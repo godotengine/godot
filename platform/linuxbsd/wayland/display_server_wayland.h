@@ -102,13 +102,11 @@ class DisplayServerWayland : public DisplayServer {
 	// WaylandMessage data for window rect changes.
 	class WaylandWindowRectMessage : public WaylandMessage {
 	public:
-		WindowID id;
 		Rect2i rect;
 	};
 
 	class WaylandWindowEventMessage : public WaylandMessage {
 	public:
-		WindowID id;
 		WindowEvent event;
 	};
 
@@ -119,7 +117,6 @@ class DisplayServerWayland : public DisplayServer {
 
 	class WaylandDropFilesEventMessage : public WaylandMessage {
 	public:
-		WindowID id;
 		Vector<String> files;
 	};
 
@@ -325,8 +322,7 @@ class DisplayServerWayland : public DisplayServer {
 
 		WaylandGlobals globals;
 
-		WindowID window_id_counter = MAIN_WINDOW_ID;
-		HashMap<WindowID, WindowData> windows;
+		WindowData main_window;
 
 		SeatState *current_seat = nullptr;
 
@@ -341,8 +337,6 @@ class DisplayServerWayland : public DisplayServer {
 
 		List<ScreenData> screens;
 		List<SeatState> seats;
-
-		List<WindowID> popup_list;
 
 		SafeFlag events_thread_done;
 
@@ -383,15 +377,13 @@ class DisplayServerWayland : public DisplayServer {
 	static void _seat_state_override_cursor_shape(SeatState &p_ss, CursorShape p_shape);
 	static void _seat_state_set_current(SeatState &p_ss);
 	static void _wayland_state_update_cursor(WaylandState &p_wls);
-	static Point2i _wayland_state_point_window_to_global(const WaylandState &wls, WindowID p_window, Point2i p_position);
 
 	static void _get_key_modifier_state(SeatState &p_seat, Ref<InputEventWithModifiers> p_event);
 
 	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 	void _window_data_set_mode(WindowData &p_wd, WindowMode p_mode);
-	void _send_window_event(WindowID p_window, WindowEvent p_event);
+	void _send_window_event(WindowEvent p_event);
 
 	static int _allocate_shm_file(size_t size);
 
@@ -630,7 +622,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual void _show_window(WindowID p_id);
+	virtual void _show_window();
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 

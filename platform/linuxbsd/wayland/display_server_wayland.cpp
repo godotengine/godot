@@ -273,6 +273,8 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 		_seat_state_override_cursor_shape(ss, p_wls.cursor_shape);
 	}
 
+	WindowData &wd = p_wls.main_window;
+
 	// Constrain/Free pointer movement depending on its mode.
 	switch (p_wls.mouse_mode) {
 		// Unconstrained pointer.
@@ -292,7 +294,6 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 		// Locked pointer.
 		case MOUSE_MODE_CAPTURED: {
 			if (!lp) {
-				WindowData &wd = p_wls.windows[MAIN_WINDOW_ID];
 				lp = zwp_pointer_constraints_v1_lock_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 
 				// Center the cursor on unlock.
@@ -307,27 +308,10 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 		case MOUSE_MODE_CONFINED:
 		case MOUSE_MODE_CONFINED_HIDDEN: {
 			if (!cp) {
-				WindowData &wd = p_wls.windows[MAIN_WINDOW_ID];
 				cp = zwp_pointer_constraints_v1_confine_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 			}
 		}
 	}
-}
-
-// Get the "global" position of a point in the window's local coordinate space.
-Point2i DisplayServerWayland::_wayland_state_point_window_to_global(const WaylandState &wls, WindowID p_window, Point2i p_position) {
-	while (p_window != INVALID_WINDOW_ID) {
-		if (!wls.windows.has(p_window)) {
-			break;
-		}
-
-		const WindowData &wd = wls.windows[p_window];
-
-		p_position += wd.rect.position;
-		p_window = wd.parent;
-	}
-
-	return p_position;
 }
 
 void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event) {
@@ -340,39 +324,9 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	Variant ret;
 	Callable::CallError ce;
 
-	// Close the topmost popup menu if the user clicks outside of it or its safe
-	// rect.
-	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && wls.popup_list.size() > 0) {
-		WindowID &front_id = wls.popup_list.front()->get();
-
-		ERR_FAIL_COND(!wls.windows.has(front_id));
-		WindowData &wd = wls.windows[front_id];
-
-		if (!wd.rect.has_point(mb->get_global_position()) && !wd.safe_rect.has_point(mb->get_global_position())) {
-			_send_window_event(front_id, WINDOW_EVENT_CLOSE_REQUEST);
-			return;
-		}
-	}
-
-	Ref<InputEventFromWindow> event_from_window = p_event;
-
-	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-		// Send to a single window.
-		if (wls.windows.has(event_from_window->get_window_id())) {
-			Callable callable = wls.windows[event_from_window->get_window_id()].input_event_callback;
-			if (callable.is_valid()) {
-				callable.callp((const Variant **)&evp, 1, ret, ce);
-			}
-		}
-	} else {
-		// Send to all windows.
-		for (KeyValue<WindowID, WindowData> &E : wls.windows) {
-			Callable callable = E.value.input_event_callback;
-			if (callable.is_valid()) {
-				callable.callp((const Variant **)&evp, 1, ret, ce);
-			}
-		}
+	Callable callable = wls.main_window.input_event_callback;
+	if (callable.is_valid()) {
+		callable.callp((const Variant **)&evp, 1, ret, ce);
 	}
 }
 
@@ -422,26 +376,6 @@ bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<
 	}
 
 	return true;
-}
-
-DisplayServer::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
-	MutexLock mutex_lock(wls.mutex);
-
-	WindowID id = wls.window_id_counter++;
-
-	WindowData &wd = wls.windows[id];
-
-	wd.id = id;
-	wd.wls = &wls;
-
-	wd.mode = p_mode;
-	wd.flags = p_flags;
-	wd.vsync_mode = p_vsync_mode;
-	wd.rect = p_rect;
-
-	wd.title = "Godot";
-
-	return id;
 }
 
 // Method which forces the modesetting logic without any fancy no-op case
@@ -516,10 +450,8 @@ void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_
 	}
 }
 
-void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_event) {
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-
-	WindowData &wd = wls.windows[p_window];
+void DisplayServerWayland::_send_window_event(WindowEvent p_event) {
+	WindowData &wd = wls.main_window;
 
 	if (wd.window_event_callback.is_valid()) {
 		Variant var_event = Variant(p_event);
@@ -967,23 +899,17 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 
 	pd.pointed_window_id = INVALID_WINDOW_ID;
 
-	for (KeyValue<WindowID, WindowData> &E : wls->windows) {
-		WindowData &wd = E.value;
-
-		if (wd.wl_surface == surface) {
-			pd.pointed_window_id = E.key;
-			break;
-		}
+	if (wls->main_window.wl_surface == surface) {
+		pd.pointed_window_id = MAIN_WINDOW_ID;
 	}
 
 	ERR_FAIL_COND_MSG(pd.pointed_window_id == INVALID_WINDOW_ID, "Cursor focused to an invalid window.");
 
-	DEBUG_LOG_WAYLAND(vformat("Pointing window %d", pd.pointed_window_id));
+	DEBUG_LOG_WAYLAND("Pointing window.");
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_ENTER;
-	msg->id = pd.pointed_window_id;
 
 	wls->message_queue.push_back(msg);
 }
@@ -1001,7 +927,6 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 		Ref<WaylandWindowEventMessage> msg;
 		msg.instantiate();
 		msg->event = WINDOW_EVENT_MOUSE_EXIT;
-		msg->id = pd.pointed_window_id;
 
 		wls->message_queue.push_back(msg);
 	}
@@ -1126,7 +1051,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 			mm->set_window_id(pd.pointed_window_id);
 			mm->set_button_mask(pd.pressed_button_mask);
 			mm->set_position(pd.position);
-			mm->set_global_position(_wayland_state_point_window_to_global(*wls, pd.pointed_window_id, pd.position));
+			mm->set_global_position(pd.position);
 
 			// FIXME: I'm not sure whether accessing the Input singleton like this might
 			// give problems.
@@ -1167,7 +1092,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 					mb->set_window_id(pd.pointed_window_id);
 					mb->set_position(pd.position);
-					mb->set_global_position(_wayland_state_point_window_to_global(*wls, pd.pointed_window_id, pd.position));
+					mb->set_global_position(pd.position);
 
 					mb->set_button_mask(pd.pressed_button_mask);
 
@@ -1205,7 +1130,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 						wh_up->set_window_id(pd.pointed_window_id);
 						wh_up->set_position(pd.position);
-						wh_up->set_global_position(_wayland_state_point_window_to_global(*wls, pd.pointed_window_id, pd.position));
+						wh_up->set_global_position(pd.position);
 
 						// We have to unset the button to avoid it getting stuck.
 						pd.pressed_button_mask &= ~test_button_mask;
@@ -1277,18 +1202,12 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 
 	_seat_state_set_current(*ss);
 
-	for (KeyValue<WindowID, WindowData> &E : wls->windows) {
-		WindowData &wd = E.value;
-
-		if (wd.wl_surface == surface) {
-			ss->keyboard_focused_window_id = E.key;
-			break;
-		}
+	if (wls->main_window.wl_surface == surface) {
+		ss->keyboard_focused_window_id = MAIN_WINDOW_ID;
 	}
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
-	msg->id = ss->keyboard_focused_window_id;
 	msg->event = WINDOW_EVENT_FOCUS_IN;
 	wls->message_queue.push_back(msg);
 }
@@ -1303,7 +1222,6 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 
-	msg->id = ss->keyboard_focused_window_id;
 	msg->event = WINDOW_EVENT_FOCUS_OUT;
 
 	wls->message_queue.push_back(msg);
@@ -1385,20 +1303,16 @@ void DisplayServerWayland::_wl_data_device_on_enter(void *data, struct wl_data_d
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	for (KeyValue<WindowID, WindowData> &E : ss->wls->windows) {
-		WindowData &wd = E.value;
+	WaylandState *wls = (WaylandState *)data;
+	ERR_FAIL_NULL(wls);
 
-		if (wd.wl_surface == surface) {
-			ss->dnd_current_window_id = E.key;
-			break;
-		}
+	if (wls->main_window.wl_surface == surface) {
+		ss->dnd_current_window_id = MAIN_WINDOW_ID;
 	}
 
 	ss->dnd_enter_serial = serial;
 
 	wl_data_offer_set_actions(id, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
-
-	ss->wl_data_offer_dnd = id;
 }
 
 void DisplayServerWayland::_wl_data_device_on_leave(void *data, struct wl_data_device *wl_data_device) {
@@ -1435,8 +1349,6 @@ void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_de
 
 		Ref<WaylandDropFilesEventMessage> msg;
 		msg.instantiate();
-
-		msg->id = ss->dnd_current_window_id;
 
 		msg->files = _string_read_fd(fds[0]).split("\n", false);
 		for (int i = 0; i < msg->files.size(); i++) {
@@ -1552,11 +1464,10 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 
 	Ref<WaylandWindowRectMessage> msg;
 	msg.instantiate();
-	msg->id = wd->id;
 	msg->rect = wd->rect;
 	wls->message_queue.push_back(msg);
 
-	DEBUG_LOG_WAYLAND(vformat("xdg surface id %d on configure rect %s", wd->id, wd->rect));
+	DEBUG_LOG_WAYLAND(vformat("xdg surface on configure rect %s", wd->rect));
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
@@ -1601,7 +1512,7 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 		}
 	}
 
-	DEBUG_LOG_WAYLAND(vformat("xdg toplevel on configure width %d height %d", width, height));
+	DEBUG_LOG_WAYLAND(vformat("XDG toplevel on configure width %d height %d.", width, height));
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel) {
@@ -1613,7 +1524,6 @@ void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_topleve
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
-	msg->id = wd->id;
 	msg->event = WINDOW_EVENT_CLOSE_REQUEST;
 	wls->message_queue.push_back(msg);
 }
@@ -1640,7 +1550,7 @@ void DisplayServerWayland::_xdg_activation_token_on_done(void *data, struct xdg_
 
 	xdg_activation_token_v1_destroy(xdg_activation_token);
 
-	DEBUG_LOG_WAYLAND(vformat("Received activation token and requested window activation for %d", wd->id));
+	DEBUG_LOG_WAYLAND(vformat("Received activation token and requested window activation"));
 }
 
 void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
@@ -1837,7 +1747,7 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 		// Override the hint set by MOUSE_MODE_CAPTURED with the requested one.
 		zwp_locked_pointer_v1_set_cursor_position_hint(wls.current_seat->wp_locked_pointer, wl_fixed_from_int(p_to.x), wl_fixed_from_int(p_to.y));
 		// Committing the surface is required to set the hint instantly.
-		wl_surface_commit(wls.windows[MAIN_WINDOW_ID].wl_surface);
+		wl_surface_commit(wls.main_window.wl_surface);
 
 		mouse_set_mode(old_mouse_mode);
 	}
@@ -1847,7 +1757,7 @@ Point2i DisplayServerWayland::mouse_get_position() const {
 	MutexLock mutex_lock(wls.mutex);
 
 	if (wls.current_seat) {
-		return _wayland_state_point_window_to_global(wls, wls.current_seat->pointer_data.pointed_window_id, wls.current_seat->pointer_data.position);
+		return wls.current_seat->pointer_data.position;
 	}
 
 	return Point2i();
@@ -2018,9 +1928,8 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 
 	if (p_enable) {
 		if (wls.globals.wp_idle_inhibit_manager && !wls.wp_idle_inhibitor) {
-			ERR_FAIL_COND(!wls.windows.has(MAIN_WINDOW_ID));
-			ERR_FAIL_COND(!wls.windows[MAIN_WINDOW_ID].wl_surface);
-			wls.wp_idle_inhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(wls.globals.wp_idle_inhibit_manager, wls.windows[MAIN_WINDOW_ID].wl_surface);
+			ERR_FAIL_COND(!wls.main_window.wl_surface);
+			wls.wp_idle_inhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(wls.globals.wp_idle_inhibit_manager, wls.main_window.wl_surface);
 		}
 	} else {
 		if (wls.wp_idle_inhibitor) {
@@ -2054,21 +1963,18 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	MutexLock mutex_lock(wls.mutex);
 
 	Vector<int> ret;
-	for (const KeyValue<WindowID, WindowData> &E : wls.windows) {
-		ret.push_back(E.key);
-	}
+	ret.push_back(MAIN_WINDOW_ID);
 
 	return ret;
 }
 
-void DisplayServerWayland::_show_window(DisplayServer::WindowID p_id) {
+void DisplayServerWayland::_show_window() {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_id));
-	WindowData &wd = wls.windows[p_id];
+	WindowData &wd = wls.main_window;
 
 	if (!wd.visible) {
-		DEBUG_LOG_WAYLAND(vformat("Showing window %d", p_id));
+		DEBUG_LOG_WAYLAND("Showing window");
 
 		wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
 		wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
@@ -2078,7 +1984,7 @@ void DisplayServerWayland::_show_window(DisplayServer::WindowID p_id) {
 
 		wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
 
-		if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_id) && wls.globals.xdg_decoration_manager) {
+		if (!window_get_flag(WINDOW_FLAG_BORDERLESS) && wls.globals.xdg_decoration_manager) {
 			wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
 			zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
 
@@ -2087,33 +1993,8 @@ void DisplayServerWayland::_show_window(DisplayServer::WindowID p_id) {
 
 		xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
 
-		if (wd.parent != INVALID_WINDOW_ID) {
-			ERR_FAIL_COND(!wls.windows.has(wd.parent));
-
-			WindowData &parent_wd = wls.windows[wd.parent];
-
-			if (parent_wd.xdg_toplevel) {
-				xdg_toplevel_set_parent(wd.xdg_toplevel, parent_wd.xdg_toplevel);
-			}
-		}
-
 		if (wd.title.utf8().ptr()) {
 			xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
-		}
-
-		if (window_get_flag(WINDOW_FLAG_POPUP, p_id)) {
-			if (wls.popup_list.size() > 0 && wls.popup_list.front()->get() != wd.parent) {
-				// Delete the whole popup tree, we're creating a new one with a different root.
-				_send_window_event(wls.popup_list.front()->get(), WINDOW_EVENT_CLOSE_REQUEST);
-				wls.popup_list.clear();
-			}
-
-			wls.popup_list.push_back(p_id);
-
-			// Focus the popup.
-			if (wls.current_seat) {
-				wls.current_seat->keyboard_focused_window_id = p_id;
-			}
 		}
 
 		wl_surface_commit(wd.wl_surface);
@@ -2126,14 +2007,14 @@ void DisplayServerWayland::_show_window(DisplayServer::WindowID p_id) {
 		// to the `wl_surface` and doing so instantly maps it, moving this method here
 		// is the only solution I can think of to implement this method properly.
 		if (wls.context_vulkan) {
-			Error err = wls.context_vulkan->window_create(p_id, wd.vsync_mode, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			Error err = wls.context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
 		}
 #endif
 
 #ifdef GLES3_ENABLED
 		if (wls.gl_manager) {
-			Error err = wls.gl_manager->window_create(p_id, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			Error err = wls.gl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
 		}
 #endif
@@ -2152,24 +2033,17 @@ DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(cons
 }
 
 void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
-
-	wd.instance_id = p_instance;
+	wls.main_window.instance_id = p_instance;
 }
 
 ObjectID DisplayServerWayland::window_get_attached_instance_id(WindowID p_window) const {
-	ERR_FAIL_COND_V(!wls.windows.has(p_window), ObjectID());
-	const WindowData &wd = wls.windows[p_window];
-	return wd.instance_id;
+	return wls.main_window.instance_id;
 }
 
 void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-
-	WindowData &wd = wls.windows[p_window];
+	WindowData &wd = wls.main_window;
 
 	wd.title = p_title;
 
@@ -2180,51 +2054,37 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 
 void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window) {
 	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_mouse_passthrough region %s window %d", p_region, p_window));
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_mouse_passthrough region %s", p_region));
 }
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
-
-	wd.rect_changed_callback = p_callable;
+	wls.main_window.rect_changed_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
-
-	wd.window_event_callback = p_callable;
+	wls.main_window.window_event_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
-
-	wd.input_event_callback = p_callable;
+	wls.main_window.input_event_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
-	wd.input_text_callback = p_callable;
+	wls.main_window.input_text_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
-
-	wd.drop_files_callback = p_callable;
+	wls.main_window.drop_files_callback = p_callable;
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window) const {
@@ -2239,13 +2099,11 @@ void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer
 Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND_V(!wls.windows.has(p_window), Point2i());
-
-	if (wls.windows[p_window].xdg_toplevel) {
+	if (wls.main_window.xdg_toplevel) {
 		// We can't know the position of toplevels with the standard protocol.
 		return Point2i();
 	} else {
-		return wls.windows[p_window].rect.position;
+		return wls.main_window.rect.position;
 	}
 }
 
@@ -2256,15 +2114,13 @@ void DisplayServerWayland::window_set_position(const Point2i &p_position, Displa
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-
-	DEBUG_LOG_WAYLAND(vformat("window id %d max size set to %s", p_window, p_size));
+	DEBUG_LOG_WAYLAND(vformat("window max size set to %s", p_size));
 
 	if (p_size.x < 0 || p_size.y < 0) {
 		ERR_FAIL_MSG("Maximum window size can't be negative!");
 	}
 
-	WindowData &wd = wls.windows[p_window];
+	WindowData &wd = wls.main_window;
 	if ((p_size != Size2i()) && ((p_size.x < wd.min_size.x) || (p_size.y < wd.min_size.y))) {
 		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
 		return;
@@ -2281,9 +2137,7 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND_V(!wls.windows.has(p_window), Size2i());
-
-	return wls.windows[p_window].max_size;
+	return wls.main_window.max_size;
 }
 
 void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
@@ -2301,11 +2155,9 @@ void DisplayServerWayland::window_set_transient(WindowID p_window, WindowID p_pa
 void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
+	DEBUG_LOG_WAYLAND(vformat("window minsize set to %s", p_size));
 
-	DEBUG_LOG_WAYLAND(vformat("window id %d minsize set to %s", p_window, p_size));
-
-	WindowData &wd = wls.windows[p_window];
+	WindowData &wd = wls.main_window;
 
 	if (p_size.x < 0 || p_size.y < 0) {
 		ERR_FAIL_MSG("Minimum window size can't be negative!");
@@ -2327,16 +2179,13 @@ void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServe
 Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND_V(!wls.windows.has(p_window), Size2i());
-
-	return wls.windows[p_window].min_size;
+	return wls.main_window.min_size;
 }
 
 void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
+	WindowData &wd = wls.main_window;
 
 	wd.rect.size = p_size;
 
@@ -2346,13 +2195,13 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 
 #ifdef VULKAN_ENABLED
 	if (wd.visible && wls.context_vulkan) {
-		wls.context_vulkan->window_resize(p_window, wd.rect.size.width, wd.rect.size.height);
+		wls.context_vulkan->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
 	}
 #endif
 
 #ifdef GLES3_ENABLED
 	if (wd.visible && wls.gl_manager) {
-		wls.gl_manager->window_resize(p_window, wd.rect.size.width, wd.rect.size.height);
+		wls.gl_manager->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
 	}
 #endif
 }
@@ -2360,57 +2209,46 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND_V(!wls.windows.has(p_window), Size2i());
-
-	return wls.windows[p_window].rect.size;
+	return wls.main_window.rect.size;
 }
 
 Size2i DisplayServerWayland::window_get_real_size(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND_V(!wls.windows.has(p_window), Size2i());
-
 	// I don't think there's a way of actually knowing the window size in wayland,
 	// other than the one requested by the compositor, which happens to be
 	// the one the windows always uses anyway.
-	return wls.windows[p_window].rect.size;
+	return wls.main_window.rect.size;
 }
 
 void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-
-	WindowData &wd = wls.windows[p_window];
-
-	if (wd.mode == p_mode) {
+	if (wls.main_window.mode == p_mode) {
 		return;
 	}
 
-	_window_data_set_mode(wd, p_mode);
+	_window_data_set_mode(wls.main_window, p_mode);
 }
 
 DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND_V(!wls.windows.has(p_window), WINDOW_MODE_WINDOWED);
-
-	return wls.windows[p_window].mode;
+	return wls.main_window.mode;
 }
 
 bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_window) const {
 	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_is_maximize_allowed window %d, returning false", p_window));
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_is_maximize_allowed, returning false"));
 	return false;
 }
 
 void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
+	WindowData &wd = wls.main_window;
 
-	DEBUG_LOG_WAYLAND(vformat("Window %d set flag %d", p_window, p_flag));
+	DEBUG_LOG_WAYLAND(vformat("Window set flag %d", p_flag));
 
 	switch (p_flag) {
 		case WINDOW_FLAG_BORDERLESS: {
@@ -2437,23 +2275,19 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 bool DisplayServerWayland::window_get_flag(WindowFlags p_flag, DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND_V(!wls.windows.has(p_window), false);
-
-	return wls.windows[p_window].flags & (1 << p_flag);
+	return wls.main_window.flags & (1 << p_flag);
 }
 
 void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-
 	if (wls.globals.xdg_activation) {
 		// Window attention requests are done through the XDG activation protocol.
 		xdg_activation_token_v1 *xdg_activation_token = xdg_activation_v1_get_activation_token(wls.globals.xdg_activation);
-		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &wls.windows[p_window]);
+		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &wls.main_window);
 		xdg_activation_token_v1_commit(xdg_activation_token);
 
-		DEBUG_LOG_WAYLAND(vformat("Requested activation token for window %d", p_window));
+		DEBUG_LOG_WAYLAND("Requested activation token.");
 	}
 }
 
@@ -2473,7 +2307,7 @@ bool DisplayServerWayland::can_any_window_draw() const {
 
 void DisplayServerWayland::window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window) {
 	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_active active %s window %d", p_active ? "true" : "false", p_window));
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_active active %s", p_active ? "true" : "false"));
 }
 
 void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window) {
@@ -2716,22 +2550,21 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandWindowRectMessage> winrect_msg = msg;
 
-		if (winrect_msg.is_valid() && wls.windows.has(winrect_msg->id)) {
-			WindowID id = winrect_msg->id;
+		if (winrect_msg.is_valid()) {
 			Rect2i rect = winrect_msg->rect;
-			WindowData &wd = wls.windows[id];
+			WindowData &wd = wls.main_window;
 
 			if (wd.visible && wd.rect == rect) {
 				// Resizing is very costly, do it only if this is the last rect update.
 #ifdef VULKAN_ENABLED
 				if (wls.context_vulkan) {
-					wls.context_vulkan->window_resize(id, rect.size.width, rect.size.height);
+					wls.context_vulkan->window_resize(MAIN_WINDOW_ID, rect.size.width, rect.size.height);
 				}
 #endif
 
 #ifdef GLES3_ENABLED
 				if (wls.gl_manager) {
-					wls.gl_manager->window_resize(id, rect.size.width, rect.size.height);
+					wls.gl_manager->window_resize(MAIN_WINDOW_ID, rect.size.width, rect.size.height);
 				}
 #endif
 			}
@@ -2749,8 +2582,8 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandWindowEventMessage> winev_msg = msg;
 
-		if (winev_msg.is_valid() && wls.windows.has(winev_msg->id)) {
-			_send_window_event(winev_msg->id, winev_msg->event);
+		if (winev_msg.is_valid()) {
+			_send_window_event(winev_msg->event);
 		}
 
 		Ref<WaylandInputEventMessage> inputev_msg = msg;
@@ -2761,8 +2594,8 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandDropFilesEventMessage> dropfiles_msg = msg;
 
-		if (dropfiles_msg.is_valid() && wls.windows.has(dropfiles_msg->id)) {
-			WindowData wd = wls.windows[dropfiles_msg->id];
+		if (dropfiles_msg.is_valid()) {
+			WindowData wd = wls.main_window;
 
 			if (wd.drop_files_callback.is_valid()) {
 				Variant var_files = dropfiles_msg->files;
@@ -3017,8 +2850,16 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	cursor_set_shape(CURSOR_BUSY);
 
-	WindowID main_window_id = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(Point2i(0, 0), p_resolution));
-	_show_window(main_window_id);
+	WindowData &wd = wls.main_window;
+
+	wd.wls = &wls;
+	wd.mode = p_mode;
+	wd.flags = p_flags;
+	wd.vsync_mode = p_vsync_mode;
+	wd.rect.size = p_resolution;
+	wd.title = "Godot";
+
+	_show_window();
 
 #ifdef VULKAN_ENABLED
 	if (p_rendering_driver == "vulkan") {
@@ -3049,33 +2890,27 @@ DisplayServerWayland::~DisplayServerWayland() {
 		events_thread.wait_to_finish();
 	}
 
-	// Destroy all windows.
-	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
-		WindowID id = E.key;
-		WindowData &wd = E.value;
-
 #ifdef VULKAN_ENABLED
-		if (wls.context_vulkan && wd.visible) {
-			wls.context_vulkan->window_destroy(id);
-		}
+	if (wls.context_vulkan && wls.main_window.visible) {
+		wls.context_vulkan->window_destroy(MAIN_WINDOW_ID);
+	}
 #endif
 
 #ifdef GLES3_ENABLED
-		if (wls.gl_manager && wd.visible) {
-			wls.gl_manager->window_destroy(id);
-		}
+	if (wls.gl_manager && wls.main_window.visible) {
+		wls.gl_manager->window_destroy(MAIN_WINDOW_ID);
+	}
 #endif
-		if (wd.xdg_toplevel) {
-			xdg_toplevel_destroy(wd.xdg_toplevel);
-		}
+	if (wls.main_window.xdg_toplevel) {
+		xdg_toplevel_destroy(wls.main_window.xdg_toplevel);
+	}
 
-		if (wd.xdg_surface) {
-			xdg_surface_destroy(wd.xdg_surface);
-		}
+	if (wls.main_window.xdg_surface) {
+		xdg_surface_destroy(wls.main_window.xdg_surface);
+	}
 
-		if (wd.wl_surface) {
-			wl_surface_destroy(wd.wl_surface);
-		}
+	if (wls.main_window.wl_surface) {
+		wl_surface_destroy(wls.main_window.wl_surface);
 	}
 
 	for (SeatState &seat : wls.seats) {
