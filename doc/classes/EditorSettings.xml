@@ -646,8 +646,8 @@
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
 			The window mode to use to display the project when starting the project from the editor.
 		</member>
-		<member name="run/window_placement/rect_custom_position" type="Vector2" setter="" getter="">
-			The custom position to use when starting the project from the editor (in pixels from the top-left corner). Only effective if [member run/window_placement/rect] is set to [b]Custom Position[/b].
+		<member name="run/window_placement/rect_custom_position" type="PackedVector2Array" setter="" getter="">
+			The custom position to use when starting the project from the editor (in pixels from the top-left corner). Only effective if [member run/window_placement/rect] is set to [b]Custom Position[/b]. You can specify 1 or more positions of debug instances. If the count of debug instances is more than the count of positions, then remaining instances will use the last position.
 		</member>
 		<member name="run/window_placement/screen" type="int" setter="" getter="">
 			The monitor to display the project on when starting the project from the editor.
