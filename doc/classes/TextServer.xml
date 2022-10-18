@@ -413,7 +413,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="texture_index" type="int" />
 			<description>
-				Returns array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
+				Returns array containing glyph packing data.
 			</description>
 		</method>
 		<method name="font_get_transform" qualifiers="const">
@@ -824,7 +824,7 @@
 			<param index="2" name="texture_index" type="int" />
 			<param index="3" name="offset" type="PackedInt32Array" />
 			<description>
-				Sets array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
+				Sets array containing glyph packing data.
 			</description>
 		</method>
 		<method name="font_set_transform">
