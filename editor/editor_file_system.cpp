@@ -1888,7 +1888,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 
 	if (load_default && ProjectSettings::get_singleton()->has_setting("importer_defaults/" + importer->get_importer_name())) {
 		//use defaults if exist
-		Dictionary d = ProjectSettings::get_singleton()->get("importer_defaults/" + importer->get_importer_name());
+		Dictionary d = GLOBAL_GET("importer_defaults/" + importer->get_importer_name());
 		List<Variant> v;
 		d.get_key_list(&v);
 
@@ -2388,7 +2388,7 @@ void EditorFileSystem::_update_extensions() {
 		valid_extensions.insert(E);
 	}
 
-	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (const String &E : textfile_ext) {
 		if (valid_extensions.has(E)) {
 			continue;

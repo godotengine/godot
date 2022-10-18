@@ -213,7 +213,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		String architecture = arch == "arm32" ? "arm" : (arch == "x86_32" ? "x86" : "x64");
 		result = result.replace("$architecture$", architecture);
 
-		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).is_empty() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
+		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).is_empty() ? (String)GLOBAL_GET("application/config/name") : String(p_preset->get("package/display_name")));
 
 		result = result.replace("$publisher_display_name$", p_preset->get("package/publisher_display_name"));
 		result = result.replace("$app_description$", p_preset->get("package/description"));

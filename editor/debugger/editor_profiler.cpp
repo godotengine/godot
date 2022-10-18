@@ -85,7 +85,7 @@ void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 }
 
 void EditorProfiler::clear() {
-	int metric_size = EditorSettings::get_singleton()->get("debugger/profiler_frame_history_size");
+	int metric_size = EDITOR_GET("debugger/profiler_frame_history_size");
 	metric_size = CLAMP(metric_size, 60, 10000);
 	frame_metrics.clear();
 	frame_metrics.resize(metric_size);

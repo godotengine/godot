@@ -358,8 +358,8 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 
 			switch (image_scale_mode) {
 				case 0: {
-					String logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
-					bool is_on = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
+					String logo_path = GLOBAL_GET("application/boot_splash/image");
+					bool is_on = GLOBAL_GET("application/boot_splash/fullsize");
 					// If custom logo is not specified, Godot does not scale default one, so we should do the same.
 					value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
 				} break;
@@ -371,7 +371,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$launch_screen_image_mode", value) + "\n";
 		} else if (lines[i].find("$launch_screen_background_color") != -1) {
 			bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
-			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : ProjectSettings::get_singleton()->get("application/boot_splash/bg_color");
+			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : GLOBAL_GET("application/boot_splash/bg_color");
 			const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
 
 			Dictionary value_dictionary;
@@ -384,7 +384,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$launch_screen_background_color", value) + "\n";
 		} else if (lines[i].find("$pbx_locale_file_reference") != -1) {
 			String locale_files;
-			Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+			Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
 			if (translations.size() > 0) {
 				HashSet<String> languages;
 				for (const String &E : translations) {
@@ -403,7 +403,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$pbx_locale_file_reference", locale_files);
 		} else if (lines[i].find("$pbx_locale_build_reference") != -1) {
 			String locale_files;
-			Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+			Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
 			if (translations.size() > 0) {
 				HashSet<String> languages;
 				for (const String &E : translations) {
@@ -574,7 +574,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 		String icon_path = p_preset->get(info.preset_key);
 		if (icon_path.length() == 0) {
 			// Resize main app icon
-			icon_path = ProjectSettings::get_singleton()->get("application/config/icon");
+			icon_path = GLOBAL_GET("application/config/icon");
 			Ref<Image> img = memnew(Image);
 			Error err = ImageLoader::load_image(icon_path, img);
 			if (err != OK) {
@@ -677,7 +677,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 	} else {
 		Ref<Image> splash;
 
-		const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+		const String splash_path = GLOBAL_GET("application/boot_splash/image");
 
 		if (!splash_path.is_empty()) {
 			splash.instantiate();
@@ -718,9 +718,9 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 		LoadingScreenInfo info = loading_screen_infos[i];
 		String loading_screen_file = p_preset->get(info.preset_key);
 
-		Color boot_bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color");
-		String boot_logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
-		bool boot_logo_scale = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
+		Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
+		String boot_logo_path = GLOBAL_GET("application/boot_splash/image");
+		bool boot_logo_scale = GLOBAL_GET("application/boot_splash/fullsize");
 
 		if (loading_screen_file.size() > 0) {
 			// Load custom loading screens, and resize if required.
@@ -1494,8 +1494,8 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 	print_line("Static framework: " + library_to_use);
 	String pkg_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
-		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	if (String(GLOBAL_GET("application/config/name")) != "") {
+		pkg_name = String(GLOBAL_GET("application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
 	}
@@ -1644,12 +1644,12 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
+	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
 	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
 	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
 	Dictionary photolibrary_usage_descriptions = p_preset->get("privacy/photolibrary_usage_description_localized");
 
-	Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+	Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
 	if (translations.size() > 0) {
 		{
 			String fname = dest_dir + binary_name + "/en.lproj";
@@ -1657,7 +1657,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + GLOBAL_GET("application/config/name").operator String() + "\";");
 			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
 			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
 			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");

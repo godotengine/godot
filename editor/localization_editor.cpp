@@ -73,7 +73,7 @@ void LocalizationEditor::add_translation(const String &p_translation) {
 }
 
 void LocalizationEditor::_translation_add(const PackedStringArray &p_paths) {
-	PackedStringArray translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+	PackedStringArray translations = GLOBAL_GET("internationalization/locale/translations");
 	for (int i = 0; i < p_paths.size(); i++) {
 		if (!translations.has(p_paths[i])) {
 			// Don't add duplicate translation paths.
@@ -83,7 +83,7 @@ void LocalizationEditor::_translation_add(const PackedStringArray &p_paths) {
 
 	undo_redo->create_action(vformat(TTR("Add %d Translations"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", translations);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", ProjectSettings::get_singleton()->get("internationalization/locale/translations"));
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", GLOBAL_GET("internationalization/locale/translations"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
 	undo_redo->add_do_method(this, "emit_signal", localization_changed);
@@ -105,7 +105,7 @@ void LocalizationEditor::_translation_delete(Object *p_item, int p_column, int p
 
 	int idx = ti->get_metadata(0);
 
-	PackedStringArray translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+	PackedStringArray translations = GLOBAL_GET("internationalization/locale/translations");
 
 	ERR_FAIL_INDEX(idx, translations.size());
 
@@ -113,7 +113,7 @@ void LocalizationEditor::_translation_delete(Object *p_item, int p_column, int p
 
 	undo_redo->create_action(TTR("Remove Translation"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", translations);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", ProjectSettings::get_singleton()->get("internationalization/locale/translations"));
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", GLOBAL_GET("internationalization/locale/translations"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
 	undo_redo->add_do_method(this, "emit_signal", localization_changed);
@@ -130,7 +130,7 @@ void LocalizationEditor::_translation_res_add(const PackedStringArray &p_paths) 
 	Dictionary remaps;
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
-		remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+		remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 		prev = remaps;
 	}
 
@@ -158,7 +158,7 @@ void LocalizationEditor::_translation_res_option_file_open() {
 void LocalizationEditor::_translation_res_option_add(const PackedStringArray &p_paths) {
 	ERR_FAIL_COND(!ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps"));
 
-	Dictionary remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 
 	TreeItem *k = translation_remap->get_selected();
 	ERR_FAIL_COND(!k);
@@ -174,7 +174,7 @@ void LocalizationEditor::_translation_res_option_add(const PackedStringArray &p_
 
 	undo_redo->create_action(vformat(TTR("Translation Resource Remap: Add %d Remap(s)"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", remaps);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps"));
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", GLOBAL_GET("internationalization/locale/translation_remaps"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
 	undo_redo->add_do_method(this, "emit_signal", localization_changed);
@@ -216,7 +216,7 @@ void LocalizationEditor::_translation_res_option_changed() {
 		return;
 	}
 
-	Dictionary remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 
 	TreeItem *k = translation_remap->get_selected();
 	ERR_FAIL_COND(!k);
@@ -236,7 +236,7 @@ void LocalizationEditor::_translation_res_option_changed() {
 	updating_translations = true;
 	undo_redo->create_action(TTR("Change Resource Remap Language"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", remaps);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps"));
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", GLOBAL_GET("internationalization/locale/translation_remaps"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
 	undo_redo->add_do_method(this, "emit_signal", localization_changed);
@@ -258,7 +258,7 @@ void LocalizationEditor::_translation_res_delete(Object *p_item, int p_column, i
 		return;
 	}
 
-	Dictionary remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 
 	TreeItem *k = Object::cast_to<TreeItem>(p_item);
 
@@ -269,7 +269,7 @@ void LocalizationEditor::_translation_res_delete(Object *p_item, int p_column, i
 
 	undo_redo->create_action(TTR("Remove Resource Remap"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", remaps);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps"));
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", GLOBAL_GET("internationalization/locale/translation_remaps"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
 	undo_redo->add_do_method(this, "emit_signal", localization_changed);
@@ -290,7 +290,7 @@ void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_co
 		return;
 	}
 
-	Dictionary remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 
 	TreeItem *k = translation_remap->get_selected();
 	ERR_FAIL_COND(!k);
@@ -308,7 +308,7 @@ void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_co
 
 	undo_redo->create_action(TTR("Remove Resource Remap Option"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", remaps);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps"));
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", GLOBAL_GET("internationalization/locale/translation_remaps"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
 	undo_redo->add_do_method(this, "emit_signal", localization_changed);
@@ -317,7 +317,7 @@ void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_co
 }
 
 void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
-	PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
+	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
 	for (int i = 0; i < p_paths.size(); i++) {
 		if (!pot_translations.has(p_paths[i])) {
 			pot_translations.push_back(p_paths[i]);
@@ -326,7 +326,7 @@ void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 
 	undo_redo->create_action(vformat(TTR("Add %d file(s) for POT generation"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", pot_translations);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files"));
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", GLOBAL_GET("internationalization/locale/translations_pot_files"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
 	undo_redo->add_do_method(this, "emit_signal", localization_changed);
@@ -344,7 +344,7 @@ void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button,
 
 	int idx = ti->get_metadata(0);
 
-	PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
+	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
 
 	ERR_FAIL_INDEX(idx, pot_translations.size());
 
@@ -352,7 +352,7 @@ void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button,
 
 	undo_redo->create_action(TTR("Remove file from POT generation"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", pot_translations);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files"));
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", GLOBAL_GET("internationalization/locale/translations_pot_files"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
 	undo_redo->add_do_method(this, "emit_signal", localization_changed);
@@ -392,7 +392,7 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 	bool remaps_changed = false;
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
-		remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+		remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 	}
 
 	// Check for the keys.
@@ -442,7 +442,7 @@ void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
 	Dictionary remaps;
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
-		remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+		remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 	}
 
 	bool remaps_changed = remaps.has(p_file);
@@ -481,7 +481,7 @@ void LocalizationEditor::update_translations() {
 	TreeItem *root = translation_list->create_item(nullptr);
 	translation_list->set_hide_root(true);
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations")) {
-		PackedStringArray translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+		PackedStringArray translations = GLOBAL_GET("internationalization/locale/translations");
 		for (int i = 0; i < translations.size(); i++) {
 			TreeItem *t = translation_list->create_item(root);
 			t->set_editable(0, false);
@@ -507,7 +507,7 @@ void LocalizationEditor::update_translations() {
 	translation_res_option_add_button->set_disabled(true);
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
-		Dictionary remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+		Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 		List<Variant> rk;
 		remaps.get_key_list(&rk);
 		Vector<String> keys;
@@ -568,7 +568,7 @@ void LocalizationEditor::update_translations() {
 	root = translation_pot_list->create_item(nullptr);
 	translation_pot_list->set_hide_root(true);
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_pot_files")) {
-		PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
+		PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
 		for (int i = 0; i < pot_translations.size(); i++) {
 			TreeItem *t = translation_pot_list->create_item(root);
 			t->set_editable(0, false);

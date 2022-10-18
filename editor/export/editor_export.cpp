@@ -124,7 +124,7 @@ void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, in
 }
 
 String EditorExportPlatform::test_etc2() const {
-	const bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
+	const bool etc2_supported = GLOBAL_GET("rendering/textures/vram_compression/import_etc2");
 
 	if (!etc2_supported) {
 		return TTR("Target platform requires 'ETC2' texture compression. Enable 'Import Etc 2' in Project Settings.");

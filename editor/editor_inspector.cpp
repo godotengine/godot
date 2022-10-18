@@ -3872,7 +3872,7 @@ void EditorInspector::_notification(int p_what) {
 				update_scroll_request = -1;
 			}
 			if (update_tree_pending) {
-				refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+				refresh_countdown = float(EDITOR_GET("docks/property_editor/auto_refresh_interval"));
 			} else if (refresh_countdown > 0) {
 				refresh_countdown -= get_process_delta_time();
 				if (refresh_countdown <= 0) {
@@ -3885,7 +3885,7 @@ void EditorInspector::_notification(int p_what) {
 							}
 						}
 					}
-					refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+					refresh_countdown = float(EDITOR_GET("docks/property_editor/auto_refresh_interval"));
 				}
 			}
 
@@ -4091,7 +4091,7 @@ EditorInspector::EditorInspector() {
 	get_v_scroll_bar()->connect("value_changed", callable_mp(this, &EditorInspector::_vscroll_changed));
 	update_scroll_request = -1;
 	if (EditorSettings::get_singleton()) {
-		refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+		refresh_countdown = float(EDITOR_GET("docks/property_editor/auto_refresh_interval"));
 	} else {
 		//used when class is created by the docgen to dump default values of everything bindable, editorsettings may not be created
 		refresh_countdown = 0.33;

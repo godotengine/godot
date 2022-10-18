@@ -106,7 +106,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	// Create all items for the files in the subdirectory.
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-		String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
+		String main_scene = GLOBAL_GET("application/run/main_scene");
 
 		// Build the list of the files to display.
 		List<FileInfo> file_list;
@@ -383,7 +383,7 @@ void FileSystemDock::_notification(int p_what) {
 
 			current_path->connect("text_submitted", callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false));
 
-			always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
+			always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 
 			set_file_list_display_mode(FileSystemDock::FILE_LIST_DISPLAY_LIST);
 
@@ -464,7 +464,7 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 
 			// Update always show folders.
-			bool new_always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
+			bool new_always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 			if (new_always_show_folders != always_show_folders) {
 				always_show_folders = new_always_show_folders;
 				_update_file_list(true);
@@ -743,7 +743,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	String directory = path;
 	String file = "";
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("docks/filesystem/thumbnail_size");
+	int thumbnail_size = EDITOR_GET("docks/filesystem/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 	Ref<Texture2D> folder_thumbnail;
 	Ref<Texture2D> file_thumbnail;
@@ -893,7 +893,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	_sort_file_info_list(file_list);
 
 	// Fills the ItemList control node from the FileInfos.
-	String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
+	String main_scene = GLOBAL_GET("application/run/main_scene");
 	for (FileInfo &E : file_list) {
 		FileInfo *finfo = &(E);
 		String fname = finfo->name;
@@ -2500,7 +2500,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), TTR("New Inherited Scene"), FILE_INHERIT);
-				if (ProjectSettings::get_singleton()->get("application/run/main_scene") != filenames[0]) {
+				if (GLOBAL_GET("application/run/main_scene") != filenames[0]) {
 					p_popup->add_icon_item(get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
 				}
 			} else {

@@ -136,16 +136,16 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 }
 
 void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags) {
-	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	String host = EDITOR_GET("network/debug/remote_host");
+	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
 		host = "localhost";
 	}
 
 	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
-		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
+		int port = EDITOR_GET("filesystem/file_server/port");
+		String passwd = EDITOR_GET("filesystem/file_server/password");
 		r_flags.push_back("--remote-fs");
 		r_flags.push_back(host + ":" + itos(port));
 		if (!passwd.is_empty()) {
@@ -813,7 +813,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				continue;
 			}
 
-			String autoload_path = ProjectSettings::get_singleton()->get(pi.name);
+			String autoload_path = GLOBAL_GET(pi.name);
 
 			if (autoload_path.begins_with("*")) {
 				autoload_path = autoload_path.substr(1);
@@ -1241,8 +1241,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	// Store icon and splash images directly, they need to bypass the import system and be loaded as images
-	String icon = ProjectSettings::get_singleton()->get("application/config/icon");
-	String splash = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+	String icon = GLOBAL_GET("application/config/icon");
+	String splash = GLOBAL_GET("application/boot_splash/image");
 	if (!icon.is_empty() && FileAccess::exists(icon)) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(icon);
 		err = p_func(p_udata, icon, array, idx, total, enc_in_filters, enc_ex_filters, key);
@@ -1277,7 +1277,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	// Store text server data if it is supported.
 	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
-		bool use_data = ProjectSettings::get_singleton()->get("internationalization/locale/include_text_server_data");
+		bool use_data = GLOBAL_GET("internationalization/locale/include_text_server_data");
 		if (use_data) {
 			// Try using user provided data file.
 			String ts_data = "res://" + TS->get_support_data_filename();
@@ -1569,16 +1569,16 @@ Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, 
 }
 
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
-	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	String host = EDITOR_GET("network/debug/remote_host");
+	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
 		host = "localhost";
 	}
 
 	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
-		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
+		int port = EDITOR_GET("filesystem/file_server/port");
+		String passwd = EDITOR_GET("filesystem/file_server/password");
 		r_flags.push_back("--remote-fs");
 		r_flags.push_back(host + ":" + itos(port));
 		if (!passwd.is_empty()) {

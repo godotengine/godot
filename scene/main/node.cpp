@@ -2958,7 +2958,7 @@ void Node::_bind_methods() {
 }
 
 String Node::_get_name_num_separator() {
-	switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_num_separator").operator int()) {
+	switch (GLOBAL_GET("editor/node_naming/name_num_separator").operator int()) {
 		case 0:
 			return "";
 		case 1:

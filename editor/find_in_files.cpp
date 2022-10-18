@@ -466,7 +466,7 @@ void FindInFilesDialog::_notification(int p_what) {
 				for (int i = 0; i < _filters_container->get_child_count(); i++) {
 					_filters_container->get_child(i)->queue_free();
 				}
-				Array exts = ProjectSettings::get_singleton()->get("editor/script/search_in_file_extensions");
+				Array exts = GLOBAL_GET("editor/script/search_in_file_extensions");
 				for (int i = 0; i < exts.size(); ++i) {
 					CheckBox *cb = memnew(CheckBox);
 					cb->set_text(exts[i]);

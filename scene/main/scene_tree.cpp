@@ -485,7 +485,7 @@ bool SceneTree::process(double p_time) {
 #ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
-		String env_path = ProjectSettings::get_singleton()->get(SNAME("rendering/environment/defaults/default_environment"));
+		String env_path = GLOBAL_GET(SNAME("rendering/environment/defaults/default_environment"));
 		env_path = env_path.strip_edges(); //user may have added a space or two
 		String cpath;
 		Ref<Environment> fallback = get_root()->get_world_3d()->get_fallback_environment();
@@ -1390,7 +1390,7 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
 	root->set_name("root");
-	root->set_title(ProjectSettings::get_singleton()->get("application/config/name"));
+	root->set_title(GLOBAL_GET("application/config/name"));
 
 #ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {

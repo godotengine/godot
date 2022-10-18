@@ -71,8 +71,8 @@ String EditorDebuggerServerWebSocket::get_uri() const {
 
 Error EditorDebuggerServerWebSocket::start(const String &p_uri) {
 	// Default host and port
-	String bind_host = (String)EditorSettings::get_singleton()->get("network/debug/remote_host");
-	int bind_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	String bind_host = (String)EDITOR_GET("network/debug/remote_host");
+	int bind_port = (int)EDITOR_GET("network/debug/remote_port");
 
 	// Optionally override
 	if (!p_uri.is_empty() && p_uri != "ws://") {

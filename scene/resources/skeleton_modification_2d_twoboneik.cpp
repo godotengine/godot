@@ -212,7 +212,7 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
+		bone_ik_color = EDITOR_GET("editors/2d/bone_ik_color");
 	}
 #endif // TOOLS_ENABLED
 

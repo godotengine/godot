@@ -352,7 +352,7 @@ void ProjectSettingsEditor::_action_added(const String &p_name) {
 
 void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionary &p_action) {
 	const String property_name = "input/" + p_name;
-	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
+	Dictionary old_val = GLOBAL_GET(property_name);
 
 	if (old_val["deadzone"] != p_action["deadzone"]) {
 		// Deadzone Changed
@@ -387,7 +387,7 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 void ProjectSettingsEditor::_action_removed(const String &p_name) {
 	const String property_name = "input/" + p_name;
 
-	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
+	Dictionary old_val = GLOBAL_GET(property_name);
 	int order = ProjectSettings::get_singleton()->get_order(property_name);
 
 	undo_redo->create_action(TTR("Erase Input Action"));
@@ -410,7 +410,7 @@ void ProjectSettingsEditor::_action_renamed(const String &p_old_name, const Stri
 			"An action with this name already exists.");
 
 	int order = ProjectSettings::get_singleton()->get_order(old_property_name);
-	Dictionary action = ProjectSettings::get_singleton()->get(old_property_name);
+	Dictionary action = GLOBAL_GET(old_property_name);
 
 	undo_redo->create_action(TTR("Rename Input Action Event"));
 	// Do: clear old, set new
@@ -505,7 +505,7 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 
 		// Strip the "input/" from the left.
 		String display_name = property_name.substr(String("input/").size() - 1);
-		Dictionary action = ProjectSettings::get_singleton()->get(property_name);
+		Dictionary action = GLOBAL_GET(property_name);
 
 		ActionMapEditor::ActionInfo action_info;
 		action_info.action = action;

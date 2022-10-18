@@ -1060,7 +1060,7 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 
 	Variant ret = p_default;
 	if (EditorSettings::get_singleton()->has_setting(p_setting)) {
-		ret = EditorSettings::get_singleton()->get(p_setting);
+		ret = EDITOR_GET(p_setting);
 	} else {
 		EditorSettings::get_singleton()->set_manually(p_setting, p_default);
 		EditorSettings::get_singleton()->set_restart_if_changed(p_setting, p_restart_if_changed);

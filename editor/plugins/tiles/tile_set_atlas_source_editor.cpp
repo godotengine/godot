@@ -1667,7 +1667,7 @@ Array TileSetAtlasSourceEditor::_get_selection_as_array() {
 
 void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 	// Colors.
-	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 
 	// Draw the selected tile.
@@ -1958,7 +1958,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_mouse_exited() {
 }
 
 void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
-	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 
 	// Update the hovered alternative tile.

@@ -401,7 +401,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 		}
 	}
 
-	if (EditorSettings::get_singleton()->get("export/android/shutdown_adb_on_exit")) {
+	if (EDITOR_GET("export/android/shutdown_adb_on_exit")) {
 		String adb = get_adb_path();
 		if (!FileAccess::exists(adb)) {
 			return; //adb not configured
@@ -419,7 +419,7 @@ String EditorExportPlatformAndroid::get_project_name(const String &p_name) const
 	if (!p_name.is_empty()) {
 		aname = p_name;
 	} else {
-		aname = ProjectSettings::get_singleton()->get("application/config/name");
+		aname = GLOBAL_GET("application/config/name");
 	}
 
 	if (aname.is_empty()) {
@@ -431,7 +431,7 @@ String EditorExportPlatformAndroid::get_project_name(const String &p_name) const
 
 String EditorExportPlatformAndroid::get_package_name(const String &p_package) const {
 	String pname = p_package;
-	String basename = ProjectSettings::get_singleton()->get("application/config/name");
+	String basename = GLOBAL_GET("application/config/name");
 	basename = basename.to_lower();
 
 	String name;
@@ -1395,7 +1395,7 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 	Vector<String> string_table;
 
 	String package_name = p_preset->get("package/name");
-	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
+	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
 
 	for (uint32_t i = 0; i < string_count; i++) {
 		uint32_t offset = decode_uint32(&r_manifest[string_table_begins + i * 4]);
@@ -1505,9 +1505,9 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 }
 
 String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image) {
-	bool scale_splash = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
-	bool apply_filter = ProjectSettings::get_singleton()->get("application/boot_splash/use_filter");
-	String project_splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+	bool scale_splash = GLOBAL_GET("application/boot_splash/fullsize");
+	bool apply_filter = GLOBAL_GET("application/boot_splash/use_filter");
+	String project_splash_path = GLOBAL_GET("application/boot_splash/image");
 
 	if (!project_splash_path.is_empty()) {
 		splash_image.instantiate();
@@ -1528,7 +1528,7 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 	}
 
 	if (scale_splash) {
-		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
+		Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
 		int width, height;
 		if (screen_size.width > screen_size.height) {
 			// scale horizontally
@@ -1559,7 +1559,7 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 }
 
 void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background) {
-	String project_icon_path = ProjectSettings::get_singleton()->get("application/config/icon");
+	String project_icon_path = GLOBAL_GET("application/config/icon");
 
 	icon.instantiate();
 	foreground.instantiate();
@@ -1920,7 +1920,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 			print_verbose(output);
 
 			if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
-				int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
+				int dbg_port = EDITOR_GET("network/debug/remote_port");
 				args.clear();
 				args.push_back("-s");
 				args.push_back(devices[p_device].id);
@@ -1935,7 +1935,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 			}
 
 			if (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT) {
-				int fs_port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
+				int fs_port = EDITOR_GET("filesystem/file_server/port");
 
 				args.clear();
 				args.push_back("-s");
@@ -1965,7 +1965,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	args.push_back("shell");
 	args.push_back("am");
 	args.push_back("start");
-	if ((bool)EditorSettings::get_singleton()->get("export/android/force_system_user") && devices[p_device].api_level >= 17) { // Multi-user introduced in Android 17
+	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) { // Multi-user introduced in Android 17
 		args.push_back("--user");
 		args.push_back("0");
 	}
@@ -1995,7 +1995,7 @@ String EditorExportPlatformAndroid::get_adb_path() {
 	if (OS::get_singleton()->get_name() == "Windows") {
 		exe_ext = ".exe";
 	}
-	String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
+	String sdk_path = EDITOR_GET("export/android/android_sdk_path");
 	return sdk_path.path_join("platform-tools/adb" + exe_ext);
 }
 
@@ -2005,7 +2005,7 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 		exe_ext = ".bat";
 	}
 	String apksigner_command_name = "apksigner" + exe_ext;
-	String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
+	String sdk_path = EDITOR_GET("export/android/android_sdk_path");
 	String apksigner_path = "";
 
 	Error errn;
@@ -2099,7 +2099,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 	}
 
 	if (!FileAccess::exists(dk)) {
-		dk = EditorSettings::get_singleton()->get("export/android/debug_keystore");
+		dk = EDITOR_GET("export/android/debug_keystore");
 		if (!FileAccess::exists(dk)) {
 			valid = false;
 			err += TTR("Debug keystore not configured in the Editor Settings nor in the preset.") + "\n";
@@ -2120,7 +2120,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
 	}
 
-	String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
+	String sdk_path = EDITOR_GET("export/android/android_sdk_path");
 	if (sdk_path.is_empty()) {
 		err += TTR("A valid Android SDK path is required in Editor Settings.") + "\n";
 		valid = false;
@@ -2394,9 +2394,9 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 		user = p_preset->get("keystore/debug_user");
 
 		if (keystore.is_empty()) {
-			keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
-			password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
-			user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
+			keystore = EDITOR_GET("export/android/debug_keystore");
+			password = EDITOR_GET("export/android/debug_keystore_pass");
+			user = EDITOR_GET("export/android/debug_keystore_user");
 		}
 
 		if (ep.step(vformat(TTR("Signing debug %s..."), export_label), 104)) {
@@ -2728,9 +2728,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				String debug_user = p_preset->get("keystore/debug_user");
 
 				if (debug_keystore.is_empty()) {
-					debug_keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
-					debug_password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
-					debug_user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
+					debug_keystore = EDITOR_GET("export/android/debug_keystore");
+					debug_password = EDITOR_GET("export/android/debug_keystore_pass");
+					debug_user = EDITOR_GET("export/android/debug_keystore_user");
 				}
 				if (debug_keystore.is_relative_path()) {
 					debug_keystore = OS::get_singleton()->get_resource_dir().path_join(debug_keystore).simplify_path();

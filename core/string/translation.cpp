@@ -628,7 +628,7 @@ TranslationServer *TranslationServer::singleton = nullptr;
 
 bool TranslationServer::_load_translations(const String &p_from) {
 	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
-		const Vector<String> &translation_names = ProjectSettings::get_singleton()->get(p_from);
+		const Vector<String> &translation_names = GLOBAL_GET(p_from);
 
 		int tcount = translation_names.size();
 

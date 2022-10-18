@@ -1454,7 +1454,7 @@ void AudioServer::update() {
 }
 
 void AudioServer::load_default_bus_layout() {
-	String layout_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
+	String layout_path = GLOBAL_GET("audio/buses/default_bus_layout");
 
 	if (ResourceLoader::exists(layout_path)) {
 		Ref<AudioBusLayout> default_layout = ResourceLoader::load(layout_path);

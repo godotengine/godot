@@ -91,9 +91,9 @@ Ref<FontVariation> make_bold_font(const Ref<Font> &p_font, double p_embolden, Ty
 void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
-	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)EditorSettings::get_singleton()->get("interface/editor/font_antialiasing");
-	int font_hinting_setting = (int)EditorSettings::get_singleton()->get("interface/editor/font_hinting");
-	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)EditorSettings::get_singleton()->get("interface/editor/font_subpixel_positioning");
+	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)EDITOR_GET("interface/editor/font_antialiasing");
+	int font_hinting_setting = (int)EDITOR_GET("interface/editor/font_hinting");
+	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)EDITOR_GET("interface/editor/font_subpixel_positioning");
 
 	TextServer::Hinting font_hinting;
 	TextServer::Hinting font_mono_hinting;
@@ -173,9 +173,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	default_font_mono->set_fallbacks(fallbacks);
 
 	// Init base font configs and load custom fonts.
-	String custom_font_path = EditorSettings::get_singleton()->get("interface/editor/main_font");
-	String custom_font_path_bold = EditorSettings::get_singleton()->get("interface/editor/main_font_bold");
-	String custom_font_path_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
+	String custom_font_path = EDITOR_GET("interface/editor/main_font");
+	String custom_font_path_bold = EDITOR_GET("interface/editor/main_font_bold");
+	String custom_font_path_source = EDITOR_GET("interface/editor/code_font");
 
 	Ref<FontVariation> default_fc;
 	default_fc.instantiate();
@@ -283,7 +283,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontVariation> mono_other_fc = mono_fc->duplicate();
 
 	// Enable contextual alternates (coding ligatures) and custom features for the source editor font.
-	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
+	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
 	switch (ot_mode) {
 		case 1: { // Disable ligatures.
 			Dictionary ftrs;
@@ -291,7 +291,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 			mono_fc->set_opentype_features(ftrs);
 		} break;
 		case 2: { // Custom.
-			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
+			Vector<String> subtag = String(EDITOR_GET("interface/editor/code_font_custom_opentype_features")).split(",");
 			Dictionary ftrs;
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");

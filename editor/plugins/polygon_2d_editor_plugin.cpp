@@ -67,7 +67,7 @@ void Polygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			uv_panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			uv_panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -299,7 +299,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			}
 
 			if (EditorSettings::get_singleton()->has_setting("interface/dialogs/uv_editor_bounds")) {
-				uv_edit->popup(EditorSettings::get_singleton()->get("interface/dialogs/uv_editor_bounds"));
+				uv_edit->popup(EDITOR_GET("interface/dialogs/uv_editor_bounds"));
 			} else {
 				uv_edit->popup_centered_ratio(0.85);
 			}

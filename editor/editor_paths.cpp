@@ -83,7 +83,7 @@ String EditorPaths::get_script_templates_dir() const {
 }
 
 String EditorPaths::get_project_script_templates_dir() const {
-	return ProjectSettings::get_singleton()->get("editor/script/templates_search_path");
+	return GLOBAL_GET("editor/script/templates_search_path");
 }
 
 String EditorPaths::get_feature_profiles_dir() const {

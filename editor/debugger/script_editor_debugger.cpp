@@ -995,7 +995,7 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 				profiler_signature.clear();
 				// Add max funcs options to request.
 				Array opts;
-				int max_funcs = EditorSettings::get_singleton()->get("debugger/profiler_frame_max_functions");
+				int max_funcs = EDITOR_GET("debugger/profiler_frame_max_functions");
 				opts.push_back(CLAMP(max_funcs, 16, 512));
 				msg_data.push_back(opts);
 			}

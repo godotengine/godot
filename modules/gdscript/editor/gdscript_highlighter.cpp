@@ -683,7 +683,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		}
 	}
 
-	const String text_edit_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
+	const String text_edit_color_theme = EDITOR_GET("text_editor/theme/color_theme");
 	const bool godot_2_theme = text_edit_color_theme == "Godot 2";
 
 	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {

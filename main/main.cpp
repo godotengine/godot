@@ -233,7 +233,7 @@ static String get_full_version_string() {
 void initialize_physics() {
 	/// 3D Physics Server
 	physics_server_3d = PhysicsServer3DManager::get_singleton()->new_server(
-			ProjectSettings::get_singleton()->get(PhysicsServer3DManager::setting_property_name));
+			GLOBAL_GET(PhysicsServer3DManager::setting_property_name));
 	if (!physics_server_3d) {
 		// Physics server not found, Use the default physics
 		physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
@@ -243,7 +243,7 @@ void initialize_physics() {
 
 	// 2D Physics server
 	physics_server_2d = PhysicsServer2DManager::get_singleton()->new_server(
-			ProjectSettings::get_singleton()->get(PhysicsServer2DManager::get_singleton()->setting_property_name));
+			GLOBAL_GET(PhysicsServer2DManager::get_singleton()->setting_property_name));
 	if (!physics_server_2d) {
 		// Physics server not found, Use the default physics
 		physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
@@ -1459,10 +1459,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		input_map->load_from_project_settings(); //keys for game
 	}
 
-	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stdout"))) {
+	if (bool(GLOBAL_GET("application/run/disable_stdout"))) {
 		quiet_stdout = true;
 	}
-	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stderr"))) {
+	if (bool(GLOBAL_GET("application/run/disable_stderr"))) {
 		CoreGlobals::print_error_enabled = false;
 	};
 
@@ -1470,7 +1470,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		CoreGlobals::print_line_enabled = false;
 	}
 
-	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
+	Logger::set_flush_stdout_on_print(GLOBAL_GET("application/run/flush_stdout_on_print"));
 
 	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
@@ -2334,11 +2334,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 					"display/mouse_cursor/custom_image",
 					PROPERTY_HINT_FILE, "*.png,*.webp"));
 
-	if (String(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image")) != String()) {
+	if (String(GLOBAL_GET("display/mouse_cursor/custom_image")) != String()) {
 		Ref<Texture2D> cursor = ResourceLoader::load(
-				ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image"));
+				GLOBAL_GET("display/mouse_cursor/custom_image"));
 		if (cursor.is_valid()) {
-			Vector2 hotspot = ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
+			Vector2 hotspot = GLOBAL_GET("display/mouse_cursor/custom_image_hotspot");
 			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CURSOR_ARROW, hotspot);
 		}
 	}
@@ -2827,7 +2827,7 @@ bool Main::start() {
 
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
-			String appname = ProjectSettings::get_singleton()->get("application/config/name");
+			String appname = GLOBAL_GET("application/config/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
 #ifdef DEBUG_ENABLED
 			// Append a suffix to the window title to denote that the project is running

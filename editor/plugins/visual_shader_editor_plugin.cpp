@@ -1356,7 +1356,7 @@ void VisualShaderEditor::_update_options_menu() {
 	Color unsupported_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
 	Color supported_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
 
-	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/renderer/rendering_method") == "gl_compatibility";
+	static bool low_driver = GLOBAL_GET("rendering/renderer/rendering_method") == "gl_compatibility";
 
 	HashMap<String, TreeItem *> folders;
 
@@ -1731,9 +1731,9 @@ void VisualShaderEditor::_update_graph() {
 		graph->connect_node(itos(from), from_idx, itos(to), to_idx);
 	}
 
-	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
-	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");
 	graph->set_connection_lines_curvature(graph_lines_curvature);
 }
 
@@ -3677,10 +3677,10 @@ void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 void VisualShaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-			graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
-			graph->set_minimap_opacity(EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity"));
-			graph->set_connection_lines_curvature(EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature"));
+			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
+			graph->set_minimap_opacity(EDITOR_GET("editors/visual_editors/minimap_opacity"));
+			graph->set_connection_lines_curvature(EDITOR_GET("editors/visual_editors/lines_curvature"));
 			_update_graph();
 		} break;
 
@@ -3700,8 +3700,8 @@ void VisualShaderEditor::_notification(int p_what) {
 				category = category->get_next();
 			}
 
-			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-			graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
+			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -4684,9 +4684,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->set_show_zoom_label(true);
 	add_child(graph);
 	graph->set_drag_forwarding(this);
-	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
-	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");
 	graph->set_connection_lines_curvature(graph_lines_curvature);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SCALAR_INT);
@@ -6269,7 +6269,7 @@ void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, Visua
 }
 
 Size2 VisualShaderNodePortPreview::get_minimum_size() const {
-	int port_preview_size = EditorSettings::get_singleton()->get("editors/visual_editors/visual_shader/port_preview_size");
+	int port_preview_size = EDITOR_GET("editors/visual_editors/visual_shader/port_preview_size");
 	return Size2(port_preview_size, port_preview_size) * EDSCALE;
 }
 

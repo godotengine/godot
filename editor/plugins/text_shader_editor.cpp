@@ -724,7 +724,7 @@ void TextShaderEditor::_notification(int p_what) {
 void TextShaderEditor::_editor_settings_changed() {
 	shader_editor->update_editor_settings();
 
-	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/appearance/whitespace/line_spacing"));
+	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
 	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 }
@@ -955,7 +955,7 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
 			int row = pos.y;
 			int col = pos.x;
-			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
+			tx->set_move_caret_on_right_click_enabled(EDITOR_GET("text_editor/behavior/navigation/move_caret_on_right_click"));
 
 			if (tx->is_move_caret_on_right_click_enabled()) {
 				tx->remove_secondary_carets();
@@ -1068,7 +1068,7 @@ TextShaderEditor::TextShaderEditor() {
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_editor_settings_changed));
 	ProjectSettingsEditor::get_singleton()->connect("confirmed", callable_mp(this, &TextShaderEditor::_project_settings_changed));
 
-	shader_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
+	shader_editor->get_text_editor()->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
 	shader_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	shader_editor->get_text_editor()->set_context_menu_enabled(false);

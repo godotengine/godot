@@ -142,7 +142,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		return; //could not guess type
 	}
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+	int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 
 	r_texture = Ref<ImageTexture>();
@@ -226,7 +226,7 @@ void EditorResourcePreview::_iterate() {
 			Ref<ImageTexture> texture;
 			Ref<ImageTexture> small_texture;
 
-			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size *= EDSCALE;
 
 			if (item.resource.is_valid()) {

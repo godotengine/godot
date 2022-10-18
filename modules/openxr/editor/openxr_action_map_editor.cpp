@@ -364,7 +364,7 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	select_interaction_profile_dialog->connect("interaction_profile_selected", callable_mp(this, &OpenXRActionMapEditor::_on_interaction_profile_selected));
 	add_child(select_interaction_profile_dialog);
 
-	_load_action_map(ProjectSettings::get_singleton()->get("xr/openxr/default_action_map"));
+	_load_action_map(GLOBAL_GET("xr/openxr/default_action_map"));
 }
 
 OpenXRActionMapEditor::~OpenXRActionMapEditor() {
