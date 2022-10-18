@@ -242,18 +242,12 @@ public:
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
 
 	static _ALWAYS_INLINE_ double cubic_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
-		return 0.5 *
-				((p_from * 2.0) +
-						(-p_pre + p_to) * p_weight +
-						(2.0 * p_pre - 5.0 * p_from + 4.0 * p_to - p_post) * (p_weight * p_weight) +
-						(-p_pre + 3.0 * p_from - 3.0 * p_to + p_post) * (p_weight * p_weight * p_weight));
+		double w2 = p_weight * p_weight;
+		return p_from + 0.5 * ((p_to - p_pre) * p_weight + (2.0 * p_pre - 5.0 * p_from + 4.0 * p_to - p_post) * w2 + (3.0 * p_from - 3.0 * p_to + p_post - p_pre) * (w2 * p_weight));
 	}
 	static _ALWAYS_INLINE_ float cubic_interpolate(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
-		return 0.5f *
-				((p_from * 2.0f) +
-						(-p_pre + p_to) * p_weight +
-						(2.0f * p_pre - 5.0f * p_from + 4.0f * p_to - p_post) * (p_weight * p_weight) +
-						(-p_pre + 3.0f * p_from - 3.0f * p_to + p_post) * (p_weight * p_weight * p_weight));
+		float w2 = p_weight * p_weight;
+		return p_from + 0.5f * ((p_to - p_pre) * p_weight + (2.0f * p_pre - 5.0f * p_from + 4.0f * p_to - p_post) * w2 + (3.0f * p_from - 3.0f * p_to + p_post - p_pre) * (w2 * p_weight));
 	}
 
 	static _ALWAYS_INLINE_ double cubic_interpolate_angle(double p_from, double p_to, double p_pre, double p_post, double p_weight) {

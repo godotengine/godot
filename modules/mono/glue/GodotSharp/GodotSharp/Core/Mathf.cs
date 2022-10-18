@@ -1,5 +1,11 @@
 using System;
 
+#if REAL_T_IS_DOUBLE
+using MathS = System.Math;
+#else
+using MathS = System.MathF;
+#endif
+
 namespace Godot
 {
     /// <summary>
@@ -20,7 +26,7 @@ namespace Godot
         /// fits around its perimeter. This is equivalent to <c>Mathf.Tau / 2</c>.
         /// </summary>
         // 3.1415927f and 3.14159265358979
-        public const real_t Pi = (real_t)3.1415926535897932384626433833M;
+        public const real_t Pi = MathS.PI;
 
         /// <summary>
         /// Positive infinity. For negative infinity, use <c>-Mathf.Inf</c>.
@@ -36,6 +42,7 @@ namespace Godot
 
         // 0.0174532924f and 0.0174532925199433
         private const real_t _degToRadConst = (real_t)0.0174532925199432957692369077M;
+
         // 57.29578f and 57.2957795130823
         private const real_t _radToDegConst = (real_t)57.295779513082320876798154814M;
 
@@ -56,7 +63,7 @@ namespace Godot
         /// <returns>The absolute value of <paramref name="s"/>.</returns>
         public static real_t Abs(real_t s)
         {
-            return Math.Abs(s);
+            return MathS.Abs(s);
         }
 
         /// <summary>
@@ -69,7 +76,7 @@ namespace Godot
         /// </returns>
         public static real_t Acos(real_t s)
         {
-            return (real_t)Math.Acos(s);
+            return MathS.Acos(s);
         }
 
         /// <summary>
@@ -82,7 +89,7 @@ namespace Godot
         /// </returns>
         public static real_t Asin(real_t s)
         {
-            return (real_t)Math.Asin(s);
+            return MathS.Asin(s);
         }
 
         /// <summary>
@@ -98,7 +105,7 @@ namespace Godot
         /// </returns>
         public static real_t Atan(real_t s)
         {
-            return (real_t)Math.Atan(s);
+            return MathS.Atan(s);
         }
 
         /// <summary>
@@ -115,7 +122,7 @@ namespace Godot
         /// </returns>
         public static real_t Atan2(real_t y, real_t x)
         {
-            return (real_t)Math.Atan2(y, x);
+            return MathS.Atan2(y, x);
         }
 
         /// <summary>
@@ -125,7 +132,7 @@ namespace Godot
         /// <returns>The smallest whole number that is not less than <paramref name="s"/>.</returns>
         public static real_t Ceil(real_t s)
         {
-            return (real_t)Math.Ceiling(s);
+            return MathS.Ceiling(s);
         }
 
         /// <summary>
@@ -161,7 +168,7 @@ namespace Godot
         /// <returns>The cosine of that angle.</returns>
         public static real_t Cos(real_t s)
         {
-            return (real_t)Math.Cos(s);
+            return MathS.Cos(s);
         }
 
         /// <summary>
@@ -171,7 +178,7 @@ namespace Godot
         /// <returns>The hyperbolic cosine of that angle.</returns>
         public static real_t Cosh(real_t s)
         {
-            return (real_t)Math.Cosh(s);
+            return MathS.Cosh(s);
         }
 
         /// <summary>
@@ -186,11 +193,8 @@ namespace Godot
         /// <returns>The resulting value of the interpolation.</returns>
         public static real_t CubicInterpolate(real_t from, real_t to, real_t pre, real_t post, real_t weight)
         {
-            return 0.5f *
-                    ((from * 2.0f) +
-                            (-pre + to) * weight +
-                            (2.0f * pre - 5.0f * from + 4.0f * to - post) * (weight * weight) +
-                            (-pre + 3.0f * from - 3.0f * to + post) * (weight * weight * weight));
+            real_t w2 = weight * weight;
+            return from + 0.5f * ((to - pre) * weight + (2.0f * pre - 5.0f * from + 4.0f * to - post) * w2 + (3.0f * from - 3.0f * to + post - pre) * (w2 * weight));
         }
 
         /// <summary>
@@ -239,12 +243,15 @@ namespace Godot
         {
             /* Barry-Goldman method */
             real_t t = Lerp(0.0f, toT, weight);
-            real_t a1 = Lerp(pre, from, preT == 0 ? 0.0f : (t - preT) / -preT);
-            real_t a2 = Lerp(from, to, toT == 0 ? 0.5f : t / toT);
-            real_t a3 = Lerp(to, post, postT - toT == 0 ? 1.0f : (t - toT) / (postT - toT));
-            real_t b1 = Lerp(a1, a2, toT - preT == 0 ? 0.0f : (t - preT) / (toT - preT));
-            real_t b2 = Lerp(a2, a3, postT == 0 ? 1.0f : t / postT);
-            return Lerp(b1, b2, toT == 0 ? 0.5f : t / toT);
+
+            real_t a1 = Lerp(pre, from, preT == 0.0f ? 0.0f : (t - preT) / -preT);
+            real_t a2 = Lerp(from, to, toT == 0.0f ? 0.5f : t / toT);
+            real_t a3 = Lerp(to, post, postT - toT == 0.0f ? 1.0f : (t - toT) / (postT - toT));
+
+            real_t b1 = Lerp(a1, a2, toT - preT == 0.0f ? 0.0f : (t - preT) / (toT - preT));
+            real_t b2 = Lerp(a2, a3, postT == 0.0f ? 1.0f : t / postT);
+
+            return Lerp(b1, b2, toT == 0.0f ? 0.5f : t / toT);
         }
 
         /// <summary>
@@ -293,13 +300,14 @@ namespace Godot
         public static real_t BezierInterpolate(real_t start, real_t control1, real_t control2, real_t end, real_t t)
         {
             // Formula from Wikipedia article on Bezier curves
-            real_t omt = 1 - t;
+            real_t omt = 1.0f - t;
             real_t omt2 = omt * omt;
             real_t omt3 = omt2 * omt;
+
             real_t t2 = t * t;
             real_t t3 = t2 * t;
 
-            return start * omt3 + control1 * omt2 * t * 3 + control2 * omt * t2 * 3 + end * t3;
+            return start * omt3 + control1 * omt2 * t * 3.0f + control2 * omt * t2 * 3.0f + end * t3;
         }
 
         /// <summary>
@@ -324,36 +332,34 @@ namespace Godot
         /// <returns>The eased value.</returns>
         public static real_t Ease(real_t s, real_t curve)
         {
-            if (s < 0f)
+            if (s < 0.0f)
             {
-                s = 0f;
+                s = 0.0f;
             }
             else if (s > 1.0f)
             {
                 s = 1.0f;
             }
 
-            if (curve > 0f)
+            if (curve > 0.0f)
             {
                 if (curve < 1.0f)
                 {
-                    return 1.0f - Pow(1.0f - s, 1.0f / curve);
+                    return 1.0f - MathS.Pow(1.0f - s, 1.0f / curve);
                 }
-
-                return Pow(s, curve);
+                return MathS.Pow(s, curve);
             }
 
-            if (curve < 0f)
+            if (curve < 0.0f)
             {
                 if (s < 0.5f)
                 {
-                    return Pow(s * 2.0f, -curve) * 0.5f;
+                    return MathS.Pow(s * 2.0f, -curve) * 0.5f;
                 }
-
-                return ((1.0f - Pow(1.0f - ((s - 0.5f) * 2.0f), -curve)) * 0.5f) + 0.5f;
+                return ((1.0f - MathS.Pow(1.0f - ((s - 0.5f) * 2.0f), -curve)) * 0.5f) + 0.5f;
             }
 
-            return 0f;
+            return 0.0f;
         }
 
         /// <summary>
@@ -364,7 +370,7 @@ namespace Godot
         /// <returns><c>e</c> raised to the power of <paramref name="s"/>.</returns>
         public static real_t Exp(real_t s)
         {
-            return (real_t)Math.Exp(s);
+            return MathS.Exp(s);
         }
 
         /// <summary>
@@ -374,7 +380,7 @@ namespace Godot
         /// <returns>The largest whole number that is not more than <paramref name="s"/>.</returns>
         public static real_t Floor(real_t s)
         {
-            return (real_t)Math.Floor(s);
+            return MathS.Floor(s);
         }
 
         /// <summary>
@@ -410,12 +416,12 @@ namespace Godot
                 return true;
             }
             // Then check for approximate equality.
-            real_t tolerance = Epsilon * Abs(a);
+            real_t tolerance = Epsilon * MathS.Abs(a);
             if (tolerance < Epsilon)
             {
                 tolerance = Epsilon;
             }
-            return Abs(a - b) < tolerance;
+            return MathS.Abs(a - b) < tolerance;
         }
 
         /// <summary>
@@ -448,7 +454,7 @@ namespace Godot
         /// <returns>A <see langword="bool"/> for whether or not the value is nearly zero.</returns>
         public static bool IsZeroApprox(real_t s)
         {
-            return Abs(s) < Epsilon;
+            return MathS.Abs(s) < Epsilon;
         }
 
         /// <summary>
@@ -477,7 +483,7 @@ namespace Godot
         public static real_t LerpAngle(real_t from, real_t to, real_t weight)
         {
             real_t difference = (to - from) % Mathf.Tau;
-            real_t distance = ((2 * difference) % Mathf.Tau) - difference;
+            real_t distance = ((2.0f * difference) % Mathf.Tau) - difference;
             return from + (distance * weight);
         }
 
@@ -490,7 +496,7 @@ namespace Godot
         /// <returns>The natural log of <paramref name="s"/>.</returns>
         public static real_t Log(real_t s)
         {
-            return (real_t)Math.Log(s);
+            return MathS.Log(s);
         }
 
         /// <summary>
@@ -548,10 +554,9 @@ namespace Godot
         /// <returns>The value after moving.</returns>
         public static real_t MoveToward(real_t from, real_t to, real_t delta)
         {
-            if (Abs(to - from) <= delta)
+            if (MathS.Abs(to - from) <= delta)
                 return to;
-
-            return from + (Sign(to - from) * delta);
+            return from + (MathS.Sign(to - from) * delta);
         }
 
         /// <summary>
@@ -611,7 +616,7 @@ namespace Godot
         /// <returns><paramref name="x"/> raised to the power of <paramref name="y"/>.</returns>
         public static real_t Pow(real_t x, real_t y)
         {
-            return (real_t)Math.Pow(x, y);
+            return MathS.Pow(x, y);
         }
 
         /// <summary>
@@ -647,7 +652,7 @@ namespace Godot
         /// <returns>The rounded number.</returns>
         public static real_t Round(real_t s)
         {
-            return (real_t)Math.Round(s);
+            return MathS.Round(s);
         }
 
         /// <summary>
@@ -683,7 +688,7 @@ namespace Godot
         /// <returns>The sine of that angle.</returns>
         public static real_t Sin(real_t s)
         {
-            return (real_t)Math.Sin(s);
+            return MathS.Sin(s);
         }
 
         /// <summary>
@@ -693,7 +698,7 @@ namespace Godot
         /// <returns>The hyperbolic sine of that angle.</returns>
         public static real_t Sinh(real_t s)
         {
-            return (real_t)Math.Sinh(s);
+            return MathS.Sinh(s);
         }
 
         /// <summary>
@@ -711,8 +716,8 @@ namespace Godot
             {
                 return from;
             }
-            real_t x = Clamp((weight - from) / (to - from), (real_t)0.0, (real_t)1.0);
-            return x * x * (3 - (2 * x));
+            real_t x = Math.Clamp((weight - from) / (to - from), 0.0f, 1.0f);
+            return x * x * (3.0f - (2.0f * x));
         }
 
         /// <summary>
@@ -724,7 +729,7 @@ namespace Godot
         /// <returns>The square root of <paramref name="s"/>.</returns>
         public static real_t Sqrt(real_t s)
         {
-            return (real_t)Math.Sqrt(s);
+            return MathS.Sqrt(s);
         }
 
         /// <summary>
@@ -748,7 +753,7 @@ namespace Godot
                 0.00000009999,
                 0.000000009999,
             };
-            double abs = Abs(step);
+            double abs = MathS.Abs(step);
             double decs = abs - (int)abs; // Strip away integer part
             for (int i = 0; i < sd.Length; i++)
             {
@@ -769,11 +774,10 @@ namespace Godot
         /// <returns>The snapped value.</returns>
         public static real_t Snapped(real_t s, real_t step)
         {
-            if (step != 0f)
+            if (step != 0.0f)
             {
-                return Floor((s / step) + 0.5f) * step;
+                return MathS.Floor((s / step) + 0.5f) * step;
             }
-
             return s;
         }
 
@@ -784,7 +788,7 @@ namespace Godot
         /// <returns>The tangent of that angle.</returns>
         public static real_t Tan(real_t s)
         {
-            return (real_t)Math.Tan(s);
+            return MathS.Tan(s);
         }
 
         /// <summary>
@@ -794,7 +798,7 @@ namespace Godot
         /// <returns>The hyperbolic tangent of that angle.</returns>
         public static real_t Tanh(real_t s)
         {
-            return (real_t)Math.Tanh(s);
+            return MathS.Tanh(s);
         }
 
         /// <summary>
@@ -812,7 +816,6 @@ namespace Godot
             int range = max - min;
             if (range == 0)
                 return min;
-
             return min + ((((value - min) % range) + range) % range);
         }
 
@@ -838,7 +841,7 @@ namespace Godot
 
         private static real_t Fract(real_t value)
         {
-            return value - (real_t)Math.Floor(value);
+            return value - MathS.Floor(value);
         }
 
         /// <summary>
@@ -852,7 +855,7 @@ namespace Godot
         /// <returns>The ping-ponged value.</returns>
         public static real_t PingPong(real_t value, real_t length)
         {
-            return (length != (real_t)0.0) ? Abs(Fract((value - length) / (length * (real_t)2.0)) * length * (real_t)2.0 - length) : (real_t)0.0;
+            return (length != 0.0f) ? MathS.Abs(Fract((value - length) / (length * 2.0f)) * length * 2.0f - length) : 0.0f;
         }
     }
 }

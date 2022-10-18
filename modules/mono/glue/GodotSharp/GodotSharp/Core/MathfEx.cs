@@ -1,5 +1,11 @@
 using System;
 
+#if REAL_T_IS_DOUBLE
+using MathS = System.Math;
+#else
+using MathS = System.MathF;
+#endif
+
 namespace Godot
 {
     public static partial class Mathf
@@ -9,7 +15,7 @@ namespace Godot
         /// <summary>
         /// The natural number <c>e</c>.
         /// </summary>
-        public const real_t E = (real_t)2.7182818284590452353602874714M; // 2.7182817f and 2.718281828459045
+        public const real_t E = MathS.E; // 2.7182817f and 2.718281828459045
 
         /// <summary>
         /// The square root of 2.
@@ -55,7 +61,7 @@ namespace Godot
         /// <returns>The smallest whole number that is not less than <paramref name="s"/>.</returns>
         public static int CeilToInt(real_t s)
         {
-            return (int)Math.Ceiling(s);
+            return (int)MathS.Ceiling(s);
         }
 
         /// <summary>
@@ -67,7 +73,7 @@ namespace Godot
         /// <returns>The largest whole number that is not more than <paramref name="s"/>.</returns>
         public static int FloorToInt(real_t s)
         {
-            return (int)Math.Floor(s);
+            return (int)MathS.Floor(s);
         }
 
         /// <summary>
@@ -79,7 +85,7 @@ namespace Godot
         /// <returns>The rounded number.</returns>
         public static int RoundToInt(real_t s)
         {
-            return (int)Math.Round(s);
+            return (int)MathS.Round(s);
         }
 
         /// <summary>
@@ -100,7 +106,7 @@ namespace Godot
                 return true;
             }
             // Then check for approximate equality.
-            return Abs(a - b) < tolerance;
+            return MathS.Abs(a - b) < tolerance;
         }
     }
 }
