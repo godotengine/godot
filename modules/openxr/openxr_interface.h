@@ -91,7 +91,6 @@ private:
 	void free_actions(ActionSet *p_action_set);
 
 	Tracker *find_tracker(const String &p_tracker_name, bool p_create = false);
-	void link_action_to_tracker(Tracker *p_tracker, Action *p_action);
 	void handle_tracker(Tracker *p_tracker);
 	void free_trackers();
 
