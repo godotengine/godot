@@ -1303,6 +1303,8 @@ void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_de
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	ERR_FAIL_NULL(ss->wl_data_offer_dnd);
+
 	int fds[2];
 	if (pipe(fds) == 0) {
 		wl_data_offer_receive(ss->wl_data_offer_dnd, "text/uri-list", fds[1]);
@@ -1348,6 +1350,7 @@ void DisplayServerWayland::_wl_data_offer_on_offer(void *data, struct wl_data_of
 	ERR_FAIL_NULL(ss);
 
 	if (strcmp(mime_type, "text/uri-list") == 0) {
+		ss->wl_data_offer_dnd = wl_data_offer;
 		wl_data_offer_accept(wl_data_offer, ss->dnd_enter_serial, mime_type);
 	}
 }
