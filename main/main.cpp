@@ -1808,6 +1808,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"0,33200,1,or_greater")); // No negative numbers
 
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
+	GLOBAL_DEF("display/window/ios/hide_status_bar", true);
+	GLOBAL_DEF("display/window/ios/suppress_ui_gesture", true);
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.15);
 	ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pointing/ios/touch_delay",
 			PropertyInfo(Variant::FLOAT,
@@ -2127,7 +2129,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		} else {
 			// Create a 1×1 transparent image. This will effectively hide the splash image.
 			boot_logo.instantiate();
-			boot_logo->create(1, 1, false, Image::FORMAT_RGBA8);
+			boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
 			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
 		}
 

@@ -1490,7 +1490,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		gui.key_event_accepted = false;
 
 		Point2 mpos = mb->get_position();
-		gui.last_mouse_pos = mpos;
 		if (mb->is_pressed()) {
 			Size2 pos = mpos;
 			if (gui.mouse_focus_mask != MouseButton::NONE) {
@@ -1643,8 +1642,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (mm.is_valid()) {
 		gui.key_event_accepted = false;
 		Point2 mpos = mm->get_position();
-
-		gui.last_mouse_pos = mpos;
 
 		// Drag & drop.
 		if (!gui.drag_attempted && gui.mouse_focus && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
@@ -2759,6 +2756,11 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		ev = p_event;
 	}
 
+	Ref<InputEventMouse> me = ev;
+	if (me.is_valid()) {
+		gui.last_mouse_pos = me->get_position();
+	}
+
 	if (is_embedding_subwindows() && _sub_windows_forward_input(ev)) {
 		set_input_as_handled();
 		return;
@@ -3727,6 +3729,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_canvas_transform", "xform"), &Viewport::set_global_canvas_transform);
 	ClassDB::bind_method(D_METHOD("get_global_canvas_transform"), &Viewport::get_global_canvas_transform);
 	ClassDB::bind_method(D_METHOD("get_final_transform"), &Viewport::get_final_transform);
+	ClassDB::bind_method(D_METHOD("get_screen_transform"), &Viewport::get_screen_transform);
 
 	ClassDB::bind_method(D_METHOD("get_visible_rect"), &Viewport::get_visible_rect);
 	ClassDB::bind_method(D_METHOD("set_transparent_background", "enable"), &Viewport::set_transparent_background);

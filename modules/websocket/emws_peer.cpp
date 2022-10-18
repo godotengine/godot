@@ -120,7 +120,7 @@ Error EMWSPeer::_send(const uint8_t *p_buffer, int p_buffer_size, bool p_binary)
 }
 
 Error EMWSPeer::send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) {
-	return _send(p_buffer, p_buffer_size, p_mode == WRITE_MODE_TEXT);
+	return _send(p_buffer, p_buffer_size, p_mode == WRITE_MODE_BINARY);
 }
 
 Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {

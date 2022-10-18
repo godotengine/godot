@@ -2019,36 +2019,36 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 		if (k->is_pressed()) {
 			bool handled = false;
 
-			if (k->is_action("ui_page_up") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_page_up", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() - vscroll->get_page());
 				handled = true;
 			}
-			if (k->is_action("ui_page_down") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_page_down", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() + vscroll->get_page());
 				handled = true;
 			}
-			if (k->is_action("ui_up") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_up", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() - theme_cache.normal_font->get_height(theme_cache.normal_font_size));
 				handled = true;
 			}
-			if (k->is_action("ui_down") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_down", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() + theme_cache.normal_font->get_height(theme_cache.normal_font_size));
 				handled = true;
 			}
-			if (k->is_action("ui_home") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_home", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(0);
 				handled = true;
 			}
-			if (k->is_action("ui_end") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_end", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_max());
 				handled = true;
 			}
 			if (is_shortcut_keys_enabled()) {
-				if (k->is_action("ui_text_select_all")) {
+				if (k->is_action("ui_text_select_all", true)) {
 					select_all();
 					handled = true;
 				}
-				if (k->is_action("ui_copy")) {
+				if (k->is_action("ui_copy", true)) {
 					selection_copy();
 					handled = true;
 				}

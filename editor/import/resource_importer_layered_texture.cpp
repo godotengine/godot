@@ -186,9 +186,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 				int mm_d = MAX(1, d >> 1);
 
 				for (int i = 0; i < mm_d; i++) {
-					Ref<Image> mm;
-					mm.instantiate();
-					mm->create(mm_w, mm_h, false, p_images[0]->get_format());
+					Ref<Image> mm = Image::create_empty(mm_w, mm_h, false, p_images[0]->get_format());
 					Vector3 pos;
 					pos.z = float(i) * float(d) / float(mm_d) + 0.5;
 					for (int x = 0; x < mm_w; x++) {

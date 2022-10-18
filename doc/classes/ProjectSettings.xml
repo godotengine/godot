@@ -413,6 +413,9 @@
 		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
 		</member>
+		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
+		</member>
 		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], all warnings will be reported as if they are errors.
 		</member>
@@ -564,6 +567,13 @@
 		</member>
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
+		</member>
+		<member name="display/window/ios/hide_status_bar" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the status bar is hidden while the app is running.
+		</member>
+		<member name="display/window/ios/suppress_ui_gesture" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], it will require two swipes to access iOS UI that uses gestures.
+			[b]Note:[/b] This setting has no effect on the home indicator if [code]hide_home_indicator[/code] is [code]true[/code].
 		</member>
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it. See also [member display/window/size/transparent] and [member rendering/transparent_background].

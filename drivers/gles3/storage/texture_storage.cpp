@@ -59,9 +59,7 @@ TextureStorage::TextureStorage() {
 	{ //create default textures
 		{ // White Textures
 
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(1, 1, 1, 1));
 			image->generate_mipmaps();
 
@@ -90,9 +88,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		{ // black
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0, 0, 0, 1));
 			image->generate_mipmaps();
 
@@ -116,9 +112,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		{ // transparent black
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0, 0, 0, 0));
 			image->generate_mipmaps();
 
@@ -127,9 +121,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		{
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0.5, 0.5, 1, 1));
 			image->generate_mipmaps();
 
@@ -138,9 +130,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		{
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(1.0, 0.5, 1, 1));
 			image->generate_mipmaps();
 
@@ -745,9 +735,7 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	texture_2d_initialize(p_texture, image);
@@ -756,9 +744,7 @@ void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
@@ -777,9 +763,7 @@ void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, Re
 void TextureStorage::texture_3d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
@@ -833,9 +817,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	data.resize(data_size);
 
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image;
-	image.instantiate();
-	image->create(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
+	Ref<Image> image = Image::create_from_data(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (texture->format != texture->real_format) {
 		image->convert(texture->format);

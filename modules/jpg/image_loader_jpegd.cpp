@@ -99,7 +99,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 		fmt = Image::FORMAT_RGB8;
 	}
 
-	p_image->create(image_width, image_height, false, fmt, data);
+	p_image->set_data(image_width, image_height, false, fmt, data);
 
 	return OK;
 }

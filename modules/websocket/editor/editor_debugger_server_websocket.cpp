@@ -40,7 +40,13 @@
 
 void EditorDebuggerServerWebSocket::poll() {
 	if (pending_peer.is_null() && tcp_server->is_connection_available()) {
-		Ref<WebSocketPeer> peer;
+		Ref<WebSocketPeer> peer = Ref<WebSocketPeer>(WebSocketPeer::create());
+		ERR_FAIL_COND(peer.is_null()); // Bug.
+
+		Vector<String> ws_protocols;
+		ws_protocols.push_back("binary"); // Compatibility for emscripten TCP-to-WebSocket.
+		peer->set_supported_protocols(ws_protocols);
+
 		Error err = peer->accept_stream(tcp_server->take_connection());
 		if (err == OK) {
 			pending_timer = OS::get_singleton()->get_ticks_msec();

@@ -1551,7 +1551,7 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 
 	print_verbose("Creating splash background color image.");
 	splash_bg_color_image.instantiate();
-	splash_bg_color_image->create(splash_image->get_width(), splash_image->get_height(), false, splash_image->get_format());
+	splash_bg_color_image->initialize_data(splash_image->get_width(), splash_image->get_height(), false, splash_image->get_format());
 	splash_bg_color_image->fill(bg_color);
 
 	String processed_splash_config_xml = vformat(SPLASH_CONFIG_XML_CONTENT, bool_to_string(apply_filter));
@@ -2901,20 +2901,22 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			_load_image_data(splash_bg_color_image, data);
 		}
 
-		for (int i = 0; i < icon_densities_count; ++i) {
-			if (main_image.is_valid() && !main_image->is_empty()) {
-				if (file == launcher_icons[i].export_path) {
-					_process_launcher_icons(file, main_image, launcher_icons[i].dimensions, data);
+		if (file.ends_with(".png") && file.contains("mipmap")) {
+			for (int i = 0; i < icon_densities_count; ++i) {
+				if (main_image.is_valid() && !main_image->is_empty()) {
+					if (file == launcher_icons[i].export_path) {
+						_process_launcher_icons(file, main_image, launcher_icons[i].dimensions, data);
+					}
 				}
-			}
-			if (foreground.is_valid() && !foreground->is_empty()) {
-				if (file == launcher_adaptive_icon_foregrounds[i].export_path) {
-					_process_launcher_icons(file, foreground, launcher_adaptive_icon_foregrounds[i].dimensions, data);
+				if (foreground.is_valid() && !foreground->is_empty()) {
+					if (file == launcher_adaptive_icon_foregrounds[i].export_path) {
+						_process_launcher_icons(file, foreground, launcher_adaptive_icon_foregrounds[i].dimensions, data);
+					}
 				}
-			}
-			if (background.is_valid() && !background->is_empty()) {
-				if (file == launcher_adaptive_icon_backgrounds[i].export_path) {
-					_process_launcher_icons(file, background, launcher_adaptive_icon_backgrounds[i].dimensions, data);
+				if (background.is_valid() && !background->is_empty()) {
+					if (file == launcher_adaptive_icon_backgrounds[i].export_path) {
+						_process_launcher_icons(file, background, launcher_adaptive_icon_backgrounds[i].dimensions, data);
+					}
 				}
 			}
 		}

@@ -183,7 +183,7 @@ Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 
 	ERR_FAIL_COND_V_MSG(errdec, ERR_FILE_CORRUPT, "Failed decoding WebP image.");
 
-	p_image->create(features.width, features.height, false, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image);
+	p_image->set_data(features.width, features.height, false, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image);
 
 	return OK;
 }

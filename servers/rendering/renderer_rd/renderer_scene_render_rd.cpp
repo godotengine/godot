@@ -250,9 +250,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 			panorama_color = ambient_color.lerp(panorama_color, ambient_color_sky_mix);
 		}
 
-		Ref<Image> panorama;
-		panorama.instantiate();
-		panorama->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
+		Ref<Image> panorama = Image::create_empty(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
 		panorama->fill(panorama_color);
 		return panorama;
 	}
@@ -1305,36 +1303,28 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Typed
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(albedo_alpha_tex, 0);
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
+		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(albedo_alpha_tex);
 		ret.push_back(img);
 	}
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(normal_tex, 0);
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
+		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(normal_tex);
 		ret.push_back(img);
 	}
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(orm_tex, 0);
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
+		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(orm_tex);
 		ret.push_back(img);
 	}
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(emission_tex, 0);
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBAH, data);
+		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBAH, data);
 		RD::get_singleton()->free(emission_tex);
 		ret.push_back(img);
 	}

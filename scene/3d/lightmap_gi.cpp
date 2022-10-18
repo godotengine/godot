@@ -145,10 +145,7 @@ Array LightmapGIData::_get_light_textures_data() const {
 	for (int i = 0; i < texture_count; i++) {
 		int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
 
-		Ref<Image> texture_image;
-		texture_image.instantiate();
-
-		texture_image->create(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
+		Ref<Image> texture_image = Image::create_empty(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
 
 		for (int j = 0; j < texture_slice_count; j++) {
 			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
@@ -818,7 +815,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				}
 
 				md.albedo_on_uv2.instantiate();
-				md.albedo_on_uv2->create(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
+				md.albedo_on_uv2->set_data(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
 			}
 
 			md.emission_on_uv2 = images[RS::BAKE_CHANNEL_EMISSION];
@@ -1054,7 +1051,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			} break;
 			case ENVIRONMENT_MODE_CUSTOM_COLOR: {
 				environment_image.instantiate();
-				environment_image->create(128, 64, false, Image::FORMAT_RGBAF);
+				environment_image->initialize_data(128, 64, false, Image::FORMAT_RGBAF);
 				Color c = environment_custom_color;
 				c.r *= environment_custom_energy;
 				c.g *= environment_custom_energy;

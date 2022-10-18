@@ -158,7 +158,7 @@
 			memcpy(w, dataY, new_width * new_height);
 
 			img[0].instantiate();
-			img[0]->create(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
+			img[0]->set_data(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
 		}
 
 		{
@@ -177,7 +177,7 @@
 
 			///TODO OpenGL doesn't support FORMAT_RG8, need to do some form of conversion
 			img[1].instantiate();
-			img[1]->create(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
+			img[1]->set_data(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
 		}
 
 		// set our texture...

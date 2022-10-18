@@ -233,12 +233,13 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 
 		ret.y = 0x7fffffff;
 		ret.x = 0;
+		const int *ct_offsets_ptr = ct.offsets.ptr();
 
 		for (int j = 0; j < ct.texture_w - mw; j++) {
 			int max_y = 0;
 
 			for (int k = j; k < j + mw; k++) {
-				int y = ct.offsets[k];
+				int y = ct_offsets_ptr[k];
 				if (y > max_y) {
 					max_y = y;
 				}
@@ -818,7 +819,10 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 		int error = 0;
 		if (!ft_library) {
 			error = FT_Init_FreeType(&ft_library);
-			ERR_FAIL_COND_V_MSG(error != 0, false, "FreeType: Error initializing library: '" + String(FT_Error_String(error)) + "'.");
+			if (error != 0) {
+				memdelete(fd);
+				ERR_FAIL_V_MSG(false, "FreeType: Error initializing library: '" + String(FT_Error_String(error)) + "'.");
+			}
 		}
 
 		memset(&fd->stream, 0, sizeof(FT_StreamRec));
@@ -847,6 +851,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 		if (error) {
 			FT_Done_Face(fd->face);
 			fd->face = nullptr;
+			memdelete(fd);
 			ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "'.");
 		}
 
@@ -945,6 +950,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 			FT_Done_MM_Var(ft_library, amaster);
 		}
 #else
+		memdelete(fd);
 		ERR_FAIL_V_MSG(false, "FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
 #endif
 	}
@@ -1588,9 +1594,7 @@ void TextServerFallback::_font_set_texture_image(const RID &p_font_rid, const Ve
 	tex.texture_h = p_image->get_height();
 	tex.format = p_image->get_format();
 
-	Ref<Image> img;
-	img.instantiate();
-	img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+	Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 	if (fd->mipmaps) {
 		img->generate_mipmaps();
 	}
@@ -1609,11 +1613,7 @@ Ref<Image> TextServerFallback::_font_get_texture_image(const RID &p_font_rid, co
 	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->textures.size(), Ref<Image>());
 
 	const FontTexture &tex = fd->cache[size]->textures[p_texture_index];
-	Ref<Image> img;
-	img.instantiate();
-	img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-
-	return img;
+	return Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 }
 
 void TextServerFallback::_font_set_texture_offsets(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index, const PackedInt32Array &p_offset) {
@@ -1933,9 +1933,7 @@ RID TextServerFallback::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 		if (gl[p_glyph | mod].texture_idx != -1) {
 			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
 				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
-				Ref<Image> img;
-				img.instantiate();
-				img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+				Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 				if (fd->mipmaps) {
 					img->generate_mipmaps();
 				}
@@ -1981,9 +1979,7 @@ Size2 TextServerFallback::_font_get_glyph_texture_size(const RID &p_font_rid, co
 		if (gl[p_glyph | mod].texture_idx != -1) {
 			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
 				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
-				Ref<Image> img;
-				img.instantiate();
-				img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+				Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 				if (fd->mipmaps) {
 					img->generate_mipmaps();
 				}
@@ -2310,9 +2306,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 			if (RenderingServer::get_singleton() != nullptr) {
 				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
 					FontTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
-					Ref<Image> img;
-					img.instantiate();
-					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 					if (fd->mipmaps) {
 						img->generate_mipmaps();
 					}
@@ -2402,9 +2396,7 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 			if (RenderingServer::get_singleton() != nullptr) {
 				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
 					FontTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
-					Ref<Image> img;
-					img.instantiate();
-					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 					if (fd->mipmaps) {
 						img->generate_mipmaps();
 					}

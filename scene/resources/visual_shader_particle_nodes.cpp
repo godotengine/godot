@@ -460,9 +460,9 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector2> 
 	image.instantiate();
 
 	if (p_array.size() == 0) {
-		image->create(1, 1, false, Image::Format::FORMAT_RGBF);
+		image->initialize_data(1, 1, false, Image::Format::FORMAT_RGBF);
 	} else {
-		image->create(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
+		image->initialize_data(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
 	}
 
 	for (int i = 0; i < p_array.size(); i++) {
@@ -481,9 +481,9 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector3> 
 	image.instantiate();
 
 	if (p_array.size() == 0) {
-		image->create(1, 1, false, Image::Format::FORMAT_RGBF);
+		image->initialize_data(1, 1, false, Image::Format::FORMAT_RGBF);
 	} else {
-		image->create(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
+		image->initialize_data(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
 	}
 
 	for (int i = 0; i < p_array.size(); i++) {
@@ -502,9 +502,9 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Color> &p
 	image.instantiate();
 
 	if (p_array.size() == 0) {
-		image->create(1, 1, false, Image::Format::FORMAT_RGBA8);
+		image->initialize_data(1, 1, false, Image::Format::FORMAT_RGBA8);
 	} else {
-		image->create(p_array.size(), 1, false, Image::Format::FORMAT_RGBA8);
+		image->initialize_data(p_array.size(), 1, false, Image::Format::FORMAT_RGBA8);
 	}
 
 	for (int i = 0; i < p_array.size(); i++) {

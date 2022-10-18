@@ -41,6 +41,13 @@ void OpenXRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("session_focussed"));
 	ADD_SIGNAL(MethodInfo("session_visible"));
 	ADD_SIGNAL(MethodInfo("pose_recentered"));
+
+	// Display refresh rate
+	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
+	ClassDB::bind_method(D_METHOD("set_display_refresh_rate", "refresh_rate"), &OpenXRInterface::set_display_refresh_rate);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "display_refresh_rate"), "set_display_refresh_rate", "get_display_refresh_rate");
+
+	ClassDB::bind_method(D_METHOD("get_available_display_refresh_rates"), &OpenXRInterface::get_available_display_refresh_rates);
 }
 
 StringName OpenXRInterface::get_name() const {
@@ -569,6 +576,36 @@ XRInterface::PlayAreaMode OpenXRInterface::get_play_area_mode() const {
 
 bool OpenXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return false;
+}
+
+float OpenXRInterface::get_display_refresh_rate() const {
+	if (openxr_api == nullptr) {
+		return 0.0;
+	} else if (!openxr_api->is_initialized()) {
+		return 0.0;
+	} else {
+		return openxr_api->get_display_refresh_rate();
+	}
+}
+
+void OpenXRInterface::set_display_refresh_rate(float p_refresh_rate) {
+	if (openxr_api == nullptr) {
+		return;
+	} else if (!openxr_api->is_initialized()) {
+		return;
+	} else {
+		openxr_api->set_display_refresh_rate(p_refresh_rate);
+	}
+}
+
+Array OpenXRInterface::get_available_display_refresh_rates() const {
+	if (openxr_api == nullptr) {
+		return Array();
+	} else if (!openxr_api->is_initialized()) {
+		return Array();
+	} else {
+		return openxr_api->get_available_display_refresh_rates();
+	}
 }
 
 Size2 OpenXRInterface::get_render_target_size() {

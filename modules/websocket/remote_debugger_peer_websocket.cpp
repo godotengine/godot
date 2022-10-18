@@ -33,12 +33,13 @@
 #include "core/config/project_settings.h"
 
 Error RemoteDebuggerPeerWebSocket::connect_to_host(const String &p_uri) {
+	ws_peer = Ref<WebSocketPeer>(WebSocketPeer::create());
+	ERR_FAIL_COND_V(ws_peer.is_null(), ERR_BUG);
+
 	Vector<String> protocols;
 	protocols.push_back("binary"); // Compatibility for emscripten TCP-to-WebSocket.
 
-	ws_peer = Ref<WebSocketPeer>(WebSocketPeer::create());
 	ws_peer->set_supported_protocols(protocols);
-
 	ws_peer->set_max_queued_packets(max_queued_messages);
 	ws_peer->set_inbound_buffer_size((1 << 23) - 1);
 	ws_peer->set_outbound_buffer_size((1 << 23) - 1);
@@ -81,6 +82,7 @@ void RemoteDebuggerPeerWebSocket::poll() {
 }
 
 int RemoteDebuggerPeerWebSocket::get_max_message_size() const {
+	ERR_FAIL_COND_V(ws_peer.is_null(), 0);
 	return ws_peer->get_max_packet_size();
 }
 

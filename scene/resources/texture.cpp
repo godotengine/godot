@@ -740,7 +740,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 				}
 			}
 
-			image->create(w, h, true, mipmap_images[0]->get_format(), img_data);
+			image->set_data(w, h, true, mipmap_images[0]->get_format(), img_data);
 			return image;
 		}
 
@@ -766,10 +766,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 				f->get_buffer(wr, data.size());
 			}
 
-			Ref<Image> image;
-			image.instantiate();
-
-			image->create(tw, th, mipmaps - i ? true : false, format, data);
+			Ref<Image> image = Image::create_from_data(tw, th, mipmaps - i ? true : false, format, data);
 
 			return image;
 		}
@@ -2336,11 +2333,11 @@ void GradientTexture2D::_update() {
 	image.instantiate();
 
 	if (gradient->get_points_count() <= 1) { // No need to interpolate.
-		image->create(width, height, false, (use_hdr) ? Image::FORMAT_RGBAF : Image::FORMAT_RGBA8);
+		image->initialize_data(width, height, false, (use_hdr) ? Image::FORMAT_RGBAF : Image::FORMAT_RGBA8);
 		image->fill((gradient->get_points_count() == 1) ? gradient->get_color(0) : Color(0, 0, 0, 1));
 	} else {
 		if (use_hdr) {
-			image->create(width, height, false, Image::FORMAT_RGBAF);
+			image->initialize_data(width, height, false, Image::FORMAT_RGBAF);
 			Gradient &g = **gradient;
 			// `create()` isn't available for non-uint8_t data, so fill in the data manually.
 			for (int y = 0; y < height; y++) {
@@ -2367,7 +2364,7 @@ void GradientTexture2D::_update() {
 					}
 				}
 			}
-			image->create(width, height, false, Image::FORMAT_RGBA8, data);
+			image->set_data(width, height, false, Image::FORMAT_RGBA8, data);
 		}
 	}
 

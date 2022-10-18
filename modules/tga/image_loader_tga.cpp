@@ -246,7 +246,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 		}
 	}
 
-	p_image->create(width, height, false, Image::FORMAT_RGBA8, image_data);
+	p_image->initialize_data(width, height, false, Image::FORMAT_RGBA8, image_data);
 
 	return OK;
 }
