@@ -1062,10 +1062,8 @@ void EditorInspectorPlugin::add_property_editor_for_multiple_properties(const St
 
 bool EditorInspectorPlugin::can_handle(Object *p_object) {
 	bool success = false;
-	if (GDVIRTUAL_CALL(_can_handle, p_object, success)) {
-		return success;
-	}
-	return false;
+	GDVIRTUAL_CALL(_can_handle, p_object, success);
+	return success;
 }
 
 void EditorInspectorPlugin::parse_begin(Object *p_object) {
@@ -1082,10 +1080,8 @@ void EditorInspectorPlugin::parse_group(Object *p_object, const String &p_group)
 
 bool EditorInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	bool ret = false;
-	if (GDVIRTUAL_CALL(_parse_property, p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide, ret)) {
-		return ret;
-	}
-	return false;
+	GDVIRTUAL_CALL(_parse_property, p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide, ret);
+	return ret;
 }
 
 void EditorInspectorPlugin::parse_end(Object *p_object) {

@@ -65,21 +65,15 @@ void MainLoop::initialize() {
 }
 
 bool MainLoop::physics_process(double p_time) {
-	bool quit;
-	if (GDVIRTUAL_CALL(_physics_process, p_time, quit)) {
-		return quit;
-	}
-
-	return false;
+	bool quit = false;
+	GDVIRTUAL_CALL(_physics_process, p_time, quit);
+	return quit;
 }
 
 bool MainLoop::process(double p_time) {
-	bool quit;
-	if (GDVIRTUAL_CALL(_process, p_time, quit)) {
-		return quit;
-	}
-
-	return false;
+	bool quit = false;
+	GDVIRTUAL_CALL(_process, p_time, quit);
+	return quit;
 }
 
 void MainLoop::finalize() {

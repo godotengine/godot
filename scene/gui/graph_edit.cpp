@@ -1475,11 +1475,9 @@ void GraphEdit::force_connection_drag_end() {
 }
 
 bool GraphEdit::is_node_hover_valid(const StringName &p_from, const int p_from_port, const StringName &p_to, const int p_to_port) {
-	bool valid = false;
-	if (GDVIRTUAL_CALL(_is_node_hover_valid, p_from, p_from_port, p_to, p_to_port, valid)) {
-		return valid;
-	}
-	return true;
+	bool valid = true;
+	GDVIRTUAL_CALL(_is_node_hover_valid, p_from, p_from_port, p_to, p_to_port, valid);
+	return valid;
 }
 
 void GraphEdit::set_panning_scheme(PanningScheme p_scheme) {

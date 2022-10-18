@@ -1078,11 +1078,9 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 }
 
 bool EditorNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	bool success;
-	if (GDVIRTUAL_CALL(_has_gizmo, p_spatial, success)) {
-		return success;
-	}
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_has_gizmo, p_spatial, success);
+	return success;
 }
 
 Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
@@ -1099,19 +1097,15 @@ Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::create_gizmo(Node3D *p_spatial) 
 }
 
 bool EditorNode3DGizmoPlugin::can_be_hidden() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_can_be_hidden, ret)) {
-		return ret;
-	}
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_can_be_hidden, ret);
+	return ret;
 }
 
 bool EditorNode3DGizmoPlugin::is_selectable_when_hidden() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_is_selectable_when_hidden, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_is_selectable_when_hidden, ret);
+	return ret;
 }
 
 void EditorNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
@@ -1120,26 +1114,20 @@ void EditorNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 bool EditorNode3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	bool ret = false;
-	if (GDVIRTUAL_CALL(_is_handle_highlighted, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret)) {
-		return ret;
-	}
-	return false;
+	GDVIRTUAL_CALL(_is_handle_highlighted, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret);
+	return ret;
 }
 
 String EditorNode3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	String ret;
-	if (GDVIRTUAL_CALL(_get_handle_name, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret)) {
-		return ret;
-	}
-	return "";
+	GDVIRTUAL_CALL(_get_handle_name, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret);
+	return ret;
 }
 
 Variant EditorNode3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	Variant ret;
-	if (GDVIRTUAL_CALL(_get_handle_value, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret)) {
-		return ret;
-	}
-	return Variant();
+	GDVIRTUAL_CALL(_get_handle_value, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret);
+	return ret;
 }
 
 void EditorNode3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -1152,10 +1140,8 @@ void EditorNode3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, in
 
 int EditorNode3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const {
 	int ret = -1;
-	if (GDVIRTUAL_CALL(_subgizmos_intersect_ray, Ref<EditorNode3DGizmo>(p_gizmo), p_camera, p_point, ret)) {
-		return ret;
-	}
-	return -1;
+	GDVIRTUAL_CALL(_subgizmos_intersect_ray, Ref<EditorNode3DGizmo>(p_gizmo), p_camera, p_point, ret);
+	return ret;
 }
 
 Vector<int> EditorNode3DGizmoPlugin::subgizmos_intersect_frustum(const EditorNode3DGizmo *p_gizmo, const Camera3D *p_camera, const Vector<Plane> &p_frustum) const {
@@ -1165,20 +1151,14 @@ Vector<int> EditorNode3DGizmoPlugin::subgizmos_intersect_frustum(const EditorNod
 		frustum[i] = p_frustum[i];
 	}
 	Vector<int> ret;
-	if (GDVIRTUAL_CALL(_subgizmos_intersect_frustum, Ref<EditorNode3DGizmo>(p_gizmo), p_camera, frustum, ret)) {
-		return ret;
-	}
-
-	return Vector<int>();
+	GDVIRTUAL_CALL(_subgizmos_intersect_frustum, Ref<EditorNode3DGizmo>(p_gizmo), p_camera, frustum, ret);
+	return ret;
 }
 
 Transform3D EditorNode3DGizmoPlugin::get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const {
 	Transform3D ret;
-	if (GDVIRTUAL_CALL(_get_subgizmo_transform, Ref<EditorNode3DGizmo>(p_gizmo), p_id, ret)) {
-		return ret;
-	}
-
-	return Transform3D();
+	GDVIRTUAL_CALL(_get_subgizmo_transform, Ref<EditorNode3DGizmo>(p_gizmo), p_id, ret);
+	return ret;
 }
 
 void EditorNode3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) {

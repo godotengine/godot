@@ -571,10 +571,8 @@ void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	bool success = false;
-	if (GDVIRTUAL_CALL(_forward_canvas_gui_input, p_event, success)) {
-		return success;
-	}
-	return false;
+	GDVIRTUAL_CALL(_forward_canvas_gui_input, p_event, success);
+	return success;
 }
 
 void EditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
@@ -606,12 +604,8 @@ int EditorPlugin::update_overlays() const {
 
 EditorPlugin::AfterGUIInput EditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	int success = EditorPlugin::AFTER_GUI_INPUT_PASS;
-
-	if (GDVIRTUAL_CALL(_forward_3d_gui_input, p_camera, p_event, success)) {
-		return static_cast<EditorPlugin::AfterGUIInput>(success);
-	}
-
-	return EditorPlugin::AFTER_GUI_INPUT_PASS;
+	GDVIRTUAL_CALL(_forward_3d_gui_input, p_camera, p_event, success);
+	return static_cast<EditorPlugin::AfterGUIInput>(success);
 }
 
 void EditorPlugin::forward_3d_draw_over_viewport(Control *p_overlay) {
@@ -624,29 +618,20 @@ void EditorPlugin::forward_3d_force_draw_over_viewport(Control *p_overlay) {
 
 String EditorPlugin::get_name() const {
 	String name;
-	if (GDVIRTUAL_CALL(_get_plugin_name, name)) {
-		return name;
-	}
-
-	return String();
+	GDVIRTUAL_CALL(_get_plugin_name, name);
+	return name;
 }
 
 const Ref<Texture2D> EditorPlugin::get_icon() const {
 	Ref<Texture2D> icon;
-	if (GDVIRTUAL_CALL(_get_plugin_icon, icon)) {
-		return icon;
-	}
-
-	return Ref<Texture2D>();
+	GDVIRTUAL_CALL(_get_plugin_icon, icon);
+	return icon;
 }
 
 bool EditorPlugin::has_main_screen() const {
-	bool success;
-	if (GDVIRTUAL_CALL(_has_main_screen, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_has_main_screen, success);
+	return success;
 }
 
 void EditorPlugin::make_visible(bool p_visible) {
@@ -663,20 +648,14 @@ void EditorPlugin::edit(Object *p_object) {
 
 bool EditorPlugin::handles(Object *p_object) const {
 	bool success = false;
-	if (GDVIRTUAL_CALL(_handles, p_object, success)) {
-		return success;
-	}
-
-	return false;
+	GDVIRTUAL_CALL(_handles, p_object, success);
+	return success;
 }
 
 Dictionary EditorPlugin::get_state() const {
 	Dictionary state;
-	if (GDVIRTUAL_CALL(_get_state, state)) {
-		return state;
-	}
-
-	return Dictionary();
+	GDVIRTUAL_CALL(_get_state, state);
+	return state;
 }
 
 void EditorPlugin::set_state(const Dictionary &p_state) {
@@ -822,11 +801,9 @@ void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 }
 
 bool EditorPlugin::build() {
-	bool success;
-	if (GDVIRTUAL_CALL(_build, success)) {
-		return success;
-	}
-	return true;
+	bool success = true;
+	GDVIRTUAL_CALL(_build, success);
+	return success;
 }
 
 void EditorPlugin::queue_save_layout() {

@@ -36,11 +36,9 @@ void AudioEffectInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_
 	}
 }
 bool AudioEffectInstance::process_silence() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_process_silence, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_process_silence, ret);
+	return ret;
 }
 
 void AudioEffectInstance::_bind_methods() {

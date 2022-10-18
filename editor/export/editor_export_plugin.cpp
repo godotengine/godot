@@ -142,10 +142,8 @@ void EditorExportPlugin::_export_end_script() {
 
 bool EditorExportPlugin::_begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) const {
 	bool ret = false;
-	if (GDVIRTUAL_CALL(_begin_customize_resources, p_platform, p_features, ret)) {
-		return ret;
-	}
-	return false;
+	GDVIRTUAL_CALL(_begin_customize_resources, p_platform, p_features, ret);
+	return ret;
 }
 
 Ref<Resource> EditorExportPlugin::_customize_resource(const Ref<Resource> &p_resource, const String &p_path) {
@@ -158,10 +156,8 @@ Ref<Resource> EditorExportPlugin::_customize_resource(const Ref<Resource> &p_res
 
 bool EditorExportPlugin::_begin_customize_scenes(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) const {
 	bool ret = false;
-	if (GDVIRTUAL_CALL(_begin_customize_scenes, p_platform, p_features, ret)) {
-		return ret;
-	}
-	return false;
+	GDVIRTUAL_CALL(_begin_customize_scenes, p_platform, p_features, ret);
+	return ret;
 }
 
 Node *EditorExportPlugin::_customize_scene(Node *p_root, const String &p_path) {

@@ -100,33 +100,21 @@ StringName XRInterfaceExtension::get_name() const {
 }
 
 uint32_t XRInterfaceExtension::get_capabilities() const {
-	uint32_t capabilities;
-
-	if (GDVIRTUAL_CALL(_get_capabilities, capabilities)) {
-		return capabilities;
-	}
-
-	return 0;
+	uint32_t capabilities = 0;
+	GDVIRTUAL_CALL(_get_capabilities, capabilities);
+	return capabilities;
 }
 
 bool XRInterfaceExtension::is_initialized() const {
 	bool initialised = false;
-
-	if (GDVIRTUAL_CALL(_is_initialized, initialised)) {
-		return initialised;
-	}
-
-	return false;
+	GDVIRTUAL_CALL(_is_initialized, initialised);
+	return initialised;
 }
 
 bool XRInterfaceExtension::initialize() {
 	bool initialised = false;
-
-	if (GDVIRTUAL_CALL(_initialize, initialised)) {
-		return initialised;
-	}
-
-	return false;
+	GDVIRTUAL_CALL(_initialize, initialised);
+	return initialised;
 }
 
 void XRInterfaceExtension::uninitialize() {
@@ -150,13 +138,9 @@ PackedStringArray XRInterfaceExtension::get_suggested_pose_names(const StringNam
 }
 
 XRInterface::TrackingStatus XRInterfaceExtension::get_tracking_status() const {
-	uint32_t status;
-
-	if (GDVIRTUAL_CALL(_get_tracking_status, status)) {
-		return TrackingStatus(status);
-	}
-
-	return XR_UNKNOWN_TRACKING;
+	uint32_t status = XR_UNKNOWN_TRACKING;
+	GDVIRTUAL_CALL(_get_tracking_status, status);
+	return TrackingStatus(status);
 }
 
 void XRInterfaceExtension::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
@@ -164,52 +148,34 @@ void XRInterfaceExtension::trigger_haptic_pulse(const String &p_action_name, con
 }
 
 bool XRInterfaceExtension::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
-	bool is_supported;
-
-	if (GDVIRTUAL_CALL(_supports_play_area_mode, p_mode, is_supported)) {
-		return is_supported;
-	}
-
-	return false;
+	bool is_supported = false;
+	GDVIRTUAL_CALL(_supports_play_area_mode, p_mode, is_supported);
+	return is_supported;
 }
 
 XRInterface::PlayAreaMode XRInterfaceExtension::get_play_area_mode() const {
-	uint32_t mode;
-
-	if (GDVIRTUAL_CALL(_get_play_area_mode, mode)) {
-		return XRInterface::PlayAreaMode(mode);
-	}
-
-	return XRInterface::XR_PLAY_AREA_UNKNOWN;
+	uint32_t mode = XR_PLAY_AREA_UNKNOWN;
+	GDVIRTUAL_CALL(_get_play_area_mode, mode);
+	return XRInterface::PlayAreaMode(mode);
 }
 
 bool XRInterfaceExtension::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
-	bool success;
-
-	if (GDVIRTUAL_CALL(_set_play_area_mode, p_mode, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_set_play_area_mode, p_mode, success);
+	return success;
 }
 
 PackedVector3Array XRInterfaceExtension::get_play_area() const {
 	PackedVector3Array arr;
-
 	GDVIRTUAL_CALL(_get_play_area, arr);
-
 	return arr;
 }
 
 /** these will only be implemented on AR interfaces, so we want dummies for VR **/
 bool XRInterfaceExtension::get_anchor_detection_is_enabled() const {
-	bool enabled;
-
-	if (GDVIRTUAL_CALL(_get_anchor_detection_is_enabled, enabled)) {
-		return enabled;
-	}
-
-	return false;
+	bool enabled = false;
+	GDVIRTUAL_CALL(_get_anchor_detection_is_enabled, enabled);
+	return enabled;
 }
 
 void XRInterfaceExtension::set_anchor_detection_is_enabled(bool p_enable) {
@@ -218,53 +184,33 @@ void XRInterfaceExtension::set_anchor_detection_is_enabled(bool p_enable) {
 }
 
 int XRInterfaceExtension::get_camera_feed_id() {
-	int feed_id;
-
-	if (GDVIRTUAL_CALL(_get_camera_feed_id, feed_id)) {
-		return feed_id;
-	}
-
-	return 0;
+	int feed_id = 0;
+	GDVIRTUAL_CALL(_get_camera_feed_id, feed_id);
+	return feed_id;
 }
 
 Size2 XRInterfaceExtension::get_render_target_size() {
 	Size2 size;
-
-	if (GDVIRTUAL_CALL(_get_render_target_size, size)) {
-		return size;
-	}
-
-	return Size2(0, 0);
+	GDVIRTUAL_CALL(_get_render_target_size, size);
+	return size;
 }
 
 uint32_t XRInterfaceExtension::get_view_count() {
-	uint32_t view_count;
-
-	if (GDVIRTUAL_CALL(_get_view_count, view_count)) {
-		return view_count;
-	}
-
-	return 1;
+	uint32_t view_count = 1;
+	GDVIRTUAL_CALL(_get_view_count, view_count);
+	return view_count;
 }
 
 Transform3D XRInterfaceExtension::get_camera_transform() {
 	Transform3D transform;
-
-	if (GDVIRTUAL_CALL(_get_camera_transform, transform)) {
-		return transform;
-	}
-
-	return Transform3D();
+	GDVIRTUAL_CALL(_get_camera_transform, transform);
+	return transform;
 }
 
 Transform3D XRInterfaceExtension::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	Transform3D transform;
-
-	if (GDVIRTUAL_CALL(_get_transform_for_view, p_view, p_cam_transform, transform)) {
-		return transform;
-	}
-
-	return Transform3D();
+	GDVIRTUAL_CALL(_get_transform_for_view, p_view, p_cam_transform, transform);
+	return transform;
 }
 
 Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
@@ -294,29 +240,20 @@ RID XRInterfaceExtension::get_vrs_texture() {
 
 RID XRInterfaceExtension::get_color_texture() {
 	RID texture;
-	if (GDVIRTUAL_CALL(_get_color_texture, texture)) {
-		return texture;
-	} else {
-		return RID();
-	}
+	GDVIRTUAL_CALL(_get_color_texture, texture);
+	return texture;
 }
 
 RID XRInterfaceExtension::get_depth_texture() {
 	RID texture;
-	if (GDVIRTUAL_CALL(_get_depth_texture, texture)) {
-		return texture;
-	} else {
-		return RID();
-	}
+	GDVIRTUAL_CALL(_get_depth_texture, texture);
+	return texture;
 }
 
 RID XRInterfaceExtension::get_velocity_texture() {
 	RID texture;
-	if (GDVIRTUAL_CALL(_get_velocity_texture, texture)) {
-		return texture;
-	} else {
-		return RID();
-	}
+	GDVIRTUAL_CALL(_get_velocity_texture, texture);
+	return texture;
 }
 
 void XRInterfaceExtension::add_blit(RID p_render_target, Rect2 p_src_rect, Rect2i p_dst_rect, bool p_use_layer, uint32_t p_layer, bool p_apply_lens_distortion, Vector2 p_eye_center, double p_k1, double p_k2, double p_upscale, double p_aspect_ratio) {
@@ -351,13 +288,8 @@ void XRInterfaceExtension::pre_render() {
 
 bool XRInterfaceExtension::pre_draw_viewport(RID p_render_target) {
 	bool do_render = true;
-
-	if (GDVIRTUAL_CALL(_pre_draw_viewport, p_render_target, do_render)) {
-		return do_render;
-	} else {
-		// if not implemented we're returning true
-		return true;
-	}
+	GDVIRTUAL_CALL(_pre_draw_viewport, p_render_target, do_render);
+	return do_render; // If not implemented we're returning true.
 }
 
 Vector<BlitToScreen> XRInterfaceExtension::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {

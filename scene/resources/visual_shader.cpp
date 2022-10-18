@@ -456,11 +456,9 @@ void VisualShaderNodeCustom::update_ports() {
 }
 
 String VisualShaderNodeCustom::get_caption() const {
-	String ret;
-	if (GDVIRTUAL_CALL(_get_name, ret)) {
-		return ret;
-	}
-	return "Unnamed";
+	String ret = "Unnamed";
+	GDVIRTUAL_CALL(_get_name, ret);
+	return ret;
 }
 
 int VisualShaderNodeCustom::get_input_port_count() const {
@@ -559,11 +557,9 @@ String VisualShaderNodeCustom::generate_global_per_func(Shader::Mode p_mode, Vis
 }
 
 bool VisualShaderNodeCustom::is_available(Shader::Mode p_mode, VisualShader::Type p_type) const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_is_available, p_mode, p_type, ret)) {
-		return ret;
-	}
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_is_available, p_mode, p_type, ret);
+	return ret;
 }
 
 void VisualShaderNodeCustom::set_input_port_default_value(int p_port, const Variant &p_value, const Variant &p_prev_value) {

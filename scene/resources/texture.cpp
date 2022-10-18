@@ -60,20 +60,14 @@ Size2 Texture2D::get_size() const {
 }
 
 bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_is_pixel_opaque, p_x, p_y, ret)) {
-		return ret;
-	}
-
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_is_pixel_opaque, p_x, p_y, ret);
+	return ret;
 }
 bool Texture2D::has_alpha() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_has_alpha, ret)) {
-		return ret;
-	}
-
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_has_alpha, ret);
+	return ret;
 }
 
 void Texture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {

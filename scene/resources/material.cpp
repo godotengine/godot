@@ -107,18 +107,15 @@ Shader::Mode Material::get_shader_mode() const {
 }
 
 bool Material::_can_do_next_pass() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_can_do_next_pass, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_do_next_pass, ret);
+	return ret;
 }
+
 bool Material::_can_use_render_priority() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_can_use_render_priority, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_use_render_priority, ret);
+	return ret;
 }
 
 void Material::_bind_methods() {

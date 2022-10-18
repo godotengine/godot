@@ -1551,10 +1551,8 @@ bool Control::is_minimum_size_adjust_blocked() const {
 
 Size2 Control::get_minimum_size() const {
 	Vector2 ms;
-	if (GDVIRTUAL_CALL(_get_minimum_size, ms)) {
-		return ms;
-	}
-	return Vector2();
+	GDVIRTUAL_CALL(_get_minimum_size, ms);
+	return ms;
 }
 
 void Control::set_custom_minimum_size(const Size2 &p_custom) {
@@ -1799,11 +1797,8 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 	}
 
 	Variant dd;
-	if (GDVIRTUAL_CALL(_get_drag_data, p_point, dd)) {
-		return dd;
-	}
-
-	return Variant();
+	GDVIRTUAL_CALL(_get_drag_data, p_point, dd);
+	return dd;
 }
 
 bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
@@ -1815,10 +1810,8 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 	}
 
 	bool ret = false;
-	if (GDVIRTUAL_CALL(_can_drop_data, p_point, p_data, ret)) {
-		return ret;
-	}
-	return false;
+	GDVIRTUAL_CALL(_can_drop_data, p_point, p_data, ret);
+	return ret;
 }
 
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
@@ -2725,11 +2718,8 @@ void Control::end_bulk_theme_override() {
 TypedArray<Vector2i> Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
 	if (p_parser_type == TextServer::STRUCTURED_TEXT_CUSTOM) {
 		TypedArray<Vector2i> ret;
-		if (GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, ret)) {
-			return ret;
-		} else {
-			return TypedArray<Vector2i>();
-		}
+		GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, ret);
+		return ret;
 	} else {
 		return TS->parse_structured_text(p_parser_type, p_args, p_text);
 	}
@@ -2814,10 +2804,8 @@ String Control::get_tooltip(const Point2 &p_pos) const {
 
 Control *Control::make_custom_tooltip(const String &p_text) const {
 	Object *ret = nullptr;
-	if (GDVIRTUAL_CALL(_make_custom_tooltip, p_text, ret)) {
-		return Object::cast_to<Control>(ret);
-	}
-	return nullptr;
+	GDVIRTUAL_CALL(_make_custom_tooltip, p_text, ret);
+	return Object::cast_to<Control>(ret);
 }
 
 // Base object overrides.
