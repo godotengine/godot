@@ -1185,6 +1185,20 @@ ProjectSettings::ProjectSettings() {
 	// Initialization of engine variables should be done in the setup() method,
 	// so that the values can be overridden from project.godot or project.binary.
 
+	if (singleton != nullptr) {
+		// If we already have a singleton this means that we're in our project manager
+		// and loading the settings of a selected project or creating a new project.
+		// In this case we're loosing all our definitions resulting in error spam.
+
+		// So lets retain those by copying them.
+		props = singleton->props;
+
+		// reset to default
+		for (const KeyValue<StringName, VariantContainer> &G : props) {
+			props[G.key].variant = props[G.key].initial;
+		}
+	}
+
 	singleton = this;
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
