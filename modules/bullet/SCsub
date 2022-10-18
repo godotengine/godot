@@ -206,13 +206,12 @@ if env["builtin_bullet"]:
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, "overlap/*.cpp")
     env.modules_sources += thirdparty_obj
 
 
 # Godot source files
-
 module_obj = []
-
 env_bullet.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
 

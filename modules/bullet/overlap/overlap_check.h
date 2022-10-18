@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  overlap_check.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,34 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef OVERLAP_CHECK_H
+#define OVERLAP_CHECK_H
 
-#include "bullet_physics_server.h"
-#include "core/class_db.h"
-#include "core/project_settings.h"
-#include "overlap/overlap_check.h"
+#include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
+#include <LinearMath/btTransform.h>
 
-/**
-	@author AndreaCatania
-*/
+class btCollisionShape;
 
-#ifndef _3D_DISABLED
-PhysicsServer *_createBulletPhysicsCallback() {
-	return memnew(BulletPhysicsServer);
-}
+typedef bool (*OverlappingFunc)(
+		btCollisionShape *p_shape_1,
+		const btTransform &p_shape_1_transform,
+		btCollisionShape *p_shape_2,
+		const btTransform &p_shape_2_transform);
+
+/// Check if two shapes are overlapping each other. The algorithm used are a mix
+/// of SAT and some accelerated one.
+/// The accelerated checks are implemented for:
+/// - Sphere <--> Sphere
+/// - Sphere <--> Box
+/// - Sphere <--> Capsule
+/// - Capsule <--> Capsule
+struct OverlapCheck {
+	static OverlappingFunc overlapping_funcs[MAX_BROADPHASE_COLLISION_TYPES][MAX_BROADPHASE_COLLISION_TYPES];
+
+	static void init();
+	static OverlappingFunc find_algorithm(int body_1, int body_2);
+};
+
 #endif
-
-void register_bullet_types() {
-#ifndef _3D_DISABLED
-	PhysicsServerManager::register_server("Bullet", &_createBulletPhysicsCallback);
-	PhysicsServerManager::set_default_server("Bullet", 1);
-
-	GLOBAL_DEF("physics/3d/active_soft_world", true);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
-
-	OverlapCheck::init();
-#endif
-}
-
-void unregister_bullet_types() {
-}

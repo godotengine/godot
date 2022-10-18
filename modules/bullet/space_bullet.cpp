@@ -38,6 +38,7 @@
 #include "core/ustring.h"
 #include "godot_collision_configuration.h"
 #include "godot_collision_dispatcher.h"
+#include "overlap/overlap_check.h"
 #include "rigid_body_bullet.h"
 #include "servers/physics_server.h"
 #include "soft_body_bullet.h"
@@ -698,6 +699,7 @@ void SpaceBullet::check_ghost_overlaps() {
 
 		// Broadphase
 		const btAlignedObjectArray<btCollisionObject *> overlapping_pairs = bt_ghost->getOverlappingPairs();
+
 		// Narrowphase
 		for (int pair_idx = 0; pair_idx < overlapping_pairs.size(); pair_idx++) {
 			btCollisionObject *other_bt_collision_object = overlapping_pairs[pair_idx];
@@ -724,49 +726,26 @@ void SpaceBullet::check_ghost_overlaps() {
 				if (!area_shape->isConvex()) {
 					continue;
 				}
-				btConvexShape *area_convex_shape = static_cast<btConvexShape *>(area_shape);
 
 				btTransform area_shape_transform(area->get_bt_shape_transform(our_shape_id));
 				area_shape_transform.getOrigin() *= area_scale;
-				btGjkPairDetector::ClosestPointInput gjk_input;
-				gjk_input.m_transformA = area_transform * area_shape_transform;
+				area_shape_transform = area_transform * area_shape_transform;
 
 				// For each other object shape
 				for (int other_shape_id = 0; other_shape_id < other_object->get_shape_count(); other_shape_id++) {
 					btCollisionShape *other_shape = other_object->get_bt_shape(other_shape_id);
 					btTransform other_shape_transform(other_object->get_bt_shape_transform(other_shape_id));
 					other_shape_transform.getOrigin() *= other_scale;
-					gjk_input.m_transformB = other_transform * other_shape_transform;
 
-					if (other_shape->isConvex()) {
-						btPointCollector result;
-						btGjkPairDetector gjk_pair_detector(
-								area_convex_shape,
-								static_cast<btConvexShape *>(other_shape),
-								gjk_simplex_solver,
-								gjk_epa_pen_solver);
-
-						gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
-						if (result.m_distance <= 0) {
-							area->set_overlap(other_object, other_shape_id, our_shape_id);
-						}
-					} else { // Other shape is not convex.
-						btCollisionObjectWrapper obA(NULL, area_convex_shape, bt_ghost, gjk_input.m_transformA, -1, our_shape_id);
-						btCollisionObjectWrapper obB(NULL, other_shape, other_bt_collision_object, gjk_input.m_transformB, -1, other_shape_id);
-						btCollisionAlgorithm *algorithm = dispatcher->findAlgorithm(&obA, &obB, NULL, BT_CONTACT_POINT_ALGORITHMS);
-
-						if (!algorithm) {
-							continue;
-						}
-
-						GodotDeepPenetrationContactResultCallback contactPointResult(&obA, &obB);
-						algorithm->processCollision(&obA, &obB, dynamicsWorld->getDispatchInfo(), &contactPointResult);
-						algorithm->~btCollisionAlgorithm();
-						dispatcher->freeCollisionAlgorithm(algorithm);
-
-						if (contactPointResult.hasHit()) {
-							area->set_overlap(other_object, our_shape_id, other_shape_id);
-						}
+					OverlappingFunc func = OverlapCheck::find_algorithm(area_shape->getShapeType(), other_shape->getShapeType());
+					ERR_CONTINUE_MSG(func == nullptr, "The overlap check function wasn't found for the shape type `" + itos(area_shape->getShapeType()) + "` and `" + itos(other_shape->getShapeType()) + "`.");
+					const bool overlapping = func(
+							area_shape,
+							area_shape_transform,
+							other_shape,
+							other_transform * other_shape_transform);
+					if (overlapping) {
+						area->mark_object_shape_overlap_inside(other_object, other_shape_id, our_shape_id);
 					}
 				} // End for each other object shape
 			} // End for each area shape
