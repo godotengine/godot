@@ -1219,7 +1219,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	static const char *_keywords_with_space[] = {
 		"and", "not", "or", "in", "as", "class", "class_name", "extends", "is", "func", "signal", "await",
-		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "while",
+		"const", "enum", "static", "var", "if", "elif", "for", "match", "while",
 		nullptr
 	};
 
@@ -1230,6 +1230,10 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		r_result.insert(option.display, option);
 		kws++;
 	}
+
+	ScriptLanguage::CodeCompletionOption else_option("else", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+	else_option.insert_text += ":";
+	r_result.insert(else_option.display, else_option);
 
 	static const char *_keywords_with_args[] = {
 		"assert", "preload",
