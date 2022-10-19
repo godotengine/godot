@@ -3235,9 +3235,10 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 			}
 		} else {
 			// TODO: Don't load if validating: use completion cache.
-			p_preload->resource = ResourceLoader::load(p_preload->resolved_path);
+			Error load_error;
+			p_preload->resource = ResourceLoader::load(p_preload->resolved_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE, &load_error);
 			if (p_preload->resource.is_null()) {
-				push_error(vformat(R"(Could not preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
+				push_error(vformat(R"(Could not preload resource file "%s": %s.)", p_preload->resolved_path, error_names[load_error]), p_preload->path);
 			}
 		}
 	}
