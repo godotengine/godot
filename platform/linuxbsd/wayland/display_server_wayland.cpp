@@ -377,9 +377,7 @@ bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<
 // useful in internal Wayland window handling.
 void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_mode) {
 	if (!p_wd.wl_surface || !p_wd.xdg_toplevel) {
-		// TODO: Ask whether this is the right behaviour.
-
-		// Don't waste time with popups and whatnot. Behave like it worked.
+		// Don't waste time with hidden windows and whatnot. Behave like it worked.
 		p_wd.mode = p_mode;
 		return;
 	}
