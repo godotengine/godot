@@ -638,20 +638,19 @@ void XROrigin3D::set_current(bool p_enabled) {
 	set_notify_local_transform(current);
 	set_notify_transform(current);
 
-	if (current) {
-		for (int i = 0; i < origin_nodes.size(); i++) {
-			if (origin_nodes[i] != this) {
-				origin_nodes[i]->set_current(false);
+	bool should_enabled(!p_enabled);
+	for (int i = 0; i < origin_nodes.size(); ++i) {
+		if (origin_nodes[i] != this) {
+			origin_nodes[i]->current = should_enabled;
+			if (origin_nodes[i]->is_inside_tree()) {
+				// Notify us of any transform changes
+				origin_nodes[i]->set_notify_local_transform(should_enabled);
+				origin_nodes[i]->set_notify_transform(should_enabled);
+				// We no longer have a current origin so only choose the first one we can make current
 			}
-		}
-	} else {
-		bool found = false;
-		// We no longer have a current origin so find the first one we can make current
-		for (int i = 0; !found && i < origin_nodes.size(); i++) {
-			if (origin_nodes[i] != this) {
-				origin_nodes[i]->set_current(true);
-				found = true;
-			}
+
+			if (should_enabled)
+				break;
 		}
 	}
 }
