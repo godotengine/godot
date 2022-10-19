@@ -234,7 +234,7 @@ void DisplayServerWayland::_seat_state_override_cursor_shape(SeatState &p_ss, Cu
 	}
 
 	// Update the cursor's hotspot.
-	wl_pointer_set_cursor(p_ss.wl_pointer, 0, p_ss.cursor_surface, hotspot.x, hotspot.y);
+	wl_pointer_set_cursor(p_ss.wl_pointer, p_ss.pointer_enter_serial, p_ss.cursor_surface, hotspot.x, hotspot.y);
 
 	// Attach the new cursor's buffer and damage it.
 	wl_surface_attach(p_ss.cursor_surface, cursor_buffer, 0, 0);
@@ -263,7 +263,7 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 	// All modes but `MOUSE_MODE_VISIBLE` and `MOUSE_MODE_CONFINED` are hidden.
 	if (p_wls.mouse_mode != MOUSE_MODE_VISIBLE && p_wls.mouse_mode != MOUSE_MODE_CONFINED) {
 		// Reset the cursor's hotspot.
-		wl_pointer_set_cursor(ss.wl_pointer, 0, ss.cursor_surface, 0, 0);
+		wl_pointer_set_cursor(ss.wl_pointer, ss.pointer_enter_serial, ss.cursor_surface, 0, 0);
 
 		// Unmap the cursor.
 		wl_surface_attach(ss.cursor_surface, nullptr, 0, 0);
@@ -888,6 +888,8 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	// Restore the cursor with our own cursor surface.
 	_seat_state_override_cursor_shape(*ss, wls->cursor_shape);
 
+	ss->pointer_enter_serial = serial;
+
 	DEBUG_LOG_WAYLAND("Pointing window.");
 
 	Ref<WaylandWindowEventMessage> msg;
@@ -1278,9 +1280,6 @@ void DisplayServerWayland::_wl_data_device_on_data_offer(void *data, struct wl_d
 void DisplayServerWayland::_wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
-
-	WaylandState *wls = (WaylandState *)data;
-	ERR_FAIL_NULL(wls);
 
 	ss->dnd_enter_serial = serial;
 

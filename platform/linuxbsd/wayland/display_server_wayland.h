@@ -235,6 +235,8 @@ class DisplayServerWayland : public DisplayServer {
 		// Pointer.
 		struct wl_pointer *wl_pointer = nullptr;
 
+		uint32_t pointer_enter_serial;
+
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
