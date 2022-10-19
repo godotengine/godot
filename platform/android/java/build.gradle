@@ -281,6 +281,11 @@ task generateDevTemplate {
     finalizedBy 'zipCustomBuild'
 }
 
+task clean(type: Delete) {
+    dependsOn 'cleanGodotEditor'
+    dependsOn 'cleanGodotTemplates'
+}
+
 /**
  * Clean the generated editor artifacts.
  */
@@ -297,8 +302,6 @@ task cleanGodotEditor(type: Delete) {
     // Delete the Godot editor apks in the Godot bin directory
     delete("$binDir/android_editor.apk")
     delete("$binDir/android_editor_dev.apk")
-
-    finalizedBy getTasksByName("clean", true)
 }
 
 /**
@@ -325,6 +328,4 @@ task cleanGodotTemplates(type: Delete) {
     delete("$binDir/godot-lib.debug.aar")
     delete("$binDir/godot-lib.dev.aar")
     delete("$binDir/godot-lib.release.aar")
-
-    finalizedBy getTasksByName("clean", true)
 }
