@@ -677,19 +677,19 @@
 			If [code]true[/code], displays line length guidelines to help you keep line lengths in check. See also [member text_editor/appearance/guidelines/line_length_guideline_soft_column] and [member text_editor/appearance/guidelines/line_length_guideline_hard_column].
 		</member>
 		<member name="text_editor/appearance/gutters/highlight_type_safe_lines" type="bool" setter="" getter="">
-			If [code]true[/code], highlights type-safe lines by displaying their line number color with [member text_editor/theme/highlighting/safe_line_number_color] instead of [member text_editor/theme/highlighting/line_number_color]. Type-safe lines are lines of code where the type of all variables is known at compile-time. These type-safe lines will run faster in Godot 4.0 and later thanks to typed instructions.
+			If [code]true[/code], highlights type-safe lines by displaying their line number color with [member text_editor/theme/highlighting/safe_line_number_color] instead of [member text_editor/theme/highlighting/line_number_color]. Type-safe lines are lines of code where the type of all variables is known at compile-time. These type-safe lines may run faster thanks to typed instructions.
 		</member>
 		<member name="text_editor/appearance/gutters/line_numbers_zero_padded" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers with zero padding (e.g. [code]007[/code] instead of [code]7[/code]).
 		</member>
 		<member name="text_editor/appearance/gutters/show_bookmark_gutter" type="bool" setter="" getter="">
-			If [code]true[/code], displays a gutter at the left containing icons for bookmarks.
+			If [code]true[/code], displays icons for bookmarks in a gutter at the left. Bookmarks remain functional when this setting is disabled.
 		</member>
 		<member name="text_editor/appearance/gutters/show_info_gutter" type="bool" setter="" getter="">
 			If [code]true[/code], displays a gutter at the left containing icons for methods with signal connections.
 		</member>
 		<member name="text_editor/appearance/gutters/show_line_numbers" type="bool" setter="" getter="">
-			If [code]true[/code], displays line numbers in the gutter at the left.
+			If [code]true[/code], displays line numbers in a gutter at the left.
 		</member>
 		<member name="text_editor/appearance/lines/code_folding" type="bool" setter="" getter="">
 			If [code]true[/code], displays the folding arrows next to indented code sections and allows code folding. If [code]false[/code], hides the folding arrows next to indented code sections and disallows code folding.
@@ -758,7 +758,7 @@
 			[b]Note:[/b] You can hold down [kbd]Alt[/kbd] while using the mouse wheel to temporarily scroll 5 times faster.
 		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
-			If [code]true[/code], adds static typing hints such as [code]-&gt; void[/code] and [code]: int[/code] when performing method definition autocompletion.
+			If [code]true[/code], adds static typing hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key.
 		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
 			If [code]true[/code], automatically completes braces when making use of code completion.
@@ -809,7 +809,7 @@
 			The script editor's background color. If set to a translucent color, the editor theme's base color will be visible behind.
 		</member>
 		<member name="text_editor/theme/highlighting/base_type_color" type="Color" setter="" getter="">
-			The script editor's base type color (used for types like [Vector2], [Vector3], ...).
+			The script editor's base type color (used for types like [Vector2], [Vector3], [Color], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/bookmark_color" type="Color" setter="" getter="">
 			The script editor's bookmark icon color (displayed in the gutter).
@@ -869,10 +869,10 @@
 			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
-			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], some built-in methods, ...).
+			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/line_length_guideline_color" type="Color" setter="" getter="">
-			The script editor's color for the line length guideline. The "hard" line length guideline will be drawn with this color, whereas the "soft" line length guideline will be drawn with an opacity twice as low.
+			The script editor's color for the line length guideline. The "hard" line length guideline will be drawn with this color, whereas the "soft" line length guideline will be drawn with half of its opacity.
 		</member>
 		<member name="text_editor/theme/highlighting/line_number_color" type="Color" setter="" getter="">
 			The script editor's color for line numbers. See also [member text_editor/theme/highlighting/safe_line_number_color].
@@ -913,7 +913,7 @@
 			The script editor's background color for text. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/current_line_color].
 		</member>
 		<member name="text_editor/theme/highlighting/user_type_color" type="Color" setter="" getter="">
-			The script editor's color for user-defined types (using [code]@class_name[/code]).
+			The script editor's color for user-defined types (using [code]class_name[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].
