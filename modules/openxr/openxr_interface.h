@@ -91,7 +91,6 @@ private:
 	void free_actions(ActionSet *p_action_set);
 
 	Tracker *find_tracker(const String &p_tracker_name, bool p_create = false);
-	void link_action_to_tracker(Tracker *p_tracker, Action *p_action);
 	void handle_tracker(Tracker *p_tracker);
 	void free_trackers();
 
@@ -119,6 +118,10 @@ public:
 	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
 	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;
 	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
+
+	float get_display_refresh_rate() const;
+	void set_display_refresh_rate(float p_refresh_rate);
+	Array get_available_display_refresh_rates() const;
 
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;

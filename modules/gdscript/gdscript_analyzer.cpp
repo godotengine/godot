@@ -3226,7 +3226,13 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 		}
 		p_preload->resolved_path = p_preload->resolved_path.simplify_path();
 		if (!ResourceLoader::exists(p_preload->resolved_path)) {
-			push_error(vformat(R"(Preload file "%s" does not exist.)", p_preload->resolved_path), p_preload->path);
+			Ref<FileAccess> file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+
+			if (file_check->file_exists(p_preload->resolved_path)) {
+				push_error(vformat(R"(Preload file "%s" has no resource loaders (unrecognized file extension).)", p_preload->resolved_path), p_preload->path);
+			} else {
+				push_error(vformat(R"(Preload file "%s" does not exist.)", p_preload->resolved_path), p_preload->path);
+			}
 		} else {
 			// TODO: Don't load if validating: use completion cache.
 			p_preload->resource = ResourceLoader::load(p_preload->resolved_path);

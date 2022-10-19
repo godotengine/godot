@@ -3918,6 +3918,32 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
+	// Typing and undo / redo should adjust viewport
+	text_edit->set_caret_line(0);
+	text_edit->set_caret_column(0);
+	text_edit->set_line_as_first_visible(5);
+	MessageQueue::get_singleton()->flush();
+	CHECK(text_edit->get_first_visible_line() == 5);
+
+	SEND_GUI_KEY_EVENT(text_edit, Key::A);
+	CHECK(text_edit->get_first_visible_line() == 0);
+
+	text_edit->set_line_as_first_visible(5);
+	MessageQueue::get_singleton()->flush();
+	CHECK(text_edit->get_first_visible_line() == 5);
+
+	text_edit->undo();
+	MessageQueue::get_singleton()->flush();
+	CHECK(text_edit->get_first_visible_line() == 0);
+
+	text_edit->set_line_as_first_visible(5);
+	MessageQueue::get_singleton()->flush();
+	CHECK(text_edit->get_first_visible_line() == 5);
+
+	text_edit->redo();
+	MessageQueue::get_singleton()->flush();
+	CHECK(text_edit->get_first_visible_line() == 0);
+
 	memdelete(text_edit);
 }
 

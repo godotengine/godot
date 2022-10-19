@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_node.h                                                          */
+/*  openxr_fb_display_refresh_rate_extension.h                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,78 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_NODE_H
-#define GLTF_NODE_H
+#ifndef OPENXR_FB_DISPLAY_REFRESH_RATE_EXTENSION_H
+#define OPENXR_FB_DISPLAY_REFRESH_RATE_EXTENSION_H
 
-#include "../gltf_defines.h"
-#include "core/io/resource.h"
+// This extension gives us access to the possible display refresh rates
+// supported by the HMD.
+// While this is an FB extension it has been adopted by most runtimes and
+// will likely become core in the near future.
 
-class GLTFNode : public Resource {
-	GDCLASS(GLTFNode, Resource);
-	friend class GLTFDocument;
+#include "../openxr_api.h"
+#include "../util.h"
+
+#include "openxr_extension_wrapper.h"
+
+class OpenXRDisplayRefreshRateExtension : public OpenXRExtensionWrapper {
+public:
+	static OpenXRDisplayRefreshRateExtension *get_singleton();
+
+	OpenXRDisplayRefreshRateExtension(OpenXRAPI *p_openxr_api);
+	virtual ~OpenXRDisplayRefreshRateExtension() override;
+
+	virtual void on_instance_created(const XrInstance p_instance) override;
+	virtual void on_instance_destroyed() override;
+
+	float get_refresh_rate() const;
+	void set_refresh_rate(float p_refresh_rate);
+
+	Array get_available_refresh_rates() const;
 
 private:
-	// matrices need to be transformed to this
-	GLTFNodeIndex parent = -1;
-	int height = -1;
-	Transform3D xform;
-	GLTFMeshIndex mesh = -1;
-	GLTFCameraIndex camera = -1;
-	GLTFSkinIndex skin = -1;
-	GLTFSkeletonIndex skeleton = -1;
-	bool joint = false;
-	Vector3 position;
-	Quaternion rotation;
-	Vector3 scale = Vector3(1, 1, 1);
-	Vector<int> children;
-	GLTFLightIndex light = -1;
-	Dictionary additional_data;
+	static OpenXRDisplayRefreshRateExtension *singleton;
 
-protected:
-	static void _bind_methods();
+	bool display_refresh_rate_ext = false;
 
-public:
-	GLTFNodeIndex get_parent();
-	void set_parent(GLTFNodeIndex p_parent);
-
-	int get_height();
-	void set_height(int p_height);
-
-	Transform3D get_xform();
-	void set_xform(Transform3D p_xform);
-
-	GLTFMeshIndex get_mesh();
-	void set_mesh(GLTFMeshIndex p_mesh);
-
-	GLTFCameraIndex get_camera();
-	void set_camera(GLTFCameraIndex p_camera);
-
-	GLTFSkinIndex get_skin();
-	void set_skin(GLTFSkinIndex p_skin);
-
-	GLTFSkeletonIndex get_skeleton();
-	void set_skeleton(GLTFSkeletonIndex p_skeleton);
-
-	bool get_joint();
-	void set_joint(bool p_joint);
-
-	Vector3 get_position();
-	void set_position(Vector3 p_position);
-
-	Quaternion get_rotation();
-	void set_rotation(Quaternion p_rotation);
-
-	Vector3 get_scale();
-	void set_scale(Vector3 p_scale);
-
-	Vector<int> get_children();
-	void set_children(Vector<int> p_children);
-
-	GLTFLightIndex get_light();
-	void set_light(GLTFLightIndex p_light);
-
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+	// OpenXR API call wrappers
+	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateDisplayRefreshRatesFB, (XrSession), session, (uint32_t), displayRefreshRateCapacityInput, (uint32_t *), displayRefreshRateCountOutput, (float *), displayRefreshRates);
+	EXT_PROTO_XRRESULT_FUNC2(xrGetDisplayRefreshRateFB, (XrSession), session, (float *), display_refresh_rate);
+	EXT_PROTO_XRRESULT_FUNC2(xrRequestDisplayRefreshRateFB, (XrSession), session, (float), display_refresh_rate);
 };
 
-#endif // GLTF_NODE_H
+#endif // OPENXR_FB_DISPLAY_REFRESH_RATE_EXTENSION_H

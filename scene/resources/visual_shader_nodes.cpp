@@ -7264,7 +7264,7 @@ String VisualShaderNodeProximityFade::generate_code(Shader::Mode p_mode, VisualS
 	} else {
 		code += "	vec4 __depth_world_pos = INV_PROJECTION_MATRIX * vec4(vec3(SCREEN_UV, __depth_tex) * 2.0 - 1.0, 1.0);\n";
 	}
-	code += "	__depth_world_pos.xyz /= __depth_world_pos.z;\n";
+	code += "	__depth_world_pos.xyz /= __depth_world_pos.w;\n";
 	code += vformat("	%s = clamp(1.0 - smoothstep(__depth_world_pos.z + %s, __depth_world_pos.z, VERTEX.z), 0.0, 1.0);\n", p_output_vars[0], p_input_vars[0]);
 
 	return code;

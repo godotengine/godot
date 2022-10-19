@@ -58,6 +58,7 @@
 			<param index="2" name="class_name" type="StringName" />
 			<param index="3" name="script" type="Variant" />
 			<description>
+				Creates a typed array from the [param base] array. The base array can't be already typed. See [method set_typed] for more details.
 			</description>
 		</constructor>
 		<constructor name="Array">
@@ -315,16 +316,19 @@
 		<method name="get_typed_builtin" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the [code]TYPE[/code] constant for a typed array. If the [Array] is not typed, returns [constant @GlobalScope.TYPE_NIL].
 			</description>
 		</method>
 		<method name="get_typed_class_name" qualifiers="const">
 			<return type="StringName" />
 			<description>
+				Returns a class name of a typed [Array] of type [constant @GlobalScope.TYPE_OBJECT].
 			</description>
 		</method>
 		<method name="get_typed_script" qualifiers="const">
 			<return type="Variant" />
 			<description>
+				Returns the script associated with a typed array tied to a class name.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -393,11 +397,13 @@
 		<method name="is_read_only" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the array is read-only. See [method set_read_only]. Arrays are automatically read-only if declared with [code]const[/code] keyword.
 			</description>
 		</method>
 		<method name="is_typed" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the array is typed. Typed arrays can only store elements of their associated type and provide type safety for the [code][][/code] operator. Methods of typed array still return [Variant].
 			</description>
 		</method>
 		<method name="map" qualifiers="const">
@@ -517,6 +523,7 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
+				Makes the [Array] read-only, i.e. disabled modifying of the array's elements. Does not apply to nested content, e.g. content of nested arrays.
 			</description>
 		</method>
 		<method name="set_typed">
@@ -525,6 +532,8 @@
 			<param index="1" name="class_name" type="StringName" />
 			<param index="2" name="script" type="Variant" />
 			<description>
+				Makes the [Array] typed. The [param type] should be one of the [@GlobalScope] [code]TYPE[/code] constants. [param class_name] is optional and can only be provided for [constant @GlobalScope.TYPE_OBJECT]. [param script] can only be provided if [param class_name] is not empty.
+				The method fails if an array is already typed.
 			</description>
 		</method>
 		<method name="shuffle">
@@ -610,6 +619,7 @@
 			<return type="bool" />
 			<param index="0" name="array" type="Array" />
 			<description>
+				Assigns a different [Array] to this array reference. It the array is typed, the new array's type must be compatible and its elements will be automatically converted.
 			</description>
 		</method>
 	</methods>
