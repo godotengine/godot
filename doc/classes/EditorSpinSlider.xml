@@ -10,13 +10,16 @@
 	</tutorials>
 	<members>
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
+			If [code]true[/code], the slider will not draw background.
 		</member>
 		<member name="hide_slider" type="bool" setter="set_hide_slider" getter="is_hiding_slider" default="false">
 			If [code]true[/code], the slider is hidden.
 		</member>
 		<member name="label" type="String" setter="set_label" getter="get_label" default="&quot;&quot;">
+			The text that displays to the left of the value.
 		</member>
 		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false">
+			If [code]true[/code], the slider can't be interacted with.
 		</member>
 		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
 			The suffix to display after the value (in a faded color). This should generally be a plural word. You may have to use an abbreviation if the suffix is too long to be displayed.

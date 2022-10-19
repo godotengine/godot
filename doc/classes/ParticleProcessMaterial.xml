@@ -217,7 +217,7 @@
 			Maximum linear acceleration applied to each particle in the direction of motion.
 		</member>
 		<member name="linear_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum equivalent of [member linear_accel_min].
+			Minimum equivalent of [member linear_accel_max].
 		</member>
 		<member name="orbit_velocity_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's orbital velocity will vary along this [CurveTexture].

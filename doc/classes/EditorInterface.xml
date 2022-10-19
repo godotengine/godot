@@ -70,6 +70,7 @@
 		<method name="get_editor_paths">
 			<return type="EditorPaths" />
 			<description>
+				Returns the [EditorPaths] singleton.
 			</description>
 		</method>
 		<method name="get_editor_scale" qualifiers="const">

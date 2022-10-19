@@ -1305,6 +1305,7 @@
 			The [Marshalls] singleton.
 		</member>
 		<member name="NativeExtensionManager" type="NativeExtensionManager" setter="" getter="">
+			The [NativeExtensionManager] singleton.
 		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.
@@ -1399,8 +1400,10 @@
 			General horizontal alignment, usually used for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
 		<constant name="CLOCKWISE" value="0" enum="ClockDirection">
+			Clockwise rotation. Used by some methods (e.g. [method Image.rotate_90]).
 		</constant>
 		<constant name="COUNTERCLOCKWISE" value="1" enum="ClockDirection">
+			Counter-clockwise rotation. Used by some methods (e.g. [method Image.rotate_90]).
 		</constant>
 		<constant name="HORIZONTAL_ALIGNMENT_LEFT" value="0" enum="HorizontalAlignment">
 			Horizontal left alignment, usually for text-derived classes.
