@@ -549,7 +549,12 @@ bool EditorFileSystem::_update_scan_actions() {
 				if (_test_for_reimport(full_path, false)) {
 					//must reimport
 					reimports.push_back(full_path);
-					reimports.append_array(_get_dependencies(full_path));
+					Vector<String> dependencies = _get_dependencies(full_path);
+					for (int i = 0; i < dependencies.size(); i++) {
+						if (import_extensions.has(dependencies[i].get_extension())) {
+							reimports.push_back(dependencies[i]);
+						}
+					}
 				} else {
 					//must not reimport, all was good
 					//update modified times, to avoid reimport
