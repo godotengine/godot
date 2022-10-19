@@ -2445,6 +2445,7 @@ Vector<uint8_t> Image::save_jpg_to_buffer(float p_quality) const {
 	if (save_jpg_buffer_func == nullptr) {
 		return Vector<uint8_t>();
 	}
+	ERR_FAIL_COND_V_MSG(p_quality < 0.01f || 1.0f < p_quality, Vector<uint8_t>(), "The image quality was set to " + rtos(p_quality) + ", which is not valid. Image quality must be between 0.01 and 1.0 (inclusive).");
 
 	return save_jpg_buffer_func(Ref<Image>((Image *)this), p_quality);
 }
