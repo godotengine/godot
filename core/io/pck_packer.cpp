@@ -107,6 +107,8 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &
 }
 
 Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encrypt) {
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_INVALID_PARAMETER, "File must be opened before use.");
+
 	Ref<FileAccess> f = FileAccess::open(p_src, FileAccess::READ);
 	if (f.is_null()) {
 		return ERR_FILE_CANT_OPEN;
