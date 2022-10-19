@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Cylinder shape for collisions.
+		[b]Note:[/b] When using GodotPhysics instead of the default Bullet physics engine, there are several known bugs with cylinder collision shapes. Using [CapsuleShape] or [BoxShape] instead is recommended.
 	</description>
 	<tutorials>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
