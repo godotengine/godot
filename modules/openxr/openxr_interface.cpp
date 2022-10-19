@@ -458,9 +458,18 @@ void OpenXRInterface::handle_tracker(Tracker *p_tracker) {
 
 void OpenXRInterface::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
 	ERR_FAIL_NULL(openxr_api);
+
 	Action *action = find_action(p_action_name);
 	ERR_FAIL_NULL(action);
-	Tracker *tracker = find_tracker(p_tracker_name);
+
+	// We need to map our tracker name to our OpenXR name for our inbuild names.
+	String tracker_name = p_tracker_name;
+	if (tracker_name == "left_hand") {
+		tracker_name = "/user/hand/left";
+	} else if (tracker_name == "right_hand") {
+		tracker_name = "/user/hand/right";
+	}
+	Tracker *tracker = find_tracker(tracker_name);
 	ERR_FAIL_NULL(tracker);
 
 	// TODO OpenXR does not support delay, so we may need to add support for that somehow...
