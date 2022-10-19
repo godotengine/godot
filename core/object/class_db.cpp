@@ -31,6 +31,7 @@
 #include "class_db.h"
 
 #include "core/config/engine.h"
+#include "core/object/script_language.h"
 #include "core/os/mutex.h"
 #include "core/version.h"
 
@@ -376,7 +377,12 @@ bool ClassDB::is_virtual(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+	if (!ti) {
+		if (!ScriptServer::is_global_class(p_class)) {
+			ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+		}
+		return false;
+	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
 		return false;
