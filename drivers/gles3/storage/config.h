@@ -56,15 +56,13 @@ private:
 
 public:
 	bool use_nearest_mip_filter = false;
-	bool use_skeleton_software = false;
 	bool use_depth_prepass = true;
-	bool use_rgba_2d_shadows = false;
 
 	int max_vertex_texture_image_units = 0;
 	int max_texture_image_units = 0;
 	int max_texture_size = 0;
+	int max_viewport_size[2] = { 0, 0 };
 	int max_uniform_buffer_size = 0;
-	int max_viewport_size = 0;
 	int max_renderable_elements = 0;
 	int max_renderable_lights = 0;
 	int max_lights_per_object = 0;

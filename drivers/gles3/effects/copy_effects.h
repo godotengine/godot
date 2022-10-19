@@ -65,6 +65,8 @@ public:
 	void copy_screen();
 	void bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region);
 	void set_color(const Color &p_color, const Rect2i &p_region);
+	void draw_screen_triangle();
+	void draw_screen_quad();
 };
 
 } //namespace GLES3

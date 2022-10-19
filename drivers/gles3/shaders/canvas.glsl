@@ -10,6 +10,7 @@ mode_instanced = #define USE_ATTRIBUTES \n#define USE_INSTANCING
 #[specializations]
 
 DISABLE_LIGHTING = false
+USE_RGBA_SHADOWS = false
 
 #[vertex]
 
@@ -213,8 +214,8 @@ void main() {
 
 #ifndef DISABLE_LIGHTING
 uniform sampler2D atlas_texture; //texunit:-2
+uniform sampler2D shadow_atlas_texture; //texunit:-3
 #endif // DISABLE_LIGHTING
-//uniform sampler2D shadow_atlas_texture; //texunit:-3
 uniform sampler2D screen_texture; //texunit:-4
 uniform sampler2D sdf_texture; //texunit:-5
 uniform sampler2D normal_texture; //texunit:-6
@@ -245,6 +246,35 @@ layout(std140) uniform MaterialUniforms{
 #endif
 
 #GLOBALS
+
+float vec4_to_float(vec4 p_vec) {
+	return dot(p_vec, vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0)) * 2.0 - 1.0;
+}
+
+vec2 screen_uv_to_sdf(vec2 p_uv) {
+	return screen_to_sdf * p_uv;
+}
+
+float texture_sdf(vec2 p_sdf) {
+	vec2 uv = p_sdf * sdf_to_tex.xy + sdf_to_tex.zw;
+	float d = vec4_to_float(texture(sdf_texture, uv));
+	d *= SDF_MAX_LENGTH;
+	return d * tex_to_sdf;
+}
+
+vec2 texture_sdf_normal(vec2 p_sdf) {
+	vec2 uv = p_sdf * sdf_to_tex.xy + sdf_to_tex.zw;
+
+	const float EPSILON = 0.001;
+	return normalize(vec2(
+			vec4_to_float(texture(sdf_texture, uv + vec2(EPSILON, 0.0))) - vec4_to_float(texture(sdf_texture, uv - vec2(EPSILON, 0.0))),
+			vec4_to_float(texture(sdf_texture, uv + vec2(0.0, EPSILON))) - vec4_to_float(texture(sdf_texture, uv - vec2(0.0, EPSILON)))));
+}
+
+vec2 sdf_to_screen_uv(vec2 p_sdf) {
+	return p_sdf * sdf_to_screen;
+}
+
 #ifndef DISABLE_LIGHTING
 #ifdef LIGHT_CODE_USED
 
@@ -297,6 +327,70 @@ vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 lig
 	} else {
 		return light_color * base_color * cNdotL;
 	}
+}
+
+#ifdef USE_RGBA_SHADOWS
+
+#define SHADOW_DEPTH(m_uv) (dot(textureLod(shadow_atlas_texture, (m_uv), 0.0), vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0)) * 2.0 - 1.0)
+
+#else
+
+#define SHADOW_DEPTH(m_uv) (textureLod(shadow_atlas_texture, (m_uv), 0.0).r)
+
+#endif
+
+#define SHADOW_TEST(m_uv)                              \
+	{                                                  \
+		highp float sd = SHADOW_DEPTH(m_uv);           \
+		shadow += step(sd, shadow_uv.z / shadow_uv.w); \
+	}
+
+//float distance = length(shadow_pos);
+vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
+#ifdef LIGHT_CODE_USED
+		,
+		vec3 shadow_modulate
+#endif
+) {
+	float shadow = 0.0;
+	uint shadow_mode = light_array[light_base].flags & LIGHT_FLAGS_FILTER_MASK;
+
+	if (shadow_mode == LIGHT_FLAGS_SHADOW_NEAREST) {
+		SHADOW_TEST(shadow_uv.xy);
+	} else if (shadow_mode == LIGHT_FLAGS_SHADOW_PCF5) {
+		vec2 shadow_pixel_size = vec2(light_array[light_base].shadow_pixel_size, 0.0);
+		SHADOW_TEST(shadow_uv.xy - shadow_pixel_size * 2.0);
+		SHADOW_TEST(shadow_uv.xy - shadow_pixel_size);
+		SHADOW_TEST(shadow_uv.xy);
+		SHADOW_TEST(shadow_uv.xy + shadow_pixel_size);
+		SHADOW_TEST(shadow_uv.xy + shadow_pixel_size * 2.0);
+		shadow /= 5.0;
+	} else { //PCF13
+		vec2 shadow_pixel_size = vec2(light_array[light_base].shadow_pixel_size, 0.0);
+		SHADOW_TEST(shadow_uv.xy - shadow_pixel_size * 6.0);
+		SHADOW_TEST(shadow_uv.xy - shadow_pixel_size * 5.0);
+		SHADOW_TEST(shadow_uv.xy - shadow_pixel_size * 4.0);
+		SHADOW_TEST(shadow_uv.xy - shadow_pixel_size * 3.0);
+		SHADOW_TEST(shadow_uv.xy - shadow_pixel_size * 2.0);
+		SHADOW_TEST(shadow_uv.xy - shadow_pixel_size);
+		SHADOW_TEST(shadow_uv.xy);
+		SHADOW_TEST(shadow_uv.xy + shadow_pixel_size);
+		SHADOW_TEST(shadow_uv.xy + shadow_pixel_size * 2.0);
+		SHADOW_TEST(shadow_uv.xy + shadow_pixel_size * 3.0);
+		SHADOW_TEST(shadow_uv.xy + shadow_pixel_size * 4.0);
+		SHADOW_TEST(shadow_uv.xy + shadow_pixel_size * 5.0);
+		SHADOW_TEST(shadow_uv.xy + shadow_pixel_size * 6.0);
+		shadow /= 13.0;
+	}
+
+	vec4 shadow_color = unpackUnorm4x8(light_array[light_base].shadow_color);
+#ifdef LIGHT_CODE_USED
+	shadow_color.rgb *= shadow_modulate;
+#endif
+
+	shadow_color.a *= light_color.a; //respect light alpha
+
+	return mix(light_color, shadow_color, shadow);
 }
 
 void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
@@ -527,6 +621,19 @@ void main() {
 		}
 #endif
 
+		if (bool(light_array[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
+			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array[light_base].shadow_matrix[0], light_array[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+
+			vec4 shadow_uv = vec4(shadow_pos.x, light_array[light_base].shadow_y_ofs, shadow_pos.y * light_array[light_base].shadow_zfar_inv, 1.0);
+
+			light_color = light_shadow_compute(light_base, light_color, shadow_uv
+#ifdef LIGHT_CODE_USED
+					,
+					shadow_modulate.rgb
+#endif
+			);
+		}
+
 		light_blend_compute(light_base, light_color, color.rgb);
 	}
 
@@ -582,6 +689,46 @@ void main() {
 		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
 			//if outside the light texture, light color is zero
 			light_color.a = 0.0;
+		}
+
+		if (bool(light_array[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
+			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array[light_base].shadow_matrix[0], light_array[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+
+			vec2 pos_norm = normalize(shadow_pos);
+			vec2 pos_abs = abs(pos_norm);
+			vec2 pos_box = pos_norm / max(pos_abs.x, pos_abs.y);
+			vec2 pos_rot = pos_norm * mat2(vec2(0.7071067811865476, -0.7071067811865476), vec2(0.7071067811865476, 0.7071067811865476)); //is there a faster way to 45 degrees rot?
+			float tex_ofs;
+			float dist;
+			if (pos_rot.y > 0.0) {
+				if (pos_rot.x > 0.0) {
+					tex_ofs = pos_box.y * 0.125 + 0.125;
+					dist = shadow_pos.x;
+				} else {
+					tex_ofs = pos_box.x * -0.125 + (0.25 + 0.125);
+					dist = shadow_pos.y;
+				}
+			} else {
+				if (pos_rot.x < 0.0) {
+					tex_ofs = pos_box.y * -0.125 + (0.5 + 0.125);
+					dist = -shadow_pos.x;
+				} else {
+					tex_ofs = pos_box.x * 0.125 + (0.75 + 0.125);
+					dist = -shadow_pos.y;
+				}
+			}
+
+			dist *= light_array[light_base].shadow_zfar_inv;
+
+			//float distance = length(shadow_pos);
+			vec4 shadow_uv = vec4(tex_ofs, light_array[light_base].shadow_y_ofs, dist, 1.0);
+
+			light_color = light_shadow_compute(light_base, light_color, shadow_uv
+#ifdef LIGHT_CODE_USED
+					,
+					shadow_modulate.rgb
+#endif
+			);
 		}
 
 		light_blend_compute(light_base, light_color, color.rgb);
