@@ -369,8 +369,6 @@ class DisplayServerWayland : public DisplayServer {
 	static void _seat_state_set_current(SeatState &p_ss);
 	static void _wayland_state_update_cursor(WaylandState &p_wls);
 
-	static void _get_key_modifier_state(SeatState &p_seat, Ref<InputEventWithModifiers> p_event);
-
 	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
 	void _window_data_set_mode(WindowData &p_wd, WindowMode p_mode);

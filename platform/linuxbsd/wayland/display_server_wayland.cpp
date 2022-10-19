@@ -86,6 +86,7 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 	}
 }
 
+// Read the content pointed by fd into a string.
 String DisplayServerWayland::_string_read_fd(int fd) {
 	// This is pretty much an arbitrary size.
 	uint32_t chunk_size = 2048;
@@ -122,6 +123,7 @@ String DisplayServerWayland::_string_read_fd(int fd) {
 	return ret;
 }
 
+// Read the content of a "text/plain" wl_data_offer.
 String DisplayServerWayland::_wl_data_offer_read(wl_data_offer *wl_data_offer) const {
 	if (!wl_data_offer) {
 		return "";
@@ -146,6 +148,7 @@ String DisplayServerWayland::_wl_data_offer_read(wl_data_offer *wl_data_offer) c
 	return "";
 }
 
+// Read the content of a "text/plain" wp_primary_selection_offer.
 String DisplayServerWayland::_wp_primary_selection_offer_read(zwp_primary_selection_offer_v1 *wp_primary_selection_offer) const {
 	if (!wp_primary_selection_offer) {
 		return "";
@@ -170,8 +173,6 @@ String DisplayServerWayland::_wp_primary_selection_offer_read(zwp_primary_select
 	return "";
 }
 
-// Sets a given seat state as its own wayland state's current seat and makes
-// sure that any old seat gets reset.
 void DisplayServerWayland::_seat_state_set_current(SeatState &p_ss) {
 	WaylandState *wls = p_ss.wls;
 	ERR_FAIL_NULL(wls);
@@ -330,13 +331,6 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	}
 }
 
-void DisplayServerWayland::_get_key_modifier_state(SeatState &p_seat, Ref<InputEventWithModifiers> p_event) {
-	p_event->set_shift_pressed(p_seat.shift_pressed);
-	p_event->set_ctrl_pressed(p_seat.ctrl_pressed);
-	p_event->set_alt_pressed(p_seat.alt_pressed);
-	p_event->set_meta_pressed(p_seat.meta_pressed);
-}
-
 // Sets up an `InputEventKey` and returns whether it has any meaningful value.
 bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed) {
 	// TODO: Handle keys that release multiple symbols?
@@ -358,7 +352,10 @@ bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<
 	p_event->set_window_id(MAIN_WINDOW_ID);
 
 	// Set all pressed modifiers.
-	_get_key_modifier_state(p_ss, p_event);
+	p_event->set_shift_pressed(p_ss.shift_pressed);
+	p_event->set_ctrl_pressed(p_ss.ctrl_pressed);
+	p_event->set_alt_pressed(p_ss.alt_pressed);
+	p_event->set_meta_pressed(p_ss.meta_pressed);
 
 	p_event->set_keycode(keycode);
 	p_event->set_physical_keycode(physical_keycode);
@@ -1027,7 +1024,10 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 		mm.instantiate();
 
 		// Set all pressed modifiers.
-		_get_key_modifier_state(*ss, mm);
+		mm->set_shift_pressed(ss->shift_pressed);
+		mm->set_ctrl_pressed(ss->ctrl_pressed);
+		mm->set_alt_pressed(ss->alt_pressed);
+		mm->set_meta_pressed(ss->meta_pressed);
 
 		mm->set_window_id(MAIN_WINDOW_ID);
 		mm->set_button_mask(pd.pressed_button_mask);
@@ -1069,7 +1069,10 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 				mb.instantiate();
 
 				// Set all pressed modifiers.
-				_get_key_modifier_state(*ss, mb);
+				mb->set_shift_pressed(ss->shift_pressed);
+				mb->set_ctrl_pressed(ss->ctrl_pressed);
+				mb->set_alt_pressed(ss->alt_pressed);
+				mb->set_meta_pressed(ss->meta_pressed);
 
 				mb->set_window_id(MAIN_WINDOW_ID);
 				mb->set_position(pd.position);
