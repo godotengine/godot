@@ -208,8 +208,10 @@ protected:
 			spec = version->variants[p_variant].lookup_ptr(specialization_default_mask);
 		}
 
-		ERR_FAIL_COND(!spec); // Should never happen
-		ERR_FAIL_COND(!spec->ok); // Should never happen
+		if (!spec || !spec->ok) {
+			WARN_PRINT_ONCE("shader failed to compile, unable to bind shader.");
+			return;
+		}
 
 		glUseProgram(spec->id);
 		current_shader = spec;

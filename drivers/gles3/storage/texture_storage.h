@@ -39,6 +39,8 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/storage/texture_storage.h"
 
+#include "../shaders/canvas_sdf.glsl.gen.h"
+
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
 #ifndef OPENGL_INCLUDE_H
@@ -84,17 +86,7 @@ namespace GLES3 {
 
 #define _GL_TEXTURE_EXTERNAL_OES 0x8D65
 
-#ifdef GLES_OVER_GL
-#define _GL_HALF_FLOAT_OES 0x140B
-#else
-#define _GL_HALF_FLOAT_OES 0x8D61
-#endif
-
 #define _EXT_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
-
-#define _RED_OES 0x1903
-
-#define _DEPTH_COMPONENT24_OES 0x81A6
 
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
@@ -126,17 +118,6 @@ struct CanvasTexture {
 
 	RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 	RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
-};
-
-/* CANVAS SHADOW */
-
-struct CanvasLightShadow {
-	RID self;
-	int size;
-	int height;
-	GLuint fbo;
-	GLuint depth;
-	GLuint distance; //for older devices
 };
 
 struct RenderTarget;
@@ -337,6 +318,15 @@ struct RenderTarget {
 	GLuint color_type = GL_UNSIGNED_BYTE;
 	Image::Format image_format = Image::FORMAT_RGBA8;
 
+	GLuint sdf_texture_write = 0;
+	GLuint sdf_texture_write_fb = 0;
+	GLuint sdf_texture_process[2] = { 0, 0 };
+	GLuint sdf_texture_read = 0;
+	RS::ViewportSDFOversize sdf_oversize = RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT;
+	RS::ViewportSDFScale sdf_scale = RS::VIEWPORT_SDF_SCALE_50_PERCENT;
+	Size2i process_size;
+	bool sdf_enabled = false;
+
 	bool is_transparent = false;
 	bool direct_to_screen = false;
 
@@ -361,10 +351,6 @@ private:
 	/* Canvas Texture API */
 
 	RID_Owner<CanvasTexture, true> canvas_texture_owner;
-
-	/* CANVAS SHADOW */
-
-	RID_PtrOwner<CanvasLightShadow> canvas_light_shadow_owner;
 
 	/* Texture API */
 
@@ -411,6 +397,14 @@ private:
 	void _clear_render_target(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
 	void _create_render_target_backbuffer(RenderTarget *rt);
+	void _render_target_allocate_sdf(RenderTarget *rt);
+	void _render_target_clear_sdf(RenderTarget *rt);
+	Rect2i _render_target_get_sdf_rect(const RenderTarget *rt) const;
+
+	struct RenderTargetSDF {
+		CanvasSdfShaderGLES3 shader;
+		RID shader_version;
+	} sdf_shader;
 
 public:
 	static TextureStorage *get_singleton();
@@ -436,10 +430,6 @@ public:
 
 	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override;
 	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override;
-
-	/* CANVAS SHADOW */
-
-	RID canvas_light_shadow_buffer_create(int p_width);
 
 	/* Texture API */
 
@@ -586,9 +576,13 @@ public:
 	void render_target_disable_clear_request(RID p_render_target) override;
 	void render_target_do_clear_request(RID p_render_target) override;
 
-	void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override;
-	Rect2i render_target_get_sdf_rect(RID p_render_target) const override;
-	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override;
+	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override;
+	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const override;
+	GLuint render_target_get_sdf_texture(RID p_render_target);
+	GLuint render_target_get_sdf_framebuffer(RID p_render_target);
+	void render_target_sdf_process(RID p_render_target);
+	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override;
+	bool render_target_is_sdf_enabled(RID p_render_target) const;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
