@@ -5,9 +5,8 @@
 #include <mutex>
 #include <string>
 #include <cmath>
-#include <chrono>
 
-#include "core/vector.h"
+#include "core/pool_vector.h"
 #include "core/object.h"
 #include "core/func_ref.h"
 #include "core/project_settings.h"
@@ -37,9 +36,9 @@ private:
 	float idle_delta = 0.0;
 	float physics_delta = 0.0;
 
-	Vector<Node*> node_pool;
-	Vector<Ref<FuncRef>> exec_pool;
-	Vector<Array> args_pool;
+	PoolVector<Node*> node_pool;
+	PoolVector<Ref<FuncRef>> exec_pool;
+	PoolVector<Array> args_pool;
 
 	cmutex primary_lock;
 	cmutex fref_lock;
@@ -54,6 +53,7 @@ protected:
 	static void _bind_methods();
 	// void _notification(int p_notification);
 
+	void clean_pool();
 	void execute_external();
 	void dispatch_all(const bool& is_physics);
 	void dispatch_idle();

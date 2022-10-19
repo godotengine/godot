@@ -1,9 +1,14 @@
 #include "node_dispatcher.h"
 
+#define PRECHECK_ALL_NODES
+
 #define MIN_EXPECTED_FPS 20
 #define MIN_THREAD 2
 #define MAX_THREAD 512
 #define THREAD_SUBTRACTION 1
+
+#define DISPATCH_PHYSICS_SCRIPT_METHOD StringName("dispatched_physics")
+#define DISPATCH_IDLE_SCRIPT_METHOD StringName("dispatched_idle")
 
 #define HUB_PRINT(MSG) \
 	Hub::get_singleton()->print_custom(String("NodeDispatcher"), String(MSG.c_str()))
@@ -12,7 +17,7 @@ NodeDispatcher *NodeDispatcher::singleton = nullptr;
 
 bool NodeDispatcher::is_node_valid(Object *n){
 	if (!n) return false;
-	return !(n->get_instance_id() == 0);
+	return !(n->get_instance_id() == 0 || n->is_queued_for_deletion());
 }
 
 int NodeDispatcher::get_nearest_two_exponent(const int& num){
@@ -30,7 +35,7 @@ NodeDispatcher::NodeDispatcher() {
 	singleton = this;
 	auto core_count = OS::get_singleton()->get_processor_count();
 	usable_threads = NodeDispatcher::get_nearest_two_exponent(core_count - THREAD_SUBTRACTION);
-	min_thread_count = usable_threads;
+	min_thread_count = 2;
 	max_thread_count = core_count > usable_threads ? core_count : usable_threads;
 	max_physics_time = 1.0 / (float)ProjectSettings::get_singleton()->get_setting("physics/common/physics_fps");
 	max_idle_time = 1.0 / MIN_EXPECTED_FPS;
@@ -92,6 +97,18 @@ void NodeDispatcher::execute_external(){
 	}
 }
 
+void NodeDispatcher::clean_pool(){
+	primary_lock.lock();
+	for (auto i = 0; i < node_pool.size(); i++){
+		auto n = node_pool[i];
+		if (is_node_valid(n)) continue;
+		if (n->is_inside_tree()) continue;
+		node_pool.remove(i);
+		i--;
+	}
+	primary_lock.unlock();
+}
+
 void NodeDispatcher::dispatch_all(const bool& is_physics){
 	// 4 threads | 8 jobs
 	// Alternating Thread Allocation:
@@ -130,7 +147,7 @@ void NodeDispatcher::dispatch_all(const bool& is_physics){
 	auto pool_size = get_node_count();
 	auto threshold = min(usable, pool_size);
 	// HUB_PRINT(cstr("Dispatching..."));
-	Vector<cthread*> thread_list;
+	PoolVector<cthread*> thread_list;
 	for (auto i = 0; i < threshold; i++){
 		// HUB_PRINT((cstr("Dispatching thread no.") + std::to_string(i)));
 		auto thread = dispatch(i, is_physics);
@@ -147,6 +164,9 @@ void NodeDispatcher::dispatch_all(const bool& is_physics){
 }
 
 void NodeDispatcher::dispatch_idle(){
+#ifdef PRECHECK_ALL_NODES
+	clean_pool();
+#endif
 	dispatch_all(false);
 }
 void NodeDispatcher::dispatch_physics(){
@@ -154,7 +174,7 @@ void NodeDispatcher::dispatch_physics(){
 	dispatch_all(true);
 }
 void NodeDispatcher::dispatch_internal(const int& tid, const bool& is_physics){
-	auto calling_method = StringName(is_physics ? "dispatched_physics" : "dispatched_idle");
+	auto calling_method = (is_physics ? DISPATCH_PHYSICS_SCRIPT_METHOD : DISPATCH_IDLE_SCRIPT_METHOD);
 	auto usable = usable_threads / 2;
 	auto pool_size = get_node_count();
 	auto allocate_to = (int)std::ceil((float)pool_size / usable);
@@ -172,12 +192,14 @@ void NodeDispatcher::dispatch_internal(const int& tid, const bool& is_physics){
 		if (dynamic_index >= pool_size) return;
 		auto n = node_pool[dynamic_index];
 
+#ifndef PRECHECK_ALL_NODES
 		if (!is_node_valid(n)) continue;
 		// Check if the SceneTree is paused
 		// If it is, check if current node can continue to process during pause
+		if (!n->is_inside_tree()) continue;
+#endif
 		if (!n->can_process()) continue;
 		//-----------------------------------------------------
-		if (!n->has_method(calling_method)) continue;
 		n->call(calling_method);
 		//-----------------------------------------------------
 		if (!auto_thread_cancel) continue;
@@ -192,19 +214,28 @@ cthread *NodeDispatcher::dispatch(const int& tid, const bool& is_physics){
 
 bool NodeDispatcher::add_node(Node* node){
 	if (!is_node_valid(node)) return false;
+	if (!node->has_method(DISPATCH_IDLE_SCRIPT_METHOD) || !node->has_method(DISPATCH_PHYSICS_SCRIPT_METHOD)){
+		HUB_PRINT(cstr("Given node does not have at least one dispatched method"));
+		return false;
+	}
 	primary_lock.lock();
 	auto pool_size = get_node_count();
 	for (auto i = 0; i < pool_size; i++){
 		auto curr = node_pool[i];
-		if (!is_node_valid(curr)) continue;
+		if (!is_node_valid(curr) || !curr->is_inside_tree()) {
+			node_pool.remove(i);
+			i--;
+			pool_size--;
+			continue;
+		}
 		if (curr->get_instance_id() == node->get_instance_id()) {
 			primary_lock.unlock();
 			return false;
 		}
 	}
-	auto result = node_pool.push_back(node);
+	node_pool.push_back(node);
 	primary_lock.unlock();
-	return result;
+	return true;
 }
 bool NodeDispatcher::remove_node(const int& instance_id){
 	primary_lock.lock();

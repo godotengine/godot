@@ -11,7 +11,7 @@
 			The current execution state of NodeDispatcher. Should only be editted deferredly/on the main thread.
 		</member>
 		<member name="usable_thread_count" type="int" setter="set_usable_thread_count" getter="get_usable_thread_count" default="2">
-			The total amount of thread this can Singleton dispatch. Minimum value is NodeDispatcher.min_thread_count. Should only be editted deferredly/on the main thread.
+			The total amount of thread this Singleton will dispatch. Minimum value is NodeDispatcher.min_thread_count. Should only be editted deferredly/on the main thread.
 		</member>
 	</members>
 	<methods>

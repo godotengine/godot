@@ -31,6 +31,12 @@
 #ifndef POOL_VECTOR_H
 #define POOL_VECTOR_H
 
+#define VECTOR_CONVERSION
+
+#ifdef VECTOR_CONVERSION
+#include "core/vector.h"
+#endif
+
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
@@ -505,12 +511,25 @@ public:
 
 	void operator=(const PoolVector &p_pool_vector) { _reference(p_pool_vector); }
 	PoolVector() { alloc = nullptr; }
+#ifdef VECTOR_CONVERSION
+	PoolVector(const Vector<T>& from_vec);
+#endif
 	PoolVector(const PoolVector &p_pool_vector) {
 		alloc = nullptr;
 		_reference(p_pool_vector);
 	}
 	~PoolVector() { _unreference(); }
 };
+
+#ifdef VECTOR_CONVERSION
+template <class T>
+PoolVector<T>::PoolVector(const Vector<T>& from_vec) {
+	auto size  = from_vec.size();
+	for (size_t i = 0; i < size; i++){
+		push_back(from_vec[i]);
+	}
+}
+#endif
 
 template <class T>
 int PoolVector<T>::size() const {

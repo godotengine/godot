@@ -533,8 +533,8 @@ void SceneTree::iteration_end() {
 	}
 }
 
-#define POOLEDPROCESS_IDLE_NOTIFIER
-#define POOLEDPROCESS_ITERATION_NOTIFIER
+// #define POOLEDPROCESS_IDLE_NOTIFIER
+// #define POOLEDPROCESS_ITERATION_NOTIFIER
 
 #ifdef POOLEDPROCESS_IDLE_NOTIFIER
 #include "modules/pooled_process/pooled_process.h"
