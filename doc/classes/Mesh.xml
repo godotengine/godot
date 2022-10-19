@@ -129,7 +129,7 @@
 		<method name="get_aabb" qualifiers="const">
 			<return type="AABB" />
 			<description>
-				Returns the smallest [AABB] enclosing this mesh in local space. Not affected by [code]custom_aabb[/code]. See also [method VisualInstance3D.get_transformed_aabb].
+				Returns the smallest [AABB] enclosing this mesh in local space. Not affected by [code]custom_aabb[/code].
 				[b]Note:[/b] This is only implemented for [ArrayMesh] and [PrimitiveMesh].
 			</description>
 		</method>

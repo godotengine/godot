@@ -60,8 +60,6 @@ public:
 	RID get_instance() const;
 	virtual AABB get_aabb() const;
 
-	virtual AABB get_transformed_aabb() const; // helper
-
 	void set_base(const RID &p_base);
 	RID get_base() const;
 
