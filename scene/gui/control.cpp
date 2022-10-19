@@ -1564,7 +1564,7 @@ Size2 Control::get_minimum_size() const {
 	return Vector2();
 }
 
-void Control::set_custom_minimum_size(const Size2i &p_custom) {
+void Control::set_custom_minimum_size(const Size2 &p_custom) {
 	if (p_custom == data.custom_minimum_size) {
 		return;
 	}
@@ -1572,7 +1572,7 @@ void Control::set_custom_minimum_size(const Size2i &p_custom) {
 	update_minimum_size();
 }
 
-Size2i Control::get_custom_minimum_size() const {
+Size2 Control::get_custom_minimum_size() const {
 	return data.custom_minimum_size;
 }
 
@@ -3175,7 +3175,7 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Layout", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
