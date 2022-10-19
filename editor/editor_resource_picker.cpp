@@ -256,7 +256,7 @@ void EditorResourcePicker::_update_menu_items() {
 
 				paste_valid = ClassDB::is_parent_class(res_type, base) || EditorNode::get_editor_data().script_class_is_parent(res_type, base);
 
-				if (!paste_valid) {
+				if (paste_valid) {
 					break;
 				}
 			}
