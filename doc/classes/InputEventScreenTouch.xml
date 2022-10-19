@@ -13,6 +13,9 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="double_tap" type="bool" setter="set_double_tap" getter="is_double_tap" default="false">
+			If [code]true[/code], the touch's state is a double tap.
+		</member>
 		<member name="index" type="int" setter="set_index" getter="get_index" default="0">
 			The touch index in the case of a multi-touch event. One index = one finger.
 		</member>
