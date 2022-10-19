@@ -301,7 +301,7 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 	const size_t copy_buffer_limit = 65536; // 64 KB
 
 	fsrc->seek_end(0);
-	int size = fsrc->get_position();
+	uint64_t size = fsrc->get_position();
 	fsrc->seek(0);
 	err = OK;
 	size_t buffer_size = MIN(size * sizeof(uint8_t), copy_buffer_limit);
