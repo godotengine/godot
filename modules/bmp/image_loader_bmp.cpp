@@ -58,6 +58,13 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			ERR_FAIL_COND_V_MSG(height % 8 != 0, ERR_UNAVAILABLE,
 					vformat("1-bpp BMP images must have a height that is a multiple of 8, but the imported BMP is %d pixels tall.", int(height)));
 
+		} else if (bits_per_pixel == 2) {
+			// Requires bit unpacking...
+			ERR_FAIL_COND_V_MSG(width % 4 != 0, ERR_UNAVAILABLE,
+					vformat("2-bpp BMP images must have a width that is a multiple of 4, but the imported BMP is %d pixels wide.", int(width)));
+			ERR_FAIL_COND_V_MSG(height % 4 != 0, ERR_UNAVAILABLE,
+					vformat("2-bpp BMP images must have a height that is a multiple of 4, but the imported BMP is %d pixels tall.", int(height)));
+
 		} else if (bits_per_pixel == 4) {
 			// Requires bit unpacking...
 			ERR_FAIL_COND_V_MSG(width % 2 != 0, ERR_UNAVAILABLE,
@@ -88,7 +95,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint32_t line_width = (width_bytes + 3) & ~3;
 
 		// The actual data traversal is determined by
-		// the data width in case of 8/4/1 bit images
+		// the data width in case of 8/4/2/1 bit images
 		const uint32_t w = bits_per_pixel >= 24 ? width : width_bytes;
 		const uint8_t *line = p_buffer + (line_width * (height - 1));
 		const uint8_t *end_buffer = p_buffer + p_header.bmp_file_header.bmp_file_size - p_header.bmp_file_header.bmp_file_offset;
@@ -112,6 +119,17 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 						write_buffer[index + 7] = (color_index >> 0) & 1;
 
 						index += 8;
+						line_ptr += 1;
+					} break;
+					case 2: {
+						uint8_t color_index = *line_ptr;
+
+						write_buffer[index + 0] = (color_index >> 6) & 3;
+						write_buffer[index + 1] = (color_index >> 4) & 3;
+						write_buffer[index + 2] = (color_index >> 2) & 3;
+						write_buffer[index + 3] = color_index & 3;
+
+						index += 4;
 						line_ptr += 1;
 					} break;
 					case 4: {
