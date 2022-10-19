@@ -353,6 +353,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			touch_event.instance();
 			touch_event->set_pressed(mb->is_pressed());
 			touch_event->set_position(mb->get_position());
+			touch_event->set_double_tap(mb->is_doubleclick());
 			main_loop->input_event(touch_event);
 		}
 	}
@@ -414,6 +415,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 				button_event->set_global_position(st->get_position());
 				button_event->set_pressed(st->is_pressed());
 				button_event->set_button_index(BUTTON_LEFT);
+				button_event->set_doubleclick(st->is_double_tap());
 				if (st->is_pressed()) {
 					button_event->set_button_mask(mouse_button_mask | (1 << (BUTTON_LEFT - 1)));
 				} else {
