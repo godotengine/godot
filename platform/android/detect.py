@@ -24,7 +24,11 @@ def can_build():
 def get_opts():
     return [
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
-        ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
+        (
+            "ndk_platform",
+            'Target platform (android-<api>, e.g. "android-' + str(get_min_target_api()) + '")',
+            "android-" + str(get_min_target_api()),
+        ),
     ]
 
 
@@ -44,6 +48,11 @@ def get_android_ndk_root(env):
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_ndk_version():
     return "23.2.8568313"
+
+
+# This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
+def get_min_target_api():
+    return 21
 
 
 def get_flags():
@@ -87,17 +96,17 @@ def configure(env: "Environment"):
         )
         sys.exit()
 
+    if get_min_sdk_version(env["ndk_platform"]) < get_min_target_api():
+        print(
+            "WARNING: minimum supported Android target api is %d. Forcing target api %d."
+            % (get_min_target_api(), get_min_target_api())
+        )
+        env["ndk_platform"] = "android-" + str(get_min_target_api())
+
     install_ndk_if_needed(env)
     ndk_root = env["ANDROID_NDK_ROOT"]
 
     # Architecture
-
-    if get_min_sdk_version(env["ndk_platform"]) < 21 and env["arch"] in ["x86_64", "arm64"]:
-        print(
-            'WARNING: arch="%s" is not supported with "ndk_platform" lower than "android-21". Forcing platform 21.'
-            % env["arch"]
-        )
-        env["ndk_platform"] = "android-21"
 
     if env["arch"] == "arm32":
         target_triple = "armv7a-linux-androideabi"
