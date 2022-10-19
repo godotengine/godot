@@ -1097,8 +1097,8 @@ void TileMap::_rendering_update_layer(int p_layer) {
 	rs->canvas_item_set_sort_children_by_y(ci, layers[p_layer].y_sort_enabled);
 	rs->canvas_item_set_use_parent_material(ci, get_use_parent_material() || get_material().is_valid());
 	rs->canvas_item_set_z_index(ci, layers[p_layer].z_index);
-	rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter()));
-	rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat()));
+	rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+	rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
 	rs->canvas_item_set_light_mask(ci, get_light_mask());
 }
 
@@ -1208,8 +1208,8 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 						rs->canvas_item_set_z_as_relative_to_parent(ci, true);
 						rs->canvas_item_set_z_index(ci, tile_z_index);
 
-						rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter()));
-						rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat()));
+						rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+						rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
 
 						q.canvas_items.push_back(ci);
 
@@ -3717,13 +3717,14 @@ void TileMap::set_use_parent_material(bool p_use_parent_material) {
 }
 
 void TileMap::set_texture_filter(TextureFilter p_texture_filter) {
-	// Set a default texture filter for the whole tilemap
+	// Set a default texture filter for the whole tilemap.
 	CanvasItem::set_texture_filter(p_texture_filter);
+	TextureFilter target_filter = get_texture_filter_in_tree();
 	for (unsigned int layer = 0; layer < layers.size(); layer++) {
 		for (HashMap<Vector2i, TileMapQuadrant>::Iterator F = layers[layer].quadrant_map.begin(); F; ++F) {
 			TileMapQuadrant &q = F->value;
 			for (const RID &ci : q.canvas_items) {
-				RenderingServer::get_singleton()->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(p_texture_filter));
+				RenderingServer::get_singleton()->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(target_filter));
 				_make_quadrant_dirty(F);
 			}
 		}
@@ -3732,13 +3733,14 @@ void TileMap::set_texture_filter(TextureFilter p_texture_filter) {
 }
 
 void TileMap::set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) {
-	// Set a default texture repeat for the whole tilemap
+	// Set a default texture repeat for the whole tilemap.
 	CanvasItem::set_texture_repeat(p_texture_repeat);
+	TextureRepeat target_repeat = get_texture_repeat_in_tree();
 	for (unsigned int layer = 0; layer < layers.size(); layer++) {
 		for (HashMap<Vector2i, TileMapQuadrant>::Iterator F = layers[layer].quadrant_map.begin(); F; ++F) {
 			TileMapQuadrant &q = F->value;
 			for (const RID &ci : q.canvas_items) {
-				RenderingServer::get_singleton()->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(p_texture_repeat));
+				RenderingServer::get_singleton()->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(target_repeat));
 				_make_quadrant_dirty(F);
 			}
 		}
