@@ -89,8 +89,8 @@ enum PropertyHint {
 	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_GLOBAL_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_INT_IS_OBJECTID,
-	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_INT_IS_POINTER,
+	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_LOCALE_ID,
 	PROPERTY_HINT_LOCALIZABLE_STRING,
 	PROPERTY_HINT_NODE_TYPE, ///< a node object type
