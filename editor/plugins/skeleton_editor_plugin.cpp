@@ -51,7 +51,7 @@ void SkeletonEditor::_on_click_option(int p_option) {
 
 void SkeletonEditor::create_physical_skeleton() {
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	Node *owner = skeleton == get_tree()->get_edited_scene_root() ? skeleton : skeleton->get_owner();
+	Node *owner = get_tree()->get_edited_scene_root();
 
 	const int bc = skeleton->get_bone_count();
 
