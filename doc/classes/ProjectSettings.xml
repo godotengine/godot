@@ -341,6 +341,9 @@
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="" default="27">
 			Largest size limit (in power of 2) allowed when compressing using long-distance matching with Zstandard. Higher values can result in better compression, but will require more memory when compressing and decompressing.
 		</member>
+		<member name="debug/disable_touch" type="bool" setter="" getter="" default="false">
+			Disable touch input. Only has effect on iOS.
+		</member>
 		<member name="debug/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], logs all output to files.
 		</member>
