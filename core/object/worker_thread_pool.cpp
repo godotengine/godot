@@ -402,7 +402,9 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 		}
 	}
 
-	groups.erase(p_group); // Threads do not access this, so safe to erase here.
+	task_mutex.lock(); // This mutex is needed when Physics 2D and/or 3D is selected to run on a separate thread.
+	groups.erase(p_group);
+	task_mutex.unlock();
 }
 
 void WorkerThreadPool::init(int p_thread_count, bool p_use_native_threads_low_priority, float p_low_priority_task_ratio) {
