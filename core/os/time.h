@@ -32,6 +32,7 @@
 #define TIME_H
 
 #include "core/object/class_db.h"
+#include "time_enums.h"
 
 // This Time class conforms with as many of the ISO 8601 standards as possible.
 // * As per ISO 8601:2004 4.3.2.1, all dates follow the Proleptic Gregorian
@@ -50,33 +51,6 @@ class Time : public Object {
 
 public:
 	static Time *get_singleton();
-
-	enum Month {
-		/// Start at 1 to follow Windows SYSTEMTIME structure
-		/// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
-		MONTH_JANUARY = 1,
-		MONTH_FEBRUARY,
-		MONTH_MARCH,
-		MONTH_APRIL,
-		MONTH_MAY,
-		MONTH_JUNE,
-		MONTH_JULY,
-		MONTH_AUGUST,
-		MONTH_SEPTEMBER,
-		MONTH_OCTOBER,
-		MONTH_NOVEMBER,
-		MONTH_DECEMBER,
-	};
-
-	enum Weekday : uint8_t {
-		WEEKDAY_SUNDAY,
-		WEEKDAY_MONDAY,
-		WEEKDAY_TUESDAY,
-		WEEKDAY_WEDNESDAY,
-		WEEKDAY_THURSDAY,
-		WEEKDAY_FRIDAY,
-		WEEKDAY_SATURDAY,
-	};
 
 	// Methods that convert times.
 	Dictionary get_datetime_dict_from_unix_time(int64_t p_unix_time_val) const;

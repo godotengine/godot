@@ -129,33 +129,6 @@ public:
 		RENDERING_DRIVER_OPENGL3,
 	};
 
-	enum Weekday {
-		DAY_SUNDAY,
-		DAY_MONDAY,
-		DAY_TUESDAY,
-		DAY_WEDNESDAY,
-		DAY_THURSDAY,
-		DAY_FRIDAY,
-		DAY_SATURDAY
-	};
-
-	enum Month {
-		// Start at 1 to follow Windows SYSTEMTIME structure
-		// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
-		MONTH_JANUARY = 1,
-		MONTH_FEBRUARY,
-		MONTH_MARCH,
-		MONTH_APRIL,
-		MONTH_MAY,
-		MONTH_JUNE,
-		MONTH_JULY,
-		MONTH_AUGUST,
-		MONTH_SEPTEMBER,
-		MONTH_OCTOBER,
-		MONTH_NOVEMBER,
-		MONTH_DECEMBER
-	};
-
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
@@ -583,8 +556,6 @@ VARIANT_ENUM_CAST(core_bind::ResourceLoader::CacheMode);
 VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 
 VARIANT_ENUM_CAST(core_bind::OS::RenderingDriver);
-VARIANT_ENUM_CAST(core_bind::OS::Weekday);
-VARIANT_ENUM_CAST(core_bind::OS::Month);
 VARIANT_ENUM_CAST(core_bind::OS::SystemDir);
 
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyBooleanOperation);
