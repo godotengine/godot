@@ -71,8 +71,6 @@ enum PropertyHint {
 	PROPERTY_HINT_EXPRESSION, ///< used for string properties that can contain multiple lines
 	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
-	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
-	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
 	PROPERTY_HINT_OBJECT_ID,
 	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
 	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, ///< so something else can provide this (used in scripts)
