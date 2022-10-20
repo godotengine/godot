@@ -4112,10 +4112,10 @@ void DisplayServerX11::process_events() {
 				if (event.xselection.target == requested) {
 					Property p = _read_property(x11_display, windows[window_id].x11_window, XInternAtom(x11_display, "PRIMARY", 0));
 
-					Vector<String> files = String((char *)p.data).split("\n", false);
+					Vector<String> files = String((char *)p.data).split("\r\n", false);
 					XFree(p.data);
 					for (int i = 0; i < files.size(); i++) {
-						files.write[i] = files[i].replace("file://", "").uri_decode().strip_edges();
+						files.write[i] = files[i].replace("file://", "").uri_decode();
 					}
 
 					if (!windows[window_id].drop_files_callback.is_null()) {
