@@ -296,6 +296,7 @@ private:
 
 		bool key_event_accepted;
 		bool mouse_in_window;
+		Map<int, ObjectID> touch_focus;
 		Control *mouse_focus;
 		Control *last_mouse_focus;
 		Control *mouse_click_grabber;
