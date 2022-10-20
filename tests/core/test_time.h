@@ -91,7 +91,7 @@ TEST_CASE("[Time] Datetime dictionary conversion methods") {
 	datetime[YEAR_KEY] = 2014;
 	datetime[MONTH_KEY] = 2;
 	datetime[DAY_KEY] = 9;
-	datetime[WEEKDAY_KEY] = Time::Weekday::WEEKDAY_SUNDAY;
+	datetime[WEEKDAY_KEY] = Weekday::WEEKDAY_SUNDAY;
 	datetime[HOUR_KEY] = 22;
 	datetime[MINUTE_KEY] = 10;
 	datetime[SECOND_KEY] = 30;
@@ -100,7 +100,7 @@ TEST_CASE("[Time] Datetime dictionary conversion methods") {
 	date_only[YEAR_KEY] = 2014;
 	date_only[MONTH_KEY] = 2;
 	date_only[DAY_KEY] = 9;
-	date_only[WEEKDAY_KEY] = Time::Weekday::WEEKDAY_SUNDAY;
+	date_only[WEEKDAY_KEY] = Weekday::WEEKDAY_SUNDAY;
 
 	Dictionary time_only;
 	time_only[HOUR_KEY] = 22;
@@ -115,8 +115,8 @@ TEST_CASE("[Time] Datetime dictionary conversion methods") {
 	CHECK_MESSAGE(time->get_date_dict_from_unix_time(1391904000).hash() == date_only.hash(), "Time get_date_dict_from_unix_time: The date timestamp for GODOT IS OPEN SOURCE is converted to a dictionary as expected.");
 	CHECK_MESSAGE(time->get_time_dict_from_unix_time(79830).hash() == time_only.hash(), "Time get_time_dict_from_unix_time: The time timestamp for GODOT IS OPEN SOURCE is converted to a dictionary as expected.");
 
-	CHECK_MESSAGE((Time::Weekday)(int)time->get_datetime_dict_from_unix_time(0)[WEEKDAY_KEY] == Time::Weekday::WEEKDAY_THURSDAY, "Time get_datetime_dict_from_unix_time: The weekday for the Unix epoch is a Thursday as expected.");
-	CHECK_MESSAGE((Time::Weekday)(int)time->get_datetime_dict_from_unix_time(1391983830)[WEEKDAY_KEY] == Time::Weekday::WEEKDAY_SUNDAY, "Time get_datetime_dict_from_unix_time: The weekday for GODOT IS OPEN SOURCE is a Sunday as expected.");
+	CHECK_MESSAGE((Weekday)(int)time->get_datetime_dict_from_unix_time(0)[WEEKDAY_KEY] == Weekday::WEEKDAY_THURSDAY, "Time get_datetime_dict_from_unix_time: The weekday for the Unix epoch is a Thursday as expected.");
+	CHECK_MESSAGE((Weekday)(int)time->get_datetime_dict_from_unix_time(1391983830)[WEEKDAY_KEY] == Weekday::WEEKDAY_SUNDAY, "Time get_datetime_dict_from_unix_time: The weekday for GODOT IS OPEN SOURCE is a Sunday as expected.");
 
 	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30").hash() == datetime.hash(), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE works as expected.");
 	CHECK_MESSAGE(!time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30", false).has(WEEKDAY_KEY), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE without weekday doesn't contain the weekday key as expected.");
