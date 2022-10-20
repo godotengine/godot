@@ -2632,13 +2632,10 @@
 		<constant name="ERR_SKIP" value="45" enum="Error">
 			Skip error.
 		</constant>
-		<constant name="ERR_HELP" value="46" enum="Error">
-			Help error.
-		</constant>
-		<constant name="ERR_BUG" value="47" enum="Error">
+		<constant name="ERR_BUG" value="46" enum="Error">
 			Bug error.
 		</constant>
-		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
+		<constant name="ERR_PRINTER_ON_FIRE" value="47" enum="Error">
 			Printer on fire error. (This is an easter egg, no engine methods return this error code.)
 		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
