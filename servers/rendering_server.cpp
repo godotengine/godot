@@ -2871,14 +2871,6 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 
-	// Already defined in some RenderingDevice*::initialize, which run before this code.
-	// We re-define them here just for doctool's sake. Make sure to keep default values in sync.
-	GLOBAL_DEF("rendering/rendering_device/staging_buffer/block_size_kb", 256);
-	GLOBAL_DEF("rendering/rendering_device/staging_buffer/max_size_mb", 128);
-	GLOBAL_DEF("rendering/rendering_device/staging_buffer/texture_upload_region_size_px", 64);
-	// Vulkan-specific.
-	GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
-
 	// Number of commands that can be drawn per frame.
 	GLOBAL_DEF_RST("rendering/gl_compatibility/item_buffer_size", 16384);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gl_compatibility/item_buffer_size", PropertyInfo(Variant::INT, "rendering/gl_compatibility/item_buffer_size", PROPERTY_HINT_RANGE, "1024,1048576,1"));
@@ -2981,7 +2973,6 @@ void RenderingServer::init() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/light_projectors/filter", PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"));
 
 	GLOBAL_DEF_RST("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
-	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/occlusion_culling/bvh_build_quality", PropertyInfo(Variant::INT, "rendering/occlusion_culling/bvh_build_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"));
 
 	GLOBAL_DEF("rendering/environment/glow/upscale_mode", 1);
