@@ -1368,11 +1368,14 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 
 			if (wall_min_slide_angle != 0 && result.get_angle(-velocity.normalized()) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
 				motion = Vector2();
+				velocity = Vector2();
 			} else if (first_slide) {
 				Vector2 motion_slide_norm = result.remainder.slide(result.collision_normal).normalized();
 				motion = motion_slide_norm * (motion.length() - result.travel.length());
+				velocity = velocity.slide(result.collision_normal);
 			} else {
 				motion = result.remainder.slide(result.collision_normal);
+				velocity = velocity.slide(result.collision_normal);
 			}
 
 			if (motion.dot(velocity) <= 0.0) {
