@@ -68,7 +68,7 @@ void GodotJavaViewWrapper::request_pointer_capture() {
 }
 
 void GodotJavaViewWrapper::release_pointer_capture() {
-	if (_request_pointer_capture != nullptr) {
+	if (_release_pointer_capture != nullptr) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
 

@@ -245,7 +245,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 				}
 				return true;
 			}
-		} else if (isMouseEvent(event)) {
+		} else {
 			return handleMouseEvent(event);
 		}
 
@@ -473,6 +473,9 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 	}
 
 	static boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative) {
+		// We don't handle ACTION_BUTTON_PRESS and ACTION_BUTTON_RELEASE events as they typically
+		// follow ACTION_DOWN and ACTION_UP events. As such, handling them would result in duplicate
+		// stream of events to the engine.
 		switch (eventAction) {
 			case MotionEvent.ACTION_CANCEL:
 			case MotionEvent.ACTION_UP:
