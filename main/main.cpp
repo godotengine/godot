@@ -2189,6 +2189,15 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 					"application/config/windows_native_icon",
 					PROPERTY_HINT_FILE, "*.ico"));
 
+	GLOBAL_DEF("application/config/auto_accept_quit", true);
+	GLOBAL_DEF("application/config/quit_on_go_back", true);
+	GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
+	GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
+	GLOBAL_DEF("display/window/stretch/mode", "disabled");
+	GLOBAL_DEF("display/window/stretch/aspect", "keep");
+	GLOBAL_DEF("display/window/stretch/scale", 1.0);
+	GLOBAL_DEF("editor/scene/scene_naming", 0);
+
 	Input *id = Input::get_singleton();
 	if (id) {
 		agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);

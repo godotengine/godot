@@ -246,6 +246,13 @@
 		<member name="application/config/windows_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
 		</member>
+		<member name="application/config/auto_accept_quit" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the application automatically accepts quitting.
+		</member>
+		<member name="application/config/quit_on_go_back" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the application quits automatically on going back (e.g on Android).
+			To handle 'Go Back' button when this option is disabled, use [enum DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST].
+		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard error. If [code]true[/code], this also hides error and warning messages printed by [method @GlobalScope.push_error] and [method @GlobalScope.push_warning]. See also [member application/run/disable_stdout].
 			Changes to this setting will only be applied upon restarting the application.
@@ -272,6 +279,10 @@
 		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+		</member>
+		<member name="application/run/main_loop_type" type="String" setter="" getter="" default="&quot;&quot;">
+			Specifies what game loop to use.
+			You can create your own game loop by Inheriting from [code]MainLoop[/code].
 		</member>
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
@@ -568,6 +579,18 @@
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
 		</member>
+		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/cpde], they will appear as separate windows handled by the operating system.
+		</member>
+		<member name="display/window/stretch/mode" type="int" setter="" getter="" default="0">
+			Sets how the base size is stretched to fit the resolution of the window or screen.
+		</member>
+		<member name="display/window/stretch/aspect" type="int" setter="" getter="" default="0">
+			Sets which aspect ratio the viewport will maintain when the screen changes size.
+		</member>
+		<member name="display/window/stretch/scale" type="float" setter="" getter="" default="1.0">
+			Sets the scaling factor of the viewport.
+		</member>
 		<member name="display/window/ios/hide_status_bar" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the status bar is hidden while the app is running.
 		</member>
@@ -652,6 +675,9 @@
 		</member>
 		<member name="editor/node_naming/name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
+		</member>
+		<member name="editor/scene/scene_naming" type="int" setter="" getter="" default="0">
+			When creating scenes names automatically, set the type of casing in this project.
 		</member>
 		<member name="editor/node_naming/name_num_separator" type="int" setter="" getter="" default="0">
 			What to use to separate node name from number. This is mostly an editor setting.
