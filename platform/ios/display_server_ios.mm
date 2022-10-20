@@ -227,7 +227,7 @@ void DisplayServerIOS::_window_callback(const Callable &p_callable, const Varian
 // MARK: Touches
 
 void DisplayServerIOS::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
-	if (!GLOBAL_DEF("debug/disable_touch", false)) {
+	if (!GLOBAL_GET("debug/disable_touch")) {
 		Ref<InputEventScreenTouch> ev;
 		ev.instantiate();
 
@@ -240,7 +240,7 @@ void DisplayServerIOS::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, 
 }
 
 void DisplayServerIOS::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
-	if (!GLOBAL_DEF("debug/disable_touch", false)) {
+	if (!GLOBAL_GET("debug/disable_touch")) {
 		Ref<InputEventScreenDrag> ev;
 		ev.instantiate();
 		ev->set_index(p_idx);

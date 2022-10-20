@@ -1225,7 +1225,7 @@ GodotSpace2D::GodotSpace2D() {
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/solver_iterations", PropertyInfo(Variant::INT, "physics/2d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"));
 
 	contact_recycle_radius = GLOBAL_DEF("physics/2d/solver/contact_recycle_radius", 1.0);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
 
 	contact_max_separation = GLOBAL_DEF("physics/2d/solver/contact_max_separation", 1.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_max_separation", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));

@@ -1258,7 +1258,7 @@ GodotSpace3D::GodotSpace3D() {
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/solver_iterations", PropertyInfo(Variant::INT, "physics/3d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"));
 
 	contact_recycle_radius = GLOBAL_DEF("physics/3d/solver/contact_recycle_radius", 0.01);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"));
 
 	contact_max_separation = GLOBAL_DEF("physics/3d/solver/contact_max_separation", 0.05);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/contact_max_separation", PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"));

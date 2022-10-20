@@ -192,10 +192,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		String name = String(p_in.m_name);
 
 		if (name.find("[SceneTree]") != -1) {
-			GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 			memnew(MessageQueue);
-
-			GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
 
 			memnew(Input);
 

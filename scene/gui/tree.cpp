@@ -4818,7 +4818,7 @@ TreeItem *Tree::get_item_with_text(const String &p_find) const {
 void Tree::_do_incr_search(const String &p_add) {
 	uint64_t time = OS::get_singleton()->get_ticks_usec() / 1000; // convert to msec
 	uint64_t diff = time - last_keypress;
-	if (diff > uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000))) {
+	if (diff > uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"))) {
 		incr_search = p_add;
 	} else if (incr_search != p_add) {
 		incr_search += p_add;

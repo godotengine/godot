@@ -619,7 +619,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
 	if (err == OK) {
-		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
+		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
 		if (!custom_settings.is_empty()) {
 			_load_settings_text(custom_settings);
 		}
@@ -1276,6 +1276,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
 
+	GLOBAL_DEF("debug/disable_touch", false);
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");
 
@@ -1291,6 +1292,22 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("compression/formats/gzip/compression_level", Compression::gzip_level);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+
+	GLOBAL_DEF("debug/settings/crash_handler/message",
+			String("Please include this when reporting the bug to the project developer."));
+	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
+			String("Please include this when reporting the bug on: https://github.com/godotengine/godot/issues"));
+	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
+	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
+	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
+
+	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/incremental_search_max_interval_msec", PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers.
+
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/block_size_kb", 256);
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/max_size_mb", 128);
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/texture_upload_region_size_px", 64);
+	GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
 
 	// These properties will not show up in the dialog nor in the documentation. If you want to exclude whole groups, see _get_property_list() method.
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
