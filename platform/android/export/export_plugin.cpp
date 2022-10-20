@@ -2011,7 +2011,10 @@ String EditorExportPlatformAndroid::get_adb_path() {
 	return sdk_path.path_join("platform-tools/adb" + exe_ext);
 }
 
-String EditorExportPlatformAndroid::get_apksigner_path() {
+String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_check_executes) {
+	if (p_target_sdk == -1) {
+		p_target_sdk = DEFAULT_TARGET_SDK_VERSION;
+	}
 	String exe_ext = "";
 	if (OS::get_singleton()->get_name() == "Windows") {
 		exe_ext = ".bat";
@@ -2029,23 +2032,89 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 	}
 
 	// There are additional versions directories we need to go through.
-	da->list_dir_begin();
-	String sub_dir = da->get_next();
-	while (!sub_dir.is_empty()) {
-		if (!sub_dir.begins_with(".") && da->current_is_dir()) {
-			// Check if the tool is here.
-			String tool_path = build_tools_dir.path_join(sub_dir).path_join(apksigner_command_name);
-			if (FileAccess::exists(tool_path)) {
-				apksigner_path = tool_path;
+	Vector<String> dir_list = da->get_directories();
+
+	// We need to use the version of build_tools that matches the Target SDK
+	// If somehow we can't find that, we see if a version between 28 and the default target SDK exists.
+	// We need to avoid versions <= 27 because they fail on Java versions >9
+	// If we can't find that, we just use the first valid version.
+	Vector<String> ideal_versions;
+	Vector<String> other_versions;
+	Vector<String> versions;
+	bool found_target_sdk = false;
+	// We only allow for versions <= 27 if specifically set
+	int min_version = p_target_sdk <= 27 ? p_target_sdk : 28;
+	for (String sub_dir : dir_list) {
+		if (!sub_dir.begins_with(".")) {
+			Vector<String> ver_numbers = sub_dir.split(".");
+			// Dir not a version number, will use as last resort
+			if (!ver_numbers.size() || !ver_numbers[0].is_valid_int()) {
+				other_versions.push_back(sub_dir);
+				continue;
+			}
+			int ver_number = ver_numbers[0].to_int();
+			if (ver_number == p_target_sdk) {
+				found_target_sdk = true;
+				//ensure this is in front of the ones we check
+				versions.push_back(sub_dir);
+			} else {
+				if (ver_number >= min_version && ver_number <= DEFAULT_TARGET_SDK_VERSION) {
+					ideal_versions.push_back(sub_dir);
+				} else {
+					other_versions.push_back(sub_dir);
+				}
+			}
+		}
+	}
+	// we will check ideal versions first, then other versions.
+	versions.append_array(ideal_versions);
+	versions.append_array(other_versions);
+
+	if (!versions.size()) {
+		print_error("Unable to find the 'apksigner' tool.");
+		return apksigner_path;
+	}
+
+	int i;
+	bool failed = false;
+	String version_to_use;
+
+	List<String> args;
+	args.push_back("--version");
+	String output;
+	int retval;
+	Error err;
+	for (i = 0; i < versions.size(); i++) {
+		// Check if the tool is here.
+		apksigner_path = build_tools_dir.path_join(versions[i]).path_join(apksigner_command_name);
+		if (FileAccess::exists(apksigner_path)) {
+			version_to_use = versions[i];
+			// If we aren't exporting, just break here.
+			if (!p_check_executes) {
+				break;
+			}
+			// we only check to see if it executes on export because it is slow to load
+			err = OS::get_singleton()->execute(apksigner_path, args, &output, &retval, false);
+			if (err || retval) {
+				failed = true;
+			} else {
 				break;
 			}
 		}
-		sub_dir = da->get_next();
 	}
-	da->list_dir_end();
-
-	if (apksigner_path.is_empty()) {
-		print_error("Unable to find the 'apksigner' tool.");
+	if (i == versions.size()) {
+		if (failed) {
+			print_error("All located 'apksigner' tools in " + build_tools_dir + " failed to execute");
+			return "<FAILED>";
+		} else {
+			print_error("Unable to find the 'apksigner' tool.");
+			return "";
+		}
+	}
+	if (!found_target_sdk) {
+		print_line("Could not find version of build tools that matches Target SDK, using " + version_to_use);
+	} else if (failed && found_target_sdk) {
+		print_line("Version of build tools that matches Target SDK failed to execute, using " + version_to_use);
 	}
 
 	return apksigner_path;
@@ -2165,8 +2234,12 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			valid = false;
 		}
 
+		String target_sdk_version = p_preset->get("custom_build/target_sdk");
+		if (!target_sdk_version.is_valid_int()) {
+			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
+		}
 		// Validate that apksigner is available
-		String apksigner_path = get_apksigner_path();
+		String apksigner_path = get_apksigner_path(target_sdk_version.to_int());
 		if (!FileAccess::exists(apksigner_path)) {
 			err += TTR("Unable to find Android SDK build-tools' apksigner command.");
 			err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
@@ -2389,9 +2462,16 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	String release_keystore = p_preset->get("keystore/release");
 	String release_username = p_preset->get("keystore/release_user");
 	String release_password = p_preset->get("keystore/release_password");
-
-	String apksigner = get_apksigner_path();
+	String target_sdk_version = p_preset->get("custom_build/target_sdk");
+	if (!target_sdk_version.is_valid_int()) {
+		target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
+	}
+	String apksigner = get_apksigner_path(target_sdk_version.to_int(), true);
 	print_verbose("Starting signing of the " + export_label + " binary using " + apksigner);
+	if (apksigner == "<FAILED>") {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("All 'apksigner' tools located in Android SDK 'build-tools' directory failed to execute. Please check that you have the correct version installed for your target sdk version. The resulting %s is unsigned."), export_label));
+		return OK;
+	}
 	if (!FileAccess::exists(apksigner)) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' could not be found. Please check that the command is available in the Android SDK build-tools directory. The resulting %s is unsigned."), export_label));
 		return OK;
@@ -2441,20 +2521,27 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	args.push_back("--ks-key-alias");
 	args.push_back(user);
 	args.push_back(export_path);
-	if (p_debug) {
-		// We only print verbose logs for debug builds to avoid leaking release keystore credentials.
+	if (OS::get_singleton()->is_stdout_verbose() && p_debug) {
+		// We only print verbose logs with credentials for debug builds to avoid leaking release keystore credentials.
 		print_verbose("Signing debug binary using: " + String("\n") + apksigner + " " + join_list(args, String(" ")));
+	} else {
+		List<String> redacted_args = List<String>(args);
+		redacted_args.find(keystore)->set("<REDACTED>");
+		redacted_args.find("pass:" + password)->set("pass:<REDACTED>");
+		redacted_args.find(user)->set("<REDACTED>");
+		print_line("Signing binary using: " + String("\n") + apksigner + " " + join_list(redacted_args, String(" ")));
 	}
 	int retval;
-	output.clear();
 	Error err = OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start apksigner executable."));
 		return err;
 	}
-	print_verbose(output);
+	// By design, apksigner does not output credentials in its output unless --verbose is used
+	print_line(output);
 	if (retval) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' returned with error #%d"), retval));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("output: \n%s"), output));
 		return ERR_CANT_CREATE;
 	}
 
@@ -2479,6 +2566,7 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	print_verbose(output);
 	if (retval) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' verification of %s failed."), export_label));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("output: \n%s"), output));
 		return ERR_CANT_CREATE;
 	}
 
