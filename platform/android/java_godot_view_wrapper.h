@@ -41,12 +41,19 @@ class GodotJavaViewWrapper {
 private:
 	jclass _cls;
 	jobject _godot_view;
+
+	jmethodID _request_pointer_capture = 0;
+	jmethodID _release_pointer_capture = 0;
 	jmethodID _set_pointer_icon = 0;
 
 public:
 	GodotJavaViewWrapper(jobject godot_view);
 
 	bool can_update_pointer_icon() const;
+	bool can_capture_pointer() const;
+
+	void request_pointer_capture();
+	void release_pointer_capture();
 	void set_pointer_icon(int pointer_type);
 
 	~GodotJavaViewWrapper();
