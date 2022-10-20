@@ -194,7 +194,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left float is less than the right one.
+				Returns [code]true[/code] if the left float is less than the right one.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
@@ -208,7 +208,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left integer is less than or equal to the right one.
+				Returns [code]true[/code] if the left float is less than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
@@ -237,7 +237,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left float is greater than the right one.
+				Returns [code]true[/code] if the left float is greater than the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
@@ -251,7 +251,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left float is greater than or equal to the right one.
+				Returns [code]true[/code] if the left float is greater than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
