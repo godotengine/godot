@@ -52,26 +52,23 @@ public:
 				event_callback_id(0) {}
 	};
 
-	enum OverlapState {
+	enum OverlapState : uint8_t {
 		OVERLAP_STATE_DIRTY = 0, // Mark processed overlaps
 		OVERLAP_STATE_INSIDE, // Mark old overlap
 		OVERLAP_STATE_ENTER, // Mark just enter overlap
 		OVERLAP_STATE_EXIT // Mark ended overlaps
 	};
 
+	struct OverlappingObjectData {
+		uint32_t shape_count;
+	};
+
 	struct OverlappingShapeData {
-		CollisionObjectBullet *other_object = nullptr;
-		OverlapState state = OVERLAP_STATE_DIRTY;
-		uint32_t other_shape_id = 0;
-		uint32_t our_shape_id = 0;
-
-		OverlappingShapeData() {}
-
-		OverlappingShapeData(CollisionObjectBullet *p_other_object, OverlapState p_state, uint32_t p_other_shape_id, uint32_t p_our_shape_id) :
-				other_object(p_other_object),
-				state(p_state),
-				other_shape_id(p_other_shape_id),
-				our_shape_id(p_our_shape_id) {}
+		OverlappingObjectData *overlap_object_data;
+		CollisionObjectBullet *other_object;
+		OverlapState state;
+		uint32_t other_shape_id;
+		uint32_t our_shape_id;
 	};
 
 private:
@@ -80,9 +77,8 @@ private:
 	Variant *call_event_res_ptr[5];
 
 	btGhostObject *btGhost;
-	Vector<OverlappingShapeData> overlapping_shapes;
-	int _overlapping_shape_count(CollisionObjectBullet *p_other_object);
-	int _find_overlapping_shape(CollisionObjectBullet *p_other_object, uint32_t p_other_shape_id, uint32_t p_our_shape_id);
+	LocalVector<OverlappingObjectData> overlapping_objects;
+	LocalVector<OverlappingShapeData> overlapping_shapes;
 	bool monitorable;
 
 	PhysicsServer::AreaSpaceOverrideMode spOv_mode;
@@ -95,7 +91,8 @@ private:
 	real_t spOv_angularDump;
 	int spOv_priority;
 
-	bool isScratched;
+	bool overlaps_changed;
+	bool is_scratched;
 
 	InOutEventCallback eventsCallbacks[2];
 
@@ -150,7 +147,7 @@ public:
 
 	void mark_all_overlaps_dirty();
 	void mark_object_overlaps_inside(CollisionObjectBullet *p_other_object);
-	void set_overlap(CollisionObjectBullet *p_other_object, uint32_t p_other_shape_id, uint32_t p_our_shape_id);
+	void mark_object_shape_overlap_inside(CollisionObjectBullet *p_other_object, uint32_t p_other_shape_id, uint32_t p_our_shape_id);
 	void mark_all_dirty_overlaps_as_exit();
 	void remove_object_overlaps(CollisionObjectBullet *p_object);
 	void clear_overlaps();
