@@ -295,8 +295,8 @@ hb_ot_color_has_png (hb_face_t *face)
  * @glyph: a glyph index
  *
  * Fetches the PNG image for a glyph. This function takes a font object, not a face object,
- * as input. To get an optimally sized PNG blob, the UPEM value must be set on the @font
- * object. If UPEM is unset, the blob returned will be the largest PNG available.
+ * as input. To get an optimally sized PNG blob, the PPEM values must be set on the @font
+ * object. If PPEM is unset, the blob returned will be the largest PNG available.
  *
  * If the glyph has no PNG image, the singleton empty blob is returned.
  *

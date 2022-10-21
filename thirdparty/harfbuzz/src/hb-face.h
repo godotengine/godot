@@ -171,6 +171,10 @@ hb_face_builder_add_table (hb_face_t *face,
 			   hb_tag_t   tag,
 			   hb_blob_t *blob);
 
+HB_EXTERN void
+hb_face_builder_sort_tables (hb_face_t *face,
+                             const hb_tag_t  *tags);
+
 
 HB_END_DECLS
 
