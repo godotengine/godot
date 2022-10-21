@@ -242,12 +242,17 @@ void main() {
 
 #endif // MODE_SIMPLE_COPY_DEPTH
 
-#ifdef MODE_LINEARIZE_DEPTH_COPY
+#if defined(MODE_LINEARIZE_DEPTH_COPY) || defined(MODE_LINEARIZE_DEPTH_COPY_INVERSED)
 
 	float depth = texelFetch(source_color, pos + params.section.xy, 0).r;
-	depth = depth * 2.0 - 1.0;
-	depth = 2.0 * params.camera_z_near * params.camera_z_far / (params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
-	vec4 color = vec4(depth / params.camera_z_far);
+
+	depth = params.camera_z_near * params.camera_z_far / (params.camera_z_far + depth * (params.camera_z_near - params.camera_z_far));
+	
+	#ifdef MODE_LINEARIZE_DEPTH_COPY_INVERSED
+		vec4 color = vec4(1.0 - (depth / params.camera_z_far));
+	#else
+		vec4 color = vec4(depth / params.camera_z_far);
+	#endif
 
 	if (bool(params.flags & FLAG_FLIP_Y)) {
 		pos.y = params.section.w - pos.y - 1;
