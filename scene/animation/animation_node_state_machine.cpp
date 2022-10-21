@@ -228,6 +228,22 @@ float AnimationNodeStateMachinePlayback::get_current_length() const {
 	return len_current;
 }
 
+float AnimationNodeStateMachinePlayback::get_fade_from_play_pos() const {
+	return pos_fade_from;
+}
+
+float AnimationNodeStateMachinePlayback::get_fade_from_length() const {
+	return len_fade_from;
+}
+
+float AnimationNodeStateMachinePlayback::get_fading_time() const {
+	return fading_time;
+}
+
+float AnimationNodeStateMachinePlayback::get_fading_pos() const {
+	return fading_pos;
+}
+
 bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel) {
 	ERR_FAIL_COND_V(!playing, false);
 	ERR_FAIL_COND_V(!p_state_machine->states.has(p_travel), false);
@@ -466,7 +482,17 @@ double AnimationNodeStateMachinePlayback::_process(AnimationNodeStateMachine *p_
 
 	if (fading_from != StringName()) {
 		double fade_blend_inv = 1.0 - fade_blend;
-		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend_inv) ? CMP_EPSILON : fade_blend_inv, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+		float fading_from_rem = 0.0;
+		fading_from_rem = p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend_inv) ? CMP_EPSILON : fade_blend_inv, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+		//guess playback position
+		if (fading_from_rem > len_fade_from) { // weird but ok
+			len_fade_from = fading_from_rem;
+		}
+
+		{ //advance and loop check
+			float next_pos = len_fade_from - fading_from_rem;
+			pos_fade_from = next_pos; //looped
+		}
 		if (fade_blend >= 1.0) {
 			fading_from = StringName();
 		}
@@ -633,6 +659,8 @@ double AnimationNodeStateMachinePlayback::_process(AnimationNodeStateMachine *p_
 			}
 
 			current = next;
+			pos_fade_from = pos_current;
+			len_fade_from = len_current;
 
 			if (reset_request) {
 				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, CMP_EPSILON, AnimationNode::FILTER_IGNORE, true); // Process next node's first key in here.
