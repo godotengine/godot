@@ -168,9 +168,6 @@ Transform2D CanvasItem::get_screen_transform() const {
 }
 
 Transform2D CanvasItem::get_global_transform() const {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(!is_inside_tree(), get_transform());
-#endif
 	if (global_invalid) {
 		const CanvasItem *pi = get_parent_item();
 		if (pi) {
