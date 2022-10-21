@@ -7,6 +7,7 @@
 		This resource is used in [EditorScenePostImport]. Some parameters are referring to bones in [Skeleton3D], [Skin], [Animation], and some other nodes are rewritten based on the parameters of [SkeletonProfile].
 	</description>
 	<tutorials>
+		<link title="Retargeting 3D Skeletons">$DOCS_URL/tutorials/assets_pipeline/retargeting_3d_skeletons.html</link>
 	</tutorials>
 	<methods>
 		<method name="find_bone" qualifiers="const">
