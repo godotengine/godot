@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PushdownAutomaton" inherits="Reference" version="3.5">
+	<brief_description>
+		In the theory of computation, a branch of theoretical computer science, a pushdown automaton (PDA) is a type of automaton that employs a stack. 
+	</brief_description>
+	<description>
+		Pushdown automata are used in theories about what can be computed by machines. They are more capable than finite-state machines but less capable than Turing machines. Deterministic pushdown automata can recognize all deterministic context-free languages while nondeterministic ones can recognize all context-free languages, with the former often used in parser design.
+		Changes made to the state pool should be final as there is currently no way to replace prioritized state and I don't have any plan to rennovate :/
+	</description>
+	<methods>
+		<method name="get_entry_state">
+			<return type="State" />
+			<description>
+				Get the prioritized state. A prioritized state is the first state to be added to a state pool. Prioritized state is also the first state to be called every poll.
+			</description>
+		</method>
+		<method name="get_state_by_name">
+			<return type="State" />
+			<argument index="0" name="state_name" type="String"/>
+			<description>
+				Get the state with the corresponding [code]state_name[/code] in the state pool.
+			</description>
+		</method>
+		<method name="get_next_state">
+			<return type="State" />
+			<argument index="0" name="from_state" type="String"/>
+			<description>
+				Get the state which is stationed behind the state with [code]from_state[/code] in the state pool. Return [code]null[/code] if none is found.
+			</description>
+		</method>
+		<method name="get_prev_state">
+			<return type="State" />
+			<argument index="0" name="from_state" type="String"/>
+			<description>
+				Get the state which is stationed in front of the state with [code]from_state[/code] in the state pool. Return [code]null[/code] if none is found.
+			</description>
+		</method>
+		<method name="add_state">
+			<return type="bool" />
+			<argument index="0" name="new_state" type="State"/>
+			<description>
+				Add [code]new_state[/code] to the state pool. Return [code]true[/code] on success. Return [code]false[/code] if the [code]new_state[/code] already existed in the current state pool.
+			</description>
+		</method>
+		<method name="remove_state">
+			<return type="bool" />
+			<argument index="0" name="state_name" type="String"/>
+			<description>
+				Remove the state with the corresponding [code]state_name[/code] from the state pool. Return [code]true[/code] on success. Return [code]false[/code] if the given state does not exist in the state pool.
+			</description>
+		</method>
+		<method name="get_all_states">
+			<return type="Dictionary" />
+			<description>
+				Get all the state currently inside the state pool in the form of a Dictionary. Note that all changes made to the yielded Dictionary most likely won't affect the state pool.
+			</description>
+		</method>
+		<method name="get_pool_size">
+			<return type="int" />
+			<description>
+				It literally does what it said.
+			</description>
+		</method>
+	</methods>
+</class>

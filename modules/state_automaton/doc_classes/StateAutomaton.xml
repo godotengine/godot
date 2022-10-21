@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StateAutomaton" inherits="Reference" version="3.5">
+	<brief_description>
+		StateAutomaton is the component used to operate multiple [State] inside a [PushdownAutomaton].
+	</brief_description>
+	<description>
+		StateAutomaton is the interface used to operate multiple [State], provide useful data for them to process and communicate with other system inside Godot. Please note that a StateAutomaton can only operate one [PushdownAutomaton] at a time, but a PushdownAutomaton can be operated by multiple StateAutomaton.
+	</description>
+	<members>
+		<member name="client" type="Variant" setter="set_client" getter="get_client">
+			The client using the service provided by this StateAutomaton.
+		</member>
+		<member name="debug_status" type="bool" setter="enable_debug" getter="is_debugging" default="false">
+			Enable this member to print some helpful informations regarding the operation of this StateAutomaton.
+		</member>
+		<member name="pda" type="PushdownAutomaton" setter="set_pda" getter="get_pda">
+			The [PushdownAutomaton] currently assigned.
+		</member>
+	</members>
+	<methods>
+		<method name="boot">
+			<return type="void" />
+			<description>
+				Initialize all [State] inside [member pda]
+			</description>
+		</method>
+		<method name="poll">
+			<return type="void" />
+			<argument index="0" name="delta" type="float" default="0.0"/>
+			<description>
+				Poll the operation. Call all [method State._poll] that [member pda] is currently handling. Passed delta can be accessed by member States using [method StateAutomaton.get_delta].
+			</description>
+		</method>
+		<method name="finalize">
+			<return type="void" />
+			<description>
+				Finalize all [State] inside [member pda]
+			</description>
+		</method>
+		<method name="get_delta">
+			<return type="float" />
+			<description>
+				Return the delta value passed by the last invokation of [method StateAutomaton.poll].
+			</description>
+		</method>
+		<method name="blackboard_get">
+			<return type="Variant" />
+			<argument index="0" name="what" type="String"/>
+			<description>
+				Return the value of name [code]what[/code] currently inside the black board.
+			</description>
+		</method>
+		<method name="blackboard_set">
+			<return type="void" />
+			<argument index="0" name="what" type="String"/>
+			<argument index="1" name="with" type="Variant"/>
+			<description>
+				Set the value of [code]what[/code] in the black board with [code]with[/code].
+			</description>
+		</method>
+	</methods>
+</class>

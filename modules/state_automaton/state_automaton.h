@@ -19,6 +19,7 @@ class PushdownAutomaton;
 class StateAutomaton;
 
 typedef OrderedHashMap<StringName, Ref<State>> StateHashMap;
+typedef OrderedHashMap<String, Variant> BlackboardHashMap;
 
 class State : public Reference {
 	GDCLASS(State, Reference);
@@ -32,9 +33,9 @@ public:
 	State();
 	~State();
 
-	void internal_start();
+	void internal_start(const Ref<StateAutomaton>& machine);
 	StringName internal_poll(const Ref<StateAutomaton>& machine);
-	void internal_finalize();
+	void internal_finalize(const Ref<StateAutomaton>& machine);
 
 	void set_state_name(const StringName& new_state_name);
 	inline StringName get_state_name() const { return state_name; }
@@ -49,7 +50,6 @@ protected:
 	static void _bind_methods();
 
 	inline StateHashMap* get_state_pool() { return &state_pool; }
-	void get_state_pool_keys(List<StringName> *klist) const;
 public:
 	PushdownAutomaton();
 	~PushdownAutomaton();
@@ -62,19 +62,20 @@ public:
 	friend class StateAutomaton;
 
 	bool add_state(const Ref<State>& new_state);
-	// bool add_entry_state(const Ref<State>& new_state);
 	bool remove_state(const StringName& state_name);
 
 	Dictionary get_all_states();
+	inline int get_pool_size() const { return state_pool.size(); }
 };
 
 class StateAutomaton : public Reference {
 	GDCLASS(StateAutomaton, Reference);
 private:
-	Dictionary blackboard;
+	BlackboardHashMap blackboard;
 	float delta_time = 0.0;
 	bool debug_status = false;
 
+	Variant client;
 	Ref<PushdownAutomaton> pda;
 protected:
 	static void _bind_methods();
@@ -95,5 +96,8 @@ public:
 	inline float get_delta() const { return delta_time; }
 	Variant blackboard_get(const String& what);
 	void blackboard_set(const String& what, const Variant& with);
+
+	inline void set_client(const Variant& new_client) { client = new_client; }
+	inline Variant get_client() const { return client; }
 };
 #endif

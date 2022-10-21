@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="State" inherits="Reference" version="3.5">
+	<brief_description>
+		State component for StateAutomaton.
+	</brief_description>
+	<description>
+		Singular State component operatated by one or multiple [StateAutomaton]. Could be stored in [PushdownAutomaton] and used by multiple instance of State Automata. All local variables should only be stored in StateAutomata' blackboard to preserve ubiquity.
+	</description>
+	<members>
+		<member name="state_name" type="String" setter="set_state_name" getter="get_state_name" default="__default">
+			The unique name of a State. No more than one state with the same name can exist inside a [PushdownAutomaton]. State name mustn't start with 2 underscores as it is reserved for commands.
+		</member>
+	</members>
+	<methods>
+		<method name="_start" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="machine" type="StateAutomaton" />
+			<description>
+				A State initializer. Invoked when [method StateAutomaton.boot] is called. Invoker will be passed through [code]machine[/code].
+			</description>
+		</method>
+		<method name="_poll" qualifiers="virtual">
+			<return type="String" />
+			<argument index="0" name="machine" type="StateAutomaton" />
+			<description>
+				Poll this State's operation. Invoked when [method StateAutomaton.poll] is called. Invoker will be passed through [code]machine[/code].
+			</description>
+		</method>
+		<method name="_finalize" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="machine" type="StateAutomaton" />
+			<description>
+				A State finalizer. Invoked when [method StateAutomaton.finalize] is called. Invoker will be passed through [code]machine[/code].
+			</description>
+		</method>
+	</methods>
+</class>

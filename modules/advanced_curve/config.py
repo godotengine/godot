@@ -1,15 +1,15 @@
 def can_build(env, platform):
-	return platform=="windows"
+    return True
+
 
 def configure(env):
-	pass
+    pass
 
 def get_doc_classes():
 	return [
-		"State",
-		"PushdownAutomaton",
-		"StateAutomaton"
+		"AdvancedCurve",
 	]
 
 def get_doc_path():
 	return "doc_classes"
+

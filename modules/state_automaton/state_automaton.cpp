@@ -31,25 +31,31 @@ void State::_bind_methods(){
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "state_name"), "set_state_name", "get_state_name");
 
-	BIND_VMETHOD(MethodInfo(STATE_VM_START));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, STATE_VM_START, PropertyInfo("StateAutomaton")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, STATE_VM_POLL, PropertyInfo("StateAutomaton")));
-	BIND_VMETHOD(MethodInfo(STATE_VM_FINALIZE));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, STATE_VM_FINALIZE, PropertyInfo("StateAutomaton")));
 }
 
-void State::internal_start(){
-	if (has_method(STATE_VM_START)) call(STATE_VM_START);
+void State::internal_start(const Ref<StateAutomaton>& machine){
+	auto script = get_script_instance();
+	if (script) script->call(STATE_VM_START, machine);
+	// if (has_method(STATE_VM_START)) call(STATE_VM_START);
 }
 
 StringName State::internal_poll(const Ref<StateAutomaton>& machine){
 	auto result = Variant(STATE_VM_POLL_NEXT_VALUE);
-	if (has_method(STATE_VM_POLL)) result = call(STATE_VM_POLL, machine);
+	// if (has_method(STATE_VM_POLL)) result = call(STATE_VM_POLL, machine);
+	auto script = get_script_instance();
+	if (script) result = script->call(STATE_VM_POLL, machine);
 	if (result.get_type() == Variant::Type::STRING)
 		return (String)result;
 	return STATE_VM_POLL_NEXT_VALUE;
 }
 
-void State::internal_finalize(){
-	if (has_method(STATE_VM_FINALIZE)) call(STATE_VM_FINALIZE);
+void State::internal_finalize(const Ref<StateAutomaton>& machine){
+	// if (has_method(STATE_VM_FINALIZE)) call(STATE_VM_FINALIZE);
+	auto script = get_script_instance();
+	if (script) script->call(STATE_VM_FINALIZE, machine);
 }
 
 void State::set_state_name(const StringName& new_state_name){
@@ -76,13 +82,7 @@ void PushdownAutomaton::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("add_state", "new_state"), &PushdownAutomaton::add_state);
 	ClassDB::bind_method(D_METHOD("remove_state", "state_name"), &PushdownAutomaton::remove_state);
 	ClassDB::bind_method(D_METHOD("get_all_states"), &PushdownAutomaton::get_all_states);
-}
-
-void PushdownAutomaton::get_state_pool_keys(List<StringName> *klist) const{
-	if (state_pool.empty()) return;
-	for (auto E = state_pool.front(); E; E = E.next()){
-		klist->push_back(E.key());
-	}
+	ClassDB::bind_method(D_METHOD("get_pool_size"), &PushdownAutomaton::get_pool_size);
 }
 
 Ref<State> PushdownAutomaton::get_entry_state(){
@@ -162,10 +162,14 @@ void StateAutomaton::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("enable_debug", "debugging"), &StateAutomaton::enable_debug);
 	ClassDB::bind_method(D_METHOD("is_debugging"), &StateAutomaton::is_debugging);
 
+	ClassDB::bind_method(D_METHOD("set_client", "new_client"), &StateAutomaton::set_client);
+	ClassDB::bind_method(D_METHOD("get_client"), &StateAutomaton::get_client);
+
 	ClassDB::bind_method(D_METHOD("get_delta"), &StateAutomaton::get_delta);
 	ClassDB::bind_method(D_METHOD("blackboard_get", "what"), &StateAutomaton::blackboard_get);
 	ClassDB::bind_method(D_METHOD("blackboard_set", "what", "with"), &StateAutomaton::blackboard_set);
 
+	ADD_PROPERTY(PropertyInfo(Variant::VARIANT_MAX, "client"), "set_client", "get_client");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_status"), "enable_debug", "is_debugging");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "pda"), "set_pda", "get_pda");
 }
@@ -176,6 +180,7 @@ void StateAutomaton::boot(){
 	// List<StringName> sp_klist;
 	// pda->get_state_pool_keys(&sp_klist);
 	int callbacks_count = 0;
+	auto self_ref = Ref<StateAutomaton>(this);
 	if (debug_status){
 		HUB_PRINT_SA((std::string("State count: ") + std::to_string(state_pool->size())));
 	}
@@ -186,7 +191,7 @@ void StateAutomaton::boot(){
 		if (debug_status){
 			HUB_PRINT_SA((std::string("Booting: ") + std::to_string(curr->get_instance_id())));
 		}
-		curr->internal_start();
+		curr->internal_start(self_ref);
 		callbacks_count++;
 	}
 }
@@ -196,12 +201,13 @@ void StateAutomaton::poll(const float& delta){
 	auto processing = pda->get_entry_state();
 	auto state_name = StringName();
 	auto callbacks_count = 0;
+	auto self_ref = Ref<StateAutomaton>(this);
 	while (processing.is_valid() && callbacks_count < MAX_STATE_POLL){
 		state_name = processing->get_state_name();
 		if (debug_status){
 			HUB_PRINT_SA((std::string("Polling: ") + std::to_string(processing->get_instance_id())));
 		}
-		auto command = processing->internal_poll(Ref<StateAutomaton>(this));
+		auto command = processing->internal_poll(self_ref);
 		if (debug_status){
 			Hub::get_singleton()->print_custom("StateAutomaton", String("Returned: ") + (String)command);
 		}
@@ -257,6 +263,7 @@ void StateAutomaton::finalize(){
 	if (debug_status){
 		HUB_PRINT_SA((std::string("State count: ") + std::to_string(state_pool->size())));
 	}
+	auto self_ref = Ref<StateAutomaton>(this);
 	for (auto E = state_pool->front(); E && callbacks_count < MAX_STATE_POLL; E = E.next()){
 		// auto key = E.get();
 		auto curr = E.value();
@@ -264,7 +271,7 @@ void StateAutomaton::finalize(){
 		if (debug_status){
 			HUB_PRINT_SA((std::string("Finalizing: ") + std::to_string(curr->get_instance_id())));
 		}
-		curr->internal_finalize();
+		curr->internal_finalize(self_ref);
 		callbacks_count++;
 	}
 }
@@ -275,8 +282,8 @@ void StateAutomaton::set_pda(const Ref<PushdownAutomaton>& new_pda){
 }
 
 Variant StateAutomaton::blackboard_get(const String& what){
-	return blackboard[Variant(what)];
+	return blackboard[what];
 }
 void StateAutomaton::blackboard_set(const String& what, const Variant& with){
-	blackboard[Variant(what)] = (with);
+	blackboard[what] = with;
 }

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AdvancedCurve" inherits="Curve" version="3.5">
+	<brief_description>
+		A brand new [Curve], now with area estimation using Trapezoid and Simpson's method.
+	</brief_description>
+	<members>
+		<member name="bake_method" type="int" enum="AdvancedCurve.ApproxMethod" setter="set_bake_method" getter="get_bake_method" default="0">
+			Set the bake method for this AdvancedCurve.
+		</member>
+		<member name="sample_resolution" type="int" setter="set_sample_resolution" getter="get_sample_resolution" default="50">
+			Set the sample resolution for this AdvancedCurve.
+		</member>
+		<member name="range" type="float" setter="set_range" getter="get_range" default="0.01">
+			Set the range for this AdvancedCurve.
+		</member>
+	</members>
+	<constants>
+		<constant name="AC_NO_METHOD" value="0" enum="ApproxMethod">
+			Don't use any bake method for this AdvancedCurve, which defeat the purpose of having an AdvancedCurve...
+		</constant>
+		<constant name="AC_TRAPEZOID" value="1" enum="ApproxMethod">
+			Use Trapezoid Approximation as the bake method. Lower accuracy but better performant.
+		</constant>
+		<constant name="AC_SIMPSON" value="2" enum="ApproxMethod">
+			Use Simpson Approximation as the bake method. Worse performant but better accuracy. IMPORTANT: Currently does not work, please do not use.
+		</constant>
+	</constants>
+	<methods>
+		<method name="bake_samples">
+			<return type="void" />
+			<description>
+				Bake all samples using the given [member sample_resolution] as sample's size. This method is automatically called before sampling if the sample pool is polluted (meaning that any member of this instance was changed prior to sampling).
+			</description>
+		</method>
+		<method name="is_samples_polluted">
+			<return type="bool" />
+			<description>
+				Return the state of the samples. The sample pool is polluted the moment any member of this instance is changed.
+			</description>
+		</method>
+		<method name="get_area">
+			<return type="float" />
+			<argument index="0" name="from" type="float"/>
+			<argument index="1" name="to" type="float"/>
+			<description>
+				Sample the area of this Curve from x1 = [code]from[/code] to x2 = [code]to[/code].
+			</description>
+		</method>
+		<method name="get_area_no_bake">
+			<return type="float" />
+			<argument index="0" name="from" type="float"/>
+			<argument index="1" name="to" type="float"/>
+			<argument index="2" name="method" type="int" enum="AdvancedCurve.ApproxMethod" default="1" />
+			<description>
+				Sample the area of this Curve using given [code]method[/code].
+			</description>
+		</method>
+	</methods>
+</class>
