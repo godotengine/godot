@@ -301,7 +301,7 @@
 		<method name="get_global_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the global transform matrix of this item.
+				Returns the global transform matrix of this item, i.e. the combined transform up to the topmost [CanvasItem] node. The topmost item is a [CanvasItem] that either has no parent, has non-[CanvasItem] parent or it is top-level. See also [method set_as_toplevel].
 			</description>
 		</method>
 		<method name="get_global_transform_with_canvas" qualifiers="const">
