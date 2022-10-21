@@ -55,6 +55,14 @@
 		<constructor name="Color">
 			<return type="Color" />
 			<param index="0" name="code" type="String" />
+			<param index="1" name="default" type="Color" />
+			<description>
+				Constructs a [Color] either from an HTML color code or from a standardized color name. Supported color names are the same as the constants. Fallbacks to [param default] if the string does not denote any valid color.
+			</description>
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="code" type="String" />
 			<param index="1" name="alpha" type="float" />
 			<description>
 				Constructs a [Color] either from an HTML color code or from a standardized color name, with [param alpha] on the range of 0 to 1. Supported color names are the same as the constants.
@@ -193,14 +201,6 @@
 			<param index="0" name="rgbe" type="int" />
 			<description>
 				Encodes a [Color] from a RGBE9995 format integer. See [constant Image.FORMAT_RGBE9995].
-			</description>
-		</method>
-		<method name="from_string" qualifiers="static">
-			<return type="Color" />
-			<param index="0" name="str" type="String" />
-			<param index="1" name="default" type="Color" />
-			<description>
-				Creates a [Color] from string, which can be either a HTML color code or a named color. Fallbacks to [param default] if the string does not denote any valid color.
 			</description>
 		</method>
 		<method name="get_luminance" qualifiers="const">

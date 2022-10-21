@@ -170,6 +170,7 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<Color, double, double, double>>(sarray("r", "g", "b"));
 	add_constructor<VariantConstructor<Color, double, double, double, double>>(sarray("r", "g", "b", "a"));
 	add_constructor<VariantConstructor<Color, String>>(sarray("code"));
+	add_constructor<VariantConstructor<Color, String, Color>>(sarray("code", "default"));
 	add_constructor<VariantConstructor<Color, String, double>>(sarray("code", "alpha"));
 
 	add_constructor<VariantConstructNoArgs<StringName>>(sarray());

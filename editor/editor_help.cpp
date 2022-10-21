@@ -2033,7 +2033,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("color=")) {
 			String col = tag.substr(6, tag.length());
-			Color color = Color::from_string(col, Color());
+			Color color = Color(col, Color());
 			p_rt->push_color(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("color");
