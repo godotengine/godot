@@ -481,7 +481,7 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 			int len = 0; //test how big is this to encode
 			encode_variant(var, nullptr, len);
 			if (len > p_max_size) { //limit to max size
-				hint = PROPERTY_HINT_OBJECT_TOO_BIG;
+				hint = PROPERTY_HINT_NONE;
 				hint_string = "";
 				var = Variant();
 			}
