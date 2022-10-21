@@ -302,19 +302,12 @@ void DisplayServer::tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id
 		case DisplayServer::TTS_UTTERANCE_ENDED:
 		case DisplayServer::TTS_UTTERANCE_CANCELED: {
 			if (utterance_callback[p_event].is_valid()) {
-				Variant args[1];
-				args[0] = p_id;
-				const Variant *argp[] = { &args[0] };
-				utterance_callback[p_event].call_deferredp(argp, 1); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
+				utterance_callback[p_event].call_deferred(p_id); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
 			}
 		} break;
 		case DisplayServer::TTS_UTTERANCE_BOUNDARY: {
 			if (utterance_callback[p_event].is_valid()) {
-				Variant args[2];
-				args[0] = p_pos;
-				args[1] = p_id;
-				const Variant *argp[] = { &args[0], &args[1] };
-				utterance_callback[p_event].call_deferredp(argp, 2); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
+				utterance_callback[p_event].call_deferred(p_pos, p_id); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
 			}
 		} break;
 		default:
