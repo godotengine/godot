@@ -209,7 +209,9 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
     return vertex_len >= MarkBasePosFormat1::static_size;
   }
 
-  hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c, unsigned this_index)
+  hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
+                                         unsigned parent_index,
+                                         unsigned this_index)
   {
     hb_set_t visited;
 
@@ -261,7 +263,7 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
     split_context_t split_context {
       c,
       this,
-      this_index,
+      c.graph.duplicate_if_shared (parent_index, this_index),
       std::move (class_to_info),
       c.graph.vertices_[mark_array_id].position_to_index_map (),
     };
@@ -365,8 +367,8 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
 
     classCount = count;
 
-    auto mark_coverage = sc.c.graph.as_table<Coverage> (this_index,
-                                                        &markCoverage);
+    auto mark_coverage = sc.c.graph.as_mutable_table<Coverage> (this_index,
+                                                                &markCoverage);
     if (!mark_coverage) return false;
     hb_set_t marks = sc.marks_for (0, count);
     auto new_coverage =
@@ -380,17 +382,17 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
       return false;
 
 
-    auto base_array = sc.c.graph.as_table<AnchorMatrix> (this_index,
-                                                         &baseArray,
-                                                         old_count);
+    auto base_array = sc.c.graph.as_mutable_table<AnchorMatrix> (this_index,
+                                                                 &baseArray,
+                                                                 old_count);
     if (!base_array || !base_array.table->shrink (sc.c,
                                                   base_array.index,
                                                   old_count,
                                                   count))
       return false;
 
-    auto mark_array = sc.c.graph.as_table<MarkArray> (this_index,
-                                                      &markArray);
+    auto mark_array = sc.c.graph.as_mutable_table<MarkArray> (this_index,
+                                                              &markArray);
     if (!mark_array || !mark_array.table->shrink (sc.c,
                                                   sc.mark_array_links,
                                                   mark_array.index,
@@ -469,11 +471,12 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
 struct MarkBasePos : public OT::Layout::GPOS_impl::MarkBasePos
 {
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
+                                         unsigned parent_index,
                                          unsigned this_index)
   {
     switch (u.format) {
     case 1:
-      return ((MarkBasePosFormat1*)(&u.format1))->split_subtables (c, this_index);
+      return ((MarkBasePosFormat1*)(&u.format1))->split_subtables (c, parent_index, this_index);
 #ifndef HB_NO_BORING_EXPANSION
     case 2: HB_FALLTHROUGH;
       // Don't split 24bit PairPos's.

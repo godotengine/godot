@@ -117,7 +117,7 @@ struct Sequence
       {
 	if (buf < p)
 	  *p++ = ',';
-	sprintf (p, "%u", i);
+	snprintf (p, sizeof(buf), "%u", i);
 	p += strlen(p);
       }
 

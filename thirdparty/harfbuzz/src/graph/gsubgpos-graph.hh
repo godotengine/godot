@@ -131,8 +131,10 @@ struct Lookup : public OT::Lookup
     for (unsigned i = 0; i < subTable.len; i++)
     {
       unsigned subtable_index = c.graph.index_for_offset (this_index, &subTable[i]);
+      unsigned parent_index = this_index;
       if (is_ext) {
         unsigned ext_subtable_index = subtable_index;
+        parent_index = ext_subtable_index;
         ExtensionFormat1<OT::Layout::GSUB_impl::ExtensionSubst>* extension =
             (ExtensionFormat1<OT::Layout::GSUB_impl::ExtensionSubst>*)
             c.graph.object (ext_subtable_index).head;
@@ -150,9 +152,9 @@ struct Lookup : public OT::Lookup
       switch (type)
       {
       case 2:
-        new_sub_tables = split_subtable<PairPos> (c, subtable_index); break;
+        new_sub_tables = split_subtable<PairPos> (c, parent_index, subtable_index); break;
       case 4:
-        new_sub_tables = split_subtable<MarkBasePos> (c, subtable_index); break;
+        new_sub_tables = split_subtable<MarkBasePos> (c, parent_index, subtable_index); break;
       default:
         break;
       }
@@ -172,13 +174,14 @@ struct Lookup : public OT::Lookup
 
   template<typename T>
   hb_vector_t<unsigned> split_subtable (gsubgpos_graph_context_t& c,
+                                        unsigned parent_idx,
                                         unsigned objidx)
   {
     T* sub_table = (T*) c.graph.object (objidx).head;
     if (!sub_table || !sub_table->sanitize (c.graph.vertices_[objidx]))
       return hb_vector_t<unsigned> ();
 
-    return sub_table->split_subtables (c, objidx);
+    return sub_table->split_subtables (c, parent_idx, objidx);
   }
 
   void add_sub_tables (gsubgpos_graph_context_t& c,

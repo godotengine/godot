@@ -40,7 +40,6 @@
 #include "hb-ot-cff1-table.hh"
 #include "hb-ot-cff2-table.hh"
 #include "hb-ot-hmtx-table.hh"
-#include "hb-ot-os2-table.hh"
 #include "hb-ot-post-table.hh"
 #include "hb-ot-stat-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-ot-vorg-table.hh"
@@ -349,14 +348,12 @@ hb_ot_get_glyph_extents (hb_font_t *font,
 
 #if !defined(HB_NO_OT_FONT_BITMAP) && !defined(HB_NO_COLOR)
   if (ot_face->sbix->get_extents (font, glyph, extents)) return true;
+  if (ot_face->CBDT->get_extents (font, glyph, extents)) return true;
 #endif
   if (ot_face->glyf->get_extents (font, glyph, extents)) return true;
 #ifndef HB_NO_OT_FONT_CFF
   if (ot_face->cff1->get_extents (font, glyph, extents)) return true;
   if (ot_face->cff2->get_extents (font, glyph, extents)) return true;
-#endif
-#if !defined(HB_NO_OT_FONT_BITMAP) && !defined(HB_NO_COLOR)
-  if (ot_face->CBDT->get_extents (font, glyph, extents)) return true;
 #endif
 
   // TODO Hook up side-bearings variations.

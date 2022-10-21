@@ -141,27 +141,24 @@ typedef HBINT32 FWORD32;
 /* 16-bit unsigned integer (HBUINT16) that describes a quantity in FUnits. */
 typedef HBUINT16 UFWORD;
 
-/* 16-bit signed fixed number with the low 14 bits of fraction (2.14). */
-struct F2DOT14 : HBINT16
+template <typename Type, unsigned fraction_bits>
+struct HBFixed : Type
 {
-  F2DOT14& operator = (uint16_t i ) { HBINT16::operator= (i); return *this; }
-  // 16384 means 1<<14
-  float to_float () const  { return ((int32_t) v) / 16384.f; }
-  void set_float (float f) { v = roundf (f * 16384.f); }
+  static constexpr float shift = (float) (1 << fraction_bits);
+  static_assert (Type::static_size * 8 > fraction_bits, "");
+
+  HBFixed& operator = (typename Type::type i ) { Type::operator= (i); return *this; }
+  float to_float () const  { return ((int32_t) Type::v) / shift; }
+  void set_float (float f) { Type::v = roundf (f * shift); }
   public:
-  DEFINE_SIZE_STATIC (2);
+  DEFINE_SIZE_STATIC (Type::static_size);
 };
 
+/* 16-bit signed fixed number with the low 14 bits of fraction (2.14). */
+using F2DOT14 = HBFixed<HBINT16, 14>;
+
 /* 32-bit signed fixed-point number (16.16). */
-struct HBFixed : HBINT32
-{
-  HBFixed& operator = (uint32_t i) { HBINT32::operator= (i); return *this; }
-  // 65536 means 1<<16
-  float to_float () const  { return ((int32_t) v) / 65536.f; }
-  void set_float (float f) { v = roundf (f * 65536.f); }
-  public:
-  DEFINE_SIZE_STATIC (4);
-};
+using F16DOT16 = HBFixed<HBINT32, 16>;
 
 /* Date represented in number of seconds since 12:00 midnight, January 1,
  * 1904. The value is represented as a signed 64-bit integer. */

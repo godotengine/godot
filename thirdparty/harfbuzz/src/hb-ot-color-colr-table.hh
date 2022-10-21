@@ -358,14 +358,14 @@ struct Affine2x3
     return_trace (c->check_struct (this));
   }
 
-  HBFixed xx;
-  HBFixed yx;
-  HBFixed xy;
-  HBFixed yy;
-  HBFixed dx;
-  HBFixed dy;
+  F16DOT16 xx;
+  F16DOT16 yx;
+  F16DOT16 xy;
+  F16DOT16 yy;
+  F16DOT16 dx;
+  F16DOT16 dy;
   public:
-  DEFINE_SIZE_STATIC (6 * HBFixed::static_size);
+  DEFINE_SIZE_STATIC (6 * F16DOT16::static_size);
 };
 
 struct PaintColrLayers

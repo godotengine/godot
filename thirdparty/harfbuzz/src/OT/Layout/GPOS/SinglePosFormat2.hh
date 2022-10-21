@@ -68,7 +68,7 @@ struct SinglePosFormat2
     unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
 
-    if (likely (index >= valueCount)) return_trace (false);
+    if (unlikely (index >= valueCount)) return_trace (false);
 
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
@@ -91,6 +91,28 @@ struct SinglePosFormat2
     buffer->idx++;
     return_trace (true);
   }
+
+  bool
+  position_single (hb_font_t           *font,
+		   hb_direction_t       direction,
+		   hb_codepoint_t       gid,
+		   hb_glyph_position_t &pos) const
+  {
+    unsigned int index = (this+coverage).get_coverage  (gid);
+    if (likely (index == NOT_COVERED)) return false;
+    if (unlikely (index >= valueCount)) return false;
+
+    /* This is ugly... */
+    hb_buffer_t buffer;
+    buffer.props.direction = direction;
+    OT::hb_ot_apply_context_t c (1, font, &buffer);
+
+    valueFormat.apply_value (&c, this,
+                             &values[index * valueFormat.get_len ()],
+                             pos);
+    return true;
+  }
+
 
   template<typename Iterator,
       typename SrcLookup,

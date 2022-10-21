@@ -25,6 +25,7 @@
  * # Updated for Unicode 12.1 by Andrew Glass 2019-05-24
  * # Updated for Unicode 13.0 by Andrew Glass 2020-07-28
  * # Updated for Unicode 14.0 by Andrew Glass 2021-09-25
+ * # Updated for Unicode 15.0 by Andrew Glass 2022-09-16
  * # Override values For Indic_Positional_Category
  * # Not derivable
  * # Initial version based on Unicode 7.0 by Andrew Glass 2014-03-17
@@ -34,6 +35,7 @@
  * # Updated for Unicode 12.1 by Andrew Glass 2019-05-30
  * # Updated for Unicode 13.0 by Andrew Glass 2020-07-28
  * # Updated for Unicode 14.0 by Andrew Glass 2021-09-28
+ * # Updated for Unicode 15.0 by Andrew Glass 2022-09-16
  * UnicodeData.txt does not have a header.
  */
 
@@ -90,7 +92,7 @@
 #pragma GCC diagnostic pop
 
 static const uint8_t
-hb_use_u8[3115] =
+hb_use_u8[3141] =
 {
      16,   50,   51,   51,   51,   52,   51,   83,  118,  131,   51,   57,   58,  179,  195,   61,
      51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,
@@ -125,11 +127,11 @@ hb_use_u8[3115] =
       2,    2,    2,    2,    2,    2,    2,    2,    2,   88,   89,    2,    2,    2,    2,    2,
       2,    2,    2,   90,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,
       2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,
-      2,    2,    2,   91,    2,    2,   92,    2,    2,    2,    2,    2,    2,    2,    2,    2,
-      2,    2,    2,   93,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,
-      2,   94,   94,   95,   96,   94,   94,   94,   94,   94,   94,   94,   94,   94,   94,   94,
-     94,   94,   94,   94,   94,   94,   94,   94,   94,   94,   94,   94,   94,   94,   94,   94,
-     94,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1,
+      2,    2,    2,   91,    2,    2,   92,    2,    2,    2,   93,    2,    2,    2,    2,    2,
+      2,    2,    2,   94,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,
+      2,   95,   95,   96,   97,   95,   95,   95,   95,   95,   95,   95,   95,   95,   95,   95,
+     95,   95,   95,   95,   95,   95,   95,   95,   95,   95,   95,   95,   95,   95,   95,   95,
+     95,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1,
       0,    2,    2,    2,    2,    2,    0,    0,    0,    3,    0,    0,    0,    0,    0,    4,
       0,    0,    5,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1,    0,    0,    0,
       0,    0,    0,    0,    0,    0,    0,    0,    6,    7,    0,    0,    0,    0,    0,    0,
@@ -226,70 +228,72 @@ hb_use_u8[3115] =
       0,    9,   47,    2,    2,    2,    2,    2,    2,    2,    2,    2,  125,   18,   20,  151,
      20,   19,  152,  153,    2,    2,    2,    2,    2,    0,    0,   63,  154,    0,    0,    0,
       0,    2,   11,    0,    0,    0,    0,    0,    0,    2,   63,   23,   18,   18,   18,   20,
-     20,  106,  155,    0,    0,  156,  157,   29,  158,   28,    2,    2,    2,    2,    2,    2,
-      2,    2,    2,    2,    2,    2,    2,   21,   17,   20,   20,  159,   42,    0,    0,    0,
+     20,  106,  155,    0,    0,   54,  156,   29,  157,   28,    2,    2,    2,    2,    2,    2,
+      2,    2,    2,    2,    2,    2,    2,   21,   17,   20,   20,  158,   42,    0,    0,    0,
      47,  125,    0,    0,    0,    0,    0,    0,    0,    2,    2,    2,    7,    7,    2,    2,
      28,    2,    2,    2,    2,    2,    2,    2,   28,    2,    2,    2,    2,    2,    2,    2,
-      8,   16,   17,   19,   20,  160,   29,    0,    0,    9,    9,   28,    2,    2,    2,    7,
+      8,   16,   17,   19,   20,  159,   29,    0,    0,    9,    9,   28,    2,    2,    2,    7,
      28,    7,    2,   28,    2,    2,   56,   15,   21,   14,   21,   45,   30,   31,   30,   32,
       0,    0,    0,    0,   33,    0,    0,    0,    2,    2,   21,    0,    9,    9,    9,   44,
       0,    9,    9,   44,    0,    0,    0,    0,    0,    2,    2,   63,   23,   18,   18,   18,
      20,   21,  123,   13,   15,    0,    0,    0,    0,    2,    2,    2,    2,    2,    0,    0,
-    161,  162,    0,    0,    0,    0,    0,    0,    0,   16,   17,   18,   18,   64,   97,   23,
-    158,    9,  163,    7,    0,    0,    0,    0,    0,    2,    2,    2,    2,    2,    2,    2,
-     63,   23,   18,   18,    0,   46,   46,    9,  164,   35,    0,    0,    0,    0,    0,    0,
+    160,  161,    0,    0,    0,    0,    0,    0,    0,   16,   17,   18,   18,   64,   97,   23,
+    157,    9,  162,    7,    0,    0,    0,    0,    0,    2,    2,    2,    2,    2,    2,    2,
+     63,   23,   18,   18,    0,   46,   46,    9,  163,   35,    0,    0,    0,    0,    0,    0,
       0,    0,    0,    0,    0,    2,    2,   18,    0,   21,   17,   18,   18,   19,   14,   80,
-    164,   36,    0,    0,    0,    0,    0,    0,    0,    2,    2,    2,    2,    2,    8,  165,
-     23,   18,   20,   20,  163,    7,    0,    0,    0,    2,    2,    2,    2,    2,    7,   41,
+    163,   36,    0,    0,    0,    0,    0,    0,    0,    2,    2,    2,    2,    2,    8,  164,
+     23,   18,   20,   20,  162,    7,    0,    0,    0,    2,    2,    2,    2,    2,    7,   41,
     133,   21,   20,   18,   74,   19,   20,    0,    0,    2,    2,    2,    7,    0,    0,    0,
-      0,    2,    2,    2,    2,    2,    2,   16,   17,   18,   19,   20,  103,  164,   35,    0,
+      0,    2,    2,    2,    2,    2,    2,   16,   17,   18,   19,   20,  103,  163,   35,    0,
       0,    2,    2,    2,    7,   28,    0,    2,    2,    2,    2,   28,    7,    2,    2,    2,
-      2,   21,   21,   16,   30,   31,   10,  166,  167,  168,  169,    0,    0,    0,    0,    0,
+      2,   21,   21,   16,   30,   31,   10,  165,  166,  167,  168,    0,    0,    0,    0,    0,
       0,    2,    2,    2,    2,    0,    2,    2,    2,   63,   23,   18,   18,    0,   20,   21,
      27,  106,    0,   31,    0,    0,    0,    0,    0,   50,   18,   20,   20,   20,  137,    2,
-      2,    2,  170,  171,    9,   13,  172,   70,  173,    0,    0,    1,  144,    0,    0,    0,
-      0,   50,   18,   20,   14,   17,   18,    2,    2,    2,    2,  155,  155,  155,  174,  174,
-    174,  174,  174,  174,   13,  175,    0,   28,    0,   20,   18,   18,   29,   20,   20,    9,
-    164,    0,   59,   59,   59,   59,   59,   59,   59,   64,   19,   80,   44,    0,    0,    0,
+      2,    2,  169,  170,    9,   13,  171,   70,  172,    0,    0,    1,  144,    0,    0,    0,
+      0,   50,   18,   20,   14,   17,   18,    2,    2,    2,    2,  155,  155,  155,  173,  173,
+    173,  173,  173,  173,   13,  174,    0,   28,    0,   20,   18,   18,   29,   20,   20,    9,
+    163,    0,   59,   59,   59,   59,   59,   59,   59,   64,   19,   80,   44,    0,    0,    0,
       0,    2,    2,    2,    7,    2,   28,    2,    2,   50,   20,   20,   29,    0,   36,   20,
-     25,    9,  157,  176,  172,    0,    0,    0,    0,    2,    2,    2,   28,    7,    2,    2,
+     25,    9,  156,  175,  171,    0,    0,    0,    0,    2,    2,    2,   28,    7,    2,    2,
       2,    2,    2,    2,    2,    2,   21,   21,   45,   20,   33,   80,   66,    0,    0,    0,
-      0,    2,  177,   64,   45,    0,    0,    0,    0,    9,  178,    2,    2,    2,    2,    2,
+      0,    2,  176,   64,   45,    0,    0,    0,    0,    9,  177,    2,    2,    2,    2,    2,
       2,    2,    2,   21,   20,   18,   29,    0,   46,   14,  140,    0,    0,    0,    0,    0,
-      0,  179,  179,  179,  106,    7,    0,    0,    0,    9,    9,    9,   44,    0,    0,    0,
-      0,    2,    2,    2,    2,    2,    7,    0,   56,  180,   18,   18,   18,   18,   18,   18,
+      0,  178,  178,  178,  106,  179,  178,    0,    0,  145,    2,    2,  180,  114,  114,  114,
+    114,  114,  114,  114,    0,    0,    0,    0,    0,    9,    9,    9,   44,    0,    0,    0,
+      0,    2,    2,    2,    2,    2,    7,    0,   56,  181,   18,   18,   18,   18,   18,   18,
      18,   18,   18,   18,   18,   18,   18,   18,   18,   18,   18,   18,   18,    0,    0,    0,
      38,  114,   24,    0,    0,    0,    0,    0,    0,    0,    0,    7,    0,    0,    0,    0,
       0,    2,    2,    2,    0,    0,    0,    0,    0,    2,    2,    2,    2,    2,    0,   56,
      35,    0,    4,  118,  118,  118,  119,    0,    0,    9,    9,    9,   47,    2,    2,    2,
       0,    2,    2,    2,    2,    2,    0,    0,    2,    2,    2,    2,    2,    2,    2,    2,
-     44,    2,    2,    2,    2,    2,    2,    9,    9,    2,    2,   42,   42,   42,   90,    0,
-      0,    O,    O,    O,   GB,    B,    B,   GB,    O,    O,   WJ,FMPst,FMPst,    O,  CGJ,    B,
-      O,    B,VMAbv,VMAbv,VMAbv,    O,VMAbv,    B,CMBlw,CMBlw,CMBlw,VMAbv,VMPst, VAbv, VPst,CMBlw,
-      B, VPst, VPre, VPst, VBlw, VBlw, VBlw, VBlw, VAbv, VAbv, VAbv, VPst, VPst, VPst,    H, VPre,
-   VPst,VMBlw,    O,    O, VAbv,   GB,VMAbv,VMPst,VMPst,    O,    B, VBlw,    O,    O, VPre, VPre,
-      O, VPre,    H,    O, VPst,FMAbv,    O,CMBlw,    O, VAbv,    O, VAbv,    H,    O,VMBlw,VMAbv,
-  CMAbv,   GB,   GB,    O, MBlw,CMAbv,CMAbv, VPst, VAbv,VMAbv,    O, VPst,    O, VPre, VPre,VMAbv,
-      B,    O,   CS,   CS,VMPst,    B, VAbv, VAbv,    B,    R,    O,  HVM,    O,    O, FBlw,    O,
-  CMAbv,    O,CMBlw, VAbv, VBlw,    B,  SUB,  SUB,  SUB,    O,  SUB,  SUB,    O, FBlw,    O,    B,
-   VPst, VBlw, VPre,VMAbv,VMBlw,VMPst,   IS, VAbv, MPst, MPre, MBlw, MBlw,    B, MBlw, MBlw, VPst,
-  VMPst,VMPst,    B, MBlw, VPst, VPre, VAbv, VAbv,VMPst,VMPst,VMBlw,    B,VMPst, VBlw, VPst,  CGJ,
-    CGJ, VPst,VMAbv,VMAbv,FMAbv, FAbv,CMAbv,FMAbv,VMAbv,FMAbv, VAbv,   IS,FMAbv,    B,FMAbv,    B,
-    CGJ,   WJ,  CGJ,   GB,CMAbv,CMAbv,    B,   GB,    B, VAbv,  SUB, FPst, FPst,VMBlw, FPst, FPst,
-   FBlw,VMAbv,FMBlw, VAbv, VPre,    B, MPre, MBlw,  SUB, FAbv, FAbv, MAbv,  SUB,   Sk, VPst, VAbv,
-  VMAbv,VMAbv, FAbv,CMAbv, VPst,    H,    B,    O,SMAbv,SMBlw,SMAbv,SMAbv,SMAbv, VPst,   IS, VBlw,
-   FAbv,VMPre,VMPre,FMAbv,CMBlw,VMBlw,VMBlw,VMAbv,   CS,    O,FMAbv, ZWNJ,  CGJ,   WJ,   WJ,   WJ,
-      O,FMPst,    O,    O,    H, MPst, VPst,    H,VMAbv, VAbv,VMBlw,    B, VBlw, FPst, VPst, FAbv,
-  VMPst,    B,CMAbv, VAbv, MBlw, MPst, MBlw,    H,    O, VBlw, MPst, MPre, MAbv, MBlw,    O,    B,
-   FAbv, FAbv, FPst, VBlw,    B,    B, VPre,    O,VMPst,   IS,    O,VMPst, VBlw, VPst,VMBlw,VMBlw,
-  VMAbv,    O,   IS,VMBlw,    B,VMPst,VMAbv,VMPst,   CS,   CS,    B,    N,    N,    O,   HN, VPre,
-   VBlw, VAbv,   IS,CMAbv,    O, VPst,    B,    R,    R,    O,FMBlw,CMBlw, VAbv, VPre,VMAbv,VMAbv,
-      H, VAbv,CMBlw,FMAbv,    B,   CS,   CS,    H,CMBlw,VMPst,    H,VMPst, VAbv,VMAbv, VPst,   IS,
-      R, MPst,    R, MPst,CMBlw,    B,FMBlw, VBlw,VMAbv,    R, MBlw, MBlw,   GB, FBlw, FBlw,CMAbv,
-     IS, VBlw,   IS,   GB, VAbv,    R,VMPst,    H,    H,    O, VBlw,
+     44,    2,    2,    2,    2,    2,    2,    9,    9,    2,    2,    2,    2,    2,    2,   20,
+     20,    2,    2,   42,   42,   42,   90,    0,    0,    O,    O,    O,   GB,    B,    B,   GB,
+      O,    O,   WJ,FMPst,FMPst,    O,  CGJ,    B,    O,    B,VMAbv,VMAbv,VMAbv,    O,VMAbv,    B,
+  CMBlw,CMBlw,CMBlw,VMAbv,VMPst, VAbv, VPst,CMBlw,    B, VPst, VPre, VPst, VBlw, VBlw, VBlw, VBlw,
+   VAbv, VAbv, VAbv, VPst, VPst, VPst,    H, VPre, VPst,VMBlw,    O,    O, VAbv,   GB,VMAbv,VMPst,
+  VMPst,    O,    B, VBlw,    O,    O, VPre, VPre,    O, VPre,    H,    O, VPst,FMAbv,    O,CMBlw,
+      O, VAbv,    O, VAbv,    H,    O,VMBlw,VMAbv,CMAbv,   GB,   GB,    O, MBlw,CMAbv,CMAbv, VPst,
+   VAbv,VMAbv,    O, VPst,    O, VPre, VPre,VMAbv,    B,    O,   CS,   CS,VMPst,    B, VAbv, VAbv,
+      B,    R,    O,  HVM,    O,    O,FMBlw,    O,CMAbv,    O,CMBlw, VAbv, VBlw,    B,  SUB,  SUB,
+    SUB,    O,  SUB,  SUB,    O,FMBlw,    O,    B, VPst, VBlw, VPre,VMAbv,VMBlw,VMPst,   IS, VAbv,
+   MPst, MPre, MBlw, MBlw,    B, MBlw, MBlw, VPst,VMPst,VMPst,    B, MBlw, VPst, VPre, VAbv, VAbv,
+  VMPst,VMPst,VMBlw,    B,VMPst, VBlw, VPst,  CGJ,  CGJ, VPst,VMAbv,VMAbv,FMAbv, FAbv,CMAbv,FMAbv,
+  VMAbv,FMAbv, VAbv,   IS,FMAbv,    B,FMAbv,    B,  CGJ,   WJ,  CGJ,   GB,CMAbv,CMAbv,    B,   GB,
+      B, VAbv,  SUB, FPst, FPst,VMBlw, FPst, FPst, FBlw,VMAbv,FMBlw, VAbv, VPre,    B, MPre, MBlw,
+    SUB, FAbv, FAbv, MAbv,  SUB,   Sk, VPst, VAbv,VMAbv,VMAbv, FAbv,CMAbv, VPst,    H,    B,    O,
+  SMAbv,SMBlw,SMAbv,SMAbv,SMAbv, VPst,   IS, VBlw, FAbv,VMPre,VMPre,FMAbv,CMBlw,VMBlw,VMBlw,VMAbv,
+     CS,    O,FMAbv, ZWNJ,  CGJ,   WJ,   WJ,   WJ,    O,FMPst,    O,    O,    H, MPst, VPst,    H,
+  VMAbv, VAbv,VMBlw,    B, VBlw, FPst, VPst, FAbv,VMPst,    B,CMAbv, VAbv, MBlw, MPst, MBlw,    H,
+      O, VBlw, MPst, MPre, MAbv, MBlw,    O,    B, FAbv, FAbv, FPst, VBlw,    B,    B, VPre,    O,
+  VMPst,   IS,    O,VMPst, VBlw, VPst,VMBlw,VMBlw,VMAbv,    O,   IS,VMBlw,    B,VMPst,VMAbv,VMPst,
+     CS,   CS,    B,    N,    N,    O,   HN, VPre, VBlw, VAbv,   IS,CMAbv,    O, VPst,    B,    R,
+      R,CMBlw, VAbv, VPre,VMAbv,VMAbv,    H, VAbv,CMBlw,FMAbv,    B,   CS,   CS,    H,CMBlw,VMPst,
+      H,VMPst, VAbv,VMAbv, VPst,   IS,    R, MPst,    R, MPst,CMBlw,    B,FMBlw, VBlw,VMAbv,    R,
+   MBlw, MBlw,   GB, FBlw, FBlw,CMAbv,   IS, VBlw,   IS,   GB, VAbv,    R,VMPst,    H,    H,    B,
+      H,    B,VMBlw,    O, VBlw,
 };
 static const uint16_t
-hb_use_u16[776] =
+hb_use_u16[784] =
 {
     0,  0,  1,  2,  0,  0,  0,  0,  0,  0,  3,  4,  0,  5,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  6,  0,  0,  0,
@@ -332,14 +336,14 @@ hb_use_u16[776] =
     9,242, 73,243,  0,  0,  0,  0,244,  9,  9,245,246,  2,247,  9,
   248,249,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9,250,
   251, 48,  9,252,253,  2,  0,  0,  9,  9,  9,  9,  9,  9,  9,  9,
-    9,  9, 98,254,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,
-    9,  9,  9,255,  0,  0,  0,  0,  9,  9,  9,  9,256,257,258,258,
-  259,260,  0,  0,  0,  0,261,  0,  9,  9,  9,  9,  9,262,  0,  0,
-    9,  9,  9,  9,  9,  9,105, 70, 94,263,  0,  0,  0,  0,  0,  0,
-    0,  0,  0,  0,  0,  0,  0,264,  9,  9, 70,265,266,  0,  0,  0,
-    0,  9,267,  0,  9,  9,268,  2,  9,  9,  9,  9,269,  2,  0,  0,
-  129,129,129,129,129,129,129,129,160,160,160,160,160,160,160,160,
-  160,160,160,160,160,160,160,129,
+    9,  9,  9,254,255,256,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,
+    9,  9,  9,257,  0,  0,  0,  0,  9,  9,  9,  9,258,259,260,260,
+  261,262,  0,  0,  0,  0,263,  0,  9,  9,  9,  9,  9,264,  0,  0,
+    9,  9,  9,  9,  9,  9,105, 70, 94,265,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,266,  9,  9, 70,267,268,  0,  0,  0,
+    0,  9,269,  0,  9,  9,270,  2,  0,  0,  0,  0,  0,  9,271,  2,
+    9,  9,  9,  9,272,  2,  0,  0,129,129,129,129,129,129,129,129,
+  160,160,160,160,160,160,160,160,160,160,160,160,160,160,160,129,
 };
 
 static inline unsigned
@@ -350,7 +354,7 @@ hb_use_b4 (const uint8_t* a, unsigned i)
 static inline uint_fast8_t
 hb_use_get_category (unsigned u)
 {
-  return u<921600u?hb_use_u8[2753+(((hb_use_u8[593+(((hb_use_u16[((hb_use_u8[113+(((hb_use_b4(hb_use_u8,u>>1>>3>>3>>5))<<5)+((u>>1>>3>>3)&31u))])<<3)+((u>>1>>3)&7u)])<<3)+((u>>1)&7u))])<<1)+((u)&1u))]:O;
+  return u<921600u?hb_use_u8[2777+(((hb_use_u8[593+(((hb_use_u16[((hb_use_u8[113+(((hb_use_b4(hb_use_u8,u>>1>>3>>3>>5))<<5)+((u>>1>>3>>3)&31u))])<<3)+((u>>1>>3)&7u)])<<3)+((u>>1)&7u))])<<1)+((u)&1u))]:O;
 }
 
 #undef B

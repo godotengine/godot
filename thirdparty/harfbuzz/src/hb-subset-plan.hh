@@ -31,10 +31,15 @@
 
 #include "hb-subset.h"
 #include "hb-subset-input.hh"
+#include "hb-subset-accelerator.hh"
 
 #include "hb-map.hh"
 #include "hb-bimap.hh"
 #include "hb-set.hh"
+
+namespace OT {
+struct Feature;
+}
 
 struct hb_subset_plan_t
 {
@@ -67,9 +72,15 @@ struct hb_subset_plan_t
     hb_map_destroy (gpos_features);
     hb_map_destroy (colrv1_layers);
     hb_map_destroy (colr_palettes);
+    hb_map_destroy (axes_index_map);
+    hb_map_destroy (axes_old_index_tag_map);
 
     hb_hashmap_destroy (gsub_langsys);
     hb_hashmap_destroy (gpos_langsys);
+    hb_hashmap_destroy (gsub_feature_record_cond_idx_map);
+    hb_hashmap_destroy (gpos_feature_record_cond_idx_map);
+    hb_hashmap_destroy (gsub_feature_substitutes_map);
+    hb_hashmap_destroy (gpos_feature_substitutes_map);
     hb_hashmap_destroy (axes_location);
     hb_hashmap_destroy (sanitized_table_cache);
     hb_hashmap_destroy (hmtx_map);
@@ -87,6 +98,7 @@ struct hb_subset_plan_t
 
   bool successful;
   unsigned flags;
+  bool attach_accelerator_data = false;
 
   // For each cp that we'd like to retain maps to the corresponding gid.
   hb_set_t *unicodes;
@@ -143,6 +155,15 @@ struct hb_subset_plan_t
   hb_map_t *gsub_features;
   hb_map_t *gpos_features;
 
+  //active feature variation records/condition index with variations
+  hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *gsub_feature_record_cond_idx_map;
+  hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *gpos_feature_record_cond_idx_map;
+
+  //feature index-> address of substituation feature table mapping with
+  //variations
+  hb_hashmap_t<unsigned, const OT::Feature*> *gsub_feature_substitutes_map;
+  hb_hashmap_t<unsigned, const OT::Feature*> *gpos_feature_substitutes_map;
+
   //active layers/palettes we'd like to retain
   hb_map_t *colrv1_layers;
   hb_map_t *colr_palettes;
@@ -158,6 +179,10 @@ struct hb_subset_plan_t
   hb_hashmap_t<hb_tag_t, int> *axes_location;
   //user specified axes location map
   hb_hashmap_t<hb_tag_t, float> *user_axes_location;
+  //retained old axis index -> new axis index mapping in fvar axis array
+  hb_map_t *axes_index_map;
+  //axis_index->axis_tag mapping in fvar axis array
+  hb_map_t *axes_old_index_tag_map;
   bool all_axes_pinned;
   bool pinned_at_default;
 
@@ -165,6 +190,8 @@ struct hb_subset_plan_t
   hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *hmtx_map;
   //vmtx metrics map: new gid->(advance, lsb)
   hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *vmtx_map;
+
+  const hb_subset_accelerator_t* accelerator;
 
  public:
 

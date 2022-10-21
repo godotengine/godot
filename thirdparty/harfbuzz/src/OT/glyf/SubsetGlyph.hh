@@ -14,7 +14,6 @@ namespace glyf_impl {
 
 struct SubsetGlyph
 {
-  hb_codepoint_t new_gid;
   hb_codepoint_t old_gid;
   Glyph source_glyph;
   hb_bytes_t dest_start;  /* region of source_glyph to copy first */

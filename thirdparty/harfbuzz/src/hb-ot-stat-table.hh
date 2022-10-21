@@ -136,7 +136,7 @@ struct AxisValueFormat1
   NameID	valueNameID;	/* The name ID for entries in the 'name' table
 				 * that provide a display string for this
 				 * attribute value. */
-  HBFixed	value;		/* A numeric value for this attribute value. */
+  F16DOT16	value;		/* A numeric value for this attribute value. */
   public:
   DEFINE_SIZE_STATIC (12);
 };
@@ -195,10 +195,10 @@ struct AxisValueFormat2
   NameID	valueNameID;	/* The name ID for entries in the 'name' table
 				 * that provide a display string for this
 				 * attribute value. */
-  HBFixed	nominalValue;	/* A numeric value for this attribute value. */
-  HBFixed	rangeMinValue;	/* The minimum value for a range associated
+  F16DOT16	nominalValue;	/* A numeric value for this attribute value. */
+  F16DOT16	rangeMinValue;	/* The minimum value for a range associated
 				 * with the specified name ID. */
-  HBFixed	rangeMaxValue;	/* The maximum value for a range associated
+  F16DOT16	rangeMaxValue;	/* The maximum value for a range associated
 				 * with the specified name ID. */
   public:
   DEFINE_SIZE_STATIC (20);
@@ -258,8 +258,8 @@ struct AxisValueFormat3
   NameID	valueNameID;	/* The name ID for entries in the 'name' table
 				 * that provide a display string for this
 				 * attribute value. */
-  HBFixed	value;		/* A numeric value for this attribute value. */
-  HBFixed	linkedValue;	/* The numeric value for a style-linked mapping
+  F16DOT16	value;		/* A numeric value for this attribute value. */
+  F16DOT16	linkedValue;	/* The numeric value for a style-linked mapping
 				 * from this value. */
   public:
   DEFINE_SIZE_STATIC (16);
@@ -280,7 +280,7 @@ struct AxisValueRecord
   HBUINT16	axisIndex;	/* Zero-base index into the axis record array
 				 * identifying the axis to which this value
 				 * applies. Must be less than designAxisCount. */
-  HBFixed	value;		/* A numeric value for this attribute value. */
+  F16DOT16	value;		/* A numeric value for this attribute value. */
   public:
   DEFINE_SIZE_STATIC (6);
 };
