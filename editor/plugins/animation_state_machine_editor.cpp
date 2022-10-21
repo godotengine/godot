@@ -1127,7 +1127,7 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 	connecting = false;
 }
 
-void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, bool p_auto_advance, bool p_multi_transitions) {
+void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_multi_transitions) {
 	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	Color icon_color(1, 1, 1);
 	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
@@ -1153,11 +1153,15 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 
 	if (p_travel) {
 		linecolor = accent;
-		linecolor.set_hsv(1.0, linecolor.get_s(), linecolor.get_v());
 	}
 
 	state_machine_draw->draw_line(p_from, p_to, linecolor, 2);
 
+	if (p_fade_ratio > 0.0) {
+		Color fade_linecolor = accent;
+		fade_linecolor.set_hsv(1.0, fade_linecolor.get_s(), fade_linecolor.get_v());
+		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_linecolor, 2);
+	}
 	Ref<Texture2D> icon = icons[p_mode + (p_auto_advance ? 3 : 0)];
 
 	Transform2D xf;
@@ -1327,7 +1331,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 			}
 		}
 
-		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()), true, false, false, false, false);
+		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()), true, false, false, 0.0, false, false);
 	}
 
 	Ref<Texture2D> tr_reference_icon = get_theme_icon(SNAME("TransitionImmediateBig"), SNAME("EditorIcons"));
@@ -1357,6 +1361,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		tl.mode = tr->get_switch_mode();
 		tl.width = tr_bidi_offset;
 		tl.travel = false;
+		tl.fade_ratio = 0.0;
 		tl.hidden = false;
 
 		if (state_machine->has_local_transition(local_to, local_from)) { //offset if same exists
@@ -1378,6 +1383,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		if (blend_from == local_from && current == local_to) {
 			tl.travel = true;
+			tl.fade_ratio = MIN(1.0, fading_pos / fading_time);
 		}
 
 		if (travel_path.size()) {
@@ -1418,7 +1424,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	for (int i = 0; i < transition_lines.size(); i++) {
 		TransitionLine tl = transition_lines[i];
 		if (!tl.hidden) {
-			_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, tl.selected, tl.travel, tl.auto_advance, !tl.multi_transitions.is_empty());
+			_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, tl.selected, tl.travel, tl.fade_ratio, tl.auto_advance, !tl.multi_transitions.is_empty());
 		}
 	}
 
@@ -1508,25 +1514,24 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	state_machine_play_pos->queue_redraw();
 }
 
-void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
+void AnimationNodeStateMachineEditor::_state_machine_pos_draw_individual(String p_name, float p_ratio) {
 	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
 	if (!tree) {
 		return;
 	}
 
 	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-
 	if (!playback.is_valid() || !playback->is_playing()) {
 		return;
 	}
 
-	if (playback->get_current_node() == state_machine->start_node || playback->get_current_node() == state_machine->end_node) {
+	if (p_name == state_machine->start_node || p_name == state_machine->end_node || p_name.is_empty()) {
 		return;
 	}
 
 	int idx = -1;
 	for (int i = 0; i < node_rects.size(); i++) {
-		if (node_rects[i].node_name == playback->get_current_node()) {
+		if (node_rects[i].node_name == p_name) {
 			idx = i;
 			break;
 		}
@@ -1550,10 +1555,7 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	}
 	to.y = from.y;
 
-	float len = MAX(0.0001, current_length);
-
-	float pos = CLAMP(play_pos, 0, len);
-	float c = pos / len;
+	float c = p_ratio;
 	Color fg = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	Color bg = fg;
 	bg.a *= 0.3;
@@ -1563,6 +1565,32 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	to = from.lerp(to, c);
 
 	state_machine_play_pos->draw_line(from, to, fg, 2);
+}
+
+void AnimationNodeStateMachineEditor::_state_machine_pos_draw_all() {
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (!tree) {
+		return;
+	}
+
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	if (!playback.is_valid() || !playback->is_playing()) {
+		return;
+	}
+
+	{
+		float len = MAX(0.0001, current_length);
+		float pos = CLAMP(current_play_pos, 0, len);
+		float c = pos / len;
+		_state_machine_pos_draw_individual(playback->get_current_node(), c);
+	}
+
+	{
+		float len = MAX(0.0001, fade_from_length);
+		float pos = CLAMP(fade_from_current_play_pos, 0, len);
+		float c = pos / len;
+		_state_machine_pos_draw_individual(playback->get_fading_from_node(), c);
+	}
 }
 
 void AnimationNodeStateMachineEditor::_update_graph() {
@@ -1687,17 +1715,28 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			Vector<StringName> tp;
 			bool is_playing = false;
 			StringName current_node;
-			StringName blend_from_node;
-			play_pos = 0;
+			StringName fading_from_node;
+
+			current_play_pos = 0;
 			current_length = 0;
+
+			fade_from_current_play_pos = 0;
+			fade_from_length = 0;
+
+			fading_time = 0;
+			fading_pos = 0;
 
 			if (playback.is_valid()) {
 				tp = playback->get_travel_path();
 				is_playing = playback->is_playing();
 				current_node = playback->get_current_node();
-				blend_from_node = playback->get_fading_from_node();
-				play_pos = playback->get_current_play_pos();
+				fading_from_node = playback->get_fading_from_node();
+				current_play_pos = playback->get_current_play_pos();
 				current_length = playback->get_current_length();
+				fade_from_current_play_pos = playback->get_fade_from_play_pos();
+				fade_from_length = playback->get_fade_from_length();
+				fading_time = playback->get_fading_time();
+				fading_pos = playback->get_fading_pos();
 			}
 
 			{
@@ -1714,12 +1753,19 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			}
 
 			//redraw if travel state changed
-			if (!same_travel_path || last_active != is_playing || last_current_node != current_node || last_blend_from_node != blend_from_node) {
+			if (!same_travel_path ||
+					last_active != is_playing ||
+					last_current_node != current_node ||
+					last_fading_from_node != fading_from_node ||
+					last_fading_time != fading_time ||
+					last_fading_pos != fading_pos) {
 				state_machine_draw->queue_redraw();
 				last_travel_path = tp;
 				last_current_node = current_node;
 				last_active = is_playing;
-				last_blend_from_node = blend_from_node;
+				last_fading_from_node = fading_from_node;
+				last_fading_time = fading_time;
+				last_fading_pos = fading_pos;
 				state_machine_play_pos->queue_redraw();
 			}
 
@@ -1737,14 +1783,15 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 					// when current_node is a state machine, use playback of current_node to set play_pos
 					if (current_node_playback.is_valid()) {
-						play_pos = current_node_playback->get_current_play_pos();
+						current_play_pos = current_node_playback->get_current_play_pos();
 						current_length = current_node_playback->get_current_length();
 					}
 				}
 			}
 
-			if (last_play_pos != play_pos) {
-				last_play_pos = play_pos;
+			if (last_play_pos != current_play_pos || fade_from_last_play_pos != fade_from_current_play_pos) {
+				last_play_pos = current_play_pos;
+				fade_from_last_play_pos = fade_from_current_play_pos;
 				state_machine_play_pos->queue_redraw();
 			}
 		} break;
@@ -2048,7 +2095,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
 	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw));
+	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw_all));
 
 	v_scroll = memnew(VScrollBar);
 	state_machine_draw->add_child(v_scroll);
