@@ -527,7 +527,7 @@
 			<param index="2" name="weight" type="Variant" />
 			<description>
 				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clamp] on the result of this function.
-				Both [param from] and [param to] must be the same type. Supported types: [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
+				Both [param from] and [param to] must be the same type. Supported types: [int], [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]

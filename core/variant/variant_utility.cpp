@@ -335,6 +335,9 @@ struct VariantUtilityFunctions {
 		}
 
 		switch (from.get_type()) {
+			case Variant::INT: {
+				return lerpf(VariantInternalAccessor<int64_t>::get(&from), to, weight);
+			} break;
 			case Variant::FLOAT: {
 				return lerpf(VariantInternalAccessor<double>::get(&from), to, weight);
 			} break;
