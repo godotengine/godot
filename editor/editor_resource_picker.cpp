@@ -570,13 +570,17 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 
 	for (int i = 0; i < size; i++) {
 		String base = allowed_types[i].strip_edges();
-		p_vector->insert(base);
+		if (!ClassDB::is_virtual(base)) {
+			p_vector->insert(base);
+		}
 
 		// If we hit a familiar base type, take all the data from cache.
 		if (allowed_types_cache.has(base)) {
 			List<StringName> allowed_subtypes = allowed_types_cache[base];
 			for (const StringName &subtype_name : allowed_subtypes) {
-				p_vector->insert(subtype_name);
+				if (!ClassDB::is_virtual(subtype_name)) {
+					p_vector->insert(subtype_name);
+				}
 			}
 		} else {
 			List<StringName> allowed_subtypes;
@@ -586,13 +590,17 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 				ClassDB::get_inheriters_from_class(base, &inheriters);
 			}
 			for (const StringName &subtype_name : inheriters) {
-				p_vector->insert(subtype_name);
+				if (!ClassDB::is_virtual(subtype_name)) {
+					p_vector->insert(subtype_name);
+				}
 				allowed_subtypes.push_back(subtype_name);
 			}
 
 			for (const StringName &subtype_name : global_classes) {
 				if (EditorNode::get_editor_data().script_class_is_parent(subtype_name, base)) {
-					p_vector->insert(subtype_name);
+					if (!ClassDB::is_virtual(subtype_name)) {
+						p_vector->insert(subtype_name);
+					}
 					allowed_subtypes.push_back(subtype_name);
 				}
 			}
