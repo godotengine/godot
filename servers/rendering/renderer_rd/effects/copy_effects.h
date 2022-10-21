@@ -117,6 +117,7 @@ private:
 		COPY_MODE_SET_COLOR_8BIT,
 		COPY_MODE_MIPMAP,
 		COPY_MODE_LINEARIZE_DEPTH,
+		COPY_MODE_LINEARIZE_DEPTH_INVERSED,
 		COPY_MODE_CUBE_TO_PANORAMA,
 		COPY_MODE_CUBE_ARRAY_TO_PANORAMA,
 		COPY_MODE_MAX,
@@ -327,6 +328,7 @@ public:
 
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_all_source = false, bool p_8_bit_dst = false, bool p_alpha_to_one = false);
 	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
+	void copy_depth_to_rect_and_linearize_reversed(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
 	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
 	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false, bool alpha_to_one = false, bool p_linear = false, bool p_normal = false);
