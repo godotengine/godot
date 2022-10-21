@@ -141,17 +141,6 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="find_named_color" qualifiers="static">
-			<return type="int" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns the index of a named color. Use [method get_named_color] to get the actual color.
-				[codeblock]
-				var idx = Color.find_named_color("khaki")
-				modulate = Color.get_named_color(idx)
-				[/codeblock]
-			</description>
-		</method>
 		<method name="from_hsv" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="h" type="float" />
@@ -209,26 +198,6 @@
 				Returns the luminance of the color in the [code][0.0, 1.0][/code] range.
 				This is useful when determining light or dark color. Colors with a luminance smaller than 0.5 can be generally considered dark.
 				[b]Note:[/b] [method get_luminance] relies on the colour being in the linear color space to return an accurate relative luminance value. If the color is in the sRGB color space, use [method srgb_to_linear] to convert it to the linear color space first.
-			</description>
-		</method>
-		<method name="get_named_color" qualifiers="static">
-			<return type="Color" />
-			<param index="0" name="idx" type="int" />
-			<description>
-				Returns a named color with the given index. You can get the index from [method find_named_color] or iteratively from [method get_named_color_count].
-			</description>
-		</method>
-		<method name="get_named_color_count" qualifiers="static">
-			<return type="int" />
-			<description>
-				Returns the number of available named colors.
-			</description>
-		</method>
-		<method name="get_named_color_name" qualifiers="static">
-			<return type="String" />
-			<param index="0" name="idx" type="int" />
-			<description>
-				Returns the name of a color with the given index. You can get the index from [method find_named_color] or iteratively from [method get_named_color_count].
 			</description>
 		</method>
 		<method name="hex" qualifiers="static">
