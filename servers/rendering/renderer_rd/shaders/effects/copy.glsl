@@ -36,7 +36,12 @@ layout(push_constant, std430) uniform Params {
 	float camera_z_near;
 	uint pad2[2];
 
+	// Color
 	vec4 set_color;
+
+	// Depth.
+	bool inverse_depth;
+	uint pad3[3];
 }
 params;
 
@@ -242,18 +247,16 @@ void main() {
 
 #endif // MODE_SIMPLE_COPY_DEPTH
 
-#if defined(MODE_LINEARIZE_DEPTH_COPY) || defined(MODE_LINEARIZE_DEPTH_COPY_INVERSED)
+#ifdef MODE_LINEARIZE_DEPTH_COPY
 
 	float depth = texelFetch(source_color, pos + params.section.xy, 0).r;
+	depth = 2.0 * params.camera_z_near * params.camera_z_far /
+			(params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
 
-	depth = params.camera_z_near * params.camera_z_far /
-			(params.camera_z_far + depth * (params.camera_z_near - params.camera_z_far));
-
-#ifdef MODE_LINEARIZE_DEPTH_COPY_INVERSED
-	vec4 color = vec4(1.0 - (depth / params.camera_z_far));
-#else
 	vec4 color = vec4(depth / params.camera_z_far);
-#endif
+	if (params.inverse_depth) {
+		color = 1.0 - color;
+	}
 
 	if (bool(params.flags & FLAG_FLIP_Y)) {
 		pos.y = params.section.w - pos.y - 1;

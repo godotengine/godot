@@ -785,12 +785,12 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 
 		RID debug_depth_texture = p_render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, SNAME("debug_depth")) ? p_render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, SNAME("debug_depth")) : p_render_buffers->create_texture(RB_SCOPE_FORWARD_CLUSTERED, SNAME("debug_depth"), format, usage_bits, texture_samples);
 
-		copy_effects->copy_depth_to_rect_and_linearize_reversed(
+		copy_effects->copy_depth_to_rect_and_linearize(
 				_render_buffers_get_depth_texture(p_render_buffers),
 				debug_depth_texture,
 				Rect2(Vector2(), rtsize),
 				false,
-				0.1, 1.0);
+				0.1, 1.0, true);
 		copy_effects->copy_to_fb_rect(
 				debug_depth_texture,
 				texture_storage->render_target_get_rd_framebuffer(render_target),

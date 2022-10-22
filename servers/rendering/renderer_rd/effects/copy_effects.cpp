@@ -86,7 +86,6 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		copy_modes.push_back("\n#define MODE_SET_COLOR\n#define DST_IMAGE_8BIT\n");
 		copy_modes.push_back("\n#define MODE_MIPMAP\n");
 		copy_modes.push_back("\n#define MODE_LINEARIZE_DEPTH_COPY\n");
-		copy_modes.push_back("\n#define MODE_LINEARIZE_DEPTH_COPY_INVERSED\n");
 		copy_modes.push_back("\n#define MODE_CUBEMAP_TO_PANORAMA\n");
 		copy_modes.push_back("\n#define MODE_CUBEMAP_ARRAY_TO_PANORAMA\n");
 
@@ -477,6 +476,7 @@ void CopyEffects::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID 
 	copy.push_constant.target[1] = p_rect.position.y;
 	copy.push_constant.camera_z_far = p_z_far;
 	copy.push_constant.camera_z_near = p_z_near;
+	copy.push_constant.inverse_depth = p_inverse_depth;
 
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -485,47 +485,6 @@ void CopyEffects::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID 
 	RD::Uniform u_dest_texture(RD::UNIFORM_TYPE_IMAGE, 0, p_dest_texture);
 
 	CopyMode mode = COPY_MODE_LINEARIZE_DEPTH;
-	RID shader = copy.shader.version_get_shader(copy.shader_version, mode);
-	ERR_FAIL_COND(shader.is_null());
-
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[mode]);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 3, u_dest_texture), 3);
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_rect.size.width, p_rect.size.height, 1);
-	RD::get_singleton()->compute_list_end();
-}
-
-void CopyEffects::copy_depth_to_rect_and_linearize_reversed(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far) {
-	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute version of the copy_depth_to_rect_and_linearize shader with the mobile renderer.");
-
-	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
-	ERR_FAIL_NULL(uniform_set_cache);
-	MaterialStorage *material_storage = MaterialStorage::get_singleton();
-	ERR_FAIL_NULL(material_storage);
-
-	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
-	if (p_flip_y) {
-		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
-	}
-
-	copy.push_constant.section[0] = 0;
-	copy.push_constant.section[1] = 0;
-	copy.push_constant.section[2] = p_rect.size.width;
-	copy.push_constant.section[3] = p_rect.size.height;
-	copy.push_constant.target[0] = p_rect.position.x;
-	copy.push_constant.target[1] = p_rect.position.y;
-	copy.push_constant.camera_z_far = p_z_far;
-	copy.push_constant.camera_z_near = p_z_near;
-
-	// setup our uniforms
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-
-	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
-	RD::Uniform u_dest_texture(RD::UNIFORM_TYPE_IMAGE, 0, p_dest_texture);
-
-	CopyMode mode = COPY_MODE_LINEARIZE_DEPTH_INVERSED;
 	RID shader = copy.shader.version_get_shader(copy.shader_version, mode);
 	ERR_FAIL_COND(shader.is_null());
 
