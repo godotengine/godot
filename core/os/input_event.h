@@ -475,6 +475,7 @@ class InputEventScreenTouch : public InputEvent {
 	int index;
 	Vector2 pos;
 	bool pressed;
+	bool double_tap;
 
 protected:
 	static void _bind_methods();
@@ -488,6 +489,9 @@ public:
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;
+
+	void set_double_tap(bool p_double_tap);
+	bool is_double_tap() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
