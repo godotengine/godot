@@ -55,18 +55,15 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 	 */
 	var panningAndScalingEnabled = false
 
-	private var doubleTapInProgress = false
+	private var nextDownIsDoubleTap = false
 	private var dragInProgress = false
 	private var scaleInProgress = false
 	private var contextClickInProgress = false
 	private var pointerCaptureInProgress = false
 
 	override fun onDown(event: MotionEvent): Boolean {
-		// Don't send / register a down event while we're in the middle of a double-tap
-		if (!doubleTapInProgress) {
-			// Send the down event
-			GodotInputHandler.handleMotionEvent(event)
-		}
+		GodotInputHandler.handleMotionEvent(event.source, MotionEvent.ACTION_DOWN, event.buttonState, event.x, event.y, nextDownIsDoubleTap)
+		nextDownIsDoubleTap = false
 		return true
 	}
 
@@ -209,24 +206,14 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 
 	override fun onDoubleTapEvent(event: MotionEvent): Boolean {
 		if (event.actionMasked == MotionEvent.ACTION_UP) {
-			doubleTapInProgress = false
+			nextDownIsDoubleTap = false
+			GodotInputHandler.handleMotionEvent(event)
 		}
 		return true
 	}
 
 	override fun onDoubleTap(event: MotionEvent): Boolean {
-		doubleTapInProgress = true
-		val x = event.x
-		val y = event.y
-		val buttonMask =
-			if (GodotInputHandler.isMouseEvent(event)) {
-				event.buttonState
-			} else {
-				MotionEvent.BUTTON_PRIMARY
-			}
-		GodotInputHandler.handleMouseEvent(MotionEvent.ACTION_DOWN, buttonMask, x, y, true)
-		GodotInputHandler.handleMouseEvent(MotionEvent.ACTION_UP, 0, x, y, false)
-
+		nextDownIsDoubleTap = true
 		return true
 	}
 
