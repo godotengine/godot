@@ -847,7 +847,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		Projection cm;
 		cm.set_perspective(90, 1, 0.01, 10.0);
 		Projection correction;
-		correction.set_depth_correction(true);
+		correction.columns[1][1] = -1.0;
 		cm = correction * cm;
 
 		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
@@ -1265,7 +1265,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 // Needs to be called after _setup_lights so that directional_light_count is accurate.
 void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows) {
 	Projection correction;
-	correction.set_depth_correction(p_flip_y);
+	correction.columns[1][1] = p_flip_y ? -1.0 : 1.0;
 	Projection projection = correction * p_render_data->cam_projection;
 	//store camera into ubo
 	GLES3::MaterialStorage::store_camera(projection, scene_state.ubo.projection_matrix);
@@ -1792,7 +1792,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			Projection projection = render_data.cam_projection;
 			if (render_data.reflection_probe.is_valid()) {
 				Projection correction;
-				correction.set_depth_correction(true);
+				correction.columns[1][1] = -1.0;
 				projection = correction * render_data.cam_projection;
 			}
 
