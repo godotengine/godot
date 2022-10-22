@@ -325,18 +325,21 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Dictionary" />
 			<description>
+				Returns [code]true[/code] if the dictionaries differ, i.e. their key or value lists are different (including the order).
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="Dictionary" />
 			<description>
+				Returns [code]true[/code] if both dictionaries have the same contents, i.e. their keys list and value list are equal.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="Variant" />
 			<param index="0" name="key" type="Variant" />
 			<description>
+				Retunrs a value at the given [param key] or [code]null[/code] and error if the key does not exist. For safe access, use [method get] or [method has].
 			</description>
 		</operator>
 	</operators>

@@ -71,8 +71,8 @@ public:
 	};
 
 private:
-	// For the sake of ease of use, Node3D can operate with Transforms (Basis+Origin), Quaterinon/Scale and Euler Rotation/Scale.
-	// Transform and Quaterinon are stored in data.local_transform Basis (so quaternion is not really stored, but converted back/forth from 3x3 matrix on demand).
+	// For the sake of ease of use, Node3D can operate with Transforms (Basis+Origin), Quaternion/Scale and Euler Rotation/Scale.
+	// Transform and Quaternion are stored in data.local_transform Basis (so quaternion is not really stored, but converted back/forth from 3x3 matrix on demand).
 	// Euler needs to be kept separate because converting to Basis and back may result in a different vector (which is troublesome for users
 	// editing in the inspector, not only because of the numerical precision loss but because they expect these rotations to be consistent, or support
 	// "redundant" rotations for animation interpolation, like going from 0 to 720 degrees).

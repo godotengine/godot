@@ -121,7 +121,9 @@ private:
 
 	static CanvasItem *current_item_drawn;
 	friend class Viewport;
+	void _refresh_texture_repeat_cache();
 	void _update_texture_repeat_changed(bool p_propagate);
+	void _refresh_texture_filter_cache();
 	void _update_texture_filter_changed(bool p_propagate);
 
 protected:
@@ -309,6 +311,9 @@ public:
 
 	virtual void set_texture_repeat(TextureRepeat p_texture_repeat);
 	TextureRepeat get_texture_repeat() const;
+
+	TextureFilter get_texture_filter_in_tree();
+	TextureRepeat get_texture_repeat_in_tree();
 
 	// Used by control nodes to retrieve the parent's anchorable area
 	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };

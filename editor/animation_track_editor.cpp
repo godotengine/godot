@@ -6204,7 +6204,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				if (do_bake && !animation->track_is_compressed(i)) {
 					Animation::InterpolationType it = animation->track_get_interpolation_type(i);
 					if (it == Animation::INTERPOLATION_NEAREST) {
-						continue; // Nearest and Angle interpolation cannot be baked.
+						continue; // Nearest interpolation cannot be baked.
 					}
 
 					// Special case for angle interpolation.

@@ -17,7 +17,7 @@
 		<method name="get_aabb" qualifiers="const">
 			<return type="AABB" />
 			<description>
-				Returns the [AABB] (also known as the bounding box) for this [VisualInstance3D]. See also [method get_transformed_aabb].
+				Returns the [AABB] (also known as the bounding box) for this [VisualInstance3D].
 			</description>
 		</method>
 		<method name="get_base" qualifiers="const">
@@ -37,13 +37,6 @@
 			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member layers] is enabled, given a [code]layer_number[/code] between 1 and 20.
-			</description>
-		</method>
-		<method name="get_transformed_aabb" qualifiers="const">
-			<return type="AABB" />
-			<description>
-				Returns the transformed [AABB] (also known as the bounding box) for this [VisualInstance3D].
-				Transformed in this case means the [AABB] plus the position, rotation, and scale of the [Node3D]'s [Transform3D]. See also [method get_aabb].
 			</description>
 		</method>
 		<method name="set_base">

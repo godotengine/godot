@@ -79,6 +79,7 @@ public:
 
 	Variant front() const;
 	Variant back() const;
+	Variant pick_random() const;
 
 	void sort();
 	void sort_custom(const Callable &p_callable);

@@ -84,8 +84,6 @@ private:
 	bool ext_vive_focus3_available = false;
 	bool ext_huawei_controller_available = false;
 
-	bool is_path_supported(const String &p_path);
-
 	// composition layer providers
 	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
 
@@ -302,6 +300,7 @@ public:
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 
 	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
+	bool is_path_supported(const String &p_path);
 
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
 	static OpenXRAPI *get_singleton();

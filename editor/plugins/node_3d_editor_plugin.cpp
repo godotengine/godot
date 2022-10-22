@@ -6991,9 +6991,10 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 				}
 			}
 			if (!found_valid_shape && vi.size()) {
-				AABB aabb = (*vi.begin())->get_transformed_aabb();
+				VisualInstance3D *begin = *vi.begin();
+				AABB aabb = begin->get_global_transform().xform(begin->get_aabb());
 				for (const VisualInstance3D *I : vi) {
-					aabb.merge_with(I->get_transformed_aabb());
+					aabb.merge_with(I->get_global_transform().xform(I->get_aabb()));
 				}
 				Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
 				from = aabb.position + size;
