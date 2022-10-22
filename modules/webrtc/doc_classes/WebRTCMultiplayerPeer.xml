@@ -22,12 +22,6 @@
 				Three channels will be created for reliable, unreliable, and ordered transport. The value of [code]unreliable_lifetime[/code] will be passed to the [code]maxPacketLifetime[/code] option when creating unreliable and ordered channels (see [method WebRTCPeerConnection.create_data_channel]).
 			</description>
 		</method>
-		<method name="close">
-			<return type="void" />
-			<description>
-				Close all the add peer connections and channels, freeing all resources.
-			</description>
-		</method>
 		<method name="create_client">
 			<return type="int" enum="Error" />
 			<param index="0" name="peer_id" type="int" />

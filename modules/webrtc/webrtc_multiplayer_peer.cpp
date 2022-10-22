@@ -42,7 +42,6 @@ void WebRTCMultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_peer", "peer_id"), &WebRTCMultiplayerPeer::has_peer);
 	ClassDB::bind_method(D_METHOD("get_peer", "peer_id"), &WebRTCMultiplayerPeer::get_peer);
 	ClassDB::bind_method(D_METHOD("get_peers"), &WebRTCMultiplayerPeer::get_peers);
-	ClassDB::bind_method(D_METHOD("close"), &WebRTCMultiplayerPeer::close);
 }
 
 void WebRTCMultiplayerPeer::set_target_peer(int p_peer_id) {
@@ -349,6 +348,18 @@ void WebRTCMultiplayerPeer::remove_peer(int p_peer_id) {
 			}
 			connection_status = CONNECTION_DISCONNECTED;
 		}
+	}
+}
+
+void WebRTCMultiplayerPeer::disconnect_peer(int p_peer_id, bool p_force) {
+	ERR_FAIL_COND(!peer_map.has(p_peer_id));
+	if (p_force) {
+		peer_map.erase(p_peer_id);
+		if (network_mode == MODE_CLIENT && p_peer_id == TARGET_PEER_SERVER) {
+			connection_status = CONNECTION_DISCONNECTED;
+		}
+	} else {
+		peer_map[p_peer_id]->connection->close(); // Will be removed during next poll.
 	}
 }
 

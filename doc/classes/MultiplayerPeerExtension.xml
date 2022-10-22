@@ -9,6 +9,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_close" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the multiplayer peer should be immediately closed (see [method MultiplayerPeer.close]).
+			</description>
+		</method>
+		<method name="_disconnect_peer" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="p_peer" type="int" />
+			<param index="1" name="p_force" type="bool" />
+			<description>
+				Called when the connected [param p_peer] should be forcibly disconnected (see [method MultiplayerPeer.disconnect_peer]).
+			</description>
+		</method>
 		<method name="_get_available_packet_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
