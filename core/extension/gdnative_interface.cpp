@@ -61,15 +61,15 @@ static void gdnative_print_script_error(const char *p_description, const char *p
 	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_SCRIPT);
 }
 
-uint64_t gdnative_get_native_struct_size(const GDNativeStringNamePtr p_name) {
+uint64_t gdnative_get_native_struct_size(GDNativeConstStringNamePtr p_name) {
 	const StringName name = *reinterpret_cast<const StringName *>(p_name);
 	return ClassDB::get_native_struct_size(name);
 }
 
 // Variant functions
 
-static void gdnative_variant_new_copy(GDNativeVariantPtr r_dest, const GDNativeVariantPtr p_src) {
-	memnew_placement(reinterpret_cast<Variant *>(r_dest), Variant(*reinterpret_cast<Variant *>(p_src)));
+static void gdnative_variant_new_copy(GDNativeVariantPtr r_dest, GDNativeConstVariantPtr p_src) {
+	memnew_placement(reinterpret_cast<Variant *>(r_dest), Variant(*reinterpret_cast<const Variant *>(p_src)));
 }
 static void gdnative_variant_new_nil(GDNativeVariantPtr r_dest) {
 	memnew_placement(reinterpret_cast<Variant *>(r_dest), Variant);
@@ -80,7 +80,7 @@ static void gdnative_variant_destroy(GDNativeVariantPtr p_self) {
 
 // variant type
 
-static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStringNamePtr p_method, const GDNativeVariantPtr *p_args, const GDNativeInt p_argcount, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
+static void gdnative_variant_call(GDNativeVariantPtr p_self, GDNativeConstStringNamePtr p_method, GDNativeConstVariantPtr *p_args, GDNativeInt p_argcount, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
 	Variant *self = (Variant *)p_self;
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
@@ -96,7 +96,7 @@ static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStrin
 	}
 }
 
-static void gdnative_variant_call_static(GDNativeVariantType p_type, const GDNativeStringNamePtr p_method, const GDNativeVariantPtr *p_args, const GDNativeInt p_argcount, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
+static void gdnative_variant_call_static(GDNativeVariantType p_type, GDNativeConstStringNamePtr p_method, GDNativeConstVariantPtr *p_args, GDNativeInt p_argcount, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
 	Variant::Type type = (Variant::Type)p_type;
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
@@ -112,7 +112,7 @@ static void gdnative_variant_call_static(GDNativeVariantType p_type, const GDNat
 	}
 }
 
-static void gdnative_variant_evaluate(GDNativeVariantOperator p_op, const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, GDNativeVariantPtr r_return, GDNativeBool *r_valid) {
+static void gdnative_variant_evaluate(GDNativeVariantOperator p_op, GDNativeConstVariantPtr p_a, GDNativeConstVariantPtr p_b, GDNativeVariantPtr r_return, GDNativeBool *r_valid) {
 	Variant::Operator op = (Variant::Operator)p_op;
 	const Variant *a = (const Variant *)p_a;
 	const Variant *b = (const Variant *)p_b;
@@ -122,7 +122,7 @@ static void gdnative_variant_evaluate(GDNativeVariantOperator p_op, const GDNati
 	*r_valid = valid;
 }
 
-static void gdnative_variant_set(GDNativeVariantPtr p_self, const GDNativeVariantPtr p_key, const GDNativeVariantPtr p_value, GDNativeBool *r_valid) {
+static void gdnative_variant_set(GDNativeVariantPtr p_self, GDNativeConstVariantPtr p_key, GDNativeConstVariantPtr p_value, GDNativeBool *r_valid) {
 	Variant *self = (Variant *)p_self;
 	const Variant *key = (const Variant *)p_key;
 	const Variant *value = (const Variant *)p_value;
@@ -132,7 +132,7 @@ static void gdnative_variant_set(GDNativeVariantPtr p_self, const GDNativeVarian
 	*r_valid = valid;
 }
 
-static void gdnative_variant_set_named(GDNativeVariantPtr p_self, const GDNativeStringNamePtr p_key, const GDNativeVariantPtr p_value, GDNativeBool *r_valid) {
+static void gdnative_variant_set_named(GDNativeVariantPtr p_self, GDNativeConstStringNamePtr p_key, GDNativeConstVariantPtr p_value, GDNativeBool *r_valid) {
 	Variant *self = (Variant *)p_self;
 	const StringName *key = (const StringName *)p_key;
 	const Variant *value = (const Variant *)p_value;
@@ -142,7 +142,7 @@ static void gdnative_variant_set_named(GDNativeVariantPtr p_self, const GDNative
 	*r_valid = valid;
 }
 
-static void gdnative_variant_set_keyed(GDNativeVariantPtr p_self, const GDNativeVariantPtr p_key, const GDNativeVariantPtr p_value, GDNativeBool *r_valid) {
+static void gdnative_variant_set_keyed(GDNativeVariantPtr p_self, GDNativeConstVariantPtr p_key, GDNativeConstVariantPtr p_value, GDNativeBool *r_valid) {
 	Variant *self = (Variant *)p_self;
 	const Variant *key = (const Variant *)p_key;
 	const Variant *value = (const Variant *)p_value;
@@ -152,7 +152,7 @@ static void gdnative_variant_set_keyed(GDNativeVariantPtr p_self, const GDNative
 	*r_valid = valid;
 }
 
-static void gdnative_variant_set_indexed(GDNativeVariantPtr p_self, GDNativeInt p_index, const GDNativeVariantPtr p_value, GDNativeBool *r_valid, GDNativeBool *r_oob) {
+static void gdnative_variant_set_indexed(GDNativeVariantPtr p_self, GDNativeInt p_index, GDNativeConstVariantPtr p_value, GDNativeBool *r_valid, GDNativeBool *r_oob) {
 	Variant *self = (Variant *)p_self;
 	const Variant *value = (const Variant *)p_value;
 
@@ -163,7 +163,7 @@ static void gdnative_variant_set_indexed(GDNativeVariantPtr p_self, GDNativeInt 
 	*r_oob = oob;
 }
 
-static void gdnative_variant_get(const GDNativeVariantPtr p_self, const GDNativeVariantPtr p_key, GDNativeVariantPtr r_ret, GDNativeBool *r_valid) {
+static void gdnative_variant_get(GDNativeConstVariantPtr p_self, GDNativeConstVariantPtr p_key, GDNativeVariantPtr r_ret, GDNativeBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	const Variant *key = (const Variant *)p_key;
 
@@ -172,7 +172,7 @@ static void gdnative_variant_get(const GDNativeVariantPtr p_self, const GDNative
 	*r_valid = valid;
 }
 
-static void gdnative_variant_get_named(const GDNativeVariantPtr p_self, const GDNativeStringNamePtr p_key, GDNativeVariantPtr r_ret, GDNativeBool *r_valid) {
+static void gdnative_variant_get_named(GDNativeConstVariantPtr p_self, GDNativeConstStringNamePtr p_key, GDNativeVariantPtr r_ret, GDNativeBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	const StringName *key = (const StringName *)p_key;
 
@@ -181,7 +181,7 @@ static void gdnative_variant_get_named(const GDNativeVariantPtr p_self, const GD
 	*r_valid = valid;
 }
 
-static void gdnative_variant_get_keyed(const GDNativeVariantPtr p_self, const GDNativeVariantPtr p_key, GDNativeVariantPtr r_ret, GDNativeBool *r_valid) {
+static void gdnative_variant_get_keyed(GDNativeConstVariantPtr p_self, GDNativeConstVariantPtr p_key, GDNativeVariantPtr r_ret, GDNativeBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	const Variant *key = (const Variant *)p_key;
 
@@ -190,7 +190,7 @@ static void gdnative_variant_get_keyed(const GDNativeVariantPtr p_self, const GD
 	*r_valid = valid;
 }
 
-static void gdnative_variant_get_indexed(const GDNativeVariantPtr p_self, GDNativeInt p_index, GDNativeVariantPtr r_ret, GDNativeBool *r_valid, GDNativeBool *r_oob) {
+static void gdnative_variant_get_indexed(GDNativeConstVariantPtr p_self, GDNativeInt p_index, GDNativeVariantPtr r_ret, GDNativeBool *r_valid, GDNativeBool *r_oob) {
 	const Variant *self = (const Variant *)p_self;
 
 	bool valid;
@@ -201,7 +201,7 @@ static void gdnative_variant_get_indexed(const GDNativeVariantPtr p_self, GDNati
 }
 
 /// Iteration.
-static GDNativeBool gdnative_variant_iter_init(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeBool *r_valid) {
+static GDNativeBool gdnative_variant_iter_init(GDNativeConstVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	Variant *iter = (Variant *)r_iter;
 
@@ -211,7 +211,7 @@ static GDNativeBool gdnative_variant_iter_init(const GDNativeVariantPtr p_self, 
 	return ret;
 }
 
-static GDNativeBool gdnative_variant_iter_next(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeBool *r_valid) {
+static GDNativeBool gdnative_variant_iter_next(GDNativeConstVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	Variant *iter = (Variant *)r_iter;
 
@@ -221,7 +221,7 @@ static GDNativeBool gdnative_variant_iter_next(const GDNativeVariantPtr p_self, 
 	return ret;
 }
 
-static void gdnative_variant_iter_get(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeVariantPtr r_ret, GDNativeBool *r_valid) {
+static void gdnative_variant_iter_get(GDNativeConstVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeVariantPtr r_ret, GDNativeBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	Variant *iter = (Variant *)r_iter;
 
@@ -231,53 +231,53 @@ static void gdnative_variant_iter_get(const GDNativeVariantPtr p_self, GDNativeV
 }
 
 /// Variant functions.
-static GDNativeInt gdnative_variant_hash(const GDNativeVariantPtr p_self) {
+static GDNativeInt gdnative_variant_hash(GDNativeConstVariantPtr p_self) {
 	const Variant *self = (const Variant *)p_self;
 	return self->hash();
 }
 
-static GDNativeInt gdnative_variant_recursive_hash(const GDNativeVariantPtr p_self, GDNativeInt p_recursion_count) {
+static GDNativeInt gdnative_variant_recursive_hash(GDNativeConstVariantPtr p_self, GDNativeInt p_recursion_count) {
 	const Variant *self = (const Variant *)p_self;
 	return self->recursive_hash(p_recursion_count);
 }
 
-static GDNativeBool gdnative_variant_hash_compare(const GDNativeVariantPtr p_self, const GDNativeVariantPtr p_other) {
+static GDNativeBool gdnative_variant_hash_compare(GDNativeConstVariantPtr p_self, GDNativeConstVariantPtr p_other) {
 	const Variant *self = (const Variant *)p_self;
 	const Variant *other = (const Variant *)p_other;
 	return self->hash_compare(*other);
 }
 
-static GDNativeBool gdnative_variant_booleanize(const GDNativeVariantPtr p_self) {
+static GDNativeBool gdnative_variant_booleanize(GDNativeConstVariantPtr p_self) {
 	const Variant *self = (const Variant *)p_self;
 	return self->booleanize();
 }
 
-static void gdnative_variant_duplicate(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_ret, GDNativeBool p_deep) {
+static void gdnative_variant_duplicate(GDNativeConstVariantPtr p_self, GDNativeVariantPtr r_ret, GDNativeBool p_deep) {
 	const Variant *self = (const Variant *)p_self;
 	memnew_placement(r_ret, Variant(self->duplicate(p_deep)));
 }
 
-static void gdnative_variant_stringify(const GDNativeVariantPtr p_self, GDNativeStringPtr r_ret) {
+static void gdnative_variant_stringify(GDNativeConstVariantPtr p_self, GDNativeStringPtr r_ret) {
 	const Variant *self = (const Variant *)p_self;
 	memnew_placement(r_ret, String(*self));
 }
 
-static GDNativeVariantType gdnative_variant_get_type(const GDNativeVariantPtr p_self) {
+static GDNativeVariantType gdnative_variant_get_type(GDNativeConstVariantPtr p_self) {
 	const Variant *self = (const Variant *)p_self;
 	return (GDNativeVariantType)self->get_type();
 }
 
-static GDNativeBool gdnative_variant_has_method(const GDNativeVariantPtr p_self, const GDNativeStringNamePtr p_method) {
+static GDNativeBool gdnative_variant_has_method(GDNativeConstVariantPtr p_self, GDNativeConstStringNamePtr p_method) {
 	const Variant *self = (const Variant *)p_self;
 	const StringName *method = (const StringName *)p_method;
 	return self->has_method(*method);
 }
 
-static GDNativeBool gdnative_variant_has_member(GDNativeVariantType p_type, const GDNativeStringNamePtr p_member) {
+static GDNativeBool gdnative_variant_has_member(GDNativeVariantType p_type, GDNativeConstStringNamePtr p_member) {
 	return Variant::has_member((Variant::Type)p_type, *((const StringName *)p_member));
 }
 
-static GDNativeBool gdnative_variant_has_key(const GDNativeVariantPtr p_self, const GDNativeVariantPtr p_key, GDNativeBool *r_valid) {
+static GDNativeBool gdnative_variant_has_key(GDNativeConstVariantPtr p_self, GDNativeConstVariantPtr p_key, GDNativeBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	const Variant *key = (const Variant *)p_key;
 	bool valid;
@@ -470,7 +470,7 @@ static GDNativeTypeFromVariantConstructorFunc gdnative_get_type_from_variant_con
 static GDNativePtrOperatorEvaluator gdnative_variant_get_ptr_operator_evaluator(GDNativeVariantOperator p_operator, GDNativeVariantType p_type_a, GDNativeVariantType p_type_b) {
 	return (GDNativePtrOperatorEvaluator)Variant::get_ptr_operator_evaluator(Variant::Operator(p_operator), Variant::Type(p_type_a), Variant::Type(p_type_b));
 }
-static GDNativePtrBuiltInMethod gdnative_variant_get_ptr_builtin_method(GDNativeVariantType p_type, const GDNativeStringNamePtr p_method, GDNativeInt p_hash) {
+static GDNativePtrBuiltInMethod gdnative_variant_get_ptr_builtin_method(GDNativeVariantType p_type, GDNativeConstStringNamePtr p_method, GDNativeInt p_hash) {
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	uint32_t hash = Variant::get_builtin_method_hash(Variant::Type(p_type), method);
 	if (hash != p_hash) {
@@ -486,7 +486,7 @@ static GDNativePtrConstructor gdnative_variant_get_ptr_constructor(GDNativeVaria
 static GDNativePtrDestructor gdnative_variant_get_ptr_destructor(GDNativeVariantType p_type) {
 	return (GDNativePtrDestructor)Variant::get_ptr_destructor(Variant::Type(p_type));
 }
-static void gdnative_variant_construct(GDNativeVariantType p_type, GDNativeVariantPtr p_base, const GDNativeVariantPtr *p_args, int32_t p_argument_count, GDNativeCallError *r_error) {
+static void gdnative_variant_construct(GDNativeVariantType p_type, GDNativeVariantPtr p_base, GDNativeConstVariantPtr *p_args, int32_t p_argument_count, GDNativeCallError *r_error) {
 	memnew_placement(p_base, Variant);
 
 	Callable::CallError error;
@@ -498,11 +498,11 @@ static void gdnative_variant_construct(GDNativeVariantType p_type, GDNativeVaria
 		r_error->expected = error.expected;
 	}
 }
-static GDNativePtrSetter gdnative_variant_get_ptr_setter(GDNativeVariantType p_type, const GDNativeStringNamePtr p_member) {
+static GDNativePtrSetter gdnative_variant_get_ptr_setter(GDNativeVariantType p_type, GDNativeConstStringNamePtr p_member) {
 	const StringName member = *reinterpret_cast<const StringName *>(p_member);
 	return (GDNativePtrSetter)Variant::get_member_ptr_setter(Variant::Type(p_type), member);
 }
-static GDNativePtrGetter gdnative_variant_get_ptr_getter(GDNativeVariantType p_type, const GDNativeStringNamePtr p_member) {
+static GDNativePtrGetter gdnative_variant_get_ptr_getter(GDNativeVariantType p_type, GDNativeConstStringNamePtr p_member) {
 	const StringName member = *reinterpret_cast<const StringName *>(p_member);
 	return (GDNativePtrGetter)Variant::get_member_ptr_getter(Variant::Type(p_type), member);
 }
@@ -521,11 +521,11 @@ static GDNativePtrKeyedGetter gdnative_variant_get_ptr_keyed_getter(GDNativeVari
 static GDNativePtrKeyedChecker gdnative_variant_get_ptr_keyed_checker(GDNativeVariantType p_type) {
 	return (GDNativePtrKeyedChecker)Variant::get_member_ptr_keyed_checker(Variant::Type(p_type));
 }
-static void gdnative_variant_get_constant_value(GDNativeVariantType p_type, const GDNativeStringNamePtr p_constant, GDNativeVariantPtr r_ret) {
+static void gdnative_variant_get_constant_value(GDNativeVariantType p_type, GDNativeConstStringNamePtr p_constant, GDNativeVariantPtr r_ret) {
 	StringName constant = *reinterpret_cast<const StringName *>(p_constant);
 	memnew_placement(r_ret, Variant(Variant::get_constant_value(Variant::Type(p_type), constant)));
 }
-static GDNativePtrUtilityFunction gdnative_variant_get_ptr_utility_function(const GDNativeStringNamePtr p_function, GDNativeInt p_hash) {
+static GDNativePtrUtilityFunction gdnative_variant_get_ptr_utility_function(GDNativeConstStringNamePtr p_function, GDNativeInt p_hash) {
 	StringName function = *reinterpret_cast<const StringName *>(p_function);
 	uint32_t hash = Variant::get_utility_function_hash(function);
 	if (hash != p_hash) {
@@ -574,31 +574,31 @@ static void gdnative_string_new_with_wide_chars(GDNativeStringPtr r_dest, const 
 	}
 }
 
-static void gdnative_string_new_with_latin1_chars_and_len(GDNativeStringPtr r_dest, const char *p_contents, const GDNativeInt p_size) {
+static void gdnative_string_new_with_latin1_chars_and_len(GDNativeStringPtr r_dest, const char *p_contents, GDNativeInt p_size) {
 	String *dest = (String *)r_dest;
 	memnew_placement(dest, String);
 	*dest = String(p_contents, p_size);
 }
 
-static void gdnative_string_new_with_utf8_chars_and_len(GDNativeStringPtr r_dest, const char *p_contents, const GDNativeInt p_size) {
+static void gdnative_string_new_with_utf8_chars_and_len(GDNativeStringPtr r_dest, const char *p_contents, GDNativeInt p_size) {
 	String *dest = (String *)r_dest;
 	memnew_placement(dest, String);
 	dest->parse_utf8(p_contents, p_size);
 }
 
-static void gdnative_string_new_with_utf16_chars_and_len(GDNativeStringPtr r_dest, const char16_t *p_contents, const GDNativeInt p_size) {
+static void gdnative_string_new_with_utf16_chars_and_len(GDNativeStringPtr r_dest, const char16_t *p_contents, GDNativeInt p_size) {
 	String *dest = (String *)r_dest;
 	memnew_placement(dest, String);
 	dest->parse_utf16(p_contents, p_size);
 }
 
-static void gdnative_string_new_with_utf32_chars_and_len(GDNativeStringPtr r_dest, const char32_t *p_contents, const GDNativeInt p_size) {
+static void gdnative_string_new_with_utf32_chars_and_len(GDNativeStringPtr r_dest, const char32_t *p_contents, GDNativeInt p_size) {
 	String *dest = (String *)r_dest;
 	memnew_placement(dest, String);
 	*dest = String((const char32_t *)p_contents, p_size);
 }
 
-static void gdnative_string_new_with_wide_chars_and_len(GDNativeStringPtr r_dest, const wchar_t *p_contents, const GDNativeInt p_size) {
+static void gdnative_string_new_with_wide_chars_and_len(GDNativeStringPtr r_dest, const wchar_t *p_contents, GDNativeInt p_size) {
 	String *dest = (String *)r_dest;
 	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit, parse.
@@ -611,7 +611,7 @@ static void gdnative_string_new_with_wide_chars_and_len(GDNativeStringPtr r_dest
 	}
 }
 
-static GDNativeInt gdnative_string_to_latin1_chars(const GDNativeStringPtr p_self, char *r_text, GDNativeInt p_max_write_length) {
+static GDNativeInt gdnative_string_to_latin1_chars(GDNativeConstStringPtr p_self, char *r_text, GDNativeInt p_max_write_length) {
 	String *self = (String *)p_self;
 	CharString cs = self->ascii(true);
 	GDNativeInt len = cs.length();
@@ -623,7 +623,7 @@ static GDNativeInt gdnative_string_to_latin1_chars(const GDNativeStringPtr p_sel
 	}
 	return len;
 }
-static GDNativeInt gdnative_string_to_utf8_chars(const GDNativeStringPtr p_self, char *r_text, GDNativeInt p_max_write_length) {
+static GDNativeInt gdnative_string_to_utf8_chars(GDNativeConstStringPtr p_self, char *r_text, GDNativeInt p_max_write_length) {
 	String *self = (String *)p_self;
 	CharString cs = self->utf8();
 	GDNativeInt len = cs.length();
@@ -635,7 +635,7 @@ static GDNativeInt gdnative_string_to_utf8_chars(const GDNativeStringPtr p_self,
 	}
 	return len;
 }
-static GDNativeInt gdnative_string_to_utf16_chars(const GDNativeStringPtr p_self, char16_t *r_text, GDNativeInt p_max_write_length) {
+static GDNativeInt gdnative_string_to_utf16_chars(GDNativeConstStringPtr p_self, char16_t *r_text, GDNativeInt p_max_write_length) {
 	String *self = (String *)p_self;
 	Char16String cs = self->utf16();
 	GDNativeInt len = cs.length();
@@ -647,7 +647,7 @@ static GDNativeInt gdnative_string_to_utf16_chars(const GDNativeStringPtr p_self
 	}
 	return len;
 }
-static GDNativeInt gdnative_string_to_utf32_chars(const GDNativeStringPtr p_self, char32_t *r_text, GDNativeInt p_max_write_length) {
+static GDNativeInt gdnative_string_to_utf32_chars(GDNativeConstStringPtr p_self, char32_t *r_text, GDNativeInt p_max_write_length) {
 	String *self = (String *)p_self;
 	GDNativeInt len = self->length();
 	if (r_text) {
@@ -658,7 +658,7 @@ static GDNativeInt gdnative_string_to_utf32_chars(const GDNativeStringPtr p_self
 	}
 	return len;
 }
-static GDNativeInt gdnative_string_to_wide_chars(const GDNativeStringPtr p_self, wchar_t *r_text, GDNativeInt p_max_write_length) {
+static GDNativeInt gdnative_string_to_wide_chars(GDNativeConstStringPtr p_self, wchar_t *r_text, GDNativeInt p_max_write_length) {
 	if constexpr (sizeof(wchar_t) == 4) {
 		return gdnative_string_to_utf32_chars(p_self, (char32_t *)r_text, p_max_write_length);
 	} else {
@@ -672,7 +672,7 @@ static char32_t *gdnative_string_operator_index(GDNativeStringPtr p_self, GDNati
 	return &self->ptrw()[p_index];
 }
 
-static const char32_t *gdnative_string_operator_index_const(const GDNativeStringPtr p_self, GDNativeInt p_index) {
+static const char32_t *gdnative_string_operator_index_const(GDNativeConstStringPtr p_self, GDNativeInt p_index) {
 	const String *self = (const String *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->length() + 1, nullptr);
 	return &self->ptr()[p_index];
@@ -686,7 +686,7 @@ static uint8_t *gdnative_packed_byte_array_operator_index(GDNativeTypePtr p_self
 	return &self->ptrw()[p_index];
 }
 
-static const uint8_t *gdnative_packed_byte_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static const uint8_t *gdnative_packed_byte_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const PackedByteArray *self = (const PackedByteArray *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return &self->ptr()[p_index];
@@ -698,7 +698,7 @@ static GDNativeTypePtr gdnative_packed_color_array_operator_index(GDNativeTypePt
 	return (GDNativeTypePtr)&self->ptrw()[p_index];
 }
 
-static GDNativeTypePtr gdnative_packed_color_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static GDNativeTypePtr gdnative_packed_color_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const PackedColorArray *self = (const PackedColorArray *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return (GDNativeTypePtr)&self->ptr()[p_index];
@@ -710,7 +710,7 @@ static float *gdnative_packed_float32_array_operator_index(GDNativeTypePtr p_sel
 	return &self->ptrw()[p_index];
 }
 
-static const float *gdnative_packed_float32_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static const float *gdnative_packed_float32_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const PackedFloat32Array *self = (const PackedFloat32Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return &self->ptr()[p_index];
@@ -722,7 +722,7 @@ static double *gdnative_packed_float64_array_operator_index(GDNativeTypePtr p_se
 	return &self->ptrw()[p_index];
 }
 
-static const double *gdnative_packed_float64_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static const double *gdnative_packed_float64_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const PackedFloat64Array *self = (const PackedFloat64Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return &self->ptr()[p_index];
@@ -734,7 +734,7 @@ static int32_t *gdnative_packed_int32_array_operator_index(GDNativeTypePtr p_sel
 	return &self->ptrw()[p_index];
 }
 
-static const int32_t *gdnative_packed_int32_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static const int32_t *gdnative_packed_int32_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const PackedInt32Array *self = (const PackedInt32Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return &self->ptr()[p_index];
@@ -746,7 +746,7 @@ static int64_t *gdnative_packed_int64_array_operator_index(GDNativeTypePtr p_sel
 	return &self->ptrw()[p_index];
 }
 
-static const int64_t *gdnative_packed_int64_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static const int64_t *gdnative_packed_int64_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const PackedInt64Array *self = (const PackedInt64Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return &self->ptr()[p_index];
@@ -758,7 +758,7 @@ static GDNativeStringPtr gdnative_packed_string_array_operator_index(GDNativeTyp
 	return (GDNativeStringPtr)&self->ptrw()[p_index];
 }
 
-static GDNativeStringPtr gdnative_packed_string_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static GDNativeStringPtr gdnative_packed_string_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const PackedStringArray *self = (const PackedStringArray *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return (GDNativeStringPtr)&self->ptr()[p_index];
@@ -770,7 +770,7 @@ static GDNativeTypePtr gdnative_packed_vector2_array_operator_index(GDNativeType
 	return (GDNativeTypePtr)&self->ptrw()[p_index];
 }
 
-static GDNativeTypePtr gdnative_packed_vector2_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static GDNativeTypePtr gdnative_packed_vector2_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const PackedVector2Array *self = (const PackedVector2Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return (GDNativeTypePtr)&self->ptr()[p_index];
@@ -782,7 +782,7 @@ static GDNativeTypePtr gdnative_packed_vector3_array_operator_index(GDNativeType
 	return (GDNativeTypePtr)&self->ptrw()[p_index];
 }
 
-static GDNativeTypePtr gdnative_packed_vector3_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static GDNativeTypePtr gdnative_packed_vector3_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const PackedVector3Array *self = (const PackedVector3Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return (GDNativeTypePtr)&self->ptr()[p_index];
@@ -794,7 +794,7 @@ static GDNativeVariantPtr gdnative_array_operator_index(GDNativeTypePtr p_self, 
 	return (GDNativeVariantPtr)&self->operator[](p_index);
 }
 
-static GDNativeVariantPtr gdnative_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+static GDNativeVariantPtr gdnative_array_operator_index_const(GDNativeConstTypePtr p_self, GDNativeInt p_index) {
 	const Array *self = (const Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return (GDNativeVariantPtr)&self->operator[](p_index);
@@ -802,20 +802,20 @@ static GDNativeVariantPtr gdnative_array_operator_index_const(const GDNativeType
 
 /* Dictionary functions */
 
-static GDNativeVariantPtr gdnative_dictionary_operator_index(GDNativeTypePtr p_self, const GDNativeVariantPtr p_key) {
+static GDNativeVariantPtr gdnative_dictionary_operator_index(GDNativeTypePtr p_self, GDNativeConstVariantPtr p_key) {
 	Dictionary *self = (Dictionary *)p_self;
 	return (GDNativeVariantPtr)&self->operator[](*(const Variant *)p_key);
 }
 
-static GDNativeVariantPtr gdnative_dictionary_operator_index_const(const GDNativeTypePtr p_self, const GDNativeVariantPtr p_key) {
+static GDNativeVariantPtr gdnative_dictionary_operator_index_const(GDNativeConstTypePtr p_self, GDNativeConstVariantPtr p_key) {
 	const Dictionary *self = (const Dictionary *)p_self;
 	return (GDNativeVariantPtr)&self->operator[](*(const Variant *)p_key);
 }
 
 /* OBJECT API */
 
-static void gdnative_object_method_bind_call(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
-	MethodBind *mb = (MethodBind *)p_method_bind;
+static void gdnative_object_method_bind_call(GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, GDNativeConstVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
+	const MethodBind *mb = reinterpret_cast<const MethodBind *>(p_method_bind);
 	Object *o = (Object *)p_instance;
 	const Variant **args = (const Variant **)p_args;
 	Callable::CallError error;
@@ -830,8 +830,8 @@ static void gdnative_object_method_bind_call(const GDNativeMethodBindPtr p_metho
 	}
 }
 
-static void gdnative_object_method_bind_ptrcall(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr p_ret) {
-	MethodBind *mb = (MethodBind *)p_method_bind;
+static void gdnative_object_method_bind_ptrcall(GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, GDNativeConstTypePtr *p_args, GDNativeTypePtr p_ret) {
+	const MethodBind *mb = reinterpret_cast<const MethodBind *>(p_method_bind);
 	Object *o = (Object *)p_instance;
 	mb->ptrcall(o, (const void **)p_args, p_ret);
 }
@@ -840,7 +840,7 @@ static void gdnative_object_destroy(GDNativeObjectPtr p_o) {
 	memdelete((Object *)p_o);
 }
 
-static GDNativeObjectPtr gdnative_global_get_singleton(const GDNativeStringNamePtr p_name) {
+static GDNativeObjectPtr gdnative_global_get_singleton(GDNativeConstStringNamePtr p_name) {
 	const StringName name = *reinterpret_cast<const StringName *>(p_name);
 	return (GDNativeObjectPtr)Engine::get_singleton()->get_singleton_object(name);
 }
@@ -855,7 +855,7 @@ static void gdnative_object_set_instance_binding(GDNativeObjectPtr p_object, voi
 	o->set_instance_binding(p_token, p_binding, p_callbacks);
 }
 
-static void gdnative_object_set_instance(GDNativeObjectPtr p_object, const GDNativeStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance) {
+static void gdnative_object_set_instance(GDNativeObjectPtr p_object, GDNativeConstStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	Object *o = (Object *)p_object;
 	ClassDB::set_object_extension_instance(o, classname, p_instance);
@@ -865,7 +865,7 @@ static GDNativeObjectPtr gdnative_object_get_instance_from_id(GDObjectInstanceID
 	return (GDNativeObjectPtr)ObjectDB::get_instance(ObjectID(p_instance_id));
 }
 
-static GDNativeObjectPtr gdnative_object_cast_to(const GDNativeObjectPtr p_object, void *p_class_tag) {
+static GDNativeObjectPtr gdnative_object_cast_to(GDNativeConstObjectPtr p_object, void *p_class_tag) {
 	if (!p_object) {
 		return nullptr;
 	}
@@ -874,7 +874,7 @@ static GDNativeObjectPtr gdnative_object_cast_to(const GDNativeObjectPtr p_objec
 	return o->is_class_ptr(p_class_tag) ? (GDNativeObjectPtr)o : (GDNativeObjectPtr) nullptr;
 }
 
-static GDObjectInstanceID gdnative_object_get_instance_id(const GDNativeObjectPtr p_object) {
+static GDObjectInstanceID gdnative_object_get_instance_id(GDNativeConstObjectPtr p_object) {
 	const Object *o = (const Object *)p_object;
 	return (GDObjectInstanceID)o->get_instance_id();
 }
@@ -886,7 +886,7 @@ static GDNativeScriptInstancePtr gdnative_script_instance_create(const GDNativeE
 	return reinterpret_cast<GDNativeScriptInstancePtr>(script_instance_extension);
 }
 
-static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const GDNativeStringNamePtr p_classname, const GDNativeStringNamePtr p_methodname, GDNativeInt p_hash) {
+static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(GDNativeConstStringNamePtr p_classname, GDNativeConstStringNamePtr p_methodname, GDNativeInt p_hash) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
 	MethodBind *mb = ClassDB::get_method(classname, methodname);
@@ -898,12 +898,12 @@ static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const GDNativeStri
 	return (GDNativeMethodBindPtr)mb;
 }
 
-static GDNativeObjectPtr gdnative_classdb_construct_object(const GDNativeStringNamePtr p_classname) {
+static GDNativeObjectPtr gdnative_classdb_construct_object(GDNativeConstStringNamePtr p_classname) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	return (GDNativeObjectPtr)ClassDB::instantiate(classname);
 }
 
-static void *gdnative_classdb_get_class_tag(const GDNativeStringNamePtr p_classname) {
+static void *gdnative_classdb_get_class_tag(GDNativeConstStringNamePtr p_classname) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(classname);
 	return class_info ? class_info->class_ptr : nullptr;
