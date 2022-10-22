@@ -99,6 +99,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Color marked_line_color = Color(1, 1, 1);
 	Color folded_code_region_color = Color(1, 1, 1);
+	int previous_line = 0;
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
@@ -163,6 +164,8 @@ protected:
 	void _update_breakpoint_list();
 	void _breakpoint_item_pressed(int p_idx);
 	void _breakpoint_toggled(int p_row);
+
+	void _on_caret_moved();
 
 	void _validate_script(); // No longer virtual.
 	void _update_warnings();
@@ -259,6 +262,9 @@ public:
 	virtual CodeTextEditor *get_code_editor() const override;
 
 	virtual void validate() override;
+
+	Variant get_previous_state();
+	void store_previous_state();
 
 	ScriptTextEditor();
 	~ScriptTextEditor();
