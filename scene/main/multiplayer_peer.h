@@ -82,9 +82,12 @@ public:
 	virtual TransferMode get_packet_mode() const = 0;
 	virtual int get_packet_channel() const = 0;
 
+	virtual void disconnect_peer(int p_peer, bool p_force = false) = 0;
+
 	virtual bool is_server() const = 0;
 
 	virtual void poll() = 0;
+	virtual void close() = 0;
 
 	virtual int get_unique_id() const = 0;
 
@@ -139,6 +142,8 @@ public:
 	EXBIND0RC(int, get_packet_channel);
 	EXBIND0RC(bool, is_server);
 	EXBIND0(poll);
+	EXBIND0(close);
+	EXBIND2(disconnect_peer, int, bool);
 	EXBIND0RC(int, get_unique_id);
 	EXBIND0RC(ConnectionStatus, get_connection_status);
 };

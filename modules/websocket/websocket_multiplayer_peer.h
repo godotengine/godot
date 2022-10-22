@@ -102,6 +102,9 @@ public:
 	virtual int get_max_packet_size() const override;
 	virtual bool is_server() const override;
 	virtual void poll() override;
+	virtual void close() override;
+	virtual void disconnect_peer(int p_peer_id, bool p_force = false) override;
+
 	virtual ConnectionStatus get_connection_status() const override;
 
 	/* PacketPeer */
@@ -132,8 +135,6 @@ public:
 
 	IPAddress get_peer_address(int p_peer_id) const;
 	int get_peer_port(int p_peer_id) const;
-	void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "");
-	void close();
 
 	void set_max_queued_packets(int p_max_queued_packets);
 	int get_max_queued_packets() const;
