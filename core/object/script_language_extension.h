@@ -650,13 +650,13 @@ public:
 
 	virtual bool set(const StringName &p_name, const Variant &p_value) override {
 		if (native_info->set_func) {
-			return native_info->set_func(instance, (const GDNativeStringNamePtr)&p_name, (const GDNativeVariantPtr)&p_value);
+			return native_info->set_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeConstVariantPtr)&p_value);
 		}
 		return false;
 	}
 	virtual bool get(const StringName &p_name, Variant &r_ret) const override {
 		if (native_info->get_func) {
-			return native_info->get_func(instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&r_ret);
+			return native_info->get_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeVariantPtr)&r_ret);
 		}
 		return false;
 	}
@@ -683,7 +683,7 @@ public:
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override {
 		if (native_info->get_property_type_func) {
 			GDNativeBool is_valid = 0;
-			GDNativeVariantType type = native_info->get_property_type_func(instance, (const GDNativeStringNamePtr)&p_name, &is_valid);
+			GDNativeVariantType type = native_info->get_property_type_func(instance, (GDNativeConstStringNamePtr)&p_name, &is_valid);
 			if (r_is_valid) {
 				*r_is_valid = is_valid != 0;
 			}
@@ -694,13 +694,13 @@ public:
 
 	virtual bool property_can_revert(const StringName &p_name) const override {
 		if (native_info->property_can_revert_func) {
-			return native_info->property_can_revert_func(instance, (const GDNativeStringNamePtr)&p_name);
+			return native_info->property_can_revert_func(instance, (GDNativeConstStringNamePtr)&p_name);
 		}
 		return false;
 	}
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
 		if (native_info->property_get_revert_func) {
-			return native_info->property_get_revert_func(instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&r_ret);
+			return native_info->property_get_revert_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeVariantPtr)&r_ret);
 		}
 		return false;
 	}
@@ -711,7 +711,7 @@ public:
 		}
 		return nullptr;
 	}
-	static void _add_property_with_state(const GDNativeStringNamePtr p_name, const GDNativeVariantPtr p_value, void *p_userdata) {
+	static void _add_property_with_state(GDNativeConstStringNamePtr p_name, GDNativeConstVariantPtr p_value, void *p_userdata) {
 		List<Pair<StringName, Variant>> *state = (List<Pair<StringName, Variant>> *)p_userdata;
 		state->push_back(Pair<StringName, Variant>(*(const StringName *)p_name, *(const Variant *)p_value));
 	}
@@ -744,7 +744,7 @@ public:
 		Variant ret;
 		if (native_info->call_func) {
 			GDNativeCallError ce;
-			native_info->call_func(instance, (const GDNativeStringNamePtr)&p_method, (const GDNativeVariantPtr *)p_args, p_argcount, (GDNativeVariantPtr)&ret, &ce);
+			native_info->call_func(instance, (GDNativeConstStringNamePtr)&p_method, (GDNativeConstVariantPtr *)p_args, p_argcount, (GDNativeVariantPtr)&ret, &ce);
 			r_error.error = Callable::CallError::Error(ce.error);
 			r_error.argument = ce.argument;
 			r_error.expected = ce.expected;
@@ -799,7 +799,7 @@ public:
 
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) override {
 		if (native_info->set_fallback_func) {
-			bool ret = native_info->set_fallback_func(instance, (const GDNativeStringNamePtr)&p_name, (const GDNativeVariantPtr)&p_value);
+			bool ret = native_info->set_fallback_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeConstVariantPtr)&p_value);
 			if (r_valid) {
 				*r_valid = ret;
 			}
@@ -808,7 +808,7 @@ public:
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid) override {
 		Variant ret;
 		if (native_info->get_fallback_func) {
-			bool valid = native_info->get_fallback_func(instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&ret);
+			bool valid = native_info->get_fallback_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeVariantPtr)&ret);
 			if (r_valid) {
 				*r_valid = valid;
 			}
