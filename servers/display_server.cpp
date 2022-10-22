@@ -273,7 +273,7 @@ TypedArray<Dictionary> DisplayServer::tts_get_voices() const {
 PackedStringArray DisplayServer::tts_get_voices_for_language(const String &p_language) const {
 	PackedStringArray ret;
 	TypedArray<Dictionary> voices = tts_get_voices();
-	for (int i = 0; i < voices.size(); i++) {
+	for (vec_size i = 0; i < voices.size(); i++) {
 		const Dictionary &voice = voices[i];
 		if (voice.has("id") && voice.has("language") && voice["language"].operator String().begins_with(p_language)) {
 			ret.push_back(voice["id"]);

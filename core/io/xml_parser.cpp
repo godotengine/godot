@@ -413,7 +413,7 @@ String XMLParser::get_attribute_value(int p_idx) const {
 }
 
 bool XMLParser::has_attribute(const String &p_name) const {
-	for (int i = 0; i < attributes.size(); i++) {
+	for (vec_size i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name) {
 			return true;
 		}
@@ -424,7 +424,7 @@ bool XMLParser::has_attribute(const String &p_name) const {
 
 String XMLParser::get_attribute_value(const String &p_name) const {
 	int idx = -1;
-	for (int i = 0; i < attributes.size(); i++) {
+	for (vec_size i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name) {
 			idx = i;
 			break;
@@ -438,7 +438,7 @@ String XMLParser::get_attribute_value(const String &p_name) const {
 
 String XMLParser::get_attribute_value_safe(const String &p_name) const {
 	int idx = -1;
-	for (int i = 0; i < attributes.size(); i++) {
+	for (vec_size i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name) {
 			idx = i;
 			break;

@@ -128,7 +128,7 @@ void Polygon2DEditor::_sync_bones() {
 			Vector<float> weights;
 			int wc = node->get_polygon().size();
 
-			for (int j = 0; j < prev_bones.size(); j += 2) {
+			for (vec_size j = 0; j < prev_bones.size(); j += 2) {
 				NodePath pvp = prev_bones[j];
 				Vector<float> pv = prev_bones[j + 1];
 				if (pvp == path && pv.size() == wc) {
@@ -585,7 +585,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					int closest = -1;
 					real_t closest_dist = 1e20;
 
-					for (int i = points_prev.size() - internal_vertices; i < points_prev.size(); i++) {
+					for (vec_size i = points_prev.size() - internal_vertices; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(uv_create_poly_prev[i]);
 						real_t dist = tuv.distance_to(mb->get_position());
 						if (dist < 8 && dist < closest_dist) {
@@ -638,7 +638,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				if (uv_move_current == UV_MODE_EDIT_POINT) {
 					point_drag_index = -1;
-					for (int i = 0; i < points_prev.size(); i++) {
+					for (vec_size i = 0; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(points_prev[i]);
 						if (tuv.distance_to(mb->get_position()) < 8) {
 							uv_drag_from = tuv;
@@ -655,7 +655,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					int closest = -1;
 					real_t closest_dist = 1e20;
 
-					for (int i = 0; i < points_prev.size(); i++) {
+					for (vec_size i = 0; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(points_prev[i]);
 						real_t dist = tuv.distance_to(mb->get_position());
 						if (dist < 8 && dist < closest_dist) {
@@ -701,7 +701,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						Vector<int> points = polygons[i];
 						Vector<Vector2> polys;
 						polys.resize(points.size());
-						for (int j = 0; j < polys.size(); j++) {
+						for (vec_size j = 0; j < polys.size(); j++) {
 							int idx = points[j];
 							if (idx < 0 || idx >= points_prev.size()) {
 								continue;
@@ -810,7 +810,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				} break;
 				case UV_MODE_MOVE: {
 					Vector<Vector2> uv_new = points_prev;
-					for (int i = 0; i < uv_new.size(); i++) {
+					for (vec_size i = 0; i < uv_new.size(); i++) {
 						uv_new.set(i, uv_new[i] + drag);
 					}
 
@@ -824,14 +824,14 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					Vector2 center;
 					Vector<Vector2> uv_new = points_prev;
 
-					for (int i = 0; i < uv_new.size(); i++) {
+					for (vec_size i = 0; i < uv_new.size(); i++) {
 						center += points_prev[i];
 					}
 					center /= uv_new.size();
 
 					real_t angle = (uv_drag_from - mtx.xform(center)).normalized().angle_to((uv_drag_to - mtx.xform(center)).normalized());
 
-					for (int i = 0; i < uv_new.size(); i++) {
+					for (vec_size i = 0; i < uv_new.size(); i++) {
 						Vector2 rel = points_prev[i] - center;
 						rel = rel.rotated(angle);
 						uv_new.set(i, center + rel);
@@ -847,7 +847,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					Vector2 center;
 					Vector<Vector2> uv_new = points_prev;
 
-					for (int i = 0; i < uv_new.size(); i++) {
+					for (vec_size i = 0; i < uv_new.size(); i++) {
 						center += points_prev[i];
 					}
 					center /= uv_new.size();
@@ -860,7 +860,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					real_t scale = to_dist / from_dist;
 
-					for (int i = 0; i < uv_new.size(); i++) {
+					for (vec_size i = 0; i < uv_new.size(); i++) {
 						Vector2 rel = points_prev[i] - center;
 						rel = rel * scale;
 						uv_new.set(i, center + rel);
@@ -1059,7 +1059,7 @@ void Polygon2DEditor::_uv_draw() {
 		uv_draw_max = 0;
 	}
 
-	for (int i = 0; i < uvs.size(); i++) {
+	for (vec_size i = 0; i < uvs.size(); i++) {
 		int next = uv_draw_max > 0 ? (i + 1) % uv_draw_max : 0;
 
 		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_GET("editors/polygon_editor/show_previous_outline")) {
@@ -1075,10 +1075,10 @@ void Polygon2DEditor::_uv_draw() {
 		}
 	}
 
-	for (int i = 0; i < polygons.size(); i++) {
+	for (vec_size i = 0; i < polygons.size(); i++) {
 		Vector<int> points = polygons[i];
 		Vector<Vector2> polypoints;
-		for (int j = 0; j < points.size(); j++) {
+		for (vec_size j = 0; j < points.size(); j++) {
 			int next = (j + 1) % points.size();
 
 			int idx = points[j];
@@ -1098,7 +1098,7 @@ void Polygon2DEditor::_uv_draw() {
 		}
 	}
 
-	for (int i = 0; i < uvs.size(); i++) {
+	for (vec_size i = 0; i < uvs.size(); i++) {
 		if (weight_r) {
 			Vector2 draw_pos = mtx.xform(uvs[i]);
 			float weight = weight_r[i];
@@ -1114,7 +1114,7 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	if (polygon_create.size()) {
-		for (int i = 0; i < polygon_create.size(); i++) {
+		for (vec_size i = 0; i < polygon_create.size(); i++) {
 			Vector2 from = uvs[polygon_create[i]];
 			Vector2 to = (i + 1) < polygon_create.size() ? uvs[polygon_create[i + 1]] : uv_create_to;
 			uv_edit_draw->draw_line(mtx.xform(from), mtx.xform(to), polygon_line_color, Math::round(EDSCALE));

@@ -142,7 +142,7 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 
 	return_doc_from_retinfo(p_method, p_methodinfo.return_val);
 
-	for (int i = 0; i < p_methodinfo.arguments.size(); i++) {
+	for (vec_size i = 0; i < p_methodinfo.arguments.size(); i++) {
 		DocData::ArgumentDoc argument;
 		argument_doc_from_arginfo(argument, p_methodinfo.arguments[i]);
 		int default_arg_index = i - (p_methodinfo.arguments.size() - p_methodinfo.default_arguments.size());

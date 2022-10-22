@@ -101,7 +101,7 @@ void GodotCollisionObject2D::set_shape_disabled(int p_idx, bool p_disabled) {
 
 void GodotCollisionObject2D::remove_shape(GodotShape2D *p_shape) {
 	//remove a shape, all the times it appears
-	for (int i = 0; i < shapes.size(); i++) {
+	for (vec_size i = 0; i < shapes.size(); i++) {
 		if (shapes[i].shape == p_shape) {
 			remove_shape(i);
 			i--;
@@ -112,7 +112,7 @@ void GodotCollisionObject2D::remove_shape(GodotShape2D *p_shape) {
 void GodotCollisionObject2D::remove_shape(int p_index) {
 	//remove anything from shape to be erased to end, so subindices don't change
 	ERR_FAIL_INDEX(p_index, shapes.size());
-	for (int i = p_index; i < shapes.size(); i++) {
+	for (vec_size i = p_index; i < shapes.size(); i++) {
 		if (shapes[i].bpid == 0) {
 			continue;
 		}
@@ -148,7 +148,7 @@ void GodotCollisionObject2D::_set_static(bool p_static) {
 }
 
 void GodotCollisionObject2D::_unregister_shapes() {
-	for (int i = 0; i < shapes.size(); i++) {
+	for (vec_size i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
 		if (s.bpid > 0) {
 			space->get_broadphase()->remove(s.bpid);
@@ -162,7 +162,7 @@ void GodotCollisionObject2D::_update_shapes() {
 		return;
 	}
 
-	for (int i = 0; i < shapes.size(); i++) {
+	for (vec_size i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
 		if (s.disabled) {
 			continue;
@@ -189,7 +189,7 @@ void GodotCollisionObject2D::_update_shapes_with_motion(const Vector2 &p_motion)
 		return;
 	}
 
-	for (int i = 0; i < shapes.size(); i++) {
+	for (vec_size i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
 		if (s.disabled) {
 			continue;
@@ -215,7 +215,7 @@ void GodotCollisionObject2D::_set_space(GodotSpace2D *p_space) {
 	if (space) {
 		space->remove_object(this);
 
-		for (int i = 0; i < shapes.size(); i++) {
+		for (vec_size i = 0; i < shapes.size(); i++) {
 			Shape &s = shapes.write[i];
 			if (s.bpid) {
 				space->get_broadphase()->remove(s.bpid);

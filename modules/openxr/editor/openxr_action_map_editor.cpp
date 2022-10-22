@@ -89,7 +89,7 @@ void OpenXRActionMapEditor::_update_action_sets() {
 	// in with the new...
 	if (action_map.is_valid()) {
 		Array action_sets = action_map->get_action_sets();
-		for (int i = 0; i < action_sets.size(); i++) {
+		for (vec_size i = 0; i < action_sets.size(); i++) {
 			Ref<OpenXRActionSet> action_set = action_sets[i];
 			_add_action_set_editor(action_set);
 		}
@@ -134,7 +134,7 @@ void OpenXRActionMapEditor::_update_interaction_profiles() {
 	// in with the new...
 	if (action_map.is_valid()) {
 		Array new_interaction_profiles = action_map->get_interaction_profiles();
-		for (int i = 0; i < new_interaction_profiles.size(); i++) {
+		for (vec_size i = 0; i < new_interaction_profiles.size(); i++) {
 			Ref<OpenXRInteractionProfile> interaction_profile = new_interaction_profiles[i];
 			_add_interaction_profile_editor(interaction_profile);
 		}

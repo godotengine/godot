@@ -105,13 +105,13 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 		return false;
 	}
 
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		if (bones[i] != p_vertex.bones[i]) {
 			return false;
 		}
 	}
 
-	for (int i = 0; i < weights.size(); i++) {
+	for (vec_size i = 0; i < weights.size(); i++) {
 		if (weights[i] != p_vertex.weights[i]) {
 			return false;
 		}
@@ -230,14 +230,14 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 		ERR_FAIL_COND(vtx.weights.size() != vtx.bones.size());
 		if (vtx.weights.size() < expected_vertices) {
 			//less than required, fill
-			for (int i = vtx.weights.size(); i < expected_vertices; i++) {
+			for (vec_size i = vtx.weights.size(); i < expected_vertices; i++) {
 				vtx.weights.push_back(0);
 				vtx.bones.push_back(0);
 			}
 		} else if (vtx.weights.size() > expected_vertices) {
 			//more than required, sort, cap and normalize.
 			Vector<WeightSort> weights;
-			for (int i = 0; i < vtx.weights.size(); i++) {
+			for (vec_size i = 0; i < vtx.weights.size(); i++) {
 				WeightSort ws;
 				ws.index = vtx.bones[i];
 				ws.weight = vtx.weights[i];

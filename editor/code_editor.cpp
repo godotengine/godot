@@ -1291,12 +1291,12 @@ void CodeTextEditor::move_lines_up() {
 	Vector<int> carets_to_remove;
 
 	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
-	for (int i = 0; i < caret_edit_order.size(); i++) {
+	for (vec_size i = 0; i < caret_edit_order.size(); i++) {
 		int c = caret_edit_order[i];
 		int cl = text_editor->get_caret_line(c);
 
 		bool swaped_caret = false;
-		for (int j = i + 1; j < caret_edit_order.size(); j++) {
+		for (vec_size j = i + 1; j < caret_edit_order.size(); j++) {
 			if (text_editor->has_selection(caret_edit_order[j])) {
 				if (text_editor->get_selection_from_line() == cl) {
 					carets_to_remove.push_back(caret_edit_order[j]);
@@ -1383,12 +1383,12 @@ void CodeTextEditor::move_lines_down() {
 	Vector<int> carets_to_remove;
 
 	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
-	for (int i = 0; i < caret_edit_order.size(); i++) {
+	for (vec_size i = 0; i < caret_edit_order.size(); i++) {
 		int c = caret_edit_order[i];
 		int cl = text_editor->get_caret_line(c);
 
 		bool swaped_caret = false;
-		for (int j = i + 1; j < caret_edit_order.size(); j++) {
+		for (vec_size j = i + 1; j < caret_edit_order.size(); j++) {
 			if (text_editor->has_selection(caret_edit_order[j])) {
 				if (text_editor->get_selection_from_line() == cl) {
 					carets_to_remove.push_back(caret_edit_order[j]);
@@ -1497,12 +1497,12 @@ void CodeTextEditor::delete_lines() {
 	Vector<int> carets_to_remove;
 
 	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
-	for (int i = 0; i < caret_edit_order.size(); i++) {
+	for (vec_size i = 0; i < caret_edit_order.size(); i++) {
 		int c = caret_edit_order[i];
 		int cl = text_editor->get_caret_line(c);
 
 		bool swaped_caret = false;
-		for (int j = i + 1; j < caret_edit_order.size(); j++) {
+		for (vec_size j = i + 1; j < caret_edit_order.size(); j++) {
 			if (text_editor->has_selection(caret_edit_order[j])) {
 				if (text_editor->get_selection_from_line() == cl) {
 					carets_to_remove.push_back(caret_edit_order[j]);
@@ -1749,21 +1749,21 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 
 	if (state.has("folded_lines")) {
 		Vector<int> folded_lines = state["folded_lines"];
-		for (int i = 0; i < folded_lines.size(); i++) {
+		for (vec_size i = 0; i < folded_lines.size(); i++) {
 			text_editor->fold_line(folded_lines[i]);
 		}
 	}
 
 	if (state.has("breakpoints")) {
 		Array breakpoints = state["breakpoints"];
-		for (int i = 0; i < breakpoints.size(); i++) {
+		for (vec_size i = 0; i < breakpoints.size(); i++) {
 			text_editor->set_line_as_breakpoint(breakpoints[i], true);
 		}
 	}
 
 	if (state.has("bookmarks")) {
 		Array bookmarks = state["bookmarks"];
-		for (int i = 0; i < bookmarks.size(); i++) {
+		for (vec_size i = 0; i < bookmarks.size(); i++) {
 			text_editor->set_line_as_bookmarked(bookmarks[i], true);
 		}
 	}
@@ -1862,7 +1862,7 @@ void CodeTextEditor::_apply_settings_change() {
 			case 2: { // Custom.
 				Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
 				Dictionary ftrs;
-				for (int i = 0; i < subtag.size(); i++) {
+				for (vec_size i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
 					if (subtag_a.size() == 2) {
 						ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
@@ -2007,7 +2007,7 @@ void CodeTextEditor::goto_next_bookmark() {
 		text_editor->set_caret_line(bmarks[0]);
 		text_editor->center_viewport_to_caret();
 	} else {
-		for (int i = 0; i < bmarks.size(); i++) {
+		for (vec_size i = 0; i < bmarks.size(); i++) {
 			int bmark_line = bmarks[i];
 			if (bmark_line > line) {
 				text_editor->unfold_line(bmark_line);
@@ -2096,7 +2096,7 @@ CodeTextEditor::CodeTextEditor() {
 			case 2: { // Custom.
 				Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
 				Dictionary ftrs;
-				for (int i = 0; i < subtag.size(); i++) {
+				for (vec_size i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
 					if (subtag_a.size() == 2) {
 						ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();

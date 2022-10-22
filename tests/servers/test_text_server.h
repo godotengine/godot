@@ -103,7 +103,7 @@ TEST_SUITE("[TextServer]") {
 
 				ts->free_rid(ctx);
 
-				for (int j = 0; j < font.size(); j++) {
+				for (vec_size j = 0; j < font.size(); j++) {
 					ts->free_rid(font[j]);
 				}
 				font.clear();
@@ -155,7 +155,7 @@ TEST_SUITE("[TextServer]") {
 
 				ts->free_rid(ctx);
 
-				for (int j = 0; j < font.size(); j++) {
+				for (vec_size j = 0; j < font.size(); j++) {
 					ts->free_rid(font[j]);
 				}
 				font.clear();
@@ -407,7 +407,7 @@ TEST_SUITE("[TextServer]") {
 					ts->free_rid(ctx);
 				}
 
-				for (int j = 0; j < font.size(); j++) {
+				for (vec_size j = 0; j < font.size(); j++) {
 					ts->free_rid(font[j]);
 				}
 				font.clear();
@@ -455,7 +455,7 @@ TEST_SUITE("[TextServer]") {
 
 				ts->free_rid(ctx);
 
-				for (int j = 0; j < font.size(); j++) {
+				for (vec_size j = 0; j < font.size(); j++) {
 					ts->free_rid(font[j]);
 				}
 				font.clear();
@@ -527,7 +527,7 @@ TEST_SUITE("[TextServer]") {
 
 				ts->free_rid(ctx);
 
-				for (int j = 0; j < font.size(); j++) {
+				for (vec_size j = 0; j < font.size(); j++) {
 					ts->free_rid(font[j]);
 				}
 				font.clear();

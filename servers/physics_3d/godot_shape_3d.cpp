@@ -1206,7 +1206,7 @@ Vector<Vector3> GodotConcavePolygonShape3D::get_faces() const {
 	Vector<Vector3> rfaces;
 	rfaces.resize(faces.size() * 3);
 
-	for (int i = 0; i < faces.size(); i++) {
+	for (vec_size i = 0; i < faces.size(); i++) {
 		Face f = faces.get(i);
 
 		for (int j = 0; j < 3; j++) {
@@ -2125,7 +2125,7 @@ void GodotHeightMapShape3D::set_data(const Variant &p_data) {
 
 		real_t *w = heights_buffer.ptrw();
 		real_t *rp = (real_t *)im_data.ptr();
-		for (int i = 0; i < heights_buffer.size(); ++i) {
+		for (vec_size i = 0; i < heights_buffer.size(); ++i) {
 			w[i] = rp[i];
 		}
 	} else {

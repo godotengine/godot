@@ -479,7 +479,7 @@ ShaderTypes::ShaderTypes() {
 	shader_types_list.push_back("sky");
 	shader_types_list.push_back("fog");
 
-	for (int i = 0; i < shader_types_list.size(); i++) {
+	for (vec_size i = 0; i < shader_types_list.size(); i++) {
 		shader_types.insert(shader_types_list[i]);
 	}
 }

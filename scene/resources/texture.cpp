@@ -731,7 +731,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 				uint8_t *wr = img_data.ptrw();
 
 				int ofs = 0;
-				for (int i = 0; i < mipmap_images.size(); i++) {
+				for (vec_size i = 0; i < mipmap_images.size(); i++) {
 					Vector<uint8_t> id = mipmap_images[i]->get_data();
 					int len = id.size();
 					const uint8_t *r = id.ptr();
@@ -1090,7 +1090,7 @@ TypedArray<Image> Texture3D::_get_datai() const {
 
 	TypedArray<Image> ret;
 	ret.resize(data.size());
-	for (int i = 0; i < data.size(); i++) {
+	for (vec_size i = 0; i < data.size(); i++) {
 		ret[i] = data[i];
 	}
 	return ret;
@@ -1142,7 +1142,7 @@ Vector<Ref<Image>> Texture3D::get_data() const {
 	if (GDVIRTUAL_REQUIRED_CALL(_get_data, ret)) {
 		Vector<Ref<Image>> data;
 		data.resize(ret.size());
-		for (int i = 0; i < data.size(); i++) {
+		for (vec_size i = 0; i < data.size(); i++) {
 			data.write[i] = ret[i];
 		}
 		return data;
@@ -1185,7 +1185,7 @@ bool ImageTexture3D::has_mipmaps() const {
 Error ImageTexture3D::_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data) {
 	Vector<Ref<Image>> images;
 	images.resize(p_data.size());
-	for (int i = 0; i < images.size(); i++) {
+	for (vec_size i = 0; i < images.size(); i++) {
 		images.write[i] = p_data[i];
 	}
 	return create(p_format, p_width, p_height, p_depth, p_mipmaps, images);
@@ -1194,7 +1194,7 @@ Error ImageTexture3D::_create(Image::Format p_format, int p_width, int p_height,
 void ImageTexture3D::_update(const TypedArray<Image> &p_data) {
 	Vector<Ref<Image>> images;
 	images.resize(p_data.size());
-	for (int i = 0; i < images.size(); i++) {
+	for (vec_size i = 0; i < images.size(); i++) {
 		images.write[i] = p_data[i];
 	}
 	return update(images);
@@ -2969,7 +2969,7 @@ ImageTextureLayered::LayeredType ImageTextureLayered::get_layered_type() const {
 
 Error ImageTextureLayered::_create_from_images(const TypedArray<Image> &p_images) {
 	Vector<Ref<Image>> images;
-	for (int i = 0; i < p_images.size(); i++) {
+	for (vec_size i = 0; i < p_images.size(); i++) {
 		Ref<Image> img = p_images[i];
 		ERR_FAIL_COND_V(img.is_null(), ERR_INVALID_PARAMETER);
 		images.push_back(img);
@@ -3004,7 +3004,7 @@ Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 	int new_height = p_images[0]->get_height();
 	bool new_mipmaps = p_images[0]->has_mipmaps();
 
-	for (int i = 1; i < p_images.size(); i++) {
+	for (vec_size i = 1; i < p_images.size(); i++) {
 		ERR_FAIL_COND_V_MSG(p_images[i]->get_format() != new_format, ERR_INVALID_PARAMETER,
 				"All images must share the same format");
 		ERR_FAIL_COND_V_MSG(p_images[i]->get_width() != new_width || p_images[i]->get_height() != new_height, ERR_INVALID_PARAMETER,

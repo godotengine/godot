@@ -307,7 +307,7 @@ void FileDialog::_action_pressed() {
 			valid = true; // match none
 		} else if (filters.size() > 1 && filter->get_selected() == 0) {
 			// match all filters
-			for (int i = 0; i < filters.size(); i++) {
+			for (vec_size i = 0; i < filters.size(); i++) {
 				String flt = filters[i].get_slice(";", 0);
 				for (int j = 0; j < flt.get_slice_count(","); j++) {
 					String str = flt.get_slice(",", j).strip_edges();
@@ -569,7 +569,7 @@ void FileDialog::update_file_list() {
 		// match all
 	} else if (filters.size() > 1 && filter->get_selected() == 0) {
 		// match all filters
-		for (int i = 0; i < filters.size(); i++) {
+		for (vec_size i = 0; i < filters.size(); i++) {
 			String f = filters[i].get_slice(";", 0);
 			for (int j = 0; j < f.get_slice_count(","); j++) {
 				patterns.push_back(f.get_slice(",", j).strip_edges());
@@ -664,7 +664,7 @@ void FileDialog::update_filters() {
 
 		filter->add_item(RTR("All Recognized") + " (" + all_filters + ")");
 	}
-	for (int i = 0; i < filters.size(); i++) {
+	for (vec_size i = 0; i < filters.size(); i++) {
 		String flt = filters[i].get_slice(";", 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
 		if (desc.length()) {

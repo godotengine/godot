@@ -48,7 +48,7 @@
 #include "scene/main/window.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
-	for (int i = 0; i < add_options.size(); i++) {
+	for (vec_size i = 0; i < add_options.size(); i++) {
 		ERR_FAIL_COND(add_options[i].script == p_script);
 	}
 
@@ -61,7 +61,7 @@ void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const R
 }
 
 void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_script) {
-	for (int i = 0; i < add_options.size(); i++) {
+	for (vec_size i = 0; i < add_options.size(); i++) {
 		if (add_options[i].script == p_script) {
 			add_options.remove_at(i);
 			return;
@@ -74,7 +74,7 @@ void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_scrip
 void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) {
 	add_node->get_popup()->clear();
 	add_node->get_popup()->reset_size();
-	for (int i = 0; i < add_options.size(); i++) {
+	for (vec_size i = 0; i < add_options.size(); i++) {
 		if (p_has_input_ports && add_options[i].input_port_count == 0) {
 			continue;
 		}
@@ -513,7 +513,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 			}
 		}
 	} else {
-		for (int i = 0; i < p_nodes.size(); i++) {
+		for (vec_size i = 0; i < p_nodes.size(); i++) {
 			to_erase.push_back(p_nodes[i]);
 		}
 	}
@@ -875,7 +875,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 				}
 			}
 
-			for (int i = 0; i < visible_properties.size(); i++) {
+			for (vec_size i = 0; i < visible_properties.size(); i++) {
 				visible_properties[i]->update_property();
 			}
 		} break;
@@ -959,7 +959,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	gn->set_size(gn->get_minimum_size());
 
 	//change editors accordingly
-	for (int i = 0; i < visible_properties.size(); i++) {
+	for (vec_size i = 0; i < visible_properties.size(); i++) {
 		String pname = visible_properties[i]->get_edited_property().operator String();
 		if (pname.begins_with(base_path + prev_name)) {
 			String new_name2 = pname.replace_first(base_path + prev_name, base_path + name);

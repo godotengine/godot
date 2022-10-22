@@ -117,7 +117,7 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 const PackedStringArray ProjectSettings::get_unsupported_features(const PackedStringArray &p_project_features) {
 	PackedStringArray unsupported_features = PackedStringArray();
 	PackedStringArray supported_features = singleton->_get_supported_features();
-	for (int i = 0; i < p_project_features.size(); i++) {
+	for (vec_size i = 0; i < p_project_features.size(); i++) {
 		if (!supported_features.has(p_project_features[i])) {
 			// Temporary compatibility code to ease upgrade to 4.0 beta 2+.
 			if (p_project_features[i].begins_with("Vulkan")) {
@@ -142,7 +142,7 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 	}
 	// Add required features if not present.
 	PackedStringArray required_features = get_required_features();
-	for (int i = 0; i < required_features.size(); i++) {
+	for (vec_size i = 0; i < required_features.size(); i++) {
 		if (!features.has(required_features[i])) {
 			features.append(required_features[i]);
 		}
@@ -285,7 +285,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	} else {
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
 			Vector<String> custom_feature_array = String(p_value).split(",");
-			for (int i = 0; i < custom_feature_array.size(); i++) {
+			for (vec_size i = 0; i < custom_feature_array.size(); i++) {
 				custom_features.insert(custom_feature_array[i]);
 			}
 			return true;
@@ -297,7 +297,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				Vector<String> s = p_name.operator String().split(".");
 
 				bool override_valid = false;
-				for (int i = 1; i < s.size(); i++) {
+				for (vec_size i = 1; i < s.size(); i++) {
 					String feature = s[i].strip_edges();
 					if (OS::get_singleton()->has_feature(feature) || custom_features.has(feature)) {
 						override_valid = true;
@@ -1014,7 +1014,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 
 	String save_features;
 
-	for (int i = 0; i < p_custom_features.size(); i++) {
+	for (vec_size i = 0; i < p_custom_features.size(); i++) {
 		if (i > 0) {
 			save_features += ",";
 		}

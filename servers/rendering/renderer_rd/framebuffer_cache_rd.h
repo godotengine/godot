@@ -61,17 +61,17 @@ class FramebufferCacheRD : public Object {
 		h = hash_murmur3_one_32(p.vrs_attachment, h);
 
 		h = hash_murmur3_one_32(p.color_attachments.size(), h);
-		for (int i = 0; i < p.color_attachments.size(); i++) {
+		for (vec_size i = 0; i < p.color_attachments.size(); i++) {
 			h = hash_murmur3_one_32(p.color_attachments[i], h);
 		}
 
 		h = hash_murmur3_one_32(p.resolve_attachments.size(), h);
-		for (int i = 0; i < p.resolve_attachments.size(); i++) {
+		for (vec_size i = 0; i < p.resolve_attachments.size(); i++) {
 			h = hash_murmur3_one_32(p.resolve_attachments[i], h);
 		}
 
 		h = hash_murmur3_one_32(p.preserve_attachments.size(), h);
-		for (int i = 0; i < p.preserve_attachments.size(); i++) {
+		for (vec_size i = 0; i < p.preserve_attachments.size(); i++) {
 			h = hash_murmur3_one_32(p.preserve_attachments[i], h);
 		}
 
@@ -91,7 +91,7 @@ class FramebufferCacheRD : public Object {
 			return false;
 		}
 
-		for (int i = 0; i < a.color_attachments.size(); i++) {
+		for (vec_size i = 0; i < a.color_attachments.size(); i++) {
 			if (a.color_attachments[i] != b.color_attachments[i]) {
 				return false;
 			}
@@ -101,7 +101,7 @@ class FramebufferCacheRD : public Object {
 			return false;
 		}
 
-		for (int i = 0; i < a.resolve_attachments.size(); i++) {
+		for (vec_size i = 0; i < a.resolve_attachments.size(); i++) {
 			if (a.resolve_attachments[i] != b.resolve_attachments[i]) {
 				return false;
 			}
@@ -111,7 +111,7 @@ class FramebufferCacheRD : public Object {
 			return false;
 		}
 
-		for (int i = 0; i < a.preserve_attachments.size(); i++) {
+		for (vec_size i = 0; i < a.preserve_attachments.size(); i++) {
 			if (a.preserve_attachments[i] != b.preserve_attachments[i]) {
 				return false;
 			}
@@ -255,11 +255,11 @@ public:
 	RID get_cache_multipass(const Vector<RID> &p_textures, const Vector<RD::FramebufferPass> &p_passes, uint32_t p_views = 1) {
 		uint32_t h = hash_murmur3_one_32(p_views);
 		h = hash_murmur3_one_32(p_textures.size());
-		for (int i = 0; i < p_textures.size(); i++) {
+		for (vec_size i = 0; i < p_textures.size(); i++) {
 			h = hash_murmur3_one_64(p_textures[i].get_id(), h);
 		}
 		h = hash_murmur3_one_32(p_passes.size());
-		for (int i = 0; i < p_passes.size(); i++) {
+		for (vec_size i = 0; i < p_passes.size(); i++) {
 			h = _hash_pass(p_passes[i], h);
 		}
 
@@ -273,7 +273,7 @@ public:
 				if (c->hash == h && c->views == p_views && c->textures.size() == (uint32_t)p_textures.size() && c->passes.size() == (uint32_t)p_passes.size()) {
 					bool all_ok = true;
 
-					for (int i = 0; i < p_textures.size(); i++) {
+					for (vec_size i = 0; i < p_textures.size(); i++) {
 						if (p_textures[i] != c->textures[i]) {
 							all_ok = false;
 							break;
@@ -281,7 +281,7 @@ public:
 					}
 
 					if (all_ok) {
-						for (int i = 0; i < p_passes.size(); i++) {
+						for (vec_size i = 0; i < p_passes.size(); i++) {
 							if (!_compare_pass(p_passes[i], c->passes[i])) {
 								all_ok = false;
 								break;

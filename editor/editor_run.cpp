@@ -246,13 +246,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 			// Append Godot-specific custom arguments.
 			custom_args = raw_custom_args.substr(placeholder_pos + String("%command%").size()).split(" ", false);
-			for (int i = 0; i < custom_args.size(); i++) {
+			for (vec_size i = 0; i < custom_args.size(); i++) {
 				args.push_back(custom_args[i].replace(" ", "%20"));
 			}
 		} else {
 			// Append Godot-specific custom arguments.
 			custom_args = raw_custom_args.split(" ", false);
-			for (int i = 0; i < custom_args.size(); i++) {
+			for (vec_size i = 0; i < custom_args.size(); i++) {
 				args.push_back(custom_args[i].replace(" ", "%20"));
 			}
 		}

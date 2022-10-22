@@ -555,13 +555,13 @@ void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<S
 }
 
 void GraphEdit::_set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag) {
-	for (int i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
+	for (vec_size i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
 		p_comment_enclosed_nodes[p_node->get_name()][i]->set_drag(p_drag);
 	}
 }
 
 void GraphEdit::_set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_drag_accum) {
-	for (int i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
+	for (vec_size i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
 		Vector2 pos = (p_comment_enclosed_nodes[p_node->get_name()][i]->get_drag_from() * zoom + drag_accum) / zoom;
 		if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 			const int snap = get_snap();
@@ -924,7 +924,7 @@ void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from
 	Vector<Vector2> scaled_points;
 	Vector<Color> colors;
 	float length = (p_from / p_zoom).distance_to(p_to / p_zoom);
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		float d = (p_from / p_zoom).distance_to(points[i]) / length;
 		colors.push_back(p_color.lerp(p_to_color, d));
 		scaled_points.push_back(points[i] * p_zoom);
@@ -1896,7 +1896,7 @@ Vector<StringName> GraphEdit::_split(const Vector<StringName> &r_layer, const Ha
 	Vector<StringName> left;
 	Vector<StringName> right;
 
-	for (int i = 0; i < r_layer.size(); i++) {
+	for (vec_size i = 0; i < r_layer.size(); i++) {
 		if (p != r_layer[i]) {
 			StringName q = r_layer[i];
 			int cross_pq = r_crossings[p][q];
@@ -1929,10 +1929,10 @@ void GraphEdit::_horizontal_alignment(Dictionary &r_root, Dictionary &r_align, c
 		Vector<StringName> upper_layer = r_layers[i - 1];
 		int r = -1;
 
-		for (int j = 0; j < lower_layer.size(); j++) {
+		for (vec_size j = 0; j < lower_layer.size(); j++) {
 			Vector<Pair<int, StringName>> up;
 			StringName current_node = lower_layer[j];
-			for (int k = 0; k < upper_layer.size(); k++) {
+			for (vec_size k = 0; k < upper_layer.size(); k++) {
 				StringName adjacent_neighbour = upper_layer[k];
 				if (r_upper_neighbours[current_node].has(adjacent_neighbour)) {
 					up.push_back(Pair<int, StringName>(k, adjacent_neighbour));
@@ -1964,16 +1964,16 @@ void GraphEdit::_crossing_minimisation(HashMap<int, Vector<StringName>> &r_layer
 		Vector<StringName> lower_layer = r_layers[i];
 		HashMap<StringName, Dictionary> c;
 
-		for (int j = 0; j < lower_layer.size(); j++) {
+		for (vec_size j = 0; j < lower_layer.size(); j++) {
 			StringName p = lower_layer[j];
 			Dictionary d;
 
-			for (int k = 0; k < lower_layer.size(); k++) {
+			for (vec_size k = 0; k < lower_layer.size(); k++) {
 				unsigned int crossings = 0;
 				StringName q = lower_layer[k];
 
 				if (j != k) {
-					for (int h = 1; h < upper_layer.size(); h++) {
+					for (vec_size h = 1; h < upper_layer.size(); h++) {
 						if (r_upper_neighbours[p].has(upper_layer[h])) {
 							for (int g = 0; g < h; g++) {
 								if (r_upper_neighbours[q].has(upper_layer[g])) {
@@ -2265,12 +2265,12 @@ void GraphEdit::arrange_nodes() {
 
 	for (unsigned int i = 0; i < layers.size(); i++) {
 		Vector<StringName> layer = layers[i];
-		for (int j = 0; j < layer.size(); j++) {
+		for (vec_size j = 0; j < layer.size(); j++) {
 			float current_node_size = Object::cast_to<GraphNode>(node_names[layer[j]])->get_size().x;
 			largest_node_size = MAX(largest_node_size, current_node_size);
 		}
 
-		for (int j = 0; j < layer.size(); j++) {
+		for (vec_size j = 0; j < layer.size(); j++) {
 			float current_node_size = Object::cast_to<GraphNode>(node_names[layer[j]])->get_size().x;
 			Vector2 cal_pos = new_positions[layer[j]];
 

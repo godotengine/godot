@@ -259,7 +259,7 @@ String OS::read_string_from_stdin(bool p_block) {
 
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
 	List<String> args;
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	String pipe;
@@ -274,7 +274,7 @@ int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r
 
 int OS::create_instance(const Vector<String> &p_arguments) {
 	List<String> args;
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	::OS::ProcessID pid = 0;
@@ -287,7 +287,7 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 
 int OS::create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console) {
 	List<String> args;
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	::OS::ProcessID pid = 0;
@@ -719,7 +719,7 @@ TypedArray<PackedVector2Array> Geometry2D::decompose_polygon_in_convex(const Vec
 
 	TypedArray<PackedVector2Array> ret;
 
-	for (int i = 0; i < decomp.size(); ++i) {
+	for (vec_size i = 0; i < decomp.size(); ++i) {
 		ret.push_back(decomp[i]);
 	}
 	return ret;
@@ -730,7 +730,7 @@ TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> 
 
 	Array ret;
 
-	for (int i = 0; i < polys.size(); ++i) {
+	for (vec_size i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
 	}
 	return ret;
@@ -741,7 +741,7 @@ TypedArray<PackedVector2Array> Geometry2D::clip_polygons(const Vector<Vector2> &
 
 	TypedArray<PackedVector2Array> ret;
 
-	for (int i = 0; i < polys.size(); ++i) {
+	for (vec_size i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
 	}
 	return ret;
@@ -752,7 +752,7 @@ TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vecto
 
 	Array ret;
 
-	for (int i = 0; i < polys.size(); ++i) {
+	for (vec_size i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
 	}
 	return ret;
@@ -763,7 +763,7 @@ TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2
 
 	Array ret;
 
-	for (int i = 0; i < polys.size(); ++i) {
+	for (vec_size i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
 	}
 	return ret;
@@ -774,7 +774,7 @@ TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vect
 
 	Array ret;
 
-	for (int i = 0; i < polys.size(); ++i) {
+	for (vec_size i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
 	}
 	return ret;
@@ -785,7 +785,7 @@ TypedArray<PackedVector2Array> Geometry2D::intersect_polyline_with_polygon(const
 
 	Array ret;
 
-	for (int i = 0; i < polys.size(); ++i) {
+	for (vec_size i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
 	}
 	return ret;
@@ -796,7 +796,7 @@ TypedArray<PackedVector2Array> Geometry2D::offset_polygon(const Vector<Vector2> 
 
 	Array ret;
 
-	for (int i = 0; i < polys.size(); ++i) {
+	for (vec_size i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
 	}
 	return ret;
@@ -807,7 +807,7 @@ TypedArray<PackedVector2Array> Geometry2D::offset_polyline(const Vector<Vector2>
 
 	Array ret;
 
-	for (int i = 0; i < polys.size(); ++i) {
+	for (vec_size i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
 	}
 	return ret;
@@ -817,7 +817,7 @@ Dictionary Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 	Dictionary ret;
 
 	Vector<Size2i> rects;
-	for (int i = 0; i < p_rects.size(); i++) {
+	for (vec_size i = 0; i < p_rects.size(); i++) {
 		rects.push_back(p_rects[i]);
 	}
 
@@ -827,7 +827,7 @@ Dictionary Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 	::Geometry2D::make_atlas(rects, result, size);
 
 	Vector<Point2> r_result;
-	for (int i = 0; i < result.size(); i++) {
+	for (vec_size i = 0; i < result.size(); i++) {
 		r_result.push_back(result[i]);
 	}
 

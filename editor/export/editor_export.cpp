@@ -38,7 +38,7 @@ EditorExport *EditorExport::singleton = nullptr;
 void EditorExport::_save() {
 	Ref<ConfigFile> config;
 	config.instantiate();
-	for (int i = 0; i < export_presets.size(); i++) {
+	for (vec_size i = 0; i < export_presets.size(); i++) {
 		Ref<EditorExportPreset> preset = export_presets[i];
 		String section = "preset." + itos(i);
 
@@ -194,7 +194,7 @@ void EditorExport::load_config() {
 
 		Ref<EditorExportPreset> preset;
 
-		for (int i = 0; i < export_platforms.size(); i++) {
+		for (vec_size i = 0; i < export_platforms.size(); i++) {
 			if (export_platforms[i]->get_name() == platform) {
 				preset = export_platforms.write[i]->create_preset();
 				break;
@@ -233,7 +233,7 @@ void EditorExport::load_config() {
 		if (get_files) {
 			Vector<String> files = config->get_value(section, "export_files");
 
-			for (int i = 0; i < files.size(); i++) {
+			for (vec_size i = 0; i < files.size(); i++) {
 				if (!FileAccess::exists(files[i])) {
 					preset->remove_export_file(files[i]);
 				} else {
@@ -287,7 +287,7 @@ void EditorExport::load_config() {
 void EditorExport::update_export_presets() {
 	HashMap<StringName, List<EditorExportPlatform::ExportOption>> platform_options;
 
-	for (int i = 0; i < export_platforms.size(); i++) {
+	for (vec_size i = 0; i < export_platforms.size(); i++) {
 		Ref<EditorExportPlatform> platform = export_platforms[i];
 
 		if (platform->should_update_export_options()) {
@@ -299,7 +299,7 @@ void EditorExport::update_export_presets() {
 	}
 
 	bool export_presets_updated = false;
-	for (int i = 0; i < export_presets.size(); i++) {
+	for (vec_size i = 0; i < export_presets.size(); i++) {
 		Ref<EditorExportPreset> preset = export_presets[i];
 		if (platform_options.has(preset->get_platform()->get_name())) {
 			export_presets_updated = true;
@@ -331,7 +331,7 @@ void EditorExport::update_export_presets() {
 
 bool EditorExport::poll_export_platforms() {
 	bool changed = false;
-	for (int i = 0; i < export_platforms.size(); i++) {
+	for (vec_size i = 0; i < export_platforms.size(); i++) {
 		if (export_platforms.write[i]->poll_export()) {
 			changed = true;
 		}

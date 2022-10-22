@@ -267,13 +267,13 @@ public:
 			}
 			RSG::mesh_storage->mesh_initialize(mesh);
 			RSG::mesh_storage->mesh_set_blend_shape_count(mesh, p_blend_shape_count);
-			for (int i = 0; i < p_surfaces.size(); i++) {
+			for (vec_size i = 0; i < p_surfaces.size(); i++) {
 				RSG::mesh_storage->mesh_add_surface(mesh, p_surfaces[i]);
 			}
 		} else {
 			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_initialize, mesh);
 			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_set_blend_shape_count, mesh, p_blend_shape_count);
-			for (int i = 0; i < p_surfaces.size(); i++) {
+			for (vec_size i = 0; i < p_surfaces.size(); i++) {
 				command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_add_surface, mesh, p_surfaces[i]);
 			}
 		}

@@ -60,7 +60,7 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 	points.resize(point_count + 2);
 	bounds = Rect2();
 
-	for (int i = 0; i < p_points.size(); i++) {
+	for (vec_size i = 0; i < p_points.size(); i++) {
 		points.write[i].pos = p_points[i];
 		points.write[i].penalty = 0;
 
@@ -79,7 +79,7 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 
 	//insert edges (which are also connections)
 
-	for (int i = 0; i < p_connections.size(); i += 2) {
+	for (vec_size i = 0; i < p_connections.size(); i += 2) {
 		Edge e(p_connections[i], p_connections[i + 1]);
 		ERR_FAIL_INDEX(e.points[0], point_count);
 		ERR_FAIL_INDEX(e.points[1], point_count);

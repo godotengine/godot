@@ -182,7 +182,7 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	ERR_FAIL_COND(unfolds.size() & 1);
 	ERR_FAIL_COND(res_unfolds.size() & 1);
 
-	for (int i = 0; i < unfolds.size(); i += 2) {
+	for (vec_size i = 0; i < unfolds.size(); i += 2) {
 		NodePath path2 = unfolds[i];
 		Vector<String> un = unfolds[i + 1];
 		Node *node = p_scene->get_node_or_null(path2);
@@ -192,7 +192,7 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 		_set_unfolds(node, un);
 	}
 
-	for (int i = 0; i < res_unfolds.size(); i += 2) {
+	for (vec_size i = 0; i < res_unfolds.size(); i += 2) {
 		String path2 = res_unfolds[i];
 		Ref<Resource> res = ResourceCache::get_ref(path2);
 		if (res.is_null()) {
@@ -203,7 +203,7 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 		_set_unfolds(res.ptr(), unfolds2);
 	}
 
-	for (int i = 0; i < nodes_folded.size(); i++) {
+	for (vec_size i = 0; i < nodes_folded.size(); i++) {
 		NodePath fold_path = nodes_folded[i];
 		if (p_scene->has_node(fold_path)) {
 			Node *node = p_scene->get_node(fold_path);

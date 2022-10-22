@@ -371,7 +371,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 			left.write[i] = v[i];
 		}
 		right.resize(v.size() - index);
-		for (int i = 0; i < right.size(); i++) {
+		for (vec_size i = 0; i < right.size(); i++) {
 			right.write[i] = v[index + i];
 		}
 		Vector<Vector2> r1 = rdp(left, optimization);
@@ -379,7 +379,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 
 		int middle = r1.size();
 		r1.resize(r1.size() + r2.size());
-		for (int i = 0; i < r2.size(); i++) {
+		for (vec_size i = 0; i < r2.size(); i++) {
 			r1.write[middle + i] = r2[i];
 		}
 		return r1;
@@ -592,7 +592,7 @@ TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_
 
 	TypedArray<PackedVector2Array> result_array;
 	result_array.resize(result.size());
-	for (int i = 0; i < result.size(); i++) {
+	for (vec_size i = 0; i < result.size(); i++) {
 		const Vector<Vector2> &polygon = result[i];
 
 		PackedVector2Array polygon_array;
@@ -600,7 +600,7 @@ TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_
 
 		{
 			Vector2 *w = polygon_array.ptrw();
-			for (int j = 0; j < polygon.size(); j++) {
+			for (vec_size j = 0; j < polygon.size(); j++) {
 				w[j] = polygon[j];
 			}
 		}

@@ -44,14 +44,14 @@ void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 	versions->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	versions->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	versions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	for (int i = 0; i < nsc.versions.size(); i++) {
+	for (vec_size i = 0; i < nsc.versions.size(); i++) {
 		TabContainer *vtab = memnew(TabContainer);
 		vtab->set_name("Version " + itos(i));
 		vtab->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 		vtab->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		vtab->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		versions->add_child(vtab);
-		for (int j = 0; j < nsc.versions[i].stages.size(); j++) {
+		for (vec_size j = 0; j < nsc.versions[i].stages.size(); j++) {
 			TextEdit *vtext = memnew(TextEdit);
 			vtext->set_editable(false);
 			vtext->set_name(nsc.versions[i].stages[j].name);

@@ -428,7 +428,7 @@ void EditorFileDialog::_action_pressed() {
 			valid = true; // match none
 		} else if (filters.size() > 1 && filter->get_selected() == 0) {
 			// match all filters
-			for (int i = 0; i < filters.size(); i++) {
+			for (vec_size i = 0; i < filters.size(); i++) {
 				String flt = filters[i].get_slice(";", 0);
 				for (int j = 0; j < flt.get_slice_count(","); j++) {
 					String str = flt.get_slice(",", j).strip_edges();
@@ -708,7 +708,7 @@ bool EditorFileDialog::_is_open_should_be_disabled() {
 		return mode != FILE_MODE_OPEN_DIR; // In "Open folder" mode, having nothing selected picks the current folder.
 	}
 
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		Dictionary d = item_list->get_item_metadata(items.get(i));
 
 		if (((mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES) && d["dir"]) || (mode == FILE_MODE_OPEN_DIR && !d["dir"])) {
@@ -842,7 +842,7 @@ void EditorFileDialog::update_file_list() {
 		// match all
 	} else if (filters.size() > 1 && filter->get_selected() == 0) {
 		// match all filters
-		for (int i = 0; i < filters.size(); i++) {
+		for (vec_size i = 0; i < filters.size(); i++) {
 			String f = filters[i].get_slice(";", 0);
 			for (int j = 0; j < f.get_slice_count(","); j++) {
 				patterns.push_back(f.get_slice(",", j).strip_edges());
@@ -954,7 +954,7 @@ void EditorFileDialog::update_filters() {
 
 		filter->add_item(TTR("All Recognized") + " (" + all_filters + ")");
 	}
-	for (int i = 0; i < filters.size(); i++) {
+	for (vec_size i = 0; i < filters.size(); i++) {
 		String flt = filters[i].get_slice(";", 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
 		if (desc.length()) {
@@ -1253,7 +1253,7 @@ void EditorFileDialog::_favorite_selected(int p_idx) {
 		String dir_to_remove = favorites->get_item_metadata(p_idx);
 
 		bool found = false;
-		for (int i = 0; i < favorited.size(); i++) {
+		for (vec_size i = 0; i < favorited.size(); i++) {
 			bool cres = favorited[i].begins_with("res://");
 			if (cres != res) {
 				continue;
@@ -1333,7 +1333,7 @@ void EditorFileDialog::_update_favorites() {
 
 	bool fav_changed = false;
 	int current_favorite = -1;
-	for (int i = 0; i < favorited.size(); i++) {
+	for (vec_size i = 0; i < favorited.size(); i++) {
 		bool cres = favorited[i].begins_with("res://");
 		if (cres != res) {
 			continue;
@@ -1374,7 +1374,7 @@ void EditorFileDialog::_update_favorites() {
 
 	EditorNode::disambiguate_filenames(favorited_paths, favorited_names);
 
-	for (int i = 0; i < favorited_paths.size(); i++) {
+	for (vec_size i = 0; i < favorited_paths.size(); i++) {
 		favorites->add_item(favorited_names[i], theme_cache.folder);
 		favorites->set_item_metadata(-1, favorited_paths[i]);
 		favorites->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
@@ -1398,7 +1398,7 @@ void EditorFileDialog::_favorite_pressed() {
 	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
 
 	bool found = false;
-	for (int i = 0; i < favorited.size(); i++) {
+	for (vec_size i = 0; i < favorited.size(); i++) {
 		bool cres = favorited[i].begins_with("res://");
 		if (cres != res) {
 			continue;
@@ -1429,7 +1429,7 @@ void EditorFileDialog::_update_recent() {
 	Vector<String> recentd_paths;
 	Vector<String> recentd_names;
 
-	for (int i = 0; i < recentd.size(); i++) {
+	for (vec_size i = 0; i < recentd.size(); i++) {
 		bool cres = recentd[i].begins_with("res://");
 		if (cres != res) {
 			continue;
@@ -1457,7 +1457,7 @@ void EditorFileDialog::_update_recent() {
 
 	EditorNode::disambiguate_filenames(recentd_paths, recentd_names);
 
-	for (int i = 0; i < recentd_paths.size(); i++) {
+	for (vec_size i = 0; i < recentd_paths.size(); i++) {
 		recent->add_item(recentd_names[i], theme_cache.folder);
 		recent->set_item_metadata(-1, recentd_paths[i]);
 		recent->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
@@ -1621,7 +1621,7 @@ void EditorFileDialog::_save_to_recent() {
 	int count = 0;
 	bool res = cur_dir.begins_with("res://");
 
-	for (int i = 0; i < recent_new.size(); i++) {
+	for (vec_size i = 0; i < recent_new.size(); i++) {
 		bool cres = recent_new[i].begins_with("res://");
 		if (recent_new[i] == cur_dir || (res == cres && count > max)) {
 			recent_new.remove_at(i);

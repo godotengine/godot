@@ -121,7 +121,7 @@ void AndroidInputHandler::process_key_event(int p_keycode, int p_physical_keycod
 void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_double_tap) {
 	if (touch.size()) {
 		//end all if exist
-		for (int i = 0; i < touch.size(); i++) {
+		for (vec_size i = 0; i < touch.size(); i++) {
 			Ref<InputEventScreenTouch> ev;
 			ev.instantiate();
 			ev->set_index(touch[i].id);
@@ -146,7 +146,7 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 			_release_all_touch();
 
 			touch.resize(p_points.size());
-			for (int i = 0; i < p_points.size(); i++) {
+			for (vec_size i = 0; i < p_points.size(); i++) {
 				touch.write[i].id = p_points[i].id;
 				touch.write[i].pos = p_points[i].pos;
 			}
@@ -160,9 +160,9 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 				return;
 			}
 
-			for (int i = 0; i < touch.size(); i++) {
+			for (vec_size i = 0; i < touch.size(); i++) {
 				int idx = -1;
-				for (int j = 0; j < p_points.size(); j++) {
+				for (vec_size j = 0; j < p_points.size(); j++) {
 					if (touch[i].id == p_points[j].id) {
 						idx = j;
 						break;
@@ -190,7 +190,7 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 			_release_all_touch();
 		} break;
 		case AMOTION_EVENT_ACTION_POINTER_DOWN: { // add touch
-			for (int i = 0; i < p_points.size(); i++) {
+			for (vec_size i = 0; i < p_points.size(); i++) {
 				if (p_points[i].id == p_pointer) {
 					TouchPos tp = p_points[i];
 					touch.push_back(tp);
@@ -208,7 +208,7 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 			}
 		} break;
 		case AMOTION_EVENT_ACTION_POINTER_UP: { // remove touch
-			for (int i = 0; i < touch.size(); i++) {
+			for (vec_size i = 0; i < touch.size(); i++) {
 				if (touch[i].id == p_pointer) {
 					Ref<InputEventScreenTouch> ev;
 					ev.instantiate();

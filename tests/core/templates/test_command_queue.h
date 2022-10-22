@@ -175,7 +175,7 @@ public:
 			Transform3D otr;
 			float f = 1;
 			during_writing = true;
-			for (int i = 0; i < message_types_to_write.size(); i++) {
+			for (vec_size i = 0; i < message_types_to_write.size(); i++) {
 				TestMsgType msg_type = message_types_to_write[i];
 				switch (msg_type) {
 					case TEST_MSG_FUNC1_TRANSFORM:

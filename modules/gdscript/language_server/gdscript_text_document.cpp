@@ -74,7 +74,7 @@ void GDScriptTextDocument::didChange(const Variant &p_param) {
 	lsp::TextDocumentItem doc = load_document_item(p_param);
 	Dictionary dict = p_param;
 	Array contentChanges = dict["contentChanges"];
-	for (int i = 0; i < contentChanges.size(); ++i) {
+	for (vec_size i = 0; i < contentChanges.size(); ++i) {
 		lsp::TextDocumentContentChangeEvent evt;
 		evt.load(contentChanges[i]);
 		doc.text = evt.text;
@@ -160,7 +160,7 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	if (HashMap<String, ExtendGDScriptParser *>::ConstIterator parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
 		Vector<lsp::DocumentedSymbolInformation> list;
 		parser->value->get_symbols().symbol_tree_as_list(uri, list);
-		for (int i = 0; i < list.size(); i++) {
+		for (vec_size i = 0; i < list.size(); i++) {
 			arr.push_back(list[i].to_json());
 		}
 	}
@@ -234,7 +234,7 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 
 			const int start_size = arr.size();
 			arr.resize(start_size + items.size());
-			for (int i = start_size; i < arr.size(); i++) {
+			for (vec_size i = start_size; i < arr.size(); i++) {
 				arr[i] = items[i - start_size];
 			}
 		}

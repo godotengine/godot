@@ -169,7 +169,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		base_control->draw_polygon(polygon, v_color);
 
 		color.a = 0.7;
-		for (int j = 0; j < polygon.size(); j++) {
+		for (vec_size j = 0; j < polygon.size(); j++) {
 			base_control->draw_line(polygon[j], polygon[(j + 1) % polygon.size()], color);
 		}
 	}
@@ -205,13 +205,13 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	base_control->draw_set_transform_matrix(Transform2D());
 	if (!in_creation_polygon.is_empty()) {
-		for (int i = 0; i < in_creation_polygon.size(); i++) {
+		for (vec_size i = 0; i < in_creation_polygon.size(); i++) {
 			base_control->draw_texture(handle, xform.xform(in_creation_polygon[i]) - handle->get_size() / 2);
 		}
 	} else {
-		for (int i = 0; i < (int)polygons.size(); i++) {
+		for (vec_size i = 0; i < (int)polygons.size(); i++) {
 			const Vector<Vector2> &polygon = polygons[i];
-			for (int j = 0; j < polygon.size(); j++) {
+			for (vec_size j = 0; j < polygon.size(); j++) {
 				const Color poly_modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.5, 1, 2) : Color(1, 1, 1);
 				base_control->draw_texture(handle, xform.xform(polygon[j]) - handle->get_size() / 2, poly_modulate);
 			}
@@ -266,7 +266,7 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			undo_redo->create_action(TTR("Reset Polygons"));
 			undo_redo->add_do_method(this, "clear_polygons");
 			Vector<Vector2> polygon = tile_set->get_tile_shape_polygon();
-			for (int i = 0; i < polygon.size(); i++) {
+			for (vec_size i = 0; i < polygon.size(); i++) {
 				polygon.write[i] = polygon[i] * tile_set->get_tile_size();
 			}
 			undo_redo->add_do_method(this, "add_polygon", polygon);
@@ -300,7 +300,7 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			undo_redo->create_action(TTR("Rotate Polygons Left"));
 			for (unsigned int i = 0; i < polygons.size(); i++) {
 				Vector<Point2> new_polygon;
-				for (int point_index = 0; point_index < polygons[i].size(); point_index++) {
+				for (vec_size point_index = 0; point_index < polygons[i].size(); point_index++) {
 					Vector2 point = polygons[i][point_index];
 					switch (p_item_pressed) {
 						case ROTATE_RIGHT: {
@@ -343,7 +343,7 @@ void GenericTilePolygonEditor::_grab_polygon_point(Vector2 p_pos, const Transfor
 	float closest_distance = grab_threshold + 1.0;
 	for (unsigned int i = 0; i < polygons.size(); i++) {
 		const Vector<Vector2> &polygon = polygons[i];
-		for (int j = 0; j < polygon.size(); j++) {
+		for (vec_size j = 0; j < polygon.size(); j++) {
 			float distance = p_pos.distance_to(p_polygon_xform.xform(polygon[j]));
 			if (distance < grab_threshold && distance < closest_distance) {
 				r_polygon_index = i;
@@ -363,7 +363,7 @@ void GenericTilePolygonEditor::_grab_polygon_segment_point(Vector2 p_pos, const 
 	float closest_distance = grab_threshold * 2.0;
 	for (unsigned int i = 0; i < polygons.size(); i++) {
 		const Vector<Vector2> &polygon = polygons[i];
-		for (int j = 0; j < polygon.size(); j++) {
+		for (vec_size j = 0; j < polygon.size(); j++) {
 			Vector2 segment[2] = { polygon[j], polygon[(j + 1) % polygon.size()] };
 			Vector2 closest_point = Geometry2D::get_closest_point_to_segment(point, segment);
 			float distance = closest_point.distance_to(point);
@@ -381,14 +381,14 @@ void GenericTilePolygonEditor::_snap_to_tile_shape(Point2 &r_point, float &r_cur
 	ERR_FAIL_COND(!tile_set.is_valid());
 
 	Vector<Point2> polygon = tile_set->get_tile_shape_polygon();
-	for (int i = 0; i < polygon.size(); i++) {
+	for (vec_size i = 0; i < polygon.size(); i++) {
 		polygon.write[i] = polygon[i] * tile_set->get_tile_size();
 	}
 	Point2 snapped_point = r_point;
 
 	// Snap to polygon vertices.
 	bool snapped = false;
-	for (int i = 0; i < polygon.size(); i++) {
+	for (vec_size i = 0; i < polygon.size(); i++) {
 		float distance = r_point.distance_to(polygon[i]);
 		if (distance < p_snap_dist && distance < r_current_snapped_dist) {
 			snapped_point = polygon[i];
@@ -399,7 +399,7 @@ void GenericTilePolygonEditor::_snap_to_tile_shape(Point2 &r_point, float &r_cur
 
 	// Snap to edges if we did not snap to vertices.
 	if (!snapped) {
-		for (int i = 0; i < polygon.size(); i++) {
+		for (vec_size i = 0; i < polygon.size(); i++) {
 			Point2 segment[2] = { polygon[i], polygon[(i + 1) % polygon.size()] };
 			Point2 point = Geometry2D::get_closest_point_to_segment(r_point, segment);
 			float distance = r_point.distance_to(point);
@@ -632,7 +632,7 @@ void GenericTilePolygonEditor::set_tile_set(Ref<TileSet> p_tile_set) {
 	clear_polygons();
 	if (p_tile_set.is_valid()) {
 		Vector<Vector2> polygon = p_tile_set->get_tile_shape_polygon();
-		for (int i = 0; i < polygon.size(); i++) {
+		for (vec_size i = 0; i < polygon.size(); i++) {
 			polygon.write[i] = polygon[i] * p_tile_set->get_tile_size();
 		}
 		add_polygon(polygon);
@@ -927,7 +927,7 @@ void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_ti
 	if (mm.is_valid()) {
 		if (drag_type == DRAG_TYPE_PAINT) {
 			Vector<Vector2i> line = Geometry2D::bresenham_line(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_pos), p_tile_atlas_view->get_atlas_tile_coords_at_pos(mm->get_position()));
-			for (int i = 0; i < line.size(); i++) {
+			for (vec_size i = 0; i < line.size(); i++) {
 				Vector2i coords = p_tile_set_atlas_source->get_tile_at_coords(line[i]);
 				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					TileMapCell cell;
@@ -1465,7 +1465,7 @@ void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_so
 	tile_data->set_constant_angular_velocity(physics_layer, dict["angular_velocity"]);
 	Array array = dict["polygons"];
 	tile_data->set_collision_polygons_count(physics_layer, array.size());
-	for (int i = 0; i < array.size(); i++) {
+	for (vec_size i = 0; i < array.size(); i++) {
 		Dictionary polygon_dict = array[i];
 		tile_data->set_collision_polygon_points(physics_layer, i, polygon_dict["points"]);
 		tile_data->set_collision_polygon_one_way(physics_layer, i, polygon_dict["one_way"]);
@@ -1501,7 +1501,7 @@ void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile
 
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E.key.alternative_tile, physics_layer), old_array.size());
-		for (int i = 0; i < old_array.size(); i++) {
+		for (vec_size i = 0; i < old_array.size(); i++) {
 			Dictionary dict = old_array[i];
 			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["points"]);
 			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way"]);
@@ -1509,7 +1509,7 @@ void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile
 		}
 
 		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E.key.alternative_tile, physics_layer), new_array.size());
-		for (int i = 0; i < new_array.size(); i++) {
+		for (vec_size i = 0; i < new_array.size(); i++) {
 			Dictionary dict = new_array[i];
 			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["points"]);
 			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way"]);
@@ -1828,7 +1828,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 			Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 			Vector<Vector2> polygon = tile_set->get_terrain_polygon(terrain_set);
-			for (int j = 0; j < polygon.size(); j++) {
+			for (vec_size j = 0; j < polygon.size(); j++) {
 				polygon.write[j] += position;
 			}
 			if (!Geometry2D::intersect_polygons(polygon, mouse_pos_rect_polygon).is_empty()) {
@@ -1840,7 +1840,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 				if (tile_set->is_valid_terrain_peering_bit(terrain_set, bit)) {
 					polygon = tile_set->get_terrain_peering_bit_polygon(terrain_set, bit);
-					for (int j = 0; j < polygon.size(); j++) {
+					for (vec_size j = 0; j < polygon.size(); j++) {
 						polygon.write[j] += position;
 					}
 					if (!Geometry2D::intersect_polygons(polygon, mouse_pos_rect_polygon).is_empty()) {
@@ -1949,7 +1949,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 	if (mm.is_valid()) {
 		if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET) {
 			Vector<Vector2i> line = Geometry2D::bresenham_line(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_pos), p_tile_atlas_view->get_atlas_tile_coords_at_pos(mm->get_position()));
-			for (int i = 0; i < line.size(); i++) {
+			for (vec_size i = 0; i < line.size(); i++) {
 				Vector2i coords = p_tile_set_atlas_source->get_tile_at_coords(line[i]);
 				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					int terrain_set = drag_painted_value;
@@ -1983,7 +1983,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 			int terrain_set = Dictionary(drag_painted_value)["terrain_set"];
 			int terrain = Dictionary(drag_painted_value)["terrain"];
 			Vector<Vector2i> line = Geometry2D::bresenham_line(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_pos), p_tile_atlas_view->get_atlas_tile_coords_at_pos(mm->get_position()));
-			for (int i = 0; i < line.size(); i++) {
+			for (vec_size i = 0; i < line.size(); i++) {
 				Vector2i coords = p_tile_set_atlas_source->get_tile_at_coords(line[i]);
 				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					TileMapCell cell;
@@ -2229,7 +2229,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						if (int(dict["terrain_set"]) >= 0) {
 							undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain", coords.x, coords.y, E.key.alternative_tile), dict["terrain"]);
 							Array array = dict["terrain_peering_bits"];
-							for (int i = 0; i < array.size(); i++) {
+							for (vec_size i = 0; i < array.size(); i++) {
 								TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 								if (tile_set->is_valid_terrain_peering_bit(dict["terrain_set"], bit)) {
 									undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), array[i]);
@@ -2251,7 +2251,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain", coords.x, coords.y, E.key.alternative_tile), terrain);
 						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain", coords.x, coords.y, E.key.alternative_tile), dict["terrain"]);
 						Array array = dict["terrain_peering_bits"];
-						for (int i = 0; i < array.size(); i++) {
+						for (vec_size i = 0; i < array.size(); i++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 							if (tile_set->is_valid_terrain_peering_bit(terrain_set, bit)) {
 								undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), terrain);
@@ -2307,7 +2307,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 						Vector<Vector2> polygon = tile_set->get_terrain_polygon(terrain_set);
-						for (int j = 0; j < polygon.size(); j++) {
+						for (vec_size j = 0; j < polygon.size(); j++) {
 							polygon.write[j] += position;
 						}
 						if (!Geometry2D::intersect_polygons(polygon, mouse_pos_rect_polygon).is_empty()) {
@@ -2320,7 +2320,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 							if (tile_set->is_valid_terrain_peering_bit(terrain_set, bit)) {
 								polygon = tile_set->get_terrain_peering_bit_polygon(terrain_set, bit);
-								for (int j = 0; j < polygon.size(); j++) {
+								for (vec_size j = 0; j < polygon.size(); j++) {
 									polygon.write[j] += position;
 								}
 								if (!Geometry2D::intersect_polygons(polygon, mouse_pos_rect_polygon).is_empty()) {
@@ -2565,7 +2565,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 						if (int(dict["terrain_set"]) >= 0) {
 							undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain", coords.x, coords.y, E.key.alternative_tile), dict["terrain"]);
 							Array array = dict["terrain_peering_bits"];
-							for (int i = 0; i < array.size(); i++) {
+							for (vec_size i = 0; i < array.size(); i++) {
 								undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), array[i]);
 							}
 						}
@@ -2584,7 +2584,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 						undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain", coords.x, coords.y, E.key.alternative_tile), terrain);
 						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain", coords.x, coords.y, E.key.alternative_tile), dict["terrain"]);
 						Array array = dict["terrain_peering_bits"];
-						for (int i = 0; i < array.size(); i++) {
+						for (vec_size i = 0; i < array.size(); i++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 							if (tile_set->is_valid_terrain_peering_bit(terrain_set, bit)) {
 								undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), terrain);
@@ -2765,7 +2765,7 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 			Vector<int> polygon = nav_polygon->get_polygon(i);
 			Vector<Vector2> vertices;
 			vertices.resize(polygon.size());
-			for (int j = 0; j < polygon.size(); j++) {
+			for (vec_size j = 0; j < polygon.size(); j++) {
 				ERR_FAIL_INDEX(polygon[j], verts.size());
 				vertices.write[j] = verts[polygon[j]];
 			}

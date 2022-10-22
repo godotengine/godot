@@ -279,7 +279,7 @@ struct WorkspaceEdit {
 		Dictionary out_changes;
 		for (const KeyValue<String, Vector<TextEdit>> &E : changes) {
 			Array edits;
-			for (int i = 0; i < E.value.size(); ++i) {
+			for (vec_size i = 0; i < E.value.size(); ++i) {
 				Dictionary text_edit;
 				text_edit["range"] = E.value[i].range.to_json();
 				text_edit["newText"] = E.value[i].newText;
@@ -295,7 +295,7 @@ struct WorkspaceEdit {
 	_FORCE_INLINE_ void add_change(const String &uri, const int &line, const int &start_character, const int &end_character, const String &new_text) {
 		if (HashMap<String, Vector<TextEdit>>::Iterator E = changes.find(uri)) {
 			Vector<TextEdit> edit_list = E->value;
-			for (int i = 0; i < edit_list.size(); ++i) {
+			for (vec_size i = 0; i < edit_list.size(); ++i) {
 				TextEdit edit = edit_list[i];
 				if (edit.range.start.character == start_character) {
 					return;
@@ -756,7 +756,7 @@ struct Diagnostic {
 		if (!relatedInformation.is_empty()) {
 			Array arr;
 			arr.resize(relatedInformation.size());
-			for (int i = 0; i < relatedInformation.size(); i++) {
+			for (vec_size i = 0; i < relatedInformation.size(); i++) {
 				arr[i] = relatedInformation[i].to_json();
 			}
 			dict["relatedInformation"] = arr;
@@ -1248,7 +1248,7 @@ struct DocumentSymbol {
 		}
 		Array arr;
 		arr.resize(children.size());
-		for (int i = 0; i < children.size(); i++) {
+		for (vec_size i = 0; i < children.size(); i++) {
 			arr[i] = children[i].to_json(with_doc);
 		}
 		dict["children"] = arr;
@@ -1270,7 +1270,7 @@ struct DocumentSymbol {
 		si.detail = detail;
 		si.documentation = documentation;
 		r_list.push_back(si);
-		for (int i = 0; i < children.size(); i++) {
+		for (vec_size i = 0; i < children.size(); i++) {
 			children[i].symbol_tree_as_list(p_uri, r_list, si.name, p_join_name);
 		}
 	}
@@ -1552,7 +1552,7 @@ struct SignatureInformation {
 		dict["label"] = label;
 		dict["documentation"] = documentation.to_json();
 		Array args;
-		for (int i = 0; i < parameters.size(); i++) {
+		for (vec_size i = 0; i < parameters.size(); i++) {
 			args.push_back(parameters[i].to_json());
 		}
 		dict["parameters"] = args;
@@ -1596,7 +1596,7 @@ struct SignatureHelp {
 	Dictionary to_json() const {
 		Dictionary dict;
 		Array sigs;
-		for (int i = 0; i < signatures.size(); i++) {
+		for (vec_size i = 0; i < signatures.size(); i++) {
 			sigs.push_back(signatures[i].to_json());
 		}
 		dict["signatures"] = sigs;
@@ -1669,7 +1669,7 @@ struct FileOperationRegistrationOptions {
 		Dictionary dict;
 
 		Array filts;
-		for (int i = 0; i < filters.size(); i++) {
+		for (vec_size i = 0; i < filters.size(); i++) {
 			filts.push_back(filters[i].to_json());
 		}
 		dict["filters"] = filts;
@@ -1929,7 +1929,7 @@ static String marked_documentation(const String &p_bbcode) {
 	int code_block_indent = -1;
 
 	markdown = "";
-	for (int i = 0; i < lines.size(); i++) {
+	for (vec_size i = 0; i < lines.size(); i++) {
 		String line = lines[i];
 		int block_start = line.find("[codeblock]");
 		if (block_start != -1) {

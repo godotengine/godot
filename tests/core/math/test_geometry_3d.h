@@ -46,7 +46,7 @@ TEST_CASE("[Geometry3D] Closest Points Between Segments") {
 	};
 	Vector<Case> tt;
 	tt.push_back(Case(Vector3(1, -1, 1), Vector3(1, 1, -1), Vector3(-1, -2, -1), Vector3(-1, 1, 1), Vector3(1, -0.2, 0.2), Vector3(-1, -0.2, 0.2)));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Geometry3D::get_closest_points_between_segments(current_case.p_1, current_case.p_2, current_case.p_3, current_case.p_4, current_case.got_1, current_case.got_2);
 		CHECK(current_case.got_1.is_equal_approx(current_case.want_1));
@@ -64,7 +64,7 @@ TEST_CASE("[Geometry3D] Closest Distance Between Segments") {
 	};
 	Vector<Case> tt;
 	tt.push_back(Case(Vector3(1, -2, 0), Vector3(1, 2, 0), Vector3(-1, 2, 0), Vector3(-1, -2, 0), 2.0f));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		float out = Geometry3D::get_closest_distance_between_segments(current_case.p_1, current_case.p_2, current_case.p_3, current_case.p_4);
 		CHECK(out == current_case.want);
@@ -101,7 +101,7 @@ TEST_CASE("[Geometry3D] Build Capsule Planes") {
 	};
 	Vector<Case> tt;
 	tt.push_back(Case(10, 20, 6, 10, Vector3::Axis(), 126));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Vector<Plane> capsule = Geometry3D::build_capsule_planes(current_case.radius, current_case.height, current_case.sides, current_case.lats, current_case.axis);
 		// Should equal (p_sides * p_lats) * 2 + p_sides
@@ -121,7 +121,7 @@ TEST_CASE("[Geometry3D] Build Cylinder Planes") {
 	};
 	Vector<Case> tt;
 	tt.push_back(Case(3.0f, 10.0f, 10, Vector3::Axis(), 12));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Vector<Plane> planes = Geometry3D::build_cylinder_planes(current_case.radius, current_case.height, current_case.sides, current_case.axis);
 		CHECK(planes.size() == current_case.want_size);
@@ -140,7 +140,7 @@ TEST_CASE("[Geometry3D] Build Sphere Planes") {
 	};
 	Vector<Case> tt;
 	tt.push_back(Case(10.0f, 10, 3, Vector3::Axis(), 63));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Vector<Plane> planes = Geometry3D::build_sphere_planes(current_case.radius, current_case.lats, current_case.lons, current_case.axis);
 		CHECK(planes.size() == 63);
@@ -164,7 +164,7 @@ TEST_CASE("[Geometry3D] Build Convex Mesh") {
 	tt.push_back(Case(Geometry3D::build_capsule_planes(5, 5, 20, 20, Vector3::Axis()), 820, 7603, 6243));
 	tt.push_back(Case(Geometry3D::build_cylinder_planes(5, 5, 20, Vector3::Axis()), 22, 100, 80));
 	tt.push_back(Case(Geometry3D::build_sphere_planes(5, 5, 20), 220, 1011, 522));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Geometry3D::MeshData mesh = Geometry3D::build_convex_mesh(current_case.object);
 		CHECK(mesh.faces.size() == current_case.want_faces);
@@ -188,7 +188,7 @@ TEST_CASE("[Geometry3D] Clip Polygon") {
 	Vector<Vector3> box = Geometry3D::compute_convex_mesh_points(&box_planes[0], box_planes.size());
 	tt.push_back(Case(Plane(), box, true));
 	tt.push_back(Case(Plane(Vector3(0, 1, 0), Vector3(0, 3, 0)), box, false));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Vector<Vector3> output = Geometry3D::clip_polygon(current_case.polygon, current_case.clipping_plane);
 		if (current_case.want) {
@@ -218,7 +218,7 @@ TEST_CASE("[Geometry3D] Compute Convex Mesh Points") {
 	cube.push_back(Vector3(-5, 5, 5));
 	cube.push_back(Vector3(5, 5, 5));
 	tt.push_back(Case(Geometry3D::build_box_planes(Vector3(5, 5, 5)), cube));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Vector<Vector3> vectors = Geometry3D::compute_convex_mesh_points(&current_case.mesh[0], current_case.mesh.size());
 		CHECK(vectors == current_case.want);
@@ -239,7 +239,7 @@ TEST_CASE("[Geometry3D] Get Closest Point To Segment") {
 	test_segment.push_back(Vector3(1, 1, 1));
 	test_segment.push_back(Vector3(5, 5, 5));
 	tt.push_back(Case(Vector3(2, 1, 4), test_segment, Vector3(2.33333, 2.33333, 2.33333)));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Vector3 output = Geometry3D::get_closest_point_to_segment(current_case.point, &current_case.segment[0]);
 		CHECK(output.is_equal_approx(current_case.want));
@@ -259,7 +259,7 @@ TEST_CASE("[Geometry3D] Plane and Box Overlap") {
 	tt.push_back(Case(Vector3(3, 4, 2), 5, Vector3(5, 5, 5), true));
 	tt.push_back(Case(Vector3(0, 1, 0), -10, Vector3(5, 5, 5), false));
 	tt.push_back(Case(Vector3(1, 0, 0), -6, Vector3(5, 5, 5), false));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		bool overlap = Geometry3D::planeBoxOverlap(current_case.normal, current_case.d, current_case.max_box);
 		CHECK(overlap == current_case.want);
@@ -278,7 +278,7 @@ TEST_CASE("[Geometry3D] Is Point in Projected Triangle") {
 	tt.push_back(Case(Vector3(1, 1, 0), Vector3(3, 0, 0), Vector3(0, 3, 0), Vector3(-3, 0, 0), true));
 	tt.push_back(Case(Vector3(5, 1, 0), Vector3(3, 0, 0), Vector3(0, 3, 0), Vector3(-3, 0, 0), false));
 	tt.push_back(Case(Vector3(3, 0, 0), Vector3(3, 0, 0), Vector3(0, 3, 0), Vector3(-3, 0, 0), true));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		bool output = Geometry3D::point_in_projected_triangle(current_case.point, current_case.v_1, current_case.v_2, current_case.v_3);
 		CHECK(output == current_case.want);
@@ -298,7 +298,7 @@ TEST_CASE("[Geometry3D] Does Ray Intersect Triangle") {
 	tt.push_back(Case(Vector3(0, 1, 1), Vector3(0, 0, -10), Vector3(0, 3, 0), Vector3(-3, 0, 0), Vector3(3, 0, 0), true));
 	tt.push_back(Case(Vector3(5, 10, 1), Vector3(0, 0, -10), Vector3(0, 3, 0), Vector3(-3, 0, 0), Vector3(3, 0, 0), false));
 	tt.push_back(Case(Vector3(0, 1, 1), Vector3(0, 0, 10), Vector3(0, 3, 0), Vector3(-3, 0, 0), Vector3(3, 0, 0), false));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		bool output = Geometry3D::ray_intersects_triangle(current_case.from, current_case.direction, current_case.v_1, current_case.v_2, current_case.v_3, current_case.result);
 		CHECK(output == current_case.want);
@@ -319,7 +319,7 @@ TEST_CASE("[Geometry3D] Does Segment Intersect Convex") {
 	tt.push_back(Case(Vector3(10, 10, 10), Vector3(0, 0, 0), Geometry3D::build_box_planes(Vector3(5, 5, 5)), true));
 	tt.push_back(Case(Vector3(10, 10, 10), Vector3(5, 5, 5), Geometry3D::build_box_planes(Vector3(5, 5, 5)), true));
 	tt.push_back(Case(Vector3(10, 10, 10), Vector3(6, 5, 5), Geometry3D::build_box_planes(Vector3(5, 5, 5)), false));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		bool output = Geometry3D::segment_intersects_convex(current_case.from, current_case.to, &current_case.planes[0], current_case.planes.size(), current_case.result, current_case.normal);
 		CHECK(output == current_case.want);
@@ -339,7 +339,7 @@ TEST_CASE("[Geometry3D] Segment Intersects Cylinder") {
 	Vector<Case> tt;
 	tt.push_back(Case(Vector3(10, 10, 10), Vector3(0, 0, 0), 5, 5, true));
 	tt.push_back(Case(Vector3(10, 10, 10), Vector3(6, 6, 6), 5, 5, false));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		bool output = Geometry3D::segment_intersects_cylinder(current_case.from, current_case.to, current_case.height, current_case.radius, current_case.result, current_case.normal);
 		CHECK(output == current_case.want);
@@ -360,7 +360,7 @@ TEST_CASE("[Geometry3D] Segment Intersects Cylinder") {
 	tt.push_back(Case(Vector3(10, 10, 10), Vector3(0, 0, 0), Vector3(0, 0, 0), 5, true));
 	tt.push_back(Case(Vector3(10, 10, 10), Vector3(0, 0, 2.5), Vector3(0, 0, 0), 5, true));
 	tt.push_back(Case(Vector3(10, 10, 10), Vector3(5, 5, 5), Vector3(0, 0, 0), 5, false));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		bool output = Geometry3D::segment_intersects_sphere(current_case.from, current_case.to, current_case.sphere_pos, current_case.radius, current_case.result, current_case.normal);
 		CHECK(output == current_case.want);
@@ -379,7 +379,7 @@ TEST_CASE("[Geometry3D] Segment Intersects Triangle") {
 	tt.push_back(Case(Vector3(1, 1, 1), Vector3(-1, -1, -1), Vector3(-3, 0, 0), Vector3(0, 3, 0), Vector3(3, 0, 0), true));
 	tt.push_back(Case(Vector3(1, 1, 1), Vector3(3, 0, 0), Vector3(-3, 0, 0), Vector3(0, 3, 0), Vector3(3, 0, 0), true));
 	tt.push_back(Case(Vector3(1, 1, 1), Vector3(10, -1, -1), Vector3(-3, 0, 0), Vector3(0, 3, 0), Vector3(3, 0, 0), false));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		bool output = Geometry3D::segment_intersects_triangle(current_case.from, current_case.to, current_case.v_1, current_case.v_2, current_case.v_3, current_case.result);
 		CHECK(output == current_case.want);
@@ -401,7 +401,7 @@ TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
 	tt.push_back(Case(Vector3(0, 0, 0), Vector3(5, 5, 5), GoodTriangle, true));
 	Vector3 BadTriangle[3] = { Vector3(100, 100, 100), Vector3(-100, -100, -100), Vector3(10, 10, 10) };
 	tt.push_back(Case(Vector3(1000, 1000, 1000), Vector3(1, 1, 1), BadTriangle, false));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		bool output = Geometry3D::triangle_box_overlap(current_case.box_centre, current_case.box_half_size, current_case.tri_verts);
 		CHECK(output == current_case.want);
@@ -426,7 +426,7 @@ TEST_CASE("[Geometry3D] Triangle and Sphere Intersect") {
 	tt.push_back(Case(triangle, Vector3(0, -1, 0), Vector3(0, 0, 0), 5, true));
 	tt.push_back(Case(triangle, Vector3(0, 1, 0), Vector3(0, 0, 0), 5, true));
 	tt.push_back(Case(triangle, Vector3(0, 1, 0), Vector3(20, 0, 0), 5, false));
-	for (int i = 0; i < tt.size(); ++i) {
+	for (vec_size i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		bool output = Geometry3D::triangle_sphere_intersection_test(&current_case.triangle[0], current_case.normal, current_case.sphere_pos, current_case.sphere_radius, current_case.triangle_contact, current_case.sphere_contact);
 		CHECK(output == current_case.want);

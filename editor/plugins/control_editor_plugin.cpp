@@ -183,7 +183,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 	split_after.append("PresetBottomLeft");
 	split_after.append("PresetCenter");
 
-	for (int i = 0, j = 0; i < p_options.size(); i++, j++) {
+	for (vec_size i = 0, j = 0; i < p_options.size(); i++, j++) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 
@@ -269,7 +269,7 @@ void EditorPropertySizeFlags::_expand_toggled() {
 
 void EditorPropertySizeFlags::_flag_toggled() {
 	uint32_t value = 0;
-	for (int i = 0; i < flag_checks.size(); i++) {
+	for (vec_size i = 0; i < flag_checks.size(); i++) {
 		if (flag_checks[i]->is_pressed()) {
 			int flag_value = flag_checks[i]->get_meta("_value");
 			value |= flag_value;
@@ -289,7 +289,7 @@ void EditorPropertySizeFlags::_flag_toggled() {
 void EditorPropertySizeFlags::update_property() {
 	uint32_t value = get_edited_object()->get(get_edited_property());
 
-	for (int i = 0; i < flag_checks.size(); i++) {
+	for (vec_size i = 0; i < flag_checks.size(); i++) {
 		int flag_value = flag_checks[i]->get_meta("_value");
 		if (value & flag_value) {
 			flag_checks[i]->set_pressed(true);
@@ -336,7 +336,7 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 	}
 
 	HashMap<int, String> flags;
-	for (int i = 0, j = 0; i < p_options.size(); i++, j++) {
+	for (vec_size i = 0, j = 0; i < p_options.size(); i++, j++) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 		flags[current_val] = text_split[0];
@@ -893,7 +893,7 @@ void ControlEditorToolbar::_selection_changed() {
 
 			Vector<int> container_h_flags = parent_container->get_allowed_size_flags_horizontal();
 			Vector<SizeFlags> tmp_flags = allowed_h_flags.duplicate();
-			for (int i = 0; i < allowed_h_flags.size(); i++) {
+			for (vec_size i = 0; i < allowed_h_flags.size(); i++) {
 				if (!container_h_flags.has((int)allowed_h_flags[i])) {
 					tmp_flags.erase(allowed_h_flags[i]);
 				}
@@ -902,7 +902,7 @@ void ControlEditorToolbar::_selection_changed() {
 
 			Vector<int> container_v_flags = parent_container->get_allowed_size_flags_vertical();
 			tmp_flags = allowed_v_flags.duplicate();
-			for (int i = 0; i < allowed_v_flags.size(); i++) {
+			for (vec_size i = 0; i < allowed_v_flags.size(); i++) {
 				if (!container_v_flags.has((int)allowed_v_flags[i])) {
 					tmp_flags.erase(allowed_v_flags[i]);
 				}

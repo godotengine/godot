@@ -370,7 +370,7 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 
 	// Make sure the intersection is inside the frustum planes, to avoid
 	// Painting on invisible regions.
-	for (int i = 0; i < planes.size(); i++) {
+	for (vec_size i = 0; i < planes.size(); i++) {
 		Plane fp = local_xform.xform(planes[i]);
 		if (fp.is_point_over(inters)) {
 			return false;
@@ -860,7 +860,7 @@ void GridMapEditor::update_palette() {
 	ids = mesh_library->get_item_list();
 
 	List<_CGMEItemSort> il;
-	for (int i = 0; i < ids.size(); i++) {
+	for (vec_size i = 0; i < ids.size(); i++) {
 		_CGMEItemSort is;
 		is.id = ids[i];
 		is.name = mesh_library->get_item_name(ids[i]);

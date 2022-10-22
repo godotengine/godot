@@ -129,7 +129,7 @@ size_t PListNode::get_asn1_size(uint8_t p_len_octets) const {
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_ARRAY: {
 			size_t size = 0;
-			for (int i = 0; i < data_array.size(); i++) {
+			for (vec_size i = 0; i < data_array.size(); i++) {
 				size += 1 + _asn1_size_len(p_len_octets) + data_array[i]->get_asn1_size(p_len_octets);
 			}
 			return size;
@@ -183,7 +183,7 @@ bool PListNode::store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) cons
 		case PList::PLNodeType::PL_NODE_TYPE_STRING: {
 			p_stream.push_back(0x0C);
 			store_asn1_size(p_stream, p_len_octets);
-			for (int i = 0; i < data_string.size(); i++) {
+			for (vec_size i = 0; i < data_string.size(); i++) {
 				p_stream.push_back(data_string[i]);
 			}
 		} break;
@@ -215,7 +215,7 @@ bool PListNode::store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) cons
 		case PList::PLNodeType::PL_NODE_TYPE_ARRAY: {
 			p_stream.push_back(0x30); // Sequence.
 			store_asn1_size(p_stream, p_len_octets);
-			for (int i = 0; i < data_array.size(); i++) {
+			for (vec_size i = 0; i < data_array.size(); i++) {
 				valid = valid && data_array[i]->store_asn1(p_stream, p_len_octets);
 			}
 		} break;
@@ -305,7 +305,7 @@ void PListNode::store_text(String &p_stream, uint8_t p_indent) const {
 		case PList::PLNodeType::PL_NODE_TYPE_ARRAY: {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<array>\n";
-			for (int i = 0; i < data_array.size(); i++) {
+			for (vec_size i = 0; i < data_array.size(); i++) {
 				data_array[i]->store_text(p_stream, p_indent + 1);
 			}
 			p_stream += String("\t").repeat(p_indent);

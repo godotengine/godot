@@ -467,7 +467,7 @@ void FindInFilesDialog::_notification(int p_what) {
 					_filters_container->get_child(i)->queue_delete();
 				}
 				Array exts = ProjectSettings::get_singleton()->get("editor/script/search_in_file_extensions");
-				for (int i = 0; i < exts.size(); ++i) {
+				for (vec_size i = 0; i < exts.size(); ++i) {
 					CheckBox *cb = memnew(CheckBox);
 					cb->set_text(exts[i]);
 					if (!_filters_preferences.has(exts[i])) {
@@ -919,7 +919,7 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 
 	int offset = 0;
 
-	for (int i = 0; i < locations.size(); ++i) {
+	for (vec_size i = 0; i < locations.size(); ++i) {
 		int repl_line_number = locations[i].line_number;
 
 		while (current_line < repl_line_number) {

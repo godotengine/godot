@@ -56,7 +56,7 @@ void TranslationPO::print_translation_map() {
 		for (List<StringName>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
 			StringName id = E2->get();
 			file->store_line("msgid: " + String::utf8(String(id).utf8()));
-			for (int i = 0; i < inner_map[id].size(); i++) {
+			for (vec_size i = 0; i < inner_map[id].size(); i++) {
 				file->store_line("msgstr[" + String::num_int64(i) + "]: " + String::utf8(String(inner_map[id][i]).utf8()));
 			}
 			file->store_line("");
@@ -124,7 +124,7 @@ int TranslationPO::_get_plural_index(int p_n) const {
 	input_val.push_back(p_n);
 
 	Variant result;
-	for (int i = 0; i < equi_tests.size(); i++) {
+	for (vec_size i = 0; i < equi_tests.size(); i++) {
 		Error err = expr->parse(equi_tests[i], input_name);
 		ERR_FAIL_COND_V_MSG(err != OK, 0, "Cannot parse expression. Error: " + expr->get_error_text());
 
@@ -202,7 +202,7 @@ void TranslationPO::add_plural_message(const StringName &p_src_text, const Vecto
 		map_id_str[p_src_text].clear();
 	}
 
-	for (int i = 0; i < p_plural_xlated_texts.size(); i++) {
+	for (vec_size i = 0; i < p_plural_xlated_texts.size(); i++) {
 		map_id_str[p_src_text].push_back(p_plural_xlated_texts[i]);
 	}
 }

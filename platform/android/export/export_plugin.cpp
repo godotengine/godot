@@ -264,7 +264,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 				if (ea->plugins.size() != loaded_plugins.size()) {
 					ea->plugins_changed.set();
 				} else {
-					for (int i = 0; i < ea->plugins.size(); i++) {
+					for (vec_size i = 0; i < ea->plugins.size(); i++) {
 						if (ea->plugins[i].name != loaded_plugins[i].name) {
 							ea->plugins_changed.set();
 							break;
@@ -289,7 +289,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 
 			Vector<String> ds = devices.split("\n");
 			Vector<String> ldevices;
-			for (int i = 1; i < ds.size(); i++) {
+			for (vec_size i = 1; i < ds.size(); i++) {
 				String d = ds[i];
 				int dpos = d.find("device");
 				if (dpos == -1) {
@@ -306,7 +306,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 			if (ea->devices.size() != ldevices.size()) {
 				different = true;
 			} else {
-				for (int i = 0; i < ea->devices.size(); i++) {
+				for (vec_size i = 0; i < ea->devices.size(); i++) {
 					if (ea->devices[i].id != ldevices[i]) {
 						different = true;
 						break;
@@ -317,10 +317,10 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 			if (different) {
 				Vector<Device> ndevices;
 
-				for (int i = 0; i < ldevices.size(); i++) {
+				for (vec_size i = 0; i < ldevices.size(); i++) {
 					Device d;
 					d.id = ldevices[i];
-					for (int j = 0; j < ea->devices.size(); j++) {
+					for (vec_size j = 0; j < ea->devices.size(); j++) {
 						if (ea->devices[j].id == ldevices[i]) {
 							d.description = ea->devices[j].description;
 							d.name = ea->devices[j].name;
@@ -345,7 +345,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 						String device;
 						d.description = "Device ID: " + d.id + "\n";
 						d.api_level = 0;
-						for (int j = 0; j < props.size(); j++) {
+						for (vec_size j = 0; j < props.size(); j++) {
 							// got information by `shell cat /system/build.prop` before and its format is "property=value"
 							// it's now changed to use `shell getporp` because of permission issue with Android 8.0 and above
 							// its format is "[property]: [value]" so changed it as like build.prop
@@ -633,7 +633,7 @@ Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_plugins() {
 
 		if (!plugins_filenames.is_empty()) {
 			Ref<ConfigFile> config_file = memnew(ConfigFile);
-			for (int i = 0; i < plugins_filenames.size(); i++) {
+			for (vec_size i = 0; i < plugins_filenames.size(); i++) {
 				PluginConfigAndroid config = PluginConfigAndroid::load_plugin_config(config_file, plugins_dir.path_join(plugins_filenames[i]));
 				if (config.valid_config) {
 					loaded_plugins.push_back(config);
@@ -650,7 +650,7 @@ Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_plugins() {
 Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
 	Vector<PluginConfigAndroid> enabled_plugins;
 	Vector<PluginConfigAndroid> all_plugins = get_plugins();
-	for (int i = 0; i < all_plugins.size(); i++) {
+	for (vec_size i = 0; i < all_plugins.size(); i++) {
 		PluginConfigAndroid plugin = all_plugins[i];
 		bool enabled = p_presets->get("plugins/" + plugin.name);
 		if (enabled) {
@@ -689,7 +689,7 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 	Vector<String> abis = get_abis();
 	bool exported = false;
-	for (int i = 0; i < p_so.tags.size(); ++i) {
+	for (vec_size i = 0; i < p_so.tags.size(); ++i) {
 		// shared objects can be fat (compatible with multiple ABIs)
 		int abi_index = abis.find(p_so.tags[i]);
 		if (abi_index != -1) {
@@ -728,7 +728,7 @@ Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const Shared
 	Vector<String> abis = get_abis();
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 	bool exported = false;
-	for (int i = 0; i < p_so.tags.size(); ++i) {
+	for (vec_size i = 0; i < p_so.tags.size(); ++i) {
 		int abi_index = abis.find(p_so.tags[i]);
 		if (abi_index != -1) {
 			exported = true;
@@ -767,7 +767,7 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 		aperms++;
 	}
 	PackedStringArray user_perms = p_preset->get("permissions/custom_permissions");
-	for (int i = 0; i < user_perms.size(); i++) {
+	for (vec_size i = 0; i < user_perms.size(); i++) {
 		String user_perm = user_perms[i].strip_edges();
 		if (!user_perm.is_empty()) {
 			r_permissions.push_back(user_perm);
@@ -802,7 +802,7 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 
 	Vector<String> perms;
 	_get_permissions(p_preset, p_give_internet, perms);
-	for (int i = 0; i < perms.size(); i++) {
+	for (vec_size i = 0; i < perms.size(); i++) {
 		String permission = perms.get(i);
 		if (permission == "android.permission.WRITE_EXTERNAL_STORAGE" || (permission == "android.permission.READ_EXTERNAL_STORAGE" && _has_manage_external_storage_permission(perms))) {
 			manifest_text += vformat("    <uses-permission android:name=\"%s\" android:maxSdkVersion=\"29\" />\n", permission);
@@ -1082,7 +1082,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 							attr_required_string = string_table.size() - 1;
 						}
 
-						for (int i = 0; i < feature_names.size(); i++) {
+						for (vec_size i = 0; i < feature_names.size(); i++) {
 							String feature_name = feature_names[i];
 							bool feature_required = feature_required_list[i];
 							int feature_version = feature_versions[i];
@@ -1212,7 +1212,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						attr_uses_permission_string = string_table.size() - 1;
 					}
 
-					for (int i = 0; i < perms.size(); ++i) {
+					for (vec_size i = 0; i < perms.size(); ++i) {
 						print_line("Adding permission " + perms[i]);
 
 						manifest_cur_size += 56 + 24; // node + end node
@@ -1282,7 +1282,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	}
 
 	ofs = 0;
-	for (int i = 0; i < string_table.size(); i++) {
+	for (vec_size i = 0; i < string_table.size(); i++) {
 		encode_uint32(ofs, &ret.write[string_table_begins + i * 4]);
 		ofs += string_table[i].length() * 2 + 2 + 2;
 	}
@@ -1290,7 +1290,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	ret.resize(ret.size() + ofs);
 	string_data_offset = ret.size() - ofs;
 	uint8_t *chars = &ret.write[string_data_offset];
-	for (int i = 0; i < string_table.size(); i++) {
+	for (vec_size i = 0; i < string_table.size(); i++) {
 		String s = string_table[i];
 		encode_uint16(s.length(), chars);
 		chars += 2;
@@ -1302,7 +1302,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 		chars += 2;
 	}
 
-	for (int i = 0; i < stable_extra.size(); i++) {
+	for (vec_size i = 0; i < stable_extra.size(); i++) {
 		ret.push_back(stable_extra[i]);
 	}
 
@@ -1430,14 +1430,14 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 	}
 
 	int ofs = 0;
-	for (int i = 0; i < string_table.size(); i++) {
+	for (vec_size i = 0; i < string_table.size(); i++) {
 		encode_uint32(ofs, &ret.write[string_table_begins + i * 4]);
 		ofs += string_table[i].length() * 2 + 2 + 2;
 	}
 
 	ret.resize(ret.size() + ofs);
 	uint8_t *chars = &ret.write[ret.size() - ofs];
-	for (int i = 0; i < string_table.size(); i++) {
+	for (vec_size i = 0; i < string_table.size(); i++) {
 		String s = string_table[i];
 		encode_uint16(s.length(), chars);
 		chars += 2;
@@ -1659,7 +1659,7 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
 	Vector<String> abis = get_abis();
 	Vector<String> enabled_abis;
-	for (int i = 0; i < abis.size(); ++i) {
+	for (vec_size i = 0; i < abis.size(); ++i) {
 		bool is_enabled = p_preset->get("architectures/" + abis[i]);
 		if (is_enabled) {
 			enabled_abis.push_back(abis[i]);
@@ -1672,7 +1672,7 @@ void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPres
 	r_features->push_back("etc2");
 
 	Vector<String> abis = get_enabled_abis(p_preset);
-	for (int i = 0; i < abis.size(); ++i) {
+	for (vec_size i = 0; i < abis.size(); ++i) {
 		r_features->push_back(abis[i]);
 	}
 }
@@ -1689,7 +1689,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), ""));
 
 	Vector<PluginConfigAndroid> plugins_configs = get_plugins();
-	for (int i = 0; i < plugins_configs.size(); i++) {
+	for (vec_size i = 0; i < plugins_configs.size(); i++) {
 		print_verbose("Found Android plugin " + plugins_configs[i].name);
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("plugins"), plugins_configs[i].name)), false));
 	}
@@ -1698,7 +1698,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	// Android supports multiple architectures in an app bundle, so
 	// we expose each option as a checkbox in the export dialog.
 	const Vector<String> abis = get_abis();
-	for (int i = 0; i < abis.size(); ++i) {
+	for (vec_size i = 0; i < abis.size(); ++i) {
 		const String abi = abis[i];
 		// All Android devices supporting Vulkan run 64-bit Android,
 		// so there is usually no point in exporting for 32-bit Android.
@@ -2315,7 +2315,7 @@ Error EditorExportPlatformAndroid::save_apk_expansion_file(const Ref<EditorExpor
 void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, int p_flags, Vector<uint8_t> &r_command_line_flags) {
 	String cmdline = p_preset->get("command_line/extra_args");
 	Vector<String> command_line_strings = cmdline.strip_edges().split(" ");
-	for (int i = 0; i < command_line_strings.size(); i++) {
+	for (vec_size i = 0; i < command_line_strings.size(); i++) {
 		if (command_line_strings[i].strip_edges().length() == 0) {
 			command_line_strings.remove_at(i);
 			i--;
@@ -2356,7 +2356,7 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 	if (command_line_strings.size()) {
 		r_command_line_flags.resize(4);
 		encode_uint32(command_line_strings.size(), &r_command_line_flags.write[0]);
-		for (int i = 0; i < command_line_strings.size(); i++) {
+		for (vec_size i = 0; i < command_line_strings.size(); i++) {
 			print_line(itos(i) + " param: " + command_line_strings[i]);
 			CharString command_line_argument = command_line_strings[i].utf8();
 			int base = r_command_line_flags.size();
@@ -2509,7 +2509,7 @@ void EditorExportPlatformAndroid::_remove_copied_libs() {
 
 	Vector<String> libs = json.get_data();
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	for (int i = 0; i < libs.size(); i++) {
+	for (vec_size i = 0; i < libs.size(); i++) {
 		print_verbose("Removing previously installed library " + libs[i]);
 		da->remove(libs[i]);
 	}
@@ -2518,7 +2518,7 @@ void EditorExportPlatformAndroid::_remove_copied_libs() {
 
 String EditorExportPlatformAndroid::join_list(List<String> parts, const String &separator) const {
 	String ret;
-	for (int i = 0; i < parts.size(); ++i) {
+	for (vec_size i = 0; i < parts.size(); ++i) {
 		if (i > 0) {
 			ret += separator;
 		}
@@ -2923,7 +2923,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		if (file.ends_with(".so")) {
 			bool enabled = false;
-			for (int i = 0; i < enabled_abis.size(); ++i) {
+			for (vec_size i = 0; i < enabled_abis.size(); ++i) {
 				if (file.begins_with("lib/" + enabled_abis[i] + "/")) {
 					invalid_abis.erase(enabled_abis[i]);
 					enabled = true;

@@ -224,7 +224,7 @@ String OS_Android::get_version() const {
 	const Vector<const char *> roms = { "ro.havoc.version", "org.pex.version", "org.pixelexperience.version",
 		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.corvus.version", "ro.pa.version",
 		"ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
-	for (int i = 0; i < roms.size(); i++) {
+	for (vec_size i = 0; i < roms.size(); i++) {
 		static String rom_version = get_system_property(roms[i]);
 		if (!rom_version.is_empty()) {
 			return rom_version;

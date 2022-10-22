@@ -53,7 +53,7 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 	file_split_sheet->clear_filters();
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
-	for (int i = 0; i < extensions.size(); i++) {
+	for (vec_size i = 0; i < extensions.size(); i++) {
 		file_split_sheet->add_filter("*." + extensions[i]);
 	}
 
@@ -442,7 +442,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 
 	List<Ref<Texture2D>> resources;
 
-	for (int i = 0; i < p_path.size(); i++) {
+	for (vec_size i = 0; i < p_path.size(); i++) {
 		Ref<Texture2D> resource;
 		resource = ResourceLoader::load(p_path[i]);
 
@@ -502,7 +502,7 @@ void SpriteFramesEditor::_load_pressed() {
 	file->clear_filters();
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
-	for (int i = 0; i < extensions.size(); i++) {
+	for (vec_size i = 0; i < extensions.size(); i++) {
 		file->add_filter("*." + extensions[i]);
 	}
 
@@ -1094,7 +1094,7 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			return false;
 		}
 
-		for (int i = 0; i < files.size(); i++) {
+		for (vec_size i = 0; i < files.size(); i++) {
 			String f = files[i];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(f);
 

@@ -230,7 +230,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	// also matches that of other IDE's.
 	Vector<String> lines = p_msg.split("\n", true);
 
-	for (int i = 0; i < lines.size(); i++) {
+	for (vec_size i = 0; i < lines.size(); i++) {
 		_process_message(lines[i], p_type);
 	}
 }
@@ -251,7 +251,7 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 void EditorLog::_rebuild_log() {
 	log->clear();
 
-	for (int msg_idx = 0; msg_idx < messages.size(); msg_idx++) {
+	for (vec_size msg_idx = 0; msg_idx < messages.size(); msg_idx++) {
 		LogMessage msg = messages[msg_idx];
 
 		if (collapse) {

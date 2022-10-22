@@ -522,7 +522,7 @@ void SkeletonModification3DFABRIK::fabrik_joint_auto_calculate_length(int p_join
 		Transform3D bone_trans = stack->skeleton->get_bone_global_pose(fabrik_data_chain[p_joint_idx].bone_idx);
 
 		real_t final_length = 0;
-		for (int i = 0; i < bone_children.size(); i++) {
+		for (vec_size i = 0; i < bone_children.size(); i++) {
 			Transform3D child_transform = stack->skeleton->get_bone_global_pose(bone_children[i]);
 			final_length += bone_trans.origin.distance_to(child_transform.origin);
 			//final_length += stack->skeleton->global_pose_to_local_pose(fabrik_data_chain[p_joint_idx].bone_idx, child_transform).origin.length();

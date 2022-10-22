@@ -127,7 +127,7 @@ public:
 		return _ptr;
 	}
 
-	_FORCE_INLINE_ int size() const {
+	_FORCE_INLINE_ vec_size size() const {
 		uint32_t *size = (uint32_t *)_get_size();
 		if (size) {
 			return *size;
@@ -139,28 +139,28 @@ public:
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ bool is_empty() const { return _ptr == nullptr; }
 
-	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
+	_FORCE_INLINE_ void set(vec_size p_index, const T &p_elem) {
 		ERR_FAIL_INDEX(p_index, size());
 		_copy_on_write();
 		_ptr[p_index] = p_elem;
 	}
 
-	_FORCE_INLINE_ T &get_m(int p_index) {
+	_FORCE_INLINE_ T &get_m(vec_size p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 		_copy_on_write();
 		return _ptr[p_index];
 	}
 
-	_FORCE_INLINE_ const T &get(int p_index) const {
+	_FORCE_INLINE_ const T &get(vec_size p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
 		return _ptr[p_index];
 	}
 
 	template <bool p_ensure_zero = false>
-	Error resize(int p_size);
+	Error resize(vec_size p_size);
 
-	_FORCE_INLINE_ void remove_at(int p_index) {
+	_FORCE_INLINE_ void remove_at(vec_size p_index) {
 		ERR_FAIL_INDEX(p_index, size());
 		T *p = ptrw();
 		int len = size();
@@ -171,10 +171,10 @@ public:
 		resize(len - 1);
 	}
 
-	Error insert(int p_pos, const T &p_val) {
+	Error insert(vec_size p_pos, const T &p_val) {
 		ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
 		resize(size() + 1);
-		for (int i = (size() - 1); i > p_pos; i--) {
+		for (vec_size i = (size() - 1); i > p_pos; i--) {
 			set(i, get(i - 1));
 		}
 		set(p_pos, p_val);
@@ -258,10 +258,10 @@ uint32_t CowData<T>::_copy_on_write() {
 
 template <class T>
 template <bool p_ensure_zero>
-Error CowData<T>::resize(int p_size) {
+Error CowData<T>::resize(vec_size p_size) {
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
-	int current_size = size();
+	vec_size current_size = size();
 
 	if (p_size == current_size) {
 		return OK;
@@ -304,7 +304,7 @@ Error CowData<T>::resize(int p_size) {
 		// construct the newly created elements
 
 		if (!std::is_trivially_constructible<T>::value) {
-			for (int i = *_get_size(); i < p_size; i++) {
+			for (vec_size i = *_get_size(); i < p_size; i++) {
 				memnew_placement(&_ptr[i], T);
 			}
 		} else if (p_ensure_zero) {
@@ -344,7 +344,7 @@ int CowData<T>::find(const T &p_val, int p_from) const {
 		return ret;
 	}
 
-	for (int i = p_from; i < size(); i++) {
+	for (vec_size i = p_from; i < size(); i++) {
 		if (get(i) == p_val) {
 			ret = i;
 			break;
@@ -376,7 +376,7 @@ int CowData<T>::rfind(const T &p_val, int p_from) const {
 template <class T>
 int CowData<T>::count(const T &p_val) const {
 	int amount = 0;
-	for (int i = 0; i < size(); i++) {
+	for (vec_size i = 0; i < size(); i++) {
 		if (get(i) == p_val) {
 			amount++;
 		}

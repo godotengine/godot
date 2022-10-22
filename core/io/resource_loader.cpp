@@ -84,7 +84,7 @@ bool ResourceFormatLoader::handles_type(const String &p_type) const {
 void ResourceFormatLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	Vector<String> ret;
 	if (GDVIRTUAL_CALL(_get_classes_used, p_path, ret)) {
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			r_classes->insert(ret[i]);
 		}
 		return;
@@ -139,7 +139,7 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 	PackedStringArray exts;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, exts)) {
 		const String *r = exts.ptr();
-		for (int i = 0; i < exts.size(); ++i) {
+		for (vec_size i = 0; i < exts.size(); ++i) {
 			p_extensions->push_back(r[i]);
 		}
 	}
@@ -168,7 +168,7 @@ void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *
 	PackedStringArray deps;
 	if (GDVIRTUAL_CALL(_get_dependencies, p_path, p_add_types, deps)) {
 		const String *r = deps.ptr();
-		for (int i = 0; i < deps.size(); ++i) {
+		for (vec_size i = 0; i < deps.size(); ++i) {
 			p_dependencies->push_back(r[i]);
 		}
 	}
@@ -808,7 +808,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		Vector<String> &res_remaps = *translation_remaps.getptr(new_path);
 
 		int best_score = 0;
-		for (int i = 0; i < res_remaps.size(); i++) {
+		for (vec_size i = 0; i < res_remaps.size(); i++) {
 			int split = res_remaps[i].rfind(":");
 			if (split == -1) {
 				continue;
@@ -921,7 +921,7 @@ void ResourceLoader::load_translation_remaps() {
 		Array langs = remaps[E];
 		Vector<String> lang_remaps;
 		lang_remaps.resize(langs.size());
-		for (int i = 0; i < langs.size(); i++) {
+		for (vec_size i = 0; i < langs.size(); i++) {
 			lang_remaps.write[i] = langs[i];
 		}
 
@@ -1032,7 +1032,7 @@ void ResourceLoader::remove_custom_loaders() {
 		}
 	}
 
-	for (int i = 0; i < custom_loaders.size(); ++i) {
+	for (vec_size i = 0; i < custom_loaders.size(); ++i) {
 		remove_resource_format_loader(custom_loaders[i]);
 	}
 }

@@ -57,7 +57,7 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		int added = 0;
 		Dictionary d = p_data;
 		Vector<String> files = d["files"];
-		for (int i = 0; i < files.size(); i++) {
+		for (vec_size i = 0; i < files.size(); i++) {
 			Ref<Texture2D> resource = ResourceLoader::load(files[i]);
 			if (resource.is_valid()) {
 				// Retrieve the id for the next created source.
@@ -102,7 +102,7 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 				return false;
 			}
 
-			for (int i = 0; i < files.size(); i++) {
+			for (vec_size i = 0; i < files.size(); i++) {
 				String file = files[i];
 				String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 
@@ -362,7 +362,7 @@ void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
 		Vector<int> selected = patterns_item_list->get_selected_items();
 		undo_redo->create_action(TTR("Remove TileSet patterns"));
-		for (int i = 0; i < selected.size(); i++) {
+		for (vec_size i = 0; i < selected.size(); i++) {
 			int pattern_index = selected[i];
 			undo_redo->add_do_method(*tile_set, "remove_pattern", pattern_index);
 			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(pattern_index), pattern_index);

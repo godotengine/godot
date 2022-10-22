@@ -99,7 +99,7 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 		int cc = caret_column;
 
 		PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
-		for (int i = 1; i < words.size(); i = i + 2) {
+		for (vec_size i = 1; i < words.size(); i = i + 2) {
 			if (words[i] > cc) {
 				cc = words[i];
 				break;
@@ -194,7 +194,7 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 	if (p_word) {
 		int cc = caret_column;
 		PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
-		for (int i = 1; i < words.size(); i = i + 2) {
+		for (vec_size i = 1; i < words.size(); i = i + 2) {
 			if (words[i] > cc) {
 				cc = words[i];
 				break;
@@ -321,7 +321,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 						last_dblclk = OS::get_singleton()->get_ticks_msec();
 						last_dblclk_pos = b->get_position();
 						PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
-						for (int i = 0; i < words.size(); i = i + 2) {
+						for (vec_size i = 0; i < words.size(); i = i + 2) {
 							if ((words[i] < caret_column && words[i + 1] > caret_column) || (i == words.size() - 2 && caret_column == words[i + 1])) {
 								selection.enabled = true;
 								selection.begin = words[i];
@@ -892,7 +892,7 @@ void LineEdit::_notification(int p_what) {
 			Vector2 ofs = Point2(x_ofs + scroll_offset, y_ofs);
 			if (selection.enabled) {
 				Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, selection.begin, selection.end);
-				for (int i = 0; i < sel.size(); i++) {
+				for (vec_size i = 0; i < sel.size(); i++) {
 					Rect2 rect = Rect2(sel[i].x + ofs.x, ofs.y, sel[i].y - sel[i].x, text_height);
 					if (rect.position.x + rect.size.x <= x_ofs || rect.position.x > ofs_max) {
 						continue;
@@ -1000,7 +1000,7 @@ void LineEdit::_notification(int p_what) {
 					{
 						// IME intermediate text range.
 						Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, caret_column, caret_column + ime_text.length());
-						for (int i = 0; i < sel.size(); i++) {
+						for (vec_size i = 0; i < sel.size(); i++) {
 							Rect2 rect = Rect2(sel[i].x + ofs.x, ofs.y, sel[i].y - sel[i].x, text_height);
 							if (rect.position.x + rect.size.x <= x_ofs || rect.position.x > ofs_max) {
 								continue;
@@ -1018,7 +1018,7 @@ void LineEdit::_notification(int p_what) {
 					{
 						// IME caret.
 						Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, caret_column + ime_selection.x, caret_column + ime_selection.x + ime_selection.y);
-						for (int i = 0; i < sel.size(); i++) {
+						for (vec_size i = 0; i < sel.size(); i++) {
 							Rect2 rect = Rect2(sel[i].x + ofs.x, ofs.y, sel[i].y - sel[i].x, text_height);
 							if (rect.position.x + rect.size.x <= x_ofs || rect.position.x > ofs_max) {
 								continue;

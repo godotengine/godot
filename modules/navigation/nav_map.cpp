@@ -153,7 +153,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			const gd::Edge &edge = navigation_polys[least_cost_id].poly->edges[i];
 
 			// Iterate over connections in this edge, then compute the new optimized travel distance assigned to this polygon.
-			for (int connection_index = 0; connection_index < edge.connections.size(); connection_index++) {
+			for (vec_size connection_index = 0; connection_index < edge.connections.size(); connection_index++) {
 				const gd::Edge::Connection &connection = edge.connections[connection_index];
 
 				// Only consider the connection to another polygon if this polygon is in a region with compatible layers.
@@ -628,12 +628,12 @@ void NavMap::sync() {
 		// to be connected, create new polygons to remove that small gap is
 		// not really useful and would result in wasteful computation during
 		// connection, integration and path finding.
-		for (int i = 0; i < free_edges.size(); i++) {
+		for (vec_size i = 0; i < free_edges.size(); i++) {
 			const gd::Edge::Connection &free_edge = free_edges[i];
 			Vector3 edge_p1 = free_edge.polygon->points[free_edge.edge].pos;
 			Vector3 edge_p2 = free_edge.polygon->points[(free_edge.edge + 1) % free_edge.polygon->points.size()].pos;
 
-			for (int j = 0; j < free_edges.size(); j++) {
+			for (vec_size j = 0; j < free_edges.size(); j++) {
 				const gd::Edge::Connection &other_edge = free_edges[j];
 				if (i == j || free_edge.polygon->owner == other_edge.polygon->owner) {
 					continue;

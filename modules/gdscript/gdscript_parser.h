@@ -655,7 +655,7 @@ public:
 
 		// EnumValue docs are parsed after itself, so we need a method to add/modify the doc property later.
 		void set_enum_value_doc(const StringName &p_name, const String &p_doc_description) {
-			ERR_FAIL_INDEX(members_indices[p_name], members.size());
+			ERR_FAIL_INDEX(members_indices[p_name], int(members.size()));
 			members.write[members_indices[p_name]].enum_value.doc_description = p_doc_description;
 		}
 #endif // TOOLS_ENABLED

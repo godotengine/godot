@@ -674,7 +674,7 @@ Error ResourceLoaderBinary::load() {
 		return error;
 	}
 
-	for (int i = 0; i < external_resources.size(); i++) {
+	for (vec_size i = 0; i < external_resources.size(); i++) {
 		String path = external_resources[i].path;
 
 		if (remaps.has(path)) {
@@ -713,7 +713,7 @@ Error ResourceLoaderBinary::load() {
 		}
 	}
 
-	for (int i = 0; i < internal_resources.size(); i++) {
+	for (vec_size i = 0; i < internal_resources.size(); i++) {
 		bool main = i == (internal_resources.size() - 1);
 
 		//maybe it is loaded already
@@ -910,7 +910,7 @@ void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringN
 		return;
 	}
 
-	for (int i = 0; i < internal_resources.size(); i++) {
+	for (vec_size i = 0; i < internal_resources.size(); i++) {
 		p_f->seek(internal_resources[i].offset);
 		String t = get_unicode_string();
 		ERR_FAIL_COND(p_f->get_error() != OK);
@@ -926,7 +926,7 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 		return;
 	}
 
-	for (int i = 0; i < external_resources.size(); i++) {
+	for (vec_size i = 0; i < external_resources.size(); i++) {
 		String dep;
 		if (external_resources[i].uid != ResourceUID::INVALID_ID) {
 			dep = ResourceUID::get_singleton()->id_to_text(external_resources[i].uid);
@@ -1751,7 +1751,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(VARIANT_ARRAY);
 			Array a = p_property;
 			f->store_32(uint32_t(a.size()));
-			for (int i = 0; i < a.size(); i++) {
+			for (vec_size i = 0; i < a.size(); i++) {
 				write_variant(f, a[i], resource_map, external_resources, string_map);
 			}
 
@@ -2108,7 +2108,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	}
 
 	f->store_32(strings.size()); //string table size
-	for (int i = 0; i < strings.size(); i++) {
+	for (vec_size i = 0; i < strings.size(); i++) {
 		save_unicode_string(f, strings[i]);
 	}
 
@@ -2121,7 +2121,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		save_order.write[E.value] = E.key;
 	}
 
-	for (int i = 0; i < save_order.size(); i++) {
+	for (vec_size i = 0; i < save_order.size(); i++) {
 		save_unicode_string(f, save_order[i]->get_save_class());
 		String res_path = save_order[i]->get_path();
 		res_path = relative_paths ? local_path.path_to_file(res_path) : res_path;
@@ -2193,7 +2193,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		}
 	}
 
-	for (int i = 0; i < ofs_table.size(); i++) {
+	for (vec_size i = 0; i < ofs_table.size(); i++) {
 		f->seek(ofs_pos[i]);
 		f->store_64(ofs_table[i]);
 	}

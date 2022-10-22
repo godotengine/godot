@@ -112,7 +112,7 @@ void SkyRD::SkyShaderData::set_code(const String &p_code) {
 #if 0
 	print_line("**compiling shader:");
 	print_line("**defines:\n");
-	for (int i = 0; i < gen_code.defines.size(); i++) {
+	for (vec_size i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
 
@@ -439,7 +439,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 		uint32_t mmw = tf.width;
 		uint32_t mmh = tf.height;
 		downsampled_layer.mipmaps.resize(tf.mipmaps);
-		for (int j = 0; j < downsampled_layer.mipmaps.size(); j++) {
+		for (vec_size j = 0; j < downsampled_layer.mipmaps.size(); j++) {
 			ReflectionData::DownsampleLayer::Mipmap &mm = downsampled_layer.mipmaps.write[j];
 			mm.size.width = mmw;
 			mm.size.height = mmh;
@@ -474,7 +474,7 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 			copy_effects->cubemap_downsample_raster(radiance_base_cubemap, downsampled_layer.mipmaps[0].framebuffers[k], k, downsampled_layer.mipmaps[0].size);
 		}
 
-		for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
+		for (vec_size i = 1; i < downsampled_layer.mipmaps.size(); i++) {
 			for (int k = 0; k < 6; k++) {
 				copy_effects->cubemap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffers[k], k, downsampled_layer.mipmaps[i].size);
 			}
@@ -483,14 +483,14 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 
 		if (p_use_arrays) {
 			RD::get_singleton()->draw_command_begin_label("filter radiance map into array heads");
-			for (int i = 0; i < layers.size(); i++) {
+			for (vec_size i = 0; i < layers.size(); i++) {
 				for (int k = 0; k < 6; k++) {
 					copy_effects->cubemap_filter_raster(downsampled_radiance_cubemap, layers[i].mipmaps[0].framebuffers[k], k, i);
 				}
 			}
 		} else {
 			RD::get_singleton()->draw_command_begin_label("filter radiance map into mipmaps directly");
-			for (int j = 0; j < layers[0].mipmaps.size(); j++) {
+			for (vec_size j = 0; j < layers[0].mipmaps.size(); j++) {
 				for (int k = 0; k < 6; k++) {
 					copy_effects->cubemap_filter_raster(downsampled_radiance_cubemap, layers[0].mipmaps[j].framebuffers[k], k, j);
 				}
@@ -501,17 +501,17 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 		RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
 		copy_effects->cubemap_downsample(radiance_base_cubemap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size);
 
-		for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
+		for (vec_size i = 1; i < downsampled_layer.mipmaps.size(); i++) {
 			copy_effects->cubemap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size);
 		}
 		RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		Vector<RID> views;
 		if (p_use_arrays) {
-			for (int i = 1; i < layers.size(); i++) {
+			for (vec_size i = 1; i < layers.size(); i++) {
 				views.push_back(layers[i].views[0]);
 			}
 		} else {
-			for (int i = 1; i < layers[0].views.size(); i++) {
+			for (vec_size i = 1; i < layers[0].views.size(); i++) {
 				views.push_back(layers[0].views[i]);
 			}
 		}
@@ -533,7 +533,7 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 				copy_effects->cubemap_downsample_raster(radiance_base_cubemap, downsampled_layer.mipmaps[0].framebuffers[k], k, downsampled_layer.mipmaps[0].size);
 			}
 
-			for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
+			for (vec_size i = 1; i < downsampled_layer.mipmaps.size(); i++) {
 				for (int k = 0; k < 6; k++) {
 					copy_effects->cubemap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffers[k], k, downsampled_layer.mipmaps[i].size);
 				}
@@ -568,7 +568,7 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 			RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
 			copy_effects->cubemap_downsample(radiance_base_cubemap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size);
 
-			for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
+			for (vec_size i = 1; i < downsampled_layer.mipmaps.size(); i++) {
 				copy_effects->cubemap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size);
 			}
 			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
@@ -1197,7 +1197,7 @@ void SkyRD::setup(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const P
 			// Run through the list of lights in the scene and pick out the Directional Lights.
 			// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
 			// after the depth prepass, but this runs before the depth prepass
-			for (int i = 0; i < (int)p_lights.size(); i++) {
+			for (vec_size i = 0; i < (int)p_lights.size(); i++) {
 				if (!light_storage->owns_light_instance(p_lights[i])) {
 					continue;
 				}

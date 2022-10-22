@@ -175,7 +175,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 	if (interaction_profile.is_valid()) {
 		String io_path = String(p_io_path->openxr_path);
 		Array bindings = interaction_profile->get_bindings();
-		for (int i = 0; i < bindings.size(); i++) {
+		for (vec_size i = 0; i < bindings.size(); i++) {
 			Ref<OpenXRIPBinding> binding = bindings[i];
 			if (binding->has_path(io_path)) {
 				Ref<OpenXRAction> action = binding->get_action();
@@ -223,7 +223,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 		}
 	}
 
-	for (int i = 0; i < top_level_paths.size(); i++) {
+	for (vec_size i = 0; i < top_level_paths.size(); i++) {
 		PanelContainer *panel = memnew(PanelContainer);
 		panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		main_hb->add_child(panel);

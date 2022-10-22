@@ -167,7 +167,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		selected_triangle = -1;
 		_update_tool_erase();
 
-		for (int i = 0; i < points.size(); i++) {
+		for (vec_size i = 0; i < points.size(); i++) {
 			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
 				selected_point = i;
 				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
@@ -205,7 +205,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		//try to see if a point can be selected
 		selected_point = -1;
 
-		for (int i = 0; i < points.size(); i++) {
+		for (vec_size i = 0; i < points.size(); i++) {
 			if (making_triangle.has(i)) {
 				continue;
 			}
@@ -411,7 +411,7 @@ void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 			bl_points.push_back(blend_space->get_blend_point_position(i));
 		}
 		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(bl_points);
-		for (int i = 0; i < tr.size(); i++) {
+		for (vec_size i = 0; i < tr.size(); i++) {
 			blend_space->add_triangle(tr[i].points[0], tr[i].points[1], tr[i].points[2]);
 		}
 	}
@@ -561,7 +561,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 	if (making_triangle.size()) {
 		Vector<Vector2> bl_points;
-		for (int i = 0; i < making_triangle.size(); i++) {
+		for (vec_size i = 0; i < making_triangle.size(); i++) {
 			Vector2 point = blend_space->get_blend_point_position(making_triangle[i]);
 			point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 			point *= s;

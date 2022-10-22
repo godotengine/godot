@@ -821,7 +821,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 		SetWindowRgn(windows[p_window].hWnd, nullptr, TRUE);
 	} else {
 		POINT *points = (POINT *)memalloc(sizeof(POINT) * windows[p_window].mpath.size());
-		for (int i = 0; i < windows[p_window].mpath.size(); i++) {
+		for (vec_size i = 0; i < windows[p_window].mpath.size(); i++) {
 			if (windows[p_window].borderless) {
 				points[i].x = windows[p_window].mpath[i].x;
 				points[i].y = windows[p_window].mpath[i].y;

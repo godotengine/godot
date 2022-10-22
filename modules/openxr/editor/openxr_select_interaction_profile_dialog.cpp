@@ -76,7 +76,7 @@ void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_inclu
 
 	// in with the new
 	PackedStringArray interaction_profiles = OpenXRDefs::get_interaction_profile_paths();
-	for (int i = 0; i < interaction_profiles.size(); i++) {
+	for (vec_size i = 0; i < interaction_profiles.size(); i++) {
 		String path = interaction_profiles[i];
 		if (!p_do_not_include.has(path)) {
 			Button *ip_button = memnew(Button);

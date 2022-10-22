@@ -74,7 +74,7 @@ void LocalizationEditor::add_translation(const String &p_translation) {
 
 void LocalizationEditor::_translation_add(const PackedStringArray &p_paths) {
 	PackedStringArray translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		if (!translations.has(p_paths[i])) {
 			// Don't add duplicate translation paths.
 			translations.push_back(p_paths[i]);
@@ -134,7 +134,7 @@ void LocalizationEditor::_translation_res_add(const PackedStringArray &p_paths) 
 		prev = remaps;
 	}
 
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		if (!remaps.has(p_paths[i])) {
 			// Don't overwrite with an empty remap array if an array already exists for the given path.
 			remaps[p_paths[i]] = PackedStringArray();
@@ -167,7 +167,7 @@ void LocalizationEditor::_translation_res_option_add(const PackedStringArray &p_
 
 	ERR_FAIL_COND(!remaps.has(key));
 	PackedStringArray r = remaps[key];
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		r.push_back(p_paths[i] + ":" + "en");
 	}
 	remaps[key] = r;
@@ -318,7 +318,7 @@ void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_co
 
 void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 	PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		if (!pot_translations.has(p_paths[i])) {
 			pot_translations.push_back(p_paths[i]);
 		}
@@ -406,11 +406,11 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 
 	// Check for the Array elements of the values.
 	Array remap_keys = remaps.keys();
-	for (int i = 0; i < remap_keys.size(); i++) {
+	for (vec_size i = 0; i < remap_keys.size(); i++) {
 		PackedStringArray remapped_files = remaps[remap_keys[i]];
 		bool remapped_files_updated = false;
 
-		for (int j = 0; j < remapped_files.size(); j++) {
+		for (vec_size j = 0; j < remapped_files.size(); j++) {
 			int splitter_pos = remapped_files[j].rfind(":");
 			String res_path = remapped_files[j].substr(0, splitter_pos);
 
@@ -482,7 +482,7 @@ void LocalizationEditor::update_translations() {
 	translation_list->set_hide_root(true);
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations")) {
 		PackedStringArray translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
-		for (int i = 0; i < translations.size(); i++) {
+		for (vec_size i = 0; i < translations.size(); i++) {
 			TreeItem *t = translation_list->create_item(root);
 			t->set_editable(0, false);
 			t->set_text(0, translations[i].replace_first("res://", ""));
@@ -516,7 +516,7 @@ void LocalizationEditor::update_translations() {
 		}
 		keys.sort();
 
-		for (int i = 0; i < keys.size(); i++) {
+		for (vec_size i = 0; i < keys.size(); i++) {
 			TreeItem *t = translation_remap->create_item(root);
 			t->set_editable(0, false);
 			t->set_text(0, keys[i].replace_first("res://", ""));
@@ -535,7 +535,7 @@ void LocalizationEditor::update_translations() {
 				translation_res_option_add_button->set_disabled(false);
 
 				PackedStringArray selected = remaps[keys[i]];
-				for (int j = 0; j < selected.size(); j++) {
+				for (vec_size j = 0; j < selected.size(); j++) {
 					String s2 = selected[j];
 					int qp = s2.rfind(":");
 					String path = s2.substr(0, qp);
@@ -569,7 +569,7 @@ void LocalizationEditor::update_translations() {
 	translation_pot_list->set_hide_root(true);
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_pot_files")) {
 		PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
-		for (int i = 0; i < pot_translations.size(); i++) {
+		for (vec_size i = 0; i < pot_translations.size(); i++) {
 			TreeItem *t = translation_pot_list->create_item(root);
 			t->set_editable(0, false);
 			t->set_text(0, pot_translations[i].replace_first("res://", ""));

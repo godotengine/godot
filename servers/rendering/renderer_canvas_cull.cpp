@@ -1287,7 +1287,7 @@ void RendererCanvasCull::canvas_item_add_primitive(RID p_item, const Vector<Poin
 	Item::CommandPrimitive *prim = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!prim);
 
-	for (int i = 0; i < p_points.size(); i++) {
+	for (vec_size i = 0; i < p_points.size(); i++) {
 		prim->points[i] = p_points[i];
 		if (i < p_uvs.size()) {
 			prim->uvs[i] = p_uvs[i];
@@ -1989,7 +1989,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 			canvas->viewports.erase(*canvas->viewports.begin());
 		}
 
-		for (int i = 0; i < canvas->child_items.size(); i++) {
+		for (vec_size i = 0; i < canvas->child_items.size(); i++) {
 			canvas->child_items[i].item->parent = RID();
 		}
 
@@ -2021,7 +2021,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 			}
 		}
 
-		for (int i = 0; i < canvas_item->child_items.size(); i++) {
+		for (vec_size i = 0; i < canvas_item->child_items.size(); i++) {
 			canvas_item->child_items[i]->parent = RID();
 		}
 

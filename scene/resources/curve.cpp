@@ -43,7 +43,7 @@ void Curve::set_point_count(int p_count) {
 		_points.resize(p_count);
 		mark_dirty();
 	} else {
-		for (int i = p_count - _points.size(); i > 0; i--) {
+		for (vec_size i = p_count - _points.size(); i > 0; i--) {
 			_add_point(Vector2());
 		}
 	}
@@ -141,7 +141,7 @@ int Curve::get_index(real_t p_offset) const {
 void Curve::clean_dupes() {
 	bool dirty = false;
 
-	for (int i = 1; i < _points.size(); ++i) {
+	for (vec_size i = 1; i < _points.size(); ++i) {
 		real_t diff = _points[i - 1].position.x - _points[i].position.x;
 		if (diff <= CMP_EPSILON) {
 			_points.remove_at(i);
@@ -379,7 +379,7 @@ Array Curve::get_data() const {
 	const unsigned int ELEMS = 5;
 	output.resize(_points.size() * ELEMS);
 
-	for (int j = 0; j < _points.size(); ++j) {
+	for (vec_size j = 0; j < _points.size(); ++j) {
 		const Point p = _points[j];
 		int i = j * ELEMS;
 
@@ -400,7 +400,7 @@ void Curve::set_data(const Array p_input) {
 	_points.clear();
 
 	// Validate input
-	for (int i = 0; i < p_input.size(); i += ELEMS) {
+	for (vec_size i = 0; i < p_input.size(); i += ELEMS) {
 		ERR_FAIL_COND(p_input[i].get_type() != Variant::VECTOR2);
 		ERR_FAIL_COND(!p_input[i + 1].is_num());
 		ERR_FAIL_COND(p_input[i + 2].get_type() != Variant::FLOAT);
@@ -416,7 +416,7 @@ void Curve::set_data(const Array p_input) {
 
 	_points.resize(p_input.size() / ELEMS);
 
-	for (int j = 0; j < _points.size(); ++j) {
+	for (vec_size j = 0; j < _points.size(); ++j) {
 		Point &p = _points.write[j];
 		int i = j * ELEMS;
 
@@ -559,7 +559,7 @@ bool Curve::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Curve::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < _points.size(); i++) {
+	for (vec_size i = 0; i < _points.size(); i++) {
 		PropertyInfo pi = PropertyInfo(Variant::VECTOR2, vformat("point_%d/position", i));
 		pi.usage &= ~PROPERTY_USAGE_STORAGE;
 		p_list->push_back(pi);
@@ -639,7 +639,7 @@ void Curve2D::set_point_count(int p_count) {
 		points.resize(p_count);
 		mark_dirty();
 	} else {
-		for (int i = p_count - points.size(); i > 0; i--) {
+		for (vec_size i = p_count - points.size(); i > 0; i--) {
 			_add_point(Vector2());
 		}
 	}
@@ -869,7 +869,7 @@ void Curve2D::_bake() const {
 	Vector2 *w = baked_point_cache.ptrw();
 	real_t *wd = baked_dist_cache.ptrw();
 
-	for (int i = 0; i < pointlist.size(); i++) {
+	for (vec_size i = 0; i < pointlist.size(); i++) {
 		w[i] = pointlist[i];
 		wd[i] = distlist[i];
 	}
@@ -1039,7 +1039,7 @@ Dictionary Curve2D::_get_data() const {
 	d.resize(points.size() * 3);
 	Vector2 *w = d.ptrw();
 
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		w[i * 3 + 0] = points[i].in;
 		w[i * 3 + 1] = points[i].out;
 		w[i * 3 + 2] = points[i].position;
@@ -1059,7 +1059,7 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 	points.resize(pc / 3);
 	const Vector2 *r = rp.ptr();
 
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		points.write[i].in = r[i * 3 + 0];
 		points.write[i].out = r[i * 3 + 1];
 		points.write[i].position = r[i * 3 + 2];
@@ -1145,7 +1145,7 @@ bool Curve2D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Curve2D::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		PropertyInfo pi = PropertyInfo(Variant::VECTOR2, vformat("point_%d/position", i));
 		pi.usage &= ~PROPERTY_USAGE_STORAGE;
 		p_list->push_back(pi);
@@ -1216,7 +1216,7 @@ void Curve3D::set_point_count(int p_count) {
 		points.resize(p_count);
 		mark_dirty();
 	} else {
-		for (int i = p_count - points.size(); i > 0; i--) {
+		for (vec_size i = p_count - points.size(); i > 0; i--) {
 			_add_point(Vector3());
 		}
 	}
@@ -1830,7 +1830,7 @@ Dictionary Curve3D::_get_data() const {
 	t.resize(points.size());
 	real_t *wt = t.ptrw();
 
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		w[i * 3 + 0] = points[i].in;
 		w[i * 3 + 1] = points[i].out;
 		w[i * 3 + 2] = points[i].position;
@@ -1855,7 +1855,7 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 	Vector<real_t> rtl = p_data["tilts"];
 	const real_t *rt = rtl.ptr();
 
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		points.write[i].in = r[i * 3 + 0];
 		points.write[i].out = r[i * 3 + 1];
 		points.write[i].position = r[i * 3 + 2];
@@ -1946,7 +1946,7 @@ bool Curve3D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Curve3D::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		PropertyInfo pi = PropertyInfo(Variant::VECTOR3, vformat("point_%d/position", i));
 		pi.usage &= ~PROPERTY_USAGE_STORAGE;
 		p_list->push_back(pi);

@@ -65,7 +65,7 @@ void joypad::free() {
 }
 
 bool joypad::has_element(IOHIDElementCookie p_cookie, Vector<rec_element> *p_list) const {
-	for (int i = 0; i < p_list->size(); i++) {
+	for (vec_size i = 0; i < p_list->size(); i++) {
 		if (p_cookie == p_list->get(i).cookie) {
 			return true;
 		}
@@ -459,19 +459,19 @@ static float axis_correct(int p_value, int p_min, int p_max) {
 void JoypadMacOS::process_joypads() {
 	poll_joypads();
 
-	for (int i = 0; i < device_list.size(); i++) {
+	for (vec_size i = 0; i < device_list.size(); i++) {
 		joypad &joy = device_list.write[i];
 
-		for (int j = 0; j < joy.axis_elements.size(); j++) {
+		for (vec_size j = 0; j < joy.axis_elements.size(); j++) {
 			rec_element &elem = joy.axis_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
 			input->joy_axis(joy.id, (JoyAxis)j, axis_correct(value, elem.min, elem.max));
 		}
-		for (int j = 0; j < joy.button_elements.size(); j++) {
+		for (vec_size j = 0; j < joy.button_elements.size(); j++) {
 			int value = joy.get_hid_element_state(&joy.button_elements.write[j]);
 			input->joy_button(joy.id, (JoyButton)j, (value >= 1));
 		}
-		for (int j = 0; j < joy.hat_elements.size(); j++) {
+		for (vec_size j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
 			HatMask hat_value = process_hat_value(elem.min, elem.max, value, joy.offset_hat);
@@ -510,7 +510,7 @@ void JoypadMacOS::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 }
 
 int JoypadMacOS::get_joy_index(int p_id) const {
-	for (int i = 0; i < device_list.size(); i++) {
+	for (vec_size i = 0; i < device_list.size(); i++) {
 		if (device_list[i].id == p_id) {
 			return i;
 		}
@@ -519,7 +519,7 @@ int JoypadMacOS::get_joy_index(int p_id) const {
 }
 
 int JoypadMacOS::get_joy_ref(IOHIDDeviceRef p_device) const {
-	for (int i = 0; i < device_list.size(); i++) {
+	for (vec_size i = 0; i < device_list.size(); i++) {
 		if (device_list[i].device_ref == p_device) {
 			return i;
 		}
@@ -528,7 +528,7 @@ int JoypadMacOS::get_joy_ref(IOHIDDeviceRef p_device) const {
 }
 
 bool JoypadMacOS::have_device(IOHIDDeviceRef p_device) const {
-	for (int i = 0; i < device_list.size(); i++) {
+	for (vec_size i = 0; i < device_list.size(); i++) {
 		if (device_list[i].device_ref == p_device) {
 			return true;
 		}
@@ -605,7 +605,7 @@ JoypadMacOS::JoypadMacOS(Input *in) {
 }
 
 JoypadMacOS::~JoypadMacOS() {
-	for (int i = 0; i < device_list.size(); i++) {
+	for (vec_size i = 0; i < device_list.size(); i++) {
 		device_list.write[i].free();
 	}
 

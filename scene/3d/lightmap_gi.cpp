@@ -80,14 +80,14 @@ void LightmapGIData::_set_user_data(const Array &p_data) {
 	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
 
-	for (int i = 0; i < p_data.size(); i += 4) {
+	for (vec_size i = 0; i < p_data.size(); i += 4) {
 		add_user(p_data[i + 0], p_data[i + 1], p_data[i + 2], p_data[i + 3]);
 	}
 }
 
 Array LightmapGIData::_get_user_data() const {
 	Array ret;
-	for (int i = 0; i < users.size(); i++) {
+	for (vec_size i = 0; i < users.size(); i++) {
 		ret.push_back(users[i].path);
 		ret.push_back(users[i].uv_scale);
 		ret.push_back(users[i].slice_index);
@@ -103,7 +103,7 @@ void LightmapGIData::_set_light_textures_data(const Array &p_data) {
 		set_light_texture(p_data[0]);
 	} else {
 		Vector<Ref<Image>> images;
-		for (int i = 0; i < p_data.size(); i++) {
+		for (vec_size i = 0; i < p_data.size(); i++) {
 			Ref<TextureLayered> texture = p_data[i];
 			ERR_FAIL_COND_MSG(texture.is_null(), vformat("Invalid TextureLayered at index %d.", i));
 			for (int j = 0; j < texture->get_layers(); j++) {
@@ -372,7 +372,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 		Array bmeshes = p_at_node->call("get_bake_bmeshes");
 		if (bmeshes.size() && (bmeshes.size() & 1) == 0) {
 			Transform3D xf = get_global_transform().affine_inverse() * s->get_global_transform();
-			for (int i = 0; i < bmeshes.size(); i += 2) {
+			for (vec_size i = 0; i < bmeshes.size(); i += 2) {
 				Ref<Mesh> mesh = bmeshes[i];
 				if (!mesh.is_valid()) {
 					continue;
@@ -754,7 +754,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		// create mesh data for insert
 
 		//get the base material textures, help compute atlas size and bounds
-		for (int m_i = 0; m_i < meshes_found.size(); m_i++) {
+		for (vec_size m_i = 0; m_i < meshes_found.size(); m_i++) {
 			if (p_bake_step) {
 				float p = (float)(m_i) / meshes_found.size();
 				p_bake_step(p * 0.1, vformat(RTR("Preparing geometry %d/%d"), m_i, meshes_found.size()), p_bake_userdata, false);
@@ -765,7 +765,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint() * mf.lightmap_scale;
 			TypedArray<RID> overrides;
 			overrides.resize(mf.overrides.size());
-			for (int i = 0; i < mf.overrides.size(); i++) {
+			for (vec_size i = 0; i < mf.overrides.size(); i++) {
 				if (mf.overrides[i].is_valid()) {
 					overrides[i] = mf.overrides[i]->get_rid();
 				}
@@ -896,7 +896,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	//bounds need to include the user probes
-	for (int i = 0; i < probes_found.size(); i++) {
+	for (vec_size i = 0; i < probes_found.size(); i++) {
 		bounds.expand_to(probes_found[i]);
 	}
 
@@ -931,13 +931,13 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		GenProbesOctree octree;
 		octree.size = subdiv;
 
-		for (int i = 0; i < mesh_data.size(); i++) {
+		for (vec_size i = 0; i < mesh_data.size(); i++) {
 			if (p_bake_step) {
 				float p = (float)(i) / mesh_data.size();
 				p_bake_step(0.3 + p * 0.1, vformat(RTR("Creating probes from mesh %d/%d"), i, mesh_data.size()), p_bake_userdata, false);
 			}
 
-			for (int j = 0; j < mesh_data[i].points.size(); j += 3) {
+			for (vec_size j = 0; j < mesh_data[i].points.size(); j += 3) {
 				Vector3 points[3] = { mesh_data[i].points[j + 0] - bounds.position, mesh_data[i].points[j + 1] - bounds.position, mesh_data[i].points[j + 2] - bounds.position };
 				_plot_triangle_into_octree(&octree, subdiv_cell_size, points);
 			}
@@ -979,10 +979,10 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	{
-		for (int i = 0; i < mesh_data.size(); i++) {
+		for (vec_size i = 0; i < mesh_data.size(); i++) {
 			lightmapper->add_mesh(mesh_data[i]);
 		}
-		for (int i = 0; i < lights_found.size(); i++) {
+		for (vec_size i = 0; i < lights_found.size(); i++) {
 			Light3D *light = lights_found[i].light;
 			Transform3D xf = lights_found[i].xform;
 
@@ -1010,7 +1010,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				lightmapper->add_spot_light(light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SPOT_ANGLE), l->get_param(Light3D::PARAM_SPOT_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			}
 		}
-		for (int i = 0; i < probes_found.size(); i++) {
+		for (vec_size i = 0; i < probes_found.size(); i++) {
 			lightmapper->add_probe(probes_found[i]);
 		}
 	}
@@ -1141,7 +1141,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		LocalVector<int32_t> bsp_simplex_indices;
 		PackedInt32Array tetrahedrons;
 
-		for (int i = 0; i < solved_simplices.size(); i++) {
+		for (vec_size i = 0; i < solved_simplices.size(); i++) {
 			//Prepare a special representation of the simplex, which uses a BSP Tree
 			BSPSimplex bsp_simplex;
 			for (int j = 0; j < 4; j++) {

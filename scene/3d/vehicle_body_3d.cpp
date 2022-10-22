@@ -476,7 +476,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
 	real_t chassisMass = get_mass();
 
-	for (int w_it = 0; w_it < wheels.size(); w_it++) {
+	for (vec_size w_it = 0; w_it < wheels.size(); w_it++) {
 		VehicleWheel3D &wheel_info = *wheels[w_it];
 
 		if (wheel_info.m_raycastInfo.m_isInContact) {
@@ -670,13 +670,13 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 	m_sideImpulse.resize(numWheel);
 
 	//collapse all those loops into one!
-	for (int i = 0; i < wheels.size(); i++) {
+	for (vec_size i = 0; i < wheels.size(); i++) {
 		m_sideImpulse.write[i] = real_t(0.);
 		m_forwardImpulse.write[i] = real_t(0.);
 	}
 
 	{
-		for (int i = 0; i < wheels.size(); i++) {
+		for (vec_size i = 0; i < wheels.size(); i++) {
 			VehicleWheel3D &wheelInfo = *wheels[i];
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
@@ -709,7 +709,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 
 	bool sliding = false;
 	{
-		for (int wheel = 0; wheel < wheels.size(); wheel++) {
+		for (vec_size wheel = 0; wheel < wheels.size(); wheel++) {
 			VehicleWheel3D &wheelInfo = *wheels[wheel];
 
 			//class btRigidBody* groundObject = (class btRigidBody*) wheelInfo.m_raycastInfo.m_groundObject;
@@ -759,7 +759,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 	}
 
 	if (sliding) {
-		for (int wheel = 0; wheel < wheels.size(); wheel++) {
+		for (vec_size wheel = 0; wheel < wheels.size(); wheel++) {
 			if (m_sideImpulse[wheel] != real_t(0.)) {
 				if (wheels[wheel]->m_skidInfo < real_t(1.)) {
 					m_forwardImpulse.write[wheel] *= wheels[wheel]->m_skidInfo;
@@ -771,7 +771,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 
 	// apply the impulses
 	{
-		for (int wheel = 0; wheel < wheels.size(); wheel++) {
+		for (vec_size wheel = 0; wheel < wheels.size(); wheel++) {
 			VehicleWheel3D &wheelInfo = *wheels[wheel];
 
 			Vector3 rel_pos = wheelInfo.m_raycastInfo.m_contactPointWS -
@@ -811,18 +811,18 @@ void VehicleBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 
 	real_t step = p_state->get_step();
 
-	for (int i = 0; i < wheels.size(); i++) {
+	for (vec_size i = 0; i < wheels.size(); i++) {
 		_update_wheel(i, p_state);
 	}
 
-	for (int i = 0; i < wheels.size(); i++) {
+	for (vec_size i = 0; i < wheels.size(); i++) {
 		_ray_cast(i, p_state);
 		wheels[i]->set_transform(p_state->get_transform().inverse() * wheels[i]->m_worldTransform);
 	}
 
 	_update_suspension(p_state);
 
-	for (int i = 0; i < wheels.size(); i++) {
+	for (vec_size i = 0; i < wheels.size(); i++) {
 		//apply suspension force
 		VehicleWheel3D &wheel = *wheels[i];
 
@@ -839,7 +839,7 @@ void VehicleBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 
 	_update_friction(p_state);
 
-	for (int i = 0; i < wheels.size(); i++) {
+	for (vec_size i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheel = *wheels[i];
 		Vector3 relpos = wheel.m_raycastInfo.m_hardPointWS - p_state->get_transform().origin;
 		Vector3 vel = p_state->get_linear_velocity() + (p_state->get_angular_velocity()).cross(relpos); // * mPos);
@@ -869,7 +869,7 @@ void VehicleBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 
 void VehicleBody3D::set_engine_force(real_t p_engine_force) {
 	engine_force = p_engine_force;
-	for (int i = 0; i < wheels.size(); i++) {
+	for (vec_size i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheelInfo = *wheels[i];
 		if (wheelInfo.engine_traction) {
 			wheelInfo.m_engineForce = p_engine_force;
@@ -883,7 +883,7 @@ real_t VehicleBody3D::get_engine_force() const {
 
 void VehicleBody3D::set_brake(real_t p_brake) {
 	brake = p_brake;
-	for (int i = 0; i < wheels.size(); i++) {
+	for (vec_size i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheelInfo = *wheels[i];
 		wheelInfo.m_brake = p_brake;
 	}
@@ -895,7 +895,7 @@ real_t VehicleBody3D::get_brake() const {
 
 void VehicleBody3D::set_steering(real_t p_steering) {
 	m_steeringValue = p_steering;
-	for (int i = 0; i < wheels.size(); i++) {
+	for (vec_size i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheelInfo = *wheels[i];
 		if (wheelInfo.steers) {
 			wheelInfo.m_steering = p_steering;

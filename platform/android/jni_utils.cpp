@@ -88,7 +88,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			Vector<String> sarray = *p_arg;
 			jobjectArray arr = env->NewObjectArray(sarray.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
 
-			for (int j = 0; j < sarray.size(); j++) {
+			for (vec_size j = 0; j < sarray.size(); j++) {
 				jstring str = env->NewStringUTF(sarray[j].utf8().get_data());
 				env->SetObjectArrayElement(arr, j, str);
 				env->DeleteLocalRef(str);
@@ -107,7 +107,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			Array keys = dict.keys();
 
 			jobjectArray jkeys = env->NewObjectArray(keys.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
-			for (int j = 0; j < keys.size(); j++) {
+			for (vec_size j = 0; j < keys.size(); j++) {
 				jstring str = env->NewStringUTF(String(keys[j]).utf8().get_data());
 				env->SetObjectArrayElement(jkeys, j, str);
 				env->DeleteLocalRef(str);
@@ -121,7 +121,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 
 			jobjectArray jvalues = env->NewObjectArray(keys.size(), env->FindClass("java/lang/Object"), nullptr);
 
-			for (int j = 0; j < keys.size(); j++) {
+			for (vec_size j = 0; j < keys.size(); j++) {
 				Variant var = dict[keys[j]];
 				jvalret valret = _variant_to_jvalue(env, var.get_type(), &var, true);
 				env->SetObjectArrayElement(jvalues, j, valret.val.l);
@@ -324,7 +324,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		Array vals = _jobject_to_variant(env, arr);
 		env->DeleteLocalRef(arr);
 
-		for (int i = 0; i < keys.size(); i++) {
+		for (vec_size i = 0; i < keys.size(); i++) {
 			ret[keys[i]] = vals[i];
 		}
 

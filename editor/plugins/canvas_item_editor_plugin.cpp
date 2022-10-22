@@ -426,12 +426,12 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 		// Guides.
 		if (Node *scene = EditorNode::get_singleton()->get_edited_scene()) {
 			Array vguides = scene->get_meta("_edit_vertical_guides_", Array());
-			for (int i = 0; i < vguides.size(); i++) {
+			for (vec_size i = 0; i < vguides.size(); i++) {
 				_snap_if_closer_float(p_target.x, output.x, snap_target[0], vguides[i], SNAP_TARGET_GUIDE);
 			}
 
 			Array hguides = scene->get_meta("_edit_horizontal_guides_", Array());
-			for (int i = 0; i < hguides.size(); i++) {
+			for (vec_size i = 0; i < hguides.size(); i++) {
 				_snap_if_closer_float(p_target.y, output.y, snap_target[1], hguides[i], SNAP_TARGET_GUIDE);
 			}
 		}
@@ -639,7 +639,7 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 	_find_canvas_items_at_pos(p_pos, scene, r_items);
 
 	//Remove invalid results
-	for (int i = 0; i < r_items.size(); i++) {
+	for (vec_size i = 0; i < r_items.size(); i++) {
 		Node *node = r_items[i].item;
 
 		// Make sure the selected node is in the current scene, or editable
@@ -1031,7 +1031,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 
 			if (m.is_valid() && m->get_position().x < RULER_WIDTH) {
 				// Check if we are hovering an existing horizontal guide
-				for (int i = 0; i < hguides.size(); i++) {
+				for (vec_size i = 0; i < hguides.size(); i++) {
 					if (ABS(xform.xform(Point2(0, hguides[i])).y - m->get_position().y) < MIN(minimum, 8)) {
 						is_hovering_h_guide = true;
 						is_hovering_v_guide = false;
@@ -1041,7 +1041,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 
 			} else if (m.is_valid() && m->get_position().y < RULER_WIDTH) {
 				// Check if we are hovering an existing vertical guide
-				for (int i = 0; i < vguides.size(); i++) {
+				for (vec_size i = 0; i < vguides.size(); i++) {
 					if (ABS(xform.xform(Point2(vguides[i], 0)).x - m->get_position().x) < MIN(minimum, 8)) {
 						is_hovering_v_guide = true;
 						is_hovering_h_guide = false;
@@ -1061,7 +1061,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 				} else if (b->get_position().x < RULER_WIDTH) {
 					// Check if we drag an existing horizontal guide
 					dragged_guide_index = -1;
-					for (int i = 0; i < hguides.size(); i++) {
+					for (vec_size i = 0; i < hguides.size(); i++) {
 						if (ABS(xform.xform(Point2(0, hguides[i])).y - b->get_position().y) < MIN(minimum, 8)) {
 							dragged_guide_index = i;
 						}
@@ -1078,7 +1078,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 				} else if (b->get_position().y < RULER_WIDTH) {
 					// Check if we drag an existing vertical guide
 					dragged_guide_index = -1;
-					for (int i = 0; i < vguides.size(); i++) {
+					for (vec_size i = 0; i < vguides.size(); i++) {
 						if (ABS(xform.xform(Point2(vguides[i], 0)).x - b->get_position().x) < MIN(minimum, 8)) {
 							dragged_guide_index = i;
 						}
@@ -1990,7 +1990,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				List<CanvasItem *> selection = _get_edited_canvas_items();
 
 				drag_selection.clear();
-				for (int i = 0; i < selection.size(); i++) {
+				for (vec_size i = 0; i < selection.size(); i++) {
 					if (_is_node_movable(selection[i], true)) {
 						drag_selection.push_back(selection[i]);
 					}
@@ -2249,7 +2249,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
 				StringName root_name = root_path.get_name(root_path.get_name_count() - 1);
 
-				for (int i = 0; i < selection_results.size(); i++) {
+				for (vec_size i = 0; i < selection_results.size(); i++) {
 					CanvasItem *item = selection_results[i].item;
 
 					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(item, "Node");
@@ -2373,7 +2373,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				List<CanvasItem *> selection2 = _get_edited_canvas_items();
 
 				drag_selection.clear();
-				for (int i = 0; i < selection2.size(); i++) {
+				for (vec_size i = 0; i < selection2.size(); i++) {
 					if (_is_node_movable(selection2[i], true)) {
 						drag_selection.push_back(selection2[i]);
 					}
@@ -2487,7 +2487,7 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 
 		// Compute the nodes names and icon position
 		Vector<_HoverResult> hovering_results_tmp;
-		for (int i = 0; i < hovering_results_items.size(); i++) {
+		for (vec_size i = 0; i < hovering_results_items.size(); i++) {
 			CanvasItem *ci = hovering_results_items[i].item;
 
 			if (ci->_edit_use_rect()) {
@@ -2505,7 +2505,7 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 		// Check if changed, if so, redraw.
 		bool changed = false;
 		if (hovering_results_tmp.size() == hovering_results.size()) {
-			for (int i = 0; i < hovering_results_tmp.size(); i++) {
+			for (vec_size i = 0; i < hovering_results_tmp.size(); i++) {
 				_HoverResult a = hovering_results_tmp[i];
 				_HoverResult b = hovering_results[i];
 				if (a.icon != b.icon || a.name != b.name || a.position != b.position) {
@@ -2728,7 +2728,7 @@ void CanvasItemEditor::_draw_guides() {
 	// Guides already there.
 	if (Node *scene = EditorNode::get_singleton()->get_edited_scene()) {
 		Array vguides = scene->get_meta("_edit_vertical_guides_", Array());
-		for (int i = 0; i < vguides.size(); i++) {
+		for (vec_size i = 0; i < vguides.size(); i++) {
 			if (drag_type == DRAG_V_GUIDE && i == dragged_guide_index) {
 				continue;
 			}
@@ -2737,7 +2737,7 @@ void CanvasItemEditor::_draw_guides() {
 		}
 
 		Array hguides = scene->get_meta("_edit_horizontal_guides_", Array());
-		for (int i = 0; i < hguides.size(); i++) {
+		for (vec_size i = 0; i < hguides.size(); i++) {
 			if (drag_type == DRAG_H_GUIDE && i == dragged_guide_index) {
 				continue;
 			}
@@ -3625,7 +3625,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 void CanvasItemEditor::_draw_hover() {
 	List<Rect2> previous_rects;
 
-	for (int i = 0; i < hovering_results.size(); i++) {
+	for (vec_size i = 0; i < hovering_results.size(); i++) {
 		Ref<Texture2D> node_icon = hovering_results[i].icon;
 		String node_name = hovering_results[i].name;
 
@@ -5505,7 +5505,7 @@ void CanvasItemEditorViewport::_on_change_type_closed() {
 
 void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) const {
 	bool add_preview = false;
-	for (int i = 0; i < files.size(); i++) {
+	for (vec_size i = 0; i < files.size(); i++) {
 		String path = files[i];
 		Ref<Resource> res = ResourceLoader::load(path);
 		ERR_FAIL_COND(res.is_null());
@@ -5688,7 +5688,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 
 	editor_data->get_undo_redo()->create_action(TTR("Create Node"));
 
-	for (int i = 0; i < selected_files.size(); i++) {
+	for (vec_size i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];
 		Ref<Resource> res = ResourceLoader::load(path);
 		if (res.is_null()) {
@@ -5721,7 +5721,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 
 	if (error_files.size() > 0) {
 		String files_str;
-		for (int i = 0; i < error_files.size(); i++) {
+		for (vec_size i = 0; i < error_files.size(); i++) {
 			files_str += error_files[i].get_file().get_basename() + ",";
 		}
 		files_str = files_str.substr(0, files_str.length() - 1);
@@ -5742,7 +5742,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 			List<String> texture_extensions;
 			ResourceLoader::get_recognized_extensions_for_type("Texture2D", &texture_extensions);
 
-			for (int i = 0; i < files.size(); i++) {
+			for (vec_size i = 0; i < files.size(); i++) {
 				// Check if dragged files with texture or scene extension can be created at least once.
 				if (texture_extensions.find(files[i].get_extension()) || scene_extensions.find(files[i].get_extension())) {
 					Ref<Resource> res = ResourceLoader::load(files[i]);
@@ -5781,7 +5781,7 @@ void CanvasItemEditorViewport::_show_resource_type_selector() {
 	List<BaseButton *> btn_list;
 	button_group->get_buttons(&btn_list);
 
-	for (int i = 0; i < btn_list.size(); i++) {
+	for (vec_size i = 0; i < btn_list.size(); i++) {
 		CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
 		check->set_pressed(check->get_text() == default_texture_node_type);
 	}
@@ -5790,7 +5790,7 @@ void CanvasItemEditorViewport::_show_resource_type_selector() {
 }
 
 bool CanvasItemEditorViewport::_only_packed_scenes_selected() const {
-	for (int i = 0; i < selected_files.size(); ++i) {
+	for (vec_size i = 0; i < selected_files.size(); ++i) {
 		if (ResourceLoader::load(selected_files[i])->get_class() != "PackedScene") {
 			return false;
 		}
@@ -5868,7 +5868,7 @@ void CanvasItemEditorViewport::_update_theme() {
 	List<BaseButton *> btn_list;
 	button_group->get_buttons(&btn_list);
 
-	for (int i = 0; i < btn_list.size(); i++) {
+	for (vec_size i = 0; i < btn_list.size(); i++) {
 		CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
 		check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
 	}
@@ -5932,7 +5932,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 	btn_group->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	button_group.instantiate();
-	for (int i = 0; i < texture_node_types.size(); i++) {
+	for (vec_size i = 0; i < texture_node_types.size(); i++) {
 		CheckBox *check = memnew(CheckBox);
 		btn_group->add_child(check);
 		check->set_text(texture_node_types[i]);

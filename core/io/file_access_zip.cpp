@@ -227,7 +227,7 @@ ZipArchive::ZipArchive() {
 }
 
 ZipArchive::~ZipArchive() {
-	for (int i = 0; i < packages.size(); i++) {
+	for (vec_size i = 0; i < packages.size(); i++) {
 		unzClose(packages[i].zfile);
 	}
 

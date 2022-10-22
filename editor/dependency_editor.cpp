@@ -105,7 +105,7 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, HashMap<St
 			int existing_score = 0;
 			int current_score = 0;
 
-			for (int j = 0; j < lostv.size(); j++) {
+			for (vec_size j = 0; j < lostv.size(); j++) {
 				if (j < existingv.size() && lostv[j] == existingv[j]) {
 					existing_score++;
 				}
@@ -312,7 +312,7 @@ void DependencyEditorOwners::_file_option(int p_option) {
 	switch (p_option) {
 		case FILE_OPEN: {
 			PackedInt32Array selected_items = owners->get_selected_items();
-			for (int i = 0; i < selected_items.size(); i++) {
+			for (vec_size i = 0; i < selected_items.size(); i++) {
 				int item_idx = selected_items[i];
 				if (item_idx < 0 || item_idx >= owners->get_item_count()) {
 					break;
@@ -338,7 +338,7 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 		Vector<String> deps = efsd->get_file_deps(i);
 		bool found = false;
-		for (int j = 0; j < deps.size(); j++) {
+		for (vec_size j = 0; j < deps.size(); j++) {
 			if (deps[j] == editing) {
 				found = true;
 				break;
@@ -411,7 +411,7 @@ void DependencyRemoveDialog::_find_all_removed_dependencies(EditorFileSystemDire
 		}
 
 		Vector<String> all_deps = efsd->get_file_deps(i);
-		for (int j = 0; j < all_deps.size(); ++j) {
+		for (vec_size j = 0; j < all_deps.size(); ++j) {
 			if (all_remove_files.has(all_deps[j])) {
 				RemovedDependency dep;
 				dep.file = path;
@@ -442,9 +442,9 @@ void DependencyRemoveDialog::_find_localization_remaps_of_removed_files(Vector<R
 			}
 
 			Array remap_keys = remaps.keys();
-			for (int j = 0; j < remap_keys.size(); j++) {
+			for (vec_size j = 0; j < remap_keys.size(); j++) {
 				PackedStringArray remapped_files = remaps[remap_keys[j]];
-				for (int k = 0; k < remapped_files.size(); k++) {
+				for (vec_size k = 0; k < remapped_files.size(); k++) {
 					int splitter_pos = remapped_files[k].rfind(":");
 					String res_path = remapped_files[k].substr(0, splitter_pos);
 					if (res_path == path) {
@@ -468,7 +468,7 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 	owners->create_item(); // root
 
 	HashMap<String, TreeItem *> tree_items;
-	for (int i = 0; i < p_removed.size(); i++) {
+	for (vec_size i = 0; i < p_removed.size(); i++) {
 		RemovedDependency rd = p_removed[i];
 
 		//Ensure that the dependency is already in the tree
@@ -507,12 +507,12 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	files_to_delete.clear();
 	owners->clear();
 
-	for (int i = 0; i < p_folders.size(); ++i) {
+	for (vec_size i = 0; i < p_folders.size(); ++i) {
 		String folder = p_folders[i].ends_with("/") ? p_folders[i] : (p_folders[i] + "/");
 		_find_files_in_removed_folder(EditorFileSystem::get_singleton()->get_filesystem_path(folder), folder);
 		dirs_to_delete.push_back(folder);
 	}
-	for (int i = 0; i < p_files.size(); ++i) {
+	for (vec_size i = 0; i < p_files.size(); ++i) {
 		all_remove_files[p_files[i]] = String();
 		files_to_delete.push_back(p_files[i]);
 	}
@@ -536,7 +536,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 }
 
 void DependencyRemoveDialog::ok_pressed() {
-	for (int i = 0; i < files_to_delete.size(); ++i) {
+	for (vec_size i = 0; i < files_to_delete.size(); ++i) {
 		if (ResourceCache::has(files_to_delete[i])) {
 			Ref<Resource> res = ResourceCache::get_ref(files_to_delete[i]);
 			res->set_path("");
@@ -581,11 +581,11 @@ void DependencyRemoveDialog::ok_pressed() {
 
 	if (dirs_to_delete.size() == 0) {
 		// If we only deleted files we should only need to tell the file system about the files we touched.
-		for (int i = 0; i < files_to_delete.size(); ++i) {
+		for (vec_size i = 0; i < files_to_delete.size(); ++i) {
 			EditorFileSystem::get_singleton()->update_file(files_to_delete[i]);
 		}
 	} else {
-		for (int i = 0; i < dirs_to_delete.size(); ++i) {
+		for (vec_size i = 0; i < dirs_to_delete.size(); ++i) {
 			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
 			print_verbose("Moving to trash: " + path);
 			Error err = OS::get_singleton()->move_to_trash(path);
@@ -603,7 +603,7 @@ void DependencyRemoveDialog::ok_pressed() {
 	Vector<String> previous_favorites = EditorSettings::get_singleton()->get_favorites();
 	Vector<String> new_favorites;
 
-	for (int i = 0; i < previous_favorites.size(); ++i) {
+	for (vec_size i = 0; i < previous_favorites.size(); ++i) {
 		if (previous_favorites[i].ends_with("/")) {
 			if (dirs_to_delete.find(previous_favorites[i]) < 0) {
 				new_favorites.push_back(previous_favorites[i]);
@@ -649,7 +649,7 @@ void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Ve
 	files->clear();
 
 	TreeItem *root = files->create_item(nullptr);
-	for (int i = 0; i < report.size(); i++) {
+	for (vec_size i = 0; i < report.size(); i++) {
 		String dep;
 		String type = "Object";
 		dep = report[i].get_slice("::", 0);
@@ -748,7 +748,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 		if (!p_parent) {
 			Vector<String> deps = efsd->get_file_deps(i);
-			for (int j = 0; j < deps.size(); j++) {
+			for (vec_size j = 0; j < deps.size(); j++) {
 				if (!refs.has(deps[j])) {
 					refs[deps[j]] = 1;
 				}

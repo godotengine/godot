@@ -327,14 +327,14 @@ public:
 		}
 
 		bool match = true;
-		for (int i = 0; i < p_args.size(); i++) {
+		for (vec_size i = 0; i < p_args.size(); i++) {
 			if (((Array)p_args[i]).size() != ((Array)_signals[p_name][i]).size()) {
 				MESSAGE("Signal has " << _signals[p_name][i] << " expected " << p_args[i]);
 				match = false;
 				continue;
 			}
 
-			for (int j = 0; j < ((Array)p_args[i]).size(); j++) {
+			for (vec_size j = 0; j < ((Array)p_args[i]).size(); j++) {
 				if (((Array)p_args[i])[j] != ((Array)_signals[p_name][i])[j]) {
 					MESSAGE("Signal has " << _signals[p_name][i] << " expected " << p_args[i]);
 					match = false;

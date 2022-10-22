@@ -57,7 +57,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	int accel_max_w = 0;
 	bool has_check = false;
 
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		Size2 item_size;
 
 		Size2 icon_size = items[i].get_icon_size();
@@ -129,7 +129,7 @@ int PopupMenu::_get_item_height(int p_item) const {
 int PopupMenu::_get_items_total_height() const {
 	// Get total height of all items by taking max of icon height and font height
 	int items_total_height = 0;
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		items_total_height += _get_item_height(i) + theme_cache.v_separation;
 	}
 
@@ -149,7 +149,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 		return -1;
 	}
 
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
 
 		ofs.y += _get_item_height(i);
@@ -280,7 +280,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			bool match_found = false;
-			for (int i = search_from; i < items.size(); i++) {
+			for (vec_size i = search_from; i < items.size(); i++) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
 					emit_signal(SNAME("id_focused"), i);
@@ -483,7 +483,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			search_string += String::chr(k->get_unicode());
 		}
 
-		for (int i = mouse_over + 1; i <= items.size(); i++) {
+		for (vec_size i = mouse_over + 1; i <= items.size(); i++) {
 			if (i == items.size()) {
 				if (mouse_over <= 0) {
 					break;
@@ -534,7 +534,7 @@ void PopupMenu::_draw_items() {
 	// Find the widest icon and whether any items have a checkbox, and store the offsets for each.
 	float icon_ofs = 0.0;
 	bool has_check = false;
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		if (items[i].separator) {
 			continue;
 		}
@@ -561,7 +561,7 @@ void PopupMenu::_draw_items() {
 	Point2 ofs = Point2();
 
 	// Loop through all items and draw each.
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		// For the first item only add half a separation. For all other items, add a whole separation to the offset.
 		ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
 
@@ -845,7 +845,7 @@ void PopupMenu::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			for (int i = 0; i < items.size(); i++) {
+			for (vec_size i = 0; i < items.size(); i++) {
 				items.write[i].xl_text = atr(items[i].text);
 				items.write[i].dirty = true;
 				_shape_item(i);
@@ -894,7 +894,7 @@ void PopupMenu::_notification(int p_what) {
 					control->queue_redraw();
 				}
 
-				for (int i = 0; i < items.size(); i++) {
+				for (vec_size i = 0; i < items.size(); i++) {
 					if (items[i].submenu.is_empty()) {
 						continue;
 					}
@@ -1296,7 +1296,7 @@ String PopupMenu::get_item_language(int p_item) const {
 }
 
 int PopupMenu::get_item_idx_from_text(const String &text) const {
-	for (int idx = 0; idx < items.size(); idx++) {
+	for (vec_size idx = 0; idx < items.size(); idx++) {
 		if (items[idx].text == text) {
 			return idx;
 		}
@@ -1336,7 +1336,7 @@ int PopupMenu::get_item_id(int p_idx) const {
 }
 
 int PopupMenu::get_item_index(int p_id) const {
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		if (items[i].id == p_id) {
 			return i;
 		}
@@ -1631,7 +1631,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 		}
 	}
 
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		if (is_item_disabled(i) || items[i].shortcut_is_disabled) {
 			continue;
 		}
@@ -1746,7 +1746,7 @@ void PopupMenu::add_separator(const String &p_text, int p_id) {
 }
 
 void PopupMenu::clear() {
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		if (items[i].shortcut.is_valid()) {
 			_unref_shortcut(items[i].shortcut);
 		}
@@ -1778,7 +1778,7 @@ void PopupMenu::_unref_shortcut(Ref<Shortcut> p_sc) {
 }
 
 void PopupMenu::_shortcut_changed() {
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		items.write[i].dirty = true;
 	}
 	control->queue_redraw();
@@ -1842,7 +1842,7 @@ void PopupMenu::set_parent_rect(const Rect2 &p_rect) {
 }
 
 void PopupMenu::get_translatable_strings(List<String> *p_strings) const {
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		if (!items[i].xl_text.is_empty()) {
 			p_strings->push_back(items[i].xl_text);
 		}
@@ -1906,7 +1906,7 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 		ERR_FAIL_COND_V(arr.size() % 10, false);
 		clear();
 
-		for (int i = 0; i < arr.size(); i += 10) {
+		for (vec_size i = 0; i < arr.size(); i += 10) {
 			String text = arr[i + 0];
 			Ref<Texture2D> icon = arr[i + 1];
 			// For compatibility, use false/true for no/checkbox and integers for other values
@@ -1976,7 +1976,7 @@ bool PopupMenu::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void PopupMenu::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
 
 		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");

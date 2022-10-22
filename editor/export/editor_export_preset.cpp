@@ -71,7 +71,7 @@ void EditorExportPreset::update_files_to_export() {
 			to_remove.push_back(E);
 		}
 	}
-	for (int i = 0; i < to_remove.size(); ++i) {
+	for (vec_size i = 0; i < to_remove.size(); ++i) {
 		selected_files.erase(to_remove[i]);
 	}
 }

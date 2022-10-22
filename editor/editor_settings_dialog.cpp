@@ -310,7 +310,7 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 	shortcut_item->set_meta("events", p_events);
 
 	// Shortcut Input Events
-	for (int i = 0; i < p_events.size(); i++) {
+	for (vec_size i = 0; i < p_events.size(); i++) {
 		Ref<InputEvent> ie = p_events[i];
 		if (ie.is_null()) {
 			continue;
@@ -338,7 +338,7 @@ bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const 
 	bool event_match = true;
 	if (search_ev.is_valid()) {
 		event_match = false;
-		for (int i = 0; i < p_events.size(); ++i) {
+		for (vec_size i = 0; i < p_events.size(); ++i) {
 			const Ref<InputEvent> ev = p_events[i];
 			if (ev.is_valid() && ev->is_match(search_ev, true)) {
 				event_match = true;

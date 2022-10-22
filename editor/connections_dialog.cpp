@@ -92,7 +92,7 @@ public:
 	}
 
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-		for (int i = 0; i < params.size(); i++) {
+		for (vec_size i = 0; i < params.size(); i++) {
 			p_list->push_back(PropertyInfo(params[i].get_type(), "bind/argument_" + itos(i + 1)));
 		}
 	}
@@ -649,7 +649,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 		// Pick up args here before "it" is deleted by update_tree.
 		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
 		script_function_args.resize(script_function_args.size() - cd.unbinds);
-		for (int i = 0; i < cd.binds.size(); i++) {
+		for (vec_size i = 0; i < cd.binds.size(); i++) {
 			script_function_args.push_back("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cd.binds[i].get_type()));
 		}
 	}
@@ -1072,7 +1072,7 @@ void ConnectionsDock::update_tree() {
 			}
 
 			if (mi.arguments.size()) {
-				for (int i = 0; i < mi.arguments.size(); i++) {
+				for (vec_size i = 0; i < mi.arguments.size(); i++) {
 					PropertyInfo &pi = mi.arguments[i];
 
 					if (i > 0) {
@@ -1117,7 +1117,7 @@ void ConnectionsDock::update_tree() {
 					DocTools *dd = EditorHelp::get_doc_data();
 					HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(base);
 					while (F && descr.is_empty()) {
-						for (int i = 0; i < F->value.signals.size(); i++) {
+						for (vec_size i = 0; i < F->value.signals.size(); i++) {
 							if (F->value.signals[i].name == signal_name.operator String()) {
 								descr = DTR(F->value.signals[i].description);
 								break;
@@ -1163,7 +1163,7 @@ void ConnectionsDock::update_tree() {
 					path += " unbinds(" + itos(cd.unbinds) + ")";
 				} else if (!cd.binds.is_empty()) {
 					path += " binds(";
-					for (int i = 0; i < cd.binds.size(); i++) {
+					for (vec_size i = 0; i < cd.binds.size(); i++) {
 						if (i > 0) {
 							path += ", ";
 						}

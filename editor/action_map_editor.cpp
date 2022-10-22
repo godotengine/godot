@@ -316,7 +316,7 @@ void ActionMapEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 
 		// The following method was used to perform the array changes since `remove` followed by `insert` was not working properly at time of writing.
 		// Loop thought existing events
-		for (int i = 0; i < events.size(); i++) {
+		for (vec_size i = 0; i < events.size(); i++) {
 			// If you come across the current index, just skip it, as it has been moved.
 			if (i == current_index) {
 				continue;
@@ -376,7 +376,7 @@ bool ActionMapEditor::_should_display_action(const String &p_name, const Array &
 	bool event_match = true;
 	if (search_ev.is_valid()) {
 		event_match = false;
-		for (int i = 0; i < p_events.size(); ++i) {
+		for (vec_size i = 0; i < p_events.size(); ++i) {
 			const Ref<InputEvent> ev = p_events[i];
 			if (ev.is_valid() && ev->is_match(search_ev, true)) {
 				event_match = true;
@@ -397,7 +397,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 
 	int uneditable_count = 0;
 
-	for (int i = 0; i < actions_cache.size(); i++) {
+	for (vec_size i = 0; i < actions_cache.size(); i++) {
 		ActionInfo action_info = actions_cache[i];
 
 		if (!action_info.editable) {
@@ -439,7 +439,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		action_item->set_custom_bg_color(0, action_tree->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 		action_item->set_custom_bg_color(1, action_tree->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
-		for (int evnt_idx = 0; evnt_idx < events.size(); evnt_idx++) {
+		for (vec_size evnt_idx = 0; evnt_idx < events.size(); evnt_idx++) {
 			Ref<InputEvent> event = events[evnt_idx];
 			if (event.is_null()) {
 				continue;

@@ -166,7 +166,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 				Array arguments;
 				signal_dict["arguments"] = arguments;
-				for (int i = 0; i < mi.arguments.size(); i++) {
+				for (vec_size i = 0; i < mi.arguments.size(); i++) {
 					Dictionary argument_dict;
 					arguments.push_back(argument_dict);
 					argument_dict["type"] = mi.arguments[i].type;

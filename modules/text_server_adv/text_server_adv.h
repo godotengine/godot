@@ -388,7 +388,7 @@ class TextServerAdvanced : public TextServerExtension {
 		bool js_ops_valid = false;
 
 		~ShapedTextDataAdvanced() {
-			for (int i = 0; i < bidi_iter.size(); i++) {
+			for (vec_size i = 0; i < bidi_iter.size(); i++) {
 				ubidi_close(bidi_iter[i]);
 			}
 			if (script_iter) {

@@ -97,7 +97,7 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 			ERR_FAIL_COND_V_MSG(p_markers.has(a.id()), "\"[...]\"", "Converting circular structure to JSON.");
 			p_markers.insert(a.id());
 
-			for (int i = 0; i < a.size(); i++) {
+			for (vec_size i = 0; i < a.size(); i++) {
 				if (i > 0) {
 					s += ",";
 					s += end_statement;

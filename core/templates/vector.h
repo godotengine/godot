@@ -48,7 +48,7 @@
 template <class T>
 class VectorWriteProxy {
 public:
-	_FORCE_INLINE_ T &operator[](int p_index) {
+	_FORCE_INLINE_ T &operator[](vec_size p_index) {
 		CRASH_BAD_INDEX(p_index, ((Vector<T> *)(this))->_cowdata.size());
 
 		return ((Vector<T> *)(this))->_cowdata.ptrw()[p_index];
@@ -84,13 +84,13 @@ public:
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
 
-	_FORCE_INLINE_ T get(int p_index) { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ const T &get(int p_index) const { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	_FORCE_INLINE_ T get(vec_size p_index) { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const T &get(vec_size p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ void set(vec_size p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
+	_FORCE_INLINE_ vec_size size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 	Error resize_zeroed(int p_size) { return _cowdata.template resize<true>(p_size); }
-	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const T &operator[](vec_size p_index) const { return _cowdata.get(p_index); }
 	Error insert(int p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
 	int find(const T &p_val, int p_from = 0) const { return _cowdata.find(p_val, p_from); }
 	int rfind(const T &p_val, int p_from = -1) const { return _cowdata.rfind(p_val, p_from); }
@@ -183,11 +183,11 @@ public:
 	}
 
 	bool operator==(const Vector<T> &p_arr) const {
-		int s = size();
+		vec_size s = size();
 		if (s != p_arr.size()) {
 			return false;
 		}
-		for (int i = 0; i < s; i++) {
+		for (vec_size i = 0; i < s; i++) {
 			if (operator[](i) != p_arr[i]) {
 				return false;
 			}
@@ -196,11 +196,11 @@ public:
 	}
 
 	bool operator!=(const Vector<T> &p_arr) const {
-		int s = size();
+		vec_size s = size();
 		if (s != p_arr.size()) {
 			return true;
 		}
-		for (int i = 0; i < s; i++) {
+		for (vec_size i = 0; i < s; i++) {
 			if (operator[](i) != p_arr[i]) {
 				return true;
 			}
@@ -289,7 +289,7 @@ public:
 
 template <class T>
 void Vector<T>::reverse() {
-	for (int i = 0; i < size() / 2; i++) {
+	for (uint32_t i = 0; i < size() / 2; i++) {
 		T *p = ptrw();
 		SWAP(p[i], p[size() - i - 1]);
 	}
@@ -320,7 +320,7 @@ bool Vector<T>::push_back(T p_elem) {
 template <class T>
 void Vector<T>::fill(T p_elem) {
 	T *p = ptrw();
-	for (int i = 0; i < size(); i++) {
+	for (vec_size i = 0; i < size(); i++) {
 		p[i] = p_elem;
 	}
 }

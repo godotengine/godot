@@ -1029,7 +1029,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 			print_verbose(String("    ") + key + " == " + String(config->get_value("params", key)));
 			if (key == "preload") {
 				Array preload_configurations = config->get_value("params", key);
-				for (int i = 0; i < preload_configurations.size(); i++) {
+				for (vec_size i = 0; i < preload_configurations.size(); i++) {
 					Dictionary preload_config = preload_configurations[i];
 
 					Dictionary variation = preload_config.has("variation_opentype") ? preload_config["variation_opentype"].operator Dictionary() : Dictionary();
@@ -1069,13 +1069,13 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 					import_variation_data_custom->set("variation_transform", transform);
 
 					Array chars = preload_config["chars"];
-					for (int j = 0; j < chars.size(); j++) {
+					for (vec_size j = 0; j < chars.size(); j++) {
 						char32_t c = chars[j].operator int();
 						import_variation_data_custom->selected_chars.insert(c);
 					}
 
 					Array glyphs = preload_config["glyphs"];
-					for (int j = 0; j < glyphs.size(); j++) {
+					for (vec_size j = 0; j < glyphs.size(); j++) {
 						int32_t c = glyphs[j];
 						import_variation_data_custom->selected_glyphs.insert(c);
 					}

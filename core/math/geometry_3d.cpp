@@ -736,7 +736,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 #define SUBPLANE_SIZE 1024.0
 
 	real_t subplane_size = 1024.0; // Should compute this from the actual plane.
-	for (int i = 0; i < p_planes.size(); i++) {
+	for (vec_size i = 0; i < p_planes.size(); i++) {
 		Plane p = p_planes[i];
 
 		Vector3 ref = Vector3(0.0, 1.0, 0.0);
@@ -758,7 +758,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 			center + up * subplane_size + right * subplane_size
 		};
 
-		for (int j = 0; j < p_planes.size(); j++) {
+		for (vec_size j = 0; j < p_planes.size(); j++) {
 			if (j == i) {
 				continue;
 			}
@@ -1117,13 +1117,13 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 Vector<int8_t> Geometry3D::generate_sdf8(const Vector<uint32_t> &p_positive, const Vector<uint32_t> &p_negative) {
 	ERR_FAIL_COND_V(p_positive.size() != p_negative.size(), Vector<int8_t>());
 	Vector<int8_t> sdf8;
-	int s = p_positive.size();
+	vec_size s = p_positive.size();
 	sdf8.resize(s);
 
 	const uint32_t *rpos = p_positive.ptr();
 	const uint32_t *rneg = p_negative.ptr();
 	int8_t *wsdf = sdf8.ptrw();
-	for (int i = 0; i < s; i++) {
+	for (vec_size i = 0; i < s; i++) {
 		int32_t diff = int32_t(rpos[i]) - int32_t(rneg[i]);
 		wsdf[i] = CLAMP(diff, -128, 127);
 	}

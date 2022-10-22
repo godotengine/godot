@@ -55,7 +55,7 @@ void EditorImportPlugin::get_recognized_extensions(List<String> *p_extensions) c
 	Vector<String> extensions;
 
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, extensions)) {
-		for (int i = 0; i < extensions.size(); i++) {
+		for (vec_size i = 0; i < extensions.size(); i++) {
 			p_extensions->push_back(extensions[i]);
 		}
 		return;
@@ -117,7 +117,7 @@ void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceI
 	needed.push_back("default_value");
 	TypedArray<Dictionary> options;
 	if (GDVIRTUAL_CALL(_get_import_options, p_path, p_preset, options)) {
-		for (int i = 0; i < options.size(); i++) {
+		for (vec_size i = 0; i < options.size(); i++) {
 			Dictionary d = options[i];
 			ERR_FAIL_COND(!d.has_all(needed));
 			String name = d["name"];
@@ -176,10 +176,10 @@ Error EditorImportPlugin::import(const String &p_source_file, const String &p_sa
 	if (GDVIRTUAL_CALL(_import, p_source_file, p_save_path, options, platform_variants, gen_files, err)) {
 		Error ret_err = Error(err);
 
-		for (int i = 0; i < platform_variants.size(); i++) {
+		for (vec_size i = 0; i < platform_variants.size(); i++) {
 			r_platform_variants->push_back(platform_variants[i]);
 		}
-		for (int i = 0; i < gen_files.size(); i++) {
+		for (vec_size i = 0; i < gen_files.size(); i++) {
 			r_gen_files->push_back(gen_files[i]);
 		}
 		return ret_err;

@@ -428,7 +428,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(array[i].get_type());
@@ -444,7 +444,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Dictionary dictionary = p_var;
 			Array arr;
 
-			for (int i = 0; i < dictionary.size(); i++) {
+			for (vec_size i = 0; i < dictionary.size(); i++) {
 				DAP::Variable var;
 				var.name = dictionary.get_key_at_index(i);
 				Variant value = dictionary.get_value_at_index(i);
@@ -467,7 +467,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = "byte";
@@ -488,7 +488,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = "int";
@@ -509,7 +509,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = "long";
@@ -530,7 +530,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = "float";
@@ -551,7 +551,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = "double";
@@ -572,7 +572,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(Variant::STRING);
@@ -593,7 +593,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(Variant::VECTOR2);
@@ -615,7 +615,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(Variant::VECTOR3);
@@ -637,7 +637,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			Array arr;
 			arr.push_back(size.to_json());
 
-			for (int i = 0; i < array.size(); i++) {
+			for (vec_size i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(Variant::COLOR);
@@ -790,7 +790,7 @@ Array DebugAdapterProtocol::update_breakpoints(const String &p_path, const Array
 	Array updated_breakpoints;
 
 	// Add breakpoints
-	for (int i = 0; i < p_lines.size(); i++) {
+	for (vec_size i = 0; i < p_lines.size(); i++) {
 		EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, p_lines[i], true);
 		DAP::Breakpoint breakpoint;
 		breakpoint.line = p_lines[i];
@@ -891,7 +891,7 @@ void DebugAdapterProtocol::on_debug_stack_dump(const Array &p_stack_dump) {
 	stackframe_list.clear();
 
 	// Fill in stacktrace information
-	for (int i = 0; i < p_stack_dump.size(); i++) {
+	for (vec_size i = 0; i < p_stack_dump.size(); i++) {
 		Dictionary stack_info = p_stack_dump[i];
 		DAP::StackFrame stackframe;
 		stackframe.id = stackframe_id++;

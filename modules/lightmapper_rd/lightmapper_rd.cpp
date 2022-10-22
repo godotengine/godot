@@ -162,7 +162,7 @@ void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Ve
 Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_size, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	Vector<Size2i> sizes;
 
-	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
+	for (vec_size m_i = 0; m_i < mesh_instances.size(); m_i++) {
 		MeshInstance &mi = mesh_instances.write[m_i];
 		Size2i s = Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height());
 		sizes.push_back(s);
@@ -194,7 +194,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		Vector<int> source_indices;
 		source_sizes.resize(sizes.size());
 		source_indices.resize(sizes.size());
-		for (int i = 0; i < source_indices.size(); i++) {
+		for (vec_size i = 0; i < source_indices.size(); i++) {
 			source_sizes.write[i] = sizes[i] + Vector2i(2, 2); // Add padding between lightmaps
 			source_indices.write[i] = i;
 		}
@@ -207,7 +207,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 			Vector<Vector3i> offsets = Geometry2D::partial_pack_rects(source_sizes, atlas_size);
 			Vector<int> new_indices;
 			Vector<Vector2i> new_sources;
-			for (int i = 0; i < offsets.size(); i++) {
+			for (vec_size i = 0; i < offsets.size(); i++) {
 				Vector3i ofs = offsets[i];
 				int sidx = source_indices[i];
 				if (ofs.z > 0) {
@@ -262,7 +262,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 
 	//assign uv positions
 
-	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
+	for (vec_size m_i = 0; m_i < mesh_instances.size(); m_i++) {
 		MeshInstance &mi = mesh_instances.write[m_i];
 		mi.offset.x = best_atlas_offsets[m_i].x;
 		mi.offset.y = best_atlas_offsets[m_i].y;
@@ -292,7 +292,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 
 	bounds = AABB();
 
-	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
+	for (vec_size m_i = 0; m_i < mesh_instances.size(); m_i++) {
 		if (p_step_function) {
 			float p = float(m_i + 1) / mesh_instances.size() * 0.1;
 			p_step_function(0.3 + p, vformat(RTR("Plotting mesh into acceleration structure %d/%d"), m_i + 1, mesh_instances.size()), p_bake_userdata, false);
@@ -308,7 +308,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			bounds.position = mi.data.points[0];
 		}
 
-		for (int i = 0; i < mi.data.points.size(); i += 3) {
+		for (vec_size i = 0; i < mi.data.points.size(); i += 3) {
 			Vector3 vtxs[3] = { mi.data.points[i + 0], mi.data.points[i + 1], mi.data.points[i + 2] };
 			Vector2 uvs[3] = { mi.data.uv2[i + 0] * uv_scale + uv_offset, mi.data.uv2[i + 1] * uv_scale + uv_offset, mi.data.uv2[i + 2] * uv_scale + uv_offset };
 			Vector3 normal[3] = { mi.data.normal[i + 0], mi.data.normal[i + 1], mi.data.normal[i + 2] };
@@ -399,7 +399,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	}
 
 	//also consider probe positions for bounds
-	for (int i = 0; i < p_probe_positions.size(); i++) {
+	for (vec_size i = 0; i < p_probe_positions.size(); i++) {
 		Vector3 pp(p_probe_positions[i].position[0], p_probe_positions[i].position[1], p_probe_positions[i].position[2]);
 		bounds.expand_to(pp);
 	}
@@ -468,7 +468,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	for (int i = 0; i < grid_size; i++) {
 		Vector<uint8_t> grid_usage;
 		grid_usage.resize(grid_size * grid_size);
-		for (int j = 0; j < grid_usage.size(); j++) {
+		for (vec_size j = 0; j < grid_usage.size(); j++) {
 			uint32_t ofs = i * grid_size * grid_size + j;
 			uint32_t count = grid_indices[ofs * 2];
 			grid_usage.write[j] = count > 0 ? 255 : 0;
@@ -1402,7 +1402,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 
 #if 0
-	for (int i = 0; i < probe_positions.size(); i++) {
+	for (vec_size i = 0; i < probe_positions.size(); i++) {
 		Ref<Image> img = Image::create_empty(6, 4, false, Image::FORMAT_RGB8);
 		for (int j = 0; j < 6; j++) {
 			Vector<uint8_t> s = rd->texture_get_data(lightprobe_tex, i * 6 + j);

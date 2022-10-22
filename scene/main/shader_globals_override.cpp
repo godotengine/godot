@@ -94,7 +94,7 @@ bool ShaderGlobalsOverride::_get(const StringName &p_name, Variant &r_ret) const
 void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const {
 	Vector<StringName> variables;
 	variables = RS::get_singleton()->global_shader_parameter_get_list();
-	for (int i = 0; i < variables.size(); i++) {
+	for (vec_size i = 0; i < variables.size(); i++) {
 		PropertyInfo pinfo;
 		pinfo.name = "params/" + variables[i];
 		pinfo.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;

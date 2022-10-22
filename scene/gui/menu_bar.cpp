@@ -159,7 +159,7 @@ void MenuBar::shortcut_input(const Ref<InputEvent> &p_event) {
 		}
 
 		Vector<PopupMenu *> popups = _get_popups();
-		for (int i = 0; i < popups.size(); i++) {
+		for (vec_size i = 0; i < popups.size(); i++) {
 			if (menu_cache[i].hidden || menu_cache[i].disabled) {
 				continue;
 			}
@@ -234,7 +234,7 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 			DisplayServer::get_singleton()->global_menu_set_item_tooltip(p_menu_name, index, p_child->get_item_tooltip(i));
 			if (!p_child->is_item_shortcut_disabled(i) && p_child->get_item_shortcut(i).is_valid() && p_child->get_item_shortcut(i)->has_valid_event()) {
 				Array events = p_child->get_item_shortcut(i)->get_events();
-				for (int j = 0; j < events.size(); j++) {
+				for (vec_size j = 0; j < events.size(); j++) {
 					Ref<InputEventKey> ie = events[j];
 					if (ie.is_valid()) {
 						DisplayServer::get_singleton()->global_menu_set_item_accelerator(p_menu_name, index, ie->get_keycode_with_modifiers());
@@ -286,7 +286,7 @@ void MenuBar::_update_menu() {
 	if (is_native_menu()) {
 		Vector<PopupMenu *> popups = _get_popups();
 		String root_name = "MenuBar<" + String::num_int64((uint64_t)this, 16) + ">";
-		for (int i = 0; i < popups.size(); i++) {
+		for (vec_size i = 0; i < popups.size(); i++) {
 			if (menu_cache[i].hidden) {
 				continue;
 			}
@@ -350,7 +350,7 @@ void MenuBar::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			for (int i = 0; i < menu_cache.size(); i++) {
+			for (vec_size i = 0; i < menu_cache.size(); i++) {
 				shape(menu_cache.write[i]);
 			}
 			_update_menu();
@@ -362,7 +362,7 @@ void MenuBar::_notification(int p_what) {
 			if (is_native_menu()) {
 				return;
 			}
-			for (int i = 0; i < menu_cache.size(); i++) {
+			for (vec_size i = 0; i < menu_cache.size(); i++) {
 				_draw_menu_item(i);
 			}
 		} break;
@@ -396,7 +396,7 @@ void MenuBar::_notification(int p_what) {
 int MenuBar::_get_index_at_point(const Point2 &p_point) const {
 	Ref<StyleBox> style = theme_cache.normal;
 	int offset = 0;
-	for (int i = 0; i < menu_cache.size(); i++) {
+	for (vec_size i = 0; i < menu_cache.size(); i++) {
 		if (menu_cache[i].hidden) {
 			continue;
 		}
@@ -529,7 +529,7 @@ void MenuBar::shape(Menu &p_menu) {
 
 void MenuBar::_refresh_menu_names() {
 	Vector<PopupMenu *> popups = _get_popups();
-	for (int i = 0; i < popups.size(); i++) {
+	for (vec_size i = 0; i < popups.size(); i++) {
 		if (!popups[i]->has_meta("_menu_name") && String(popups[i]->get_name()) != get_menu_title(i)) {
 			menu_cache.write[i].name = popups[i]->get_name();
 			shape(menu_cache.write[i]);
@@ -555,7 +555,7 @@ int MenuBar::get_menu_idx_from_control(PopupMenu *p_child) const {
 	ERR_FAIL_COND_V(p_child->get_parent() != this, -1);
 
 	Vector<PopupMenu *> popups = _get_popups();
-	for (int i = 0; i < popups.size(); i++) {
+	for (vec_size i = 0; i < popups.size(); i++) {
 		if (popups[i] == p_child) {
 			return i;
 		}
@@ -753,7 +753,7 @@ Size2 MenuBar::get_minimum_size() const {
 	Ref<StyleBox> style = theme_cache.normal;
 
 	Vector2 size;
-	for (int i = 0; i < menu_cache.size(); i++) {
+	for (vec_size i = 0; i < menu_cache.size(); i++) {
 		if (menu_cache[i].hidden) {
 			continue;
 		}
@@ -843,7 +843,7 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 
 void MenuBar::get_translatable_strings(List<String> *p_strings) const {
 	Vector<PopupMenu *> popups = _get_popups();
-	for (int i = 0; i < popups.size(); i++) {
+	for (vec_size i = 0; i < popups.size(); i++) {
 		PopupMenu *pm = popups[i];
 
 		if (!pm->has_meta("_menu_name") && !pm->has_meta("_menu_tooltip")) {

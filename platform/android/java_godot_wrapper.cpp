@@ -350,7 +350,7 @@ void GodotJavaWrapper::create_new_godot_instance(List<String> args) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
 		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
-		for (int i = 0; i < args.size(); i++) {
+		for (vec_size i = 0; i < args.size(); i++) {
 			env->SetObjectArrayElement(jargs, i, env->NewStringUTF(args[i].utf8().get_data()));
 		}
 		env->CallVoidMethod(godot_instance, _create_new_godot_instance, jargs);

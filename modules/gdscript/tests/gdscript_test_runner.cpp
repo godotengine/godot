@@ -181,7 +181,7 @@ int GDScriptTestRunner::run_tests() {
 	}
 
 	int failed = 0;
-	for (int i = 0; i < tests.size(); i++) {
+	for (vec_size i = 0; i < tests.size(); i++) {
 		GDScriptTest test = tests[i];
 		GDScriptTest::TestResult result = test.run_test();
 
@@ -213,7 +213,7 @@ bool GDScriptTestRunner::generate_outputs() {
 		return false;
 	}
 
-	for (int i = 0; i < tests.size(); i++) {
+	for (vec_size i = 0; i < tests.size(); i++) {
 		OS::get_singleton()->print(".");
 		GDScriptTest test = tests[i];
 		bool result = test.generate_output();
@@ -297,7 +297,7 @@ bool GDScriptTestRunner::make_tests() {
 
 bool GDScriptTestRunner::generate_class_index() {
 	StringName gdscript_name = GDScriptLanguage::get_singleton()->get_name();
-	for (int i = 0; i < tests.size(); i++) {
+	for (vec_size i = 0; i < tests.size(); i++) {
 		GDScriptTest test = tests[i];
 		String base_type;
 

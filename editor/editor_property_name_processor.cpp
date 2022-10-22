@@ -63,7 +63,7 @@ String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const
 	}
 
 	Vector<String> parts = p_name.split("_", false);
-	for (int i = 0; i < parts.size(); i++) {
+	for (vec_size i = 0; i < parts.size(); i++) {
 		HashMap<String, String>::ConstIterator remap = capitalize_string_remaps.find(parts[i]);
 		if (remap) {
 			parts.write[i] = remap->value;

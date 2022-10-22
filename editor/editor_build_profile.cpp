@@ -285,7 +285,7 @@ Error EditorBuildProfile::load_from_file(const String &p_path) {
 
 	if (data.has("disabled_classes")) {
 		Array disabled_classes_arr = data["disabled_classes"];
-		for (int i = 0; i < disabled_classes_arr.size(); i++) {
+		for (vec_size i = 0; i < disabled_classes_arr.size(); i++) {
 			disabled_classes.insert(disabled_classes_arr[i]);
 		}
 	}
@@ -501,7 +501,7 @@ void EditorBuildProfileManager::_detect_classes() {
 
 	for (const KeyValue<String, DetectedFile> &E : updated_file_cache) {
 		String l = E.key + "::" + itos(E.value.timestamp) + "::" + E.value.md5 + "::";
-		for (int i = 0; i < E.value.classes.size(); i++) {
+		for (vec_size i = 0; i < E.value.classes.size(); i++) {
 			String c = E.value.classes[i];
 			if (i > 0) {
 				l += ",";
@@ -517,7 +517,7 @@ void EditorBuildProfileManager::_detect_classes() {
 	// Add forced ones.
 
 	Vector<String> force_detect = edited->get_force_detect_classes().split(",");
-	for (int i = 0; i < force_detect.size(); i++) {
+	for (vec_size i = 0; i < force_detect.size(); i++) {
 		String c = force_detect[i].strip_edges();
 		if (c.is_empty()) {
 			continue;

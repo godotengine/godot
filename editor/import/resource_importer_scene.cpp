@@ -65,7 +65,7 @@ uint32_t EditorSceneFormatImporter::get_import_flags() const {
 void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const {
 	Vector<String> arr;
 	if (GDVIRTUAL_CALL(_get_extensions, arr)) {
-		for (int i = 0; i < arr.size(); i++) {
+		for (vec_size i = 0; i < arr.size(); i++) {
 			r_extensions->push_back(arr[i]);
 		}
 		return;
@@ -284,7 +284,7 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		return false;
 	}
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
+	for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_option_visibility(p_path, animation_importer, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
 			return ret;
@@ -361,7 +361,7 @@ static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r
 		Vector<Ref<Shape3D>> cd;
 		cd.push_back(mesh->get_mesh()->create_convex_shape(true, /*Passing false, otherwise VHACD will be used to simplify (Decompose) the Mesh.*/ false));
 		if (cd.size()) {
-			for (int i = 0; i < cd.size(); i++) {
+			for (vec_size i = 0; i < cd.size(); i++) {
 				r_shape_list.push_back(cd[i]);
 			}
 		}
@@ -406,7 +406,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 		Ref<Material> mat = p_mesh->get_surface_material(surf_idx);
 		{
 			Vector<Vector3> vertex_array = arr[ArrayMesh::ARRAY_VERTEX];
-			for (int vert_arr_i = 0; vert_arr_i < vertex_array.size(); vert_arr_i++) {
+			for (vec_size vert_arr_i = 0; vert_arr_i < vertex_array.size(); vert_arr_i++) {
 				vertex_array.write[vert_arr_i] = vertex_array[vert_arr_i] * p_scale;
 			}
 			arr[ArrayMesh::ARRAY_VERTEX] = vertex_array;
@@ -1131,7 +1131,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 	{
 		ObjectID node_id = p_node->get_instance_id();
-		for (int i = 0; i < post_importer_plugins.size(); i++) {
+		for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
 				break;
@@ -1141,7 +1141,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ObjectID node_id = p_node->get_instance_id();
-		for (int i = 0; i < post_importer_plugins.size(); i++) {
+		for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
 				break;
@@ -1151,7 +1151,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 	if (Object::cast_to<Skeleton3D>(p_node)) {
 		ObjectID node_id = p_node->get_instance_id();
-		for (int i = 0; i < post_importer_plugins.size(); i++) {
+		for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
 				break;
@@ -1184,7 +1184,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								}
 							}
 
-							for (int j = 0; j < post_importer_plugins.size(); j++) {
+							for (vec_size j = 0; j < post_importer_plugins.size(); j++) {
 								post_importer_plugins.write[j]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
 							}
 
@@ -1350,7 +1350,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
-		for (int i = 0; i < post_importer_plugins.size(); i++) {
+		for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 		}
 
@@ -1372,7 +1372,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						}
 					}
 
-					for (int i = 0; i < post_importer_plugins.size(); i++) {
+					for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION, p_root, p_node, anim, node_settings);
 					}
 				}
@@ -1417,7 +1417,7 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> anim, const Array &p_slices, bool p_bake_all) {
 	Ref<AnimationLibrary> al = ap->get_animation_library(ap->find_animation_library(anim));
 
-	for (int i = 0; i < p_slices.size(); i += 7) {
+	for (vec_size i = 0; i < p_slices.size(); i += 7) {
 		String name = p_slices[i];
 		float from = p_slices[i + 1];
 		float to = p_slices[i + 2];
@@ -1674,7 +1674,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		}
 	}
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
+	for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->get_internal_import_options(EditorScenePostImportPlugin::InternalImportCategory(p_category), r_options);
 	}
 }
@@ -1793,7 +1793,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 		}
 	}
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
+	for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_internal_option_visibility(EditorScenePostImportPlugin::InternalImportCategory(p_category), animation_importer, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
 			return ret;
@@ -1830,7 +1830,7 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 		}
 	}
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
+	for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_internal_option_update_view_required(EditorScenePostImportPlugin::InternalImportCategory(p_category), p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
 			return ret;
@@ -1870,7 +1870,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
+	for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->get_import_options(p_path, r_options);
 	}
 
@@ -2001,7 +2001,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 						}
 					}
 
-					for (int i = 0; i < post_importer_plugins.size(); i++) {
+					for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH, nullptr, src_mesh_node, src_mesh_node->get_mesh(), mesh_settings);
 					}
 				}
@@ -2023,7 +2023,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 						} else {
 							String new_md5 = String::md5(lightmap_cache.ptr()); // MD5 is stored at the beginning of the cache data
 
-							for (int i = 0; i < r_lightmap_caches.size(); i++) {
+							for (vec_size i = 0; i < r_lightmap_caches.size(); i++) {
 								String md5 = String::md5(r_lightmap_caches[i].ptr());
 								if (new_md5 < md5) {
 									r_lightmap_caches.insert(i, lightmap_cache);
@@ -2396,7 +2396,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	_pre_fix_node(scene, scene, collision_map, &occluder_arrays, node_renames);
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
+	for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->pre_process(scene, p_options);
 	}
 
@@ -2468,7 +2468,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		Ref<FileAccess> f = FileAccess::open(p_source_file + ".unwrap_cache", FileAccess::WRITE);
 		if (f.is_valid()) {
 			f->store_32(mesh_lightmap_caches.size());
-			for (int i = 0; i < mesh_lightmap_caches.size(); i++) {
+			for (vec_size i = 0; i < mesh_lightmap_caches.size(); i++) {
 				String md5 = String::md5(mesh_lightmap_caches[i].ptr());
 				f->store_buffer(mesh_lightmap_caches[i].ptr(), mesh_lightmap_caches[i].size());
 			}
@@ -2507,7 +2507,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		}
 	}
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
+	for (vec_size i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->post_process(scene, p_options);
 	}
 

@@ -97,7 +97,7 @@ bool MovieWriter::handles_file(const String &p_path) const {
 void MovieWriter::get_supported_extensions(List<String> *r_extensions) const {
 	Vector<String> exts;
 	if (GDVIRTUAL_REQUIRED_CALL(_get_supported_extensions, exts)) {
-		for (int i = 0; i < exts.size(); i++) {
+		for (vec_size i = 0; i < exts.size(); i++) {
 			r_extensions->push_back(exts[i]);
 		}
 	}

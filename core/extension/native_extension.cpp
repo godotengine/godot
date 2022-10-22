@@ -399,7 +399,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 	for (const String &E : libraries) {
 		Vector<String> tags = E.split(".");
 		bool all_tags_met = true;
-		for (int i = 0; i < tags.size(); i++) {
+		for (vec_size i = 0; i < tags.size(); i++) {
 			String tag = tags[i].strip_edges();
 			if (!OS::get_singleton()->has_feature(tag)) {
 				all_tags_met = false;

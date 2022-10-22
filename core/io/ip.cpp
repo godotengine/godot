@@ -150,7 +150,7 @@ PackedStringArray IP::resolve_hostname_addresses(const String &p_hostname, Type 
 	resolver->mutex.unlock();
 
 	PackedStringArray result;
-	for (int i = 0; i < res.size(); ++i) {
+	for (vec_size i = 0; i < res.size(); ++i) {
 		result.push_back(String(res[i]));
 	}
 	return result;
@@ -208,7 +208,7 @@ IPAddress IP::get_resolve_item_address(ResolverID p_id) const {
 
 	List<IPAddress> res = resolver->queue[p_id].response;
 
-	for (int i = 0; i < res.size(); ++i) {
+	for (vec_size i = 0; i < res.size(); ++i) {
 		if (res[i].is_valid()) {
 			return res[i];
 		}
@@ -228,7 +228,7 @@ Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 	List<IPAddress> res = resolver->queue[p_id].response;
 
 	Array result;
-	for (int i = 0; i < res.size(); ++i) {
+	for (vec_size i = 0; i < res.size(); ++i) {
 		if (res[i].is_valid()) {
 			result.push_back(String(res[i]));
 		}

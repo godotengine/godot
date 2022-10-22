@@ -975,7 +975,7 @@ String String::_camelcase_to_underscore() const {
 	String new_string;
 	int start_index = 0;
 
-	for (int i = 1; i < this->size(); i++) {
+	for (vec_size i = 1; i < this->size(); i++) {
 		bool is_prev_upper = is_ascii_upper_case(cstr[i - 1]);
 		bool is_prev_lower = is_ascii_lower_case(cstr[i - 1]);
 		bool is_prev_digit = is_digit(cstr[i - 1]);
@@ -1040,7 +1040,7 @@ String String::to_snake_case() const {
 String String::get_with_code_lines() const {
 	const Vector<String> lines = split("\n");
 	String ret;
-	for (int i = 0; i < lines.size(); i++) {
+	for (vec_size i = 0; i < lines.size(); i++) {
 		if (i > 0) {
 			ret += "\n";
 		}
@@ -1351,7 +1351,7 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 
 String String::join(Vector<String> parts) const {
 	String ret;
-	for (int i = 0; i < parts.size(); ++i) {
+	for (vec_size i = 0; i < parts.size(); ++i) {
 		if (i > 0) {
 			ret += *this;
 		}
@@ -1371,7 +1371,7 @@ char32_t String::char_lowercase(char32_t p_char) {
 String String::to_upper() const {
 	String upper = *this;
 
-	for (int i = 0; i < upper.size(); i++) {
+	for (vec_size i = 0; i < upper.size(); i++) {
 		const char32_t s = upper[i];
 		const char32_t t = _find_upper(s);
 		if (s != t) { // avoid copy on write
@@ -1385,7 +1385,7 @@ String String::to_upper() const {
 String String::to_lower() const {
 	String lower = *this;
 
-	for (int i = 0; i < lower.size(); i++) {
+	for (vec_size i = 0; i < lower.size(); i++) {
 		const char32_t s = lower[i];
 		const char32_t t = _find_lower(s);
 		if (s != t) { // avoid copy on write
@@ -1648,7 +1648,7 @@ CharString String::ascii(bool p_allow_extended) const {
 	CharString cs;
 	cs.resize(size());
 
-	for (int i = 0; i < size(); i++) {
+	for (vec_size i = 0; i < size(); i++) {
 		char32_t c = operator[](i);
 		if ((c <= 0x7f) || (c <= 0xff && p_allow_extended)) {
 			cs[i] = c;
@@ -3348,7 +3348,7 @@ String String::format(const Variant &values, String placeholder) const {
 	if (values.get_type() == Variant::ARRAY) {
 		Array values_arr = values;
 
-		for (int i = 0; i < values_arr.size(); i++) {
+		for (vec_size i = 0; i < values_arr.size(); i++) {
 			String i_as_str = String::num_int64(i);
 
 			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
@@ -3719,7 +3719,7 @@ String String::simplify_path() const {
 	}
 	Vector<String> dirs = s.split("/", false);
 
-	for (int i = 0; i < dirs.size(); i++) {
+	for (vec_size i = 0; i < dirs.size(); i++) {
 		String d = dirs[i];
 		if (d == ".") {
 			dirs.remove_at(i);
@@ -3738,7 +3738,7 @@ String String::simplify_path() const {
 
 	s = "";
 
-	for (int i = 0; i < dirs.size(); i++) {
+	for (vec_size i = 0; i < dirs.size(); i++) {
 		if (i > 0) {
 			s += "/";
 		}
@@ -4326,7 +4326,7 @@ String String::path_to(const String &p_path) const {
 		dir += "../";
 	}
 
-	for (int i = common_parent + 1; i < dst_dirs.size(); i++) {
+	for (vec_size i = common_parent + 1; i < dst_dirs.size(); i++) {
 		dir += dst_dirs[i] + "/";
 	}
 
@@ -4356,7 +4356,7 @@ bool String::is_valid_filename() const {
 bool String::is_valid_ip_address() const {
 	if (find(":") >= 0) {
 		Vector<String> ip = split(":");
-		for (int i = 0; i < ip.size(); i++) {
+		for (vec_size i = 0; i < ip.size(); i++) {
 			String n = ip[i];
 			if (n.is_empty()) {
 				continue;
@@ -4378,7 +4378,7 @@ bool String::is_valid_ip_address() const {
 		if (ip.size() != 4) {
 			return false;
 		}
-		for (int i = 0; i < ip.size(); i++) {
+		for (vec_size i = 0; i < ip.size(); i++) {
 			String n = ip[i];
 			if (!n.is_valid_int()) {
 				return false;
@@ -4509,7 +4509,7 @@ const String String::invalid_node_name_characters = ". : @ / \" " UNIQUE_NODE_PR
 String String::validate_node_name() const {
 	Vector<String> chars = String::invalid_node_name_characters.split(" ");
 	String name = this->replace(chars[0], "");
-	for (int i = 1; i < chars.size(); i++) {
+	for (vec_size i = 1; i < chars.size(); i++) {
 		name = name.replace(chars[i], "");
 	}
 	return name;

@@ -471,7 +471,7 @@ void SkeletonModification3DTwoBoneIK::calculate_joint_lengths() {
 		Vector<int> bone_two_children = stack->skeleton->get_bone_children(joint_two_bone_idx);
 		if (bone_two_children.size() > 0) {
 			joint_two_length = 0;
-			for (int i = 0; i < bone_two_children.size(); i++) {
+			for (vec_size i = 0; i < bone_two_children.size(); i++) {
 				joint_two_length += bone_two_rest_trans.origin.distance_to(
 						stack->skeleton->get_bone_global_pose(bone_two_children[i]).origin);
 			}

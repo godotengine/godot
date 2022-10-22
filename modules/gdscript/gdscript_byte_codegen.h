@@ -67,7 +67,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<RBMap<StringName, int>> block_identifier_stack;
 	RBMap<StringName, int> block_identifiers;
 
-	int max_locals = 0;
+	uint32_t max_locals = 0;
 	int current_line = 0;
 	int instr_args_max = 0;
 	int ptrcall_max = 0;

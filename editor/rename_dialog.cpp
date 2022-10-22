@@ -514,7 +514,7 @@ String RenameDialog::_postprocess(const String &subject) {
 			String buffer;
 			int start = 0;
 			int end = 0;
-			for (int i = 0; i < matches.size(); ++i) {
+			for (vec_size i = 0; i < matches.size(); ++i) {
 				start = ((Ref<RegExMatch>)matches[i])->get_start(1);
 				buffer += result.substr(end, start - end - 1);
 				buffer += result.substr(start, 1).to_upper();

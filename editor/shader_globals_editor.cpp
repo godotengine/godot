@@ -124,7 +124,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const {
 		Vector<StringName> variables;
 		variables = RS::get_singleton()->global_shader_parameter_get_list();
-		for (int i = 0; i < variables.size(); i++) {
+		for (vec_size i = 0; i < variables.size(); i++) {
 			PropertyInfo pinfo;
 			pinfo.name = variables[i];
 

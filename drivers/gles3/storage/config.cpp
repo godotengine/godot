@@ -125,7 +125,7 @@ Config::Config() {
 		String vendors = GLOBAL_GET("rendering/driver/depth_prepass/disable_for_vendors");
 		Vector<String> vendor_match = vendors.split(",");
 		String renderer = (const char *)glGetString(GL_RENDERER);
-		for (int i = 0; i < vendor_match.size(); i++) {
+		for (vec_size i = 0; i < vendor_match.size(); i++) {
 			String v = vendor_match[i].strip_edges();
 			if (v == String()) {
 				continue;

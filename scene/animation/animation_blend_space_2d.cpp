@@ -69,7 +69,7 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 		for (int i = blend_points_used - 1; i > p_at_index; i--) {
 			blend_points[i] = blend_points[i - 1];
 		}
-		for (int i = 0; i < triangles.size(); i++) {
+		for (vec_size i = 0; i < triangles.size(); i++) {
 			for (int j = 0; j < 3; j++) {
 				if (triangles[i].points[j] >= p_at_index) {
 					triangles.write[i].points[j]++;
@@ -123,7 +123,7 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	ERR_FAIL_COND(blend_points[p_point].node.is_null());
 	blend_points[p_point].node->disconnect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed));
 
-	for (int i = 0; i < triangles.size(); i++) {
+	for (vec_size i = 0; i < triangles.size(); i++) {
 		bool erase = false;
 		for (int j = 0; j < 3; j++) {
 			if (triangles[i].points[j] == p_point) {
@@ -164,7 +164,7 @@ bool AnimationNodeBlendSpace2D::has_triangle(int p_x, int p_y, int p_z) const {
 	SortArray<int> sort;
 	sort.sort(t.points, 3);
 
-	for (int i = 0; i < triangles.size(); i++) {
+	for (vec_size i = 0; i < triangles.size(); i++) {
 		bool all_equal = true;
 		for (int j = 0; j < 3; j++) {
 			if (triangles[i].points[j] != t.points[j]) {
@@ -195,7 +195,7 @@ void AnimationNodeBlendSpace2D::add_triangle(int p_x, int p_y, int p_z, int p_at
 	SortArray<int> sort;
 	sort.sort(t.points, 3);
 
-	for (int i = 0; i < triangles.size(); i++) {
+	for (vec_size i = 0; i < triangles.size(); i++) {
 		bool all_equal = true;
 		for (int j = 0; j < 3; j++) {
 			if (triangles[i].points[j] != t.points[j]) {
@@ -296,7 +296,7 @@ void AnimationNodeBlendSpace2D::_set_triangles(const Vector<int> &p_triangles) {
 		return;
 	}
 	ERR_FAIL_COND(p_triangles.size() % 3 != 0);
-	for (int i = 0; i < p_triangles.size(); i += 3) {
+	for (vec_size i = 0; i < p_triangles.size(); i += 3) {
 		add_triangle(p_triangles[i + 0], p_triangles[i + 1], p_triangles[i + 2]);
 	}
 }
@@ -308,7 +308,7 @@ Vector<int> AnimationNodeBlendSpace2D::_get_triangles() const {
 	}
 
 	t.resize(triangles.size() * 3);
-	for (int i = 0; i < triangles.size(); i++) {
+	for (vec_size i = 0; i < triangles.size(); i++) {
 		t.write[i * 3 + 0] = triangles[i].points[0];
 		t.write[i * 3 + 1] = triangles[i].points[1];
 		t.write[i * 3 + 2] = triangles[i].points[2];
@@ -345,7 +345,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 
 	Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(points);
 
-	for (int i = 0; i < tr.size(); i++) {
+	for (vec_size i = 0; i < tr.size(); i++) {
 		add_triangle(tr[i].points[0], tr[i].points[1], tr[i].points[2]);
 	}
 	emit_signal(SNAME("triangles_updated"));
@@ -361,7 +361,7 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 	Vector2 best_point;
 	bool first = true;
 
-	for (int i = 0; i < triangles.size(); i++) {
+	for (vec_size i = 0; i < triangles.size(); i++) {
 		Vector2 points[3];
 		for (int j = 0; j < 3; j++) {
 			points[j] = get_blend_point_position(get_triangle_point(i, j));
@@ -450,7 +450,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 		int blend_triangle = -1;
 		float blend_weights[3] = { 0, 0, 0 };
 
-		for (int i = 0; i < triangles.size(); i++) {
+		for (vec_size i = 0; i < triangles.size(); i++) {
 			Vector2 points[3];
 			for (int j = 0; j < 3; j++) {
 				points[j] = get_blend_point_position(get_triangle_point(i, j));

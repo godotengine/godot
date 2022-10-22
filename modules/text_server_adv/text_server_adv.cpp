@@ -793,7 +793,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 	int mw = p_width;
 	int mh = p_height;
 
-	for (int i = 0; i < p_data->textures.size(); i++) {
+	for (vec_size i = 0; i < p_data->textures.size(); i++) {
 		const FontTexture &ct = p_data->textures[i];
 
 		if (p_image_format != ct.format) {
@@ -1010,7 +1010,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 	}
 
 	if (FT_Outline_Get_Orientation(outline) == 1) {
-		for (int i = 0; i < (int)shape.contours.size(); ++i) {
+		for (vec_size i = 0; i < (int)shape.contours.size(); ++i) {
 			shape.contours[i].reverse();
 		}
 	}
@@ -2052,7 +2052,7 @@ void TextServerAdvanced::_font_set_generate_mipmaps(const RID &p_font_rid, bool 
 	MutexLock lock(fd->mutex);
 	if (fd->mipmaps != p_generate_mipmaps) {
 		for (KeyValue<Vector2i, FontForSizeAdvanced *> &E : fd->cache) {
-			for (int i = 0; i < E.value->textures.size(); i++) {
+			for (vec_size i = 0; i < E.value->textures.size(); i++) {
 				E.value->textures.write[i].dirty = true;
 				E.value->textures.write[i].texture = Ref<ImageTexture>();
 			}
@@ -3594,7 +3594,7 @@ void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *
 	p_shaped->glyphs_logical.clear();
 	p_shaped->overrun_trim_data = TrimData();
 	p_shaped->utf16 = Char16String();
-	for (int i = 0; i < p_shaped->bidi_iter.size(); i++) {
+	for (vec_size i = 0; i < p_shaped->bidi_iter.size(); i++) {
 		ubidi_close(p_shaped->bidi_iter[i]);
 	}
 	p_shaped->bidi_iter.clear();
@@ -3618,7 +3618,7 @@ void TextServerAdvanced::full_copy(ShapedTextDataAdvanced *p_shaped) {
 		}
 	}
 
-	for (int i = 0; i < parent->spans.size(); i++) {
+	for (vec_size i = 0; i < parent->spans.size(); i++) {
 		ShapedTextDataAdvanced::Span span = parent->spans[i];
 		if (span.start >= p_shaped->end || span.end <= p_shaped->start) {
 			continue;
@@ -3716,7 +3716,7 @@ void TextServerAdvanced::_shaped_text_set_bidi_override(const RID &p_shaped, con
 		full_copy(sd);
 	}
 	sd->bidi_override.clear();
-	for (int i = 0; i < p_override.size(); i++) {
+	for (vec_size i = 0; i < p_override.size(); i++) {
 		if (p_override[i].get_type() == Variant::VECTOR2I) {
 			sd->bidi_override.push_back(p_override[i]);
 		}
@@ -3845,7 +3845,7 @@ bool TextServerAdvanced::_shaped_text_add_string(const RID &p_shaped, const Stri
 	ERR_FAIL_COND_V(p_size <= 0, false);
 
 	MutexLock lock(sd->mutex);
-	for (int i = 0; i < p_fonts.size(); i++) {
+	for (vec_size i = 0; i < p_fonts.size(); i++) {
 		ERR_FAIL_COND_V(!font_owner.get_or_null(p_fonts[i]), false);
 	}
 
@@ -4095,7 +4095,7 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 
 		int sd_size = p_sd->glyphs.size();
 		const Glyph *sd_glyphs = p_sd->glyphs.ptr();
-		for (int ov = 0; ov < p_sd->bidi_override.size(); ov++) {
+		for (vec_size ov = 0; ov < p_sd->bidi_override.size(); ov++) {
 			UErrorCode err = U_ZERO_ERROR;
 
 			if (p_sd->bidi_override[ov].x >= p_start + p_length || p_sd->bidi_override[ov].y <= p_start) {
@@ -4361,7 +4361,7 @@ double TextServerAdvanced::_shaped_text_tab_align(const RID &p_shaped, const Pac
 		const_cast<TextServerAdvanced *>(this)->_shaped_text_update_breaks(p_shaped);
 	}
 
-	for (int i = 0; i < p_tab_stops.size(); i++) {
+	for (vec_size i = 0; i < p_tab_stops.size(); i++) {
 		if (p_tab_stops[i] <= 0) {
 			return 0.0;
 		}
@@ -4452,7 +4452,7 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	RID dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
 	if (!_font_has_char(dot_gl_font_rid, '.')) {
 		const Array &fonts = spans[spans.size() - 1].fonts;
-		for (int i = 0; i < fonts.size(); i++) {
+		for (vec_size i = 0; i < fonts.size(); i++) {
 			if (_font_has_char(fonts[i], '.')) {
 				dot_gl_font_rid = fonts[i];
 				break;
@@ -4462,7 +4462,7 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	RID whitespace_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
 	if (!_font_has_char(whitespace_gl_font_rid, '.')) {
 		const Array &fonts = spans[spans.size() - 1].fonts;
-		for (int i = 0; i < fonts.size(); i++) {
+		for (vec_size i = 0; i < fonts.size(); i++) {
 			if (_font_has_char(fonts[i], ' ')) {
 				whitespace_gl_font_rid = fonts[i];
 				break;
@@ -5031,7 +5031,7 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 _FORCE_INLINE_ void TextServerAdvanced::_add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs) {
 	Array keys = p_source.keys();
 	Array values = p_source.values();
-	for (int i = 0; i < keys.size(); i++) {
+	for (vec_size i = 0; i < keys.size(); i++) {
 		int32_t value = values[i];
 		if (value >= 0) {
 			hb_feature_t feature;
@@ -5316,7 +5316,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 		sd->bidi_override.push_back(Vector2i(sd->start, sd->end));
 	}
 
-	for (int ov = 0; ov < sd->bidi_override.size(); ov++) {
+	for (vec_size ov = 0; ov < sd->bidi_override.size(); ov++) {
 		// Create BiDi iterator.
 		int start = _convert_pos_inv(sd, sd->bidi_override[ov].x - sd->start);
 		int end = _convert_pos_inv(sd, sd->bidi_override[ov].y - sd->start);
@@ -5789,7 +5789,7 @@ String TextServerAdvanced::_format_number(const String &p_string, const String &
 	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
-	for (int i = 0; i < num_systems.size(); i++) {
+	for (vec_size i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
@@ -5814,7 +5814,7 @@ String TextServerAdvanced::_parse_number(const String &p_string, const String &p
 	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
-	for (int i = 0; i < num_systems.size(); i++) {
+	for (vec_size i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
@@ -5841,7 +5841,7 @@ String TextServerAdvanced::_parse_number(const String &p_string, const String &p
 String TextServerAdvanced::_percent_sign(const String &p_language) const {
 	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
-	for (int i = 0; i < num_systems.size(); i++) {
+	for (vec_size i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
 			if (num_systems[i].percent_sign.is_empty()) {
 				return "%";
@@ -5862,7 +5862,7 @@ int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedS
 
 	USpoofChecker *sc = uspoof_open(&status);
 	uspoof_setChecks(sc, USPOOF_CONFUSABLE, &status);
-	for (int i = 0; i < p_dict.size(); i++) {
+	for (vec_size i = 0; i < p_dict.size(); i++) {
 		Char16String word = p_dict[i].utf16();
 		int32_t len = uspoof_getSkeleton(sc, 0, word.get_data(), -1, NULL, 0, &status);
 		skeletons.write[i] = (UChar *)memalloc(++len * sizeof(UChar));
@@ -5874,7 +5874,7 @@ int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedS
 	UChar *skel = (UChar *)memalloc(++len * sizeof(UChar));
 	status = U_ZERO_ERROR;
 	uspoof_getSkeleton(sc, 0, utf16.get_data(), -1, skel, len, &status);
-	for (int i = 0; i < skeletons.size(); i++) {
+	for (vec_size i = 0; i < skeletons.size(); i++) {
 		if (u_strcmp(skel, skeletons[i]) == 0) {
 			match_index = i;
 			break;
@@ -5882,7 +5882,7 @@ int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedS
 	}
 	memfree(skel);
 
-	for (int i = 0; i < skeletons.size(); i++) {
+	for (vec_size i = 0; i < skeletons.size(); i++) {
 		memfree(skeletons.write[i]);
 	}
 	uspoof_close(sc);

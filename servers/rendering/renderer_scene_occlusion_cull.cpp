@@ -176,7 +176,7 @@ RID RendererSceneOcclusionCull::HZBuffer::get_debug_texture() {
 	}
 
 	unsigned char *ptrw = debug_data.ptrw();
-	for (int i = 0; i < debug_data.size(); i++) {
+	for (vec_size i = 0; i < debug_data.size(); i++) {
 		ptrw[i] = MIN(mips[0][i] / debug_tex_range, 1.0) * 255;
 	}
 

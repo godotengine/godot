@@ -92,7 +92,7 @@ void SkeletonModification2DPhysicalBones::_get_property_list(List<PropertyInfo> 
 	}
 #endif //TOOLS_ENABLED
 
-	for (int i = 0; i < physical_bone_chain.size(); i++) {
+	for (vec_size i = 0; i < physical_bone_chain.size(); i++) {
 		String base_string = "joint_" + itos(i) + "_";
 
 		p_list->push_back(PropertyInfo(Variant::NODE_PATH, base_string + "nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicalBone2D", PROPERTY_USAGE_DEFAULT));
@@ -110,7 +110,7 @@ void SkeletonModification2DPhysicalBones::_execute(float p_delta) {
 		_update_simulation_state();
 	}
 
-	for (int i = 0; i < physical_bone_chain.size(); i++) {
+	for (vec_size i = 0; i < physical_bone_chain.size(); i++) {
 		PhysicalBone_Data2D bone_data = physical_bone_chain[i];
 		if (bone_data.physical_bone_node_cache.is_null()) {
 			WARN_PRINT_ONCE("PhysicalBone2D cache " + itos(i) + " is out of date. Attempting to update...");
@@ -143,7 +143,7 @@ void SkeletonModification2DPhysicalBones::_setup_modification(SkeletonModificati
 		is_setup = true;
 
 		if (stack->skeleton) {
-			for (int i = 0; i < physical_bone_chain.size(); i++) {
+			for (vec_size i = 0; i < physical_bone_chain.size(); i++) {
 				_physical_bone_update_cache(i);
 			}
 		}
@@ -239,7 +239,7 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 	_simulation_state_dirty = false;
 
 	if (_simulation_state_dirty_names.size() <= 0) {
-		for (int i = 0; i < physical_bone_chain.size(); i++) {
+		for (vec_size i = 0; i < physical_bone_chain.size(); i++) {
 			PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(stack->skeleton->get_node(physical_bone_chain[i].physical_bone_node));
 			if (!physical_bone) {
 				continue;
@@ -248,7 +248,7 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 			physical_bone->set_simulate_physics(_simulation_state_dirty_process);
 		}
 	} else {
-		for (int i = 0; i < physical_bone_chain.size(); i++) {
+		for (vec_size i = 0; i < physical_bone_chain.size(); i++) {
 			PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(ObjectDB::get_instance(physical_bone_chain[i].physical_bone_node_cache));
 			if (!physical_bone) {
 				continue;

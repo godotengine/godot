@@ -223,7 +223,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 	// within disambiguated_scene_names which contain the same name.
 	Vector<RBSet<int>> index_sets;
 	HashMap<String, int> scene_name_to_set_index;
-	for (int i = 0; i < r_filenames.size(); i++) {
+	for (vec_size i = 0; i < r_filenames.size(); i++) {
 		String scene_name = r_filenames[i];
 		if (!scene_name_to_set_index.has(scene_name)) {
 			index_sets.append(RBSet<int>());
@@ -233,7 +233,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 	}
 
 	// For each index set with a size > 1, we need to disambiguate.
-	for (int i = 0; i < index_sets.size(); i++) {
+	for (vec_size i = 0; i < index_sets.size(); i++) {
 		RBSet<int> iset = index_sets[i];
 		while (iset.size() > 1) {
 			// Append the parent folder to each scene name.
@@ -592,7 +592,7 @@ void EditorNode::_select_default_main_screen_plugin() {
 
 	// Switch to the first main screen plugin that is enabled. Usually this is
 	// 2D, but may be subsequent ones if 2D is disabled in the feature profile.
-	for (int i = 0; i < main_editor_buttons.size(); i++) {
+	for (vec_size i = 0; i < main_editor_buttons.size(); i++) {
 		Button *editor_button = main_editor_buttons[i];
 		if (editor_button->is_visible()) {
 			editor_select(i);
@@ -703,7 +703,7 @@ void EditorNode::_notification(int p_what) {
 					addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
 				}
 
-				for (int i = 0; i < addons.size(); i++) {
+				for (vec_size i = 0; i < addons.size(); i++) {
 					set_addon_plugin_enabled(addons[i], true);
 				}
 				_initializing_plugins = false;
@@ -788,7 +788,7 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			// Update icons.
-			for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
+			for (vec_size i = 0; i < singleton->main_editor_buttons.size(); i++) {
 				Button *tb = singleton->main_editor_buttons[i];
 				EditorPlugin *p_editor = singleton->editor_table[i];
 				Ref<Texture2D> icon = p_editor->get_icon();
@@ -840,7 +840,7 @@ void EditorNode::_notification(int p_what) {
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), gui_base->get_theme_icon(SNAME("Godot"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), gui_base->get_theme_icon(SNAME("Heart"), SNAME("EditorIcons")));
 
-			for (int i = 0; i < main_editor_buttons.size(); i++) {
+			for (vec_size i = 0; i < main_editor_buttons.size(); i++) {
 				main_editor_buttons.write[i]->add_theme_font_override("font", gui_base->get_theme_font(SNAME("main_button_font"), SNAME("EditorFonts")));
 				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
 			}
@@ -907,7 +907,7 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 	ProjectSettings *ps = ProjectSettings::get_singleton();
 	PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
-	for (int i = 0; i < enabled_plugins.size(); ++i) {
+	for (vec_size i = 0; i < enabled_plugins.size(); ++i) {
 		if (enabled_plugins.get(i) == p_name) {
 			enabled_plugins.remove_at(i);
 			break;
@@ -1043,7 +1043,7 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	List<String> scenes;
 	int current_tab = scene_tabs->get_current_tab();
 
-	for (int i = 0; i < p_resources.size(); i++) {
+	for (vec_size i = 0; i < p_resources.size(); i++) {
 		String file_type = ResourceLoader::get_resource_type(p_resources[i]);
 		if (file_type == "PackedScene") {
 			scenes.push_back(p_resources[i]);
@@ -2160,7 +2160,7 @@ void EditorNode::edit_item(Object *p_object) {
 	if (!sub_plugins.is_empty()) {
 		bool same = true;
 		if (sub_plugins.size() == editor_plugins_over->get_plugins_list().size()) {
-			for (int i = 0; i < sub_plugins.size(); i++) {
+			for (vec_size i = 0; i < sub_plugins.size(); i++) {
 				if (sub_plugins[i] != editor_plugins_over->get_plugins_list()[i]) {
 					same = false;
 				}
@@ -2613,7 +2613,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 			file->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
+			for (vec_size i = 0; i < extensions.size(); i++) {
 				file->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
@@ -2773,7 +2773,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			Ref<PackedScene> sd = memnew(PackedScene);
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			file->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
+			for (vec_size i = 0; i < extensions.size(); i++) {
 				file->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
@@ -2908,7 +2908,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_reset_play_buttons();
 
 			if (bool(EDITOR_GET("run/output/always_close_output_on_stop"))) {
-				for (int i = 0; i < bottom_panel_items.size(); i++) {
+				for (vec_size i = 0; i < bottom_panel_items.size(); i++) {
 					if (bottom_panel_items[i].control == log) {
 						_bottom_panel_switch(false, i);
 						break;
@@ -3052,7 +3052,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 			file->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
+			for (vec_size i = 0; i < extensions.size(); i++) {
 				file->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
@@ -3344,7 +3344,7 @@ void EditorNode::editor_select(int p_which) {
 
 	selecting = true;
 
-	for (int i = 0; i < main_editor_buttons.size(); i++) {
+	for (vec_size i = 0; i < main_editor_buttons.size(); i++) {
 		main_editor_buttons[i]->set_pressed(i == p_which);
 	}
 
@@ -3382,7 +3382,7 @@ void EditorNode::editor_select(int p_which) {
 void EditorNode::select_editor_by_name(const String &p_name) {
 	ERR_FAIL_COND(p_name.is_empty());
 
-	for (int i = 0; i < main_editor_buttons.size(); i++) {
+	for (vec_size i = 0; i < main_editor_buttons.size(); i++) {
 		if (main_editor_buttons[i]->get_text() == p_name) {
 			editor_select(i);
 			return;
@@ -3428,7 +3428,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 
 void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 	if (p_editor->has_main_screen()) {
-		for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
+		for (vec_size i = 0; i < singleton->main_editor_buttons.size(); i++) {
 			if (p_editor->get_name() == singleton->main_editor_buttons[i]->get_text()) {
 				if (singleton->main_editor_buttons[i]->is_pressed()) {
 					singleton->editor_select(EDITOR_SCRIPT);
@@ -3618,7 +3618,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 }
 
 int EditorNode::_get_current_main_editor() {
-	for (int i = 0; i < editor_table.size(); i++) {
+	for (vec_size i = 0; i < editor_table.size(); i++) {
 		if (editor_table[i] == editor_plugin_screen) {
 			return i;
 		}
@@ -3644,7 +3644,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 	changing_scene = false;
 
 	int current_tab = -1;
-	for (int i = 0; i < editor_table.size(); i++) {
+	for (vec_size i = 0; i < editor_table.size(); i++) {
 		if (editor_plugin_screen == editor_table[i]) {
 			current_tab = i;
 			break;
@@ -4055,7 +4055,7 @@ void EditorNode::_update_recent_scenes() {
 	recent_scenes->clear();
 
 	String path;
-	for (int i = 0; i < rc.size(); i++) {
+	for (vec_size i = 0; i < rc.size(); i++) {
 		path = rc[i];
 		recent_scenes->add_item(path.replace("res://", ""), i);
 	}
@@ -4069,7 +4069,7 @@ void EditorNode::_quick_opened() {
 	Vector<String> files = quick_open->get_selected_files();
 
 	bool open_scene_dialog = quick_open->get_base_type() == "PackedScene";
-	for (int i = 0; i < files.size(); i++) {
+	for (vec_size i = 0; i < files.size(); i++) {
 		String res_path = files[i];
 
 		List<String> scene_extensions;
@@ -4210,7 +4210,7 @@ Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) cons
 
 			Ref<Script> base_scr = scr;
 			while (base_scr.is_valid()) {
-				for (int i = 0; i < types.size(); ++i) {
+				for (vec_size i = 0; i < types.size(); ++i) {
 					if (types[i].script == base_scr) {
 						return types[i].script;
 					}
@@ -4243,7 +4243,7 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 			StringName base = base_scr->get_instance_base_type();
 			if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
 				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
-				for (int i = 0; i < types.size(); ++i) {
+				for (vec_size i = 0; i < types.size(); ++i) {
 					if (types[i].script == base_scr) {
 						return types[i].name;
 					}
@@ -4313,7 +4313,7 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 			StringName base = base_scr->get_instance_base_type();
 			if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
 				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
-				for (int i = 0; i < types.size(); ++i) {
+				for (vec_size i = 0; i < types.size(); ++i) {
 					if (types[i].script == base_scr && types[i].icon.is_valid()) {
 						script_icon_cache[scr] = types[i].icon;
 						return types[i].icon;
@@ -4597,7 +4597,7 @@ void EditorNode::_update_dock_containers() {
 			dock_slot[i]->show();
 		}
 	}
-	for (int i = 0; i < vsplits.size(); i++) {
+	for (vec_size i = 0; i < vsplits.size(); i++) {
 		bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
 		if (in_use) {
 			vsplits[i]->show();
@@ -4829,13 +4829,13 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 	p_layout->set_value(p_section, "dock_filesystem_file_sort", FileSystemDock::get_singleton()->get_file_sort());
 	p_layout->set_value(p_section, "dock_filesystem_file_list_display_mode", FileSystemDock::get_singleton()->get_file_list_display_mode());
 
-	for (int i = 0; i < vsplits.size(); i++) {
+	for (vec_size i = 0; i < vsplits.size(); i++) {
 		if (vsplits[i]->is_visible_in_tree()) {
 			p_layout->set_value(p_section, "dock_split_" + itos(i + 1), vsplits[i]->get_split_offset());
 		}
 	}
 
-	for (int i = 0; i < hsplits.size(); i++) {
+	for (vec_size i = 0; i < hsplits.size(); i++) {
 		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), hsplits[i]->get_split_offset());
 	}
 }
@@ -4884,7 +4884,7 @@ void EditorNode::_update_dock_slots_visibility(bool p_keep_selected_tabs) {
 			dock_slot[i]->hide();
 		}
 
-		for (int i = 0; i < vsplits.size(); i++) {
+		for (vec_size i = 0; i < vsplits.size(); i++) {
 			vsplits[i]->hide();
 		}
 
@@ -4904,7 +4904,7 @@ void EditorNode::_update_dock_slots_visibility(bool p_keep_selected_tabs) {
 			}
 		}
 
-		for (int i = 0; i < vsplits.size(); i++) {
+		for (vec_size i = 0; i < vsplits.size(); i++) {
 			bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
 			if (in_use) {
 				vsplits[i]->show();
@@ -4937,7 +4937,7 @@ void EditorNode::_dock_tab_changed(int p_tab) {
 			dock_slot[i]->hide();
 		}
 
-		for (int i = 0; i < vsplits.size(); i++) {
+		for (vec_size i = 0; i < vsplits.size(); i++) {
 			vsplits[i]->hide();
 		}
 
@@ -4952,7 +4952,7 @@ void EditorNode::_dock_tab_changed(int p_tab) {
 			}
 		}
 
-		for (int i = 0; i < vsplits.size(); i++) {
+		for (vec_size i = 0; i < vsplits.size(); i++) {
 			bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
 			if (in_use) {
 				vsplits[i]->show();
@@ -4978,7 +4978,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 
 		Vector<String> names = String(p_layout->get_value(p_section, "dock_" + itos(i + 1))).split(",");
 
-		for (int j = 0; j < names.size(); j++) {
+		for (vec_size j = 0; j < names.size(); j++) {
 			String name = names[j];
 			// FIXME: Find it, in a horribly inefficient way.
 			int atidx = -1;
@@ -5033,7 +5033,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		FileSystemDock::get_singleton()->set_file_list_display_mode(dock_filesystem_file_list_display_mode);
 	}
 
-	for (int i = 0; i < vsplits.size(); i++) {
+	for (vec_size i = 0; i < vsplits.size(); i++) {
 		if (!p_layout->has_section_key(p_section, "dock_split_" + itos(i + 1))) {
 			continue;
 		}
@@ -5042,7 +5042,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		vsplits[i]->set_split_offset(ofs);
 	}
 
-	for (int i = 0; i < hsplits.size(); i++) {
+	for (vec_size i = 0; i < hsplits.size(); i++) {
 		if (!p_layout->has_section_key(p_section, "dock_hsplit_" + itos(i + 1))) {
 			continue;
 		}
@@ -5050,7 +5050,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		hsplits[i]->set_split_offset(ofs);
 	}
 
-	for (int i = 0; i < vsplits.size(); i++) {
+	for (vec_size i = 0; i < vsplits.size(); i++) {
 		bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
 		if (in_use) {
 			vsplits[i]->show();
@@ -5084,7 +5084,7 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout, const S
 	restoring_scenes = true;
 
 	Array scenes = p_layout->get_value(p_section, "open_scenes");
-	for (int i = 0; i < scenes.size(); i++) {
+	for (vec_size i = 0; i < scenes.size(); i++) {
 		load_scene(scenes[i]);
 	}
 	save_layout();
@@ -5438,7 +5438,7 @@ Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
 }
 
 void EditorNode::hide_bottom_panel() {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
+	for (vec_size i = 0; i < bottom_panel_items.size(); i++) {
 		if (bottom_panel_items[i].control->is_visible()) {
 			_bottom_panel_switch(false, i);
 			break;
@@ -5447,7 +5447,7 @@ void EditorNode::hide_bottom_panel() {
 }
 
 void EditorNode::make_bottom_panel_item_visible(Control *p_item) {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
+	for (vec_size i = 0; i < bottom_panel_items.size(); i++) {
 		if (bottom_panel_items[i].control == p_item) {
 			_bottom_panel_switch(true, i);
 			break;
@@ -5456,7 +5456,7 @@ void EditorNode::make_bottom_panel_item_visible(Control *p_item) {
 }
 
 void EditorNode::raise_bottom_panel_item(Control *p_item) {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
+	for (vec_size i = 0; i < bottom_panel_items.size(); i++) {
 		if (bottom_panel_items[i].control == p_item) {
 			bottom_panel_items[i].button->move_to_front();
 			SWAP(bottom_panel_items.write[i], bottom_panel_items.write[bottom_panel_items.size() - 1]);
@@ -5464,14 +5464,14 @@ void EditorNode::raise_bottom_panel_item(Control *p_item) {
 		}
 	}
 
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
+	for (vec_size i = 0; i < bottom_panel_items.size(); i++) {
 		bottom_panel_items[i].button->disconnect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch));
 		bottom_panel_items[i].button->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch).bind(i));
 	}
 }
 
 void EditorNode::remove_bottom_panel_item(Control *p_item) {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
+	for (vec_size i = 0; i < bottom_panel_items.size(); i++) {
 		if (bottom_panel_items[i].control == p_item) {
 			if (p_item->is_visible_in_tree()) {
 				_bottom_panel_switch(false, i);
@@ -5484,7 +5484,7 @@ void EditorNode::remove_bottom_panel_item(Control *p_item) {
 		}
 	}
 
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
+	for (vec_size i = 0; i < bottom_panel_items.size(); i++) {
 		bottom_panel_items[i].button->disconnect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch));
 		bottom_panel_items[i].button->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch).bind(i));
 	}
@@ -5498,7 +5498,7 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 	}
 
 	if (p_enable) {
-		for (int i = 0; i < bottom_panel_items.size(); i++) {
+		for (vec_size i = 0; i < bottom_panel_items.size(); i++) {
 			bottom_panel_items[i].button->set_pressed(i == p_idx);
 			bottom_panel_items[i].control->set_visible(i == p_idx);
 		}
@@ -5540,7 +5540,7 @@ bool EditorNode::get_docks_visible() const {
 void EditorNode::_toggle_distraction_free_mode() {
 	if (EditorSettings::get_singleton()->get("interface/editor/separate_distraction_mode")) {
 		int screen = -1;
-		for (int i = 0; i < editor_table.size(); i++) {
+		for (vec_size i = 0; i < editor_table.size(); i++) {
 			if (editor_plugin_screen == editor_table[i]) {
 				screen = i;
 				break;
@@ -5639,7 +5639,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from) {
 	bool has_folder = false;
 	bool has_file = false;
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		bool is_folder = p_paths[i].ends_with("/");
 		has_folder |= is_folder;
 		has_file |= !is_folder;
@@ -5748,7 +5748,7 @@ void EditorNode::_dropped_files(const Vector<String> &p_files) {
 void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, String to_path) {
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
-	for (int i = 0; i < p_files.size(); i++) {
+	for (vec_size i = 0; i < p_files.size(); i++) {
 		String from = p_files[i];
 		String to = to_path.path_join(from.get_file());
 
@@ -5892,7 +5892,7 @@ void EditorNode::remove_resource_conversion_plugin(const Ref<EditorResourceConve
 Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion_plugin(const Ref<Resource> &p_for_resource) {
 	Vector<Ref<EditorResourceConversionPlugin>> ret;
 
-	for (int i = 0; i < resource_conversion_plugins.size(); i++) {
+	for (vec_size i = 0; i < resource_conversion_plugins.size(); i++) {
 		if (resource_conversion_plugins[i].is_valid() && resource_conversion_plugins[i]->handles(p_for_resource)) {
 			ret.push_back(resource_conversion_plugins[i]);
 		}
@@ -6447,7 +6447,7 @@ EditorNode::EditorNode() {
 	hsplits.push_back(main_hsplit);
 	hsplits.push_back(right_hsplit);
 
-	for (int i = 0; i < vsplits.size(); i++) {
+	for (vec_size i = 0; i < vsplits.size(); i++) {
 		vsplits[i]->connect("dragged", callable_mp(this, &EditorNode::_dock_split_dragged));
 		hsplits[i]->connect("dragged", callable_mp(this, &EditorNode::_dock_split_dragged));
 	}
@@ -7021,7 +7021,7 @@ EditorNode::EditorNode() {
 	// "vulkan" in particular uses lowercase "v" in the code, and uppercase in the UI.
 	current_renderer = current_renderer.to_lower();
 
-	for (int i = 0; i < renderers.size(); i++) {
+	for (vec_size i = 0; i < renderers.size(); i++) {
 		String rendering_method = renderers[i];
 
 		// Add the renderers name to the UI.
@@ -7118,7 +7118,7 @@ EditorNode::EditorNode() {
 	default_layout->set_value(docks_section, "dock_4", "FileSystem");
 	default_layout->set_value(docks_section, "dock_5", "Inspector,Node");
 
-	for (int i = 0; i < vsplits.size(); i++) {
+	for (vec_size i = 0; i < vsplits.size(); i++) {
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
 	}
 	default_layout->set_value(docks_section, "dock_hsplit_1", 0);
@@ -7524,7 +7524,7 @@ EditorNode::EditorNode() {
 	select_current_scene_button = pick_main_scene->add_button(TTR("Select Current"), true, "select_current");
 	pick_main_scene->connect("custom_action", callable_mp(this, &EditorNode::_pick_main_scene_custom_action));
 
-	for (int i = 0; i < _init_callbacks.size(); i++) {
+	for (vec_size i = 0; i < _init_callbacks.size(); i++) {
 		_init_callbacks[i]();
 	}
 
@@ -7601,13 +7601,13 @@ EditorNode::~EditorNode() {
  */
 
 void EditorPluginList::make_visible(bool p_visible) {
-	for (int i = 0; i < plugins_list.size(); i++) {
+	for (vec_size i = 0; i < plugins_list.size(); i++) {
 		plugins_list[i]->make_visible(p_visible);
 	}
 }
 
 void EditorPluginList::edit(Object *p_object) {
-	for (int i = 0; i < plugins_list.size(); i++) {
+	for (vec_size i = 0; i < plugins_list.size(); i++) {
 		plugins_list[i]->edit(p_object);
 	}
 }
@@ -7615,7 +7615,7 @@ void EditorPluginList::edit(Object *p_object) {
 bool EditorPluginList::forward_gui_input(const Ref<InputEvent> &p_event) {
 	bool discard = false;
 
-	for (int i = 0; i < plugins_list.size(); i++) {
+	for (vec_size i = 0; i < plugins_list.size(); i++) {
 		if (plugins_list[i]->forward_canvas_gui_input(p_event)) {
 			discard = true;
 		}
@@ -7627,7 +7627,7 @@ bool EditorPluginList::forward_gui_input(const Ref<InputEvent> &p_event) {
 EditorPlugin::AfterGUIInput EditorPluginList::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled) {
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 
-	for (int i = 0; i < plugins_list.size(); i++) {
+	for (vec_size i = 0; i < plugins_list.size(); i++) {
 		if ((!serve_when_force_input_enabled) && plugins_list[i]->is_input_event_forwarding_always_enabled()) {
 			continue;
 		}
@@ -7645,25 +7645,25 @@ EditorPlugin::AfterGUIInput EditorPluginList::forward_3d_gui_input(Camera3D *p_c
 }
 
 void EditorPluginList::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
+	for (vec_size i = 0; i < plugins_list.size(); i++) {
 		plugins_list[i]->forward_canvas_draw_over_viewport(p_overlay);
 	}
 }
 
 void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
+	for (vec_size i = 0; i < plugins_list.size(); i++) {
 		plugins_list[i]->forward_canvas_force_draw_over_viewport(p_overlay);
 	}
 }
 
 void EditorPluginList::forward_3d_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
+	for (vec_size i = 0; i < plugins_list.size(); i++) {
 		plugins_list[i]->forward_3d_draw_over_viewport(p_overlay);
 	}
 }
 
 void EditorPluginList::forward_3d_force_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
+	for (vec_size i = 0; i < plugins_list.size(); i++) {
 		plugins_list[i]->forward_3d_force_draw_over_viewport(p_overlay);
 	}
 }

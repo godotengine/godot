@@ -170,7 +170,7 @@ struct CSGBrushOperation {
 
 		inline int _get_point_idx(const Vector2 &p_point);
 		inline int _add_vertex(const Vertex2D &p_vertex);
-		inline void _add_vertex_idx_sorted(Vector<int> &r_vertex_indices, int p_new_vertex_index);
+		inline void _add_vertex_idx_sorted(Vector<int> &r_vertex_indices, uint32_t p_new_vertex_index);
 		inline void _merge_faces(const Vector<int> &p_segment_indices);
 		inline void _find_edge_intersections(const Vector2 p_segment_points[2], Vector<int> &r_segment_indices);
 		inline int _insert_point(const Vector2 &p_point);

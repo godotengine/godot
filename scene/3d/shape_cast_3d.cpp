@@ -465,7 +465,7 @@ bool ShapeCast3D::is_collide_with_bodies_enabled() const {
 Array ShapeCast3D::_get_collision_result() const {
 	Array ret;
 
-	for (int i = 0; i < result.size(); ++i) {
+	for (vec_size i = 0; i < result.size(); ++i) {
 		const PhysicsDirectSpaceState3D::ShapeRestInfo &sri = result[i];
 
 		Dictionary col;
@@ -488,7 +488,7 @@ void ShapeCast3D::_update_debug_shape_vertices() {
 
 	if (!shape.is_null()) {
 		debug_shape_vertices.append_array(shape->get_debug_mesh_lines());
-		for (int i = 0; i < debug_shape_vertices.size(); i++) {
+		for (vec_size i = 0; i < debug_shape_vertices.size(); i++) {
 			debug_shape_vertices.set(i, debug_shape_vertices[i] + Vector3(target_position * get_closest_collision_safe_fraction()));
 		}
 	}

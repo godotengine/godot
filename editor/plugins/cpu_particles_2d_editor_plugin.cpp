@@ -205,7 +205,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 		PackedVector2Array norms;
 		norms.resize(valid_normals.size());
 		Vector2 *normsw = norms.ptrw();
-		for (int i = 0; i < valid_normals.size(); i += 1) {
+		for (vec_size i = 0; i < valid_normals.size(); i += 1) {
 			normsw[i] = valid_normals[i];
 		}
 		particles->set_emission_normals(norms);
@@ -217,7 +217,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 		PackedVector2Array points;
 		points.resize(valid_positions.size());
 		Vector2 *pointsw = points.ptrw();
-		for (int i = 0; i < valid_positions.size(); i += 1) {
+		for (vec_size i = 0; i < valid_positions.size(); i += 1) {
 			pointsw[i] = valid_positions[i];
 		}
 		particles->set_emission_points(points);

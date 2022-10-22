@@ -42,7 +42,7 @@
 Array SceneDebugger::RPCProfilerFrame::serialize() {
 	Array arr;
 	arr.push_back(infos.size() * 4);
-	for (int i = 0; i < infos.size(); ++i) {
+	for (vec_size i = 0; i < infos.size(); ++i) {
 		arr.push_back(uint64_t(infos[i].node));
 		arr.push_back(infos[i].node_path);
 		arr.push_back(infos[i].incoming_rpc);
@@ -463,7 +463,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 	Array send_props;
-	for (int i = 0; i < properties.size(); i++) {
+	for (vec_size i = 0; i < properties.size(); i++) {
 		const PropertyInfo &pi = properties[i].first;
 		Variant &var = properties[i].second;
 
@@ -508,7 +508,7 @@ void SceneDebuggerObject::deserialize(const Array &p_arr) {
 	class_name = p_arr[1];
 	Array props = p_arr[2];
 
-	for (int i = 0; i < props.size(); i++) {
+	for (vec_size i = 0; i < props.size(); i++) {
 		CHECK_TYPE(props[i], ARRAY);
 		Array prop = props[i];
 
@@ -857,7 +857,7 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		to_delete.push_back(n2);
 	}
 
-	for (int i = 0; i < to_delete.size(); i++) {
+	for (vec_size i = 0; i < to_delete.size(); i++) {
 		memdelete(to_delete[i]);
 	}
 }
@@ -893,7 +893,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		to_remove.push_back(n);
 	}
 
-	for (int i = 0; i < to_remove.size(); i++) {
+	for (vec_size i = 0; i < to_remove.size(); i++) {
 		Node *n = to_remove[i];
 		Node *n2 = n->get_node(p_at);
 		n2->get_parent()->remove_child(n2);

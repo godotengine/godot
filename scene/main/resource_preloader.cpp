@@ -39,7 +39,7 @@ void ResourcePreloader::_set_resources(const Array &p_data) {
 
 	ERR_FAIL_COND(names.size() != resdata.size());
 
-	for (int i = 0; i < resdata.size(); i++) {
+	for (vec_size i = 0; i < resdata.size(); i++) {
 		String name = names[i];
 		Ref<Resource> resource = resdata[i];
 		ERR_CONTINUE(!resource.is_valid());

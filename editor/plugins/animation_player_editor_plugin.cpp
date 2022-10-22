@@ -966,7 +966,7 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 	}
 
 	int current_lib_id = index_offset; // Don't default to [Global] if it doesn't exist yet.
-	for (int i = 0; i < libraries.size(); i++) {
+	for (vec_size i = 0; i < libraries.size(); i++) {
 		StringName library_name = libraries[i];
 		library->add_item((library_name == StringName()) ? String(TTR("[Global]")) : String(library_name));
 		library->set_item_metadata(i + index_offset, String(library_name));
@@ -1368,7 +1368,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 }
 
 void AnimationPlayerEditor::_free_onion_layers() {
-	for (int i = 0; i < onion.captures.size(); i++) {
+	for (vec_size i = 0; i < onion.captures.size(); i++) {
 		if (onion.captures[i].is_valid()) {
 			RS::get_singleton()->free(onion.captures[i]);
 		}
@@ -1429,7 +1429,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 		Array orig_vp = spatial_edit_state["viewports"];
 		Array vp;
 		vp.resize(4);
-		for (int i = 0; i < vp.size(); i++) {
+		for (vec_size i = 0; i < vp.size(); i++) {
 			Dictionary d = ((Dictionary)orig_vp[i]).duplicate();
 			d["use_environment"] = false;
 			d["doppler"] = false;

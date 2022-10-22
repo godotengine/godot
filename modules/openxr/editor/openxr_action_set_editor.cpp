@@ -76,7 +76,7 @@ void OpenXRActionSetEditor::_update_actions() {
 
 	// in with the new...
 	Array actions = action_set->get_actions();
-	for (int i = 0; i < actions.size(); i++) {
+	for (vec_size i = 0; i < actions.size(); i++) {
 		Ref<OpenXRAction> action = actions[i];
 		_add_action_editor(action);
 	}

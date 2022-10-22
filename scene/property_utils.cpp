@@ -69,7 +69,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 	if (const Node *node = Object::cast_to<Node>(p_object)) {
 		// Check inheritance/instantiation ancestors
 		const Vector<SceneState::PackState> &states_stack = p_states_stack_cache ? *p_states_stack_cache : PropertyUtils::get_node_states_stack(node, p_owner);
-		for (int i = 0; i < states_stack.size(); ++i) {
+		for (vec_size i = 0; i < states_stack.size(); ++i) {
 			const SceneState::PackState &ia = states_stack[i];
 			bool found = false;
 			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found);

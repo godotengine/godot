@@ -347,7 +347,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 				float buttons_width = remove->get_width() + lock->get_width() + visibility_visible->get_width() + solo->get_width() + hsep * 3;
 
-				for (int i = 0; i < tracks.size(); ++i) {
+				for (vec_size i = 0; i < tracks.size(); ++i) {
 					// RELATED TRACKS TITLES
 
 					int current_track = tracks[i];
@@ -609,7 +609,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
-				for (int i = 0; i < edit_points.size(); ++i) {
+				for (vec_size i = 0; i < edit_points.size(); ++i) {
 					if (edit_points[i].track == selected_track) {
 						EditPoint ep = edit_points[i];
 						edit_points.remove_at(i);
@@ -752,7 +752,7 @@ void AnimationBezierTrackEdit::_update_locked_tracks_after(int p_track) {
 		updated_locked_tracks.push_back(E);
 	}
 	locked_tracks.clear();
-	for (int i = 0; i < updated_locked_tracks.size(); ++i) {
+	for (vec_size i = 0; i < updated_locked_tracks.size(); ++i) {
 		if (updated_locked_tracks[i] > p_track) {
 			locked_tracks.insert(updated_locked_tracks[i] - 1);
 		} else {
@@ -771,7 +771,7 @@ void AnimationBezierTrackEdit::_update_hidden_tracks_after(int p_track) {
 		updated_hidden_tracks.push_back(E);
 	}
 	hidden_tracks.clear();
-	for (int i = 0; i < updated_hidden_tracks.size(); ++i) {
+	for (vec_size i = 0; i < updated_hidden_tracks.size(); ++i) {
 		if (updated_hidden_tracks[i] > p_track) {
 			hidden_tracks.insert(updated_hidden_tracks[i] - 1);
 		} else {
@@ -852,7 +852,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (ED_GET_SHORTCUT("animation_bezier_editor/focus")->matches_event(p_event)) {
 			SelectionSet focused_keys;
 			if (selection.is_empty()) {
-				for (int i = 0; i < edit_points.size(); ++i) {
+				for (vec_size i = 0; i < edit_points.size(); ++i) {
 					IntPair key_pair = IntPair(edit_points[i].track, edit_points[i].key);
 					focused_keys.insert(key_pair);
 				}
@@ -913,7 +913,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 			return;
 		} else if (ED_GET_SHORTCUT("animation_bezier_editor/select_all_keys")->matches_event(p_event)) {
-			for (int i = 0; i < edit_points.size(); ++i) {
+			for (vec_size i = 0; i < edit_points.size(); ++i) {
 				selection.insert(IntPair(edit_points[i].track, edit_points[i].key));
 			}
 
@@ -1084,7 +1084,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		for (int i = 0; i < edit_points.size(); i++) {
+		for (vec_size i = 0; i < edit_points.size(); i++) {
 			//first check point
 			//command makes it ignore the main point, so control point editors can be force-edited
 			//path 2D editing in the 3D and 2D editors works the same way
@@ -1219,7 +1219,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			Rect2 selection_rect(bs_from, bs_to - bs_from);
 
 			bool track_set = false;
-			for (int i = 0; i < edit_points.size(); i++) {
+			for (vec_size i = 0; i < edit_points.size(); i++) {
 				if (edit_points[i].point_rect.intersects(selection_rect)) {
 					selection.insert(IntPair(edit_points[i].track, edit_points[i].key));
 					if (!track_set) {
@@ -1338,7 +1338,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				// 6-(undo) reinsert overlapped keys
-				for (int i = 0; i < to_restore.size(); i++) {
+				for (vec_size i = 0; i < to_restore.size(); i++) {
 					const AnimMoveRestore &amr = to_restore[i];
 					Array key = amr.key;
 					undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, 1);

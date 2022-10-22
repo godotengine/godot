@@ -307,7 +307,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 			}
 
 			TypedArray<StringName> libs = player->call("get_animation_library_list");
-			for (int i = 0; i < libs.size(); i++) {
+			for (vec_size i = 0; i < libs.size(); i++) {
 				const StringName K = libs[i];
 				Ref<AnimationLibrary> al2 = player->call("get_animation_library", K);
 				if (al2 == al) {
@@ -626,7 +626,7 @@ void AnimationLibraryEditor::update_tree() {
 	TreeItem *root = tree->create_item();
 	TypedArray<StringName> libs = player->call("get_animation_library_list");
 
-	for (int i = 0; i < libs.size(); i++) {
+	for (vec_size i = 0; i < libs.size(); i++) {
 		const StringName K = libs[i];
 		TreeItem *libitem = tree->create_item(root);
 		libitem->set_text(0, K);

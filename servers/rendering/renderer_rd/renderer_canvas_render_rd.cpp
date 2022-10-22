@@ -298,7 +298,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 
 	PolygonBuffers pb;
 	pb.vertex_buffer = RD::get_singleton()->vertex_buffer_create(polygon_buffer.size(), polygon_buffer);
-	for (int i = 0; i < descriptions.size(); i++) {
+	for (vec_size i = 0; i < descriptions.size(); i++) {
 		if (buffers[i] == RID()) { //if put in vertex, use as vertex
 			buffers.write[i] = pb.vertex_buffer;
 		}
@@ -2045,7 +2045,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 #if 0
 	print_line("**compiling shader:");
 	print_line("**defines:\n");
-	for (int i = 0; i < gen_code.defines.size(); i++) {
+	for (vec_size i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
 

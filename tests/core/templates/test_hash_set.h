@@ -84,7 +84,7 @@ TEST_CASE("[HashSet] Insert, iterate and remove many elements") {
 
 	CHECK(elems_still_valid.size() == set.size());
 
-	for (int i = 0; i < elems_still_valid.size(); i++) {
+	for (vec_size i = 0; i < elems_still_valid.size(); i++) {
 		CHECK(set.has(elems_still_valid[i]));
 	}
 }
@@ -119,7 +119,7 @@ TEST_CASE("[HashSet] Insert, iterate and remove many strings") {
 
 	CHECK(elems_still_valid.size() == set.size());
 
-	for (int i = 0; i < elems_still_valid.size(); i++) {
+	for (vec_size i = 0; i < elems_still_valid.size(); i++) {
 		CHECK(set.has(elems_still_valid[i]));
 	}
 

@@ -364,7 +364,7 @@ EditorPropertyFontMetaOverride::EditorPropertyFontMetaOverride(bool p_script) {
 	menu = memnew(PopupMenu);
 	if (script_editor) {
 		script_codes = TranslationServer::get_singleton()->get_all_scripts();
-		for (int i = 0; i < script_codes.size(); i++) {
+		for (vec_size i = 0; i < script_codes.size(); i++) {
 			menu->add_item(TranslationServer::get_singleton()->get_script_name(script_codes[i]) + " (" + script_codes[i] + ")", i);
 		}
 	}
@@ -677,7 +677,7 @@ void EditorPropertyOTFeatures::update_property() {
 
 		bool show_hidden = EDITOR_GET("interface/inspector/show_low_level_opentype_features");
 
-		for (int i = 0; i < supported.size(); i++) {
+		for (vec_size i = 0; i < supported.size(); i++) {
 			int name_tag = supported.get_key_at_index(i);
 			Dictionary info = supported.get_value_at_index(i);
 			bool hidden = info["hidden"].operator bool();
@@ -1018,7 +1018,7 @@ EditorPropertyFontNamesArray::EditorPropertyFontNamesArray() {
 
 	if (OS::get_singleton()) {
 		Vector<String> fonts = OS::get_singleton()->get_system_fonts();
-		for (int i = 0; i < fonts.size(); i++) {
+		for (vec_size i = 0; i < fonts.size(); i++) {
 			menu->add_item(fonts[i], i + 6);
 		}
 	}

@@ -720,10 +720,10 @@ void Environment::_update_glow() {
 	if (glow_normalize_levels) {
 		normalized_levels.resize(7);
 		float size = 0.0;
-		for (int i = 0; i < glow_levels.size(); i++) {
+		for (vec_size i = 0; i < glow_levels.size(); i++) {
 			size += glow_levels[i];
 		}
-		for (int i = 0; i < glow_levels.size(); i++) {
+		for (vec_size i = 0; i < glow_levels.size(); i++) {
 			normalized_levels.write[i] = glow_levels[i] / size;
 		}
 	} else {

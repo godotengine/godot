@@ -208,7 +208,7 @@ void Node3D::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 #ifdef TOOLS_ENABLED
-			for (int i = 0; i < data.gizmos.size(); i++) {
+			for (vec_size i = 0; i < data.gizmos.size(); i++) {
 				data.gizmos.write[i]->transform();
 			}
 #endif
@@ -554,7 +554,7 @@ void Node3D::remove_gizmo(Ref<Node3DGizmo> p_gizmo) {
 
 void Node3D::clear_gizmos() {
 #ifdef TOOLS_ENABLED
-	for (int i = 0; i < data.gizmos.size(); i++) {
+	for (vec_size i = 0; i < data.gizmos.size(); i++) {
 		data.gizmos.write[i]->free();
 	}
 	data.gizmos.clear();
@@ -565,7 +565,7 @@ TypedArray<Node3DGizmo> Node3D::get_gizmos_bind() const {
 	TypedArray<Node3DGizmo> ret;
 
 #ifdef TOOLS_ENABLED
-	for (int i = 0; i < data.gizmos.size(); i++) {
+	for (vec_size i = 0; i < data.gizmos.size(); i++) {
 		ret.push_back(Variant(data.gizmos[i].ptr()));
 	}
 #endif
@@ -588,7 +588,7 @@ void Node3D::_update_gizmos() {
 		return;
 	}
 	data.gizmos_dirty = false;
-	for (int i = 0; i < data.gizmos.size(); i++) {
+	for (vec_size i = 0; i < data.gizmos.size(); i++) {
 		if (is_visible_in_tree()) {
 			data.gizmos.write[i]->redraw();
 		} else {

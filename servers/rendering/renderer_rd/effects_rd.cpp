@@ -119,7 +119,7 @@ void EffectsRD::luminance_reduction(RID p_source_texture, const Size2i p_source_
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
-	for (int i = 0; i < p_reduce.size(); i++) {
+	for (vec_size i = 0; i < p_reduce.size(); i++) {
 		if (i == 0) {
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE_READ]);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_texture), 0);
@@ -157,7 +157,7 @@ void EffectsRD::luminance_reduction_raster(RID p_source_texture, const Size2i p_
 	luminance_reduce_raster.push_constant.min_luminance = p_min_luminance;
 	luminance_reduce_raster.push_constant.exposure_adjust = p_adjust;
 
-	for (int i = 0; i < p_reduce.size(); i++) {
+	for (vec_size i = 0; i < p_reduce.size(); i++) {
 		luminance_reduce_raster.push_constant.source_size[0] = i == 0 ? p_source_size.x : luminance_reduce_raster.push_constant.dest_size[0];
 		luminance_reduce_raster.push_constant.source_size[1] = i == 0 ? p_source_size.y : luminance_reduce_raster.push_constant.dest_size[1];
 		luminance_reduce_raster.push_constant.dest_size[0] = MAX(luminance_reduce_raster.push_constant.source_size[0] / 8, 1);

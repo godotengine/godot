@@ -738,7 +738,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 						// virtual functions have no hash since no MethodBind is involved
 						bool has_return = mi.return_val.type != Variant::NIL || (mi.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 						Array arguments;
-						for (int i = (has_return ? -1 : 0); i < mi.arguments.size(); i++) {
+						for (vec_size i = (has_return ? -1 : 0); i < mi.arguments.size(); i++) {
 							PropertyInfo pinfo = i == -1 ? mi.return_val : mi.arguments[i];
 							Dictionary d3;
 
@@ -833,7 +833,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 					Array arguments;
 
-					for (int i = 0; i < F.arguments.size(); i++) {
+					for (vec_size i = 0; i < F.arguments.size(); i++) {
 						Dictionary d3;
 						d3["name"] = F.arguments[i].name;
 						d3["type"] = get_property_info_type_name(F.arguments[i]);

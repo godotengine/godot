@@ -189,10 +189,10 @@ bool WSLPeer::_parse_client_request() {
 	session_key = headers["sec-websocket-key"];
 	if (headers.has("sec-websocket-protocol")) {
 		Vector<String> protos = headers["sec-websocket-protocol"].split(",");
-		for (int i = 0; i < protos.size(); i++) {
+		for (vec_size i = 0; i < protos.size(); i++) {
 			String proto = protos[i].strip_edges();
 			// Check if we have the given protocol
-			for (int j = 0; j < supported_protocols.size(); j++) {
+			for (vec_size j = 0; j < supported_protocols.size(); j++) {
 				if (proto != supported_protocols[j]) {
 					continue;
 				}
@@ -260,7 +260,7 @@ Error WSLPeer::_do_server_handshake() {
 				if (!selected_protocol.is_empty()) {
 					s += "Sec-WebSocket-Protocol: " + selected_protocol + "\r\n";
 				}
-				for (int i = 0; i < handshake_headers.size(); i++) {
+				for (vec_size i = 0; i < handshake_headers.size(); i++) {
 					s += handshake_headers[i] + "\r\n";
 				}
 				s += "\r\n";
@@ -461,7 +461,7 @@ bool WSLPeer::_verify_server_response() {
 		// Check received sub-protocol was one of those requested.
 		selected_protocol = headers["sec-websocket-protocol"];
 		bool valid = false;
-		for (int i = 0; i < supported_protocols.size(); i++) {
+		for (vec_size i = 0; i < supported_protocols.size(); i++) {
 			if (supported_protocols[i] != selected_protocol) {
 				continue;
 			}
@@ -533,7 +533,7 @@ Error WSLPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509Ce
 	request += "Sec-WebSocket-Version: 13\r\n";
 	if (supported_protocols.size() > 0) {
 		request += "Sec-WebSocket-Protocol: ";
-		for (int i = 0; i < supported_protocols.size(); i++) {
+		for (vec_size i = 0; i < supported_protocols.size(); i++) {
 			if (i != 0) {
 				request += ",";
 			}
@@ -541,7 +541,7 @@ Error WSLPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509Ce
 		}
 		request += "\r\n";
 	}
-	for (int i = 0; i < handshake_headers.size(); i++) {
+	for (vec_size i = 0; i < handshake_headers.size(); i++) {
 		request += handshake_headers[i] + "\r\n";
 	}
 	request += "\r\n";

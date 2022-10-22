@@ -522,7 +522,7 @@ void EditorDebuggerNode::set_breakpoint(const String &p_path, int p_line, bool p
 }
 
 void EditorDebuggerNode::set_breakpoints(const String &p_path, Array p_lines) {
-	for (int i = 0; i < p_lines.size(); i++) {
+	for (vec_size i = 0; i < p_lines.size(); i++) {
 		set_breakpoint(p_path, p_lines[i], true);
 	}
 

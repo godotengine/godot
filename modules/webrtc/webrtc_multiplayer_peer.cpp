@@ -98,7 +98,7 @@ void WebRTCMultiplayerPeer::poll() {
 			break;
 		}
 		// This peer has newly connected, and all channels are now open.
-		if (ready == peer->channels.size() && !peer->connected) {
+		if (ready == int(peer->channels.size()) && !peer->connected) {
 			peer->connected = true;
 			add.push_back(E.key);
 		}
@@ -187,7 +187,7 @@ MultiplayerPeer::ConnectionStatus WebRTCMultiplayerPeer::get_connection_status()
 Error WebRTCMultiplayerPeer::initialize(int p_self_id, bool p_server_compat, Array p_channels_config) {
 	ERR_FAIL_COND_V(p_self_id < 1 || p_self_id > ~(1 << 31), ERR_INVALID_PARAMETER);
 	channels_config.clear();
-	for (int i = 0; i < p_channels_config.size(); i++) {
+	for (vec_size i = 0; i < p_channels_config.size(); i++) {
 		ERR_FAIL_COND_V_MSG(p_channels_config[i].get_type() != Variant::INT, ERR_INVALID_PARAMETER, "The 'channels_config' array must contain only enum values from 'MultiplayerPeer.Multiplayer::TransferMode'");
 		int mode = p_channels_config[i].operator int();
 		// Initialize data channel configurations.
@@ -357,7 +357,7 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 		HashMap<int, Ref<ConnectedPeer>>::Iterator E = peer_map.find(target_peer);
 		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
 
-		ERR_FAIL_COND_V_MSG(E->value->channels.size() <= ch, ERR_INVALID_PARAMETER, vformat("Unable to send packet on channel %d, max channels: %d", ch, E->value->channels.size()));
+		ERR_FAIL_COND_V_MSG(int(E->value->channels.size()) <= ch, ERR_INVALID_PARAMETER, vformat("Unable to send packet on channel %d, max channels: %d", ch, E->value->channels.size()));
 		ERR_FAIL_COND_V(E->value->channels[ch].is_null(), ERR_BUG);
 		return E->value->channels[ch]->put_packet(p_buffer, p_buffer_size);
 

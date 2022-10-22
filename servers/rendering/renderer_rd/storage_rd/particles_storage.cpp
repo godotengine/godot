@@ -635,7 +635,7 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 	}
 
 	float longest_axis_size = 0;
-	for (int i = 0; i < particles->draw_passes.size(); i++) {
+	for (vec_size i = 0; i < particles->draw_passes.size(); i++) {
 		if (particles->draw_passes[i].is_valid()) {
 			AABB maabb = MeshStorage::get_singleton()->mesh_get_aabb(particles->draw_passes[i], RID());
 			longest_axis_size = MAX(maabb.get_longest_axis_size(), longest_axis_size);
@@ -1393,7 +1393,7 @@ void ParticlesStorage::update_particles() {
 					particles_shader.pose_update_buffer.resize(particles->trail_bind_poses.size() * 16);
 				}
 
-				for (int i = 0; i < particles->trail_bind_poses.size(); i++) {
+				for (vec_size i = 0; i < particles->trail_bind_poses.size(); i++) {
 					RendererRD::MaterialStorage::store_transform(particles->trail_bind_poses[i], &particles_shader.pose_update_buffer[i * 16]);
 				}
 

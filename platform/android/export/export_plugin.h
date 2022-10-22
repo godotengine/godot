@@ -201,7 +201,7 @@ public:
 		if (!first_build) {
 			have_plugins_changed = plugin_names != last_plugin_names;
 			if (!have_plugins_changed) {
-				for (int i = 0; i < enabled_plugins.size(); i++) {
+				for (vec_size i = 0; i < enabled_plugins.size(); i++) {
 					if (enabled_plugins.get(i).last_updated > last_custom_build_time) {
 						have_plugins_changed = true;
 						break;

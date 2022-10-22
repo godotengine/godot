@@ -35,9 +35,9 @@
 #include "editor/editor_settings.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
-	for (int i = 0; i < m.categories.size(); i++) {
+	for (vec_size i = 0; i < m.categories.size(); i++) {
 		m.category_ptrs[m.categories[i].signature] = &m.categories.write[i];
-		for (int j = 0; j < m.categories[i].items.size(); j++) {
+		for (vec_size j = 0; j < m.categories[i].items.size(); j++) {
 			m.item_ptrs[m.categories[i].items[j].signature] = &m.categories.write[i].items.write[j];
 		}
 	}
@@ -334,7 +334,7 @@ void EditorProfiler::_update_frame() {
 
 	int dtime = display_time->get_selected();
 
-	for (int i = 0; i < m.categories.size(); i++) {
+	for (vec_size i = 0; i < m.categories.size(); i++) {
 		TreeItem *category = variables->create_item(root);
 		category->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		category->set_editable(0, true);
@@ -530,7 +530,7 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 
 	// Different metrics may contain different number of categories.
 	HashSet<StringName> possible_signatures;
-	for (int i = 0; i < frame_metrics.size(); i++) {
+	for (vec_size i = 0; i < frame_metrics.size(); i++) {
 		const Metric &m = frame_metrics[i];
 		if (!m.valid) {
 			continue;
@@ -560,7 +560,7 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 
 	int index = last_metric;
 
-	for (int i = 0; i < frame_metrics.size(); i++) {
+	for (vec_size i = 0; i < frame_metrics.size(); i++) {
 		++index;
 
 		if (index >= frame_metrics.size()) {

@@ -1486,7 +1486,7 @@ void RendererSceneCull::instance_geometry_get_shader_parameter_list(RID p_instan
 		names.push_back(E.key);
 	}
 	names.sort_custom<StringName::AlphCompare>();
-	for (int i = 0; i < names.size(); i++) {
+	for (vec_size i = 0; i < names.size(); i++) {
 		PropertyInfo pinfo = instance->instance_shader_uniforms[names[i]].info;
 		p_parameters->push_back(pinfo);
 	}
@@ -2277,7 +2277,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
 
-					for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
+					for (vec_size j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 						Instance *instance = instance_shadow_cull_result[j];
 						if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
 							continue;
@@ -2355,7 +2355,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
 
-					for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
+					for (vec_size j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 						Instance *instance = instance_shadow_cull_result[j];
 						if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
 							continue;
@@ -2418,7 +2418,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 			RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
 
-			for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
+			for (vec_size j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 				Instance *instance = instance_shadow_cull_result[j];
 				if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
 					continue;
@@ -2989,7 +2989,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 		RSG::light_storage->set_directional_shadow_count(lights_with_shadow.size());
 
-		for (int i = 0; i < lights_with_shadow.size(); i++) {
+		for (vec_size i = 0; i < lights_with_shadow.size(); i++) {
 			_light_instance_setup_directional_shadow(i, lights_with_shadow[i], p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_orthogonal, p_camera_data->vaspect);
 		}
 	}
@@ -3232,7 +3232,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	}
 
 	//append the directional lights to the lights culled
-	for (int i = 0; i < directional_lights.size(); i++) {
+	for (vec_size i = 0; i < directional_lights.size(); i++) {
 		scene_cull_result.light_instances.push_back(directional_lights[i]);
 	}
 
@@ -3654,7 +3654,7 @@ void RendererSceneCull::render_particle_colliders() {
 			hfpc->scenario->indexers[Scenario::INDEXER_GEOMETRY].aabb_query(hfpc->transformed_aabb, cull_aabb);
 			hfpc->scenario->indexers[Scenario::INDEXER_VOLUMES].aabb_query(hfpc->transformed_aabb, cull_aabb);
 
-			for (int i = 0; i < (int)instance_cull_result.size(); i++) {
+			for (vec_size i = 0; i < (int)instance_cull_result.size(); i++) {
 				Instance *instance = instance_cull_result[i];
 				if (!instance || !((1 << instance->base_type) & (RS::INSTANCE_GEOMETRY_MASK & (~(1 << RS::INSTANCE_PARTICLES))))) { //all but particles to avoid self collision
 					continue;
@@ -3760,7 +3760,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 					if (mesh.is_valid()) {
 						bool cast_shadows = false;
 
-						for (int i = 0; i < p_instance->materials.size(); i++) {
+						for (vec_size i = 0; i < p_instance->materials.size(); i++) {
 							RID mat = p_instance->materials[i].is_valid() ? p_instance->materials[i] : RSG::mesh_storage->mesh_surface_get_material(mesh, i);
 
 							if (!mat.is_valid()) {

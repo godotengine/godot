@@ -690,7 +690,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	Vector<int> orders;
 	orders.resize(autoload_cache.size());
 
-	for (int i = 0; i < autoloads.size(); i++) {
+	for (vec_size i = 0; i < autoloads.size(); i++) {
 		aux.order = ProjectSettings::get_singleton()->get_order("autoload/" + autoloads[i]);
 
 		List<AutoloadInfo>::Element *I = autoload_cache.find(aux);

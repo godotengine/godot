@@ -45,7 +45,7 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 		float area_accum = 0;
 		RBMap<float, int> triangle_area_map;
 
-		for (int i = 0; i < geometry.size(); i++) {
+		for (vec_size i = 0; i < geometry.size(); i++) {
 			float area = geometry[i].get_area();
 			if (area < CMP_EPSILON) {
 				continue;

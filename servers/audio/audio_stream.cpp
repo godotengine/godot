@@ -728,7 +728,7 @@ bool AudioStreamRandomizer::_set(const StringName &p_name, const Variant &p_valu
 void AudioStreamRandomizer::_get_property_list(List<PropertyInfo> *p_list) const {
 	AudioStream::_get_property_list(p_list); // Define the trivial scalar properties.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Streams", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int i = 0; i < audio_stream_pool.size(); i++) {
+	for (vec_size i = 0; i < audio_stream_pool.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("stream_%d/stream", i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("stream_%d/weight", i), PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"));
 	}

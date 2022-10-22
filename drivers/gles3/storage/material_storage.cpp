@@ -1079,7 +1079,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 	bool uses_global_textures = false;
 	global_textures_pass++;
 
-	for (int i = 0, k = 0; i < p_texture_uniforms.size(); i++) {
+	for (vec_size i = 0, k = 0; i < p_texture_uniforms.size(); i++) {
 		const StringName &uniform_name = p_texture_uniforms[i].name;
 		int uniform_array_size = p_texture_uniforms[i].array_size;
 
@@ -1120,7 +1120,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				if (V->value.is_array()) {
 					Array array = (Array)V->value;
 					if (uniform_array_size > 0) {
-						for (int j = 0; j < array.size(); j++) {
+						for (vec_size j = 0; j < array.size(); j++) {
 							textures.push_back(array[j]);
 						}
 					} else {
@@ -1136,7 +1136,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 			if (uniform_array_size > 0) {
 				if (textures.size() < uniform_array_size) {
 					HashMap<StringName, HashMap<int, RID>>::ConstIterator W = p_default_textures.find(uniform_name);
-					for (int j = textures.size(); j < uniform_array_size; j++) {
+					for (vec_size j = textures.size(); j < uniform_array_size; j++) {
 						if (W && W->value.has(j)) {
 							textures.push_back(W->value[j]);
 						} else {
@@ -1231,7 +1231,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				p_textures[k++] = gl_texture;
 			}
 		} else {
-			for (int j = 0; j < textures.size(); j++) {
+			for (vec_size j = 0; j < textures.size(); j++) {
 				Texture *tex = TextureStorage::get_singleton()->get_texture(textures[j]);
 
 				if (tex) {
@@ -1314,7 +1314,7 @@ void MaterialData::update_parameters_internal(const HashMap<StringName, Variant>
 	}
 
 	uint32_t tex_uniform_count = 0U;
-	for (int i = 0; i < p_texture_uniforms.size(); i++) {
+	for (vec_size i = 0; i < p_texture_uniforms.size(); i++) {
 		tex_uniform_count += uint32_t(p_texture_uniforms[i].array_size > 0 ? p_texture_uniforms[i].array_size : 1);
 	}
 
@@ -2842,7 +2842,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 #if 0
 	print_line("**compiling shader:");
 	print_line("**defines:\n");
-	for (int i = 0; i < gen_code.defines.size(); i++) {
+	for (vec_size i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
 
@@ -2858,7 +2858,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 #endif
 
 	Vector<StringName> texture_uniform_names;
-	for (int i = 0; i < gen_code.texture_uniforms.size(); i++) {
+	for (vec_size i = 0; i < gen_code.texture_uniforms.size(); i++) {
 		texture_uniform_names.push_back(gen_code.texture_uniforms[i].name);
 	}
 
@@ -2999,7 +2999,7 @@ void CanvasMaterialData::bind_uniforms() {
 
 	RID *textures = texture_cache.ptrw();
 	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
-	for (int ti = 0; ti < texture_cache.size(); ti++) {
+	for (vec_size ti = 0; ti < texture_cache.size(); ti++) {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
 		glActiveTexture(GL_TEXTURE1 + ti); // Start at GL_TEXTURE1 because texture slot 0 is used by the base texture
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
@@ -3086,7 +3086,7 @@ void SkyShaderData::set_code(const String &p_code) {
 #if 0
 	print_line("**compiling shader:");
 	print_line("**defines:\n");
-	for (int i = 0; i < gen_code.defines.size(); i++) {
+	for (vec_size i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
 
@@ -3102,7 +3102,7 @@ void SkyShaderData::set_code(const String &p_code) {
 #endif
 
 	Vector<StringName> texture_uniform_names;
-	for (int i = 0; i < gen_code.texture_uniforms.size(); i++) {
+	for (vec_size i = 0; i < gen_code.texture_uniforms.size(); i++) {
 		texture_uniform_names.push_back(gen_code.texture_uniforms[i].name);
 	}
 
@@ -3252,7 +3252,7 @@ void SkyMaterialData::bind_uniforms() {
 
 	RID *textures = texture_cache.ptrw();
 	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
-	for (int ti = 0; ti < texture_cache.size(); ti++) {
+	for (vec_size ti = 0; ti < texture_cache.size(); ti++) {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
 		glActiveTexture(GL_TEXTURE0 + ti);
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
@@ -3405,7 +3405,7 @@ void SceneShaderData::set_code(const String &p_code) {
 #if 0
 	print_line("**compiling shader:");
 	print_line("**defines:\n");
-	for (int i = 0; i < gen_code.defines.size(); i++) {
+	for (vec_size i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
 
@@ -3421,7 +3421,7 @@ void SceneShaderData::set_code(const String &p_code) {
 #endif
 
 	Vector<StringName> texture_uniform_names;
-	for (int i = 0; i < gen_code.texture_uniforms.size(); i++) {
+	for (vec_size i = 0; i < gen_code.texture_uniforms.size(); i++) {
 		texture_uniform_names.push_back(gen_code.texture_uniforms[i].name);
 	}
 
@@ -3585,7 +3585,7 @@ void SceneMaterialData::bind_uniforms() {
 
 	RID *textures = texture_cache.ptrw();
 	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
-	for (int ti = 0; ti < texture_cache.size(); ti++) {
+	for (vec_size ti = 0; ti < texture_cache.size(); ti++) {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
 		glActiveTexture(GL_TEXTURE0 + ti);
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);

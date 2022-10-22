@@ -40,7 +40,7 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	Array parameters;
 
 	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
-		for (int i = 0; i < parameters.size(); i++) {
+		for (vec_size i = 0; i < parameters.size(); i++) {
 			Dictionary d = parameters[i];
 			ERR_CONTINUE(d.is_empty());
 			r_list->push_back(PropertyInfo::from_dict(d));
@@ -394,7 +394,7 @@ Array AnimationNode::_get_filters() const {
 
 void AnimationNode::_set_filters(const Array &p_filters) {
 	filter.clear();
-	for (int i = 0; i < p_filters.size(); i++) {
+	for (vec_size i = 0; i < p_filters.size(); i++) {
 		set_filter_path(p_filters[i], true);
 	}
 }

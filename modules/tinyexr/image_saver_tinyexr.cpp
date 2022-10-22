@@ -203,7 +203,7 @@ Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale) {
 
 			if (src_pixel_type == SRC_FLOAT && target_pixel_type == TINYEXR_PIXELTYPE_FLOAT) {
 				// Note: we don't save mipmaps
-				CRASH_COND(src_data.size() < pixel_count * channel_count * target_pixel_type_size);
+				CRASH_COND(src_data.size() < vec_size(pixel_count * channel_count * target_pixel_type_size));
 
 				const float *src_rp = (float *)src_r;
 				float *dst_wp = (float *)dst_w;

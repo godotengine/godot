@@ -276,7 +276,7 @@ public:
 							if (uv2 == p_vert.uv2) {
 								if (!weights.is_empty() || !p_vert.weights.is_empty()) {
 									if (weights.size() == p_vert.weights.size()) {
-										for (int i = 0; i < weights.size(); i++) {
+										for (vec_size i = 0; i < weights.size(); i++) {
 											if (weights[i].bone_idx != p_vert.weights[i].bone_idx) {
 												return weights[i].bone_idx < p_vert.weights[i].bone_idx;
 											}
@@ -356,7 +356,7 @@ public:
 
 		Node() {}
 		virtual ~Node() {
-			for (int i = 0; i < children.size(); i++) {
+			for (vec_size i = 0; i < children.size(); i++) {
 				memdelete(children[i]);
 			}
 		};
@@ -405,7 +405,7 @@ public:
 		Vector<Node *> root_nodes;
 
 		~VisualScene() {
-			for (int i = 0; i < root_nodes.size(); i++) {
+			for (vec_size i = 0; i < root_nodes.size(); i++) {
 				memdelete(root_nodes[i]);
 			}
 		}

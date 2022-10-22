@@ -2541,14 +2541,14 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 			{
 				int total_elements = 0;
-				for (int i = 0; i < levels.size(); i++) {
+				for (vec_size i = 0; i < levels.size(); i++) {
 					total_elements += levels[i];
 				}
 
 				write_buffer = RD::get_singleton()->storage_buffer_create(total_elements * 16);
 			}
 
-			for (int i = 0; i < levels.size(); i++) {
+			for (vec_size i = 0; i < levels.size(); i++) {
 				VoxelGIInstance::Mipmap mipmap;
 				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture, 0, i, 1, RD::TEXTURE_SLICE_3D);
 				mipmap.level = levels.size() - i - 1;
@@ -2964,7 +2964,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 			for (int pass = 0; pass < passes; pass++) {
 				if (p_update_light_instances) {
-					for (int i = 0; i < mipmaps.size(); i++) {
+					for (vec_size i = 0; i < mipmaps.size(); i++) {
 						if (i == 0) {
 							RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->voxel_gi_lighting_shader_version_pipelines[pass == 0 ? VOXEL_GI_SHADER_VERSION_COMPUTE_LIGHT : VOXEL_GI_SHADER_VERSION_COMPUTE_SECOND_BOUNCE]);
 						} else if (i == 1) {
@@ -2998,7 +2998,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_WRITE_TEXTURE]);
 
-				for (int i = 0; i < mipmaps.size(); i++) {
+				for (vec_size i = 0; i < mipmaps.size(); i++) {
 					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mipmaps[i].write_uniform_set, 0);
 
 					push_constant.cell_offset = mipmaps[i].cell_offset;
@@ -3035,7 +3035,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 		AABB probe_aabb(Vector3(), octree_size);
 
 		//this could probably be better parallelized in compute..
-		for (int i = 0; i < (int)p_dynamic_objects.size(); i++) {
+		for (vec_size i = 0; i < (int)p_dynamic_objects.size(); i++) {
 			RenderGeometryInstance *instance = p_dynamic_objects[i];
 
 			//transform aabb to voxel_gi
@@ -3158,7 +3158,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				RD::get_singleton()->compute_list_dispatch(compute_list, (rect.size.x - 1) / 8 + 1, (rect.size.y - 1) / 8 + 1, 1);
 				//print_line("rect: " + itos(i) + ": " + rect);
 
-				for (int k = 1; k < dynamic_maps.size(); k++) {
+				for (vec_size k = 1; k < dynamic_maps.size(); k++) {
 					// enlarge the rect if needed so all pixels fit when downscaled,
 					// this ensures downsampling is smooth and optimal because no pixels are left behind
 
@@ -3240,7 +3240,7 @@ void GI::VoxelGIInstance::free_resources() {
 		mipmaps.clear();
 	}
 
-	for (int i = 0; i < dynamic_maps.size(); i++) {
+	for (vec_size i = 0; i < dynamic_maps.size(); i++) {
 		RD::get_singleton()->free(dynamic_maps[i].texture);
 		RD::get_singleton()->free(dynamic_maps[i].depth);
 

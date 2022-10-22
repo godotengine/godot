@@ -101,6 +101,8 @@
 #undef MAX
 #undef CLAMP
 
+typedef uint32_t vec_size;
+
 // Generic ABS function, for math uses please use Math::abs.
 template <typename T>
 constexpr T ABS(T m_v) {

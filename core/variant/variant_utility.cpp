@@ -1588,7 +1588,7 @@ MethodInfo Variant::get_utility_function_info(const StringName &p_name) {
 		if (bfi->is_vararg) {
 			info.flags |= METHOD_FLAG_VARARG;
 		}
-		for (int i = 0; i < bfi->argnames.size(); ++i) {
+		for (vec_size i = 0; i < bfi->argnames.size(); ++i) {
 			PropertyInfo arg;
 			arg.type = bfi->get_arg_type(i);
 			arg.name = bfi->argnames[i];

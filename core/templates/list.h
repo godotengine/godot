@@ -463,7 +463,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ int size() const {
+	_FORCE_INLINE_ vec_size size() const {
 		return _data ? _data->size_cache : 0;
 	}
 
@@ -517,11 +517,11 @@ public:
 		}
 	}
 
-	T &operator[](int p_index) {
+	T &operator[](vec_size p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 
 		Element *I = front();
-		int c = 0;
+		vec_size c = 0;
 		while (c < p_index) {
 			I = I->next();
 			c++;
@@ -530,11 +530,11 @@ public:
 		return I->get();
 	}
 
-	const T &operator[](int p_index) const {
+	const T &operator[](vec_size p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
 		const Element *I = front();
-		int c = 0;
+		vec_size c = 0;
 		while (c < p_index) {
 			I = I->next();
 			c++;
@@ -570,10 +570,10 @@ public:
 	}
 
 	void reverse() {
-		int s = size() / 2;
+		vec_size s = size() / 2;
 		Element *F = front();
 		Element *B = back();
-		for (int i = 0; i < s; i++) {
+		for (vec_size i = 0; i < s; i++) {
 			SWAP(F->value, B->value);
 			F = F->next();
 			B = B->prev();

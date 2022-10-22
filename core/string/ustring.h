@@ -49,7 +49,7 @@ class CharProxy {
 	friend class CharString;
 	friend class String;
 
-	const int _index;
+	const vec_size _index;
 	CowData<T> &_cowdata;
 	static const T _null = 0;
 
@@ -94,19 +94,19 @@ class Char16String {
 public:
 	_FORCE_INLINE_ char16_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char16_t *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
+	_FORCE_INLINE_ vec_size size() const { return _cowdata.size(); }
+	Error resize(vec_size p_size) { return _cowdata.resize(p_size); }
 
-	_FORCE_INLINE_ char16_t get(int p_index) const { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const char16_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ const char16_t &operator[](int p_index) const {
+	_FORCE_INLINE_ char16_t get(vec_size p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ void set(vec_size p_index, const char16_t &p_elem) { _cowdata.set(p_index, p_elem); }
+	_FORCE_INLINE_ const char16_t &operator[](vec_size p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
 		}
 
 		return _cowdata.get(p_index);
 	}
-	_FORCE_INLINE_ CharProxy<char16_t> operator[](int p_index) { return CharProxy<char16_t>(p_index, _cowdata); }
+	_FORCE_INLINE_ CharProxy<char16_t> operator[](vec_size p_index) { return CharProxy<char16_t>(p_index, _cowdata); }
 
 	_FORCE_INLINE_ Char16String() {}
 	_FORCE_INLINE_ Char16String(const Char16String &p_str) { _cowdata._ref(p_str._cowdata); }
@@ -116,7 +116,7 @@ public:
 	void operator=(const char16_t *p_cstr);
 	bool operator<(const Char16String &p_right) const;
 	Char16String &operator+=(char16_t p_char);
-	int length() const { return size() ? size() - 1 : 0; }
+	vec_size length() const { return size() ? size() - 1 : 0; }
 	const char16_t *get_data() const;
 	operator const char16_t *() const { return get_data(); };
 
@@ -135,19 +135,19 @@ class CharString {
 public:
 	_FORCE_INLINE_ char *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
+	_FORCE_INLINE_ vec_size size() const { return _cowdata.size(); }
+	Error resize(vec_size p_size) { return _cowdata.resize(p_size); }
 
-	_FORCE_INLINE_ char get(int p_index) const { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ const char &operator[](int p_index) const {
+	_FORCE_INLINE_ char get(vec_size p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ void set(vec_size p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
+	_FORCE_INLINE_ const char &operator[](vec_size p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
 		}
 
 		return _cowdata.get(p_index);
 	}
-	_FORCE_INLINE_ CharProxy<char> operator[](int p_index) { return CharProxy<char>(p_index, _cowdata); }
+	_FORCE_INLINE_ CharProxy<char> operator[](vec_size p_index) { return CharProxy<char>(p_index, _cowdata); }
 
 	_FORCE_INLINE_ CharString() {}
 	_FORCE_INLINE_ CharString(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
@@ -210,19 +210,19 @@ public:
 
 	_FORCE_INLINE_ void clear() { resize(0); }
 
-	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
+	_FORCE_INLINE_ char32_t get(vec_size p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ void set(vec_size p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
+	_FORCE_INLINE_ vec_size size() const { return _cowdata.size(); }
+	Error resize(vec_size p_size) { return _cowdata.resize(p_size); }
 
-	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
+	_FORCE_INLINE_ const char32_t &operator[](vec_size p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
 		}
 
 		return _cowdata.get(p_index);
 	}
-	_FORCE_INLINE_ CharProxy<char32_t> operator[](int p_index) { return CharProxy<char32_t>(p_index, _cowdata); }
+	_FORCE_INLINE_ CharProxy<char32_t> operator[](vec_size p_index) { return CharProxy<char32_t>(p_index, _cowdata); }
 
 	bool operator==(const String &p_str) const;
 	bool operator!=(const String &p_str) const;

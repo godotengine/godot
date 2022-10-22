@@ -146,7 +146,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			Vector3 scl = global_transform.basis.get_scale_local();
 
 			Vector<int> bones_to_process = src_skeleton->get_parentless_bones();
-			for (int i = 0; i < bones_to_process.size(); i++) {
+			for (vec_size i = 0; i < bones_to_process.size(); i++) {
 				src_skeleton->set_bone_rest(bones_to_process[i], global_transform.orthonormalized() * src_skeleton->get_bone_rest(bones_to_process[i]));
 			}
 
@@ -154,7 +154,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				int src_idx = bones_to_process[0];
 				bones_to_process.erase(src_idx);
 				Vector<int> src_children = src_skeleton->get_bone_children(src_idx);
-				for (int i = 0; i < src_children.size(); i++) {
+				for (vec_size i = 0; i < src_children.size(); i++) {
 					bones_to_process.push_back(src_children[i]);
 				}
 				src_skeleton->set_bone_rest(src_idx, Transform3D(src_skeleton->get_bone_rest(src_idx).basis, src_skeleton->get_bone_rest(src_idx).origin * scl));
@@ -299,13 +299,13 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				int prof_idx = bones_to_process[0];
 				bones_to_process.erase(prof_idx);
 				Vector<int> prof_children = prof_skeleton->get_bone_children(prof_idx);
-				for (int i = 0; i < prof_children.size(); i++) {
+				for (vec_size i = 0; i < prof_children.size(); i++) {
 					bones_to_process.push_back(prof_children[i]);
 				}
 
 				// Calc virtual/looking direction with origins.
 				bool is_filtered = false;
-				for (int i = 0; i < filter.size(); i++) {
+				for (vec_size i = 0; i < filter.size(); i++) {
 					if (String(filter[i]) == prof_skeleton->get_bone_name(prof_idx)) {
 						is_filtered = true;
 						break;
@@ -521,7 +521,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				int src_idx = bones_to_process[0];
 				bones_to_process.erase(src_idx);
 				Vector<int> src_children = src_skeleton->get_bone_children(src_idx);
-				for (int i = 0; i < src_children.size(); i++) {
+				for (vec_size i = 0; i < src_children.size(); i++) {
 					bones_to_process.push_back(src_children[i]);
 				}
 

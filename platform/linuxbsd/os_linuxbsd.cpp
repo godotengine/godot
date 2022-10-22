@@ -67,7 +67,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	Vector<String> path_elems = path.split(":", false);
 	String program;
 
-	for (int i = 0; i < path_elems.size(); i++) {
+	for (vec_size i = 0; i < path_elems.size(); i++) {
 		for (uint64_t k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
 			String tested_path = path_elems[i].path_join(message_programs[k]);
 

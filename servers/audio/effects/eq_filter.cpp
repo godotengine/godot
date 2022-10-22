@@ -71,7 +71,7 @@ EQ::BandProcess::BandProcess() {
 void EQ::recalculate_band_coefficients() {
 #define BAND_LOG(m_f) (log((m_f)) / log(2.))
 
-	for (int i = 0; i < band.size(); i++) {
+	for (vec_size i = 0; i < band.size(); i++) {
 		double octave_size;
 
 		double frq = band[i].freq;
@@ -171,7 +171,7 @@ float EQ::get_band_frequency(int p_band) {
 
 void EQ::set_bands(const Vector<float> &p_bands) {
 	band.resize(p_bands.size());
-	for (int i = 0; i < p_bands.size(); i++) {
+	for (vec_size i = 0; i < p_bands.size(); i++) {
 		band.write[i].freq = p_bands[i];
 	}
 

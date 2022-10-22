@@ -124,7 +124,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 	float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4f : 0.55f;
 	float hue_shift = 1.0f / float(monitors.size());
 
-	for (int i = 0; i < active.size(); i++) {
+	for (vec_size i = 0; i < active.size(); i++) {
 		Monitor &current = monitors[active[i]];
 		Rect2i rect(Point2i(i % columns, i / columns) * cell_size + Point2i(MARGIN, MARGIN), cell_size - Point2i(MARGIN, MARGIN) * 2);
 		monitor_draw->draw_style_box(graph_style_box, rect);
@@ -313,7 +313,7 @@ void EditorPerformanceProfiler::reset() {
 
 void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_names) {
 	HashMap<StringName, int> names;
-	for (int i = 0; i < p_names.size(); i++) {
+	for (vec_size i = 0; i < p_names.size(); i++) {
 		names.insert("custom:" + p_names[i], Performance::MONITOR_MAX + i);
 	}
 

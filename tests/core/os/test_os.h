@@ -57,7 +57,7 @@ TEST_CASE("[OS] Environment variables") {
 TEST_CASE("[OS] Command line arguments") {
 	List<String> arguments = OS::get_singleton()->get_cmdline_args();
 	bool found = false;
-	for (int i = 0; i < arguments.size(); i++) {
+	for (vec_size i = 0; i < arguments.size(); i++) {
 		if (arguments[i] == "--test") {
 			found = true;
 			break;

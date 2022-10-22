@@ -93,7 +93,7 @@ void CreateDialog::_fill_type_list() {
 			}
 
 			const Vector<EditorData::CustomType> &ct = ed.get_custom_types()[type];
-			for (int i = 0; i < ct.size(); i++) {
+			for (vec_size i = 0; i < ct.size(); i++) {
 				custom_type_parents[ct[i].name] = type;
 				custom_type_indices[ct[i].name] = i;
 				type_list.push_back(ct[i].name);
@@ -181,7 +181,7 @@ void CreateDialog::_update_search() {
 	}
 
 	// Build the type tree.
-	for (int i = 0; i < candidates.size(); i++) {
+	for (vec_size i = 0; i < candidates.size(); i++) {
 		_add_type(candidates[i], ClassDB::class_exists(candidates[i]) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
 	}
 
@@ -327,7 +327,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 String CreateDialog::_top_result(const Vector<String> p_candidates, const String &p_search_text) const {
 	float highest_score = 0;
 	int highest_index = 0;
-	for (int i = 0; i < p_candidates.size(); i++) {
+	for (vec_size i = 0; i < p_candidates.size(); i++) {
 		float score = _score_type(p_candidates[i].get_slicec(' ', 0), p_search_text);
 		if (score > highest_score) {
 			highest_score = score;
@@ -668,7 +668,7 @@ void CreateDialog::_save_and_update_favorite_list() {
 	{
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites." + base_type), FileAccess::WRITE);
 		if (f.is_valid()) {
-			for (int i = 0; i < favorite_list.size(); i++) {
+			for (vec_size i = 0; i < favorite_list.size(); i++) {
 				String l = favorite_list[i];
 				String name = l.get_slicec(' ', 0);
 				if (!EditorNode::get_editor_data().is_type_recognized(name)) {

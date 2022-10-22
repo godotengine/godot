@@ -397,7 +397,7 @@ protected:
 	Dictionary _get_versions() const {
 		Vector<StringName> vnames = get_version_list();
 		Dictionary ret;
-		for (int i = 0; i < vnames.size(); i++) {
+		for (vec_size i = 0; i < vnames.size(); i++) {
 			ret[vnames[i]] = versions[vnames[i]];
 		}
 		return ret;
@@ -454,7 +454,7 @@ public:
 protected:
 	void _set_ids(const TypedArray<RID> &p_ids) {
 		base.clear_ids();
-		for (int i = 0; i < p_ids.size(); i++) {
+		for (vec_size i = 0; i < p_ids.size(); i++) {
 			RID id = p_ids[i];
 			ERR_FAIL_COND(id.is_null());
 			base.append_id(id);

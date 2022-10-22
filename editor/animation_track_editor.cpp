@@ -625,7 +625,7 @@ public:
 					vtypes += Variant::get_type_name(Variant::Type(i));
 				}
 
-				for (int i = 0; i < args.size(); i++) {
+				for (vec_size i = 0; i < args.size(); i++) {
 					p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%d/%s", PNAME("args"), i, PNAME("type")), PROPERTY_HINT_ENUM, vtypes));
 					if (args[i].get_type() != Variant::NIL) {
 						p_list->push_back(PropertyInfo(args[i].get_type(), vformat("%s/%d/%s", PNAME("args"), i, PNAME("value"))));
@@ -1315,7 +1315,7 @@ public:
 						vtypes += Variant::get_type_name(Variant::Type(i));
 					}
 
-					for (int i = 0; i < args.size(); i++) {
+					for (vec_size i = 0; i < args.size(); i++) {
 						p_list->push_back(PropertyInfo(Variant::INT, "args/" + itos(i) + "/type", PROPERTY_HINT_ENUM, vtypes));
 						if (args[i].get_type() != Variant::NIL) {
 							p_list->push_back(PropertyInfo(args[i].get_type(), "args/" + itos(i) + "/value"));
@@ -2395,7 +2395,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		if (d.has("args")) {
 			args = d["args"];
 		}
-		for (int i = 0; i < args.size(); i++) {
+		for (vec_size i = 0; i < args.size(); i++) {
 			if (i > 0) {
 				text += ", ";
 			}
@@ -2710,7 +2710,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					if (d.has("args")) {
 						args = d["args"];
 					}
-					for (int i = 0; i < args.size(); i++) {
+					for (vec_size i = 0; i < args.size(); i++) {
 						if (i > 0) {
 							text += ", ";
 						}
@@ -3687,7 +3687,7 @@ void AnimationTrackEditor::_track_grab_focus(int p_track) {
 
 void AnimationTrackEditor::set_anim_pos(float p_pos) {
 	timeline->set_play_position(p_pos);
-	for (int i = 0; i < track_edits.size(); i++) {
+	for (vec_size i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->set_play_position(p_pos);
 	}
 	_redraw_groups();
@@ -3726,7 +3726,7 @@ void AnimationTrackEditor::commit_insert_queue() {
 		reset_allowed = false;
 	} else {
 		bool some_resettable = false;
-		for (int i = 0; i < insert_data.size(); i++) {
+		for (vec_size i = 0; i < insert_data.size(); i++) {
 			if (track_type_is_resettable(insert_data[i].type)) {
 				some_resettable = true;
 				break;
@@ -3741,7 +3741,7 @@ void AnimationTrackEditor::commit_insert_queue() {
 	int num_tracks = 0;
 	String last_track_query;
 	bool all_bezier = true;
-	for (int i = 0; i < insert_data.size(); i++) {
+	for (vec_size i = 0; i < insert_data.size(); i++) {
 		if (insert_data[i].type != Animation::TYPE_VALUE && insert_data[i].type != Animation::TYPE_BEZIER) {
 			all_bezier = false;
 		}
@@ -3954,7 +3954,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	}
 
 	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
-	for (int i = 1; i < history->get_path_size(); i++) {
+	for (vec_size i = 1; i < history->get_path_size(); i++) {
 		String prop = history->get_path_property(i);
 		ERR_FAIL_COND(prop.is_empty());
 		path += ":" + prop;
@@ -4054,7 +4054,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 		return;
 	}
 
-	for (int i = 1; i < history->get_path_size(); i++) {
+	for (vec_size i = 1; i < history->get_path_size(); i++) {
 		String prop = history->get_path_property(i);
 		ERR_FAIL_COND(prop.is_empty());
 		path += ":" + prop;
@@ -4330,7 +4330,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 			bool valid;
 			Vector<String> subindices = _get_bezier_subindices_for_type(p_id.value.get_type(), &valid);
 			if (valid) {
-				for (int i = 0; i < subindices.size(); i++) {
+				for (vec_size i = 0; i < subindices.size(); i++) {
 					InsertData id = p_id;
 					id.type = Animation::TYPE_BEZIER;
 					id.value = p_id.value.get(subindices[i].substr(1, subindices[i].length()));
@@ -4528,7 +4528,7 @@ void AnimationTrackEditor::_update_tracks() {
 						pinfo.name = leftover_path[leftover_path.size() - 1];
 					}
 
-					for (int j = 0; j < track_edit_plugins.size(); j++) {
+					for (vec_size j = 0; j < track_edit_plugins.size(); j++) {
 						track_edit = track_edit_plugins.write[j]->create_value_track_edit(object, pinfo.type, pinfo.name, pinfo.hint, pinfo.hint_string, pinfo.usage);
 						if (track_edit) {
 							break;
@@ -4538,7 +4538,7 @@ void AnimationTrackEditor::_update_tracks() {
 			}
 		}
 		if (animation->track_get_type(i) == Animation::TYPE_AUDIO) {
-			for (int j = 0; j < track_edit_plugins.size(); j++) {
+			for (vec_size j = 0; j < track_edit_plugins.size(); j++) {
 				track_edit = track_edit_plugins.write[j]->create_audio_track_edit();
 				if (track_edit) {
 					break;
@@ -4555,7 +4555,7 @@ void AnimationTrackEditor::_update_tracks() {
 			}
 
 			if (node && Object::cast_to<AnimationPlayer>(node)) {
-				for (int j = 0; j < track_edit_plugins.size(); j++) {
+				for (vec_size j = 0; j < track_edit_plugins.size(); j++) {
 					track_edit = track_edit_plugins.write[j]->create_animation_track_edit(node);
 					if (track_edit) {
 						break;
@@ -4639,13 +4639,13 @@ void AnimationTrackEditor::_update_tracks() {
 }
 
 void AnimationTrackEditor::_redraw_tracks() {
-	for (int i = 0; i < track_edits.size(); i++) {
+	for (vec_size i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->queue_redraw();
 	}
 }
 
 void AnimationTrackEditor::_redraw_groups() {
-	for (int i = 0; i < groups.size(); i++) {
+	for (vec_size i = 0; i < groups.size(); i++) {
 		groups[i]->queue_redraw();
 	}
 }
@@ -4720,7 +4720,7 @@ void AnimationTrackEditor::_animation_update() {
 	if (track_edits.size() == animation->get_track_count()) {
 		// Check tracks are the same.
 
-		for (int i = 0; i < track_edits.size(); i++) {
+		for (vec_size i = 0; i < track_edits.size(); i++) {
 			if (track_edits[i]->get_path() != animation->track_get_path(i)) {
 				same = false;
 				break;
@@ -4977,7 +4977,7 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 
 		undo_redo->create_action(TTR("Add Bezier Track"));
 		int base_track = animation->get_track_count();
-		for (int i = 0; i < subindices.size(); i++) {
+		for (vec_size i = 0; i < subindices.size(); i++) {
 			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
 			undo_redo->add_do_method(animation.ptr(), "track_set_path", base_track + i, full_path + subindices[i]);
 			undo_redo->add_undo_method(animation.ptr(), "remove_track", base_track);
@@ -4990,7 +4990,7 @@ void AnimationTrackEditor::_timeline_value_changed(double) {
 	timeline->update_play_position();
 
 	_redraw_tracks();
-	for (int i = 0; i < track_edits.size(); i++) {
+	for (vec_size i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->update_play_position();
 	}
 	_redraw_groups();
@@ -5000,7 +5000,7 @@ void AnimationTrackEditor::_timeline_value_changed(double) {
 }
 
 int AnimationTrackEditor::_get_track_selected() {
-	for (int i = 0; i < track_edits.size(); i++) {
+	for (vec_size i = 0; i < track_edits.size(); i++) {
 		if (track_edits[i]->has_focus()) {
 			return i;
 		}
@@ -5161,7 +5161,7 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 			Array params;
 			int first_defarg = E.arguments.size() - E.default_arguments.size();
 
-			for (int i = 0; i < E.arguments.size(); i++) {
+			for (vec_size i = 0; i < E.arguments.size(); i++) {
 				if (i >= first_defarg) {
 					Variant arg = E.default_arguments[i - first_defarg];
 					params.push_back(arg);
@@ -5464,7 +5464,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		} else if (box_selecting) {
 			if (box_selection->is_visible_in_tree()) {
 				// Only if moved.
-				for (int i = 0; i < track_edits.size(); i++) {
+				for (vec_size i = 0; i < track_edits.size(); i++) {
 					Rect2 local_rect = box_select_rect;
 					local_rect.position -= track_edits[i]->get_global_position();
 					track_edits[i]->append_to_selection(local_rect, mb->is_command_or_control_pressed());
@@ -5739,7 +5739,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 					text = node->get_name();
 					Vector<StringName> sn = path.get_subnames();
-					for (int j = 0; j < sn.size(); j++) {
+					for (vec_size j = 0; j < sn.size(); j++) {
 						text += ".";
 						text += sn[j];
 					}
@@ -5837,7 +5837,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			int base_track = animation->get_track_count();
 			undo_redo->create_action(TTR("Paste Tracks"));
-			for (int i = 0; i < track_clipboard.size(); i++) {
+			for (vec_size i = 0; i < track_clipboard.size(); i++) {
 				undo_redo->add_do_method(animation.ptr(), "add_track", track_clipboard[i].track_type);
 				Node *exists = nullptr;
 				NodePath path = track_clipboard[i].base_path;
@@ -5858,7 +5858,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", base_track, track_clipboard[i].update_mode);
 				}
 
-				for (int j = 0; j < track_clipboard[i].keys.size(); j++) {
+				for (vec_size j = 0; j < track_clipboard[i].keys.size(); j++) {
 					undo_redo->add_do_method(animation.ptr(), "track_insert_key", base_track, track_clipboard[i].keys[j].time, track_clipboard[i].keys[j].value, track_clipboard[i].keys[j].transition);
 				}
 
@@ -6003,7 +6003,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					tracks.append(E.key.track);
 				}
 			}
-			for (int i = 0; i < tracks.size(); i++) {
+			for (vec_size i = 0; i < tracks.size(); i++) {
 				switch (animation->track_get_type(tracks[i])) {
 					case Animation::TYPE_VALUE:
 					case Animation::TYPE_POSITION_3D:
@@ -6062,7 +6062,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				}
 
 				// Do insertion.
-				for (int i = 0; i < insert_queue_new.size(); i++) {
+				for (vec_size i = 0; i < insert_queue_new.size(); i++) {
 					undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, insert_queue_new[i].first, insert_queue_new[i].second);
 					undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", track, insert_queue_new[i].first);
 				}
@@ -6482,7 +6482,7 @@ void AnimationTrackEditor::_pick_track_filter_text_changed(const String &p_newte
 	_pick_track_select_recursive(root_item, filter, select_candidates);
 
 	if (!select_candidates.is_empty()) {
-		for (int i = 0; i < select_candidates.size(); ++i) {
+		for (vec_size i = 0; i < select_candidates.size(); ++i) {
 			Node *candidate = select_candidates[i];
 
 			if (((String)candidate->get_name()).to_lower().begins_with(filter.to_lower())) {

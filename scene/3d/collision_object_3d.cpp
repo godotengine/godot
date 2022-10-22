@@ -340,7 +340,7 @@ void CollisionObject3D::_shape_changed(const Ref<Shape3D> &p_shape) {
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ShapeData &shapedata = E.value;
 		ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
-		for (int i = 0; i < shapedata.shapes.size(); i++) {
+		for (vec_size i = 0; i < shapedata.shapes.size(); i++) {
 			ShapeData::ShapeBase &s = shape_bases[i];
 			if (s.shape == p_shape && s.debug_shape.is_valid()) {
 				Ref<Mesh> mesh = s.shape->get_debug_mesh();
@@ -360,7 +360,7 @@ void CollisionObject3D::_update_debug_shapes() {
 		if (shapes.has(shapedata_idx)) {
 			ShapeData &shapedata = shapes[shapedata_idx];
 			ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
-			for (int i = 0; i < shapedata.shapes.size(); i++) {
+			for (vec_size i = 0; i < shapedata.shapes.size(); i++) {
 				ShapeData::ShapeBase &s = shape_bases[i];
 				if (s.shape.is_null() || shapedata.disabled) {
 					if (s.debug_shape.is_valid()) {
@@ -395,7 +395,7 @@ void CollisionObject3D::_clear_debug_shapes() {
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ShapeData &shapedata = E.value;
 		ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
-		for (int i = 0; i < shapedata.shapes.size(); i++) {
+		for (vec_size i = 0; i < shapedata.shapes.size(); i++) {
 			ShapeData::ShapeBase &s = shape_bases[i];
 			if (s.debug_shape.is_valid()) {
 				RS::get_singleton()->free(s.debug_shape);
@@ -418,7 +418,7 @@ void CollisionObject3D::_on_transform_changed() {
 				continue; // If disabled then there are no debug shapes to update.
 			}
 			const ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptr();
-			for (int i = 0; i < shapedata.shapes.size(); i++) {
+			for (vec_size i = 0; i < shapedata.shapes.size(); i++) {
 				RS::get_singleton()->instance_set_transform(shape_bases[i].debug_shape, debug_shape_old_transform * shapedata.xform);
 			}
 		}
@@ -526,7 +526,7 @@ void CollisionObject3D::shape_owner_set_disabled(uint32_t p_owner, bool p_disabl
 	}
 	sd.disabled = p_disabled;
 
-	for (int i = 0; i < sd.shapes.size(); i++) {
+	for (vec_size i = 0; i < sd.shapes.size(); i++) {
 		if (area) {
 			PhysicsServer3D::get_singleton()->area_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
 		} else {
@@ -562,7 +562,7 @@ void CollisionObject3D::shape_owner_set_transform(uint32_t p_owner, const Transf
 
 	ShapeData &sd = shapes[p_owner];
 	sd.xform = p_transform;
-	for (int i = 0; i < sd.shapes.size(); i++) {
+	for (vec_size i = 0; i < sd.shapes.size(); i++) {
 		if (area) {
 			PhysicsServer3D::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, p_transform);
 		} else {
@@ -649,7 +649,7 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 	shapes[p_owner].shapes.remove_at(p_shape);
 
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
-		for (int i = 0; i < E.value.shapes.size(); i++) {
+		for (vec_size i = 0; i < E.value.shapes.size(); i++) {
 			if (E.value.shapes[i].index > index_to_remove) {
 				E.value.shapes.write[i].index -= 1;
 			}
@@ -671,7 +671,7 @@ uint32_t CollisionObject3D::shape_find_owner(int p_shape_index) const {
 	ERR_FAIL_INDEX_V(p_shape_index, total_subshapes, UINT32_MAX);
 
 	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
-		for (int i = 0; i < E.value.shapes.size(); i++) {
+		for (vec_size i = 0; i < E.value.shapes.size(); i++) {
 			if (E.value.shapes[i].index == p_shape_index) {
 				return E.key;
 			}

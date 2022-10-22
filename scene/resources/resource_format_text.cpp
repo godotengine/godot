@@ -224,7 +224,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("node_paths")) {
 				Vector<String> paths = next_tag.fields["node_paths"];
-				for (int i = 0; i < paths.size(); i++) {
+				for (vec_size i = 0; i < paths.size(); i++) {
 					path_properties.insert(paths[i]);
 				}
 			}
@@ -269,7 +269,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];
-				for (int i = 0; i < groups.size(); i++) {
+				for (vec_size i = 0; i < groups.size(); i++) {
 					packed_scene->get_state()->add_node_group(node_id, packed_scene->get_state()->add_name(groups[i]));
 				}
 			}
@@ -348,7 +348,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			}
 
 			Vector<int> bind_ints;
-			for (int i = 0; i < binds.size(); i++) {
+			for (vec_size i = 0; i < binds.size(); i++) {
 				bind_ints.push_back(packed_scene->get_state()->add_value(binds[i]));
 			}
 
@@ -1342,7 +1342,7 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 	wf->seek(sub_res_count_pos); //plus one because the saved one
 	wf->store_32(local_offsets.size());
 
-	for (int i = 0; i < local_offsets.size(); i++) {
+	for (vec_size i = 0; i < local_offsets.size(); i++) {
 		wf->seek(local_pointers_pos[i]);
 		wf->store_64(local_offsets[i] + offset_from);
 	}
@@ -1965,7 +1965,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 	sorted_er.sort();
 
-	for (int i = 0; i < sorted_er.size(); i++) {
+	for (vec_size i = 0; i < sorted_er.size(); i++) {
 		String p = sorted_er[i].resource->get_path();
 
 		String s = "[ext_resource type=\"" + sorted_er[i].resource->get_save_class() + "\"";
@@ -2131,7 +2131,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				// since it's rare to have more than 5 groups assigned to a single node.
 				groups.sort_custom<StringName::AlphCompare>();
 				String sgroups = " groups=[";
-				for (int j = 0; j < groups.size(); j++) {
+				for (vec_size j = 0; j < groups.size(); j++) {
 					sgroups += "\"" + String(groups[j]).c_escape() + "\"";
 					if (j < groups.size() - 1) {
 						sgroups += ", ";
@@ -2203,7 +2203,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		}
 
 		Vector<NodePath> editable_instances = state->get_editable_instances();
-		for (int i = 0; i < editable_instances.size(); i++) {
+		for (vec_size i = 0; i < editable_instances.size(); i++) {
 			if (i == 0) {
 				f->store_line("");
 			}

@@ -53,7 +53,7 @@ void Occluder3D::_update() {
 	aabb = AABB();
 
 	const Vector3 *ptr = vertices.ptr();
-	for (int i = 0; i < vertices.size(); i++) {
+	for (vec_size i = 0; i < vertices.size(); i++) {
 		aabb.expand_to(ptr[i]);
 	}
 
@@ -397,7 +397,7 @@ void PolygonOccluder3D::_update_arrays(PackedVector3Array &r_vertices, PackedInt
 	r_vertices.resize(occluder_polygon.size());
 	Vector3 *vertex_ptr = r_vertices.ptrw();
 	const Vector2 *polygon_ptr = occluder_polygon.ptr();
-	for (int i = 0; i < occluder_polygon.size(); i++) {
+	for (vec_size i = 0; i < occluder_polygon.size(); i++) {
 		vertex_ptr[i] = Vector3(polygon_ptr[i].x, polygon_ptr[i].y, 0.0);
 	}
 
@@ -528,7 +528,7 @@ void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_s
 	}
 
 	Vector3 *vertices_ptr = vertices.ptrw();
-	for (int j = 0; j < vertices.size(); j++) {
+	for (vec_size j = 0; j < vertices.size(); j++) {
 		vertices_ptr[j] = p_transform.xform(vertices_ptr[j]);
 	}
 
@@ -550,7 +550,7 @@ void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_s
 	int index_offset = r_indices.size();
 	r_indices.resize(index_offset + indices.size());
 	int *idx_ptr = r_indices.ptrw();
-	for (int j = 0; j < indices.size(); j++) {
+	for (vec_size j = 0; j < indices.size(); j++) {
 		idx_ptr[index_offset + j] = vertex_offset + indices[j];
 	}
 }

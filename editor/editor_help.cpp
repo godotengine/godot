@@ -149,7 +149,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			if (topic == "class_enum") {
 				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-				for (int i = 0; i < cd.constants.size(); i++) {
+				for (vec_size i = 0; i < cd.constants.size(); i++) {
 					if (cd.constants[i].enumeration == link) {
 						// Found in @GlobalScope.
 						emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
@@ -159,7 +159,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			} else if (topic == "class_constant") {
 				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-				for (int i = 0; i < cd.constants.size(); i++) {
+				for (vec_size i = 0; i < cd.constants.size(); i++) {
 					if (cd.constants[i].name == link) {
 						// Found in @GlobalScope.
 						emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
@@ -331,7 +331,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->add_text("(");
 	class_desc->pop();
 
-	for (int j = 0; j < p_method.arguments.size(); j++) {
+	for (vec_size j = 0; j < p_method.arguments.size(); j++) {
 		class_desc->push_color(text_color);
 		if (j > 0) {
 			class_desc->add_text(", ");
@@ -427,7 +427,7 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 	for (int pass = 0; pass < 2; pass++) {
 		Vector<DocData::MethodDoc> m;
 
-		for (int i = 0; i < p_methods.size(); i++) {
+		for (vec_size i = 0; i < p_methods.size(); i++) {
 			const String &q = p_methods[i].qualifiers;
 			if ((pass == 0 && q.contains("virtual")) || (pass == 1 && !q.contains("virtual"))) {
 				m.push_back(p_methods[i]);
@@ -442,7 +442,7 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 		}
 
 		String group_prefix;
-		for (int i = 0; i < m.size(); i++) {
+		for (vec_size i = 0; i < m.size(); i++) {
 			const String new_prefix = m[i].name.substr(0, 3);
 			bool is_new_group = false;
 
@@ -492,14 +492,14 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 	for (int pass = 0; pass < 2; pass++) {
 		Vector<DocData::MethodDoc> methods_filtered;
 
-		for (int i = 0; i < p_methods.size(); i++) {
+		for (vec_size i = 0; i < p_methods.size(); i++) {
 			const String &q = p_methods[i].qualifiers;
 			if ((pass == 0 && q.contains("virtual")) || (pass == 1 && !q.contains("virtual"))) {
 				methods_filtered.push_back(p_methods[i]);
 			}
 		}
 
-		for (int i = 0; i < methods_filtered.size(); i++) {
+		for (vec_size i = 0; i < methods_filtered.size(); i++) {
 			class_desc->push_font(code_font);
 			_add_method(methods_filtered[i], false);
 			class_desc->pop();
@@ -514,7 +514,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 				class_desc->append_text(TTR("Error codes returned:"));
 				class_desc->add_newline();
 				class_desc->push_list(0, RichTextLabel::LIST_DOTS, false);
-				for (int j = 0; j < methods_filtered[i].errors_returned.size(); j++) {
+				for (vec_size j = 0; j < methods_filtered[i].errors_returned.size(); j++) {
 					if (j > 0) {
 						class_desc->add_newline();
 					}
@@ -739,7 +739,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_font(doc_code_font);
 		class_desc->add_newline();
 
-		for (int i = 0; i < cd.tutorials.size(); i++) {
+		for (vec_size i = 0; i < cd.tutorials.size(); i++) {
 			const String link = DTR(cd.tutorials[i].link);
 			String linktxt = (cd.tutorials[i].title.is_empty()) ? link : DTR(cd.tutorials[i].title);
 			const int seppos = linktxt.find("//");
@@ -766,7 +766,7 @@ void EditorHelp::_update_doc() {
 	bool has_properties = cd.properties.size() != 0;
 	if (cd.is_script_doc) {
 		has_properties = false;
-		for (int i = 0; i < cd.properties.size(); i++) {
+		for (vec_size i = 0; i < cd.properties.size(); i++) {
 			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
 				continue;
 			}
@@ -791,7 +791,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_table(4);
 		class_desc->set_table_column_expand(1, true);
 
-		for (int i = 0; i < cd.properties.size(); i++) {
+		for (vec_size i = 0; i < cd.properties.size(); i++) {
 			// Ignore undocumented private.
 			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
 				continue;
@@ -931,7 +931,7 @@ void EditorHelp::_update_doc() {
 
 	Vector<DocData::MethodDoc> methods;
 
-	for (int i = 0; i < cd.methods.size(); i++) {
+	for (vec_size i = 0; i < cd.methods.size(); i++) {
 		if (skip_methods.has(cd.methods[i].name)) {
 			if (cd.methods[i].arguments.size() == 0 /* getter */ || (cd.methods[i].arguments.size() == 1 && cd.methods[i].return_type == "void" /* setter */)) {
 				continue;
@@ -1007,7 +1007,7 @@ void EditorHelp::_update_doc() {
 		data_type_names["icon"] = TTR("Icons");
 		data_type_names["style"] = TTR("Styles");
 
-		for (int i = 0; i < cd.theme_properties.size(); i++) {
+		for (vec_size i = 0; i < cd.theme_properties.size(); i++) {
 			theme_property_line[cd.theme_properties[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			if (theme_data_type != cd.theme_properties[i].data_type) {
@@ -1096,7 +1096,7 @@ void EditorHelp::_update_doc() {
 
 		class_desc->push_indent(1);
 
-		for (int i = 0; i < cd.signals.size(); i++) {
+		for (vec_size i = 0; i < cd.signals.size(); i++) {
 			signal_line[cd.signals[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			class_desc->push_font(doc_code_font); // monofont
@@ -1107,7 +1107,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(symbol_color);
 			class_desc->add_text("(");
 			class_desc->pop();
-			for (int j = 0; j < cd.signals[i].arguments.size(); j++) {
+			for (vec_size j = 0; j < cd.signals[i].arguments.size(); j++) {
 				class_desc->push_color(text_color);
 				if (j > 0) {
 					class_desc->add_text(", ");
@@ -1160,7 +1160,7 @@ void EditorHelp::_update_doc() {
 		HashMap<String, Vector<DocData::ConstantDoc>> enums;
 		Vector<DocData::ConstantDoc> constants;
 
-		for (int i = 0; i < cd.constants.size(); i++) {
+		for (vec_size i = 0; i < cd.constants.size(); i++) {
 			if (!cd.constants[i].enumeration.is_empty()) {
 				if (!enums.has(cd.constants[i].enumeration)) {
 					enums[cd.constants[i].enumeration] = Vector<DocData::ConstantDoc>();
@@ -1236,7 +1236,7 @@ void EditorHelp::_update_doc() {
 				HashMap<String, int> enumValuesContainer;
 				int enumStartingLine = enum_line[E.key];
 
-				for (int i = 0; i < enum_list.size(); i++) {
+				for (vec_size i = 0; i < enum_list.size(); i++) {
 					if (cd.name == "@GlobalScope") {
 						enumValuesContainer[enum_list[i].name] = enumStartingLine;
 					}
@@ -1308,7 +1308,7 @@ void EditorHelp::_update_doc() {
 
 			class_desc->add_newline();
 
-			for (int i = 0; i < constants.size(); i++) {
+			for (vec_size i = 0; i < constants.size(); i++) {
 				constant_line[constants[i].name] = class_desc->get_paragraph_count() - 2;
 				class_desc->push_font(doc_code_font);
 
@@ -1385,7 +1385,7 @@ void EditorHelp::_update_doc() {
 
 		class_desc->push_indent(1);
 
-		for (int i = 0; i < cd.annotations.size(); i++) {
+		for (vec_size i = 0; i < cd.annotations.size(); i++) {
 			annotation_line[cd.annotations[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			class_desc->push_font(doc_code_font); // monofont
@@ -1398,7 +1398,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_color(symbol_color);
 				class_desc->add_text("(");
 				class_desc->pop();
-				for (int j = 0; j < cd.annotations[i].arguments.size(); j++) {
+				for (vec_size j = 0; j < cd.annotations[i].arguments.size(); j++) {
 					class_desc->push_color(text_color);
 					if (j > 0) {
 						class_desc->add_text(", ");
@@ -1485,7 +1485,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 		class_desc->add_newline();
 
-		for (int i = 0; i < cd.properties.size(); i++) {
+		for (vec_size i = 0; i < cd.properties.size(); i++) {
 			if (cd.properties[i].overridden) {
 				continue;
 			}
@@ -1563,7 +1563,7 @@ void EditorHelp::_update_doc() {
 			// Script doc doesn't have setter, getter.
 			if (!cd.is_script_doc) {
 				HashMap<String, DocData::MethodDoc> method_map;
-				for (int j = 0; j < methods.size(); j++) {
+				for (vec_size j = 0; j < methods.size(); j++) {
 					method_map[methods[j].name] = methods[j];
 				}
 
@@ -2145,7 +2145,7 @@ Vector<Pair<String, int>> EditorHelp::get_sections() {
 	_wait_for_thread();
 	Vector<Pair<String, int>> sections;
 
-	for (int i = 0; i < section_line.size(); i++) {
+	for (vec_size i = 0; i < section_line.size(); i++) {
 		sections.push_back(Pair<String, int>(section_line[i].first, i));
 	}
 	return sections;

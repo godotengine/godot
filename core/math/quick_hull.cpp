@@ -38,7 +38,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	/* CREATE AABB VOLUME */
 
 	AABB aabb;
-	for (int i = 0; i < p_points.size(); i++) {
+	for (vec_size i = 0; i < p_points.size(); i++) {
 		if (i == 0) {
 			aabb.position = p_points[i];
 		} else {
@@ -54,7 +54,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	valid_points.resize(p_points.size());
 	HashSet<Vector3> valid_cache;
 
-	for (int i = 0; i < p_points.size(); i++) {
+	for (vec_size i = 0; i < p_points.size(); i++) {
 		Vector3 sp = p_points[i].snapped(Vector3(0.0001, 0.0001, 0.0001));
 		if (valid_cache.has(sp)) {
 			valid_points.write[i] = false;
@@ -74,7 +74,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	{
 		real_t max = 0, min = 0;
 
-		for (int i = 0; i < p_points.size(); i++) {
+		for (vec_size i = 0; i < p_points.size(); i++) {
 			if (!valid_points[i]) {
 				continue;
 			}
@@ -97,7 +97,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		real_t maxd = 0;
 		Vector3 rel12 = p_points[simplex[0]] - p_points[simplex[1]];
 
-		for (int i = 0; i < p_points.size(); i++) {
+		for (vec_size i = 0; i < p_points.size(); i++) {
 			if (!valid_points[i]) {
 				continue;
 			}
@@ -118,7 +118,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		real_t maxd = 0;
 		Plane p(p_points[simplex[0]], p_points[simplex[1]], p_points[simplex[2]]);
 
-		for (int i = 0; i < p_points.size(); i++) {
+		for (vec_size i = 0; i < p_points.size(); i++) {
 			if (!valid_points[i]) {
 				continue;
 			}
@@ -175,7 +175,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 	/* COMPUTE AVAILABLE VERTICES */
 
-	for (int i = 0; i < p_points.size(); i++) {
+	for (vec_size i = 0; i < p_points.size(); i++) {
 		if (i == simplex[0]) {
 			continue;
 		}
@@ -221,7 +221,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		int next = -1;
 		real_t next_d = 0;
 
-		for (int i = 0; i < f.points_over.size(); i++) {
+		for (vec_size i = 0; i < f.points_over.size(); i++) {
 			real_t d = f.plane.distance_to(p_points[f.points_over[i]]);
 
 			if (d > next_d) {
@@ -295,7 +295,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		for (List<Face>::Element *&F : lit_faces) {
 			Face &lf = F->get();
 
-			for (int i = 0; i < lf.points_over.size(); i++) {
+			for (vec_size i = 0; i < lf.points_over.size(); i++) {
 				if (lf.points_over[i] == f.points_over[next]) { //do not add current one
 					continue;
 				}

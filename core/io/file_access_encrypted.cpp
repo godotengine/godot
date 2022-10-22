@@ -132,7 +132,7 @@ void FileAccessEncrypted::_close() {
 
 		compressed.resize(len);
 		memset(compressed.ptrw(), 0, len);
-		for (int i = 0; i < data.size(); i++) {
+		for (vec_size i = 0; i < data.size(); i++) {
 			compressed.write[i] = data[i];
 		}
 

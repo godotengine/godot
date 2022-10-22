@@ -92,7 +92,7 @@ void CallableCustomBind::call(const Variant **p_arguments, int p_argcount, Varia
 	for (int i = 0; i < p_argcount; i++) {
 		args[i] = (const Variant *)p_arguments[i];
 	}
-	for (int i = 0; i < binds.size(); i++) {
+	for (vec_size i = 0; i < binds.size(); i++) {
 		args[i + p_argcount] = (const Variant *)&binds[i];
 	}
 

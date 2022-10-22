@@ -45,7 +45,7 @@ Rect2 NavigationPolygon::_edit_get_rect() const {
 		item_rect = Rect2();
 		bool first = true;
 
-		for (int i = 0; i < outlines.size(); i++) {
+		for (vec_size i = 0; i < outlines.size(); i++) {
 			const Vector<Vector2> &outline = outlines[i];
 			const int outline_size = outline.size();
 			if (outline_size < 3) {
@@ -68,7 +68,7 @@ Rect2 NavigationPolygon::_edit_get_rect() const {
 }
 
 bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	for (int i = 0; i < outlines.size(); i++) {
+	for (vec_size i = 0; i < outlines.size(); i++) {
 		const Vector<Vector2> &outline = outlines[i];
 		const int outline_size = outline.size();
 		if (outline_size < 3) {
@@ -101,7 +101,7 @@ void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array
 		navmesh.unref();
 	}
 	polygons.resize(p_array.size());
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		polygons.write[i].indices = p_array[i];
 	}
 }
@@ -109,7 +109,7 @@ void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array
 TypedArray<Vector<int32_t>> NavigationPolygon::_get_polygons() const {
 	TypedArray<Vector<int32_t>> ret;
 	ret.resize(polygons.size());
-	for (int i = 0; i < ret.size(); i++) {
+	for (vec_size i = 0; i < ret.size(); i++) {
 		ret[i] = polygons[i].indices;
 	}
 
@@ -118,7 +118,7 @@ TypedArray<Vector<int32_t>> NavigationPolygon::_get_polygons() const {
 
 void NavigationPolygon::_set_outlines(const TypedArray<Vector<Vector2>> &p_array) {
 	outlines.resize(p_array.size());
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		outlines.write[i] = p_array[i];
 	}
 	rect_cache_dirty = true;
@@ -127,7 +127,7 @@ void NavigationPolygon::_set_outlines(const TypedArray<Vector<Vector2>> &p_array
 TypedArray<Vector<Vector2>> NavigationPolygon::_get_outlines() const {
 	TypedArray<Vector<Vector2>> ret;
 	ret.resize(outlines.size());
-	for (int i = 0; i < ret.size(); i++) {
+	for (vec_size i = 0; i < ret.size(); i++) {
 		ret[i] = outlines[i];
 	}
 
@@ -178,7 +178,7 @@ Ref<NavigationMesh> NavigationPolygon::get_mesh() {
 
 			const Vector2 *r = get_vertices().ptr();
 
-			for (int i(0); i < get_vertices().size(); i++) {
+			for (vec_size i(0); i < get_vertices().size(); i++) {
 				w[i] = Vector3(r[i].x, 0.0, r[i].y);
 			}
 		}
@@ -232,7 +232,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	Vector2 outside_point(-1e10, -1e10);
 
-	for (int i = 0; i < outlines.size(); i++) {
+	for (vec_size i = 0; i < outlines.size(); i++) {
 		Vector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
 		if (olsize < 3) {
@@ -247,7 +247,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	outside_point += Vector2(0.7239784, 0.819238); //avoid precision issues
 
-	for (int i = 0; i < outlines.size(); i++) {
+	for (vec_size i = 0; i < outlines.size(); i++) {
 		Vector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
 		if (olsize < 3) {
@@ -257,7 +257,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 		int interscount = 0;
 		//test if this is an outer outline
-		for (int k = 0; k < outlines.size(); k++) {
+		for (vec_size k = 0; k < outlines.size(); k++) {
 			if (i == k) {
 				continue; //no self intersect
 			}
@@ -509,7 +509,7 @@ void NavigationRegion2D::_notification(int p_what) {
 					Vector<int> polygon = navpoly->get_polygon(i);
 					Vector<Vector2> vertices;
 					vertices.resize(polygon.size());
-					for (int j = 0; j < polygon.size(); j++) {
+					for (vec_size j = 0; j < polygon.size(); j++) {
 						ERR_FAIL_INDEX(polygon[j], verts.size());
 						vertices.write[j] = verts[polygon[j]];
 					}

@@ -62,7 +62,7 @@ PluginConfigAndroid PluginConfigAndroid::resolve_prebuilt_plugin(PluginConfigAnd
 	resolved.binary = resolved.binary_type == PluginConfigAndroid::BINARY_TYPE_LOCAL ? resolve_local_dependency_path(plugin_config_dir, prebuilt_plugin.binary) : prebuilt_plugin.binary;
 	if (!prebuilt_plugin.local_dependencies.is_empty()) {
 		resolved.local_dependencies.clear();
-		for (int i = 0; i < prebuilt_plugin.local_dependencies.size(); i++) {
+		for (vec_size i = 0; i < prebuilt_plugin.local_dependencies.size(); i++) {
 			resolved.local_dependencies.push_back(resolve_local_dependency_path(plugin_config_dir, prebuilt_plugin.local_dependencies[i]));
 		}
 	}
@@ -88,7 +88,7 @@ bool PluginConfigAndroid::is_plugin_config_valid(PluginConfigAndroid plugin_conf
 
 	bool valid_local_dependencies = true;
 	if (!plugin_config.local_dependencies.is_empty()) {
-		for (int i = 0; i < plugin_config.local_dependencies.size(); i++) {
+		for (vec_size i = 0; i < plugin_config.local_dependencies.size(); i++) {
 			if (!FileAccess::exists(plugin_config.local_dependencies[i])) {
 				valid_local_dependencies = false;
 				break;
@@ -102,7 +102,7 @@ uint64_t PluginConfigAndroid::get_plugin_modification_time(const PluginConfigAnd
 	uint64_t last_updated = FileAccess::get_modified_time(config_path);
 	last_updated = MAX(last_updated, FileAccess::get_modified_time(plugin_config.binary));
 
-	for (int i = 0; i < plugin_config.local_dependencies.size(); i++) {
+	for (vec_size i = 0; i < plugin_config.local_dependencies.size(); i++) {
 		String binary = plugin_config.local_dependencies.get(i);
 		last_updated = MAX(last_updated, FileAccess::get_modified_time(binary));
 	}
@@ -127,7 +127,7 @@ PluginConfigAndroid PluginConfigAndroid::load_plugin_config(Ref<ConfigFile> conf
 			if (config_file->has_section(PluginConfigAndroid::DEPENDENCIES_SECTION)) {
 				Vector<String> local_dependencies_paths = config_file->get_value(PluginConfigAndroid::DEPENDENCIES_SECTION, PluginConfigAndroid::DEPENDENCIES_LOCAL_KEY, Vector<String>());
 				if (!local_dependencies_paths.is_empty()) {
-					for (int i = 0; i < local_dependencies_paths.size(); i++) {
+					for (vec_size i = 0; i < local_dependencies_paths.size(); i++) {
 						plugin_config.local_dependencies.push_back(resolve_local_dependency_path(config_base_dir, local_dependencies_paths[i]));
 					}
 				}
@@ -148,7 +148,7 @@ String PluginConfigAndroid::get_plugins_binaries(String binary_type, Vector<Plug
 	String plugins_binaries;
 	if (!plugins_configs.is_empty()) {
 		Vector<String> binaries;
-		for (int i = 0; i < plugins_configs.size(); i++) {
+		for (vec_size i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];
 			if (!config.valid_config) {
 				continue;
@@ -177,7 +177,7 @@ String PluginConfigAndroid::get_plugins_custom_maven_repos(Vector<PluginConfigAn
 	String custom_maven_repos;
 	if (!plugins_configs.is_empty()) {
 		Vector<String> repos_urls;
-		for (int i = 0; i < plugins_configs.size(); i++) {
+		for (vec_size i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];
 			if (!config.valid_config) {
 				continue;
@@ -195,7 +195,7 @@ String PluginConfigAndroid::get_plugins_names(Vector<PluginConfigAndroid> plugin
 	String plugins_names;
 	if (!plugins_configs.is_empty()) {
 		Vector<String> names;
-		for (int i = 0; i < plugins_configs.size(); i++) {
+		for (vec_size i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];
 			if (!config.valid_config) {
 				continue;

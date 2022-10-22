@@ -79,7 +79,7 @@ void StringName::cleanup() {
 		data.sort_custom<DebugSortReferences>();
 		int unreferenced_stringnames = 0;
 		int rarely_referenced_stringnames = 0;
-		for (int i = 0; i < data.size(); i++) {
+		for (vec_size i = 0; i < data.size(); i++) {
 			print_line(itos(i + 1) + ": " + data[i]->get_name() + " - " + itos(data[i]->debug_references));
 			if (data[i]->debug_references == 0) {
 				unreferenced_stringnames += 1;

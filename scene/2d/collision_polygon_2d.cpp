@@ -51,7 +51,7 @@ void CollisionPolygon2D::_build_polygon() {
 		//here comes the sun, lalalala
 		//decompose concave into multiple convex polygons and add them
 		Vector<Vector<Vector2>> decomp = _decompose_in_convex();
-		for (int i = 0; i < decomp.size(); i++) {
+		for (vec_size i = 0; i < decomp.size(); i++) {
 			Ref<ConvexPolygonShape2D> convex = memnew(ConvexPolygonShape2D);
 			convex->set_points(decomp[i]);
 			parent->shape_owner_add_shape(owner_id, convex);
@@ -68,7 +68,7 @@ void CollisionPolygon2D::_build_polygon() {
 		segments.resize(polygon.size() * 2);
 		Vector2 *w = segments.ptrw();
 
-		for (int i = 0; i < polygon.size(); i++) {
+		for (vec_size i = 0; i < polygon.size(); i++) {
 			w[(i << 1) + 0] = polygon[i];
 			w[(i << 1) + 1] = polygon[(i + 1) % polygon.size()];
 		}
@@ -145,7 +145,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				Vector<Vector<Vector2>> decomp = _decompose_in_convex();
 
 				Color c(0.4, 0.9, 0.1);
-				for (int i = 0; i < decomp.size(); i++) {
+				for (vec_size i = 0; i < decomp.size(); i++) {
 					c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
 					draw_colored_polygon(decomp[i], c);
 				}
@@ -179,7 +179,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 	polygon = p_polygon;
 
 	{
-		for (int i = 0; i < polygon.size(); i++) {
+		for (vec_size i = 0; i < polygon.size(); i++) {
 			if (i == 0) {
 				aabb = Rect2(polygon[i], Size2());
 			} else {

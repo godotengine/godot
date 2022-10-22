@@ -288,7 +288,7 @@ Error MultiplayerAPI::_rpc_bind(int p_peer, Object *p_object, const StringName &
 	argsp.resize(p_args.size());
 	Variant *ptr = args.ptrw();
 	const Variant **pptr = argsp.ptrw();
-	for (int i = 0; i < p_args.size(); i++) {
+	for (vec_size i = 0; i < p_args.size(); i++) {
 		ptr[i] = p_args[i];
 		pptr[i] = &ptr[i];
 	}

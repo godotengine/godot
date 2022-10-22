@@ -51,7 +51,7 @@ static bool _property_path_matches(const String &p_property_path, const String &
 	}
 
 	const Vector<String> sections = p_property_path.split("/");
-	for (int i = 0; i < sections.size(); i++) {
+	for (vec_size i = 0; i < sections.size(); i++) {
 		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style))) {
 			return true;
 		}
@@ -1793,10 +1793,10 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 
 			// For undoing things
 			undo_redo->add_undo_property(object, count_property, properties_as_array.size());
-			for (int i = 0; i < (int)properties_as_array.size(); i++) {
+			for (vec_size i = 0; i < (int)properties_as_array.size(); i++) {
 				Dictionary d = Dictionary(properties_as_array[i]);
 				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
+				for (vec_size j = 0; j < keys.size(); j++) {
 					String key = keys[j];
 					undo_redo->add_undo_property(object, vformat(key, i), d[key]);
 				}
@@ -1816,10 +1816,10 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 
 			// Change the array size then set the properties.
 			undo_redo->add_do_property(object, count_property, properties_as_array.size());
-			for (int i = 0; i < (int)properties_as_array.size(); i++) {
+			for (vec_size i = 0; i < (int)properties_as_array.size(); i++) {
 				Dictionary d = properties_as_array[i];
 				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
+				for (vec_size j = 0; j < keys.size(); j++) {
 					String key = keys[j];
 					undo_redo->add_do_property(object, vformat(key, i), d[key]);
 				}
@@ -1869,10 +1869,10 @@ void EditorInspectorArray::_clear_array() {
 
 		// For undoing things
 		undo_redo->add_undo_property(object, count_property, count);
-		for (int i = 0; i < (int)properties_as_array.size(); i++) {
+		for (vec_size i = 0; i < (int)properties_as_array.size(); i++) {
 			Dictionary d = Dictionary(properties_as_array[i]);
 			Array keys = d.keys();
-			for (int j = 0; j < keys.size(); j++) {
+			for (vec_size j = 0; j < keys.size(); j++) {
 				String key = keys[j];
 				undo_redo->add_undo_property(object, vformat(key, i), d[key]);
 			}
@@ -1944,7 +1944,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 			for (int i = count - 1; i > p_size - 1; i--) {
 				Dictionary d = Dictionary(properties_as_array[i]);
 				Array keys = d.keys();
-				for (int j = 0; j < keys.size(); j++) {
+				for (vec_size j = 0; j < keys.size(); j++) {
 					String key = keys[j];
 					undo_redo->add_undo_property(object, vformat(key, i), d[key]);
 				}
@@ -2001,7 +2001,7 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 }
 
 int EditorInspectorArray::_drop_position() const {
-	for (int i = 0; i < (int)array_elements.size(); i++) {
+	for (vec_size i = 0; i < (int)array_elements.size(); i++) {
 		const ArrayElement &ae = array_elements[i];
 
 		Size2 size = ae.panel->get_size();
@@ -2061,7 +2061,7 @@ void EditorInspectorArray::_setup() {
 		numbers_min_w = numbers_font->get_string_size(test).width;
 	}
 
-	for (int i = 0; i < (int)array_elements.size(); i++) {
+	for (vec_size i = 0; i < (int)array_elements.size(); i++) {
 		ArrayElement &ae = array_elements[i];
 
 		// Panel and its hbox.
@@ -2200,7 +2200,7 @@ void EditorInspectorArray::_notification(int p_what) {
 			odd_style->set_bg_color(color.darkened(-0.08));
 			even_style->set_bg_color(color.darkened(0.08));
 
-			for (int i = 0; i < (int)array_elements.size(); i++) {
+			for (vec_size i = 0; i < (int)array_elements.size(); i++) {
 				ArrayElement &ae = array_elements[i];
 				if (ae.move_texture_rect) {
 					ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
@@ -2449,7 +2449,7 @@ EditorProperty *EditorInspector::instantiate_property_editor(Object *p_object, c
 	for (int i = inspector_plugin_count - 1; i >= 0; i--) {
 		inspector_plugins[i]->parse_property(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		if (inspector_plugins[i]->added_editors.size()) {
-			for (int j = 1; j < inspector_plugins[i]->added_editors.size(); j++) { //only keep first one
+			for (vec_size j = 1; j < inspector_plugins[i]->added_editors.size(); j++) { //only keep first one
 				memdelete(inspector_plugins[i]->added_editors[j].property_editor);
 			}
 
@@ -2550,7 +2550,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 					ep->set_label(F.label);
 				}
 
-				for (int i = 0; i < F.properties.size(); i++) {
+				for (vec_size i = 0; i < F.properties.size(); i++) {
 					String prop = F.properties[i];
 
 					if (!editor_property_map.has(prop)) {
@@ -2984,7 +2984,7 @@ void EditorInspector::update_tree() {
 		int level = 1;
 
 		Vector<String> components = path.split("/");
-		for (int i = 0; i < components.size(); i++) {
+		for (vec_size i = 0; i < components.size(); i++) {
 			String component = components[i];
 			acc_path += (i > 0) ? "/" + component : component;
 
@@ -3055,7 +3055,7 @@ void EditorInspector::update_tree() {
 			bool foldable = use_folding;
 			String add_button_text = TTR("Add Element");
 			String swap_method;
-			for (int i = (p.type == Variant::NIL ? 1 : 2); i < class_name_components.size(); i++) {
+			for (vec_size i = (p.type == Variant::NIL ? 1 : 2); i < class_name_components.size(); i++) {
 				if (class_name_components[i].begins_with("page_size") && class_name_components[i].get_slice_count("=") == 2) {
 					page_size = class_name_components[i].get_slice("=", 1).to_int();
 				} else if (class_name_components[i].begins_with("add_button_text") && class_name_components[i].get_slice_count("=") == 2) {
@@ -3150,7 +3150,7 @@ void EditorInspector::update_tree() {
 				DocTools *dd = EditorHelp::get_doc_data();
 				HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(classname);
 				while (F && doc_info.description.is_empty()) {
-					for (int i = 0; i < F->value.properties.size(); i++) {
+					for (vec_size i = 0; i < F->value.properties.size(); i++) {
 						if (F->value.properties[i].name == propname.operator String()) {
 							doc_info.description = DTR(F->value.properties[i].description);
 							doc_info.path = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
@@ -3160,7 +3160,7 @@ void EditorInspector::update_tree() {
 
 					Vector<String> slices = propname.operator String().split("/");
 					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
-						for (int i = 0; i < F->value.theme_properties.size(); i++) {
+						for (vec_size i = 0; i < F->value.theme_properties.size(); i++) {
 							if (F->value.theme_properties[i].name == slices[1]) {
 								doc_info.description = DTR(F->value.theme_properties[i].description);
 								doc_info.path = "class_theme_item:" + F->value.name + ":" + F->value.theme_properties[i].name;
@@ -3204,7 +3204,7 @@ void EditorInspector::update_tree() {
 
 		editors.append_array(late_editors);
 
-		for (int i = 0; i < editors.size(); i++) {
+		for (vec_size i = 0; i < editors.size(); i++) {
 			EditorProperty *ep = Object::cast_to<EditorProperty>(editors[i].property_editor);
 			const Vector<String> &properties = editors[i].properties;
 
@@ -3227,7 +3227,7 @@ void EditorInspector::update_tree() {
 						ep->set_label(property_label_string);
 					}
 
-					for (int j = 0; j < properties.size(); j++) {
+					for (vec_size j = 0; j < properties.size(); j++) {
 						String prop = properties[j];
 
 						if (!editor_property_map.has(prop)) {
@@ -3604,7 +3604,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 
 		PackedStringArray linked_properties_dynamic = object->call("_get_linked_undo_properties", p_name, p_value);
-		for (int i = 0; i < linked_properties_dynamic.size(); i++) {
+		for (vec_size i = 0; i < linked_properties_dynamic.size(); i++) {
 			valid = false;
 			Variant undo_value = object->get(linked_properties_dynamic[i], &valid);
 			if (valid) {
@@ -3615,7 +3615,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Variant v_undo_redo = undo_redo;
 		Variant v_object = object;
 		Variant v_name = p_name;
-		for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback().size(); i++) {
+		for (vec_size i = 0; i < EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback().size(); i++) {
 			const Callable &callback = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback()[i];
 
 			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
@@ -3683,14 +3683,14 @@ void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array
 	ERR_FAIL_COND(p_paths.size() == 0 || p_values.size() == 0);
 	ERR_FAIL_COND(p_paths.size() != p_values.size());
 	String names;
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		if (i > 0) {
 			names += ",";
 		}
 		names += p_paths[i];
 	}
 	undo_redo->create_action(TTR("Set Multiple:") + " " + names, UndoRedo::MERGE_ENDS);
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		_edit_set(p_paths[i], p_values[i], false, "");
 		if (restart_request_props.has(p_paths[i])) {
 			emit_signal(SNAME("restart_requested"));

@@ -84,7 +84,7 @@ void MIDIDriverALSAMidi::thread_func(void *p_udata) {
 
 		md->lock();
 
-		for (int i = 0; i < md->connected_inputs.size(); i++) {
+		for (vec_size i = 0; i < md->connected_inputs.size(); i++) {
 			snd_rawmidi_t *midi_in = md->connected_inputs[i];
 			do {
 				uint8_t byte = 0;
@@ -159,7 +159,7 @@ void MIDIDriverALSAMidi::close() {
 	exit_thread.set();
 	thread.wait_to_finish();
 
-	for (int i = 0; i < connected_inputs.size(); i++) {
+	for (vec_size i = 0; i < connected_inputs.size(); i++) {
 		snd_rawmidi_t *midi_in = connected_inputs[i];
 		snd_rawmidi_close(midi_in);
 	}
@@ -178,7 +178,7 @@ PackedStringArray MIDIDriverALSAMidi::get_connected_inputs() {
 	PackedStringArray list;
 
 	lock();
-	for (int i = 0; i < connected_inputs.size(); i++) {
+	for (vec_size i = 0; i < connected_inputs.size(); i++) {
 		snd_rawmidi_t *midi_in = connected_inputs[i];
 		snd_rawmidi_info_t *info;
 

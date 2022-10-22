@@ -514,7 +514,7 @@ void TextureProgressBar::_notification(int p_what) {
 								Vector<Point2> points;
 								uvs.push_back(get_relative_center());
 								points.push_back(progress_offset + s * get_relative_center());
-								for (int i = 0; i < pts.size(); i++) {
+								for (vec_size i = 0; i < pts.size(); i++) {
 									Point2 uv = unit_val_to_uv(pts[i]);
 									if (uvs.find(uv) >= 0) {
 										continue;

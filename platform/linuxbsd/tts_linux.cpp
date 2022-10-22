@@ -118,7 +118,7 @@ void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNo
 			}
 			PackedInt32Array breaks = TS->string_get_word_breaks(message.text, language);
 			int prev = 0;
-			for (int i = 0; i < breaks.size(); i++) {
+			for (vec_size i = 0; i < breaks.size(); i++) {
 				text += message.text.substr(prev, breaks[i] - prev);
 				text += "<mark name=\"" + String::num_int64(breaks[i], 10) + "\"/>";
 				prev = breaks[i];

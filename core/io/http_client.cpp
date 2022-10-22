@@ -70,14 +70,14 @@ Error HTTPClient::_request(Method p_method, const String &p_url, const Vector<St
 String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 	String query = "";
 	Array keys = p_dict.keys();
-	for (int i = 0; i < keys.size(); ++i) {
+	for (vec_size i = 0; i < keys.size(); ++i) {
 		String encoded_key = String(keys[i]).uri_encode();
 		Variant value = p_dict[keys[i]];
 		switch (value.get_type()) {
 			case Variant::ARRAY: {
 				// Repeat the key with every values
 				Array values = value;
-				for (int j = 0; j < values.size(); ++j) {
+				for (vec_size j = 0; j < values.size(); ++j) {
 					query += "&" + encoded_key + "=" + String(values[j]).uri_encode();
 				}
 				break;
@@ -97,7 +97,7 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 }
 
 Error HTTPClient::verify_headers(const Vector<String> &p_headers) {
-	for (int i = 0; i < p_headers.size(); i++) {
+	for (vec_size i = 0; i < p_headers.size(); i++) {
 		String sanitized = p_headers[i].strip_edges();
 		ERR_FAIL_COND_V_MSG(sanitized.is_empty(), ERR_INVALID_PARAMETER, "Invalid HTTP header at index " + itos(i) + ": empty.");
 		ERR_FAIL_COND_V_MSG(sanitized.find(":") < 1, ERR_INVALID_PARAMETER,

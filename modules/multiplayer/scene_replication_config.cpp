@@ -94,7 +94,7 @@ bool SceneReplicationConfig::_get(const StringName &p_name, Variant &r_ret) cons
 }
 
 void SceneReplicationConfig::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < properties.size(); i++) {
+	for (vec_size i = 0; i < properties.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/spawn", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
@@ -120,7 +120,7 @@ void SceneReplicationConfig::add_property(const NodePath &p_path, int p_index) {
 	ERR_FAIL_INDEX(p_index, properties.size());
 
 	List<ReplicationProperty>::Element *I = properties.front();
-	int c = 0;
+	vec_size c = 0;
 	while (c < p_index) {
 		I = I->next();
 		c++;
@@ -133,7 +133,7 @@ void SceneReplicationConfig::remove_property(const NodePath &p_path) {
 }
 
 bool SceneReplicationConfig::has_property(const NodePath &p_path) const {
-	for (int i = 0; i < properties.size(); i++) {
+	for (vec_size i = 0; i < properties.size(); i++) {
 		if (properties[i].name == p_path) {
 			return true;
 		}
@@ -142,7 +142,7 @@ bool SceneReplicationConfig::has_property(const NodePath &p_path) const {
 }
 
 int SceneReplicationConfig::property_get_index(const NodePath &p_path) const {
-	for (int i = 0; i < properties.size(); i++) {
+	for (vec_size i = 0; i < properties.size(); i++) {
 		if (properties[i].name == p_path) {
 			return i;
 		}

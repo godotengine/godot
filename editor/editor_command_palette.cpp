@@ -195,7 +195,7 @@ void EditorCommandPalette::add_command(String p_command_name, String p_key_name,
 	ERR_FAIL_COND_MSG(commands.has(p_key_name), "The Command '" + String(p_command_name) + "' already exists. Unable to add it.");
 
 	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * arguments.size());
-	for (int i = 0; i < arguments.size(); i++) {
+	for (vec_size i = 0; i < arguments.size(); i++) {
 		argptrs[i] = &arguments[i];
 	}
 	Command command;
@@ -245,7 +245,7 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 	// Load command use history.
 	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
 	Array history_entries = command_history.keys();
-	for (int i = 0; i < history_entries.size(); i++) {
+	for (vec_size i = 0; i < history_entries.size(); i++) {
 		const String &history_key = history_entries[i];
 		if (commands.has(history_key)) {
 			commands[history_key].last_used = command_history[history_key];

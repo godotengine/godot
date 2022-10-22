@@ -660,7 +660,7 @@ TypedArray<Plane> Camera3D::_get_frustum() const {
 
 bool Camera3D::is_position_in_frustum(const Vector3 &p_position) const {
 	Vector<Plane> frustum = get_frustum();
-	for (int i = 0; i < frustum.size(); i++) {
+	for (vec_size i = 0; i < frustum.size(); i++) {
 		if (frustum[i].is_point_over(p_position)) {
 			return false;
 		}

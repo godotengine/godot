@@ -288,7 +288,7 @@ void EditorPropertyTextEnum::update_property() {
 		// Add an explicit empty value for clearing the property.
 		option_button->add_item("", options.size() + 1000);
 
-		for (int i = 0; i < options.size(); i++) {
+		for (vec_size i = 0; i < options.size(); i++) {
 			option_button->add_item(options[i], i);
 			if (options[i] == current_value) {
 				option_button->select(option_button->get_item_count() - 1);
@@ -310,7 +310,7 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_strin
 		option_button->add_item("", options.size() + 1000);
 	}
 
-	for (int i = 0; i < p_options.size(); i++) {
+	for (vec_size i = 0; i < p_options.size(); i++) {
 		options.append(p_options[i]);
 		option_button->add_item(p_options[i], i);
 	}
@@ -473,7 +473,7 @@ void EditorPropertyPath::_path_pressed() {
 		dialog->set_current_dir(full_path);
 	} else {
 		dialog->set_file_mode(save_mode ? EditorFileDialog::FILE_MODE_SAVE_FILE : EditorFileDialog::FILE_MODE_OPEN_FILE);
-		for (int i = 0; i < extensions.size(); i++) {
+		for (vec_size i = 0; i < extensions.size(); i++) {
 			String e = extensions[i].strip_edges();
 			if (!e.is_empty()) {
 				dialog->add_filter(extensions[i].strip_edges());
@@ -780,7 +780,7 @@ void EditorPropertyEnum::update_property() {
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	options->clear();
 	int64_t current_val = 0;
-	for (int i = 0; i < p_options.size(); i++) {
+	for (vec_size i = 0; i < p_options.size(); i++) {
 		Vector<String> text_split = p_options[i].split(":");
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
@@ -829,7 +829,7 @@ void EditorPropertyFlags::_flag_toggled(int p_index) {
 void EditorPropertyFlags::update_property() {
 	uint32_t value = get_edited_object()->get(get_edited_property());
 
-	for (int i = 0; i < flags.size(); i++) {
+	for (vec_size i = 0; i < flags.size(); i++) {
 		flags[i]->set_pressed((value & flag_values[i]) == flag_values[i]);
 	}
 }
@@ -839,7 +839,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 
 	bool first = true;
 	uint32_t current_val;
-	for (int i = 0; i < p_options.size(); i++) {
+	for (vec_size i = 0; i < p_options.size(); i++) {
 		// An empty option is not considered a "flag".
 		String option = p_options[i].strip_edges();
 		if (option.is_empty()) {
@@ -951,7 +951,7 @@ Size2 EditorPropertyLayersGrid::get_minimum_size() const {
 }
 
 String EditorPropertyLayersGrid::get_tooltip(const Point2 &p_pos) const {
-	for (int i = 0; i < flag_rects.size(); i++) {
+	for (vec_size i = 0; i < flag_rects.size(); i++) {
 		if (i < tooltips.size() && flag_rects[i].has_point(p_pos)) {
 			return tooltips[i];
 		}
@@ -972,7 +972,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (!expand_hovered) {
-			for (int i = 0; i < flag_rects.size(); i++) {
+			for (vec_size i = 0; i < flag_rects.size(); i++) {
 				if (flag_rects[i].has_point(mm->get_position())) {
 					// Used to highlight the hovered flag in the layers grid.
 					hovered_index = i;
@@ -4238,7 +4238,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 			hint.step = slices[2].to_float();
 		}
 		hint.hide_slider = false;
-		for (int i = 2; i < slices.size(); i++) {
+		for (vec_size i = 2; i < slices.size(); i++) {
 			String slice = slices[i].strip_edges();
 			if (slice == "or_greater") {
 				hint.or_greater = true;
@@ -4252,7 +4252,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		}
 	}
 	bool degrees = false;
-	for (int i = 0; i < slices.size(); i++) {
+	for (vec_size i = 0; i < slices.size(); i++) {
 		String slice = slices[i].strip_edges();
 		if (slice == "radians") {
 			hint.radians = true;
@@ -4351,7 +4351,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				bool positive_only = false;
 				bool flip = false;
 				const Vector<String> hints = p_hint_text.split(",");
-				for (int i = 0; i < hints.size(); i++) {
+				for (vec_size i = 0; i < hints.size(); i++) {
 					const String hint = hints[i].strip_edges();
 					if (hint == "attenuation") {
 						flip = true;

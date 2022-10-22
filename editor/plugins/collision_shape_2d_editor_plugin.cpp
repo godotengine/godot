@@ -341,7 +341,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
-				for (int i = 0; i < handles.size(); i++) {
+				for (vec_size i = 0; i < handles.size(); i++) {
 					if (xform.xform(handles[i]).distance_to(gpoint) < 8) {
 						edit_handle = i;
 
@@ -527,7 +527,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 			handles.resize(8);
 			Vector2 ext = shape->get_size() / 2;
-			for (int i = 0; i < handles.size(); i++) {
+			for (vec_size i = 0; i < handles.size(); i++) {
 				handles.write[i] = RECT_HANDLES[i] * ext;
 				p_overlay->draw_texture(h, gt.xform(handles[i]) - size);
 			}

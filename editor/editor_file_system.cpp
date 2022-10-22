@@ -53,7 +53,7 @@ void EditorFileSystemDirectory::sort_files() {
 }
 
 int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
-	for (int i = 0; i < files.size(); i++) {
+	for (vec_size i = 0; i < files.size(); i++) {
 		if (files[i]->file == p_file) {
 			return i;
 		}
@@ -62,7 +62,7 @@ int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
 }
 
 int EditorFileSystemDirectory::find_dir_index(const String &p_dir) const {
-	for (int i = 0; i < subdirs.size(); i++) {
+	for (vec_size i = 0; i < subdirs.size(); i++) {
 		if (subdirs[i]->name == p_dir) {
 			return i;
 		}
@@ -121,7 +121,7 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), Vector<String>());
 	Vector<String> deps;
 
-	for (int i = 0; i < files[p_idx]->deps.size(); i++) {
+	for (vec_size i = 0; i < files[p_idx]->deps.size(); i++) {
 		String dep = files[p_idx]->deps[i];
 		int sep_idx = dep.find("::"); //may contain type information, unwanted
 		if (sep_idx != -1) {
@@ -199,11 +199,11 @@ EditorFileSystemDirectory::EditorFileSystemDirectory() {
 }
 
 EditorFileSystemDirectory::~EditorFileSystemDirectory() {
-	for (int i = 0; i < files.size(); i++) {
+	for (vec_size i = 0; i < files.size(); i++) {
 		memdelete(files[i]);
 	}
 
-	for (int i = 0; i < subdirs.size(); i++) {
+	for (vec_size i = 0; i < subdirs.size(); i++) {
 		memdelete(subdirs[i]);
 	}
 }
@@ -277,7 +277,7 @@ void EditorFileSystem::_scan_filesystem() {
 					String deps = split[8].strip_edges();
 					if (deps.length()) {
 						Vector<String> dp = deps.split("<>");
-						for (int i = 0; i < dp.size(); i++) {
+						for (vec_size i = 0; i < dp.size(); i++) {
 							String path = dp[i];
 							fc.deps.push_back(path);
 						}
@@ -405,7 +405,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 				to_check.push_back(value);
 			} else if (assign == "files") {
 				Array fa = value;
-				for (int i = 0; i < fa.size(); i++) {
+				for (vec_size i = 0; i < fa.size(); i++) {
 					to_check.push_back(fa[i]);
 				}
 			} else if (assign == "importer_version") {
@@ -519,11 +519,11 @@ bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
 	HashMap<String, int> import_support_test;
 	Vector<bool> import_support_tested;
 	import_support_tested.resize(import_support_queries.size());
-	for (int i = 0; i < import_support_queries.size(); i++) {
+	for (vec_size i = 0; i < import_support_queries.size(); i++) {
 		import_support_tested.write[i] = false;
 		if (import_support_queries[i]->is_active()) {
 			Vector<String> extensions = import_support_queries[i]->get_file_extensions();
-			for (int j = 0; j < extensions.size(); j++) {
+			for (vec_size j = 0; j < extensions.size(); j++) {
 				import_support_test.insert(extensions[j], i);
 			}
 		}
@@ -533,14 +533,14 @@ bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
 		return false; //well nothing to do
 	}
 
-	for (int i = 0; i < reimports.size(); i++) {
+	for (vec_size i = 0; i < reimports.size(); i++) {
 		HashMap<String, int>::Iterator E = import_support_test.find(reimports[i].get_extension());
 		if (E) {
 			import_support_tested.write[E->value] = true;
 		}
 	}
 
-	for (int i = 0; i < import_support_tested.size(); i++) {
+	for (vec_size i = 0; i < import_support_tested.size(); i++) {
 		if (import_support_tested[i]) {
 			if (import_support_queries.write[i]->query()) {
 				return true;
@@ -565,7 +565,7 @@ bool EditorFileSystem::_update_scan_actions() {
 			} break;
 			case ItemAction::ACTION_DIR_ADD: {
 				int idx = 0;
-				for (int i = 0; i < ia.dir->subdirs.size(); i++) {
+				for (vec_size i = 0; i < ia.dir->subdirs.size(); i++) {
 					if (ia.new_dir->name.naturalnocasecmp_to(ia.dir->subdirs[i]->name) < 0) {
 						break;
 					}
@@ -587,7 +587,7 @@ bool EditorFileSystem::_update_scan_actions() {
 			} break;
 			case ItemAction::ACTION_FILE_ADD: {
 				int idx = 0;
-				for (int i = 0; i < ia.dir->files.size(); i++) {
+				for (vec_size i = 0; i < ia.dir->files.size(); i++) {
 					if (ia.new_file->file.naturalnocasecmp_to(ia.dir->files[i]->file) < 0) {
 						break;
 					}
@@ -791,7 +791,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				_scan_new_dir(efd, da, p_progress.get_sub(idx, total));
 
 				int idx2 = 0;
-				for (int i = 0; i < p_dir->subdirs.size(); i++) {
+				for (vec_size i = 0; i < p_dir->subdirs.size(); i++) {
 					if (efd->name.naturalnocasecmp_to(p_dir->subdirs[i]->name) < 0) {
 						break;
 					}
@@ -924,7 +924,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 					continue;
 				}
 				Vector<DocData::ClassDoc> docs = scr->get_documentation();
-				for (int j = 0; j < docs.size(); j++) {
+				for (vec_size j = 0; j < docs.size(); j++) {
 					EditorHelp::get_doc_data()->add_doc(docs[j]);
 				}
 			}
@@ -948,11 +948,11 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 		//first mark everything as veryfied
 
-		for (int i = 0; i < p_dir->files.size(); i++) {
+		for (vec_size i = 0; i < p_dir->files.size(); i++) {
 			p_dir->files[i]->verified = false;
 		}
 
-		for (int i = 0; i < p_dir->subdirs.size(); i++) {
+		for (vec_size i = 0; i < p_dir->subdirs.size(); i++) {
 			p_dir->get_subdir(i)->verified = false;
 		}
 
@@ -1054,7 +1054,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 		da->list_dir_end();
 	}
 
-	for (int i = 0; i < p_dir->files.size(); i++) {
+	for (vec_size i = 0; i < p_dir->files.size(); i++) {
 		if (updated_dir && !p_dir->files[i]->verified) {
 			//this file was removed, add action to remove it
 			ItemAction ia;
@@ -1110,7 +1110,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 		}
 	}
 
-	for (int i = 0; i < p_dir->subdirs.size(); i++) {
+	for (vec_size i = 0; i < p_dir->subdirs.size(); i++) {
 		if ((updated_dir && !p_dir->subdirs[i]->verified) || _should_skip_directory(p_dir->subdirs[i]->get_path())) {
 			//this directory was removed or ignored, add action to remove it
 			ItemAction ia;
@@ -1269,13 +1269,13 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 	}
 	p_file->store_line("::" + p_dir->get_path() + "::" + String::num(p_dir->modified_time));
 
-	for (int i = 0; i < p_dir->files.size(); i++) {
+	for (vec_size i = 0; i < p_dir->files.size(); i++) {
 		if (!p_dir->files[i]->import_group_file.is_empty()) {
 			group_file_cache.insert(p_dir->files[i]->import_group_file);
 		}
 		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->uid) + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
 		s += "::";
-		for (int j = 0; j < p_dir->files[i]->deps.size(); j++) {
+		for (vec_size j = 0; j < p_dir->files[i]->deps.size(); j++) {
 			if (j > 0) {
 				s += "<>";
 			}
@@ -1285,7 +1285,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		p_file->store_line(s);
 	}
 
-	for (int i = 0; i < p_dir->subdirs.size(); i++) {
+	for (vec_size i = 0; i < p_dir->subdirs.size(); i++) {
 		_save_filesystem_cache(p_dir->subdirs[i], p_file);
 	}
 }
@@ -1315,7 +1315,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 	EditorFileSystemDirectory *fs = filesystem;
 
-	for (int i = 0; i < path.size(); i++) {
+	for (vec_size i = 0; i < path.size(); i++) {
 		if (path[i].begins_with(".")) {
 			return false;
 		}
@@ -1355,7 +1355,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	}
 
 	int cpos = -1;
-	for (int i = 0; i < fs->files.size(); i++) {
+	for (vec_size i = 0; i < fs->files.size(); i++) {
 		if (fs->files[i]->file == file) {
 			cpos = i;
 			break;
@@ -1426,7 +1426,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 	EditorFileSystemDirectory *fs = filesystem;
 
-	for (int i = 0; i < path.size(); i++) {
+	for (vec_size i = 0; i < path.size(); i++) {
 		int idx = -1;
 		for (int j = 0; j < fs->get_subdir_count(); j++) {
 			if (fs->get_subdir(j)->get_name() == path[i]) {
@@ -1579,7 +1579,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 		int idx = 0;
 		String file_name = p_file.get_file();
 
-		for (int i = 0; i < fs->files.size(); i++) {
+		for (vec_size i = 0; i < fs->files.size(); i++) {
 			if (p_file.naturalnocasecmp_to(fs->files[i]->file) < 0) {
 				break;
 			}
@@ -1637,7 +1637,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 	HashMap<String, HashMap<StringName, Variant>> source_file_options;
 	HashMap<String, String> base_paths;
-	for (int i = 0; i < p_files.size(); i++) {
+	for (vec_size i = 0; i < p_files.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
 		Error err = config->load(p_files[i] + ".import");
@@ -1731,7 +1731,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			f->store_line("source_file=" + Variant(file).get_construct_string());
 			if (dest_paths.size()) {
 				Array dp;
-				for (int i = 0; i < dest_paths.size(); i++) {
+				for (vec_size i = 0; i < dest_paths.size(); i++) {
 					dp.push_back(dest_paths[i]);
 				}
 				f->store_line("dest_files=" + Variant(dp).get_construct_string() + "\n");
@@ -1980,7 +1980,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 
 		if (dest_paths.size()) {
 			Array dp;
-			for (int i = 0; i < dest_paths.size(); i++) {
+			for (vec_size i = 0; i < dest_paths.size(); i++) {
 				dp.push_back(dest_paths[i]);
 			}
 			f->store_line("dest_files=" + Variant(dp).get_construct_string() + "\n");
@@ -2072,7 +2072,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	HashSet<String> groups_to_reimport;
 
-	for (int i = 0; i < p_files.size(); i++) {
+	for (vec_size i = 0; i < p_files.size(); i++) {
 		String file = p_files[i];
 
 		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(file);
@@ -2111,7 +2111,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
 
 	int from = 0;
-	for (int i = 0; i < reimport_files.size(); i++) {
+	for (vec_size i = 0; i < reimport_files.size(); i++) {
 		if (use_multiple_threads && reimport_files[i].threaded) {
 			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer) {
 				if (from - i == 0) {
@@ -2317,7 +2317,7 @@ bool EditorFileSystem::_scan_extensions() {
 	}
 
 	Vector<String> loaded_extensions = NativeExtensionManager::get_singleton()->get_loaded_extensions();
-	for (int i = 0; i < loaded_extensions.size(); i++) {
+	for (vec_size i = 0; i < loaded_extensions.size(); i++) {
 		if (!extensions.has(loaded_extensions[i])) {
 			extensions_removed.push_back(loaded_extensions[i]);
 		}
@@ -2339,7 +2339,7 @@ bool EditorFileSystem::_scan_extensions() {
 	}
 
 	bool needs_restart = false;
-	for (int i = 0; i < extensions_added.size(); i++) {
+	for (vec_size i = 0; i < extensions_added.size(); i++) {
 		NativeExtensionManager::LoadStatus st = NativeExtensionManager::get_singleton()->load_extension(extensions_added[i]);
 		if (st == NativeExtensionManager::LOAD_STATUS_FAILED) {
 			EditorNode::get_singleton()->add_io_error("Error loading extension: " + extensions_added[i]);
@@ -2347,7 +2347,7 @@ bool EditorFileSystem::_scan_extensions() {
 			needs_restart = true;
 		}
 	}
-	for (int i = 0; i < extensions_removed.size(); i++) {
+	for (vec_size i = 0; i < extensions_removed.size(); i++) {
 		NativeExtensionManager::LoadStatus st = NativeExtensionManager::get_singleton()->unload_extension(extensions_removed[i]);
 		if (st == NativeExtensionManager::LOAD_STATUS_FAILED) {
 			EditorNode::get_singleton()->add_io_error("Error removing extension: " + extensions_added[i]);

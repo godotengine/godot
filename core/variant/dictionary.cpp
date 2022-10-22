@@ -169,7 +169,7 @@ Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 	return *result;
 }
 
-int Dictionary::size() const {
+vec_size Dictionary::size() const {
 	return _p->variant_map.size();
 }
 
@@ -187,7 +187,7 @@ bool Dictionary::has(const Variant &p_key) const {
 }
 
 bool Dictionary::has_all(const Array &p_keys) const {
-	for (int i = 0; i < p_keys.size(); i++) {
+	for (vec_size i = 0; i < p_keys.size(); i++) {
 		if (!has(p_keys[i])) {
 			return false;
 		}

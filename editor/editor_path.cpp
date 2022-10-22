@@ -64,7 +64,7 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 		String proper_name = "";
 		Vector<String> name_parts = E.name.split("/");
 
-		for (int i = 0; i < name_parts.size(); i++) {
+		for (vec_size i = 0; i < name_parts.size(); i++) {
 			if (i > 0) {
 				proper_name += " > ";
 			}
@@ -116,7 +116,7 @@ void EditorPath::_about_to_show() {
 }
 
 void EditorPath::update_path() {
-	for (int i = 0; i < history->get_path_size(); i++) {
+	for (vec_size i = 0; i < history->get_path_size(); i++) {
 		Object *obj = ObjectDB::get_instance(history->get_path_object(i));
 		if (!obj) {
 			continue;

@@ -115,7 +115,7 @@ void PostImportPluginSkeletonTrackOrganizer::internal_process(InternalImportCate
 				}
 
 				remove_indices.reverse();
-				for (int i = 0; i < remove_indices.size(); i++) {
+				for (vec_size i = 0; i < remove_indices.size(); i++) {
 					anim->remove_track(remove_indices[i]);
 				}
 			}

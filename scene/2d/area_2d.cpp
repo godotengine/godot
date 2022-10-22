@@ -143,7 +143,7 @@ void Area2D::_body_enter_tree(ObjectID p_id) {
 
 	E->value.in_tree = true;
 	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
-	for (int i = 0; i < E->value.shapes.size(); i++) {
+	for (vec_size i = 0; i < E->value.shapes.size(); i++) {
 		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].area_shape);
 	}
 }
@@ -157,7 +157,7 @@ void Area2D::_body_exit_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!E->value.in_tree);
 	E->value.in_tree = false;
 	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
-	for (int i = 0; i < E->value.shapes.size(); i++) {
+	for (vec_size i = 0; i < E->value.shapes.size(); i++) {
 		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].area_shape);
 	}
 }
@@ -237,7 +237,7 @@ void Area2D::_area_enter_tree(ObjectID p_id) {
 
 	E->value.in_tree = true;
 	emit_signal(SceneStringNames::get_singleton()->area_entered, node);
-	for (int i = 0; i < E->value.shapes.size(); i++) {
+	for (vec_size i = 0; i < E->value.shapes.size(); i++) {
 		emit_signal(SceneStringNames::get_singleton()->area_shape_entered, E->value.rid, node, E->value.shapes[i].area_shape, E->value.shapes[i].self_shape);
 	}
 }
@@ -251,7 +251,7 @@ void Area2D::_area_exit_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!E->value.in_tree);
 	E->value.in_tree = false;
 	emit_signal(SceneStringNames::get_singleton()->area_exited, node);
-	for (int i = 0; i < E->value.shapes.size(); i++) {
+	for (vec_size i = 0; i < E->value.shapes.size(); i++) {
 		emit_signal(SceneStringNames::get_singleton()->area_shape_exited, E->value.rid, node, E->value.shapes[i].area_shape, E->value.shapes[i].self_shape);
 	}
 }
@@ -342,7 +342,7 @@ void Area2D::_clear_monitoring() {
 				continue;
 			}
 
-			for (int i = 0; i < E.value.shapes.size(); i++) {
+			for (vec_size i = 0; i < E.value.shapes.size(); i++) {
 				emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E.value.rid, node, E.value.shapes[i].body_shape, E.value.shapes[i].area_shape);
 			}
 
@@ -370,7 +370,7 @@ void Area2D::_clear_monitoring() {
 				continue;
 			}
 
-			for (int i = 0; i < E.value.shapes.size(); i++) {
+			for (vec_size i = 0; i < E.value.shapes.size(); i++) {
 				emit_signal(SceneStringNames::get_singleton()->area_shape_exited, E.value.rid, node, E.value.shapes[i].area_shape, E.value.shapes[i].self_shape);
 			}
 

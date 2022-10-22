@@ -1694,7 +1694,7 @@ String stringify_variant_clean(const Variant p_variant, int recursion_count) {
 template <class T>
 String stringify_vector(const T &vec, int recursion_count) {
 	String str("[");
-	for (int i = 0; i < vec.size(); i++) {
+	for (vec_size i = 0; i < vec.size(); i++) {
 		if (i > 0) {
 			str += ", ";
 		}
@@ -1777,7 +1777,7 @@ String Variant::stringify(int recursion_count) const {
 				pairs.push_back(sp);
 			}
 
-			for (int i = 0; i < pairs.size(); i++) {
+			for (vec_size i = 0; i < pairs.size(); i++) {
 				if (i > 0) {
 					str += ", ";
 				}
@@ -2191,7 +2191,7 @@ inline DA _convert_array(const SA &p_array) {
 	DA da;
 	da.resize(p_array.size());
 
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		da.set(i, Variant(p_array.get(i)));
 	}
 
@@ -2323,7 +2323,7 @@ Variant::operator Vector<::RID>() const {
 	Array va = operator Array();
 	Vector<::RID> rids;
 	rids.resize(va.size());
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		rids.write[i] = va[i];
 	}
 	return rids;
@@ -2651,7 +2651,7 @@ Variant::Variant(const Vector<Plane> &p_array) {
 
 	plane_array->resize(p_array.size());
 
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		plane_array->operator[](i) = Variant(p_array[i]);
 	}
 }
@@ -2663,7 +2663,7 @@ Variant::Variant(const Vector<::RID> &p_array) {
 
 	rid_array->resize(p_array.size());
 
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		rid_array->set(i, Variant(p_array[i]));
 	}
 }
@@ -2740,7 +2740,7 @@ Variant::Variant(const Vector<Variant> &p_array) {
 	type = NIL;
 	Array arr;
 	arr.resize(p_array.size());
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		arr[i] = p_array[i];
 	}
 	*this = arr;
@@ -3278,7 +3278,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 	const p_type *lr = l.ptr();                                         \
 	const p_type *rr = r.ptr();                                         \
                                                                         \
-	for (int i = 0; i < l.size(); ++i) {                                \
+	for (vec_size i = 0; i < l.size(); ++i) {                           \
 		if (!p_compare_func((lr[i]), (rr[i])))                          \
 			return false;                                               \
 	}                                                                   \

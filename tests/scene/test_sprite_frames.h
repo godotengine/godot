@@ -57,7 +57,7 @@ TEST_CASE("[SpriteFrames] Animation addition, list getter, renaming, removal, an
 	frames.add_animation("1");
 	frames.add_animation("3");
 
-	for (int i = 0; i < test_names.size(); i++) {
+	for (vec_size i = 0; i < test_names.size(); i++) {
 		CHECK_MESSAGE(
 				frames.has_animation(test_names[i]),
 				"Add animation properly worked for each value");
@@ -74,7 +74,7 @@ TEST_CASE("[SpriteFrames] Animation addition, list getter, renaming, removal, an
 			sname_list.size() == test_names.size(),
 			"StringName List getter returned list of expected size");
 
-	for (int i = 0; i < test_names.size(); i++) {
+	for (vec_size i = 0; i < test_names.size(); i++) {
 		CHECK_MESSAGE(
 				sname_list[i] == StringName(test_names[i]),
 				"StringName List getter returned expected values");
@@ -84,7 +84,7 @@ TEST_CASE("[SpriteFrames] Animation addition, list getter, renaming, removal, an
 	Vector<String> string_vector = frames.get_animation_names();
 	test_names.sort();
 
-	for (int i = 0; i < test_names.size(); i++) {
+	for (vec_size i = 0; i < test_names.size(); i++) {
 		CHECK_MESSAGE(
 				string_vector[i] == test_names[i],
 				"String Vector getter returned expected values");

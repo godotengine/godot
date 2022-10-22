@@ -288,7 +288,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 #else
 	if (r_pipe) {
 		String command = "\"" + p_path + "\"";
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			command += String(" \"") + p_arguments[i] + "\"";
 		}
 		if (read_stderr) {
@@ -329,12 +329,12 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		// The child process
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			cs.push_back(p_arguments[i].utf8());
 		}
 
 		Vector<char *> args;
-		for (int i = 0; i < cs.size(); i++) {
+		for (vec_size i = 0; i < cs.size(); i++) {
 			args.push_back((char *)cs[i].get_data());
 		}
 		args.push_back(0);
@@ -371,12 +371,12 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			cs.push_back(p_arguments[i].utf8());
 		}
 
 		Vector<char *> args;
-		for (int i = 0; i < cs.size(); i++) {
+		for (vec_size i = 0; i < cs.size(); i++) {
 			args.push_back((char *)cs[i].get_data());
 		}
 		args.push_back(0);

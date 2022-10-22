@@ -88,7 +88,7 @@ void ConvexPolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
 Rect2 ConvexPolygonShape2D::get_rect() const {
 	Rect2 rect;
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		if (i == 0) {
 			rect.position = points[i];
 		} else {
@@ -101,7 +101,7 @@ Rect2 ConvexPolygonShape2D::get_rect() const {
 
 real_t ConvexPolygonShape2D::get_enclosing_radius() const {
 	real_t r = 0.0;
-	for (int i(0); i < get_points().size(); i++) {
+	for (vec_size i(0); i < get_points().size(); i++) {
 		r = MAX(get_points()[i].length_squared(), r);
 	}
 	return Math::sqrt(r);

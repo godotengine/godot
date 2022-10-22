@@ -216,7 +216,7 @@ Vector<Vector3> Transform3D::xform(const Vector<Vector3> &p_array) const {
 	const Vector3 *r = p_array.ptr();
 	Vector3 *w = array.ptrw();
 
-	for (int i = 0; i < p_array.size(); ++i) {
+	for (vec_size i = 0; i < p_array.size(); ++i) {
 		w[i] = xform(r[i]);
 	}
 	return array;
@@ -229,7 +229,7 @@ Vector<Vector3> Transform3D::xform_inv(const Vector<Vector3> &p_array) const {
 	const Vector3 *r = p_array.ptr();
 	Vector3 *w = array.ptrw();
 
-	for (int i = 0; i < p_array.size(); ++i) {
+	for (vec_size i = 0; i < p_array.size(); ++i) {
 		w[i] = xform_inv(r[i]);
 	}
 	return array;

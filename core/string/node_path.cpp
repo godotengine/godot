@@ -171,14 +171,14 @@ NodePath::operator String() const {
 		ret = "/";
 	}
 
-	for (int i = 0; i < data->path.size(); i++) {
+	for (vec_size i = 0; i < data->path.size(); i++) {
 		if (i > 0) {
 			ret += "/";
 		}
 		ret += data->path[i].operator String();
 	}
 
-	for (int i = 0; i < data->subpath.size(); i++) {
+	for (vec_size i = 0; i < data->subpath.size(); i++) {
 		ret += ":" + data->subpath[i].operator String();
 	}
 
@@ -261,11 +261,11 @@ NodePath NodePath::rel_path_to(const NodePath &p_np) const {
 
 	int path_size = 0;
 	StringName back_str("..");
-	for (int i = common_parent + 1; i < src_dirs.size(); i++) {
+	for (vec_size i = common_parent + 1; i < src_dirs.size(); i++) {
 		relpath_ptr[path_size++] = back_str;
 	}
 
-	for (int i = common_parent + 1; i < dst_dirs.size(); i++) {
+	for (vec_size i = common_parent + 1; i < dst_dirs.size(); i++) {
 		relpath_ptr[path_size++] = dst_dirs[i];
 	}
 
@@ -286,7 +286,7 @@ NodePath NodePath::get_as_property_path() const {
 
 		String initial_subname = data->path[0];
 
-		for (int i = 1; i < data->path.size(); i++) {
+		for (vec_size i = 1; i < data->path.size(); i++) {
 			initial_subname += "/" + data->path[i];
 		}
 		new_path.insert(0, initial_subname);
@@ -303,7 +303,7 @@ void NodePath::simplify() {
 	if (!data) {
 		return;
 	}
-	for (int i = 0; i < data->path.size(); i++) {
+	for (vec_size i = 0; i < data->path.size(); i++) {
 		if (data->path.size() == 1) {
 			break;
 		}

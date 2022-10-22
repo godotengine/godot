@@ -40,12 +40,12 @@ int GDScriptFunction::get_code_size() const {
 	return _code_size;
 }
 
-Variant GDScriptFunction::get_constant(int p_idx) const {
+Variant GDScriptFunction::get_constant(vec_size p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
 	return constants[p_idx];
 }
 
-StringName GDScriptFunction::get_global_name(int p_idx) const {
+StringName GDScriptFunction::get_global_name(vec_size p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, global_names.size(), "<errgname>");
 	return global_names[p_idx];
 }
@@ -54,7 +54,7 @@ int GDScriptFunction::get_default_argument_count() const {
 	return _default_arg_count;
 }
 
-int GDScriptFunction::get_default_argument_addr(int p_idx) const {
+int GDScriptFunction::get_default_argument_addr(vec_size p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), -1);
 	return default_arguments[p_idx];
 }
@@ -149,7 +149,7 @@ GDScriptFunction::GDScriptFunction() {
 }
 
 GDScriptFunction::~GDScriptFunction() {
-	for (int i = 0; i < lambdas.size(); i++) {
+	for (vec_size i = 0; i < lambdas.size(); i++) {
 		memdelete(lambdas[i]);
 	}
 

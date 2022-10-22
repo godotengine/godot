@@ -56,7 +56,7 @@ void TileProxiesManagerDialog::_delete_selected_bindings() {
 	undo_redo->create_action(TTR("Remove Tile Proxies"));
 
 	Vector<int> source_level_selected = source_level_list->get_selected_items();
-	for (int i = 0; i < source_level_selected.size(); i++) {
+	for (vec_size i = 0; i < source_level_selected.size(); i++) {
 		int key = source_level_list->get_item_metadata(source_level_selected[i]);
 		int val = tile_set->get_source_level_tile_proxy(key);
 		undo_redo->add_do_method(*tile_set, "remove_source_level_tile_proxy", key);
@@ -64,7 +64,7 @@ void TileProxiesManagerDialog::_delete_selected_bindings() {
 	}
 
 	Vector<int> coords_level_selected = coords_level_list->get_selected_items();
-	for (int i = 0; i < coords_level_selected.size(); i++) {
+	for (vec_size i = 0; i < coords_level_selected.size(); i++) {
 		Array key = coords_level_list->get_item_metadata(coords_level_selected[i]);
 		Array val = tile_set->get_coords_level_tile_proxy(key[0], key[1]);
 		undo_redo->add_do_method(*tile_set, "remove_coords_level_tile_proxy", key[0], key[1]);
@@ -72,7 +72,7 @@ void TileProxiesManagerDialog::_delete_selected_bindings() {
 	}
 
 	Vector<int> alternative_level_selected = alternative_level_list->get_selected_items();
-	for (int i = 0; i < alternative_level_selected.size(); i++) {
+	for (vec_size i = 0; i < alternative_level_selected.size(); i++) {
 		Array key = alternative_level_list->get_item_metadata(alternative_level_selected[i]);
 		Array val = tile_set->get_coords_level_tile_proxy(key[0], key[1]);
 		undo_redo->add_do_method(*tile_set, "remove_alternative_level_tile_proxy", key[0], key[1], key[2]);
@@ -91,7 +91,7 @@ void TileProxiesManagerDialog::_update_lists() {
 	alternative_level_list->clear();
 
 	Array proxies = tile_set->get_source_level_tile_proxies();
-	for (int i = 0; i < proxies.size(); i++) {
+	for (vec_size i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
 		String text = vformat("%s", proxy[0]).rpad(5) + "-> " + vformat("%s", proxy[1]);
 		int id = source_level_list->add_item(text);
@@ -99,7 +99,7 @@ void TileProxiesManagerDialog::_update_lists() {
 	}
 
 	proxies = tile_set->get_coords_level_tile_proxies();
-	for (int i = 0; i < proxies.size(); i++) {
+	for (vec_size i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
 		String text = vformat("%s, %s", proxy[0], proxy[1]).rpad(17) + "-> " + vformat("%s, %s", proxy[2], proxy[3]);
 		int id = coords_level_list->add_item(text);
@@ -107,7 +107,7 @@ void TileProxiesManagerDialog::_update_lists() {
 	}
 
 	proxies = tile_set->get_alternative_level_tile_proxies();
-	for (int i = 0; i < proxies.size(); i++) {
+	for (vec_size i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
 		String text = vformat("%s, %s, %s", proxy[0], proxy[1], proxy[2]).rpad(24) + "-> " + vformat("%s, %s, %s", proxy[3], proxy[4], proxy[5]);
 		int id = alternative_level_list->add_item(text);
@@ -197,19 +197,19 @@ void TileProxiesManagerDialog::_clear_invalid_button_pressed() {
 	undo_redo->add_do_method(*tile_set, "cleanup_invalid_tile_proxies");
 
 	Array proxies = tile_set->get_source_level_tile_proxies();
-	for (int i = 0; i < proxies.size(); i++) {
+	for (vec_size i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
 		undo_redo->add_undo_method(*tile_set, "set_source_level_tile_proxy", proxy[0], proxy[1]);
 	}
 
 	proxies = tile_set->get_coords_level_tile_proxies();
-	for (int i = 0; i < proxies.size(); i++) {
+	for (vec_size i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
 		undo_redo->add_undo_method(*tile_set, "set_coords_level_tile_proxy", proxy[0], proxy[1], proxy[2], proxy[3]);
 	}
 
 	proxies = tile_set->get_alternative_level_tile_proxies();
-	for (int i = 0; i < proxies.size(); i++) {
+	for (vec_size i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
 		undo_redo->add_undo_method(*tile_set, "set_alternative_level_tile_proxy", proxy[0], proxy[1], proxy[2], proxy[3], proxy[4], proxy[5]);
 	}
@@ -224,19 +224,19 @@ void TileProxiesManagerDialog::_clear_all_button_pressed() {
 	undo_redo->add_do_method(*tile_set, "clear_tile_proxies");
 
 	Array proxies = tile_set->get_source_level_tile_proxies();
-	for (int i = 0; i < proxies.size(); i++) {
+	for (vec_size i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
 		undo_redo->add_undo_method(*tile_set, "set_source_level_tile_proxy", proxy[0], proxy[1]);
 	}
 
 	proxies = tile_set->get_coords_level_tile_proxies();
-	for (int i = 0; i < proxies.size(); i++) {
+	for (vec_size i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
 		undo_redo->add_undo_method(*tile_set, "set_coords_level_tile_proxy", proxy[0], proxy[1], proxy[2], proxy[3]);
 	}
 
 	proxies = tile_set->get_alternative_level_tile_proxies();
-	for (int i = 0; i < proxies.size(); i++) {
+	for (vec_size i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
 		undo_redo->add_undo_method(*tile_set, "set_alternative_level_tile_proxy", proxy[0], proxy[1], proxy[2], proxy[3], proxy[4], proxy[5]);
 	}

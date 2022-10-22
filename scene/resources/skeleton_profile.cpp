@@ -131,7 +131,7 @@ void SkeletonProfile::_validate_property(PropertyInfo &p_property) const {
 
 	if (p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
 		String hint = "";
-		for (int i = 0; i < bones.size(); i++) {
+		for (vec_size i = 0; i < bones.size(); i++) {
 			hint += i == 0 ? String(bones[i].bone_name) : "," + String(bones[i].bone_name);
 		}
 		p_property.hint_string = hint;
@@ -150,7 +150,7 @@ void SkeletonProfile::_get_property_list(List<PropertyInfo> *p_list) const {
 		return;
 	}
 	String group_names = "";
-	for (int i = 0; i < groups.size(); i++) {
+	for (vec_size i = 0; i < groups.size(); i++) {
 		String path = "groups/" + itos(i) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "group_name"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
@@ -159,7 +159,7 @@ void SkeletonProfile::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 		group_names = group_names + groups[i].group_name;
 	}
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		String path = "bones/" + itos(i) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "bone_name"));
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "bone_parent"));
@@ -258,7 +258,7 @@ int SkeletonProfile::find_bone(StringName p_bone_name) const {
 	if (p_bone_name == StringName()) {
 		return -1;
 	}
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		if (bones[i].bone_name == p_bone_name) {
 			return i;
 		}
@@ -381,7 +381,7 @@ void SkeletonProfile::set_require(int p_bone_idx, const bool p_require) {
 
 bool SkeletonProfile::has_bone(StringName p_bone_name) {
 	bool is_found = false;
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		if (bones[i].bone_name == p_bone_name) {
 			is_found = true;
 			break;

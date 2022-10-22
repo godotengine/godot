@@ -128,7 +128,7 @@ public:
 		}
 		int first = middle;
 		int second = middle + 1;
-		if (second >= points.size()) {
+		if (second >= int(points.size())) {
 			return points[points.size() - 1].color;
 		}
 		if (first < 0) {
@@ -147,7 +147,7 @@ public:
 			case GRADIENT_INTERPOLATE_CUBIC: {
 				int p0 = first - 1;
 				int p3 = second + 1;
-				if (p3 >= points.size()) {
+				if (p3 >= int(points.size())) {
 					p3 = second;
 				}
 				if (p0 < 0) {

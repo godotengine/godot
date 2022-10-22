@@ -71,7 +71,7 @@ public:
 	_FORCE_INLINE_ Variant has_default_argument(int p_arg) const {
 		int idx = p_arg - (argument_count - default_arguments.size());
 
-		if (idx < 0 || idx >= default_arguments.size()) {
+		if (idx < 0 || idx >= int(default_arguments.size())) {
 			return false;
 		} else {
 			return true;
@@ -81,7 +81,7 @@ public:
 	_FORCE_INLINE_ Variant get_default_argument(int p_arg) const {
 		int idx = p_arg - (argument_count - default_arguments.size());
 
-		if (idx < 0 || idx >= default_arguments.size()) {
+		if (idx < 0 || idx >= int(default_arguments.size())) {
 			return Variant();
 		} else {
 			return default_arguments[idx];
@@ -141,7 +141,7 @@ public:
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg < 0) {
 			return _gen_return_type_info();
-		} else if (p_arg < method_info.arguments.size()) {
+		} else if (p_arg < int(method_info.arguments.size())) {
 			return method_info.arguments[p_arg];
 		} else {
 			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
@@ -179,7 +179,7 @@ public:
 			Vector<StringName> names;
 			names.resize(method_info.arguments.size());
 #endif
-			for (int i = 0; i < method_info.arguments.size(); i++) {
+			for (vec_size i = 0; i < method_info.arguments.size(); i++) {
 				at[i + 1] = method_info.arguments[i].type;
 #ifdef DEBUG_METHODS_ENABLED
 				names.write[i] = method_info.arguments[i].name;

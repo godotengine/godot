@@ -158,7 +158,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	}
 
 	List<jobject> to_free;
-	for (int i = 0; i < method->param_types.size(); i++) {
+	for (vec_size i = 0; i < method->param_types.size(); i++) {
 		switch (method->param_types[i]) {
 			case ARG_TYPE_VOID: {
 				//can't happen
@@ -279,7 +279,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_BOOLEAN: {
 				Array arr = *p_args[i];
 				jbooleanArray a = env->NewBooleanArray(arr.size());
-				for (int j = 0; j < arr.size(); j++) {
+				for (vec_size j = 0; j < arr.size(); j++) {
 					jboolean val = arr[j];
 					env->SetBooleanArrayRegion(a, j, 1, &val);
 				}
@@ -290,7 +290,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_BYTE: {
 				Array arr = *p_args[i];
 				jbyteArray a = env->NewByteArray(arr.size());
-				for (int j = 0; j < arr.size(); j++) {
+				for (vec_size j = 0; j < arr.size(); j++) {
 					jbyte val = arr[j];
 					env->SetByteArrayRegion(a, j, 1, &val);
 				}
@@ -301,7 +301,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_CHAR: {
 				Array arr = *p_args[i];
 				jcharArray a = env->NewCharArray(arr.size());
-				for (int j = 0; j < arr.size(); j++) {
+				for (vec_size j = 0; j < arr.size(); j++) {
 					jchar val = arr[j];
 					env->SetCharArrayRegion(a, j, 1, &val);
 				}
@@ -312,7 +312,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_SHORT: {
 				Array arr = *p_args[i];
 				jshortArray a = env->NewShortArray(arr.size());
-				for (int j = 0; j < arr.size(); j++) {
+				for (vec_size j = 0; j < arr.size(); j++) {
 					jshort val = arr[j];
 					env->SetShortArrayRegion(a, j, 1, &val);
 				}
@@ -323,7 +323,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_INT: {
 				Array arr = *p_args[i];
 				jintArray a = env->NewIntArray(arr.size());
-				for (int j = 0; j < arr.size(); j++) {
+				for (vec_size j = 0; j < arr.size(); j++) {
 					jint val = arr[j];
 					env->SetIntArrayRegion(a, j, 1, &val);
 				}
@@ -333,7 +333,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_LONG: {
 				Array arr = *p_args[i];
 				jlongArray a = env->NewLongArray(arr.size());
-				for (int j = 0; j < arr.size(); j++) {
+				for (vec_size j = 0; j < arr.size(); j++) {
 					jlong val = (int64_t)arr[j];
 					env->SetLongArrayRegion(a, j, 1, &val);
 				}
@@ -344,7 +344,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_FLOAT: {
 				Array arr = *p_args[i];
 				jfloatArray a = env->NewFloatArray(arr.size());
-				for (int j = 0; j < arr.size(); j++) {
+				for (vec_size j = 0; j < arr.size(); j++) {
 					jfloat val = arr[j];
 					env->SetFloatArrayRegion(a, j, 1, &val);
 				}
@@ -355,7 +355,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_DOUBLE: {
 				Array arr = *p_args[i];
 				jdoubleArray a = env->NewDoubleArray(arr.size());
-				for (int j = 0; j < arr.size(); j++) {
+				for (vec_size j = 0; j < arr.size(); j++) {
 					jdouble val = arr[j];
 					env->SetDoubleArrayRegion(a, j, 1, &val);
 				}
@@ -366,7 +366,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_STRING: {
 				Array arr = *p_args[i];
 				jobjectArray a = env->NewObjectArray(arr.size(), env->FindClass("java/lang/String"), nullptr);
-				for (int j = 0; j < arr.size(); j++) {
+				for (vec_size j = 0; j < arr.size(); j++) {
 					String s = arr[j];
 					jstring jStr = env->NewStringUTF(s.utf8().get_data());
 					env->SetObjectArrayElement(a, j, jStr);
@@ -1062,7 +1062,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 				continue;
 			}
 			bool this_valid = true;
-			for (int j = 0; j < E->get().param_types.size(); j++) {
+			for (vec_size j = 0; j < E->get().param_types.size(); j++) {
 				Variant::Type _new;
 				float new_l;
 				Variant::Type existing;

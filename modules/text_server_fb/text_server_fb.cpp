@@ -216,7 +216,7 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 	int mw = p_width;
 	int mh = p_height;
 
-	for (int i = 0; i < p_data->textures.size(); i++) {
+	for (vec_size i = 0; i < p_data->textures.size(); i++) {
 		const FontTexture &ct = p_data->textures[i];
 
 		if (p_image_format != ct.format) {
@@ -435,7 +435,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 	}
 
 	if (FT_Outline_Get_Orientation(outline) == 1) {
-		for (int i = 0; i < (int)shape.contours.size(); ++i) {
+		for (vec_size i = 0; i < (int)shape.contours.size(); ++i) {
 			shape.contours[i].reverse();
 		}
 	}
@@ -1147,7 +1147,7 @@ void TextServerFallback::_font_set_generate_mipmaps(const RID &p_font_rid, bool 
 	MutexLock lock(fd->mutex);
 	if (fd->mipmaps != p_generate_mipmaps) {
 		for (KeyValue<Vector2i, FontForSizeFallback *> &E : fd->cache) {
-			for (int i = 0; i < E.value->textures.size(); i++) {
+			for (vec_size i = 0; i < E.value->textures.size(); i++) {
 				E.value->textures.write[i].dirty = true;
 				E.value->textures.write[i].texture = Ref<ImageTexture>();
 			}
@@ -2621,7 +2621,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 		}
 	}
 
-	for (int k = 0; k < parent->spans.size(); k++) {
+	for (vec_size k = 0; k < parent->spans.size(); k++) {
 		ShapedTextDataFallback::Span span = parent->spans[k];
 		if (span.start >= p_shaped->end || span.end <= p_shaped->start) {
 			continue;
@@ -2832,7 +2832,7 @@ bool TextServerFallback::_shaped_text_add_string(const RID &p_shaped, const Stri
 	MutexLock lock(sd->mutex);
 	ERR_FAIL_COND_V(p_size <= 0, false);
 
-	for (int i = 0; i < p_fonts.size(); i++) {
+	for (vec_size i = 0; i < p_fonts.size(); i++) {
 		ERR_FAIL_COND_V(!font_owner.get_or_null(p_fonts[i]), false);
 	}
 
@@ -3265,7 +3265,7 @@ double TextServerFallback::_shaped_text_tab_align(const RID &p_shaped, const Pac
 		const_cast<TextServerFallback *>(this)->_shaped_text_update_breaks(p_shaped);
 	}
 
-	for (int i = 0; i < p_tab_stops.size(); i++) {
+	for (vec_size i = 0; i < p_tab_stops.size(); i++) {
 		if (p_tab_stops[i] <= 0) {
 			return 0.0;
 		}
@@ -3428,7 +3428,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	RID dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
 	if (!_font_has_char(dot_gl_font_rid, '.')) {
 		const Array &fonts = spans[spans.size() - 1].fonts;
-		for (int i = 0; i < fonts.size(); i++) {
+		for (vec_size i = 0; i < fonts.size(); i++) {
 			if (_font_has_char(fonts[i], '.')) {
 				dot_gl_font_rid = fonts[i];
 				break;
@@ -3438,7 +3438,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	RID whitespace_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
 	if (!_font_has_char(whitespace_gl_font_rid, '.')) {
 		const Array &fonts = spans[spans.size() - 1].fonts;
-		for (int i = 0; i < fonts.size(); i++) {
+		for (vec_size i = 0; i < fonts.size(); i++) {
 			if (_font_has_char(fonts[i], ' ')) {
 				whitespace_gl_font_rid = fonts[i];
 				break;
@@ -3597,7 +3597,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 	}
 
 	// "Shape" string.
-	for (int i = 0; i < sd->spans.size(); i++) {
+	for (vec_size i = 0; i < sd->spans.size(); i++) {
 		const ShapedTextDataFallback::Span &span = sd->spans[i];
 		if (span.embedded_key != Variant()) {
 			// Embedded object.
@@ -3636,7 +3636,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 					gl.index = 0x0020;
 				}
 				// Select first font which has character (font are already sorted by span language).
-				for (int k = 0; k < span.fonts.size(); k++) {
+				for (vec_size k = 0; k < span.fonts.size(); k++) {
 					if (_font_has_char(span.fonts[k], gl.index)) {
 						gl.font_rid = span.fonts[k];
 						break;

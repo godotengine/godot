@@ -52,7 +52,7 @@ void ReplicationEditor::_pick_node_filter_text_changed(const String &p_newtext) 
 	_pick_node_select_recursive(root_item, filter, select_candidates);
 
 	if (!select_candidates.is_empty()) {
-		for (int i = 0; i < select_candidates.size(); ++i) {
+		for (vec_size i = 0; i < select_candidates.size(); ++i) {
 			Node *candidate = select_candidates[i];
 
 			if (((String)candidate->get_name()).to_lower().begins_with(filter.to_lower())) {
@@ -434,7 +434,7 @@ void ReplicationEditor::_update_config() {
 	if (props.size()) {
 		drop_label->set_visible(false);
 	}
-	for (int i = 0; i < props.size(); i++) {
+	for (vec_size i = 0; i < props.size(); i++) {
 		const NodePath path = props[i];
 		_add_property(path, config->property_get_spawn(path), config->property_get_sync(path));
 	}

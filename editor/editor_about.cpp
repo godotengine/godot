@@ -85,7 +85,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sc->add_child(vbc);
 
-	for (int i = 0; i < p_sections.size(); i++) {
+	for (vec_size i = 0; i < p_sections.size(); i++) {
 		bool single_column = p_flag_single_column & 1 << i;
 		const char *const *names_ptr = p_src[i];
 		if (*names_ptr) {

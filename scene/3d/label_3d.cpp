@@ -245,7 +245,7 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 
 	float total_h = 0.0;
 	float max_line_w = 0.0;
-	for (int i = 0; i < lines_rid.size(); i++) {
+	for (vec_size i = 0; i < lines_rid.size(); i++) {
 		total_h += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
 		max_line_w = MAX(max_line_w, TS->shaped_text_get_width(lines_rid[i]));
 	}
@@ -467,7 +467,7 @@ void Label3D::_shape() {
 	}
 
 	if (dirty_lines) {
-		for (int i = 0; i < lines_rid.size(); i++) {
+		for (vec_size i = 0; i < lines_rid.size(); i++) {
 			TS->free_rid(lines_rid[i]);
 		}
 		lines_rid.clear();
@@ -490,7 +490,7 @@ void Label3D::_shape() {
 
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
 		float max_line_w = 0.0;
-		for (int i = 0; i < line_breaks.size(); i = i + 2) {
+		for (vec_size i = 0; i < line_breaks.size(); i = i + 2) {
 			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 			max_line_w = MAX(max_line_w, TS->shaped_text_get_width(line));
 			lines_rid.push_back(line);
@@ -506,7 +506,7 @@ void Label3D::_shape() {
 
 	// Generate surfaces and materials.
 	float total_h = 0.0;
-	for (int i = 0; i < lines_rid.size(); i++) {
+	for (vec_size i = 0; i < lines_rid.size(); i++) {
 		total_h += (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size;
 	}
 
@@ -525,7 +525,7 @@ void Label3D::_shape() {
 	}
 
 	Vector2 offset = Vector2(0, vbegin + lbl_offset.y * pixel_size);
-	for (int i = 0; i < lines_rid.size(); i++) {
+	for (vec_size i = 0; i < lines_rid.size(); i++) {
 		const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
 		int gl_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
 		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
@@ -959,7 +959,7 @@ Label3D::Label3D() {
 }
 
 Label3D::~Label3D() {
-	for (int i = 0; i < lines_rid.size(); i++) {
+	for (vec_size i = 0; i < lines_rid.size(); i++) {
 		TS->free_rid(lines_rid[i]);
 	}
 	lines_rid.clear();

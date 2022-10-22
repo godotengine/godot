@@ -1989,7 +1989,7 @@ int ProjectConverter3To4::convert() {
 	uint32_t converted_files = 0;
 
 	// Check file by file.
-	for (int i = 0; i < collected_files.size(); i++) {
+	for (vec_size i = 0; i < collected_files.size(); i++) {
 		String file_name = collected_files[i];
 		Vector<String> lines;
 		uint32_t ignored_lines = 0;
@@ -2112,7 +2112,7 @@ int ProjectConverter3To4::convert() {
 				reason.append(vformat("    Ignored %d lines, because their length exceeds maximum allowed characters - %d.", ignored_lines, maximum_line_length));
 			}
 		}
-		for (int k = 0; k < reason.size(); k++) {
+		for (vec_size k = 0; k < reason.size(); k++) {
 			print_line(reason[k]);
 		}
 	}
@@ -2156,7 +2156,7 @@ int ProjectConverter3To4::validate_conversion() {
 	uint32_t converted_files = 0;
 
 	// Check file by file.
-	for (int i = 0; i < collected_files.size(); i++) {
+	for (vec_size i = 0; i < collected_files.size(); i++) {
 		String file_name = collected_files[i];
 		Vector<String> lines;
 		uint32_t ignored_lines = 0;
@@ -2261,14 +2261,14 @@ int ProjectConverter3To4::validate_conversion() {
 		}
 		print_line(end_message);
 
-		for (int k = 0; k < reason.size(); k++) {
+		for (vec_size k = 0; k < reason.size(); k++) {
 			print_line(reason[k]);
 		}
 
 		if (changed_elements.size() > 0 && !is_ignored) {
 			converted_files++;
 
-			for (int k = 0; k < changed_elements.size(); k++) {
+			for (vec_size k = 0; k < changed_elements.size(); k++) {
 				print_line(String("\t\t") + changed_elements[k]);
 			}
 		}
@@ -3313,7 +3313,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 			Vector<String> parts = parse_arguments(line.substr(start, end));
 
 			String start_string = line.substr(0, start) + "(";
-			for (int i = 0; i < parts.size(); i++) {
+			for (vec_size i = 0; i < parts.size(); i++) {
 				start_string += parts[i].strip_edges().trim_prefix("var ");
 				if (i != parts.size() - 1) {
 					start_string += ", ";
@@ -4048,7 +4048,7 @@ String ProjectConverter3To4::simple_line_formatter(int current_line, String old_
 // Collects string from vector strings
 String ProjectConverter3To4::collect_string_from_vector(Vector<String> &vector) {
 	String string = "";
-	for (int i = 0; i < vector.size(); i++) {
+	for (vec_size i = 0; i < vector.size(); i++) {
 		string += vector[i];
 
 		if (i != vector.size() - 1) {

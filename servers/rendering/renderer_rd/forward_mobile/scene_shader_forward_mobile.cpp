@@ -154,7 +154,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 #if 0
 	print_line("**compiling shader:");
 	print_line("**defines:\n");
-	for (int i = 0; i < gen_code.defines.size(); i++) {
+	for (vec_size i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
 

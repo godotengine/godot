@@ -69,7 +69,7 @@ class ExtendGDScriptParser : public GDScriptParser {
 	Dictionary dump_function_api(const GDScriptParser::FunctionNode *p_func) const;
 	Dictionary dump_class_api(const GDScriptParser::ClassNode *p_class) const;
 
-	String parse_documentation(int p_line, bool p_docs_down = false);
+	String parse_documentation(vec_size p_line, bool p_docs_down = false);
 	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent) const;
 
 	Array member_completions;

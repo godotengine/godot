@@ -168,7 +168,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	strings.resize(total_compression_size);
 	uint8_t *cw = strings.ptrw();
 
-	for (int i = 0; i < compressed.size(); i++) {
+	for (vec_size i = 0; i < compressed.size(); i++) {
 		memcpy(&cw[compressed[i].offset], compressed[i].compressed.get_data(), compressed[i].compressed.size());
 	}
 

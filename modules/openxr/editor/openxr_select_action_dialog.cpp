@@ -76,7 +76,7 @@ void OpenXRSelectActionDialog::open() {
 	action_buttons.clear();
 
 	Array action_sets = action_map->get_action_sets();
-	for (int i = 0; i < action_sets.size(); i++) {
+	for (vec_size i = 0; i < action_sets.size(); i++) {
 		Ref<OpenXRActionSet> action_set = action_sets[i];
 
 		Label *action_set_label = memnew(Label);
@@ -84,7 +84,7 @@ void OpenXRSelectActionDialog::open() {
 		main_vb->add_child(action_set_label);
 
 		Array actions = action_set->get_actions();
-		for (int j = 0; j < actions.size(); j++) {
+		for (vec_size j = 0; j < actions.size(); j++) {
 			Ref<OpenXRAction> action = actions[j];
 
 			HBoxContainer *action_hb = memnew(HBoxContainer);

@@ -148,7 +148,7 @@ static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_u
 	String ret;
 	Vector<String> parts = p_identifier.split("_", true);
 
-	for (int i = 0; i < parts.size(); i++) {
+	for (vec_size i = 0; i < parts.size(); i++) {
 		String part = parts[i];
 
 		if (part.length()) {
@@ -181,7 +181,7 @@ static String snake_to_camel_case(const String &p_identifier, bool p_input_is_up
 	String ret;
 	Vector<String> parts = p_identifier.split("_", true);
 
-	for (int i = 0; i < parts.size(); i++) {
+	for (vec_size i = 0; i < parts.size(); i++) {
 		String part = parts[i];
 
 		if (part.length()) {
@@ -244,7 +244,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append(text.xml_escape());
 			} else {
 				Vector<String> lines = text.split("\n");
-				for (int i = 0; i < lines.size(); i++) {
+				for (vec_size i = 0; i < lines.size(); i++) {
 					if (i != 0) {
 						xml_output.append("<para>");
 					}
@@ -270,7 +270,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append(text.xml_escape());
 			} else {
 				Vector<String> lines = text.split("\n");
-				for (int i = 0; i < lines.size(); i++) {
+				for (vec_size i = 0; i < lines.size(); i++) {
 					if (i != 0) {
 						xml_output.append("<para>");
 					}
@@ -812,7 +812,7 @@ void BindingsGenerator::_apply_prefix_to_enum_constants(BindingsGenerator::EnumI
 			}
 
 			constant_name = "";
-			for (int i = curr_prefix_length; i < parts.size(); i++) {
+			for (vec_size i = curr_prefix_length; i < parts.size(); i++) {
 				if (i > curr_prefix_length) {
 					constant_name += "_";
 				}
@@ -965,7 +965,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			if (summary_lines.size()) {
 				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
-				for (int i = 0; i < summary_lines.size(); i++) {
+				for (vec_size i = 0; i < summary_lines.size(); i++) {
 					p_output.append(INDENT1 "/// ");
 					p_output.append(summary_lines[i]);
 					p_output.append("\n");
@@ -1029,7 +1029,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 				if (summary_lines.size()) {
 					p_output.append(INDENT1 "/// <summary>\n");
 
-					for (int i = 0; i < summary_lines.size(); i++) {
+					for (vec_size i = 0; i < summary_lines.size(); i++) {
 						p_output.append(INDENT1 "/// ");
 						p_output.append(summary_lines[i]);
 						p_output.append("\n");
@@ -1171,7 +1171,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	includes_props_content.append("<Project>\n"
 								  "  <ItemGroup>\n");
 
-	for (int i = 0; i < compile_items.size(); i++) {
+	for (vec_size i = 0; i < compile_items.size(); i++) {
 		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
@@ -1280,7 +1280,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	includes_props_content.append("<Project>\n"
 								  "  <ItemGroup>\n");
 
-	for (int i = 0; i < compile_items.size(); i++) {
+	for (vec_size i = 0; i < compile_items.size(); i++) {
 		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
@@ -1386,7 +1386,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		if (summary_lines.size()) {
 			output.append("/// <summary>\n");
 
-			for (int i = 0; i < summary_lines.size(); i++) {
+			for (vec_size i = 0; i < summary_lines.size(); i++) {
 				output.append("/// ");
 				output.append(summary_lines[i]);
 				output.append("\n");
@@ -1437,7 +1437,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			if (summary_lines.size()) {
 				output.append(MEMBER_BEGIN "/// <summary>\n");
 
-				for (int i = 0; i < summary_lines.size(); i++) {
+				for (vec_size i = 0; i < summary_lines.size(); i++) {
 					output.append(INDENT1 "/// ");
 					output.append(summary_lines[i]);
 					output.append("\n");
@@ -1481,7 +1481,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				if (summary_lines.size()) {
 					output.append(INDENT2 "/// <summary>\n");
 
-					for (int i = 0; i < summary_lines.size(); i++) {
+					for (vec_size i = 0; i < summary_lines.size(); i++) {
 						output.append(INDENT2 "/// ");
 						output.append(summary_lines[i]);
 						output.append("\n");
@@ -1643,7 +1643,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			output << imethod.proxy_name << "(";
 
-			for (int i = 0; i < imethod.arguments.size(); i++) {
+			for (vec_size i = 0; i < imethod.arguments.size(); i++) {
 				const ArgumentInterface &iarg = imethod.arguments[i];
 
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
@@ -1840,7 +1840,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		if (summary_lines.size()) {
 			p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
-			for (int i = 0; i < summary_lines.size(); i++) {
+			for (vec_size i = 0; i < summary_lines.size(); i++) {
 				p_output.append(INDENT1 "/// ");
 				p_output.append(summary_lines[i]);
 				p_output.append("\n");
@@ -2095,7 +2095,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			if (summary_lines.size()) {
 				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
-				for (int i = 0; i < summary_lines.size(); i++) {
+				for (vec_size i = 0; i < summary_lines.size(); i++) {
 					p_output.append(INDENT1 "/// ");
 					p_output.append(summary_lines[i]);
 					p_output.append("\n");
@@ -2265,7 +2265,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			if (summary_lines.size()) {
 				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
-				for (int i = 0; i < summary_lines.size(); i++) {
+				for (vec_size i = 0; i < summary_lines.size(); i++) {
 					p_output.append(INDENT1 "/// ");
 					p_output.append(summary_lines[i]);
 					p_output.append("\n");
@@ -2848,7 +2848,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			iprop.prop_doc = nullptr;
 
-			for (int i = 0; i < itype.class_doc->properties.size(); i++) {
+			for (vec_size i = 0; i < itype.class_doc->properties.size(); i++) {
 				const DocData::PropertyDoc &prop_doc = itype.class_doc->properties[i];
 
 				if (prop_doc.name == iprop.cname) {
@@ -3009,7 +3009,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			}
 
 			if (itype.class_doc) {
-				for (int i = 0; i < itype.class_doc->methods.size(); i++) {
+				for (vec_size i = 0; i < itype.class_doc->methods.size(); i++) {
 					if (itype.class_doc->methods[i].name == imethod.name) {
 						imethod.method_doc = &itype.class_doc->methods[i];
 						break;
@@ -3097,7 +3097,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			}
 
 			if (itype.class_doc) {
-				for (int i = 0; i < itype.class_doc->signals.size(); i++) {
+				for (vec_size i = 0; i < itype.class_doc->signals.size(); i++) {
 					const DocData::MethodDoc &signal_doc = itype.class_doc->signals[i];
 					if (signal_doc.name == isignal.name) {
 						isignal.method_doc = &signal_doc;
@@ -3138,7 +3138,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 
 				iconstant.const_doc = nullptr;
-				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
+				for (vec_size i = 0; i < itype.class_doc->constants.size(); i++) {
 					const DocData::ConstantDoc &const_doc = itype.class_doc->constants[i];
 
 					if (const_doc.name == iconstant.name) {
@@ -3182,7 +3182,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			ConstantInterface iconstant(constant_name, constant_proxy_name, *value);
 
 			iconstant.const_doc = nullptr;
-			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
+			for (vec_size i = 0; i < itype.class_doc->constants.size(); i++) {
 				const DocData::ConstantDoc &const_doc = itype.class_doc->constants[i];
 
 				if (const_doc.name == iconstant.name) {
@@ -3759,7 +3759,7 @@ void BindingsGenerator::_populate_global_constants() {
 			String constant_name = CoreConstants::get_global_constant_name(i);
 
 			const DocData::ConstantDoc *const_doc = nullptr;
-			for (int j = 0; j < global_scope_doc.constants.size(); j++) {
+			for (vec_size j = 0; j < global_scope_doc.constants.size(); j++) {
 				const DocData::ConstantDoc &curr_const_doc = global_scope_doc.constants[j];
 
 				if (curr_const_doc.name == constant_name) {

@@ -40,10 +40,10 @@
 #include "scene/resources/packed_scene.h"
 
 void EditorSelectionHistory::cleanup_history() {
-	for (int i = 0; i < history.size(); i++) {
+	for (vec_size i = 0; i < history.size(); i++) {
 		bool fail = false;
 
-		for (int j = 0; j < history[i].path.size(); j++) {
+		for (vec_size j = 0; j < history[i].path.size(); j++) {
 			if (!history[i].path[j].ref.is_null()) {
 				// Reference is not null - object still alive.
 				continue;
@@ -274,14 +274,14 @@ void EditorData::copy_object_params(Object *p_object) {
 }
 
 void EditorData::get_editor_breakpoints(List<String> *p_breakpoints) {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->get_breakpoints(p_breakpoints);
 	}
 }
 
 Dictionary EditorData::get_editor_states() const {
 	Dictionary metadata;
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		Dictionary state = editor_plugins[i]->get_state();
 		if (state.is_empty()) {
 			continue;
@@ -306,7 +306,7 @@ void EditorData::set_editor_states(const Dictionary &p_states) {
 	for (; E; E = E->next()) {
 		String name = E->get();
 		int idx = -1;
-		for (int i = 0; i < editor_plugins.size(); i++) {
+		for (vec_size i = 0; i < editor_plugins.size(); i++) {
 			if (editor_plugins[i]->get_name() == name) {
 				idx = i;
 				break;
@@ -321,44 +321,44 @@ void EditorData::set_editor_states(const Dictionary &p_states) {
 }
 
 void EditorData::notify_edited_scene_changed() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->edited_scene_changed();
 		editor_plugins[i]->notify_scene_changed(get_edited_scene_root());
 	}
 }
 
 void EditorData::notify_resource_saved(const Ref<Resource> &p_resource) {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->notify_resource_saved(p_resource);
 	}
 }
 
 void EditorData::clear_editor_states() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->clear();
 	}
 }
 
 void EditorData::save_editor_external_data() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->save_external_data();
 	}
 }
 
 void EditorData::apply_changes_in_editors() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->apply_changes();
 	}
 }
 
 void EditorData::save_editor_global_states() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->save_global_state();
 	}
 }
 
 void EditorData::restore_editor_global_states() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->restore_global_state();
 	}
 }
@@ -490,7 +490,7 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 
 Variant EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
 	if (get_custom_types().has(p_inherits)) {
-		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
+		for (vec_size i = 0; i < get_custom_types()[p_inherits].size(); i++) {
 			if (get_custom_types()[p_inherits][i].name == p_type) {
 				Ref<Script> script = get_custom_types()[p_inherits][i].script;
 
@@ -537,7 +537,7 @@ bool EditorData::is_type_recognized(const String &p_type) const {
 
 void EditorData::remove_custom_type(const String &p_type) {
 	for (KeyValue<String, Vector<CustomType>> &E : custom_types) {
-		for (int i = 0; i < E.value.size(); i++) {
+		for (vec_size i = 0; i < E.value.size(); i++) {
 			if (E.value[i].name == p_type) {
 				E.value.remove_at(i);
 				if (E.value.is_empty()) {
@@ -597,7 +597,7 @@ void EditorData::move_edited_scene_index(int p_idx, int p_to_idx) {
 void EditorData::remove_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 	if (edited_scene[p_idx].root) {
-		for (int i = 0; i < editor_plugins.size(); i++) {
+		for (vec_size i = 0; i < editor_plugins.size(); i++) {
 			editor_plugins[i]->notify_scene_closed(edited_scene[p_idx].root->get_scene_file_path());
 		}
 
@@ -741,7 +741,7 @@ int EditorData::get_edited_scene_count() const {
 Vector<EditorData::EditedScene> EditorData::get_edited_scenes() const {
 	Vector<EditedScene> out_edited_scenes_list = Vector<EditedScene>();
 
-	for (int i = 0; i < edited_scene.size(); i++) {
+	for (vec_size i = 0; i < edited_scene.size(); i++) {
 		out_edited_scenes_list.push_back(edited_scene[i]);
 	}
 
@@ -813,7 +813,7 @@ String EditorData::get_scene_title(int p_idx, bool p_always_strip_extension) con
 	}
 
 	// Return the filename including the extension if there's ambiguity (e.g. both `foo.tscn` and `foo.scn` are being edited).
-	for (int i = 0; i < edited_scene.size(); i++) {
+	for (vec_size i = 0; i < edited_scene.size(); i++) {
 		if (i == p_idx) {
 			// Don't compare the edited scene against itself.
 			continue;
@@ -893,7 +893,7 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 }
 
 void EditorData::clear_edited_scenes() {
-	for (int i = 0; i < edited_scene.size(); i++) {
+	for (vec_size i = 0; i < edited_scene.size(); i++) {
 		if (edited_scene[i].root) {
 			memdelete(edited_scene[i].root);
 		}
@@ -902,13 +902,13 @@ void EditorData::clear_edited_scenes() {
 }
 
 void EditorData::set_plugin_window_layout(Ref<ConfigFile> p_layout) {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->set_window_layout(p_layout);
 	}
 }
 
 void EditorData::get_plugin_window_layout(Ref<ConfigFile> p_layout) {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (vec_size i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->get_window_layout(p_layout);
 	}
 }

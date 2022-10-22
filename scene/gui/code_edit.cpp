@@ -88,7 +88,7 @@ void CodeEdit::_notification(int p_what) {
 				const int xmargin_end = size.width - style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
 				const float char_size = font->get_char_size('0', font_size).width;
 
-				for (int i = 0; i < line_length_guideline_columns.size(); i++) {
+				for (vec_size i = 0; i < line_length_guideline_columns.size(); i++) {
 					const int xoffset = xmargin_beg + char_size * (int)line_length_guideline_columns[i] - get_h_scroll();
 					if (xoffset > xmargin_beg && xoffset < xmargin_end) {
 						Color guideline_color = (i == 0) ? line_length_guideline_color : line_length_guideline_color * Color(1, 1, 1, 0.5);
@@ -176,7 +176,7 @@ void CodeEdit::_notification(int p_what) {
 
 					Point2 match_pos = Point2(code_completion_rect.position.x + icon_area_size.x + icon_hsep, code_completion_rect.position.y + i * row_height);
 
-					for (int j = 0; j < code_completion_options[l].matches.size(); j++) {
+					for (vec_size j = 0; j < code_completion_options[l].matches.size(); j++) {
 						Pair<int, int> match = code_completion_options[l].matches[j];
 						int match_offset = font->get_string_size(code_completion_options[l].display.substr(0, match.first), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 						int match_len = font->get_string_size(code_completion_options[l].display.substr(match.first, match.second), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
@@ -790,7 +790,7 @@ bool CodeEdit::is_auto_indent_enabled() const {
 
 void CodeEdit::set_auto_indent_prefixes(const TypedArray<String> &p_prefixes) {
 	auto_indent_prefixes.clear();
-	for (int i = 0; i < p_prefixes.size(); i++) {
+	for (vec_size i = 0; i < p_prefixes.size(); i++) {
 		const String prefix = p_prefixes[i];
 		auto_indent_prefixes.insert(prefix[0]);
 	}
@@ -1157,7 +1157,7 @@ void CodeEdit::add_auto_brace_completion_pair(const String &p_open_key, const St
 	}
 
 	int at = 0;
-	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+	for (vec_size i = 0; i < auto_brace_completion_pairs.size(); i++) {
 		ERR_FAIL_COND_MSG(auto_brace_completion_pairs[i].open_key == p_open_key, "auto brace completion open key '" + p_open_key + "' already exists.");
 		if (p_open_key.length() < auto_brace_completion_pairs[i].open_key.length()) {
 			at++;
@@ -1174,21 +1174,21 @@ void CodeEdit::set_auto_brace_completion_pairs(const Dictionary &p_auto_brace_co
 	auto_brace_completion_pairs.clear();
 
 	Array keys = p_auto_brace_completion_pairs.keys();
-	for (int i = 0; i < keys.size(); i++) {
+	for (vec_size i = 0; i < keys.size(); i++) {
 		add_auto_brace_completion_pair(keys[i], p_auto_brace_completion_pairs[keys[i]]);
 	}
 }
 
 Dictionary CodeEdit::get_auto_brace_completion_pairs() const {
 	Dictionary brace_pairs;
-	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+	for (vec_size i = 0; i < auto_brace_completion_pairs.size(); i++) {
 		brace_pairs[auto_brace_completion_pairs[i].open_key] = auto_brace_completion_pairs[i].close_key;
 	}
 	return brace_pairs;
 }
 
 bool CodeEdit::has_auto_brace_completion_open_key(const String &p_open_key) const {
-	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+	for (vec_size i = 0; i < auto_brace_completion_pairs.size(); i++) {
 		if (auto_brace_completion_pairs[i].open_key == p_open_key) {
 			return true;
 		}
@@ -1197,7 +1197,7 @@ bool CodeEdit::has_auto_brace_completion_open_key(const String &p_open_key) cons
 }
 
 bool CodeEdit::has_auto_brace_completion_close_key(const String &p_close_key) const {
-	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+	for (vec_size i = 0; i < auto_brace_completion_pairs.size(); i++) {
 		if (auto_brace_completion_pairs[i].close_key == p_close_key) {
 			return true;
 		}
@@ -1206,7 +1206,7 @@ bool CodeEdit::has_auto_brace_completion_close_key(const String &p_close_key) co
 }
 
 String CodeEdit::get_auto_brace_completion_close_key(const String &p_open_key) const {
-	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+	for (vec_size i = 0; i < auto_brace_completion_pairs.size(); i++) {
 		if (auto_brace_completion_pairs[i].open_key == p_open_key) {
 			return auto_brace_completion_pairs[i].close_key;
 		}
@@ -1833,7 +1833,7 @@ bool CodeEdit::is_code_completion_enabled() const {
 
 void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes) {
 	code_completion_prefixes.clear();
-	for (int i = 0; i < p_prefixes.size(); i++) {
+	for (vec_size i = 0; i < p_prefixes.size(); i++) {
 		const String prefix = p_prefixes[i];
 
 		ERR_CONTINUE_MSG(prefix.is_empty(), "Code completion prefix cannot be empty.");
@@ -1881,7 +1881,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 	if (ignored) {
 		ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT;
 		const ScriptLanguage::CodeCompletionOption *previous_option = nullptr;
-		for (int i = 0; i < code_completion_options.size(); i++) {
+		for (vec_size i = 0; i < code_completion_options.size(); i++) {
 			const ScriptLanguage::CodeCompletionOption &current_option = code_completion_options[i];
 			if (!previous_option) {
 				previous_option = &current_option;
@@ -1939,7 +1939,7 @@ TypedArray<Dictionary> CodeEdit::get_code_completion_options() const {
 
 	TypedArray<Dictionary> completion_options;
 	completion_options.resize(code_completion_options.size());
-	for (int i = 0; i < code_completion_options.size(); i++) {
+	for (vec_size i = 0; i < code_completion_options.size(); i++) {
 		Dictionary option;
 		option["kind"] = code_completion_options[i].kind;
 		option["display_text"] = code_completion_options[i].display;
@@ -2390,7 +2390,7 @@ int CodeEdit::_get_auto_brace_pair_open_at_pos(int p_line, int p_col) {
 	const String &line = get_line(p_line);
 
 	/* Should be fast enough, expecting low amount of pairs... */
-	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+	for (vec_size i = 0; i < auto_brace_completion_pairs.size(); i++) {
 		const String &open_key = auto_brace_completion_pairs[i].open_key;
 		if (p_col - open_key.length() < 0) {
 			continue;
@@ -2415,7 +2415,7 @@ int CodeEdit::_get_auto_brace_pair_close_at_pos(int p_line, int p_col) {
 	const String &line = get_line(p_line);
 
 	/* Should be fast enough, expecting low amount of pairs... */
-	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+	for (vec_size i = 0; i < auto_brace_completion_pairs.size(); i++) {
 		if (p_col + auto_brace_completion_pairs[i].close_key.length() > line.length()) {
 			continue;
 		}
@@ -2547,7 +2547,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 			/* check if we are in entering a region */
 			bool same_line = false;
 			if (in_region == -1) {
-				for (int d = 0; d < delimiters.size(); d++) {
+				for (vec_size d = 0; d < delimiters.size(); d++) {
 					/* check there is enough room */
 					int chars_left = line_length - from;
 					int start_key_length = delimiters[d].start_key.length();
@@ -2712,7 +2712,7 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 	}
 
 	int at = 0;
-	for (int i = 0; i < delimiters.size(); i++) {
+	for (vec_size i = 0; i < delimiters.size(); i++) {
 		ERR_FAIL_COND_MSG(delimiters[i].start_key == p_start_key, "delimiter with start key '" + p_start_key + "' already exists.");
 		if (p_start_key.length() < delimiters[i].start_key.length()) {
 			at++;
@@ -2732,7 +2732,7 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 }
 
 void CodeEdit::_remove_delimiter(const String &p_start_key, DelimiterType p_type) {
-	for (int i = 0; i < delimiters.size(); i++) {
+	for (vec_size i = 0; i < delimiters.size(); i++) {
 		if (delimiters[i].start_key != p_start_key) {
 			continue;
 		}
@@ -2751,7 +2751,7 @@ void CodeEdit::_remove_delimiter(const String &p_start_key, DelimiterType p_type
 }
 
 bool CodeEdit::_has_delimiter(const String &p_start_key, DelimiterType p_type) const {
-	for (int i = 0; i < delimiters.size(); i++) {
+	for (vec_size i = 0; i < delimiters.size(); i++) {
 		if (delimiters[i].start_key == p_start_key) {
 			return delimiters[i].type == p_type;
 		}
@@ -2763,7 +2763,7 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 	setting_delimiters = true;
 	_clear_delimiters(p_type);
 
-	for (int i = 0; i < p_delimiters.size(); i++) {
+	for (vec_size i = 0; i < p_delimiters.size(); i++) {
 		String key = p_delimiters[i];
 
 		if (key.is_empty()) {
@@ -2793,7 +2793,7 @@ void CodeEdit::_clear_delimiters(DelimiterType p_type) {
 
 TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 	TypedArray<String> r_delimiters;
-	for (int i = 0; i < delimiters.size(); i++) {
+	for (vec_size i = 0; i < delimiters.size(); i++) {
 		if (delimiters[i].type != p_type) {
 			continue;
 		}

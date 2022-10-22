@@ -184,7 +184,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		Vector<Ref<Mesh>> meshes;
 		Vector<Transform3D> transforms;
 		Vector<int> ids = p_library->get_item_list();
-		for (int i = 0; i < ids.size(); i++) {
+		for (vec_size i = 0; i < ids.size(); i++) {
 			if (mesh_instances.find(ids[i])) {
 				meshes.push_back(p_library->get_item_mesh(ids[i]));
 				transforms.push_back(mesh_instances[ids[i]]->get_transform());
@@ -193,7 +193,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 		Vector<Ref<Texture2D>> textures = EditorInterface::get_singleton()->make_mesh_previews(meshes, &transforms, EditorSettings::get_singleton()->get("editors/grid_map/preview_size"));
 		int j = 0;
-		for (int i = 0; i < ids.size(); i++) {
+		for (vec_size i = 0; i < ids.size(); i++) {
 			if (mesh_instances.find(ids[i])) {
 				p_library->set_item_preview(ids[i], textures[j]);
 				j++;
@@ -262,7 +262,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 	file->clear_filters();
 	file->set_title(TTR("Import Scene"));
-	for (int i = 0; i < extensions.size(); i++) {
+	for (vec_size i = 0; i < extensions.size(); i++) {
 		file->add_filter("*." + extensions[i], extensions[i].to_upper());
 	}
 	add_child(file);

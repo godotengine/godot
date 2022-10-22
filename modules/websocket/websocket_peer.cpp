@@ -99,7 +99,7 @@ Error WebSocketPeer::send_text(const String &p_text) {
 void WebSocketPeer::set_supported_protocols(const Vector<String> &p_protocols) {
 	// Strip edges from protocols.
 	supported_protocols.resize(p_protocols.size());
-	for (int i = 0; i < p_protocols.size(); i++) {
+	for (vec_size i = 0; i < p_protocols.size(); i++) {
 		supported_protocols.write[i] = p_protocols[i].strip_edges();
 	}
 }

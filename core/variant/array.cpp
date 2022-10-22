@@ -90,7 +90,7 @@ void Array::_unref() const {
 	_p = nullptr;
 }
 
-Variant &Array::operator[](int p_idx) {
+Variant &Array::operator[](vec_size p_idx) {
 	if (unlikely(_p->read_only)) {
 		*_p->read_only = _p->array[p_idx];
 		return *_p->read_only;
@@ -98,7 +98,7 @@ Variant &Array::operator[](int p_idx) {
 	return _p->array.write[p_idx];
 }
 
-const Variant &Array::operator[](int p_idx) const {
+const Variant &Array::operator[](vec_size p_idx) const {
 	if (unlikely(_p->read_only)) {
 		*_p->read_only = _p->array[p_idx];
 		return *_p->read_only;
@@ -106,7 +106,7 @@ const Variant &Array::operator[](int p_idx) const {
 	return _p->array[p_idx];
 }
 
-int Array::size() const {
+vec_size Array::size() const {
 	return _p->array.size();
 }
 
@@ -194,7 +194,7 @@ uint32_t Array::recursive_hash(int recursion_count) const {
 	uint32_t h = hash_murmur3_one_32(Variant::ARRAY);
 
 	recursion_count++;
-	for (int i = 0; i < _p->array.size(); i++) {
+	for (vec_size i = 0; i < _p->array.size(); i++) {
 		h = hash_murmur3_one_32(_p->array[i].recursive_hash(recursion_count), h);
 	}
 	return hash_fmix32(h);
@@ -209,7 +209,7 @@ bool Array::_assign(const Array &p_array) {
 	} else if (p_array._p->typed.type == Variant::NIL) { //from untyped to typed, must try to check if they are all valid
 		if (_p->typed.type == Variant::OBJECT) {
 			//for objects, it needs full validation, either can be converted or fail
-			for (int i = 0; i < p_array._p->array.size(); i++) {
+			for (vec_size i = 0; i < p_array._p->array.size(); i++) {
 				if (!_p->typed.validate(p_array._p->array[i], "assign")) {
 					return false;
 				}
@@ -220,7 +220,7 @@ bool Array::_assign(const Array &p_array) {
 			//for non objects, we need to check if there is a valid conversion, which needs to happen one by one, so this is the worst case.
 			Vector<Variant> new_array;
 			new_array.resize(p_array._p->array.size());
-			for (int i = 0; i < p_array._p->array.size(); i++) {
+			for (vec_size i = 0; i < p_array._p->array.size(); i++) {
 				Variant src_val = p_array._p->array[i];
 				if (src_val.get_type() == _p->typed.type) {
 					new_array.write[i] = src_val;
@@ -261,7 +261,7 @@ void Array::push_back(const Variant &p_value) {
 
 void Array::append_array(const Array &p_array) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	for (int i = 0; i < p_array.size(); ++i) {
+	for (vec_size i = 0; i < p_array.size(); ++i) {
 		ERR_FAIL_COND(!_p->typed.validate(p_array[i], "append_array"));
 	}
 	_p->array.append_array(p_array._p->array);
@@ -346,7 +346,7 @@ int Array::count(const Variant &p_value) const {
 	}
 
 	int amount = 0;
-	for (int i = 0; i < _p->array.size(); i++) {
+	for (vec_size i = 0; i < _p->array.size(); i++) {
 		if (_p->array[i] == p_value) {
 			amount++;
 		}
@@ -366,14 +366,14 @@ void Array::remove_at(int p_pos) {
 	_p->array.remove_at(p_pos);
 }
 
-void Array::set(int p_idx, const Variant &p_value) {
+void Array::set(vec_size p_idx, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "set"));
 
 	operator[](p_idx) = p_value;
 }
 
-const Variant &Array::get(int p_idx) const {
+const Variant &Array::get(vec_size p_idx) const {
 	return operator[](p_idx);
 }
 
@@ -444,7 +444,7 @@ Array Array::filter(const Callable &p_callable) const {
 	int accepted_count = 0;
 
 	const Variant *argptrs[1];
-	for (int i = 0; i < size(); i++) {
+	for (vec_size i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
 		Variant result;
@@ -470,7 +470,7 @@ Array Array::map(const Callable &p_callable) const {
 	new_arr.resize(size());
 
 	const Variant *argptrs[1];
-	for (int i = 0; i < size(); i++) {
+	for (vec_size i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
 		Variant result;
@@ -495,7 +495,7 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 	}
 
 	const Variant *argptrs[2];
-	for (int i = start; i < size(); i++) {
+	for (vec_size i = start; i < size(); i++) {
 		argptrs[0] = &ret;
 		argptrs[1] = &get(i);
 
@@ -513,7 +513,7 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 
 bool Array::any(const Callable &p_callable) const {
 	const Variant *argptrs[1];
-	for (int i = 0; i < size(); i++) {
+	for (vec_size i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
 		Variant result;
@@ -535,7 +535,7 @@ bool Array::any(const Callable &p_callable) const {
 
 bool Array::all(const Callable &p_callable) const {
 	const Variant *argptrs[1];
-	for (int i = 0; i < size(); i++) {
+	for (vec_size i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
 		Variant result;
@@ -664,7 +664,7 @@ Variant Array::pop_at(int p_pos) {
 
 Variant Array::min() const {
 	Variant minval;
-	for (int i = 0; i < size(); i++) {
+	for (vec_size i = 0; i < size(); i++) {
 		if (i == 0) {
 			minval = get(i);
 		} else {
@@ -686,7 +686,7 @@ Variant Array::min() const {
 
 Variant Array::max() const {
 	Variant maxval;
-	for (int i = 0; i < size(); i++) {
+	for (vec_size i = 0; i < size(); i++) {
 		if (i == 0) {
 			maxval = get(i);
 		} else {

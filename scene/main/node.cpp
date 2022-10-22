@@ -175,7 +175,7 @@ void Node::_notification(int p_notification) {
 void Node::_propagate_ready() {
 	data.ready_notified = true;
 	data.blocked++;
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_ready();
 	}
 	data.blocked--;
@@ -227,7 +227,7 @@ void Node::_propagate_enter_tree() {
 	data.blocked++;
 	//block while adding children
 
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		if (!data.children[i]->is_inside_tree()) { // could have been added in enter_tree
 			data.children[i]->_propagate_enter_tree();
 		}
@@ -405,7 +405,7 @@ void Node::_propagate_groups_dirty() {
 		}
 	}
 
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_groups_dirty();
 	}
 }
@@ -526,7 +526,7 @@ void Node::_propagate_pause_notification(bool p_enable) {
 		notification(NOTIFICATION_UNPAUSED);
 	}
 
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_pause_notification(p_enable);
 	}
 }
@@ -546,7 +546,7 @@ void Node::_propagate_process_owner(Node *p_owner, int p_pause_notification, int
 		notification(p_enabled_notification);
 	}
 
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		Node *c = data.children[i];
 		if (c->data.process_mode == PROCESS_MODE_INHERIT) {
 			c->_propagate_process_owner(p_owner, p_pause_notification, p_enabled_notification);
@@ -558,7 +558,7 @@ void Node::set_multiplayer_authority(int p_peer_id, bool p_recursive) {
 	data.multiplayer_authority = p_peer_id;
 
 	if (p_recursive) {
-		for (int i = 0; i < data.children.size(); i++) {
+		for (vec_size i = 0; i < data.children.size(); i++) {
 			data.children[i]->set_multiplayer_authority(p_peer_id, true);
 		}
 	}
@@ -1319,7 +1319,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		} else {
 			next = nullptr;
 
-			for (int j = 0; j < current->data.children.size(); j++) {
+			for (vec_size j = 0; j < current->data.children.size(); j++) {
 				Node *child = current->data.children[j];
 
 				if (child->data.name == name) {
@@ -1796,7 +1796,7 @@ int Node::get_persistent_group_count() const {
 void Node::_print_tree_pretty(const String &prefix, const bool last) {
 	String new_prefix = last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
 	print_line(prefix + new_prefix + String(get_name()));
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		new_prefix = last ? String::utf8("   ") : String::utf8(" ┃ ");
 		data.children[i]->_print_tree_pretty(prefix + new_prefix, i == data.children.size() - 1);
 	}
@@ -1812,7 +1812,7 @@ void Node::print_tree() {
 
 void Node::_print_tree(const Node *p_node) {
 	print_line(String(p_node->get_path_to(this)));
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		data.children[i]->_print_tree(p_node);
 	}
 }
@@ -1836,7 +1836,7 @@ void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) 
 		MessageQueue::get_singleton()->push_notification(this, p_notification);
 	}
 
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_deferred_notification(p_notification, p_reverse);
 	}
 
@@ -1851,7 +1851,7 @@ void Node::propagate_notification(int p_notification) {
 	data.blocked++;
 	notification(p_notification);
 
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		data.children[i]->propagate_notification(p_notification);
 	}
 	data.blocked--;
@@ -1864,7 +1864,7 @@ void Node::propagate_call(const StringName &p_method, const Array &p_args, const
 		callv(p_method, p_args);
 	}
 
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		data.children[i]->propagate_call(p_method, p_args, p_parent_first);
 	}
 
@@ -1881,7 +1881,7 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 	}
 
 	data.blocked++;
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_replace_owner(p_owner, p_by_owner);
 	}
 	data.blocked--;
@@ -2407,11 +2407,11 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	}
 
 	p_node->set_owner(owner);
-	for (int i = 0; i < owned.size(); i++) {
+	for (vec_size i = 0; i < owned.size(); i++) {
 		owned[i]->set_owner(p_node);
 	}
 
-	for (int i = 0; i < owned_by_owner.size(); i++) {
+	for (vec_size i = 0; i < owned_by_owner.size(); i++) {
 		owned_by_owner[i]->set_owner(owner);
 	}
 
@@ -2623,7 +2623,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 
 void Node::clear_internal_tree_resource_paths() {
 	clear_internal_resource_paths();
-	for (int i = 0; i < data.children.size(); i++) {
+	for (vec_size i = 0; i < data.children.size(); i++) {
 		data.children[i]->clear_internal_tree_resource_paths();
 	}
 }
@@ -2642,7 +2642,7 @@ PackedStringArray Node::get_configuration_warnings() const {
 String Node::get_configuration_warnings_as_string() const {
 	PackedStringArray warnings = get_configuration_warnings();
 	String all_warnings = String();
-	for (int i = 0; i < warnings.size(); i++) {
+	for (vec_size i = 0; i < warnings.size(); i++) {
 		if (i > 0) {
 			all_warnings += "\n\n";
 		}

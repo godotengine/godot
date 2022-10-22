@@ -1169,7 +1169,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 }
 
 void SceneImportSettings::_save_dir_confirm() {
-	for (int i = 0; i < save_path_items.size(); i++) {
+	for (vec_size i = 0; i < save_path_items.size(); i++) {
 		TreeItem *item = save_path_items[i];
 		if (!item->is_checked(0)) {
 			continue; //ignore

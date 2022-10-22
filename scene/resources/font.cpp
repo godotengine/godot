@@ -104,7 +104,7 @@ void Font::_update_rids_fb(const Ref<Font> &p_f, int p_depth) const {
 			rids.push_back(rid);
 		}
 		const TypedArray<Font> &_fallbacks = p_f->get_fallbacks();
-		for (int i = 0; i < _fallbacks.size(); i++) {
+		for (vec_size i = 0; i < _fallbacks.size(); i++) {
 			_update_rids_fb(_fallbacks[i], p_depth + 1);
 		}
 	}
@@ -134,7 +134,7 @@ bool Font::_is_cyclic(const Ref<Font> &p_f, int p_depth) const {
 	if (p_f == this) {
 		return true;
 	}
-	for (int i = 0; i < p_f->fallbacks.size(); i++) {
+	for (vec_size i = 0; i < p_f->fallbacks.size(); i++) {
 		const Ref<Font> &f = p_f->fallbacks[i];
 		if (_is_cyclic(f, p_depth + 1)) {
 			return true;
@@ -149,18 +149,18 @@ void Font::reset_state() {
 
 // Fallbacks.
 void Font::set_fallbacks(const TypedArray<Font> &p_fallbacks) {
-	for (int i = 0; i < p_fallbacks.size(); i++) {
+	for (vec_size i = 0; i < p_fallbacks.size(); i++) {
 		const Ref<Font> &f = p_fallbacks[i];
 		ERR_FAIL_COND_MSG(_is_cyclic(f, 0), "Cyclic font fallback.");
 	}
-	for (int i = 0; i < fallbacks.size(); i++) {
+	for (vec_size i = 0; i < fallbacks.size(); i++) {
 		Ref<Font> f = fallbacks[i];
 		if (f.is_valid()) {
 			f->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Font::_invalidate_rids));
 		}
 	}
 	fallbacks = p_fallbacks;
-	for (int i = 0; i < fallbacks.size(); i++) {
+	for (vec_size i = 0; i < fallbacks.size(); i++) {
 		Ref<Font> f = fallbacks[i];
 		if (f.is_valid()) {
 			f->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -187,7 +187,7 @@ real_t Font::get_height(int p_font_size) const {
 		_update_rids();
 	}
 	real_t ret = 0.f;
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size) + TS->font_get_descent(rids[i], p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_BOTTOM) + get_spacing(TextServer::SPACING_TOP);
@@ -198,7 +198,7 @@ real_t Font::get_ascent(int p_font_size) const {
 		_update_rids();
 	}
 	real_t ret = 0.f;
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_TOP);
@@ -209,7 +209,7 @@ real_t Font::get_descent(int p_font_size) const {
 		_update_rids();
 	}
 	real_t ret = 0.f;
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_descent(rids[i], p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_BOTTOM);
@@ -220,7 +220,7 @@ real_t Font::get_underline_position(int p_font_size) const {
 		_update_rids();
 	}
 	real_t ret = 0.f;
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_underline_position(rids[i], p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_TOP);
@@ -231,7 +231,7 @@ real_t Font::get_underline_thickness(int p_font_size) const {
 		_update_rids();
 	}
 	real_t ret = 0.f;
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_underline_thickness(rids[i], p_font_size));
 	}
 	return ret;
@@ -469,7 +469,7 @@ Size2 Font::get_char_size(char32_t p_char, int p_font_size) const {
 	if (dirty_rids) {
 		_update_rids();
 	}
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		if (TS->font_has_char(rids[i], p_char)) {
 			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
 			return Size2(TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x, get_height(p_font_size));
@@ -482,7 +482,7 @@ real_t Font::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, 
 	if (dirty_rids) {
 		_update_rids();
 	}
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		if (TS->font_has_char(rids[i], p_char)) {
 			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
 			TS->font_draw_glyph(rids[i], p_canvas_item, p_font_size, p_pos, glyph, p_modulate);
@@ -496,7 +496,7 @@ real_t Font::draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t 
 	if (dirty_rids) {
 		_update_rids();
 	}
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		if (TS->font_has_char(rids[i], p_char)) {
 			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
 			TS->font_draw_glyph_outline(rids[i], p_canvas_item, p_font_size, p_size, p_pos, glyph, p_modulate);
@@ -511,7 +511,7 @@ bool Font::has_char(char32_t p_char) const {
 	if (dirty_rids) {
 		_update_rids();
 	}
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		if (TS->font_has_char(rids[i], p_char)) {
 			return true;
 		}
@@ -524,7 +524,7 @@ String Font::get_supported_chars() const {
 		_update_rids();
 	}
 	String chars;
-	for (int i = 0; i < rids.size(); i++) {
+	for (vec_size i = 0; i < rids.size(); i++) {
 		String data_chars = TS->font_get_supported_chars(rids[i]);
 		for (int j = 0; j < data_chars.length(); j++) {
 			if (chars.find_char(data_chars[j]) == -1) {
@@ -568,7 +568,7 @@ Font::~Font() {
 /*************************************************************************/
 
 _FORCE_INLINE_ void FontFile::_clear_cache() {
-	for (int i = 0; i < cache.size(); i++) {
+	for (vec_size i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
 			TS->free_rid(cache[i]);
 			cache.write[i] = RID();
@@ -1049,7 +1049,7 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 		// Compatibility, BitmapFont.
 		set_fixed_size(16);
 		Array textures = p_value;
-		for (int i = 0; i < textures.size(); i++) {
+		for (vec_size i = 0; i < textures.size(); i++) {
 			Ref<ImageTexture> tex = textures[i];
 			ERR_CONTINUE(!tex.is_valid());
 			set_texture_image(0, Vector2i(16, 0), i, tex->get_image());
@@ -1265,14 +1265,14 @@ bool FontFile::_get(const StringName &p_name, Variant &r_ret) const {
 
 void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 	Vector<String> lang_over = get_language_support_overrides();
-	for (int i = 0; i < lang_over.size(); i++) {
+	for (vec_size i = 0; i < lang_over.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "language_support_override/" + lang_over[i], PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 	}
 	Vector<String> scr_over = get_script_support_overrides();
-	for (int i = 0; i < scr_over.size(); i++) {
+	for (vec_size i = 0; i < scr_over.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "script_support_override/" + scr_over[i], PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 	}
-	for (int i = 0; i < cache.size(); i++) {
+	for (vec_size i = 0; i < cache.size(); i++) {
 		String prefix = "cache/" + itos(i) + "/";
 		TypedArray<Vector2i> sizes = get_size_cache_list(i);
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, prefix + "variation_coordinates", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -1280,7 +1280,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 
-		for (int j = 0; j < sizes.size(); j++) {
+		for (vec_size j = 0; j < sizes.size(); j++) {
 			Vector2i sz = sizes[j];
 			String prefix_sz = prefix + itos(sz.x) + "/" + itos(sz.y) + "/";
 			if (sz.y == 0) {
@@ -1297,7 +1297,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 			}
 			PackedInt32Array glyphs = get_glyph_list(i, sz);
-			for (int k = 0; k < glyphs.size(); k++) {
+			for (vec_size k = 0; k < glyphs.size(); k++) {
 				const int32_t &gl = glyphs[k];
 				if (sz.y == 0) {
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "glyphs/" + itos(gl) + "/advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -1309,7 +1309,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 			if (sz.y == 0) {
 				TypedArray<Vector2i> kerning_map = get_kerning_list(i, sz.x);
-				for (int k = 0; k < kerning_map.size(); k++) {
+				for (vec_size k = 0; k < kerning_map.size(); k++) {
 					const Vector2i &gl_pair = kerning_map[k];
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "kerning_overrides/" + itos(gl_pair.x) + "/" + itos(gl_pair.y), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 				}
@@ -1824,7 +1824,7 @@ void FontFile::set_data_ptr(const uint8_t *p_data, size_t p_size) {
 	data_ptr = p_data;
 	data_size = p_size;
 
-	for (int i = 0; i < cache.size(); i++) {
+	for (vec_size i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
 			TS->font_set_data_ptr(cache[i], data_ptr, data_size);
 		}
@@ -1836,7 +1836,7 @@ void FontFile::set_data(const PackedByteArray &p_data) {
 	data_ptr = data.ptr();
 	data_size = data.size();
 
-	for (int i = 0; i < cache.size(); i++) {
+	for (vec_size i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
 			TS->font_set_data_ptr(cache[i], data_ptr, data_size);
 		}
@@ -1870,7 +1870,7 @@ void FontFile::set_font_style(BitField<TextServer::FontStyle> p_style) {
 void FontFile::set_antialiasing(TextServer::FontAntialiasing p_antialiasing) {
 	if (antialiasing != p_antialiasing) {
 		antialiasing = p_antialiasing;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_antialiasing(cache[i], antialiasing);
 		}
@@ -1885,7 +1885,7 @@ TextServer::FontAntialiasing FontFile::get_antialiasing() const {
 void FontFile::set_generate_mipmaps(bool p_generate_mipmaps) {
 	if (mipmaps != p_generate_mipmaps) {
 		mipmaps = p_generate_mipmaps;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_generate_mipmaps(cache[i], mipmaps);
 		}
@@ -1900,7 +1900,7 @@ bool FontFile::get_generate_mipmaps() const {
 void FontFile::set_multichannel_signed_distance_field(bool p_msdf) {
 	if (msdf != p_msdf) {
 		msdf = p_msdf;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_multichannel_signed_distance_field(cache[i], msdf);
 		}
@@ -1915,7 +1915,7 @@ bool FontFile::is_multichannel_signed_distance_field() const {
 void FontFile::set_msdf_pixel_range(int p_msdf_pixel_range) {
 	if (msdf_pixel_range != p_msdf_pixel_range) {
 		msdf_pixel_range = p_msdf_pixel_range;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_msdf_pixel_range(cache[i], msdf_pixel_range);
 		}
@@ -1930,7 +1930,7 @@ int FontFile::get_msdf_pixel_range() const {
 void FontFile::set_msdf_size(int p_msdf_size) {
 	if (msdf_size != p_msdf_size) {
 		msdf_size = p_msdf_size;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_msdf_size(cache[i], msdf_size);
 		}
@@ -1945,7 +1945,7 @@ int FontFile::get_msdf_size() const {
 void FontFile::set_fixed_size(int p_fixed_size) {
 	if (fixed_size != p_fixed_size) {
 		fixed_size = p_fixed_size;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_fixed_size(cache[i], fixed_size);
 		}
@@ -1960,7 +1960,7 @@ int FontFile::get_fixed_size() const {
 void FontFile::set_force_autohinter(bool p_force_autohinter) {
 	if (force_autohinter != p_force_autohinter) {
 		force_autohinter = p_force_autohinter;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_force_autohinter(cache[i], force_autohinter);
 		}
@@ -1975,7 +1975,7 @@ bool FontFile::is_force_autohinter() const {
 void FontFile::set_hinting(TextServer::Hinting p_hinting) {
 	if (hinting != p_hinting) {
 		hinting = p_hinting;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_hinting(cache[i], hinting);
 		}
@@ -1990,7 +1990,7 @@ TextServer::Hinting FontFile::get_hinting() const {
 void FontFile::set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel) {
 	if (subpixel_positioning != p_subpixel) {
 		subpixel_positioning = p_subpixel;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_subpixel_positioning(cache[i], subpixel_positioning);
 		}
@@ -2005,7 +2005,7 @@ TextServer::SubpixelPositioning FontFile::get_subpixel_positioning() const {
 void FontFile::set_oversampling(real_t p_oversampling) {
 	if (oversampling != p_oversampling) {
 		oversampling = p_oversampling;
-		for (int i = 0; i < cache.size(); i++) {
+		for (vec_size i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_oversampling(cache[i], oversampling);
 		}
@@ -2020,7 +2020,7 @@ real_t FontFile::get_oversampling() const {
 RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
-	for (int i = 0; i < cache.size(); i++) {
+	for (vec_size i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
 			const Dictionary &cache_var = TS->font_get_variation_coordinates(cache[i]);
 			bool match = true;
@@ -2499,7 +2499,7 @@ void FontVariation::_update_rids() const {
 		}
 
 		const TypedArray<Font> &base_fallbacks = f->get_fallbacks();
-		for (int i = 0; i < base_fallbacks.size(); i++) {
+		for (vec_size i = 0; i < base_fallbacks.size(); i++) {
 			_update_rids_fb(base_fallbacks[i], 0);
 		}
 	} else {
@@ -2749,7 +2749,7 @@ void SystemFont::_update_rids() const {
 		}
 
 		const TypedArray<Font> &base_fallbacks = f->get_fallbacks();
-		for (int i = 0; i < base_fallbacks.size(); i++) {
+		for (vec_size i = 0; i < base_fallbacks.size(); i++) {
 			_update_rids_fb(base_fallbacks[i], 0);
 		}
 	} else {

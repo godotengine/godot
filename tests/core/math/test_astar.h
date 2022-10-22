@@ -327,7 +327,7 @@ TEST_CASE("[Stress][AStar3D] Find paths") {
 							goto exit;
 						}
 						float astar_dist = 0;
-						for (int i = 1; i < route.size(); i++) {
+						for (vec_size i = 1; i < route.size(); i++) {
 							if (!adj[route[i - 1]][route[i]]) {
 								print_verbose(vformat("From %d to %d: edge (%d, %d) does not exist\n",
 										u, v, route[i - 1], route[i]));

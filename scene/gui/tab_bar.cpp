@@ -46,7 +46,7 @@ Size2 TabBar::get_minimum_size() const {
 
 	int y_margin = MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
 
-	for (int i = 0; i < tabs.size(); i++) {
+	for (vec_size i = 0; i < tabs.size(); i++) {
 		if (tabs[i].hidden) {
 			continue;
 		}
@@ -336,7 +336,7 @@ void TabBar::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			for (int i = 0; i < tabs.size(); ++i) {
+			for (vec_size i = 0; i < tabs.size(); ++i) {
 				_shape(i);
 			}
 
@@ -851,7 +851,7 @@ void TabBar::_update_cache() {
 
 	max_drawn_tab = tabs.size() - 1;
 
-	for (int i = 0; i < tabs.size(); i++) {
+	for (vec_size i = 0; i < tabs.size(); i++) {
 		tabs.write[i].text_buf->set_width(-1);
 		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
 		tabs.write[i].size_cache = get_tab_width(i);
@@ -1508,7 +1508,7 @@ bool TabBar::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void TabBar::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < tabs.size(); i++) {
+	for (vec_size i = 0; i < tabs.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("tab_%d/title", i)));
 
 		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("tab_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");

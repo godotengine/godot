@@ -95,11 +95,11 @@ Array ServersDebugger::ServersProfilerFrame::serialize() {
 	arr.push_back(script_time);
 
 	arr.push_back(servers.size());
-	for (int i = 0; i < servers.size(); i++) {
+	for (vec_size i = 0; i < servers.size(); i++) {
 		ServerInfo &s = servers[i];
 		arr.push_back(s.name);
 		arr.push_back(s.functions.size() * 2);
-		for (int j = 0; j < s.functions.size(); j++) {
+		for (vec_size j = 0; j < s.functions.size(); j++) {
 			ServerFunctionInfo &f = s.functions[j];
 			arr.push_back(f.name);
 			arr.push_back(f.time);
@@ -107,7 +107,7 @@ Array ServersDebugger::ServersProfilerFrame::serialize() {
 	}
 
 	arr.push_back(script_functions.size() * 4);
-	for (int i = 0; i < script_functions.size(); i++) {
+	for (vec_size i = 0; i < script_functions.size(); i++) {
 		arr.push_back(script_functions[i].sig_id);
 		arr.push_back(script_functions[i].call_count);
 		arr.push_back(script_functions[i].self_time);
@@ -164,7 +164,7 @@ Array ServersDebugger::VisualProfilerFrame::serialize() {
 	Array arr;
 	arr.push_back(frame_number);
 	arr.push_back(areas.size() * 3);
-	for (int i = 0; i < areas.size(); i++) {
+	for (vec_size i = 0; i < areas.size(); i++) {
 		arr.push_back(areas[i].name);
 		arr.push_back(areas[i].cpu_msec);
 		arr.push_back(areas[i].gpu_msec);

@@ -90,7 +90,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			} else if ((node_type == "MenuButton" || node_type == "OptionButton") && property_name == "items") {
 				Vector<String> str_values = property_value;
 				int incr_value = node_type == "MenuButton" ? PopupMenu::ITEM_PROPERTY_SIZE : OptionButton::ITEM_PROPERTY_SIZE;
-				for (int k = 0; k < str_values.size(); k += incr_value) {
+				for (vec_size k = 0; k < str_values.size(); k += incr_value) {
 					String desc = str_values[k].get_slice(";", 1).strip_edges();
 					if (!desc.is_empty()) {
 						parsed_strings.push_back(desc);
@@ -99,7 +99,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			} else if (node_type == "FileDialog" && property_name == "filters") {
 				// Extract FileDialog's filters property with values in format "*.png ; PNG Images","*.gd ; GDScript Files".
 				Vector<String> str_values = property_value;
-				for (int k = 0; k < str_values.size(); k++) {
+				for (vec_size k = 0; k < str_values.size(); k++) {
 					String desc = str_values[k].get_slice(";", 1).strip_edges();
 					if (!desc.is_empty()) {
 						parsed_strings.push_back(desc);

@@ -70,7 +70,7 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 }
 
 void GDScriptEditorTranslationParserPlugin::_traverse_class(const GDScriptParser::ClassNode *p_class) {
-	for (int i = 0; i < p_class->members.size(); i++) {
+	for (vec_size i = 0; i < p_class->members.size(); i++) {
 		const GDScriptParser::ClassNode::Member &m = p_class->members[i];
 		// There are 7 types of Member, but only class, function and variable can contain translatable strings.
 		switch (m.type) {
@@ -103,7 +103,7 @@ void GDScriptEditorTranslationParserPlugin::_traverse_block(const GDScriptParser
 	}
 
 	const Vector<GDScriptParser::Node *> &statements = p_suite->statements;
-	for (int i = 0; i < statements.size(); i++) {
+	for (vec_size i = 0; i < statements.size(); i++) {
 		GDScriptParser::Node *statement = statements[i];
 
 		// Statements with Node type constant, break, continue, pass, breakpoint are skipped because they can't contain translatable strings.
@@ -134,7 +134,7 @@ void GDScriptEditorTranslationParserPlugin::_traverse_block(const GDScriptParser
 			case GDScriptParser::Node::MATCH: {
 				GDScriptParser::MatchNode *match_node = static_cast<GDScriptParser::MatchNode *>(statement);
 				_assess_expression(match_node->test);
-				for (int j = 0; j < match_node->branches.size(); j++) {
+				for (vec_size j = 0; j < match_node->branches.size(); j++) {
 					_traverse_block(match_node->branches[j]->block);
 				}
 				break;
@@ -169,7 +169,7 @@ void GDScriptEditorTranslationParserPlugin::_assess_expression(GDScriptParser::E
 	switch (p_expression->type) {
 		case GDScriptParser::Node::ARRAY: {
 			GDScriptParser::ArrayNode *array_node = static_cast<GDScriptParser::ArrayNode *>(p_expression);
-			for (int i = 0; i < array_node->elements.size(); i++) {
+			for (vec_size i = 0; i < array_node->elements.size(); i++) {
 				_assess_expression(array_node->elements[i]);
 			}
 			break;
@@ -186,13 +186,13 @@ void GDScriptEditorTranslationParserPlugin::_assess_expression(GDScriptParser::E
 		case GDScriptParser::Node::CALL: {
 			GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(p_expression);
 			_extract_from_call(call_node);
-			for (int i = 0; i < call_node->arguments.size(); i++) {
+			for (vec_size i = 0; i < call_node->arguments.size(); i++) {
 				_assess_expression(call_node->arguments[i]);
 			}
 		} break;
 		case GDScriptParser::Node::DICTIONARY: {
 			GDScriptParser::DictionaryNode *dict_node = static_cast<GDScriptParser::DictionaryNode *>(p_expression);
-			for (int i = 0; i < dict_node->elements.size(); i++) {
+			for (vec_size i = 0; i < dict_node->elements.size(); i++) {
 				_assess_expression(dict_node->elements[i].key);
 				_assess_expression(dict_node->elements[i].value);
 			}
@@ -232,7 +232,7 @@ void GDScriptEditorTranslationParserPlugin::_assess_assignment(GDScriptParser::A
 			GDScriptParser::ArrayNode *array_node = static_cast<GDScriptParser::ArrayNode *>(call_node->arguments[0]);
 
 			// Extract the name in "extension ; name" of PackedStringArray.
-			for (int i = 0; i < array_node->elements.size(); i++) {
+			for (vec_size i = 0; i < array_node->elements.size(); i++) {
 				_extract_fd_literals(array_node->elements[i]);
 			}
 		}
@@ -255,7 +255,7 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 
 	if (function_name == tr_func) {
 		// Extract from tr(id, ctx).
-		for (int i = 0; i < p_call->arguments.size(); i++) {
+		for (vec_size i = 0; i < p_call->arguments.size(); i++) {
 			if (p_call->arguments[i]->type == GDScriptParser::Node::LITERAL) {
 				id_ctx_plural.write[i] = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[i])->value;
 			} else {
@@ -272,7 +272,7 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 		indices.push_back(0);
 		indices.push_back(3);
 		indices.push_back(1);
-		for (int i = 0; i < indices.size(); i++) {
+		for (vec_size i = 0; i < indices.size(); i++) {
 			if (indices[i] >= p_call->arguments.size()) {
 				continue;
 			}
@@ -306,7 +306,7 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 		GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(p_call->arguments[0]);
 		if (call_node->arguments[0]->type == GDScriptParser::Node::ARRAY) {
 			GDScriptParser::ArrayNode *array_node = static_cast<GDScriptParser::ArrayNode *>(call_node->arguments[0]);
-			for (int i = 0; i < array_node->elements.size(); i++) {
+			for (vec_size i = 0; i < array_node->elements.size(); i++) {
 				_extract_fd_literals(array_node->elements[i]);
 			}
 		}

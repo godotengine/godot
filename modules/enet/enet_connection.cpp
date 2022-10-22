@@ -419,7 +419,7 @@ size_t ENetConnection::Compressor::enet_compress(void *context, const ENetBuffer
 	}
 
 	int req_size = Compression::get_max_compressed_buffer_size(ofs, mode);
-	if (compressor->dst_mem.size() < req_size) {
+	if (int(compressor->dst_mem.size()) < req_size) {
 		compressor->dst_mem.resize(req_size);
 	}
 	int ret = Compression::compress(compressor->dst_mem.ptrw(), compressor->src_mem.ptr(), ofs, mode);

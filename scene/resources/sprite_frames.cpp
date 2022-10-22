@@ -150,7 +150,7 @@ Array SpriteFrames::_get_animations() const {
 		d["speed"] = anim.speed;
 		d["loop"] = anim.loop;
 		Array frames;
-		for (int i = 0; i < anim.frames.size(); i++) {
+		for (vec_size i = 0; i < anim.frames.size(); i++) {
 			frames.push_back(anim.frames[i]);
 		}
 		d["frames"] = frames;
@@ -162,7 +162,7 @@ Array SpriteFrames::_get_animations() const {
 
 void SpriteFrames::_set_animations(const Array &p_animations) {
 	animations.clear();
-	for (int i = 0; i < p_animations.size(); i++) {
+	for (vec_size i = 0; i < p_animations.size(); i++) {
 		Dictionary d = p_animations[i];
 
 		ERR_CONTINUE(!d.has("name"));
@@ -174,7 +174,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		anim.speed = d["speed"];
 		anim.loop = d["loop"];
 		Array frames = d["frames"];
-		for (int j = 0; j < frames.size(); j++) {
+		for (vec_size j = 0; j < frames.size(); j++) {
 			Ref<Resource> res = frames[j];
 			anim.frames.push_back(res);
 		}

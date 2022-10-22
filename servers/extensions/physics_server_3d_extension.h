@@ -363,7 +363,7 @@ public:
 	void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) override {
 		TypedArray<RID> ret;
 		GDVIRTUAL_REQUIRED_CALL(_body_get_collision_exceptions, p_body, ret);
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			p_exceptions->push_back(ret[i]);
 		}
 	}
@@ -427,7 +427,7 @@ public:
 	void soft_body_get_collision_exceptions(RID p_soft_body, List<RID> *p_exceptions) override {
 		TypedArray<RID> ret;
 		GDVIRTUAL_REQUIRED_CALL(_soft_body_get_collision_exceptions, p_soft_body, ret);
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			p_exceptions->push_back(ret[i]);
 		}
 	}

@@ -434,7 +434,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 		js.uid = uidname;
 		js.connected = true;
 		int mapping = fallback_mapping;
-		for (int i = 0; i < map_db.size(); i++) {
+		for (vec_size i = 0; i < map_db.size(); i++) {
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
 				js.name = map_db[i].name;
@@ -1081,7 +1081,7 @@ void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
 	JoyEvent event;
 
-	for (int i = 0; i < mapping.bindings.size(); i++) {
+	for (vec_size i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_BUTTON && binding.input.button == p_button) {
 			event.type = binding.outputType;
@@ -1116,7 +1116,7 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value) {
 	JoyEvent event;
 
-	for (int i = 0; i < mapping.bindings.size(); i++) {
+	for (vec_size i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_AXIS && binding.input.axis.axis == p_axis) {
 			float value = p_value;
@@ -1183,7 +1183,7 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 }
 
 void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]) {
-	for (int i = 0; i < mapping.bindings.size(); i++) {
+	for (vec_size i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_HAT && binding.input.hat.hat == p_hat) {
 			HatDir hat_direction;
@@ -1381,7 +1381,7 @@ void Input::remove_joy_mapping(String p_guid) {
 }
 
 void Input::set_fallback_mapping(String p_guid) {
-	for (int i = 0; i < map_db.size(); i++) {
+	for (vec_size i = 0; i < map_db.size(); i++) {
 		if (map_db[i].uid == p_guid) {
 			fallback_mapping = i;
 			return;
@@ -1441,7 +1441,7 @@ Input::Input() {
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
 	if (!env_mapping.is_empty()) {
 		Vector<String> entries = env_mapping.split("\n");
-		for (int i = 0; i < entries.size(); i++) {
+		for (vec_size i = 0; i < entries.size(); i++) {
 			if (entries[i].is_empty()) {
 				continue;
 			}

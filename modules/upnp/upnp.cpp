@@ -267,7 +267,7 @@ void UPNP::clear_devices() {
 Ref<UPNPDevice> UPNP::get_gateway() const {
 	ERR_FAIL_COND_V_MSG(devices.size() < 1, nullptr, "Couldn't find any UPNPDevices.");
 
-	for (int i = 0; i < devices.size(); i++) {
+	for (vec_size i = 0; i < devices.size(); i++) {
 		Ref<UPNPDevice> dev = get_device(i);
 
 		if (dev != nullptr && dev->is_valid_gateway()) {

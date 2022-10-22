@@ -61,11 +61,11 @@ String find_executable(const String &p_name) {
 		return String();
 	}
 
-	for (int i = 0; i < env_path.size(); i++) {
+	for (vec_size i = 0; i < env_path.size(); i++) {
 		String p = path::join(env_path[i], p_name);
 
 #ifdef WINDOWS_ENABLED
-		for (int j = 0; j < exts.size(); j++) {
+		for (vec_size j = 0; j < exts.size(); j++) {
 			String p2 = p + exts[j].to_lower(); // lowercase to reduce risk of case mismatch warning
 
 			if (FileAccess::exists(p2)) {

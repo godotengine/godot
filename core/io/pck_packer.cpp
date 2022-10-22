@@ -173,7 +173,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		fhead = fae;
 	}
 
-	for (int i = 0; i < files.size(); i++) {
+	for (vec_size i = 0; i < files.size(); i++) {
 		int string_len = files[i].path.utf8().length();
 		int pad = _get_pad(4, string_len);
 
@@ -213,7 +213,7 @@ Error PCKPacker::flush(bool p_verbose) {
 	uint8_t *buf = memnew_arr(uint8_t, buf_max);
 
 	int count = 0;
-	for (int i = 0; i < files.size(); i++) {
+	for (vec_size i = 0; i < files.size(); i++) {
 		Ref<FileAccess> src = FileAccess::open(files[i].src_path, FileAccess::READ);
 		uint64_t to_write = files[i].size;
 

@@ -163,7 +163,7 @@ TEST_CASE("[Array] sort()") {
 	arr.push_back(1);
 	arr.sort();
 	int val = 1;
-	for (int i = 0; i < arr.size(); i++) {
+	for (vec_size i = 0; i < arr.size(); i++) {
 		CHECK(int(arr[i]) == val);
 		val++;
 	}

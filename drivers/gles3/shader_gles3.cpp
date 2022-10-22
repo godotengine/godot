@@ -41,7 +41,7 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 
 	String text;
 
-	for (int i = 0; i < lines.size(); i++) {
+	for (vec_size i = 0; i < lines.size(); i++) {
 		String l = lines[i];
 		bool push_chunk = false;
 
@@ -166,7 +166,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	builder.append(general_defines.get_data());
 	builder.append(variant_defines[p_variant]);
 	builder.append("\n");
-	for (int j = 0; j < p_version->custom_defines.size(); j++) {
+	for (vec_size j = 0; j < p_version->custom_defines.size(); j++) {
 		builder.append(p_version->custom_defines[j].get_data());
 	}
 	builder.append("\n"); //make sure defines begin at newline
@@ -227,7 +227,7 @@ static void _display_error_with_code(const String &p_error, const String &p_code
 	int line = 1;
 	Vector<String> lines = p_code.split("\n");
 
-	for (int j = 0; j < lines.size(); j++) {
+	for (vec_size j = 0; j < lines.size(); j++) {
 		print_line(itos(line) + ": " + lines[j]);
 		line++;
 	}
@@ -410,7 +410,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		}
 	}
 	// textures
-	for (int i = 0; i < p_version->texture_uniforms.size(); i++) {
+	for (vec_size i = 0; i < p_version->texture_uniforms.size(); i++) {
 		String native_uniform_name = p_version->texture_uniforms[i];
 		GLint location = glGetUniformLocation(spec.id, (native_uniform_name).ascii().get_data());
 		glUniform1i(location, i + base_texture_index);
@@ -427,7 +427,7 @@ RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_ver
 
 	source_code.versions.resize(variant_count);
 
-	for (int i = 0; i < source_code.versions.size(); i++) {
+	for (vec_size i = 0; i < source_code.versions.size(); i++) {
 		//vertex stage
 
 		{
@@ -473,11 +473,11 @@ String ShaderGLES3::_version_get_sha1(Version *p_version) const {
 	}
 	code_sections.sort_custom<StringName::AlphCompare>();
 
-	for (int i = 0; i < code_sections.size(); i++) {
+	for (vec_size i = 0; i < code_sections.size(); i++) {
 		hash_build.append(String("[code:") + String(code_sections[i]) + "]");
 		hash_build.append(p_version->code_sections[code_sections[i]].get_data());
 	}
-	for (int i = 0; i < p_version->custom_defines.size(); i++) {
+	for (vec_size i = 0; i < p_version->custom_defines.size(); i++) {
 		hash_build.append("[custom_defines:" + itos(i) + "]");
 		hash_build.append(p_version->custom_defines[i].get_data());
 	}
@@ -620,7 +620,7 @@ void ShaderGLES3::version_set_code(RID p_version, const HashMap<String, String> 
 	}
 
 	version->custom_defines.clear();
-	for (int i = 0; i < p_custom_defines.size(); i++) {
+	for (vec_size i = 0; i < p_custom_defines.size(); i++) {
 		version->custom_defines.push_back(p_custom_defines[i].utf8());
 	}
 

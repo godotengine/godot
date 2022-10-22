@@ -32,7 +32,7 @@
 #include "core/os/keyboard.h"
 
 void Shortcut::set_events(const Array &p_events) {
-	for (int i = 0; i < p_events.size(); i++) {
+	for (vec_size i = 0; i < p_events.size(); i++) {
 		Ref<InputEventShortcut> ies = p_events[i];
 		ERR_FAIL_COND_MSG(ies.is_valid(), "Cannot set a shortcut event to an instance of InputEventShortcut.");
 	}
@@ -61,7 +61,7 @@ bool Shortcut::matches_event(const Ref<InputEvent> &p_event) const {
 		}
 	}
 
-	for (int i = 0; i < events.size(); i++) {
+	for (vec_size i = 0; i < events.size(); i++) {
 		Ref<InputEvent> ie = events[i];
 		bool valid = ie.is_valid() && ie->is_match(p_event);
 
@@ -75,7 +75,7 @@ bool Shortcut::matches_event(const Ref<InputEvent> &p_event) const {
 }
 
 String Shortcut::get_as_text() const {
-	for (int i = 0; i < events.size(); i++) {
+	for (vec_size i = 0; i < events.size(); i++) {
 		Ref<InputEvent> ie = events[i];
 		// Return first shortcut which is valid
 		if (ie.is_valid()) {
@@ -88,7 +88,7 @@ String Shortcut::get_as_text() const {
 
 bool Shortcut::has_valid_event() const {
 	// Tests if there is ANY input event which is valid.
-	for (int i = 0; i < events.size(); i++) {
+	for (vec_size i = 0; i < events.size(); i++) {
 		Ref<InputEvent> ie = events[i];
 		if (ie.is_valid()) {
 			return true;
@@ -116,7 +116,7 @@ bool Shortcut::is_event_array_equal(const Array &p_event_array1, const Array &p_
 	}
 
 	bool is_same = true;
-	for (int i = 0; i < p_event_array1.size(); i++) {
+	for (vec_size i = 0; i < p_event_array1.size(); i++) {
 		Ref<InputEvent> ie_1 = p_event_array1[i];
 		Ref<InputEvent> ie_2 = p_event_array2[i];
 

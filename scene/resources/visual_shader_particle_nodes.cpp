@@ -465,7 +465,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector2> 
 		image->initialize_data(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
 	}
 
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		Vector2 v = p_array[i];
 		image->set_pixel(i, 0, Color(v.x, v.y, 0));
 	}
@@ -486,7 +486,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector3> 
 		image->initialize_data(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
 	}
 
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		Vector3 v = p_array[i];
 		image->set_pixel(i, 0, Color(v.x, v.y, v.z));
 	}
@@ -507,7 +507,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Color> &p
 		image->initialize_data(p_array.size(), 1, false, Image::Format::FORMAT_RGBA8);
 	}
 
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		image->set_pixel(i, 0, p_array[i]);
 	}
 	if (r_texture->get_width() != p_array.size() || p_array.size() == 0) {
@@ -538,7 +538,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// position
 			if (surface_arrays_size > Mesh::ARRAY_VERTEX) {
 				Array vertex_array = surface_arrays[Mesh::ARRAY_VERTEX];
-				for (int j = 0; j < vertex_array.size(); j++) {
+				for (vec_size j = 0; j < vertex_array.size(); j++) {
 					vertices.push_back((Vector3)vertex_array[j]);
 				}
 			}
@@ -546,7 +546,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// normal
 			if (surface_arrays_size > Mesh::ARRAY_NORMAL) {
 				Array normal_array = surface_arrays[Mesh::ARRAY_NORMAL];
-				for (int j = 0; j < normal_array.size(); j++) {
+				for (vec_size j = 0; j < normal_array.size(); j++) {
 					normals.push_back((Vector3)normal_array[j]);
 				}
 			}
@@ -554,7 +554,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// color
 			if (surface_arrays_size > Mesh::ARRAY_COLOR) {
 				Array color_array = surface_arrays[Mesh::ARRAY_COLOR];
-				for (int j = 0; j < color_array.size(); j++) {
+				for (vec_size j = 0; j < color_array.size(); j++) {
 					colors.push_back((Color)color_array[j]);
 				}
 			}
@@ -562,7 +562,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// uv
 			if (surface_arrays_size > Mesh::ARRAY_TEX_UV) {
 				Array uv_array = surface_arrays[Mesh::ARRAY_TEX_UV];
-				for (int j = 0; j < uv_array.size(); j++) {
+				for (vec_size j = 0; j < uv_array.size(); j++) {
 					uvs.push_back((Vector2)uv_array[j]);
 				}
 			}
@@ -570,7 +570,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// uv2
 			if (surface_arrays_size > Mesh::ARRAY_TEX_UV2) {
 				Array uv2_array = surface_arrays[Mesh::ARRAY_TEX_UV2];
-				for (int j = 0; j < uv2_array.size(); j++) {
+				for (vec_size j = 0; j < uv2_array.size(); j++) {
 					uvs2.push_back((Vector2)uv2_array[j]);
 				}
 			}
@@ -583,7 +583,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// position
 			if (surface_arrays_size > Mesh::ARRAY_VERTEX) {
 				Array vertex_array = surface_arrays[Mesh::ARRAY_VERTEX];
-				for (int i = 0; i < vertex_array.size(); i++) {
+				for (vec_size i = 0; i < vertex_array.size(); i++) {
 					vertices.push_back((Vector3)vertex_array[i]);
 				}
 			}
@@ -591,7 +591,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// normal
 			if (surface_arrays_size > Mesh::ARRAY_NORMAL) {
 				Array normal_array = surface_arrays[Mesh::ARRAY_NORMAL];
-				for (int i = 0; i < normal_array.size(); i++) {
+				for (vec_size i = 0; i < normal_array.size(); i++) {
 					normals.push_back((Vector3)normal_array[i]);
 				}
 			}
@@ -599,7 +599,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// color
 			if (surface_arrays_size > Mesh::ARRAY_COLOR) {
 				Array color_array = surface_arrays[Mesh::ARRAY_COLOR];
-				for (int i = 0; i < color_array.size(); i++) {
+				for (vec_size i = 0; i < color_array.size(); i++) {
 					colors.push_back((Color)color_array[i]);
 				}
 			}
@@ -607,7 +607,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// uv
 			if (surface_arrays_size > Mesh::ARRAY_TEX_UV) {
 				Array uv_array = surface_arrays[Mesh::ARRAY_TEX_UV];
-				for (int j = 0; j < uv_array.size(); j++) {
+				for (vec_size j = 0; j < uv_array.size(); j++) {
 					uvs.push_back((Vector2)uv_array[j]);
 				}
 			}
@@ -615,7 +615,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 			// uv2
 			if (surface_arrays_size > Mesh::ARRAY_TEX_UV2) {
 				Array uv2_array = surface_arrays[Mesh::ARRAY_TEX_UV2];
-				for (int j = 0; j < uv2_array.size(); j++) {
+				for (vec_size j = 0; j < uv2_array.size(); j++) {
 					uvs2.push_back((Vector2)uv2_array[j]);
 				}
 			}
@@ -1606,7 +1606,7 @@ String VisualShaderNodeParticleEmit::generate_code(Shader::Mode p_mode, VisualSh
 
 	String flags_str;
 
-	for (int i = 0; i < flags_arr.size(); i++) {
+	for (vec_size i = 0; i < flags_arr.size(); i++) {
 		if (i > 0) {
 			flags_str += "|";
 		}

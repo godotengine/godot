@@ -173,14 +173,14 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	font->set_fallbacks(fallbacks);
 
 	Dictionary langs = p_options["language_support"];
-	for (int i = 0; i < langs.size(); i++) {
+	for (vec_size i = 0; i < langs.size(); i++) {
 		String key = langs.get_key_at_index(i);
 		bool enabled = langs.get_value_at_index(i);
 		font->set_language_support_override(key, enabled);
 	}
 
 	Dictionary scripts = p_options["script_support"];
-	for (int i = 0; i < scripts.size(); i++) {
+	for (vec_size i = 0; i < scripts.size(); i++) {
 		String key = scripts.get_key_at_index(i);
 		bool enabled = scripts.get_value_at_index(i);
 		font->set_script_support_override(key, enabled);
@@ -188,7 +188,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 
 	Array preload_configurations = p_options["preload"];
 
-	for (int i = 0; i < preload_configurations.size(); i++) {
+	for (vec_size i = 0; i < preload_configurations.size(); i++) {
 		Dictionary preload_config = preload_configurations[i];
 
 		Dictionary variation = preload_config.has("variation_opentype") ? preload_config["variation_opentype"].operator Dictionary() : Dictionary();
@@ -201,13 +201,13 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 		RID conf_rid = font->find_variation(variation, face_index, embolden, transform);
 
 		Array chars = preload_config["chars"];
-		for (int j = 0; j < chars.size(); j++) {
+		for (vec_size j = 0; j < chars.size(); j++) {
 			char32_t c = chars[j].operator int();
 			TS->font_render_range(conf_rid, size, c, c);
 		}
 
 		Array glyphs = preload_config["glyphs"];
-		for (int j = 0; j < glyphs.size(); j++) {
+		for (vec_size j = 0; j < glyphs.size(); j++) {
 			int32_t c = glyphs[j];
 			TS->font_render_glyph(conf_rid, size, c);
 		}

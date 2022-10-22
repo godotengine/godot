@@ -324,7 +324,7 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 
 		msort.sort();
 		msort.reverse();
-		for (int i = 0; i < msort.size(); i++) {
+		for (vec_size i = 0; i < msort.size(); i++) {
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
 
@@ -460,7 +460,7 @@ void GDScript::_add_doc(const DocData::ClassDoc &p_inner_class) {
 	if (_owner) {
 		_owner->_add_doc(p_inner_class);
 	} else {
-		for (int i = 0; i < docs.size(); i++) {
+		for (vec_size i = 0; i < docs.size(); i++) {
 			if (docs[i].name == p_inner_class.name) {
 				docs.remove_at(i);
 				break;
@@ -514,7 +514,7 @@ void GDScript::_update_doc() {
 
 	List<MethodInfo> methods;
 	_get_script_method_list(&methods, false);
-	for (int i = 0; i < methods.size(); i++) {
+	for (vec_size i = 0; i < methods.size(); i++) {
 		// Ignore internal methods.
 		if (methods[i].name[0] == '@') {
 			continue;
@@ -549,7 +549,7 @@ void GDScript::_update_doc() {
 
 	List<PropertyInfo> props;
 	_get_script_property_list(&props, false);
-	for (int i = 0; i < props.size(); i++) {
+	for (vec_size i = 0; i < props.size(); i++) {
 		if (props[i].usage & PROPERTY_USAGE_CATEGORY || props[i].usage & PROPERTY_USAGE_GROUP || props[i].usage & PROPERTY_USAGE_SUBGROUP) {
 			continue;
 		}
@@ -580,7 +580,7 @@ void GDScript::_update_doc() {
 
 	List<MethodInfo> signals;
 	_get_script_signal_list(&signals, false);
-	for (int i = 0; i < signals.size(); i++) {
+	for (vec_size i = 0; i < signals.size(); i++) {
 		DocData::MethodDoc signal_doc;
 		if (doc_signals.has(signals[i].name)) {
 			DocData::signal_doc_from_methodinfo(signal_doc, signals[i], doc_signals[signals[i].name]);
@@ -600,14 +600,14 @@ void GDScript::_update_doc() {
 		if (E.value.get_type() == Variant::DICTIONARY) {
 			if (doc_enums.has(E.key)) {
 				is_enum = true;
-				for (int i = 0; i < doc_enums[E.key].values.size(); i++) {
+				for (vec_size i = 0; i < doc_enums[E.key].values.size(); i++) {
 					doc_enums[E.key].values.write[i].enumeration = E.key;
 					doc.constants.push_back(doc_enums[E.key].values[i]);
 				}
 			}
 		}
 		if (!is_enum && doc_enums.has("@unnamed_enums")) {
-			for (int i = 0; i < doc_enums["@unnamed_enums"].values.size(); i++) {
+			for (vec_size i = 0; i < doc_enums["@unnamed_enums"].values.size(); i++) {
 				if (E.key == doc_enums["@unnamed_enums"].values[i].name) {
 					is_enum = true;
 					DocData::ConstantDoc constant_doc;
@@ -714,7 +714,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 			members_cache.push_back(get_class_category());
 
-			for (int i = 0; i < c->members.size(); i++) {
+			for (vec_size i = 0; i < c->members.size(); i++) {
 				const GDScriptParser::ClassNode::Member &member = c->members[i];
 
 				switch (member.type) {
@@ -734,7 +734,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						// TODO: Cache this in parser to avoid loops like this.
 						Vector<StringName> parameters_names;
 						parameters_names.resize(member.signal->parameters.size());
-						for (int j = 0; j < member.signal->parameters.size(); j++) {
+						for (vec_size j = 0; j < member.signal->parameters.size(); j++) {
 							parameters_names.write[j] = member.signal->parameters[j]->identifier->name;
 						}
 						_signals[member.signal->identifier->name] = parameters_names;
@@ -757,7 +757,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 	placeholder_fallback_enabled = false;
 
 	if (base_cache.is_valid() && base_cache->is_valid()) {
-		for (int i = 0; i < base_caches.size(); i++) {
+		for (vec_size i = 0; i < base_caches.size(); i++) {
 			if (base_caches[i] == base_cache.ptr()) {
 				if (r_err) {
 					*r_err = true;
@@ -1141,7 +1141,7 @@ void GDScript::_get_script_signal_list(List<MethodInfo> *r_list, bool p_include_
 	for (const KeyValue<StringName, Vector<StringName>> &E : _signals) {
 		MethodInfo mi;
 		mi.name = E.key;
-		for (int i = 0; i < E.value.size(); i++) {
+		for (vec_size i = 0; i < E.value.size(); i++) {
 			PropertyInfo arg;
 			arg.name = E.value[i];
 			mi.arguments.push_back(arg);
@@ -1215,7 +1215,7 @@ void GDScript::_save_orphaned_subclasses() {
 	constants.clear();
 
 	// keep orphan subclass only for subclasses that are still in use
-	for (int i = 0; i < weak_subclasses.size(); i++) {
+	for (vec_size i = 0; i < weak_subclasses.size(); i++) {
 		ClassRefWithName subclass = weak_subclasses[i];
 		Object *obj = ObjectDB::get_instance(subclass.id);
 		if (!obj) {
@@ -1482,7 +1482,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 				ERR_FAIL_COND_MSG(ret.get_type() != Variant::ARRAY, "Wrong type for _get_property_list, must be an array of dictionaries.");
 
 				Array arr = ret;
-				for (int i = 0; i < arr.size(); i++) {
+				for (vec_size i = 0; i < arr.size(); i++) {
 					Dictionary d = arr[i];
 					ERR_CONTINUE(!d.has("name"));
 					ERR_CONTINUE(!d.has("type"));
@@ -1522,7 +1522,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 
 		msort.sort();
 		msort.reverse();
-		for (int i = 0; i < msort.size(); i++) {
+		for (vec_size i = 0; i < msort.size(); i++) {
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
 
@@ -2245,7 +2245,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 
 							while (extend_classes.size() > 0) {
 								bool found = false;
-								for (int i = 0; i < subclass->members.size(); i++) {
+								for (vec_size i = 0; i < subclass->members.size(); i++) {
 									if (subclass->members[i].type != GDScriptParser::ClassNode::Member::CLASS) {
 										continue;
 									}
@@ -2348,7 +2348,7 @@ GDScriptLanguage::~GDScriptLanguage() {
 
 		for (KeyValue<StringName, GDScriptFunction *> &E : scr->member_functions) {
 			GDScriptFunction *func = E.value;
-			for (int i = 0; i < func->argument_types.size(); i++) {
+			for (vec_size i = 0; i < func->argument_types.size(); i++) {
 				func->argument_types.write[i].script_type_ref = Ref<Script>();
 			}
 			func->return_type.script_type_ref = Ref<Script>();

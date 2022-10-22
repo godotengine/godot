@@ -335,7 +335,7 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	E->value.in_scene = true;
 	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 
-	for (int i = 0; i < E->value.shapes.size(); i++) {
+	for (vec_size i = 0; i < E->value.shapes.size(); i++) {
 		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
@@ -356,7 +356,7 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 
 	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 
-	for (int i = 0; i < E->value.shapes.size(); i++) {
+	for (vec_size i = 0; i < E->value.shapes.size(); i++) {
 		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
@@ -457,7 +457,7 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 		//untag all
 		int rc = 0;
 		for (KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {
-			for (int i = 0; i < E.value.shapes.size(); i++) {
+			for (vec_size i = 0; i < E.value.shapes.size(); i++) {
 				E.value.shapes[i].tagged = false;
 				rc++;
 			}
@@ -503,7 +503,7 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 		//put the ones to remove
 
 		for (const KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {
-			for (int i = 0; i < E.value.shapes.size(); i++) {
+			for (vec_size i = 0; i < E.value.shapes.size(); i++) {
 				if (!E.value.shapes[i].tagged) {
 					toremove[toremove_count].rid = E.value.rid;
 					toremove[toremove_count].body_id = E.key;
@@ -1794,7 +1794,7 @@ CharacterBody2D::CharacterBody2D() :
 }
 
 CharacterBody2D::~CharacterBody2D() {
-	for (int i = 0; i < slide_colliders.size(); i++) {
+	for (vec_size i = 0; i < slide_colliders.size(); i++) {
 		if (slide_colliders[i].is_valid()) {
 			slide_colliders.write[i]->owner = nullptr;
 		}

@@ -41,7 +41,7 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 		if (closed) {
 			const Vector2 *r = polygon.ptr();
 			item_rect = Rect2();
-			for (int i = 0; i < polygon.size(); i++) {
+			for (vec_size i = 0; i < polygon.size(); i++) {
 				Vector2 pos = r[i];
 				if (i == 0) {
 					item_rect.position = pos;
@@ -56,7 +56,7 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 			} else {
 				Vector2 d = Vector2(LINE_GRAB_WIDTH, LINE_GRAB_WIDTH);
 				item_rect = Rect2(polygon[0] - d, 2 * d);
-				for (int i = 1; i < polygon.size(); i++) {
+				for (vec_size i = 1; i < polygon.size(); i++) {
 					item_rect.expand_to(polygon[i] - d);
 					item_rect.expand_to(polygon[i] + d);
 				}

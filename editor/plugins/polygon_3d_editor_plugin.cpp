@@ -198,7 +198,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 							int closest_idx = -1;
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
-							for (int i = 0; i < poly.size(); i++) {
+							for (vec_size i = 0; i < poly.size(); i++) {
 								Vector2 points[2] = {
 									p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth))),
 									p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)))
@@ -234,7 +234,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 							int closest_idx = -1;
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
-							for (int i = 0; i < poly.size(); i++) {
+							for (vec_size i = 0; i < poly.size(); i++) {
 								Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
 								real_t d = cp.distance_to(gpoint);
@@ -278,7 +278,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 					int closest_idx = -1;
 					Vector2 closest_pos;
 					real_t closest_dist = 1e10;
-					for (int i = 0; i < poly.size(); i++) {
+					for (vec_size i = 0; i < poly.size(); i++) {
 						Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
 						real_t d = cp.distance_to(gpoint);
@@ -387,7 +387,7 @@ void Polygon3DEditor::_polygon_draw() {
 
 	Rect2 rect;
 
-	for (int i = 0; i < poly.size(); i++) {
+	for (vec_size i = 0; i < poly.size(); i++) {
 		Vector2 p, p2;
 		p = i == edited_point ? edited_point_pos : poly[i];
 		if ((wip_active && i == poly.size() - 1) || (((i + 1) % poly.size()) == edited_point)) {
@@ -473,7 +473,7 @@ void Polygon3DEditor::_polygon_draw() {
 	{
 		va.resize(poly.size());
 		Vector3 *w = va.ptrw();
-		for (int i = 0; i < poly.size(); i++) {
+		for (vec_size i = 0; i < poly.size(); i++) {
 			Vector2 p, p2;
 			p = i == edited_point ? edited_point_pos : poly[i];
 

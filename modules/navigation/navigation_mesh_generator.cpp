@@ -99,7 +99,7 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 			Vector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
 			const int *ir = mesh_indices.ptr();
 
-			for (int j = 0; j < mesh_vertices.size(); j++) {
+			for (vec_size j = 0; j < mesh_vertices.size(); j++) {
 				_add_vertex(p_xform.xform(vr[j]), p_vertices);
 			}
 
@@ -134,7 +134,7 @@ void NavigationMeshGenerator::_add_mesh_array(const Array &p_array, const Transf
 	const int face_count = mesh_indices.size() / 3;
 	const int current_vertex_count = p_vertices.size() / 3;
 
-	for (int j = 0; j < mesh_vertices.size(); j++) {
+	for (vec_size j = 0; j < mesh_vertices.size(); j++) {
 		_add_vertex(p_xform.xform(vr[j]), p_vertices);
 	}
 
@@ -335,7 +335,7 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 		if (p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 			Array meshes = gridmap->get_meshes();
 			Transform3D xform = gridmap->get_global_transform();
-			for (int i = 0; i < meshes.size(); i += 2) {
+			for (vec_size i = 0; i < meshes.size(); i += 2) {
 				Ref<Mesh> mesh = meshes[i + 1];
 				if (mesh.is_valid()) {
 					_add_mesh(mesh, p_navmesh_transform * xform * (Transform3D)meshes[i], p_vertices, p_indices);
@@ -345,7 +345,7 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 
 		if (p_generate_from != NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES && (gridmap->get_collision_layer() & p_collision_mask)) {
 			Array shapes = gridmap->get_collision_shapes();
-			for (int i = 0; i < shapes.size(); i += 2) {
+			for (vec_size i = 0; i < shapes.size(); i += 2) {
 				RID shape = shapes[i + 1];
 				PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);
 				Variant data = PhysicsServer3D::get_singleton()->shape_get_data(shape);

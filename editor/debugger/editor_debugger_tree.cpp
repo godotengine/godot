@@ -142,7 +142,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 	// Nodes are in a flatten list, depth first. Use a stack of parents, avoid recursion.
 	List<Pair<TreeItem *, int>> parents;
-	for (int i = 0; i < p_tree->nodes.size(); i++) {
+	for (vec_size i = 0; i < p_tree->nodes.size(); i++) {
 		TreeItem *parent = nullptr;
 		if (parents.size()) { // Find last parent.
 			Pair<TreeItem *, int> &p = parents[0];
@@ -208,7 +208,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 				item = parent;
 				parent = item->get_parent();
 				// Check if parent expects more children.
-				for (int j = 0; j < parents.size(); j++) {
+				for (vec_size j = 0; j < parents.size(); j++) {
 					if (parents[j].first == item) {
 						parent = nullptr;
 						break; // Might have more children.
@@ -290,7 +290,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			Ref<PackedScene> sd = memnew(PackedScene);
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			file_dialog->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
+			for (vec_size i = 0; i < extensions.size(); i++) {
 				file_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 

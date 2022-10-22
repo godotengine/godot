@@ -107,7 +107,7 @@ void CodeSignCodeResources::add_rule2(const String &p_rule, const String &p_key,
 CodeSignCodeResources::CRMatch CodeSignCodeResources::match_rules1(const String &p_path) const {
 	CRMatch found = CRMatch::CR_MATCH_NO;
 	int weight = 0;
-	for (int i = 0; i < rules1.size(); i++) {
+	for (vec_size i = 0; i < rules1.size(); i++) {
 		RegEx regex = RegEx(rules1[i].file_pattern);
 		if (regex.search(p_path).is_valid()) {
 			if (rules1[i].key == "omit") {
@@ -136,7 +136,7 @@ CodeSignCodeResources::CRMatch CodeSignCodeResources::match_rules1(const String 
 CodeSignCodeResources::CRMatch CodeSignCodeResources::match_rules2(const String &p_path) const {
 	CRMatch found = CRMatch::CR_MATCH_NO;
 	int weight = 0;
-	for (int i = 0; i < rules2.size(); i++) {
+	for (vec_size i = 0; i < rules2.size(); i++) {
 		RegEx regex = RegEx(rules2[i].file_pattern);
 		if (regex.search(p_path).is_valid()) {
 			if (rules2[i].key == "omit") {
@@ -202,11 +202,11 @@ bool CodeSignCodeResources::add_file2(const String &p_root, const String &p_path
 }
 
 bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &p_path, const String &p_exepath) {
-#define CLEANUP()                                       \
-	if (files_to_add.size() > 1) {                      \
-		for (int j = 0; j < files_to_add.size(); j++) { \
-			da->remove(files_to_add[j]);                \
-		}                                               \
+#define CLEANUP()                                            \
+	if (files_to_add.size() > 1) {                           \
+		for (vec_size j = 0; j < files_to_add.size(); j++) { \
+			da->remove(files_to_add[j]);                     \
+		}                                                    \
 	}
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -235,7 +235,7 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 	f.name = p_path;
 	f.optional = false;
 	f.nested = true;
-	for (int i = 0; i < files_to_add.size(); i++) {
+	for (vec_size i = 0; i < files_to_add.size(); i++) {
 		MachO mh;
 		if (!mh.open_file(files_to_add[i])) {
 			CLEANUP();
@@ -257,7 +257,7 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 		if (rq_blob.size() > 8) {
 			CodeSignRequirements rq = CodeSignRequirements(rq_blob);
 			Vector<String> rqs = rq.parse_requirements();
-			for (int j = 0; j < rqs.size(); j++) {
+			for (vec_size j = 0; j < rqs.size(); j++) {
 				if (rqs[j].begins_with("designated => ")) {
 					req_string = rqs[j].replace("designated => ", "");
 				}
@@ -354,7 +354,7 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 	// Write version 1 hashes.
 	Ref<PListNode> files1_dict = PListNode::new_dict();
 	pl.get_root()->push_subnode(files1_dict, "files");
-	for (int i = 0; i < files1.size(); i++) {
+	for (vec_size i = 0; i < files1.size(); i++) {
 		if (files1[i].optional) {
 			Ref<PListNode> file_dict = PListNode::new_dict();
 			files1_dict->push_subnode(file_dict, files1[i].name);
@@ -369,7 +369,7 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 	// Write version 2 hashes.
 	Ref<PListNode> files2_dict = PListNode::new_dict();
 	pl.get_root()->push_subnode(files2_dict, "files2");
-	for (int i = 0; i < files2.size(); i++) {
+	for (vec_size i = 0; i < files2.size(); i++) {
 		Ref<PListNode> file_dict = PListNode::new_dict();
 		files2_dict->push_subnode(file_dict, files2[i].name);
 
@@ -388,7 +388,7 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 	// Write version 1 rules.
 	Ref<PListNode> rules1_dict = PListNode::new_dict();
 	pl.get_root()->push_subnode(rules1_dict, "rules");
-	for (int i = 0; i < rules1.size(); i++) {
+	for (vec_size i = 0; i < rules1.size(); i++) {
 		if (rules1[i].store) {
 			if (rules1[i].key.is_empty() && rules1[i].weight <= 0) {
 				rules1_dict->push_subnode(PListNode::new_bool(true), rules1[i].file_pattern);
@@ -408,7 +408,7 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 	// Write version 2 rules.
 	Ref<PListNode> rules2_dict = PListNode::new_dict();
 	pl.get_root()->push_subnode(rules2_dict, "rules2");
-	for (int i = 0; i < rules2.size(); i++) {
+	for (vec_size i = 0; i < rules2.size(); i++) {
 		if (rules2[i].store) {
 			if (rules2[i].key.is_empty() && rules2[i].weight <= 0) {
 				rules2_dict->push_subnode(PListNode::new_bool(true), rules2[i].file_pattern);
@@ -1101,7 +1101,7 @@ bool CodeSignSuperBlob::add_blob(const Ref<CodeSignBlob> &p_blob) {
 
 int CodeSignSuperBlob::get_size() const {
 	int size = 12 + blobs.size() * 8;
-	for (int i = 0; i < blobs.size(); i++) {
+	for (vec_size i = 0; i < blobs.size(); i++) {
 		if (blobs[i].is_null()) {
 			return 0;
 		}
@@ -1121,7 +1121,7 @@ void CodeSignSuperBlob::write_to_file(Ref<FileAccess> p_file) const {
 	p_file->store_32(BSWAP32(blobs.size()));
 
 	// Write index.
-	for (int i = 0; i < blobs.size(); i++) {
+	for (vec_size i = 0; i < blobs.size(); i++) {
 		if (blobs[i].is_null()) {
 			return;
 		}
@@ -1131,7 +1131,7 @@ void CodeSignSuperBlob::write_to_file(Ref<FileAccess> p_file) const {
 	}
 
 	// Write blobs.
-	for (int i = 0; i < blobs.size(); i++) {
+	for (vec_size i = 0; i < blobs.size(); i++) {
 		blobs[i]->write_to_file(p_file);
 	}
 }
@@ -1189,11 +1189,11 @@ PackedByteArray CodeSign::file_hash_sha256(const String &p_path) {
 }
 
 Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const String &p_info, const String &p_exe_path, const String &p_bundle_path, const String &p_ent_path, bool p_ios_bundle, String &r_error_msg) {
-#define CLEANUP()                                        \
-	if (files_to_sign.size() > 1) {                      \
-		for (int j = 0; j < files_to_sign.size(); j++) { \
-			da->remove(files_to_sign[j]);                \
-		}                                                \
+#define CLEANUP()                                             \
+	if (files_to_sign.size() > 1) {                           \
+		for (vec_size j = 0; j < files_to_sign.size(); j++) { \
+			da->remove(files_to_sign[j]);                     \
+		}                                                     \
 	}
 
 	print_verbose(vformat("CodeSign: Signing executable: %s, bundle: %s with entitlements %s", p_exe_path, p_bundle_path, p_ent_path));
@@ -1271,7 +1271,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 
 	// Check if it's already signed.
 	if (!p_force) {
-		for (int i = 0; i < files_to_sign.size(); i++) {
+		for (vec_size i = 0; i < files_to_sign.size(); i++) {
 			MachO mh;
 			mh.open_file(files_to_sign[i]);
 			if (mh.is_signed()) {
@@ -1387,7 +1387,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	rq = Ref<CodeSignRequirements>(memnew(CodeSignRequirements()));
 
 	// Sign executables.
-	for (int i = 0; i < files_to_sign.size(); i++) {
+	for (vec_size i = 0; i < files_to_sign.size(); i++) {
 		MachO mh;
 		if (!mh.open_file(files_to_sign[i])) {
 			CLEANUP();

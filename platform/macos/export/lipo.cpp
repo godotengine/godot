@@ -44,7 +44,7 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_output_path));
 
 	uint64_t max_size = 0;
-	for (int i = 0; i < p_files.size(); i++) {
+	for (vec_size i = 0; i < p_files.size(); i++) {
 		MachO mh;
 		if (!mh.open_file(p_files[i])) {
 			ERR_FAIL_V_MSG(false, vformat("LipO: Invalid MachO file: \"%s.\"", p_files[i]));
@@ -76,7 +76,7 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 	}
 	fa->store_32(BSWAP32(archs.size()));
 	uint64_t offset = archs.size() * (is_64 ? 32 : 20) + 8;
-	for (int i = 0; i < archs.size(); i++) {
+	for (vec_size i = 0; i < archs.size(); i++) {
 		archs.write[i].offset = offset + PAD(offset, uint64_t(1) << archs[i].align);
 		if (is_64) {
 			fa->store_32(BSWAP32(archs[i].cputype));
@@ -96,7 +96,7 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 	}
 
 	// Write files and padding.
-	for (int i = 0; i < archs.size(); i++) {
+	for (vec_size i = 0; i < archs.size(); i++) {
 		Ref<FileAccess> fb = FileAccess::open(p_files[i], FileAccess::READ);
 		if (fb.is_null()) {
 			close();

@@ -190,7 +190,7 @@ void ImportDefaultsEditor::clear() {
 	}
 	names.sort();
 
-	for (int i = 0; i < names.size(); i++) {
+	for (vec_size i = 0; i < names.size(); i++) {
 		importers->add_item(names[i]);
 
 		if (names[i] == last_selected) {

@@ -124,7 +124,7 @@ bool SkeletonModification2DCCDIK::_get(const StringName &p_path, Variant &r_ret)
 }
 
 void SkeletonModification2DCCDIK::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < ccdik_data_chain.size(); i++) {
+	for (vec_size i = 0; i < ccdik_data_chain.size(); i++) {
 		String base_string = "joint_data/" + itos(i) + "/";
 
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
@@ -183,7 +183,7 @@ void SkeletonModification2DCCDIK::_execute(float p_delta) {
 		return;
 	}
 
-	for (int i = 0; i < ccdik_data_chain.size(); i++) {
+	for (vec_size i = 0; i < ccdik_data_chain.size(); i++) {
 		_execute_ccdik_joint(i, target, tip);
 	}
 }
@@ -249,7 +249,7 @@ void SkeletonModification2DCCDIK::_draw_editor_gizmo() {
 		return;
 	}
 
-	for (int i = 0; i < ccdik_data_chain.size(); i++) {
+	for (vec_size i = 0; i < ccdik_data_chain.size(); i++) {
 		if (!ccdik_data_chain[i].editor_draw_gizmo) {
 			continue;
 		}

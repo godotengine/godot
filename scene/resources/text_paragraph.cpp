@@ -135,7 +135,7 @@ void TextParagraph::_bind_methods() {
 
 void TextParagraph::_shape_lines() {
 	if (lines_dirty) {
-		for (int i = 0; i < (int)lines_rid.size(); i++) {
+		for (vec_size i = 0; i < (int)lines_rid.size(); i++) {
 			TS->free_rid(lines_rid[i]);
 		}
 		lines_rid.clear();
@@ -160,7 +160,7 @@ void TextParagraph::_shape_lines() {
 		if (h_offset > 0) {
 			// Dropcap, flow around.
 			PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(rid, width - h_offset, 0, brk_flags);
-			for (int i = 0; i < line_breaks.size(); i = i + 2) {
+			for (vec_size i = 0; i < line_breaks.size(); i = i + 2) {
 				RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
 				if (v_offset < h) {
@@ -178,7 +178,7 @@ void TextParagraph::_shape_lines() {
 		}
 		// Use fixed for the rest of lines.
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(rid, width, start, brk_flags);
-		for (int i = 0; i < line_breaks.size(); i = i + 2) {
+		for (vec_size i = 0; i < line_breaks.size(); i = i + 2) {
 			RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 			if (!tab_stops.is_empty()) {
 				TS->shaped_text_tab_align(line, tab_stops);
@@ -220,7 +220,7 @@ void TextParagraph::_shape_lines() {
 				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
 			}
 			if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
-				for (int i = 0; i < (int)lines_rid.size(); i++) {
+				for (vec_size i = 0; i < (int)lines_rid.size(); i++) {
 					if (i < visible_lines - 1 || (int)lines_rid.size() == 1) {
 						TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
 					} else if (i == (visible_lines - 1)) {
@@ -234,7 +234,7 @@ void TextParagraph::_shape_lines() {
 
 		} else {
 			// Autowrap disabled.
-			for (int i = 0; i < (int)lines_rid.size(); i++) {
+			for (vec_size i = 0; i < (int)lines_rid.size(); i++) {
 				if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
 					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
@@ -268,7 +268,7 @@ RID TextParagraph::get_dropcap_rid() const {
 void TextParagraph::clear() {
 	_THREAD_SAFE_METHOD_
 
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
+	for (vec_size i = 0; i < (int)lines_rid.size(); i++) {
 		TS->free_rid(lines_rid[i]);
 	}
 	lines_rid.clear();
@@ -751,7 +751,7 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 		TS->shaped_text_draw_outline(dropcap_rid, p_canvas, dc_off + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_dc_color);
 	}
 
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
+	for (vec_size i = 0; i < (int)lines_rid.size(); i++) {
 		float l_width = width;
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
@@ -841,7 +841,7 @@ int TextParagraph::hit_test(const Point2 &p_coords) const {
 			return 0;
 		}
 	}
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
+	for (vec_size i = 0; i < (int)lines_rid.size(); i++) {
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			if ((p_coords.y >= ofs.y) && (p_coords.y <= ofs.y + TS->shaped_text_get_size(lines_rid[i]).y)) {
 				return TS->shaped_text_hit_test_position(lines_rid[i], p_coords.x);
@@ -953,7 +953,7 @@ TextParagraph::TextParagraph() {
 }
 
 TextParagraph::~TextParagraph() {
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
+	for (vec_size i = 0; i < (int)lines_rid.size(); i++) {
 		TS->free_rid(lines_rid[i]);
 	}
 	lines_rid.clear();

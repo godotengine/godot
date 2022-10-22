@@ -670,7 +670,7 @@ void TextureStorage::texture_free(RID p_texture) {
 
 	texture_atlas_remove_texture(p_texture);
 
-	for (int i = 0; i < t->proxies.size(); i++) {
+	for (vec_size i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
 		ERR_CONTINUE(!p);
 		p->proxy_to = RID();
@@ -872,10 +872,10 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 		tex_to->canvas_texture->diffuse = p_texture; //update
 	}
 
-	for (int i = 0; i < proxies_to_update.size(); i++) {
+	for (vec_size i = 0; i < proxies_to_update.size(); i++) {
 		texture_proxy_update(proxies_to_update[i], p_texture);
 	}
-	for (int i = 0; i < proxies_to_redirect.size(); i++) {
+	for (vec_size i = 0; i < proxies_to_redirect.size(); i++) {
 		texture_proxy_update(proxies_to_redirect[i], p_texture);
 	}
 	//delete last, so proxies can be updated

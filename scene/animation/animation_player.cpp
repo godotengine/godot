@@ -41,7 +41,7 @@
 #include "scene/2d/skeleton_2d.h"
 
 void AnimatedValuesBackup::update_skeletons() {
-	for (int i = 0; i < entries.size(); i++) {
+	for (vec_size i = 0; i < entries.size(); i++) {
 		if (entries[i].bone_idx != -1) {
 			// 3D bone
 			Object::cast_to<Skeleton3D>(entries[i].object)->notification(Skeleton3D::NOTIFICATION_UPDATE_SKELETON);
@@ -56,7 +56,7 @@ void AnimatedValuesBackup::update_skeletons() {
 }
 
 void AnimatedValuesBackup::restore() const {
-	for (int i = 0; i < entries.size(); i++) {
+	for (vec_size i = 0; i < entries.size(); i++) {
 		const AnimatedValuesBackup::Entry *entry = &entries[i];
 		if (entry->bone_idx == -1) {
 			entry->object->set_indexed(entry->subpath, entry->value);
@@ -161,7 +161,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		Array array;
-		for (int i = 0; i < keys.size(); i++) {
+		for (vec_size i = 0; i < keys.size(); i++) {
 			array.push_back(keys[i].from);
 			array.push_back(keys[i].to);
 			array.push_back(blend_times.get(keys[i]));
@@ -1120,7 +1120,7 @@ void AnimationPlayer::_animation_update_transforms() {
 					String key_debug;
 					if (pa->subpath.size() > 0) {
 						key_debug = pa->subpath[0];
-						for (int subpath_index = 1; subpath_index < pa->subpath.size(); ++subpath_index) {
+						for (vec_size subpath_index = 1; subpath_index < pa->subpath.size(); ++subpath_index) {
 							key_debug += ".";
 							key_debug += pa->subpath[subpath_index];
 						}
@@ -1999,7 +1999,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values(Node *p_root_o
 	_ensure_node_caches(playback.current.from, p_root_override);
 
 	backup.instantiate();
-	for (int i = 0; i < playback.current.from->node_cache.size(); i++) {
+	for (vec_size i = 0; i < playback.current.from->node_cache.size(); i++) {
 		TrackNodeCache *nc = playback.current.from->node_cache[i];
 		if (!nc) {
 			continue;

@@ -50,7 +50,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	versions.clear();
 	base_error = "";
 
-	for (int lidx = 0; lidx < lines.size(); lidx++) {
+	for (vec_size lidx = 0; lidx < lines.size(); lidx++) {
 		String line = lines[lidx];
 
 		{
@@ -187,7 +187,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				if (!error.is_empty()) {
 					error += String() + "\n\nStage '" + stage_str[i] + "' source code: \n\n";
 					Vector<String> sclines = code.split("\n");
-					for (int j = 0; j < sclines.size(); j++) {
+					for (vec_size j = 0; j < sclines.size(); j++) {
 						error += itos(j + 1) + "\t\t" + sclines[j] + "\n";
 					}
 					errors_found = true;

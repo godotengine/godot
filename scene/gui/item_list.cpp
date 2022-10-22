@@ -376,7 +376,7 @@ void ItemList::select(int p_idx, bool p_single) {
 			return;
 		}
 
-		for (int i = 0; i < items.size(); i++) {
+		for (vec_size i = 0; i < items.size(); i++) {
 			items.write[i].selected = p_idx == i;
 		}
 
@@ -407,7 +407,7 @@ void ItemList::deselect_all() {
 		return;
 	}
 
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		items.write[i].selected = false;
 	}
 	current = -1;
@@ -530,7 +530,7 @@ void ItemList::set_max_text_lines(int p_lines) {
 	ERR_FAIL_COND(p_lines < 1);
 	if (max_text_lines != p_lines) {
 		max_text_lines = p_lines;
-		for (int i = 0; i < items.size(); i++) {
+		for (vec_size i = 0; i < items.size(); i++) {
 			if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
 				items.write[i].text_buf->set_max_lines_visible(p_lines);
@@ -580,7 +580,7 @@ void ItemList::set_icon_mode(IconMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 2);
 	if (icon_mode != p_mode) {
 		icon_mode = p_mode;
-		for (int i = 0; i < items.size(); i++) {
+		for (vec_size i = 0; i < items.size(); i++) {
 			if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
 			} else {
@@ -772,7 +772,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				uint64_t diff = now - search_time_msec;
 
 				if (diff < uint64_t(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
-					for (int i = current + 1; i < items.size(); i++) {
+					for (vec_size i = current + 1; i < items.size(); i++) {
 						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
 							ensure_current_is_visible();
@@ -907,7 +907,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					search_string += String::chr(k->get_unicode());
 				}
 
-				for (int i = current + 1; i <= items.size(); i++) {
+				for (vec_size i = current + 1; i <= items.size(); i++) {
 					if (i == items.size()) {
 						if (current == 0 || current == -1) {
 							break;
@@ -1002,7 +1002,7 @@ void ItemList::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			for (int i = 0; i < items.size(); i++) {
+			for (vec_size i = 0; i < items.size(); i++) {
 				_shape(i);
 			}
 			shape_changed = true;
@@ -1043,7 +1043,7 @@ void ItemList::_notification(int p_what) {
 				float max_column_width = 0.0;
 
 				//1- compute item minimum sizes
-				for (int i = 0; i < items.size(); i++) {
+				for (vec_size i = 0; i < items.size(); i++) {
 					Size2 minsize;
 					if (items[i].icon.is_valid()) {
 						if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
@@ -1112,7 +1112,7 @@ void ItemList::_notification(int p_what) {
 					int col = 0;
 					int max_h = 0;
 					separators.clear();
-					for (int i = 0; i < items.size(); i++) {
+					for (vec_size i = 0; i < items.size(); i++) {
 						if (current_columns > 1 && items[i].rect_cache.size.width + ofs.x > fit_size) {
 							//went past
 							current_columns = MAX(col, 1);
@@ -1218,7 +1218,7 @@ void ItemList::_notification(int p_what) {
 				first_item_visible = lo;
 			}
 
-			for (int i = first_item_visible; i < items.size(); i++) {
+			for (vec_size i = first_item_visible; i < items.size(); i++) {
 				Rect2 rcache = items[i].rect_cache;
 
 				if (rcache.position.y > clip.position.y + clip.size.y) {
@@ -1424,7 +1424,7 @@ void ItemList::_notification(int p_what) {
 				first_visible_separator = lo;
 			}
 
-			for (int i = first_visible_separator; i < separators.size(); i++) {
+			for (vec_size i = first_visible_separator; i < separators.size(); i++) {
 				if (separators[i] > clip.position.y + clip.size.y) {
 					break; // done
 				}
@@ -1452,7 +1452,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	int closest = -1;
 	int closest_dist = 0x7FFFFFFF;
 
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;
 		if (i % current_columns == current_columns - 1) {
 			rc.size.width = get_size().width - rc.position.x; // Make sure you can still select the last item when clicking past the column.
@@ -1514,7 +1514,7 @@ void ItemList::sort_items_by_text() {
 	shape_changed = true;
 
 	if (select_mode == SELECT_SINGLE) {
-		for (int i = 0; i < items.size(); i++) {
+		for (vec_size i = 0; i < items.size(); i++) {
 			if (items[i].selected) {
 				select(i);
 				return;
@@ -1524,7 +1524,7 @@ void ItemList::sort_items_by_text() {
 }
 
 int ItemList::find_metadata(const Variant &p_metadata) const {
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		if (items[i].metadata == p_metadata) {
 			return i;
 		}
@@ -1559,7 +1559,7 @@ real_t ItemList::get_icon_scale() const {
 
 Vector<int> ItemList::get_selected_items() {
 	Vector<int> selected;
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		if (items[i].selected) {
 			selected.push_back(i);
 			if (this->select_mode == SELECT_SINGLE) {
@@ -1571,7 +1571,7 @@ Vector<int> ItemList::get_selected_items() {
 }
 
 bool ItemList::is_anything_selected() {
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		if (items[i].selected) {
 			return true;
 		}
@@ -1608,7 +1608,7 @@ bool ItemList::has_auto_height() const {
 void ItemList::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	if (text_overrun_behavior != p_behavior) {
 		text_overrun_behavior = p_behavior;
-		for (int i = 0; i < items.size(); i++) {
+		for (vec_size i = 0; i < items.size(); i++) {
 			items.write[i].text_buf->set_text_overrun_behavior(p_behavior);
 		}
 		shape_changed = true;
@@ -1645,7 +1645,7 @@ bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
 		ERR_FAIL_COND_V(arr.size() % 3, false);
 		clear();
 
-		for (int i = 0; i < arr.size(); i += 3) {
+		for (vec_size i = 0; i < arr.size(); i += 3) {
 			String text = arr[i + 0];
 			Ref<Texture2D> icon = arr[i + 1];
 			bool disabled = arr[i + 2];
@@ -1681,7 +1681,7 @@ bool ItemList::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void ItemList::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < items.size(); i++) {
+	for (vec_size i = 0; i < items.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
 
 		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");

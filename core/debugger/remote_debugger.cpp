@@ -80,12 +80,12 @@ public:
 		} else {
 			bandwidth_in_ptr = 0;
 			bandwidth_in.resize(16384); // ~128kB
-			for (int i = 0; i < bandwidth_in.size(); ++i) {
+			for (vec_size i = 0; i < bandwidth_in.size(); ++i) {
 				bandwidth_in.write[i].packet_size = -1;
 			}
 			bandwidth_out_ptr = 0;
 			bandwidth_out.resize(16384); // ~128kB
-			for (int i = 0; i < bandwidth_out.size(); ++i) {
+			for (vec_size i = 0; i < bandwidth_out.size(); ++i) {
 				bandwidth_out.write[i].packet_size = -1;
 			}
 		}
@@ -156,7 +156,7 @@ public:
 			arr[i] = performance->call("get_monitor", i);
 		}
 
-		for (int i = 0; i < custom_monitor_names.size(); i++) {
+		for (vec_size i = 0; i < custom_monitor_names.size(); i++) {
 			Variant monitor_value = performance->call("get_custom_monitor", custom_monitor_names[i]);
 			if (!monitor_value.is_num()) {
 				ERR_PRINT("Value of custom monitor '" + String(custom_monitor_names[i]) + "' is not a number");
@@ -287,7 +287,7 @@ void RemoteDebugger::flush_output() {
 		Vector<String> joined_log_strings;
 		Vector<String> strings;
 		Vector<int> types;
-		for (int i = 0; i < output_strings.size(); i++) {
+		for (vec_size i = 0; i < output_strings.size(); i++) {
 			const OutputString &output_string = output_strings[i];
 			if (output_string.type == MESSAGE_TYPE_ERROR) {
 				if (!joined_log_strings.is_empty()) {

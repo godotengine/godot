@@ -78,7 +78,7 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 
 	SUBCASE("[Modules][GDScript] Validate built-in methods") {
 		for (const MethodInfo &mi : builtin_methods) {
-			for (int j = 0; j < mi.arguments.size(); j++) {
+			for (vec_size j = 0; j < mi.arguments.size(); j++) {
 				PropertyInfo arg = mi.arguments[j];
 
 				TEST_COND((arg.name.is_empty() || arg.name.begins_with("_unnamed_arg")),
@@ -93,7 +93,7 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 
 	SUBCASE("[Modules][GDScript] Validate built-in annotations") {
 		for (const MethodInfo &ai : builtin_annotations) {
-			for (int j = 0; j < ai.arguments.size(); j++) {
+			for (vec_size j = 0; j < ai.arguments.size(); j++) {
 				PropertyInfo arg = ai.arguments[j];
 
 				TEST_COND((arg.name.is_empty() || arg.name.begins_with("_unnamed_arg")),

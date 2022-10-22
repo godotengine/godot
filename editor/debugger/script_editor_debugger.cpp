@@ -201,7 +201,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			file->store_string("\n");
 
 			Vector<Vector<String>> profiler_data = profiler->get_data_as_csv();
-			for (int i = 0; i < profiler_data.size(); i++) {
+			for (vec_size i = 0; i < profiler_data.size(); i++) {
 				file->store_csv_line(profiler_data[i]);
 			}
 		} break;
@@ -381,7 +381,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		Array stack_dump_info;
 
-		for (int i = 0; i < stack.frames.size(); i++) {
+		for (vec_size i = 0; i < stack.frames.size(); i++) {
 			TreeItem *s = stack_dump->create_item(r);
 			Dictionary d;
 			d["frame"] = i;
@@ -419,7 +419,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		ERR_FAIL_COND(output_strings.size() != output_types.size());
 
-		for (int i = 0; i < output_strings.size(); i++) {
+		for (vec_size i = 0; i < output_strings.size(); i++) {
 			RemoteDebugger::MessageType type = (RemoteDebugger::MessageType)(int)(output_types[i]);
 			EditorLog::MessageType msg_type;
 			switch (type) {
@@ -443,7 +443,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	} else if (p_msg == "performance:profile_frame") {
 		Vector<float> frame_data;
 		frame_data.resize(p_data.size());
-		for (int i = 0; i < p_data.size(); i++) {
+		for (vec_size i = 0; i < p_data.size(); i++) {
 			frame_data.write[i] = p_data[i];
 		}
 		performance_profiler->add_profile_frame(frame_data);
@@ -459,7 +459,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		{
 			EditorVisualProfiler::Metric::Area *areas_ptr = metric.areas.ptrw();
-			for (int i = 0; i < frame.areas.size(); i++) {
+			for (vec_size i = 0; i < frame.areas.size(); i++) {
 				areas_ptr[i].name = frame.areas[i].name;
 				areas_ptr[i].cpu_time = frame.areas[i].cpu_msec;
 				areas_ptr[i].gpu_time = frame.areas[i].gpu_msec;
@@ -645,7 +645,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			metric.categories.push_back(frame_time);
 		}
 
-		for (int i = 0; i < frame.servers.size(); i++) {
+		for (vec_size i = 0; i < frame.servers.size(); i++) {
 			const ServersDebugger::ServerInfo &srv = frame.servers[i];
 			EditorProfiler::Metric::Category c;
 			const String name = srv.name;
@@ -653,7 +653,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			c.items.resize(srv.functions.size());
 			c.total_time = 0;
 			c.signature = "categ::" + name;
-			for (int j = 0; j < srv.functions.size(); j++) {
+			for (vec_size j = 0; j < srv.functions.size(); j++) {
 				EditorProfiler::Metric::Category::Item item;
 				item.calls = 1;
 				item.line = 0;
@@ -673,7 +673,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		funcs.items.resize(frame.script_functions.size());
 		funcs.name = "Script Functions";
 		funcs.signature = "script_functions";
-		for (int i = 0; i < frame.script_functions.size(); i++) {
+		for (vec_size i = 0; i < frame.script_functions.size(); i++) {
 			int signature = frame.script_functions[i].sig_id;
 			int calls = frame.script_functions[i].call_count;
 			float total = frame.script_functions[i].total_time;
@@ -716,7 +716,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	} else if (p_msg == "multiplayer:rpc") {
 		SceneDebugger::RPCProfilerFrame frame;
 		frame.deserialize(p_data);
-		for (int i = 0; i < frame.infos.size(); i++) {
+		for (vec_size i = 0; i < frame.infos.size(); i++) {
 			network_profiler->add_node_frame_data(frame.infos[i]);
 		}
 
@@ -731,7 +731,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	} else if (p_msg == "performance:profile_names") {
 		Vector<StringName> monitors;
 		monitors.resize(p_data.size());
-		for (int i = 0; i < p_data.size(); i++) {
+		for (vec_size i = 0; i < p_data.size(); i++) {
 			ERR_FAIL_COND(p_data[i].get_type() != Variant::STRING_NAME);
 			monitors.set(i, p_data[i]);
 		}

@@ -133,7 +133,7 @@ void ShaderFileEditor::_update_options() {
 
 	StringName current_version;
 
-	for (int i = 0; i < version_list.size(); i++) {
+	for (vec_size i = 0; i < version_list.size(); i++) {
 		String title = version_list[i];
 		if (title.is_empty()) {
 			title = "default";

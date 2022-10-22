@@ -240,7 +240,7 @@ void TranslationServer::init_locale_info() {
 		info.script = locale_scripts[idx][1];
 		info.default_country = locale_scripts[idx][2];
 		Vector<String> supported_countries = String(locale_scripts[idx][3]).split(",", false);
-		for (int i = 0; i < supported_countries.size(); i++) {
+		for (vec_size i = 0; i < supported_countries.size(); i++) {
 			info.supported_countries.insert(supported_countries[i]);
 		}
 		locale_script_info.push_back(info);
@@ -323,7 +323,7 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 
 	// Try extract script and variant from the extra part.
 	Vector<String> script_extra = univ_locale.get_slice("@", 1).split(";");
-	for (int i = 0; i < script_extra.size(); i++) {
+	for (vec_size i = 0; i < script_extra.size(); i++) {
 		if (script_extra[i].to_lower() == "cyrillic") {
 			script_name = "Cyrl";
 			break;
@@ -355,7 +355,7 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 
 	// Add script code base on language and country codes for some ambiguous cases.
 	if (script_name.is_empty()) {
-		for (int i = 0; i < locale_script_info.size(); i++) {
+		for (vec_size i = 0; i < locale_script_info.size(); i++) {
 			const LocaleScriptInfo &info = locale_script_info[i];
 			if (info.name == lang_name) {
 				if (country_name.is_empty() || info.supported_countries.has(country_name)) {
@@ -367,7 +367,7 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 	}
 	if (!script_name.is_empty() && country_name.is_empty()) {
 		// Add conntry code based on script for some ambiguous cases.
-		for (int i = 0; i < locale_script_info.size(); i++) {
+		for (vec_size i = 0; i < locale_script_info.size(); i++) {
 			const LocaleScriptInfo &info = locale_script_info[i];
 			if (info.name == lang_name && info.script == script_name) {
 				country_name = info.default_country;
@@ -405,8 +405,8 @@ int TranslationServer::compare_locales(const String &p_locale_a, const String &p
 		// Matching language, both locales have extra parts.
 		// Return number of matching elements.
 		int matching_elements = 1;
-		for (int i = 1; i < locale_a_elements.size(); i++) {
-			for (int j = 1; j < locale_b_elements.size(); j++) {
+		for (vec_size i = 1; i < locale_a_elements.size(); i++) {
+			for (vec_size j = 1; j < locale_b_elements.size(); j++) {
 				if (locale_a_elements[i] == locale_b_elements[j]) {
 					matching_elements++;
 				}
@@ -815,7 +815,7 @@ StringName TranslationServer::tool_pseudolocalize(const StringName &p_message) c
 
 String TranslationServer::get_override_string(String &p_message) const {
 	String res;
-	for (int i = 0; i < p_message.size(); i++) {
+	for (vec_size i = 0; i < p_message.size(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -829,7 +829,7 @@ String TranslationServer::get_override_string(String &p_message) const {
 
 String TranslationServer::double_vowels(String &p_message) const {
 	String res;
-	for (int i = 0; i < p_message.size(); i++) {
+	for (vec_size i = 0; i < p_message.size(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -847,7 +847,7 @@ String TranslationServer::double_vowels(String &p_message) const {
 
 String TranslationServer::replace_with_accented_string(String &p_message) const {
 	String res;
-	for (int i = 0; i < p_message.size(); i++) {
+	for (vec_size i = 0; i < p_message.size(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -870,7 +870,7 @@ String TranslationServer::wrap_with_fakebidi_characters(String &p_message) const
 	char32_t fakebidisuffix = U'\u202c';
 	res += fakebidiprefix;
 	// The fake bidi unicode gets popped at every newline so pushing it back at every newline.
-	for (int i = 0; i < p_message.size(); i++) {
+	for (vec_size i = 0; i < p_message.size(); i++) {
 		if (p_message[i] == '\n') {
 			res += fakebidisuffix;
 			res += p_message[i];

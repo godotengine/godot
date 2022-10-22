@@ -84,7 +84,7 @@ RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const
 	ERR_FAIL_COND_V(p_format.is_null(), RID());
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
 	Vector<Vector<uint8_t>> data;
-	for (int i = 0; i < p_data.size(); i++) {
+	for (vec_size i = 0; i < p_data.size(); i++) {
 		Vector<uint8_t> byte_slice = p_data[i];
 		ERR_FAIL_COND_V(byte_slice.is_empty(), RID());
 		data.push_back(byte_slice);
@@ -108,7 +108,7 @@ RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create
 	Vector<AttachmentFormat> attachments;
 	attachments.resize(p_attachments.size());
 
-	for (int i = 0; i < p_attachments.size(); i++) {
+	for (vec_size i = 0; i < p_attachments.size(); i++) {
 		Ref<RDAttachmentFormat> af = p_attachments[i];
 		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
 		attachments.write[i] = af->base;
@@ -120,14 +120,14 @@ RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create
 	Vector<AttachmentFormat> attachments;
 	attachments.resize(p_attachments.size());
 
-	for (int i = 0; i < p_attachments.size(); i++) {
+	for (vec_size i = 0; i < p_attachments.size(); i++) {
 		Ref<RDAttachmentFormat> af = p_attachments[i];
 		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
 		attachments.write[i] = af->base;
 	}
 
 	Vector<FramebufferPass> passes;
-	for (int i = 0; i < p_passes.size(); i++) {
+	for (vec_size i = 0; i < p_passes.size(); i++) {
 		Ref<RDFramebufferPass> pass = p_passes[i];
 		ERR_CONTINUE(pass.is_null());
 		passes.push_back(pass->base);
@@ -144,7 +144,7 @@ RID RenderingDevice::_framebuffer_create(const TypedArray<RID> &p_textures, Fram
 RID RenderingDevice::_framebuffer_create_multipass(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
 	Vector<RID> textures = Variant(p_textures);
 	Vector<FramebufferPass> passes;
-	for (int i = 0; i < p_passes.size(); i++) {
+	for (vec_size i = 0; i < p_passes.size(); i++) {
 		Ref<RDFramebufferPass> pass = p_passes[i];
 		ERR_CONTINUE(pass.is_null());
 		passes.push_back(pass->base);
@@ -162,7 +162,7 @@ RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const Typ
 	Vector<VertexAttribute> descriptions;
 	descriptions.resize(p_vertex_formats.size());
 
-	for (int i = 0; i < p_vertex_formats.size(); i++) {
+	for (vec_size i = 0; i < p_vertex_formats.size(); i++) {
 		Ref<RDVertexAttribute> af = p_vertex_formats[i];
 		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
 		descriptions.write[i] = af->base;
@@ -238,7 +238,7 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
 	Vector<Uniform> uniforms;
 	uniforms.resize(p_uniforms.size());
-	for (int i = 0; i < p_uniforms.size(); i++) {
+	for (vec_size i = 0; i < p_uniforms.size(); i++) {
 		Ref<RDUniform> uniform = p_uniforms[i];
 		ERR_FAIL_COND_V(!uniform.is_valid(), RID());
 		uniforms.write[i] = uniform->base;
@@ -253,7 +253,7 @@ Error RenderingDevice::_buffer_update(RID p_buffer, uint32_t p_offset, uint32_t 
 static Vector<RenderingDevice::PipelineSpecializationConstant> _get_spec_constants(const TypedArray<RDPipelineSpecializationConstant> &p_constants) {
 	Vector<RenderingDevice::PipelineSpecializationConstant> ret;
 	ret.resize(p_constants.size());
-	for (int i = 0; i < p_constants.size(); i++) {
+	for (vec_size i = 0; i < p_constants.size(); i++) {
 		Ref<RDPipelineSpecializationConstant> c = p_constants[i];
 		ERR_CONTINUE(c.is_null());
 		RenderingDevice::PipelineSpecializationConstant &sc = ret.write[i];
@@ -289,7 +289,7 @@ RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p
 	PipelineMultisampleState multisample_state;
 	if (p_multisample_state.is_valid()) {
 		multisample_state = p_multisample_state->base;
-		for (int i = 0; i < p_multisample_state->sample_masks.size(); i++) {
+		for (vec_size i = 0; i < p_multisample_state->sample_masks.size(); i++) {
 			int64_t mask = p_multisample_state->sample_masks[i];
 			multisample_state.sample_mask.push_back(mask);
 		}
@@ -303,7 +303,7 @@ RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p
 	PipelineColorBlendState color_blend_state;
 	if (p_blend_state.is_valid()) {
 		color_blend_state = p_blend_state->base;
-		for (int i = 0; i < p_blend_state->attachments.size(); i++) {
+		for (vec_size i = 0; i < p_blend_state->attachments.size(); i++) {
 			Ref<RDPipelineColorBlendStateAttachment> attachment = p_blend_state->attachments[i];
 			if (attachment.is_valid()) {
 				color_blend_state.attachments.push_back(attachment->base);
@@ -322,14 +322,14 @@ Vector<int64_t> RenderingDevice::_draw_list_begin_split(RID p_framebuffer, uint3
 	Vector<DrawListID> splits;
 	splits.resize(p_splits);
 	Vector<RID> stextures;
-	for (int i = 0; i < p_storage_textures.size(); i++) {
+	for (vec_size i = 0; i < p_storage_textures.size(); i++) {
 		stextures.push_back(p_storage_textures[i]);
 	}
 	draw_list_begin_split(p_framebuffer, p_splits, splits.ptrw(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, stextures);
 
 	Vector<int64_t> split_ids;
 	split_ids.resize(splits.size());
-	for (int i = 0; i < splits.size(); i++) {
+	for (vec_size i = 0; i < splits.size(); i++) {
 		split_ids.write[i] = splits[i];
 	}
 
@@ -345,7 +345,7 @@ Vector<int64_t> RenderingDevice::_draw_list_switch_to_next_pass_split(uint32_t p
 
 	Vector<int64_t> split_ids;
 	split_ids.resize(splits.size());
-	for (int i = 0; i < splits.size(); i++) {
+	for (vec_size i = 0; i < splits.size(); i++) {
 		split_ids.write[i] = splits[i];
 	}
 

@@ -111,7 +111,7 @@ void SkeletonModification2DJiggle::_get_property_list(List<PropertyInfo> *p_list
 		p_list->push_back(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS, "", PROPERTY_USAGE_DEFAULT));
 	}
 
-	for (int i = 0; i < jiggle_data_chain.size(); i++) {
+	for (vec_size i = 0; i < jiggle_data_chain.size(); i++) {
 		String base_string = "joint_data/" + itos(i) + "/";
 
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
@@ -147,7 +147,7 @@ void SkeletonModification2DJiggle::_execute(float p_delta) {
 		return;
 	}
 
-	for (int i = 0; i < jiggle_data_chain.size(); i++) {
+	for (vec_size i = 0; i < jiggle_data_chain.size(); i++) {
 		_execute_jiggle_joint(i, target, p_delta);
 	}
 }
@@ -228,7 +228,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 }
 
 void SkeletonModification2DJiggle::_update_jiggle_joint_data() {
-	for (int i = 0; i < jiggle_data_chain.size(); i++) {
+	for (vec_size i = 0; i < jiggle_data_chain.size(); i++) {
 		if (!jiggle_data_chain[i].override_defaults) {
 			set_jiggle_joint_stiffness(i, stiffness);
 			set_jiggle_joint_mass(i, mass);
@@ -246,7 +246,7 @@ void SkeletonModification2DJiggle::_setup_modification(SkeletonModificationStack
 		is_setup = true;
 
 		if (stack->skeleton) {
-			for (int i = 0; i < jiggle_data_chain.size(); i++) {
+			for (vec_size i = 0; i < jiggle_data_chain.size(); i++) {
 				int bone_idx = jiggle_data_chain[i].bone_idx;
 				if (bone_idx > 0 && bone_idx < stack->skeleton->get_bone_count()) {
 					Bone2D *bone2d_node = stack->skeleton->get_bone(bone_idx);

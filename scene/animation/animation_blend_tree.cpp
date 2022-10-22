@@ -51,7 +51,7 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 	if (p_property.name == "animation" && get_editable_animation_list) {
 		Vector<String> names = get_editable_animation_list();
 		String anims;
-		for (int i = 0; i < names.size(); i++) {
+		for (vec_size i = 0; i < names.size(); i++) {
 			if (i > 0) {
 				anims += ",";
 			}
@@ -896,7 +896,7 @@ void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
 
 	ns.sort_custom<StringName::AlphCompare>();
 
-	for (int i = 0; i < ns.size(); i++) {
+	for (vec_size i = 0; i < ns.size(); i++) {
 		ChildNode cn;
 		cn.name = ns[i];
 		cn.node = nodes[cn.name].node;
@@ -927,7 +927,7 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 
 	//erase connections to name
 	for (KeyValue<StringName, Node> &E : nodes) {
-		for (int i = 0; i < E.value.connections.size(); i++) {
+		for (vec_size i = 0; i < E.value.connections.size(); i++) {
 			if (E.value.connections[i] == p_name) {
 				E.value.connections.write[i] = StringName();
 			}
@@ -951,7 +951,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 
 	//rename connections
 	for (KeyValue<StringName, Node> &E : nodes) {
-		for (int i = 0; i < E.value.connections.size(); i++) {
+		for (vec_size i = 0; i < E.value.connections.size(); i++) {
 			if (E.value.connections[i] == p_name) {
 				E.value.connections.write[i] = p_new_name;
 			}
@@ -973,7 +973,7 @@ void AnimationNodeBlendTree::connect_node(const StringName &p_input_node, int p_
 	ERR_FAIL_INDEX(p_input_index, nodes[p_input_node].connections.size());
 
 	for (KeyValue<StringName, Node> &E : nodes) {
-		for (int i = 0; i < E.value.connections.size(); i++) {
+		for (vec_size i = 0; i < E.value.connections.size(); i++) {
 			StringName output = E.value.connections[i];
 			ERR_FAIL_COND(output == p_output_node);
 		}
@@ -1017,7 +1017,7 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 	}
 
 	for (const KeyValue<StringName, Node> &E : nodes) {
-		for (int i = 0; i < E.value.connections.size(); i++) {
+		for (vec_size i = 0; i < E.value.connections.size(); i++) {
 			const StringName output = E.value.connections[i];
 			if (output == p_output_node) {
 				return CONNECTION_ERROR_CONNECTION_EXISTS;
@@ -1029,7 +1029,7 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 
 void AnimationNodeBlendTree::get_node_connections(List<NodeConnection> *r_connections) const {
 	for (const KeyValue<StringName, Node> &E : nodes) {
-		for (int i = 0; i < E.value.connections.size(); i++) {
+		for (vec_size i = 0; i < E.value.connections.size(); i++) {
 			const StringName output = E.value.connections[i];
 			if (output != StringName()) {
 				NodeConnection nc;
@@ -1093,7 +1093,7 @@ bool AnimationNodeBlendTree::_set(const StringName &p_name, const Variant &p_val
 		Array conns = p_value;
 		ERR_FAIL_COND_V(conns.size() % 3 != 0, false);
 
-		for (int i = 0; i < conns.size(); i += 3) {
+		for (vec_size i = 0; i < conns.size(); i += 3) {
 			connect_node(conns[i], conns[i + 1], conns[i + 2]);
 		}
 		return true;

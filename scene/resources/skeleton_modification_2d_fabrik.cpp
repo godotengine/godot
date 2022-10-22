@@ -80,7 +80,7 @@ bool SkeletonModification2DFABRIK::_get(const StringName &p_path, Variant &r_ret
 }
 
 void SkeletonModification2DFABRIK::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < fabrik_data_chain.size(); i++) {
+	for (vec_size i = 0; i < fabrik_data_chain.size(); i++) {
 		String base_string = "joint_data/" + itos(i) + "/";
 
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
@@ -137,7 +137,7 @@ void SkeletonModification2DFABRIK::_execute(float p_delta) {
 		fabrik_transform_chain.resize(fabrik_data_chain.size());
 	}
 
-	for (int i = 0; i < fabrik_data_chain.size(); i++) {
+	for (vec_size i = 0; i < fabrik_data_chain.size(); i++) {
 		// Update the transform chain
 		if (fabrik_data_chain[i].bone2d_node_cache.is_null() && !fabrik_data_chain[i].bone2d_node.is_empty()) {
 			WARN_PRINT_ONCE("Bone2D cache for joint " + itos(i) + " is out of date.. Attempting to update...");
@@ -179,7 +179,7 @@ void SkeletonModification2DFABRIK::_execute(float p_delta) {
 	}
 
 	// Apply all of the saved transforms to the Bone2D nodes
-	for (int i = 0; i < fabrik_data_chain.size(); i++) {
+	for (vec_size i = 0; i < fabrik_data_chain.size(); i++) {
 		Bone2D *joint_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
 		if (!joint_bone2d_node) {
 			ERR_PRINT_ONCE("FABRIK Joint " + itos(i) + " does not have a Bone2D node set!");

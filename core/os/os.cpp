@@ -217,7 +217,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separato
 	}
 
 	String safe_dir_name = p_dir_name.replace("\\", "/").strip_edges();
-	for (int i = 0; i < invalid_chars.size(); i++) {
+	for (vec_size i = 0; i < invalid_chars.size(); i++) {
 		safe_dir_name = safe_dir_name.replace(invalid_chars[i], "-");
 	}
 	return safe_dir_name;

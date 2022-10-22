@@ -99,7 +99,7 @@ bool EditorNode3DGizmo::is_editable() const {
 }
 
 void EditorNode3DGizmo::clear() {
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		if (instances[i].instance.is_valid()) {
 			RS::get_singleton()->free(instances[i].instance);
 		}
@@ -185,7 +185,7 @@ int EditorNode3DGizmo::subgizmos_intersect_ray(Camera3D *p_camera, const Vector2
 Vector<int> EditorNode3DGizmo::subgizmos_intersect_frustum(const Camera3D *p_camera, const Vector<Plane> &p_frustum) const {
 	TypedArray<Plane> frustum;
 	frustum.resize(p_frustum.size());
-	for (int i = 0; i < p_frustum.size(); i++) {
+	for (vec_size i = 0; i < p_frustum.size(); i++) {
 		frustum[i] = p_frustum[i];
 	}
 	Vector<int> ret;
@@ -219,7 +219,7 @@ void EditorNode3DGizmo::set_subgizmo_transform(int p_id, Transform3D p_transform
 void EditorNode3DGizmo::commit_subgizmos(const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) {
 	TypedArray<Transform3D> restore;
 	restore.resize(p_restore.size());
-	for (int i = 0; i < p_restore.size(); i++) {
+	for (vec_size i = 0; i < p_restore.size(); i++) {
 		restore[i] = p_restore[i];
 	}
 
@@ -295,7 +295,7 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 	color.resize(p_vertices.size());
 	{
 		Color *w = color.ptrw();
-		for (int i = 0; i < p_vertices.size(); i++) {
+		for (vec_size i = 0; i < p_vertices.size(); i++) {
 			if (is_selected()) {
 				w[i] = Color(1, 1, 1, 0.8) * p_modulate;
 			} else {
@@ -311,7 +311,7 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 
 	if (p_billboard) {
 		float md = 0;
-		for (int i = 0; i < p_vertices.size(); i++) {
+		for (vec_size i = 0; i < p_vertices.size(); i++) {
 			md = MAX(0, p_vertices[i].length());
 		}
 		if (md) {
@@ -366,7 +366,7 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 	mesh->surface_set_material(0, p_material);
 
 	float md = 0;
-	for (int i = 0; i < vs.size(); i++) {
+	for (vec_size i = 0; i < vs.size(); i++) {
 		md = MAX(0, vs[i].length());
 	}
 	if (md) {
@@ -394,7 +394,7 @@ void EditorNode3DGizmo::add_collision_triangles(const Ref<TriangleMesh> &p_tmesh
 void EditorNode3DGizmo::add_collision_segments(const Vector<Vector3> &p_lines) {
 	int from = collision_segments.size();
 	collision_segments.resize(from + p_lines.size());
-	for (int i = 0; i < p_lines.size(); i++) {
+	for (vec_size i = 0; i < p_lines.size(); i++) {
 		collision_segments.write[from + i] = p_lines[i];
 	}
 }
@@ -428,7 +428,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	{
 		colors.resize(p_handles.size());
 		Color *w = colors.ptrw();
-		for (int i = 0; i < p_handles.size(); i++) {
+		for (vec_size i = 0; i < p_handles.size(); i++) {
 			Color col(1, 1, 1, 1);
 			if (is_handle_highlighted(i, p_secondary)) {
 				col = Color(0, 0, 1, 0.9);
@@ -448,7 +448,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 
 	if (p_billboard) {
 		float md = 0;
-		for (int i = 0; i < p_handles.size(); i++) {
+		for (vec_size i = 0; i < p_handles.size(); i++) {
 			md = MAX(0, p_handles[i].length());
 		}
 		if (md) {
@@ -467,7 +467,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	Vector<Vector3> &h = p_secondary ? secondary_handles : handles;
 	int current_size = h.size();
 	h.resize(current_size + p_handles.size());
-	for (int i = 0; i < p_handles.size(); i++) {
+	for (vec_size i = 0; i < p_handles.size(); i++) {
 		h.write[current_size + i] = p_handles[i];
 	}
 
@@ -475,7 +475,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 		Vector<int> &ids = p_secondary ? secondary_handle_ids : handle_ids;
 		current_size = ids.size();
 		ids.resize(current_size + p_ids.size());
-		for (int i = 0; i < p_ids.size(); i++) {
+		for (vec_size i = 0; i < p_ids.size(); i++) {
 			ids.write[current_size + i] = p_ids[i];
 		}
 	}
@@ -491,7 +491,7 @@ void EditorNode3DGizmo::add_solid_box(const Ref<Material> &p_material, Vector3 p
 	PackedVector3Array vertex = arrays[RS::ARRAY_VERTEX];
 	Vector3 *w = vertex.ptrw();
 
-	for (int i = 0; i < vertex.size(); ++i) {
+	for (vec_size i = 0; i < vertex.size(); ++i) {
 		w[i] += p_position;
 	}
 
@@ -599,7 +599,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 
 	float min_d = 1e20;
 
-	for (int i = 0; i < secondary_handles.size(); i++) {
+	for (vec_size i = 0; i < secondary_handles.size(); i++) {
 		Vector3 hpos = t.xform(secondary_handles[i]);
 		Vector2 p = p_camera->unproject_position(hpos);
 
@@ -623,7 +623,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 
 	min_d = 1e20;
 
-	for (int i = 0; i < handles.size(); i++) {
+	for (vec_size i = 0; i < handles.size(); i++) {
 		Vector3 hpos = t.xform(handles[i]);
 		Vector2 p = p_camera->unproject_position(hpos);
 
@@ -789,7 +789,7 @@ void EditorNode3DGizmo::create() {
 	ERR_FAIL_COND(valid);
 	valid = true;
 
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		instances.write[i].create_instance(spatial_node, hidden);
 	}
 
@@ -799,7 +799,7 @@ void EditorNode3DGizmo::create() {
 void EditorNode3DGizmo::transform() {
 	ERR_FAIL_COND(!spatial_node);
 	ERR_FAIL_COND(!valid);
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		RS::get_singleton()->instance_set_transform(instances[i].instance, spatial_node->get_global_transform() * instances[i].xform);
 	}
 }
@@ -808,7 +808,7 @@ void EditorNode3DGizmo::free() {
 	ERR_FAIL_COND(!spatial_node);
 	ERR_FAIL_COND(!valid);
 
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		if (instances[i].instance.is_valid()) {
 			RS::get_singleton()->free(instances[i].instance);
 		}
@@ -823,7 +823,7 @@ void EditorNode3DGizmo::free() {
 void EditorNode3DGizmo::set_hidden(bool p_hidden) {
 	hidden = p_hidden;
 	int layer = hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
-	for (int i = 0; i < instances.size(); ++i) {
+	for (vec_size i = 0; i < instances.size(); ++i) {
 		RS::get_singleton()->instance_set_layer_mask(instances[i].instance, layer);
 	}
 }
@@ -1161,7 +1161,7 @@ int EditorNode3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_
 Vector<int> EditorNode3DGizmoPlugin::subgizmos_intersect_frustum(const EditorNode3DGizmo *p_gizmo, const Camera3D *p_camera, const Vector<Plane> &p_frustum) const {
 	TypedArray<Transform3D> frustum;
 	frustum.resize(p_frustum.size());
-	for (int i = 0; i < p_frustum.size(); i++) {
+	for (vec_size i = 0; i < p_frustum.size(); i++) {
 		frustum[i] = p_frustum[i];
 	}
 	Vector<int> ret;
@@ -1188,7 +1188,7 @@ void EditorNode3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_
 void EditorNode3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) {
 	TypedArray<Transform3D> restore;
 	restore.resize(p_restore.size());
-	for (int i = 0; i < p_restore.size(); i++) {
+	for (vec_size i = 0; i < p_restore.size(); i++) {
 		restore[i] = p_restore[i];
 	}
 
@@ -1197,7 +1197,7 @@ void EditorNode3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo,
 
 void EditorNode3DGizmoPlugin::set_state(int p_state) {
 	current_state = p_state;
-	for (int i = 0; i < current_gizmos.size(); ++i) {
+	for (vec_size i = 0; i < current_gizmos.size(); ++i) {
 		current_gizmos[i]->set_hidden(current_state == HIDDEN);
 	}
 }
@@ -1215,7 +1215,7 @@ EditorNode3DGizmoPlugin::EditorNode3DGizmoPlugin() {
 }
 
 EditorNode3DGizmoPlugin::~EditorNode3DGizmoPlugin() {
-	for (int i = 0; i < current_gizmos.size(); ++i) {
+	for (vec_size i = 0; i < current_gizmos.size(); ++i) {
 		current_gizmos[i]->set_plugin(nullptr);
 		current_gizmos[i]->get_node_3d()->remove_gizmo(current_gizmos[i]);
 	}
@@ -3941,7 +3941,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Vector<int> tetrahedrons = data->get_capture_tetrahedra();
 
-	for (int i = 0; i < tetrahedrons.size(); i += 4) {
+	for (vec_size i = 0; i < tetrahedrons.size(); i += 4) {
 		for (int j = 0; j < 4; j++) {
 			for (int k = j + 1; k < 4; k++) {
 				Vector2i pair;
@@ -3974,7 +3974,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Vector<int> indices;
 	float radius = 0.3;
 
-	for (int p = 0; p < points.size(); p++) {
+	for (vec_size p = 0; p < points.size(); p++) {
 		int vertex_base = vertices.size();
 		Vector3 sh_col[9];
 		for (int i = 0; i < 9; i++) {
@@ -4822,7 +4822,7 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	float depth = polygon->get_depth() * 0.5;
 
 	Vector<Vector3> lines;
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		int n = (i + 1) % points.size();
 		lines.push_back(Vector3(points[i].x, points[i].y, depth));
 		lines.push_back(Vector3(points[n].x, points[n].y, depth));
@@ -4875,7 +4875,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	for (int i = 0; i < navigationmesh->get_polygon_count(); i++) {
 		Vector<int> p = navigationmesh->get_polygon(i);
 
-		for (int j = 2; j < p.size(); j++) {
+		for (vec_size j = 2; j < p.size(); j++) {
 			Face3 f;
 			f.vertex[0] = vr[p[0]];
 			f.vertex[1] = vr[p[j - 1]];

@@ -104,7 +104,7 @@ void AnimationTreeEditor::_update_path() {
 	b->set_focus_mode(FOCUS_NONE);
 	b->connect("pressed", callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(-1));
 	path_hb->add_child(b);
-	for (int i = 0; i < button_path.size(); i++) {
+	for (vec_size i = 0; i < button_path.size(); i++) {
 		b = memnew(Button);
 		b->set_text(button_path[i]);
 		b->set_toggle_mode(true);
@@ -124,7 +124,7 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 	if (node.is_valid()) {
 		current_root = node->get_instance_id();
 
-		for (int i = 0; i < p_path.size(); i++) {
+		for (vec_size i = 0; i < p_path.size(); i++) {
 			Ref<AnimationNode> child = node->get_child_by_name(p_path[i]);
 			ERR_BREAK(child.is_null());
 			node = child;
@@ -133,7 +133,7 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 
 		edited_path = button_path;
 
-		for (int i = 0; i < editors.size(); i++) {
+		for (vec_size i = 0; i < editors.size(); i++) {
 			if (editors[i]->can_edit(node)) {
 				editors[i]->edit(node);
 				editors[i]->show();
@@ -146,7 +146,7 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 		current_root = ObjectID();
 		edited_path = button_path;
 
-		for (int i = 0; i < editors.size(); i++) {
+		for (vec_size i = 0; i < editors.size(); i++) {
 			editors[i]->edit(Ref<AnimationNode>());
 			editors[i]->hide();
 		}
@@ -206,14 +206,14 @@ void AnimationTreeEditor::remove_plugin(AnimationTreeNodeEditorPlugin *p_editor)
 
 String AnimationTreeEditor::get_base_path() {
 	String path = SceneStringNames::get_singleton()->parameters_base_path;
-	for (int i = 0; i < edited_path.size(); i++) {
+	for (vec_size i = 0; i < edited_path.size(); i++) {
 		path += edited_path[i] + "/";
 	}
 	return path;
 }
 
 bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
-	for (int i = 0; i < editors.size(); i++) {
+	for (vec_size i = 0; i < editors.size(); i++) {
 		if (editors[i]->can_edit(p_node)) {
 			return true;
 		}

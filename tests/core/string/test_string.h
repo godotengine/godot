@@ -488,20 +488,20 @@ TEST_CASE("[String] Splitting") {
 
 	l = s.split(",", true, 2);
 	CHECK(l.size() == 3);
-	for (int i = 0; i < l.size(); i++) {
+	for (vec_size i = 0; i < l.size(); i++) {
 		CHECK(l[i] == slices_l[i]);
 	}
 
 	l = s.rsplit(",", true, 2);
 	CHECK(l.size() == 3);
-	for (int i = 0; i < l.size(); i++) {
+	for (vec_size i = 0; i < l.size(); i++) {
 		CHECK(l[i] == slices_r[i]);
 	}
 
 	s = "Mars Jupiter Saturn Uranus";
 	const char *slices_s[4] = { "Mars", "Jupiter", "Saturn", "Uranus" };
 	l = s.split_spaces();
-	for (int i = 0; i < l.size(); i++) {
+	for (vec_size i = 0; i < l.size(); i++) {
 		CHECK(l[i] == slices_s[i]);
 	}
 
@@ -511,7 +511,7 @@ TEST_CASE("[String] Splitting") {
 	Vector<float> f;
 	f = s.split_floats(";");
 	CHECK(f.size() == 2);
-	for (int i = 0; i < f.size(); i++) {
+	for (vec_size i = 0; i < f.size(); i++) {
 		CHECK(ABS(f[i] - slices_d[i]) <= 0.00001);
 	}
 
@@ -521,7 +521,7 @@ TEST_CASE("[String] Splitting") {
 
 	f = s.split_floats_mk(keys);
 	CHECK(f.size() == 3);
-	for (int i = 0; i < f.size(); i++) {
+	for (vec_size i = 0; i < f.size(); i++) {
 		CHECK(ABS(f[i] - slices_d[i]) <= 0.00001);
 	}
 
@@ -531,13 +531,13 @@ TEST_CASE("[String] Splitting") {
 	Vector<int> ii;
 	ii = s.split_ints(";");
 	CHECK(ii.size() == 2);
-	for (int i = 0; i < ii.size(); i++) {
+	for (vec_size i = 0; i < ii.size(); i++) {
 		CHECK(ii[i] == slices_i[i]);
 	}
 
 	ii = s.split_ints_mk(keys);
 	CHECK(ii.size() == 3);
-	for (int i = 0; i < ii.size(); i++) {
+	for (vec_size i = 0; i < ii.size(); i++) {
 		CHECK(ii[i] == slices_i[i]);
 	}
 }

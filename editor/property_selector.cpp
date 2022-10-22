@@ -294,7 +294,7 @@ void PropertySelector::_update_search() {
 
 			desc += vformat(" %s(", mi.name);
 
-			for (int i = 0; i < mi.arguments.size(); i++) {
+			for (vec_size i = 0; i < mi.arguments.size(); i++) {
 				if (i > 0) {
 					desc += ", ";
 				}
@@ -372,7 +372,7 @@ void PropertySelector::_item_selected() {
 		while (!class_type.is_empty()) {
 			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
 			if (E) {
-				for (int i = 0; i < E->value.properties.size(); i++) {
+				for (vec_size i = 0; i < E->value.properties.size(); i++) {
 					if (E->value.properties[i].name == name) {
 						text = DTR(E->value.properties[i].description);
 						break;
@@ -391,7 +391,7 @@ void PropertySelector::_item_selected() {
 		while (!class_type.is_empty()) {
 			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
 			if (E) {
-				for (int i = 0; i < E->value.methods.size(); i++) {
+				for (vec_size i = 0; i < E->value.methods.size(); i++) {
 					if (E->value.methods[i].name == name) {
 						text = DTR(E->value.methods[i].description);
 						break;

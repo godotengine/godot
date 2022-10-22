@@ -489,7 +489,7 @@ void BoneMapper::_update_state() {
 				}
 
 				bool is_broken = false;
-				for (int j = 0; j < prof_parent_bones.size(); j++) {
+				for (vec_size j = 0; j < prof_parent_bones.size(); j++) {
 					if (prof_parent_bones[j] != -1 && !skel_parent_bones.has(prof_parent_bones[j])) {
 						is_broken = true;
 					}
@@ -535,7 +535,7 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 	LocalVector<String> hit_list;
 	String shortest = "";
 
-	for (int word_idx = 0; word_idx < p_picklist.size(); word_idx++) {
+	for (vec_size word_idx = 0; word_idx < p_picklist.size(); word_idx++) {
 		RegEx re = RegEx(p_picklist[word_idx]);
 		if (p_child == -1) {
 			Vector<int> bones_to_process = p_parent == -1 ? p_skeleton->get_parentless_bones() : p_skeleton->get_bone_children(p_parent);
@@ -543,7 +543,7 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 				int idx = bones_to_process[0];
 				bones_to_process.erase(idx);
 				Vector<int> children = p_skeleton->get_bone_children(idx);
-				for (int i = 0; i < children.size(); i++) {
+				for (vec_size i = 0; i < children.size(); i++) {
 					bones_to_process.push_back(children[i]);
 				}
 
@@ -671,7 +671,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		bone_idx = search_path[0]; // It is only one bone which can be root.
 	} else {
 		bool found = false;
-		for (int i = 0; i < search_path.size(); i++) {
+		for (vec_size i = 0; i < search_path.size(); i++) {
 			RegEx re = RegEx("root");
 			if (!re.search(skeleton->get_bone_name(search_path[i]).to_lower()).is_null()) {
 				bone_idx = search_path[i]; // Name match is preferred.
@@ -680,7 +680,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			}
 		}
 		if (!found) {
-			for (int i = 0; i < search_path.size(); i++) {
+			for (vec_size i = 0; i < search_path.size(); i++) {
 				if (skeleton->get_bone_global_rest(search_path[i]).origin.is_zero_approx()) {
 					bone_idx = search_path[i]; // The bone existing at the origin is appropriate as a root.
 					found = true;
@@ -974,7 +974,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			RegEx finger_re = RegEx("finger");
 			search_path = skeleton->get_bone_children(left_hand_or_palm);
 			Vector<String> finger_names;
-			for (int i = 0; i < search_path.size(); i++) {
+			for (vec_size i = 0; i < search_path.size(); i++) {
 				String bn = skeleton->get_bone_name(search_path[i]);
 				if (!finger_re.search(bn.to_lower()).is_null()) {
 					finger_names.push_back(bn);
@@ -982,7 +982,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			}
 			finger_names.sort(); // Order by lexicographic, normal use cases never have more than 10 fingers in one hand.
 			search_path.clear();
-			for (int i = 0; i < finger_names.size(); i++) {
+			for (vec_size i = 0; i < finger_names.size(); i++) {
 				if (i >= 5) {
 					break;
 				}
@@ -1065,7 +1065,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			RegEx finger_re = RegEx("finger");
 			search_path = skeleton->get_bone_children(right_hand_or_palm);
 			Vector<String> finger_names;
-			for (int i = 0; i < search_path.size(); i++) {
+			for (vec_size i = 0; i < search_path.size(); i++) {
 				String bn = skeleton->get_bone_name(search_path[i]);
 				if (!finger_re.search(bn.to_lower()).is_null()) {
 					finger_names.push_back(bn);
@@ -1073,7 +1073,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			}
 			finger_names.sort(); // Order by lexicographic, normal use cases never have more than 10 fingers in one hand.
 			search_path.clear();
-			for (int i = 0; i < finger_names.size(); i++) {
+			for (vec_size i = 0; i < finger_names.size(); i++) {
 				if (i >= 5) {
 					break;
 				}

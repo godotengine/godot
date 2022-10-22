@@ -39,7 +39,7 @@ namespace GLTFTemplateConvert {
 template <class T>
 static Array to_array(const Vector<T> &p_inp) {
 	Array ret;
-	for (int i = 0; i < p_inp.size(); i++) {
+	for (vec_size i = 0; i < p_inp.size(); i++) {
 		ret.push_back(p_inp[i]);
 	}
 	return ret;
@@ -59,7 +59,7 @@ static TypedArray<T> to_array(const HashSet<T> &p_inp) {
 template <class T>
 static void set_from_array(Vector<T> &r_out, const Array &p_inp) {
 	r_out.clear();
-	for (int i = 0; i < p_inp.size(); i++) {
+	for (vec_size i = 0; i < p_inp.size(); i++) {
 		r_out.push_back(p_inp[i]);
 	}
 }
@@ -67,7 +67,7 @@ static void set_from_array(Vector<T> &r_out, const Array &p_inp) {
 template <class T>
 static void set_from_array(HashSet<T> &r_out, const TypedArray<T> &p_inp) {
 	r_out.clear();
-	for (int i = 0; i < p_inp.size(); i++) {
+	for (vec_size i = 0; i < p_inp.size(); i++) {
 		r_out.insert(p_inp[i]);
 	}
 }
@@ -85,7 +85,7 @@ template <class K, class V>
 static void set_from_dict(HashMap<K, V> &r_out, const Dictionary &p_inp) {
 	r_out.clear();
 	Array keys = p_inp.keys();
-	for (int i = 0; i < keys.size(); i++) {
+	for (vec_size i = 0; i < keys.size(); i++) {
 		r_out[keys[i]] = p_inp[keys[i]];
 	}
 }

@@ -83,7 +83,7 @@ void Gradient::_bind_methods() {
 Vector<float> Gradient::get_offsets() const {
 	Vector<float> offsets;
 	offsets.resize(points.size());
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		offsets.write[i] = points[i].offset;
 	}
 	return offsets;
@@ -92,7 +92,7 @@ Vector<float> Gradient::get_offsets() const {
 Vector<Color> Gradient::get_colors() const {
 	Vector<Color> colors;
 	colors.resize(points.size());
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		colors.write[i] = points[i].color;
 	}
 	return colors;
@@ -109,7 +109,7 @@ Gradient::InterpolationMode Gradient::get_interpolation_mode() {
 
 void Gradient::set_offsets(const Vector<float> &p_offsets) {
 	points.resize(p_offsets.size());
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		points.write[i].offset = p_offsets[i];
 	}
 	is_sorted = false;
@@ -121,7 +121,7 @@ void Gradient::set_colors(const Vector<Color> &p_colors) {
 		is_sorted = false;
 	}
 	points.resize(p_colors.size());
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		points.write[i].color = p_colors[i];
 	}
 	emit_signal(CoreStringNames::get_singleton()->changed);
@@ -149,7 +149,7 @@ void Gradient::remove_point(int p_index) {
 }
 
 void Gradient::reverse() {
-	for (int i = 0; i < points.size(); i++) {
+	for (vec_size i = 0; i < points.size(); i++) {
 		points.write[i].offset = 1.0 - points[i].offset;
 	}
 

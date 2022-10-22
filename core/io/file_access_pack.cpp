@@ -38,7 +38,7 @@
 #include <stdio.h>
 
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
-	for (int i = 0; i < sources.size(); i++) {
+	for (vec_size i = 0; i < sources.size(); i++) {
 		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
 			return OK;
 		}
@@ -75,7 +75,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 
 			Vector<String> ds = p.get_base_dir().split("/");
 
-			for (int j = 0; j < ds.size(); j++) {
+			for (vec_size j = 0; j < ds.size(); j++) {
 				if (!cd->subdirs.has(ds[j])) {
 					PackedDir *pd = memnew(PackedDir);
 					pd->name = ds[j];
@@ -118,7 +118,7 @@ void PackedData::_free_packed_dirs(PackedDir *p_dir) {
 }
 
 PackedData::~PackedData() {
-	for (int i = 0; i < sources.size(); i++) {
+	for (vec_size i = 0; i < sources.size(); i++) {
 		memdelete(sources[i]);
 	}
 	_free_packed_dirs(root);
@@ -222,7 +222,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 		Vector<uint8_t> key;
 		key.resize(32);
-		for (int i = 0; i < key.size(); i++) {
+		for (vec_size i = 0; i < key.size(); i++) {
 			key.write[i] = script_encryption_key[i];
 		}
 
@@ -381,7 +381,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 
 		Vector<uint8_t> key;
 		key.resize(32);
-		for (int i = 0; i < key.size(); i++) {
+		for (vec_size i = 0; i < key.size(); i++) {
 			key.write[i] = script_encryption_key[i];
 		}
 
@@ -485,7 +485,7 @@ PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 		pd = current;
 	}
 
-	for (int i = 0; i < paths.size(); i++) {
+	for (vec_size i = 0; i < paths.size(); i++) {
 		String p = paths[i];
 		if (p == ".") {
 			continue;

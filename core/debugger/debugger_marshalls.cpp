@@ -38,7 +38,7 @@
 Array DebuggerMarshalls::ScriptStackDump::serialize() {
 	Array arr;
 	arr.push_back(frames.size() * 3);
-	for (int i = 0; i < frames.size(); i++) {
+	for (vec_size i = 0; i < frames.size(); i++) {
 		arr.push_back(frames[i].file);
 		arr.push_back(frames[i].line);
 		arr.push_back(frames[i].func);
@@ -111,7 +111,7 @@ Array DebuggerMarshalls::OutputError::serialize() {
 	unsigned int size = callstack.size();
 	const ScriptLanguage::StackInfo *r = callstack.ptr();
 	arr.push_back(size * 3);
-	for (int i = 0; i < callstack.size(); i++) {
+	for (vec_size i = 0; i < callstack.size(); i++) {
 		arr.push_back(r[i].file);
 		arr.push_back(r[i].func);
 		arr.push_back(r[i].line);

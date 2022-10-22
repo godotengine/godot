@@ -60,7 +60,7 @@ void EditorPluginSettings::update_plugins() {
 	Vector<String> plugins = _get_plugins("res://addons");
 	plugins.sort();
 
-	for (int i = 0; i < plugins.size(); i++) {
+	for (vec_size i = 0; i < plugins.size(); i++) {
 		Ref<ConfigFile> cf;
 		cf.instantiate();
 		const String path = plugins[i];

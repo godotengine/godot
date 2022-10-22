@@ -117,7 +117,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			if (from != line_length) {
 				/* check if we are in entering a region */
 				if (in_region == -1) {
-					for (int c = 0; c < color_regions.size(); c++) {
+					for (vec_size c = 0; c < color_regions.size(); c++) {
 						/* check there is enough room */
 						int chars_left = line_length - from;
 						int start_key_length = color_regions[c].start_key.length();
@@ -756,7 +756,7 @@ void GDScriptSyntaxHighlighter::add_color_region(const String &p_start_key, cons
 	}
 
 	int at = 0;
-	for (int i = 0; i < color_regions.size(); i++) {
+	for (vec_size i = 0; i < color_regions.size(); i++) {
 		ERR_FAIL_COND_MSG(color_regions[i].start_key == p_start_key, "color region with start key '" + p_start_key + "' already exists.");
 		if (p_start_key.length() < color_regions[i].start_key.length()) {
 			at++;

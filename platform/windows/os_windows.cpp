@@ -509,7 +509,7 @@ uint64_t OS_Windows::get_ticks_usec() const {
 }
 
 String OS_Windows::_quote_command_line_argument(const String &p_text) const {
-	for (int i = 0; i < p_text.size(); i++) {
+	for (vec_size i = 0; i < p_text.size(); i++) {
 		char32_t c = p_text[i];
 		if (c == ' ' || c == '&' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}' || c == '^' || c == '=' || c == ';' || c == '!' || c == '\'' || c == '+' || c == ',' || c == '`' || c == '~') {
 			return "\"" + p_text + "\"";

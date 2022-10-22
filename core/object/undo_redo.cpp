@@ -53,7 +53,7 @@ void UndoRedo::_discard_redo() {
 		return;
 	}
 
-	for (int i = current_action + 1; i < actions.size(); i++) {
+	for (vec_size i = current_action + 1; i < actions.size(); i++) {
 		for (Operation &E : actions.write[i].do_ops) {
 			E.delete_reference();
 		}
@@ -339,7 +339,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 						method_callback(method_callback_ud, obj, op.name, nullptr, 0);
 					} else {
 						const Variant **args = (const Variant **)alloca(sizeof(const Variant **) * binds.size());
-						for (int i = 0; i < binds.size(); i++) {
+						for (vec_size i = 0; i < binds.size(); i++) {
 							args[i] = (const Variant *)&binds[i];
 						}
 

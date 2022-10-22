@@ -172,7 +172,7 @@ Transform3D XRServer::get_hmd_transform() {
 void XRServer::add_interface(const Ref<XRInterface> &p_interface) {
 	ERR_FAIL_COND(p_interface.is_null());
 
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		if (interfaces[i] == p_interface) {
 			ERR_PRINT("Interface was already added");
 			return;
@@ -187,7 +187,7 @@ void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
 	ERR_FAIL_COND(p_interface.is_null());
 
 	int idx = -1;
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		if (interfaces[i] == p_interface) {
 			idx = i;
 			break;
@@ -214,7 +214,7 @@ Ref<XRInterface> XRServer::get_interface(int p_index) const {
 
 Ref<XRInterface> XRServer::find_interface(const String &p_name) const {
 	int idx = -1;
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		if (interfaces[i]->get_name() == p_name) {
 			idx = i;
 			break;
@@ -229,7 +229,7 @@ Ref<XRInterface> XRServer::find_interface(const String &p_name) const {
 TypedArray<Dictionary> XRServer::get_interfaces() const {
 	Array ret;
 
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		Dictionary iface_info;
 
 		iface_info["id"] = i;
@@ -288,7 +288,7 @@ void XRServer::remove_tracker(Ref<XRPositionalTracker> p_tracker) {
 Dictionary XRServer::get_trackers(int p_tracker_types) {
 	Dictionary res;
 
-	for (int i = 0; i < trackers.size(); i++) {
+	for (vec_size i = 0; i < trackers.size(); i++) {
 		Ref<XRPositionalTracker> tracker = trackers.get_value_at_index(i);
 		if (tracker.is_valid() && (tracker->get_tracker_type() & p_tracker_types) != 0) {
 			res[tracker->get_tracker_name()] = tracker;
@@ -310,10 +310,10 @@ Ref<XRPositionalTracker> XRServer::get_tracker(const StringName &p_name) const {
 PackedStringArray XRServer::get_suggested_tracker_names() const {
 	PackedStringArray arr;
 
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		Ref<XRInterface> interface = interfaces[i];
 		PackedStringArray interface_arr = interface->get_suggested_tracker_names();
-		for (int a = 0; a < interface_arr.size(); a++) {
+		for (vec_size a = 0; a < interface_arr.size(); a++) {
 			if (!arr.has(interface_arr[a])) {
 				arr.push_back(interface_arr[a]);
 			}
@@ -333,10 +333,10 @@ PackedStringArray XRServer::get_suggested_tracker_names() const {
 PackedStringArray XRServer::get_suggested_pose_names(const StringName &p_tracker_name) const {
 	PackedStringArray arr;
 
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		Ref<XRInterface> interface = interfaces[i];
 		PackedStringArray interface_arr = interface->get_suggested_pose_names(p_tracker_name);
-		for (int a = 0; a < interface_arr.size(); a++) {
+		for (vec_size a = 0; a < interface_arr.size(); a++) {
 			if (!arr.has(interface_arr[a])) {
 				arr.push_back(interface_arr[a]);
 			}
@@ -362,7 +362,7 @@ void XRServer::_process() {
 	// note that we can have multiple interfaces active if we have interfaces that purely handle tracking
 
 	// process all active interfaces
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		if (!interfaces[i].is_valid()) {
 			// ignore, not a valid reference
 		} else if (interfaces[i]->is_initialized()) {
@@ -376,7 +376,7 @@ void XRServer::pre_render() {
 	// note that we can have multiple interfaces active if we have interfaces that purely handle tracking
 
 	// process all active interfaces
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		if (!interfaces[i].is_valid()) {
 			// ignore, not a valid reference
 		} else if (interfaces[i]->is_initialized()) {
@@ -389,7 +389,7 @@ void XRServer::end_frame() {
 	// called from RenderingServerDefault after Vulkan queues have been submitted
 
 	// process all active interfaces
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		if (!interfaces[i].is_valid()) {
 			// ignore, not a valid reference
 		} else if (interfaces[i]->is_initialized()) {

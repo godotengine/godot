@@ -466,7 +466,7 @@ public:
 		}
 		virtual ~Item() {
 			clear();
-			for (int i = 0; i < blocks.size(); i++) {
+			for (vec_size i = 0; i < blocks.size(); i++) {
 				memfree(blocks[i].memory);
 			}
 			if (copy_back_buffer) {

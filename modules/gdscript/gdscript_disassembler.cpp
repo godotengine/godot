@@ -984,7 +984,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			} break;
 			case OPCODE_LINE: {
 				int line = _code_ptr[ip + 1] - 1;
-				if (line >= 0 && line < p_code_lines.size()) {
+				if (line >= 0 && line < int(p_code_lines.size())) {
 					text += "line ";
 					text += itos(line + 1);
 					text += ": ";

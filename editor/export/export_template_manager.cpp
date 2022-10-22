@@ -269,7 +269,7 @@ void ExportTemplateManager::_refresh_mirrors_completed(int p_status, int p_code,
 	if (mirror_data.has("mirrors")) {
 		Array mirrors = mirror_data["mirrors"];
 
-		for (int i = 0; i < mirrors.size(); i++) {
+		for (vec_size i = 0; i < mirrors.size(); i++) {
 			Dictionary m = mirrors[i];
 			ERR_CONTINUE(!m.has("url") || !m.has("name"));
 

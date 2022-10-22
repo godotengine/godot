@@ -155,7 +155,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 				if (ea->plugins.size() != loaded_plugins.size()) {
 					ea->plugins_changed.set();
 				} else {
-					for (int i = 0; i < ea->plugins.size(); i++) {
+					for (vec_size i = 0; i < ea->plugins.size(); i++) {
 						if (ea->plugins[i].name != loaded_plugins[i].name || ea->plugins[i].last_updated != loaded_plugins[i].last_updated) {
 							ea->plugins_changed.set();
 							break;
@@ -239,7 +239,7 @@ public:
 				if (da->current_is_dir()) {
 					if (p_check_directories) {
 						Vector<String> directory_files = list_plugin_config_files(p_path.path_join(file), false);
-						for (int i = 0; i < directory_files.size(); ++i) {
+						for (vec_size i = 0; i < directory_files.size(); ++i) {
 							dir_files.push_back(file.path_join(directory_files[i]));
 						}
 					}
@@ -267,7 +267,7 @@ public:
 
 			if (!plugins_filenames.is_empty()) {
 				Ref<ConfigFile> config_file = memnew(ConfigFile);
-				for (int i = 0; i < plugins_filenames.size(); i++) {
+				for (vec_size i = 0; i < plugins_filenames.size(); i++) {
 					PluginConfigIOS config = PluginConfigIOS::load_plugin_config(config_file, plugins_dir.path_join(plugins_filenames[i]));
 					if (config.valid_config) {
 						loaded_plugins.push_back(config);
@@ -284,7 +284,7 @@ public:
 	static Vector<PluginConfigIOS> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
 		Vector<PluginConfigIOS> enabled_plugins;
 		Vector<PluginConfigIOS> all_plugins = get_plugins();
-		for (int i = 0; i < all_plugins.size(); i++) {
+		for (vec_size i = 0; i < all_plugins.size(); i++) {
 			PluginConfigIOS plugin = all_plugins[i];
 			bool enabled = p_presets->get("plugins/" + plugin.name);
 			if (enabled) {

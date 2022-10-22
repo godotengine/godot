@@ -233,7 +233,7 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 
 	if (data.has("disabled_classes")) {
 		Array disabled_classes_arr = data["disabled_classes"];
-		for (int i = 0; i < disabled_classes_arr.size(); i++) {
+		for (vec_size i = 0; i < disabled_classes_arr.size(); i++) {
 			disabled_classes.insert(disabled_classes_arr[i]);
 		}
 	}
@@ -242,7 +242,7 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 
 	if (data.has("disabled_editors")) {
 		Array disabled_editors_arr = data["disabled_editors"];
-		for (int i = 0; i < disabled_editors_arr.size(); i++) {
+		for (vec_size i = 0; i < disabled_editors_arr.size(); i++) {
 			disabled_editors.insert(disabled_editors_arr[i]);
 		}
 	}
@@ -251,7 +251,7 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 
 	if (data.has("disabled_properties")) {
 		Array disabled_properties_arr = data["disabled_properties"];
-		for (int i = 0; i < disabled_properties_arr.size(); i++) {
+		for (vec_size i = 0; i < disabled_properties_arr.size(); i++) {
 			String s = disabled_properties_arr[i];
 			set_disable_class_property(s.get_slice(":", 0), s.get_slice(":", 1), true);
 		}
@@ -262,7 +262,7 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			bool found = false;
 			String f = feature_identifiers[i];
-			for (int j = 0; j < disabled_features_arr.size(); j++) {
+			for (vec_size j = 0; j < disabled_features_arr.size(); j++) {
 				String fd = disabled_features_arr[j];
 				if (fd == f) {
 					found = true;
@@ -377,7 +377,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 
 	profile_list->clear();
 
-	for (int i = 0; i < profiles.size(); i++) {
+	for (vec_size i = 0; i < profiles.size(); i++) {
 		String name = profiles[i];
 
 		if (i == 0 && selected_profile.is_empty()) {
@@ -800,7 +800,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 
 void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths) {
 	//test it first
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		Ref<EditorFeatureProfile> profile;
 		profile.instantiate();
 		Error err = profile->load_from_file(p_paths[i]);
@@ -819,7 +819,7 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 	}
 
 	//do it second
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		Ref<EditorFeatureProfile> profile;
 		profile.instantiate();
 		Error err = profile->load_from_file(p_paths[i]);

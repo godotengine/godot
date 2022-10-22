@@ -293,7 +293,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 		case 2: { // Custom.
 			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
 			Dictionary ftrs;
-			for (int i = 0; i < subtag.size(); i++) {
+			for (vec_size i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
 					ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();

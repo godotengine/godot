@@ -232,7 +232,7 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 	{
 		uint8_t *w = gpudata.ptrw();
 		uint8_t *dst = w;
-		for (int i = 0; i < gpudata.size(); i++) {
+		for (vec_size i = 0; i < gpudata.size(); i++) {
 			dst[i] = 0x00;
 		}
 

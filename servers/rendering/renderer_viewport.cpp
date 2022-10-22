@@ -653,7 +653,7 @@ void RendererViewport::draw_viewports() {
 	int objects_drawn = 0;
 	int draw_calls_used = 0;
 
-	for (int i = 0; i < sorted_active_viewports.size(); i++) {
+	for (vec_size i = 0; i < sorted_active_viewports.size(); i++) {
 		Viewport *vp = sorted_active_viewports[i];
 
 		if (vp->last_pass != draw_viewports_pass) {
@@ -689,7 +689,7 @@ void RendererViewport::draw_viewports() {
 						blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
 					}
 
-					for (int b = 0; b < blits.size(); b++) {
+					for (vec_size b = 0; b < blits.size(); b++) {
 						blit_to_screen_list[vp->viewport_to_screen].push_back(blits[b]);
 					}
 				}
@@ -1173,7 +1173,7 @@ void RendererViewport::viewport_set_occlusion_rays_per_thread(int p_rays_per_thr
 
 	occlusion_rays_per_thread = p_rays_per_thread;
 
-	for (int i = 0; i < active_viewports.size(); i++) {
+	for (vec_size i = 0; i < active_viewports.size(); i++) {
 		active_viewports[i]->occlusion_buffer_dirty = true;
 	}
 }

@@ -334,10 +334,10 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		const Vector<String> lines = p_source_code.split("\n");
 		cursor_line = 1;
 		cursor_column = 1;
-		for (int i = 0; i < lines.size(); i++) {
+		for (vec_size i = 0; i < lines.size(); i++) {
 			bool found = false;
 			const String &line = lines[i];
-			for (int j = 0; j < line.size(); j++) {
+			for (vec_size j = 0; j < line.size(); j++) {
 				if (line[j] == char32_t(0xFFFF)) {
 					found = true;
 					break;
@@ -1292,7 +1292,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 
 #ifdef TOOLS_ENABLED
 	// Enum values documentation.
-	for (int i = 0; i < enum_node->values.size(); i++) {
+	for (vec_size i = 0; i < enum_node->values.size(); i++) {
 		if (i == enum_node->values.size() - 1) {
 			// If close bracket is same line as last value.
 			if (enum_node->values[i].line != previous.start_line && has_comment(enum_node->values[i].line)) {
@@ -3605,7 +3605,7 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 	}
 
 	const List<PropertyInfo>::Element *E = info.arguments.front();
-	for (int i = 0; i < p_annotation->arguments.size(); i++) {
+	for (vec_size i = 0; i < p_annotation->arguments.size(); i++) {
 		ExpressionNode *argument = p_annotation->arguments[i];
 		const PropertyInfo &parameter = E->get();
 
@@ -3713,7 +3713,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	variable->export_info.hint = t_hint;
 
 	String hint_string;
-	for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_annotation->resolved_arguments.size(); i++) {
 		if (i > 0) {
 			hint_string += ",";
 		}
@@ -4139,7 +4139,7 @@ void GDScriptParser::TreePrinter::push_text(const String &p_text) {
 void GDScriptParser::TreePrinter::print_annotation(const AnnotationNode *p_annotation) {
 	push_text(p_annotation->name);
 	push_text(" (");
-	for (int i = 0; i < p_annotation->arguments.size(); i++) {
+	for (vec_size i = 0; i < p_annotation->arguments.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -4150,7 +4150,7 @@ void GDScriptParser::TreePrinter::print_annotation(const AnnotationNode *p_annot
 
 void GDScriptParser::TreePrinter::print_array(ArrayNode *p_array) {
 	push_text("[ ");
-	for (int i = 0; i < p_array->elements.size(); i++) {
+	for (vec_size i = 0; i < p_array->elements.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -4310,7 +4310,7 @@ void GDScriptParser::TreePrinter::print_call(CallNode *p_call) {
 		print_expression(p_call->callee);
 	}
 	push_text("( ");
-	for (int i = 0; i < p_call->arguments.size(); i++) {
+	for (vec_size i = 0; i < p_call->arguments.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -4340,7 +4340,7 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 			push_text(vformat(R"("%s")", p_class->extends_path));
 			first = false;
 		}
-		for (int i = 0; i < p_class->extends.size(); i++) {
+		for (vec_size i = 0; i < p_class->extends.size(); i++) {
 			if (!first) {
 				push_text(".");
 			} else {
@@ -4354,7 +4354,7 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 
 	increase_indent();
 
-	for (int i = 0; i < p_class->members.size(); i++) {
+	for (vec_size i = 0; i < p_class->members.size(); i++) {
 		const ClassNode::Member &m = p_class->members[i];
 
 		switch (m.type) {
@@ -4409,7 +4409,7 @@ void GDScriptParser::TreePrinter::print_constant(ConstantNode *p_constant) {
 void GDScriptParser::TreePrinter::print_dictionary(DictionaryNode *p_dictionary) {
 	push_line("{");
 	increase_indent();
-	for (int i = 0; i < p_dictionary->elements.size(); i++) {
+	for (vec_size i = 0; i < p_dictionary->elements.size(); i++) {
 		print_expression(p_dictionary->elements[i].key);
 		if (p_dictionary->style == DictionaryNode::PYTHON_DICT) {
 			push_text(" : ");
@@ -4493,7 +4493,7 @@ void GDScriptParser::TreePrinter::print_enum(EnumNode *p_enum) {
 
 	push_line(" {");
 	increase_indent();
-	for (int i = 0; i < p_enum->values.size(); i++) {
+	for (vec_size i = 0; i < p_enum->values.size(); i++) {
 		const EnumNode::Value &item = p_enum->values[i];
 		print_identifier(item.identifier);
 		push_text(" = ");
@@ -4530,7 +4530,7 @@ void GDScriptParser::TreePrinter::print_function(FunctionNode *p_function, const
 		push_text("<anonymous>");
 	}
 	push_text("( ");
-	for (int i = 0; i < p_function->parameters.size(); i++) {
+	for (vec_size i = 0; i < p_function->parameters.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -4582,7 +4582,7 @@ void GDScriptParser::TreePrinter::print_if(IfNode *p_if, bool p_is_elif) {
 void GDScriptParser::TreePrinter::print_lambda(LambdaNode *p_lambda) {
 	print_function(p_lambda->function, "Lambda");
 	push_text("| captures [ ");
-	for (int i = 0; i < p_lambda->captures.size(); i++) {
+	for (vec_size i = 0; i < p_lambda->captures.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -4625,14 +4625,14 @@ void GDScriptParser::TreePrinter::print_match(MatchNode *p_match) {
 	push_line(" :");
 
 	increase_indent();
-	for (int i = 0; i < p_match->branches.size(); i++) {
+	for (vec_size i = 0; i < p_match->branches.size(); i++) {
 		print_match_branch(p_match->branches[i]);
 	}
 	decrease_indent();
 }
 
 void GDScriptParser::TreePrinter::print_match_branch(MatchBranchNode *p_match_branch) {
-	for (int i = 0; i < p_match_branch->patterns.size(); i++) {
+	for (vec_size i = 0; i < p_match_branch->patterns.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -4666,7 +4666,7 @@ void GDScriptParser::TreePrinter::print_match_pattern(PatternNode *p_match_patte
 			break;
 		case PatternNode::PT_ARRAY:
 			push_text("[ ");
-			for (int i = 0; i < p_match_pattern->array.size(); i++) {
+			for (vec_size i = 0; i < p_match_pattern->array.size(); i++) {
 				if (i > 0) {
 					push_text(" , ");
 				}
@@ -4676,7 +4676,7 @@ void GDScriptParser::TreePrinter::print_match_pattern(PatternNode *p_match_patte
 			break;
 		case PatternNode::PT_DICTIONARY:
 			push_text("{ ");
-			for (int i = 0; i < p_match_pattern->dictionary.size(); i++) {
+			for (vec_size i = 0; i < p_match_pattern->dictionary.size(); i++) {
 				if (i > 0) {
 					push_text(" , ");
 				}
@@ -4733,7 +4733,7 @@ void GDScriptParser::TreePrinter::print_signal(SignalNode *p_signal) {
 	push_text("Signal ");
 	print_identifier(p_signal->identifier);
 	push_text("( ");
-	for (int i = 0; i < p_signal->parameters.size(); i++) {
+	for (vec_size i = 0; i < p_signal->parameters.size(); i++) {
 		print_parameter(p_signal->parameters[i]);
 	}
 	push_line(" )");
@@ -4804,7 +4804,7 @@ void GDScriptParser::TreePrinter::print_statement(Node *p_statement) {
 }
 
 void GDScriptParser::TreePrinter::print_suite(SuiteNode *p_suite) {
-	for (int i = 0; i < p_suite->statements.size(); i++) {
+	for (vec_size i = 0; i < p_suite->statements.size(); i++) {
 		print_statement(p_suite->statements[i]);
 	}
 }
@@ -4824,7 +4824,7 @@ void GDScriptParser::TreePrinter::print_type(TypeNode *p_type) {
 	if (p_type->type_chain.is_empty()) {
 		push_text("Void");
 	} else {
-		for (int i = 0; i < p_type->type_chain.size(); i++) {
+		for (vec_size i = 0; i < p_type->type_chain.size(); i++) {
 			if (i > 0) {
 				push_text(".");
 			}

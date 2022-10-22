@@ -76,7 +76,7 @@ int Label::get_line_height(int p_line) const {
 		return TS->shaped_text_get_size(lines_rid[p_line]).y;
 	} else if (lines_rid.size() > 0) {
 		int h = 0;
-		for (int i = 0; i < lines_rid.size(); i++) {
+		for (vec_size i = 0; i < lines_rid.size(); i++) {
 			h = MAX(h, TS->shaped_text_get_size(lines_rid[i]).y);
 		}
 		return h;
@@ -124,7 +124,7 @@ void Label::_shape() {
 	}
 
 	if (lines_dirty) {
-		for (int i = 0; i < lines_rid.size(); i++) {
+		for (vec_size i = 0; i < lines_rid.size(); i++) {
 			TS->free_rid(lines_rid[i]);
 		}
 		lines_rid.clear();
@@ -146,7 +146,7 @@ void Label::_shape() {
 		autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
 
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
-		for (int i = 0; i < line_breaks.size(); i = i + 2) {
+		for (vec_size i = 0; i < line_breaks.size(); i = i + 2) {
 			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 			lines_rid.push_back(line);
 		}
@@ -159,7 +159,7 @@ void Label::_shape() {
 
 	if (autowrap_mode == TextServer::AUTOWRAP_OFF) {
 		minsize.width = 0.0f;
-		for (int i = 0; i < lines_rid.size(); i++) {
+		for (vec_size i = 0; i < lines_rid.size(); i++) {
 			if (minsize.width < TS->shaped_text_get_size(lines_rid[i]).x) {
 				minsize.width = TS->shaped_text_get_size(lines_rid[i]).x;
 			}
@@ -198,7 +198,7 @@ void Label::_shape() {
 				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
 			}
 			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-				for (int i = 0; i < lines_rid.size(); i++) {
+				for (vec_size i = 0; i < lines_rid.size(); i++) {
 					if (i < visible_lines - 1 || lines_rid.size() == 1) {
 						TS->shaped_text_fit_to_width(lines_rid[i], width);
 					} else if (i == (visible_lines - 1)) {
@@ -210,7 +210,7 @@ void Label::_shape() {
 			}
 		} else {
 			// Autowrap disabled.
-			for (int i = 0; i < lines_rid.size(); i++) {
+			for (vec_size i = 0; i < lines_rid.size(); i++) {
 				if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 					TS->shaped_text_fit_to_width(lines_rid[i], width);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
@@ -982,7 +982,7 @@ Label::Label(const String &p_text) {
 }
 
 Label::~Label() {
-	for (int i = 0; i < lines_rid.size(); i++) {
+	for (vec_size i = 0; i < lines_rid.size(); i++) {
 		TS->free_rid(lines_rid[i]);
 	}
 	lines_rid.clear();

@@ -134,7 +134,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 					unique_resources_list_tree->clear();
 					TreeItem *root = unique_resources_list_tree->create_item();
 
-					for (int i = 0; i < resource_propnames.size(); i++) {
+					for (vec_size i = 0; i < resource_propnames.size(); i++) {
 						String propname = resource_propnames[i].replace("/", " / ");
 
 						TreeItem *ti = unique_resources_list_tree->create_item(root);
@@ -223,12 +223,12 @@ void InspectorDock::_load_resource(const String &p_type) {
 	ResourceLoader::get_recognized_extensions_for_type(p_type, &extensions);
 
 	load_resource_dialog->clear_filters();
-	for (int i = 0; i < extensions.size(); i++) {
+	for (vec_size i = 0; i < extensions.size(); i++) {
 		load_resource_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 	}
 
 	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
-	for (int i = 0; i < textfile_ext.size(); i++) {
+	for (vec_size i = 0; i < textfile_ext.size(); i++) {
 		load_resource_dialog->add_filter("*." + textfile_ext[i], textfile_ext[i].to_upper());
 	}
 

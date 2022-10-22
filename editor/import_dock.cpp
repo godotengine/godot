@@ -197,7 +197,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	HashMap<String, Dictionary> value_frequency;
 	HashSet<String> extensions;
 
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
 		extensions.insert(p_paths[i].get_extension());
@@ -468,7 +468,7 @@ void ImportDock::_reimport_attempt() {
 	} else {
 		importer_name = "keep";
 	}
-	for (int i = 0; i < params->paths.size(); i++) {
+	for (vec_size i = 0; i < params->paths.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
 		Error err = config->load(params->paths[i] + ".import");
@@ -505,7 +505,7 @@ void ImportDock::_advanced_options() {
 	}
 }
 void ImportDock::_reimport() {
-	for (int i = 0; i < params->paths.size(); i++) {
+	for (vec_size i = 0; i < params->paths.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
 		Error err = config->load(params->paths[i] + ".import");

@@ -189,7 +189,7 @@ void ScriptServer::init_languages() {
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
 			Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");
 
-			for (int i = 0; i < script_classes.size(); i++) {
+			for (vec_size i = 0; i < script_classes.size(); i++) {
 				Dictionary c = script_classes[i];
 				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
 					continue;

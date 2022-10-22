@@ -116,7 +116,7 @@ void NavRegion::update_polygons() {
 		Vector3 center;
 		float sum(0);
 
-		for (int j(0); j < mesh_poly.size(); j++) {
+		for (vec_size j(0); j < mesh_poly.size(); j++) {
 			int idx = indices[j];
 			if (idx < 0 || idx >= len) {
 				valid = false;

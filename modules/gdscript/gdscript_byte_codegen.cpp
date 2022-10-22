@@ -185,9 +185,9 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 #endif
 	append(GDScriptFunction::OPCODE_END, 0);
 
-	for (int i = 0; i < temporaries.size(); i++) {
+	for (vec_size i = 0; i < temporaries.size(); i++) {
 		int stack_index = i + max_locals + RESERVED_STACK;
-		for (int j = 0; j < temporaries[i].bytecode_indices.size(); j++) {
+		for (vec_size j = 0; j < temporaries[i].bytecode_indices.size(); j++) {
 			opcodes.write[temporaries[i].bytecode_indices[j]] = stack_index | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
 		}
 		if (temporaries[i].type != Variant::NIL) {
@@ -922,7 +922,7 @@ void GDScriptByteCodeGenerator::write_cast(const Address &p_target, const Addres
 
 void GDScriptByteCodeGenerator::write_call(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
@@ -933,7 +933,7 @@ void GDScriptByteCodeGenerator::write_call(const Address &p_target, const Addres
 
 void GDScriptByteCodeGenerator::write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	append(GDScriptFunction::OPCODE_CALL_SELF_BASE, 1 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_target);
@@ -943,7 +943,7 @@ void GDScriptByteCodeGenerator::write_super_call(const Address &p_target, const 
 
 void GDScriptByteCodeGenerator::write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	append(GDScriptFunction::OPCODE_CALL_ASYNC, 2 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
@@ -954,7 +954,7 @@ void GDScriptByteCodeGenerator::write_call_async(const Address &p_target, const 
 
 void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_target, GDScriptUtilityFunctions::FunctionPtr p_function, const Vector<Address> &p_arguments) {
 	append(GDScriptFunction::OPCODE_CALL_GDSCRIPT_UTILITY, 1 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_target);
@@ -968,7 +968,7 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 		is_validated = true; // Vararg works fine with any argument, since they can be any type.
 	} else if (p_arguments.size() == Variant::get_utility_function_argument_count(p_function)) {
 		bool all_types_exact = true;
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			if (!IS_BUILTIN_TYPE(p_arguments[i], Variant::get_utility_function_argument_type(p_function, i))) {
 				all_types_exact = false;
 				break;
@@ -980,7 +980,7 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 
 	if (is_validated) {
 		append(GDScriptFunction::OPCODE_CALL_UTILITY_VALIDATED, 1 + p_arguments.size());
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
 		append(p_target);
@@ -988,7 +988,7 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 		append(Variant::get_validated_utility_function(p_function));
 	} else {
 		append(GDScriptFunction::OPCODE_CALL_UTILITY, 1 + p_arguments.size());
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
 		append(p_target);
@@ -1005,7 +1005,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 		is_validated = true; // Vararg works fine with any argument, since they can be any type.
 	} else if (p_arguments.size() == Variant::get_builtin_method_argument_count(p_type, p_method)) {
 		bool all_types_exact = true;
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			if (!IS_BUILTIN_TYPE(p_arguments[i], Variant::get_builtin_method_argument_type(p_type, p_method, i))) {
 				all_types_exact = false;
 				break;
@@ -1031,7 +1031,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 
 	append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, 2 + p_arguments.size());
 
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
@@ -1048,7 +1048,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_
 		is_validated = true; // Vararg works fine with any argument, since they can be any type.
 	} else if (p_arguments.size() == Variant::get_builtin_method_argument_count(p_type, p_method)) {
 		bool all_types_exact = true;
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			if (!IS_BUILTIN_TYPE(p_arguments[i], Variant::get_builtin_method_argument_type(p_type, p_method, i))) {
 				all_types_exact = false;
 				break;
@@ -1061,7 +1061,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_
 	if (!is_validated) {
 		// Perform regular call.
 		append(GDScriptFunction::OPCODE_CALL_BUILTIN_STATIC, p_arguments.size() + 1);
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
 		append(p_target);
@@ -1081,7 +1081,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_
 
 	append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, 2 + p_arguments.size());
 
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(Address()); // No base since it's static.
@@ -1098,7 +1098,7 @@ void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target
 	if (!is_validated) {
 		// Perform regular call.
 		append(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size() + 1);
-		for (int i = 0; i < p_arguments.size(); i++) {
+		for (vec_size i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
 		append(p_target);
@@ -1110,7 +1110,7 @@ void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target
 
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
 	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
@@ -1174,7 +1174,7 @@ void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, cons
 		append(GDScriptFunction::OPCODE_CALL_PTRCALL_NO_RETURN, 2 + p_arguments.size());
 	}
 
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
@@ -1190,7 +1190,7 @@ void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, cons
 
 void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
@@ -1201,7 +1201,7 @@ void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const S
 
 void GDScriptByteCodeGenerator::write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	append(GDScriptFunction::OPCODE_CALL_ASYNC, 2 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(GDScriptFunction::ADDR_SELF);
@@ -1212,7 +1212,7 @@ void GDScriptByteCodeGenerator::write_call_self_async(const Address &p_target, c
 
 void GDScriptByteCodeGenerator::write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
@@ -1223,7 +1223,7 @@ void GDScriptByteCodeGenerator::write_call_script_function(const Address &p_targ
 
 void GDScriptByteCodeGenerator::write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) {
 	append(p_use_self ? GDScriptFunction::OPCODE_CREATE_SELF_LAMBDA : GDScriptFunction::OPCODE_CREATE_LAMBDA, 1 + p_captures.size());
-	for (int i = 0; i < p_captures.size(); i++) {
+	for (vec_size i = 0; i < p_captures.size(); i++) {
 		append(p_captures[i]);
 	}
 
@@ -1236,7 +1236,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 	// Try to find an appropriate constructor.
 	bool all_have_type = true;
 	Vector<Variant::Type> arg_types;
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		if (!HAS_BUILTIN_TYPE(p_arguments[i])) {
 			all_have_type = false;
 			break;
@@ -1250,7 +1250,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 				continue;
 			}
 			int types_correct = true;
-			for (int j = 0; j < arg_types.size(); j++) {
+			for (vec_size j = 0; j < arg_types.size(); j++) {
 				if (arg_types[j] != Variant::get_constructor_argument_type(p_type, i, j)) {
 					types_correct = false;
 					break;
@@ -1263,7 +1263,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 		}
 		if (valid_constructor >= 0) {
 			append(GDScriptFunction::OPCODE_CONSTRUCT_VALIDATED, 1 + p_arguments.size());
-			for (int i = 0; i < p_arguments.size(); i++) {
+			for (vec_size i = 0; i < p_arguments.size(); i++) {
 				append(p_arguments[i]);
 			}
 			append(p_target);
@@ -1274,7 +1274,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 	}
 
 	append(GDScriptFunction::OPCODE_CONSTRUCT, 1 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_target);
@@ -1284,7 +1284,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 
 void GDScriptByteCodeGenerator::write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) {
 	append(GDScriptFunction::OPCODE_CONSTRUCT_ARRAY, 1 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_target);
@@ -1293,7 +1293,7 @@ void GDScriptByteCodeGenerator::write_construct_array(const Address &p_target, c
 
 void GDScriptByteCodeGenerator::write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) {
 	append(GDScriptFunction::OPCODE_CONSTRUCT_TYPED_ARRAY, 2 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_target);
@@ -1312,7 +1312,7 @@ void GDScriptByteCodeGenerator::write_construct_typed_array(const Address &p_tar
 
 void GDScriptByteCodeGenerator::write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) {
 	append(GDScriptFunction::OPCODE_CONSTRUCT_DICTIONARY, 1 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
+	for (vec_size i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_target);

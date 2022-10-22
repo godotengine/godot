@@ -250,7 +250,7 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
-					for (int i = 0; i < (int)frame->lines.size(); i++) {
+					for (vec_size i = 0; i < (int)frame->lines.size(); i++) {
 						_update_line_font(frame, i, p_base_font, p_base_font_size);
 					}
 				}
@@ -293,7 +293,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 					float prev_h = 0;
-					for (int i = 0; i < (int)frame->lines.size(); i++) {
+					for (vec_size i = 0; i < (int)frame->lines.size(); i++) {
 						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
 						int w = _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1;
 						prev_h = _resize_line(frame, i, p_base_font, p_base_font_size, w, prev_h);
@@ -379,7 +379,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 					offset.x += frame->padding.position.x;
 					float yofs = frame->padding.position.y;
 					float prev_h = 0;
-					for (int i = 0; i < (int)frame->lines.size(); i++) {
+					for (vec_size i = 0; i < (int)frame->lines.size(); i++) {
 						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
 						frame->lines[i].text_buf->set_width(table->columns[column].width);
 						table->columns[column].width = MAX(table->columns[column].width, ceil(frame->lines[i].text_buf->get_size().x));
@@ -562,7 +562,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 
 					int column = idx % col_count;
 					float prev_h = 0;
-					for (int i = 0; i < (int)frame->lines.size(); i++) {
+					for (vec_size i = 0; i < (int)frame->lines.size(); i++) {
 						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
 
 						int char_offset = l.char_offset + l.char_count;
@@ -654,7 +654,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					offset.x += frame->padding.position.x;
 					float yofs = frame->padding.position.y;
 					float prev_h = 0;
-					for (int i = 0; i < (int)frame->lines.size(); i++) {
+					for (vec_size i = 0; i < (int)frame->lines.size(); i++) {
 						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
 
 						frame->lines[i].text_buf->set_width(table->columns[column].width);
@@ -740,7 +740,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	_find_list(l.from, list_index, list_items);
 
 	String prefix;
-	for (int i = 0; i < list_index.size(); i++) {
+	for (vec_size i = 0; i < list_index.size(); i++) {
 		if (rtl) {
 			prefix = prefix + ".";
 		} else {
@@ -872,7 +872,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		off.y += TS->shaped_text_get_ascent(rid);
 		// Draw inlined objects.
 		Array objects = TS->shaped_text_get_objects(rid);
-		for (int i = 0; i < objects.size(); i++) {
+		for (vec_size i = 0; i < objects.size(); i++) {
 			Item *it = reinterpret_cast<Item *>((uint64_t)objects[i]);
 			if (it != nullptr) {
 				Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
@@ -912,7 +912,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + hseparation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->border != Color(0, 0, 0, 0) ? frame->border : border), false);
 							}
 
-							for (int j = 0; j < (int)frame->lines.size(); j++) {
+							for (vec_size j = 0; j < (int)frame->lines.size(); j++) {
 								_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
 							}
 							idx++;
@@ -989,7 +989,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 			bool txt_visible = (font_outline_color.a != 0) || (font_shadow_color.a != 0);
 
-			for (int j = 0; j < fx_stack.size(); j++) {
+			for (vec_size j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
 				bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
 
@@ -1098,7 +1098,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			sel_end = MIN(TS->shaped_text_get_range(rid).y, (selection.to_frame->lines[selection.to_line].char_offset + selection.to_char) - l.char_offset);
 
 			Vector<Vector2> sel = TS->shaped_text_get_selection(rid, sel_start, sel_end);
-			for (int i = 0; i < sel.size(); i++) {
+			for (vec_size i = 0; i < sel.size(); i++) {
 				Rect2 rect = Rect2(sel[i].x + p_ofs.x + off.x, p_ofs.y + off.y - TS->shaped_text_get_ascent(rid), sel[i].y - sel[i].x, TS->shaped_text_get_size(rid).y);
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_bg);
 			}
@@ -1207,7 +1207,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 			bool txt_visible = (font_color.a != 0);
 
-			for (int j = 0; j < fx_stack.size(); j++) {
+			for (vec_size j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
 				bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
 
@@ -1438,7 +1438,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		off.y += TS->shaped_text_get_ascent(rid);
 
 		Array objects = TS->shaped_text_get_objects(rid);
-		for (int i = 0; i < objects.size(); i++) {
+		for (vec_size i = 0; i < objects.size(); i++) {
 			Item *it = reinterpret_cast<Item *>((uint64_t)objects[i]);
 			if (it != nullptr) {
 				Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
@@ -1473,14 +1473,14 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 										}
 									}
 									if (crect.has_point(p_click)) {
-										for (int j = 0; j < (int)frame->lines.size(); j++) {
+										for (vec_size j = 0; j < (int)frame->lines.size(); j++) {
 											_find_click_in_line(frame, j, rect.position + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
 											if (table_click_frame && table_click_item) {
 												// Save cell detected cell hit data.
 												table_range = Vector2i(INT32_MAX, 0);
 												for (Item *F : table->subitems) {
 													ItemFrame *sub_frame = static_cast<ItemFrame *>(F);
-													for (int k = 0; k < (int)sub_frame->lines.size(); k++) {
+													for (vec_size k = 0; k < (int)sub_frame->lines.size(); k++) {
 														table_range.x = MIN(table_range.x, sub_frame->lines[k].char_offset);
 														table_range.y = MAX(table_range.y, sub_frame->lines[k].char_offset + sub_frame->lines[k].char_count);
 													}
@@ -1928,7 +1928,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					const Line &l = c_frame->lines[c_line];
 					MutexLock lock(l.text_buf->get_mutex());
 					PackedInt32Array words = TS->shaped_text_get_word_breaks(l.text_buf->get_rid());
-					for (int i = 0; i < words.size(); i = i + 2) {
+					for (vec_size i = 0; i < words.size(); i = i + 2) {
 						if (c_index >= words[i] && c_index < words[i + 1]) {
 							selection.from_frame = c_frame;
 							selection.from_line = c_line;
@@ -2687,7 +2687,7 @@ bool RichTextLabel::_validate_line_caches() {
 
 		// Update fonts.
 		if (main->first_invalid_font_line.load() != (int)main->lines.size()) {
-			for (int i = main->first_invalid_font_line.load(); i < (int)main->lines.size(); i++) {
+			for (vec_size i = main->first_invalid_font_line.load(); i < (int)main->lines.size(); i++) {
 				_update_line_font(main, i, theme_cache.normal_font, theme_cache.normal_font_size);
 			}
 			main->first_resized_line.store(main->first_invalid_font_line.load());
@@ -2702,7 +2702,7 @@ bool RichTextLabel::_validate_line_caches() {
 		int fi = main->first_resized_line.load();
 
 		float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
-		for (int i = fi; i < (int)main->lines.size(); i++) {
+		for (vec_size i = fi; i < (int)main->lines.size(); i++) {
 			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
 
 			updating_scroll = true;
@@ -2774,7 +2774,7 @@ void RichTextLabel::_process_line_caches() {
 	int total_chars = (fi == 0) ? 0 : (main->lines[fi].char_offset + main->lines[fi].char_count);
 
 	float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
-	for (int i = fi; i < (int)main->lines.size(); i++) {
+	for (vec_size i = fi; i < (int)main->lines.size(); i++) {
 		total_height = _shape_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
 		updating_scroll = true;
 		bool exceeds = total_height > ctrl_height && scroll_active;
@@ -2939,7 +2939,7 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 		// If a newline was erased, all lines AFTER the newline need to be decremented.
 		if (p_item->type == ITEM_NEWLINE) {
 			current_frame->lines.remove_at(p_line);
-			for (int i = 0; i < current->subitems.size(); i++) {
+			for (vec_size i = 0; i < current->subitems.size(); i++) {
 				if (current->subitems[i]->line > p_subitem_line) {
 					current->subitems[i]->line--;
 				}
@@ -3044,7 +3044,7 @@ bool RichTextLabel::remove_line(const int p_line) {
 
 	// Remove all subitems with the same line as that provided.
 	Vector<int> subitem_indices_to_remove;
-	for (int i = 0; i < current->subitems.size(); i++) {
+	for (vec_size i = 0; i < current->subitems.size(); i++) {
 		if (current->subitems[i]->line == p_line) {
 			subitem_indices_to_remove.push_back(i);
 		}
@@ -3303,7 +3303,7 @@ void RichTextLabel::push_table(int p_columns, InlineAlignment p_alignment) {
 	item->columns.resize(p_columns);
 	item->total_width = 0;
 	item->inline_align = p_alignment;
-	for (int i = 0; i < (int)item->columns.size(); i++) {
+	for (vec_size i = 0; i < (int)item->columns.size(); i++) {
 		item->columns[i].expand = false;
 		item->columns[i].expand_ratio = 1;
 	}
@@ -3667,7 +3667,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		OptionMap bbcode_options;
 		if (!split_tag_block.is_empty()) {
 			bbcode_name = split_tag_block[0];
-			for (int i = 1; i < split_tag_block.size(); i++) {
+			for (vec_size i = 1; i < split_tag_block.size(); i++) {
 				const String &expr = split_tag_block[i];
 				int value_pos = expr.find("=");
 				if (value_pos > -1) {
@@ -3834,7 +3834,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		} else if (tag.begins_with("cell ")) {
 			Vector<String> subtag = tag.substr(5, tag.length()).split(" ");
 
-			for (int i = 0; i < subtag.size(); i++) {
+			for (vec_size i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "expand") {
@@ -3848,7 +3848,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			}
 			push_cell();
 			const Color fallback_color = Color(0, 0, 0, 0);
-			for (int i = 0; i < subtag.size(); i++) {
+			for (vec_size i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "border") {
@@ -3992,7 +3992,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			Control::TextDirection dir = Control::TEXT_DIRECTION_INHERITED;
 			String lang;
 			TextServer::StructuredTextParser st_parser_type = TextServer::STRUCTURED_TEXT_DEFAULT;
-			for (int i = 0; i < subtag.size(); i++) {
+			for (vec_size i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "align") {
@@ -4067,7 +4067,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int outline_size = theme_cache.outline_size;
 			Rect2 dropcap_margins = Rect2();
 
-			for (int i = 0; i < subtag.size(); i++) {
+			for (vec_size i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "font" || subtag_a[0] == "f") {
@@ -4228,7 +4228,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 				}
 				Dictionary features;
-				for (int i = 0; i < subtag.size(); i++) {
+				for (vec_size i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
 					if (subtag_a.size() == 2) {
 						features[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
@@ -4281,7 +4281,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			fc.instantiate();
 
 			int fnt_size = -1;
-			for (int i = 1; i < subtag.size(); i++) {
+			for (vec_size i = 1; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=", true, 2);
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "name" || subtag_a[0] == "n") {
@@ -4318,7 +4318,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						Dictionary variations;
 						if (!subtag_a[1].is_empty()) {
 							Vector<String> variation_tags = subtag_a[1].split(",");
-							for (int j = 0; j < variation_tags.size(); j++) {
+							for (vec_size j = 0; j < variation_tags.size(); j++) {
 								Vector<String> subtag_b = variation_tags[j].split("=");
 								if (subtag_b.size() == 2) {
 									variations[TS->name_to_tag(subtag_b[0])] = subtag_b[1].to_float();
@@ -4330,7 +4330,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						Dictionary features;
 						if (!subtag_a[1].is_empty()) {
 							Vector<String> feature_tags = subtag_a[1].split(",");
-							for (int j = 0; j < feature_tags.size(); j++) {
+							for (vec_size j = 0; j < feature_tags.size(); j++) {
 								Vector<String> subtag_b = feature_tags[j].split("=");
 								if (subtag_b.size() == 2) {
 									features[TS->name_to_tag(subtag_b[0])] = subtag_b[1].to_float();
@@ -4684,7 +4684,7 @@ bool RichTextLabel::_search_table(ItemTable *p_table, List<Item *>::Element *p_f
 				}
 			}
 		} else {
-			for (int i = 0; i < (int)frame->lines.size(); i++) {
+			for (vec_size i = 0; i < (int)frame->lines.size(); i++) {
 				if (_search_line(frame, i, p_string, 0, p_reverse_search)) {
 					return true;
 				}
@@ -4857,7 +4857,7 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 			for (Item *E : table->subitems) {
 				ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 				ItemFrame *frame = static_cast<ItemFrame *>(E);
-				for (int i = 0; i < (int)frame->lines.size(); i++) {
+				for (vec_size i = 0; i < (int)frame->lines.size(); i++) {
 					txt += _get_line_text(frame, i, p_selection);
 				}
 			}
@@ -5564,7 +5564,7 @@ int RichTextLabel::get_total_glyph_count() const {
 	while (it) {
 		if (it->type == ITEM_FRAME) {
 			ItemFrame *f = static_cast<ItemFrame *>(it);
-			for (int i = 0; i < (int)f->lines.size(); i++) {
+			for (vec_size i = 0; i < (int)f->lines.size(); i++) {
 				MutexLock lock(f->lines[i].text_buf->get_mutex());
 				tg += TS->shaped_text_get_glyph_count(f->lines[i].text_buf->get_rid());
 			}
@@ -5683,7 +5683,7 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 
 		if (draw_box) {
 			Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, fbg_index.y);
-			for (int j = 0; j < sel.size(); j++) {
+			for (vec_size j = 0; j < sel.size(); j++) {
 				Vector2 rect_off = line_off + Vector2(sel[j].x, -TS->shaped_text_get_ascent(p_rid));
 				Vector2 rect_size = Vector2(sel[j].y - sel[j].x, TS->shaped_text_get_size(p_rid).y);
 				RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
@@ -5702,7 +5702,7 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 
 	if (last_color.a > 0) {
 		Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, end);
-		for (int i = 0; i < sel.size(); i++) {
+		for (vec_size i = 0; i < sel.size(); i++) {
 			Vector2 rect_off = line_off + Vector2(sel[i].x, -TS->shaped_text_get_ascent(p_rid));
 			Vector2 rect_size = Vector2(sel[i].y - sel[i].x, TS->shaped_text_get_size(p_rid).y);
 			RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
@@ -5711,7 +5711,7 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 }
 
 Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_identifier) {
-	for (int i = 0; i < custom_effects.size(); i++) {
+	for (vec_size i = 0; i < custom_effects.size(); i++) {
 		Ref<RichTextEffect> effect = custom_effects[i];
 		if (!effect.is_valid()) {
 			continue;
@@ -5727,7 +5727,7 @@ Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_id
 
 Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressions) {
 	Dictionary d = Dictionary();
-	for (int i = 0; i < p_expressions.size(); i++) {
+	for (vec_size i = 0; i < p_expressions.size(); i++) {
 		String expression = p_expressions[i];
 
 		Array a = Array();
@@ -5751,7 +5751,7 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 		RegEx numerical = RegEx();
 		numerical.compile("^\\d+$");
 
-		for (int j = 0; j < values.size(); j++) {
+		for (vec_size j = 0; j < values.size(); j++) {
 			if (!color.search(values[j]).is_null()) {
 				a.append(Color::html(values[j]));
 			} else if (!nodepath.search(values[j]).is_null()) {

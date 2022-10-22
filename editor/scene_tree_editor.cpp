@@ -483,7 +483,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 	if (valid_types.size()) {
 		bool valid = false;
-		for (int i = 0; i < valid_types.size(); i++) {
+		for (vec_size i = 0; i < valid_types.size(); i++) {
 			if (p_node->is_class(valid_types[i])) {
 				valid = true;
 				break;
@@ -664,7 +664,7 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 		return true;
 	}
 
-	for (int i = 0; i < p_terms.size(); i++) {
+	for (vec_size i = 0; i < p_terms.size(); i++) {
 		String term = p_terms[i];
 
 		// Recognise special filter.
@@ -702,7 +702,7 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 					node->get_groups(&group_info_list);
 
 					bool term_in_groups = false;
-					for (int j = 0; j < group_info_list.size(); j++) {
+					for (vec_size j = 0; j < group_info_list.size(); j++) {
 						if (!group_info_list[j].persistent) {
 							continue; // Ignore internal groups.
 						}
@@ -1164,7 +1164,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	int list_max = 10;
 	float opacity_step = 1.0f / list_max;
 	float opacity_item = 1.0f;
-	for (int i = 0; i < selected_nodes.size(); i++) {
+	for (vec_size i = 0; i < selected_nodes.size(); i++) {
 		if (i < list_max) {
 			HBoxContainer *hb = memnew(HBoxContainer);
 			TextureRect *tf = memnew(TextureRect);
@@ -1229,7 +1229,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 
 		bool scene_drop = true;
-		for (int i = 0; i < files.size(); i++) {
+		for (vec_size i = 0; i < files.size(); i++) {
 			String file = files[i];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 			if (ftype != "PackedScene") {

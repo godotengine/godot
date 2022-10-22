@@ -172,7 +172,7 @@ public:
 			planes = p_planes;
 			planes_ptr = planes.ptrw();
 			plane_count = planes.size();
-			for (int i = 0; i < planes.size(); i++) {
+			for (vec_size i = 0; i < planes.size(); i++) {
 				PlaneSign ps(p_planes[i]);
 				plane_signs.push_back(ps);
 			}

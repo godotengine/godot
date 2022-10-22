@@ -312,7 +312,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 	if (failed_files.size()) {
 		String msg = vformat(TTR("The following files failed extraction from asset \"%s\":"), asset_name) + "\n\n";
-		for (int i = 0; i < failed_files.size(); i++) {
+		for (vec_size i = 0; i < failed_files.size(); i++) {
 			if (i > 15) {
 				msg += "\n" + vformat(TTR("(and %s more files)"), itos(failed_files.size() - i));
 				break;

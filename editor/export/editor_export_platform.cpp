@@ -196,14 +196,14 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	sd.size = p_data.size();
 	sd.encrypted = false;
 
-	for (int i = 0; i < p_enc_in_filters.size(); ++i) {
+	for (vec_size i = 0; i < p_enc_in_filters.size(); ++i) {
 		if (p_path.matchn(p_enc_in_filters[i]) || p_path.replace("res://", "").matchn(p_enc_in_filters[i])) {
 			sd.encrypted = true;
 			break;
 		}
 	}
 
-	for (int i = 0; i < p_enc_ex_filters.size(); ++i) {
+	for (vec_size i = 0; i < p_enc_ex_filters.size(); ++i) {
 		if (p_path.matchn(p_enc_ex_filters[i]) || p_path.replace("res://", "").matchn(p_enc_ex_filters[i])) {
 			sd.encrypted = false;
 			break;
@@ -359,7 +359,7 @@ void EditorExportPlatform::_export_find_dependencies(const String &p_path, HashS
 
 	Vector<String> deps = dir->get_file_deps(file_idx);
 
-	for (int i = 0; i < deps.size(); i++) {
+	for (vec_size i = 0; i < deps.size(); i++) {
 		_export_find_dependencies(deps[i], p_paths);
 	}
 }
@@ -381,7 +381,7 @@ void EditorExportPlatform::_edit_files_with_filter(Ref<DirAccess> &da, const Vec
 			String fullpath = cur_dir + f;
 			// Test also against path without res:// so that filters like `file.txt` can work.
 			String fullpath_no_prefix = cur_dir_no_prefix + f;
-			for (int i = 0; i < p_filters.size(); ++i) {
+			for (vec_size i = 0; i < p_filters.size(); ++i) {
 				if (fullpath.matchn(p_filters[i]) || fullpath_no_prefix.matchn(p_filters[i])) {
 					if (!exclude) {
 						r_list.insert(fullpath);
@@ -396,7 +396,7 @@ void EditorExportPlatform::_edit_files_with_filter(Ref<DirAccess> &da, const Vec
 
 	da->list_dir_end();
 
-	for (int i = 0; i < dirs.size(); ++i) {
+	for (vec_size i = 0; i < dirs.size(); ++i) {
 		String dir = dirs[i];
 		if (dir.begins_with(".")) {
 			continue;
@@ -418,7 +418,7 @@ void EditorExportPlatform::_edit_filter_list(HashSet<String> &r_list, const Stri
 	}
 	Vector<String> split = p_filter.split(",");
 	Vector<String> filters;
-	for (int i = 0; i < split.size(); i++) {
+	for (vec_size i = 0; i < split.size(); i++) {
 		String f = split[i].strip_edges();
 		if (f.is_empty()) {
 			continue;
@@ -451,7 +451,7 @@ HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset>
 	if (!p_preset->get_custom_features().is_empty()) {
 		Vector<String> tmp_custom_list = p_preset->get_custom_features().split(",");
 
-		for (int i = 0; i < tmp_custom_list.size(); i++) {
+		for (vec_size i = 0; i < tmp_custom_list.size(); i++) {
 			String f = tmp_custom_list[i].strip_edges();
 			if (!f.is_empty()) {
 				result.insert(f);
@@ -466,7 +466,7 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 	HashSet<String> features = p_platform.get_features(p_preset, p_debug);
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	//initial export plugin callback
-	for (int i = 0; i < export_plugins.size(); i++) {
+	for (vec_size i = 0; i < export_plugins.size(); i++) {
 		if (export_plugins[i]->get_script_instance()) { //script based
 			PackedStringArray features_psa;
 			for (const String &feature : features) {
@@ -481,7 +481,7 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 
 EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
-	for (int i = 0; i < export_plugins.size(); i++) {
+	for (vec_size i = 0; i < export_plugins.size(); i++) {
 		if (export_plugins[i]->get_script_instance()) {
 			export_plugins.write[i]->_export_end_script();
 		}
@@ -541,7 +541,7 @@ bool EditorExportPlatform::_export_customize_dictionary(Dictionary &dict, LocalV
 bool EditorExportPlatform::_export_customize_array(Array &arr, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins) {
 	bool changed = false;
 
-	for (int i = 0; i < arr.size(); i++) {
+	for (vec_size i = 0; i < arr.size(); i++) {
 		Variant v = arr.get(i);
 		switch (v.get_type()) {
 			case Variant::OBJECT: {
@@ -789,14 +789,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	} else if (p_preset->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES) {
 		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
 		Vector<String> files = p_preset->get_files_to_export();
-		for (int i = 0; i < files.size(); i++) {
+		for (vec_size i = 0; i < files.size(); i++) {
 			paths.erase(files[i]);
 		}
 	} else {
 		bool scenes_only = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_SCENES;
 
 		Vector<String> files = p_preset->get_files_to_export();
-		for (int i = 0; i < files.size(); i++) {
+		for (vec_size i = 0; i < files.size(); i++) {
 			if (scenes_only && ResourceLoader::get_resource_type(files[i]) != "PackedScene") {
 				continue;
 			}
@@ -841,7 +841,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	if (enc_pck) {
 		Vector<String> enc_in_split = p_preset->get_enc_in_filter().split(",");
-		for (int i = 0; i < enc_in_split.size(); i++) {
+		for (vec_size i = 0; i < enc_in_split.size(); i++) {
 			String f = enc_in_split[i].strip_edges();
 			if (f.is_empty()) {
 				continue;
@@ -850,7 +850,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 
 		Vector<String> enc_ex_split = p_preset->get_enc_ex_filter().split(",");
-		for (int i = 0; i < enc_ex_split.size(); i++) {
+		for (vec_size i = 0; i < enc_ex_split.size(); i++) {
 			String f = enc_ex_split[i].strip_edges();
 			if (f.is_empty()) {
 				continue;
@@ -900,18 +900,18 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	// Always sort by name, to so if for some reason theya are re-arranged, it still works.
 	export_plugins.sort_custom<SortByName>();
 
-	for (int i = 0; i < export_plugins.size(); i++) {
+	for (vec_size i = 0; i < export_plugins.size(); i++) {
 		export_plugins.write[i]->set_export_preset(p_preset);
 
 		if (p_so_func) {
-			for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
+			for (vec_size j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
 				err = p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
 				if (err != OK) {
 					return err;
 				}
 			}
 		}
-		for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
+		for (vec_size j = 0; j < export_plugins[i]->extra_files.size(); j++) {
 			err = p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, 0, paths.size(), enc_in_filters, enc_ex_filters, key);
 			if (err != OK) {
 				return err;
@@ -934,7 +934,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	LocalVector<Ref<EditorExportPlugin>> customize_resources_plugins;
 	LocalVector<Ref<EditorExportPlugin>> customize_scenes_plugins;
 
-	for (int i = 0; i < export_plugins.size(); i++) {
+	for (vec_size i = 0; i < export_plugins.size(); i++) {
 		if (export_plugins[i]->_begin_customize_resources(Ref<EditorExportPlatform>(this), features_psa)) {
 			customize_resources_plugins.push_back(export_plugins[i]);
 
@@ -1116,14 +1116,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			// Customize
 
 			bool do_export = true;
-			for (int i = 0; i < export_plugins.size(); i++) {
+			for (vec_size i = 0; i < export_plugins.size(); i++) {
 				if (export_plugins[i]->get_script_instance()) { //script based
 					export_plugins.write[i]->_export_file_script(path, type, features_psa);
 				} else {
 					export_plugins.write[i]->_export_file(path, type, features);
 				}
 				if (p_so_func) {
-					for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
+					for (vec_size j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
 						err = p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
 						if (err != OK) {
 							return err;
@@ -1131,7 +1131,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					}
 				}
 
-				for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
+				for (vec_size j = 0; j < export_plugins[i]->extra_files.size(); j++) {
 					err = p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key);
 					if (err != OK) {
 						return err;
@@ -1207,7 +1207,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	if (!p_preset->get_custom_features().is_empty()) {
 		Vector<String> tmp_custom_list = p_preset->get_custom_features().split(",");
 
-		for (int i = 0; i < tmp_custom_list.size(); i++) {
+		for (vec_size i = 0; i < tmp_custom_list.size(); i++) {
 			String f = tmp_custom_list[i].strip_edges();
 			if (!f.is_empty()) {
 				custom_list.push_back(f);
@@ -1218,7 +1218,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	ProjectSettings::CustomMap custom_map;
 	if (path_remaps.size()) {
 		if (true) { //new remap mode, use always as it's friendlier with multiple .pck exports
-			for (int i = 0; i < path_remaps.size(); i += 2) {
+			for (vec_size i = 0; i < path_remaps.size(); i += 2) {
 				String from = path_remaps[i];
 				String to = path_remaps[i + 1];
 				String remap_file = "[remap]\n\npath=\"" + to.c_escape() + "\"\n";
@@ -1458,7 +1458,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		fhead = fae;
 	}
 
-	for (int i = 0; i < pd.file_ofs.size(); i++) {
+	for (vec_size i = 0; i < pd.file_ofs.size(); i++) {
 		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
 		uint32_t pad = _get_pad(4, string_len);
 

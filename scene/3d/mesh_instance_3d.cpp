@@ -291,7 +291,7 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node() {
 	}
 
 	StaticBody3D *static_body = memnew(StaticBody3D);
-	for (int i = 0; i < shapes.size(); i++) {
+	for (vec_size i = 0; i < shapes.size(); i++) {
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
 		cshape->set_shape(shapes[i]);
 		static_body->add_child(cshape, true);
@@ -413,7 +413,7 @@ MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 			continue;
 		}
 
-		for (int j = 0; j < verts.size(); j++) {
+		for (vec_size j = 0; j < verts.size(); j++) {
 			Vector3 v = verts[j];
 			Vector3 n = norms[j];
 			Vector3 t = Vector3(tangents[j * 4 + 0], tangents[j * 4 + 1], tangents[j * 4 + 2]);

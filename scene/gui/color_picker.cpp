@@ -54,23 +54,23 @@ void ColorPicker::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				if (preset_cache.is_empty()) {
 					PackedColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PackedColorArray());
-					for (int i = 0; i < saved_presets.size(); i++) {
+					for (vec_size i = 0; i < saved_presets.size(); i++) {
 						preset_cache.push_back(saved_presets[i]);
 					}
 				}
 
-				for (int i = 0; i < preset_cache.size(); i++) {
+				for (vec_size i = 0; i < preset_cache.size(); i++) {
 					presets.push_back(preset_cache[i]);
 				}
 
 				if (recent_preset_cache.is_empty()) {
 					PackedColorArray saved_recent_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "recent_presets", PackedColorArray());
-					for (int i = 0; i < saved_recent_presets.size(); i++) {
+					for (vec_size i = 0; i < saved_recent_presets.size(); i++) {
 						recent_preset_cache.push_back(saved_recent_presets[i]);
 					}
 				}
 
-				for (int i = 0; i < recent_preset_cache.size(); i++) {
+				for (vec_size i = 0; i < recent_preset_cache.size(); i++) {
 					recent_presets.push_back(recent_preset_cache[i]);
 				}
 			}
@@ -548,7 +548,7 @@ void ColorPicker::_update_presets() {
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// Only load preset buttons when the only child is the add-preset button.
 		if (preset_container->get_child_count() == 1) {
-			for (int i = 0; i < preset_cache.size(); i++) {
+			for (vec_size i = 0; i < preset_cache.size(); i++) {
 				_add_preset_button(preset_size, preset_cache[i]);
 			}
 			_notification(NOTIFICATION_VISIBILITY_CHANGED);
@@ -566,12 +566,12 @@ void ColorPicker::_update_recent_presets() {
 		}
 
 		recent_presets.clear();
-		for (int i = 0; i < recent_preset_cache.size(); i++) {
+		for (vec_size i = 0; i < recent_preset_cache.size(); i++) {
 			recent_presets.push_back(recent_preset_cache[i]);
 		}
 
 		int preset_size = _get_preset_size();
-		for (int i = 0; i < recent_presets.size(); i++) {
+		for (vec_size i = 0; i < recent_presets.size(); i++) {
 			_add_recent_preset_button(preset_size, recent_presets[i]);
 		}
 
@@ -811,7 +811,7 @@ void ColorPicker::erase_recent_preset(const Color &p_color) {
 PackedColorArray ColorPicker::get_presets() const {
 	PackedColorArray arr;
 	arr.resize(presets.size());
-	for (int i = 0; i < presets.size(); i++) {
+	for (vec_size i = 0; i < presets.size(); i++) {
 		arr.set(i, presets[i]);
 	}
 	return arr;
@@ -820,7 +820,7 @@ PackedColorArray ColorPicker::get_presets() const {
 PackedColorArray ColorPicker::get_recent_presets() const {
 	PackedColorArray arr;
 	arr.resize(recent_presets.size());
-	for (int i = 0; i < recent_presets.size(); i++) {
+	for (vec_size i = 0; i < recent_presets.size(); i++) {
 		arr.set(i, recent_presets[i]);
 	}
 	return arr;
@@ -1611,7 +1611,7 @@ ColorPicker::ColorPicker() :
 	current_mode = MODE_RGB;
 
 	mode_popup = btn_mode->get_popup();
-	for (int i = 0; i < modes.size(); i++) {
+	for (vec_size i = 0; i < modes.size(); i++) {
 		mode_popup->add_radio_check_item(modes[i]->get_name(), i);
 	}
 	mode_popup->add_separator();
@@ -1742,7 +1742,7 @@ ColorPicker::ColorPicker() :
 }
 
 ColorPicker::~ColorPicker() {
-	for (int i = 0; i < modes.size(); i++) {
+	for (vec_size i = 0; i < modes.size(); i++) {
 		delete modes[i];
 	}
 }

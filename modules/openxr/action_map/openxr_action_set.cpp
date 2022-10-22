@@ -82,7 +82,7 @@ int OpenXRActionSet::get_action_count() const {
 
 void OpenXRActionSet::clear_actions() {
 	// Actions held within our action set should be released and destroyed but just in case they are still used some where else
-	for (int i = 0; i < actions.size(); i++) {
+	for (vec_size i = 0; i < actions.size(); i++) {
 		Ref<OpenXRAction> action = actions[i];
 		action->action_set = nullptr;
 	}
@@ -93,7 +93,7 @@ void OpenXRActionSet::set_actions(Array p_actions) {
 	// Any actions not retained in p_actions should be freed automatically, those held within our Array will have be relinked to our action set.
 	clear_actions();
 
-	for (int i = 0; i < p_actions.size(); i++) {
+	for (vec_size i = 0; i < p_actions.size(); i++) {
 		// add them anew so we verify our action_set pointer
 		add_action(p_actions[i]);
 	}
@@ -104,7 +104,7 @@ Array OpenXRActionSet::get_actions() const {
 }
 
 Ref<OpenXRAction> OpenXRActionSet::get_action(const String p_name) const {
-	for (int i = 0; i < actions.size(); i++) {
+	for (vec_size i = 0; i < actions.size(); i++) {
 		Ref<OpenXRAction> action = actions[i];
 		if (action->get_name() == p_name) {
 			return action;

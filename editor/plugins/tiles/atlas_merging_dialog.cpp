@@ -51,7 +51,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 
 		// Compute the new texture region size.
 		Vector2i new_texture_region_size;
-		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
+		for (vec_size source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
 			Ref<TileSetAtlasSource> atlas_source = p_atlas_sources[source_index];
 			new_texture_region_size = new_texture_region_size.max(atlas_source->get_texture_region_size());
 		}
@@ -59,7 +59,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 		// Generate the merged TileSetAtlasSource.
 		Vector2i atlas_offset;
 		int line_height = 0;
-		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
+		for (vec_size source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
 			Ref<TileSetAtlasSource> atlas_source = p_atlas_sources[source_index];
 			merged_mapping.push_back(HashMap<Vector2i, Vector2i>());
 
@@ -125,7 +125,7 @@ void AtlasMergingDialog::_update_texture() {
 	Vector<int> selected = atlas_merging_atlases_list->get_selected_items();
 	if (selected.size() >= 2) {
 		Vector<Ref<TileSetAtlasSource>> to_merge;
-		for (int i = 0; i < selected.size(); i++) {
+		for (vec_size i = 0; i < selected.size(); i++) {
 			int source_id = atlas_merging_atlases_list->get_item_metadata(selected[i]);
 			to_merge.push_back(tile_set->get_source(source_id));
 		}
@@ -162,7 +162,7 @@ void AtlasMergingDialog::_merge_confirmed(String p_path) {
 	if (delete_original_atlases) {
 		// Delete originals if needed.
 		Vector<int> selected = atlas_merging_atlases_list->get_selected_items();
-		for (int i = 0; i < selected.size(); i++) {
+		for (vec_size i = 0; i < selected.size(); i++) {
 			int source_id = atlas_merging_atlases_list->get_item_metadata(selected[i]);
 			Ref<TileSetAtlasSource> tas = tile_set->get_source(source_id);
 			undo_redo->add_do_method(*tile_set, "remove_source", source_id);

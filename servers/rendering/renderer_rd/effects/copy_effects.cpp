@@ -992,7 +992,7 @@ void CopyEffects::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubema
 	ERR_FAIL_NULL(material_storage);
 
 	Vector<RD::Uniform> uniforms;
-	for (int i = 0; i < p_dest_cubemap.size(); i++) {
+	for (vec_size i = 0; i < p_dest_cubemap.size(); i++) {
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 		u.binding = i;

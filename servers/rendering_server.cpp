@@ -73,7 +73,7 @@ Array RenderingServer::_texture_debug_usage_bind() {
 static PackedInt64Array to_int_array(const Vector<ObjectID> &ids) {
 	PackedInt64Array a;
 	a.resize(ids.size());
-	for (int i = 0; i < ids.size(); ++i) {
+	for (vec_size i = 0; i < ids.size(); ++i) {
 		a.write[i] = ids[i];
 	}
 	return a;
@@ -100,7 +100,7 @@ PackedInt64Array RenderingServer::_instances_cull_convex_bind(const TypedArray<P
 		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
 	}
 	Vector<Plane> planes;
-	for (int i = 0; i < p_convex.size(); ++i) {
+	for (vec_size i = 0; i < p_convex.size(); ++i) {
 		Variant v = p_convex[i];
 		ERR_FAIL_COND_V(v.get_type() != Variant::PLANE, PackedInt64Array());
 		planes.push_back(v);
@@ -223,7 +223,7 @@ RID RenderingServer::_make_test_cube() {
 
 	Vector<int> indices;
 	indices.resize(vertices.size());
-	for (int i = 0; i < vertices.size(); i++) {
+	for (vec_size i = 0; i < vertices.size(); i++) {
 		indices.set(i, i);
 	}
 	d[RenderingServer::ARRAY_INDEX] = indices;
@@ -867,7 +867,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	int index_array_len = 0;
 	int array_len = 0;
 
-	for (int i = 0; i < p_arrays.size(); i++) {
+	for (vec_size i = 0; i < p_arrays.size(); i++) {
 		if (p_arrays[i].get_type() == Variant::NIL) {
 			continue;
 		}
@@ -913,10 +913,10 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 
 	if (p_blend_shapes.size()) {
 		// Validate format for morphs.
-		for (int i = 0; i < p_blend_shapes.size(); i++) {
+		for (vec_size i = 0; i < p_blend_shapes.size(); i++) {
 			uint32_t bsformat = 0;
 			Array arr = p_blend_shapes[i];
-			for (int j = 0; j < arr.size(); j++) {
+			for (vec_size j = 0; j < arr.size(); j++) {
 				if (arr[j].get_type() != Variant::NIL) {
 					bsformat |= (1 << j);
 				}
@@ -977,7 +977,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 
 	if (p_blend_shapes.size()) {
 		uint32_t bs_format = format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK;
-		for (int i = 0; i < p_blend_shapes.size(); i++) {
+		for (vec_size i = 0; i < p_blend_shapes.size(); i++) {
 			Vector<uint8_t> vertex_array_shape;
 			vertex_array_shape.resize(vertex_array_size);
 			Vector<uint8_t> noindex;
@@ -1317,7 +1317,7 @@ Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) con
 
 	Dictionary ret;
 
-	for (int i = 0; i < sd.lods.size(); i++) {
+	for (vec_size i = 0; i < sd.lods.size(); i++) {
 		Vector<int> lods;
 		if (sd.vertex_count <= 65536) {
 			uint32_t lc = sd.lods[i].index_data.size() / 2;
@@ -1400,7 +1400,7 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const {
 	Vector<AABB> vec = RS::get_singleton()->mesh_surface_get_skeleton_aabb(p_mesh, p_surface);
 	Array arr;
-	for (int i = 0; i < vec.size(); i++) {
+	for (vec_size i = 0; i < vec.size(); i++) {
 		arr[i] = vec[i];
 	}
 	return arr;
@@ -1482,7 +1482,7 @@ RenderingDevice *RenderingServer::create_local_rendering_device() const {
 static Vector<Ref<Image>> _get_imgvec(const TypedArray<Image> &p_layers) {
 	Vector<Ref<Image>> images;
 	images.resize(p_layers.size());
-	for (int i = 0; i < p_layers.size(); i++) {
+	for (vec_size i = 0; i < p_layers.size(); i++) {
 		images.write[i] = p_layers[i];
 	}
 	return images;
@@ -1502,7 +1502,7 @@ TypedArray<Image> RenderingServer::_texture_3d_get(RID p_texture) const {
 	Vector<Ref<Image>> images = texture_3d_get(p_texture);
 	TypedArray<Image> ret;
 	ret.resize(images.size());
-	for (int i = 0; i < images.size(); i++) {
+	for (vec_size i = 0; i < images.size(); i++) {
 		ret[i] = images[i];
 	}
 	return ret;
@@ -1545,7 +1545,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 
 	if (p_dictionary.has("lods")) {
 		Array lods = p_dictionary["lods"];
-		for (int i = 0; i < lods.size(); i++) {
+		for (vec_size i = 0; i < lods.size(); i++) {
 			Dictionary lod = lods[i];
 			ERR_CONTINUE(!lod.has("edge_length"));
 			ERR_CONTINUE(!lod.has("index_data"));
@@ -1558,7 +1558,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 
 	if (p_dictionary.has("bone_aabbs")) {
 		Array aabbs = p_dictionary["bone_aabbs"];
-		for (int i = 0; i < aabbs.size(); i++) {
+		for (vec_size i = 0; i < aabbs.size(); i++) {
 			AABB aabb = aabbs[i];
 			sd.bone_aabbs.push_back(aabb);
 		}
@@ -1576,7 +1576,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 }
 RID RenderingServer::_mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count) {
 	Vector<RS::SurfaceData> surfaces;
-	for (int i = 0; i < p_surfaces.size(); i++) {
+	for (vec_size i = 0; i < p_surfaces.size(); i++) {
 		surfaces.push_back(_dict_to_surf(p_surfaces[i]));
 	}
 	return mesh_create_from_surfaces(surfaces);
@@ -1606,7 +1606,7 @@ Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
 
 	if (sd.lods.size()) {
 		Array lods;
-		for (int i = 0; i < sd.lods.size(); i++) {
+		for (vec_size i = 0; i < sd.lods.size(); i++) {
 			Dictionary ld;
 			ld["edge_length"] = sd.lods[i].edge_length;
 			ld["index_data"] = sd.lods[i].index_data;
@@ -1617,7 +1617,7 @@ Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
 
 	if (sd.bone_aabbs.size()) {
 		Array aabbs;
-		for (int i = 0; i < sd.bone_aabbs.size(); i++) {
+		for (vec_size i = 0; i < sd.bone_aabbs.size(); i++) {
 			aabbs.push_back(sd.bone_aabbs[i]);
 		}
 		d["bone_aabbs"] = aabbs;
@@ -1641,7 +1641,7 @@ TypedArray<Dictionary> RenderingServer::_instance_geometry_get_shader_parameter_
 
 TypedArray<Image> RenderingServer::_bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) {
 	TypedArray<RID> mat_overrides;
-	for (int i = 0; i < p_material_overrides.size(); i++) {
+	for (vec_size i = 0; i < p_material_overrides.size(); i++) {
 		mat_overrides.push_back(p_material_overrides[i]);
 	}
 	return bake_render_uv2(p_base, mat_overrides, p_image_size);
@@ -1650,7 +1650,7 @@ TypedArray<Image> RenderingServer::_bake_render_uv2(RID p_base, const TypedArray
 void RenderingServer::_particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses) {
 	Vector<Transform3D> tbposes;
 	tbposes.resize(p_bind_poses.size());
-	for (int i = 0; i < p_bind_poses.size(); i++) {
+	for (vec_size i = 0; i < p_bind_poses.size(); i++) {
 		tbposes.write[i] = p_bind_poses[i];
 	}
 	particles_set_trail_bind_poses(p_particles, tbposes);

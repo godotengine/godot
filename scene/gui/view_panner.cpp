@@ -131,7 +131,7 @@ void ViewPanner::release_pan_key() {
 
 void ViewPanner::callback_helper(Callable p_callback, Vector<Variant> p_args) {
 	const Variant **argptr = (const Variant **)alloca(sizeof(Variant *) * p_args.size());
-	for (int i = 0; i < p_args.size(); i++) {
+	for (vec_size i = 0; i < p_args.size(); i++) {
 		argptr[i] = &p_args[i];
 	}
 

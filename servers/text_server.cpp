@@ -52,7 +52,7 @@ void TextServerManager::_bind_methods() {
 void TextServerManager::add_interface(const Ref<TextServer> &p_interface) {
 	ERR_FAIL_COND(p_interface.is_null());
 
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		if (interfaces[i] == p_interface) {
 			ERR_PRINT("TextServer: Interface was already added.");
 			return;
@@ -69,7 +69,7 @@ void TextServerManager::remove_interface(const Ref<TextServer> &p_interface) {
 	ERR_FAIL_COND_MSG(p_interface == primary_interface, "TextServer: Can't remove primary interface.");
 
 	int idx = -1;
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		if (interfaces[i] == p_interface) {
 			idx = i;
 			break;
@@ -93,7 +93,7 @@ Ref<TextServer> TextServerManager::get_interface(int p_index) const {
 
 Ref<TextServer> TextServerManager::find_interface(const String &p_name) const {
 	int idx = -1;
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		if (interfaces[i]->get_name() == p_name) {
 			idx = i;
 			break;
@@ -107,7 +107,7 @@ Ref<TextServer> TextServerManager::find_interface(const String &p_name) const {
 TypedArray<Dictionary> TextServerManager::get_interfaces() const {
 	TypedArray<Dictionary> ret;
 
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (vec_size i = 0; i < interfaces.size(); i++) {
 		Dictionary iface_info;
 
 		iface_info["id"] = i;
@@ -1556,7 +1556,7 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 }
 
 void TextServer::_diacritics_map_add(const String &p_from, char32_t p_to) {
-	for (int i = 0; i < p_from.size(); i++) {
+	for (vec_size i = 0; i < p_from.size(); i++) {
 		diacritics_map[p_from[i]] = p_to;
 	}
 }
@@ -1741,7 +1741,7 @@ TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_pa
 			if (p_args.size() == 1 && p_args[0].get_type() == Variant::STRING) {
 				Vector<String> tags = p_text.split(String(p_args[0]));
 				int prev = 0;
-				for (int i = 0; i < tags.size(); i++) {
+				for (vec_size i = 0; i < tags.size(); i++) {
 					if (prev != i) {
 						ret.push_back(Vector2i(prev, prev + tags[i].length()));
 					}

@@ -1391,7 +1391,7 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 			XUnionRectWithRegion(&rect, region, region);
 		} else {
 			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * p_region.size());
-			for (int i = 0; i < p_region.size(); i++) {
+			for (vec_size i = 0; i < p_region.size(); i++) {
 				points[i].x = p_region[i].x;
 				points[i].y = p_region[i].y;
 			}
@@ -2599,7 +2599,7 @@ String DisplayServerX11::keyboard_get_layout_language(int p_index) const {
 		if (names != None) {
 			Vector<String> info = get_atom_name(x11_display, names).split("+");
 			if (p_index >= 0 && p_index < _group_count) {
-				if (p_index + 1 < info.size()) {
+				if (p_index + 1 < int(info.size())) {
 					ret = info[p_index + 1]; // Skip "pc" at the start and "inet"/"group" at the end of symbols.
 				} else {
 					ret = "en"; // No symbol for layout fallback to "en".
@@ -3782,7 +3782,7 @@ void DisplayServerX11::process_events() {
 				}
 #ifdef TOUCH_ENABLED
 				// Grab touch devices to avoid OS gesture interference
-				/*for (int i = 0; i < xi.touch_devices.size(); ++i) {
+				/*for (vec_size i = 0; i < xi.touch_devices.size(); ++i) {
 					XIGrabDevice(x11_display, xi.touch_devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &xi.touch_event_mask);
 				}*/
 #endif
@@ -3824,7 +3824,7 @@ void DisplayServerX11::process_events() {
 				}
 #ifdef TOUCH_ENABLED
 				// Ungrab touch devices so input works as usual while we are unfocused
-				/*for (int i = 0; i < xi.touch_devices.size(); ++i) {
+				/*for (vec_size i = 0; i < xi.touch_devices.size(); ++i) {
 					XIUngrabDevice(x11_display, xi.touch_devices[i], CurrentTime);
 				}*/
 
@@ -4115,7 +4115,7 @@ void DisplayServerX11::process_events() {
 
 					Vector<String> files = String((char *)p.data).split("\n", false);
 					XFree(p.data);
-					for (int i = 0; i < files.size(); i++) {
+					for (vec_size i = 0; i < files.size(); i++) {
 						files.write[i] = files[i].replace("file://", "").uri_decode().strip_edges();
 					}
 
@@ -4869,7 +4869,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 				String ld_library_path(getenv("LD_LIBRARY_PATH"));
 				Vector<String> libraries = ld_library_path.split(":");
 
-				for (int i = 0; i < libraries.size(); ++i) {
+				for (vec_size i = 0; i < libraries.size(); ++i) {
 					if (FileAccess::exists(libraries[i] + "/libGL.so.1") ||
 							FileAccess::exists(libraries[i] + "/libGL.so")) {
 						print_verbose("Custom libGL override detected. Skipping GPU detection");

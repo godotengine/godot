@@ -94,7 +94,7 @@ void TilesEditorPlugin::_thread() {
 
 				Rect2 encompassing_rect = Rect2();
 				encompassing_rect.set_position(tile_map->map_to_local(used_cells[0]));
-				for (int i = 0; i < used_cells.size(); i++) {
+				for (vec_size i = 0; i < used_cells.size(); i++) {
 					Vector2i cell = used_cells[i];
 					Vector2 world_pos = tile_map->map_to_local(cell);
 					encompassing_rect.expand_to(world_pos);

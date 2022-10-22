@@ -149,7 +149,7 @@ Array OpenXRInteractionProfile::get_bindings() const {
 }
 
 Ref<OpenXRIPBinding> OpenXRInteractionProfile::get_binding_for_action(const Ref<OpenXRAction> p_action) const {
-	for (int i = 0; i < bindings.size(); i++) {
+	for (vec_size i = 0; i < bindings.size(); i++) {
 		Ref<OpenXRIPBinding> binding = bindings[i];
 		if (binding->get_action() == p_action) {
 			return binding;

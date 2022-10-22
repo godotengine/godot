@@ -75,7 +75,7 @@ Error EMWSPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509C
 	ERR_FAIL_COND_V_MSG(scheme != "ws://" && scheme != "wss://", ERR_INVALID_PARAMETER, vformat("Invalid protocol: \"%s\" (must be either \"ws://\" or \"wss://\").", scheme));
 
 	String proto_string;
-	for (int i = 0; i < supported_protocols.size(); i++) {
+	for (vec_size i = 0; i < supported_protocols.size(); i++) {
 		if (i != 0) {
 			proto_string += ",";
 		}

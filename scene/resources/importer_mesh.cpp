@@ -53,7 +53,7 @@ void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<in
 	int final_vertex_count = current_vertex_count + new_vertex_count;
 	const int *indices_ptr = p_indices.ptr();
 
-	for (int i = 0; i < r_arrays.size(); i++) {
+	for (vec_size i = 0; i < r_arrays.size(); i++) {
 		if (i == RS::ARRAY_INDEX) {
 			continue;
 		}
@@ -167,7 +167,7 @@ void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_a
 	int vertex_count = vertex_array.size();
 	ERR_FAIL_COND(vertex_count == 0);
 
-	for (int i = 0; i < blend_shapes.size(); i++) {
+	for (vec_size i = 0; i < blend_shapes.size(); i++) {
 		Array bsdata = p_blend_shapes[i];
 		ERR_FAIL_COND(bsdata.size() != Mesh::ARRAY_MAX);
 		Vector<Vector3> vertex_data = bsdata[Mesh::ARRAY_VERTEX];
@@ -279,12 +279,12 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 	}
 
 	LocalVector<Transform3D> bone_transform_vector;
-	for (int i = 0; i < p_bone_transform_array.size(); i++) {
+	for (vec_size i = 0; i < p_bone_transform_array.size(); i++) {
 		ERR_FAIL_COND(p_bone_transform_array[i].get_type() != Variant::TRANSFORM3D);
 		bone_transform_vector.push_back(p_bone_transform_array[i]);
 	}
 
-	for (int i = 0; i < surfaces.size(); i++) {
+	for (vec_size i = 0; i < surfaces.size(); i++) {
 		if (surfaces[i].primitive != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
 		}
@@ -537,7 +537,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				}
 
 				const StaticRaycaster::Ray *rp = rays.ptr();
-				for (int j = 0; j < rays.size(); j++) {
+				for (vec_size j = 0; j < rays.size(); j++) {
 					if (rp[j].geomID != 0) { // Ray missed
 						continue;
 					}
@@ -647,7 +647,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
 		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
 
-		for (int j = 0; j < surfaces.write[i].lods.size(); j++) {
+		for (vec_size j = 0; j < surfaces.write[i].lods.size(); j++) {
 			Surface::LOD &lod = surfaces.write[i].lods.write[j];
 			unsigned int *lod_indices_ptr = (unsigned int *)lod.indices.ptrw();
 			SurfaceTool::optimize_vertex_cache_func(lod_indices_ptr, lod_indices_ptr, lod.indices.size(), split_vertex_count);
@@ -673,20 +673,20 @@ Ref<ArrayMesh> ImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
 		if (has_meta("import_id")) {
 			mesh->set_meta("import_id", get_meta("import_id"));
 		}
-		for (int i = 0; i < blend_shapes.size(); i++) {
+		for (vec_size i = 0; i < blend_shapes.size(); i++) {
 			mesh->add_blend_shape(blend_shapes[i]);
 		}
 		mesh->set_blend_shape_mode(blend_shape_mode);
-		for (int i = 0; i < surfaces.size(); i++) {
+		for (vec_size i = 0; i < surfaces.size(); i++) {
 			Array bs_data;
 			if (surfaces[i].blend_shape_data.size()) {
-				for (int j = 0; j < surfaces[i].blend_shape_data.size(); j++) {
+				for (vec_size j = 0; j < surfaces[i].blend_shape_data.size(); j++) {
 					bs_data.push_back(surfaces[i].blend_shape_data[j].arrays);
 				}
 			}
 			Dictionary lods;
 			if (surfaces[i].lods.size()) {
-				for (int j = 0; j < surfaces[i].lods.size(); j++) {
+				for (vec_size j = 0; j < surfaces[i].lods.size(); j++) {
 					lods[surfaces[i].lods[j].distance] = surfaces[i].lods[j].indices;
 				}
 			}
@@ -727,7 +727,7 @@ void ImporterMesh::create_shadow_mesh() {
 		return;
 	}
 	//no shadow mesh for skeletons
-	for (int i = 0; i < surfaces.size(); i++) {
+	for (vec_size i = 0; i < surfaces.size(); i++) {
 		if (surfaces[i].arrays[RS::ARRAY_BONES].get_type() != Variant::NIL) {
 			return;
 		}
@@ -738,7 +738,7 @@ void ImporterMesh::create_shadow_mesh() {
 
 	shadow_mesh.instantiate();
 
-	for (int i = 0; i < surfaces.size(); i++) {
+	for (vec_size i = 0; i < surfaces.size(); i++) {
 		LocalVector<int> vertex_remap;
 		Vector<Vector3> new_vertices;
 		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
@@ -788,7 +788,7 @@ void ImporterMesh::create_shadow_mesh() {
 
 			// Make sure the same LODs as the full version are used.
 			// This makes it more coherent between rendered model and its shadows.
-			for (int j = 0; j < surfaces[i].lods.size(); j++) {
+			for (vec_size j = 0; j < surfaces[i].lods.size(); j++) {
 				indices = surfaces[i].lods[j].indices;
 
 				index_count = indices.size();
@@ -821,7 +821,7 @@ void ImporterMesh::_set_data(const Dictionary &p_data) {
 	}
 	if (p_data.has("surfaces")) {
 		Array surface_arr = p_data["surfaces"];
-		for (int i = 0; i < surface_arr.size(); i++) {
+		for (vec_size i = 0; i < surface_arr.size(); i++) {
 			Dictionary s = surface_arr[i];
 			ERR_CONTINUE(!s.has("primitive"));
 			ERR_CONTINUE(!s.has("arrays"));
@@ -858,20 +858,20 @@ Dictionary ImporterMesh::_get_data() const {
 		data["blend_shape_names"] = blend_shapes;
 	}
 	Array surface_arr;
-	for (int i = 0; i < surfaces.size(); i++) {
+	for (vec_size i = 0; i < surfaces.size(); i++) {
 		Dictionary d;
 		d["primitive"] = surfaces[i].primitive;
 		d["arrays"] = surfaces[i].arrays;
 		if (surfaces[i].blend_shape_data.size()) {
 			Array bs_data;
-			for (int j = 0; j < surfaces[i].blend_shape_data.size(); j++) {
+			for (vec_size j = 0; j < surfaces[i].blend_shape_data.size(); j++) {
 				bs_data.push_back(surfaces[i].blend_shape_data[j].arrays);
 			}
 			d["blend_shapes"] = bs_data;
 		}
 		if (surfaces[i].lods.size()) {
 			Dictionary lods;
-			for (int j = 0; j < surfaces[i].lods.size(); j++) {
+			for (vec_size j = 0; j < surfaces[i].lods.size(); j++) {
 				lods[surfaces[i].lods[j].distance] = surfaces[i].lods[j].indices;
 			}
 			d["lods"] = lods;
@@ -897,12 +897,12 @@ Dictionary ImporterMesh::_get_data() const {
 
 Vector<Face3> ImporterMesh::get_faces() const {
 	Vector<Face3> faces;
-	for (int i = 0; i < surfaces.size(); i++) {
+	for (vec_size i = 0; i < surfaces.size(); i++) {
 		if (surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
 			Vector<Vector3> vertices = surfaces[i].arrays[Mesh::ARRAY_VERTEX];
 			Vector<int> indices = surfaces[i].arrays[Mesh::ARRAY_INDEX];
 			if (indices.size()) {
-				for (int j = 0; j < indices.size(); j += 3) {
+				for (vec_size j = 0; j < indices.size(); j += 3) {
 					Face3 f;
 					f.vertex[0] = vertices[indices[j + 0]];
 					f.vertex[1] = vertices[indices[j + 1]];
@@ -910,7 +910,7 @@ Vector<Face3> ImporterMesh::get_faces() const {
 					faces.push_back(f);
 				}
 			} else {
-				for (int j = 0; j < vertices.size(); j += 3) {
+				for (vec_size j = 0; j < vertices.size(); j += 3) {
 					Face3 f;
 					f.vertex[0] = vertices[j + 0];
 					f.vertex[1] = vertices[j + 1];
@@ -961,7 +961,7 @@ Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Mesh::ConvexDecomposit
 
 	Vector<Ref<Shape3D>> ret;
 
-	for (int i = 0; i < decomposed.size(); i++) {
+	for (vec_size i = 0; i < decomposed.size(); i++) {
 		Ref<ConvexPolygonShape3D> shape;
 		shape.instantiate();
 		shape->set_points(decomposed[i]);
@@ -980,7 +980,7 @@ Ref<Shape3D> ImporterMesh::create_trimesh_shape() const {
 	Vector<Vector3> face_points;
 	face_points.resize(faces.size() * 3);
 
-	for (int i = 0; i < face_points.size(); i += 3) {
+	for (vec_size i = 0; i < face_points.size(); i += 3) {
 		Face3 f = faces.get(i / 3);
 		face_points.set(i, f.vertex[0]);
 		face_points.set(i + 1, f.vertex[1]);
@@ -1001,7 +1001,7 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 	HashMap<Vector3, int> unique_vertices;
 	LocalVector<int> face_indices;
 
-	for (int i = 0; i < faces.size(); i++) {
+	for (vec_size i = 0; i < faces.size(); i++) {
 		for (int j = 0; j < 3; j++) {
 			Vector3 v = faces[i].vertex[j];
 			int idx;
@@ -1173,7 +1173,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	//create surfacetools for each surface..
 	LocalVector<Ref<SurfaceTool>> surfaces_tools;
 
-	for (int i = 0; i < lightmap_surfaces.size(); i++) {
+	for (vec_size i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;
 		st.instantiate();
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);

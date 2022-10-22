@@ -59,7 +59,7 @@ LightStorage::LightStorage() {
 			lightmap_textures.resize(1024);
 		}
 
-		for (int i = 0; i < lightmap_textures.size(); i++) {
+		for (vec_size i = 0; i < lightmap_textures.size(); i++) {
 			lightmap_textures.write[i] = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 		}
 	}
@@ -575,7 +575,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 	r_directional_light_soft_shadows = false;
 
-	for (int i = 0; i < (int)p_lights.size(); i++) {
+	for (vec_size i = 0; i < (int)p_lights.size(); i++) {
 		LightInstance *light_instance = light_instance_owner.get_or_null(p_lights[i]);
 		if (!light_instance) {
 			continue;
@@ -1303,7 +1303,7 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 		ra->reflection = RID();
 		RD::get_singleton()->free(ra->depth_buffer);
 		ra->depth_buffer = RID();
-		for (int i = 0; i < ra->reflections.size(); i++) {
+		for (vec_size i = 0; i < ra->reflections.size(); i++) {
 			ra->reflections.write[i].data.clear_reflection_data();
 			if (ra->reflections[i].owner.is_null()) {
 				continue;
@@ -1409,7 +1409,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		RD::get_singleton()->free(atlas->reflection);
 		atlas->reflection = RID();
 
-		for (int i = 0; i < atlas->reflections.size(); i++) {
+		for (vec_size i = 0; i < atlas->reflections.size(); i++) {
 			if (atlas->reflections[i].owner.is_null()) {
 				continue;
 			}
@@ -1457,7 +1457,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	}
 
 	if (rpi->atlas_index == -1) {
-		for (int i = 0; i < atlas->reflections.size(); i++) {
+		for (vec_size i = 0; i < atlas->reflections.size(); i++) {
 			if (atlas->reflections[i].owner.is_null()) {
 				rpi->atlas_index = i;
 				break;
@@ -1468,7 +1468,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 			//everything is in use, find the one least used via LRU
 			uint64_t pass_min = 0;
 
-			for (int i = 0; i < atlas->reflections.size(); i++) {
+			for (vec_size i = 0; i < atlas->reflections.size(); i++) {
 				ReflectionProbeInstance *rpi2 = reflection_probe_instance_owner.get_or_null(atlas->reflections[i].owner);
 				if (rpi2->last_pass < pass_min) {
 					pass_min = rpi2->last_pass;
@@ -1752,7 +1752,7 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 	if (using_lightmap_array) {
 		if (lm->array_index < 0) {
 			//not in array, try to put in array
-			for (int i = 0; i < lightmap_textures.size(); i++) {
+			for (vec_size i = 0; i < lightmap_textures.size(); i++) {
 				if (lightmap_textures[i] == default_2d_array) {
 					lm->array_index = i;
 					break;
@@ -1997,7 +1997,7 @@ void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quad
 	}
 
 	//erase all data from quadrant
-	for (int i = 0; i < shadow_atlas->quadrants[p_quadrant].shadows.size(); i++) {
+	for (vec_size i = 0; i < shadow_atlas->quadrants[p_quadrant].shadows.size(); i++) {
 		if (shadow_atlas->quadrants[p_quadrant].shadows[i].owner.is_valid()) {
 			shadow_atlas->shadow_owners.erase(shadow_atlas->quadrants[p_quadrant].shadows[i].owner);
 			LightInstance *li = light_instance_owner.get_or_null(shadow_atlas->quadrants[p_quadrant].shadows[i].owner);

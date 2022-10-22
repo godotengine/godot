@@ -1061,18 +1061,18 @@ template <>
 struct VariantInternalAccessor<Vector<Variant>> {
 	static _FORCE_INLINE_ Vector<Variant> get(const Variant *v) {
 		Vector<Variant> ret;
-		int s = VariantInternal::get_array(v)->size();
+		vec_size s = VariantInternal::get_array(v)->size();
 		ret.resize(s);
-		for (int i = 0; i < s; i++) {
+		for (vec_size i = 0; i < s; i++) {
 			ret.write[i] = VariantInternal::get_array(v)->get(i);
 		}
 
 		return ret;
 	}
 	static _FORCE_INLINE_ void set(Variant *v, const Vector<Variant> &p_value) {
-		int s = p_value.size();
+		vec_size s = p_value.size();
 		VariantInternal::get_array(v)->resize(s);
-		for (int i = 0; i < s; i++) {
+		for (vec_size i = 0; i < s; i++) {
 			VariantInternal::get_array(v)->set(i, p_value[i]);
 		}
 	}

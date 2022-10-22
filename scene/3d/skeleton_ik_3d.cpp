@@ -324,7 +324,7 @@ void FabrikInverseKinematic::_update_chain(const Skeleton3D *p_sk, ChainItem *p_
 	p_chain_item->current_pos = p_chain_item->initial_transform.origin;
 
 	ChainItem *items = p_chain_item->children.ptrw();
-	for (int i = 0; i < p_chain_item->children.size(); i += 1) {
+	for (vec_size i = 0; i < p_chain_item->children.size(); i += 1) {
 		_update_chain(p_sk, items + i);
 	}
 }

@@ -224,7 +224,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	List<String> extension_list = current->get_platform()->get_binary_extensions(current);
 	Vector<String> extension_vector;
-	for (int i = 0; i < extension_list.size(); i++) {
+	for (vec_size i = 0; i < extension_list.size(); i++) {
 		extension_vector.push_back("*." + extension_list[i]);
 	}
 
@@ -246,7 +246,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		if (!error.is_empty()) {
 			Vector<String> items = error.split("\n", false);
 			error = "";
-			for (int i = 0; i < items.size(); i++) {
+			for (vec_size i = 0; i < items.size(); i++) {
 				if (i > 0) {
 					error += "\n";
 				}
@@ -270,7 +270,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		if (error != String()) {
 			Vector<String> items = error.split("\n", false);
 			error = "";
-			for (int i = 0; i < items.size(); i++) {
+			for (vec_size i = 0; i < items.size(); i++) {
 				if (i > 0) {
 					error += "\n";
 				}
@@ -346,7 +346,7 @@ void ProjectExportDialog::_update_feature_list() {
 
 	String custom = current->get_custom_features();
 	Vector<String> custom_list = custom.split(",");
-	for (int i = 0; i < custom_list.size(); i++) {
+	for (vec_size i = 0; i < custom_list.size(); i++) {
 		String f = custom_list[i].strip_edges();
 		if (!f.is_empty()) {
 			features.push_back(f);
@@ -882,7 +882,7 @@ void ProjectExportDialog::_export_project() {
 	export_project->clear_filters();
 
 	List<String> extension_list = platform->get_binary_extensions(current);
-	for (int i = 0; i < extension_list.size(); i++) {
+	for (vec_size i = 0; i < extension_list.size(); i++) {
 		// TRANSLATORS: This is the name of a project export file format. %s will be replaced by the platform name.
 		export_project->add_filter("*." + extension_list[i], vformat(TTR("%s Export"), platform->get_name()));
 	}

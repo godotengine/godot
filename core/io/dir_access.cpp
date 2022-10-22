@@ -173,7 +173,7 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 	Vector<String> subdirs = full_dir.split("/");
 
 	String curpath = base;
-	for (int i = 0; i < subdirs.size(); i++) {
+	for (vec_size i = 0; i < subdirs.size(); i++) {
 		curpath = curpath.path_join(subdirs[i]);
 		Error err = make_dir(curpath);
 		if (err != OK && err != ERR_ALREADY_EXISTS) {

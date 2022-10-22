@@ -42,7 +42,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 
 	String text;
 
-	for (int i = 0; i < lines.size(); i++) {
+	for (vec_size i = 0; i < lines.size(); i++) {
 		String l = lines[i];
 		bool push_chunk = false;
 
@@ -145,7 +145,7 @@ RID ShaderRD::version_create() {
 void ShaderRD::_clear_version(Version *p_version) {
 	//clear versions if they exist
 	if (p_version->variants) {
-		for (int i = 0; i < variant_defines.size(); i++) {
+		for (vec_size i = 0; i < variant_defines.size(); i++) {
 			if (variants_enabled[i]) {
 				RD::get_singleton()->free(p_version->variants[i]);
 			}
@@ -167,7 +167,7 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 				builder.append("\n"); //make sure defines begin at newline
 				builder.append(general_defines.get_data());
 				builder.append(variant_defines[p_variant].get_data());
-				for (int j = 0; j < p_version->custom_defines.size(); j++) {
+				for (vec_size j = 0; j < p_version->custom_defines.size(); j++) {
 					builder.append(p_version->custom_defines[j].get_data());
 				}
 				builder.append("\n"); //make sure defines begin at newline
@@ -302,7 +302,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 
 	source_code.versions.resize(variant_defines.size());
 
-	for (int i = 0; i < source_code.versions.size(); i++) {
+	for (vec_size i = 0; i < source_code.versions.size(); i++) {
 		if (!is_compute) {
 			//vertex stage
 
@@ -364,11 +364,11 @@ String ShaderRD::_version_get_sha1(Version *p_version) const {
 	}
 	code_sections.sort_custom<StringName::AlphCompare>();
 
-	for (int i = 0; i < code_sections.size(); i++) {
+	for (vec_size i = 0; i < code_sections.size(); i++) {
 		hash_build.append(String("[code:") + String(code_sections[i]) + "]");
 		hash_build.append(p_version->code_sections[code_sections[i]].get_data());
 	}
-	for (int i = 0; i < p_version->custom_defines.size(); i++) {
+	for (vec_size i = 0; i < p_version->custom_defines.size(); i++) {
 		hash_build.append("[custom_defines:" + itos(i) + "]");
 		hash_build.append(p_version->custom_defines[i].get_data());
 	}
@@ -481,13 +481,13 @@ void ShaderRD::_compile_version(Version *p_version) {
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 #else
-	for (int i = 0; i < variant_defines.size(); i++) {
+	for (vec_size i = 0; i < variant_defines.size(); i++) {
 		_compile_variant(i, p_version);
 	}
 #endif
 
 	bool all_valid = true;
-	for (int i = 0; i < variant_defines.size(); i++) {
+	for (vec_size i = 0; i < variant_defines.size(); i++) {
 		if (!variants_enabled[i]) {
 			continue; //disabled
 		}
@@ -499,7 +499,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 
 	if (!all_valid) {
 		//clear versions if they exist
-		for (int i = 0; i < variant_defines.size(); i++) {
+		for (vec_size i = 0; i < variant_defines.size(); i++) {
 			if (!variants_enabled[i]) {
 				continue; //disabled
 			}
@@ -539,7 +539,7 @@ void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_
 	}
 
 	version->custom_defines.clear();
-	for (int i = 0; i < p_custom_defines.size(); i++) {
+	for (vec_size i = 0; i < p_custom_defines.size(); i++) {
 		version->custom_defines.push_back(p_custom_defines[i].utf8());
 	}
 
@@ -565,7 +565,7 @@ void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, Str
 	}
 
 	version->custom_defines.clear();
-	for (int i = 0; i < p_custom_defines.size(); i++) {
+	for (vec_size i = 0; i < p_custom_defines.size(); i++) {
 		version->custom_defines.push_back(p_custom_defines[i].utf8());
 	}
 
@@ -634,7 +634,7 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 
 	general_defines = p_general_defines.utf8();
 
-	for (int i = 0; i < p_variant_defines.size(); i++) {
+	for (vec_size i = 0; i < p_variant_defines.size(); i++) {
 		variant_defines.push_back(p_variant_defines[i].utf8());
 		variants_enabled.push_back(true);
 	}
@@ -646,7 +646,7 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 		hash_build.append(base_sha256);
 		hash_build.append("[general_defines]");
 		hash_build.append(general_defines.get_data());
-		for (int i = 0; i < variant_defines.size(); i++) {
+		for (vec_size i = 0; i < variant_defines.size(); i++) {
 			hash_build.append("[variant_defines:" + itos(i) + "]");
 			hash_build.append(variant_defines[i].get_data());
 		}

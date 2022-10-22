@@ -294,10 +294,10 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 void AudioServer::_mix_step() {
 	bool solo_mode = false;
 
-	for (int i = 0; i < buses.size(); i++) {
+	for (vec_size i = 0; i < buses.size(); i++) {
 		Bus *bus = buses[i];
 		bus->index_cache = i; //might be moved around by editor, so..
-		for (int k = 0; k < bus->channels.size(); k++) {
+		for (vec_size k = 0; k < bus->channels.size(); k++) {
 			bus->channels.write[k].used = false;
 		}
 
@@ -478,7 +478,7 @@ void AudioServer::_mix_step() {
 		//go bus by bus
 		Bus *bus = buses[i];
 
-		for (int k = 0; k < bus->channels.size(); k++) {
+		for (vec_size k = 0; k < bus->channels.size(); k++) {
 			if (bus->channels[k].active && !bus->channels[k].used) {
 				//buffer was not used, but it's still active, so it must be cleaned
 				AudioFrame *buf = bus->channels.write[k].buffer.ptrw();
@@ -491,7 +491,7 @@ void AudioServer::_mix_step() {
 
 		//process effects
 		if (!bus->bypass) {
-			for (int j = 0; j < bus->effects.size(); j++) {
+			for (vec_size j = 0; j < bus->effects.size(); j++) {
 				if (!bus->effects[j].enabled) {
 					continue;
 				}
@@ -500,7 +500,7 @@ void AudioServer::_mix_step() {
 				uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 #endif
 
-				for (int k = 0; k < bus->channels.size(); k++) {
+				for (vec_size k = 0; k < bus->channels.size(); k++) {
 					if (!(bus->channels[k].active || bus->channels[k].effect_instances[j]->process_silence())) {
 						continue;
 					}
@@ -508,7 +508,7 @@ void AudioServer::_mix_step() {
 				}
 
 				//swap buffers, so internal buffer always has the right data
-				for (int k = 0; k < bus->channels.size(); k++) {
+				for (vec_size k = 0; k < bus->channels.size(); k++) {
 					if (!(buses[i]->channels[k].active || bus->channels[k].effect_instances[j]->process_silence())) {
 						continue;
 					}
@@ -537,7 +537,7 @@ void AudioServer::_mix_step() {
 			}
 		}
 
-		for (int k = 0; k < bus->channels.size(); k++) {
+		for (vec_size k = 0; k < bus->channels.size(); k++) {
 			if (!bus->channels[k].active) {
 				bus->channels.write[k].peak_volume = AudioFrame(AUDIO_MIN_PEAK_DB, AUDIO_MIN_PEAK_DB);
 				continue;
@@ -698,7 +698,7 @@ void AudioServer::set_bus_count(int p_count) {
 	int cb = buses.size();
 
 	if (p_count < buses.size()) {
-		for (int i = p_count; i < buses.size(); i++) {
+		for (vec_size i = p_count; i < buses.size(); i++) {
 			bus_map.erase(buses[i]->name);
 			memdelete(buses[i]);
 		}
@@ -706,7 +706,7 @@ void AudioServer::set_bus_count(int p_count) {
 
 	buses.resize(p_count);
 
-	for (int i = cb; i < buses.size(); i++) {
+	for (vec_size i = cb; i < buses.size(); i++) {
 		String attempt = "New Bus";
 		int attempts = 1;
 		while (true) {
@@ -780,7 +780,7 @@ void AudioServer::add_bus(int p_at_pos) {
 	int attempts = 1;
 	while (true) {
 		bool name_free = true;
-		for (int j = 0; j < buses.size(); j++) {
+		for (vec_size j = 0; j < buses.size(); j++) {
 			if (buses[j]->name == attempt) {
 				name_free = false;
 				break;
@@ -865,7 +865,7 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 
 	while (true) {
 		bool name_free = true;
-		for (int i = 0; i < buses.size(); i++) {
+		for (vec_size i = 0; i < buses.size(); i++) {
 			if (buses[i]->name == attempt) {
 				name_free = false;
 				break;
@@ -893,7 +893,7 @@ String AudioServer::get_bus_name(int p_bus) const {
 }
 
 int AudioServer::get_bus_index(const StringName &p_bus_name) const {
-	for (int i = 0; i < buses.size(); ++i) {
+	for (vec_size i = 0; i < buses.size(); ++i) {
 		if (buses[i]->name == p_bus_name) {
 			return i;
 		}
@@ -975,9 +975,9 @@ bool AudioServer::is_bus_bypassing_effects(int p_bus) const {
 }
 
 void AudioServer::_update_bus_effects(int p_bus) {
-	for (int i = 0; i < buses[p_bus]->channels.size(); i++) {
+	for (vec_size i = 0; i < buses[p_bus]->channels.size(); i++) {
 		buses.write[p_bus]->channels.write[i].effect_instances.resize(buses[p_bus]->effects.size());
-		for (int j = 0; j < buses[p_bus]->effects.size(); j++) {
+		for (vec_size j = 0; j < buses[p_bus]->effects.size(); j++) {
 			Ref<AudioEffectInstance> fx = buses.write[p_bus]->effects.write[j].effect->instantiate();
 			if (Object::cast_to<AudioEffectCompressorInstance>(*fx)) {
 				Object::cast_to<AudioEffectCompressorInstance>(*fx)->set_current_channel(i);
@@ -1331,11 +1331,11 @@ void AudioServer::init_channels_and_buffers() {
 	temp_buffer.resize(channel_count);
 	mix_buffer.resize(buffer_size + LOOKAHEAD_BUFFER_SIZE);
 
-	for (int i = 0; i < temp_buffer.size(); i++) {
+	for (vec_size i = 0; i < temp_buffer.size(); i++) {
 		temp_buffer.write[i].resize(buffer_size);
 	}
 
-	for (int i = 0; i < buses.size(); i++) {
+	for (vec_size i = 0; i < buses.size(); i++) {
 		buses[i]->channels.resize(channel_count);
 		for (int j = 0; j < channel_count; j++) {
 			buses.write[i]->channels.write[j].buffer.resize(buffer_size);
@@ -1388,7 +1388,7 @@ void AudioServer::update() {
 				continue;
 			}
 
-			for (int j = 0; j < bus->effects.size(); j++) {
+			for (vec_size j = 0; j < bus->effects.size(); j++) {
 				if (!bus->effects[j].enabled) {
 					continue;
 				}
@@ -1422,7 +1422,7 @@ void AudioServer::update() {
 			continue;
 		}
 
-		for (int j = 0; j < bus->effects.size(); j++) {
+		for (vec_size j = 0; j < bus->effects.size(); j++) {
 			if (!bus->effects[j].enabled) {
 				continue;
 			}
@@ -1469,7 +1469,7 @@ void AudioServer::finish() {
 		AudioDriverManager::get_driver(i)->finish();
 	}
 
-	for (int i = 0; i < buses.size(); i++) {
+	for (vec_size i = 0; i < buses.size(); i++) {
 		memdelete(buses[i]);
 	}
 
@@ -1565,12 +1565,12 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 	ERR_FAIL_COND(p_bus_layout.is_null() || p_bus_layout->buses.size() == 0);
 
 	lock();
-	for (int i = 0; i < buses.size(); i++) {
+	for (vec_size i = 0; i < buses.size(); i++) {
 		memdelete(buses[i]);
 	}
 	buses.resize(p_bus_layout->buses.size());
 	bus_map.clear();
-	for (int i = 0; i < p_bus_layout->buses.size(); i++) {
+	for (vec_size i = 0; i < p_bus_layout->buses.size(); i++) {
 		Bus *bus = memnew(Bus);
 		if (i == 0) {
 			bus->name = "Master";
@@ -1584,7 +1584,7 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 		bus->bypass = p_bus_layout->buses[i].bypass;
 		bus->volume_db = p_bus_layout->buses[i].volume_db;
 
-		for (int j = 0; j < p_bus_layout->buses[i].effects.size(); j++) {
+		for (vec_size j = 0; j < p_bus_layout->buses[i].effects.size(); j++) {
 			Ref<AudioEffect> fx = p_bus_layout->buses[i].effects[j].effect;
 
 			if (fx.is_valid()) {
@@ -1619,14 +1619,14 @@ Ref<AudioBusLayout> AudioServer::generate_bus_layout() const {
 
 	state->buses.resize(buses.size());
 
-	for (int i = 0; i < buses.size(); i++) {
+	for (vec_size i = 0; i < buses.size(); i++) {
 		state->buses.write[i].name = buses[i]->name;
 		state->buses.write[i].send = buses[i]->send;
 		state->buses.write[i].mute = buses[i]->mute;
 		state->buses.write[i].solo = buses[i]->solo;
 		state->buses.write[i].bypass = buses[i]->bypass;
 		state->buses.write[i].volume_db = buses[i]->volume_db;
-		for (int j = 0; j < buses[i]->effects.size(); j++) {
+		for (vec_size j = 0; j < buses[i]->effects.size(); j++) {
 			AudioBusLayout::Bus::Effect fx;
 			fx.effect = buses[i]->effects[j].effect;
 			fx.enabled = buses[i]->effects[j].enabled;
@@ -1864,7 +1864,7 @@ bool AudioBusLayout::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void AudioBusLayout::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < buses.size(); i++) {
+	for (vec_size i = 0; i < buses.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "bus/" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/solo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/mute", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
@@ -1872,7 +1872,7 @@ void AudioBusLayout::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus/" + itos(i) + "/volume_db", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus/" + itos(i) + "/send", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 
-		for (int j = 0; j < buses[i].effects.size(); j++) {
+		for (vec_size j = 0; j < buses[i].effects.size(); j++) {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, "bus/" + itos(i) + "/effect/" + itos(j) + "/effect", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/effect/" + itos(j) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}

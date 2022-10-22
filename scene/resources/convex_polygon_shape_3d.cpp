@@ -57,7 +57,7 @@ real_t ConvexPolygonShape3D::get_enclosing_radius() const {
 	Vector<Vector3> data = get_points();
 	const Vector3 *read = data.ptr();
 	real_t r = 0.0;
-	for (int i(0); i < data.size(); i++) {
+	for (vec_size i(0); i < data.size(); i++) {
 		r = MAX(read[i].length_squared(), r);
 	}
 	return Math::sqrt(r);

@@ -33,7 +33,7 @@
 
 void OggPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByteArray> &p_data) {
 	Vector<PackedByteArray> data_stored;
-	for (int i = 0; i < p_data.size(); i++) {
+	for (vec_size i = 0; i < p_data.size(); i++) {
 		data_stored.push_back(p_data[i]);
 	}
 	page_granule_positions.push_back(p_granule_pos);
@@ -44,11 +44,11 @@ void OggPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByte
 void OggPacketSequence::set_packet_data(const TypedArray<Array> &p_data) {
 	data_version++; // Update the data version so old playbacks know that they can't rely on us anymore.
 	page_data.clear();
-	for (int page_idx = 0; page_idx < p_data.size(); page_idx++) {
+	for (vec_size page_idx = 0; page_idx < p_data.size(); page_idx++) {
 		// Push a new page. We cleared the vector so this will be at index `page_idx`.
 		page_data.push_back(Vector<PackedByteArray>());
 		TypedArray<PackedByteArray> this_page_data = p_data[page_idx];
-		for (int packet = 0; packet < this_page_data.size(); packet++) {
+		for (vec_size packet = 0; packet < this_page_data.size(); packet++) {
 			page_data.write[page_idx].push_back(this_page_data[packet]);
 		}
 	}
@@ -69,7 +69,7 @@ TypedArray<Array> OggPacketSequence::get_packet_data() const {
 void OggPacketSequence::set_packet_granule_positions(const PackedInt64Array &p_granule_positions) {
 	data_version++; // Update the data version so old playbacks know that they can't rely on us anymore.
 	page_granule_positions.clear();
-	for (int page_idx = 0; page_idx < p_granule_positions.size(); page_idx++) {
+	for (vec_size page_idx = 0; page_idx < p_granule_positions.size(); page_idx++) {
 		int64_t granule_pos = p_granule_positions[page_idx];
 		page_granule_positions.push_back(granule_pos);
 	}

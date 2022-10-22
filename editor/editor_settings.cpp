@@ -74,7 +74,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 
 	if (p_name == "shortcuts") {
 		Array arr = p_value;
-		for (int i = 0; i < arr.size(); i++) {
+		for (vec_size i = 0; i < arr.size(); i++) {
 			Dictionary dict = arr[i];
 			String shortcut_name = dict["name"];
 
@@ -89,7 +89,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 		return false;
 	} else if (p_name == "builtin_action_overrides") {
 		Array actions_arr = p_value;
-		for (int i = 0; i < actions_arr.size(); i++) {
+		for (vec_size i = 0; i < actions_arr.size(); i++) {
 			Dictionary action_dict = actions_arr[i];
 
 			String action_name = action_dict["name"];
@@ -99,7 +99,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 			im->action_erase_events(action_name);
 
 			builtin_action_overrides[action_name].clear();
-			for (int ev_idx = 0; ev_idx < events.size(); ev_idx++) {
+			for (vec_size ev_idx = 0; ev_idx < events.size(); ev_idx++) {
 				im->action_add_event(action_name, events[ev_idx]);
 				builtin_action_overrides[action_name].push_back(events[ev_idx]);
 			}
@@ -737,7 +737,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	if (p_extra_config.is_valid()) {
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
 			Vector<String> list = p_extra_config->get_value("init_projects", "list");
-			for (int i = 0; i < list.size(); i++) {
+			for (vec_size i = 0; i < list.size(); i++) {
 				String proj_name = list[i].replace("/", "::");
 				set("projects/" + proj_name, list[i]);
 			}
@@ -889,7 +889,7 @@ fail:
 
 	if (extra_config->has_section("init_projects")) {
 		Vector<String> list = extra_config->get_value("init_projects", "list");
-		for (int i = 0; i < list.size(); i++) {
+		for (vec_size i = 0; i < list.size(); i++) {
 			list.write[i] = exe_path.path_join(list[i]);
 		}
 		extra_config->set_value("init_projects", "list", list);
@@ -1138,7 +1138,7 @@ void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	}
 	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::WRITE);
 	if (f.is_valid()) {
-		for (int i = 0; i < favorites.size(); i++) {
+		for (vec_size i = 0; i < favorites.size(); i++) {
 			f->store_line(favorites[i]);
 		}
 	}
@@ -1158,7 +1158,7 @@ void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 	}
 	Ref<FileAccess> f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
 	if (f.is_valid()) {
-		for (int i = 0; i < recent_dirs.size(); i++) {
+		for (vec_size i = 0; i < recent_dirs.size(); i++) {
 			f->store_line(recent_dirs[i]);
 		}
 	}
@@ -1464,7 +1464,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 	Array events;
 
-	for (int i = 0; i < p_keycodes.size(); i++) {
+	for (vec_size i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
 #ifdef MACOS_ENABLED
@@ -1498,7 +1498,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keyc
 Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes) {
 	Array events;
 
-	for (int i = 0; i < p_keycodes.size(); i++) {
+	for (vec_size i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
 #ifdef MACOS_ENABLED
@@ -1545,7 +1545,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Typ
 
 	// Override the whole list, since events may have their order changed or be added, removed or edited.
 	InputMap::get_singleton()->action_erase_events(p_name);
-	for (int i = 0; i < p_events.size(); i++) {
+	for (vec_size i = 0; i < p_events.size(); i++) {
 		event_list.push_back(p_events[i]);
 		InputMap::get_singleton()->action_add_event(p_name, p_events[i]);
 	}

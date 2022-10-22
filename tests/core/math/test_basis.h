@@ -249,8 +249,8 @@ TEST_CASE("[Basis] Euler conversions") {
 	vectors_to_test.push_back(Vector3(120.0, 150.0, -130.0));
 	vectors_to_test.push_back(Vector3(120.0, 150.0, 130.0));
 
-	for (int h = 0; h < rotorder_to_test.size(); h += 1) {
-		for (int i = 0; i < vectors_to_test.size(); i += 1) {
+	for (vec_size h = 0; h < rotorder_to_test.size(); h += 1) {
+		for (vec_size i = 0; i < vectors_to_test.size(); i += 1) {
 			test_rotation(vectors_to_test[i], rotorder_to_test[h]);
 		}
 	}
@@ -275,8 +275,8 @@ TEST_CASE("[Stress][Basis] Euler conversions") {
 				rng.randf_range(-1800, 1800)));
 	}
 
-	for (int h = 0; h < rotorder_to_test.size(); h += 1) {
-		for (int i = 0; i < vectors_to_test.size(); i += 1) {
+	for (vec_size h = 0; h < rotorder_to_test.size(); h += 1) {
+		for (vec_size i = 0; i < vectors_to_test.size(); i += 1) {
 			test_rotation(vectors_to_test[i], rotorder_to_test[h]);
 		}
 	}

@@ -69,7 +69,7 @@ void DictionaryPropertyEdit::_get_property_list(List<PropertyInfo> *p_list) cons
 	Array keys = dict.keys();
 	keys.sort();
 
-	for (int i = 0; i < keys.size(); i++) {
+	for (vec_size i = 0; i < keys.size(); i++) {
 		String index = itos(i);
 
 		const Variant &key = keys[i];

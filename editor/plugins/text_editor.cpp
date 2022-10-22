@@ -173,7 +173,7 @@ void TextEditor::_update_bookmark_list() {
 
 	bookmarks_menu->add_separator();
 
-	for (int i = 0; i < bookmark_list.size(); i++) {
+	for (vec_size i = 0; i < bookmark_list.size(); i++) {
 		String line = code_editor->get_text_editor()->get_line(bookmark_list[i]).strip_edges();
 		// Limit the size of the line if too big.
 		if (line.length() > 50) {

@@ -405,7 +405,7 @@ void TileSet::_update_terrains_cache() {
 	if (terrains_cache_dirty) {
 		// Organizes tiles into structures.
 		per_terrain_pattern_tiles.resize(terrain_sets.size());
-		for (int i = 0; i < (int)per_terrain_pattern_tiles.size(); i++) {
+		for (vec_size i = 0; i < (int)per_terrain_pattern_tiles.size(); i++) {
 			per_terrain_pattern_tiles[i].clear();
 		}
 
@@ -451,7 +451,7 @@ void TileSet::_update_terrains_cache() {
 		}
 
 		// Add the empty cell in the possible patterns and cells.
-		for (int i = 0; i < terrain_sets.size(); i++) {
+		for (vec_size i = 0; i < terrain_sets.size(); i++) {
 			TileSet::TerrainsPattern empty_pattern(this, i);
 
 			TileMapCell empty_cell;
@@ -1300,7 +1300,7 @@ void TileSet::cleanup_invalid_tile_proxies() {
 			source_to_remove.append(E.key);
 		}
 	}
-	for (int i = 0; i < source_to_remove.size(); i++) {
+	for (vec_size i = 0; i < source_to_remove.size(); i++) {
 		remove_source_level_tile_proxy(source_to_remove[i]);
 	}
 
@@ -1312,7 +1312,7 @@ void TileSet::cleanup_invalid_tile_proxies() {
 			coords_to_remove.append(a);
 		}
 	}
-	for (int i = 0; i < coords_to_remove.size(); i++) {
+	for (vec_size i = 0; i < coords_to_remove.size(); i++) {
 		Array a = coords_to_remove[i];
 		remove_coords_level_tile_proxy(a[0], a[1]);
 	}
@@ -1325,7 +1325,7 @@ void TileSet::cleanup_invalid_tile_proxies() {
 			alternative_to_remove.append(a);
 		}
 	}
-	for (int i = 0; i < alternative_to_remove.size(); i++) {
+	for (vec_size i = 0; i < alternative_to_remove.size(); i++) {
 		Array a = alternative_to_remove[i];
 		remove_alternative_level_tile_proxy(a[0], a[1], a[2]);
 	}
@@ -1466,7 +1466,7 @@ Vector<Vector2> TileSet::get_tile_shape_polygon() {
 		points.append(Vector2(0.5, 0.5 - overlap));
 		points.append(Vector2(0.5, overlap - 0.5));
 		if (get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
-			for (int i = 0; i < points.size(); i++) {
+			for (vec_size i = 0; i < points.size(); i++) {
 				points.write[i] = Vector2(points[i].y, points[i].x);
 			}
 		}
@@ -1479,7 +1479,7 @@ void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform
 		Vector<Vector2> shape = get_tile_shape_polygon();
 		Vector<Vector2> uvs;
 		uvs.resize(shape.size());
-		for (int i = 0; i < shape.size(); i++) {
+		for (vec_size i = 0; i < shape.size(); i++) {
 			uvs.write[i] = shape[i] + Vector2(0.5, 0.5);
 		}
 
@@ -2142,7 +2142,7 @@ Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_peering_bit_poly
 	Vector2 unit = Vector2(p_size) / 6.0;
 	Vector<Vector2> polygon;
 	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		for (int i = 0; i < point_list.size(); i++) {
+		for (vec_size i = 0; i < point_list.size(); i++) {
 			point_list.write[i] = point_list[i] * unit;
 		}
 		switch (p_bit) {
@@ -2204,7 +2204,7 @@ Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_peering_bit_poly
 				break;
 		}
 	} else {
-		for (int i = 0; i < point_list.size(); i++) {
+		for (vec_size i = 0; i < point_list.size(); i++) {
 			point_list.write[i] = Vector2(point_list[i].y, point_list[i].x) * unit;
 		}
 		switch (p_bit) {
@@ -2294,7 +2294,7 @@ Vector<Point2> TileSet::_get_half_offset_corner_terrain_peering_bit_polygon(Vect
 	Vector2 unit = Vector2(p_size) / 6.0;
 	Vector<Vector2> polygon;
 	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		for (int i = 0; i < point_list.size(); i++) {
+		for (vec_size i = 0; i < point_list.size(); i++) {
 			point_list.write[i] = point_list[i] * unit;
 		}
 		switch (p_bit) {
@@ -2332,7 +2332,7 @@ Vector<Point2> TileSet::_get_half_offset_corner_terrain_peering_bit_polygon(Vect
 				break;
 		}
 	} else {
-		for (int i = 0; i < point_list.size(); i++) {
+		for (vec_size i = 0; i < point_list.size(); i++) {
 			point_list.write[i] = Vector2(point_list[i].y, point_list[i].x) * unit;
 		}
 		switch (p_bit) {
@@ -2392,7 +2392,7 @@ Vector<Point2> TileSet::_get_half_offset_side_terrain_peering_bit_polygon(Vector
 	Vector2 unit = Vector2(p_size) / 6.0;
 	Vector<Vector2> polygon;
 	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		for (int i = 0; i < point_list.size(); i++) {
+		for (vec_size i = 0; i < point_list.size(); i++) {
 			point_list.write[i] = point_list[i] * unit;
 		}
 		switch (p_bit) {
@@ -2424,7 +2424,7 @@ Vector<Point2> TileSet::_get_half_offset_side_terrain_peering_bit_polygon(Vector
 				break;
 		}
 	} else {
-		for (int i = 0; i < point_list.size(); i++) {
+		for (vec_size i = 0; i < point_list.size(); i++) {
 			point_list.write[i] = Vector2(point_list[i].y, point_list[i].x) * unit;
 		}
 		switch (p_bit) {
@@ -2584,13 +2584,13 @@ void TileSet::_compatibility_conversion() {
 							add_physics_layer();
 						}
 					}
-					for (int k = 0; k < ctd->shapes.size(); k++) {
+					for (vec_size k = 0; k < ctd->shapes.size(); k++) {
 						CompatibilityShapeData csd = ctd->shapes[k];
 						if (csd.autotile_coords == coords) {
 							Ref<ConvexPolygonShape2D> convex_shape = csd.shape; // Only ConvexPolygonShape2D are supported, which is the default type used by the 3.x editor
 							if (convex_shape.is_valid()) {
 								Vector<Vector2> polygon = convex_shape->get_points();
-								for (int point_index = 0; point_index < polygon.size(); point_index++) {
+								for (vec_size point_index = 0; point_index < polygon.size(); point_index++) {
 									polygon.write[point_index] = csd.transform.xform(polygon[point_index]);
 								}
 								tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
@@ -2679,13 +2679,13 @@ void TileSet::_compatibility_conversion() {
 									add_physics_layer();
 								}
 							}
-							for (int k = 0; k < ctd->shapes.size(); k++) {
+							for (vec_size k = 0; k < ctd->shapes.size(); k++) {
 								CompatibilityShapeData csd = ctd->shapes[k];
 								if (csd.autotile_coords == coords) {
 									Ref<ConvexPolygonShape2D> convex_shape = csd.shape; // Only ConvexPolygonShape2D are supported, which is the default type used by the 3.x editor
 									if (convex_shape.is_valid()) {
 										Vector<Vector2> polygon = convex_shape->get_points();
-										for (int point_index = 0; point_index < polygon.size(); point_index++) {
+										for (vec_size point_index = 0; point_index < polygon.size(); point_index++) {
 											polygon.write[point_index] = csd.transform.xform(polygon[point_index]);
 										}
 										tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
@@ -2713,11 +2713,11 @@ void TileSet::_compatibility_conversion() {
 		}
 
 		// Offset all shapes
-		for (int k = 0; k < ctd->shapes.size(); k++) {
+		for (vec_size k = 0; k < ctd->shapes.size(); k++) {
 			Ref<ConvexPolygonShape2D> convex = ctd->shapes[k].shape;
 			if (convex.is_valid()) {
 				Vector<Vector2> points = convex->get_points();
-				for (int i_point = 0; i_point < points.size(); i_point++) {
+				for (vec_size i_point = 0; i_point < points.size(); i_point++) {
 					points.write[i_point] = points[i_point] - get_tile_size() / 2;
 				}
 				convex->set_points(points);
@@ -2887,10 +2887,10 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 
 		} else if (what == "shapes") {
 			Array p = p_value;
-			for (int i = 0; i < p.size(); i++) {
+			for (vec_size i = 0; i < p.size(); i++) {
 				CompatibilityShapeData csd;
 				Dictionary d = p[i];
-				for (int j = 0; j < d.size(); j++) {
+				for (vec_size j = 0; j < d.size(); j++) {
 					String key = d.get_key_at_index(j);
 					if (key == "autotile_coord") {
 						csd.autotile_coords = d[key];
@@ -3058,19 +3058,19 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			Array a = p_value;
 			ERR_FAIL_COND_V(a.size() % 2 != 0, false);
 			if (components[1] == "source_level") {
-				for (int i = 0; i < a.size(); i += 2) {
+				for (vec_size i = 0; i < a.size(); i += 2) {
 					set_source_level_tile_proxy(a[i], a[i + 1]);
 				}
 				return true;
 			} else if (components[1] == "coords_level") {
-				for (int i = 0; i < a.size(); i += 2) {
+				for (vec_size i = 0; i < a.size(); i += 2) {
 					Array key = a[i];
 					Array value = a[i + 1];
 					set_coords_level_tile_proxy(key[0], key[1], value[0], value[1]);
 				}
 				return true;
 			} else if (components[1] == "alternative_level") {
-				for (int i = 0; i < a.size(); i += 2) {
+				for (vec_size i = 0; i < a.size(); i += 2) {
 					Array key = a[i];
 					Array value = a[i + 1];
 					set_alternative_level_tile_proxy(key[0], key[1], key[2], value[0], value[1], value[2]);
@@ -3080,7 +3080,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			return false;
 		} else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
 			int pattern_index = components[0].trim_prefix("pattern_").to_int();
-			for (int i = patterns.size(); i <= pattern_index; i++) {
+			for (vec_size i = patterns.size(); i <= pattern_index; i++) {
 				add_pattern(p_value);
 			}
 			return true;
@@ -3223,7 +3223,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	PropertyInfo property_info;
 	// Rendering.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int i = 0; i < occlusion_layers.size(); i++) {
+	for (vec_size i = 0; i < occlusion_layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("occlusion_layer_%d/light_mask", i), PROPERTY_HINT_LAYERS_2D_RENDER));
 
 		// occlusion_layer_%d/sdf_collision
@@ -3236,7 +3236,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Physics.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int i = 0; i < physics_layers.size(); i++) {
+	for (vec_size i = 0; i < physics_layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_layer", i), PROPERTY_HINT_LAYERS_2D_PHYSICS));
 
 		// physics_layer_%d/collision_mask
@@ -3256,10 +3256,10 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Terrains.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int terrain_set_index = 0; terrain_set_index < terrain_sets.size(); terrain_set_index++) {
+	for (vec_size terrain_set_index = 0; terrain_set_index < terrain_sets.size(); terrain_set_index++) {
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("terrain_set_%d/mode", terrain_set_index), PROPERTY_HINT_ENUM, "Match Corners and Sides,Match Corners,Match Sides"));
 		p_list->push_back(PropertyInfo(Variant::NIL, vformat("terrain_set_%d/terrains", terrain_set_index), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, vformat("terrain_set_%d/terrain_", terrain_set_index)));
-		for (int terrain_index = 0; terrain_index < terrain_sets[terrain_set_index].terrains.size(); terrain_index++) {
+		for (vec_size terrain_index = 0; terrain_index < terrain_sets[terrain_set_index].terrains.size(); terrain_index++) {
 			p_list->push_back(PropertyInfo(Variant::STRING, vformat("terrain_set_%d/terrain_%d/name", terrain_set_index, terrain_index)));
 			p_list->push_back(PropertyInfo(Variant::COLOR, vformat("terrain_set_%d/terrain_%d/color", terrain_set_index, terrain_index)));
 		}
@@ -3267,7 +3267,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Navigation.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Navigation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int i = 0; i < navigation_layers.size(); i++) {
+	for (vec_size i = 0; i < navigation_layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("navigation_layer_%d/layers", i), PROPERTY_HINT_LAYERS_2D_NAVIGATION));
 	}
 
@@ -3277,7 +3277,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		argt += "," + Variant::get_type_name(Variant::Type(i));
 	}
 	p_list->push_back(PropertyInfo(Variant::NIL, "Custom data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int i = 0; i < custom_data_layers.size(); i++) {
+	for (vec_size i = 0; i < custom_data_layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("custom_data_layer_%d/name", i)));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("custom_data_layer_%d/type", i), PROPERTY_HINT_ENUM, argt));
 	}
@@ -3977,7 +3977,7 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		// animation_frame_*.
 		bool store_durations = tiles[E_tile.key].animation_frames_durations.size() >= 2;
-		for (int i = 0; i < (int)tiles[E_tile.key].animation_frames_durations.size(); i++) {
+		for (vec_size i = 0; i < (int)tiles[E_tile.key].animation_frames_durations.size(); i++) {
 			property_info = PropertyInfo(Variant::FLOAT, vformat("animation_frame_%d/duration", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
 			if (!store_durations) {
 				property_info.usage ^= PROPERTY_USAGE_STORAGE;
@@ -4187,7 +4187,7 @@ real_t TileSetAtlasSource::get_tile_animation_total_duration(const Vector2i p_at
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
 
 	real_t sum = 0.0;
-	for (int frame = 0; frame < (int)tiles[p_atlas_coords].animation_frames_durations.size(); frame++) {
+	for (vec_size frame = 0; frame < (int)tiles[p_atlas_coords].animation_frames_durations.size(); frame++) {
 		sum += tiles[p_atlas_coords].animation_frames_durations[frame];
 	}
 	return sum;
@@ -4524,7 +4524,7 @@ void TileSetAtlasSource::_compute_next_alternative_id(const Vector2i p_atlas_coo
 void TileSetAtlasSource::_clear_coords_mapping_cache(Vector2i p_atlas_coords) {
 	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
 	TileAlternativesData &tad = tiles[p_atlas_coords];
-	for (int frame = 0; frame < (int)tad.animation_frames_durations.size(); frame++) {
+	for (vec_size frame = 0; frame < (int)tad.animation_frames_durations.size(); frame++) {
 		Vector2i frame_coords = p_atlas_coords + (tad.size_in_atlas + tad.animation_separation) * ((tad.animation_columns > 0) ? Vector2i(frame % tad.animation_columns, frame / tad.animation_columns) : Vector2i(frame, 0));
 		for (int x = 0; x < tad.size_in_atlas.x; x++) {
 			for (int y = 0; y < tad.size_in_atlas.y; y++) {
@@ -4546,7 +4546,7 @@ void TileSetAtlasSource::_create_coords_mapping_cache(Vector2i p_atlas_coords) {
 	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
 
 	TileAlternativesData &tad = tiles[p_atlas_coords];
-	for (int frame = 0; frame < (int)tad.animation_frames_durations.size(); frame++) {
+	for (vec_size frame = 0; frame < (int)tad.animation_frames_durations.size(); frame++) {
 		Vector2i frame_coords = p_atlas_coords + (tad.size_in_atlas + tad.animation_separation) * ((tad.animation_columns > 0) ? Vector2i(frame % tad.animation_columns, frame / tad.animation_columns) : Vector2i(frame, 0));
 		for (int x = 0; x < tad.size_in_atlas.x; x++) {
 			for (int y = 0; y < tad.size_in_atlas.y; y++) {
@@ -4605,7 +4605,7 @@ void TileSetAtlasSource::_update_padded_texture() {
 	Ref<Image> image = Image::create_empty(size.x, size.y, false, src->get_format());
 
 	for (KeyValue<Vector2i, TileAlternativesData> kv : tiles) {
-		for (int frame = 0; frame < (int)kv.value.animation_frames_durations.size(); frame++) {
+		for (vec_size frame = 0; frame < (int)kv.value.animation_frames_durations.size(); frame++) {
 			// Compute the source rects.
 			Rect2i src_rect = get_tile_texture_region(kv.key, frame);
 
@@ -4805,7 +4805,7 @@ bool TileSetScenesCollectionSource::_get(const StringName &p_name, Variant &r_re
 }
 
 void TileSetScenesCollectionSource::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < scenes_ids.size(); i++) {
+	for (vec_size i = 0; i < scenes_ids.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("scenes/%d/scene", scenes_ids[i]), PROPERTY_HINT_RESOURCE_TYPE, "TileSetScenesCollectionSource"));
 
 		PropertyInfo property_info = PropertyInfo(Variant::BOOL, vformat("scenes/%d/display_placeholder", scenes_ids[i]));
@@ -4853,7 +4853,7 @@ void TileData::notify_tile_data_properties_should_change() {
 
 	// Convert custom data to the new type.
 	custom_data.resize(tile_set->get_custom_data_layers_count());
-	for (int i = 0; i < custom_data.size(); i++) {
+	for (vec_size i = 0; i < custom_data.size(); i++) {
 		if (custom_data[i].get_type() != tile_set->get_custom_data_layer_type(i)) {
 			Variant new_val;
 			Callable::CallError error;
@@ -5209,7 +5209,7 @@ void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index,
 		ERR_FAIL_COND_MSG(decomp.is_empty(), "Could not decompose the polygon into convex shapes.");
 
 		physics.write[p_layer_id].polygons.write[p_polygon_index].shapes.resize(decomp.size());
-		for (int i = 0; i < decomp.size(); i++) {
+		for (vec_size i = 0; i < decomp.size(); i++) {
 			Ref<ConvexPolygonShape2D> shape;
 			shape.instantiate();
 			shape->set_points(decomp[i]);
@@ -5598,7 +5598,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (tile_set) {
 		// Occlusion layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-		for (int i = 0; i < occluders.size(); i++) {
+		for (vec_size i = 0; i < occluders.size(); i++) {
 			// occlusion_layer_%d/polygon
 			property_info = PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT);
 			if (!occluders[i].is_valid()) {
@@ -5609,12 +5609,12 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		// Physics layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-		for (int i = 0; i < physics.size(); i++) {
+		for (vec_size i = 0; i < physics.size(); i++) {
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, vformat("physics_layer_%d/linear_velocity", i), PROPERTY_HINT_NONE));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/angular_velocity", i), PROPERTY_HINT_NONE));
 			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/polygons_count", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 
-			for (int j = 0; j < physics[i].polygons.size(); j++) {
+			for (vec_size j = 0; j < physics[i].polygons.size(); j++) {
 				// physics_layer_%d/points
 				property_info = PropertyInfo(Variant::ARRAY, vformat("physics_layer_%d/polygon_%d/points", i, j), PROPERTY_HINT_ARRAY_TYPE, "Vector2", PROPERTY_USAGE_DEFAULT);
 				if (physics[i].polygons[j].polygon.is_empty()) {
@@ -5655,7 +5655,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		// Navigation layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Navigation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-		for (int i = 0; i < navigation.size(); i++) {
+		for (vec_size i = 0; i < navigation.size(); i++) {
 			property_info = PropertyInfo(Variant::OBJECT, vformat("navigation_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon", PROPERTY_USAGE_DEFAULT);
 			if (!navigation[i].is_valid()) {
 				property_info.usage ^= PROPERTY_USAGE_STORAGE;
@@ -5665,7 +5665,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		// Custom data layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Custom data", PROPERTY_HINT_NONE, "custom_data_", PROPERTY_USAGE_GROUP));
-		for (int i = 0; i < custom_data.size(); i++) {
+		for (vec_size i = 0; i < custom_data.size(); i++) {
 			Variant default_val;
 			Callable::CallError error;
 			Variant::construct(custom_data[i].get_type(), default_val, nullptr, 0, error);

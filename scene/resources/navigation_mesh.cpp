@@ -305,7 +305,7 @@ Vector<Vector3> NavigationMesh::get_vertices() const {
 
 void NavigationMesh::_set_polygons(const Array &p_array) {
 	polygons.resize(p_array.size());
-	for (int i = 0; i < p_array.size(); i++) {
+	for (vec_size i = 0; i < p_array.size(); i++) {
 		polygons.write[i].indices = p_array[i];
 	}
 	notify_property_list_changed();
@@ -314,7 +314,7 @@ void NavigationMesh::_set_polygons(const Array &p_array) {
 Array NavigationMesh::_get_polygons() const {
 	Array ret;
 	ret.resize(polygons.size());
-	for (int i = 0; i < ret.size(); i++) {
+	for (vec_size i = 0; i < ret.size(); i++) {
 		ret[i] = polygons[i].indices;
 	}
 

@@ -49,12 +49,12 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		compression.fps = comp["fps"];
 		Array bounds = comp["bounds"];
 		compression.bounds.resize(bounds.size());
-		for (int i = 0; i < bounds.size(); i++) {
+		for (vec_size i = 0; i < bounds.size(); i++) {
 			compression.bounds[i] = bounds[i];
 		}
 		Array pages = comp["pages"];
 		compression.pages.resize(pages.size());
-		for (int i = 0; i < pages.size(); i++) {
+		for (vec_size i = 0; i < pages.size(); i++) {
 			Dictionary page = pages[i];
 			ERR_FAIL_COND_V(!page.has("data"), false);
 			ERR_FAIL_COND_V(!page.has("time_offset"), false);
@@ -822,7 +822,7 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (compression.enabled) {
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "_compression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
-	for (int i = 0; i < tracks.size(); i++) {
+	for (vec_size i = 0; i < tracks.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "tracks/" + itos(i) + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
@@ -976,7 +976,7 @@ NodePath Animation::track_get_path(int p_track) const {
 }
 
 int Animation::find_track(const NodePath &p_path, const TrackType p_type) const {
-	for (int i = 0; i < tracks.size(); i++) {
+	for (vec_size i = 0; i < tracks.size(); i++) {
 		if (tracks[i]->path == p_path && tracks[i]->type == p_type) {
 			return i;
 		}
@@ -4030,7 +4030,7 @@ void Animation::_bind_methods() {
 }
 
 void Animation::clear() {
-	for (int i = 0; i < tracks.size(); i++) {
+	for (vec_size i = 0; i < tracks.size(); i++) {
 		memdelete(tracks[i]);
 	}
 	tracks.clear();
@@ -4393,7 +4393,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 
 void Animation::optimize(real_t p_allowed_velocity_err, real_t p_allowed_angular_err, int p_precision) {
 	real_t precision = Math::pow(0.1, p_precision);
-	for (int i = 0; i < tracks.size(); i++) {
+	for (vec_size i = 0; i < tracks.size(); i++) {
 		if (track_is_compressed(i)) {
 			continue; //not possible to optimize compressed track
 		}
@@ -6014,7 +6014,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 Animation::Animation() {}
 
 Animation::~Animation() {
-	for (int i = 0; i < tracks.size(); i++) {
+	for (vec_size i = 0; i < tracks.size(); i++) {
 		memdelete(tracks[i]);
 	}
 }

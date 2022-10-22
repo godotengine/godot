@@ -130,7 +130,7 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 
 			if (!color_samples[0].is_equal_approx(color_next)) {
 				color_samples.resize(1 + (x_to - x_from) / 64); // Make a color sample every 64 px.
-				for (int i = 1; i < color_samples.size(); i++) {
+				for (vec_size i = 1; i < color_samples.size(); i++) {
 					float j = i;
 					color_samples.write[i] = get_animation()->value_track_interpolate(
 							get_track(),

@@ -162,7 +162,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	if (mode == MODE_3D) {
 		//3D saves in its own way
 
-		for (int i = 0; i < p_images.size(); i++) {
+		for (vec_size i = 0; i < p_images.size(); i++) {
 			if (p_images.write[i]->has_mipmaps()) {
 				p_images.write[i]->clear_mipmaps();
 			}
@@ -242,7 +242,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 			}
 		}
 	} else {
-		for (int i = 0; i < p_images.size(); i++) {
+		for (vec_size i = 0; i < p_images.size(); i++) {
 			if (p_force_po2) {
 				p_images.write[i]->resize_to_po2();
 			}
@@ -271,11 +271,11 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	f->store_32(0);
 	f->store_32(0);
 
-	for (int i = 0; i < p_images.size(); i++) {
+	for (vec_size i = 0; i < p_images.size(); i++) {
 		ResourceImporterTexture::save_to_ctex_format(f, p_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
 	}
 
-	for (int i = 0; i < mipmap_images.size(); i++) {
+	for (vec_size i = 0; i < mipmap_images.size(); i++) {
 		ResourceImporterTexture::save_to_ctex_format(f, mipmap_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
 	}
 }
@@ -498,12 +498,12 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	if (r_texture_import->hdr_compression == 2) {
 		// The user selected to compress hdr anyway, so force an alpha-less format.
 		if (r_texture_import->image->get_format() == Image::FORMAT_RGBAF) {
-			for (int i = 0; i < r_texture_import->slices->size(); i++) {
+			for (vec_size i = 0; i < r_texture_import->slices->size(); i++) {
 				r_texture_import->slices->write[i]->convert(Image::FORMAT_RGBF);
 			}
 
 		} else if (r_texture_import->image->get_format() == Image::FORMAT_RGBAH) {
-			for (int i = 0; i < r_texture_import->slices->size(); i++) {
+			for (vec_size i = 0; i < r_texture_import->slices->size(); i++) {
 				r_texture_import->slices->write[i]->convert(Image::FORMAT_RGBH);
 			}
 		}
@@ -515,7 +515,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 		if (!can_bptc) {
 			//default to rgbe
 			if (r_texture_import->image->get_format() != Image::FORMAT_RGBE9995) {
-				for (int i = 0; i < r_texture_import->slices->size(); i++) {
+				for (vec_size i = 0; i < r_texture_import->slices->size(); i++) {
 					r_texture_import->slices->write[i]->convert(Image::FORMAT_RGBE9995);
 				}
 			}

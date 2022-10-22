@@ -92,10 +92,10 @@ void DocTools::merge_from(const DocTools &p_data) {
 		c.brief_description = cf.brief_description;
 		c.tutorials = cf.tutorials;
 
-		for (int i = 0; i < c.constructors.size(); i++) {
+		for (vec_size i = 0; i < c.constructors.size(); i++) {
 			DocData::MethodDoc &m = c.constructors.write[i];
 
-			for (int j = 0; j < cf.constructors.size(); j++) {
+			for (vec_size j = 0; j < cf.constructors.size(); j++) {
 				if (cf.constructors[j].name != m.name) {
 					continue;
 				}
@@ -142,10 +142,10 @@ void DocTools::merge_from(const DocTools &p_data) {
 			}
 		}
 
-		for (int i = 0; i < c.methods.size(); i++) {
+		for (vec_size i = 0; i < c.methods.size(); i++) {
 			DocData::MethodDoc &m = c.methods.write[i];
 
-			for (int j = 0; j < cf.methods.size(); j++) {
+			for (vec_size j = 0; j < cf.methods.size(); j++) {
 				if (cf.methods[j].name != m.name) {
 					continue;
 				}
@@ -159,10 +159,10 @@ void DocTools::merge_from(const DocTools &p_data) {
 			}
 		}
 
-		for (int i = 0; i < c.signals.size(); i++) {
+		for (vec_size i = 0; i < c.signals.size(); i++) {
 			DocData::MethodDoc &m = c.signals.write[i];
 
-			for (int j = 0; j < cf.signals.size(); j++) {
+			for (vec_size j = 0; j < cf.signals.size(); j++) {
 				if (cf.signals[j].name != m.name) {
 					continue;
 				}
@@ -175,10 +175,10 @@ void DocTools::merge_from(const DocTools &p_data) {
 			}
 		}
 
-		for (int i = 0; i < c.constants.size(); i++) {
+		for (vec_size i = 0; i < c.constants.size(); i++) {
 			DocData::ConstantDoc &m = c.constants.write[i];
 
-			for (int j = 0; j < cf.constants.size(); j++) {
+			for (vec_size j = 0; j < cf.constants.size(); j++) {
 				if (cf.constants[j].name != m.name) {
 					continue;
 				}
@@ -191,10 +191,10 @@ void DocTools::merge_from(const DocTools &p_data) {
 			}
 		}
 
-		for (int i = 0; i < c.annotations.size(); i++) {
+		for (vec_size i = 0; i < c.annotations.size(); i++) {
 			DocData::MethodDoc &m = c.annotations.write[i];
 
-			for (int j = 0; j < cf.annotations.size(); j++) {
+			for (vec_size j = 0; j < cf.annotations.size(); j++) {
 				if (cf.annotations[j].name != m.name) {
 					continue;
 				}
@@ -207,10 +207,10 @@ void DocTools::merge_from(const DocTools &p_data) {
 			}
 		}
 
-		for (int i = 0; i < c.properties.size(); i++) {
+		for (vec_size i = 0; i < c.properties.size(); i++) {
 			DocData::PropertyDoc &p = c.properties.write[i];
 
-			for (int j = 0; j < cf.properties.size(); j++) {
+			for (vec_size j = 0; j < cf.properties.size(); j++) {
 				if (cf.properties[j].name != p.name) {
 					continue;
 				}
@@ -223,10 +223,10 @@ void DocTools::merge_from(const DocTools &p_data) {
 			}
 		}
 
-		for (int i = 0; i < c.theme_properties.size(); i++) {
+		for (vec_size i = 0; i < c.theme_properties.size(); i++) {
 			DocData::ThemeItemDoc &ti = c.theme_properties.write[i];
 
-			for (int j = 0; j < cf.theme_properties.size(); j++) {
+			for (vec_size j = 0; j < cf.theme_properties.size(); j++) {
 				if (cf.theme_properties[j].name != ti.name || cf.theme_properties[j].data_type != ti.data_type) {
 					continue;
 				}
@@ -237,10 +237,10 @@ void DocTools::merge_from(const DocTools &p_data) {
 			}
 		}
 
-		for (int i = 0; i < c.operators.size(); i++) {
+		for (vec_size i = 0; i < c.operators.size(); i++) {
 			DocData::MethodDoc &m = c.operators.write[i];
 
-			for (int j = 0; j < cf.operators.size(); j++) {
+			for (vec_size j = 0; j < cf.operators.size(); j++) {
 				if (cf.operators[j].name != m.name) {
 					continue;
 				}
@@ -296,7 +296,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 		// Don't show this to your kids.
 		if (c.name == "@GlobalScope") {
 			// Retrieve GodotSharp singleton.
-			for (int j = 0; j < cf.properties.size(); j++) {
+			for (vec_size j = 0; j < cf.properties.size(); j++) {
 				if (cf.properties[j].name == "GodotSharp") {
 					c.properties.push_back(cf.properties[j]);
 				}
@@ -539,7 +539,7 @@ void DocTools::generate(bool p_basic_types) {
 					if (!errs.has(OK)) {
 						errs.insert(0, OK);
 					}
-					for (int i = 0; i < errs.size(); i++) {
+					for (vec_size i = 0; i < errs.size(); i++) {
 						if (!method.errors_returned.has(errs[i])) {
 							method.errors_returned.push_back(errs[i]);
 						}
@@ -556,7 +556,7 @@ void DocTools::generate(bool p_basic_types) {
 				for (List<MethodInfo>::Element *EV = signal_list.front(); EV; EV = EV->next()) {
 					DocData::MethodDoc signal;
 					signal.name = EV->get().name;
-					for (int i = 0; i < EV->get().arguments.size(); i++) {
+					for (vec_size i = 0; i < EV->get().arguments.size(); i++) {
 						const PropertyInfo &arginfo = EV->get().arguments[i];
 						DocData::ArgumentDoc argument;
 						DocData::argument_doc_from_arginfo(argument, arginfo);
@@ -763,7 +763,7 @@ void DocTools::generate(bool p_basic_types) {
 
 			method.name = mi.name;
 
-			for (int j = 0; j < mi.arguments.size(); j++) {
+			for (vec_size j = 0; j < mi.arguments.size(); j++) {
 				PropertyInfo arginfo = mi.arguments[j];
 				DocData::ArgumentDoc ad;
 				DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
@@ -940,7 +940,7 @@ void DocTools::generate(bool p_basic_types) {
 
 				DocData::return_doc_from_retinfo(md, mi.return_val);
 
-				for (int j = 0; j < mi.arguments.size(); j++) {
+				for (vec_size j = 0; j < mi.arguments.size(); j++) {
 					DocData::ArgumentDoc ad;
 					DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
 
@@ -985,7 +985,7 @@ void DocTools::generate(bool p_basic_types) {
 
 				DocData::return_doc_from_retinfo(atd, ai.return_val);
 
-				for (int j = 0; j < ai.arguments.size(); j++) {
+				for (vec_size j = 0; j < ai.arguments.size(); j++) {
 					DocData::ArgumentDoc ad;
 					DocData::argument_doc_from_arginfo(ad, ai.arguments[j]);
 
@@ -1362,7 +1362,7 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 	if (!p_method_docs.is_empty()) {
 		p_method_docs.sort();
 		_write_string(f, 1, "<" + p_name + "s>");
-		for (int i = 0; i < p_method_docs.size(); i++) {
+		for (vec_size i = 0; i < p_method_docs.size(); i++) {
 			const DocData::MethodDoc &m = p_method_docs[i];
 
 			String qualifiers;
@@ -1388,12 +1388,12 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
 			}
 			if (m.errors_returned.size() > 0) {
-				for (int j = 0; j < m.errors_returned.size(); j++) {
+				for (vec_size j = 0; j < m.errors_returned.size(); j++) {
 					_write_string(f, 3, "<returns_error number=\"" + itos(m.errors_returned[j]) + "\"/>");
 				}
 			}
 
-			for (int j = 0; j < m.arguments.size(); j++) {
+			for (vec_size j = 0; j < m.arguments.size(); j++) {
 				const DocData::ArgumentDoc &a = m.arguments[j];
 
 				String enum_text;
@@ -1466,7 +1466,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		_write_string(f, 1, "</description>");
 
 		_write_string(f, 1, "<tutorials>");
-		for (int i = 0; i < c.tutorials.size(); i++) {
+		for (vec_size i = 0; i < c.tutorials.size(); i++) {
 			DocData::TutorialDoc tutorial = c.tutorials.get(i);
 			String title_attribute = (!tutorial.title.is_empty()) ? " title=\"" + _translate_doc_string(tutorial.title).xml_escape() + "\"" : "";
 			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
@@ -1482,7 +1482,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 
 			c.properties.sort();
 
-			for (int i = 0; i < c.properties.size(); i++) {
+			for (vec_size i = 0; i < c.properties.size(); i++) {
 				String additional_attributes;
 				if (!c.properties[i].enumeration.is_empty()) {
 					additional_attributes += " enum=\"" + c.properties[i].enumeration + "\"";
@@ -1514,7 +1514,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 
 		if (!c.constants.is_empty()) {
 			_write_string(f, 1, "<constants>");
-			for (int i = 0; i < c.constants.size(); i++) {
+			for (vec_size i = 0; i < c.constants.size(); i++) {
 				const DocData::ConstantDoc &k = c.constants[i];
 
 				String additional_attributes;
@@ -1555,7 +1555,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 			c.theme_properties.sort();
 
 			_write_string(f, 1, "<theme_items>");
-			for (int i = 0; i < c.theme_properties.size(); i++) {
+			for (vec_size i = 0; i < c.theme_properties.size(); i++) {
 				const DocData::ThemeItemDoc &ti = c.theme_properties[i];
 
 				if (!ti.default_value.is_empty()) {

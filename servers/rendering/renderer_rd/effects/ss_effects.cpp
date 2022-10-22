@@ -354,7 +354,7 @@ SSEffects::SSEffects() {
 
 		sss.shader_version = sss.shader.version_create();
 
-		for (int i = 0; i < sss_modes.size(); i++) {
+		for (vec_size i = 0; i < sss_modes.size(); i++) {
 			sss.pipelines[i] = RD::get_singleton()->compute_pipeline_create(sss.shader.version_get_shader(sss.shader_version, i));
 		}
 	}

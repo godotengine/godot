@@ -559,12 +559,12 @@ public:
 
 	const int *get_code() const; //used for debug
 	int get_code_size() const;
-	Variant get_constant(int p_idx) const;
-	StringName get_global_name(int p_idx) const;
+	Variant get_constant(vec_size p_idx) const;
+	StringName get_global_name(vec_size p_idx) const;
 	StringName get_name() const;
 	int get_max_stack_size() const;
 	int get_default_argument_count() const;
-	int get_default_argument_addr(int p_idx) const;
+	int get_default_argument_addr(vec_size p_idx) const;
 	GDScriptDataType get_return_type() const;
 	GDScriptDataType get_argument_type(int p_idx) const;
 	GDScript *get_script() const { return _script; }
@@ -575,15 +575,15 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return _code_size == 0; }
 
 	int get_argument_count() const { return _argument_count; }
-	StringName get_argument_name(int p_idx) const {
+	StringName get_argument_name(uint32_t p_idx) const {
 #ifdef TOOLS_ENABLED
-		ERR_FAIL_INDEX_V(p_idx, arg_names.size(), StringName());
+		ERR_FAIL_INDEX_V(int(p_idx), int(arg_names.size()), StringName());
 		return arg_names[p_idx];
 #else
 		return StringName();
 #endif
 	}
-	Variant get_default_argument(int p_idx) const {
+	Variant get_default_argument(uint32_t p_idx) const {
 		ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), Variant());
 		return default_arguments[p_idx];
 	}

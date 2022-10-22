@@ -184,7 +184,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 
 	bool error = false;
 
-	for (int i = 0; i < p_files.size(); i++) {
+	for (vec_size i = 0; i < p_files.size(); i++) {
 		Ref<PackedScene> sdata = ResourceLoader::load(p_files[i]);
 		if (!sdata.is_valid()) {
 			current_option = -1;
@@ -218,7 +218,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 	}
 
 	if (error) {
-		for (int i = 0; i < instances.size(); i++) {
+		for (vec_size i = 0; i < instances.size(); i++) {
 			memdelete(instances[i]);
 		}
 		return;
@@ -226,7 +226,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 
 	editor_data->get_undo_redo()->create_action(TTR("Instance Scene(s)"));
 
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		Node *instantiated_scene = instances[i];
 
 		editor_data->get_undo_redo()->add_do_method(parent, "add_child", instantiated_scene, true);
@@ -247,7 +247,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 
 	editor_data->get_undo_redo()->commit_action();
 	_push_item(instances[instances.size() - 1]);
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		emit_signal(SNAME("node_created"), instances[i]);
 	}
 }
@@ -344,7 +344,7 @@ bool SceneTreeDock::_track_inherit(const String &p_target_scene_path, Node *p_de
 			break;
 		}
 	}
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		memdelete(instances[i]);
 	}
 	return result;
@@ -400,7 +400,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					preferred_types.push_back("Node3D");
 				}
 
-				for (int i = 0; i < preferred_types.size(); i++) {
+				for (vec_size i = 0; i < preferred_types.size(); i++) {
 					if (ClassDB::is_parent_class(root_class, preferred_types[i])) {
 						create_dialog->set_preferred_search_result_type(preferred_types[i]);
 						break;
@@ -535,7 +535,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo()->create_action(TTR("Detach Script"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
 			editor_data->get_undo_redo()->add_do_method(EditorNode::get_singleton(), "push_item", (Script *)nullptr);
 
-			for (int i = 0; i < selection.size(); i++) {
+			for (vec_size i = 0; i < selection.size(); i++) {
 				Node *n = Object::cast_to<Node>(selection[i]);
 				Ref<Script> existing = n->get_script();
 				Ref<Script> empty = EditorNode::get_singleton()->get_object_custom_type_base(n);
@@ -609,7 +609,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				editor_data->get_undo_redo()->create_action(TTR("Move Nodes In Parent"));
 			}
 
-			for (int i = 0; i < selection.size(); i++) {
+			for (vec_size i = 0; i < selection.size(); i++) {
 				Node *top_node = selection[i];
 				Node *bottom_node = selection[selection.size() - 1 - i];
 
@@ -831,7 +831,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				String msg;
 				if (remove_list.size() > 1) {
 					bool any_children = false;
-					for (int i = 0; !any_children && i < remove_list.size(); i++) {
+					for (vec_size i = 0; !any_children && i < remove_list.size(); i++) {
 						any_children = remove_list[i]->get_child_count() > 0;
 					}
 
@@ -911,7 +911,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Ref<PackedScene> sd = memnew(PackedScene);
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			new_scene_from_dialog->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
+			for (vec_size i = 0; i < extensions.size(); i++) {
 				new_scene_from_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
@@ -940,7 +940,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_OPEN_DOCUMENTATION: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			for (int i = 0; i < selection.size(); i++) {
+			for (vec_size i = 0; i < selection.size(); i++) {
 				ScriptEditor::get_singleton()->goto_help("class_name:" + selection[i]->get_class());
 			}
 			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
@@ -1433,7 +1433,7 @@ void SceneTreeDock::_node_renamed() {
 }
 
 void SceneTreeDock::_set_owners(Node *p_owner, const Array &p_nodes) {
-	for (int i = 0; i < p_nodes.size(); i++) {
+	for (vec_size i = 0; i < p_nodes.size(); i++) {
 		Node *n = Object::cast_to<Node>(p_nodes[i]);
 		if (!n) {
 			continue;
@@ -1526,7 +1526,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 		case Variant::ARRAY: {
 			Array a = r_variant;
 			bool updated = false;
-			for (int i = 0; i < a.size(); i++) {
+			for (vec_size i = 0; i < a.size(); i++) {
 				Variant value = a[i];
 				if (_check_node_path_recursive(p_root_node, value, p_renames)) {
 					if (!updated) {
@@ -1545,7 +1545,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 		case Variant::DICTIONARY: {
 			Dictionary d = r_variant;
 			bool updated = false;
-			for (int i = 0; i < d.size(); i++) {
+			for (vec_size i = 0; i < d.size(); i++) {
 				Variant value = d.get_value_at_index(i);
 				if (_check_node_path_recursive(p_root_node, value, p_renames)) {
 					if (!updated) {
@@ -1789,7 +1789,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	p_nodes.sort_custom<Node::Comparator>(); //Makes result reliable.
 
 	bool no_change = true;
-	for (int ni = 0; ni < p_nodes.size(); ni++) {
+	for (vec_size ni = 0; ni < p_nodes.size(); ni++) {
 		if (p_nodes[ni] == p_new_parent) {
 			return; // Attempt to reparent to itself.
 		}
@@ -1819,7 +1819,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 	int inc = 0;
 
-	for (int ni = 0; ni < p_nodes.size(); ni++) {
+	for (vec_size ni = 0; ni < p_nodes.size(); ni++) {
 		// No undo implemented for this yet.
 		Node *node = p_nodes[ni];
 
@@ -1899,7 +1899,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	}
 
 	// Add and move in a second step (so old order is preserved).
-	for (int ni = 0; ni < p_nodes.size(); ni++) {
+	for (vec_size ni = 0; ni < p_nodes.size(); ni++) {
 		Node *node = p_nodes[ni];
 
 		List<Node *> owned;
@@ -2149,7 +2149,7 @@ void SceneTreeDock::_update_script_button() {
 	} else {
 		button_create_script->hide();
 		Array selection = editor_selection->get_selected_nodes();
-		for (int i = 0; i < selection.size(); i++) {
+		for (vec_size i = 0; i < selection.size(); i++) {
 			Node *n = Object::cast_to<Node>(selection[i]);
 			if (!n->get_script().is_null()) {
 				button_detach_script->show();

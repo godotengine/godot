@@ -323,7 +323,7 @@ void ScriptEditorQuickOpen::_update_search() {
 	search_options->clear();
 	TreeItem *root = search_options->create_item();
 
-	for (int i = 0; i < functions.size(); i++) {
+	for (vec_size i = 0; i < functions.size(); i++) {
 		String file = functions[i];
 		if ((search_box->get_text().is_empty() || file.findn(search_box->get_text()) != -1)) {
 			TreeItem *ti = search_options->create_item(root);
@@ -523,7 +523,7 @@ void ScriptEditor::_clear_breakpoints() {
 	script_editor_cache->get_sections(&cached_editors);
 	for (const String &E : cached_editors) {
 		Array breakpoints = _get_cached_breakpoints_for_script(E);
-		for (int i = 0; i < breakpoints.size(); i++) {
+		for (vec_size i = 0; i < breakpoints.size(); i++) {
 			EditorDebuggerNode::get_singleton()->set_breakpoint(E, (int)breakpoints[i] + 1, false);
 		}
 
@@ -675,7 +675,7 @@ void ScriptEditor::_update_recent_scripts() {
 	recent_scripts->clear();
 
 	String path;
-	for (int i = 0; i < rc.size(); i++) {
+	for (vec_size i = 0; i < rc.size(); i++) {
 		path = rc[i];
 		recent_scripts->add_item(path.replace("res://", ""));
 	}
@@ -789,7 +789,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	//remove from history
 	history.resize(history_pos + 1);
 
-	for (int i = 0; i < history.size(); i++) {
+	for (vec_size i = 0; i < history.size(); i++) {
 		if (history[i].control == tselected) {
 			history.remove_at(i);
 			i--;
@@ -1161,7 +1161,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
 			file_dialog->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
+			for (vec_size i = 0; i < extensions.size(); i++) {
 				file_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
@@ -1680,7 +1680,7 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 		}
 
 		PackedInt32Array bpoints = se->get_breakpoints();
-		for (int j = 0; j < bpoints.size(); j++) {
+		for (vec_size j = 0; j < bpoints.size(); j++) {
 			p_breakpoints->push_back(base + ":" + itos((int)bpoints[j] + 1));
 		}
 	}
@@ -1694,7 +1694,7 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 		}
 
 		Array breakpoints = _get_cached_breakpoints_for_script(E);
-		for (int i = 0; i < breakpoints.size(); i++) {
+		for (vec_size i = 0; i < breakpoints.size(); i++) {
 			p_breakpoints->push_back(E + ":" + itos((int)breakpoints[i] + 1));
 		}
 	}
@@ -1827,7 +1827,7 @@ void ScriptEditor::_update_members_overview() {
 		functions.sort();
 	}
 
-	for (int i = 0; i < functions.size(); i++) {
+	for (vec_size i = 0; i < functions.size(); i++) {
 		String filter = filter_methods->get_text();
 		String name = functions[i].get_slice(":", 0);
 		if (filter.is_empty() || filter.is_subsequence_ofn(name)) {
@@ -1883,7 +1883,7 @@ void ScriptEditor::_update_help_overview() {
 	}
 
 	Vector<Pair<String, int>> sections = se->get_sections();
-	for (int i = 0; i < sections.size(); i++) {
+	for (vec_size i = 0; i < sections.size(); i++) {
 		help_overview->add_item(sections[i].first);
 		help_overview->set_item_metadata(i, sections[i].second);
 	}
@@ -2004,7 +2004,7 @@ void ScriptEditor::_update_script_names() {
 
 		Vector<String> disambiguated_script_names;
 		Vector<String> full_script_paths;
-		for (int j = 0; j < sedata.size(); j++) {
+		for (vec_size j = 0; j < sedata.size(); j++) {
 			String name = sedata[j].name.replace("(*)", "");
 			ScriptListName script_display = (ScriptListName)(int)EditorSettings::get_singleton()->get("text_editor/script_list/list_script_names_as");
 			switch (script_display) {
@@ -2024,7 +2024,7 @@ void ScriptEditor::_update_script_names() {
 
 		EditorNode::disambiguate_filenames(full_script_paths, disambiguated_script_names);
 
-		for (int j = 0; j < sedata.size(); j++) {
+		for (vec_size j = 0; j < sedata.size(); j++) {
 			if (sedata[j].name.ends_with("(*)")) {
 				sedata.write[j].name = disambiguated_script_names[j] + "(*)";
 			} else {
@@ -2060,7 +2060,7 @@ void ScriptEditor::_update_script_names() {
 		int prev_tab = tab_container->get_previous_tab();
 		int new_cur_tab = -1;
 		int new_prev_tab = -1;
-		for (int i = 0; i < sedata.size(); i++) {
+		for (vec_size i = 0; i < sedata.size(); i++) {
 			tab_container->move_child(sedata[i].ref, i);
 			if (new_prev_tab == -1 && sedata[i].index == prev_tab) {
 				new_prev_tab = i;
@@ -2079,7 +2079,7 @@ void ScriptEditor::_update_script_names() {
 	}
 
 	Vector<_ScriptEditorItemData> sedata_filtered;
-	for (int i = 0; i < sedata.size(); i++) {
+	for (vec_size i = 0; i < sedata.size(); i++) {
 		String filter = filter_scripts->get_text();
 		if (filter.is_empty() || filter.is_subsequence_ofn(sedata[i].name)) {
 			sedata_filtered.push_back(sedata[i]);
@@ -2088,7 +2088,7 @@ void ScriptEditor::_update_script_names() {
 
 	Color tool_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 	tool_color.set_s(tool_color.get_s() * 1.5);
-	for (int i = 0; i < sedata_filtered.size(); i++) {
+	for (vec_size i = 0; i < sedata_filtered.size(); i++) {
 		script_list->add_item(sedata_filtered[i].name, sedata_filtered[i].icon);
 		if (sedata_filtered[i].tool) {
 			script_list->set_item_icon_modulate(-1, tool_color);
@@ -2227,7 +2227,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			int num_chars = 0;
 			bool inside_quotes = false;
 
-			for (int i = 0; i < flags.size(); i++) {
+			for (vec_size i = 0; i < flags.size(); i++) {
 				if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
 					if (!inside_quotes) {
 						from++;
@@ -2309,7 +2309,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	if (!p_resource->is_class("VisualScript")) {
 		bool highlighter_set = false;
-		for (int i = 0; i < syntax_highlighters.size(); i++) {
+		for (vec_size i = 0; i < syntax_highlighters.size(); i++) {
 			Ref<EditorSyntaxHighlighter> highlighter = syntax_highlighters[i]->_create();
 			if (highlighter.is_null()) {
 				continue;
@@ -2709,7 +2709,7 @@ void ScriptEditor::_files_moved(const String &p_old_file, const String &p_new_fi
 
 	// If Script, update breakpoints with debugger.
 	Array breakpoints = _get_cached_breakpoints_for_script(p_new_file);
-	for (int i = 0; i < breakpoints.size(); i++) {
+	for (vec_size i = 0; i < breakpoints.size(); i++) {
 		int line = (int)breakpoints[i] + 1;
 		EditorDebuggerNode::get_singleton()->set_breakpoint(p_old_file, line, false);
 		if (!p_new_file.begins_with("local://") && ResourceLoader::exists(p_new_file, "Script")) {
@@ -2734,7 +2734,7 @@ void ScriptEditor::_file_removed(const String &p_removed_file) {
 	// Check closed.
 	if (script_editor_cache->has_section(p_removed_file)) {
 		Array breakpoints = _get_cached_breakpoints_for_script(p_removed_file);
-		for (int i = 0; i < breakpoints.size(); i++) {
+		for (vec_size i = 0; i < breakpoints.size(); i++) {
 			EditorDebuggerNode::get_singleton()->set_breakpoint(p_removed_file, (int)breakpoints[i] + 1, false);
 		}
 		script_editor_cache->erase_section(p_removed_file);
@@ -2864,7 +2864,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return false; //weird
 		}
 
-		for (int i = 0; i < files.size(); i++) {
+		for (vec_size i = 0; i < files.size(); i++) {
 			String file = files[i];
 			if (file.is_empty() || !FileAccess::exists(file)) {
 				continue;
@@ -2944,7 +2944,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 			new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
 		}
 		int num_tabs_before = tab_container->get_tab_count();
-		for (int i = 0; i < files.size(); i++) {
+		for (vec_size i = 0; i < files.size(); i++) {
 			String file = files[i];
 			if (file.is_empty() || !FileAccess::exists(file)) {
 				continue;
@@ -3102,7 +3102,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
 
-	for (int i = 0; i < scripts.size(); i++) {
+	for (vec_size i = 0; i < scripts.size(); i++) {
 		String path = scripts[i];
 
 		Dictionary script_info = scripts[i];
@@ -3145,7 +3145,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		}
 	}
 
-	for (int i = 0; i < helps.size(); i++) {
+	for (vec_size i = 0; i < helps.size(); i++) {
 		String path = helps[i];
 		if (path.is_empty()) { // invalid, skip
 			continue;
@@ -3180,7 +3180,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		}
 
 		Array breakpoints = _get_cached_breakpoints_for_script(E);
-		for (int i = 0; i < breakpoints.size(); i++) {
+		for (vec_size i = 0; i < breakpoints.size(); i++) {
 			EditorDebuggerNode::get_singleton()->set_breakpoint(E, (int)breakpoints[i] + 1, true);
 		}
 	}
@@ -3302,7 +3302,7 @@ void ScriptEditor::clear_docs_from_script(const Ref<Script> &p_script) {
 	ERR_FAIL_COND(p_script.is_null());
 
 	Vector<DocData::ClassDoc> documentations = p_script->get_documentation();
-	for (int j = 0; j < documentations.size(); j++) {
+	for (vec_size j = 0; j < documentations.size(); j++) {
 		const DocData::ClassDoc &doc = documentations.get(j);
 		if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
 			EditorHelp::get_doc_data()->remove_doc(doc.name);
@@ -3314,7 +3314,7 @@ void ScriptEditor::update_docs_from_script(const Ref<Script> &p_script) {
 	ERR_FAIL_COND(p_script.is_null());
 
 	Vector<DocData::ClassDoc> documentations = p_script->get_documentation();
-	for (int j = 0; j < documentations.size(); j++) {
+	for (vec_size j = 0; j < documentations.size(); j++) {
 		const DocData::ClassDoc &doc = documentations.get(j);
 		EditorHelp::get_doc_data()->add_doc(doc);
 		update_doc(doc.name);

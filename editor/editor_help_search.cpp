@@ -364,35 +364,35 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 				_match_method_name_and_push_back(class_doc.operators, &match.operators);
 			}
 			if (search_flags & SEARCH_SIGNALS) {
-				for (int i = 0; i < class_doc.signals.size(); i++) {
+				for (vec_size i = 0; i < class_doc.signals.size(); i++) {
 					if (_all_terms_in_name(class_doc.signals[i].name)) {
 						match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc.signals[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_CONSTANTS) {
-				for (int i = 0; i < class_doc.constants.size(); i++) {
+				for (vec_size i = 0; i < class_doc.constants.size(); i++) {
 					if (_all_terms_in_name(class_doc.constants[i].name)) {
 						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc.constants[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_PROPERTIES) {
-				for (int i = 0; i < class_doc.properties.size(); i++) {
+				for (vec_size i = 0; i < class_doc.properties.size(); i++) {
 					if (_all_terms_in_name(class_doc.properties[i].name)) {
 						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.properties[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_THEME_ITEMS) {
-				for (int i = 0; i < class_doc.theme_properties.size(); i++) {
+				for (vec_size i = 0; i < class_doc.theme_properties.size(); i++) {
 					if (_all_terms_in_name(class_doc.theme_properties[i].name)) {
 						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc.theme_properties[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_ANNOTATIONS) {
-				for (int i = 0; i < class_doc.annotations.size(); i++) {
+				for (vec_size i = 0; i < class_doc.annotations.size(); i++) {
 					if (_match_string(term, class_doc.annotations[i].name)) {
 						match.annotations.push_back(const_cast<DocData::MethodDoc *>(&class_doc.annotations[i]));
 					}
@@ -452,7 +452,7 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 
 	TreeItem *parent_item = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	bool constructor_created = false;
-	for (int i = 0; i < match.methods.size(); i++) {
+	for (vec_size i = 0; i < match.methods.size(); i++) {
 		String text = match.methods[i]->name;
 		if (!constructor_created) {
 			if (match.doc->name == match.methods[i]->name) {
@@ -466,19 +466,19 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 		}
 		_create_method_item(parent_item, match.doc, text, match.methods[i]);
 	}
-	for (int i = 0; i < match.signals.size(); i++) {
+	for (vec_size i = 0; i < match.signals.size(); i++) {
 		_create_signal_item(parent_item, match.doc, match.signals[i]);
 	}
-	for (int i = 0; i < match.constants.size(); i++) {
+	for (vec_size i = 0; i < match.constants.size(); i++) {
 		_create_constant_item(parent_item, match.doc, match.constants[i]);
 	}
-	for (int i = 0; i < match.properties.size(); i++) {
+	for (vec_size i = 0; i < match.properties.size(); i++) {
 		_create_property_item(parent_item, match.doc, match.properties[i]);
 	}
-	for (int i = 0; i < match.theme_properties.size(); i++) {
+	for (vec_size i = 0; i < match.theme_properties.size(); i++) {
 		_create_theme_property_item(parent_item, match.doc, match.theme_properties[i]);
 	}
-	for (int i = 0; i < match.annotations.size(); i++) {
+	for (vec_size i = 0; i < match.annotations.size(); i++) {
 		// Hide the redundant leading @ symbol.
 		_create_annotation_item(parent_item, match.doc, match.annotations[i]->name.substr(1), match.annotations[i]);
 	}
@@ -496,7 +496,7 @@ bool EditorHelpSearch::Runner::_phase_select_match() {
 
 void EditorHelpSearch::Runner::_match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<DocData::MethodDoc *> *r_match_methods) {
 	// Constructors, Methods, Operators...
-	for (int i = 0; i < p_methods.size(); i++) {
+	for (vec_size i = 0; i < p_methods.size(); i++) {
 		String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? p_methods[i].name : p_methods[i].name.to_lower();
 		if (_all_terms_in_name(method_name) ||
 				(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
@@ -508,7 +508,7 @@ void EditorHelpSearch::Runner::_match_method_name_and_push_back(Vector<DocData::
 }
 
 bool EditorHelpSearch::Runner::_all_terms_in_name(String name) {
-	for (int i = 0; i < terms.size(); i++) {
+	for (vec_size i = 0; i < terms.size(); i++) {
 		if (!_match_string(terms[i], name)) {
 			return false;
 		}
@@ -544,7 +544,7 @@ void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_tex
 
 String EditorHelpSearch::Runner::_build_method_tooltip(const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) const {
 	String tooltip = p_doc->return_type + " " + p_class_doc->name + "." + p_doc->name + "(";
-	for (int i = 0; i < p_doc->arguments.size(); i++) {
+	for (vec_size i = 0; i < p_doc->arguments.size(); i++) {
 		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
 		tooltip += arg.type + " " + arg.name;
 		if (!arg.default_value.is_empty()) {

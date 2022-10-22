@@ -597,7 +597,7 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 
 		if (shader_data->uses_light) {
 			sky_globals.directional_light_count = 0;
-			for (int i = 0; i < (int)p_lights.size(); i++) {
+			for (vec_size i = 0; i < (int)p_lights.size(); i++) {
 				GLES3::LightInstance *li = GLES3::LightStorage::get_singleton()->get_light_instance(p_lights[i]);
 				if (!li) {
 					continue;
@@ -1122,7 +1122,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 
 	//fill list
 
-	for (int i = 0; i < (int)p_render_data->instances->size(); i++) {
+	for (vec_size i = 0; i < (int)p_render_data->instances->size(); i++) {
 		GeometryInstanceGLES3 *inst = static_cast<GeometryInstanceGLES3 *>((*p_render_data->instances)[i]);
 
 		if (p_render_data->cam_orthogonal) {

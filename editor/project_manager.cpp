@@ -593,7 +593,7 @@ private:
 
 					if (failed_files.size()) {
 						String err_msg = TTR("The following files failed extraction from package:") + "\n\n";
-						for (int i = 0; i < failed_files.size(); i++) {
+						for (vec_size i = 0; i < failed_files.size(); i++) {
 							if (i > 15) {
 								err_msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
 								break;
@@ -1283,7 +1283,7 @@ void ProjectList::load_projects() {
 	// If you have 150 projects, it may read through 150 files on your disk at once + load 150 icons.
 
 	// Clear whole list
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		Item &project = _projects.write[i];
 		CRASH_COND(project.control == nullptr);
 		memdelete(project.control); // Why not queue_free()?
@@ -1302,7 +1302,7 @@ void ProjectList::load_projects() {
 	}
 
 	// Create controls
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		create_project_item_control(i);
 	}
 
@@ -1321,7 +1321,7 @@ void ProjectList::update_dock_menu() {
 
 	int favs_added = 0;
 	int total_added = 0;
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		if (!_projects[i].grayed && !_projects[i].missing) {
 			if (_projects[i].favorite) {
 				favs_added++;
@@ -1491,7 +1491,7 @@ void ProjectList::sort_projects() {
 	sorter.compare.order_option = _order_option;
 	sorter.sort(_projects.ptrw(), _projects.size());
 
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
 
 		bool item_visible = true;
@@ -1512,7 +1512,7 @@ void ProjectList::sort_projects() {
 		item.control->set_visible(item_visible);
 	}
 
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
 		item.control->get_parent()->move_child(item.control, i);
 	}
@@ -1535,7 +1535,7 @@ Vector<ProjectList::Item> ProjectList::get_selected_projects() const {
 	}
 	items.resize(_selected_project_paths.size());
 	int j = 0;
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		const Item &item = _projects[i];
 		if (_selected_project_paths.has(item.path)) {
 			items.write[j++] = item;
@@ -1563,7 +1563,7 @@ int ProjectList::get_single_selected_index() const {
 		// Multiple selected, consider the last clicked one as "main"
 		key = _last_clicked;
 	}
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		if (_projects[i].path == key) {
 			return i;
 		}
@@ -1592,7 +1592,7 @@ void ProjectList::remove_project(int p_index, bool p_update_config) {
 }
 
 bool ProjectList::is_any_project_missing() const {
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		if (_projects[i].missing) {
 			return true;
 		}
@@ -1608,7 +1608,7 @@ void ProjectList::erase_missing_projects() {
 	int deleted_count = 0;
 	int remaining_count = 0;
 
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		const Item &item = _projects[i];
 
 		if (item.missing) {
@@ -1637,7 +1637,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 	bool was_selected = _selected_project_paths.has(dir_path);
 
 	// Remove item in any case
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		const Item &existing_item = _projects[i];
 		if (existing_item.path == dir_path) {
 			remove_project(i, false);
@@ -1656,7 +1656,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 
 		sort_projects();
 
-		for (int i = 0; i < _projects.size(); ++i) {
+		for (vec_size i = 0; i < _projects.size(); ++i) {
 			if (_projects[i].path == dir_path) {
 				if (was_selected) {
 					select_project(i);
@@ -1700,7 +1700,7 @@ void ProjectList::select_project(int p_index) {
 	Vector<Item> previous_selected_items = get_selected_projects();
 	_selected_project_paths.clear();
 
-	for (int i = 0; i < previous_selected_items.size(); ++i) {
+	for (vec_size i = 0; i < previous_selected_items.size(); ++i) {
 		previous_selected_items[i].control->queue_redraw();
 	}
 
@@ -1710,7 +1710,7 @@ void ProjectList::select_project(int p_index) {
 void ProjectList::select_first_visible_project() {
 	bool found = false;
 
-	for (int i = 0; i < _projects.size(); i++) {
+	for (vec_size i = 0; i < _projects.size(); i++) {
 		if (_projects[i].control->is_visible()) {
 			select_project(i);
 			found = true;
@@ -1755,7 +1755,7 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 		return;
 	}
 
-	for (int i = 0; i < _projects.size(); ++i) {
+	for (vec_size i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
 		if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
 			_config.erase_section(item.path);
@@ -1803,7 +1803,7 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_shift_pressed() && _selected_project_paths.size() > 0 && !_last_clicked.is_empty() && clicked_project.path != _last_clicked) {
 			int anchor_index = -1;
-			for (int i = 0; i < _projects.size(); ++i) {
+			for (vec_size i = 0; i < _projects.size(); ++i) {
 				const Item &p = _projects[i];
 				if (p.path == _last_clicked) {
 					anchor_index = p.control->get_index();
@@ -1849,7 +1849,7 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 	sort_projects();
 
 	if (item.favorite) {
-		for (int i = 0; i < _projects.size(); ++i) {
+		for (vec_size i = 0; i < _projects.size(); ++i) {
 			if (_projects[i].path == item.path) {
 				ensure_project_visible(i);
 				break;
@@ -1983,7 +1983,7 @@ void ProjectManager::_update_project_buttons() {
 	bool empty_selection = selected_projects.is_empty();
 
 	bool is_missing_project_selected = false;
-	for (int i = 0; i < selected_projects.size(); ++i) {
+	for (vec_size i = 0; i < selected_projects.size(); ++i) {
 		if (selected_projects[i].missing) {
 			is_missing_project_selected = true;
 			break;
@@ -2099,7 +2099,7 @@ void ProjectManager::_load_recent_projects() {
 void ProjectManager::_on_projects_updated() {
 	Vector<ProjectList::Item> selected_projects = _project_list->get_selected_projects();
 	int index = 0;
-	for (int i = 0; i < selected_projects.size(); ++i) {
+	for (vec_size i = 0; i < selected_projects.size(); ++i) {
 		index = _project_list->refresh_project(selected_projects[i].path);
 	}
 	if (index != -1) {
@@ -2223,7 +2223,7 @@ void ProjectManager::_open_selected_projects_ask() {
 	// Check if the project is using features not supported by this build of Godot.
 	if (!unsupported_features.is_empty()) {
 		String warning_message = "";
-		for (int i = 0; i < unsupported_features.size(); i++) {
+		for (vec_size i = 0; i < unsupported_features.size(); i++) {
 			String feature = unsupported_features[i];
 			if (feature == "Double Precision") {
 				warning_message += TTR("Warning: This project uses double precision floats, but this version of\nGodot uses single precision floats. Opening this project may cause data loss.\n\n");
@@ -2289,7 +2289,7 @@ void ProjectManager::_perform_full_project_conversion() {
 void ProjectManager::_run_project_confirm() {
 	Vector<ProjectList::Item> selected_list = _project_list->get_selected_projects();
 
-	for (int i = 0; i < selected_list.size(); ++i) {
+	for (vec_size i = 0; i < selected_list.size(); ++i) {
 		const String &selected_main = selected_list[i].main_scene;
 		if (selected_main.is_empty()) {
 			run_error_diag->set_text(TTR("Can't run project: no main scene defined.\nPlease edit the project and set the main scene in the Project Settings under the \"Application\" category."));
@@ -2458,7 +2458,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 	}
 	HashSet<String> folders_set;
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	for (int i = 0; i < p_files.size(); i++) {
+	for (vec_size i = 0; i < p_files.size(); i++) {
 		String file = p_files[i];
 		folders_set.insert(da->dir_exists(file) ? file : file.get_base_dir());
 	}
@@ -2496,7 +2496,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 }
 
 void ProjectManager::_scan_multiple_folders(PackedStringArray p_files) {
-	for (int i = 0; i < p_files.size(); i++) {
+	for (vec_size i = 0; i < p_files.size(); i++) {
 		_scan_begin(p_files.get(i));
 	}
 }
@@ -2670,7 +2670,7 @@ ProjectManager::ProjectManager() {
 		sort_filter_titles.push_back(TTR("Name"));
 		sort_filter_titles.push_back(TTR("Path"));
 
-		for (int i = 0; i < sort_filter_titles.size(); i++) {
+		for (vec_size i = 0; i < sort_filter_titles.size(); i++) {
 			filter_option->add_item(sort_filter_titles[i]);
 		}
 
@@ -2818,7 +2818,7 @@ ProjectManager::ProjectManager() {
 		String current_lang = EditorSettings::get_singleton()->get("interface/editor/editor_language");
 		language_btn->set_text(current_lang);
 
-		for (int i = 0; i < editor_languages.size(); i++) {
+		for (vec_size i = 0; i < editor_languages.size(); i++) {
 			String lang = editor_languages[i];
 			String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
 			language_btn->add_item(vformat("[%s] %s", lang, lang_name), i);

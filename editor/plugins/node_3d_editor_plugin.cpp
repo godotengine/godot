@@ -124,7 +124,7 @@ void ViewportRotationControl::_draw() {
 
 	Vector<Axis2D> axis_to_draw;
 	_get_sorted_axis(axis_to_draw);
-	for (int i = 0; i < axis_to_draw.size(); ++i) {
+	for (vec_size i = 0; i < axis_to_draw.size(); ++i) {
 		_draw_axis(axis_to_draw[i]);
 	}
 }
@@ -239,7 +239,7 @@ void ViewportRotationControl::_update_focus() {
 	Vector<Axis2D> axes;
 	_get_sorted_axis(axes);
 
-	for (int i = 0; i < axes.size(); i++) {
+	for (vec_size i = 0; i < axes.size(); i++) {
 		const Axis2D &axis = axes[i];
 		if (mouse_pos.distance_to(axis.screen_point) < AXIS_CIRCLE_RADIUS) {
 			focused_axis = axis.axis;
@@ -533,7 +533,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 	Node *item = nullptr;
 	float closest_dist = 1e20;
 
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
 
 		if (!spat) {
@@ -542,7 +542,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 
 		Vector<Ref<Node3DGizmo>> gizmos = spat->get_gizmos();
 
-		for (int j = 0; j < gizmos.size(); j++) {
+		for (vec_size j = 0; j < gizmos.size(); j++) {
 			Ref<EditorNode3DGizmo> seg = gizmos[j];
 
 			if ((!seg.is_valid()) || found_gizmos.has(seg)) {
@@ -591,7 +591,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
 	HashSet<Node3D *> found_nodes;
 
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
 
 		if (!spat) {
@@ -607,7 +607,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 		}
 
 		Vector<Ref<Node3DGizmo>> gizmos = spat->get_gizmos();
-		for (int j = 0; j < gizmos.size(); j++) {
+		for (vec_size j = 0; j < gizmos.size(); j++) {
 			Ref<EditorNode3DGizmo> seg = gizmos[j];
 
 			if (!seg.is_valid()) {
@@ -725,7 +725,7 @@ void Node3DEditorViewport::_select_region() {
 
 			bool found_subgizmos = false;
 			Vector<Ref<Node3DGizmo>> gizmos = single_selected->get_gizmos();
-			for (int j = 0; j < gizmos.size(); j++) {
+			for (vec_size j = 0; j < gizmos.size(); j++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[j];
 				if (!seg.is_valid()) {
 					continue;
@@ -738,7 +738,7 @@ void Node3DEditorViewport::_select_region() {
 				Vector<int> subgizmos = seg->subgizmos_intersect_frustum(camera, frustum);
 				if (!subgizmos.is_empty()) {
 					se->gizmo = seg;
-					for (int i = 0; i < subgizmos.size(); i++) {
+					for (vec_size i = 0; i < subgizmos.size(); i++) {
 						int subgizmo_id = subgizmos[i];
 						if (!se->subgizmos.has(subgizmo_id)) {
 							se->subgizmos.insert(subgizmo_id, se->gizmo->get_subgizmo_transform(subgizmo_id));
@@ -777,7 +777,7 @@ void Node3DEditorViewport::_select_region() {
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
 
-	for (int i = 0; i < instances.size(); i++) {
+	for (vec_size i = 0; i < instances.size(); i++) {
 		Node3D *sp = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
 		if (!sp || _is_node_locked(sp)) {
 			continue;
@@ -812,7 +812,7 @@ void Node3DEditorViewport::_select_region() {
 		}
 
 		Vector<Ref<Node3DGizmo>> gizmos = sp->get_gizmos();
-		for (int j = 0; j < gizmos.size(); j++) {
+		for (vec_size j = 0; j < gizmos.size(); j++) {
 			Ref<EditorNode3DGizmo> seg = gizmos[j];
 			if (!seg.is_valid()) {
 				continue;
@@ -824,7 +824,7 @@ void Node3DEditorViewport::_select_region() {
 		}
 	}
 
-	for (int i = 0; i < selected.size(); i++) {
+	for (vec_size i = 0; i < selected.size(); i++) {
 		if (!editor_selection->is_selected(selected[i])) {
 			editor_selection->add_node(selected[i]);
 		}
@@ -1283,7 +1283,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 	Node *scene = EditorNode::get_singleton()->get_edited_scene();
 
-	for (int i = 0; i < selection_results.size(); i++) {
+	for (vec_size i = 0; i < selection_results.size(); i++) {
 		Node3D *item = selection_results[i].item;
 		if (item != scene && item->get_owner() != scene && item != scene->get_deepest_editable_node(item)) {
 			//invalid result
@@ -1305,7 +1305,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
 		StringName root_name = root_path.get_name(root_path.get_name_count() - 1);
 
-		for (int i = 0; i < selection_results.size(); i++) {
+		for (vec_size i = 0; i < selection_results.size(); i++) {
 			Node3D *spat = selection_results[i].item;
 
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
@@ -1509,7 +1509,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						Vector<Ref<Node3DGizmo>> gizmos = spatial_editor->get_single_selected_node()->get_gizmos();
 
 						bool intersected_handle = false;
-						for (int i = 0; i < gizmos.size(); i++) {
+						for (vec_size i = 0; i < gizmos.size(); i++) {
 							Ref<EditorNode3DGizmo> seg = gizmos[i];
 
 							if ((!seg.is_valid())) {
@@ -1545,7 +1545,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						Vector<Ref<Node3DGizmo>> gizmos = spatial_editor->get_single_selected_node()->get_gizmos();
 
 						bool intersected_subgizmo = false;
-						for (int i = 0; i < gizmos.size(); i++) {
+						for (vec_size i = 0; i < gizmos.size(); i++) {
 							Ref<EditorNode3DGizmo> seg = gizmos[i];
 
 							if ((!seg.is_valid())) {
@@ -1678,7 +1678,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			int found_handle = -1;
 			bool found_handle_secondary = false;
 
-			for (int i = 0; i < gizmos.size(); i++) {
+			for (vec_size i = 0; i < gizmos.size(); i++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[i];
 				if (!seg.is_valid()) {
 					continue;
@@ -3832,7 +3832,7 @@ Node *Node3DEditorViewport::_sanitize_preview_node(Node *p_node) const {
 }
 
 void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) const {
-	for (int i = 0; i < files.size(); i++) {
+	for (vec_size i = 0; i < files.size(); i++) {
 		String path = files[i];
 		Ref<Resource> res = ResourceLoader::load(path);
 		ERR_CONTINUE(res.is_null());
@@ -4080,7 +4080,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 
 	editor_data->get_undo_redo()->create_action(TTR("Create Node"));
 
-	for (int i = 0; i < selected_files.size(); i++) {
+	for (vec_size i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];
 		Ref<Resource> res = ResourceLoader::load(path);
 		if (res.is_null()) {
@@ -4100,7 +4100,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 
 	if (error_files.size() > 0) {
 		String files_str;
-		for (int i = 0; i < error_files.size(); i++) {
+		for (vec_size i = 0; i < error_files.size(); i++) {
 			files_str += error_files[i].get_file().get_basename() + ",";
 		}
 		files_str = files_str.substr(0, files_str.length() - 1);
@@ -4128,7 +4128,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			List<String> texture_extensions;
 			ResourceLoader::get_recognized_extensions_for_type("Texture", &texture_extensions);
 
-			for (int i = 0; i < files.size(); i++) {
+			for (vec_size i = 0; i < files.size(); i++) {
 				// Check if dragged files with mesh or scene extension can be created at least once.
 				if (mesh_extensions.find(files[i].get_extension()) ||
 						scene_extensions.find(files[i].get_extension()) ||
@@ -4649,7 +4649,7 @@ void Node3DEditorViewport::shortcut_changed_callback(const Ref<Shortcut> p_short
 		im->add_action(p_shortcut_path);
 	}
 
-	for (int i = 0; i < p_shortcut->get_events().size(); i++) {
+	for (vec_size i = 0; i < p_shortcut->get_events().size(); i++) {
 		im->action_add_event(p_shortcut_path, p_shortcut->get_events()[i]);
 	}
 }
@@ -5509,7 +5509,7 @@ Dictionary Node3DEditor::get_state() const {
 	d["zfar"] = get_zfar();
 
 	Dictionary gizmos_status;
-	for (int i = 0; i < gizmo_plugins_by_name.size(); i++) {
+	for (vec_size i = 0; i < gizmo_plugins_by_name.size(); i++) {
 		if (!gizmo_plugins_by_name[i]->can_be_hidden()) {
 			continue;
 		}
@@ -5634,12 +5634,12 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		List<Variant> keys;
 		gizmos_status.get_key_list(&keys);
 
-		for (int j = 0; j < gizmo_plugins_by_name.size(); ++j) {
+		for (vec_size j = 0; j < gizmo_plugins_by_name.size(); ++j) {
 			if (!gizmo_plugins_by_name[j]->can_be_hidden()) {
 				continue;
 			}
 			int state = EditorNode3DGizmoPlugin::VISIBLE;
-			for (int i = 0; i < keys.size(); i++) {
+			for (vec_size i = 0; i < keys.size(); i++) {
 				if (gizmo_plugins_by_name.write[j]->get_gizmo_name() == String(keys[i])) {
 					state = gizmos_status[keys[i]];
 					break;
@@ -5688,7 +5688,7 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 	if (p_spatial != selected) {
 		if (selected) {
 			Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
-			for (int i = 0; i < gizmos.size(); i++) {
+			for (vec_size i = 0; i < gizmos.size(); i++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[i];
 				if (!seg.is_valid()) {
 					continue;
@@ -5712,7 +5712,7 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 
 		if (selected) {
 			Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
-			for (int i = 0; i < gizmos.size(); i++) {
+			for (vec_size i = 0; i < gizmos.size(); i++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[i];
 				if (!seg.is_valid()) {
 					continue;
@@ -6597,7 +6597,7 @@ void fragment() {
 void Node3DEditor::_update_gizmos_menu() {
 	gizmos_menu->clear();
 
-	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
+	for (vec_size i = 0; i < gizmo_plugins_by_name.size(); ++i) {
 		if (!gizmo_plugins_by_name[i]->can_be_hidden()) {
 			continue;
 		}
@@ -6623,7 +6623,7 @@ void Node3DEditor::_update_gizmos_menu() {
 }
 
 void Node3DEditor::_update_gizmos_menu_theme() {
-	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
+	for (vec_size i = 0; i < gizmo_plugins_by_name.size(); ++i) {
 		if (!gizmo_plugins_by_name[i]->can_be_hidden()) {
 			continue;
 		}
@@ -6864,7 +6864,7 @@ void Node3DEditor::_selection_changed() {
 	_refresh_menu_icons();
 	if (selected && editor_selection->get_selected_node_list().size() != 1) {
 		Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
-		for (int i = 0; i < gizmos.size(); i++) {
+		for (vec_size i = 0; i < gizmos.size(); i++) {
 			Ref<EditorNode3DGizmo> seg = gizmos[i];
 			if (!seg.is_valid()) {
 				continue;
@@ -7030,7 +7030,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 	if (keys.size()) {
 		// For snapping to be performed, there must be solid geometry under at least one of the selected nodes.
 		// We need to check this before snapping to register the undo/redo action only if needed.
-		for (int i = 0; i < keys.size(); i++) {
+		for (vec_size i = 0; i < keys.size(); i++) {
 			Node *node = Object::cast_to<Node>(keys[i]);
 			Node3D *sp = Object::cast_to<Node3D>(node);
 			Dictionary d = snap_data[node];
@@ -7052,7 +7052,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 			undo_redo->create_action(TTR("Snap Nodes to Floor"));
 
 			// Perform snapping if at least one node can be snapped
-			for (int i = 0; i < keys.size(); i++) {
+			for (vec_size i = 0; i < keys.size(); i++) {
 				Node *node = Object::cast_to<Node>(keys[i]);
 				Node3D *sp = Object::cast_to<Node3D>(node);
 				Dictionary d = snap_data[node];
@@ -7368,7 +7368,7 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 
 	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 	if (edited_scene && (sp == edited_scene || (sp->get_owner() && edited_scene->is_ancestor_of(sp)))) {
-		for (int i = 0; i < gizmo_plugins_by_priority.size(); ++i) {
+		for (vec_size i = 0; i < gizmo_plugins_by_priority.size(); ++i) {
 			Ref<EditorNode3DGizmo> seg = gizmo_plugins_by_priority.write[i]->get_gizmo(sp);
 
 			if (seg.is_valid()) {

@@ -32,7 +32,7 @@
 #include "scene/2d/skeleton_2d.h"
 
 void SkeletonModificationStack2D::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < modifications.size(); i++) {
+	for (vec_size i = 0; i < modifications.size(); i++) {
 		p_list->push_back(
 				PropertyInfo(Variant::OBJECT, "modifications/" + itos(i),
 						PROPERTY_HINT_RESOURCE_TYPE,
@@ -70,7 +70,7 @@ void SkeletonModificationStack2D::setup() {
 
 	if (skeleton != nullptr) {
 		is_setup = true;
-		for (int i = 0; i < modifications.size(); i++) {
+		for (vec_size i = 0; i < modifications.size(); i++) {
 			if (!modifications[i].is_valid()) {
 				continue;
 			}
@@ -99,7 +99,7 @@ void SkeletonModificationStack2D::execute(float p_delta, int p_execution_mode) {
 		return;
 	}
 
-	for (int i = 0; i < modifications.size(); i++) {
+	for (vec_size i = 0; i < modifications.size(); i++) {
 		if (!modifications[i].is_valid()) {
 			continue;
 		}
@@ -116,7 +116,7 @@ void SkeletonModificationStack2D::draw_editor_gizmos() {
 	}
 
 	if (editor_gizmo_dirty) {
-		for (int i = 0; i < modifications.size(); i++) {
+		for (vec_size i = 0; i < modifications.size(); i++) {
 			if (!modifications[i].is_valid()) {
 				continue;
 			}
@@ -146,7 +146,7 @@ void SkeletonModificationStack2D::set_editor_gizmos_dirty(bool p_dirty) {
 }
 
 void SkeletonModificationStack2D::enable_all_modifications(bool p_enabled) {
-	for (int i = 0; i < modifications.size(); i++) {
+	for (vec_size i = 0; i < modifications.size(); i++) {
 		if (!modifications[i].is_valid()) {
 			continue;
 		}

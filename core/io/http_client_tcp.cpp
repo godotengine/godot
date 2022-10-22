@@ -165,7 +165,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	bool add_clen = p_body_size > 0;
 	bool add_uagent = true;
 	bool add_accept = true;
-	for (int i = 0; i < p_headers.size(); i++) {
+	for (vec_size i = 0; i < p_headers.size(); i++) {
 		request += p_headers[i] + "\r\n";
 		if (add_host && p_headers[i].findn("Host:") == 0) {
 			add_host = false;
@@ -231,7 +231,7 @@ Error HTTPClientTCP::get_response_headers(List<String> *r_response) {
 		return ERR_INVALID_PARAMETER;
 	}
 
-	for (int i = 0; i < response_headers.size(); i++) {
+	for (vec_size i = 0; i < response_headers.size(); i++) {
 		r_response->push_back(response_headers[i]);
 	}
 
@@ -499,7 +499,7 @@ Error HTTPClientTCP::poll() {
 					// Broken web servers should be fixed.
 					bool keep_alive = true;
 
-					for (int i = 0; i < responses.size(); i++) {
+					for (vec_size i = 0; i < responses.size(); i++) {
 						String header = responses[i].strip_edges();
 						String s = header.to_lower();
 						if (s.length() == 0) {

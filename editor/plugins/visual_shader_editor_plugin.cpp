@@ -493,7 +493,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		port_offset++;
 	}
 
-	for (int i = 0; i < editor->plugins.size(); i++) {
+	for (vec_size i = 0; i < editor->plugins.size(); i++) {
 		vsnode->set_meta("id", p_id);
 		vsnode->set_meta("shader_type", (int)p_type);
 		custom_editor = editor->plugins.write[i]->create_editor(visual_shader, vsnode);
@@ -1153,7 +1153,7 @@ void VisualShaderEditor::remove_plugin(const Ref<VisualShaderNodePlugin> &p_plug
 }
 
 void VisualShaderEditor::clear_custom_types() {
-	for (int i = 0; i < add_options.size(); i++) {
+	for (vec_size i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
 			add_options.remove_at(i);
 			i--;
@@ -1165,7 +1165,7 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 	ERR_FAIL_COND(!p_name.is_valid_identifier());
 	ERR_FAIL_COND(!p_script.is_valid());
 
-	for (int i = 0; i < add_options.size(); i++) {
+	for (vec_size i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
 			if (add_options[i].script == p_script) {
 				return;
@@ -1185,7 +1185,7 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 	bool begin = false;
 	String root = p_category.split("/")[0];
 
-	for (int i = 0; i < add_options.size(); i++) {
+	for (vec_size i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
 			if (add_options[i].category == root) {
 				if (!begin) {
@@ -1229,7 +1229,7 @@ void VisualShaderEditor::_update_nodes() {
 	List<StringName> class_list;
 	ScriptServer::get_global_class_list(&class_list);
 	Dictionary added;
-	for (int i = 0; i < class_list.size(); i++) {
+	for (vec_size i = 0; i < class_list.size(); i++) {
 		if (ScriptServer::get_global_class_native_base(class_list[i]) == "VisualShaderNodeCustom") {
 			String script_path = ScriptServer::get_global_class_path(class_list[i]);
 			Ref<Resource> res = ResourceLoader::load(script_path);
@@ -1311,7 +1311,7 @@ void VisualShaderEditor::_update_nodes() {
 					item.disabled = false;
 				}
 			} else {
-				for (int i = 0; i < add_options.size(); i++) {
+				for (vec_size i = 0; i < add_options.size(); i++) {
 					if (add_options[i].type == item.node->get_class_name()) {
 						if ((add_options[i].func != visual_shader->get_mode() && add_options[i].func != -1) || !_is_available(add_options[i].mode)) {
 							item.disabled = true;
@@ -1328,7 +1328,7 @@ void VisualShaderEditor::_update_nodes() {
 	Array keys = added.keys();
 	keys.sort();
 
-	for (int i = 0; i < keys.size(); i++) {
+	for (vec_size i = 0; i < keys.size(); i++) {
 		const Variant &key = keys.get(i);
 
 		const Dictionary &value = (Dictionary)added[key];
@@ -1376,7 +1376,7 @@ void VisualShaderEditor::_update_options_menu() {
 		type_filter_exceptions.append("VisualShaderNodeExpression");
 	}
 
-	for (int i = 0; i < add_options.size(); i++) {
+	for (vec_size i = 0; i < add_options.size(); i++) {
 		if (!use_filter || add_options[i].name.findn(filter) != -1) {
 			// port type filtering
 			if (members_output_port_type != VisualShaderNode::PORT_TYPE_MAX || members_input_port_type != VisualShaderNode::PORT_TYPE_MAX) {
@@ -1473,7 +1473,7 @@ void VisualShaderEditor::_update_options_menu() {
 	options.append_array(custom_options);
 	options.append_array(embedded_options);
 
-	for (int i = 0; i < options.size(); i++) {
+	for (vec_size i = 0; i < options.size(); i++) {
 		String path = options[i].category;
 		Vector<String> subfolders = path.split("/");
 		TreeItem *category = nullptr;
@@ -1481,7 +1481,7 @@ void VisualShaderEditor::_update_options_menu() {
 		if (!folders.has(path)) {
 			category = root;
 			String path_temp = "";
-			for (int j = 0; j < subfolders.size(); j++) {
+			for (vec_size j = 0; j < subfolders.size(); j++) {
 				path_temp += subfolders[j];
 				if (!folders.has(path_temp)) {
 					category = members->create_item(category);
@@ -1617,7 +1617,7 @@ void VisualShaderEditor::_update_parameters(bool p_update_refs) {
 
 	for (int t = 0; t < VisualShader::TYPE_MAX; t++) {
 		Vector<int> tnodes = visual_shader->get_node_list((VisualShader::Type)t);
-		for (int i = 0; i < tnodes.size(); i++) {
+		for (vec_size i = 0; i < tnodes.size(); i++) {
 			Ref<VisualShaderNode> vsnode = visual_shader->get_node((VisualShader::Type)t, tnodes[i]);
 			Ref<VisualShaderNodeParameter> parameter = vsnode;
 
@@ -1665,7 +1665,7 @@ void VisualShaderEditor::_update_parameter_refs(HashSet<String> &p_deleted_names
 		VisualShader::Type type = VisualShader::Type(i);
 
 		Vector<int> nodes = visual_shader->get_node_list(type);
-		for (int j = 0; j < nodes.size(); j++) {
+		for (vec_size j = 0; j < nodes.size(); j++) {
 			if (j > 0) {
 				Ref<VisualShaderNodeParameterRef> ref = visual_shader->get_node(type, nodes[j]);
 				if (ref.is_valid()) {
@@ -1718,7 +1718,7 @@ void VisualShaderEditor::_update_graph() {
 	graph_plugin->make_dirty(true);
 	graph_plugin->update_theme();
 
-	for (int n_i = 0; n_i < nodes.size(); n_i++) {
+	for (vec_size n_i = 0; n_i < nodes.size(); n_i++) {
 		graph_plugin->add_node(type, nodes[n_i]);
 	}
 
@@ -2912,7 +2912,7 @@ void VisualShaderEditor::_add_varying(const String &p_name, VisualShader::Varyin
 		VisualShader::Type type = VisualShader::Type(i);
 		Vector<int> nodes = visual_shader->get_node_list(type);
 
-		for (int j = 0; j < nodes.size(); j++) {
+		for (vec_size j = 0; j < nodes.size(); j++) {
 			int node_id = nodes[j];
 			Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, node_id);
 			Ref<VisualShaderNodeVarying> var = vsnode;
@@ -2948,7 +2948,7 @@ void VisualShaderEditor::_remove_varying(const String &p_name) {
 		VisualShader::Type type = VisualShader::Type(i);
 		Vector<int> nodes = visual_shader->get_node_list(type);
 
-		for (int j = 0; j < nodes.size(); j++) {
+		for (vec_size j = 0; j < nodes.size(); j++) {
 			int node_id = nodes[j];
 			Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, node_id);
 			Ref<VisualShaderNodeVarying> var = vsnode;
@@ -3433,7 +3433,7 @@ void VisualShaderEditor::_delete_nodes_request(const TypedArray<StringName> &p_n
 			}
 		}
 	} else {
-		for (int i = 0; i < p_nodes.size(); i++) {
+		for (vec_size i = 0; i < p_nodes.size(); i++) {
 			to_erase.push_back(p_nodes[i].operator String().to_int());
 		}
 	}
@@ -4512,7 +4512,7 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 			if (d["files"].get_type() == Variant::PACKED_STRING_ARRAY) {
 				PackedStringArray arr = d["files"];
-				for (int i = 0; i < arr.size(); i++) {
+				for (vec_size i = 0; i < arr.size(); i++) {
 					String type = ResourceLoader::get_resource_type(arr[i]);
 					if (type == "GDScript") {
 						Ref<Script> scr = ResourceLoader::load(arr[i]);
@@ -4522,7 +4522,7 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 							int idx = -1;
 
-							for (int j = custom_node_option_idx; j < add_options.size(); j++) {
+							for (vec_size j = custom_node_option_idx; j < add_options.size(); j++) {
 								if (add_options[j].script.is_valid()) {
 									if (add_options[j].script->get_path() == arr[i]) {
 										idx = j;
@@ -5932,7 +5932,7 @@ public:
 		if (updating) {
 			return;
 		}
-		for (int i = 0; i < properties.size(); i++) {
+		for (vec_size i = 0; i < properties.size(); i++) {
 			properties[i]->update_property();
 		}
 	}
@@ -5951,7 +5951,7 @@ public:
 	Vector<Label *> prop_names;
 
 	void _show_prop_names(bool p_show) {
-		for (int i = 0; i < prop_names.size(); i++) {
+		for (vec_size i = 0; i < prop_names.size(); i++) {
 			prop_names[i]->set_visible(p_show);
 		}
 	}
@@ -5966,7 +5966,7 @@ public:
 		node_id = (int)p_node->get_meta("id");
 		shader_type = VisualShader::Type((int)p_node->get_meta("shader_type"));
 
-		for (int i = 0; i < p_properties.size(); i++) {
+		for (vec_size i = 0; i < p_properties.size(); i++) {
 			HBoxContainer *hbox = memnew(HBoxContainer);
 			hbox->set_h_size_flags(SIZE_EXPAND_FILL);
 			add_child(hbox);
@@ -6037,7 +6037,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 	Vector<PropertyInfo> pinfo;
 
 	for (const PropertyInfo &E : props) {
-		for (int i = 0; i < properties.size(); i++) {
+		for (vec_size i = 0; i < properties.size(); i++) {
 			if (E.name == String(properties[i])) {
 				pinfo.push_back(E);
 			}
@@ -6053,7 +6053,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 	Ref<VisualShaderNode> node = p_node;
 	Vector<EditorProperty *> editors;
 
-	for (int i = 0; i < pinfo.size(); i++) {
+	for (vec_size i = 0; i < pinfo.size(); i++) {
 		EditorProperty *prop = EditorInspector::instantiate_property_editor(node.ptr(), pinfo[i].type, pinfo[i].name, pinfo[i].hint, pinfo[i].hint_string, pinfo[i].usage);
 		if (!prop) {
 			return nullptr;
@@ -6122,7 +6122,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 	for (int i = 0; i < VisualShader::TYPE_MAX; i++) {
 		VisualShader::Type type = VisualShader::Type(i);
 		Vector<int> nodes = visual_shader->get_node_list(type);
-		for (int j = 0; j < nodes.size(); j++) {
+		for (vec_size j = 0; j < nodes.size(); j++) {
 			Ref<VisualShaderNodeInput> input = visual_shader->get_node(type, nodes[j]);
 			if (!input.is_valid()) {
 				continue;
@@ -6173,7 +6173,7 @@ void EditorPropertyVisualShaderMode::update_property() {
 }
 
 void EditorPropertyVisualShaderMode::setup(const Vector<String> &p_options) {
-	for (int i = 0; i < p_options.size(); i++) {
+	for (vec_size i = 0; i < p_options.size(); i++) {
 		options->add_item(p_options[i], i);
 	}
 }
@@ -6223,8 +6223,8 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	Ref<Shader> preview_shader;
 	preview_shader.instantiate();
 	preview_shader->set_code(shader_code);
-	for (int i = 0; i < default_textures.size(); i++) {
-		for (int j = 0; j < default_textures[i].params.size(); j++) {
+	for (vec_size i = 0; i < default_textures.size(); i++) {
+		for (vec_size j = 0; j < default_textures[i].params.size(); j++) {
 			preview_shader->set_default_texture_parameter(default_textures[i].name, default_textures[i].params[j], j);
 		}
 	}

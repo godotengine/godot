@@ -239,7 +239,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		EditorSettings::get_singleton()->set_favorites(favorite_paths);
 	}
 
-	for (int i = 0; i < favorite_paths.size(); i++) {
+	for (vec_size i = 0; i < favorite_paths.size(); i++) {
 		String fave = favorite_paths[i];
 		if (!fave.begins_with("res://")) {
 			continue;
@@ -954,7 +954,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 		// Tooltip.
 		if (finfo->sources.size()) {
-			for (int j = 0; j < finfo->sources.size(); j++) {
+			for (vec_size j = 0; j < finfo->sources.size(); j++) {
 				tooltip += "\nSource: " + finfo->sources[j];
 			}
 		}
@@ -1188,7 +1188,7 @@ void FileSystemDock::_find_remaps(EditorFileSystemDirectory *p_efsd, const HashM
 	}
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		Vector<String> deps = p_efsd->get_file_deps(i);
-		for (int j = 0; j < deps.size(); j++) {
+		for (vec_size j = 0; j < deps.size(); j++) {
 			if (r_renames.has(deps[j])) {
 				r_to_remaps.push_back(p_efsd->get_file_path(i));
 				break;
@@ -1237,7 +1237,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		}
 
 		// Update scene if it is open.
-		for (int i = 0; i < file_changed_paths.size(); ++i) {
+		for (vec_size i = 0; i < file_changed_paths.size(); ++i) {
 			String new_item_path = p_item.is_file ? new_path : file_changed_paths[i].replace_first(old_path, new_path);
 			if (ResourceLoader::get_resource_type(new_item_path) == "PackedScene" && EditorNode::get_singleton()->is_scene_open(file_changed_paths[i])) {
 				EditorData *ed = &EditorNode::get_singleton()->get_editor_data();
@@ -1252,12 +1252,12 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		}
 
 		// Only treat as a changed dependency if it was successfully moved.
-		for (int i = 0; i < file_changed_paths.size(); ++i) {
+		for (vec_size i = 0; i < file_changed_paths.size(); ++i) {
 			p_file_renames[file_changed_paths[i]] = file_changed_paths[i].replace_first(old_path, new_path);
 			print_verbose("  Remap: " + file_changed_paths[i] + " -> " + p_file_renames[file_changed_paths[i]]);
 			emit_signal(SNAME("files_moved"), file_changed_paths[i], p_file_renames[file_changed_paths[i]]);
 		}
-		for (int i = 0; i < folder_changed_paths.size(); ++i) {
+		for (vec_size i = 0; i < folder_changed_paths.size(); ++i) {
 			p_folder_renames[folder_changed_paths[i]] = folder_changed_paths[i].replace_first(old_path, new_path);
 			emit_signal(SNAME("folder_moved"), folder_changed_paths[i], p_folder_renames[folder_changed_paths[i]].substr(0, p_folder_renames[folder_changed_paths[i]].length() - 1));
 		}
@@ -1373,7 +1373,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 	// 2) ResourceLoader can use the new paths without needing to call rescan.
 	Vector<String> remaps;
 	_find_remaps(EditorFileSystem::get_singleton()->get_filesystem(), p_renames, remaps);
-	for (int i = 0; i < remaps.size(); ++i) {
+	for (vec_size i = 0; i < remaps.size(); ++i) {
 		// Because we haven't called a rescan yet the found remap might still be an old path itself.
 		String file = p_renames.has(remaps[i]) ? p_renames[remaps[i]] : remaps[i];
 		print_verbose("Remapping dependencies for: " + file);
@@ -1441,7 +1441,7 @@ void FileSystemDock::_save_scenes_after_move(const HashMap<String, String> &p_re
 	_find_remaps(EditorFileSystem::get_singleton()->get_filesystem(), p_renames, remaps);
 	Vector<String> new_filenames;
 
-	for (int i = 0; i < remaps.size(); ++i) {
+	for (vec_size i = 0; i < remaps.size(); ++i) {
 		String file = p_renames.has(remaps[i]) ? p_renames[remaps[i]] : remaps[i];
 		if (ResourceLoader::get_resource_type(file) == "PackedScene") {
 			new_filenames.push_back(file);
@@ -1626,7 +1626,7 @@ void FileSystemDock::_move_with_overwrite() {
 Vector<String> FileSystemDock::_check_existing() {
 	Vector<String> conflicting_items;
 	String &p_to_path = to_move_path;
-	for (int i = 0; i < to_move.size(); i++) {
+	for (vec_size i = 0; i < to_move.size(); i++) {
 		String ol_pth = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
 		String p_new_path = p_to_path.path_join(ol_pth.get_file());
 		FileOrFolder p_item = to_move[i];
@@ -1658,7 +1658,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 	}
 
 	// Check groups.
-	for (int i = 0; i < to_move.size(); i++) {
+	for (vec_size i = 0; i < to_move.size(); i++) {
 		if (to_move[i].is_file && EditorFileSystem::get_singleton()->is_group_file(to_move[i].path)) {
 			EditorFileSystem::get_singleton()->move_group_file(to_move[i].path, p_to_path.path_join(to_move[i].path.get_file()));
 		}
@@ -1667,7 +1667,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 	HashMap<String, String> file_renames;
 	HashMap<String, String> folder_renames;
 	bool is_moved = false;
-	for (int i = 0; i < to_move.size(); i++) {
+	for (vec_size i = 0; i < to_move.size(); i++) {
 		String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
 		String new_path = p_to_path.path_join(old_path.get_file());
 		if (old_path != new_path) {
@@ -1727,7 +1727,7 @@ Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> select
 	if (selected_strings.size() > 1) {
 		selected_strings.sort_custom<NaturalNoCaseComparator>();
 		String last_path = "";
-		for (int i = 0; i < selected_strings.size(); i++) {
+		for (vec_size i = 0; i < selected_strings.size(); i++) {
 			if (!last_path.is_empty() && selected_strings[i].begins_with(last_path)) {
 				selected_strings.remove_at(i);
 				i--;
@@ -1761,7 +1761,7 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 void FileSystemDock::_file_list_rmb_option(int p_option) {
 	Vector<int> selected_id = files->get_selected_items();
 	Vector<String> selected;
-	for (int i = 0; i < selected_id.size(); i++) {
+	for (vec_size i = 0; i < selected_id.size(); i++) {
 		selected.push_back(files->get_item_metadata(selected_id[i]));
 	}
 	_file_option(p_option, selected);
@@ -1796,7 +1796,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				selected = tree->get_next_selected(selected);
 			}
 			// Open the file.
-			for (int i = 0; i < p_selected.size(); i++) {
+			for (vec_size i = 0; i < p_selected.size(); i++) {
 				_select_file(p_selected[i]);
 			}
 		} break;
@@ -1821,7 +1821,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_INSTANCE: {
 			// Instance all selected scenes.
 			Vector<String> paths;
-			for (int i = 0; i < p_selected.size(); i++) {
+			for (vec_size i = 0; i < p_selected.size(); i++) {
 				String fpath = p_selected[i];
 				if (EditorFileSystem::get_singleton()->get_file_type(fpath) == "PackedScene") {
 					paths.push_back(fpath);
@@ -1835,7 +1835,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_ADD_FAVORITE: {
 			// Add the files from favorites.
 			Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
-			for (int i = 0; i < p_selected.size(); i++) {
+			for (vec_size i = 0; i < p_selected.size(); i++) {
 				if (!favorites_list.has(p_selected[i])) {
 					favorites_list.push_back(p_selected[i]);
 				}
@@ -1847,7 +1847,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_REMOVE_FAVORITE: {
 			// Remove the files from favorites.
 			Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
-			for (int i = 0; i < p_selected.size(); i++) {
+			for (vec_size i = 0; i < p_selected.size(); i++) {
 				favorites_list.erase(p_selected[i]);
 			}
 			EditorSettings::get_singleton()->set_favorites(favorites_list);
@@ -1917,7 +1917,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			Vector<String> remove_folders;
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 
-			for (int i = 0; i < collapsed_paths.size(); i++) {
+			for (vec_size i = 0; i < collapsed_paths.size(); i++) {
 				String fpath = collapsed_paths[i];
 				if (fpath != "res://") {
 					if (fpath.ends_with("/")) {
@@ -1935,7 +1935,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		case FILE_DUPLICATE: {
 			// Duplicate the selected files.
-			for (int i = 0; i < p_selected.size(); i++) {
+			for (vec_size i = 0; i < p_selected.size(); i++) {
 				to_duplicate.path = p_selected[i];
 				to_duplicate.is_file = !to_duplicate.path.ends_with("/");
 				if (to_duplicate.is_file) {
@@ -1960,7 +1960,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_REIMPORT: {
 			// Reimport all selected files.
 			Vector<String> reimport;
-			for (int i = 0; i < p_selected.size(); i++) {
+			for (vec_size i = 0; i < p_selected.size(); i++) {
 				reimport.push_back(p_selected[i]);
 			}
 
@@ -2232,7 +2232,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		// rather than bring up a message don't try to do it in the first place.
 		to_dir = to_dir.ends_with("/") ? to_dir : (to_dir + "/");
 		Vector<String> fnames = drag_data["files"];
-		for (int i = 0; i < fnames.size(); ++i) {
+		for (vec_size i = 0; i < fnames.size(); ++i) {
 			if (fnames[i].ends_with("/") && to_dir.begins_with(fnames[i])) {
 				return false;
 			}
@@ -2293,7 +2293,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		// Remove dragged favorites.
 		Vector<int> to_remove;
 		int offset = 0;
-		for (int i = 0; i < drag_files.size(); i++) {
+		for (vec_size i = 0; i < drag_files.size(); i++) {
 			int to_remove_pos = dirs.find(drag_files[i]);
 			to_remove.push_back(to_remove_pos);
 			if (to_remove_pos < drop_position) {
@@ -2302,12 +2302,12 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		}
 		drop_position -= offset;
 		to_remove.sort();
-		for (int i = 0; i < to_remove.size(); i++) {
+		for (vec_size i = 0; i < to_remove.size(); i++) {
 			dirs.remove_at(to_remove[i] - i);
 		}
 
 		// Re-add them at the right position.
-		for (int i = 0; i < drag_files.size(); i++) {
+		for (vec_size i = 0; i < drag_files.size(); i++) {
 			dirs.insert(drop_position, drag_files[i]);
 			drop_position++;
 		}
@@ -2341,14 +2341,14 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		if (!to_dir.is_empty()) {
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
-			for (int i = 0; i < fnames.size(); i++) {
+			for (vec_size i = 0; i < fnames.size(); i++) {
 				if (fnames[i].get_base_dir() != to_dir) {
 					to_move.push_back(FileOrFolder(fnames[i], !fnames[i].ends_with("/")));
 				}
 			}
 			if (!to_move.is_empty()) {
 				if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-					for (int i = 0; i < to_move.size(); i++) {
+					for (vec_size i = 0; i < to_move.size(); i++) {
 						String new_path;
 						String new_path_base;
 
@@ -2378,7 +2378,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			// Add the files from favorites.
 			Vector<String> fnames = drag_data["files"];
 			Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
-			for (int i = 0; i < fnames.size(); i++) {
+			for (vec_size i = 0; i < fnames.size(); i++) {
 				if (!favorites_list.has(fnames[i])) {
 					favorites_list.push_back(fnames[i]);
 				}
@@ -2469,7 +2469,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	bool all_favorites = true;
 	bool all_not_favorites = true;
 
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		String fpath = p_paths[i];
 		if (fpath.ends_with("/")) {
 			foldernames.push_back(fpath);
@@ -2482,7 +2482,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 		// Check if in favorites.
 		bool found = false;
-		for (int j = 0; j < favorites_list.size(); j++) {
+		for (vec_size j = 0; j < favorites_list.size(); j++) {
 			if (favorites_list[j] == fpath) {
 				found = true;
 				break;
@@ -2895,14 +2895,14 @@ void FileSystemDock::_update_import_dock() {
 
 	// Expand directory selection
 	Vector<String> efiles;
-	for (int i = 0; i < selected.size(); i++) {
+	for (vec_size i = 0; i < selected.size(); i++) {
 		_get_imported_files(selected[i], efiles);
 	}
 
 	// Check import.
 	Vector<String> imports;
 	String import_type;
-	for (int i = 0; i < efiles.size(); i++) {
+	for (vec_size i = 0; i < efiles.size(); i++) {
 		String fpath = efiles[i];
 		Ref<ConfigFile> cf;
 		cf.instantiate();

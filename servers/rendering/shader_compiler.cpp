@@ -196,7 +196,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_BVEC3:
 		case SL::TYPE_BVEC4: {
 			String text = "bvec" + itos(p_type - SL::TYPE_BOOL + 1) + "(";
-			for (int i = 0; i < p_values.size(); i++) {
+			for (vec_size i = 0; i < p_values.size(); i++) {
 				if (i > 0) {
 					text += ",";
 				}
@@ -213,7 +213,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_IVEC3:
 		case SL::TYPE_IVEC4: {
 			String text = "ivec" + itos(p_type - SL::TYPE_INT + 1) + "(";
-			for (int i = 0; i < p_values.size(); i++) {
+			for (vec_size i = 0; i < p_values.size(); i++) {
 				if (i > 0) {
 					text += ",";
 				}
@@ -230,7 +230,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_UVEC3:
 		case SL::TYPE_UVEC4: {
 			String text = "uvec" + itos(p_type - SL::TYPE_UINT + 1) + "(";
-			for (int i = 0; i < p_values.size(); i++) {
+			for (vec_size i = 0; i < p_values.size(); i++) {
 				if (i > 0) {
 					text += ",";
 				}
@@ -246,7 +246,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_VEC3:
 		case SL::TYPE_VEC4: {
 			String text = "vec" + itos(p_type - SL::TYPE_FLOAT + 1) + "(";
-			for (int i = 0; i < p_values.size(); i++) {
+			for (vec_size i = 0; i < p_values.size(); i++) {
 				if (i > 0) {
 					text += ",";
 				}
@@ -261,7 +261,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_MAT3:
 		case SL::TYPE_MAT4: {
 			String text = "mat" + itos(p_type - SL::TYPE_MAT2 + 2) + "(";
-			for (int i = 0; i < p_values.size(); i++) {
+			for (vec_size i = 0; i < p_values.size(); i++) {
 				if (i > 0) {
 					text += ",";
 				}
@@ -292,7 +292,7 @@ String ShaderCompiler::_get_sampler_name(ShaderLanguage::TextureFilter p_filter,
 void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const HashMap<StringName, String> &p_func_code, String &r_to_add, HashSet<StringName> &added) {
 	int fidx = -1;
 
-	for (int i = 0; i < p_node->functions.size(); i++) {
+	for (vec_size i = 0; i < p_node->functions.size(); i++) {
 		if (p_node->functions[i].name == p_for_func) {
 			fidx = i;
 			break;
@@ -308,7 +308,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 	}
 	uses_functions.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
 
-	for (int k = 0; k < uses_functions.size(); k++) {
+	for (vec_size k = 0; k < uses_functions.size(); k++) {
 		if (added.has(uses_functions[k])) {
 			continue; //was added already
 		}
@@ -317,7 +317,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 
 		SL::FunctionNode *fnode = nullptr;
 
-		for (int i = 0; i < p_node->functions.size(); i++) {
+		for (vec_size i = 0; i < p_node->functions.size(); i++) {
 			if (p_node->functions[i].name == uses_functions[k]) {
 				fnode = p_node->functions[i].function;
 				break;
@@ -345,7 +345,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 		header += _mkid(fnode->name);
 		header += "(";
 
-		for (int i = 0; i < fnode->arguments.size(); i++) {
+		for (vec_size i = 0; i < fnode->arguments.size(); i++) {
 			if (i > 0) {
 				header += ", ";
 			}
@@ -442,7 +442,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 		case SL::Node::TYPE_SHADER: {
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
 
-			for (int i = 0; i < pnode->render_modes.size(); i++) {
+			for (vec_size i = 0; i < pnode->render_modes.size(); i++) {
 				if (p_default_actions.render_mode_defines.has(pnode->render_modes[i]) && !used_rmode_defines.has(pnode->render_modes[i])) {
 					r_gen_code.defines.push_back(p_default_actions.render_mode_defines[pnode->render_modes[i]]);
 					used_rmode_defines.insert(pnode->render_modes[i]);
@@ -460,7 +460,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			// structs
 
-			for (int i = 0; i < pnode->vstructs.size(); i++) {
+			for (vec_size i = 0; i < pnode->vstructs.size(); i++) {
 				SL::StructNode *st = pnode->vstructs[i].shader_struct;
 				String struct_code;
 
@@ -468,7 +468,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				struct_code += _mkid(pnode->vstructs[i].name);
 				struct_code += " ";
 				struct_code += "{\n";
-				for (int j = 0; j < st->members.size(); j++) {
+				for (vec_size j = 0; j < st->members.size(); j++) {
 					SL::MemberNode *m = st->members[j];
 					if (m->datatype == SL::TYPE_STRUCT) {
 						struct_code += _mkid(m->struct_name);
@@ -531,7 +531,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			uniform_names.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
 
-			for (int k = 0; k < uniform_names.size(); k++) {
+			for (vec_size k = 0; k < uniform_names.size(); k++) {
 				StringName uniform_name = uniform_names[k];
 				const SL::ShaderNode::Uniform &uniform = pnode->uniforms[uniform_name];
 
@@ -628,7 +628,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			// add up
 			int offset = 0;
-			for (int i = 0; i < uniform_sizes.size(); i++) {
+			for (vec_size i = 0; i < uniform_sizes.size(); i++) {
 				int align = offset % uniform_alignments[i];
 
 				if (align != 0) {
@@ -658,7 +658,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			varying_names.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
 
-			for (int k = 0; k < varying_names.size(); k++) {
+			for (vec_size k = 0; k < varying_names.size(); k++) {
 				StringName varying_name = varying_names[k];
 				const SL::ShaderNode::Varying &varying = pnode->varyings[varying_name];
 
@@ -724,7 +724,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				r_gen_code.stage_globals[STAGE_FRAGMENT] += gcode;
 			}
 
-			for (int i = 0; i < pnode->vconstants.size(); i++) {
+			for (vec_size i = 0; i < pnode->vconstants.size(); i++) {
 				const SL::ShaderNode::Constant &cnode = pnode->vconstants[i];
 				String gcode;
 				gcode += _constr(true);
@@ -751,7 +751,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			HashMap<StringName, String> function_code;
 
 			//code for functions
-			for (int i = 0; i < pnode->functions.size(); i++) {
+			for (vec_size i = 0; i < pnode->functions.size(); i++) {
 				SL::FunctionNode *fnode = pnode->functions[i].function;
 				function = fnode;
 				current_func_name = fnode->name;
@@ -763,7 +763,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			HashSet<StringName> added_funcs_per_stage[STAGE_MAX];
 
-			for (int i = 0; i < pnode->functions.size(); i++) {
+			for (vec_size i = 0; i < pnode->functions.size(); i++) {
 				SL::FunctionNode *fnode = pnode->functions[i].function;
 
 				function = fnode;
@@ -793,7 +793,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				code += _mktab(p_level - 1) + "{\n";
 			}
 
-			for (int i = 0; i < bnode->statements.size(); i++) {
+			for (vec_size i = 0; i < bnode->statements.size(); i++) {
 				String scode = _dump_node_code(bnode->statements[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 
 				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->single_statement) {
@@ -821,7 +821,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				declaration += _prestr(vdnode->precision) + _typestr(vdnode->datatype);
 			}
 			declaration += " ";
-			for (int i = 0; i < vdnode->declarations.size(); i++) {
+			for (vec_size i = 0; i < vdnode->declarations.size(); i++) {
 				bool is_array = vdnode->declarations[i].size > 0;
 				if (i > 0) {
 					declaration += ",";
@@ -1168,7 +1168,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					code += "(";
 
-					for (int i = 1; i < onode->arguments.size(); i++) {
+					for (vec_size i = 1; i < onode->arguments.size(); i++) {
 						if (i > 1) {
 							code += ", ";
 						}
@@ -1207,7 +1207,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									} else {
 										bool found = false;
 
-										for (int j = 0; j < function->arguments.size(); j++) {
+										for (vec_size j = 0; j < function->arguments.size(); j++) {
 											if (function->arguments[j].name == texture_uniform) {
 												if (function->arguments[j].tex_builtin_check) {
 													ERR_CONTINUE(!actions.custom_samplers.has(function->arguments[j].tex_builtin));
@@ -1372,7 +1372,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 		Vector<String> shader_lines = p_code.split("\n");
 
 		// Reconstruct the files.
-		for (int i = 0; i < shader_lines.size(); i++) {
+		for (vec_size i = 0; i < shader_lines.size(); i++) {
 			String l = shader_lines[i];
 			if (l.begins_with("@@>")) {
 				String inc_path = l.replace_first("@@>", "");
@@ -1405,13 +1405,13 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 				print_line("--" + E.key + "--");
 			}
 			int err_line = -1;
-			for (int i = 0; i < include_positions.size(); i++) {
+			for (vec_size i = 0; i < include_positions.size(); i++) {
 				if (include_positions[i].file == E.key) {
 					err_line = include_positions[i].line;
 				}
 			}
 			const Vector<String> &V = E.value;
-			for (int i = 0; i < V.size(); i++) {
+			for (vec_size i = 0; i < V.size(); i++) {
 				if (i == err_line - 1) {
 					// Mark the error line to be visible without having to look at
 					// the trace at the end.

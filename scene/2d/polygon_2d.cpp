@@ -243,7 +243,7 @@ void Polygon2D::_notification(int p_what) {
 					weightsw[i] = 0;
 				}
 
-				for (int i = 0; i < bone_weights.size(); i++) {
+				for (vec_size i = 0; i < bone_weights.size(); i++) {
 					if (bone_weights[i].weights.size() != points.size()) {
 						continue; //different number of vertices, sorry not using.
 					}
@@ -314,7 +314,7 @@ void Polygon2D::_notification(int p_what) {
 				index_array = Geometry2D::triangulate_polygon(points);
 			} else {
 				//draw individual polygons
-				for (int i = 0; i < polygons.size(); i++) {
+				for (vec_size i = 0; i < polygons.size(); i++) {
 					Vector<int> src_indices = polygons[i];
 					int ic = src_indices.size();
 					if (ic < 3) {
@@ -556,7 +556,7 @@ Array Polygon2D::_get_bones() const {
 void Polygon2D::_set_bones(const Array &p_bones) {
 	ERR_FAIL_COND(p_bones.size() & 1);
 	clear_bones();
-	for (int i = 0; i < p_bones.size(); i += 2) {
+	for (vec_size i = 0; i < p_bones.size(); i += 2) {
 		// Convert back from String to NodePath.
 		add_bone(NodePath(p_bones[i]), p_bones[i + 1]);
 	}

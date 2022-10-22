@@ -687,7 +687,7 @@ void TextureStorage::texture_free(RID p_texture) {
 
 	decal_atlas_remove_texture(p_texture);
 
-	for (int i = 0; i < t->proxies.size(); i++) {
+	for (vec_size i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
 		ERR_CONTINUE(!p);
 		p->proxy_to = RID();
@@ -781,7 +781,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 		bool valid_mipmaps = false;
 		Image::Format valid_format = Image::FORMAT_MAX;
 
-		for (int i = 0; i < p_layers.size(); i++) {
+		for (vec_size i = 0; i < p_layers.size(); i++) {
 			ERR_FAIL_COND(p_layers[i]->is_empty());
 
 			if (i == 0) {
@@ -854,7 +854,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 		rd_view.swizzle_a = ret_format.swizzle_a;
 	}
 	Vector<Vector<uint8_t>> data_slices;
-	for (int i = 0; i < images.size(); i++) {
+	for (vec_size i = 0; i < images.size(); i++) {
 		Vector<uint8_t> data = images[i]->get_data(); //use image data
 		data_slices.push_back(data);
 	}
@@ -896,7 +896,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 		Vector<Ref<Image>> images;
 		uint32_t all_data_size = 0;
 		images.resize(p_data.size());
-		for (int i = 0; i < p_data.size(); i++) {
+		for (vec_size i = 0; i < p_data.size(); i++) {
 			TextureToRDFormat f;
 			images.write[i] = _validate_texture_format(p_data[i], f);
 			if (i == 0) {
@@ -910,7 +910,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 		all_data.resize(all_data_size); //consolidate all data here
 		uint32_t offset = 0;
 		Size2i prev_size;
-		for (int i = 0; i < p_data.size(); i++) {
+		for (vec_size i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
 
 			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
@@ -1058,7 +1058,7 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 		Vector<Ref<Image>> images;
 		uint32_t all_data_size = 0;
 		images.resize(p_data.size());
-		for (int i = 0; i < p_data.size(); i++) {
+		for (vec_size i = 0; i < p_data.size(); i++) {
 			Ref<Image> image = p_data[i];
 			if (image->get_format() != tex->validated_format) {
 				image = image->duplicate();
@@ -1071,7 +1071,7 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 		all_data.resize(all_data_size); //consolidate all data here
 		uint32_t offset = 0;
 
-		for (int i = 0; i < p_data.size(); i++) {
+		for (vec_size i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
 			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
 			offset += s;
@@ -1216,7 +1216,7 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 
 	Vector<Ref<Image>> ret;
 
-	for (int i = 0; i < tex->buffer_slices_3d.size(); i++) {
+	for (vec_size i = 0; i < tex->buffer_slices_3d.size(); i++) {
 		const Texture::BufferSlice3D &bs = tex->buffer_slices_3d[i];
 		ERR_FAIL_COND_V(bs.offset >= (uint32_t)all_data.size(), Vector<Ref<Image>>());
 		ERR_FAIL_COND_V(bs.offset + bs.buffer_size > (uint32_t)all_data.size(), Vector<Ref<Image>>());
@@ -1267,10 +1267,10 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 		tex->canvas_texture->diffuse = p_texture; //update
 	}
 
-	for (int i = 0; i < proxies_to_update.size(); i++) {
+	for (vec_size i = 0; i < proxies_to_update.size(); i++) {
 		texture_proxy_update(proxies_to_update[i], p_texture);
 	}
-	for (int i = 0; i < proxies_to_redirect.size(); i++) {
+	for (vec_size i = 0; i < proxies_to_redirect.size(); i++) {
 		texture_proxy_update(proxies_to_redirect[i], p_texture);
 	}
 	//delete last, so proxies can be updated
@@ -2063,7 +2063,7 @@ void TextureStorage::update_decal_atlas() {
 	}
 
 	RID prev_texture;
-	for (int i = 0; i < decal_atlas.texture_mipmaps.size(); i++) {
+	for (vec_size i = 0; i < decal_atlas.texture_mipmaps.size(); i++) {
 		const DecalAtlas::MipMap &mm = decal_atlas.texture_mipmaps[i];
 
 		Color clear_color(0, 0, 0, 0);
@@ -2493,7 +2493,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		tex->format = rt->image_format;
 
 		Vector<RID> proxies = tex->proxies; //make a copy, since update may change it
-		for (int i = 0; i < proxies.size(); i++) {
+		for (vec_size i = 0; i < proxies.size(); i++) {
 			texture_proxy_update(proxies[i], rt->texture);
 		}
 	}
@@ -3135,7 +3135,7 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	//then mipmap blur
 	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
 
-	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
+	for (vec_size i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
 		region.size.x = MAX(1, region.size.x >> 1);
@@ -3197,7 +3197,7 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 	//then mipmap blur
 	RID prev_texture = rt->backbuffer_mipmap0;
 
-	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
+	for (vec_size i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
 		region.size.x = MAX(1, region.size.x >> 1);

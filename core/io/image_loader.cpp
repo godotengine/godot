@@ -61,7 +61,7 @@ Error ImageFormatLoaderExtension::load_image(Ref<Image> p_image, Ref<FileAccess>
 void ImageFormatLoaderExtension::get_recognized_extensions(List<String> *p_extension) const {
 	PackedStringArray ext;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, ext)) {
-		for (int i = 0; i < ext.size(); i++) {
+		for (vec_size i = 0; i < ext.size(); i++) {
 			p_extension->push_back(ext[i]);
 		}
 	}
@@ -94,7 +94,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, Ref<FileAccess>
 
 	String extension = p_file.get_extension();
 
-	for (int i = 0; i < loader.size(); i++) {
+	for (vec_size i = 0; i < loader.size(); i++) {
 		if (!loader[i]->recognize(extension)) {
 			continue;
 		}
@@ -112,13 +112,13 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, Ref<FileAccess>
 }
 
 void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
-	for (int i = 0; i < loader.size(); i++) {
+	for (vec_size i = 0; i < loader.size(); i++) {
 		loader[i]->get_recognized_extensions(p_extensions);
 	}
 }
 
 Ref<ImageFormatLoader> ImageLoader::recognize(const String &p_extension) {
-	for (int i = 0; i < loader.size(); i++) {
+	for (vec_size i = 0; i < loader.size(); i++) {
 		if (loader[i]->recognize(p_extension)) {
 			return loader[i];
 		}
@@ -173,7 +173,7 @@ Ref<Resource> ResourceFormatLoaderImage::load(const String &p_path, const String
 
 	int idx = -1;
 
-	for (int i = 0; i < ImageLoader::loader.size(); i++) {
+	for (vec_size i = 0; i < ImageLoader::loader.size(); i++) {
 		if (ImageLoader::loader[i]->recognize(extension)) {
 			idx = i;
 			break;

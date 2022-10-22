@@ -475,7 +475,7 @@ public:
 		int inside_count = 0;
 		int outside_count = 0;
 
-		for (int a = 0; a < polygon.size(); a++) {
+		for (vec_size a = 0; a < polygon.size(); a++) {
 			real_t dist = p_plane.distance_to(polygon[a]);
 			if (dist < (real_t)-CMP_POINT_IN_PLANE_EPSILON) {
 				location_cache[a] = LOC_INSIDE;
@@ -499,7 +499,7 @@ public:
 		long previous = polygon.size() - 1;
 		Vector<Vector3> clipped;
 
-		for (int index = 0; index < polygon.size(); index++) {
+		for (vec_size index = 0; index < polygon.size(); index++) {
 			int loc = location_cache[index];
 			if (loc == LOC_OUTSIDE) {
 				if (location_cache[previous] == LOC_INSIDE) {

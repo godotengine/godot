@@ -43,12 +43,12 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 
 	if (GDVIRTUAL_CALL(_parse_file, p_path, ids, ids_ctx_plural)) {
 		// Add user's extracted translatable messages.
-		for (int i = 0; i < ids.size(); i++) {
+		for (vec_size i = 0; i < ids.size(); i++) {
 			r_ids->append(ids[i]);
 		}
 
 		// Add user's collected translatable messages with context or plurals.
-		for (int i = 0; i < ids_ctx_plural.size(); i++) {
+		for (vec_size i = 0; i < ids_ctx_plural.size(); i++) {
 			Array arr = ids_ctx_plural[i];
 			ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, "Array entries written into `msgids_context_plural` in `parse_file()` method should have the form [\"message\", \"context\", \"plural message\"]");
 
@@ -68,7 +68,7 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
 	Vector<String> extensions;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, extensions)) {
-		for (int i = 0; i < extensions.size(); i++) {
+		for (vec_size i = 0; i < extensions.size(); i++) {
 			r_extensions->push_back(extensions[i]);
 		}
 	} else {
@@ -86,14 +86,14 @@ void EditorTranslationParserPlugin::_bind_methods() {
 void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensions) const {
 	HashSet<String> extensions;
 	List<String> temp;
-	for (int i = 0; i < standard_parsers.size(); i++) {
+	for (vec_size i = 0; i < standard_parsers.size(); i++) {
 		standard_parsers[i]->get_recognized_extensions(&temp);
 	}
-	for (int i = 0; i < custom_parsers.size(); i++) {
+	for (vec_size i = 0; i < custom_parsers.size(); i++) {
 		custom_parsers[i]->get_recognized_extensions(&temp);
 	}
 	// Remove duplicates.
-	for (int i = 0; i < temp.size(); i++) {
+	for (vec_size i = 0; i < temp.size(); i++) {
 		extensions.insert(temp[i]);
 	}
 	for (const String &E : extensions) {
@@ -104,7 +104,7 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 bool EditorTranslationParser::can_parse(const String &p_extension) const {
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
-	for (int i = 0; i < extensions.size(); i++) {
+	for (vec_size i = 0; i < extensions.size(); i++) {
 		if (p_extension == extensions[i]) {
 			return true;
 		}
@@ -114,20 +114,20 @@ bool EditorTranslationParser::can_parse(const String &p_extension) const {
 
 Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const String &p_extension) const {
 	// Consider user-defined parsers first.
-	for (int i = 0; i < custom_parsers.size(); i++) {
+	for (vec_size i = 0; i < custom_parsers.size(); i++) {
 		List<String> temp;
 		custom_parsers[i]->get_recognized_extensions(&temp);
-		for (int j = 0; j < temp.size(); j++) {
+		for (vec_size j = 0; j < temp.size(); j++) {
 			if (temp[j] == p_extension) {
 				return custom_parsers[i];
 			}
 		}
 	}
 
-	for (int i = 0; i < standard_parsers.size(); i++) {
+	for (vec_size i = 0; i < standard_parsers.size(); i++) {
 		List<String> temp;
 		standard_parsers[i]->get_recognized_extensions(&temp);
-		for (int j = 0; j < temp.size(); j++) {
+		for (vec_size j = 0; j < temp.size(); j++) {
 			if (temp[j] == p_extension) {
 				return standard_parsers[i];
 			}

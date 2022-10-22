@@ -492,7 +492,7 @@ String CSharpLanguage::make_function(const String &, const String &p_name, const
 	// - Due to Godot's API limitation this just appends the function to the end of the file
 	// - Use fully qualified name if there is ambiguity
 	String s = "private void " + p_name + "(";
-	for (int i = 0; i < p_args.size(); i++) {
+	for (vec_size i = 0; i < p_args.size(); i++) {
 		const String &arg = p_args[i];
 
 		if (i > 0) {
@@ -1574,7 +1574,7 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 			ERR_PRINT("Unexpected error calling '_get_property_list'");
 		} else {
 			Array array = ret;
-			for (int i = 0, size = array.size(); i < size; i++) {
+			for (vec_size i = 0, size = array.size(); i < size; i++) {
 				p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
 			}
 		}
@@ -2219,7 +2219,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	p_script->methods.resize(methods_array.size());
 	int push_index = 0;
 
-	for (int i = 0; i < methods_array.size(); i++) {
+	for (vec_size i = 0; i < methods_array.size(); i++) {
 		Dictionary method_info_dict = methods_array[i];
 
 		StringName name = method_info_dict["name"];
@@ -2229,7 +2229,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 
 		Array params = method_info_dict["params"];
 
-		for (int j = 0; j < params.size(); j++) {
+		for (vec_size j = 0; j < params.size(); j++) {
 			Dictionary param = params[j];
 
 			Variant::Type param_type = (Variant::Type)(int)param["type"];
@@ -2259,7 +2259,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 
 		Array params = signals_dict[*s];
 
-		for (int i = 0; i < params.size(); i++) {
+		for (vec_size i = 0; i < params.size(); i++) {
 			Dictionary param = params[i];
 
 			Variant::Type param_type = (Variant::Type)(int)param["type"];

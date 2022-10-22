@@ -330,7 +330,7 @@ void LocalDebugger::print_variables(const List<String> &names, const List<Varian
 		} else {
 			print_line(E + ":");
 			value_lines = value.split("\n");
-			for (int i = 0; i < value_lines.size(); ++i) {
+			for (vec_size i = 0; i < value_lines.size(); ++i) {
 				print_line(variable_prefix + value_lines[i]);
 			}
 		}

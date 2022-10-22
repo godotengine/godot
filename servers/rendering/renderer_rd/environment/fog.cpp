@@ -698,7 +698,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 		bool any_uses_time = false;
 
-		for (int i = 0; i < (int)p_fog_volumes.size(); i++) {
+		for (vec_size i = 0; i < (int)p_fog_volumes.size(); i++) {
 			FogVolumeInstance *fog_volume_instance = fog_volume_instance_owner.get_or_null(p_fog_volumes[i]);
 			ERR_FAIL_COND(!fog_volume_instance);
 			RID fog_volume = fog_volume_instance->volume;

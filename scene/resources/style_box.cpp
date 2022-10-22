@@ -859,7 +859,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	// Compute UV coordinates.
 	Rect2 uv_rect = style_rect.grow(aa_on ? aa_size : 0);
 	uvs.resize(verts.size());
-	for (int i = 0; i < verts.size(); i++) {
+	for (vec_size i = 0; i < verts.size(); i++) {
 		uvs.write[i].x = (verts[i].x - uv_rect.position.x) / uv_rect.size.width;
 		uvs.write[i].y = (verts[i].y - uv_rect.position.y) / uv_rect.size.height;
 	}

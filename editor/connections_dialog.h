@@ -94,7 +94,7 @@ public:
 				return Callable(target, method).unbind(unbinds);
 			} else if (!binds.is_empty()) {
 				const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * binds.size());
-				for (int i = 0; i < binds.size(); i++) {
+				for (vec_size i = 0; i < binds.size(); i++) {
 					argptrs[i] = &binds[i];
 				}
 				return Callable(target, method).bindp(argptrs, binds.size());

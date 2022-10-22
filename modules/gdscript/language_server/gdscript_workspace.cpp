@@ -77,7 +77,7 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 	}
 
 	String function_body = "\n\n" + function_signature + "(";
-	for (int i = 0; i < args.size(); ++i) {
+	for (vec_size i = 0; i < args.size(); ++i) {
 		function_body += args[i];
 		if (i < args.size() - 1) {
 			function_body += ", ";
@@ -108,7 +108,7 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 
 void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {
 	Array files = p_params["files"];
-	for (int i = 0; i < files.size(); ++i) {
+	for (vec_size i = 0; i < files.size(); ++i) {
 		Dictionary file = files[i];
 		String uri = file["uri"];
 		String path = get_file_path(uri);
@@ -148,7 +148,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_native_symbol(const String &p_
 			if (p_member.is_empty()) {
 				return &class_symbol;
 			} else {
-				for (int i = 0; i < class_symbol.children.size(); i++) {
+				for (vec_size i = 0; i < class_symbol.children.size(); i++) {
 					const lsp::DocumentSymbol &symbol = class_symbol.children[i];
 					if (symbol.name == p_member) {
 						return &symbol;
@@ -171,7 +171,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_script_symbol(const String &p_
 }
 
 const lsp::DocumentSymbol *GDScriptWorkspace::get_parameter_symbol(const lsp::DocumentSymbol *p_parent, const String &symbol_identifier) {
-	for (int i = 0; i < p_parent->children.size(); ++i) {
+	for (vec_size i = 0; i < p_parent->children.size(); ++i) {
 		const lsp::DocumentSymbol *parameter_symbol = &p_parent->children[i];
 		if (!parameter_symbol->detail.is_empty() && parameter_symbol->name == symbol_identifier) {
 			return parameter_symbol;
@@ -184,11 +184,11 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_parameter_symbol(const lsp::Do
 const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier) {
 	const lsp::DocumentSymbol *class_symbol = &p_parser->get_symbols();
 
-	for (int i = 0; i < class_symbol->children.size(); ++i) {
+	for (vec_size i = 0; i < class_symbol->children.size(); ++i) {
 		if (class_symbol->children[i].kind == lsp::SymbolKind::Function || class_symbol->children[i].kind == lsp::SymbolKind::Class) {
 			const lsp::DocumentSymbol *function_symbol = &class_symbol->children[i];
 
-			for (int l = 0; l < function_symbol->children.size(); ++l) {
+			for (vec_size l = 0; l < function_symbol->children.size(); ++l) {
 				const lsp::DocumentSymbol *local = &function_symbol->children[l];
 				if (!local->detail.is_empty() && local->name == p_symbol_identifier) {
 					return local;
@@ -269,7 +269,7 @@ Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
 			Vector<lsp::DocumentedSymbolInformation> script_symbols;
 			E.value->get_symbols().symbol_tree_as_list(E.key, script_symbols);
-			for (int i = 0; i < script_symbols.size(); ++i) {
+			for (vec_size i = 0; i < script_symbols.size(); ++i) {
 				if (query.is_subsequence_ofn(script_symbols[i].name)) {
 					lsp::DocumentedSymbolInformation symbol = script_symbols[i];
 					symbol.location.uri = get_file_uri(symbol.location.uri);
@@ -300,7 +300,7 @@ Error GDScriptWorkspace::initialize() {
 		}
 		class_symbol.documentation = class_data.brief_description + "\n" + class_data.description;
 
-		for (int i = 0; i < class_data.constants.size(); i++) {
+		for (vec_size i = 0; i < class_data.constants.size(); i++) {
 			const DocData::ConstantDoc &const_data = class_data.constants[i];
 			lsp::DocumentSymbol symbol;
 			symbol.name = const_data.name;
@@ -315,7 +315,7 @@ Error GDScriptWorkspace::initialize() {
 			class_symbol.children.push_back(symbol);
 		}
 
-		for (int i = 0; i < class_data.properties.size(); i++) {
+		for (vec_size i = 0; i < class_data.properties.size(); i++) {
 			const DocData::PropertyDoc &data = class_data.properties[i];
 			lsp::DocumentSymbol symbol;
 			symbol.name = data.name;
@@ -331,7 +331,7 @@ Error GDScriptWorkspace::initialize() {
 			class_symbol.children.push_back(symbol);
 		}
 
-		for (int i = 0; i < class_data.theme_properties.size(); i++) {
+		for (vec_size i = 0; i < class_data.theme_properties.size(); i++) {
 			const DocData::ThemeItemDoc &data = class_data.theme_properties[i];
 			lsp::DocumentSymbol symbol;
 			symbol.name = data.name;
@@ -346,10 +346,10 @@ Error GDScriptWorkspace::initialize() {
 		methods_signals.append_array(class_data.constructors);
 		methods_signals.append_array(class_data.methods);
 		methods_signals.append_array(class_data.operators);
-		const int signal_start_idx = methods_signals.size();
+		const vec_size signal_start_idx = methods_signals.size();
 		methods_signals.append_array(class_data.signals);
 
-		for (int i = 0; i < methods_signals.size(); i++) {
+		for (vec_size i = 0; i < methods_signals.size(); i++) {
 			const DocData::MethodDoc &data = methods_signals[i];
 
 			lsp::DocumentSymbol symbol;
@@ -359,7 +359,7 @@ Error GDScriptWorkspace::initialize() {
 
 			String params = "";
 			bool arg_default_value_started = false;
-			for (int j = 0; j < data.arguments.size(); j++) {
+			for (vec_size j = 0; j < data.arguments.size(); j++) {
 				const DocData::ArgumentDoc &arg = data.arguments[j];
 
 				lsp::DocumentSymbol symbol_arg;
@@ -403,7 +403,7 @@ Error GDScriptWorkspace::initialize() {
 		for (const KeyValue<StringName, lsp::DocumentSymbol> &E : native_symbols) {
 			ClassMembers members;
 			const lsp::DocumentSymbol &class_symbol = E.value;
-			for (int i = 0; i < class_symbol.children.size(); i++) {
+			for (vec_size i = 0; i < class_symbol.children.size(); i++) {
 				const lsp::DocumentSymbol &symbol = class_symbol.children[i];
 				members.insert(symbol.name, &symbol);
 			}
@@ -460,7 +460,7 @@ Dictionary GDScriptWorkspace::rename(const lsp::TextDocumentPositionParams &p_do
 
 		for (List<String>::Element *PE = paths.front(); PE; PE = PE->next()) {
 			PackedStringArray content = FileAccess::get_file_as_string(PE->get(), &err).split("\n");
-			for (int i = 0; i < content.size(); ++i) {
+			for (vec_size i = 0; i < content.size(); ++i) {
 				String line = content[i];
 
 				int character = line.find(identifier);
@@ -518,7 +518,7 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	if (ele) {
 		const Vector<lsp::Diagnostic> &list = ele->value->get_diagnostics();
 		errors.resize(list.size());
-		for (int i = 0; i < list.size(); ++i) {
+		for (vec_size i = 0; i < list.size(); ++i) {
 			errors[i] = list[i].to_json();
 		}
 	}
@@ -539,7 +539,7 @@ void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, String p_pa
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 		Vector<String> deps = efsd->get_file_deps(i);
 		bool found = false;
-		for (int j = 0; j < deps.size(); j++) {
+		for (vec_size j = 0; j < deps.size(); j++) {
 			if (deps[j] == p_path) {
 				found = true;
 				break;
@@ -559,7 +559,7 @@ Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
 
 	_get_owners(EditorFileSystem::get_singleton()->get_filesystem(), p_path, owners);
 
-	for (int i = 0; i < owners.size(); i++) {
+	for (vec_size i = 0; i < owners.size(); i++) {
 		NodePath owner_path = owners[i];
 		Ref<Resource> owner_res = ResourceLoader::load(owner_path);
 		if (Object::cast_to<PackedScene>(owner_res.ptr())) {
@@ -714,7 +714,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const lsp::N
 			return &symbol;
 		}
 
-		for (int i = 0; i < symbol.children.size(); ++i) {
+		for (vec_size i = 0; i < symbol.children.size(); ++i) {
 			if (symbol.children[i].name == p_params.symbol_name) {
 				return &(symbol.children[i]);
 			}
@@ -761,7 +761,7 @@ Error GDScriptWorkspace::resolve_signature(const lsp::TextDocumentPositionParams
 					signature_info.label = symbol->detail;
 					signature_info.documentation = symbol->render();
 
-					for (int i = 0; i < symbol->children.size(); i++) {
+					for (vec_size i = 0; i < symbol->children.size(); i++) {
 						const lsp::DocumentSymbol &arg = symbol->children[i];
 						lsp::ParameterInformation arg_info;
 						arg_info.label = arg.name;

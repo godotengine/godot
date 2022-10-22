@@ -162,14 +162,14 @@ ViewportTexture::~ViewportTexture() {
 }
 
 void Viewport::_sub_window_update_order() {
-	for (int i = 0; i < gui.sub_windows.size(); i++) {
+	for (vec_size i = 0; i < gui.sub_windows.size(); i++) {
 		RS::get_singleton()->canvas_item_set_draw_index(gui.sub_windows[i].canvas_item, i);
 	}
 }
 
 void Viewport::_sub_window_register(Window *p_window) {
 	ERR_FAIL_COND(!is_inside_tree());
-	for (int i = 0; i < gui.sub_windows.size(); i++) {
+	for (vec_size i = 0; i < gui.sub_windows.size(); i++) {
 		ERR_FAIL_COND(gui.sub_windows[i].window == p_window);
 	}
 
@@ -341,7 +341,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 }
 
 int Viewport::_sub_window_find(Window *p_window) {
-	for (int i = 0; i < gui.sub_windows.size(); i++) {
+	for (vec_size i = 0; i < gui.sub_windows.size(); i++) {
 		if (gui.sub_windows[i].window == p_window) {
 			return i;
 		}

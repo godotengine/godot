@@ -228,7 +228,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			s->lods = memnew_arr(Mesh::Surface::LOD, p_surface.lods.size());
 			s->lod_count = p_surface.lods.size();
 
-			for (int i = 0; i < p_surface.lods.size(); i++) {
+			for (vec_size i = 0; i < p_surface.lods.size(); i++) {
 				glGenBuffers(1, &s->lods[i].index_buffer);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->lods[i].index_buffer);
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, p_surface.lods[i].index_data.size(), p_surface.lods[i].index_data.ptr(), GL_STATIC_DRAW);
@@ -258,7 +258,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			// Each surface may affect different numbers of bones.
 			mesh->bone_aabbs.resize(p_surface.bone_aabbs.size());
 		}
-		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
+		for (vec_size i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			const AABB &bone = p_surface.bone_aabbs[i];
 			if (bone.has_volume()) {
 				mesh->bone_aabbs.write[i].merge_with(bone);

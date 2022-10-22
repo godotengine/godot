@@ -375,7 +375,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			s->lods = memnew_arr(Mesh::Surface::LOD, p_surface.lods.size());
 			s->lod_count = p_surface.lods.size();
 
-			for (int i = 0; i < p_surface.lods.size(); i++) {
+			for (vec_size i = 0; i < p_surface.lods.size(); i++) {
 				uint32_t indices = p_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
 				s->lods[i].index_buffer = RD::get_singleton()->index_buffer_create(indices, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, p_surface.lods[i].index_data);
 				s->lods[i].index_array = RD::get_singleton()->index_array_create(s->lods[i].index_buffer, 0, indices);
@@ -442,7 +442,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			// Each surface may affect different numbers of bones.
 			mesh->bone_aabbs.resize(p_surface.bone_aabbs.size());
 		}
-		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
+		for (vec_size i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			const AABB &bone = p_surface.bone_aabbs[i];
 			if (bone.has_volume()) {
 				mesh->bone_aabbs.write[i].merge_with(bone);
@@ -1175,7 +1175,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	}
 
 	//update final stride
-	for (int i = 0; i < attributes.size(); i++) {
+	for (vec_size i = 0; i < attributes.size(); i++) {
 		if (attributes[i].stride == 0) {
 			continue; //default location
 		}

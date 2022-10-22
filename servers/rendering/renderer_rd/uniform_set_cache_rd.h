@@ -182,7 +182,7 @@ public:
 	RID get_cache_vec(RID p_shader, uint32_t p_set, const Vector<RD::Uniform> &p_uniforms) {
 		uint32_t h = hash_murmur3_one_64(p_shader.get_id());
 		h = hash_murmur3_one_32(p_set, h);
-		for (int i = 0; i < p_uniforms.size(); i++) {
+		for (vec_size i = 0; i < p_uniforms.size(); i++) {
 			h = _hash_uniform(p_uniforms[i], h);
 		}
 
@@ -195,7 +195,7 @@ public:
 			while (c) {
 				if (c->hash == h && c->set == p_set && c->shader == p_shader && (uint32_t)p_uniforms.size() == c->uniforms.size()) {
 					bool all_ok = true;
-					for (int i = 0; i < p_uniforms.size(); i++) {
+					for (vec_size i = 0; i < p_uniforms.size(); i++) {
 						if (!_compare_uniform(p_uniforms[i], c->uniforms[i])) {
 							all_ok = false;
 							break;

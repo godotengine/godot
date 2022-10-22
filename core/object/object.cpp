@@ -117,7 +117,7 @@ MethodInfo::operator Dictionary() const {
 	d["name"] = name;
 	d["args"] = convert_property_list(&arguments);
 	Array da;
-	for (int i = 0; i < default_arguments.size(); i++) {
+	for (vec_size i = 0; i < default_arguments.size(); i++) {
 		da.push_back(default_arguments[i]);
 	}
 	d["default_args"] = da;
@@ -139,7 +139,7 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 		args = p_dict["args"];
 	}
 
-	for (int i = 0; i < args.size(); i++) {
+	for (vec_size i = 0; i < args.size(); i++) {
 		Dictionary d = args[i];
 		mi.arguments.push_back(PropertyInfo::from_dict(d));
 	}
@@ -147,7 +147,7 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 	if (p_dict.has("default_args")) {
 		defargs = p_dict["default_args"];
 	}
-	for (int i = 0; i < defargs.size(); i++) {
+	for (vec_size i = 0; i < defargs.size(); i++) {
 		mi.default_arguments.push_back(defargs[i]);
 	}
 
@@ -457,7 +457,7 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 	bool valid = false;
 
 	Variant current_value = get(p_names[0], &valid);
-	for (int i = 1; i < p_names.size(); i++) {
+	for (vec_size i = 1; i < p_names.size(); i++) {
 		current_value = current_value.get_named(p_names[i], valid);
 
 		if (!valid) {
@@ -661,7 +661,7 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 
 	if (p_args.size() > 0) {
 		argptrs = (const Variant **)alloca(sizeof(Variant *) * p_args.size());
-		for (int i = 0; i < p_args.size(); i++) {
+		for (vec_size i = 0; i < p_args.size(); i++) {
 			argptrs[i] = &p_args[i];
 		}
 	}
@@ -1093,7 +1093,7 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	MethodInfo mi;
 	mi.name = p_name;
 
-	for (int i = 0; i < p_args.size(); i++) {
+	for (vec_size i = 0; i < p_args.size(); i++) {
 		Dictionary d = p_args[i];
 		PropertyInfo param;
 
@@ -1189,7 +1189,7 @@ void Object::get_all_signal_connections(List<Connection> *p_connections) const {
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
 		const SignalData *s = &E.value;
 
-		for (int i = 0; i < s->slot_map.size(); i++) {
+		for (vec_size i = 0; i < s->slot_map.size(); i++) {
 			p_connections->push_back(s->slot_map.getv(i).conn);
 		}
 	}
@@ -1201,7 +1201,7 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 		return; //nothing
 	}
 
-	for (int i = 0; i < s->slot_map.size(); i++) {
+	for (vec_size i = 0; i < s->slot_map.size(); i++) {
 		p_connections->push_back(s->slot_map.getv(i).conn);
 	}
 }
@@ -1212,7 +1212,7 @@ int Object::get_persistent_signal_connection_count() const {
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
 		const SignalData *s = &E.value;
 
-		for (int i = 0; i < s->slot_map.size(); i++) {
+		for (vec_size i = 0; i < s->slot_map.size(); i++) {
 			if (s->slot_map.getv(i).conn.flags & CONNECT_PERSIST) {
 				count += 1;
 			}
@@ -1413,7 +1413,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 		} break;
 		case Variant::ARRAY: {
 			Array a = p_var;
-			for (int i = 0; i < a.size(); i++) {
+			for (vec_size i = 0; i < a.size(); i++) {
 				_clear_internal_resource_paths(a[i]);
 			}
 
@@ -1653,7 +1653,7 @@ Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> 
 	Variant check;
 	Variant::construct(t, check, nullptr, 0, ce);
 
-	for (int i = 1; i < p_path.size(); i++) {
+	for (vec_size i = 1; i < p_path.size(); i++) {
 		if (check.get_type() == Variant::OBJECT || check.get_type() == Variant::DICTIONARY || check.get_type() == Variant::ARRAY) {
 			// We cannot be sure about the type of properties this type can have
 			if (r_valid) {

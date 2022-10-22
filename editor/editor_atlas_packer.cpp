@@ -40,7 +40,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 	int max_w = 0;
 
-	for (int i = 0; i < charts.size(); i++) {
+	for (vec_size i = 0; i < charts.size(); i++) {
 		const Chart &chart = charts[i];
 
 		//generate aabb
@@ -66,7 +66,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 		//plot triangles, using divisor
 
-		for (int j = 0; j < chart.faces.size(); j++) {
+		for (vec_size j = 0; j < chart.faces.size(); j++) {
 			Vector2i v[3];
 			for (int k = 0; k < 3; k++) {
 				Vector2 vtx = chart.vertices[chart.faces[j].vertex[k]];
@@ -154,7 +154,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 		}
 
 		String row;
-		for (int j = 0; j < top_heights.size(); j++) {
+		for (vec_size j = 0; j < top_heights.size(); j++) {
 			row += "(" + itos(top_heights[j]) + "-" + itos(bottom_heights[j]) + "),";
 		}
 
@@ -186,7 +186,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 		int *atlas_ptr = heights.ptrw();
 
-		for (int i = 0; i < bitmaps.size(); i++) {
+		for (vec_size i = 0; i < bitmaps.size(); i++) {
 			int best_height = 0x7FFFFFFF;
 			int best_height_offset = -1;
 			int w = bitmaps[i].top_heights.size();

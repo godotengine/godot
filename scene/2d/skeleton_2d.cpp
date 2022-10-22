@@ -165,7 +165,7 @@ void Bone2D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (skeleton) {
-				for (int i = 0; i < skeleton->bones.size(); i++) {
+				for (vec_size i = 0; i < skeleton->bones.size(); i++) {
 					if (skeleton->bones[i].bone == this) {
 						skeleton->bones.remove_at(i);
 						break;
@@ -584,7 +584,7 @@ void Skeleton2D::_update_bone_setup() {
 
 	bones.sort(); //sorting so that they are always in the same order/index
 
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		bones.write[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
 		bones.write[i].bone->skeleton_index = i;
 		Bone2D *parent_bone = Object::cast_to<Bone2D>(bones[i].bone->get_parent());
@@ -623,7 +623,7 @@ void Skeleton2D::_update_transform() {
 
 	transform_dirty = false;
 
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		ERR_CONTINUE(bones[i].parent_index >= i);
 		if (bones[i].parent_index >= 0) {
 			bones.write[i].accum_transform = bones[bones[i].parent_index].accum_transform * bones[i].bone->get_transform();
@@ -632,7 +632,7 @@ void Skeleton2D::_update_transform() {
 		}
 	}
 
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		Transform2D final_xform = bones[i].accum_transform * bones[i].rest_inverse;
 		RS::get_singleton()->skeleton_bone_set_transform_2d(skeleton, i, final_xform);
 	}
@@ -736,7 +736,7 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 	}
 
 	// Do not cache the transform changes caused by the modifications!
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		bones[i].bone->copy_transform_to_cache = false;
 	}
 
@@ -748,7 +748,7 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 
 	// Only apply the local pose override on _process. Otherwise, just calculate the local_pose_override and reset the transform.
 	if (p_execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process) {
-		for (int i = 0; i < bones.size(); i++) {
+		for (vec_size i = 0; i < bones.size(); i++) {
 			if (bones[i].local_pose_override_amount > 0) {
 				bones[i].bone->set_meta("_local_pose_override_enabled_", true);
 
@@ -769,7 +769,7 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 	}
 
 	// Cache any future transform changes
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		bones[i].bone->copy_transform_to_cache = true;
 	}
 

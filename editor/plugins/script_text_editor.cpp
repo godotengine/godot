@@ -48,7 +48,7 @@ void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_n
 	tree->clear();
 	TreeItem *root = tree->create_item();
 
-	for (int i = 0; i < p_nodes.size(); i++) {
+	for (vec_size i = 0; i < p_nodes.size(); i++) {
 		List<Connection> all_connections;
 		p_nodes[i]->get_signals_connected_to_this(&all_connections);
 
@@ -612,7 +612,7 @@ void ScriptTextEditor::_update_bookmark_list() {
 
 	bookmarks_menu->add_separator();
 
-	for (int i = 0; i < bookmark_list.size(); i++) {
+	for (vec_size i = 0; i < bookmark_list.size(); i++) {
 		// Strip edges to remove spaces or tabs.
 		// Also replace any tabs by spaces, since we can't print tabs in the menu.
 		String line = code_editor->get_text_editor()->get_line(bookmark_list[i]).replace("\t", "  ").strip_edges();
@@ -767,7 +767,7 @@ void ScriptTextEditor::_update_breakpoint_list() {
 
 	breakpoints_menu->add_separator();
 
-	for (int i = 0; i < breakpoint_list.size(); i++) {
+	for (vec_size i = 0; i < breakpoint_list.size(); i++) {
 		// Strip edges to remove spaces or tabs.
 		// Also replace any tabs by spaces, since we can't print tabs in the menu.
 		String line = code_editor->get_text_editor()->get_line(breakpoint_list[i]).replace("\t", "  ").strip_edges();
@@ -981,7 +981,7 @@ void ScriptTextEditor::_update_connected_methods() {
 	// Add connection icons to methods.
 	Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
 	HashSet<StringName> methods_found;
-	for (int i = 0; i < nodes.size(); i++) {
+	for (vec_size i = 0; i < nodes.size(); i++) {
 		List<Connection> signal_connections;
 		nodes[i]->get_signals_connected_to_this(&signal_connections);
 
@@ -1004,7 +1004,7 @@ void ScriptTextEditor::_update_connected_methods() {
 			if (!ClassDB::has_method(script->get_instance_base_type(), method)) {
 				int line = -1;
 
-				for (int j = 0; j < functions.size(); j++) {
+				for (vec_size j = 0; j < functions.size(); j++) {
 					String name = functions[j].get_slice(":", 0);
 					if (name == method) {
 						Dictionary line_meta;
@@ -1044,7 +1044,7 @@ void ScriptTextEditor::_update_connected_methods() {
 
 	// Add override icons to methods.
 	methods_found.clear();
-	for (int i = 0; i < functions.size(); i++) {
+	for (vec_size i = 0; i < functions.size(); i++) {
 		StringName name = StringName(functions[i].get_slice(":", 0));
 		if (methods_found.has(name)) {
 			continue;
@@ -1067,7 +1067,7 @@ void ScriptTextEditor::_update_connected_methods() {
 			while (base_class) {
 				List<MethodInfo> methods;
 				ClassDB::get_method_list(base_class, &methods, true);
-				for (int j = 0; j < methods.size(); j++) {
+				for (vec_size j = 0; j < methods.size(); j++) {
 					if (methods[j].name == name) {
 						found_base_class = "builtin:" + base_class;
 						break;
@@ -1284,7 +1284,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			Vector<String> lines = code_editor->get_text_editor()->get_selected_text().split("\n");
 			PackedStringArray results;
 
-			for (int i = 0; i < lines.size(); i++) {
+			for (vec_size i = 0; i < lines.size(); i++) {
 				String line = lines[i];
 				String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); //extract the whitespace at the beginning
 
@@ -1356,7 +1356,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
 
-			for (int i = 0; i < bpoints.size(); i++) {
+			for (vec_size i = 0; i < bpoints.size(); i++) {
 				int line = bpoints[i];
 				bool dobreak = !tx->is_line_breakpointed(line);
 				tx->set_line_as_breakpoint(line, dobreak);
@@ -1378,7 +1378,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				tx->set_caret_line(bpoints[0]);
 				tx->center_viewport_to_caret();
 			} else {
-				for (int i = 0; i < bpoints.size(); i++) {
+				for (vec_size i = 0; i < bpoints.size(); i++) {
 					int bline = bpoints[i];
 					if (bline > line) {
 						tx->unfold_line(bline);
@@ -1647,7 +1647,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		String text_to_drop;
 		bool preload = Input::get_singleton()->is_key_pressed(Key::CTRL);
-		for (int i = 0; i < files.size(); i++) {
+		for (vec_size i = 0; i < files.size(); i++) {
 			if (i > 0) {
 				text_to_drop += ", ";
 			}
@@ -1684,7 +1684,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 			bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
-			for (int i = 0; i < nodes.size(); i++) {
+			for (vec_size i = 0; i < nodes.size(); i++) {
 				NodePath np = nodes[i];
 				Node *node = get_node(np);
 				if (!node) {
@@ -1714,7 +1714,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				}
 			}
 		} else {
-			for (int i = 0; i < nodes.size(); i++) {
+			for (vec_size i = 0; i < nodes.size(); i++) {
 				if (i > 0) {
 					text_to_drop += ", ";
 				}

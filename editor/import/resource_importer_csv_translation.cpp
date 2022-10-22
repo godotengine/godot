@@ -97,7 +97,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 	Vector<String> locales;
 	Vector<Ref<Translation>> translations;
 
-	for (int i = 1; i < line.size(); i++) {
+	for (vec_size i = 1; i < line.size(); i++) {
 		String locale = TranslationServer::get_singleton()->standardize_locale(line[i]);
 
 		locales.push_back(locale);
@@ -112,7 +112,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 	while (line.size() == locales.size() + 1) {
 		String key = line[0];
 		if (!key.is_empty()) {
-			for (int i = 1; i < line.size(); i++) {
+			for (vec_size i = 1; i < line.size(); i++) {
 				translations.write[i - 1]->add_message(key, line[i].c_unescape());
 			}
 		}
@@ -120,7 +120,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		line = f->get_csv_line(delimiter);
 	}
 
-	for (int i = 0; i < translations.size(); i++) {
+	for (vec_size i = 0; i < translations.size(); i++) {
 		Ref<Translation> xlt = translations[i];
 
 		if (compress) {

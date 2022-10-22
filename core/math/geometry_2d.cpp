@@ -43,7 +43,7 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> p
 
 	TPPLPoly inp;
 	inp.Init(polygon.size());
-	for (int i = 0; i < polygon.size(); i++) {
+	for (vec_size i = 0; i < polygon.size(); i++) {
 		inp.GetPoint(i) = polygon[i];
 	}
 	inp.SetOrientation(TPPL_ORIENTATION_CCW);
@@ -94,14 +94,14 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	// 256x8192 atlas (won't work anywhere).
 
 	ERR_FAIL_COND(p_rects.size() == 0);
-	for (int i = 0; i < p_rects.size(); i++) {
+	for (vec_size i = 0; i < p_rects.size(); i++) {
 		ERR_FAIL_COND(p_rects[i].width <= 0);
 		ERR_FAIL_COND(p_rects[i].height <= 0);
 	}
 
 	Vector<_AtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
-	for (int i = 0; i < p_rects.size(); i++) {
+	for (vec_size i = 0; i < p_rects.size(); i++) {
 		wrects.write[i].s = p_rects[i];
 		wrects.write[i].idx = i;
 	}
@@ -127,7 +127,7 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 		// Place them.
 		int ofs = 0;
 		int limit_h = 0;
-		for (int j = 0; j < wrects.size(); j++) {
+		for (vec_size j = 0; j < wrects.size(); j++) {
 			if (ofs + wrects[j].s.width > w) {
 				ofs = 0;
 			}
@@ -176,7 +176,7 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	int best = -1;
 	real_t best_aspect = 1e20;
 
-	for (int i = 0; i < results.size(); i++) {
+	for (vec_size i = 0; i < results.size(); i++) {
 		real_t h = next_power_of_2(results[i].max_h);
 		real_t w = next_power_of_2(results[i].max_w);
 		real_t aspect = h > w ? h / w : w / h;
@@ -188,7 +188,7 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 
 	r_result.resize(p_rects.size());
 
-	for (int i = 0; i < p_rects.size(); i++) {
+	for (vec_size i = 0; i < p_rects.size(); i++) {
 		r_result.write[results[best].result[i].idx] = results[best].result[i].p;
 	}
 
@@ -217,10 +217,10 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 	Path path_a, path_b;
 
 	// Need to scale points (Clipper's requirement for robust computation).
-	for (int i = 0; i != p_polypath_a.size(); ++i) {
+	for (vec_size i = 0; i != p_polypath_a.size(); ++i) {
 		path_a << IntPoint(p_polypath_a[i].x * (real_t)SCALE_FACTOR, p_polypath_a[i].y * (real_t)SCALE_FACTOR);
 	}
-	for (int i = 0; i != p_polypath_b.size(); ++i) {
+	for (vec_size i = 0; i != p_polypath_b.size(); ++i) {
 		path_b << IntPoint(p_polypath_b[i].x * (real_t)SCALE_FACTOR, p_polypath_b[i].y * (real_t)SCALE_FACTOR);
 	}
 	Clipper clp;
@@ -294,7 +294,7 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 	Path path;
 
 	// Need to scale points (Clipper's requirement for robust computation).
-	for (int i = 0; i != p_polypath.size(); ++i) {
+	for (vec_size i = 0; i != p_polypath.size(); ++i) {
 		path << IntPoint(p_polypath[i].x * (real_t)SCALE_FACTOR, p_polypath[i].y * (real_t)SCALE_FACTOR);
 	}
 	co.AddPath(path, jt, et);
@@ -330,7 +330,7 @@ Vector<Point2i> Geometry2D::pack_rects(const Vector<Size2i> &p_sizes, const Size
 	Vector<stbrp_rect> rects;
 	rects.resize(p_sizes.size());
 
-	for (int i = 0; i < p_sizes.size(); i++) {
+	for (vec_size i = 0; i < p_sizes.size(); i++) {
 		rects.write[i].id = 0;
 		rects.write[i].w = p_sizes[i].width;
 		rects.write[i].h = p_sizes[i].height;
@@ -347,7 +347,7 @@ Vector<Point2i> Geometry2D::pack_rects(const Vector<Size2i> &p_sizes, const Size
 	Vector<Point2i> ret;
 	ret.resize(p_sizes.size());
 
-	for (int i = 0; i < p_sizes.size(); i++) {
+	for (vec_size i = 0; i < p_sizes.size(); i++) {
 		Point2i r(rects[i].x, rects[i].y);
 		ret.write[i] = r;
 	}
@@ -366,7 +366,7 @@ Vector<Vector3i> Geometry2D::partial_pack_rects(const Vector<Vector2i> &p_sizes,
 	Vector<stbrp_rect> rects;
 	rects.resize(p_sizes.size());
 
-	for (int i = 0; i < p_sizes.size(); i++) {
+	for (vec_size i = 0; i < p_sizes.size(); i++) {
 		rects.write[i].id = i;
 		rects.write[i].w = p_sizes[i].width;
 		rects.write[i].h = p_sizes[i].height;
@@ -380,7 +380,7 @@ Vector<Vector3i> Geometry2D::partial_pack_rects(const Vector<Vector2i> &p_sizes,
 	Vector<Vector3i> ret;
 	ret.resize(p_sizes.size());
 
-	for (int i = 0; i < p_sizes.size(); i++) {
+	for (vec_size i = 0; i < p_sizes.size(); i++) {
 		ret.write[rects[i].id] = Vector3i(rects[i].x, rects[i].y, rects[i].was_packed != 0 ? 1 : 0);
 	}
 

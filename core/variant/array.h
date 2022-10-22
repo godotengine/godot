@@ -50,13 +50,13 @@ protected:
 	bool _assign(const Array &p_array);
 
 public:
-	Variant &operator[](int p_idx);
-	const Variant &operator[](int p_idx) const;
+	Variant &operator[](vec_size p_idx);
+	const Variant &operator[](vec_size p_idx) const;
 
-	void set(int p_idx, const Variant &p_value);
-	const Variant &get(int p_idx) const;
+	void set(vec_size p_idx, const Variant &p_value);
+	const Variant &get(vec_size p_idx) const;
 
-	int size() const;
+	vec_size size() const;
 	bool is_empty() const;
 	void clear();
 

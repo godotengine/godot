@@ -96,7 +96,7 @@ void EditorQuickOpen::_update_search() {
 
 	// Filter possible candidates.
 	Vector<Entry> entries;
-	for (int i = 0; i < files.size(); i++) {
+	for (vec_size i = 0; i < files.size(); i++) {
 		if (empty_search || search_text.is_subsequence_ofn(files[i])) {
 			Entry r;
 			r.path = files[i];

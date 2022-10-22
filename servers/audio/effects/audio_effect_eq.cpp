@@ -67,7 +67,7 @@ Ref<AudioEffectInstance> AudioEffectEQ::instantiate() {
 	ins->gains.resize(eq.get_band_count());
 	for (int i = 0; i < 2; i++) {
 		ins->bands[i].resize(eq.get_band_count());
-		for (int j = 0; j < ins->bands[i].size(); j++) {
+		for (vec_size j = 0; j < ins->bands[i].size(); j++) {
 			ins->bands[i].write[j] = eq.get_band_processor(j);
 		}
 	}
@@ -111,7 +111,7 @@ bool AudioEffectEQ::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void AudioEffectEQ::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < band_names.size(); i++) {
+	for (vec_size i = 0; i < band_names.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::FLOAT, band_names[i], PROPERTY_HINT_RANGE, "-60,24,0.1"));
 	}
 }
@@ -126,7 +126,7 @@ AudioEffectEQ::AudioEffectEQ(EQ::Preset p_preset) {
 	eq.set_mix_rate(AudioServer::get_singleton()->get_mix_rate());
 	eq.set_preset_band_mode(p_preset);
 	gain.resize(eq.get_band_count());
-	for (int i = 0; i < gain.size(); i++) {
+	for (vec_size i = 0; i < gain.size(); i++) {
 		gain.write[i] = 0.0;
 		String band_name = "band_db/" + itos(eq.get_band_frequency(i)) + "_hz";
 		prop_band_map[band_name] = i;

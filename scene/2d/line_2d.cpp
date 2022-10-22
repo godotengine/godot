@@ -49,7 +49,7 @@ Rect2 Line2D::_edit_get_rect() const {
 	}
 	Vector2 d = Vector2(_width, _width);
 	Rect2 aabb = Rect2(_points[0] - d, 2 * d);
-	for (int i = 1; i < _points.size(); i++) {
+	for (vec_size i = 1; i < _points.size(); i++) {
 		aabb.expand_to(_points[i] - d);
 		aabb.expand_to(_points[i] + d);
 	}

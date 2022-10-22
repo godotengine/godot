@@ -43,7 +43,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	frame_metrics.write[last_metric] = p_metric;
 
 	List<String> stack;
-	for (int i = 0; i < frame_metrics[last_metric].areas.size(); i++) {
+	for (vec_size i = 0; i < frame_metrics[last_metric].areas.size(); i++) {
 		String name = frame_metrics[last_metric].areas[i].name;
 		frame_metrics.write[last_metric].areas.write[i].color_cache = _get_color_from_signature(name);
 		String full_name;
@@ -171,7 +171,7 @@ void EditorVisualProfiler::_update_plot() {
 	float highest_cpu = 0;
 	float highest_gpu = 0;
 
-	for (int i = 0; i < frame_metrics.size(); i++) {
+	for (vec_size i = 0; i < frame_metrics.size(); i++) {
 		const Metric &m = frame_metrics[i];
 		if (!m.valid) {
 			continue;
@@ -547,7 +547,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 
 			//metric may be invalid, so look for closest metric that is valid, this makes snap feel better
 			bool valid = false;
-			for (int i = 0; i < frame_metrics.size(); i++) {
+			for (vec_size i = 0; i < frame_metrics.size(); i++) {
 				if (frame_metrics[metric].valid) {
 					valid = true;
 					break;
@@ -666,11 +666,11 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	Vector<String> signatures;
 	const Vector<EditorFrameProfiler::Metric::Category> &categories = frame_metrics[0].categories;
 
-	for (int j = 0; j < categories.size(); j++) {
+	for (vec_size j = 0; j < categories.size(); j++) {
 		const EditorFrameProfiler::Metric::Category &c = categories[j];
 		signatures.push_back(c.signature);
 
-		for (int k = 0; k < c.items.size(); k++) {
+		for (vec_size k = 0; k < c.items.size(); k++) {
 			signatures.push_back(c.items[k].signature);
 		}
 	}
@@ -682,7 +682,7 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 
 	int index = last_metric;
 
-	for (int i = 0; i < frame_metrics.size(); i++) {
+	for (vec_size i = 0; i < frame_metrics.size(); i++) {
 		++index;
 
 		if (index >= frame_metrics.size()) {
@@ -695,11 +695,11 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 		int it = 0;
 		const Vector<EditorFrameProfiler::Metric::Category> &frame_cat = frame_metrics[index].categories;
 
-		for (int j = 0; j < frame_cat.size(); j++) {
+		for (vec_size j = 0; j < frame_cat.size(); j++) {
 			const EditorFrameProfiler::Metric::Category &c = frame_cat[j];
 			values.write[it++] = String::num_real(c.total_time);
 
-			for (int k = 0; k < c.items.size(); k++) {
+			for (vec_size k = 0; k < c.items.size(); k++) {
 				values.write[it++] = String::num_real(c.items[k].total);
 			}
 		}

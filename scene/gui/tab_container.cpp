@@ -262,7 +262,7 @@ void TabContainer::_repaint() {
 	Vector<Control *> controls = _get_tab_controls();
 	int current = get_current_tab();
 
-	for (int i = 0; i < controls.size(); i++) {
+	for (vec_size i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
 		if (i == current) {
@@ -511,7 +511,7 @@ void TabContainer::_on_tab_button_pressed(int p_tab) {
 
 void TabContainer::_refresh_tab_names() {
 	Vector<Control *> controls = _get_tab_controls();
-	for (int i = 0; i < controls.size(); i++) {
+	for (vec_size i = 0; i < controls.size(); i++) {
 		if (!controls[i]->has_meta("_tab_name") && String(controls[i]->get_name()) != get_tab_title(i)) {
 			tab_bar->set_tab_title(i, controls[i]->get_name());
 		}
@@ -641,7 +641,7 @@ int TabContainer::get_tab_idx_from_control(Control *p_child) const {
 	ERR_FAIL_COND_V(p_child->get_parent() != this, -1);
 
 	Vector<Control *> controls = _get_tab_controls();
-	for (int i = 0; i < controls.size(); i++) {
+	for (vec_size i = 0; i < controls.size(); i++) {
 		if (controls[i] == p_child) {
 			return i;
 		}
@@ -680,7 +680,7 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	tab_bar->set_visible(tabs_visible);
 
 	Vector<Control *> controls = _get_tab_controls();
-	for (int i = 0; i < controls.size(); i++) {
+	for (vec_size i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 		if (tabs_visible) {
 			c->set_offset(SIDE_TOP, _get_top_margin());
@@ -805,7 +805,7 @@ Ref<Texture2D> TabContainer::get_tab_button_icon(int p_tab) const {
 
 void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 	Vector<Control *> controls = _get_tab_controls();
-	for (int i = 0; i < controls.size(); i++) {
+	for (vec_size i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
 		if (!c->has_meta("_tab_name")) {
@@ -839,7 +839,7 @@ Size2 TabContainer::get_minimum_size() const {
 
 	Vector<Control *> controls = _get_tab_controls();
 	Size2 largest_child_min_size;
-	for (int i = 0; i < controls.size(); i++) {
+	for (vec_size i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
 		if (!c->is_visible_in_tree() && !use_hidden_tabs_for_min_size) {

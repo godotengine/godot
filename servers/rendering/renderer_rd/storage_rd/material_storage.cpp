@@ -1054,7 +1054,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 	bool uses_global_textures = false;
 	global_textures_pass++;
 
-	for (int i = 0, k = 0; i < p_texture_uniforms.size(); i++) {
+	for (vec_size i = 0, k = 0; i < p_texture_uniforms.size(); i++) {
 		const StringName &uniform_name = p_texture_uniforms[i].name;
 		int uniform_array_size = p_texture_uniforms[i].array_size;
 
@@ -1095,7 +1095,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 				if (V->value.is_array()) {
 					Array array = (Array)V->value;
 					if (uniform_array_size > 0) {
-						for (int j = 0; j < array.size(); j++) {
+						for (vec_size j = 0; j < array.size(); j++) {
 							textures.push_back(array[j]);
 						}
 					} else {
@@ -1111,7 +1111,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 			if (uniform_array_size > 0) {
 				if (textures.size() < uniform_array_size) {
 					HashMap<StringName, HashMap<int, RID>>::ConstIterator W = p_default_textures.find(uniform_name);
-					for (int j = textures.size(); j < uniform_array_size; j++) {
+					for (vec_size j = textures.size(); j < uniform_array_size; j++) {
 						if (W && W->value.has(j)) {
 							textures.push_back(W->value[j]);
 						} else {
@@ -1201,7 +1201,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 		} else {
 			bool srgb = p_use_linear_color && p_texture_uniforms[i].use_color;
 
-			for (int j = 0; j < textures.size(); j++) {
+			for (vec_size j = 0; j < textures.size(); j++) {
 				TextureStorage::Texture *tex = TextureStorage::get_singleton()->get_texture(textures[j]);
 
 				if (tex) {
@@ -1301,7 +1301,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 	}
 
 	uint32_t tex_uniform_count = 0U;
-	for (int i = 0; i < p_texture_uniforms.size(); i++) {
+	for (vec_size i = 0; i < p_texture_uniforms.size(); i++) {
 		tex_uniform_count += uint32_t(p_texture_uniforms[i].array_size > 0 ? p_texture_uniforms[i].array_size : 1);
 	}
 
@@ -1343,7 +1343,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		}
 
 		const RID *textures = texture_cache.ptrw();
-		for (int i = 0, k = 0; i < p_texture_uniforms.size(); i++) {
+		for (vec_size i = 0, k = 0; i < p_texture_uniforms.size(); i++) {
 			const int array_size = p_texture_uniforms[i].array_size;
 
 			RD::Uniform u;

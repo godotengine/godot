@@ -59,7 +59,7 @@ public:
 	Variant get_valid(const Variant &p_key) const;
 	Variant get(const Variant &p_key, const Variant &p_default) const;
 
-	int size() const;
+	vec_size size() const;
 	bool is_empty() const;
 	void clear();
 	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);

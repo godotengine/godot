@@ -82,7 +82,7 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_get_documentation, doc);
 
 		Vector<DocData::ClassDoc> class_doc;
-		for (int i = 0; i < doc.size(); i++) {
+		for (vec_size i = 0; i < doc.size(); i++) {
 			class_doc.append(DocData::ClassDoc::from_dict(doc[i]));
 		}
 
@@ -110,7 +110,7 @@ public:
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override {
 		TypedArray<Dictionary> sl;
 		GDVIRTUAL_REQUIRED_CALL(_get_script_signal_list, sl);
-		for (int i = 0; i < sl.size(); i++) {
+		for (vec_size i = 0; i < sl.size(); i++) {
 			r_signals->push_back(MethodInfo::from_dict(sl[i]));
 		}
 	}
@@ -135,7 +135,7 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *r_methods) const override {
 		TypedArray<Dictionary> sl;
 		GDVIRTUAL_REQUIRED_CALL(_get_script_method_list, sl);
-		for (int i = 0; i < sl.size(); i++) {
+		for (vec_size i = 0; i < sl.size(); i++) {
 			r_methods->push_back(MethodInfo::from_dict(sl[i]));
 		}
 	}
@@ -145,7 +145,7 @@ public:
 	virtual void get_script_property_list(List<PropertyInfo> *r_propertys) const override {
 		TypedArray<Dictionary> sl;
 		GDVIRTUAL_REQUIRED_CALL(_get_script_property_list, sl);
-		for (int i = 0; i < sl.size(); i++) {
+		for (vec_size i = 0; i < sl.size(); i++) {
 			r_propertys->push_back(PropertyInfo::from_dict(sl[i]));
 		}
 	}
@@ -167,7 +167,7 @@ public:
 	virtual void get_members(HashSet<StringName> *p_members) override {
 		TypedArray<StringName> members;
 		GDVIRTUAL_REQUIRED_CALL(_get_members, members);
-		for (int i = 0; i < members.size(); i++) {
+		for (vec_size i = 0; i < members.size(); i++) {
 			p_members->insert(members[i]);
 		}
 	}
@@ -210,7 +210,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_reserved_words, ret);
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			p_words->push_back(ret[i]);
 		}
 	}
@@ -221,7 +221,7 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_comment_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			p_words->push_back(ret[i]);
 		}
 	}
@@ -231,7 +231,7 @@ public:
 	virtual void get_string_delimiters(List<String> *p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_string_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			p_words->push_back(ret[i]);
 		}
 	}
@@ -244,7 +244,7 @@ public:
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_built_in_templates, p_object, ret);
 		Vector<ScriptTemplate> stret;
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			Dictionary d = ret[i];
 			ScriptTemplate st;
 			ERR_CONTINUE(!d.has("inherit"));
@@ -275,13 +275,13 @@ public:
 		}
 		if (r_functions != nullptr && ret.has("functions")) {
 			Vector<String> functions = ret["functions"];
-			for (int i = 0; i < functions.size(); i++) {
+			for (vec_size i = 0; i < functions.size(); i++) {
 				r_functions->push_back(functions[i]);
 			}
 		}
 		if (r_errors != nullptr && ret.has("errors")) {
 			Array errors = ret["errors"];
-			for (int i = 0; i < errors.size(); i++) {
+			for (vec_size i = 0; i < errors.size(); i++) {
 				Dictionary err = errors[i];
 				ERR_CONTINUE(!err.has("line"));
 				ERR_CONTINUE(!err.has("column"));
@@ -298,7 +298,7 @@ public:
 		if (r_warnings != nullptr && ret.has("warnings")) {
 			ERR_FAIL_COND_V(!ret.has("warnings"), false);
 			Array warnings = ret["warnings"];
-			for (int i = 0; i < warnings.size(); i++) {
+			for (vec_size i = 0; i < warnings.size(); i++) {
 				Dictionary warn = warnings[i];
 				ERR_CONTINUE(!warn.has("start_line"));
 				ERR_CONTINUE(!warn.has("end_line"));
@@ -322,7 +322,7 @@ public:
 		}
 		if (r_safe_lines != nullptr && ret.has("safe_lines")) {
 			PackedInt32Array safe_lines = ret["safe_lines"];
-			for (int i = 0; i < safe_lines.size(); i++) {
+			for (vec_size i = 0; i < safe_lines.size(); i++) {
 				r_safe_lines->insert(safe_lines[i]);
 			}
 		}
@@ -357,7 +357,7 @@ public:
 
 		if (r_options != nullptr && ret.has("options")) {
 			Array options = ret["options"];
-			for (int i = 0; i < options.size(); i++) {
+			for (vec_size i = 0; i < options.size(); i++) {
 				Dictionary op = options[i];
 				CodeCompletionOption option;
 				ERR_CONTINUE(!op.has("kind"));
@@ -377,7 +377,7 @@ public:
 				if (op.has("matches")) {
 					PackedInt32Array matches = op["matches"];
 					ERR_CONTINUE(matches.size() & 1);
-					for (int j = 0; j < matches.size(); j += 2) {
+					for (vec_size j = 0; j < matches.size(); j += 2) {
 						option.matches.push_back(Pair<int, int>(matches[j], matches[j + 1]));
 					}
 				}
@@ -451,13 +451,13 @@ public:
 		}
 		if (p_locals != nullptr && ret.has("locals")) {
 			PackedStringArray strings = ret["locals"];
-			for (int i = 0; i < strings.size(); i++) {
+			for (vec_size i = 0; i < strings.size(); i++) {
 				p_locals->push_back(strings[i]);
 			}
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
+			for (vec_size i = 0; i < values.size(); i++) {
 				p_values->push_back(values[i]);
 			}
 		}
@@ -471,13 +471,13 @@ public:
 		}
 		if (p_members != nullptr && ret.has("members")) {
 			PackedStringArray strings = ret["members"];
-			for (int i = 0; i < strings.size(); i++) {
+			for (vec_size i = 0; i < strings.size(); i++) {
 				p_members->push_back(strings[i]);
 			}
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
+			for (vec_size i = 0; i < values.size(); i++) {
 				p_values->push_back(values[i]);
 			}
 		}
@@ -498,13 +498,13 @@ public:
 		}
 		if (p_globals != nullptr && ret.has("globals")) {
 			PackedStringArray strings = ret["globals"];
-			for (int i = 0; i < strings.size(); i++) {
+			for (vec_size i = 0; i < strings.size(); i++) {
 				p_globals->push_back(strings[i]);
 			}
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
+			for (vec_size i = 0; i < values.size(); i++) {
 				p_values->push_back(values[i]);
 			}
 		}
@@ -517,7 +517,7 @@ public:
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_debug_get_current_stack_info, ret);
 		Vector<StackInfo> sret;
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			StackInfo si;
 			Dictionary d = ret[i];
 			ERR_CONTINUE(!d.has("file"));
@@ -540,7 +540,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override {
 		PackedStringArray ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_recognized_extensions, ret);
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			p_extensions->push_back(ret[i]);
 		}
 	}
@@ -549,7 +549,7 @@ public:
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_public_functions, ret);
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			MethodInfo mi = MethodInfo::from_dict(ret[i]);
 			p_functions->push_back(mi);
 		}
@@ -558,7 +558,7 @@ public:
 	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const override {
 		Dictionary ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_public_constants, ret);
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			Dictionary d = ret[i];
 			ERR_CONTINUE(!d.has("name"));
 			ERR_CONTINUE(!d.has("value"));
@@ -569,7 +569,7 @@ public:
 	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_public_annotations, ret);
-		for (int i = 0; i < ret.size(); i++) {
+		for (vec_size i = 0; i < ret.size(); i++) {
 			MethodInfo mi = MethodInfo::from_dict(ret[i]);
 			p_annotations->push_back(mi);
 		}

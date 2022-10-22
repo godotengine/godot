@@ -107,7 +107,7 @@ void VersionControlEditorPlugin::_notification(int p_what) {
 
 void VersionControlEditorPlugin::_populate_available_vcs_names() {
 	set_up_choice->clear();
-	for (int i = 0; i < available_plugins.size(); i++) {
+	for (vec_size i = 0; i < available_plugins.size(); i++) {
 		set_up_choice->add_item(available_plugins[i]);
 	}
 }
@@ -229,7 +229,7 @@ void VersionControlEditorPlugin::_refresh_branch_list() {
 
 	String current_branch = EditorVCSInterface::get_singleton()->get_current_branch_name();
 
-	for (int i = 0; i < branch_list.size(); i++) {
+	for (vec_size i = 0; i < branch_list.size(); i++) {
 		branch_select->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("VcsBranches"), SNAME("EditorIcons")), branch_list[i], i);
 
 		if (branch_list[i] == current_branch) {
@@ -289,7 +289,7 @@ void VersionControlEditorPlugin::_refresh_remote_list() {
 
 	remote_select->set_disabled(remotes.is_empty());
 
-	for (int i = 0; i < remotes.size(); i++) {
+	for (vec_size i = 0; i < remotes.size(); i++) {
 		remote_select->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")), remotes[i], i);
 		remote_select->set_item_metadata(i, remotes[i]);
 
@@ -494,7 +494,7 @@ void VersionControlEditorPlugin::_force_push() {
 
 void VersionControlEditorPlugin::_update_opened_tabs() {
 	Vector<EditorData::EditedScene> open_scenes = EditorNode::get_singleton()->get_editor_data().get_edited_scenes();
-	for (int i = 0; i < open_scenes.size(); i++) {
+	for (vec_size i = 0; i < open_scenes.size(); i++) {
 		if (open_scenes[i].root == NULL) {
 			continue;
 		}
@@ -621,7 +621,7 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 		diff->pop();
 	}
 
-	for (int i = 0; i < diff_content.size(); i++) {
+	for (vec_size i = 0; i < diff_content.size(); i++) {
 		EditorVCSInterface::DiffFile diff_file = diff_content[i];
 
 		diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts")));
@@ -632,7 +632,7 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 
 		diff->add_newline();
 		diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-		for (int j = 0; j < diff_file.diff_hunks.size(); j++) {
+		for (vec_size j = 0; j < diff_file.diff_hunks.size(); j++) {
 			EditorVCSInterface::DiffHunk hunk = diff_file.diff_hunks[j];
 
 			String old_start = String::num_int64(hunk.old_start);
@@ -663,7 +663,7 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 void VersionControlEditorPlugin::_display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content) {
 	List<EditorVCSInterface::DiffLine> parsed_diff;
 
-	for (int i = 0; i < p_diff_content.size(); i++) {
+	for (vec_size i = 0; i < p_diff_content.size(); i++) {
 		EditorVCSInterface::DiffLine diff_line = p_diff_content[i];
 		String line = diff_line.content.strip_edges(false, true);
 
@@ -710,7 +710,7 @@ void VersionControlEditorPlugin::_display_diff_split_view(List<EditorVCSInterfac
 	diff->set_table_column_expand(2, true);
 	diff->set_table_column_expand(5, true);
 
-	for (int i = 0; i < parsed_diff.size(); i++) {
+	for (vec_size i = 0; i < parsed_diff.size(); i++) {
 		EditorVCSInterface::DiffLine diff_line = parsed_diff[i];
 
 		bool has_change = diff_line.status != " ";
@@ -794,7 +794,7 @@ void VersionControlEditorPlugin::_display_diff_unified_view(List<EditorVCSInterf
 		[cell]status[/cell]
 		[cell]code[/cell]
 	*/
-	for (int i = 0; i < p_diff_content.size(); i++) {
+	for (vec_size i = 0; i < p_diff_content.size(); i++) {
 		EditorVCSInterface::DiffLine diff_line = p_diff_content[i];
 		String line = diff_line.content.strip_edges(false, true);
 

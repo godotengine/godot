@@ -188,7 +188,7 @@ void SceneTree::_flush_ugc() {
 
 		const Variant **argptrs = (const Variant **)alloca(E->value.size() * sizeof(Variant *));
 
-		for (int i = 0; i < E->value.size(); i++) {
+		for (vec_size i = 0; i < E->value.size(); i++) {
 			argptrs[i] = &E->value[i];
 		}
 
@@ -1181,7 +1181,7 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const
 		const StringName *sptr = snames.ptr();
 		const StringName *nptr = tnames.ptr();
 		bool valid = true;
-		for (int i = 0; i < snames.size(); i++) {
+		for (vec_size i = 0; i < snames.size(); i++) {
 			if (sptr[i] != nptr[i]) {
 				valid = false;
 				break;

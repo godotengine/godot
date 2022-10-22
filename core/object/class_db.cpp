@@ -253,7 +253,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			for (const StringName &F : snames) {
 				MethodInfo &mi = t->signal_map[F];
 				hash = hash_murmur3_one_64(F.hash(), hash);
-				for (int i = 0; i < mi.arguments.size(); i++) {
+				for (vec_size i = 0; i < mi.arguments.size(); i++) {
 					hash = hash_murmur3_one_64(mi.arguments[i].type, hash);
 				}
 			}
@@ -1347,7 +1347,7 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 		if (p_arg_names.size() != mi.arguments.size()) {
 			WARN_PRINT("Mismatch argument name count for virtual method: " + String(p_class) + "::" + p_method.name);
 		} else {
-			for (int i = 0; i < p_arg_names.size(); i++) {
+			for (vec_size i = 0; i < p_arg_names.size(); i++) {
 				mi.arguments[i].name = p_arg_names[i];
 			}
 		}

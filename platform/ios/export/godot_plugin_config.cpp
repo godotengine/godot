@@ -70,7 +70,7 @@ String PluginConfigIOS::resolve_system_dependency_path(String dependency_path) {
 Vector<String> PluginConfigIOS::resolve_local_dependencies(String plugin_config_dir, Vector<String> p_paths) {
 	Vector<String> paths;
 
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		String path = resolve_local_dependency_path(plugin_config_dir, p_paths[i]);
 
 		if (path.is_empty()) {
@@ -86,7 +86,7 @@ Vector<String> PluginConfigIOS::resolve_local_dependencies(String plugin_config_
 Vector<String> PluginConfigIOS::resolve_system_dependencies(Vector<String> p_paths) {
 	Vector<String> paths;
 
-	for (int i = 0; i < p_paths.size(); i++) {
+	for (vec_size i = 0; i < p_paths.size(); i++) {
 		String path = resolve_system_dependency_path(p_paths[i]);
 
 		if (path.is_empty()) {
@@ -212,7 +212,7 @@ PluginConfigIOS PluginConfigIOS::load_plugin_config(Ref<ConfigFile> config_file,
 		List<String> keys;
 		config_file->get_section_keys(PluginConfigIOS::PLIST_SECTION, &keys);
 
-		for (int i = 0; i < keys.size(); i++) {
+		for (vec_size i = 0; i < keys.size(); i++) {
 			Vector<String> key_components = keys[i].split(":");
 
 			String key_value = "";

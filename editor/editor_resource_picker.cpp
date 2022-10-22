@@ -281,7 +281,7 @@ void EditorResourcePicker::_update_menu_items() {
 		if (conversions.size()) {
 			edit_menu->add_separator();
 		}
-		for (int i = 0; i < conversions.size(); i++) {
+		for (vec_size i = 0; i < conversions.size(); i++) {
 			String what = conversions[i]->converts_to();
 			Ref<Texture2D> icon;
 			if (has_theme_icon(what, SNAME("EditorIcons"))) {
@@ -478,7 +478,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			bool is_custom_resource = false;
 			Ref<Texture2D> icon;
 			if (!custom_resources.is_empty()) {
-				for (int j = 0; j < custom_resources.size(); j++) {
+				for (vec_size j = 0; j < custom_resources.size(); j++) {
 					if (custom_resources[j].name == t) {
 						is_custom_resource = true;
 						if (custom_resources[j].icon.is_valid()) {
@@ -618,7 +618,7 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 	if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
 		Vector<EditorData::CustomType> custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
 
-		for (int i = 0; i < custom_resources.size(); i++) {
+		for (vec_size i = 0; i < custom_resources.size(); i++) {
 			p_vector->insert(custom_resources[i].name);
 		}
 	}

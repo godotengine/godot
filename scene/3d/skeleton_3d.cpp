@@ -151,7 +151,7 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 }
 
 void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		const String prep = vformat("%s/%d/", PNAME("bones"), i);
 		p_list->push_back(PropertyInfo(Variant::STRING, prep + PNAME("name"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::INT, prep + PNAME("parent"), PROPERTY_HINT_RANGE, "-1," + itos(bones.size() - 1) + ",1", PROPERTY_USAGE_NO_EDITOR));
@@ -322,7 +322,7 @@ void Skeleton3D::_notification(int p_what) {
 			// This is active only if the skeleton animates the physical bones
 			// and the state of the bone is not active.
 			if (animate_physical_bones) {
-				for (int i = 0; i < bones.size(); i += 1) {
+				for (vec_size i = 0; i < bones.size(); i += 1) {
 					if (bones[i].physical_bone) {
 						if (bones[i].physical_bone->is_simulating_physics() == false) {
 							bones[i].physical_bone->reset_to_rest_position();
@@ -355,7 +355,7 @@ void Skeleton3D::_notification(int p_what) {
 }
 
 void Skeleton3D::clear_bones_global_pose_override() {
-	for (int i = 0; i < bones.size(); i += 1) {
+	for (vec_size i = 0; i < bones.size(); i += 1) {
 		bones.write[i].global_pose_override_amount = 0;
 		bones.write[i].global_pose_override_reset = true;
 	}
@@ -396,7 +396,7 @@ Transform3D Skeleton3D::get_bone_global_pose_no_override(int p_bone) const {
 }
 
 void Skeleton3D::clear_bones_local_pose_override() {
-	for (int i = 0; i < bones.size(); i += 1) {
+	for (vec_size i = 0; i < bones.size(); i += 1) {
 		bones.write[i].local_pose_override_amount = 0;
 	}
 	_make_dirty();
@@ -433,7 +433,7 @@ void Skeleton3D::update_bone_rest_forward_vector(int p_bone, bool p_force_update
 		Vector<int> child_bones = get_bone_children(p_bone);
 		if (child_bones.size() > 0) {
 			Vector3 combined_child_dir = Vector3(0, 0, 0);
-			for (int i = 0; i < child_bones.size(); i++) {
+			for (vec_size i = 0; i < child_bones.size(); i++) {
 				combined_child_dir += bones[child_bones[i]].rest.origin.normalized();
 			}
 			combined_child_dir = combined_child_dir / child_bones.size();
@@ -506,7 +506,7 @@ float Skeleton3D::get_motion_scale() const {
 void Skeleton3D::add_bone(const String &p_name) {
 	ERR_FAIL_COND(p_name.is_empty() || p_name.contains(":") || p_name.contains("/"));
 
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		ERR_FAIL_COND(bones[i].name == p_name);
 	}
 
@@ -521,7 +521,7 @@ void Skeleton3D::add_bone(const String &p_name) {
 }
 
 int Skeleton3D::find_bone(const String &p_name) const {
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		if (bones[i].name == p_name) {
 			return i;
 		}
@@ -737,7 +737,7 @@ void Skeleton3D::reset_bone_pose(int p_bone) {
 }
 
 void Skeleton3D::reset_bone_poses() {
-	for (int i = 0; i < bones.size(); i++) {
+	for (vec_size i = 0; i < bones.size(); i++) {
 		reset_bone_pose(i);
 	}
 }
@@ -781,7 +781,7 @@ void Skeleton3D::set_animate_physical_bones(bool p_enabled) {
 
 	if (Engine::get_singleton()->is_editor_hint() == false) {
 		bool sim = false;
-		for (int i = 0; i < bones.size(); i += 1) {
+		for (vec_size i = 0; i < bones.size(); i += 1) {
 			if (bones[i].physical_bone) {
 				bones[i].physical_bone->reset_physics_simulation_state();
 				if (bones[i].physical_bone->is_simulating_physics()) {
@@ -1022,7 +1022,7 @@ void Skeleton3D::force_update_all_dirty_bones() {
 void Skeleton3D::force_update_all_bone_transforms() {
 	_update_process_order();
 
-	for (int i = 0; i < parentless_bones.size(); i++) {
+	for (vec_size i = 0; i < parentless_bones.size(); i++) {
 		force_update_bone_children_transforms(parentless_bones[i]);
 	}
 }

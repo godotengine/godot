@@ -215,7 +215,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 
 		if (n) {
 			AABB aabb;
-			for (int i = 0; i < n->faces.size(); i++) {
+			for (vec_size i = 0; i < n->faces.size(); i++) {
 				for (int j = 0; j < 3; j++) {
 					if (i == 0 && j == 0) {
 						aabb.position = n->faces[i].vertices[j];
@@ -306,13 +306,13 @@ void CSGShape3D::_update_shape() {
 
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
-	for (int i = 0; i < face_count.size(); i++) {
+	for (vec_size i = 0; i < face_count.size(); i++) {
 		face_count.write[i] = 0;
 	}
 
-	for (int i = 0; i < n->faces.size(); i++) {
+	for (vec_size i = 0; i < n->faces.size(); i++) {
 		int mat = n->faces[i].material;
-		ERR_CONTINUE(mat < -1 || mat >= face_count.size());
+		ERR_CONTINUE(mat < -1 || mat >= int(face_count.size()));
 		int idx = mat == -1 ? face_count.size() - 1 : mat;
 
 		if (n->faces[i].smooth) {
@@ -338,7 +338,7 @@ void CSGShape3D::_update_shape() {
 	surfaces.resize(face_count.size());
 
 	//create arrays
-	for (int i = 0; i < surfaces.size(); i++) {
+	for (vec_size i = 0; i < surfaces.size(); i++) {
 		surfaces.write[i].vertices.resize(face_count[i] * 3);
 		surfaces.write[i].normals.resize(face_count[i] * 3);
 		surfaces.write[i].uvs.resize(face_count[i] * 3);
@@ -361,7 +361,7 @@ void CSGShape3D::_update_shape() {
 
 	//fill arrays
 	{
-		for (int i = 0; i < n->faces.size(); i++) {
+		for (vec_size i = 0; i < n->faces.size(); i++) {
 			int order[3] = { 0, 1, 2 };
 
 			if (n->faces[i].invert) {
@@ -369,7 +369,7 @@ void CSGShape3D::_update_shape() {
 			}
 
 			int mat = n->faces[i].material;
-			ERR_CONTINUE(mat < -1 || mat >= face_count.size());
+			ERR_CONTINUE(mat < -1 || mat >= int(face_count.size()));
 			int idx = mat == -1 ? face_count.size() - 1 : mat;
 
 			int last = surfaces[idx].last_added;
@@ -411,7 +411,7 @@ void CSGShape3D::_update_shape() {
 	root_mesh.instantiate();
 	//create surfaces
 
-	for (int i = 0; i < surfaces.size(); i++) {
+	for (vec_size i = 0; i < surfaces.size(); i++) {
 		// calculate tangents for this surface
 		bool have_tangents = calculate_tangents;
 		if (have_tangents) {
@@ -463,7 +463,7 @@ void CSGShape3D::_update_collision_faces() {
 		physics_faces.resize(n->faces.size() * 3);
 		Vector3 *physicsw = physics_faces.ptrw();
 
-		for (int i = 0; i < n->faces.size(); i++) {
+		for (vec_size i = 0; i < n->faces.size(); i++) {
 			int order[3] = { 0, 1, 2 };
 
 			if (n->faces[i].invert) {

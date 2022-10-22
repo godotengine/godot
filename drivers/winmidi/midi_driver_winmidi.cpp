@@ -67,7 +67,7 @@ Error MIDIDriverWinMidi::open() {
 PackedStringArray MIDIDriverWinMidi::get_connected_inputs() {
 	PackedStringArray list;
 
-	for (int i = 0; i < connected_sources.size(); i++) {
+	for (vec_size i = 0; i < connected_sources.size(); i++) {
 		HMIDIIN midi_in = connected_sources[i];
 		UINT id = 0;
 		MMRESULT res = midiInGetID(midi_in, &id);
@@ -84,7 +84,7 @@ PackedStringArray MIDIDriverWinMidi::get_connected_inputs() {
 }
 
 void MIDIDriverWinMidi::close() {
-	for (int i = 0; i < connected_sources.size(); i++) {
+	for (vec_size i = 0; i < connected_sources.size(); i++) {
 		HMIDIIN midi_in = connected_sources[i];
 		midiInStop(midi_in);
 		midiInClose(midi_in);

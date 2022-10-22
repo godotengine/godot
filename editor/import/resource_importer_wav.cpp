@@ -369,7 +369,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	if (normalize) {
 		float max = 0;
-		for (int i = 0; i < data.size(); i++) {
+		for (vec_size i = 0; i < data.size(); i++) {
 			float amp = Math::abs(data[i]);
 			if (amp > max) {
 				max = amp;
@@ -378,7 +378,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		if (max > 0) {
 			float mult = 1.0 / max;
-			for (int i = 0; i < data.size(); i++) {
+			for (vec_size i = 0; i < data.size(); i++) {
 				data.write[i] *= mult;
 			}
 		}

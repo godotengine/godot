@@ -175,7 +175,7 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 		return Error::FAILED;
 	}
 
-	for (GLTFBufferViewIndex i = 0; i < state->buffer_views.size(); i++) {
+	for (GLTFBufferViewIndex i = 0; i < int(state->buffer_views.size()); i++) {
 		state->buffer_views.write[i]->buffer = 0;
 	}
 
@@ -215,7 +215,7 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 		return Error::FAILED;
 	}
 
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+	for (vec_size ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
 		err = ext->export_post(state);
@@ -407,7 +407,7 @@ static Vector<real_t> _xform_to_array(const Transform3D p_transform) {
 
 Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 	Array nodes;
-	for (int i = 0; i < state->nodes.size(); i++) {
+	for (vec_size i = 0; i < state->nodes.size(); i++) {
 		Dictionary node;
 		Ref<GLTFNode> gltf_node = state->nodes[i];
 		Dictionary extensions;
@@ -448,13 +448,13 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 		}
 		if (gltf_node->children.size()) {
 			Array children;
-			for (int j = 0; j < gltf_node->children.size(); j++) {
+			for (vec_size j = 0; j < gltf_node->children.size(); j++) {
 				children.push_back(gltf_node->children[j]);
 			}
 			node["children"] = children;
 		}
 
-		for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		for (vec_size ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 			Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 			ERR_CONTINUE(ext.is_null());
 			ERR_CONTINUE(!state->scene_nodes.find(i));
@@ -557,7 +557,7 @@ String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> state, const GLTFSkele
 Error GLTFDocument::_parse_scenes(Ref<GLTFState> state) {
 	ERR_FAIL_COND_V(!state->json.has("scenes"), ERR_FILE_CORRUPT);
 	const Array &scenes = state->json["scenes"];
-	int loaded_scene = 0;
+	vec_size loaded_scene = 0;
 	if (state->json.has("scene")) {
 		loaded_scene = state->json["scene"];
 	} else {
@@ -569,7 +569,7 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> state) {
 		const Dictionary &s = scenes[loaded_scene];
 		ERR_FAIL_COND_V(!s.has("nodes"), ERR_UNAVAILABLE);
 		const Array &nodes = s["nodes"];
-		for (int j = 0; j < nodes.size(); j++) {
+		for (vec_size j = 0; j < nodes.size(); j++) {
 			state->root_nodes.push_back(nodes[j]);
 		}
 
@@ -586,7 +586,7 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> state) {
 Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 	ERR_FAIL_COND_V(!state->json.has("nodes"), ERR_FILE_CORRUPT);
 	const Array &nodes = state->json["nodes"];
-	for (int i = 0; i < nodes.size(); i++) {
+	for (vec_size i = 0; i < nodes.size(); i++) {
 		Ref<GLTFNode> node;
 		node.instantiate();
 		const Dictionary &n = nodes[i];
@@ -633,7 +633,7 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 
 		if (n.has("children")) {
 			const Array &children = n["children"];
-			for (int j = 0; j < children.size(); j++) {
+			for (vec_size j = 0; j < children.size(); j++) {
 				node->children.push_back(children[j]);
 			}
 		}
@@ -642,11 +642,11 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 	}
 
 	// build the hierarchy
-	for (GLTFNodeIndex node_i = 0; node_i < state->nodes.size(); node_i++) {
-		for (int j = 0; j < state->nodes[node_i]->children.size(); j++) {
+	for (GLTFNodeIndex node_i = 0; node_i < int(state->nodes.size()); node_i++) {
+		for (vec_size j = 0; j < state->nodes[node_i]->children.size(); j++) {
 			GLTFNodeIndex child_i = state->nodes[node_i]->children[j];
 
-			ERR_FAIL_INDEX_V(child_i, state->nodes.size(), ERR_FILE_CORRUPT);
+			ERR_FAIL_INDEX_V(child_i, int(state->nodes.size()), ERR_FILE_CORRUPT);
 			ERR_CONTINUE(state->nodes[child_i]->parent != -1); //node already has a parent, wtf.
 
 			state->nodes.write[child_i]->parent = node_i;
@@ -660,7 +660,7 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 
 void GLTFDocument::_compute_node_heights(Ref<GLTFState> state) {
 	state->root_nodes.clear();
-	for (GLTFNodeIndex node_i = 0; node_i < state->nodes.size(); ++node_i) {
+	for (GLTFNodeIndex node_i = 0; node_i < int(state->nodes.size()); ++node_i) {
 		Ref<GLTFNode> node = state->nodes[node_i];
 		node->height = 0;
 
@@ -712,7 +712,7 @@ Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> state, const String &p_pat
 		buffers.push_back(gltf_buffer);
 	}
 
-	for (GLTFBufferIndex i = 1; i < state->buffers.size() - 1; i++) {
+	for (GLTFBufferIndex i = 1; i < GLTFBufferIndex(state->buffers.size() - 1); i++) {
 		Vector<uint8_t> buffer_data = state->buffers[i];
 		Dictionary gltf_buffer;
 		String filename = p_path.get_basename().get_file() + itos(i) + ".bin";
@@ -744,7 +744,7 @@ Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> state, const String &p_pa
 	}
 	Array buffers;
 
-	for (GLTFBufferIndex i = 0; i < state->buffers.size(); i++) {
+	for (GLTFBufferIndex i = 0; i < GLTFBufferIndex(state->buffers.size()); i++) {
 		Vector<uint8_t> buffer_data = state->buffers[i];
 		Dictionary gltf_buffer;
 		String filename = p_path.get_basename().get_file() + itos(i) + ".bin";
@@ -774,7 +774,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> state, const String &p_base_pa
 	}
 
 	const Array &buffers = state->json["buffers"];
-	for (GLTFBufferIndex i = 0; i < buffers.size(); i++) {
+	for (GLTFBufferIndex i = 0; i < GLTFBufferIndex(buffers.size()); i++) {
 		if (i == 0 && state->glb_data.size()) {
 			state->buffers.push_back(state->glb_data);
 
@@ -814,7 +814,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> state, const String &p_base_pa
 
 Error GLTFDocument::_encode_buffer_views(Ref<GLTFState> state) {
 	Array buffers;
-	for (GLTFBufferViewIndex i = 0; i < state->buffer_views.size(); i++) {
+	for (GLTFBufferViewIndex i = 0; i < GLTFBufferViewIndex(state->buffer_views.size()); i++) {
 		Dictionary d;
 
 		Ref<GLTFBufferView> buffer_view = state->buffer_views[i];
@@ -848,7 +848,7 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> state) {
 		return OK;
 	}
 	const Array &buffers = state->json["bufferViews"];
-	for (GLTFBufferViewIndex i = 0; i < buffers.size(); i++) {
+	for (GLTFBufferViewIndex i = 0; i < GLTFBufferViewIndex(buffers.size()); i++) {
 		const Dictionary &d = buffers[i];
 
 		Ref<GLTFBufferView> buffer_view;
@@ -882,7 +882,7 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> state) {
 
 Error GLTFDocument::_encode_accessors(Ref<GLTFState> state) {
 	Array accessors;
-	for (GLTFAccessorIndex i = 0; i < state->accessors.size(); i++) {
+	for (GLTFAccessorIndex i = 0; i < GLTFAccessorIndex(state->accessors.size()); i++) {
 		Dictionary d;
 
 		Ref<GLTFAccessor> accessor = state->accessors[i];
@@ -997,7 +997,7 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> state) {
 		return OK;
 	}
 	const Array &accessors = state->json["accessors"];
-	for (GLTFAccessorIndex i = 0; i < accessors.size(); i++) {
+	for (GLTFAccessorIndex i = 0; i < GLTFAccessorIndex(accessors.size()); i++) {
 		const Dictionary &d = accessors[i];
 
 		Ref<GLTFAccessor> accessor;
@@ -1298,7 +1298,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 	}
 	ERR_FAIL_COND_V(buffer_end > bv->byte_length, ERR_INVALID_DATA);
 
-	ERR_FAIL_COND_V((int)(offset + buffer_end) > gltf_buffer.size(), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V((offset + buffer_end) > gltf_buffer.size(), ERR_INVALID_DATA);
 	r_accessor = bv->buffer = state->buffer_views.size();
 	state->buffer_views.push_back(bv);
 	return OK;
@@ -1328,7 +1328,7 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> state, double *dst, const
 	const int buffer_end = (stride * (count - 1)) + element_size;
 	ERR_FAIL_COND_V(buffer_end > bv->byte_length, ERR_PARSE_ERROR);
 
-	ERR_FAIL_COND_V((int)(offset + buffer_end) > buffer.size(), ERR_PARSE_ERROR);
+	ERR_FAIL_COND_V((offset + buffer_end) > buffer.size(), ERR_PARSE_ERROR);
 
 	//fill everything as doubles
 
@@ -1463,7 +1463,7 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> state, const GLTFAc
 	double *dst = dst_buffer.ptrw();
 
 	if (a->buffer_view >= 0) {
-		ERR_FAIL_INDEX_V(a->buffer_view, state->buffer_views.size(), Vector<double>());
+		ERR_FAIL_INDEX_V(a->buffer_view, int(state->buffer_views.size()), Vector<double>());
 
 		const Error err = _decode_buffer_view(state, dst, a->buffer_view, skip_every, skip_bytes, element_size, a->count, a->type, component_count, a->component_type, component_size, a->normalized, a->byte_offset, p_for_vertex);
 		if (err != OK) {
@@ -1494,7 +1494,7 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> state, const GLTFAc
 			return Vector<double>();
 		}
 
-		for (int i = 0; i < indices.size(); i++) {
+		for (vec_size i = 0; i < indices.size(); i++) {
 			const int write_offset = int(indices[i]) * component_count;
 
 			for (int j = 0; j < component_count; j++) {
@@ -1518,7 +1518,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> state, c
 	type_max.resize(element_count);
 	Vector<double> type_min;
 	type_min.resize(element_count);
-	for (int i = 0; i < p_attribs.size(); i++) {
+	for (vec_size i = 0; i < p_attribs.size(); i++) {
 		attribs.write[i] = Math::snapped(p_attribs[i], 1.0);
 		if (i == 0) {
 			for (int32_t type_i = 0; type_i < element_count; type_i++) {
@@ -1611,7 +1611,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> state, c
 	Vector<double> type_min;
 	type_min.resize(element_count);
 
-	for (int i = 0; i < p_attribs.size(); i++) {
+	for (vec_size i = 0; i < p_attribs.size(); i++) {
 		Vector2 attrib = p_attribs[i];
 		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
@@ -1657,7 +1657,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> state, 
 	type_max.resize(element_count);
 	Vector<double> type_min;
 	type_min.resize(element_count);
-	for (int i = 0; i < p_attribs.size(); i++) {
+	for (vec_size i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
 		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
@@ -1722,7 +1722,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> state
 	type_max.resize(element_count);
 	Vector<double> type_min;
 	type_min.resize(element_count);
-	for (int i = 0; i < p_attribs.size(); i++) {
+	for (vec_size i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
 		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
@@ -1771,7 +1771,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> state,
 	type_max.resize(element_count);
 	Vector<double> type_min;
 	type_min.resize(element_count);
-	for (int i = 0; i < p_attribs.size(); i++) {
+	for (vec_size i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
 		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
@@ -1818,7 +1818,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> s
 	type_max.resize(element_count);
 	Vector<double> type_min;
 	type_min.resize(element_count);
-	for (int i = 0; i < p_attribs.size(); i++) {
+	for (vec_size i = 0; i < p_attribs.size(); i++) {
 		Quaternion quaternion = p_attribs[i];
 		attribs.write[(i * element_count) + 0] = Math::snapped(quaternion.x, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[(i * element_count) + 1] = Math::snapped(quaternion.y, CMP_NORMALIZE_TOLERANCE);
@@ -1887,7 +1887,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> state,
 	Vector<double> type_min;
 	type_min.resize(element_count);
 
-	for (int i = 0; i < p_attribs.size(); i++) {
+	for (vec_size i = 0; i < p_attribs.size(); i++) {
 		attribs.write[i] = Math::snapped(p_attribs[i], CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
@@ -1931,7 +1931,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> state, c
 	type_max.resize(element_count);
 	Vector<double> type_min;
 	type_min.resize(element_count);
-	for (int i = 0; i < p_attribs.size(); i++) {
+	for (vec_size i = 0; i < p_attribs.size(); i++) {
 		Vector3 attrib = p_attribs[i];
 		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
@@ -1977,7 +1977,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 	type_max.resize(element_count);
 	Vector<double> type_min;
 	type_min.resize(element_count);
-	for (int i = 0; i < p_attribs.size(); i++) {
+	for (vec_size i = 0; i < p_attribs.size(); i++) {
 		Transform3D attrib = p_attribs[i];
 		Basis basis = attrib.get_basis();
 		Vector3 axis_0 = basis.get_column(Vector3::AXIS_X);
@@ -2107,7 +2107,7 @@ Vector<Transform2D> GLTFDocument::_decode_accessor_as_xform2d(Ref<GLTFState> sta
 
 	ERR_FAIL_COND_V(attribs.size() % 4 != 0, ret);
 	ret.resize(attribs.size() / 4);
-	for (int i = 0; i < ret.size(); i++) {
+	for (vec_size i = 0; i < ret.size(); i++) {
 		ret.write[i][0] = Vector2(attribs[i * 4 + 0], attribs[i * 4 + 1]);
 		ret.write[i][1] = Vector2(attribs[i * 4 + 2], attribs[i * 4 + 3]);
 	}
@@ -2124,7 +2124,7 @@ Vector<Basis> GLTFDocument::_decode_accessor_as_basis(Ref<GLTFState> state, cons
 
 	ERR_FAIL_COND_V(attribs.size() % 9 != 0, ret);
 	ret.resize(attribs.size() / 9);
-	for (int i = 0; i < ret.size(); i++) {
+	for (vec_size i = 0; i < ret.size(); i++) {
 		ret.write[i].set_column(0, Vector3(attribs[i * 9 + 0], attribs[i * 9 + 1], attribs[i * 9 + 2]));
 		ret.write[i].set_column(1, Vector3(attribs[i * 9 + 3], attribs[i * 9 + 4], attribs[i * 9 + 5]));
 		ret.write[i].set_column(2, Vector3(attribs[i * 9 + 6], attribs[i * 9 + 7], attribs[i * 9 + 8]));
@@ -2142,7 +2142,7 @@ Vector<Transform3D> GLTFDocument::_decode_accessor_as_xform(Ref<GLTFState> state
 
 	ERR_FAIL_COND_V(attribs.size() % 16 != 0, ret);
 	ret.resize(attribs.size() / 16);
-	for (int i = 0; i < ret.size(); i++) {
+	for (vec_size i = 0; i < ret.size(); i++) {
 		ret.write[i].basis.set_column(0, Vector3(attribs[i * 16 + 0], attribs[i * 16 + 1], attribs[i * 16 + 2]));
 		ret.write[i].basis.set_column(1, Vector3(attribs[i * 16 + 4], attribs[i * 16 + 5], attribs[i * 16 + 6]));
 		ret.write[i].basis.set_column(2, Vector3(attribs[i * 16 + 8], attribs[i * 16 + 9], attribs[i * 16 + 10]));
@@ -2315,7 +2315,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 				}
 			}
 			HashMap<int, int> joint_i_to_bone_i;
-			for (GLTFNodeIndex node_i = 0; node_i < state->nodes.size(); node_i++) {
+			for (GLTFNodeIndex node_i = 0; node_i < int(state->nodes.size()); node_i++) {
 				GLTFSkinIndex skin_i = -1;
 				if (state->nodes[node_i]->mesh == gltf_mesh_i) {
 					skin_i = state->nodes[node_i]->skin;
@@ -2333,7 +2333,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					Vector<Color> attribs;
 					attribs.resize(ret_size);
 					{
-						for (int array_i = 0; array_i < attribs.size(); array_i++) {
+						for (vec_size array_i = 0; array_i < attribs.size(); array_i++) {
 							int32_t joint_0 = a[(array_i * JOINT_GROUP_SIZE) + 0];
 							int32_t joint_1 = a[(array_i * JOINT_GROUP_SIZE) + 1];
 							int32_t joint_2 = a[(array_i * JOINT_GROUP_SIZE) + 2];
@@ -2510,7 +2510,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 		e["targetNames"] = target_names;
 
 		weights.resize(target_names.size());
-		for (int name_i = 0; name_i < target_names.size(); name_i++) {
+		for (vec_size name_i = 0; name_i < target_names.size(); name_i++) {
 			real_t weight = 0.0;
 			if (name_i < state->meshes.write[gltf_mesh_i]->get_blend_weights().size()) {
 				weight = state->meshes.write[gltf_mesh_i]->get_blend_weights()[name_i];
@@ -2545,7 +2545,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 	}
 
 	Array meshes = state->json["meshes"];
-	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
+	for (GLTFMeshIndex i = 0; i < GLTFMeshIndex(meshes.size()); i++) {
 		print_verbose("glTF: Parsing mesh: " + itos(i));
 		Dictionary d = meshes[i];
 
@@ -2565,7 +2565,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		}
 		import_mesh->set_name(_gen_unique_name(state, vformat("%s_%s", state->scene_name, mesh_name)));
 
-		for (int j = 0; j < primitives.size(); j++) {
+		for (vec_size j = 0; j < primitives.size(); j++) {
 			uint32_t flags = 0;
 			Dictionary p = primitives[j];
 
@@ -2820,12 +2820,12 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 
 				if (j == 0) {
 					const Array &target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
-					for (int k = 0; k < targets.size(); k++) {
+					for (vec_size k = 0; k < targets.size(); k++) {
 						import_mesh->add_blend_shape(k < target_names.size() ? (String)target_names[k] : String("morph_") + itos(k));
 					}
 				}
 
-				for (int k = 0; k < targets.size(); k++) {
+				for (vec_size k = 0; k < targets.size(); k++) {
 					const Dictionary &t = targets[k];
 
 					Array array_copy;
@@ -2966,13 +2966,13 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 
 		Vector<float> blend_weights;
 		blend_weights.resize(import_mesh->get_blend_shape_count());
-		for (int32_t weight_i = 0; weight_i < blend_weights.size(); weight_i++) {
+		for (vec_size weight_i = 0; weight_i < blend_weights.size(); weight_i++) {
 			blend_weights.write[weight_i] = 0.0f;
 		}
 
 		if (d.has("weights")) {
 			const Array &weights = d["weights"];
-			for (int j = 0; j < weights.size(); j++) {
+			for (vec_size j = 0; j < weights.size(); j++) {
 				if (j >= blend_weights.size()) {
 					break;
 				}
@@ -2992,7 +2992,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 
 Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path) {
 	Array images;
-	for (int i = 0; i < state->images.size(); i++) {
+	for (vec_size i = 0; i < state->images.size(); i++) {
 		Dictionary d;
 
 		ERR_CONTINUE(state->images[i].is_null());
@@ -3009,7 +3009,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			const GLTFBufferIndex bi = 0;
 			bv->buffer = bi;
 			bv->byte_offset = state->buffers[bi].size();
-			ERR_FAIL_INDEX_V(bi, state->buffers.size(), ERR_PARAMETER_RANGE_ERROR);
+			ERR_FAIL_INDEX_V(bi, int(state->buffers.size()), ERR_PARAMETER_RANGE_ERROR);
 
 			Vector<uint8_t> buffer;
 			Ref<ImageTexture> img_tex = image;
@@ -3022,7 +3022,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			bv->byte_length = buffer.size();
 			state->buffers.write[bi].resize(state->buffers[bi].size() + bv->byte_length);
 			memcpy(&state->buffers.write[bi].write[bv->byte_offset], buffer.ptr(), buffer.size());
-			ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > state->buffers[bi].size(), ERR_FILE_CORRUPT);
+			ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > int(state->buffers[bi].size()), ERR_FILE_CORRUPT);
 
 			state->buffer_views.push_back(bv);
 			bvi = state->buffer_views.size() - 1;
@@ -3068,7 +3068,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 	// Ref: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#images
 
 	const Array &images = state->json["images"];
-	for (int i = 0; i < images.size(); i++) {
+	for (vec_size i = 0; i < images.size(); i++) {
 		const Dictionary &d = images[i];
 
 		// glTF 2.0 supports PNG and JPEG types, which can be specified as (from spec):
@@ -3157,12 +3157,12 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 
 			const GLTFBufferViewIndex bvi = d["bufferView"];
 
-			ERR_FAIL_INDEX_V(bvi, state->buffer_views.size(), ERR_PARAMETER_RANGE_ERROR);
+			ERR_FAIL_INDEX_V(bvi, int(state->buffer_views.size()), ERR_PARAMETER_RANGE_ERROR);
 
 			Ref<GLTFBufferView> bv = state->buffer_views[bvi];
 
 			const GLTFBufferIndex bi = bv->buffer;
-			ERR_FAIL_INDEX_V(bi, state->buffers.size(), ERR_PARAMETER_RANGE_ERROR);
+			ERR_FAIL_INDEX_V(bi, int(state->buffers.size()), ERR_PARAMETER_RANGE_ERROR);
 
 			ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > state->buffers[bi].size(), ERR_FILE_CORRUPT);
 
@@ -3216,7 +3216,7 @@ Error GLTFDocument::_serialize_textures(Ref<GLTFState> state) {
 	}
 
 	Array textures;
-	for (int32_t i = 0; i < state->textures.size(); i++) {
+	for (vec_size i = 0; i < state->textures.size(); i++) {
 		Dictionary d;
 		Ref<GLTFTexture> t = state->textures[i];
 		ERR_CONTINUE(t->get_src_image() == -1);
@@ -3282,7 +3282,7 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> state, const GLTFTextur
 }
 
 GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> state, StandardMaterial3D::TextureFilter p_filter_mode, bool p_repeats) {
-	for (int i = 0; i < state->texture_samplers.size(); ++i) {
+	for (vec_size i = 0; i < state->texture_samplers.size(); ++i) {
 		if (state->texture_samplers[i]->get_filter_mode() == p_filter_mode) {
 			return i;
 		}
@@ -3342,7 +3342,7 @@ Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> state) {
 	}
 
 	const Array &samplers = state->json["samplers"];
-	for (int i = 0; i < samplers.size(); ++i) {
+	for (vec_size i = 0; i < samplers.size(); ++i) {
 		const Dictionary &d = samplers[i];
 
 		Ref<GLTFTextureSampler> sampler;
@@ -3935,7 +3935,7 @@ GLTFNodeIndex GLTFDocument::_find_highest_node(Ref<GLTFState> state, const Vecto
 	int highest = -1;
 	GLTFNodeIndex best_node = -1;
 
-	for (int i = 0; i < subset.size(); ++i) {
+	for (vec_size i = 0; i < subset.size(); ++i) {
 		const GLTFNodeIndex node_i = subset[i];
 		const Ref<GLTFNode> node = state->nodes[node_i];
 
@@ -3951,7 +3951,7 @@ GLTFNodeIndex GLTFDocument::_find_highest_node(Ref<GLTFState> state, const Vecto
 bool GLTFDocument::_capture_nodes_in_skin(Ref<GLTFState> state, Ref<GLTFSkin> skin, const GLTFNodeIndex node_index) {
 	bool found_joint = false;
 
-	for (int i = 0; i < state->nodes[node_index]->children.size(); ++i) {
+	for (vec_size i = 0; i < state->nodes[node_index]->children.size(); ++i) {
 		found_joint |= _capture_nodes_in_skin(state, skin, state->nodes[node_index]->children[i]);
 	}
 
@@ -3974,7 +3974,7 @@ bool GLTFDocument::_capture_nodes_in_skin(Ref<GLTFState> state, Ref<GLTFSkin> sk
 void GLTFDocument::_capture_nodes_for_multirooted_skin(Ref<GLTFState> state, Ref<GLTFSkin> skin) {
 	DisjointSet<GLTFNodeIndex> disjoint_set;
 
-	for (int i = 0; i < skin->joints.size(); ++i) {
+	for (vec_size i = 0; i < skin->joints.size(); ++i) {
 		const GLTFNodeIndex node_index = skin->joints[i];
 		const GLTFNodeIndex parent = state->nodes[node_index]->parent;
 		disjoint_set.insert(node_index);
@@ -3994,7 +3994,7 @@ void GLTFDocument::_capture_nodes_for_multirooted_skin(Ref<GLTFState> state, Ref
 	int maxHeight = -1;
 
 	// Determine the max height rooted tree
-	for (int i = 0; i < roots.size(); ++i) {
+	for (vec_size i = 0; i < roots.size(); ++i) {
 		const GLTFNodeIndex root = roots[i];
 
 		if (maxHeight == -1 || state->nodes[root]->height < maxHeight) {
@@ -4004,7 +4004,7 @@ void GLTFDocument::_capture_nodes_for_multirooted_skin(Ref<GLTFState> state, Ref
 
 	// Go up the tree till all of the multiple roots of the skin are at the same hierarchy level.
 	// This sucks, but 99% of all game engines (not just Godot) would have this same issue.
-	for (int i = 0; i < roots.size(); ++i) {
+	for (vec_size i = 0; i < roots.size(); ++i) {
 		GLTFNodeIndex current_node = roots[i];
 		while (state->nodes[current_node]->height > maxHeight) {
 			GLTFNodeIndex parent = state->nodes[current_node]->parent;
@@ -4029,12 +4029,12 @@ void GLTFDocument::_capture_nodes_for_multirooted_skin(Ref<GLTFState> state, Ref
 		all_same = true;
 		const GLTFNodeIndex first_parent = state->nodes[roots[0]]->parent;
 
-		for (int i = 1; i < roots.size(); ++i) {
+		for (vec_size i = 1; i < roots.size(); ++i) {
 			all_same &= (first_parent == state->nodes[roots[i]]->parent);
 		}
 
 		if (!all_same) {
-			for (int i = 0; i < roots.size(); ++i) {
+			for (vec_size i = 0; i < roots.size(); ++i) {
 				const GLTFNodeIndex current_node = roots[i];
 				const GLTFNodeIndex parent = state->nodes[current_node]->parent;
 
@@ -4061,7 +4061,7 @@ Error GLTFDocument::_expand_skin(Ref<GLTFState> state, Ref<GLTFSkin> skin) {
 	all_skin_nodes.append_array(skin->joints);
 	all_skin_nodes.append_array(skin->non_joints);
 
-	for (int i = 0; i < all_skin_nodes.size(); ++i) {
+	for (vec_size i = 0; i < all_skin_nodes.size(); ++i) {
 		const GLTFNodeIndex node_index = all_skin_nodes[i];
 		const GLTFNodeIndex parent = state->nodes[node_index]->parent;
 		disjoint_set.insert(node_index);
@@ -4076,7 +4076,7 @@ Error GLTFDocument::_expand_skin(Ref<GLTFState> state, Ref<GLTFSkin> skin) {
 
 	Vector<GLTFNodeIndex> out_roots;
 
-	for (int i = 0; i < out_owners.size(); ++i) {
+	for (vec_size i = 0; i < out_owners.size(); ++i) {
 		Vector<GLTFNodeIndex> set;
 		disjoint_set.get_members(set, out_owners[i]);
 
@@ -4087,7 +4087,7 @@ Error GLTFDocument::_expand_skin(Ref<GLTFState> state, Ref<GLTFSkin> skin) {
 
 	out_roots.sort();
 
-	for (int i = 0; i < out_roots.size(); ++i) {
+	for (vec_size i = 0; i < out_roots.size(); ++i) {
 		_capture_nodes_in_skin(state, skin, out_roots[i]);
 	}
 
@@ -4111,7 +4111,7 @@ Error GLTFDocument::_verify_skin(Ref<GLTFState> state, Ref<GLTFSkin> skin) {
 	all_skin_nodes.append_array(skin->joints);
 	all_skin_nodes.append_array(skin->non_joints);
 
-	for (int i = 0; i < all_skin_nodes.size(); ++i) {
+	for (vec_size i = 0; i < all_skin_nodes.size(); ++i) {
 		const GLTFNodeIndex node_index = all_skin_nodes[i];
 		const GLTFNodeIndex parent = state->nodes[node_index]->parent;
 		disjoint_set.insert(node_index);
@@ -4126,7 +4126,7 @@ Error GLTFDocument::_verify_skin(Ref<GLTFState> state, Ref<GLTFSkin> skin) {
 
 	Vector<GLTFNodeIndex> out_roots;
 
-	for (int i = 0; i < out_owners.size(); ++i) {
+	for (vec_size i = 0; i < out_owners.size(); ++i) {
 		Vector<GLTFNodeIndex> set;
 		disjoint_set.get_members(set, out_owners[i]);
 
@@ -4141,7 +4141,7 @@ Error GLTFDocument::_verify_skin(Ref<GLTFState> state, Ref<GLTFSkin> skin) {
 
 	// Make sure the roots are the exact same (they better be)
 	ERR_FAIL_COND_V(out_roots.size() != skin->roots.size(), FAILED);
-	for (int i = 0; i < out_roots.size(); ++i) {
+	for (vec_size i = 0; i < out_roots.size(); ++i) {
 		ERR_FAIL_COND_V(out_roots[i] != skin->roots[i], FAILED);
 	}
 
@@ -4152,7 +4152,7 @@ Error GLTFDocument::_verify_skin(Ref<GLTFState> state, Ref<GLTFSkin> skin) {
 
 	// Make sure all parents of a multi-rooted skin are the SAME
 	const GLTFNodeIndex parent = state->nodes[out_roots[0]]->parent;
-	for (int i = 1; i < out_roots.size(); ++i) {
+	for (vec_size i = 1; i < out_roots.size(); ++i) {
 		if (state->nodes[out_roots[i]]->parent != parent) {
 			return FAILED;
 		}
@@ -4169,7 +4169,7 @@ Error GLTFDocument::_parse_skins(Ref<GLTFState> state) {
 	const Array &skins = state->json["skins"];
 
 	// Create the base skins, and mark nodes that are joints
-	for (int i = 0; i < skins.size(); i++) {
+	for (vec_size i = 0; i < skins.size(); i++) {
 		const Dictionary &d = skins[i];
 
 		Ref<GLTFSkin> skin;
@@ -4184,7 +4184,7 @@ Error GLTFDocument::_parse_skins(Ref<GLTFState> state) {
 			ERR_FAIL_COND_V(skin->inverse_binds.size() != joints.size(), ERR_PARSE_ERROR);
 		}
 
-		for (int j = 0; j < joints.size(); j++) {
+		for (vec_size j = 0; j < joints.size(); j++) {
 			const GLTFNodeIndex node = joints[j];
 			ERR_FAIL_INDEX_V(node, state->nodes.size(), ERR_PARSE_ERROR);
 
@@ -4235,7 +4235,7 @@ Error GLTFDocument::_determine_skeletons(Ref<GLTFState> state) {
 		all_skin_nodes.append_array(skin->joints);
 		all_skin_nodes.append_array(skin->non_joints);
 
-		for (int i = 0; i < all_skin_nodes.size(); ++i) {
+		for (vec_size i = 0; i < all_skin_nodes.size(); ++i) {
 			const GLTFNodeIndex node_index = all_skin_nodes[i];
 			const GLTFNodeIndex parent = state->nodes[node_index]->parent;
 			skeleton_sets.insert(node_index);
@@ -4247,7 +4247,7 @@ Error GLTFDocument::_determine_skeletons(Ref<GLTFState> state) {
 
 		// We are going to connect the separate skin subtrees in each skin together
 		// so that the final roots are entire sets of valid skin trees
-		for (int i = 1; i < skin->roots.size(); ++i) {
+		for (vec_size i = 1; i < skin->roots.size(); ++i) {
 			skeleton_sets.create_union(skin->roots[0], skin->roots[i]);
 		}
 	}
@@ -4258,18 +4258,18 @@ Error GLTFDocument::_determine_skeletons(Ref<GLTFState> state) {
 
 		Vector<GLTFNodeIndex> highest_group_members;
 		Vector<Vector<GLTFNodeIndex>> groups;
-		for (int i = 0; i < groups_representatives.size(); ++i) {
+		for (vec_size i = 0; i < groups_representatives.size(); ++i) {
 			Vector<GLTFNodeIndex> group;
 			skeleton_sets.get_members(group, groups_representatives[i]);
 			highest_group_members.push_back(_find_highest_node(state, group));
 			groups.push_back(group);
 		}
 
-		for (int i = 0; i < highest_group_members.size(); ++i) {
+		for (vec_size i = 0; i < highest_group_members.size(); ++i) {
 			const GLTFNodeIndex node_i = highest_group_members[i];
 
 			// Attach any siblings together (this needs to be done n^2/2 times)
-			for (int j = i + 1; j < highest_group_members.size(); ++j) {
+			for (vec_size j = i + 1; j < highest_group_members.size(); ++j) {
 				const GLTFNodeIndex node_j = highest_group_members[j];
 
 				// Even if they are siblings under the root! :)
@@ -4310,7 +4310,7 @@ Error GLTFDocument::_determine_skeletons(Ref<GLTFState> state) {
 			Ref<GLTFSkin> skin = state->skins.write[skin_i];
 
 			// If any of the the skeletons nodes exist in a skin, that skin now maps to the skeleton
-			for (int i = 0; i < skeleton_nodes.size(); ++i) {
+			for (vec_size i = 0; i < skeleton_nodes.size(); ++i) {
 				GLTFNodeIndex skel_node_i = skeleton_nodes[i];
 				if (skin->joints.find(skel_node_i) >= 0 || skin->non_joints.find(skel_node_i) >= 0) {
 					skin->skeleton = skel_i;
@@ -4320,7 +4320,7 @@ Error GLTFDocument::_determine_skeletons(Ref<GLTFState> state) {
 		}
 
 		Vector<GLTFNodeIndex> non_joints;
-		for (int i = 0; i < skeleton_nodes.size(); ++i) {
+		for (vec_size i = 0; i < skeleton_nodes.size(); ++i) {
 			const GLTFNodeIndex node_i = skeleton_nodes[i];
 
 			if (state->nodes[node_i]->joint) {
@@ -4338,7 +4338,7 @@ Error GLTFDocument::_determine_skeletons(Ref<GLTFState> state) {
 	for (GLTFSkeletonIndex skel_i = 0; skel_i < state->skeletons.size(); ++skel_i) {
 		Ref<GLTFSkeleton> skeleton = state->skeletons.write[skel_i];
 
-		for (int i = 0; i < skeleton->joints.size(); ++i) {
+		for (vec_size i = 0; i < skeleton->joints.size(); ++i) {
 			const GLTFNodeIndex node_i = skeleton->joints[i];
 			Ref<GLTFNode> node = state->nodes[node_i];
 
@@ -4364,7 +4364,7 @@ Error GLTFDocument::_reparent_non_joint_skeleton_subtrees(Ref<GLTFState> state, 
 	// skinD depicted here explains this issue:
 	// https://github.com/KhronosGroup/glTF-Asset-Generator/blob/master/Output/Positive/Animation_Skin
 
-	for (int i = 0; i < non_joints.size(); ++i) {
+	for (vec_size i = 0; i < non_joints.size(); ++i) {
 		const GLTFNodeIndex node_i = non_joints[i];
 
 		subtree_set.insert(node_i);
@@ -4380,13 +4380,13 @@ Error GLTFDocument::_reparent_non_joint_skeleton_subtrees(Ref<GLTFState> state, 
 	Vector<GLTFNodeIndex> non_joint_subtree_roots;
 	subtree_set.get_representatives(non_joint_subtree_roots);
 
-	for (int root_i = 0; root_i < non_joint_subtree_roots.size(); ++root_i) {
+	for (vec_size root_i = 0; root_i < non_joint_subtree_roots.size(); ++root_i) {
 		const GLTFNodeIndex subtree_root = non_joint_subtree_roots[root_i];
 
 		Vector<GLTFNodeIndex> subtree_nodes;
 		subtree_set.get_members(subtree_nodes, subtree_root);
 
-		for (int subtree_i = 0; subtree_i < subtree_nodes.size(); ++subtree_i) {
+		for (vec_size subtree_i = 0; subtree_i < subtree_nodes.size(); ++subtree_i) {
 			Ref<GLTFNode> node = state->nodes[subtree_nodes[subtree_i]];
 			node->joint = true;
 			// Add the joint to the skeletons joints
@@ -4421,7 +4421,7 @@ Error GLTFDocument::_determine_skeleton_roots(Ref<GLTFState> state, const GLTFSk
 
 	Vector<GLTFNodeIndex> roots;
 
-	for (int i = 0; i < representatives.size(); ++i) {
+	for (vec_size i = 0; i < representatives.size(); ++i) {
 		Vector<GLTFNodeIndex> set;
 		disjoint_set.get_members(set, representatives[i]);
 		const GLTFNodeIndex root = _find_highest_node(state, set);
@@ -4441,7 +4441,7 @@ Error GLTFDocument::_determine_skeleton_roots(Ref<GLTFState> state, const GLTFSk
 
 	// Check that the subtrees have the same parent root
 	const GLTFNodeIndex parent = state->nodes[roots[0]]->parent;
-	for (int i = 1; i < roots.size(); ++i) {
+	for (vec_size i = 1; i < roots.size(); ++i) {
 		if (state->nodes[roots[i]]->parent != parent) {
 			return FAILED;
 		}
@@ -4463,7 +4463,7 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> state) {
 
 		List<GLTFNodeIndex> bones;
 
-		for (int i = 0; i < gltf_skeleton->roots.size(); ++i) {
+		for (vec_size i = 0; i < gltf_skeleton->roots.size(); ++i) {
 			bones.push_back(gltf_skeleton->roots[i]);
 		}
 
@@ -4480,7 +4480,7 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> state) {
 
 			{ // Add all child nodes to the stack (deterministically)
 				Vector<GLTFNodeIndex> child_nodes;
-				for (int i = 0; i < node->children.size(); ++i) {
+				for (vec_size i = 0; i < node->children.size(); ++i) {
 					const GLTFNodeIndex child_i = node->children[i];
 					if (state->nodes[child_i]->skeleton == skel_i) {
 						child_nodes.push_back(child_i);
@@ -4529,7 +4529,7 @@ Error GLTFDocument::_map_skin_joints_indices_to_skeleton_bone_indices(Ref<GLTFSt
 
 		Ref<GLTFSkeleton> skeleton = state->skeletons[skin->skeleton];
 
-		for (int joint_index = 0; joint_index < skin->joints_original.size(); ++joint_index) {
+		for (vec_size joint_index = 0; joint_index < skin->joints_original.size(); ++joint_index) {
 			const GLTFNodeIndex node_i = skin->joints_original[joint_index];
 			const Ref<GLTFNode> node = state->nodes[node_i];
 
@@ -4546,7 +4546,7 @@ Error GLTFDocument::_map_skin_joints_indices_to_skeleton_bone_indices(Ref<GLTFSt
 Error GLTFDocument::_serialize_skins(Ref<GLTFState> state) {
 	_remove_duplicate_skins(state);
 	Array json_skins;
-	for (int skin_i = 0; skin_i < state->skins.size(); skin_i++) {
+	for (vec_size skin_i = 0; skin_i < state->skins.size(); skin_i++) {
 		Ref<GLTFSkin> gltf_skin = state->skins[skin_i];
 		Dictionary json_skin;
 		json_skin["inverseBindMatrices"] = _encode_accessor_as_xform(state, gltf_skin->inverse_binds, false);
@@ -4572,7 +4572,7 @@ Error GLTFDocument::_create_skins(Ref<GLTFState> state) {
 		// Some skins don't have IBM's! What absolute monsters!
 		const bool has_ibms = !gltf_skin->inverse_binds.is_empty();
 
-		for (int joint_i = 0; joint_i < gltf_skin->joints_original.size(); ++joint_i) {
+		for (vec_size joint_i = 0; joint_i < gltf_skin->joints_original.size(); ++joint_i) {
 			GLTFNodeIndex node = gltf_skin->joints_original[joint_i];
 			String bone_name = state->nodes[node]->get_name();
 
@@ -4632,8 +4632,8 @@ bool GLTFDocument::_skins_are_same(const Ref<Skin> skin_a, const Ref<Skin> skin_
 }
 
 void GLTFDocument::_remove_duplicate_skins(Ref<GLTFState> state) {
-	for (int i = 0; i < state->skins.size(); ++i) {
-		for (int j = i + 1; j < state->skins.size(); ++j) {
+	for (vec_size i = 0; i < state->skins.size(); ++i) {
+		for (vec_size j = i + 1; j < state->skins.size(); ++j) {
 			const Ref<Skin> skin_i = state->skins[i]->godot_skin;
 			const Ref<Skin> skin_j = state->skins[j]->godot_skin;
 
@@ -4755,7 +4755,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 		AnimationPlayer *animation_player = state->animation_players[player_i];
 		animation_player->get_animation_list(&animation_names);
 		if (animation_names.size()) {
-			for (int animation_name_i = 0; animation_name_i < animation_names.size(); animation_name_i++) {
+			for (vec_size animation_name_i = 0; animation_name_i < animation_names.size(); animation_name_i++) {
 				_convert_animation(state, animation_player, animation_names[animation_name_i]);
 			}
 		}
@@ -4893,9 +4893,9 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 				int32_t values_size = track.weight_tracks[0].values.size();
 				int32_t weight_tracks_size = track.weight_tracks.size();
 				all_track_values.resize(weight_tracks_size * values_size);
-				for (int k = 0; k < track.weight_tracks.size(); k++) {
+				for (vec_size k = 0; k < track.weight_tracks.size(); k++) {
 					Vector<real_t> wdata = track.weight_tracks[k].values;
-					for (int l = 0; l < wdata.size(); l++) {
+					for (vec_size l = 0; l < wdata.size(); l++) {
 						int32_t index = l * weight_tracks_size + k;
 						ERR_BREAK(index >= all_track_values.size());
 						all_track_values.write[index] = wdata.write[l];
@@ -4962,7 +4962,7 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 			animation->set_name(_gen_unique_animation_name(state, anim_name));
 		}
 
-		for (int j = 0; j < channels.size(); j++) {
+		for (vec_size j = 0; j < channels.size(); j++) {
 			const Dictionary &c = channels[j];
 			if (!c.has("target")) {
 				continue;
@@ -5072,7 +5072,7 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 }
 
 void GLTFDocument::_assign_scene_names(Ref<GLTFState> state) {
-	for (int i = 0; i < state->nodes.size(); i++) {
+	for (vec_size i = 0; i < state->nodes.size(); i++) {
 		Ref<GLTFNode> n = state->nodes[i];
 
 		// Any joints get unique names generated when the skeleton is made, unique to the skeleton
@@ -5614,7 +5614,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 
 	state->scene_nodes.insert(node_index, current_node);
 
-	for (int i = 0; i < gltf_node->children.size(); ++i) {
+	for (vec_size i = 0; i < gltf_node->children.size(); ++i) {
 		_generate_scene_node(state, current_node, scene_root, gltf_node->children[i]);
 	}
 }
@@ -5693,7 +5693,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 
 	state->scene_nodes.insert(node_index, current_node);
 
-	for (int i = 0; i < gltf_node->children.size(); ++i) {
+	for (vec_size i = 0; i < gltf_node->children.size(); ++i) {
 		_generate_scene_node(state, active_skeleton, scene_root, gltf_node->children[i]);
 	}
 }
@@ -5757,7 +5757,7 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 	}
 	//could use binary search, worth it?
 	int idx = -1;
-	for (int i = 0; i < p_times.size(); i++) {
+	for (vec_size i = 0; i < p_times.size(); i++) {
 		if (p_times[i] > p_time) {
 			break;
 		}
@@ -5866,18 +5866,18 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			transform_node_path = node_path;
 		}
 
-		for (int i = 0; i < track.rotation_track.times.size(); i++) {
+		for (vec_size i = 0; i < track.rotation_track.times.size(); i++) {
 			length = MAX(length, track.rotation_track.times[i]);
 		}
-		for (int i = 0; i < track.position_track.times.size(); i++) {
+		for (vec_size i = 0; i < track.position_track.times.size(); i++) {
 			length = MAX(length, track.position_track.times[i]);
 		}
-		for (int i = 0; i < track.scale_track.times.size(); i++) {
+		for (vec_size i = 0; i < track.scale_track.times.size(); i++) {
 			length = MAX(length, track.scale_track.times[i]);
 		}
 
-		for (int i = 0; i < track.weight_tracks.size(); i++) {
-			for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+		for (vec_size i = 0; i < track.weight_tracks.size(); i++) {
+			for (vec_size j = 0; j < track.weight_tracks[i].times.size(); j++) {
 				length = MAX(length, track.weight_tracks[i].times[j]);
 			}
 		}
@@ -5894,7 +5894,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			if (track.position_track.values.size()) {
 				Vector3 base_pos = state->nodes[track_i.key]->position;
 				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.position_track.times.size(); i++) {
+				for (vec_size i = 0; i < track.position_track.times.size(); i++) {
 					Vector3 value = track.position_track.values[track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
 					if (!value.is_equal_approx(base_pos)) {
 						not_default = true;
@@ -5913,7 +5913,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			if (track.rotation_track.values.size()) {
 				Quaternion base_rot = state->nodes[track_i.key]->rotation.normalized();
 				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.rotation_track.times.size(); i++) {
+				for (vec_size i = 0; i < track.rotation_track.times.size(); i++) {
 					Quaternion value = track.rotation_track.values[track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i].normalized();
 					if (!value.is_equal_approx(base_rot)) {
 						not_default = true;
@@ -5931,7 +5931,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			if (track.scale_track.values.size()) {
 				Vector3 base_scale = state->nodes[track_i.key]->scale;
 				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.scale_track.times.size(); i++) {
+				for (vec_size i = 0; i < track.scale_track.times.size(); i++) {
 					Vector3 value = track.scale_track.values[track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
 					if (!value.is_equal_approx(base_scale)) {
 						not_default = true;
@@ -6000,7 +6000,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			}
 		}
 
-		for (int i = 0; i < track.weight_tracks.size(); i++) {
+		for (vec_size i = 0; i < track.weight_tracks.size(); i++) {
 			ERR_CONTINUE(gltf_node->mesh < 0 || gltf_node->mesh >= state->meshes.size());
 			Ref<GLTFMesh> mesh = state->meshes[gltf_node->mesh];
 			ERR_CONTINUE(mesh.is_null());
@@ -6018,7 +6018,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			GLTFAnimation::Interpolation gltf_interp = track.weight_tracks[i].interpolation;
 			if (gltf_interp == GLTFAnimation::INTERP_LINEAR || gltf_interp == GLTFAnimation::INTERP_STEP) {
 				animation->track_set_interpolation_type(track_idx, gltf_interp == GLTFAnimation::INTERP_STEP ? Animation::INTERPOLATION_NEAREST : Animation::INTERPOLATION_LINEAR);
-				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+				for (vec_size j = 0; j < track.weight_tracks[i].times.size(); j++) {
 					const float t = track.weight_tracks[i].times[j];
 					const float attribs = track.weight_tracks[i].values[j];
 					animation->blend_shape_track_insert_key(track_idx, t, attribs);
@@ -6057,7 +6057,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 }
 
 void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
-	for (GLTFNodeIndex mi_node_i = 0; mi_node_i < state->nodes.size(); ++mi_node_i) {
+	for (GLTFNodeIndex mi_node_i = 0; mi_node_i < int(state->nodes.size()); ++mi_node_i) {
 		Ref<GLTFNode> node = state->nodes[mi_node_i];
 
 		if (node->mesh < 0) {
@@ -6191,7 +6191,7 @@ float GLTFDocument::get_max_component(const Color &p_color) {
 }
 
 void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_root) {
-	for (GLTFNodeIndex node_i = 0; node_i < state->nodes.size(); ++node_i) {
+	for (GLTFNodeIndex node_i = 0; node_i < int(state->nodes.size()); ++node_i) {
 		Ref<GLTFNode> node = state->nodes[node_i];
 
 		if (node->skin >= 0 && node->mesh >= 0) {
@@ -6586,7 +6586,7 @@ Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> 
 	state->major_version = version.get_slice(".", 0).to_int();
 	state->minor_version = version.get_slice(".", 1).to_int();
 
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+	for (vec_size ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
 		err = ext->import_preflight(state);
@@ -6740,8 +6740,8 @@ void GLTFDocument::_bind_methods() {
 
 void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> state) {
 	// build the hierarchy
-	for (GLTFNodeIndex node_i = 0; node_i < state->nodes.size(); node_i++) {
-		for (int j = 0; j < state->nodes[node_i]->children.size(); j++) {
+	for (GLTFNodeIndex node_i = 0; node_i < int(state->nodes.size()); node_i++) {
+		for (vec_size j = 0; j < state->nodes[node_i]->children.size(); j++) {
 			GLTFNodeIndex child_i = state->nodes[node_i]->children[j];
 			ERR_FAIL_INDEX(child_i, state->nodes.size());
 			if (state->nodes.write[child_i]->parent != -1) {
@@ -6846,13 +6846,13 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		root->add_child(ap, true);
 		ap->set_owner(root);
-		for (int i = 0; i < state->animations.size(); i++) {
+		for (vec_size i = 0; i < state->animations.size(); i++) {
 			_import_animation(state, ap, i, p_bake_fps);
 		}
 	}
 	for (KeyValue<GLTFNodeIndex, Node *> E : state->scene_nodes) {
 		ERR_CONTINUE(!E.value);
-		for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		for (vec_size ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 			Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 			ERR_CONTINUE(ext.is_null());
 			ERR_CONTINUE(!state->json.has("nodes"));
@@ -6865,7 +6865,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 			ERR_CONTINUE(err != OK);
 		}
 	}
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+	for (vec_size ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
 		err = ext->import_post(state, root);
@@ -6880,7 +6880,7 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32
 	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+	for (vec_size ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
 		Error err = ext->export_preflight(p_node);
@@ -6906,7 +6906,7 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	state->base_path = p_base_path.get_base_dir();
 	err = _parse(state, state->base_path, file_access, p_bake_fps);
 	ERR_FAIL_COND_V(err != OK, err);
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+	for (vec_size ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
 		err = ext->import_post_parse(state);
@@ -7030,7 +7030,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 	r_state->base_path = base_path;
 	err = _parse(r_state, base_path, f, p_bake_fps);
 	ERR_FAIL_COND_V(err != OK, err);
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+	for (vec_size ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
 		err = ext->import_post_parse(r_state);
@@ -7053,16 +7053,16 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> state) {
 	supported_extensions.insert("KHR_lights_punctual");
 	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
 	supported_extensions.insert("KHR_texture_transform");
-	for (int ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+	for (vec_size ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
 		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
-		for (int i = 0; i < ext_supported_extensions.size(); ++i) {
+		for (vec_size i = 0; i < ext_supported_extensions.size(); ++i) {
 			supported_extensions.insert(ext_supported_extensions[i]);
 		}
 	}
 	Error ret = Error::OK;
-	for (int i = 0; i < state->extensions_required.size(); i++) {
+	for (vec_size i = 0; i < state->extensions_required.size(); i++) {
 		if (!supported_extensions.has(state->extensions_required[i])) {
 			ERR_PRINT("GLTF: Can't import file '" + state->filename + "', required extension '" + String(state->extensions_required[i]) + "' is not supported. Are you missing a GLTFDocumentExtension plugin?");
 			ret = ERR_UNAVAILABLE;

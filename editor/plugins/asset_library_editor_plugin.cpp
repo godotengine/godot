@@ -152,7 +152,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 			icon = p_image;
 		} break;
 		case EditorAssetLibrary::IMAGE_QUEUE_THUMBNAIL: {
-			for (int i = 0; i < preview_images.size(); i++) {
+			for (vec_size i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
 					if (preview_images[i].is_video) {
 						Ref<Image> overlay = previews->get_theme_icon(SNAME("PlayOverlay"), SNAME("EditorIcons"))->get_image();
@@ -175,7 +175,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 			}
 		} break;
 		case EditorAssetLibrary::IMAGE_QUEUE_SCREENSHOT: {
-			for (int i = 0; i < preview_images.size(); i++) {
+			for (vec_size i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
 					preview_images.write[i].image = p_image;
 					if (preview_images[i].button->is_pressed()) {
@@ -207,7 +207,7 @@ void EditorAssetLibraryItemDescription::_link_click(const String &p_url) {
 }
 
 void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
-	for (int i = 0; i < preview_images.size(); i++) {
+	for (vec_size i = 0; i < preview_images.size(); i++) {
 		if (preview_images[i].id == p_id) {
 			preview_images[i].button->set_pressed(true);
 			if (!preview_images[i].is_video) {
@@ -635,7 +635,7 @@ void EditorAssetLibrary::_update_repository_options() {
 	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
 	repository->clear();
 	Array keys = available_urls.keys();
-	for (int i = 0; i < keys.size(); i++) {
+	for (vec_size i = 0; i < keys.size(); i++) {
 		String key = keys[i];
 		repository->add_item(key);
 		repository->set_item_metadata(i, available_urls[key]);
@@ -801,7 +801,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 
 	if (p_status == HTTPRequest::RESULT_SUCCESS && p_code < HTTPClient::RESPONSE_BAD_REQUEST) {
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
-			for (int i = 0; i < headers.size(); i++) {
+			for (vec_size i = 0; i < headers.size(); i++) {
 				if (headers[i].findn("ETag:") == 0) { // Save etag
 					String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().path_join("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 					String new_etag = headers[i].substr(headers[i].find(":") + 1, headers[i].length()).strip_edges();
@@ -1148,7 +1148,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			categories->set_item_metadata(0, 0);
 			if (d.has("categories")) {
 				Array clist = d["categories"];
-				for (int i = 0; i < clist.size(); i++) {
+				for (vec_size i = 0; i < clist.size(); i++) {
 					Dictionary cat = clist[i];
 					if (!cat.has("name") || !cat.has("id")) {
 						continue;
@@ -1234,7 +1234,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				library_info->hide();
 			}
 
-			for (int i = 0; i < result.size(); i++) {
+			for (vec_size i = 0; i < result.size(); i++) {
 				Dictionary r = result[i];
 
 				ERR_CONTINUE(!r.has("title"));
@@ -1310,7 +1310,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			if (d.has("previews")) {
 				Array previews = d["previews"];
 
-				for (int i = 0; i < previews.size(); i++) {
+				for (vec_size i = 0; i < previews.size(); i++) {
 					Dictionary p = previews[i];
 
 					ERR_CONTINUE(!p.has("type"));

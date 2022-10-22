@@ -639,7 +639,7 @@ void XROrigin3D::set_current(bool p_enabled) {
 	set_notify_transform(current);
 
 	if (current) {
-		for (int i = 0; i < origin_nodes.size(); i++) {
+		for (vec_size i = 0; i < origin_nodes.size(); i++) {
 			if (origin_nodes[i] != this) {
 				origin_nodes[i]->set_current(false);
 			}
@@ -647,7 +647,7 @@ void XROrigin3D::set_current(bool p_enabled) {
 	} else {
 		bool found = false;
 		// We no longer have a current origin so find the first one we can make current
-		for (int i = 0; !found && i < origin_nodes.size(); i++) {
+		for (vec_size i = 0; !found && i < origin_nodes.size(); i++) {
 			if (origin_nodes[i] != this) {
 				origin_nodes[i]->set_current(true);
 				found = true;

@@ -51,13 +51,13 @@
 TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size) {
 	Vector<Ref<Mesh>> meshes;
 
-	for (int i = 0; i < p_meshes.size(); i++) {
+	for (vec_size i = 0; i < p_meshes.size(); i++) {
 		meshes.push_back(p_meshes[i]);
 	}
 
 	Vector<Ref<Texture2D>> textures = make_mesh_previews(meshes, nullptr, p_preview_size);
 	TypedArray<Texture2D> ret;
-	for (int i = 0; i < textures.size(); i++) {
+	for (vec_size i = 0; i < textures.size(); i++) {
 		ret.push_back(textures[i]);
 	}
 
@@ -91,7 +91,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 
 	Vector<Ref<Texture2D>> textures;
 
-	for (int i = 0; i < p_meshes.size(); i++) {
+	for (vec_size i = 0; i < p_meshes.size(); i++) {
 		Ref<Mesh> mesh = p_meshes[i];
 		if (!mesh.is_valid()) {
 			textures.push_back(Ref<Texture2D>());
@@ -700,7 +700,7 @@ void EditorPlugin::apply_changes() {
 void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 	PackedStringArray arr;
 	if (GDVIRTUAL_CALL(_get_breakpoints, arr)) {
-		for (int i = 0; i < arr.size(); i++) {
+		for (vec_size i = 0; i < arr.size(); i++) {
 			p_breakpoints->push_back(arr[i]);
 		}
 	}
@@ -793,7 +793,7 @@ void EditorPlugin::remove_scene_post_import_plugin(const Ref<EditorScenePostImpo
 
 int find(const PackedStringArray &a, const String &v) {
 	const String *r = a.ptr();
-	for (int j = 0; j < a.size(); ++j) {
+	for (vec_size j = 0; j < a.size(); ++j) {
 		if (r[j] == v) {
 			return j;
 		}

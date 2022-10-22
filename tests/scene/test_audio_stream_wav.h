@@ -64,7 +64,7 @@ Vector<uint8_t> gen_pcm8_test(float wav_rate, int wav_count, bool stereo) {
 	buffer.resize(stereo ? wav_count * 2 : wav_count);
 
 	uint8_t *write_ptr = buffer.ptrw();
-	for (int i = 0; i < buffer.size(); i++) {
+	for (vec_size i = 0; i < buffer.size(); i++) {
 		float wav;
 		if (stereo) {
 			if (i % 2 == 0) {

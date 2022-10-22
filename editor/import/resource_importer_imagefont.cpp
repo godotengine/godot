@@ -120,7 +120,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	int chr_height = img->get_height() / rows;
 	int pos = 0;
 
-	for (int i = 0; i < ranges.size(); i++) {
+	for (vec_size i = 0; i < ranges.size(); i++) {
 		int32_t start, end;
 		Vector<String> tokens = ranges[i].split("-");
 		if (tokens.size() == 2) {

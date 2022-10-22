@@ -1042,7 +1042,7 @@ void Skeleton3DEditor::_subgizmo_selection_change() {
 
 	if (selected >= 0) {
 		Vector<Ref<Node3DGizmo>> gizmos = skeleton->get_gizmos();
-		for (int i = 0; i < gizmos.size(); i++) {
+		for (vec_size i = 0; i < gizmos.size(); i++) {
 			Ref<EditorNode3DGizmo> gizmo = gizmos[i];
 			if (!gizmo.is_valid()) {
 				continue;
@@ -1322,19 +1322,19 @@ void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, c
 	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Transform"));
 	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || ne->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
-		for (int i = 0; i < p_ids.size(); i++) {
+		for (vec_size i = 0; i < p_ids.size(); i++) {
 			ur->add_do_method(skeleton, "set_bone_pose_position", p_ids[i], skeleton->get_bone_pose_position(p_ids[i]));
 			ur->add_undo_method(skeleton, "set_bone_pose_position", p_ids[i], se->get_bone_original_position());
 		}
 	}
 	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || ne->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
-		for (int i = 0; i < p_ids.size(); i++) {
+		for (vec_size i = 0; i < p_ids.size(); i++) {
 			ur->add_do_method(skeleton, "set_bone_pose_rotation", p_ids[i], skeleton->get_bone_pose_rotation(p_ids[i]));
 			ur->add_undo_method(skeleton, "set_bone_pose_rotation", p_ids[i], se->get_bone_original_rotation());
 		}
 	}
 	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
-		for (int i = 0; i < p_ids.size(); i++) {
+		for (vec_size i = 0; i < p_ids.size(); i++) {
 			// If the axis is swapped by scaling, the rotation can be changed.
 			ur->add_do_method(skeleton, "set_bone_pose_rotation", p_ids[i], skeleton->get_bone_pose_rotation(p_ids[i]));
 			ur->add_undo_method(skeleton, "set_bone_pose_rotation", p_ids[i], se->get_bone_original_rotation());

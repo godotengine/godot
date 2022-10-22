@@ -345,7 +345,7 @@ void Main::print_help(const char *p_binary) {
 		}
 		OS::get_singleton()->print("'%s' (", DisplayServer::get_create_function_name(i));
 		Vector<String> rd = DisplayServer::get_create_function_rendering_drivers(i);
-		for (int j = 0; j < rd.size(); j++) {
+		for (vec_size j = 0; j < rd.size(); j++) {
 			if (j > 0) {
 				OS::get_singleton()->print(", ");
 			}
@@ -1553,7 +1553,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 			Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
 
-			for (int d = 0; d < r_drivers.size(); d++) {
+			for (vec_size d = 0; d < r_drivers.size(); d++) {
 				if (rendering_driver == r_drivers[d]) {
 					found = true;
 					break;
@@ -1568,7 +1568,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
 
-				for (int d = 0; d < r_drivers.size(); d++) {
+				for (vec_size d = 0; d < r_drivers.size(); d++) {
 					OS::get_singleton()->print("'%s', ", r_drivers[d].utf8().get_data());
 				}
 			}
@@ -1599,7 +1599,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 
-		for (int i = 0; i < available_drivers.size(); i++) {
+		for (vec_size i = 0; i < available_drivers.size(); i++) {
 			if (rendering_driver == available_drivers[i]) {
 				valid_combination = true;
 				break;
@@ -1609,7 +1609,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (!valid_combination) {
 			OS::get_singleton()->print("Invalid renderer/driver combination '%s' and '%s', aborting. %s only supports the following drivers ", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data(), rendering_method.utf8().get_data());
 
-			for (int d = 0; d < available_drivers.size(); d++) {
+			for (vec_size d = 0; d < available_drivers.size(); d++) {
 				OS::get_singleton()->print("'%s', ", available_drivers[d].utf8().get_data());
 			}
 
@@ -2393,7 +2393,7 @@ bool Main::start() {
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 
-	for (int i = 0; i < args.size(); i++) {
+	for (vec_size i = 0; i < args.size(); i++) {
 		// First check parameters that do not have an argument to the right.
 
 		// Doctest Unit Testing Handler

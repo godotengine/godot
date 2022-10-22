@@ -172,14 +172,14 @@ public:
 		return messages.size();
 	}
 
-	virtual ExportMessage get_message(int p_index) const {
-		ERR_FAIL_INDEX_V(p_index, messages.size(), ExportMessage());
+	virtual ExportMessage get_message(vec_size p_index) const {
+		ERR_FAIL_INDEX_V(int(p_index), int(messages.size()), ExportMessage());
 		return messages[p_index];
 	}
 
 	virtual ExportMessageType get_worst_message_type() const {
 		ExportMessageType worst_type = EXPORT_MESSAGE_NONE;
-		for (int i = 0; i < messages.size(); i++) {
+		for (vec_size i = 0; i < messages.size(); i++) {
 			worst_type = MAX(worst_type, messages[i].msg_type);
 		}
 		return worst_type;

@@ -200,7 +200,7 @@ GPUParticles3D::DrawOrder GPUParticles3D::get_draw_order() const {
 
 void GPUParticles3D::set_draw_passes(int p_count) {
 	ERR_FAIL_COND(p_count < 1);
-	for (int i = p_count; i < draw_passes.size(); i++) {
+	for (vec_size i = p_count; i < draw_passes.size(); i++) {
 		set_draw_pass_mesh(i, Ref<Mesh>());
 	}
 	draw_passes.resize(p_count);
@@ -279,7 +279,7 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 	bool meshes_found = false;
 	bool anim_material_found = false;
 
-	for (int i = 0; i < draw_passes.size(); i++) {
+	for (vec_size i = 0; i < draw_passes.size(); i++) {
 		if (draw_passes[i].is_valid()) {
 			meshes_found = true;
 			for (int j = 0; j < draw_passes[i]->get_surface_count(); j++) {
@@ -319,7 +319,7 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 		bool missing_trails = false;
 		bool no_materials = false;
 
-		for (int i = 0; i < draw_passes.size(); i++) {
+		for (vec_size i = 0; i < draw_passes.size(); i++) {
 			Ref<Mesh> draw_pass = draw_passes[i];
 			if (draw_pass.is_valid() && draw_pass->get_builtin_bind_pose_count() > 0) {
 				dp_count++;
@@ -463,7 +463,7 @@ void GPUParticles3D::_skinning_changed() {
 			xforms.write[i] = skin->get_bind_pose(i);
 		}
 	} else {
-		for (int i = 0; i < draw_passes.size(); i++) {
+		for (vec_size i = 0; i < draw_passes.size(); i++) {
 			Ref<Mesh> draw_pass = draw_passes[i];
 			if (draw_pass.is_valid() && draw_pass->get_builtin_bind_pose_count() > 0) {
 				xforms.resize(draw_pass->get_builtin_bind_pose_count());

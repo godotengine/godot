@@ -64,7 +64,7 @@ List<String> EditorVCSInterface::get_remotes() {
 	}
 
 	List<String> remotes;
-	for (int i = 0; i < result.size(); i++) {
+	for (vec_size i = 0; i < result.size(); i++) {
 		remotes.push_back(result[i]);
 	}
 	return remotes;
@@ -78,7 +78,7 @@ List<EditorVCSInterface::StatusFile> EditorVCSInterface::get_modified_files_data
 	}
 
 	List<EditorVCSInterface::StatusFile> status_files;
-	for (int i = 0; i < result.size(); i++) {
+	for (vec_size i = 0; i < result.size(); i++) {
 		status_files.push_back(_convert_status_file(result[i]));
 	}
 	return status_files;
@@ -116,7 +116,7 @@ List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_diff(String p_identif
 	}
 
 	List<DiffFile> diff_files;
-	for (int i = 0; i < result.size(); i++) {
+	for (vec_size i = 0; i < result.size(); i++) {
 		diff_files.push_back(_convert_diff_file(result[i]));
 	}
 	return diff_files;
@@ -130,7 +130,7 @@ List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits(int p_
 	}
 
 	List<EditorVCSInterface::Commit> commits;
-	for (int i = 0; i < result.size(); i++) {
+	for (vec_size i = 0; i < result.size(); i++) {
 		commits.push_back(_convert_commit(result[i]));
 	}
 	return commits;
@@ -144,7 +144,7 @@ List<String> EditorVCSInterface::get_branch_list() {
 	}
 
 	List<String> branch_list;
-	for (int i = 0; i < result.size(); i++) {
+	for (vec_size i = 0; i < result.size(); i++) {
 		branch_list.push_back(result[i]);
 	}
 	return branch_list;
@@ -217,7 +217,7 @@ List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(String p_fi
 	}
 
 	List<DiffHunk> diff_hunks;
-	for (int i = 0; i < result.size(); i++) {
+	for (vec_size i = 0; i < result.size(); i++) {
 		diff_hunks.push_back(_convert_diff_hunk(result[i]));
 	}
 	return diff_hunks;
@@ -313,7 +313,7 @@ EditorVCSInterface::DiffHunk EditorVCSInterface::_convert_diff_hunk(Dictionary p
 	dh.new_start = p_diff_hunk["new_start"];
 	dh.old_start = p_diff_hunk["old_start"];
 	TypedArray<Dictionary> diff_lines = p_diff_hunk["diff_lines"];
-	for (int i = 0; i < diff_lines.size(); i++) {
+	for (vec_size i = 0; i < diff_lines.size(); i++) {
 		DiffLine dl = _convert_diff_line(diff_lines[i]);
 		dh.diff_lines.push_back(dl);
 	}
@@ -325,7 +325,7 @@ EditorVCSInterface::DiffFile EditorVCSInterface::_convert_diff_file(Dictionary p
 	df.new_file = p_diff_file["new_file"];
 	df.old_file = p_diff_file["old_file"];
 	TypedArray<Dictionary> diff_hunks = p_diff_file["diff_hunks"];
-	for (int i = 0; i < diff_hunks.size(); i++) {
+	for (vec_size i = 0; i < diff_hunks.size(); i++) {
 		DiffHunk dh = _convert_diff_hunk(diff_hunks[i]);
 		df.diff_hunks.push_back(dh);
 	}

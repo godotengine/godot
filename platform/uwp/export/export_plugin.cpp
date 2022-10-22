@@ -386,7 +386,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	Vector<String> cl = ((String)p_preset->get("command_line/extra_args")).strip_edges().split(" ");
-	for (int i = 0; i < cl.size(); i++) {
+	for (vec_size i = 0; i < cl.size(); i++) {
 		if (cl[i].strip_edges().length() == 0) {
 			cl.remove_at(i);
 			i--;
@@ -407,7 +407,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	clf.resize(4);
 	encode_uint32(cl.size(), clf.ptrw());
 
-	for (int i = 0; i < cl.size(); i++) {
+	for (vec_size i = 0; i < cl.size(); i++) {
 		CharString txt = cl[i].utf8();
 		int base = clf.size();
 		clf.resize(base + 4 + txt.length());

@@ -279,7 +279,7 @@ void TreeItem::set_text(int p_column, String p_text) {
 		Vector<String> strings = p_text.split(",");
 		cells.write[p_column].min = INT_MAX;
 		cells.write[p_column].max = INT_MIN;
-		for (int i = 0; i < strings.size(); i++) {
+		for (vec_size i = 0; i < strings.size(); i++) {
 			int value = i;
 			if (!strings[i].get_slicec(':', 1).is_empty()) {
 				value = strings[i].get_slicec(':', 1).to_int();
@@ -840,7 +840,7 @@ TreeItem *TreeItem::get_child(int p_idx) {
 int TreeItem::get_visible_child_count() {
 	_create_children_cache();
 	int visible_count = 0;
-	for (int i = 0; i < children_cache.size(); i++) {
+	for (vec_size i = 0; i < children_cache.size(); i++) {
 		if (children_cache[i]->is_visible()) {
 			visible_count += 1;
 		}
@@ -1085,7 +1085,7 @@ void TreeItem::erase_button(int p_column, int p_idx) {
 
 int TreeItem::get_button_by_id(int p_column, int p_id) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
-	for (int i = 0; i < cells[p_column].buttons.size(); i++) {
+	for (vec_size i = 0; i < cells[p_column].buttons.size(); i++) {
 		if (cells[p_column].buttons[i].id == p_id) {
 			return i;
 		}
@@ -1349,7 +1349,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 		}
 
 		// Buttons.
-		for (int i = 0; i < cell.buttons.size(); i++) {
+		for (vec_size i = 0; i < cell.buttons.size(); i++) {
 			Ref<Texture2D> texture = cell.buttons[i].texture;
 			if (texture.is_valid()) {
 				Size2 button_size = texture->get_size() + parent_tree->theme_cache.button_pressed->get_minimum_size();
@@ -1662,12 +1662,12 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 	ERR_FAIL_COND_V(theme_cache.font.is_null(), 0);
 	int height = 0;
 
-	for (int i = 0; i < columns.size(); i++) {
+	for (vec_size i = 0; i < columns.size(); i++) {
 		if (p_item->cells[i].dirty) {
 			const_cast<Tree *>(this)->update_item_cell(p_item, i);
 		}
 		height = MAX(height, p_item->cells[i].text_buf->get_size().y);
-		for (int j = 0; j < p_item->cells[i].buttons.size(); j++) {
+		for (vec_size j = 0; j < p_item->cells[i].buttons.size(); j++) {
 			Size2i s; // = cache.button_pressed->get_minimum_size();
 			s += p_item->cells[i].buttons[j].texture->get_size();
 			if (s.height > height) {
@@ -1836,7 +1836,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 
 			valtext = RTR("(Other)");
 			Vector<String> strings = p_item->cells[p_col].text.split(",");
-			for (int j = 0; j < strings.size(); j++) {
+			for (vec_size j = 0; j < strings.size(); j++) {
 				int value = j;
 				if (!strings[j].get_slicec(':', 1).is_empty()) {
 					value = strings[j].get_slicec(':', 1).to_int();
@@ -1883,7 +1883,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 }
 
 void Tree::update_item_cache(TreeItem *p_item) {
-	for (int i = 0; i < p_item->cells.size(); i++) {
+	for (vec_size i = 0; i < p_item->cells.size(); i++) {
 		update_item_cell(p_item, i);
 	}
 
@@ -1924,7 +1924,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 		int ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.hseparation : theme_cache.item_margin);
 		int skip2 = 0;
-		for (int i = 0; i < columns.size(); i++) {
+		for (vec_size i = 0; i < columns.size(); i++) {
 			if (skip2) {
 				skip2--;
 				continue;
@@ -2423,7 +2423,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 int Tree::_count_selected_items(TreeItem *p_from) const {
 	int count = 0;
-	for (int i = 0; i < columns.size(); i++) {
+	for (vec_size i = 0; i < columns.size(); i++) {
 		if (p_from->is_selected(i)) {
 			count++;
 		}
@@ -2441,7 +2441,7 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 }
 
 bool Tree::_is_branch_selected(TreeItem *p_from) const {
-	for (int i = 0; i < columns.size(); i++) {
+	for (vec_size i = 0; i < columns.size(); i++) {
 		if (p_from->is_selected(i)) {
 			return true;
 		}
@@ -2481,7 +2481,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 
 	bool emitted_row = false;
 
-	for (int i = 0; i < columns.size(); i++) {
+	for (vec_size i = 0; i < columns.size(); i++) {
 		TreeItem::Cell &c = p_current->cells.write[i];
 
 		if (!c.selectable) {
@@ -2643,7 +2643,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 		int limit_w = x_limit;
 
-		for (int i = 0; i < columns.size(); i++) {
+		for (vec_size i = 0; i < columns.size(); i++) {
 			col_width = get_column_width(i);
 
 			if (p_item->cells[i].expand_right) {
@@ -3392,7 +3392,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			if (pos.y < 0) {
 				pos.x += theme_cache.offset.x;
 				int len = 0;
-				for (int i = 0; i < columns.size(); i++) {
+				for (vec_size i = 0; i < columns.size(); i++) {
 					len += get_column_width(i);
 					if (pos.x < len) {
 						cache.hover_type = Cache::CLICK_TITLE;
@@ -3515,7 +3515,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					if (pos.y < 0) {
 						pos.x += theme_cache.offset.x;
 						int len = 0;
-						for (int i = 0; i < columns.size(); i++) {
+						for (vec_size i = 0; i < columns.size(); i++) {
 							len += get_column_width(i);
 							if (pos.x < static_cast<real_t>(len)) {
 								emit_signal(SNAME("column_title_clicked"), i, mb->get_button_index());
@@ -3616,7 +3616,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					if (pos.y < 0) {
 						pos.x += theme_cache.offset.x;
 						int len = 0;
-						for (int i = 0; i < columns.size(); i++) {
+						for (vec_size i = 0; i < columns.size(); i++) {
 							len += get_column_width(i);
 							if (pos.x < static_cast<real_t>(len)) {
 								cache.click_type = Cache::CLICK_TITLE;
@@ -3835,7 +3835,7 @@ Size2 Tree::get_internal_min_size() const {
 	if (root) {
 		size.height += get_item_height(root);
 	}
-	for (int i = 0; i < columns.size(); i++) {
+	for (vec_size i = 0; i < columns.size(); i++) {
 		size.width += get_column_minimum_width(i);
 	}
 
@@ -3899,7 +3899,7 @@ int Tree::_get_title_button_height() const {
 	ERR_FAIL_COND_V(theme_cache.font.is_null() || theme_cache.title_button.is_null(), 0);
 	int h = 0;
 	if (show_column_titles) {
-		for (int i = 0; i < columns.size(); i++) {
+		for (vec_size i = 0; i < columns.size(); i++) {
 			h = MAX(h, columns[i].text_buf->get_size().y + theme_cache.title_button->get_minimum_size().height);
 		}
 	}
@@ -4031,7 +4031,7 @@ void Tree::_notification(int p_what) {
 			if (show_column_titles) {
 				//title buttons
 				int ofs2 = theme_cache.panel_style->get_margin(SIDE_LEFT);
-				for (int i = 0; i < columns.size(); i++) {
+				for (vec_size i = 0; i < columns.size(); i++) {
 					Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? theme_cache.title_button_pressed : ((cache.hover_type == Cache::CLICK_TITLE && cache.hover_index == i) ? theme_cache.title_button_hover : theme_cache.title_button);
 					Ref<Font> f = theme_cache.tb_font;
 					Rect2 tbrect = Rect2(ofs2 - theme_cache.offset.x, bg->get_margin(SIDE_TOP), get_column_width(i), tbh);
@@ -4085,7 +4085,7 @@ void Tree::_notification(int p_what) {
 }
 
 void Tree::_update_all() {
-	for (int i = 0; i < columns.size(); i++) {
+	for (vec_size i = 0; i < columns.size(); i++) {
 		update_column(i);
 	}
 	if (root) {
@@ -4376,7 +4376,7 @@ TreeItem *Tree::get_next_selected(TreeItem *p_item) {
 			}
 		}
 
-		for (int i = 0; i < columns.size(); i++) {
+		for (vec_size i = 0; i < columns.size(); i++) {
 			if (p_item->cells[i].selected) {
 				return p_item;
 			}
@@ -4451,7 +4451,7 @@ int Tree::get_column_width(int p_column) const {
 
 		int expanding_total = 0;
 
-		for (int i = 0; i < columns.size(); i++) {
+		for (vec_size i = 0; i < columns.size(); i++) {
 			expand_area -= get_column_minimum_width(i);
 			if (columns[i].expand) {
 				expanding_total += columns[i].expand_ratio;
@@ -4762,7 +4762,7 @@ TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_c
 	TreeItem *loop = nullptr; // Safe-guard against infinite loop.
 
 	while (p_at) {
-		for (int i = 0; i < columns.size(); i++) {
+		for (vec_size i = 0; i < columns.size(); i++) {
 			if (p_at->get_text(i).findn(p_find) == 0 && (!p_selectable || p_at->is_selectable(i))) {
 				if (r_col) {
 					*r_col = i;
@@ -4806,7 +4806,7 @@ TreeItem *Tree::search_item_text(const String &p_find, int *r_col, bool p_select
 
 TreeItem *Tree::get_item_with_text(const String &p_find) const {
 	for (TreeItem *current = root; current; current = current->get_next_visible()) {
-		for (int i = 0; i < columns.size(); i++) {
+		for (vec_size i = 0; i < columns.size(); i++) {
 			if (current->get_text(i) == p_find) {
 				return current;
 			}
@@ -4853,7 +4853,7 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 				section = 0;
 			}
 
-			for (int i = 0; i < columns.size(); i++) {
+			for (vec_size i = 0; i < columns.size(); i++) {
 				int w = get_column_width(i);
 				if (pos.x < w) {
 					r_column = i;

@@ -53,7 +53,7 @@ TEST_CASE("[Image] Instantiation") {
 	CHECK(!image->has_mipmaps());
 
 	PackedByteArray image_data = image->get_data();
-	for (int i = 0; i < image_data.size(); i++) {
+	for (vec_size i = 0; i < image_data.size(); i++) {
 		CHECK_MESSAGE(
 				image_data[i] == 0,
 				"An image created without data specified should have its data zeroed out.");

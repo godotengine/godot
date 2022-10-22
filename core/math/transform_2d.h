@@ -226,7 +226,7 @@ Vector<Vector2> Transform2D::xform(const Vector<Vector2> &p_array) const {
 	const Vector2 *r = p_array.ptr();
 	Vector2 *w = array.ptrw();
 
-	for (int i = 0; i < p_array.size(); ++i) {
+	for (vec_size i = 0; i < p_array.size(); ++i) {
 		w[i] = xform(r[i]);
 	}
 	return array;
@@ -239,7 +239,7 @@ Vector<Vector2> Transform2D::xform_inv(const Vector<Vector2> &p_array) const {
 	const Vector2 *r = p_array.ptr();
 	Vector2 *w = array.ptrw();
 
-	for (int i = 0; i < p_array.size(); ++i) {
+	for (vec_size i = 0; i < p_array.size(); ++i) {
 		w[i] = xform_inv(r[i]);
 	}
 	return array;

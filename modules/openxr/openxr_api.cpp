@@ -253,7 +253,7 @@ bool OpenXRAPI::create_instance() {
 	}
 
 	Vector<const char *> extension_ptrs;
-	for (int i = 0; i < enabled_extensions.size(); i++) {
+	for (vec_size i = 0; i < enabled_extensions.size(); i++) {
 		extension_ptrs.push_back(enabled_extensions[i].get_data());
 	}
 
@@ -940,7 +940,7 @@ bool OpenXRAPI::on_state_synchronized() {
 	// Just in case, see if we already have active trackers...
 	List<RID> trackers;
 	tracker_owner.get_owned_list(&trackers);
-	for (int i = 0; i < trackers.size(); i++) {
+	for (vec_size i = 0; i < trackers.size(); i++) {
 		tracker_check_profile(trackers[i]);
 	}
 
@@ -1438,7 +1438,7 @@ bool OpenXRAPI::poll_events() {
 
 				List<RID> trackers;
 				tracker_owner.get_owned_list(&trackers);
-				for (int i = 0; i < trackers.size(); i++) {
+				for (vec_size i = 0; i < trackers.size(); i++) {
 					tracker_check_profile(trackers[i], event->session);
 				}
 
@@ -1967,7 +1967,7 @@ bool OpenXRAPI::xr_result(XrResult result, const char *format, Array args) const
 RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
 	List<RID> current;
 	tracker_owner.get_owned_list(&current);
-	for (int i = 0; i < current.size(); i++) {
+	for (vec_size i = 0; i < current.size(); i++) {
 		Tracker *tracker = tracker_owner.get_or_null(current[i]);
 		if (tracker && tracker->toplevel_path == p_path) {
 			return current[i];
@@ -2121,11 +2121,11 @@ bool OpenXRAPI::action_set_attach(RID p_action_set) {
 	print_verbose("Attached set " + action_set->name);
 	List<RID> action_rids;
 	action_owner.get_owned_list(&action_rids);
-	for (int i = 0; i < action_rids.size(); i++) {
+	for (vec_size i = 0; i < action_rids.size(); i++) {
 		Action * action = action_owner.get_or_null(action_rids[i]);
 		if (action && action->action_set_rid == p_action_set) {
 			print_verbose(" - Action " + action->name + ": " + OpenXRUtil::get_action_type_name(action->action_type));
-			for (int j = 0; j < action->trackers.size(); j++) {
+			for (vec_size j = 0; j < action->trackers.size(); j++) {
 				Tracker * tracker = tracker_owner.get_or_null(action->trackers[j].tracker_rid);
 				if (tracker) {
 					print_verbose("    - " + tracker->name);
@@ -2152,7 +2152,7 @@ void OpenXRAPI::action_set_free(RID p_action_set) {
 RID OpenXRAPI::get_action_rid(XrAction p_action) {
 	List<RID> current;
 	action_owner.get_owned_list(&current);
-	for (int i = 0; i < current.size(); i++) {
+	for (vec_size i = 0; i < current.size(); i++) {
 		Action *action = action_owner.get_or_null(current[i]);
 		if (action && action->handle == p_action) {
 			return current[i];
@@ -2195,7 +2195,7 @@ RID OpenXRAPI::action_create(RID p_action_set, const String p_name, const String
 	}
 
 	Vector<XrPath> toplevel_paths;
-	for (int i = 0; i < p_trackers.size(); i++) {
+	for (vec_size i = 0; i < p_trackers.size(); i++) {
 		Tracker *tracker = tracker_owner.get_or_null(p_trackers[i]);
 		if (tracker != nullptr && tracker->toplevel_path != XR_NULL_PATH) {
 			ActionTracker action_tracker = {
@@ -2256,7 +2256,7 @@ void OpenXRAPI::action_free(RID p_action) {
 RID OpenXRAPI::get_interaction_profile_rid(XrPath p_path) {
 	List<RID> current;
 	interaction_profile_owner.get_owned_list(&current);
-	for (int i = 0; i < current.size(); i++) {
+	for (vec_size i = 0; i < current.size(); i++) {
 		InteractionProfile *ip = interaction_profile_owner.get_or_null(current[i]);
 		if (ip && ip->path == p_path) {
 			return current[i];
@@ -2370,7 +2370,7 @@ bool OpenXRAPI::interaction_profile_suggest_bindings(RID p_interaction_profile) 
 
 	/* For debugging:
 	print_verbose("Suggested bindings for " + ip->name);
-	for (int i = 0; i < ip->bindings.size(); i++) {
+	for (vec_size i = 0; i < ip->bindings.size(); i++) {
 		uint32_t strlen;
 		char path[XR_MAX_PATH_LENGTH];
 
@@ -2404,7 +2404,7 @@ bool OpenXRAPI::sync_action_sets(const Vector<RID> p_active_sets) {
 	}
 
 	Vector<XrActiveActionSet> active_sets;
-	for (int i = 0; i < p_active_sets.size(); i++) {
+	for (vec_size i = 0; i < p_active_sets.size(); i++) {
 		ActionSet *action_set = action_set_owner.get_or_null(p_active_sets[i]);
 		if (action_set && action_set->handle != XR_NULL_HANDLE) {
 			XrActiveActionSet aset;
