@@ -71,6 +71,12 @@
 				Emitted when the user contextual goto and the item is in the same script.
 			</description>
 		</signal>
+		<signal name="request_save_previous_state">
+			<param index="0" name="line" type="int" />
+			<description>
+				Emitted when the user changes current script or moves caret by 10 or more columns within the same script.
+			</description>
+		</signal>
 		<signal name="search_in_files_requested">
 			<param index="0" name="text" type="String" />
 			<description>
