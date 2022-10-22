@@ -400,7 +400,7 @@ typedef struct {
 	void (*print_warning)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
 	void (*print_script_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
 
-	uint64_t (*get_native_struct_size)(const char *p_name);
+	uint64_t (*get_native_struct_size)(const GDNativeStringNamePtr p_name);
 
 	/* GODOT VARIANT */
 
@@ -443,19 +443,19 @@ typedef struct {
 	GDNativeVariantFromTypeConstructorFunc (*get_variant_from_type_constructor)(GDNativeVariantType p_type);
 	GDNativeTypeFromVariantConstructorFunc (*get_variant_to_type_constructor)(GDNativeVariantType p_type);
 	GDNativePtrOperatorEvaluator (*variant_get_ptr_operator_evaluator)(GDNativeVariantOperator p_operator, GDNativeVariantType p_type_a, GDNativeVariantType p_type_b);
-	GDNativePtrBuiltInMethod (*variant_get_ptr_builtin_method)(GDNativeVariantType p_type, const char *p_method, GDNativeInt p_hash);
+	GDNativePtrBuiltInMethod (*variant_get_ptr_builtin_method)(GDNativeVariantType p_type, const GDNativeStringNamePtr p_method, GDNativeInt p_hash);
 	GDNativePtrConstructor (*variant_get_ptr_constructor)(GDNativeVariantType p_type, int32_t p_constructor);
 	GDNativePtrDestructor (*variant_get_ptr_destructor)(GDNativeVariantType p_type);
 	void (*variant_construct)(GDNativeVariantType p_type, GDNativeVariantPtr p_base, const GDNativeVariantPtr *p_args, int32_t p_argument_count, GDNativeCallError *r_error);
-	GDNativePtrSetter (*variant_get_ptr_setter)(GDNativeVariantType p_type, const char *p_member);
-	GDNativePtrGetter (*variant_get_ptr_getter)(GDNativeVariantType p_type, const char *p_member);
+	GDNativePtrSetter (*variant_get_ptr_setter)(GDNativeVariantType p_type, const GDNativeStringNamePtr p_member);
+	GDNativePtrGetter (*variant_get_ptr_getter)(GDNativeVariantType p_type, const GDNativeStringNamePtr p_member);
 	GDNativePtrIndexedSetter (*variant_get_ptr_indexed_setter)(GDNativeVariantType p_type);
 	GDNativePtrIndexedGetter (*variant_get_ptr_indexed_getter)(GDNativeVariantType p_type);
 	GDNativePtrKeyedSetter (*variant_get_ptr_keyed_setter)(GDNativeVariantType p_type);
 	GDNativePtrKeyedGetter (*variant_get_ptr_keyed_getter)(GDNativeVariantType p_type);
 	GDNativePtrKeyedChecker (*variant_get_ptr_keyed_checker)(GDNativeVariantType p_type);
-	void (*variant_get_constant_value)(GDNativeVariantType p_type, const char *p_constant, GDNativeVariantPtr r_ret);
-	GDNativePtrUtilityFunction (*variant_get_ptr_utility_function)(const char *p_function, GDNativeInt p_hash);
+	void (*variant_get_constant_value)(GDNativeVariantType p_type, const GDNativeStringNamePtr p_constant, GDNativeVariantPtr r_ret);
+	GDNativePtrUtilityFunction (*variant_get_ptr_utility_function)(const GDNativeStringNamePtr p_function, GDNativeInt p_hash);
 
 	/*  extra utilities */
 
@@ -524,12 +524,12 @@ typedef struct {
 	void (*object_method_bind_call)(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_ret, GDNativeCallError *r_error);
 	void (*object_method_bind_ptrcall)(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
 	void (*object_destroy)(GDNativeObjectPtr p_o);
-	GDNativeObjectPtr (*global_get_singleton)(const char *p_name);
+	GDNativeObjectPtr (*global_get_singleton)(const GDNativeStringNamePtr p_name);
 
 	void *(*object_get_instance_binding)(GDNativeObjectPtr p_o, void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks);
 	void (*object_set_instance_binding)(GDNativeObjectPtr p_o, void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks);
 
-	void (*object_set_instance)(GDNativeObjectPtr p_o, const char *p_classname, GDExtensionClassInstancePtr p_instance); /* p_classname should be a registered extension class and should extend the p_o object's class. */
+	void (*object_set_instance)(GDNativeObjectPtr p_o, const GDNativeStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance); /* p_classname should be a registered extension class and should extend the p_o object's class. */
 
 	GDNativeObjectPtr (*object_cast_to)(const GDNativeObjectPtr p_object, void *p_class_tag);
 	GDNativeObjectPtr (*object_get_instance_from_id)(GDObjectInstanceID p_instance_id);
@@ -540,9 +540,9 @@ typedef struct {
 	GDNativeScriptInstancePtr (*script_instance_create)(const GDNativeExtensionScriptInstanceInfo *p_info, GDNativeExtensionScriptInstanceDataPtr p_instance_data);
 
 	/* CLASSDB */
-	GDNativeObjectPtr (*classdb_construct_object)(const char *p_classname); /* The passed class must be a built-in godot class, or an already-registered extension class. In both case, object_set_instance should be called to fully initialize the object. */
-	GDNativeMethodBindPtr (*classdb_get_method_bind)(const char *p_classname, const char *p_methodname, GDNativeInt p_hash);
-	void *(*classdb_get_class_tag)(const char *p_classname);
+	GDNativeObjectPtr (*classdb_construct_object)(const GDNativeStringNamePtr p_classname); /* The passed class must be a built-in godot class, or an already-registered extension class. In both case, object_set_instance should be called to fully initialize the object. */
+	GDNativeMethodBindPtr (*classdb_get_method_bind)(const GDNativeStringNamePtr p_classname, const GDNativeStringNamePtr p_methodname, GDNativeInt p_hash);
+	void *(*classdb_get_class_tag)(const GDNativeStringNamePtr p_classname);
 
 	/* CLASSDB EXTENSION */
 
