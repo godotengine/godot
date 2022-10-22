@@ -32,6 +32,7 @@
 #define COLOR_H
 
 #include "core/math/math_funcs.h"
+#include "core/variant/dictionary.h"
 
 class String;
 
@@ -198,6 +199,7 @@ struct _NO_DISCARD_ Color {
 	static int get_named_color_count();
 	static String get_named_color_name(int p_idx);
 	static Color get_named_color(int p_idx);
+	static Dictionary get_named_colors();
 	static Color from_string(const String &p_string, const Color &p_default);
 	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);

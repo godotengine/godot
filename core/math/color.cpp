@@ -34,6 +34,7 @@
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 #include "core/templates/rb_map.h"
+#include "core/variant/variant.h"
 
 #include "thirdparty/misc/ok_color.h"
 
@@ -451,6 +452,17 @@ String Color::get_named_color_name(int p_idx) {
 Color Color::get_named_color(int p_idx) {
 	ERR_FAIL_INDEX_V(p_idx, get_named_color_count(), Color());
 	return named_colors[p_idx].color;
+}
+
+Dictionary Color::get_named_colors() {
+	Dictionary dict;
+	for (int idx = 0; named_colors[idx].name != nullptr; idx++) {
+		NamedColor named = named_colors[idx];
+
+		const String name = String(named.name);
+		dict[Variant(name)] = Variant(named.color);
+	}
+	return dict;
 }
 
 // For a version that errors on invalid values instead of returning
