@@ -55,11 +55,17 @@
 		</method>
 	</methods>
 	<members>
+		<member name="can_add_swatches" type="bool" setter="set_can_add_swatches" getter="are_swatches_enabled" default="true">
+			If [code]true[/code], it's possible to add presets under Swatches. If [code]false[/code], the button to add presets is disabled.
+		</member>
 		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)">
 			The currently selected color.
 		</member>
 		<member name="color_mode" type="int" setter="set_color_mode" getter="get_color_mode" enum="ColorPicker.ColorModeType" default="0">
 			The currently selected color mode. See [enum ColorModeType].
+		</member>
+		<member name="color_modes_visible" type="bool" setter="set_modes_visible" getter="are_modes_visible" default="true">
+			If [code]true[/code], the color mode buttons are visible.
 		</member>
 		<member name="deferred_mode" type="bool" setter="set_deferred_mode" getter="is_deferred_mode" default="false">
 			If [code]true[/code], the color will apply only after the user releases the mouse button, otherwise it will apply immediately even in mouse motion event (which can cause performance issues).
@@ -67,14 +73,20 @@
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
 			If [code]true[/code], shows an alpha channel slider (opacity).
 		</member>
+		<member name="hex_visible" type="bool" setter="set_hex_visible" getter="is_hex_visible" default="true">
+			If [code]true[/code], the hex color code input field is visible.
+		</member>
 		<member name="picker_shape" type="int" setter="set_picker_shape" getter="get_picker_shape" enum="ColorPicker.PickerShapeType" default="0">
 			The shape of the color space view. See [enum PickerShapeType].
 		</member>
-		<member name="presets_enabled" type="bool" setter="set_presets_enabled" getter="are_presets_enabled" default="true">
-			If [code]true[/code], the "add preset" button is enabled.
-		</member>
 		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible" default="true">
-			If [code]true[/code], saved color presets are visible.
+			If [code]true[/code], the Swatches and Recent Colors presets are visible.
+		</member>
+		<member name="sampler_visible" type="bool" setter="set_sampler_visible" getter="is_sampler_visible" default="true">
+			If [code]true[/code], the color sampler and color preview are visible.
+		</member>
+		<member name="sliders_visible" type="bool" setter="set_sliders_visible" getter="are_sliders_visible" default="true">
+			If [code]true[/code], the color sliders are visible.
 		</member>
 		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" overrides="BoxContainer" default="true" />
 	</members>
@@ -124,6 +136,9 @@
 		</constant>
 		<constant name="SHAPE_OKHSL_CIRCLE" value="3" enum="PickerShapeType">
 			HSL OK Color Model circle color space.
+		</constant>
+		<constant name="SHAPE_NONE" value="4" enum="PickerShapeType">
+			The color space shape and the shape select button are hidden. Can't be selected from the shapes popup.
 		</constant>
 	</constants>
 	<theme_items>
