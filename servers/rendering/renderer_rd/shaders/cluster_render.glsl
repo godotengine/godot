@@ -142,7 +142,11 @@ void main() {
 		}
 	}
 #else
-	if (!gl_HelperInvocation) {
+// MoltenVK/Metal fails to compile shaders using gl_HelperInvocation for some GPUs
+#ifndef MOLTENVK_USED
+	if (!gl_HelperInvocation)
+#endif
+	{
 		atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
 	}
 #endif
@@ -162,7 +166,11 @@ void main() {
 		}
 	}
 #else
-	if (!gl_HelperInvocation) {
+// MoltenVK/Metal fails to compile shaders using gl_HelperInvocation for some GPUs
+#ifndef MOLTENVK_USED
+	if (!gl_HelperInvocation)
+#endif
+	{
 		atomicOr(cluster_render.data[z_write_offset], z_write_bit);
 	}
 #endif
