@@ -1,6 +1,6 @@
-# Error here. `class_name` should be used *before* annotations, not after (except @tool).
-@icon("res://path/to/optional/icon.svg")
+# Error here. Annotations should be used before `class_name`, not after.
 class_name HelloWorld
+@icon("res://path/to/optional/icon.svg")
 
 func test():
 	pass
