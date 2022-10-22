@@ -61,8 +61,9 @@ static void gdnative_print_script_error(const char *p_description, const char *p
 	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_SCRIPT);
 }
 
-uint64_t gdnative_get_native_struct_size(const char *p_name) {
-	return ClassDB::get_native_struct_size(p_name);
+uint64_t gdnative_get_native_struct_size(const GDNativeStringNamePtr p_name) {
+	const StringName name = *reinterpret_cast<const StringName *>(p_name);
+	return ClassDB::get_native_struct_size(name);
 }
 
 // Variant functions
@@ -81,11 +82,11 @@ static void gdnative_variant_destroy(GDNativeVariantPtr p_self) {
 
 static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStringNamePtr p_method, const GDNativeVariantPtr *p_args, const GDNativeInt p_argcount, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
 	Variant *self = (Variant *)p_self;
-	const StringName *method = (const StringName *)p_method;
+	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
 	Variant ret;
 	Callable::CallError error;
-	self->callp(*method, args, p_argcount, ret, error);
+	self->callp(method, args, p_argcount, ret, error);
 	memnew_placement(r_return, Variant(ret));
 
 	if (r_error) {
@@ -97,11 +98,11 @@ static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStrin
 
 static void gdnative_variant_call_static(GDNativeVariantType p_type, const GDNativeStringNamePtr p_method, const GDNativeVariantPtr *p_args, const GDNativeInt p_argcount, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
 	Variant::Type type = (Variant::Type)p_type;
-	const StringName *method = (const StringName *)p_method;
+	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
 	Variant ret;
 	Callable::CallError error;
-	Variant::call_static(type, *method, args, p_argcount, ret, error);
+	Variant::call_static(type, method, args, p_argcount, ret, error);
 	memnew_placement(r_return, Variant(ret));
 
 	if (r_error) {
@@ -469,11 +470,11 @@ static GDNativeTypeFromVariantConstructorFunc gdnative_get_type_from_variant_con
 static GDNativePtrOperatorEvaluator gdnative_variant_get_ptr_operator_evaluator(GDNativeVariantOperator p_operator, GDNativeVariantType p_type_a, GDNativeVariantType p_type_b) {
 	return (GDNativePtrOperatorEvaluator)Variant::get_ptr_operator_evaluator(Variant::Operator(p_operator), Variant::Type(p_type_a), Variant::Type(p_type_b));
 }
-static GDNativePtrBuiltInMethod gdnative_variant_get_ptr_builtin_method(GDNativeVariantType p_type, const char *p_method, GDNativeInt p_hash) {
-	StringName method = p_method;
+static GDNativePtrBuiltInMethod gdnative_variant_get_ptr_builtin_method(GDNativeVariantType p_type, const GDNativeStringNamePtr p_method, GDNativeInt p_hash) {
+	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	uint32_t hash = Variant::get_builtin_method_hash(Variant::Type(p_type), method);
 	if (hash != p_hash) {
-		ERR_PRINT_ONCE("Error getting method " + String(method) + ", hash mismatch.");
+		ERR_PRINT_ONCE("Error getting method " + method + ", hash mismatch.");
 		return nullptr;
 	}
 
@@ -497,11 +498,13 @@ static void gdnative_variant_construct(GDNativeVariantType p_type, GDNativeVaria
 		r_error->expected = error.expected;
 	}
 }
-static GDNativePtrSetter gdnative_variant_get_ptr_setter(GDNativeVariantType p_type, const char *p_member) {
-	return (GDNativePtrSetter)Variant::get_member_ptr_setter(Variant::Type(p_type), p_member);
+static GDNativePtrSetter gdnative_variant_get_ptr_setter(GDNativeVariantType p_type, const GDNativeStringNamePtr p_member) {
+	const StringName member = *reinterpret_cast<const StringName *>(p_member);
+	return (GDNativePtrSetter)Variant::get_member_ptr_setter(Variant::Type(p_type), member);
 }
-static GDNativePtrGetter gdnative_variant_get_ptr_getter(GDNativeVariantType p_type, const char *p_member) {
-	return (GDNativePtrGetter)Variant::get_member_ptr_getter(Variant::Type(p_type), p_member);
+static GDNativePtrGetter gdnative_variant_get_ptr_getter(GDNativeVariantType p_type, const GDNativeStringNamePtr p_member) {
+	const StringName member = *reinterpret_cast<const StringName *>(p_member);
+	return (GDNativePtrGetter)Variant::get_member_ptr_getter(Variant::Type(p_type), member);
 }
 static GDNativePtrIndexedSetter gdnative_variant_get_ptr_indexed_setter(GDNativeVariantType p_type) {
 	return (GDNativePtrIndexedSetter)Variant::get_member_ptr_indexed_setter(Variant::Type(p_type));
@@ -518,14 +521,15 @@ static GDNativePtrKeyedGetter gdnative_variant_get_ptr_keyed_getter(GDNativeVari
 static GDNativePtrKeyedChecker gdnative_variant_get_ptr_keyed_checker(GDNativeVariantType p_type) {
 	return (GDNativePtrKeyedChecker)Variant::get_member_ptr_keyed_checker(Variant::Type(p_type));
 }
-static void gdnative_variant_get_constant_value(GDNativeVariantType p_type, const char *p_constant, GDNativeVariantPtr r_ret) {
-	memnew_placement(r_ret, Variant(Variant::get_constant_value(Variant::Type(p_type), p_constant)));
+static void gdnative_variant_get_constant_value(GDNativeVariantType p_type, const GDNativeStringNamePtr p_constant, GDNativeVariantPtr r_ret) {
+	StringName constant = *reinterpret_cast<const StringName *>(p_constant);
+	memnew_placement(r_ret, Variant(Variant::get_constant_value(Variant::Type(p_type), constant)));
 }
-static GDNativePtrUtilityFunction gdnative_variant_get_ptr_utility_function(const char *p_function, GDNativeInt p_hash) {
-	StringName function = p_function;
+static GDNativePtrUtilityFunction gdnative_variant_get_ptr_utility_function(const GDNativeStringNamePtr p_function, GDNativeInt p_hash) {
+	StringName function = *reinterpret_cast<const StringName *>(p_function);
 	uint32_t hash = Variant::get_utility_function_hash(function);
 	if (hash != p_hash) {
-		ERR_PRINT_ONCE("Error getting utility function " + String(function) + ", hash mismatch.");
+		ERR_PRINT_ONCE("Error getting utility function " + function + ", hash mismatch.");
 		return nullptr;
 	}
 	return (GDNativePtrUtilityFunction)Variant::get_ptr_utility_function(function);
@@ -836,8 +840,9 @@ static void gdnative_object_destroy(GDNativeObjectPtr p_o) {
 	memdelete((Object *)p_o);
 }
 
-static GDNativeObjectPtr gdnative_global_get_singleton(const char *p_name) {
-	return (GDNativeObjectPtr)Engine::get_singleton()->get_singleton_object(String(p_name));
+static GDNativeObjectPtr gdnative_global_get_singleton(const GDNativeStringNamePtr p_name) {
+	const StringName name = *reinterpret_cast<const StringName *>(p_name);
+	return (GDNativeObjectPtr)Engine::get_singleton()->get_singleton_object(name);
 }
 
 static void *gdnative_object_get_instance_binding(GDNativeObjectPtr p_object, void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks) {
@@ -850,9 +855,10 @@ static void gdnative_object_set_instance_binding(GDNativeObjectPtr p_object, voi
 	o->set_instance_binding(p_token, p_binding, p_callbacks);
 }
 
-static void gdnative_object_set_instance(GDNativeObjectPtr p_object, const char *p_classname, GDExtensionClassInstancePtr p_instance) {
+static void gdnative_object_set_instance(GDNativeObjectPtr p_object, const GDNativeStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance) {
+	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	Object *o = (Object *)p_object;
-	ClassDB::set_object_extension_instance(o, p_classname, p_instance);
+	ClassDB::set_object_extension_instance(o, classname, p_instance);
 }
 
 static GDNativeObjectPtr gdnative_object_get_instance_from_id(GDObjectInstanceID p_instance_id) {
@@ -880,23 +886,26 @@ static GDNativeScriptInstancePtr gdnative_script_instance_create(const GDNativeE
 	return reinterpret_cast<GDNativeScriptInstancePtr>(script_instance_extension);
 }
 
-static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const char *p_classname, const char *p_methodname, GDNativeInt p_hash) {
-	MethodBind *mb = ClassDB::get_method(StringName(p_classname), StringName(p_methodname));
+static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const GDNativeStringNamePtr p_classname, const GDNativeStringNamePtr p_methodname, GDNativeInt p_hash) {
+	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
+	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
+	MethodBind *mb = ClassDB::get_method(classname, methodname);
 	ERR_FAIL_COND_V(!mb, nullptr);
 	if (mb->get_hash() != p_hash) {
-		ERR_PRINT("Hash mismatch for method '" + String(p_classname) + "." + String(p_methodname) + "'.");
+		ERR_PRINT("Hash mismatch for method '" + classname + "." + methodname + "'.");
 		return nullptr;
 	}
-	// MethodBind *mb = ClassDB::get_method("Node", "get_name");
 	return (GDNativeMethodBindPtr)mb;
 }
 
-static GDNativeObjectPtr gdnative_classdb_construct_object(const char *p_classname) {
-	return (GDNativeObjectPtr)ClassDB::instantiate(p_classname);
+static GDNativeObjectPtr gdnative_classdb_construct_object(const GDNativeStringNamePtr p_classname) {
+	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
+	return (GDNativeObjectPtr)ClassDB::instantiate(classname);
 }
 
-static void *gdnative_classdb_get_class_tag(const char *p_classname) {
-	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(p_classname);
+static void *gdnative_classdb_get_class_tag(const GDNativeStringNamePtr p_classname) {
+	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
+	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(classname);
 	return class_info ? class_info->class_ptr : nullptr;
 }
 
