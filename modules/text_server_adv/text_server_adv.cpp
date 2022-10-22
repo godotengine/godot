@@ -4591,6 +4591,7 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 
 	if (!sd->break_ops_valid) {
 		sd->breaks.clear();
+		sd->break_inserts = 0;
 		UErrorCode err = U_ZERO_ERROR;
 		int i = 0;
 		while (i < sd->spans.size()) {
@@ -4619,6 +4620,11 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 						sd->breaks[pos] = true;
 					} else if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_SOFT) && (ubrk_getRuleStatus(bi) < UBRK_LINE_SOFT_LIMIT)) {
 						sd->breaks[pos] = false;
+
+						int pos_p = pos - 1 - sd->start;
+						if (pos - sd->start != sd->end && !is_whitespace(sd->text[pos_p])) {
+							sd->break_inserts++;
+						}
 					}
 				}
 			}
@@ -4628,60 +4634,83 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 		sd->break_ops_valid = true;
 	}
 
+	Vector<Glyph> glyphs_new;
+
+	bool rewrite = false;
+	int sd_shift = 0;
+	int sd_size = sd->glyphs.size();
+	Glyph *sd_glyphs = sd->glyphs.ptrw();
+	Glyph *sd_glyphs_new = nullptr;
+
+	if (sd->break_inserts > 0) {
+		glyphs_new.resize(sd->glyphs.size() + sd->break_inserts);
+		sd_glyphs_new = glyphs_new.ptrw();
+		rewrite = true;
+	} else {
+		sd_glyphs_new = sd_glyphs;
+	}
+
 	sd->sort_valid = false;
 	sd->glyphs_logical.clear();
-	int sd_size = sd->glyphs.size();
 	const char32_t *ch = sd->text.ptr();
-	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
 	int c_punct_size = sd->custom_punct.length();
 	const char32_t *c_punct = sd->custom_punct.ptr();
 
 	for (int i = 0; i < sd_size; i++) {
+		if (rewrite) {
+			for (int j = 0; j < sd_glyphs[i].count; j++) {
+				sd_glyphs_new[sd_shift + i + j] = sd_glyphs[i + j];
+			}
+		}
 		if (sd_glyphs[i].count > 0) {
 			char32_t c = ch[sd_glyphs[i].start - sd->start];
 			if (c == 0xfffc) {
+				i += (sd_glyphs[i].count - 1);
 				continue;
 			}
 			if (c == 0x0009 || c == 0x000b) {
-				sd_glyphs[i].flags |= GRAPHEME_IS_TAB;
+				sd_glyphs_new[sd_shift + i].flags |= GRAPHEME_IS_TAB;
 			}
 			if (is_whitespace(c)) {
-				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
+				sd_glyphs_new[sd_shift + i].flags |= GRAPHEME_IS_SPACE;
 			}
 			if (c_punct_size == 0) {
 				if (u_ispunct(c) && c != 0x005f) {
-					sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+					sd_glyphs_new[sd_shift + i].flags |= GRAPHEME_IS_PUNCTUATION;
 				}
 			} else {
 				for (int j = 0; j < c_punct_size; j++) {
 					if (c_punct[j] == c) {
-						sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+						sd_glyphs_new[sd_shift + i].flags |= GRAPHEME_IS_PUNCTUATION;
 						break;
 					}
 				}
 			}
 			if (is_underscore(c)) {
-				sd_glyphs[i].flags |= GRAPHEME_IS_UNDERSCORE;
+				sd_glyphs_new[sd_shift + i].flags |= GRAPHEME_IS_UNDERSCORE;
 			}
 			if (sd->breaks.has(sd_glyphs[i].end)) {
 				if (sd->breaks[sd_glyphs[i].end] && (is_linebreak(c))) {
-					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
+					sd_glyphs_new[sd_shift + i].flags |= GRAPHEME_IS_BREAK_HARD;
 				} else if (is_whitespace(c)) {
-					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+					sd_glyphs_new[sd_shift + i].flags |= GRAPHEME_IS_BREAK_SOFT;
 				} else {
 					int count = sd_glyphs[i].count;
 					// Do not add extra space at the end of the line.
 					if (sd_glyphs[i].end == sd->end) {
+						i += (sd_glyphs[i].count - 1);
 						continue;
 					}
 					// Do not add extra space after existing space.
 					if (sd_glyphs[i].flags & GRAPHEME_IS_RTL) {
 						if ((i + count < sd_size - 1) && ((sd_glyphs[i + count].flags & (GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT)) == (GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT))) {
+							i += (sd_glyphs[i].count - 1);
 							continue;
 						}
 					} else {
-						if ((i > 0) && ((sd_glyphs[i - 1].flags & (GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT)) == (GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT))) {
+						if ((sd_glyphs[i].flags & (GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT)) == (GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT)) {
+							i += (sd_glyphs[i].count - 1);
 							continue;
 						}
 					}
@@ -4694,21 +4723,24 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 					gl.flags = GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL | GRAPHEME_IS_SPACE;
 					if (sd_glyphs[i].flags & GRAPHEME_IS_RTL) {
 						gl.flags |= GRAPHEME_IS_RTL;
-						sd->glyphs.insert(i, gl); // Insert before.
+						for (int j = sd_glyphs[i].count - 1; j >= 0; j--) {
+							sd_glyphs_new[sd_shift + i + j + 1] = sd_glyphs_new[sd_shift + i + j];
+						}
+						sd_glyphs_new[sd_shift + i] = gl;
 					} else {
-						sd->glyphs.insert(i + count, gl); // Insert after.
+						sd_glyphs_new[sd_shift + i + count] = gl;
 					}
-					i += count;
-
-					// Update write pointer and size.
-					sd_size = sd->glyphs.size();
-					sd_glyphs = sd->glyphs.ptrw();
-					continue;
+					sd_shift++;
+					ERR_FAIL_COND_V_MSG(sd_shift > sd->break_inserts, false, "Invalid break insert count!");
 				}
 			}
-
 			i += (sd_glyphs[i].count - 1);
 		}
+	}
+	ERR_FAIL_COND_V_MSG(sd_shift != sd->break_inserts, false, "Invalid break insert count!");
+
+	if (sd->break_inserts > 0) {
+		sd->glyphs = glyphs_new;
 	}
 
 	sd->line_breaks_valid = true;
