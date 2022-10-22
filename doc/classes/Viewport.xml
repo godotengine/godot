@@ -208,14 +208,15 @@
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
 		</member>
 		<member name="debanding" type="bool" setter="set_use_debanding" getter="get_use_debanding" default="false">
-			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. In this case, [member usage] must also be set to [constant USAGE_3D]. See also [member ProjectSettings.rendering/quality/filters/use_debanding].
+			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
 			[b]Note:[/b] Only available on the GLES3 backend. [member hdr] must also be [code]true[/code] for debanding to be effective.
 		</member>
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
 		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
-			If [code]true[/code], the viewport will disable 3D rendering. For actual disabling use [code]usage[/code].
+			If [code]true[/code], the viewport will disable 3D rendering. To actually disable allocation of 3D buffers, set [member usage] instead.
 		</member>
 		<member name="fxaa" type="bool" setter="set_use_fxaa" getter="get_use_fxaa" default="false">
 			Enables fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K. Some of the lost sharpness can be recovered by enabling contrast-adaptive sharpening (see [member sharpen_intensity]).
@@ -290,7 +291,7 @@
 			If [code]true[/code], the viewport should render its background as transparent.
 		</member>
 		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage" default="2">
-			The rendering mode of viewport.
+			The viewport's rendering mode. This controls which buffers are allocated for the viewport (2D only, or 2D + 3D). 2D-only options can reduce memory usage and improve performance slightly, especially on low-end devices.
 			[b]Note:[/b] If set to [constant USAGE_2D] or [constant USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since HDR is not supported for 2D.
 		</member>
 		<member name="use_32_bpc_depth" type="bool" setter="set_use_32_bpc_depth" getter="get_use_32_bpc_depth" default="false">
