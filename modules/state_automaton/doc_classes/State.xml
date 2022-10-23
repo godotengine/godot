@@ -4,7 +4,7 @@
 		State component for StateAutomaton.
 	</brief_description>
 	<description>
-		Singular State component operatated by one or multiple [StateAutomaton]. Could be stored in [PushdownAutomaton] and used by multiple instance of State Automata. All local variables should only be stored in StateAutomata' blackboard to preserve ubiquity.
+		Singular State component operatated by one or multiple [StateAutomaton]. Could be stored in [PushdownAutomaton] and used by multiple State Automata. All local variables should only be stored in StateAutomata' blackboard to preserve ubiquity.
 	</description>
 	<members>
 		<member name="state_name" type="String" setter="set_state_name" getter="get_state_name" default="__default">

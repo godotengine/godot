@@ -164,14 +164,20 @@ void NodeDispatcher::dispatch_all(const bool& is_physics){
 }
 
 void NodeDispatcher::dispatch_idle(){
+	auto time_start = OS::get_singleton()->get_ticks_usec();
 #ifdef PRECHECK_ALL_NODES
 	clean_pool();
 #endif
 	dispatch_all(false);
+	auto time_end = OS::get_singleton()->get_ticks_usec();
+	idle_time_usec = time_end - time_start;
 }
 void NodeDispatcher::dispatch_physics(){
+	auto time_start = OS::get_singleton()->get_ticks_usec();
 	execute_external();
 	dispatch_all(true);
+	auto time_end = OS::get_singleton()->get_ticks_usec();
+	physics_time_usec = time_end - time_start;
 }
 void NodeDispatcher::dispatch_internal(const int& tid, const bool& is_physics){
 	auto calling_method = (is_physics ? DISPATCH_PHYSICS_SCRIPT_METHOD : DISPATCH_IDLE_SCRIPT_METHOD);
@@ -283,6 +289,7 @@ Array NodeDispatcher::get_all_nodes() {
 	primary_lock.unlock();
 	return arr;
 }
+
 Dictionary NodeDispatcher::get_all_nodes_by_handler(){
 	Dictionary re;
 	primary_lock.lock();

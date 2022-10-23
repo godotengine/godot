@@ -19,10 +19,11 @@
 			Don't use any bake method for this AdvancedCurve, which defeat the purpose of having an AdvancedCurve...
 		</constant>
 		<constant name="AC_TRAPEZOID" value="1" enum="ApproxMethod">
-			Use Trapezoid Approximation as the bake method. Lower accuracy but better performant.
+			Use Trapezoid Approximation as the bake method. Lower accuracy but performant.
 		</constant>
 		<constant name="AC_SIMPSON" value="2" enum="ApproxMethod">
-			Use Simpson Approximation as the bake method. Worse performant but better accuracy. IMPORTANT: Currently does not work, please do not use.
+			Use Simpson Approximation as the bake method.
+			IMPORTANT: Currently does not work, please do not use.
 		</constant>
 	</constants>
 	<methods>
@@ -43,7 +44,7 @@
 			<argument index="0" name="from" type="float"/>
 			<argument index="1" name="to" type="float"/>
 			<description>
-				Sample the area of this Curve from x1 = [code]from[/code] to x2 = [code]to[/code].
+				Sample the area of this Curve using [code]from[/code] as the upper bound and [code]to[/code] as the lower bound.
 			</description>
 		</method>
 		<method name="get_area_no_bake">
@@ -52,7 +53,7 @@
 			<argument index="1" name="to" type="float"/>
 			<argument index="2" name="method" type="int" enum="AdvancedCurve.ApproxMethod" default="1" />
 			<description>
-				Sample the area of this Curve using given [code]method[/code].
+				Sample the area of this Curve using given [code]method[/code]. Does not sample the baked data.
 			</description>
 		</method>
 	</methods>

@@ -75,6 +75,10 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(PHYSICS_3D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ISLAND_COUNT);
 	BIND_ENUM_CONSTANT(AUDIO_OUTPUT_LATENCY);
+#ifdef USE_NODE_DISPATCHER
+	BIND_ENUM_CONSTANT(NODE_DISPATCHER_PHYSICS_TIME);
+	BIND_ENUM_CONSTANT(NODE_DISPATCHER_IDLE_TIME);
+#endif
 
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 }
@@ -123,6 +127,10 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"physics_3d/collision_pairs",
 		"physics_3d/islands",
 		"audio/output_latency",
+#ifdef USE_NODE_DISPATCHER
+		"node_dispatcher/physics_time",
+		"node_dispatcher/idle_time",
+#endif
 
 	};
 
@@ -193,6 +201,12 @@ float Performance::get_monitor(Monitor p_monitor) const {
 			return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ISLAND_COUNT);
 		case AUDIO_OUTPUT_LATENCY:
 			return AudioServer::get_singleton()->get_output_latency();
+#ifdef USE_NODE_DISPATCHER
+		case NODE_DISPATCHER_PHYSICS_TIME:
+			return NodeDispatcher::get_singleton()->get_time_usec(true);
+		case NODE_DISPATCHER_IDLE_TIME:
+			return NodeDispatcher::get_singleton()->get_time_usec(false);
+#endif
 
 		default: {
 		}

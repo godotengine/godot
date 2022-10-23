@@ -16,6 +16,9 @@
 		<member name="pda" type="PushdownAutomaton" setter="set_pda" getter="get_pda">
 			The [PushdownAutomaton] currently assigned.
 		</member>
+		<member name="terminated" type="bool" setter="set_termination" getter="is_terminated" default="false">
+			Enable the deconstruction of this StateAutomaton.
+		</member>
 	</members>
 	<methods>
 		<method name="boot">

@@ -46,6 +46,7 @@ class PushdownAutomaton : public Reference {
 private:
 	StateHashMap state_pool;
 
+	bool terminated = false;
 protected:
 	static void _bind_methods();
 
@@ -55,16 +56,20 @@ public:
 	~PushdownAutomaton();
 	
 	Ref<State> get_entry_state();
-	Ref<State> get_state_by_name(const StringName& state_name);
-	Ref<State> get_next_state(const StringName& from_state);
-	Ref<State> get_prev_state(const StringName& from_state);
+	Ref<State> get_state_by_name(const StringName& state_name) const;
+	Ref<State> get_next_state(const StringName& from_state) const;
+	Ref<State> get_prev_state(const StringName& from_state) const;
 
 	friend class StateAutomaton;
 
 	bool add_state(const Ref<State>& new_state);
 	bool remove_state(const StringName& state_name);
 
-	Dictionary get_all_states();
+	void set_termination(const bool& status);
+	inline bool is_terminated() const { return terminated; }
+
+	inline void clean_pool() { state_pool.clear(); }
+	Dictionary get_all_states() const;
 	inline int get_pool_size() const { return state_pool.size(); }
 };
 
@@ -74,6 +79,7 @@ private:
 	BlackboardHashMap blackboard;
 	float delta_time = 0.0;
 	bool debug_status = false;
+	bool terminated = false;
 
 	Variant client;
 	Ref<PushdownAutomaton> pda;
@@ -86,6 +92,9 @@ public:
 	void boot();
 	void poll(const float& delta = 0.0);
 	void finalize();
+
+	void set_termination(const bool& status);
+	inline bool is_terminated() const { return terminated; }
 
 	void set_pda(const Ref<PushdownAutomaton>& new_pda);
 	inline Ref<PushdownAutomaton> get_pda() const { return pda; }

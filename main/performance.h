@@ -33,6 +33,12 @@
 
 #include "core/object.h"
 
+#define USE_NODE_DISPATCHER
+
+#ifdef USE_NODE_DISPATCHER
+#include "modules/node_dispatcher/node_dispatcher.h"
+#endif
+
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
 
@@ -82,6 +88,10 @@ public:
 		PHYSICS_3D_ISLAND_COUNT,
 		//physics
 		AUDIO_OUTPUT_LATENCY,
+#ifdef USE_NODE_DISPATCHER
+		NODE_DISPATCHER_PHYSICS_TIME,
+		NODE_DISPATCHER_IDLE_TIME ,
+#endif
 		MONITOR_MAX
 	};
 

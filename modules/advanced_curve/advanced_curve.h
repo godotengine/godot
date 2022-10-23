@@ -7,7 +7,7 @@
 class AdvancedCurve : public Curve {
 	GDCLASS(AdvancedCurve, Curve);
 public:
-	enum ApproxMethod : unsigned int{
+	enum ApproxMethod : unsigned int {
 		AC_NO_METHOD,
 		AC_TRAPEZOID,
 		AC_SIMPSON,

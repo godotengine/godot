@@ -7,6 +7,11 @@
 		Pushdown automata are used in theories about what can be computed by machines. They are more capable than finite-state machines but less capable than Turing machines. Deterministic pushdown automata can recognize all deterministic context-free languages while nondeterministic ones can recognize all context-free languages, with the former often used in parser design.
 		Changes made to the state pool should be final as there is currently no way to replace prioritized state and I don't have any plan to rennovate :/
 	</description>
+	<members>
+		<member name="terminated" type="bool" setter="set_termination" getter="is_terminated" default="false">
+			Enable the deconstruction of this PushdownAutomaton.
+		</member>
+	</members>
 	<methods>
 		<method name="get_entry_state">
 			<return type="State" />
@@ -47,6 +52,19 @@
 			<argument index="0" name="state_name" type="String"/>
 			<description>
 				Remove the state with the corresponding [code]state_name[/code] from the state pool. Return [code]true[/code] on success. Return [code]false[/code] if the given state does not exist in the state pool.
+			</description>
+		</method>
+		<method name="get_state">
+			<return type="State" />
+			<argument index="0" name="state_name" type="String"/>
+			<description>
+				Find the state with [code]state_name[/code]. Return [code]null[/code] when nothing is found.
+			</description>
+		</method>
+		<method name="clean_pool">
+			<return type="void" />
+			<description>
+				Remove all active states from the current pool.
 			</description>
 		</method>
 		<method name="get_all_states">

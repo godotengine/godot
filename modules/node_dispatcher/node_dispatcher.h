@@ -33,6 +33,9 @@ private:
 	float max_idle_time = 1.0;
 	float max_physics_time = 1.0;
 
+	uint64_t physics_time_usec = 0;
+	uint64_t idle_time_usec = 0;
+
 	float idle_delta = 0.0;
 	float physics_delta = 0.0;
 
@@ -84,6 +87,8 @@ public:
 	inline int get_queued_execution_count() const { return exec_pool.size(); }
 	Array get_all_nodes();
 	Dictionary get_all_nodes_by_handler();
+	
+	inline uint64_t get_time_usec(const bool& is_physics) const { return is_physics ? physics_time_usec : idle_time_usec; }
 };
 
 #endif

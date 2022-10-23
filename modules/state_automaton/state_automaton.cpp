@@ -31,9 +31,9 @@ void State::_bind_methods(){
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "state_name"), "set_state_name", "get_state_name");
 
-	BIND_VMETHOD(MethodInfo(Variant::STRING, STATE_VM_START, PropertyInfo("StateAutomaton")));
+	BIND_VMETHOD(MethodInfo(Variant::NIL, STATE_VM_START, PropertyInfo("StateAutomaton")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, STATE_VM_POLL, PropertyInfo("StateAutomaton")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, STATE_VM_FINALIZE, PropertyInfo("StateAutomaton")));
+	BIND_VMETHOD(MethodInfo(Variant::NIL, STATE_VM_FINALIZE, PropertyInfo("StateAutomaton")));
 }
 
 void State::internal_start(const Ref<StateAutomaton>& machine){
@@ -70,7 +70,7 @@ PushdownAutomaton::PushdownAutomaton(){
 }
 
 PushdownAutomaton::~PushdownAutomaton(){
-
+	set_termination(true);
 }
 
 void PushdownAutomaton::_bind_methods(){
@@ -79,10 +79,23 @@ void PushdownAutomaton::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("get_next_state", "from_state"), &PushdownAutomaton::get_next_state);
 	ClassDB::bind_method(D_METHOD("get_prev_state", "from_state"), &PushdownAutomaton::get_prev_state);
 
+	ClassDB::bind_method(D_METHOD("set_termination", "status"), &PushdownAutomaton::set_termination);
+	ClassDB::bind_method(D_METHOD("is_terminated"), &PushdownAutomaton::is_terminated);
+
 	ClassDB::bind_method(D_METHOD("add_state", "new_state"), &PushdownAutomaton::add_state);
 	ClassDB::bind_method(D_METHOD("remove_state", "state_name"), &PushdownAutomaton::remove_state);
+	// ClassDB::bind_method(D_METHOD("get_state", "state_name"), &PushdownAutomaton::get_state);
+	ClassDB::bind_method(D_METHOD("clean_pool"), &PushdownAutomaton::clean_pool);
 	ClassDB::bind_method(D_METHOD("get_all_states"), &PushdownAutomaton::get_all_states);
 	ClassDB::bind_method(D_METHOD("get_pool_size"), &PushdownAutomaton::get_pool_size);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "terminated"), "set_termination", "is_terminated");
+}
+
+void PushdownAutomaton::set_termination(const bool& status){
+	if (!status) return;
+	terminated = true;
+	state_pool.clear();
 }
 
 Ref<State> PushdownAutomaton::get_entry_state(){
@@ -90,18 +103,15 @@ Ref<State> PushdownAutomaton::get_entry_state(){
 	return state_pool.front().value();
 }
 
-Ref<State> PushdownAutomaton::get_state_by_name(const StringName& state_name){
-	auto is_available = state_pool.has(state_name);
-	if (!is_available) return Ref<State>();
-	for (auto E = state_pool.front(); E; E = E.next()) {
-		if (E.key() == state_name) return E.value();
-	}
+Ref<State> PushdownAutomaton::get_state_by_name(const StringName& state_name) const{
+	if (state_pool.has(state_name)) return state_pool[state_name];
 	return Ref<State>();
 }
 
-Ref<State> PushdownAutomaton::get_next_state(const StringName& from_state){
+Ref<State> PushdownAutomaton::get_next_state(const StringName& from_state) const{
 	auto is_available = state_pool.has(from_state);
 	if (!is_available) return Ref<State>();
+	if (state_pool.back().key() == from_state) return Ref<State>();
 	auto is_ready = false;
 	for (auto E = state_pool.front(); E; E = E.next()) {
 		if (is_ready) return E.value();
@@ -110,18 +120,20 @@ Ref<State> PushdownAutomaton::get_next_state(const StringName& from_state){
 	return Ref<State>();
 }
 
-Ref<State> PushdownAutomaton::get_prev_state(const StringName& from_state){
+Ref<State> PushdownAutomaton::get_prev_state(const StringName& from_state) const{
 	auto is_available = state_pool.has(from_state);
 	if (!is_available) return Ref<State>();
+	if (state_pool.front().key() == from_state) return Ref<State>();
 	Ref<State> last;
 	for (auto E = state_pool.front(); E; E = E.next()) {
 		if (E.key() == from_state) return last;
 		last = E.value();
 	}
-	return last;
+	return Ref<State>();
 }
 
 bool PushdownAutomaton::add_state(const Ref<State>& new_state){
+	if (terminated) return false;
 	auto state_name = new_state->get_state_name();
 	auto is_available = state_pool.has(state_name);
 	if (is_available) return false;
@@ -132,10 +144,12 @@ bool PushdownAutomaton::add_state(const Ref<State>& new_state){
 
 // }
 bool PushdownAutomaton::remove_state(const StringName& state_name){
+	if (terminated) return false;
 	return state_pool.erase(state_name);
 }
 
-Dictionary PushdownAutomaton::get_all_states(){
+Dictionary PushdownAutomaton::get_all_states() const{
+	if (terminated) return Dictionary();
 	Dictionary re;
 	for (auto E = state_pool.front(); E; E = E.next()) {
 		re[Variant(E.key())] = Variant(E.get());
@@ -148,13 +162,16 @@ StateAutomaton::StateAutomaton(){
 }
 
 StateAutomaton::~StateAutomaton(){
-
+	set_termination(true);
 }
 
 void StateAutomaton::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("boot"), &StateAutomaton::boot);
 	ClassDB::bind_method(D_METHOD("poll", "delta"), &StateAutomaton::poll);
 	ClassDB::bind_method(D_METHOD("finalize"), &StateAutomaton::finalize);
+
+	ClassDB::bind_method(D_METHOD("set_termination", "status"), &StateAutomaton::set_termination);
+	ClassDB::bind_method(D_METHOD("is_terminated"), &StateAutomaton::is_terminated);
 
 	ClassDB::bind_method(D_METHOD("set_pda", "new_pda"), &StateAutomaton::set_pda);
 	ClassDB::bind_method(D_METHOD("get_pda"), &StateAutomaton::get_pda);
@@ -172,6 +189,15 @@ void StateAutomaton::_bind_methods(){
 	ADD_PROPERTY(PropertyInfo(Variant::VARIANT_MAX, "client"), "set_client", "get_client");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_status"), "enable_debug", "is_debugging");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "pda"), "set_pda", "get_pda");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "terminated"), "set_termination", "is_terminated");
+}
+
+void StateAutomaton::set_termination(const bool& status){
+	if (!status) return;
+	terminated = true;
+	blackboard.clear();
+	pda = Ref<PushdownAutomaton>();
+	client = Variant();
 }
 
 void StateAutomaton::boot(){
@@ -224,32 +250,6 @@ void StateAutomaton::poll(const float& delta){
 		} else {
 			processing = pda->get_state_by_name(command);
 		}
-		// I tried, didn't work
-		// switch (command.hash()){
-		// 	case STATE_VM_POLL_FIRST_VALUE.hash():
-		// 		processing = pda->get_entry_state();
-		// 		break;
-		// 	case STATE_VM_POLL_NEXT_VALUE.hash():
-		// 		processing = pda->get_next_state(state_name);
-		// 		break;
-		// 	case STATE_VM_POLL_PREV_VALUE.hash():
-		// 		processing = pda->get_prev_state(state_name);
-		// 		break;
-		// 	case STATE_VM_POLL_STOP_VALUE.hash():
-		// 		stop_exec = true;
-		// 		break;
-		// 	default:
-		// 		processing = pda->get_state_by_name(command);
-		// 		break;
-		// }
-		// if (stop_exec) break;
-		// if (command == STATE_VM_POLL_STOP_VALUE) break;
-		// else if (command == STATE_VM_POLL_NEXT_VALUE) {
-		// 	processing = pda->get_next_state(state_name);
-		// }
-		// else{
-		// 	processing = pda->get_state_by_name(command);
-		// }
 		callbacks_count++;
 	}
 
@@ -277,7 +277,7 @@ void StateAutomaton::finalize(){
 }
 
 void StateAutomaton::set_pda(const Ref<PushdownAutomaton>& new_pda){
-	if (new_pda == pda) return;
+	if (new_pda == pda || terminated) return;
 	pda = new_pda;
 }
 
