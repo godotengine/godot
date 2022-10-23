@@ -339,6 +339,16 @@ bool GLManager_Windows::is_using_vsync() const {
 	return use_vsync;
 }
 
+HDC GLManager_Windows::get_hdc(DisplayServer::WindowID p_window_id) {
+	return get_window(p_window_id).hDC;
+}
+
+HGLRC GLManager_Windows::get_hglrc(DisplayServer::WindowID p_window_id) {
+	const GLWindow &win = get_window(p_window_id);
+	const GLDisplay &disp = get_display(win.gldisplay_id);
+	return disp.hRC;
+}
+
 GLManager_Windows::GLManager_Windows(ContextType p_context_type) {
 	context_type = p_context_type;
 

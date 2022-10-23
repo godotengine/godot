@@ -376,6 +376,17 @@ bool GLManager_X11::is_using_vsync() const {
 	return use_vsync;
 }
 
+void *GLManager_X11::get_glx_context(DisplayServer::WindowID p_window_id) {
+	if (p_window_id == -1) {
+		return nullptr;
+	}
+
+	const GLWindow &win = _windows[p_window_id];
+	const GLDisplay &disp = get_display(win.gldisplay_id);
+
+	return (void *)disp.context->glx_context;
+}
+
 GLManager_X11::GLManager_X11(const Vector2i &p_size, ContextType p_context_type) {
 	context_type = p_context_type;
 

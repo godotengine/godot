@@ -116,6 +116,8 @@ public:
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
+	void *get_glx_context(DisplayServer::WindowID p_window_id);
+
 	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);
 	~GLManager_X11();
 };

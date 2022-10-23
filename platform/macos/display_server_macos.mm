@@ -2932,6 +2932,11 @@ int64_t DisplayServerMacOS::window_get_native_handle(HandleType p_handle_type, W
 		case WINDOW_VIEW: {
 			return (int64_t)windows[p_window].window_view;
 		}
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			return (int64_t)gl_manager->get_context(p_window);
+		}
+#endif
 		default: {
 			return 0;
 		}

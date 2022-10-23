@@ -89,6 +89,8 @@ public:
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
+	NSOpenGLContext *get_context(DisplayServer::WindowID p_window_id);
+
 	GLManager_MacOS(ContextType p_context_type);
 	~GLManager_MacOS();
 };

@@ -70,6 +70,7 @@ public:
 		DISPLAY_HANDLE,
 		WINDOW_HANDLE,
 		WINDOW_VIEW,
+		OPENGL_CONTEXT,
 	};
 
 	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Point2i *, const Size2i &, Error &r_error);

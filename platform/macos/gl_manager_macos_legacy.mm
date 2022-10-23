@@ -215,6 +215,15 @@ bool GLManager_MacOS::is_using_vsync() const {
 	return use_vsync;
 }
 
+NSOpenGLContext *GLManager_MacOS::get_context(DisplayServer::WindowID p_window_id) {
+	if (!windows.has(p_window_id)) {
+		return nullptr;
+	}
+
+	GLWindow &win = windows[p_window_id];
+	return win.context;
+}
+
 GLManager_MacOS::GLManager_MacOS(ContextType p_context_type) {
 	context_type = p_context_type;
 }

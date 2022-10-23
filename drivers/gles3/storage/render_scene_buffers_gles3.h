@@ -61,9 +61,6 @@ public:
 	bool is_transparent = false;
 
 	RID render_target;
-	GLuint internal_texture = 0; // Used for rendering when post effects are enabled
-	GLuint depth_texture = 0; // Main depth texture
-	GLuint framebuffer = 0; // Main framebuffer, contains internal_texture and depth_texture or render_target->color and depth_texture
 
 	//built-in textures used for ping pong image processing and blurring
 	struct Blur {
