@@ -368,6 +368,12 @@ void FindReplaceBar::_update_results_count() {
 
 		int col_pos = 0;
 
+		if (is_ignoring_comments()) {
+			if (line_text.begins_with("#")) {
+				continue;
+			}
+		}
+
 		while (true) {
 			col_pos = is_case_sensitive() ? line_text.find(searched, col_pos) : line_text.findn(searched, col_pos);
 
@@ -427,6 +433,9 @@ bool FindReplaceBar::search_current() {
 	if (is_case_sensitive()) {
 		flags |= TextEdit::SEARCH_MATCH_CASE;
 	}
+	if (is_ignoring_comments()) {
+		flags |= TextEdit::SEARCH_IGNORE_COMMENTS;
+	}
 
 	int line, col;
 	_get_search_from(line, col);
@@ -451,6 +460,9 @@ bool FindReplaceBar::search_prev() {
 	}
 	if (is_case_sensitive()) {
 		flags |= TextEdit::SEARCH_MATCH_CASE;
+	}
+	if (is_ignoring_comments()) {
+		flags |= TextEdit::SEARCH_IGNORE_COMMENTS;
 	}
 
 	flags |= TextEdit::SEARCH_BACKWARDS;
@@ -486,6 +498,9 @@ bool FindReplaceBar::search_next() {
 	}
 	if (is_case_sensitive()) {
 		flags |= TextEdit::SEARCH_MATCH_CASE;
+	}
+	if (is_ignoring_comments()) {
+		flags |= TextEdit::SEARCH_IGNORE_COMMENTS;
 	}
 
 	int line, col;
@@ -620,6 +635,10 @@ bool FindReplaceBar::is_case_sensitive() const {
 	return case_sensitive->is_pressed();
 }
 
+bool FindReplaceBar::is_ignoring_comments() const {
+	return ignore_comments->is_pressed();
+}
+
 bool FindReplaceBar::is_whole_words() const {
 	return whole_words->is_pressed();
 }
@@ -716,6 +735,12 @@ FindReplaceBar::FindReplaceBar() {
 	case_sensitive->set_text(TTR("Match Case"));
 	case_sensitive->set_focus_mode(FOCUS_NONE);
 	case_sensitive->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+
+	ignore_comments = memnew(CheckBox);
+	hbc_option_search->add_child(ignore_comments);
+	ignore_comments->set_text(TTR("Ignore Comments"));
+	ignore_comments->set_focus_mode(FOCUS_NONE);
+	ignore_comments->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	whole_words = memnew(CheckBox);
 	hbc_option_search->add_child(whole_words);

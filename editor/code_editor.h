@@ -67,6 +67,7 @@ class FindReplaceBar : public HBoxContainer {
 	Button *find_prev = nullptr;
 	Button *find_next = nullptr;
 	CheckBox *case_sensitive = nullptr;
+	CheckBox *ignore_comments = nullptr;
 	CheckBox *whole_words = nullptr;
 	TextureButton *hide_button = nullptr;
 
@@ -121,6 +122,7 @@ public:
 	String get_replace_text() const;
 
 	bool is_case_sensitive() const;
+	bool is_ignoring_comments() const;
 	bool is_whole_words() const;
 	bool is_selection_only() const;
 	void set_error(const String &p_label);
