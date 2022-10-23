@@ -1734,7 +1734,7 @@ void ScriptEditor::ensure_select_current() {
 	if (tab_container->get_tab_count() && tab_container->get_current_tab() >= 0) {
 		ScriptEditorBase *se = _get_current_editor();
 		if (se) {
-			se->enable_editor();
+			se->enable_editor(this);
 
 			if (!grab_focus_block && is_visible_in_tree()) {
 				se->ensure_focus();
@@ -2108,7 +2108,7 @@ void ScriptEditor::_update_script_names() {
 
 			ScriptEditorBase *se = _get_current_editor();
 			if (se) {
-				se->enable_editor();
+				se->enable_editor(this);
 				_update_selected_editor_menu();
 			}
 		}
@@ -2273,7 +2273,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 		if ((scr != nullptr && se->get_edited_resource() == p_resource) || se->get_edited_resource()->get_path() == p_resource->get_path()) {
 			if (should_open) {
-				se->enable_editor();
+				se->enable_editor(this);
 
 				if (tab_container->get_current_tab() != i) {
 					_go_to_tab(i);
@@ -2329,7 +2329,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	tab_container->add_child(se);
 
 	if (p_grab_focus) {
-		se->enable_editor();
+		se->enable_editor(this);
 	}
 
 	// If we delete a script within the filesystem, the original resource path

@@ -111,7 +111,7 @@ public:
 	virtual Ref<Texture2D> get_theme_icon() override;
 	virtual Ref<Resource> get_edited_resource() const override;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
-	virtual void enable_editor() override;
+	virtual void enable_editor(Control *p_shortcut_context = nullptr) override;
 	virtual void reload_text() override;
 	virtual void apply_code() override;
 	virtual bool is_unsaved() override;

@@ -108,7 +108,7 @@ void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	code_editor->update_line_and_column();
 }
 
-void TextEditor::enable_editor() {
+void TextEditor::enable_editor(Control *p_shortcut_context) {
 	if (editor_enabled) {
 		return;
 	}
@@ -116,6 +116,15 @@ void TextEditor::enable_editor() {
 	editor_enabled = true;
 
 	_load_theme_settings();
+
+	if (p_shortcut_context) {
+		for (int i = 0; i < edit_hb->get_child_count(); ++i) {
+			Control *c = cast_to<Control>(edit_hb->get_child(i));
+			if (c) {
+				c->set_shortcut_context(p_shortcut_context);
+			}
+		}
+	}
 }
 
 void TextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
