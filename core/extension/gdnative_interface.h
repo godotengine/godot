@@ -202,21 +202,21 @@ typedef uint64_t (*GDNativeExtensionClassGetRID)(GDExtensionClassInstancePtr p_i
 
 typedef struct {
 	GDNativeVariantType type;
-	const char *name;
-	const char *class_name;
+	GDNativeStringNamePtr name;
+	GDNativeStringNamePtr class_name;
 	uint32_t hint; // Bitfield of `PropertyHint` (defined in `extension_api.json`)
-	const char *hint_string;
+	GDNativeStringPtr hint_string;
 	uint32_t usage; // Bitfield of `PropertyUsageFlags` (defined in `extension_api.json`)
 } GDNativePropertyInfo;
 
 typedef struct {
-	const char *name;
+	GDNativeStringNamePtr name;
 	GDNativePropertyInfo return_value;
 	uint32_t flags; // Bitfield of `GDNativeExtensionClassMethodFlags`
 	int32_t id;
-	GDNativePropertyInfo *arguments;
+	GDNativePropertyInfo *arguments; // array of `argument_count` size
 	uint32_t argument_count;
-	GDNativeVariantPtr default_arguments;
+	GDNativeVariantPtr *default_arguments; // array of `default_argument_count` size
 	uint32_t default_argument_count;
 } GDNativeMethodInfo;
 
@@ -225,13 +225,13 @@ typedef void (*GDNativeExtensionClassFreePropertyList)(GDExtensionClassInstanceP
 typedef GDNativeBool (*GDNativeExtensionClassPropertyCanRevert)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name);
 typedef GDNativeBool (*GDNativeExtensionClassPropertyGetRevert)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
 typedef void (*GDNativeExtensionClassNotification)(GDExtensionClassInstancePtr p_instance, int32_t p_what);
-typedef void (*GDNativeExtensionClassToString)(GDExtensionClassInstancePtr p_instance, GDNativeStringPtr p_out);
+typedef void (*GDNativeExtensionClassToString)(GDExtensionClassInstancePtr p_instance, GDNativeBool *r_is_valid, GDNativeStringPtr p_out);
 typedef void (*GDNativeExtensionClassReference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassUnreference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
 typedef GDNativeObjectPtr (*GDNativeExtensionClassCreateInstance)(void *p_userdata);
 typedef void (*GDNativeExtensionClassFreeInstance)(void *p_userdata, GDExtensionClassInstancePtr p_instance);
-typedef GDNativeExtensionClassCallVirtual (*GDNativeExtensionClassGetVirtual)(void *p_userdata, const char *p_name);
+typedef GDNativeExtensionClassCallVirtual (*GDNativeExtensionClassGetVirtual)(void *p_userdata, const GDNativeStringNamePtr p_name);
 
 typedef struct {
 	GDNativeBool is_virtual;
@@ -284,24 +284,21 @@ typedef enum {
 typedef void (*GDNativeExtensionClassMethodCall)(void *method_userdata, GDExtensionClassInstancePtr p_instance, const GDNativeVariantPtr *p_args, const GDNativeInt p_argument_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error);
 typedef void (*GDNativeExtensionClassMethodPtrCall)(void *method_userdata, GDExtensionClassInstancePtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
 
-/* passing -1 as argument in the following functions refers to the return type */
-typedef GDNativeVariantType (*GDNativeExtensionClassMethodGetArgumentType)(void *p_method_userdata, int32_t p_argument);
-typedef void (*GDNativeExtensionClassMethodGetArgumentInfo)(void *p_method_userdata, int32_t p_argument, GDNativePropertyInfo *r_info);
-typedef GDNativeExtensionClassMethodArgumentMetadata (*GDNativeExtensionClassMethodGetArgumentMetadata)(void *p_method_userdata, int32_t p_argument);
-
 typedef struct {
-	const char *name;
+	GDNativeStringNamePtr name;
 	void *method_userdata;
 	GDNativeExtensionClassMethodCall call_func;
 	GDNativeExtensionClassMethodPtrCall ptrcall_func;
 	uint32_t method_flags; // Bitfield of `GDNativeExtensionClassMethodFlags`
 	uint32_t argument_count;
 	GDNativeBool has_return_value;
-	GDNativeExtensionClassMethodGetArgumentType get_argument_type_func;
-	GDNativeExtensionClassMethodGetArgumentInfo get_argument_info_func; /* name and hint information for the argument can be omitted in release builds. Class name should always be present if it applies. */
-	GDNativeExtensionClassMethodGetArgumentMetadata get_argument_metadata_func;
+	GDNativePropertyInfo *return_value_info; // Ignored if `has_return_value` is false
+	GDNativeExtensionClassMethodArgumentMetadata return_value_metadata; // Ignored if `has_return_value` is false
+	/* name and hint information for the argument can be omitted in release builds. Class name should always be present if it applies. */
+	GDNativePropertyInfo *aguments_info; // array of `argument_count` size
+	GDNativeExtensionClassMethodArgumentMetadata *aguments_metadata; // array of `argument_count` size
 	uint32_t default_argument_count;
-	GDNativeVariantPtr *default_arguments;
+	GDNativeVariantPtr *default_arguments; // array of `default_argument_count` size
 } GDNativeExtensionClassMethodInfo;
 
 /* SCRIPT INSTANCE EXTENSION */
@@ -312,7 +309,6 @@ typedef GDNativeBool (*GDNativeExtensionScriptInstanceSet)(GDNativeExtensionScri
 typedef GDNativeBool (*GDNativeExtensionScriptInstanceGet)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
 typedef const GDNativePropertyInfo *(*GDNativeExtensionScriptInstanceGetPropertyList)(GDNativeExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
 typedef void (*GDNativeExtensionScriptInstanceFreePropertyList)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativePropertyInfo *p_list);
-typedef GDNativeVariantType (*GDNativeExtensionScriptInstanceGetPropertyType)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeBool *r_is_valid);
 
 typedef GDNativeBool (*GDNativeExtensionScriptInstancePropertyCanRevert)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name);
 typedef GDNativeBool (*GDNativeExtensionScriptInstancePropertyGetRevert)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
@@ -328,7 +324,7 @@ typedef GDNativeBool (*GDNativeExtensionScriptInstanceHasMethod)(GDNativeExtensi
 
 typedef void (*GDNativeExtensionScriptInstanceCall)(GDNativeExtensionScriptInstanceDataPtr p_self, const GDNativeStringNamePtr p_method, const GDNativeVariantPtr *p_args, const GDNativeInt p_argument_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error);
 typedef void (*GDNativeExtensionScriptInstanceNotification)(GDNativeExtensionScriptInstanceDataPtr p_instance, int32_t p_what);
-typedef const char *(*GDNativeExtensionScriptInstanceToString)(GDNativeExtensionScriptInstanceDataPtr p_instance, GDNativeBool *r_is_valid);
+typedef void (*GDNativeExtensionScriptInstanceToString)(GDNativeExtensionScriptInstanceDataPtr p_instance, GDNativeBool *r_is_valid, GDNativeStringPtr r_out);
 
 typedef void (*GDNativeExtensionScriptInstanceRefCountIncremented)(GDNativeExtensionScriptInstanceDataPtr p_instance);
 typedef GDNativeBool (*GDNativeExtensionScriptInstanceRefCountDecremented)(GDNativeExtensionScriptInstanceDataPtr p_instance);
@@ -349,7 +345,6 @@ typedef struct {
 	GDNativeExtensionScriptInstanceGet get_func;
 	GDNativeExtensionScriptInstanceGetPropertyList get_property_list_func;
 	GDNativeExtensionScriptInstanceFreePropertyList free_property_list_func;
-	GDNativeExtensionScriptInstanceGetPropertyType get_property_type_func;
 
 	GDNativeExtensionScriptInstancePropertyCanRevert property_can_revert_func;
 	GDNativeExtensionScriptInstancePropertyGetRevert property_get_revert_func;
@@ -546,14 +541,15 @@ typedef struct {
 
 	/* CLASSDB EXTENSION */
 
-	void (*classdb_register_extension_class)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
-	void (*classdb_register_extension_class_method)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
-	void (*classdb_register_extension_class_integer_constant)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield);
-	void (*classdb_register_extension_class_property)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter);
-	void (*classdb_register_extension_class_property_group)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_group_name, const char *p_prefix);
-	void (*classdb_register_extension_class_property_subgroup)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix);
-	void (*classdb_register_extension_class_signal)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
-	void (*classdb_unregister_extension_class)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
+	// Provided parameters for `classdb_register_extension_*` can be safely freed once the function returns
+	void (*classdb_register_extension_class)(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringNamePtr p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
+	void (*classdb_register_extension_class_method)(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
+	void (*classdb_register_extension_class_integer_constant)(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringNamePtr p_enum_name, const GDNativeStringNamePtr p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield);
+	void (*classdb_register_extension_class_property)(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativePropertyInfo *p_info, const GDNativeStringNamePtr p_setter, const GDNativeStringNamePtr p_getter);
+	void (*classdb_register_extension_class_property_group)(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringPtr p_group_name, const GDNativeStringPtr p_prefix);
+	void (*classdb_register_extension_class_property_subgroup)(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringPtr p_subgroup_name, const GDNativeStringPtr p_prefix);
+	void (*classdb_register_extension_class_signal)(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringNamePtr p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
+	void (*classdb_unregister_extension_class)(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
 
 	void (*get_library_path)(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path);
 

@@ -808,7 +808,8 @@ String Object::to_string() {
 	}
 	if (_extension && _extension->to_string) {
 		String ret;
-		_extension->to_string(_extension_instance, &ret);
+		GDNativeBool is_valid;
+		_extension->to_string(_extension_instance, &is_valid, &ret);
 		return ret;
 	}
 	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
