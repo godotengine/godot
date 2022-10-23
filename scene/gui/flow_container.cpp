@@ -152,6 +152,28 @@ void FlowContainer::_resort() {
 			line_data = lines_data[current_line_idx];
 		}
 
+		// The first child of each line adds the offset caused by the alignment,
+		// but only if the line doesn't contain a child that expands.
+		if (child_idx_in_line == 0 && Math::is_equal_approx(line_data.stretch_ratio_total, 0)) {
+			int alignment_ofs = 0;
+			switch (alignment) {
+				case ALIGNMENT_CENTER:
+					alignment_ofs = line_data.stretch_avail / 2;
+					break;
+				case ALIGNMENT_END:
+					alignment_ofs = line_data.stretch_avail;
+					break;
+				default:
+					break;
+			}
+
+			if (vertical) { /* VERTICAL */
+				ofs.y += alignment_ofs;
+			} else { /* HORIZONTAL */
+				ofs.x += alignment_ofs;
+			}
+		}
+
 		if (vertical) { /* VERTICAL */
 			if (child->get_h_size_flags() & (SIZE_FILL | SIZE_SHRINK_CENTER | SIZE_SHRINK_END)) {
 				child_size.width = line_data.min_line_height;
@@ -282,6 +304,18 @@ int FlowContainer::get_line_count() const {
 	return cached_line_count;
 }
 
+void FlowContainer::set_alignment(AlignmentMode p_alignment) {
+	if (alignment == p_alignment) {
+		return;
+	}
+	alignment = p_alignment;
+	_resort();
+}
+
+FlowContainer::AlignmentMode FlowContainer::get_alignment() const {
+	return alignment;
+}
+
 void FlowContainer::set_vertical(bool p_vertical) {
 	ERR_FAIL_COND_MSG(is_fixed, "Can't change orientation of " + get_class() + ".");
 	vertical = p_vertical;
@@ -300,8 +334,15 @@ FlowContainer::FlowContainer(bool p_vertical) {
 void FlowContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_count"), &FlowContainer::get_line_count);
 
+	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &FlowContainer::set_alignment);
+	ClassDB::bind_method(D_METHOD("get_alignment"), &FlowContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &FlowContainer::set_vertical);
 	ClassDB::bind_method(D_METHOD("is_vertical"), &FlowContainer::is_vertical);
 
+	BIND_ENUM_CONSTANT(ALIGNMENT_BEGIN);
+	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
+	BIND_ENUM_CONSTANT(ALIGNMENT_END);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 }
