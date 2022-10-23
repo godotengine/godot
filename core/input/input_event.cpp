@@ -1499,7 +1499,18 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool p_exact
 }
 
 String InputEventAction::as_text() const {
-	return vformat(RTR("Input Action %s was %s"), action, pressed ? "pressed" : "released");
+	const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(action);
+	if (!events) {
+		return String();
+	}
+
+	for (const Ref<InputEvent> &E : *events) {
+		if (E.is_valid()) {
+			return E->as_text();
+		}
+	}
+
+	return String();
 }
 
 String InputEventAction::to_string() {
