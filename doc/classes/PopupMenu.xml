@@ -533,6 +533,8 @@
 			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when an item of some [param id] is pressed or its accelerator is activated.
+
+				[b]Note:[/b] If [param id] is negative (either explicitly or due to overflow), this will return the correponding index instead.
 			</description>
 		</signal>
 		<signal name="index_pressed">
