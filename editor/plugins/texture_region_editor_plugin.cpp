@@ -86,8 +86,8 @@ void TextureRegionEditor::_region_draw() {
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
 	RS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), mtx);
-	edit_draw->draw_rect(Rect2(Point2(), base_tex->get_size()), Color(0.5, 0.5, 0.5, 0.5), false);
-	edit_draw->draw_texture(base_tex, Point2());
+	edit_draw->draw_rect(Rect2(Point2(), preview_tex->get_size()), Color(0.5, 0.5, 0.5, 0.5), false);
+	edit_draw->draw_texture(preview_tex, Point2());
 	RS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), Transform2D());
 
 	const Color color = get_theme_color(SNAME("mono_color"), SNAME("Editor"));
@@ -905,6 +905,13 @@ void TextureRegionEditor::edit(Object *p_obj) {
 	if (atlas_tex.is_valid()) {
 		atlas_tex->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
+
+	node_sprite_2d = nullptr;
+	node_sprite_3d = nullptr;
+	node_ninepatch = nullptr;
+	obj_styleBox = Ref<StyleBoxTexture>(nullptr);
+	atlas_tex = Ref<AtlasTexture>(nullptr);
+
 	if (p_obj) {
 		node_sprite_2d = Object::cast_to<Sprite2D>(p_obj);
 		node_sprite_3d = Object::cast_to<Sprite3D>(p_obj);
@@ -926,13 +933,8 @@ void TextureRegionEditor::edit(Object *p_obj) {
 			p_obj->connect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 		}
 		_edit_region();
-	} else {
-		node_sprite_2d = nullptr;
-		node_sprite_3d = nullptr;
-		node_ninepatch = nullptr;
-		obj_styleBox = Ref<StyleBoxTexture>(nullptr);
-		atlas_tex = Ref<AtlasTexture>(nullptr);
 	}
+
 	edit_draw->queue_redraw();
 	popup_centered_ratio(0.5);
 	request_center = true;
@@ -946,26 +948,89 @@ void TextureRegionEditor::_texture_changed() {
 }
 
 void TextureRegionEditor::_edit_region() {
+	CanvasItem::TextureFilter filter = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+
 	Ref<Texture2D> texture = nullptr;
 	if (atlas_tex.is_valid()) {
 		texture = atlas_tex->get_atlas();
 	} else if (node_sprite_2d) {
 		texture = node_sprite_2d->get_texture();
+		filter = node_sprite_2d->get_texture_filter_in_tree();
 	} else if (node_sprite_3d) {
 		texture = node_sprite_3d->get_texture();
+
+		StandardMaterial3D::TextureFilter filter_3d = node_sprite_3d->get_texture_filter();
+
+		switch (filter_3d) {
+			case StandardMaterial3D::TEXTURE_FILTER_NEAREST:
+				filter = CanvasItem::TEXTURE_FILTER_NEAREST;
+				break;
+			case StandardMaterial3D::TEXTURE_FILTER_LINEAR:
+				filter = CanvasItem::TEXTURE_FILTER_LINEAR;
+				break;
+			case StandardMaterial3D::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+				filter = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+				break;
+			case StandardMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+				filter = CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+				break;
+			case StandardMaterial3D::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC:
+				filter = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC;
+				break;
+			case StandardMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC:
+				filter = CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC;
+				break;
+			default:
+				// fallback to project default
+				filter = CanvasItem::TEXTURE_FILTER_PARENT_NODE;
+				break;
+		}
 	} else if (node_ninepatch) {
 		texture = node_ninepatch->get_texture();
+		filter = node_ninepatch->get_texture_filter_in_tree();
 	} else if (obj_styleBox.is_valid()) {
 		texture = obj_styleBox->get_texture();
 	}
 
+	// occurs when get_texture_filter_in_tree reaches the scene root
+	if (filter == CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
+		SubViewport *root = EditorNode::get_singleton()->get_scene_root();
+
+		if (root != nullptr) {
+			Viewport::DefaultCanvasItemTextureFilter filter_default = root->get_default_canvas_item_texture_filter();
+
+			// depending on default filter, set filter to match, otherwise fall back on nearest w/ mipmaps
+			switch (filter_default) {
+				case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
+					filter = CanvasItem::TEXTURE_FILTER_NEAREST;
+					break;
+				case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR:
+					filter = CanvasItem::TEXTURE_FILTER_LINEAR;
+					break;
+				case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+					filter = CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+					break;
+				case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+				default:
+					filter = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+					break;
+			}
+		} else {
+			filter = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+		}
+	}
+
 	if (texture.is_null()) {
+		preview_tex->set_diffuse_texture(nullptr);
 		_zoom_reset();
 		hscroll->hide();
 		vscroll->hide();
 		edit_draw->queue_redraw();
 		return;
 	}
+
+	preview_tex->set_texture_filter(filter);
+	preview_tex->set_diffuse_texture(texture);
 
 	if (cache_map.has(texture->get_rid())) {
 		autoslice_cache = cache_map[texture->get_rid()];
@@ -1001,6 +1066,8 @@ TextureRegionEditor::TextureRegionEditor() {
 	obj_styleBox = Ref<StyleBoxTexture>(nullptr);
 	atlas_tex = Ref<AtlasTexture>(nullptr);
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
+	preview_tex = Ref<CanvasTexture>(memnew(CanvasTexture));
 
 	snap_step = Vector2(10, 10);
 	snap_separation = Vector2(0, 0);
