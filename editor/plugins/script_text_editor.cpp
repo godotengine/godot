@@ -151,7 +151,7 @@ void ScriptTextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	code_editor->update_line_and_column();
 }
 
-void ScriptTextEditor::enable_editor() {
+void ScriptTextEditor::enable_editor(Control *p_shortcut_context) {
 	if (editor_enabled) {
 		return;
 	}
@@ -161,6 +161,15 @@ void ScriptTextEditor::enable_editor() {
 	_enable_code_editor();
 
 	_validate_script();
+
+	if (p_shortcut_context) {
+		for (int i = 0; i < edit_hb->get_child_count(); ++i) {
+			Control *c = cast_to<Control>(edit_hb->get_child(i));
+			if (c) {
+				c->set_shortcut_context(p_shortcut_context);
+			}
+		}
+	}
 }
 
 void ScriptTextEditor::_load_theme_settings() {
