@@ -1956,9 +1956,15 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	{
 		String display_driver = DisplayServer::get_create_function_name(display_driver_idx);
 
+		Vector2i *window_position = nullptr;
+		Vector2i position = init_custom_pos;
+		if (init_use_custom_pos) {
+			window_position = &position;
+		}
+
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
-		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
+		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, err);
 		if (err != OK || display_server == nullptr) {
 			// We can't use this display server, try other ones as fallback.
 			// Skip headless (always last registered) because that's not what users
@@ -1967,7 +1973,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
 				}
-				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
+				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, err);
 				if (err == OK && display_server != nullptr) {
 					break;
 				}
