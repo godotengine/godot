@@ -235,6 +235,7 @@ void DisplayServerIOS::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, 
 		ev->set_index(p_idx);
 		ev->set_pressed(p_pressed);
 		ev->set_position(Vector2(p_x, p_y));
+		ev->set_double_tap(p_double_click);
 		perform_event(ev);
 	}
 }
