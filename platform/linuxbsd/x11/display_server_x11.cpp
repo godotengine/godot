@@ -1309,6 +1309,11 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 		case WINDOW_VIEW: {
 			return 0; // Not supported.
 		}
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			return (int64_t)gl_manager->get_glx_context(p_window);
+		}
+#endif
 		default: {
 			return 0;
 		}

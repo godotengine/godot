@@ -1642,6 +1642,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		ERR_FAIL_COND(rb.is_null());
 	}
 
+	GLES3::RenderTarget *rt = texture_storage->get_render_target(rb->render_target);
+	ERR_FAIL_COND(!rt);
+
 	// Assign render data
 	// Use the format from rendererRD
 	RenderDataGLES3 render_data;
@@ -1729,8 +1732,20 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	scene_state.ubo.emissive_exposure_normalization = -1.0; // Use default exposure normalization.
 
+	bool flip_y = !render_data.reflection_probe.is_valid();
+
+	if (rt->overridden.color.is_valid()) {
+		// If we've overridden the render target's color texture, then don't render upside down.
+		// We're probably rendering directly to an XR device.
+		flip_y = false;
+	}
+	if (!flip_y) {
+		// If we're rendering right-side up, then we need to change the winding order.
+		glFrontFace(GL_CW);
+	}
+
 	_setup_lights(&render_data, false, render_data.directional_light_count, render_data.omni_light_count, render_data.spot_light_count);
-	_setup_environment(&render_data, render_data.reflection_probe.is_valid(), screen_size, !render_data.reflection_probe.is_valid(), clear_color, false);
+	_setup_environment(&render_data, render_data.reflection_probe.is_valid(), screen_size, flip_y, clear_color, false);
 
 	_fill_render_list(RENDER_LIST_OPAQUE, &render_data, PASS_MODE_COLOR);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
@@ -1811,7 +1826,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, rb->framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 	glViewport(0, 0, rb->width, rb->height);
 
 	// Do depth prepass if it's explicitly enabled
@@ -1916,6 +1931,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	RenderListParameters render_list_params_alpha(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, spec_constant_base_flags, use_wireframe);
 
 	_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(&render_list_params_alpha, &render_data, 0, render_list[RENDER_LIST_ALPHA].elements.size(), true);
+
+	if (!flip_y) {
+		// Restore the default winding order.
+		glFrontFace(GL_CCW);
+	}
 
 	if (rb.is_valid()) {
 		_render_buffers_debug_draw(rb, p_shadow_atlas, p_occluder_debug_tex);
