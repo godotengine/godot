@@ -74,6 +74,15 @@ protected:
 			uint32_t bmp_colors_used = 0;
 			uint32_t bmp_important_colors = 0;
 		} bmp_info_header;
+
+		struct bmp_bitfield_s {
+			uint16_t red_mask = 0x7C00;
+			uint16_t green_mask = 0x03E0;
+			uint16_t blue_mask = 0x001F;
+			uint16_t red_mask_width = 5;
+			uint16_t green_mask_width = 5;
+			uint16_t blue_mask_width = 5;
+		} bmp_bitfield;
 	};
 
 	static Error convert_to_image(Ref<Image> p_image,

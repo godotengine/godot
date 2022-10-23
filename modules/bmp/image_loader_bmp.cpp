@@ -32,6 +32,15 @@
 
 #include "core/io/file_access_memory.h"
 
+static uint8_t get_mask_width(uint16_t mask) {
+	// Simple pop_count
+	int c = 0;
+	for (; mask != 0; mask &= mask - 1) {
+		c++;
+	}
+	return c;
+}
+
 Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint8_t *p_buffer,
 		const uint8_t *p_color_buffer,
@@ -48,6 +57,13 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		size_t width = (size_t)p_header.bmp_info_header.bmp_width;
 		size_t height = (size_t)p_header.bmp_info_header.bmp_height;
 		size_t bits_per_pixel = (size_t)p_header.bmp_info_header.bmp_bit_count;
+
+		uint16_t blue_mask = p_header.bmp_bitfield.blue_mask;
+		uint16_t green_mask = p_header.bmp_bitfield.green_mask;
+		uint16_t red_mask = p_header.bmp_bitfield.red_mask;
+		uint8_t blue_mask_width = p_header.bmp_bitfield.blue_mask_width;
+		uint8_t green_mask_width = p_header.bmp_bitfield.green_mask_width;
+		uint8_t red_mask_width = p_header.bmp_bitfield.red_mask_width;
 
 		// Check whether we can load it
 
@@ -71,9 +87,6 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 					vformat("4-bpp BMP images must have a width that is a multiple of 2, but the imported BMP is %d pixels wide.", int(width)));
 			ERR_FAIL_COND_V_MSG(height % 2 != 0, ERR_UNAVAILABLE,
 					vformat("4-bpp BMP images must have a height that is a multiple of 2, but the imported BMP is %d pixels tall.", int(height)));
-
-		} else if (bits_per_pixel == 16) {
-			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "16-bpp BMP images are not supported.");
 		}
 
 		// Image data (might be indexed)
@@ -96,7 +109,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 		// The actual data traversal is determined by
 		// the data width in case of 8/4/2/1 bit images
-		const uint32_t w = bits_per_pixel >= 24 ? width : width_bytes;
+		const uint32_t w = bits_per_pixel >= 16 ? width : width_bytes;
 		const uint8_t *line = p_buffer + (line_width * (height - 1));
 		const uint8_t *end_buffer = p_buffer + p_header.bmp_file_header.bmp_file_size - p_header.bmp_file_header.bmp_file_offset;
 
@@ -148,6 +161,22 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 						index += 1;
 						line_ptr += 1;
+					} break;
+					case 16: {
+						uint16_t pixel = (line_ptr[1] << 8) + line_ptr[0];
+
+						uint8_t red_value = (pixel & red_mask) >> (green_mask_width + blue_mask_width);
+						uint8_t green_value = (pixel & green_mask) >> blue_mask_width;
+						uint8_t blue_value = pixel & blue_mask;
+
+						// Expand to 8-bit values.
+						write_buffer[index + 2] = blue_value << (8 - blue_mask_width);
+						write_buffer[index + 1] = green_value << (8 - green_mask_width);
+						write_buffer[index + 0] = red_value << (8 - red_mask_width);
+						write_buffer[index + 3] = 0xFF;
+
+						index += 4;
+						line_ptr += 2;
 					} break;
 					case 24: {
 						write_buffer[index + 2] = line_ptr[0];
@@ -252,7 +281,25 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 			bmp_header.bmp_info_header.bmp_colors_used = f->get_32();
 			bmp_header.bmp_info_header.bmp_important_colors = f->get_32();
 
+			// Don't rely on sizeof(bmp_file_header) as structure padding
+			// adds 2 bytes offset leading to misaligned color table reading
+			uint32_t ct_offset = BITMAP_FILE_HEADER_SIZE + bmp_header.bmp_info_header.bmp_header_size;
+			f->seek(ct_offset);
+
+			uint32_t color_table_size = 0;
+			Vector<uint8_t> bmp_color_table;
+			const uint8_t *bmp_color_table_r = nullptr;
+
 			switch (bmp_header.bmp_info_header.bmp_compression) {
+				case BI_BITFIELDS: {
+					bmp_header.bmp_bitfield.red_mask = f->get_32();
+					bmp_header.bmp_bitfield.green_mask = f->get_32();
+					bmp_header.bmp_bitfield.blue_mask = f->get_32();
+
+					bmp_header.bmp_bitfield.red_mask_width = get_mask_width(bmp_header.bmp_bitfield.red_mask);
+					bmp_header.bmp_bitfield.green_mask_width = get_mask_width(bmp_header.bmp_bitfield.green_mask);
+					bmp_header.bmp_bitfield.blue_mask_width = get_mask_width(bmp_header.bmp_bitfield.blue_mask);
+				} break;
 				case BI_RLE8:
 				case BI_RLE4:
 				case BI_CMYKRLE8:
@@ -261,28 +308,23 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 					ERR_FAIL_V_MSG(ERR_UNAVAILABLE,
 							vformat("Compressed BMP files are not supported: %s", f->get_path()));
 				} break;
+				default: {
+					// bmp_colors_used may report 0 despite having a color table
+					// for 4 and 1 bit images, so don't rely on this information
+					if (bmp_header.bmp_info_header.bmp_bit_count <= 8) {
+						// Support 256 colors max
+						color_table_size = 1 << bmp_header.bmp_info_header.bmp_bit_count;
+						ERR_FAIL_COND_V_MSG(color_table_size == 0, ERR_BUG,
+								vformat("Couldn't parse the BMP color table: %s", f->get_path()));
+					}
+
+					// Color table is usually 4 bytes per color -> [B][G][R][0]
+					bmp_color_table.resize(color_table_size * 4);
+					uint8_t *bmp_color_table_w = bmp_color_table.ptrw();
+					f->get_buffer(bmp_color_table_w, color_table_size * 4);
+					bmp_color_table_r = bmp_color_table.ptr();
+				}
 			}
-			// Don't rely on sizeof(bmp_file_header) as structure padding
-			// adds 2 bytes offset leading to misaligned color table reading
-			uint32_t ct_offset = BITMAP_FILE_HEADER_SIZE + bmp_header.bmp_info_header.bmp_header_size;
-			f->seek(ct_offset);
-
-			uint32_t color_table_size = 0;
-
-			// bmp_colors_used may report 0 despite having a color table
-			// for 4 and 1 bit images, so don't rely on this information
-			if (bmp_header.bmp_info_header.bmp_bit_count <= 8) {
-				// Support 256 colors max
-				color_table_size = 1 << bmp_header.bmp_info_header.bmp_bit_count;
-				ERR_FAIL_COND_V_MSG(color_table_size == 0, ERR_BUG,
-						vformat("Couldn't parse the BMP color table: %s", f->get_path()));
-			}
-
-			Vector<uint8_t> bmp_color_table;
-			// Color table is usually 4 bytes per color -> [B][G][R][0]
-			bmp_color_table.resize(color_table_size * 4);
-			uint8_t *bmp_color_table_w = bmp_color_table.ptrw();
-			f->get_buffer(bmp_color_table_w, color_table_size * 4);
 
 			f->seek(bmp_header.bmp_file_header.bmp_file_offset);
 
@@ -295,7 +337,6 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 				f->get_buffer(bmp_buffer_w, bmp_buffer_size);
 
 				const uint8_t *bmp_buffer_r = bmp_buffer.ptr();
-				const uint8_t *bmp_color_table_r = bmp_color_table.ptr();
 				err = convert_to_image(p_image, bmp_buffer_r,
 						bmp_color_table_r, color_table_size, bmp_header);
 			}
