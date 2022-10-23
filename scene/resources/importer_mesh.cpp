@@ -426,6 +426,9 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 
 		const float max_mesh_error = FLT_MAX; // We don't want to limit by error, just by index target
 		float scale = SurfaceTool::simplify_scale_func((const float *)merged_vertices_ptr, merged_vertex_count, sizeof(Vector3));
+		if (!Math::is_finite(scale)) {
+			continue;
+		}
 		float mesh_error = 0.0f;
 
 		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
