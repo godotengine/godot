@@ -22,10 +22,10 @@ Godot is completely free and open source under the very permissive [MIT license]
 No strings attached, no royalties, nothing. The users' games are theirs, down
 to the last line of engine code. Godot's development is fully independent and
 community-driven, empowering users to help shape their engine to match their
-expectations. It is supported by the [Software Freedom Conservancy](https://sfconservancy.org/)
+expectations. It is supported by the [Software Freedom Conservancy](https://sfconservancy.org/), 
 not-for-profit.
 
-Before being open sourced in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
+Before being open-sourced in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
 Godot had been developed by [Juan Linietsky](https://github.com/reduz) and
 [Ariel Manzur](https://github.com/punto-) (both still maintaining the project) for several
 years as an in-house engine, used to publish several work-for-hire titles.
@@ -62,7 +62,7 @@ It is maintained by the Godot community in its own [GitHub repository](https://g
 The [class reference](https://docs.godotengine.org/en/latest/classes/)
 is also accessible from the Godot editor.
 
-We also maintain official demos in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
+We also maintain official demos in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects), 
 as well as a list of [awesome Godot community resources](https://github.com/godotengine/awesome-godot).
 
 There are also a number of other
