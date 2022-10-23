@@ -76,19 +76,19 @@ const Features = { // eslint-disable-line no-unused-vars
 	getMissingFeatures: function () {
 		const missing = [];
 		if (!Features.isWebGLAvailable(2)) {
-			missing.push('WebGL2');
+			missing.push('WebGL2 - Check web browser configuration and hardware support');
 		}
 		if (!Features.isFetchAvailable()) {
-			missing.push('Fetch');
+			missing.push('Fetch - Check web browser version');
 		}
 		if (!Features.isSecureContext()) {
-			missing.push('Secure Context');
+			missing.push('Secure Context - Check web server configuration (use HTTPS)');
 		}
 		if (!Features.isCrossOriginIsolated()) {
-			missing.push('Cross Origin Isolation');
+			missing.push('Cross Origin Isolation - Check web server configuration (send correct headers)');
 		}
 		if (!Features.isSharedArrayBufferAvailable()) {
-			missing.push('SharedArrayBuffer');
+			missing.push('SharedArrayBuffer - Check web server configuration (send correct headers)');
 		}
 		// Audio is normally optional since we have a dummy fallback.
 		return missing;
