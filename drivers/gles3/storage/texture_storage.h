@@ -126,6 +126,7 @@ struct Texture {
 	RID self;
 
 	bool is_proxy = false;
+	bool is_external = false;
 	bool is_render_target = false;
 
 	RID proxy_to = RID();
@@ -187,6 +188,7 @@ struct Texture {
 	void copy_from(const Texture &o) {
 		proxy_to = o.proxy_to;
 		is_proxy = o.is_proxy;
+		is_external = o.is_external;
 		width = o.width;
 		height = o.height;
 		alloc_width = o.alloc_width;
@@ -310,6 +312,7 @@ struct RenderTarget {
 	RID self;
 	GLuint fbo = 0;
 	GLuint color = 0;
+	GLuint depth = 0;
 	GLuint backbuffer_fbo = 0;
 	GLuint backbuffer = 0;
 
@@ -332,6 +335,20 @@ struct RenderTarget {
 
 	bool used_in_frame = false;
 	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
+
+	struct RTOverridden {
+		bool is_overridden = false;
+		RID color;
+		RID depth;
+		RID velocity;
+
+		struct FBOCacheEntry {
+			GLuint fbo;
+			Size2i size;
+			Vector<GLuint> allocated_textures;
+		};
+		RBMap<uint32_t, FBOCacheEntry> fbo_cache;
+	} overridden;
 
 	RID texture;
 
@@ -395,6 +412,7 @@ private:
 	mutable RID_Owner<RenderTarget> render_target_owner;
 
 	void _clear_render_target(RenderTarget *rt);
+	void _clear_render_target_overridden_fbo_cache(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
 	void _create_render_target_backbuffer(RenderTarget *rt);
 	void _render_target_allocate_sdf(RenderTarget *rt);
@@ -453,6 +471,8 @@ public:
 	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override;
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
+
+	RID texture_create_external(Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY);
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override{};
@@ -593,10 +613,10 @@ public:
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override {}
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const override { return RID(); }
 
-	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) override {}
-	virtual RID render_target_get_override_color(RID p_render_target) const override { return RID(); }
-	virtual RID render_target_get_override_depth(RID p_render_target) const override { return RID(); }
-	virtual RID render_target_get_override_velocity(RID p_render_target) const override { return RID(); }
+	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) override;
+	virtual RID render_target_get_override_color(RID p_render_target) const override;
+	virtual RID render_target_get_override_depth(RID p_render_target) const override;
+	virtual RID render_target_get_override_velocity(RID p_render_target) const override;
 
 	virtual RID render_target_get_texture(RID p_render_target) override;
 
