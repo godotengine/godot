@@ -1246,8 +1246,7 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	Ref<Resource> res;
 	if (textfile_extensions.has(p_resource.get_extension())) {
 		res = ScriptEditor::get_singleton()->open_file(p_resource);
-	}
-	else if (ResourceLoader::exists(p_resource, "")) {
+	} else if (ResourceLoader::exists(p_resource, "")) {
 		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	}
 	ERR_FAIL_COND_V(!res.is_valid(), ERR_CANT_OPEN);
