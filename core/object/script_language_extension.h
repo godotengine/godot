@@ -681,16 +681,21 @@ public:
 		}
 	}
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override {
-		if (native_info->get_property_type_func) {
-			GDNativeBool is_valid = 0;
-			GDNativeVariantType type = native_info->get_property_type_func(instance, (const GDNativeStringNamePtr)&p_name, &is_valid);
-			if (r_is_valid) {
-				*r_is_valid = is_valid != 0;
+		Variant::Type type = Variant::Type::NIL;
+		if (native_info->get_property_list_func) {
+			uint32_t pcount;
+			const GDNativePropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
+			for (uint32_t i = 0; i < pcount; i++) {
+				if (p_name == *reinterpret_cast<StringName *>(pinfo->name)) {
+					type = Variant::Type(pinfo->type);
+					break;
+				}
 			}
-
-			return Variant::Type(type);
+			if (native_info->free_property_list_func) {
+				native_info->free_property_list_func(instance, pinfo);
+			}
 		}
-		return Variant::NIL;
+		return type;
 	}
 
 	virtual bool property_can_revert(const StringName &p_name) const override {
@@ -727,19 +732,7 @@ public:
 			uint32_t mcount;
 			const GDNativeMethodInfo *minfo = native_info->get_method_list_func(instance, &mcount);
 			for (uint32_t i = 0; i < mcount; i++) {
-				MethodInfo m;
-				m.name = minfo[i].name;
-				m.flags = minfo[i].flags;
-				m.id = minfo[i].id;
-				m.return_val = PropertyInfo(minfo[i].return_value);
-				for (uint32_t j = 0; j < minfo[i].argument_count; j++) {
-					m.arguments.push_back(PropertyInfo(minfo[i].arguments[j]));
-				}
-				const Variant *def_values = (const Variant *)minfo[i].default_arguments;
-				for (uint32_t j = 0; j < minfo[i].default_argument_count; j++) {
-					m.default_arguments.push_back(def_values[j]);
-				}
-				p_list->push_back(m);
+				p_list->push_back(MethodInfo(minfo[i]));
 			}
 			if (native_info->free_method_list_func) {
 				native_info->free_method_list_func(instance, minfo);
@@ -773,7 +766,8 @@ public:
 	virtual String to_string(bool *r_valid) override {
 		if (native_info->to_string_func) {
 			GDNativeBool valid;
-			String ret = native_info->to_string_func(instance, &valid);
+			String ret;
+			native_info->to_string_func(instance, &valid, reinterpret_cast<GDNativeStringPtr>(&ret));
 			if (r_valid) {
 				*r_valid = valid != 0;
 			}
