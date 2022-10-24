@@ -123,6 +123,9 @@ void SceneTree::tree_changed() {
 
 void SceneTree::node_added(Node *p_node) {
 	emit_signal(node_added_name, p_node);
+	if (call_lock > 0) {
+		call_skip.erase(p_node->get_instance_id());
+	}
 }
 
 void SceneTree::node_removed(Node *p_node) {
@@ -131,7 +134,7 @@ void SceneTree::node_removed(Node *p_node) {
 	}
 	emit_signal(node_removed_name, p_node);
 	if (call_lock > 0) {
-		call_skip.insert(p_node);
+		call_skip.insert(p_node->get_instance_id());
 	}
 }
 
@@ -261,7 +264,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_lock && call_skip.has(gr_nodes[i]->get_instance_id())) {
 				continue;
 			}
 
@@ -275,7 +278,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 
 	} else {
 		for (int i = 0; i < gr_node_count; i++) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_lock && call_skip.has(gr_nodes[i]->get_instance_id())) {
 				continue;
 			}
 
@@ -314,7 +317,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_lock && call_skip.has(gr_nodes[i]->get_instance_id())) {
 				continue;
 			}
 
@@ -327,7 +330,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 
 	} else {
 		for (int i = 0; i < gr_node_count; i++) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_lock && call_skip.has(gr_nodes[i]->get_instance_id())) {
 				continue;
 			}
 
@@ -365,7 +368,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_lock && call_skip.has(gr_nodes[i]->get_instance_id())) {
 				continue;
 			}
 
@@ -378,7 +381,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 
 	} else {
 		for (int i = 0; i < gr_node_count; i++) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_lock && call_skip.has(gr_nodes[i]->get_instance_id())) {
 				continue;
 			}
 
@@ -854,7 +857,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 
 	for (int i = 0; i < gr_node_count; i++) {
 		Node *n = gr_nodes[i];
-		if (call_lock && call_skip.has(n)) {
+		if (call_lock && call_skip.has(n->get_instance_id())) {
 			continue;
 		}
 
@@ -904,7 +907,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 		}
 
 		Node *n = gr_nodes[i];
-		if (call_lock && call_skip.has(n)) {
+		if (call_lock && call_skip.has(n->get_instance_id())) {
 			continue;
 		}
 
