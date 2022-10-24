@@ -1403,10 +1403,6 @@ Control *Viewport::gui_find_control(const Point2 &p_global) {
 }
 
 Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform) {
-	if (Object::cast_to<Viewport>(p_node)) {
-		return nullptr;
-	}
-
 	if (!p_node->is_visible()) {
 		return nullptr; // Canvas item hidden, discard.
 	}

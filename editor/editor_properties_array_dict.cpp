@@ -510,7 +510,7 @@ void EditorPropertyArray::_notification(int p_what) {
 			change_type->add_separator();
 			change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
-			if (Object::cast_to<Button>(button_add_item)) {
+			if (button_add_item) {
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;
@@ -1205,7 +1205,7 @@ void EditorPropertyDictionary::_notification(int p_what) {
 			change_type->add_separator();
 			change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
-			if (Object::cast_to<Button>(button_add_item)) {
+			if (button_add_item) {
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;
@@ -1431,7 +1431,7 @@ void EditorPropertyLocalizableString::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			if (Object::cast_to<Button>(button_add_item)) {
+			if (button_add_item) {
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;
