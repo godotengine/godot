@@ -184,23 +184,23 @@ void ScriptServer::unregister_language(const ScriptLanguage *p_language) {
 }
 
 void ScriptServer::init_languages() {
-	{ //load global classes
-		global_classes_clear();
-		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
-			Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");
-
-			for (int i = 0; i < script_classes.size(); i++) {
-				Dictionary c = script_classes[i];
-				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
-					continue;
-				}
-				add_global_class(c["class"], c["base"], c["language"], c["path"]);
-			}
-		}
-	}
+	global_classes_clear();
 
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->init();
+	}
+
+	if (!ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
+		return;
+	}
+
+	Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary c = script_classes[i];
+		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+			continue;
+		}
+		add_global_class(c["class"], c["base"], c["language"], c["path"]);
 	}
 }
 
