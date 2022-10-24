@@ -4534,7 +4534,7 @@ void EditorNode::_dock_floating_close_request(Control *p_control) {
 	dock_slot[window_slot]->move_child(p_control, MIN((int)window->get_meta("dock_index"), dock_slot[window_slot]->get_tab_count()));
 	dock_slot[window_slot]->set_current_tab(window->get_meta("dock_index"));
 
-	window->queue_delete();
+	window->queue_free();
 
 	_update_dock_containers();
 

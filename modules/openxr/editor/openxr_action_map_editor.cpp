@@ -128,7 +128,7 @@ void OpenXRActionMapEditor::_update_interaction_profiles() {
 		interaction_profiles.remove_at(0);
 
 		tabs->remove_child(interaction_profile);
-		interaction_profile->queue_delete();
+		interaction_profile->queue_free();
 	}
 
 	// in with the new...
@@ -205,7 +205,7 @@ void OpenXRActionMapEditor::_on_remove_action_set(Object *p_action_set_editor) {
 
 	action_map->remove_action_set(action_set);
 	actionsets_vb->remove_child(action_set_editor);
-	action_set_editor->queue_delete();
+	action_set_editor->queue_free();
 }
 
 void OpenXRActionMapEditor::_on_action_removed() {
@@ -290,7 +290,7 @@ void OpenXRActionMapEditor::_on_tab_button_pressed(int p_tab) {
 
 	action_map->remove_interaction_profile(interaction_profile);
 	tabs->remove_child(profile_editor);
-	profile_editor->queue_delete();
+	profile_editor->queue_free();
 }
 
 void OpenXRActionMapEditor::open_action_map(String p_path) {

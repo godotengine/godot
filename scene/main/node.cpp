@@ -2569,7 +2569,7 @@ void Node::print_orphan_nodes() {
 #endif
 }
 
-void Node::queue_delete() {
+void Node::queue_free() {
 	if (is_inside_tree()) {
 		get_tree()->queue_delete(this);
 	} else {
@@ -2811,7 +2811,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
 
-	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_delete);
+	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_free);
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 

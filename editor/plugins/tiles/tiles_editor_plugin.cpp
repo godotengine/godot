@@ -131,7 +131,7 @@ void TilesEditorPlugin::_thread() {
 				Callable::CallError error;
 				item.callback.callp(args_ptr, 2, r, error);
 
-				viewport->queue_delete();
+				viewport->queue_free();
 			}
 		}
 	}

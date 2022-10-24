@@ -72,7 +72,7 @@ void SceneReplicationInterface::_free_remotes(const PeerInfo &p_info) {
 	for (const KeyValue<uint32_t, ObjectID> &E : p_info.recv_nodes) {
 		Node *node = tracked_nodes.has(E.value) ? get_id_as<Node>(E.value) : nullptr;
 		ERR_CONTINUE(!node);
-		node->queue_delete();
+		node->queue_free();
 	}
 }
 
@@ -582,7 +582,7 @@ Error SceneReplicationInterface::on_despawn_receive(int p_from, const uint8_t *p
 	if (node->get_parent() != nullptr) {
 		node->get_parent()->remove_child(node);
 	}
-	node->queue_delete();
+	node->queue_free();
 	spawner->emit_signal(SNAME("despawned"), node);
 
 	return OK;

@@ -3264,7 +3264,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 	EditorSettings::get_singleton()->save();
 	if (node_shortcuts_toggle->is_pressed()) {
 		for (int i = 0; i < favorite_node_shortcuts->get_child_count(); i++) {
-			favorite_node_shortcuts->get_child(i)->queue_delete();
+			favorite_node_shortcuts->get_child(i)->queue_free();
 		}
 
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites.Node"), FileAccess::READ);

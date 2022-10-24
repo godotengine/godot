@@ -293,7 +293,7 @@ void EditorPropertyArray::update_property() {
 					continue; // Don't remove the property that the user is moving.
 				}
 
-				child->queue_delete(); // Button still needed after pressed is called.
+				child->queue_free(); // Button still needed after pressed is called.
 				property_vbox->remove_child(child);
 			}
 		}
@@ -861,7 +861,7 @@ void EditorPropertyDictionary::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 		}
 
@@ -1349,7 +1349,7 @@ void EditorPropertyLocalizableString::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 		}
 

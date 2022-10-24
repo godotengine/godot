@@ -527,7 +527,7 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 
 		if (info.node) {
-			info.node->queue_delete();
+			info.node->queue_free();
 			info.node = nullptr;
 		}
 

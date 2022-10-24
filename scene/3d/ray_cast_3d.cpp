@@ -516,7 +516,7 @@ void RayCast3D::_clear_debug_shape() {
 
 	MeshInstance3D *mi = static_cast<MeshInstance3D *>(debug_shape);
 	if (mi->is_inside_tree()) {
-		mi->queue_delete();
+		mi->queue_free();
 	} else {
 		memdelete(mi);
 	}
