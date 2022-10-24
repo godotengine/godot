@@ -42,6 +42,7 @@
 
 #include "dynwrappers/wayland-client-core.h"
 #include "dynwrappers/wayland-cursor.h"
+#include "dynwrappers/xkbcommon.h"
 
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"

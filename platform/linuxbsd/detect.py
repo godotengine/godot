@@ -196,7 +196,7 @@ def configure(env: "Environment"):
     if env["wayland"]:
         env.ParseConfig("pkg-config wayland-client --cflags")  # Only cflags, we dlopen the library.
         env.ParseConfig("pkg-config wayland-cursor --cflags")  # Only cflags, we dlopen the library.
-        env.ParseConfig("pkg-config xkbcommon --cflags --libs")
+        env.ParseConfig("pkg-config xkbcommon --cflags")  # Only cflags, we dlopen the library.
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])

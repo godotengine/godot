@@ -2684,8 +2684,13 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		return;
 	}
 
-	if(initialize_wayland_cursor(dylibloader_verbose) != 0) {
+	if (initialize_wayland_cursor(dylibloader_verbose) != 0) {
 		WARN_PRINT("Can't load the wayland cursor library.");
+		return;
+	}
+
+	if (initialize_xkbcommon(dylibloader_verbose) != 0) {
+		WARN_PRINT("Can't load the xkbcommon library.");
 		return;
 	}
 
