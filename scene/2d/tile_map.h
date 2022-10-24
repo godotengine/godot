@@ -266,9 +266,9 @@ private:
 	void _scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
 	// Terrains.
-	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, RBSet<TerrainConstraint> p_constraints);
+	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, RBSet<TerrainConstraint> p_constraints, TileSet::TerrainsPattern p_current_pattern);
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(Vector2i p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
-	RBSet<TerrainConstraint> _get_terrain_constraints_from_cells_list(int p_layer, const RBSet<Vector2i> &p_on_map, int p_terrain_set, bool p_ignore_empty_terrains) const;
+	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(int p_layer, const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
 	// Set and get tiles from data arrays.
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
@@ -352,7 +352,7 @@ public:
 	void set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPattern> p_pattern);
 
 	// Terrains.
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> p_constraints); // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> p_constraints); // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_pattern(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains = true); // Not exposed.
