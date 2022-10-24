@@ -302,14 +302,6 @@ void SoftBody3D::_notification(int p_what) {
 				_prepare_physics_server();
 			}
 		} break;
-
-#ifdef TOOLS_ENABLED
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (Engine::get_singleton()->is_editor_hint()) {
-				update_configuration_warnings();
-			}
-		} break;
-#endif
 	}
 }
 
@@ -389,11 +381,6 @@ PackedStringArray SoftBody3D::get_configuration_warnings() const {
 
 	if (mesh.is_null()) {
 		warnings.push_back(RTR("This body will be ignored until you set a mesh."));
-	}
-
-	Transform3D t = get_transform();
-	if ((ABS(t.basis.get_column(0).length() - 1.0) > 0.05 || ABS(t.basis.get_column(1).length() - 1.0) > 0.05 || ABS(t.basis.get_column(2).length() - 1.0) > 0.05)) {
-		warnings.push_back(RTR("Size changes to SoftBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;

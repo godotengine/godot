@@ -4,7 +4,8 @@
 		Base class for all objects affected by physics in 3D space.
 	</brief_description>
 	<description>
-		PhysicsBody3D is an abstract base class for implementing a physics body. All *Body types inherit from it.
+		PhysicsBody3D is an abstract base class for implementing a physics body. All *Body3D types inherit from it.
+		[b]Warning:[/b] With a non-uniform scale this node will probably not function as expected. Please make sure to keep its scale uniform (i.e. the same on all axes), and change the size(s) of its collision shape(s) instead.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>

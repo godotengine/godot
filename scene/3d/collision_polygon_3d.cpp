@@ -104,6 +104,11 @@ void CollisionPolygon3D::_notification(int p_what) {
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				update_configuration_warnings();
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
@@ -171,11 +176,16 @@ PackedStringArray CollisionPolygon3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		warnings.push_back(RTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
+		warnings.push_back(RTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
 
 	if (polygon.is_empty()) {
 		warnings.push_back(RTR("An empty CollisionPolygon3D has no effect on collision."));
+	}
+
+	Vector3 scale = get_transform().get_basis().get_scale();
+	if (!(Math::is_zero_approx(scale.x - scale.y) && Math::is_zero_approx(scale.y - scale.z))) {
+		warnings.push_back(RTR("A non-uniformly scaled CollisionPolygon3D node will probably not function as expected.\nPlease make its scale uniform (i.e. the same on all axes), and change its polygon's vertices instead."));
 	}
 
 	return warnings;

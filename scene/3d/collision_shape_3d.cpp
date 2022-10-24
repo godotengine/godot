@@ -98,6 +98,11 @@ void CollisionShape3D::_notification(int p_what) {
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				update_configuration_warnings();
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
@@ -129,6 +134,11 @@ PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 			Object::cast_to<RigidBody3D>(get_parent()) &&
 			Object::cast_to<ConcavePolygonShape3D>(*shape)) {
 		warnings.push_back(RTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
+	}
+
+	Vector3 scale = get_transform().get_basis().get_scale();
+	if (!(Math::is_zero_approx(scale.x - scale.y) && Math::is_zero_approx(scale.y - scale.z))) {
+		warnings.push_back(RTR("A non-uniformly scaled CollisionShape3D node will probably not function as expected.\nPlease make its scale uniform (i.e. the same on all axes), and change the size of its shape resource instead."));
 	}
 
 	return warnings;
