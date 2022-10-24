@@ -69,7 +69,11 @@ namespace Godot
         /// </returns>
         public static real_t Acos(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Acos(s);
+#else
+            return (real_t)MathF.Acos(s);
+#endif
         }
 
         /// <summary>
@@ -82,7 +86,11 @@ namespace Godot
         /// </returns>
         public static real_t Asin(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Asin(s);
+#else
+            return (real_t)MathF.Asin(s);
+#endif
         }
 
         /// <summary>
@@ -98,7 +106,11 @@ namespace Godot
         /// </returns>
         public static real_t Atan(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Atan(s);
+#else
+            return (real_t)MathF.Atan(s);
+#endif
         }
 
         /// <summary>
@@ -115,7 +127,11 @@ namespace Godot
         /// </returns>
         public static real_t Atan2(real_t y, real_t x)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Atan2(y, x);
+#else
+            return (real_t)MathF.Atan2(y, x);
+#endif
         }
 
         /// <summary>
@@ -125,7 +141,11 @@ namespace Godot
         /// <returns>The smallest whole number that is not less than <paramref name="s"/>.</returns>
         public static real_t Ceil(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Ceiling(s);
+#else
+            return (real_t)MathF.Ceiling(s);
+#endif
         }
 
         /// <summary>
@@ -161,7 +181,11 @@ namespace Godot
         /// <returns>The cosine of that angle.</returns>
         public static real_t Cos(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Cos(s);
+#else
+            return (real_t)MathF.Cos(s);
+#endif
         }
 
         /// <summary>
@@ -171,7 +195,11 @@ namespace Godot
         /// <returns>The hyperbolic cosine of that angle.</returns>
         public static real_t Cosh(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Cosh(s);
+#else
+            return (real_t)MathF.Cosh(s);
+#endif
         }
 
         /// <summary>
@@ -364,7 +392,11 @@ namespace Godot
         /// <returns><c>e</c> raised to the power of <paramref name="s"/>.</returns>
         public static real_t Exp(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Exp(s);
+#else
+            return (real_t)MathF.Exp(s);
+#endif
         }
 
         /// <summary>
@@ -374,7 +406,11 @@ namespace Godot
         /// <returns>The largest whole number that is not more than <paramref name="s"/>.</returns>
         public static real_t Floor(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Floor(s);
+#else
+            return (real_t)MathF.Floor(s);
+#endif
         }
 
         /// <summary>
@@ -490,7 +526,11 @@ namespace Godot
         /// <returns>The natural log of <paramref name="s"/>.</returns>
         public static real_t Log(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Log(s);
+#else
+            return (real_t)MathF.Log(s);
+#endif
         }
 
         /// <summary>
@@ -611,7 +651,11 @@ namespace Godot
         /// <returns><paramref name="x"/> raised to the power of <paramref name="y"/>.</returns>
         public static real_t Pow(real_t x, real_t y)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Pow(x, y);
+#else
+            return (real_t)MathF.Pow(x, y);
+#endif
         }
 
         /// <summary>
@@ -647,7 +691,11 @@ namespace Godot
         /// <returns>The rounded number.</returns>
         public static real_t Round(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Round(s);
+#else
+            return (real_t)MathF.Round(s);
+#endif
         }
 
         /// <summary>
@@ -683,7 +731,11 @@ namespace Godot
         /// <returns>The sine of that angle.</returns>
         public static real_t Sin(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Sin(s);
+#else
+            return (real_t)MathF.Sin(s);
+#endif
         }
 
         /// <summary>
@@ -693,7 +745,11 @@ namespace Godot
         /// <returns>The hyperbolic sine of that angle.</returns>
         public static real_t Sinh(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Sinh(s);
+#else
+            return (real_t)MathF.Sinh(s);
+#endif
         }
 
         /// <summary>
@@ -724,7 +780,11 @@ namespace Godot
         /// <returns>The square root of <paramref name="s"/>.</returns>
         public static real_t Sqrt(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Sqrt(s);
+#else
+            return (real_t)MathF.Sqrt(s);
+#endif
         }
 
         /// <summary>
@@ -784,7 +844,11 @@ namespace Godot
         /// <returns>The tangent of that angle.</returns>
         public static real_t Tan(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Tan(s);
+#else
+            return (real_t)MathF.Tan(s);
+#endif
         }
 
         /// <summary>
@@ -794,7 +858,11 @@ namespace Godot
         /// <returns>The hyperbolic tangent of that angle.</returns>
         public static real_t Tanh(real_t s)
         {
+#if REAL_T_IS_DOUBLE
             return (real_t)Math.Tanh(s);
+#else
+            return (real_t)MathF.Tanh(s);
+#endif
         }
 
         /// <summary>
@@ -838,7 +906,11 @@ namespace Godot
 
         private static real_t Fract(real_t value)
         {
+#if REAL_T_IS_DOUBLE
             return value - (real_t)Math.Floor(value);
+#else
+            return value - (real_t)MathF.Floor(value);
+#endif
         }
 
         /// <summary>
