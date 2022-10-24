@@ -118,7 +118,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data" qualifiers="static">

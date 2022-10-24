@@ -19,6 +19,8 @@
 			<param index="2" name="modulate" type="Color" />
 			<param index="3" name="transpose" type="bool" />
 			<description>
+				Called when the entire [Texture2D] is requested to be drawn over a [CanvasItem], with the top-left offset specified in [param pos]. [param modulate] specifies a multiplier for the colors being drawn, while [param transpose] specifies whether drawing should be performed in column-major order instead of row-major order (resulting in 90-degree clockwise rotation).
+				[b]Note:[/b] This is only used in 2D rendering, not 3D.
 			</description>
 		</method>
 		<method name="_draw_rect" qualifiers="virtual const">
@@ -29,6 +31,8 @@
 			<param index="3" name="modulate" type="Color" />
 			<param index="4" name="transpose" type="bool" />
 			<description>
+				Called when the [Texture2D] is requested to be drawn onto [CanvasItem]'s specified [param rect]. [param modulate] specifies a multiplier for the colors being drawn, while [param transpose] specifies whether drawing should be performed in column-major order instead of row-major order (resulting in 90-degree clockwise rotation).
+				[b]Note:[/b] This is only used in 2D rendering, not 3D.
 			</description>
 		</method>
 		<method name="_draw_rect_region" qualifiers="virtual const">
@@ -40,21 +44,26 @@
 			<param index="4" name="transpose" type="bool" />
 			<param index="5" name="clip_uv" type="bool" />
 			<description>
+				Called when a part of the [Texture2D] specified by [param src_rect]'s coordinates is requested to be drawn onto [CanvasItem]'s specified [param rect]. [param modulate] specifies a multiplier for the colors being drawn, while [param transpose] specifies whether drawing should be performed in column-major order instead of row-major order (resulting in 90-degree clockwise rotation).
+				[b]Note:[/b] This is only used in 2D rendering, not 3D.
 			</description>
 		</method>
 		<method name="_get_height" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Called when the [Texture2D]'s height is queried.
 			</description>
 		</method>
 		<method name="_get_width" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Called when the [Texture2D]'s width is queried.
 			</description>
 		</method>
 		<method name="_has_alpha" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
+				Called when the presence of an alpha channel in the [Texture2D] is queried.
 			</description>
 		</method>
 		<method name="_is_pixel_opaque" qualifiers="virtual const">
@@ -62,6 +71,7 @@
 			<param index="0" name="x" type="int" />
 			<param index="1" name="y" type="int" />
 			<description>
+				Called when a pixel's opaque state in the [Texture2D] is queried at the specified [code](x, y)[/code] position.
 			</description>
 		</method>
 		<method name="draw" qualifiers="const">
@@ -100,7 +110,7 @@
 		<method name="get_height" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the texture height.
+				Returns the texture height in pixels.
 			</description>
 		</method>
 		<method name="get_image" qualifiers="const">
@@ -113,13 +123,13 @@
 		<method name="get_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the texture size.
+				Returns the texture size in pixels.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the texture width.
+				Returns the texture width in pixels.
 			</description>
 		</method>
 		<method name="has_alpha" qualifiers="const">
