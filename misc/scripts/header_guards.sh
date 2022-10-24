@@ -8,8 +8,8 @@ fi
 files_invalid_guard=""
 
 for file in $(find -name "thirdparty" -prune -o -name "*.h" -print); do
-  # Skip *.gen.h and *-so_wrap.h, they're generated.
-  if [[ "$file" == *".gen.h" || "$file" == *"-so_wrap.h" ]]; then continue; fi
+  # Skip *.gen.h, *-so_wrap.h and files in dynwrappers/, they're generated.
+  if [[ "$file" == *".gen.h" || "$file" == *"-so_wrap.h" || "$file" == *"/dynwrappers/"* ]]; then continue; fi
   # Has important define before normal header guards.
   if [[ "$file" == *"thread.h" || "$file" == *"platform_config.h" ]]; then continue; fi
   # Obj-C files don't use header guards.
