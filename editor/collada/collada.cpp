@@ -845,6 +845,8 @@ void Collada::_parse_curve_geometry(XMLParser &parser, String p_id, String p_nam
 
 	CurveData &curvedata = state.curve_data_map[p_id];
 	curvedata.name = p_name;
+	String closed = parser.get_attribute_value_safe("closed").to_lower();
+	curvedata.closed = closed == "true" || closed == "1";
 
 	COLLADA_PRINT("curve name: " + p_name);
 
