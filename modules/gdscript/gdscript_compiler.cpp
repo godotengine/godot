@@ -2275,6 +2275,18 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 		} break;
 		case GDScriptDataType::GDSCRIPT: {
 			Ref<GDScript> base = Ref<GDScript>(base_type.script_type);
+			if (base.is_valid()) {
+				Error err = OK;
+				GDScriptCache::get_full_script(base->get_path(), err, main_script->path);
+				if (err != OK)
+					return err;
+				if (p_class->extends.size() > 1) {
+					for (int i = 1; i < p_class->extends.size(); i++) {
+						StringName extend = p_class->extends.get(i);
+						base = base->constants[extend];
+					}
+				}
+			}
 			p_script->base = base;
 			p_script->_base = base.ptr();
 
@@ -2290,15 +2302,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 						if (err) {
 							return err;
 						}
-					}
-				} else {
-					Error err = OK;
-					base = GDScriptCache::get_full_script(p_class->base_type.script_path, err, main_script->path);
-					if (err) {
-						return err;
-					}
-					if (base.is_null() || !base->is_valid()) {
-						return ERR_COMPILATION_FAILED;
 					}
 				}
 			}
