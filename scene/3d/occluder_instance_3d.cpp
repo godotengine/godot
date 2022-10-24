@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
+#include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -533,11 +534,20 @@ void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_s
 	}
 
 	if (!Math::is_zero_approx(p_simplification_dist) && SurfaceTool::simplify_func) {
-		float error_scale = SurfaceTool::simplify_scale_func((float *)vertices.ptr(), vertices.size(), sizeof(Vector3));
+		Vector<float> vertices_f32 = vector3_to_float32_array(vertices.ptr(), vertices.size());
+
+		float error_scale = SurfaceTool::simplify_scale_func(vertices_f32.ptr(), vertices.size(), sizeof(float) * 3);
 		float target_error = p_simplification_dist / error_scale;
 		float error = -1.0f;
 		int target_index_count = MIN(indices.size(), 36);
-		uint32_t index_count = SurfaceTool::simplify_func((unsigned int *)indices.ptrw(), (unsigned int *)indices.ptr(), indices.size(), (float *)vertices.ptr(), vertices.size(), sizeof(Vector3), target_index_count, target_error, &error);
+
+		uint32_t index_count = SurfaceTool::simplify_func(
+				(unsigned int *)indices.ptrw(),
+				(unsigned int *)indices.ptr(),
+				indices.size(),
+				vertices_f32.ptr(), vertices.size(), sizeof(float) * 3,
+				target_index_count, target_error, &error);
+
 		indices.resize(index_count);
 	}
 
