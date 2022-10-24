@@ -40,7 +40,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include <wayland-cursor.h>
+#include "dynwrappers/wayland-client-core.h"
+#include "dynwrappers/wayland-cursor.h"
 
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"

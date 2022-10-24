@@ -37,7 +37,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#include <wayland-egl.h>
+#include "dynwrappers/wayland-egl-core.h"
 
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"

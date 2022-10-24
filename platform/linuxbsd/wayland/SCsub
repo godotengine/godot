@@ -94,6 +94,9 @@ env.WAYLAND_API_CODE(
 )
 
 source_files = [
+    "dynwrappers/wayland-cursor.c",
+    "dynwrappers/wayland-client-core.c",
+    "dynwrappers/wayland-egl-core.c",
     "protocol/wayland.gen.c",
     "protocol/xdg_shell.gen.c",
     "protocol/xdg_decoration.gen.c",

@@ -263,6 +263,16 @@ void GLManagerWayland::window_make_current(DisplayServer::WindowID p_window_id) 
 }
 
 Error GLManagerWayland::initialize() {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+
+	if (initialize_wayland_egl(dylibloader_verbose) != 0) {
+		ERR_PRINT("Can't load the wayland client library.");
+		return ERR_CANT_CREATE;
+	}
 	// Check if we have the Wayland EGL platform extension.
 
 	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);

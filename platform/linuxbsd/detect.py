@@ -194,8 +194,8 @@ def configure(env: "Environment"):
         env.ParseConfig("pkg-config xi --cflags --libs")
 
     if env["wayland"]:
-        env.ParseConfig("pkg-config wayland-client --cflags --libs")
-        env.ParseConfig("pkg-config wayland-cursor --cflags --libs")
+        env.ParseConfig("pkg-config wayland-client --cflags")  # Only cflags, we dlopen the library.
+        env.ParseConfig("pkg-config wayland-cursor --cflags")  # Only cflags, we dlopen the library.
         env.ParseConfig("pkg-config xkbcommon --cflags --libs")
 
     if env["touch"]:
@@ -376,7 +376,7 @@ def configure(env: "Environment"):
             env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
             env.ParseConfig("pkg-config opengl --cflags --libs")
             env.ParseConfig("pkg-config egl --cflags --libs")
-            env.ParseConfig("pkg-config wayland-egl --cflags --libs")
+            env.ParseConfig("pkg-config wayland-egl --cflags")  # Only cflags, we dlopen the library.
 
     env.Append(LIBS=["pthread"])
 

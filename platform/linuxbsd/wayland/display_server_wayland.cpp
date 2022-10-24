@@ -2673,6 +2673,22 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	r_error = ERR_UNAVAILABLE;
 
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+
+	if (initialize_wayland_client(dylibloader_verbose) != 0) {
+		WARN_PRINT("Can't load the wayland client library.");
+		return;
+	}
+
+	if(initialize_wayland_cursor(dylibloader_verbose) != 0) {
+		WARN_PRINT("Can't load the wayland cursor library.");
+		return;
+	}
+
 	wls.wl_display = wl_display_connect(nullptr);
 
 	ERR_FAIL_COND_MSG(!wls.wl_display, "Can't connect to a Wayland display.");
