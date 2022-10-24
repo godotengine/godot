@@ -744,7 +744,7 @@ void ColorPicker::add_recent_preset(const Color &p_color) {
 		if (recent_preset_hbc->get_child_count() >= PRESET_COLUMN_COUNT) {
 			recent_preset_cache.pop_front();
 			recent_presets.pop_front();
-			recent_preset_hbc->get_child(PRESET_COLUMN_COUNT - 1)->queue_delete();
+			recent_preset_hbc->get_child(PRESET_COLUMN_COUNT - 1)->queue_free();
 		}
 		recent_presets.push_back(p_color);
 		recent_preset_cache.push_back(p_color);
@@ -770,7 +770,7 @@ void ColorPicker::erase_preset(const Color &p_color) {
 		for (int i = 1; i < preset_container->get_child_count(); i++) {
 			ColorPresetButton *current_btn = Object::cast_to<ColorPresetButton>(preset_container->get_child(i));
 			if (current_btn && p_color == current_btn->get_preset_color()) {
-				current_btn->queue_delete();
+				current_btn->queue_free();
 				break;
 			}
 		}
@@ -794,7 +794,7 @@ void ColorPicker::erase_recent_preset(const Color &p_color) {
 		for (int i = 1; i < recent_preset_hbc->get_child_count(); i++) {
 			ColorPresetButton *current_btn = Object::cast_to<ColorPresetButton>(recent_preset_hbc->get_child(i));
 			if (current_btn && p_color == current_btn->get_preset_color()) {
-				current_btn->queue_delete();
+				current_btn->queue_free();
 				break;
 			}
 		}

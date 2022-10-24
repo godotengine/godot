@@ -1141,7 +1141,7 @@ void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p
 
 	// Update everything.
 	if (property_editor) {
-		property_editor->queue_delete();
+		property_editor->queue_free();
 	}
 
 	// Update the dummy object.
@@ -1200,7 +1200,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 }
 
 TileDataDefaultEditor::~TileDataDefaultEditor() {
-	toolbar->queue_delete();
+	toolbar->queue_free();
 	memdelete(dummy_object);
 }
 
@@ -1403,11 +1403,11 @@ void TileDataCollisionEditor::_polygons_changed() {
 		dummy_object->remove_dummy_property(vformat("polygon_%d_one_way_margin", i));
 	}
 	for (int i = polygon_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way", i)); i++) {
-		property_editors[vformat("polygon_%d_one_way", i)]->queue_delete();
+		property_editors[vformat("polygon_%d_one_way", i)]->queue_free();
 		property_editors.erase(vformat("polygon_%d_one_way", i));
 	}
 	for (int i = polygon_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way_margin", i)); i++) {
-		property_editors[vformat("polygon_%d_one_way_margin", i)]->queue_delete();
+		property_editors[vformat("polygon_%d_one_way_margin", i)]->queue_free();
 		property_editors.erase(vformat("polygon_%d_one_way_margin", i));
 	}
 }
@@ -2658,7 +2658,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 }
 
 TileDataTerrainsEditor::~TileDataTerrainsEditor() {
-	toolbar->queue_delete();
+	toolbar->queue_free();
 	memdelete(dummy_object);
 }
 

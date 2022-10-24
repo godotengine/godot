@@ -100,7 +100,7 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 	}
 
 	if (p_replace) {
-		queue_delete();
+		queue_free();
 		base->remove_child(this);
 	}
 

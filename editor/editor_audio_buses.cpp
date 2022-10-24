@@ -1036,7 +1036,7 @@ void EditorAudioBuses::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			if (drop_end) {
-				drop_end->queue_delete();
+				drop_end->queue_free();
 				drop_end = nullptr;
 			}
 		} break;

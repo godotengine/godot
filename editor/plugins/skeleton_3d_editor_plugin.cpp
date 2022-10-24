@@ -1082,7 +1082,7 @@ void Skeleton3DEditor::select_bone(int p_idx) {
 Skeleton3DEditor::~Skeleton3DEditor() {
 	singleton = nullptr;
 
-	handles_mesh_instance->queue_delete();
+	handles_mesh_instance->queue_free();
 
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 

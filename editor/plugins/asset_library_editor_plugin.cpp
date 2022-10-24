@@ -460,7 +460,7 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 void EditorAssetLibraryItemDownload::_close() {
 	// Clean up downloaded file.
 	DirAccess::remove_file_or_error(download->get_download_file());
-	queue_delete();
+	queue_free();
 }
 
 bool EditorAssetLibraryItemDownload::can_install() const {
@@ -832,7 +832,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		}
 	}
 
-	image_queue[p_queue_id].request->queue_delete();
+	image_queue[p_queue_id].request->queue_free();
 	image_queue.erase(p_queue_id);
 
 	_update_image_queue();
@@ -868,7 +868,7 @@ void EditorAssetLibrary::_update_image_queue() {
 	}
 
 	while (to_delete.size()) {
-		image_queue[to_delete.front()->get()].request->queue_delete();
+		image_queue[to_delete.front()->get()].request->queue_free();
 		image_queue.erase(to_delete.front()->get());
 		to_delete.pop_front();
 	}
