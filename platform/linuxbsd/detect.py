@@ -374,7 +374,6 @@ def configure(env: "Environment"):
 
         if env["wayland"]:
             env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
-            env.ParseConfig("pkg-config opengl --cflags --libs")
             env.ParseConfig("pkg-config egl --cflags --libs")
             env.ParseConfig("pkg-config wayland-egl --cflags")  # Only cflags, we dlopen the library.
 

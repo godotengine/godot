@@ -44,5 +44,4 @@
 #endif
 #endif
 
-#define GL_GLEXT_PROTOTYPES
-#define OPENGL_INCLUDE_H <GL/gl.h>
+#define OPENGL_INCLUDE_H "thirdparty/glad/glad/glad.h"
