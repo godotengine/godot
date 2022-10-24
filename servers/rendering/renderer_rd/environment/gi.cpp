@@ -2866,7 +2866,8 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 		{
 			Transform3D to_cell = gi->voxel_gi_get_to_cell_xform(probe);
-			Transform3D to_probe_xform = (transform * to_cell.affine_inverse()).affine_inverse();
+			Transform3D to_probe_xform = to_cell * transform.affine_inverse();
+
 			//update lights
 
 			for (uint32_t i = 0; i < light_count; i++) {
