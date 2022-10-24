@@ -104,9 +104,10 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	file->get_buffer((uint8_t *)&riff, 4); //RIFF
 
 	if (riff[0] != 'R' || riff[1] != 'I' || riff[2] != 'F' || riff[3] != 'F') {
+		uint64_t length = file->get_len();
 		file->close();
 		memdelete(file);
-		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Not a WAV file. File should start with 'RIFF', but found '%s', in file of size %d bytes", riff, length));
 	}
 
 	/* GET FILESIZE */
@@ -114,14 +115,15 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	/* CHECK WAVE */
 
-	char wave[4];
-
-	file->get_buffer((uint8_t *)&wave, 4); //RIFF
+	char wave[5];
+	wave[4] = 0;
+	file->get_buffer((uint8_t *)&wave, 4); //WAVE
 
 	if (wave[0] != 'W' || wave[1] != 'A' || wave[2] != 'V' || wave[3] != 'E') {
+		uint64_t length = file->get_len();
 		file->close();
 		memdelete(file);
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Not a WAV file (no WAVE RIFF header).");
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Not a WAV file. Header should contain 'WAVE', but found '%s', in file of size %d bytes", wave, length));
 	}
 
 	// Let users override potential loop points from the WAV.
