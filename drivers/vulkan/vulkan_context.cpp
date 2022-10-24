@@ -717,9 +717,12 @@ Error VulkanContext::_check_capabilities() {
 		VkPhysicalDeviceProperties2 physicalDeviceProperties{};
 		void *nextptr = nullptr;
 
-		subgroupProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
-		subgroupProperties.pNext = nextptr;
-		nextptr = &subgroupProperties;
+		if (!(vulkan_major == 1 && vulkan_minor == 0)) {
+			subgroupProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
+			subgroupProperties.pNext = nextptr;
+
+			nextptr = &subgroupProperties;
+		}
 
 		if (multiview_capabilities.is_supported) {
 			multiviewProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES;
