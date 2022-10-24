@@ -13,7 +13,8 @@
 	</description>
 	<tutorials>
 		<link title="Particle systems (2D)">$DOCS_URL/tutorials/2d/particle_systems_2d.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Particles Demo">https://godotengine.org/asset-library/asset/118</link>
+		<link title="2D Dodge The Creeps Demo (uses GPUParticles2D for the trail behind the player)">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
 		<method name="capture_rect" qualifiers="const">
