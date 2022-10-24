@@ -56,7 +56,7 @@ public:
 	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 	//RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	//bool use_debanding = false;
-	//uint32_t view_count = 1;
+	uint32_t view_count = 1;
 
 	bool is_transparent = false;
 

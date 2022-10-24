@@ -118,7 +118,7 @@ void GodotBody3D::update_mass_properties() {
 					shape_inertia_tensor = shape_basis * shape_inertia_tensor * shape_basis.transposed();
 
 					Vector3 shape_origin = shape_transform.origin - center_of_mass_local;
-					inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass;
+					inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass_new;
 				}
 
 				// Set the inertia to a valid value when there are no valid shapes.

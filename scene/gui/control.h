@@ -445,7 +445,6 @@ public:
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_screen_rect() const;
-	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the rendering server
 	Rect2 get_anchorable_rect() const override;
 
 	void set_scale(const Vector2 &p_scale);
