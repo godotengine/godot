@@ -8,7 +8,7 @@ set -uo pipefail
 # Loops through all code files tracked by Git.
 git ls-files -- '*.c' '*.h' '*.cpp' '*.hpp' '*.cc' '*.hh' '*.cxx' '*.m' '*.mm' '*.inc' '*.java' '*.glsl' \
                 ':!:.git/*' ':!:thirdparty/*' ':!:*/thirdparty/*' ':!:platform/android/java/lib/src/com/google/*' \
-                ':!:*-so_wrap.*' ':!:*dynwrappers/*' ':!:tests/python_build/*' |
+                ':!:*-so_wrap.*' ':!:*/dynwrappers/*' ':!:tests/python_build/*' |
 while read -r f; do
     # Run clang-format.
     clang-format --Wno-error=unknown -i "$f"
