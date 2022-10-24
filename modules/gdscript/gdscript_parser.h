@@ -469,7 +469,7 @@ public:
 			EnumNode *parent_enum = nullptr;
 			int index = -1;
 			bool resolved = false;
-			int value = 0;
+			int64_t value = 0;
 			int line = 0;
 			int leftmost_column = 0;
 			int rightmost_column = 0;
