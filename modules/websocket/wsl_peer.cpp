@@ -320,7 +320,9 @@ void WSLPeer::_do_client_handshake() {
 	}
 
 	tcp->poll();
-	if (tcp->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
+	if (tcp->get_status() == StreamPeerTCP::STATUS_CONNECTING) {
+		return; // Keep connecting.
+	} else if (tcp->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 		close(-1); // Failed to connect.
 		return;
 	}
@@ -511,7 +513,7 @@ Error WSLPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509Ce
 	resolver.start(host, port);
 	resolver.try_next_candidate(tcp);
 
-	if (tcp->get_status() != StreamPeerTCP::STATUS_CONNECTING && !resolver.has_more_candidates()) {
+	if (tcp->get_status() != StreamPeerTCP::STATUS_CONNECTING && tcp->get_status() != StreamPeerTCP::STATUS_CONNECTED && !resolver.has_more_candidates()) {
 		_clear();
 		return FAILED;
 	}

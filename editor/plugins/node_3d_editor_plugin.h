@@ -193,6 +193,9 @@ private:
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
 	Node3D *preview_node = nullptr;
+	bool update_preview_node = false;
+	Point2 preview_node_viewport_pos;
+	Vector3 preview_node_pos;
 	AABB *preview_bounds = nullptr;
 	Vector<String> selected_files;
 	AcceptDialog *accept = nullptr;
@@ -413,7 +416,7 @@ private:
 	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
 	void _perform_drop_data();
 
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _project_settings_changed();
@@ -720,6 +723,9 @@ private:
 	void _selection_changed();
 	void _refresh_menu_icons();
 
+	bool do_snap_selected_nodes_to_floor = false;
+	void _snap_selected_nodes_to_floor();
+
 	// Preview Sun and Environment
 
 	uint32_t world_env_count = 0;
@@ -767,7 +773,7 @@ private:
 	WorldEnvironment *preview_environment = nullptr;
 	bool preview_env_dangling = false;
 	Ref<Environment> environment;
-	Ref<CameraAttributesPhysical> camera_attributes;
+	Ref<CameraAttributesPractical> camera_attributes;
 	Ref<ProceduralSkyMaterial> sky_material;
 
 	bool sun_environ_updating = false;

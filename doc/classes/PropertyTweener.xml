@@ -27,7 +27,7 @@
 				Sets a custom initial value to the [PropertyTweener]. Example:
 				[codeblock]
 				var tween = get_tree().create_tween()
-				tween.tween_property(self, "position", Vector2(200, 100), 1).from(Vector2(100, 100) #this will move the node from position (100, 100) to (200, 100)
+				tween.tween_property(self, "position", Vector2(200, 100), 1).from(Vector2(100, 100)) #this will move the node from position (100, 100) to (200, 100)
 				[/codeblock]
 			</description>
 		</method>

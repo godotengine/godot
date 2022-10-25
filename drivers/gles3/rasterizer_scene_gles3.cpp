@@ -1273,6 +1273,19 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	GLES3::MaterialStorage::store_transform(p_render_data->cam_transform, scene_state.ubo.inv_view_matrix);
 	GLES3::MaterialStorage::store_transform(p_render_data->inv_cam_transform, scene_state.ubo.view_matrix);
 
+	if (p_render_data->view_count > 1) {
+		for (uint32_t v = 0; v < p_render_data->view_count; v++) {
+			projection = correction * p_render_data->view_projection[v];
+			GLES3::MaterialStorage::store_camera(projection, scene_state.multiview_ubo.projection_matrix_view[v]);
+			GLES3::MaterialStorage::store_camera(projection.inverse(), scene_state.multiview_ubo.inv_projection_matrix_view[v]);
+
+			scene_state.multiview_ubo.eye_offset[v][0] = p_render_data->view_eye_offset[v].x;
+			scene_state.multiview_ubo.eye_offset[v][1] = p_render_data->view_eye_offset[v].y;
+			scene_state.multiview_ubo.eye_offset[v][2] = p_render_data->view_eye_offset[v].z;
+			scene_state.multiview_ubo.eye_offset[v][3] = 0.0;
+		}
+	}
+
 	scene_state.ubo.directional_light_count = p_render_data->directional_light_count;
 
 	scene_state.ubo.z_far = p_render_data->z_far;
@@ -1374,6 +1387,15 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DATA_UNIFORM_LOCATION, scene_state.ubo_buffer);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::UBO), &scene_state.ubo, GL_STREAM_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	if (p_render_data->view_count > 1) {
+		if (scene_state.multiview_buffer == 0) {
+			glGenBuffers(1, &scene_state.multiview_buffer);
+		}
+		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::MultiviewUBO), &scene_state.multiview_ubo, GL_STREAM_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
 }
 
 // Puts lights into Uniform Buffers. Needs to be called before _fill_list as this caches the index of each light in the Uniform Buffer
@@ -1916,8 +1938,14 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 	GLES3::SceneShaderData *prev_shader = nullptr;
 	GeometryInstanceGLES3 *prev_inst = nullptr;
 	SceneShaderGLES3::ShaderVariant prev_variant = SceneShaderGLES3::ShaderVariant::MODE_COLOR;
+	SceneShaderGLES3::ShaderVariant shader_variant = SceneShaderGLES3::MODE_COLOR; // Assigned to silence wrong -Wmaybe-initialized
 
-	SceneShaderGLES3::ShaderVariant shader_variant = SceneShaderGLES3::MODE_COLOR; // Assigned to silence wrong -Wmaybe-initialized.
+	// @todo Get this from p_params->spec_constant_base_flags instead of hardcoding it.
+	uint32_t base_spec_constants = 0;
+
+	if (p_render_data->view_count > 1) {
+		base_spec_constants |= 1 << SPEC_CONSTANT_USE_MULTIVIEW;
+	}
 
 	switch (p_pass_mode) {
 		case PASS_MODE_COLOR:
@@ -1956,8 +1984,6 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		if (inst->instance_count == 0) {
 			continue;
 		}
-
-		//uint32_t base_spec_constants = p_params->spec_constant_base_flags;
 
 		GLES3::SceneShaderData *shader;
 		GLES3::SceneMaterialData *material_data;
@@ -2128,7 +2154,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		}
 
 		if (prev_shader != shader || prev_variant != instance_variant) {
-			material_storage->shaders.scene_shader.version_bind_shader(shader->version, instance_variant);
+			material_storage->shaders.scene_shader.version_bind_shader(shader->version, instance_variant, base_spec_constants);
 			float opaque_prepass_threshold = 0.0;
 			if constexpr (p_pass_mode == PASS_MODE_DEPTH) {
 				opaque_prepass_threshold = 0.99;
@@ -2136,7 +2162,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				opaque_prepass_threshold = 0.1;
 			}
 
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, instance_variant);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, instance_variant, base_spec_constants);
 
 			prev_shader = shader;
 			prev_variant = instance_variant;
@@ -2144,21 +2170,21 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 		if (prev_inst != inst || prev_shader != shader || prev_variant != instance_variant) {
 			// Rebind the light indices.
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_count, shader->version, instance_variant);
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_count, shader->version, instance_variant);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_count, shader->version, instance_variant, base_spec_constants);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_count, shader->version, instance_variant, base_spec_constants);
 
 			if (inst->omni_light_count) {
-				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::OMNI_LIGHT_INDICES, shader->version, instance_variant), inst->omni_light_count, inst->omni_light_gl_cache.ptr());
+				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::OMNI_LIGHT_INDICES, shader->version, instance_variant, base_spec_constants), inst->omni_light_count, inst->omni_light_gl_cache.ptr());
 			}
 
 			if (inst->spot_light_count) {
-				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::SPOT_LIGHT_INDICES, shader->version, instance_variant), inst->spot_light_count, inst->spot_light_gl_cache.ptr());
+				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::SPOT_LIGHT_INDICES, shader->version, instance_variant, base_spec_constants), inst->spot_light_count, inst->spot_light_gl_cache.ptr());
 			}
 
 			prev_inst = inst;
 		}
 
-		material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, instance_variant);
+		material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, instance_variant, base_spec_constants);
 		if (inst->instance_count > 0) {
 			// Using MultiMesh.
 			// Bind instance buffers.

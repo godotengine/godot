@@ -6,6 +6,7 @@
 		A [SkeletonProfile] as a preset that is optimized for the human form. This exists for standardization, so all parameters are read-only.
 	</description>
 	<tutorials>
+		<link title="Retargeting 3D Skeletons">$DOCS_URL/tutorials/assets_pipeline/retargeting_3d_skeletons.html</link>
 	</tutorials>
 	<members>
 		<member name="bone_size" type="int" setter="set_bone_size" getter="get_bone_size" overrides="SkeletonProfile" default="56" />

@@ -277,6 +277,9 @@ public:
 
 		bool operator<(const TerrainsPattern &p_terrains_pattern) const;
 		bool operator==(const TerrainsPattern &p_terrains_pattern) const;
+		bool operator!=(const TerrainsPattern &p_terrains_pattern) const {
+			return !operator==(p_terrains_pattern);
+		};
 
 		void set_terrain(int p_terrain);
 		int get_terrain() const;

@@ -234,6 +234,8 @@ typedef void (*GDNativeExtensionClassFreeInstance)(void *p_userdata, GDExtension
 typedef GDNativeExtensionClassCallVirtual (*GDNativeExtensionClassGetVirtual)(void *p_userdata, const char *p_name);
 
 typedef struct {
+	GDNativeBool is_virtual;
+	GDNativeBool is_abstract;
 	GDNativeExtensionClassSet set_func;
 	GDNativeExtensionClassGet get_func;
 	GDNativeExtensionClassGetPropertyList get_property_list_func;

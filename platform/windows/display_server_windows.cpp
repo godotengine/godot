@@ -3087,7 +3087,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					rect_changed = true;
 				}
 #if defined(VULKAN_ENABLED)
-				if (context_vulkan && window_created) {
+				if (context_vulkan && window.context_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
 					context_vulkan->window_resize(window_id, window.width, window.height);
 				}
@@ -3547,6 +3547,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				windows.erase(id);
 				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create Vulkan Window.");
 			}
+			wd.context_created = true;
 		}
 #endif
 
@@ -3921,9 +3922,21 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
-				"Unable to initialize Video driver");
+		if (p_rendering_driver == "vulkan") {
+			String executable_name = OS::get_singleton()->get_executable_path().get_file();
+			OS::get_singleton()->alert("Your video card driver does not support the selected Vulkan version.\n"
+									   "Please try updating your GPU driver or try using the OpenGL 3 driver.\n"
+									   "You can enable the OpenGL 3 driver by starting the engine from the\n"
+									   "command line with the command:\n'./" +
+							executable_name + " --rendering-driver opengl3'.\n "
+											  "If you have updated your graphics drivers recently, try rebooting.",
+					"Unable to initialize Video driver");
+		} else {
+			OS::get_singleton()->alert("Your video card driver does not support the selected OpenGL version.\n"
+									   "Please try updating your GPU driver.\n"
+									   "If you have updated your graphics drivers recently, try rebooting.",
+					"Unable to initialize Video driver");
+		}
 	}
 	return ds;
 }

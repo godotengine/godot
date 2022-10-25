@@ -87,13 +87,13 @@ private:
 
 	void _release_mouse_event_info(bool p_source_mouse_relative = false);
 
-	void _parse_all_touch(bool p_pressed);
+	void _parse_all_touch(bool p_pressed, bool p_double_tap);
 
 	void _release_all_touch();
 
 public:
 	void process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative);
-	void process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
+	void process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points, bool p_double_tap);
 	void process_magnify(Point2 p_pos, float p_factor);
 	void process_pan(Point2 p_pos, Vector2 p_delta);
 	void process_joy_event(JoypadEvent p_event);

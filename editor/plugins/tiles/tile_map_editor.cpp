@@ -2348,27 +2348,27 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrain_path_o
 	}
 
 	HashMap<Vector2i, TileMapCell> output;
-	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E : terrain_fill_output) {
-		if (painted_set.has(E.key)) {
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : terrain_fill_output) {
+		if (painted_set.has(kv.key)) {
 			// Paint a random tile with the correct terrain for the painted path.
-			output[E.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, E.value);
+			output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
-			bool keep_old = false;
-			TileMapCell cell = tile_map->get_cell(tile_map_layer, E.key);
+			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
+			TileMapCell cell = tile_map->get_cell(tile_map_layer, kv.key);
 			if (cell.source_id != TileSet::INVALID_SOURCE) {
 				TileSetSource *source = *tile_set->get_source(cell.source_id);
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
 					// Get tile data.
 					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-					if (tile_data && tile_data->get_terrains_pattern() == E.value) {
-						keep_old = true;
+					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
+						in_map_terrain_pattern = tile_data->get_terrains_pattern();
 					}
 				}
 			}
-			if (!keep_old) {
-				output[E.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, E.value);
+			if (in_map_terrain_pattern != kv.value) {
+				output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 			}
 		}
 	}
@@ -2395,23 +2395,27 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrain_patter
 	}
 
 	HashMap<Vector2i, TileMapCell> output;
-	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E : terrain_fill_output) {
-		if (painted_set.has(E.key)) {
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : terrain_fill_output) {
+		if (painted_set.has(kv.key)) {
 			// Paint a random tile with the correct terrain for the painted path.
-			output[E.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, E.value);
+			output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
-			TileMapCell cell = tile_map->get_cell(tile_map_layer, E.key);
+			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
+			TileMapCell cell = tile_map->get_cell(tile_map_layer, kv.key);
 			if (cell.source_id != TileSet::INVALID_SOURCE) {
 				TileSetSource *source = *tile_set->get_source(cell.source_id);
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
 					// Get tile data.
 					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-					if (tile_data && !(tile_data->get_terrains_pattern() == E.value)) {
-						output[E.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, E.value);
+					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
+						in_map_terrain_pattern = tile_data->get_terrains_pattern();
 					}
 				}
+			}
+			if (in_map_terrain_pattern != kv.value) {
+				output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 			}
 		}
 	}

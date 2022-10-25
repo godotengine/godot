@@ -71,6 +71,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_screen_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the transform from the Viewport's coordinates to the screen coordinates of the containing window manager window.
+			</description>
+		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="ViewportTexture" />
 			<description>
@@ -300,6 +306,8 @@
 			If [code]true[/code], the viewport should render its background as transparent.
 		</member>
 		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="is_using_debanding" default="false">
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
+			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
 		</member>
 		<member name="use_occlusion_culling" type="bool" setter="set_use_occlusion_culling" getter="is_using_occlusion_culling" default="false">
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D for this viewport. For the root viewport, [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] must be set to [code]true[/code] instead.

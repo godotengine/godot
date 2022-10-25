@@ -1162,6 +1162,13 @@ bool InputEventScreenTouch::is_pressed() const {
 	return pressed;
 }
 
+void InputEventScreenTouch::set_double_tap(bool p_double_tap) {
+	double_tap = p_double_tap;
+}
+bool InputEventScreenTouch::is_double_tap() const {
+	return double_tap;
+}
+
 Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenTouch> st;
 	st.instantiate();
@@ -1170,6 +1177,7 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 	st->set_index(index);
 	st->set_position(p_xform.xform(pos + p_local_ofs));
 	st->set_pressed(pressed);
+	st->set_double_tap(double_tap);
 
 	return st;
 }
@@ -1182,7 +1190,8 @@ String InputEventScreenTouch::as_text() const {
 
 String InputEventScreenTouch::to_string() {
 	String p = pressed ? "true" : "false";
-	return vformat("InputEventScreenTouch: index=%d, pressed=%s, position=(%s)", index, p, String(get_position()));
+	String double_tap_string = double_tap ? "true" : "false";
+	return vformat("InputEventScreenTouch: index=%d, pressed=%s, position=(%s), double_tap=%s", index, p, String(get_position()), double_tap_string);
 }
 
 void InputEventScreenTouch::_bind_methods() {
@@ -1195,9 +1204,13 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventScreenTouch::set_pressed);
 	//ClassDB::bind_method(D_METHOD("is_pressed"),&InputEventScreenTouch::is_pressed);
 
+	ClassDB::bind_method(D_METHOD("set_double_tap", "double_tap"), &InputEventScreenTouch::set_double_tap);
+	ClassDB::bind_method(D_METHOD("is_double_tap"), &InputEventScreenTouch::is_double_tap);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_tap"), "set_double_tap", "is_double_tap");
 }
 
 ///////////////////////////////////

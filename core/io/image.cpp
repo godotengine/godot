@@ -2862,6 +2862,9 @@ void Image::_repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_s
 }
 
 void Image::fill(const Color &p_color) {
+	if (data.size() == 0) {
+		return;
+	}
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
 
 	uint8_t *dst_data_ptr = data.ptrw();
@@ -2875,6 +2878,9 @@ void Image::fill(const Color &p_color) {
 }
 
 void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
+	if (data.size() == 0) {
+		return;
+	}
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
 
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());

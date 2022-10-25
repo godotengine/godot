@@ -958,6 +958,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 		preview_rect->set_offset(SIDE_TOP, 1);
 		preview_rect->set_offset(SIDE_BOTTOM, -1);
 		preview_rect->set_offset(SIDE_RIGHT, -1);
+		preview_rect->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 		assign_button->add_child(preview_rect);
 	}
 
