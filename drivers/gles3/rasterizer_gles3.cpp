@@ -121,7 +121,6 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 }
 
 #ifdef CAN_DEBUG
-#if defined(GLAD_ENABLED) || !defined(GLES_OVER_GL)
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
 		return;
@@ -173,7 +172,6 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINT(output);
 }
-#endif
 #endif
 
 typedef void (*DEBUGPROCARB)(GLenum source,
