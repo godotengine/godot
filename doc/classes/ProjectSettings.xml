@@ -208,7 +208,7 @@
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high-resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
 		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
-			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
+			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If a custom directory name is defined, this name will be appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
@@ -235,7 +235,8 @@
 			[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/code] will still be read to override the project settings.
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
+			If [code]true[/code], the project will save user data to its own user directory. If [member application/config/custom_user_dir_name] is empty, [code]&lt;OS user data directory&gt;/&lt;project name&gt;[/code] directory will be used. If [code]false[/code], the project will save user data to [code]&lt;OS user data directory&gt;/Godot/app_userdata/&lt;project name&gt;[/code].
+			See also [url=$DOCS_URL/tutorials/io/data_paths.html#accessing-persistent-user-data-user]File paths in Godot projects[/url]. This setting is only effective on desktop platforms.
 		</member>
 		<member name="application/config/use_hidden_project_data_directory" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the project will use a hidden directory ([code].godot[/code]) for storing project-specific data (metadata, shader cache, etc.).
