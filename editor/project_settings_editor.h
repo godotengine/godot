@@ -53,6 +53,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	};
 
 	TabContainer *tab_container;
+	VBoxContainer *general_editor;
 
 	Timer *timer;
 	InputType add_type;
@@ -185,6 +186,7 @@ public:
 	static ProjectSettingsEditor *get_singleton() { return singleton; }
 	void popup_project_settings();
 	void set_plugins_page();
+	void set_general_page(const String &p_category);
 	void update_plugins();
 
 	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }

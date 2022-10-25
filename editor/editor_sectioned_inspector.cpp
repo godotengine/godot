@@ -164,7 +164,9 @@ void SectionedInspector::_section_selected() {
 
 void SectionedInspector::set_current_section(const String &p_section) {
 	if (section_map.has(p_section)) {
-		section_map[p_section]->select(0);
+		TreeItem *item = section_map[p_section];
+		item->select(0);
+		sections->scroll_to_item(item);
 	}
 }
 
