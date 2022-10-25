@@ -1219,7 +1219,7 @@ void TextEdit::_notification(int p_what) {
 								int sel_from = (line > get_selection_from_line(c)) ? TS->shaped_text_get_range(rid).x : get_selection_from_column(c);
 								int sel_to = (line < get_selection_to_line(c)) ? TS->shaped_text_get_range(rid).y : get_selection_to_column(c);
 
-								if (glyphs[j].start >= sel_from && glyphs[j].end <= sel_to && override_selected_font_color) {
+								if (glyphs[j].start >= sel_from && glyphs[j].end <= sel_to && use_selected_font_color) {
 									gl_color = font_selected_color;
 								}
 							}
@@ -2861,6 +2861,7 @@ void TextEdit::_update_caches() {
 	/* Selection */
 	font_selected_color = get_theme_color(SNAME("font_selected_color"));
 	selection_color = get_theme_color(SNAME("selection_color"));
+	use_selected_font_color = font_selected_color != Color(0, 0, 0, 0);
 
 	/* Visual. */
 	style_normal = get_theme_stylebox(SNAME("normal"));
@@ -4739,14 +4740,6 @@ bool TextEdit::is_drag_and_drop_selection_enabled() const {
 	return drag_and_drop_selection_enabled;
 }
 
-void TextEdit::set_override_selected_font_color(bool p_override_selected_font_color) {
-	override_selected_font_color = p_override_selected_font_color;
-}
-
-bool TextEdit::is_overriding_selected_font_color() const {
-	return override_selected_font_color;
-}
-
 void TextEdit::set_selection_mode(SelectionMode p_mode, int p_line, int p_column, int p_caret) {
 	ERR_FAIL_INDEX(p_caret, carets.size());
 
@@ -5992,9 +5985,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_drag_and_drop_selection_enabled", "enable"), &TextEdit::set_drag_and_drop_selection_enabled);
 	ClassDB::bind_method(D_METHOD("is_drag_and_drop_selection_enabled"), &TextEdit::is_drag_and_drop_selection_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_override_selected_font_color", "override"), &TextEdit::set_override_selected_font_color);
-	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &TextEdit::is_overriding_selected_font_color);
-
 	ClassDB::bind_method(D_METHOD("set_selection_mode", "mode", "line", "column", "caret_index"), &TextEdit::set_selection_mode, DEFVAL(-1), DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_selection_mode"), &TextEdit::get_selection_mode);
 
@@ -6163,7 +6153,6 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");

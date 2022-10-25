@@ -1097,9 +1097,6 @@
 			The width, in pixels, of the minimap.
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" overrides="Control" enum="Control.CursorShape" default="1" />
-		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
-			If [code]true[/code], custom [code]font_selected_color[/code] will be used for selected text.
-		</member>
 		<member name="placeholder_text" type="String" setter="set_placeholder" getter="get_placeholder" default="&quot;&quot;">
 			Text shown when the [TextEdit] is empty. It is [b]not[/b] the [TextEdit]'s default value (see [member text]).
 		</member>
@@ -1363,8 +1360,8 @@
 		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Sets the font [Color] when [member editable] is disabled.
 		</theme_item>
-		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
+		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			Sets the [Color] of the selected text. If equal to [code]Color(0, 0, 0, 0)[/code], it will be ignored.
 		</theme_item>
 		<theme_item name="search_result_border_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 0.4)">
 			[Color] of the border around text that matches the search query.

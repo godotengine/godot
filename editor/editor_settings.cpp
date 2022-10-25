@@ -777,7 +777,7 @@ void EditorSettings::_load_godot2_text_editor_theme() {
 	_initial_set("text_editor/theme/highlighting/safe_line_number_color", Color(0.67, 0.78, 0.67, 0.6));
 	_initial_set("text_editor/theme/highlighting/caret_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/theme/highlighting/caret_background_color", Color(0, 0, 0));
-	_initial_set("text_editor/theme/highlighting/text_selected_color", Color(0, 0, 0));
+	_initial_set("text_editor/theme/highlighting/text_selected_color", Color(0, 0, 0, 0));
 	_initial_set("text_editor/theme/highlighting/selection_color", Color(0.41, 0.61, 0.91, 0.35));
 	_initial_set("text_editor/theme/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
 	_initial_set("text_editor/theme/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
