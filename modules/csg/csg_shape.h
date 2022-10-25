@@ -62,7 +62,7 @@ private:
 	bool last_visible = false;
 	float snap = 0.001;
 
-	bool use_collision = false;
+	bool use_collision = true;
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;

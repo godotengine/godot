@@ -74,8 +74,9 @@
 		<member name="snap" type="float" setter="set_snap" getter="get_snap" default="0.001">
 			Snap makes the mesh snap to a given distance so that the faces of two meshes can be perfectly aligned. A lower value results in greater precision but may be harder to adjust.
 		</member>
-		<member name="use_collision" type="bool" setter="set_use_collision" getter="is_using_collision" default="false">
-			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body. Note that the collision shape is still active even if the CSG shape itself is hidden.
+		<member name="use_collision" type="bool" setter="set_use_collision" getter="is_using_collision" default="true">
+			If [code]true[/code], adds a [ConcavePolygonShape3D] matching the CSG shape for use by the physics engine. This will always act like a [StaticBody3D].
+			[b]Note:[/b] The collision shape is still active even if the CSG shape itself is hidden. This can be used to create invisible barriers to smooth out collisions in a level and preventing players from getting stuck in certain spots.
 		</member>
 	</members>
 	<constants>
