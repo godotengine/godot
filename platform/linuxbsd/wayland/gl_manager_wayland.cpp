@@ -273,8 +273,8 @@ Error GLManagerWayland::initialize() {
 		ERR_PRINT("Can't load the wayland client library.");
 		return ERR_CANT_CREATE;
 	}
-	// Check if we have the Wayland EGL platform extension.
 
+	// Check if we have the Wayland EGL platform extension.
 	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 	// The above method should always work. If it doesn't, something's very wrong.
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
