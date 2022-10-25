@@ -41,7 +41,7 @@
 
 		func _ready():
 		    thread = Thread.new()
-		    thread.start(self, "_upnp_setup", SERVER_PORT)
+		    thread.start(_upnp_setup.bind(SERVER_PORT))
 
 		func _exit_tree():
 		    # Wait for thread finish here to handle game exit while the thread is running.

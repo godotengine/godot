@@ -74,6 +74,7 @@ enum SceneUniformLocation {
 	SCENE_OMNILIGHT_UNIFORM_LOCATION,
 	SCENE_SPOTLIGHT_UNIFORM_LOCATION,
 	SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
+	SCENE_MULTIVIEW_UNIFORM_LOCATION,
 };
 
 enum SkyUniformLocation {
@@ -90,6 +91,8 @@ enum {
 	SPEC_CONSTANT_DISABLE_OMNI_LIGHTS = 2,
 	SPEC_CONSTANT_DISABLE_SPOT_LIGHTS = 3,
 	SPEC_CONSTANT_DISABLE_FOG = 4,
+	SPEC_CONSTANT_USE_RADIANCE_MAP = 5,
+	SPEC_CONSTANT_USE_MULTIVIEW = 6,
 };
 
 struct RenderDataGLES3 {
@@ -343,6 +346,13 @@ private:
 		};
 		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");
 
+		struct MultiviewUBO {
+			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
+		};
+		static_assert(sizeof(MultiviewUBO) % 16 == 0, "Multiview UBO size must be a multiple of 16 bytes");
+
 		struct TonemapUBO {
 			float exposure = 1.0;
 			float white = 1.0;
@@ -353,6 +363,8 @@ private:
 
 		UBO ubo;
 		GLuint ubo_buffer = 0;
+		MultiviewUBO multiview_ubo;
+		GLuint multiview_buffer = 0;
 		GLuint tonemap_buffer = 0;
 
 		bool used_depth_prepass = false;

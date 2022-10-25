@@ -172,6 +172,7 @@ void Light2D::set_shadow_filter(ShadowFilter p_filter) {
 	ERR_FAIL_INDEX(p_filter, SHADOW_FILTER_MAX);
 	shadow_filter = p_filter;
 	RS::get_singleton()->canvas_light_set_shadow_filter(canvas_light, RS::CanvasLightShadowFilter(p_filter));
+	notify_property_list_changed();
 }
 
 Light2D::ShadowFilter Light2D::get_shadow_filter() const {
@@ -229,6 +230,10 @@ real_t Light2D::get_shadow_smooth() const {
 
 void Light2D::_validate_property(PropertyInfo &p_property) const {
 	if (!shadow && (p_property.name == "shadow_color" || p_property.name == "shadow_filter" || p_property.name == "shadow_filter_smooth" || p_property.name == "shadow_item_cull_mask")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (shadow && p_property.name == "shadow_filter_smooth" && shadow_filter == SHADOW_FILTER_NONE) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

@@ -148,9 +148,11 @@ void OS_MacOS::alert(const String &p_alert, const String &p_title) {
 	NSString *ns_title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
 	NSString *ns_alert = [NSString stringWithUTF8String:p_alert.utf8().get_data()];
 
+	NSTextField *text_field = [NSTextField labelWithString:ns_alert];
+	[text_field setAlignment:NSTextAlignmentCenter];
 	[window addButtonWithTitle:@"OK"];
 	[window setMessageText:ns_title];
-	[window setInformativeText:ns_alert];
+	[window setAccessoryView:text_field];
 	[window setAlertStyle:NSAlertStyleWarning];
 
 	id key_window = [[NSApplication sharedApplication] keyWindow];

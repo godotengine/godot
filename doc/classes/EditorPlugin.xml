@@ -691,11 +691,13 @@
 		</signal>
 		<signal name="project_settings_changed">
 			<description>
+				Emitted when any project setting has changed.
 			</description>
 		</signal>
 		<signal name="resource_saved">
 			<param index="0" name="resource" type="Resource" />
 			<description>
+				Emitted when the given [param resource] was saved on disc.
 			</description>
 		</signal>
 		<signal name="scene_changed">

@@ -26,7 +26,7 @@
 			<param index="1" name="src_rect" type="Rect2i" />
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
-				Alpha-blends [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with not positive size is treated as empty.
+				Alpha-blends [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blend_rect_mask">
@@ -36,7 +36,7 @@
 			<param index="2" name="src_rect" type="Rect2i" />
 			<param index="3" name="dst" type="Vector2i" />
 			<description>
-				Alpha-blends [param src_rect] from [param src] image to this image using [param mask] image at coordinates [param dst], clipped accordingly to both image bounds. Alpha channels are required for both [param src] and [param mask]. [param dst] pixels and [param src] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with not positive size is treated as empty.
+				Alpha-blends [param src_rect] from [param src] image to this image using [param mask] image at coordinates [param dst], clipped accordingly to both image bounds. Alpha channels are required for both [param src] and [param mask]. [param dst] pixels and [param src] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with non-positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect">
@@ -45,7 +45,7 @@
 			<param index="1" name="src_rect" type="Rect2i" />
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
-				Copies [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with not positive size is treated as empty.
+				Copies [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect_mask">
@@ -55,7 +55,7 @@
 			<param index="2" name="src_rect" type="Rect2i" />
 			<param index="3" name="dst" type="Vector2i" />
 			<description>
-				Blits [param src_rect] area from [param src] image to this image at the coordinates given by [param dst], clipped accordingly to both image bounds. [param src] pixel is copied onto [param dst] if the corresponding [param mask] pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with not positive size is treated as empty.
+				Blits [param src_rect] area from [param src] image to this image at the coordinates given by [param dst], clipped accordingly to both image bounds. [param src] pixel is copied onto [param dst] if the corresponding [param mask] pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with non-positive size is treated as empty.
 			</description>
 		</method>
 		<method name="bump_map_to_normal_map">

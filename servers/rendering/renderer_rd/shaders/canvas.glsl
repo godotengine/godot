@@ -655,20 +655,7 @@ void main() {
 		if (i >= light_count) {
 			break;
 		}
-		uint light_base;
-		if (i < 8) {
-			if (i < 4) {
-				light_base = draw_data.lights[0];
-			} else {
-				light_base = draw_data.lights[1];
-			}
-		} else {
-			if (i < 12) {
-				light_base = draw_data.lights[2];
-			} else {
-				light_base = draw_data.lights[3];
-			}
-		}
+		uint light_base = draw_data.lights[i >> 2];
 		light_base >>= (i & 3) * 8;
 		light_base &= 0xFF;
 

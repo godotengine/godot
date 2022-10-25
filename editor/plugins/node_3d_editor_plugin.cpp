@@ -2435,6 +2435,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			bool vp_visible = is_visible_in_tree();
 
 			set_process(vp_visible);
+			set_physics_process(vp_visible);
 
 			if (vp_visible) {
 				orthogonal = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
@@ -2656,6 +2657,21 @@ void Node3DEditorViewport::_notification(int p_what) {
 				float locked_half_width = locked_label->get_size().width / 2.0f;
 				locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
 			}
+		} break;
+
+		case NOTIFICATION_PHYSICS_PROCESS: {
+			if (!update_preview_node) {
+				return;
+			}
+			if (preview_node->is_inside_tree()) {
+				preview_node_pos = _get_instance_position(preview_node_viewport_pos);
+				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
+				preview_node->set_global_transform(preview_gl_transform);
+				if (!preview_node->is_visible()) {
+					preview_node->show();
+				}
+			}
+			update_preview_node = false;
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -4029,7 +4045,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 			gl_transform = parent_node3d->get_global_gizmo_transform();
 		}
 
-		gl_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
+		gl_transform.origin = spatial_editor->snap_point(preview_node_pos);
 		gl_transform.basis *= node3d->get_transform().basis;
 
 		editor_data->get_undo_redo()->add_do_method(instantiated_scene, "set_global_transform", gl_transform);
@@ -4093,7 +4109,9 @@ void Node3DEditorViewport::_perform_drop_data() {
 	}
 }
 
-bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	preview_node_viewport_pos = p_point;
+
 	bool can_instantiate = false;
 
 	if (!preview_node->is_inside_tree() && spatial_editor->get_preview_material().is_null()) {
@@ -4157,6 +4175,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			}
 			if (can_instantiate) {
 				_create_preview_node(files);
+				preview_node->hide();
 			}
 		}
 	} else {
@@ -4166,8 +4185,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	}
 
 	if (can_instantiate) {
-		Transform3D gl_transform = Transform3D(Basis(), _get_instance_position(p_point));
-		preview_node->set_global_transform(gl_transform);
+		update_preview_node = true;
 		return true;
 	}
 
@@ -6932,6 +6950,10 @@ HashSet<RID> _get_physics_bodies_rid(Node *node) {
 }
 
 void Node3DEditor::snap_selected_nodes_to_floor() {
+	do_snap_selected_nodes_to_floor = true;
+}
+
+void Node3DEditor::_snap_selected_nodes_to_floor() {
 	const List<Node *> &selection = editor_selection->get_selected_node_list();
 	Dictionary snap_data;
 
@@ -6969,9 +6991,10 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 				}
 			}
 			if (!found_valid_shape && vi.size()) {
-				AABB aabb = (*vi.begin())->get_transformed_aabb();
+				VisualInstance3D *begin = *vi.begin();
+				AABB aabb = begin->get_global_transform().xform(begin->get_aabb());
 				for (const VisualInstance3D *I : vi) {
-					aabb.merge_with(I->get_transformed_aabb());
+					aabb.merge_with(I->get_global_transform().xform(I->get_aabb()));
 				}
 				Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
 				from = aabb.position + size;
@@ -7229,6 +7252,13 @@ void Node3DEditor::_notification(int p_what) {
 				tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_pressed(false);
 			}
 		} break;
+
+		case NOTIFICATION_PHYSICS_PROCESS: {
+			if (do_snap_selected_nodes_to_floor) {
+				_snap_selected_nodes_to_floor();
+				do_snap_selected_nodes_to_floor = false;
+			}
+		}
 	}
 }
 
@@ -8349,10 +8379,12 @@ void Node3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		spatial_editor->show();
 		spatial_editor->set_process(true);
+		spatial_editor->set_physics_process(true);
 
 	} else {
 		spatial_editor->hide();
 		spatial_editor->set_process(false);
+		spatial_editor->set_physics_process(false);
 	}
 }
 

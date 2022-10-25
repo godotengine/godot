@@ -40,10 +40,6 @@ AABB VisualInstance3D::get_aabb() const {
 	return AABB();
 }
 
-AABB VisualInstance3D::get_transformed_aabb() const {
-	return get_global_transform().xform(get_aabb());
-}
-
 void VisualInstance3D::_update_visibility() {
 	if (!is_inside_tree()) {
 		return;
@@ -120,8 +116,6 @@ void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_mask"), &VisualInstance3D::get_layer_mask);
 	ClassDB::bind_method(D_METHOD("set_layer_mask_value", "layer_number", "value"), &VisualInstance3D::set_layer_mask_value);
 	ClassDB::bind_method(D_METHOD("get_layer_mask_value", "layer_number"), &VisualInstance3D::get_layer_mask_value);
-
-	ClassDB::bind_method(D_METHOD("get_transformed_aabb"), &VisualInstance3D::get_transformed_aabb);
 
 	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");

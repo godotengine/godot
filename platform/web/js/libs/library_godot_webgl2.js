@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  gltf_node.h                                                          */
+/*  library_godot_webgl2.js                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,79 +27,26 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+const GodotWebGL2 = {
+	$GodotWebGL2__deps: ['$GL', '$GodotRuntime'],
+	$GodotWebGL2: {},
 
-#ifndef GLTF_NODE_H
-#define GLTF_NODE_H
-
-#include "../gltf_defines.h"
-#include "core/io/resource.h"
-
-class GLTFNode : public Resource {
-	GDCLASS(GLTFNode, Resource);
-	friend class GLTFDocument;
-
-private:
-	// matrices need to be transformed to this
-	GLTFNodeIndex parent = -1;
-	int height = -1;
-	Transform3D xform;
-	GLTFMeshIndex mesh = -1;
-	GLTFCameraIndex camera = -1;
-	GLTFSkinIndex skin = -1;
-	GLTFSkeletonIndex skeleton = -1;
-	bool joint = false;
-	Vector3 position;
-	Quaternion rotation;
-	Vector3 scale = Vector3(1, 1, 1);
-	Vector<int> children;
-	GLTFLightIndex light = -1;
-	Dictionary additional_data;
-
-protected:
-	static void _bind_methods();
-
-public:
-	GLTFNodeIndex get_parent();
-	void set_parent(GLTFNodeIndex p_parent);
-
-	int get_height();
-	void set_height(int p_height);
-
-	Transform3D get_xform();
-	void set_xform(Transform3D p_xform);
-
-	GLTFMeshIndex get_mesh();
-	void set_mesh(GLTFMeshIndex p_mesh);
-
-	GLTFCameraIndex get_camera();
-	void set_camera(GLTFCameraIndex p_camera);
-
-	GLTFSkinIndex get_skin();
-	void set_skin(GLTFSkinIndex p_skin);
-
-	GLTFSkeletonIndex get_skeleton();
-	void set_skeleton(GLTFSkeletonIndex p_skeleton);
-
-	bool get_joint();
-	void set_joint(bool p_joint);
-
-	Vector3 get_position();
-	void set_position(Vector3 p_position);
-
-	Quaternion get_rotation();
-	void set_rotation(Quaternion p_rotation);
-
-	Vector3 get_scale();
-	void set_scale(Vector3 p_scale);
-
-	Vector<int> get_children();
-	void set_children(Vector<int> p_children);
-
-	GLTFLightIndex get_light();
-	void set_light(GLTFLightIndex p_light);
-
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+	godot_webgl2_glFramebufferTextureMultiviewOVR__deps: ['emscripten_webgl_get_current_context'],
+	godot_webgl2_glFramebufferTextureMultiviewOVR__proxy: 'sync',
+	godot_webgl2_glFramebufferTextureMultiviewOVR__sig: 'viiiiii',
+	godot_webgl2_glFramebufferTextureMultiviewOVR: function (target, attachment, texture, level, base_view_index, num_views) {
+		const context = GL.currentContext;
+		if (typeof context.multiviewExt === 'undefined') {
+			const ext = context.GLctx.getExtension('OVR_multiview2');
+			if (!ext) {
+				console.error('Trying to call glFramebufferTextureMultiviewOVR() without the OVR_multiview2 extension');
+				return;
+			}
+			context.multiviewExt = ext;
+		}
+		context.multiviewExt.framebufferTextureMultiviewOVR(target, attachment, GL.textures[texture], level, base_view_index, num_views);
+	},
 };
 
-#endif // GLTF_NODE_H
+autoAddDeps(GodotWebGL2, '$GodotWebGL2');
+mergeInto(LibraryManager.library, GodotWebGL2);

@@ -34,6 +34,15 @@
 #include "core/config/project_settings.h"
 #include "core/templates/vector.h"
 
+#ifdef ANDROID_ENABLED
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
+#include <GLES3/gl3platform.h>
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif
+
 using namespace GLES3;
 
 #define _GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
@@ -97,6 +106,16 @@ Config::Config() {
 		glGetFloatv(_GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropic_level);
 		anisotropic_level = MIN(float(1 << int(ProjectSettings::get_singleton()->get("rendering/textures/default_filters/anisotropic_filtering_level"))), anisotropic_level);
 	}
+
+	multiview_supported = extensions.has("GL_OVR_multiview2") || extensions.has("GL_OVR_multiview");
+#ifdef ANDROID_ENABLED
+	if (multiview_supported) {
+		eglFramebufferTextureMultiviewOVR = (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)eglGetProcAddress("glFramebufferTextureMultiviewOVR");
+		if (eglFramebufferTextureMultiviewOVR == nullptr) {
+			multiview_supported = false;
+		}
+	}
+#endif
 
 	force_vertex_shading = false; //GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
 	use_nearest_mip_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");

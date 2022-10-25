@@ -26,6 +26,7 @@
 		[/csharp]
 		[/codeblocks]
 		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
+		[b]Note:[/b] For 3D position/rotation/scale, using the dedicated [constant TYPE_POSITION_3D], [constant TYPE_ROTATION_3D] and [constant TYPE_SCALE_3D] track types instead of [constant TYPE_VALUE] is recommended for performance reasons.
 	</description>
 	<tutorials>
 		<link title="Animation documentation index">$DOCS_URL/tutorials/animation/index.html</link>
@@ -209,6 +210,7 @@
 			<param index="1" name="time" type="float" />
 			<param index="2" name="amount" type="float" />
 			<description>
+				Inserts a key in a given blend shape track. Returns the key index.
 			</description>
 		</method>
 		<method name="clear">
@@ -223,6 +225,8 @@
 			<param index="1" name="fps" type="int" default="120" />
 			<param index="2" name="split_tolerance" type="float" default="4.0" />
 			<description>
+				Compress the animation and all its tracks in-place. This will make [method track_is_compressed] return [code]true[/code] once called on this [Animation]. Compressed tracks require less memory to be played, and are designed to be used for complex 3D animations (such as cutscenes) imported from external 3D software. Compression is lossy, but the difference is usually not noticeable in real world conditions.
+				[b]Note:[/b] Compressed tracks have various limitations (such as not being editable from the editor), so only use compressed animations if you actually need them.
 			</description>
 		</method>
 		<method name="copy_track">
@@ -278,6 +282,7 @@
 			<param index="1" name="time" type="float" />
 			<param index="2" name="position" type="Vector3" />
 			<description>
+				Inserts a key in a given 3D position track. Returns the key index.
 			</description>
 		</method>
 		<method name="remove_track">
@@ -293,6 +298,7 @@
 			<param index="1" name="time" type="float" />
 			<param index="2" name="rotation" type="Quaternion" />
 			<description>
+				Inserts a key in a given 3D rotation track. Returns the key index.
 			</description>
 		</method>
 		<method name="scale_track_insert_key">
@@ -301,6 +307,7 @@
 			<param index="1" name="time" type="float" />
 			<param index="2" name="scale" type="Vector3" />
 			<description>
+				Inserts a key in a given 3D scale track. Returns the key index.
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">
@@ -385,6 +392,7 @@
 			<return type="bool" />
 			<param index="0" name="track_idx" type="int" />
 			<description>
+				Returns [code]true[/code] if the track is compressed, [code]false[/code] otherwise. See also [method compress].
 			</description>
 		</method>
 		<method name="track_is_enabled" qualifiers="const">
@@ -569,15 +577,19 @@
 	</signals>
 	<constants>
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
-			Value tracks set values in node properties, but only those which can be Interpolated.
+			Value tracks set values in node properties, but only those which can be interpolated. For 3D position/rotation/scale, using the dedicated [constant TYPE_POSITION_3D], [constant TYPE_ROTATION_3D] and [constant TYPE_SCALE_3D] track types instead of [constant TYPE_VALUE] is recommended for performance reasons.
 		</constant>
 		<constant name="TYPE_POSITION_3D" value="1" enum="TrackType">
+			3D position track (values are stored in [Vector3]s).
 		</constant>
 		<constant name="TYPE_ROTATION_3D" value="2" enum="TrackType">
+			3D rotation track (values are stored in [Quaternion]s).
 		</constant>
 		<constant name="TYPE_SCALE_3D" value="3" enum="TrackType">
+			3D scale track (values are stored in [Vector3]s).
 		</constant>
 		<constant name="TYPE_BLEND_SHAPE" value="4" enum="TrackType">
+			Blend shape track.
 		</constant>
 		<constant name="TYPE_METHOD" value="5" enum="TrackType">
 			Method tracks call functions with given arguments per key.
@@ -598,7 +610,7 @@
 			Linear interpolation.
 		</constant>
 		<constant name="INTERPOLATION_CUBIC" value="2" enum="InterpolationType">
-			Cubic interpolation.
+			Cubic interpolation. This looks smoother than linear interpolation, but is more expensive to interpolate. Stick to [constant INTERPOLATION_LINEAR] for complex 3D animations imported from external software, even if it requires using a higher animation framerate in return.
 		</constant>
 		<constant name="INTERPOLATION_LINEAR_ANGLE" value="3" enum="InterpolationType">
 			Linear interpolation with shortest path rotation.

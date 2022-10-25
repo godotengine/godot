@@ -773,6 +773,9 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 		if (emscripten_webgl_make_context_current(webgl_ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
 			webgl2_init_failed = true;
 		} else {
+			if (!emscripten_webgl_enable_extension(webgl_ctx, "OVR_multiview2")) {
+				// @todo Should we log this?
+			}
 			RasterizerGLES3::make_current();
 		}
 	}

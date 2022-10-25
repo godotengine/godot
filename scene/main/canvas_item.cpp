@@ -1092,7 +1092,7 @@ int CanvasItem::get_canvas_layer() const {
 	}
 }
 
-void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
+void CanvasItem::_refresh_texture_filter_cache() {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -1107,6 +1107,14 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	} else {
 		texture_filter_cache = RS::CanvasItemTextureFilter(texture_filter);
 	}
+}
+
+void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	_refresh_texture_filter_cache();
+
 	RS::get_singleton()->canvas_item_set_default_texture_filter(get_canvas_item(), texture_filter_cache);
 	queue_redraw();
 
@@ -1133,7 +1141,7 @@ CanvasItem::TextureFilter CanvasItem::get_texture_filter() const {
 	return texture_filter;
 }
 
-void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
+void CanvasItem::_refresh_texture_repeat_cache() {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -1148,6 +1156,14 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	} else {
 		texture_repeat_cache = RS::CanvasItemTextureRepeat(texture_repeat);
 	}
+}
+
+void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	_refresh_texture_repeat_cache();
+
 	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), texture_repeat_cache);
 	queue_redraw();
 	if (p_propagate) {
@@ -1187,6 +1203,16 @@ bool CanvasItem::is_clipping_children() const {
 
 CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
 	return texture_repeat;
+}
+
+CanvasItem::TextureFilter CanvasItem::get_texture_filter_in_tree() {
+	_refresh_texture_filter_cache();
+	return (TextureFilter)texture_filter_cache;
+}
+
+CanvasItem::TextureRepeat CanvasItem::get_texture_repeat_in_tree() {
+	_refresh_texture_repeat_cache();
+	return (TextureRepeat)texture_repeat_cache;
 }
 
 CanvasItem::CanvasItem() :

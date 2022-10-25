@@ -15,6 +15,7 @@
 		</member>
 		<member name="omni_range" type="float" setter="set_param" getter="get_param" default="5.0">
 			The light's radius. Note that the effectively lit area may appear to be smaller depending on the [member omni_attenuation] in use. No matter the [member omni_attenuation] in use, the light will never reach anything outside this radius.
+			[b]Note:[/b] [member omni_range] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 		</member>
 		<member name="omni_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="OmniLight3D.ShadowMode" default="1">
 			See [enum ShadowMode].

@@ -131,6 +131,7 @@
 			The width of the hue selection slider.
 		</theme_item>
 		<theme_item name="label_width" data_type="constant" type="int" default="10">
+			The minimum width of the color labels next to sliders.
 		</theme_item>
 		<theme_item name="margin" data_type="constant" type="int" default="4">
 			The margin around the [ColorPicker].
@@ -160,8 +161,10 @@
 			The indicator used to signalize that the color value is outside the 0-1 range.
 		</theme_item>
 		<theme_item name="picker_cursor" data_type="icon" type="Texture2D">
+			The image displayed over the color box/circle (depending on the [member picker_shape]), marking the currently selected color.
 		</theme_item>
 		<theme_item name="sample_bg" data_type="icon" type="Texture2D">
+			Background panel for the color preview box (visible when the color is translucent).
 		</theme_item>
 		<theme_item name="screen_picker" data_type="icon" type="Texture2D">
 			The icon for the screen color picker button.

@@ -84,8 +84,6 @@ private:
 	bool ext_vive_focus3_available = false;
 	bool ext_huawei_controller_available = false;
 
-	bool is_path_supported(const String &p_path);
-
 	// composition layer providers
 	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
 
@@ -302,6 +300,7 @@ public:
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 
 	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
+	bool is_path_supported(const String &p_path);
 
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
 	static OpenXRAPI *get_singleton();
@@ -335,6 +334,11 @@ public:
 	RID get_depth_texture();
 	void post_draw_viewport(RID p_render_target);
 	void end_frame();
+
+	// Display refresh rate
+	float get_display_refresh_rate() const;
+	void set_display_refresh_rate(float p_refresh_rate);
+	Array get_available_display_refresh_rates() const;
 
 	// action map
 	String get_default_action_map_resource_name();

@@ -261,11 +261,11 @@ Error SceneReplicationInterface::_update_sync_visibility(int p_peer, Multiplayer
 	if (p_peer == 0) {
 		for (KeyValue<int, PeerInfo> &E : peers_info) {
 			// Might be visible to this specific peer.
-			is_visible = is_visible || p_sync->is_visible_to(E.key);
-			if (is_visible == E.value.sync_nodes.has(sid)) {
+			bool is_visible_to_peer = is_visible || p_sync->is_visible_to(E.key);
+			if (is_visible_to_peer == E.value.sync_nodes.has(sid)) {
 				continue;
 			}
-			if (is_visible) {
+			if (is_visible_to_peer) {
 				E.value.sync_nodes.insert(sid);
 			} else {
 				E.value.sync_nodes.erase(sid);

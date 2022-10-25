@@ -96,8 +96,8 @@ namespace Godot.SourceGenerators
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
-            var uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
-                             + "_ScriptPath_Generated";
+            string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
+                             + "_ScriptPath.generated";
 
             var source = new StringBuilder();
 
@@ -126,7 +126,7 @@ namespace Godot.SourceGenerators
                 source.Append("\n}\n");
             }
 
-            context.AddSource(uniqueHint.ToString(), SourceText.From(source.ToString(), Encoding.UTF8));
+            context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
         private static void AddScriptTypesAssemblyAttr(GeneratorExecutionContext context,
@@ -157,7 +157,7 @@ namespace Godot.SourceGenerators
 
             sourceBuilder.Append("})]\n");
 
-            context.AddSource("AssemblyScriptTypes_Generated",
+            context.AddSource("AssemblyScriptTypes.generated",
                 SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
         }
 
