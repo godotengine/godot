@@ -443,9 +443,9 @@ private:
 	bool deselect_on_focus_loss_enabled = true;
 	bool drag_and_drop_selection_enabled = true;
 
-	Color font_selected_color = Color(1, 1, 1);
+	Color font_selected_color = Color(0, 0, 0, 0);
 	Color selection_color = Color(1, 1, 1);
-	bool override_selected_font_color = false;
+	bool use_selected_font_color = false;
 
 	bool selection_drag_attempt = false;
 	bool dragging_selection = false;

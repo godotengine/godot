@@ -2304,7 +2304,6 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
 	rich_text->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
-	rich_text->set_override_selected_font_color(false);
 	rich_text->set_fit_content_height(true);
 	set_custom_minimum_size(Size2(0, 50 * EDSCALE));
 }
