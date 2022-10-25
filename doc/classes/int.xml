@@ -72,14 +72,14 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] if operands are different from each other.
+				Returns [code]true[/code] if this [int] is not equivalent to the given [float].
 			</description>
 		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] if operands are different from each other.
+				Returns [code]true[/code] if the integers are not equal.
 			</description>
 		</operator>
 		<operator name="operator %">
@@ -262,7 +262,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] the left integer is less than the right one.
+				Returns [code]true[/code] if the left integer is less than the right one.
 			</description>
 		</operator>
 		<operator name="operator &lt;&lt;">
@@ -287,7 +287,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] the left integer is less than or equal to the right one.
+				Returns [code]true[/code] if the left integer is less than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -315,7 +315,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] the left integer is greater than the right one.
+				Returns [code]true[/code] if the left integer is greater than the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
@@ -329,7 +329,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] the left integer is greater than or equal to the right one.
+				Returns [code]true[/code] if the left integer is greater than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;&gt;">

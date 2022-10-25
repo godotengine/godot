@@ -438,15 +438,19 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 	}
 
 	static boolean handleMotionEvent(int eventSource, int eventAction, int buttonsMask, float x, float y) {
-		return handleMotionEvent(eventSource, eventAction, buttonsMask, x, y, 0, 0);
+		return handleMotionEvent(eventSource, eventAction, buttonsMask, x, y, false);
 	}
 
-	static boolean handleMotionEvent(int eventSource, int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY) {
+	static boolean handleMotionEvent(int eventSource, int eventAction, int buttonsMask, float x, float y, boolean doubleTap) {
+		return handleMotionEvent(eventSource, eventAction, buttonsMask, x, y, 0, 0, doubleTap);
+	}
+
+	static boolean handleMotionEvent(int eventSource, int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleTap) {
 		if (isMouseEvent(eventSource)) {
-			return handleMouseEvent(eventAction, buttonsMask, x, y, deltaX, deltaY, false, false);
+			return handleMouseEvent(eventAction, buttonsMask, x, y, deltaX, deltaY, doubleTap, false);
 		}
 
-		return handleTouchEvent(eventAction, x, y);
+		return handleTouchEvent(eventAction, x, y, doubleTap);
 	}
 
 	static boolean handleMouseEvent(final MotionEvent event) {
@@ -466,10 +470,6 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 
 	static boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y) {
 		return handleMouseEvent(eventAction, buttonsMask, x, y, 0, 0, false, false);
-	}
-
-	static boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, boolean doubleClick) {
-		return handleMouseEvent(eventAction, buttonsMask, x, y, 0, 0, doubleClick, false);
 	}
 
 	static boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative) {
@@ -508,14 +508,14 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 		final int action = event.getActionMasked();
 		final int actionPointerId = event.getPointerId(event.getActionIndex());
 
-		return handleTouchEvent(action, actionPointerId, pointerCount, positions);
+		return handleTouchEvent(action, actionPointerId, pointerCount, positions, false);
 	}
 
-	static boolean handleTouchEvent(int eventAction, float x, float y) {
-		return handleTouchEvent(eventAction, 0, 1, new float[] { 0, x, y });
+	static boolean handleTouchEvent(int eventAction, float x, float y, boolean doubleTap) {
+		return handleTouchEvent(eventAction, 0, 1, new float[] { 0, x, y }, doubleTap);
 	}
 
-	static boolean handleTouchEvent(int eventAction, int actionPointerId, int pointerCount, float[] positions) {
+	static boolean handleTouchEvent(int eventAction, int actionPointerId, int pointerCount, float[] positions, boolean doubleTap) {
 		switch (eventAction) {
 			case MotionEvent.ACTION_DOWN:
 			case MotionEvent.ACTION_CANCEL:
@@ -523,7 +523,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			case MotionEvent.ACTION_MOVE:
 			case MotionEvent.ACTION_POINTER_UP:
 			case MotionEvent.ACTION_POINTER_DOWN: {
-				GodotLib.dispatchTouchEvent(eventAction, actionPointerId, pointerCount, positions);
+				GodotLib.dispatchTouchEvent(eventAction, actionPointerId, pointerCount, positions, doubleTap);
 				return true;
 			}
 		}

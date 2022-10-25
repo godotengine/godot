@@ -1598,9 +1598,24 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 	return nullptr;
 }
 
-void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+static String _quote_drop_data(const String &str) {
+	// This function prepares a string for being "dropped" into the script editor.
+	// The string can be a resource path, node path or property name.
 
+	const bool using_single_quotes = EDITOR_GET("text_editor/completion/use_single_quotes");
+
+	String escaped = str.c_escape();
+
+	// If string is double quoted, there is no need to escape single quotes.
+	// We can revert the extra escaping added in c_escape().
+	if (!using_single_quotes) {
+		escaped = escaped.replace("\\'", "\'");
+	}
+
+	return escaped.quote(using_single_quotes ? "'" : "\"");
+}
+
+void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
 	CodeEdit *te = code_editor->get_text_editor();
@@ -1638,9 +1653,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			}
 
 			if (preload) {
-				text_to_drop += "preload(" + String(files[i]).c_escape().quote(quote_style) + ")";
+				text_to_drop += "preload(" + _quote_drop_data(String(files[i])) + ")";
 			} else {
-				text_to_drop += String(files[i]).c_escape().quote(quote_style);
+				text_to_drop += _quote_drop_data(String(files[i]));
 			}
 		}
 
@@ -1686,7 +1701,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				}
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_identifier()) {
-						path = path.c_escape().quote(quote_style);
+						path = _quote_drop_data(path);
 						break;
 					}
 				}
@@ -1721,7 +1736,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_identifier()) {
-						path = path.c_escape().quote(quote_style);
+						path = _quote_drop_data(path);
 						break;
 					}
 				}
@@ -1737,7 +1752,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
 		te->remove_secondary_carets();
-		const String text_to_drop = String(d["property"]).c_escape().quote(quote_style);
+		// It is unclear whether properties may contain single or double quotes.
+		// Assume here that double-quotes may not exist. We are escaping single-quotes if necessary.
+		const String text_to_drop = _quote_drop_data(String(d["property"]));
 
 		te->set_caret_line(row);
 		te->set_caret_column(col);

@@ -82,7 +82,7 @@ namespace Godot.SourceGenerators
             bool isInnerClass = symbol.ContainingType != null;
 
             string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
-                                + "_ScriptSignals_Generated";
+                                + "_ScriptSignals.generated";
 
             var source = new StringBuilder();
 

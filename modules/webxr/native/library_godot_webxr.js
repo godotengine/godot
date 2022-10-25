@@ -337,20 +337,18 @@ const GodotWebXR = {
 		return buf;
 	},
 
-	godot_webxr_commit_for_eye__proxy: 'sync',
-	godot_webxr_commit_for_eye__sig: 'vii',
-	godot_webxr_commit_for_eye: function (p_eye, p_destination_fbo) {
+	godot_webxr_commit__proxy: 'sync',
+	godot_webxr_commit__sig: 'vi',
+	godot_webxr_commit: function (p_texture) {
 		if (!GodotWebXR.session || !GodotWebXR.pose) {
 			return;
 		}
 
-		const view_index = (p_eye === 2 /* ARVRInterface::EYE_RIGHT */) ? 1 : 0;
 		const glLayer = GodotWebXR.session.renderState.baseLayer;
-		const view = GodotWebXR.pose.views[view_index];
-		const viewport = glLayer.getViewport(view);
+		const views = GodotWebXR.pose.views;
 		const gl = GodotWebXR.gl;
 
-		const framebuffer = GL.framebuffers[p_destination_fbo];
+		const texture = GL.textures[p_texture];
 
 		const orig_framebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
 		const orig_read_framebuffer = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING);
@@ -359,14 +357,27 @@ const GodotWebXR = {
 
 		// Copy from Godot render target into framebuffer from WebXR.
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer);
-		gl.readBuffer(gl.COLOR_ATTACHMENT0);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, glLayer.framebuffer);
+		for (let i = 0; i < views.length; i++) {
+			const viewport = glLayer.getViewport(views[i]);
 
-		// Flip Y upside down on destination.
-		gl.blitFramebuffer(0, 0, viewport.width, viewport.height,
-			viewport.x, viewport.height, viewport.width, viewport.y,
-			gl.COLOR_BUFFER_BIT, gl.NEAREST);
+			const read_fbo = gl.createFramebuffer();
+			gl.bindFramebuffer(gl.READ_FRAMEBUFFER, read_fbo);
+			if (views.length > 1) {
+				gl.framebufferTextureLayer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture, 0, i);
+			} else {
+				gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+			}
+			gl.readBuffer(gl.COLOR_ATTACHMENT0);
+			gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, glLayer.framebuffer);
+
+			// Flip Y upside down on destination.
+			gl.blitFramebuffer(0, 0, viewport.width, viewport.height,
+				viewport.x, viewport.y + viewport.height, viewport.x + viewport.width, viewport.y,
+				gl.COLOR_BUFFER_BIT, gl.NEAREST);
+
+			gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+			gl.deleteFramebuffer(read_fbo);
+		}
 
 		// Restore state.
 		gl.bindFramebuffer(gl.FRAMEBUFFER, orig_framebuffer);

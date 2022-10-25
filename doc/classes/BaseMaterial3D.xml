@@ -115,7 +115,7 @@
 			The color used by the backlight effect. Represents the light passing through an object.
 		</member>
 		<member name="backlight_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], the backlight effect is enabled.
+			If [code]true[/code], the backlight effect is enabled. See also [member subsurf_scatter_transmittance_enabled].
 		</member>
 		<member name="backlight_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to control the backlight effect per-pixel. Added to [member backlight].
@@ -289,6 +289,7 @@
 			[b]Note:[/b] If [member detail_enabled] is [code]true[/code], the [member detail_albedo] texture is drawn [i]below[/i] the [member normal_texture]. To display a normal map [i]above[/i] the [member detail_albedo] texture, use [member detail_normal] instead.
 		</member>
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The Occlusion/Roughness/Metallic texture to use. This is a more efficient replacement of [member ao_texture], [member roughness_texture] and [member metallic_texture] in [ORMMaterial3D]. Ambient occlusion is stored in the red channel. Roughness map is stored in the green channel. Metallic map is stored in the blue channel. The alpha channel is ignored.
 		</member>
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
 			The number of horizontal frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
@@ -350,13 +351,13 @@
 		</member>
 		<member name="specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" enum="BaseMaterial3D.SpecularMode" default="0">
 			The method for rendering the specular blob. See [enum SpecularMode].
-			[b]Note:[/b] Only applies to the specular blob. Does not affect specular reflections from the Sky, SSR, or ReflectionProbes.
+			[b]Note:[/b] [member specular_mode] only applies to the specular blob. It does not affect specular reflections from the sky, screen-space reflections, [VoxelGI], SDFGI or [ReflectionProbe]s. To disable reflections from these sources as well, set [member metallic_specular] to [code]0.0[/code] instead.
 		</member>
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges.
 		</member>
 		<member name="subsurf_scatter_skin_mode" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], subsurface scattering will use a special mode optimized for the color and density of human skin.
+			If [code]true[/code], subsurface scattering will use a special mode optimized for the color and density of human skin, such as boosting the intensity of the red channel in subsurface scattering.
 		</member>
 		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength" default="0.0">
 			The strength of the subsurface scattering effect.
@@ -365,14 +366,19 @@
 			Texture used to control the subsurface scattering strength. Stored in the red texture channel. Multiplied by [member subsurf_scatter_strength].
 		</member>
 		<member name="subsurf_scatter_transmittance_boost" type="float" setter="set_transmittance_boost" getter="get_transmittance_boost" default="0.0">
+			The intensity of the subsurface scattering transmittance effect.
 		</member>
 		<member name="subsurf_scatter_transmittance_color" type="Color" setter="set_transmittance_color" getter="get_transmittance_color" default="Color(1, 1, 1, 1)">
+			The color to multiply the subsurface scattering transmittance effect with. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
 		</member>
 		<member name="subsurf_scatter_transmittance_depth" type="float" setter="set_transmittance_depth" getter="get_transmittance_depth" default="0.1">
+			The depth of the subsurface scattering transmittance effect.
 		</member>
 		<member name="subsurf_scatter_transmittance_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], enables subsurface scattering transmittance. Only effective if [member subsurf_scatter_enabled] is [code]true[/code]. See also [member backlight_enabled].
 		</member>
 		<member name="subsurf_scatter_transmittance_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The texture to use for multiplying the intensity of the subsurface scattering transmitteance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
 			Filter flags for the texture. See [enum TextureFilter] for options.
@@ -385,6 +391,7 @@
 			If [code]true[/code], transparency is enabled on the body. See also [member blend_mode].
 		</member>
 		<member name="use_particle_trails" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering.
 		</member>
 		<member name="use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
@@ -682,6 +689,7 @@
 			Enables the skin mode for subsurface scattering which is used to improve the look of subsurface scattering when used for human skin.
 		</constant>
 		<constant name="FLAG_PARTICLE_TRAILS_MODE" value="19" enum="Flags">
+			Enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering.
 		</constant>
 		<constant name="FLAG_ALBEDO_TEXTURE_MSDF" value="20" enum="Flags">
 			Enables multichannel signed distance field rendering shader.

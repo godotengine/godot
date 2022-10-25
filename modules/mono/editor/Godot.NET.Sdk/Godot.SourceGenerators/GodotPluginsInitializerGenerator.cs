@@ -56,7 +56,7 @@ namespace GodotPlugins.Game
 }
 ";
 
-            context.AddSource("GodotPlugins.Game_Generated",
+            context.AddSource("GodotPlugins.Game.generated",
                 SourceText.From(source, Encoding.UTF8));
         }
     }

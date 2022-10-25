@@ -3675,7 +3675,7 @@ String String::simplify_path() const {
 	if (p > 0) {
 		bool only_chars = true;
 		for (int i = 0; i < p; i++) {
-			if (!is_ascii_char(s[i])) {
+			if (!is_ascii_alphanumeric_char(s[i])) {
 				only_chars = false;
 				break;
 			}

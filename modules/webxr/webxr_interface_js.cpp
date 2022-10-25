@@ -415,8 +415,7 @@ Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, c
 
 	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
 
-	// @todo Support multiple eyes!
-	godot_webxr_commit_for_eye(1, rt->fbo);
+	godot_webxr_commit(rt->color);
 
 	return blit_to_screen;
 };
