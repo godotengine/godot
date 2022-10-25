@@ -31,6 +31,8 @@
 #ifndef VULKAN_CONTEXT_WIN_H
 #define VULKAN_CONTEXT_WIN_H
 
+#ifdef VULKAN_ENABLED
+
 #include "drivers/vulkan/vulkan_context.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -45,5 +47,7 @@ public:
 	VulkanContextWindows();
 	~VulkanContextWindows();
 };
+
+#endif // VULKAN_ENABLED
 
 #endif // VULKAN_CONTEXT_WIN_H

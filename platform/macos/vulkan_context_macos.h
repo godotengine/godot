@@ -31,6 +31,8 @@
 #ifndef VULKAN_CONTEXT_MACOS_H
 #define VULKAN_CONTEXT_MACOS_H
 
+#ifdef VULKAN_ENABLED
+
 #include "drivers/vulkan/vulkan_context.h"
 #import <AppKit/AppKit.h>
 
@@ -43,5 +45,7 @@ public:
 	VulkanContextMacOS();
 	~VulkanContextMacOS();
 };
+
+#endif // VULKAN_ENABLED
 
 #endif // VULKAN_CONTEXT_MACOS_H

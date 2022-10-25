@@ -223,6 +223,8 @@ def configure(env: "Environment"):
             "AVFoundation",
             "-framework",
             "CoreMedia",
+            "-framework",
+            "QuartzCore",
         ]
     )
     env.Append(LIBS=["pthread", "z"])
@@ -236,7 +238,7 @@ def configure(env: "Environment"):
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-        env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "QuartzCore", "-framework", "IOSurface"])
+        env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
             mvk_found = False

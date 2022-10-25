@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef VULKAN_ENABLED
 #include "vulkan_context_macos.h"
 #ifdef USE_VOLK
 #include <volk.h>
@@ -57,3 +58,5 @@ VulkanContextMacOS::VulkanContextMacOS() {
 
 VulkanContextMacOS::~VulkanContextMacOS() {
 }
+
+#endif // VULKAN_ENABLED

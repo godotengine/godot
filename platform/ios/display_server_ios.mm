@@ -41,7 +41,6 @@
 #include "tts_ios.h"
 #import "view_controller.h"
 
-#import <Foundation/Foundation.h>
 #import <sys/utsname.h>
 
 static const float kDisplayServerIOSAcceleration = 1.f;

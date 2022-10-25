@@ -31,6 +31,8 @@
 #ifndef VULKAN_CONTEXT_X11_H
 #define VULKAN_CONTEXT_X11_H
 
+#ifdef VULKAN_ENABLED
+
 #include "drivers/vulkan/vulkan_context.h"
 #include <X11/Xlib.h>
 
@@ -43,5 +45,7 @@ public:
 	VulkanContextX11();
 	~VulkanContextX11();
 };
+
+#endif // VULKAN_ENABLED
 
 #endif // VULKAN_CONTEXT_X11_H

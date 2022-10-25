@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef VULKAN_ENABLED
+
 #include "vulkan_context_android.h"
 
 #ifdef USE_VOLK
@@ -63,3 +65,5 @@ bool VulkanContextAndroid::_use_validation_layers() {
 	// On Android, we use validation layers automatically if they were explicitly linked with the app.
 	return count > 0;
 }
+
+#endif // VULKAN_ENABLED

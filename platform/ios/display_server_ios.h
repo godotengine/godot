@@ -40,13 +40,15 @@
 
 #include "vulkan_context_ios.h"
 
-#import <QuartzCore/CAMetalLayer.h>
 #ifdef USE_VOLK
 #include <volk.h>
 #else
 #include <vulkan/vulkan.h>
 #endif
 #endif
+
+#import <Foundation/Foundation.h>
+#import <QuartzCore/CAMetalLayer.h>
 
 class DisplayServerIOS : public DisplayServer {
 	GDCLASS(DisplayServerIOS, DisplayServer)
