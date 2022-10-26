@@ -218,7 +218,48 @@ Array TextLine::get_objects() const {
 }
 
 Rect2 TextLine::get_object_rect(Variant p_key) const {
-	return TS->shaped_text_get_object_rect(rid, p_key);
+	Vector2 ofs;
+
+	float length = TS->shaped_text_get_width(rid);
+	if (width > 0) {
+		switch (alignment) {
+			case HORIZONTAL_ALIGNMENT_FILL:
+			case HORIZONTAL_ALIGNMENT_LEFT:
+				break;
+			case HORIZONTAL_ALIGNMENT_CENTER: {
+				if (length <= width) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += Math::floor((width - length) / 2.0);
+					} else {
+						ofs.y += Math::floor((width - length) / 2.0);
+					}
+				} else if (TS->shaped_text_get_inferred_direction(rid) == TextServer::DIRECTION_RTL) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += width - length;
+					} else {
+						ofs.y += width - length;
+					}
+				}
+			} break;
+			case HORIZONTAL_ALIGNMENT_RIGHT: {
+				if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+					ofs.x += width - length;
+				} else {
+					ofs.y += width - length;
+				}
+			} break;
+		}
+	}
+	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		ofs.y += TS->shaped_text_get_ascent(rid);
+	} else {
+		ofs.x += TS->shaped_text_get_ascent(rid);
+	}
+
+	Rect2 rect = TS->shaped_text_get_object_rect(rid, p_key);
+	rect.position += ofs;
+
+	return rect;
 }
 
 void TextLine::set_horizontal_alignment(HorizontalAlignment p_alignment) {
