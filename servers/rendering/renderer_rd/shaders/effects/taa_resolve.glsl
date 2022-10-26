@@ -32,7 +32,9 @@
 // Based on Spartan Engine's TAA implementation (without TAA upscale).
 // <https://github.com/PanosK92/SpartanEngine/blob/a8338d0609b85dc32f3732a5c27fb4463816a3b9/Data/shaders/temporal_antialiasing.hlsl>
 
+#ifndef MOLTENVK_USED
 #define USE_SUBGROUPS
+#endif // MOLTENVK_USED
 
 #define GROUP_SIZE 8
 #define FLT_MIN 0.00000001
