@@ -12,8 +12,10 @@
 		<method name="add_stream">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
+			<param index="1" name="stream" type="AudioStream" />
+			<param index="2" name="weight" type="float" default="1.0" />
 			<description>
-				Insert a stream at the specified index.
+				Insert a stream at the specified index. If the index is less than zero, the insertion occurs at the end of the underlying pool.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">

@@ -410,12 +410,12 @@ AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
 
 ////////////////////////////////
 
-void AudioStreamRandomizer::add_stream(int p_index) {
+void AudioStreamRandomizer::add_stream(int p_index, Ref<AudioStream> p_stream, float p_weight) {
 	if (p_index < 0) {
 		p_index = audio_stream_pool.size();
 	}
 	ERR_FAIL_COND(p_index > audio_stream_pool.size());
-	PoolEntry entry{ nullptr, 1.0f };
+	PoolEntry entry{ p_stream, p_weight };
 	audio_stream_pool.insert(p_index, entry);
 	emit_signal(SNAME("changed"));
 	notify_property_list_changed();
@@ -709,7 +709,7 @@ void AudioStreamRandomizer::_get_property_list(List<PropertyInfo> *p_list) const
 }
 
 void AudioStreamRandomizer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_stream", "index"), &AudioStreamRandomizer::add_stream);
+	ClassDB::bind_method(D_METHOD("add_stream", "index", "stream", "weight"), &AudioStreamRandomizer::add_stream, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("move_stream", "index_from", "index_to"), &AudioStreamRandomizer::move_stream);
 	ClassDB::bind_method(D_METHOD("remove_stream", "index"), &AudioStreamRandomizer::remove_stream);
 

@@ -81,7 +81,7 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 	if (p_from_index < 0) {
 		undo_redo_man->add_undo_method(randomizer, "remove_stream", p_to_pos < 0 ? randomizer->get_streams_count() : p_to_pos);
 	} else if (p_to_pos < 0) {
-		undo_redo_man->add_undo_method(randomizer, "add_stream", p_from_index);
+		undo_redo_man->add_undo_method(randomizer, "add_stream", p_from_index, Ref<AudioStream>());
 	}
 
 	List<PropertyInfo> properties;
@@ -107,7 +107,7 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 #undef ADD_UNDO
 
 	if (p_from_index < 0) {
-		undo_redo_man->add_do_method(randomizer, "add_stream", p_to_pos);
+		undo_redo_man->add_do_method(randomizer, "add_stream", p_to_pos, Ref<AudioStream>());
 	} else if (p_to_pos < 0) {
 		undo_redo_man->add_do_method(randomizer, "remove_stream", p_from_index);
 	} else {

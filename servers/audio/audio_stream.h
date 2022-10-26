@@ -241,7 +241,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void add_stream(int p_index);
+	void add_stream(int p_index, Ref<AudioStream> p_stream, float p_weight = 1.0);
 	void move_stream(int p_index_from, int p_index_to);
 	void remove_stream(int p_index);
 
