@@ -1978,15 +1978,15 @@ void DisplayServerWayland::_show_window() {
 		// Since `VulkanContextWayland::window_create` automatically assigns a buffer
 		// to the `wl_surface` and doing so instantly maps it, moving this method here
 		// is the only solution I can think of to implement this method properly.
-		if (wls.context_vulkan) {
-			Error err = wls.context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+		if (context_vulkan) {
+			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
 		}
 #endif
 
 #ifdef GLES3_ENABLED
-		if (wls.gl_manager) {
-			Error err = wls.gl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+		if (gl_manager) {
+			Error err = gl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
 		}
 #endif
@@ -2114,8 +2114,8 @@ Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_windo
 
 void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	if (wls.gl_manager) {
-		wls.gl_manager->window_make_current(MAIN_WINDOW_ID);
+	if (gl_manager) {
+		gl_manager->window_make_current(MAIN_WINDOW_ID);
 	}
 #endif
 }
@@ -2166,14 +2166,14 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 	}
 
 #ifdef VULKAN_ENABLED
-	if (wd.visible && wls.context_vulkan) {
-		wls.context_vulkan->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
+	if (wd.visible && context_vulkan) {
+		context_vulkan->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
 	}
 #endif
 
 #ifdef GLES3_ENABLED
-	if (wd.visible && wls.gl_manager) {
-		wls.gl_manager->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
+	if (wd.visible && gl_manager) {
+		gl_manager->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
 	}
 #endif
 }
@@ -2529,14 +2529,14 @@ void DisplayServerWayland::process_events() {
 			if (wd.visible && wd.rect == rect) {
 				// Resizing is very costly, do it only if this is the last rect update.
 #ifdef VULKAN_ENABLED
-				if (wls.context_vulkan) {
-					wls.context_vulkan->window_resize(MAIN_WINDOW_ID, rect.size.width, rect.size.height);
+				if (context_vulkan) {
+					context_vulkan->window_resize(MAIN_WINDOW_ID, rect.size.width, rect.size.height);
 				}
 #endif
 
 #ifdef GLES3_ENABLED
-				if (wls.gl_manager) {
-					wls.gl_manager->window_resize(MAIN_WINDOW_ID, rect.size.width, rect.size.height);
+				if (gl_manager) {
+					gl_manager->window_resize(MAIN_WINDOW_ID, rect.size.width, rect.size.height);
 				}
 #endif
 			}
@@ -2624,24 +2624,24 @@ void DisplayServerWayland::process_events() {
 
 void DisplayServerWayland::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	if (wls.gl_manager) {
-		wls.gl_manager->release_current();
+	if (gl_manager) {
+		gl_manager->release_current();
 	}
 #endif
 }
 
 void DisplayServerWayland::make_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	if (wls.gl_manager) {
-		wls.gl_manager->make_current();
+	if (gl_manager) {
+		gl_manager->make_current();
 	}
 #endif
 }
 
 void DisplayServerWayland::swap_buffers() {
 #if defined(GLES3_ENABLED)
-	if (wls.gl_manager) {
-		wls.gl_manager->swap_buffers();
+	if (gl_manager) {
+		gl_manager->swap_buffers();
 	}
 #endif
 }
@@ -2746,11 +2746,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #if defined(VULKAN_ENABLED)
 	if (p_rendering_driver == "vulkan") {
-		wls.context_vulkan = memnew(VulkanContextWayland);
+		context_vulkan = memnew(VulkanContextWayland);
 
-		if (wls.context_vulkan->initialize() != OK) {
-			memdelete(wls.context_vulkan);
-			wls.context_vulkan = nullptr;
+		if (context_vulkan->initialize() != OK) {
+			memdelete(context_vulkan);
+			context_vulkan = nullptr;
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize Vulkan.");
 		}
@@ -2759,11 +2759,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #if defined(GLES3_ENABLED)
 	if (p_rendering_driver == "opengl3") {
-		wls.gl_manager = memnew(GLManagerWayland);
+		gl_manager = memnew(GLManagerWayland);
 
-		if (wls.gl_manager->initialize() != OK) {
-			memdelete(wls.gl_manager);
-			wls.gl_manager = nullptr;
+		if (gl_manager->initialize() != OK) {
+			memdelete(gl_manager);
+			gl_manager = nullptr;
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize GLES3.");
 		}
@@ -2856,8 +2856,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #ifdef VULKAN_ENABLED
 	if (p_rendering_driver == "vulkan") {
-		wls.rendering_device_vulkan = memnew(RenderingDeviceVulkan);
-		wls.rendering_device_vulkan->initialize(wls.context_vulkan);
+		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+		rendering_device_vulkan->initialize(context_vulkan);
 
 		RendererCompositorRD::make_current();
 	}
@@ -2884,14 +2884,14 @@ DisplayServerWayland::~DisplayServerWayland() {
 	}
 
 #ifdef VULKAN_ENABLED
-	if (wls.context_vulkan && wls.main_window.visible) {
-		wls.context_vulkan->window_destroy(MAIN_WINDOW_ID);
+	if (context_vulkan && wls.main_window.visible) {
+		context_vulkan->window_destroy(MAIN_WINDOW_ID);
 	}
 #endif
 
 #ifdef GLES3_ENABLED
-	if (wls.gl_manager && wls.main_window.visible) {
-		wls.gl_manager->window_destroy(MAIN_WINDOW_ID);
+	if (gl_manager && wls.main_window.visible) {
+		gl_manager->window_destroy(MAIN_WINDOW_ID);
 	}
 #endif
 	if (wls.main_window.xdg_toplevel) {
@@ -3002,13 +3002,13 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	// Destroy all drivers.
 #ifdef VULKAN_ENABLED
-	if (wls.rendering_device_vulkan) {
-		wls.rendering_device_vulkan->finalize();
-		memdelete(wls.rendering_device_vulkan);
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
 	}
 
-	if (wls.context_vulkan) {
-		memdelete(wls.context_vulkan);
+	if (context_vulkan) {
+		memdelete(context_vulkan);
 	}
 #endif
 

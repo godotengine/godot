@@ -338,20 +338,20 @@ class DisplayServerWayland : public DisplayServer {
 		List<Ref<WaylandMessage>> message_queue;
 
 		struct zwp_idle_inhibitor_v1 *wp_idle_inhibitor = nullptr;
-
-#ifdef VULKAN_ENABLED
-		VulkanContextWayland *context_vulkan = nullptr;
-		RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
-#endif
-
-#ifdef GLES3_ENABLED
-		GLManagerWayland *gl_manager = nullptr;
-#endif
 	};
 
 	WaylandState wls;
 
 	Thread events_thread;
+
+#ifdef VULKAN_ENABLED
+	VulkanContextWayland *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#endif
+
+#ifdef GLES3_ENABLED
+	GLManagerWayland *gl_manager = nullptr;
+#endif
 
 #ifdef SPEECHD_ENABLED
 	TTS_Linux *tts = nullptr;
