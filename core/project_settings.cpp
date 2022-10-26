@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
+#include "core/io/file_access_zip.h"
 #include "core/io/marshalls.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
@@ -298,7 +299,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
+bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, const String &p_password) {
 	if (PackedData::get_singleton()->is_disabled()) {
 		return false;
 	}
@@ -312,6 +313,9 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 	//if data.pck is found, all directory access will be from here
 	DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
 	using_datapack = true;
+
+	//set or clear ZipArchive password
+	ZipArchive::get_singleton()->set_password(p_password.utf8());
 
 	return true;
 }
@@ -1036,7 +1040,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("localize_path", "path"), &ProjectSettings::localize_path);
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
-	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset", "password"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ProjectSettings::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ProjectSettings::property_get_revert);
 

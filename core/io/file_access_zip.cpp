@@ -108,6 +108,10 @@ static void godot_free(voidpf opaque, voidpf address) {
 
 } // extern "C"
 
+void ZipArchive::set_password(const CharString &pass) {
+	password = pass;
+}
+
 void ZipArchive::close_handle(unzFile p_file) const {
 	ERR_FAIL_COND_MSG(!p_file, "Cannot close a file if none is open.");
 	unzCloseCurrentFile(p_file);
@@ -137,9 +141,23 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	unzFile pkg = unzOpen2(packages[file.package].filename.utf8().get_data(), &io);
 	ERR_FAIL_COND_V_MSG(!pkg, nullptr, "Cannot open file '" + packages[file.package].filename + "'.");
 	int unz_err = unzGoToFilePos(pkg, &file.file_pos);
-	if (unz_err != UNZ_OK || unzOpenCurrentFile(pkg) != UNZ_OK) {
+	if (unz_err != UNZ_OK) {
 		unzClose(pkg);
 		ERR_FAIL_V(nullptr);
+	}
+
+	// check if encryption password is not empty
+	if(password.length()) {
+		if(unzOpenCurrentFilePassword(pkg, password) != UNZ_OK) {
+			unzClose(pkg);
+			ERR_FAIL_V(nullptr);
+		}
+	}
+	else {
+		if(unzOpenCurrentFile(pkg) != UNZ_OK) {
+			unzClose(pkg);
+			ERR_FAIL_V(nullptr);
+		}
 	}
 
 	return pkg;
