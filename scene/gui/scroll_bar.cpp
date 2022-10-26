@@ -55,12 +55,14 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN && b->is_pressed()) {
-			set_value(get_value() + get_page() / 4.0);
+			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
+			set_value(get_value() + MAX(change, get_step()));
 			accept_event();
 		}
 
 		if (b->get_button_index() == MouseButton::WHEEL_UP && b->is_pressed()) {
-			set_value(get_value() - get_page() / 4.0);
+			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
+			set_value(get_value() - MAX(change, get_step()));
 			accept_event();
 		}
 
@@ -99,7 +101,8 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 				if (scrolling) {
 					target_scroll = CLAMP(target_scroll - get_page(), get_min(), get_max() - get_page());
 				} else {
-					target_scroll = CLAMP(get_value() - get_page(), get_min(), get_max() - get_page());
+					double change = get_page() != 0.0 ? get_page() : (get_max() - get_min()) / 16.0;
+					target_scroll = CLAMP(get_value() - change, get_min(), get_max() - get_page());
 				}
 
 				if (smooth_scroll_enabled) {
@@ -122,7 +125,8 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 				if (scrolling) {
 					target_scroll = CLAMP(target_scroll + get_page(), get_min(), get_max() - get_page());
 				} else {
-					target_scroll = CLAMP(get_value() + get_page(), get_min(), get_max() - get_page());
+					double change = get_page() != 0.0 ? get_page() : (get_max() - get_min()) / 16.0;
+					target_scroll = CLAMP(get_value() + change, get_min(), get_max() - get_page());
 				}
 
 				if (smooth_scroll_enabled) {
