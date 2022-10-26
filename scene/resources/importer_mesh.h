@@ -65,7 +65,7 @@ class ImporterMesh : public Resource {
 
 		struct LODComparator {
 			_FORCE_INLINE_ bool operator()(const LOD &l, const LOD &r) const {
-				return l.distance < r.distance;
+				return l.distance < r.distance && l.indices.size() < r.indices.size();
 			}
 		};
 
