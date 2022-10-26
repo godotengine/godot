@@ -323,6 +323,8 @@ class DisplayServerWindows : public DisplayServer {
 		LPARAM lParam;
 	};
 
+	WindowID window_mouseover_id = INVALID_WINDOW_ID;
+
 	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
 	int key_event_pos;
 
@@ -398,7 +400,6 @@ class DisplayServerWindows : public DisplayServer {
 
 		Size2 window_rect;
 		Point2 last_pos;
-		bool mouse_outside = true;
 
 		ObjectID instance_id;
 
