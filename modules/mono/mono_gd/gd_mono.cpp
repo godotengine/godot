@@ -260,32 +260,38 @@ using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbac
 #endif
 
 #ifdef TOOLS_ENABLED
-godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
-	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-	HostFxrCharString godot_plugins_path = str_to_hostfxr(
-			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.dll"));
+load_assembly_and_get_function_pointer_fn initialize_hostfxr(bool &r_runtime_initialized) {
+	String api_assemblies_config = GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.runtimeconfig.json");
+	if (!FileAccess::exists(api_assemblies_config)) {
+		WARN_PRINT("Mono glue not found. Consider running the next commands from the Godot source root:\n\
+<godot_binary> --generate-mono-glue ./modules/mono/glue\n\
+./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin");
+		ERR_FAIL_V_MSG(nullptr, "Could not initialize hostfxr.");
+	}
 
-	HostFxrCharString config_path = str_to_hostfxr(
-			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.runtimeconfig.json"));
-
-	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer =
+	HostFxrCharString config_path = str_to_hostfxr(api_assemblies_config);
+	load_assembly_and_get_function_pointer_fn setup_assembly =
 			initialize_hostfxr_for_config(get_data(config_path));
-	ERR_FAIL_NULL_V(load_assembly_and_get_function_pointer, nullptr);
+	ERR_FAIL_NULL_V(setup_assembly, nullptr);
 
 	r_runtime_initialized = true;
-
 	print_verbose(".NET: hostfxr initialized");
+	return setup_assembly;
+}
 
-	int rc = load_assembly_and_get_function_pointer(get_data(godot_plugins_path),
+godot_plugins_initialize_fn initialize_godot_plugins(load_assembly_and_get_function_pointer_fn setup_assembly) {
+	ERR_FAIL_NULL_V_MSG(setup_assembly, nullptr, "Could not initialize Godot plugins due to hostfxr being uninitialized.");
+	godot_plugins_initialize_fn init_plugins = nullptr;
+	HostFxrCharString godot_plugins_path = str_to_hostfxr(GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.dll"));
+	int rc = setup_assembly(get_data(godot_plugins_path),
 			HOSTFXR_STR("GodotPlugins.Main, GodotPlugins"),
 			HOSTFXR_STR("InitializeFromEngine"),
 			UNMANAGEDCALLERSONLY_METHOD,
 			nullptr,
-			(void **)&godot_plugins_initialize);
+			(void **)&init_plugins);
 	ERR_FAIL_COND_V_MSG(rc != 0, nullptr, ".NET: Failed to get GodotPlugins initialization function pointer");
-
-	return godot_plugins_initialize;
+	return init_plugins;
 }
 #else
 static String get_assembly_name() {
@@ -298,31 +304,30 @@ static String get_assembly_name() {
 	return assembly_name;
 }
 
-godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
-	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
-
-	String assembly_name = get_assembly_name();
-
+load_assembly_and_get_function_pointer_fn initialize_hostfxr(bool &r_runtime_initialized) {
 	HostFxrCharString assembly_path = str_to_hostfxr(GodotSharpDirs::get_api_assemblies_dir()
-															 .path_join(assembly_name + ".dll"));
-
-	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer =
+															 .path_join(get_assembly_name() + ".dll"));
+	load_assembly_and_get_function_pointer_fn setup_assembly =
 			initialize_hostfxr_self_contained(get_data(assembly_path));
-	ERR_FAIL_NULL_V(load_assembly_and_get_function_pointer, nullptr);
+	ERR_FAIL_NULL_V(setup_assembly, nullptr);
 
 	r_runtime_initialized = true;
-
 	print_verbose(".NET: hostfxr initialized");
+	return setup_assembly;
+}
 
-	int rc = load_assembly_and_get_function_pointer(get_data(assembly_path),
-			get_data(str_to_hostfxr("GodotPlugins.Game.Main, " + assembly_name)),
+godot_plugins_initialize_fn initialize_godot_plugins(load_assembly_and_get_function_pointer_fn setup_assembly) {
+	HostFxrCharString assembly_path = str_to_hostfxr(GodotSharpDirs::get_api_assemblies_dir()
+															 .path_join(get_assembly_name() + ".dll"));
+	godot_plugins_initialize_fn init_plugins = nullptr;
+	int rc = setup_assembly(get_data(assembly_path),
+			get_data(str_to_hostfxr("GodotPlugins.Game.Main, " + get_assembly_name())),
 			HOSTFXR_STR("InitializeFromGameProject"),
 			UNMANAGEDCALLERSONLY_METHOD,
 			nullptr,
-			(void **)&godot_plugins_initialize);
+			(void **)&init_plugins);
 	ERR_FAIL_COND_V_MSG(rc != 0, nullptr, ".NET: Failed to get GodotPlugins initialization function pointer");
-
-	return godot_plugins_initialize;
+	return init_plugins;
 }
 
 godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
@@ -399,8 +404,9 @@ void GDMono::initialize() {
 	}
 
 	if (!is_native_aot) {
-		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
-		ERR_FAIL_NULL(godot_plugins_initialize);
+		load_assembly_and_get_function_pointer_fn fn = initialize_hostfxr(runtime_initialized);
+		godot_plugins_initialize = initialize_godot_plugins(fn);
+		ERR_FAIL_NULL_MSG(godot_plugins_initialize, "Could not initialize GDMono due to Godot plugins being uninitialized.");
 	}
 
 	int32_t interop_funcs_size = 0;

@@ -342,6 +342,13 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
 def main():
     import argparse
     import sys
+    import os.path
+
+    if not os.path.exists("modules/mono/glue/GodotSharp/GodotSharp/Generated/"):
+        print(
+            "WARNING: Mono glue not found.\nConsider running the command `<godot_binary> --generate-mono-glue ./modules/mono/glue` from the Godot source root.\n",
+            file=sys.stderr,
+        )
 
     parser = argparse.ArgumentParser(description="Builds all Godot .NET solutions")
     parser.add_argument("--godot-output-dir", type=str, required=True)
