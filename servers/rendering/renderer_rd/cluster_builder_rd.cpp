@@ -54,7 +54,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, 0);
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, RD::get_singleton()->framebuffer_format_create_empty(), vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState(), 0);
 		RD::PipelineMultisampleState ms;
-		ms.sample_count = RD::TEXTURE_SAMPLES_4;
+		ms.sample_count = RD::TEXTURE_SAMPLES_1;
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, RD::get_singleton()->framebuffer_format_create_empty(), vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), ms, RD::PipelineDepthStencilState(), RD::PipelineColorBlendState(), 0);
 	}
 	{
