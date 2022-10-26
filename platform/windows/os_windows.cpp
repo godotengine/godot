@@ -3998,6 +3998,11 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	AudioDriverManager::add_driver(&driver_xaudio2);
 #endif
 
+	// Use the officially documented constant, https://learn.microsoft.com/en-us/windows/console/setconsolemode
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
+
 	// Enable ANSI escape code support on Windows 10 v1607 (Anniversary Update) and later.
 	// This lets the engine and projects use ANSI escape codes to color text just like on macOS and Linux.
 	//
