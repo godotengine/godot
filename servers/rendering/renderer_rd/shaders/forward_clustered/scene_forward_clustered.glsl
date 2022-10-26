@@ -97,9 +97,7 @@ layout(location = 8) out vec4 prev_screen_position;
 
 #ifdef MATERIAL_UNIFORMS_USED
 layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
-
 #MATERIAL_UNIFORMS
-
 } material;
 #endif
 
@@ -691,7 +689,7 @@ vec4 fog_process(vec3 vertex) {
 
 void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
 	uint item_min_max = cluster_buffer.data[p_offset];
-	item_min = item_min_max & 0xFFFF;
+	item_min = item_min_max & 0xFFFFu;
 	item_max = item_min_max >> 16;
 
 	item_from = item_min >> 5;
@@ -958,9 +956,9 @@ void fragment_shader(in SceneData scene_data) {
 
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
-				merged_mask &= ~(1 << bit);
+				merged_mask &= ~(1u << bit);
 #ifdef USE_SUBGROUPS
-				if (((1 << bit) & mask) == 0) { //do not process if not originally here
+				if (((1u << bit) & mask) == 0) { //do not process if not originally here
 					continue;
 				}
 #endif
@@ -1419,9 +1417,9 @@ void fragment_shader(in SceneData scene_data) {
 
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
-				merged_mask &= ~(1 << bit);
+				merged_mask &= ~(1u << bit);
 #ifdef USE_SUBGROUPS
-				if (((1 << bit) & mask) == 0) { //do not process if not originally here
+				if (((1u << bit) & mask) == 0) { //do not process if not originally here
 					continue;
 				}
 #endif
@@ -1775,9 +1773,9 @@ void fragment_shader(in SceneData scene_data) {
 			float shadow = 1.0;
 #ifndef SHADOWS_DISABLED
 			if (i < 4) {
-				shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
+				shadow = float(shadow0 >> (i * 8u) & 0xFFu) / 255.0;
 			} else {
-				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
+				shadow = float(shadow1 >> ((i - 4u) * 8u) & 0xFFu) / 255.0;
 			}
 
 			shadow = shadow * directional_lights.data[i].shadow_opacity + 1.0 - directional_lights.data[i].shadow_opacity;
@@ -1839,9 +1837,9 @@ void fragment_shader(in SceneData scene_data) {
 
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
-				merged_mask &= ~(1 << bit);
+				merged_mask &= ~(1u << bit);
 #ifdef USE_SUBGROUPS
-				if (((1 << bit) & mask) == 0) { //do not process if not originally here
+				if (((1u << bit) & mask) == 0) { //do not process if not originally here
 					continue;
 				}
 #endif
@@ -1910,9 +1908,9 @@ void fragment_shader(in SceneData scene_data) {
 
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
-				merged_mask &= ~(1 << bit);
+				merged_mask &= ~(1u << bit);
 #ifdef USE_SUBGROUPS
-				if (((1 << bit) & mask) == 0) { //do not process if not originally here
+				if (((1u << bit) & mask) == 0) { //do not process if not originally here
 					continue;
 				}
 #endif
@@ -2065,7 +2063,7 @@ void fragment_shader(in SceneData scene_data) {
 			float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
 			float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
 			//store as 8985 to have 2 extra neighbour bits
-			uint light_rgbe = ((uint(sRed) & 0x1FF) >> 1) | ((uint(sGreen) & 0x1FF) << 8) | (((uint(sBlue) & 0x1FF) >> 1) << 17) | ((uint(exps) & 0x1F) << 25);
+			uint light_rgbe = ((uint(sRed) & 0x1FFu) >> 1) | ((uint(sGreen) & 0x1FFu) << 8) | (((uint(sBlue) & 0x1FFu) >> 1) << 17) | ((uint(exps) & 0x1Fu) << 25);
 
 			imageStore(emission_grid, grid_pos, uvec4(light_rgbe));
 			imageStore(emission_aniso_grid, grid_pos, uvec4(light_aniso));
@@ -2099,8 +2097,8 @@ void fragment_shader(in SceneData scene_data) {
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
 		uint index2 = instances.data[instance_index].gi_offset >> 16;
-		voxel_gi_buffer.x = index1 & 0xFF;
-		voxel_gi_buffer.y = index2 & 0xFF;
+		voxel_gi_buffer.x = index1 & 0xFFu;
+		voxel_gi_buffer.y = index2 & 0xFFu;
 	} else {
 		voxel_gi_buffer.x = 0xFF;
 		voxel_gi_buffer.y = 0xFF;
