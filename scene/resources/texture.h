@@ -174,7 +174,7 @@ protected:
 
 public:
 	CompressionMode get_compression_mode() const;
-	void create_from_image(const Ref<Image> &p_image, CompressionMode p_compression_mode, bool p_normal_map = false, float p_lossy_quality = 0.8);
+	void create_from_image(const Ref<Image> &p_image, CompressionMode p_compression_mode, bool p_normal_map = false, float p_lossy_quality = 0.8, bool p_near_lossless = false);
 
 	Image::Format get_format() const;
 

@@ -38,41 +38,49 @@
 #include <webp/encode.h>
 
 namespace WebPCommon {
-Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
+Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality, bool p_near_lossless) {
 	ERR_FAIL_COND_V(p_image.is_null() || p_image->is_empty(), Vector<uint8_t>());
 
-	Ref<Image> img = p_image->duplicate();
-	if (img->detect_alpha()) {
-		img->convert(Image::FORMAT_RGBA8);
+	if (!p_near_lossless) {
+		Ref<Image> img = p_image->duplicate();
+		if (img->detect_alpha()) {
+			img->convert(Image::FORMAT_RGBA8);
+		} else {
+			img->convert(Image::FORMAT_RGB8);
+		}
+
+		Size2 s(img->get_width(), img->get_height());
+		Vector<uint8_t> data = img->get_data();
+		const uint8_t *r = data.ptr();
+
+		uint8_t *dst_buff = nullptr;
+		size_t dst_size = 0;
+		if (img->get_format() == Image::FORMAT_RGB8) {
+			dst_size = WebPEncodeRGB(r, s.width, s.height, 3 * s.width, CLAMP(p_quality * 100.0f, 0.0f, 100.0f), &dst_buff);
+		} else {
+			dst_size = WebPEncodeRGBA(r, s.width, s.height, 4 * s.width, CLAMP(p_quality * 100.0f, 0.0f, 100.0f), &dst_buff);
+		}
+
+		ERR_FAIL_COND_V(dst_size == 0, Vector<uint8_t>());
+		Vector<uint8_t> dst;
+		dst.resize(dst_size);
+		uint8_t *w = dst.ptrw();
+		memcpy(w, dst_buff, dst_size);
+		WebPFree(dst_buff);
+
+		return dst;
 	} else {
-		img->convert(Image::FORMAT_RGB8);
+		return _webp_lossless_helper(p_image, CLAMP(p_quality * 100, 0, 100));
 	}
-
-	Size2 s(img->get_width(), img->get_height());
-	Vector<uint8_t> data = img->get_data();
-	const uint8_t *r = data.ptr();
-
-	uint8_t *dst_buff = nullptr;
-	size_t dst_size = 0;
-	if (img->get_format() == Image::FORMAT_RGB8) {
-		dst_size = WebPEncodeRGB(r, s.width, s.height, 3 * s.width, CLAMP(p_quality * 100.0f, 0.0f, 100.0f), &dst_buff);
-	} else {
-		dst_size = WebPEncodeRGBA(r, s.width, s.height, 4 * s.width, CLAMP(p_quality * 100.0f, 0.0f, 100.0f), &dst_buff);
-	}
-
-	ERR_FAIL_COND_V(dst_size == 0, Vector<uint8_t>());
-	Vector<uint8_t> dst;
-	dst.resize(dst_size);
-	uint8_t *w = dst.ptrw();
-	memcpy(w, dst_buff, dst_size);
-	WebPFree(dst_buff);
-
-	return dst;
 }
 
 Vector<uint8_t> _webp_lossless_pack(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_V(p_image.is_null() || p_image->is_empty(), Vector<uint8_t>());
 
+	return _webp_lossless_helper(p_image);
+}
+
+Vector<uint8_t> _webp_lossless_helper(const Ref<Image> &p_image, int p_near_lossless_quality) {
 	int compression_level = ProjectSettings::get_singleton()->get("rendering/textures/lossless_compression/webp_compression_level");
 	compression_level = CLAMP(compression_level, 0, 9);
 
@@ -87,7 +95,7 @@ Vector<uint8_t> _webp_lossless_pack(const Ref<Image> &p_image) {
 	Vector<uint8_t> data = img->get_data();
 	const uint8_t *r = data.ptr();
 
-	// we need to use the more complex API in order to access the 'exact' flag...
+	// we need to use the more complex API in order to access specific flags...
 
 	WebPConfig config;
 	WebPPicture pic;
@@ -97,6 +105,7 @@ Vector<uint8_t> _webp_lossless_pack(const Ref<Image> &p_image) {
 
 	WebPMemoryWriter wrt;
 	config.exact = 1;
+	config.near_lossless = p_near_lossless_quality;
 	pic.use_argb = 1;
 	pic.width = s.width;
 	pic.height = s.height;
