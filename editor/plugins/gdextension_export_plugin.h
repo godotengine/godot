@@ -72,9 +72,8 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 
 		if (all_tags_met) {
 			String library_path = config->get_value("libraries", E);
-			if (!library_path.begins_with("res://")) {
-				print_line("Skipping export of out-of-project library " + library_path);
-				continue;
+			if (library_path.is_relative_path()) {
+				library_path = p_path.get_base_dir().path_join(library_path);
 			}
 			add_shared_object(library_path, tags);
 
@@ -131,9 +130,8 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 			for (const Variant *key = dependency.next(nullptr); key; key = dependency.next(key)) {
 				String library_path = *key;
 				String target_path = dependency[*key];
-				if (!library_path.begins_with("res://")) {
-					print_line("Skipping export of out-of-project library " + library_path);
-					continue;
+				if (library_path.is_relative_path()) {
+					library_path = p_path.get_base_dir().path_join(library_path);
 				}
 				add_shared_object(library_path, tags, target_path);
 			}
