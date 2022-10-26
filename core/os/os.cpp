@@ -353,20 +353,26 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "debug") {
 		return true;
 	}
-#else
-	if (p_feature == "release") {
-		return true;
-	}
-#endif
+#endif // DEBUG_ENABLED
+
 #ifdef TOOLS_ENABLED
 	if (p_feature == "editor") {
 		return true;
 	}
 #else
-	if (p_feature == "standalone") {
+	if (p_feature == "template") {
 		return true;
 	}
-#endif
+#ifdef DEBUG_ENABLED
+	if (p_feature == "template_debug") {
+		return true;
+	}
+#else
+	if (p_feature == "template_release" || p_feature == "release") {
+		return true;
+	}
+#endif // DEBUG_ENABLED
+#endif // TOOLS_ENABLED
 
 	if (sizeof(void *) == 8 && p_feature == "64") {
 		return true;

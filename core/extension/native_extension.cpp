@@ -30,13 +30,118 @@
 
 #include "native_extension.h"
 #include "core/config/project_settings.h"
-#include "core/io/config_file.h"
+#include "core/io/dir_access.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 
 String NativeExtension::get_extension_list_config_file() {
 	return ProjectSettings::get_singleton()->get_project_data_path().path_join("extension_list.cfg");
+}
+
+String NativeExtension::find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags) {
+	// First, check the explicit libraries.
+	if (p_config->has_section("libraries")) {
+		List<String> libraries;
+		p_config->get_section_keys("libraries", &libraries);
+
+		// Iterate the libraries, finding the best matching tags.
+		String best_library_path;
+		Vector<String> best_library_tags;
+		for (const String &E : libraries) {
+			Vector<String> tags = E.split(".");
+			bool all_tags_met = true;
+			for (int i = 0; i < tags.size(); i++) {
+				String tag = tags[i].strip_edges();
+				if (!p_has_feature(tag)) {
+					all_tags_met = false;
+					break;
+				}
+			}
+
+			if (all_tags_met && tags.size() > best_library_tags.size()) {
+				best_library_path = p_config->get_value("libraries", E);
+				best_library_tags = tags;
+			}
+		}
+
+		if (!best_library_path.is_empty()) {
+			if (best_library_path.is_relative_path()) {
+				best_library_path = p_path.get_base_dir().path_join(best_library_path);
+			}
+			if (r_tags != nullptr) {
+				r_tags->append_array(best_library_tags);
+			}
+			return best_library_path;
+		}
+	}
+
+	// Second, try to autodetect
+	String autodetect_library_prefix;
+	if (p_config->has_section_key("configuration", "autodetect_library_prefix")) {
+		autodetect_library_prefix = p_config->get_value("configuration", "autodetect_library_prefix");
+	}
+	if (!autodetect_library_prefix.is_empty()) {
+		String autodetect_path = autodetect_library_prefix;
+		if (autodetect_path.is_relative_path()) {
+			autodetect_path = p_path.get_base_dir().path_join(autodetect_path);
+		}
+
+		// Find the folder and file parts of the prefix.
+		String folder;
+		String file_prefix;
+		if (DirAccess::dir_exists_absolute(autodetect_path)) {
+			folder = autodetect_path;
+		} else if (DirAccess::dir_exists_absolute(autodetect_path.get_base_dir())) {
+			folder = autodetect_path.get_base_dir();
+			file_prefix = autodetect_path.get_file();
+		} else {
+			ERR_FAIL_V_MSG(String(), vformat("Error in extension: %s. Could not find folder for automatic detection of libraries files. autodetect_library_prefix=\"%s\"", p_path, autodetect_library_prefix));
+		}
+
+		// Open the folder.
+		Ref<DirAccess> dir = DirAccess::open(folder);
+		ERR_FAIL_COND_V_MSG(!dir.is_valid(), String(), vformat("Error in extension: %s. Could not open folder for automatic detection of libraries files. autodetect_library_prefix=\"%s\"", p_path, autodetect_library_prefix));
+
+		// Iterate the files and check the prefixes, finding the best matching file.
+		String best_file;
+		Vector<String> best_file_tags;
+		dir->list_dir_begin();
+		String file_name = dir->_get_next();
+		while (file_name != "") {
+			if (!dir->current_is_dir() && file_name.begins_with(file_prefix)) {
+				// Check if the files matches all requested feature tags.
+				String tags_str = file_name.trim_prefix(file_prefix);
+				tags_str = tags_str.trim_suffix(tags_str.get_extension());
+
+				Vector<String> tags = tags_str.split(".", false);
+				bool all_tags_met = true;
+				for (int i = 0; i < tags.size(); i++) {
+					String tag = tags[i].strip_edges();
+					if (!p_has_feature(tag)) {
+						all_tags_met = false;
+						break;
+					}
+				}
+
+				// If all tags are found in the feature list, and we found more tags than before, use this file.
+				if (all_tags_met && tags.size() > best_file_tags.size()) {
+					best_file_tags = tags;
+					best_file = file_name;
+				}
+			}
+			file_name = dir->_get_next();
+		}
+
+		if (!best_file.is_empty()) {
+			String library_path = folder.path_join(best_file);
+			if (r_tags != nullptr) {
+				r_tags->append_array(best_file_tags);
+			}
+			return library_path;
+		}
+	}
+	return String();
 }
 
 class NativeExtensionMethodBind : public MethodBind {
@@ -415,28 +520,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 
 	String entry_symbol = config->get_value("configuration", "entry_symbol");
 
-	List<String> libraries;
-
-	config->get_section_keys("libraries", &libraries);
-
-	String library_path;
-
-	for (const String &E : libraries) {
-		Vector<String> tags = E.split(".");
-		bool all_tags_met = true;
-		for (int i = 0; i < tags.size(); i++) {
-			String tag = tags[i].strip_edges();
-			if (!OS::get_singleton()->has_feature(tag)) {
-				all_tags_met = false;
-				break;
-			}
-		}
-
-		if (all_tags_met) {
-			library_path = config->get_value("libraries", E);
-			break;
-		}
-	}
+	String library_path = NativeExtension::find_extension_library(p_path, config, [](String p_feature) { return OS::get_singleton()->has_feature(p_feature); });
 
 	if (library_path.is_empty()) {
 		if (r_error) {
