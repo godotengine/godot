@@ -31,7 +31,10 @@
 #ifndef NATIVE_EXTENSION_H
 #define NATIVE_EXTENSION_H
 
+#include <functional>
+
 #include "core/extension/gdnative_interface.h"
+#include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
 
@@ -65,6 +68,7 @@ protected:
 
 public:
 	static String get_extension_list_config_file();
+	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
 
 	Error open_library(const String &p_path, const String &p_entry_symbol);
 	void close_library();
