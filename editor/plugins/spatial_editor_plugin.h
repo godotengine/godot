@@ -752,6 +752,7 @@ private:
 
 	bool is_any_freelook_active() const;
 
+	void _selection_changed();
 	void _refresh_menu_icons();
 
 protected:
