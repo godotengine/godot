@@ -86,6 +86,8 @@
 #endif
 #endif
 
+#include "godot_tracy/profiler.h"
+
 /* Static members */
 
 // Singletons
@@ -2194,6 +2196,8 @@ static uint64_t frame_delta_sync_time = 0;
 #endif
 
 bool Main::iteration() {
+	ZoneScoped;
+
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
@@ -2251,6 +2255,8 @@ bool Main::iteration() {
 	bool exit = false;
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
+		ZoneScopedN("Main::iteration::PhysicsProcess");
+
 		if (InputDefault::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
 			InputDefault::get_singleton()->flush_buffered_events();
 		}
@@ -2270,13 +2276,19 @@ bool Main::iteration() {
 			break;
 		}
 
-		NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
-		message_queue->flush();
+		{
+			ZoneScopedN("Main::iteration::PhysicsProcess::Navigation");
+			NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
+			message_queue->flush();
+		}
 
-		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
+		{
+			ZoneScopedN("Main::iteration::PhysicsProcess::Physics");
+			PhysicsServer::get_singleton()->step(frame_slice * time_scale);
 
-		Physics2DServer::get_singleton()->end_sync();
-		Physics2DServer::get_singleton()->step(frame_slice * time_scale);
+			Physics2DServer::get_singleton()->end_sync();
+			Physics2DServer::get_singleton()->step(frame_slice * time_scale);
+		}
 
 		message_queue->flush();
 
@@ -2295,11 +2307,14 @@ bool Main::iteration() {
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
-	if (OS::get_singleton()->get_main_loop()->idle(step * time_scale)) {
-		exit = true;
+	{
+		ZoneScopedN("Main::iteration::IdleProcess");
+		if (OS::get_singleton()->get_main_loop()->idle(step * time_scale)) {
+			exit = true;
+		}
+		visual_server_callbacks->flush();
+		message_queue->flush();
 	}
-	visual_server_callbacks->flush();
-	message_queue->flush();
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 

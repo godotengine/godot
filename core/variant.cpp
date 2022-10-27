@@ -40,6 +40,8 @@
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
 
+#include "godot_tracy/profiler.h"
+
 String Variant::get_type_name(Variant::Type p_type) {
 	switch (p_type) {
 		case NIL: {
@@ -2995,6 +2997,10 @@ bool Variant::is_shared() const {
 }
 
 Variant Variant::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
+	ZoneScoped;
+	CharString c = String(p_method).utf8();
+	ZoneName(c.ptr(), c.size());
+
 	VARIANT_ARGPTRS;
 	int argc = 0;
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {

@@ -78,6 +78,8 @@
 
 #include <X11/XKBlib.h>
 
+#include "godot_tracy/profiler.h"
+
 // 2.2 is the first release with multitouch
 #define XINPUT_CLIENT_VERSION_MAJOR 2
 #define XINPUT_CLIENT_VERSION_MINOR 2
@@ -3980,6 +3982,9 @@ void OS_X11::run() {
 	//uint64_t frame=0;
 
 	while (!force_quit) {
+		FrameMark;
+		ZoneScoped;
+
 		process_xevents(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();

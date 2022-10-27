@@ -39,6 +39,8 @@
 #include "core/os/os.h"
 #include "core/script_language.h"
 
+#include "godot_tracy/profiler.h"
+
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
 
@@ -1241,7 +1243,12 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 		}
 #endif
 		_VariantCall::FuncData &funcdata = E->get();
-		funcdata.call(ret, *this, p_args, p_argcount, r_error);
+		{
+			ZoneScoped;
+			CharString c = Profiler::stringify_method(p_method, p_args, p_argcount);
+			ZoneName(c.ptr(), c.size());
+			funcdata.call(ret, *this, p_args, p_argcount, r_error);
+		}
 	}
 
 	if (r_error.error == Variant::CallError::CALL_OK && r_ret) {

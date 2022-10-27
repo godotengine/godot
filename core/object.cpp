@@ -40,6 +40,8 @@
 #include "core/script_language.h"
 #include "core/translation.h"
 
+#include "godot_tracy/profiler.h"
+
 #ifdef DEBUG_ENABLED
 
 struct _ObjectDebugLock {
@@ -738,6 +740,10 @@ static void _test_call_error(const StringName &p_func, const Variant::CallError 
 #endif
 
 void Object::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
+	ZoneScoped;
+	CharString c = Profiler::stringify_method(p_method, p_args, p_argcount);
+	ZoneName(c.ptr(), c.size());
+
 	if (p_method == CoreStringNames::get_singleton()->_free) {
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_MSG(Object::cast_to<Reference>(this), "Can't 'free' a reference.");
@@ -864,6 +870,10 @@ void Object::call_multilevel(const StringName &p_name, VARIANT_ARG_DECLARE) {
 }
 
 Variant Object::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	ZoneScoped;
+	CharString c = Profiler::stringify_method(p_method, p_args, p_argcount);
+	ZoneName(c.ptr(), c.size());
+
 	r_error.error = Variant::CallError::CALL_OK;
 
 	if (p_method == CoreStringNames::get_singleton()->_free) {
