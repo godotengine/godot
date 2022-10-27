@@ -119,8 +119,17 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 	graph->clear_connections();
 	//erase all nodes
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		if (Object::cast_to<GraphNode>(graph->get_child(i))) {
-			memdelete(graph->get_child(i));
+		GraphNode *graph_node = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (graph_node) {
+			Ref<AnimationNode> agnode = blend_tree->get_node(graph_node->get_name());
+			for (int j = 0; j < graph_node->get_child_count(); j++) {
+				LineEdit *le = Object::cast_to<LineEdit>(graph_node->get_child(j));
+
+				if (le) {
+					le->disconnect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(le, agnode));
+				}
+			}
+			memdelete(graph_node);
 			i--;
 		}
 	}
