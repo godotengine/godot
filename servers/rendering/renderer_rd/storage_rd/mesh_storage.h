@@ -398,13 +398,11 @@ public:
 		return s->index_count ? s->index_count : s->vertex_count;
 	}
 
-	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t *r_index_count = nullptr) const {
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t &r_index_count) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
-		if (r_index_count) {
-			*r_index_count = s->index_count;
-		}
+		r_index_count = s->index_count;
 		for (uint32_t i = 0; i < s->lod_count; i++) {
 			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
 			if (screen_size > p_mesh_lod_threshold) {
@@ -415,9 +413,7 @@ public:
 		if (current_lod == -1) {
 			return 0;
 		} else {
-			if (r_index_count) {
-				*r_index_count = s->lods[current_lod].index_count;
-			}
+			r_index_count = s->lods[current_lod].index_count;
 			return current_lod + 1;
 		}
 	}

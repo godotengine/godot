@@ -1189,8 +1189,8 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					distance = 1.0;
 				}
 
-				uint32_t indices;
-				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, &indices);
+				uint32_t indices = 0;
+				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, indices);
 				/*
 				if (p_render_data->render_info) {
 					indices = _indices_to_primitives(surf->primitive, indices);
