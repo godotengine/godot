@@ -478,8 +478,8 @@ void NavigationAgent2D::_request_repath() {
 void NavigationAgent2D::_check_distance_to_target() {
 	if (!target_reached) {
 		if (distance_to_target() < target_desired_distance) {
-			emit_signal(SNAME("target_reached"));
 			target_reached = true;
+			emit_signal(SNAME("target_reached"));
 		}
 	}
 }
