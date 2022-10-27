@@ -896,7 +896,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 
 	call_lock++;
 
-	Vector<Node *> no_context_nodes;
+	Vector<ObjectID> no_context_node_ids; // Nodes may be deleted due to this shortcut input.
 
 	for (int i = gr_node_count - 1; i >= 0; i--) {
 		if (p_viewport->is_input_handled()) {
@@ -922,7 +922,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 					// If calling shortcut input on a control, ensure it respects the shortcut context.
 					// Shortcut context (based on focus) only makes sense for controls (UI), so don't need to worry about it for nodes
 					if (c->get_shortcut_context() == nullptr) {
-						no_context_nodes.append(n);
+						no_context_node_ids.append(n->get_instance_id());
 						continue;
 					}
 					if (!c->is_focus_owner_in_shortcut_context()) {
@@ -941,8 +941,11 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 		}
 	}
 
-	for (Node *n : no_context_nodes) {
-		n->_call_shortcut_input(p_input);
+	for (const ObjectID &id : no_context_node_ids) {
+		Node *n = Object::cast_to<Node>(ObjectDB::get_instance(id));
+		if (n) {
+			n->_call_shortcut_input(p_input);
+		}
 	}
 
 	call_lock--;
