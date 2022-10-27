@@ -3781,7 +3781,7 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, boo
 		if (child) {
 			AABB child_bounds = _calculate_spatial_bounds(child, false);
 
-			if (bounds.size == Vector3() && Object::cast_to<Node3D>(p_parent)) {
+			if (bounds.size == Vector3() && p_parent) {
 				bounds = child_bounds;
 			} else {
 				bounds.merge_with(child_bounds);
@@ -3789,7 +3789,7 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, boo
 		}
 	}
 
-	if (bounds.size == Vector3() && !Object::cast_to<Node3D>(p_parent)) {
+	if (bounds.size == Vector3() && !p_parent) {
 		bounds = AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 	}
 
