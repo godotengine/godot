@@ -959,7 +959,7 @@ void ColorPicker::_sample_draw() {
 		// Draw both old and new colors for easier comparison (only if spawned from a ColorPickerButton).
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 
-		if (display_old_color && old_color.a < 1.0) {
+		if (old_color.a < 1.0) {
 			sample->draw_texture_rect(get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), rect_old, true);
 		}
 
