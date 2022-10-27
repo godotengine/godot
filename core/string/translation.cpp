@@ -293,6 +293,10 @@ void TranslationServer::init_locale_info() {
 }
 
 String TranslationServer::standardize_locale(const String &p_locale) const {
+	return _standardize_locale(p_locale, false);
+}
+
+String TranslationServer::_standardize_locale(const String &p_locale, bool p_add_defaults) const {
 	// Replaces '-' with '_' for macOS style locales.
 	String univ_locale = p_locale.replace("-", "_");
 
@@ -354,24 +358,26 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 	}
 
 	// Add script code base on language and country codes for some ambiguous cases.
-	if (script_name.is_empty()) {
-		for (int i = 0; i < locale_script_info.size(); i++) {
-			const LocaleScriptInfo &info = locale_script_info[i];
-			if (info.name == lang_name) {
-				if (country_name.is_empty() || info.supported_countries.has(country_name)) {
-					script_name = info.script;
-					break;
+	if (p_add_defaults) {
+		if (script_name.is_empty()) {
+			for (int i = 0; i < locale_script_info.size(); i++) {
+				const LocaleScriptInfo &info = locale_script_info[i];
+				if (info.name == lang_name) {
+					if (country_name.is_empty() || info.supported_countries.has(country_name)) {
+						script_name = info.script;
+						break;
+					}
 				}
 			}
 		}
-	}
-	if (!script_name.is_empty() && country_name.is_empty()) {
-		// Add conntry code based on script for some ambiguous cases.
-		for (int i = 0; i < locale_script_info.size(); i++) {
-			const LocaleScriptInfo &info = locale_script_info[i];
-			if (info.name == lang_name && info.script == script_name) {
-				country_name = info.default_country;
-				break;
+		if (!script_name.is_empty() && country_name.is_empty()) {
+			// Add conntry code based on script for some ambiguous cases.
+			for (int i = 0; i < locale_script_info.size(); i++) {
+				const LocaleScriptInfo &info = locale_script_info[i];
+				if (info.name == lang_name && info.script == script_name) {
+					country_name = info.default_country;
+					break;
+				}
 			}
 		}
 	}
@@ -391,8 +397,8 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 }
 
 int TranslationServer::compare_locales(const String &p_locale_a, const String &p_locale_b) const {
-	String locale_a = standardize_locale(p_locale_a);
-	String locale_b = standardize_locale(p_locale_b);
+	String locale_a = _standardize_locale(p_locale_a, true);
+	String locale_b = _standardize_locale(p_locale_b, true);
 
 	if (locale_a == locale_b) {
 		// Exact match.
