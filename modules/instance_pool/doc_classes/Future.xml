@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Future" inherits="Object" version="3.5">
+	<brief_description>
+		[code]Future[/code] provide asynchronous operations in Godot.
+	</brief_description>
+	<description>
+		A Future is a reference which eventually contain a value, but might not contain one yet. The only correct ways to initialize a [code]Future[/code] is either using [method WorkPool.queue_job] or [method InstancePool.queue_job].
+	</description>
+	<methods>
+		<method name="is_legit">
+			<return type="bool" />
+			<description>
+				Return the state of this [code]Future[/code]. A Future is legit when it is properly initialized by a [WorkPool].
+			</description>
+		</method>
+		<method name="is_available">
+			<return type="bool" />
+			<description>
+				Return the state of this Future's asynchronous operation. Return true when the value is ready.
+			</description>
+		</method>
+		<method name="get_value">
+			<return type="Variant" />
+			<description>
+				Return whatever value this Future is holding. Will definitely return [code]null[/code] before the operation is finished.
+			</description>
+		</method>
+		<method name="await">
+			<return type="Variant" />
+			<description>
+				Wait until the operation is finished and return the result.
+			</description>
+		</method>
+	</methods>
+</class>

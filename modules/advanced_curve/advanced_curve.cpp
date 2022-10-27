@@ -98,11 +98,11 @@ void AdvancedCurve::bake_samples(){
 }
 
 float AdvancedCurve::get_area(const float& from, const float& to){
+	if (from >= to) return 0.0;
 	if (is_samples_polluted()) bake_samples();
 	if (is_samples_polluted()) return 0.0;
 	auto local_from = from / range;
 	auto local_to = to / range;
-	if (from > to) return 0.0;
 	auto sum = 0.0;
 	if (local_from < 0.0){
 		if (local_to <= 0.0){
@@ -127,6 +127,7 @@ float AdvancedCurve::get_area(const float& from, const float& to){
 }
 
 float AdvancedCurve::get_area_no_bake(const float& from, const float& to, ApproxMethod met){
+	if (from >= to) return 0.0;
 	float sum = 0.0;
 	switch (met){
 		case ApproxMethod::AC_TRAPEZOID: {

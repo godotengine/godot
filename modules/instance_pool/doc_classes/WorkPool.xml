@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WorkPool" inherits="Object" version="3.5">
+	<brief_description>
+		A pooled worker instance.
+	</brief_description>
+	<description>
+		A WorkPool is used to dispatch foreign functions asynchronously. All operations are placed inside a wait queue until it is handle the next idle frame. All active operations are handled using FIFO method. Should be initialized using [InstancePool].
+	</description>
+	<members>
+		<member name="auto_free" type="bool" setter="set_autofree" getter="is_autofree" default="false">
+			Allow or disallow this WorkPool to be freed automatically by [InstancePool] when it is no longer of any use.
+		</member>
+		<member name="pool_name" type="String" setter="set_pool_name" getter="get_pool_name" default="">
+			The name of the current WorkPool.
+		</member>
+
+	</members>
+	<methods>
+		<method name="get_job_count">
+			<return type="int" />
+			<description>
+				Return the amount of operations currently being handled.
+			</description>
+		</method>
+		<method name="get_queued_count">
+			<return type="int" />
+			<description>
+				Return the amount of operations currently sitting in the wait queue.
+			</description>
+		</method>
+		<method name="is_worker_active">
+			<return type="bool" />
+			<description>
+				Return the status of this WorkPool's worker thread.
+			</description>
+		</method>
+		<method name="dispatch">
+			<return type="void" />
+			<argument index="0" name="delta" type="float" default="0.0"/>
+			<description>
+				Flush the wait queue and dispatch a worker if there isn't any. Is called by [InstancePool] every frame if this instance was created by it. Only call this manually if you know what you are doing.
+			</description>
+		</method>
+		<method name="queue_job">
+			<return type="Future" />
+			<argument index="0" name="function" type="FuncRef"/>
+			<argument index="1" name="parameters" type="Array"/>
+			<description>
+				Queue this [code]function[/code] for later execution with the arguments list of [code]parameters[/code]. Return a legit [Future] on success.
+			</description>
+		</method>
+	</methods>
+</class>

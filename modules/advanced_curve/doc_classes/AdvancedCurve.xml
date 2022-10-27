@@ -4,7 +4,7 @@
 		A brand new [Curve], now with area estimation using Trapezoid and Simpson's method.
 	</brief_description>
 	<members>
-		<member name="bake_method" type="int" enum="AdvancedCurve.ApproxMethod" setter="set_bake_method" getter="get_bake_method" default="0">
+		<member name="bake_method" type="int" enum="AdvancedCurve.ApproxMethod" setter="set_bake_method" getter="get_bake_method" default="1">
 			Set the bake method for this AdvancedCurve.
 		</member>
 		<member name="sample_resolution" type="int" setter="set_sample_resolution" getter="get_sample_resolution" default="50">

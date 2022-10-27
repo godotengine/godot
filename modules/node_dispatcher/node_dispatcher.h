@@ -68,7 +68,7 @@ public:
 	~NodeDispatcher();
 
 	static NodeDispatcher* get_singleton() { return singleton; }
-	friend class SceneTree;
+	friend class SceneTreeHook;
 
 	// Exposed methods
 	bool add_node(Node* node);

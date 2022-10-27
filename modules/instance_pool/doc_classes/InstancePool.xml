@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InstancePool" inherits="Object" version="3.5">
+	<brief_description>
+		A centralized asynchronous operations handler.
+	</brief_description>
+	<methods>
+		<method name="create_work_pool">
+			<return type="int" />
+			<argument index="0" name="pool_name" type="String"/>
+			<argument index="1" name="auto_free" type="bool"/>
+			<description>
+				Create a [WorkPool] of name [code]pool_name[/code] and handle its deletion if allowed by [code]auto_free[/code].
+			</description>
+		</method>
+		<method name="get_work_pool">
+			<argument index="0" name="object_id" type="int"/>
+			<return type="WorkPool" />
+			<description>
+				Return a [WorkPool] of id [code]object_id[/code] if it is currently inside the pool.
+			</description>
+		</method>
+		<method name="get_work_pool_by_name">
+			<argument index="0" name="pool_name" type="String"/>
+			<return type="WorkPool" />
+			<description>
+				Return a [WorkPool] of name [code]pool_name[/code] if it is currently inside the pool.
+			</description>
+		</method>
+		<method name="erase_work_pool">
+			<argument index="0" name="object_id" type="int"/>
+			<return type="bool" />
+			<description>
+				Remove a [WorkPool] of id [code]object_id[/code] if it is currently inside the pool. Return true on success, false when such instance wasn't found.
+			</description>
+		</method>
+		<method name="erase_work_pool_by_name">
+			<argument index="0" name="pool_name" type="String"/>
+			<return type="bool" />
+			<description>
+				Remove a [WorkPool] of name [code]pool_name[/code] if it is currently inside the pool. Return true on success, false when such instance wasn't found.
+			</description>
+		</method>
+		<method name="get_pool_size">
+			<return type="int" />
+			<description>
+				Return the current pool size.
+			</description>
+		</method>
+		<method name="queue_job">
+			<return type="Future" />
+			<argument index="0" name="function" type="FuncRef"/>
+			<argument index="1" name="parameters" type="Array"/>
+			<description>
+				Create a single [WorkPool] to handle a single job and automatically free it upon finish.
+			</description>
+		</method>
+	</methods>
+</class>

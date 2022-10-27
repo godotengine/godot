@@ -24,7 +24,7 @@ private:
 	int sample_resolution = 50; 
 	float range = 5.0;
 
-	ApproxMethod bake_method = ApproxMethod::AC_NO_METHOD;
+	ApproxMethod bake_method = ApproxMethod::AC_TRAPEZOID;
 	PoolRealArray samples_pool;
 public:
 	AdvancedCurve();

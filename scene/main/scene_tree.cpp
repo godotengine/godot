@@ -536,12 +536,17 @@ void SceneTree::iteration_end() {
 // #define POOLEDPROCESS_IDLE_NOTIFIER
 // #define POOLEDPROCESS_ITERATION_NOTIFIER
 
-#define USE_NODE_DISPATCHER
+// #define USE_NODE_DISPATCHER
+#define USE_EXTERNAL_CYCLE_HOOKS
 
 #ifdef USE_NODE_DISPATCHER
 #ifdef TOOLS_ENABLE
 #include "modules/node_dispatcher/node_dispatcher.h"
 #endif
+#endif
+
+#ifdef USE_EXTERNAL_CYCLE_HOOKS
+#include "modules/node_dispatcher/scene_tree_hook.h"
 #endif
 
 bool SceneTree::iteration(float p_time) {
@@ -578,6 +583,10 @@ bool SceneTree::iteration(float p_time) {
 	auto node_dispatcher = NodeDispatcher::get_singleton();
 	if (node_dispatcher) node_dispatcher->dispatch_physics();
 #endif
+#endif
+
+#ifdef USE_EXTERNAL_CYCLE_HOOKS
+	SceneTreeHook::dispatch_physics(p_time);
 #endif
 
 	process_tweens(p_time, true);
@@ -630,6 +639,10 @@ bool SceneTree::idle(float p_time) {
 	auto node_dispatcher = NodeDispatcher::get_singleton();
 	if (node_dispatcher) node_dispatcher->dispatch_idle();
 #endif
+#endif
+
+#ifdef USE_EXTERNAL_CYCLE_HOOKS
+	SceneTreeHook::dispatch_idle(p_time);
 #endif
 
 	Size2 win_size = OS::get_singleton()->get_window_size();
