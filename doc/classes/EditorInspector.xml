@@ -33,7 +33,7 @@
 		<signal name="object_id_selected">
 			<param index="0" name="id" type="int" />
 			<description>
-				Emitted when the Edit button of an [Object] has been pressed in the inspector. This is mainly used in the remote scene tree inspector.
+				Emitted when the Edit button of an [Object] has been pressed in the inspector. This is mainly used in the remote scene tree Inspector.
 			</description>
 		</signal>
 		<signal name="property_deleted">

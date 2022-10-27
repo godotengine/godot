@@ -384,7 +384,7 @@
 			<description>
 				Returns the object's metadata entry for the given [param name].
 				Throws error if the entry does not exist, unless [param default] is not [code]null[/code] (in which case the default value will be returned). See also [method has_meta], [method set_meta] and [method remove_meta].
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the inspector and should not be edited.
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited.
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
@@ -430,7 +430,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a metadata entry is found with the given [param name]. See also [method get_meta], [method set_meta] and [method remove_meta].
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the inspector and should not be edited.
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited.
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
@@ -502,7 +502,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Removes a given entry from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the inspector and should not be edited.
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited.
 			</description>
 		</method>
 		<method name="set">
@@ -566,7 +566,7 @@
 			<description>
 				Adds, changes or removes a given entry in the object's metadata. Metadata are serialized and can take any [Variant] value.
 				To remove a given entry from the object's metadata, use [method remove_meta]. Metadata is also removed if its value is set to [code]null[/code]. This means you can also use [code]set_meta("name", null)[/code] to remove metadata for [code]"name"[/code]. See also [method has_meta] and [method get_meta].
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the inspector and should not be edited.
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited.
 			</description>
 		</method>
 		<method name="set_script">
