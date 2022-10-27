@@ -6071,6 +6071,20 @@ bool SpatialEditor::is_any_freelook_active() const {
 	return false;
 }
 
+void SpatialEditor::_selection_changed() {
+	_refresh_menu_icons();
+
+	if (selected && editor_selection->get_selected_node_list().size() != 1) {
+		Ref<EditorSpatialGizmo> gizmo = selected->get_gizmo();
+		if (gizmo.is_valid()) {
+			gizmo->set_selected(false);
+			selected->update_gizmo();
+		}
+		selected = nullptr;
+		over_gizmo_handle = -1;
+	}
+}
+
 void SpatialEditor::_refresh_menu_icons() {
 	bool all_locked = true;
 	bool all_grouped = true;
@@ -6295,7 +6309,7 @@ void SpatialEditor::_notification(int p_what) {
 
 		get_tree()->connect("node_removed", this, "_node_removed");
 		EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect("node_changed", this, "_refresh_menu_icons");
-		editor_selection->connect("selection_changed", this, "_refresh_menu_icons");
+		editor_selection->connect("selection_changed", this, "_selection_changed");
 
 		editor->connect("stop_pressed", this, "_update_camera_override_button", make_binds(false));
 		editor->connect("play_pressed", this, "_update_camera_override_button", make_binds(true));
@@ -6534,6 +6548,7 @@ void SpatialEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &SpatialEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &SpatialEditor::_request_gizmo);
 	ClassDB::bind_method("_toggle_maximize_view", &SpatialEditor::_toggle_maximize_view);
+	ClassDB::bind_method("_selection_changed", &SpatialEditor::_selection_changed);
 	ClassDB::bind_method("_refresh_menu_icons", &SpatialEditor::_refresh_menu_icons);
 	ClassDB::bind_method("_update_camera_override_button", &SpatialEditor::_update_camera_override_button);
 	ClassDB::bind_method("_update_camera_override_viewport", &SpatialEditor::_update_camera_override_viewport);
@@ -6995,7 +7010,13 @@ void SpatialEditorPlugin::edit(Object *p_object) {
 }
 
 bool SpatialEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Spatial");
+	if (p_object->is_class("Spatial")) {
+		return true;
+	} else {
+		// This ensures that gizmos are cleared when selecting a non-Spatial node.
+		const_cast<SpatialEditorPlugin *>(this)->edit((Object *)nullptr);
+		return false;
+	}
 }
 
 Dictionary SpatialEditorPlugin::get_state() const {
