@@ -48,6 +48,13 @@ private:
 		CH_RESERVED_MAX = 3
 	};
 
+	enum NetworkMode {
+		MODE_NONE,
+		MODE_SERVER,
+		MODE_CLIENT,
+		MODE_MESH,
+	};
+
 	class ConnectedPeer : public RefCounted {
 	public:
 		Ref<WebRTCPeerConnection> connection;
@@ -67,19 +74,25 @@ private:
 	int client_count = 0;
 	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
 	int next_packet_peer = 0;
-	bool server_compat = false;
+	int next_packet_channel = 0;
+	NetworkMode network_mode = MODE_NONE;
 
 	HashMap<int, Ref<ConnectedPeer>> peer_map;
+	List<TransferMode> channels_modes;
 	List<Dictionary> channels_config;
 
 	void _peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict);
 	void _find_next_peer();
+	Ref<ConnectedPeer> _get_next_peer();
+	Error _initialize(int p_self_id, NetworkMode p_mode, Array p_channels_config = Array());
 
 public:
 	WebRTCMultiplayerPeer() {}
 	~WebRTCMultiplayerPeer();
 
-	Error initialize(int p_self_id, bool p_server_compat = false, Array p_channels_config = Array());
+	Error create_server(Array p_channels_config = Array());
+	Error create_client(int p_self_id, Array p_channels_config = Array());
+	Error create_mesh(int p_self_id, Array p_channels_config = Array());
 	Error add_peer(Ref<WebRTCPeerConnection> p_peer, int p_peer_id, int p_unreliable_lifetime = 1);
 	void remove_peer(int p_peer_id);
 	bool has_peer(int p_peer_id);
@@ -98,8 +111,11 @@ public:
 
 	int get_unique_id() const override;
 	int get_packet_peer() const override;
+	int get_packet_channel() const override;
+	TransferMode get_packet_mode() const override;
 
 	bool is_server() const override;
+	bool is_server_relay_supported() const override;
 
 	void poll() override;
 

@@ -370,10 +370,9 @@ Error SceneReplicationInterface::_send_raw(const uint8_t *p_buffer, int p_size, 
 #endif
 
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
-	peer->set_target_peer(p_peer);
 	peer->set_transfer_channel(0);
 	peer->set_transfer_mode(p_reliable ? MultiplayerPeer::TRANSFER_MODE_RELIABLE : MultiplayerPeer::TRANSFER_MODE_UNRELIABLE);
-	return peer->put_packet(p_buffer, p_size);
+	return multiplayer->send_command(p_peer, p_buffer, p_size);
 }
 
 Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpawner *p_spawner, int &r_len) {
