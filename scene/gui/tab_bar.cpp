@@ -385,9 +385,6 @@ void TabBar::_notification(int p_what) {
 					if (tabs[i].disabled) {
 						sb = theme_cache.tab_disabled_style;
 						col = theme_cache.font_disabled_color;
-					} else if (i == current) {
-						sb = theme_cache.tab_selected_style;
-						col = theme_cache.font_selected_color;
 					} else {
 						sb = theme_cache.tab_unselected_style;
 						col = theme_cache.font_unselected_color;

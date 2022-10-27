@@ -2481,9 +2481,6 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 
 						if (terrain_set == -1 || !tile_data || tile_data->get_terrain_set() != terrain_set) {
 							// Paint terrain sets.
-							if (mb->get_button_index() == MouseButton::RIGHT) {
-								terrain_set = -1;
-							}
 							drag_type = DRAG_TYPE_PAINT_TERRAIN_SET;
 							drag_modified.clear();
 							drag_painted_value = int(dummy_object->get("terrain_set"));
