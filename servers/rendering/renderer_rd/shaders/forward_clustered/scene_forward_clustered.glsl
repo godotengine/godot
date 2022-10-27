@@ -1447,16 +1447,19 @@ void fragment_shader(in SceneData scene_data) {
 	}
 
 	//finalize ambient light here
-	ambient_light *= albedo.rgb;
-	ambient_light *= ao;
+	{
+#if defined(AMBIENT_LIGHT_DISABLED)
+		ambient_light = vec3(0.0, 0.0, 0.0);
+#else
+		ambient_light *= albedo.rgb;
+		ambient_light *= ao;
 
-	// convert ao to direct light ao
-	ao = mix(1.0, ao, ao_light_affect);
-
-	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
-		vec4 ssil = textureLod(sampler2D(ssil_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv, 0.0);
-		ambient_light *= 1.0 - ssil.a;
-		ambient_light += ssil.rgb * albedo.rgb;
+		if (bool(scene_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
+			vec4 ssil = textureLod(sampler2D(ssil_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv, 0.0);
+			ambient_light *= 1.0 - ssil.a;
+			ambient_light += ssil.rgb * albedo.rgb;
+		}
+#endif // AMBIENT_LIGHT_DISABLED
 	}
 
 	//this saves some VGPRs
