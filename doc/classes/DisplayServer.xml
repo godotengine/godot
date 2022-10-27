@@ -44,16 +44,6 @@
 				[b]Note:[/b] This method is only implemented on Linux (X11).
 			</description>
 		</method>
-		<method name="create_sub_window">
-			<return type="int" />
-			<param index="0" name="mode" type="int" enum="DisplayServer.WindowMode" />
-			<param index="1" name="vsync_mode" type="int" enum="DisplayServer.VSyncMode" />
-			<param index="2" name="flags" type="int" />
-			<param index="3" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
-			<description>
-				Create a new subwindow (a [Window] whose presence is linked to another window). This window will appear to be embedded within the main window if [member Viewport.gui_embed_subwindows] is [code]true[/code]. Otherwise, the window will appear to be a separate window which can be dragged outside the main window. [code]vsync_mode[/code] is ignored if [member Viewport.gui_embed_subwindows] is [code]true[/code], as the subwindow will be drawn at the same time as the main window in this case.
-			</description>
-		</method>
 		<method name="cursor_get_shape" qualifiers="const">
 			<return type="int" enum="DisplayServer.CursorShape" />
 			<description>
@@ -74,13 +64,6 @@
 			<param index="0" name="shape" type="int" enum="DisplayServer.CursorShape" />
 			<description>
 				Sets the default mouse cursor shape. The cursor's appearance will vary depending on the user's operating system and mouse cursor theme. See also [method cursor_get_shape] and [method cursor_set_custom_image].
-			</description>
-		</method>
-		<method name="delete_sub_window">
-			<return type="void" />
-			<param index="0" name="window_id" type="int" />
-			<description>
-				Removes the subwindow specified by [param window_id].
 			</description>
 		</method>
 		<method name="dialog_input_text">
@@ -391,6 +374,14 @@
 			<param index="1" name="idx" type="int" />
 			<description>
 				Returns the callback of the item at index [param idx].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="menu_root" type="String" />
+			<description>
+				Returns number of items in the global menu with ID [param menu_root].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -1089,14 +1080,6 @@
 				Sets the mouse cursor position to the given [param position] relative to an origin at the upper left corner of the currently focused game Window Manager window.
 			</description>
 		</method>
-		<method name="window_attach_instance_id">
-			<return type="void" />
-			<param index="0" name="instance_id" type="int" />
-			<param index="1" name="window_id" type="int" default="0" />
-			<description>
-				Sets the [Window] instance ID ([method Object.get_instance_id]) the [param window_id] should be attached to. See also [method window_get_attached_instance_id].
-			</description>
-		</method>
 		<method name="window_can_draw" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -1202,6 +1185,13 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Returns the V-Sync mode of the given window.
+			</description>
+		</method>
+		<method name="window_is_maximize_allowed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns [code]true[/code] if the given window can be maximized (the maximize button is enabled).
 			</description>
 		</method>
 		<method name="window_maximize_on_title_dbl_click" qualifiers="const">
