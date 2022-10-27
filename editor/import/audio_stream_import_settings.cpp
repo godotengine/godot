@@ -288,17 +288,15 @@ void AudioStreamImportSettings::_draw_indicator() {
 		float preview_len = zoom_bar->get_page();
 		float beat_size = 60 / float(stream->get_bpm());
 		int prev_beat = 0;
-		int last_text_end_x = 0;
 		for (int i = 0; i < rect.size.width; i++) {
 			float ofs = preview_offset + i * preview_len / rect.size.width;
 			int beat = int(ofs / beat_size);
 			if (beat != prev_beat) {
 				String text = itos(beat);
 				int text_w = beat_font->get_string_size(text).width;
-				if (i - text_w / 2 > last_text_end_x + 2 * EDSCALE && beat == _hovering_beat) {
+				if (i - text_w / 2 > 2 * EDSCALE && beat == _hovering_beat) {
 					int x_ofs = i - text_w / 2;
 					_indicator->draw_string(beat_font, Point2(x_ofs, 2 * EDSCALE + beat_font->get_ascent(main_size)), text, HORIZONTAL_ALIGNMENT_LEFT, rect.size.width - x_ofs, Font::DEFAULT_FONT_SIZE, color);
-					last_text_end_x = i + text_w / 2;
 					break;
 				}
 				prev_beat = beat;

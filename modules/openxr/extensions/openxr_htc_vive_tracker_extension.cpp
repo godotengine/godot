@@ -91,8 +91,6 @@ bool OpenXRHTCViveTrackerExtension::is_path_supported(const String &p_path) {
 		return available;
 	} else if (p_path == "/user/vive_tracker_htcx/role/chest") {
 		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/chest") {
-		return available;
 	} else if (p_path == "/user/vive_tracker_htcx/role/camera") {
 		return available;
 	} else if (p_path == "/user/vive_tracker_htcx/role/keyboard") {
