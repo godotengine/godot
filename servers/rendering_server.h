@@ -1575,6 +1575,8 @@ public:
 
 	virtual void set_print_gpu_profile(bool p_enable) = 0;
 
+	virtual Size2i get_maximum_viewport_size() const = 0;
+
 	RenderingDevice *get_rendering_device() const;
 	RenderingDevice *create_local_rendering_device() const;
 

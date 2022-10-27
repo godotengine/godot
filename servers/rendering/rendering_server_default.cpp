@@ -331,6 +331,14 @@ bool RenderingServerDefault::is_low_end() const {
 	return RendererCompositor::is_low_end();
 }
 
+Size2i RenderingServerDefault::get_maximum_viewport_size() const {
+	if (RSG::utilities) {
+		return RSG::utilities->get_maximum_viewport_size();
+	} else {
+		return Size2i();
+	}
+}
+
 void RenderingServerDefault::_thread_exit() {
 	exit.set();
 }

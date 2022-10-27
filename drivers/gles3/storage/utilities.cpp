@@ -356,4 +356,13 @@ String Utilities::get_video_adapter_api_version() const {
 	return (const char *)glGetString(GL_VERSION);
 }
 
+Size2i Utilities::get_maximum_viewport_size() const {
+	Config *config = Config::get_singleton();
+	if (!config) {
+		return Size2i();
+	}
+
+	return Size2i(config->max_viewport_size, config->max_viewport_size);
+}
+
 #endif // GLES3_ENABLED
