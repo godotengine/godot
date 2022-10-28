@@ -214,6 +214,7 @@ private:
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
+	int code_completion_force_item_center = -1;
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 	Rect2i code_completion_scroll_rect;
