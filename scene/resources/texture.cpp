@@ -422,7 +422,7 @@ Vector<uint8_t> PortableCompressedTexture2D::_get_data() const {
 	return compressed_buffer;
 }
 
-void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, CompressionMode p_compression_mode, bool p_normal_map, float p_lossy_quality) {
+void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, CompressionMode p_compression_mode, bool p_normal_map, float p_lossy_quality, bool p_near_lossless) {
 	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
 
 	Vector<uint8_t> buffer;
@@ -440,7 +440,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
 				if (p_compression_mode == COMPRESSION_MODE_LOSSY) {
-					data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+					data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality, p_near_lossless);
 				} else {
 					data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
 				}
@@ -607,7 +607,7 @@ bool PortableCompressedTexture2D::is_keeping_compressed_buffer() const {
 }
 
 void PortableCompressedTexture2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_from_image", "image", "compression_mode", "normal_map", "lossy_quality"), &PortableCompressedTexture2D::create_from_image, DEFVAL(false), DEFVAL(0.8));
+	ClassDB::bind_method(D_METHOD("create_from_image", "image", "compression_mode", "normal_map", "lossy_quality", "near_lossless"), &PortableCompressedTexture2D::create_from_image, DEFVAL(false), DEFVAL(0.8), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_format"), &PortableCompressedTexture2D::get_format);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &PortableCompressedTexture2D::get_compression_mode);
 

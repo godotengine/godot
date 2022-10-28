@@ -2922,7 +2922,7 @@ void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
 void (*Image::_image_decompress_etc2)(Image *) = nullptr;
 
-Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
+Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float, bool) = nullptr;
 Vector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
 Ref<Image> (*Image::webp_unpacker)(const Vector<uint8_t> &) = nullptr;
 Vector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;

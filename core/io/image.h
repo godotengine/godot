@@ -150,7 +150,7 @@ public:
 	static void (*_image_decompress_etc1)(Image *);
 	static void (*_image_decompress_etc2)(Image *);
 
-	static Vector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality);
+	static Vector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality, bool p_near_lossless);
 	static Vector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image);
 	static Ref<Image> (*webp_unpacker)(const Vector<uint8_t> &p_buffer);
 	static Vector<uint8_t> (*png_packer)(const Ref<Image> &p_image);
