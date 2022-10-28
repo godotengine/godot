@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_manager_wayland.cpp                                               */
+/*  egl_manager_wayland.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "egl_manager_wayland.h"
+#include "gl_manager_wayland.h"
 
 const char *EGLManagerWayland::_get_platform_extension_name() const {
 	return "EGL_KHR_platform_wayland";

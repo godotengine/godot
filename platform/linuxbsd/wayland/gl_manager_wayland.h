@@ -34,64 +34,14 @@
 #ifdef WAYLAND_ENABLED
 #ifdef GLES3_ENABLED
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+#include "drivers/egl/egl_manager.h"
 
-#include "dynwrappers/wayland-egl-core.h"
-
-#include "core/templates/local_vector.h"
-#include "servers/display_server.h"
-
-class GLManagerWayland {
-private:
-	// An EGL side rappresentation of a wl_display with its own rendering
-	// context.
-	struct GLDisplay {
-		struct wl_display *wl_display = nullptr;
-
-		EGLDisplay egl_display = EGL_NO_DISPLAY;
-		EGLContext egl_context = EGL_NO_CONTEXT;
-		EGLConfig egl_config;
-	};
-
-	// EGL specific window data.
-	struct GLWindow {
-		bool initialized = false;
-
-		int width = 0;
-		int height = 0;
-
-		// An handle to the GLDisplay associated with this window.
-		int gldisplay_id = -1;
-
-		struct wl_egl_window *wl_egl_window = nullptr;
-		EGLSurface egl_surface = EGL_NO_SURFACE;
-	};
-
-	LocalVector<GLDisplay> displays;
-	LocalVector<GLWindow> windows;
-
-	GLWindow *current_window = nullptr;
-
-	int _get_gldisplay_id(struct wl_display *p_display);
-	Error _gldisplay_create_context(GLDisplay &p_gldisplay);
-
+class EGLManagerWayland : public EGLManager {
 public:
-	Error window_create(DisplayServer::WindowID p_window_id, struct wl_display *p_display, struct wl_surface *p_surface, int p_width, int p_height);
+	virtual const char *_get_platform_extension_name() const override;
+	virtual EGLenum _get_platform_extension_enum() const;
 
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
-
-	void release_current();
-	void make_current();
-	void swap_buffers();
-
-	void window_make_current(DisplayServer::WindowID p_window_id);
-
-	Error initialize();
-
-	GLManagerWayland();
-	~GLManagerWayland();
+	virtual Error initialize();
 };
 
 #endif // GLES3_ENABLED

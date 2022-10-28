@@ -42,6 +42,7 @@
 
 #include "dynwrappers/wayland-client-core.h"
 #include "dynwrappers/wayland-cursor.h"
+#include "dynwrappers/wayland-egl-core.h"
 #include "dynwrappers/xkbcommon.h"
 
 #include "key_mapping_xkb.h"
@@ -65,7 +66,7 @@
 #endif
 
 #ifdef GLES3_ENABLED
-#include "gl_manager_wayland.h"
+#include "egl_manager_wayland.h"
 #endif
 
 #if defined(SPEECHD_ENABLED)
@@ -171,6 +172,10 @@ class DisplayServerWayland : public DisplayServer {
 		struct xdg_toplevel *xdg_toplevel = nullptr;
 
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
+
+#ifdef GLES3_ENABLED
+		struct wl_egl_window *wl_egl_window = nullptr;
+#endif
 
 		bool visible = false;
 
@@ -350,7 +355,7 @@ class DisplayServerWayland : public DisplayServer {
 #endif
 
 #ifdef GLES3_ENABLED
-	GLManagerWayland *gl_manager = nullptr;
+	EGLManagerWayland *egl_manager = nullptr;
 #endif
 
 #ifdef SPEECHD_ENABLED

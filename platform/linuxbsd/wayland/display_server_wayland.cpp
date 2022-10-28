@@ -1088,11 +1088,11 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 				}
 
 				if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
-					mb->set_factor(abs(pd.scroll_vector.y));
+					mb->set_factor(abs(pd.scroll_vector.y / 20));
 				}
 
 				if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
-					mb->set_factor(abs(pd.scroll_vector.x));
+					mb->set_factor(abs(pd.scroll_vector.x / 20));
 				}
 
 				Ref<WaylandInputEventMessage> msg;
@@ -1985,8 +1985,9 @@ void DisplayServerWayland::_show_window() {
 #endif
 
 #ifdef GLES3_ENABLED
-		if (gl_manager) {
-			Error err = gl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+		if (egl_manager) {
+			wd.wl_egl_window = wl_egl_window_create(wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
 		}
 #endif
@@ -2114,8 +2115,8 @@ Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_windo
 
 void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_make_current(MAIN_WINDOW_ID);
+	if (egl_manager) {
+		egl_manager->window_make_current(MAIN_WINDOW_ID);
 	}
 #endif
 }
@@ -2172,8 +2173,8 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 #endif
 
 #ifdef GLES3_ENABLED
-	if (wd.visible && gl_manager) {
-		gl_manager->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
+	if (wd.visible && egl_manager) {
+		wl_egl_window_resize(wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height, 0, 0);
 	}
 #endif
 }
@@ -2535,8 +2536,8 @@ void DisplayServerWayland::process_events() {
 #endif
 
 #ifdef GLES3_ENABLED
-				if (gl_manager) {
-					gl_manager->window_resize(MAIN_WINDOW_ID, rect.size.width, rect.size.height);
+				if (egl_manager) {
+					wl_egl_window_resize(wd.wl_egl_window, rect.size.width, rect.size.height, 0, 0);
 				}
 #endif
 			}
@@ -2624,24 +2625,24 @@ void DisplayServerWayland::process_events() {
 
 void DisplayServerWayland::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->release_current();
+	if (egl_manager) {
+		egl_manager->release_current();
 	}
 #endif
 }
 
 void DisplayServerWayland::make_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->make_current();
+	if (egl_manager) {
+		egl_manager->make_current();
 	}
 #endif
 }
 
 void DisplayServerWayland::swap_buffers() {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->swap_buffers();
+	if (egl_manager) {
+		egl_manager->swap_buffers();
 	}
 #endif
 }
@@ -2680,17 +2681,17 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #endif
 
 	if (initialize_wayland_client(dylibloader_verbose) != 0) {
-		WARN_PRINT("Can't load the wayland client library.");
+		WARN_PRINT("Can't load the Wayland client library.");
 		return;
 	}
 
 	if (initialize_wayland_cursor(dylibloader_verbose) != 0) {
-		WARN_PRINT("Can't load the wayland cursor library.");
+		WARN_PRINT("Can't load the Wayland cursor library.");
 		return;
 	}
 
 	if (initialize_xkbcommon(dylibloader_verbose) != 0) {
-		WARN_PRINT("Can't load the xkbcommon library.");
+		WARN_PRINT("Can't load the XKBcommon library.");
 		return;
 	}
 
@@ -2759,11 +2760,18 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #if defined(GLES3_ENABLED)
 	if (p_rendering_driver == "opengl3") {
-		gl_manager = memnew(GLManagerWayland);
+		egl_manager = memnew(EGLManagerWayland);
 
-		if (gl_manager->initialize() != OK) {
-			memdelete(gl_manager);
-			gl_manager = nullptr;
+#ifdef GLES3_ENABLED
+		if (initialize_wayland_egl(dylibloader_verbose) != 0) {
+			WARN_PRINT("Can't load the Wayland EGL library.");
+			return;
+		}
+#endif
+
+		if (egl_manager->initialize() != OK) {
+			memdelete(egl_manager);
+			egl_manager = nullptr;
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize GLES3.");
 		}
@@ -2883,23 +2891,30 @@ DisplayServerWayland::~DisplayServerWayland() {
 		events_thread.wait_to_finish();
 	}
 
+	if (wls.main_window.visible) {
 #ifdef VULKAN_ENABLED
-	if (context_vulkan && wls.main_window.visible) {
-		context_vulkan->window_destroy(MAIN_WINDOW_ID);
-	}
+		if (context_vulkan) {
+			context_vulkan->window_destroy(MAIN_WINDOW_ID);
+		}
 #endif
 
 #ifdef GLES3_ENABLED
-	if (gl_manager && wls.main_window.visible) {
-		gl_manager->window_destroy(MAIN_WINDOW_ID);
-	}
+		if (egl_manager) {
+			egl_manager->window_destroy(MAIN_WINDOW_ID);
+		}
 #endif
+	}
+
 	if (wls.main_window.xdg_toplevel) {
 		xdg_toplevel_destroy(wls.main_window.xdg_toplevel);
 	}
 
 	if (wls.main_window.xdg_surface) {
 		xdg_surface_destroy(wls.main_window.xdg_surface);
+	}
+
+	if (wls.main_window.wl_egl_window) {
+		wl_egl_window_destroy(wls.main_window.wl_egl_window);
 	}
 
 	if (wls.main_window.wl_surface) {

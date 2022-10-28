@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_manager_wayland.cpp                                               */
+/*  egl_manager.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "egl_manager_wayland.h"
+#ifndef EGL_WAYLAND_H
+#define EGL_WAYLAND_H
 
-const char *EGLManagerWayland::_get_platform_extension_name() const {
-	return "EGL_KHR_platform_wayland";
-}
+#ifdef GLES3_ENABLED
 
-EGLenum EGLManagerWayland::_get_platform_extension_enum() const {
-	return EGL_PLATFORM_WAYLAND_KHR;
-}
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
-Error EGLManagerWayland::initialize() {
-	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-	// The above method should always work. If it doesn't, something's very wrong.
-	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
+#include "core/templates/local_vector.h"
+#include "servers/display_server.h"
 
-	const char *platform = _get_platform_extension_name();
-	if (!extensions_string.split(" ").find(platform)) {
-		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
-	}
+class EGLManager {
+private:
+	// An EGL-side rappresentation of a display with its own rendering
+	// context.
+	struct GLDisplay {
+		void *display = nullptr;
 
-	return OK;
-}
+		EGLDisplay egl_display = EGL_NO_DISPLAY;
+		EGLContext egl_context = EGL_NO_CONTEXT;
+		EGLConfig egl_config;
+	};
+
+	// EGL specific window data.
+	struct GLWindow {
+		bool initialized = false;
+
+		// An handle to the GLDisplay associated with this window.
+		int gldisplay_id = -1;
+
+		EGLSurface egl_surface = EGL_NO_SURFACE;
+	};
+
+	LocalVector<GLDisplay> displays;
+	LocalVector<GLWindow> windows;
+
+	GLWindow *current_window = nullptr;
+
+	virtual const char *_get_platform_extension_name() const = 0;
+	virtual EGLenum _get_platform_extension_enum() const = 0;
+
+	int _get_gldisplay_id(void *p_display);
+	Error _gldisplay_create_context(GLDisplay &p_gldisplay);
+
+public:
+	Error window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height);
+
+	void window_destroy(DisplayServer::WindowID p_window_id);
+
+	void release_current();
+	void make_current();
+	void swap_buffers();
+
+	void window_make_current(DisplayServer::WindowID p_window_id);
+
+	virtual Error initialize() { return OK; };
+
+	EGLManager();
+	virtual ~EGLManager();
+};
+
+#endif // GLES3_ENABLED
+
+#endif // EGL_MANAGER_H

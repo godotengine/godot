@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_manager_wayland.cpp                                               */
+/*  egl_manager_wayland.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "egl_manager_wayland.h"
+#ifndef GL_MANAGER_WAYLAND_H
+#define GL_MANAGER_WAYLAND_H
 
-const char *EGLManagerWayland::_get_platform_extension_name() const {
-	return "EGL_KHR_platform_wayland";
-}
+#ifdef WAYLAND_ENABLED
+#ifdef GLES3_ENABLED
 
-EGLenum EGLManagerWayland::_get_platform_extension_enum() const {
-	return EGL_PLATFORM_WAYLAND_KHR;
-}
+#include "drivers/egl/egl_manager.h"
 
-Error EGLManagerWayland::initialize() {
-	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-	// The above method should always work. If it doesn't, something's very wrong.
-	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
+class EGLManagerWayland : public EGLManager {
+public:
+	virtual const char *_get_platform_extension_name() const override;
+	virtual EGLenum _get_platform_extension_enum() const;
 
-	const char *platform = _get_platform_extension_name();
-	if (!extensions_string.split(" ").find(platform)) {
-		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
-	}
+	virtual Error initialize();
+};
 
-	return OK;
-}
+#endif // GLES3_ENABLED
+#endif // WAYLAND_ENABLED
+
+#endif // GL_MANAGER_WAYLAND_H
