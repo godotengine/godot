@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EGL_WAYLAND_H
-#define EGL_WAYLAND_H
+#ifndef EGL_MANAGER_H
+#define EGL_MANAGER_H
 
 #ifdef GLES3_ENABLED
 
