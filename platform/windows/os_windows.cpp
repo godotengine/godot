@@ -311,6 +311,10 @@ String OS_Windows::get_version() const {
 }
 
 Vector<String> OS_Windows::get_video_adapter_driver_info() const {
+	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+		return Vector<String>();
+	}
+
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
 	REFIID uuid = IID_IWbemLocator; // Interface UUID
 	IWbemLocator *wbemLocator = NULL; // to get the services
