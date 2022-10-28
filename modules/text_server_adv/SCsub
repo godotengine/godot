@@ -451,7 +451,7 @@ if env["builtin_icu"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    icu_data_name = "icudt71l.dat"
+    icu_data_name = "icudt72l.dat"
 
     if env.editor_build:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
