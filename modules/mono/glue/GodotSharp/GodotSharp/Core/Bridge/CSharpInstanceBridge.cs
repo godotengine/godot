@@ -22,8 +22,7 @@ namespace Godot.Bridge
                 }
 
                 bool methodInvoked = godotObject.InvokeGodotClassMethod(CustomUnsafe.AsRef(method),
-                    new NativeVariantPtrArgs(args),
-                    argCount, out godot_variant retValue);
+                    new NativeVariantPtrArgs(args, argCount), out godot_variant retValue);
 
                 if (!methodInvoked)
                 {
@@ -102,7 +101,7 @@ namespace Godot.Bridge
                     return godot_bool.False;
                 }
 
-                *outRet = Marshaling.ConvertManagedObjectToVariant(ret);
+                *outRet = ret.CopyNativeVariant();
                 return godot_bool.True;
             }
             catch (Exception e)

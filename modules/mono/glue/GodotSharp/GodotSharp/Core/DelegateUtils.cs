@@ -30,33 +30,23 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, godot_variant** args, uint argc,
-            godot_variant* outRet)
+        internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, void* trampoline,
+            godot_variant** args, int argc, godot_variant* outRet)
         {
             try
             {
-                // TODO: Optimize
+                if (trampoline == null)
+                {
+                    throw new ArgumentNullException(nameof(trampoline),
+                        "Cannot dynamically invoke delegate because the trampoline is null.");
+                }
+
                 var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target!;
-                var managedArgs = new object?[argc];
+                var trampolineFn = (delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void>)trampoline;
 
-                var parameterInfos = @delegate.Method.GetParameters();
-                var paramsLength = parameterInfos.Length;
+                trampolineFn(@delegate, new NativeVariantPtrArgs(args, argc), out godot_variant ret);
 
-                if (argc != paramsLength)
-                {
-                    throw new InvalidOperationException(
-                        $"The delegate expects {paramsLength} arguments, but received {argc}.");
-                }
-
-                for (uint i = 0; i < argc; i++)
-                {
-                    managedArgs[i] = Marshaling.ConvertVariantToManagedObjectOfType(
-                        *args[i], parameterInfos[i].ParameterType);
-                }
-
-                object? invokeRet = @delegate.DynamicInvoke(managedArgs);
-
-                *outRet = Marshaling.ConvertManagedObjectToVariant(invokeRet);
+                *outRet = ret;
             }
             catch (Exception e)
             {

@@ -202,7 +202,7 @@ namespace Godot
 
         // ReSharper disable once VirtualMemberNeverOverridden.Global
         protected internal virtual void RaiseGodotClassSignalCallbacks(in godot_string_name signal,
-            NativeVariantPtrArgs args, int argCount)
+            NativeVariantPtrArgs args)
         {
         }
 

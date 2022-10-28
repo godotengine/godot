@@ -339,7 +339,7 @@ namespace Godot.Bridge
                 *outOwnerIsNull = godot_bool.False;
 
                 owner.RaiseGodotClassSignalCallbacks(CustomUnsafe.AsRef(eventSignalName),
-                    new NativeVariantPtrArgs(args), argCount);
+                    new NativeVariantPtrArgs(args, argCount));
             }
             catch (Exception e)
             {

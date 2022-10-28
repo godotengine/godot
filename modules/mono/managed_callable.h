@@ -40,6 +40,7 @@
 class ManagedCallable : public CallableCustom {
 	friend class CSharpLanguage;
 	GCHandleIntPtr delegate_handle;
+	void *trampoline = nullptr;
 	ObjectID object_id;
 
 #ifdef GD_MONO_HOT_RELOAD
@@ -58,6 +59,7 @@ public:
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
 	_FORCE_INLINE_ GCHandleIntPtr get_delegate() const { return delegate_handle; }
+	_FORCE_INLINE_ void *get_trampoline() const { return trampoline; }
 
 	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
 	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
@@ -67,7 +69,7 @@ public:
 
 	void release_delegate_handle();
 
-	ManagedCallable(GCHandleIntPtr p_delegate_handle, ObjectID p_object_id);
+	ManagedCallable(GCHandleIntPtr p_delegate_handle, void *p_trampoline, ObjectID p_object_id);
 	~ManagedCallable();
 };
 
