@@ -734,13 +734,20 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 		}
 
 		SUBCASE("[TextEdit] add selection for next occurrence") {
-			text_edit->set_text("\ntest   other_test\nrandom   test\nword test word");
+			text_edit->set_text("\ntest   other_test\nrandom   test\nword test word nonrandom");
 			text_edit->set_caret_column(0);
 			text_edit->set_caret_line(1);
 
-			text_edit->select_word_under_caret();
-			CHECK(text_edit->has_selection(0));
+			// First selection made by the implicit select_word_under_caret call
+			text_edit->add_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
 			CHECK(text_edit->get_selected_text(0) == "test");
+			CHECK(text_edit->get_selection_from_line(0) == 1);
+			CHECK(text_edit->get_selection_from_column(0) == 0);
+			CHECK(text_edit->get_selection_to_line(0) == 1);
+			CHECK(text_edit->get_selection_to_column(0) == 4);
+			CHECK(text_edit->get_caret_line(0) == 1);
+			CHECK(text_edit->get_caret_column(0) == 4);
 
 			text_edit->add_selection_for_next_occurrence();
 			CHECK(text_edit->get_caret_count() == 2);
@@ -771,6 +778,27 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selection_to_column(3) == 9);
 			CHECK(text_edit->get_caret_line(3) == 3);
 			CHECK(text_edit->get_caret_column(3) == 9);
+
+			// A different word with a new manually added caret
+			text_edit->add_caret(2, 1);
+			text_edit->select(2, 0, 2, 4, 4);
+			CHECK(text_edit->get_selected_text(4) == "rand");
+
+			text_edit->add_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 6);
+			CHECK(text_edit->get_selected_text(5) == "rand");
+			CHECK(text_edit->get_selection_from_line(5) == 3);
+			CHECK(text_edit->get_selection_from_column(5) == 18);
+			CHECK(text_edit->get_selection_to_line(5) == 3);
+			CHECK(text_edit->get_selection_to_column(5) == 22);
+			CHECK(text_edit->get_caret_line(5) == 3);
+			CHECK(text_edit->get_caret_column(5) == 22);
+
+			// Make sure the previous selections are still active
+			CHECK(text_edit->get_selected_text(0) == "test");
+			CHECK(text_edit->get_selected_text(1) == "test");
+			CHECK(text_edit->get_selected_text(2) == "test");
+			CHECK(text_edit->get_selected_text(3) == "test");
 		}
 
 		SUBCASE("[TextEdit] deselect on focus loss") {
