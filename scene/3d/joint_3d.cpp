@@ -320,6 +320,7 @@ void HingeJoint3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_LIMIT_RELAXATION);
 	BIND_ENUM_CONSTANT(PARAM_MOTOR_TARGET_VELOCITY);
 	BIND_ENUM_CONSTANT(PARAM_MOTOR_MAX_IMPULSE);
+	BIND_ENUM_CONSTANT(PARAM_CURRENT_ANGULAR_DISPLACEMENT);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(FLAG_USE_LIMIT);
@@ -339,6 +340,10 @@ void HingeJoint3D::set_param(Param p_param, real_t p_value) {
 
 real_t HingeJoint3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
+
+	if (is_configured()) {
+		return PhysicsServer3D::get_singleton()->hinge_joint_get_param(get_joint(), PhysicsServer3D::HingeJointParam(p_param));
+	}
 	return params[p_param];
 }
 
