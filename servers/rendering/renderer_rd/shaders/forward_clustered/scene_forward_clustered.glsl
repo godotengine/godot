@@ -1454,13 +1454,16 @@ void fragment_shader(in SceneData scene_data) {
 		ambient_light *= albedo.rgb;
 		ambient_light *= ao;
 
-		if (bool(scene_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
+		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
 			vec4 ssil = textureLod(sampler2D(ssil_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv, 0.0);
 			ambient_light *= 1.0 - ssil.a;
 			ambient_light += ssil.rgb * albedo.rgb;
 		}
 #endif // AMBIENT_LIGHT_DISABLED
 	}
+
+	// convert ao to direct light ao
+	ao = mix(1.0, ao, ao_light_affect);
 
 	//this saves some VGPRs
 	vec3 f0 = F0(metallic, specular, albedo);
