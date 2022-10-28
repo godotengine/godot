@@ -66,6 +66,9 @@ private:
 
 	GLWindow *current_window = nullptr;
 
+	// On EGL the default swap interval is 1 and thus vsync is on by defualt.
+	bool use_vsync = true;
+
 	virtual const char *_get_platform_extension_name() const = 0;
 	virtual EGLenum _get_platform_extension_enum() const = 0;
 
@@ -82,6 +85,9 @@ public:
 	void swap_buffers();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
+
+	void set_use_vsync(bool p_use);
+	bool is_using_vsync() const;
 
 	virtual Error initialize() { return OK; };
 

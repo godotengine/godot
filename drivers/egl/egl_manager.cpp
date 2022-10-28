@@ -232,6 +232,33 @@ void EGLManager::window_make_current(DisplayServer::WindowID p_window_id) {
 	eglMakeCurrent(current_display.egl_display, current_window->egl_surface, current_window->egl_surface, current_display.egl_context);
 }
 
+void EGLManager::set_use_vsync(bool p_use) {
+	// force vsync in the editor for now, as a safety measure
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_editor) {
+		p_use = true;
+	}
+
+	// We need an active window to get a display to set the vsync.
+	if (!current_window) {
+		return;
+	}
+
+	GLDisplay &disp = displays[current_window->gldisplay_id];
+
+	// TODO: Warn when vsync isn't available.
+
+	int swap_interval = p_use ? 1 : 0;
+
+	eglSwapInterval(disp.egl_display, swap_interval);
+
+	use_vsync = p_use;
+}
+
+bool EGLManager::is_using_vsync() const {
+	return use_vsync;
+}
+
 EGLManager::EGLManager() {
 }
 
