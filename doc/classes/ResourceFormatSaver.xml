@@ -24,6 +24,15 @@
 				Returns whether the given resource object can be saved by this saver.
 			</description>
 		</method>
+		<method name="_recognize_path" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if this saver handles a given save path and [code]false[/code] otherwise.
+				If this method is not implemented, the default behavior returns whether the path's extension is within the ones provided by [method _get_recognized_extensions].
+			</description>
+		</method>
 		<method name="_save" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="resource" type="Resource" />
