@@ -423,6 +423,10 @@ String UndoRedo::get_current_action_name() const {
 	return actions[current_action].name;
 }
 
+int UndoRedo::get_action_level() const {
+	return action_level;
+}
+
 bool UndoRedo::has_undo() const {
 	return current_action >= 0;
 }

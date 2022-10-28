@@ -3613,7 +3613,7 @@ void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Anim
 	}
 	int idx = p_track;
 	if (idx >= 0 && idx < p_from_animation->get_track_count()) {
-		undo_redo->create_action(TTR("Remove Anim Track"));
+		undo_redo->create_action(TTR("Remove Anim Track"), UndoRedo::MERGE_DISABLE, p_from_animation.ptr());
 
 		// Remove corresponding reset tracks if they are no longer needed.
 		AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
