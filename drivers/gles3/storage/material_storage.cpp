@@ -89,7 +89,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					gui[j + 3] = 0; // ignored
 				}
 			} else {
-				int v = value;
+				uint32_t v = value;
 				gui[0] = v & 1 ? 1 : 0;
 				gui[1] = v & 2 ? 1 : 0;
 			}
@@ -116,7 +116,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					gui[j + 3] = 0; // ignored
 				}
 			} else {
-				int v = value;
+				uint32_t v = value;
 				gui[0] = (v & 1) ? 1 : 0;
 				gui[1] = (v & 2) ? 1 : 0;
 				gui[2] = (v & 4) ? 1 : 0;
@@ -145,7 +145,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					}
 				}
 			} else {
-				int v = value;
+				uint32_t v = value;
 				gui[0] = (v & 1) ? 1 : 0;
 				gui[1] = (v & 2) ? 1 : 0;
 				gui[2] = (v & 4) ? 1 : 0;
@@ -728,7 +728,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 	switch (type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			uint32_t *gui = (uint32_t *)data;
-			*gui = value[0].boolean ? 1 : 0;
+			gui[0] = value[0].boolean ? 1 : 0;
 		} break;
 		case ShaderLanguage::TYPE_BVEC2: {
 			uint32_t *gui = (uint32_t *)data;
@@ -2314,7 +2314,7 @@ void MaterialStorage::global_shader_parameters_instance_free(RID p_instance) {
 	global_shader_uniforms.instance_buffer_pos.erase(p_instance);
 }
 
-void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value) {
+void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count) {
 	if (!global_shader_uniforms.instance_buffer_pos.has(p_instance)) {
 		return; //just not allocated, ignore
 	}
@@ -2324,7 +2324,9 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 		return; //again, not allocated, ignore
 	}
 	ERR_FAIL_INDEX(p_index, ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
-	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(p_value.get_type())); //anything greater not supported
+
+	Variant::Type value_type = p_value.get_type();
+	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(value_type)); //anything greater not supported
 
 	ShaderLanguage::DataType datatype_from_value[Variant::COLOR + 1] = {
 		ShaderLanguage::TYPE_MAX, //nil
@@ -2350,9 +2352,24 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 		ShaderLanguage::TYPE_VEC4 //color
 	};
 
-	ShaderLanguage::DataType datatype = datatype_from_value[p_value.get_type()];
+	ShaderLanguage::DataType datatype = ShaderLanguage::TYPE_MAX;
+	if (value_type == Variant::INT && p_flags_count > 0) {
+		switch (p_flags_count) {
+			case 1:
+				datatype = ShaderLanguage::TYPE_BVEC2;
+				break;
+			case 2:
+				datatype = ShaderLanguage::TYPE_BVEC3;
+				break;
+			case 3:
+				datatype = ShaderLanguage::TYPE_BVEC4;
+				break;
+		}
+	} else {
+		datatype = datatype_from_value[value_type];
+	}
 
-	ERR_FAIL_COND_MSG(datatype == ShaderLanguage::TYPE_MAX, "Unsupported variant type for instance parameter: " + Variant::get_type_name(p_value.get_type())); //anything greater not supported
+	ERR_FAIL_COND_MSG(datatype == ShaderLanguage::TYPE_MAX, "Unsupported variant type for instance parameter: " + Variant::get_type_name(value_type)); //anything greater not supported
 
 	pos += p_index;
 
