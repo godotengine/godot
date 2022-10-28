@@ -136,29 +136,12 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	Ref<Resource> loaded_resource = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
+	HashSet<String> allowed_types;
+	_get_allowed_types(false, &allowed_types);
+
 	if (!base_type.is_empty()) {
-		bool any_type_matches = false;
-
-		String res_type = loaded_resource->get_class();
-		Ref<Script> res_script = loaded_resource->get_script();
-		bool is_global_class = false;
-		if (res_script.is_valid()) {
-			String script_type = EditorNode::get_editor_data().script_class_get_name(res_script->get_path());
-			if (!script_type.is_empty()) {
-				is_global_class = true;
-				res_type = script_type;
-			}
-		}
-
-		for (int i = 0; i < base_type.get_slice_count(","); i++) {
-			String base = base_type.get_slice(",", i);
-
-			any_type_matches = is_global_class ? EditorNode::get_editor_data().script_class_is_parent(res_type, base) : loaded_resource->is_class(base);
-
-			if (any_type_matches) {
-				break;
-			}
-		}
+		String res_type;
+		bool any_type_matches = _is_object_valid(loaded_resource, allowed_types, &res_type);
 
 		if (!any_type_matches) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("The selected resource (%s) does not match any type expected for this property (%s)."), res_type, base_type));
@@ -244,23 +227,11 @@ void EditorResourcePicker::_update_menu_items() {
 
 	// Add options to copy/paste resource.
 	Ref<Resource> cb = EditorSettings::get_singleton()->get_resource_clipboard();
+	HashSet<String> allowed_types;
+	_get_allowed_types(true, &allowed_types);
 	bool paste_valid = false;
 	if (is_editable() && cb.is_valid()) {
-		if (base_type.is_empty()) {
-			paste_valid = true;
-		} else {
-			String res_type = _get_resource_type(cb);
-
-			for (int i = 0; i < base_type.get_slice_count(","); i++) {
-				String base = base_type.get_slice(",", i);
-
-				paste_valid = ClassDB::is_parent_class(res_type, base) || EditorNode::get_editor_data().script_class_is_parent(res_type, base);
-
-				if (!paste_valid) {
-					break;
-				}
-			}
-		}
+		paste_valid = base_type.is_empty() || _is_object_valid(cb, allowed_types);
 	}
 
 	if (edited_resource.is_valid() || paste_valid) {
@@ -624,6 +595,37 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 	}
 }
 
+bool EditorResourcePicker::_is_object_valid(const Ref<Resource> &p_resource, HashSet<String> p_allowed_types, String *r_res_type) const {
+	String res_type = _get_resource_type(p_resource);
+	if (r_res_type) {
+		*r_res_type = res_type;
+	}
+
+	if (_is_type_valid(res_type, p_allowed_types)) {
+		return true;
+	} else {
+		Ref<Script> scr = p_resource->get_script();
+		if (!scr.is_valid()) {
+			return false;
+		}
+		for (int i = 0; i < base_type.get_slice_count(","); i++) {
+			String base = base_type.get_slice(",", i);
+
+			if (!ScriptServer::is_global_class(base)) {
+				continue;
+			}
+
+			String script_path = ScriptServer::get_global_class_path(base);
+			Ref<Script> required_script = ResourceLoader::load(script_path);
+			if (required_script.is_valid() && scr->inherits_script(required_script)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	if (base_type.is_empty()) {
 		return true;
@@ -652,20 +654,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	HashSet<String> allowed_types;
 	_get_allowed_types(true, &allowed_types);
 
-	if (res.is_valid()) {
-		String res_type = _get_resource_type(res);
-
-		if (_is_type_valid(res_type, allowed_types)) {
-			return true;
-		}
-
-		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res.ptr());
-		if (_is_type_valid(custom_class, allowed_types)) {
-			return true;
-		}
-	}
-
-	return false;
+	return res.is_valid() && _is_object_valid(res, allowed_types);
 }
 
 bool EditorResourcePicker::_is_type_valid(const String p_type_name, HashSet<String> p_allowed_types) const {
