@@ -139,7 +139,7 @@ Ref<Image> _webp_unpack(const Vector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_V(r[0] != 'R' || r[1] != 'I' || r[2] != 'F' || r[3] != 'F' || r[8] != 'W' || r[9] != 'E' || r[10] != 'B' || r[11] != 'P', Ref<Image>());
 	WebPBitstreamFeatures features;
 	if (WebPGetFeatures(r, size, &features) != VP8_STATUS_OK) {
-		ERR_FAIL_V_MSG(Ref<Image>(), "Error unpacking WEBP image.");
+		ERR_FAIL_V_MSG(Ref<Image>(), "Error unpacking WebP image.");
 	}
 
 	Vector<uint8_t> dst_image;
