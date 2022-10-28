@@ -70,6 +70,12 @@
 				Register a new gutter to this [TextEdit]. Use [param at] to have a specific gutter order. A value of [code]-1[/code] appends the gutter to the right.
 			</description>
 		</method>
+		<method name="add_selection_for_next_occurrence">
+			<return type="void" />
+			<description>
+				Adds a selection and a caret for the next occurrence of the current selection. If there is no active selection, selects word under caret.
+			</description>
+		</method>
 		<method name="adjust_carets_after_edit">
 			<return type="void" />
 			<param index="0" name="caret" type="int" />

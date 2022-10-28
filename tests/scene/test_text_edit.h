@@ -733,6 +733,46 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("caret_changed");
 		}
 
+		SUBCASE("[TextEdit] add selection for next occurrence") {
+			text_edit->set_text("\ntest   other_test\nrandom   test\nword test word");
+			text_edit->set_caret_column(0);
+			text_edit->set_caret_line(1);
+
+			text_edit->select_word_under_caret();
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+
+			text_edit->add_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 2);
+			CHECK(text_edit->get_selected_text(1) == "test");
+			CHECK(text_edit->get_selection_from_line(1) == 1);
+			CHECK(text_edit->get_selection_from_column(1) == 13);
+			CHECK(text_edit->get_selection_to_line(1) == 1);
+			CHECK(text_edit->get_selection_to_column(1) == 17);
+			CHECK(text_edit->get_caret_line(1) == 1);
+			CHECK(text_edit->get_caret_column(1) == 17);
+
+			text_edit->add_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 3);
+			CHECK(text_edit->get_selected_text(2) == "test");
+			CHECK(text_edit->get_selection_from_line(2) == 2);
+			CHECK(text_edit->get_selection_from_column(2) == 9);
+			CHECK(text_edit->get_selection_to_line(2) == 2);
+			CHECK(text_edit->get_selection_to_column(2) == 13);
+			CHECK(text_edit->get_caret_line(2) == 2);
+			CHECK(text_edit->get_caret_column(2) == 13);
+
+			text_edit->add_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 4);
+			CHECK(text_edit->get_selected_text(3) == "test");
+			CHECK(text_edit->get_selection_from_line(3) == 3);
+			CHECK(text_edit->get_selection_from_column(3) == 5);
+			CHECK(text_edit->get_selection_to_line(3) == 3);
+			CHECK(text_edit->get_selection_to_column(3) == 9);
+			CHECK(text_edit->get_caret_line(3) == 3);
+			CHECK(text_edit->get_caret_column(3) == 9);
+		}
+
 		SUBCASE("[TextEdit] deselect on focus loss") {
 			text_edit->set_text("test");
 
