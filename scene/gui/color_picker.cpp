@@ -1591,9 +1591,6 @@ ColorPicker::ColorPicker() :
 		mode_hbc->add_child(mode_btns[i]);
 		mode_btns[i]->set_focus_mode(FOCUS_NONE);
 		mode_btns[i]->set_h_size_flags(SIZE_EXPAND_FILL);
-		mode_btns[i]->add_theme_style_override("pressed", get_theme_stylebox("tab_selected", "TabContainer"));
-		mode_btns[i]->add_theme_style_override("normal", get_theme_stylebox("tab_unselected", "TabContainer"));
-		mode_btns[i]->add_theme_style_override("hover", get_theme_stylebox("tab_selected", "TabContainer"));
 		mode_btns[i]->set_toggle_mode(true);
 		mode_btns[i]->set_text(modes[i]->get_name());
 		mode_btns[i]->set_button_group(mode_group);
