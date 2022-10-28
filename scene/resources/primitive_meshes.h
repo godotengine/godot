@@ -56,6 +56,9 @@ private:
 	Ref<Material> material;
 	bool flip_faces = false;
 
+	bool add_uv2 = false;
+	float uv2_padding = 2.0;
+
 	// make sure we do an update after we've finished constructing our object
 	mutable bool pending_request = true;
 	void _update() const;
@@ -69,6 +72,10 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const {}
 	void _request_update();
 	GDVIRTUAL0RC(Array, _create_mesh_array)
+
+	Vector2 get_uv2_scale(Vector2 p_margin_scale = Vector2(1.0, 1.0)) const;
+	float get_lightmap_texel_size() const;
+	virtual void _update_lightmap_size(){};
 
 public:
 	virtual int get_surface_count() const override;
@@ -98,6 +105,12 @@ public:
 	void set_flip_faces(bool p_enable);
 	bool get_flip_faces() const;
 
+	void set_add_uv2(bool p_enable);
+	bool get_add_uv2() const { return add_uv2; }
+
+	void set_uv2_padding(float p_padding);
+	float get_uv2_padding() const { return uv2_padding; }
+
 	PrimitiveMesh();
 	~PrimitiveMesh();
 };
@@ -118,8 +131,10 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
-	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 8);
+	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 8, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
 	void set_radius(const float p_radius);
 	float get_radius() const;
@@ -152,8 +167,10 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
-	static void create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w = 0, int subdivide_h = 0, int subdivide_d = 0);
+	static void create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w = 0, int subdivide_h = 0, int subdivide_d = 0, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
@@ -190,8 +207,10 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
-	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = 64, int rings = 4, bool cap_top = true, bool cap_bottom = true);
+	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = 64, int rings = 4, bool cap_top = true, bool cap_bottom = true, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
 	void set_top_radius(const float p_radius);
 	float get_top_radius() const;
@@ -240,6 +259,8 @@ private:
 protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
+
+	virtual void _update_lightmap_size() override;
 
 public:
 	void set_size(const Size2 &p_size);
@@ -292,6 +313,8 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
 	void set_left_to_right(const float p_left_to_right);
 	float get_left_to_right() const;
@@ -328,8 +351,10 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
-	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 32, bool is_hemisphere = false);
+	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 32, bool is_hemisphere = false, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
 	void set_radius(const float p_radius);
 	float get_radius() const;
@@ -364,6 +389,8 @@ private:
 protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
+
+	virtual void _update_lightmap_size() override;
 
 public:
 	void set_inner_radius(const float p_inner_radius);

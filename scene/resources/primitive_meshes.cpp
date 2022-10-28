@@ -30,12 +30,15 @@
 
 #include "primitive_meshes.h"
 
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering_server.h"
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
+
+#define PADDING_REF_SIZE 1024.0
 
 /**
   PrimitiveMesh
@@ -92,6 +95,26 @@ void PrimitiveMesh::_update() const {
 			arr[RS::ARRAY_NORMAL] = normals;
 			arr[RS::ARRAY_INDEX] = indices;
 		}
+	}
+
+	if (add_uv2) {
+		// _create_mesh_array should populate our UV2, this is a fallback in case it doesn't.
+		// As we don't know anything about the geometry we only pad the right and bottom edge
+		// of our texture.
+		Vector<Vector2> uv = arr[RS::ARRAY_TEX_UV];
+		Vector<Vector2> uv2 = arr[RS::ARRAY_TEX_UV2];
+
+		if (uv.size() > 0 && uv2.size() == 0) {
+			Vector2 uv2_scale = get_uv2_scale();
+			uv2.resize(uv.size());
+
+			Vector2 *uv2w = uv2.ptrw();
+			for (int i = 0; i < uv.size(); i++) {
+				uv2w[i] = uv[i] * uv2_scale;
+			}
+		}
+
+		arr[RS::ARRAY_TEX_UV2] = uv2;
 	}
 
 	array_len = pc;
@@ -160,7 +183,12 @@ TypedArray<Array> PrimitiveMesh::surface_get_blend_shape_arrays(int p_surface) c
 uint32_t PrimitiveMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, 0);
 
-	return RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL | RS::ARRAY_FORMAT_TANGENT | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
+	uint32_t mesh_format = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL | RS::ARRAY_FORMAT_TANGENT | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
+	if (add_uv2) {
+		mesh_format |= RS::ARRAY_FORMAT_TEX_UV2;
+	}
+
+	return mesh_format;
 }
 
 Mesh::PrimitiveType PrimitiveMesh::surface_get_primitive_type(int p_idx) const {
@@ -219,9 +247,17 @@ void PrimitiveMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &PrimitiveMesh::set_flip_faces);
 	ClassDB::bind_method(D_METHOD("get_flip_faces"), &PrimitiveMesh::get_flip_faces);
 
+	ClassDB::bind_method(D_METHOD("set_add_uv2", "add_uv2"), &PrimitiveMesh::set_add_uv2);
+	ClassDB::bind_method(D_METHOD("get_add_uv2"), &PrimitiveMesh::get_add_uv2);
+
+	ClassDB::bind_method(D_METHOD("set_uv2_padding", "uv2_padding"), &PrimitiveMesh::set_uv2_padding);
+	ClassDB::bind_method(D_METHOD("get_uv2_padding"), &PrimitiveMesh::get_uv2_padding);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "add_uv2"), "set_add_uv2", "get_add_uv2");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv2_padding"), "set_uv2_padding", "get_uv2_padding");
 
 	GDVIRTUAL_BIND(_create_mesh_array);
 }
@@ -263,6 +299,42 @@ bool PrimitiveMesh::get_flip_faces() const {
 	return flip_faces;
 }
 
+void PrimitiveMesh::set_add_uv2(bool p_enable) {
+	add_uv2 = p_enable;
+	_update_lightmap_size();
+	_request_update();
+}
+
+void PrimitiveMesh::set_uv2_padding(float p_padding) {
+	uv2_padding = p_padding;
+	_update_lightmap_size();
+	_request_update();
+}
+
+Vector2 PrimitiveMesh::get_uv2_scale(Vector2 p_margin_scale) const {
+	Vector2 uv2_scale;
+	Vector2 lightmap_size = get_lightmap_size_hint();
+
+	// Calculate it as a margin, if no lightmap size hint is given we assume "PADDING_REF_SIZE" as our texture size.
+	uv2_scale.x = p_margin_scale.x * uv2_padding / (lightmap_size.x == 0.0 ? PADDING_REF_SIZE : lightmap_size.x);
+	uv2_scale.y = p_margin_scale.y * uv2_padding / (lightmap_size.y == 0.0 ? PADDING_REF_SIZE : lightmap_size.y);
+
+	// Inverse it to turn our margin into a scale
+	uv2_scale = Vector2(1.0, 1.0) - uv2_scale;
+
+	return uv2_scale;
+}
+
+float PrimitiveMesh::get_lightmap_texel_size() const {
+	float texel_size = GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size");
+
+	if (texel_size <= 0.0) {
+		texel_size = 0.2;
+	}
+
+	return texel_size;
+}
+
 PrimitiveMesh::PrimitiveMesh() {
 	mesh = RenderingServer::get_singleton()->mesh_create();
 }
@@ -275,15 +347,44 @@ PrimitiveMesh::~PrimitiveMesh() {
 	CapsuleMesh
 */
 
-void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
-	create_mesh_array(p_arr, radius, height, radial_segments, rings);
+void CapsuleMesh::_update_lightmap_size() {
+	if (get_add_uv2()) {
+		// size must have changed, update lightmap size hint
+		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
+		float padding = get_uv2_padding();
+
+		float radial_length = radius * Math_PI * 0.5; // circumference of 90 degree bend
+		float vertical_length = radial_length * 2 + (height - 2.0 * radius); // total vertical length
+
+		_lightmap_size_hint.x = MAX(1.0, 4.0 * radial_length / texel_size) + padding;
+		_lightmap_size_hint.y = MAX(1.0, vertical_length / texel_size) + padding;
+
+		set_lightmap_size_hint(_lightmap_size_hint);
+	}
 }
 
-void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const float height, const int radial_segments, const int rings) {
+void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
+	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
+	float _uv2_padding = get_uv2_padding() * texel_size;
+
+	create_mesh_array(p_arr, radius, height, radial_segments, rings, _add_uv2, _uv2_padding);
+}
+
+void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const float height, const int radial_segments, const int rings, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, w;
 	float onethird = 1.0 / 3.0;
 	float twothirds = 2.0 / 3.0;
+
+	// Only used if we calculate UV2
+	float radial_width = 2.0 * radius * Math_PI;
+	float radial_h = radial_width / (radial_width + p_uv2_padding);
+	float radial_length = radius * Math_PI * 0.5; // circumference of 90 degree bend
+	float vertical_length = radial_length * 2 + (height - 2.0 * radius) + p_uv2_padding; // total vertical length
+	float radial_v = radial_length / vertical_length; // v size of top and bottom section
+	float height_v = (height - 2.0 * radius) / vertical_length; // v size of height section
 
 	// note, this has been aligned with our collision shape but I've left the descriptions as top/middle/bottom
 
@@ -291,6 +392,7 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 	Vector<Vector3> normals;
 	Vector<float> tangents;
 	Vector<Vector2> uvs;
+	Vector<Vector2> uv2s;
 	Vector<int> indices;
 	point = 0;
 
@@ -322,6 +424,9 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			normals.push_back(p.normalized());
 			ADD_TANGENT(-z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v * onethird));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(u * radial_h, v * radial_v));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -361,6 +466,9 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			normals.push_back(Vector3(x, 0.0, -z));
 			ADD_TANGENT(-z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, onethird + (v * onethird)));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(u * radial_h, radial_v + (v * height_v)));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -390,17 +498,20 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		y = radius * cos(0.5 * Math_PI * v);
 
 		for (i = 0; i <= radial_segments; i++) {
-			float u2 = i;
-			u2 /= radial_segments;
+			u = i;
+			u /= radial_segments;
 
-			x = -sin(u2 * Math_TAU);
-			z = cos(u2 * Math_TAU);
+			x = -sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, -0.5 * height + radius, 0.0));
 			normals.push_back(p.normalized());
 			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u2, twothirds + ((v - 1.0) * onethird)));
+			uvs.push_back(Vector2(u, twothirds + ((v - 1.0) * onethird)));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(u * radial_h, radial_v + height_v + ((v - 1.0) * radial_v)));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -422,6 +533,9 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 	p_arr[RS::ARRAY_NORMAL] = normals;
 	p_arr[RS::ARRAY_TANGENT] = tangents;
 	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	if (p_add_uv2) {
+		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+	}
 	p_arr[RS::ARRAY_INDEX] = indices;
 }
 
@@ -450,6 +564,7 @@ void CapsuleMesh::set_radius(const float p_radius) {
 	if (radius > height * 0.5) {
 		height = radius * 2.0;
 	}
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -462,6 +577,7 @@ void CapsuleMesh::set_height(const float p_height) {
 	if (radius > height * 0.5) {
 		radius = height * 0.5;
 	}
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -493,15 +609,52 @@ CapsuleMesh::CapsuleMesh() {}
   BoxMesh
 */
 
-void BoxMesh::_create_mesh_array(Array &p_arr) const {
-	BoxMesh::create_mesh_array(p_arr, size, subdivide_w, subdivide_h, subdivide_d);
+void BoxMesh::_update_lightmap_size() {
+	if (get_add_uv2()) {
+		// size must have changed, update lightmap size hint
+		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
+		float padding = get_uv2_padding();
+
+		float width = (size.x + size.z) / texel_size;
+		float length = (size.y + size.y + MAX(size.x, size.z)) / texel_size;
+
+		_lightmap_size_hint.x = MAX(1.0, width) + 2.0 * padding;
+		_lightmap_size_hint.y = MAX(1.0, length) + 3.0 * padding;
+
+		set_lightmap_size_hint(_lightmap_size_hint);
+	}
 }
 
-void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int subdivide_h, int subdivide_d) {
+void BoxMesh::_create_mesh_array(Array &p_arr) const {
+	// Note about padding, with our box each face of the box faces a different direction so we want a seam
+	// around every face. We thus add our padding to the right and bottom of each face.
+	// With 3 faces along the width and 2 along the height of the texture we need to adjust our scale
+	// accordingly.
+	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
+	float _uv2_padding = get_uv2_padding() * texel_size;
+
+	BoxMesh::create_mesh_array(p_arr, size, subdivide_w, subdivide_h, subdivide_d, _add_uv2, _uv2_padding);
+}
+
+void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int subdivide_h, int subdivide_d, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 	float onethird = 1.0 / 3.0;
 	float twothirds = 2.0 / 3.0;
+
+	// Only used if we calculate UV2
+	// TODO this could be improved by changing the order depending on which side is the longest (basically the below works best if size.y is the longest)
+	float total_h = (size.x + size.z + (2.0 * p_uv2_padding));
+	float padding_h = p_uv2_padding / total_h;
+	float width_h = size.x / total_h;
+	float depth_h = size.z / total_h;
+	float total_v = (size.y + size.y + MAX(size.x, size.z) + (3.0 * p_uv2_padding));
+	float padding_v = p_uv2_padding / total_v;
+	float width_v = size.x / total_v;
+	float height_v = size.y / total_v;
+	float depth_v = size.z / total_v;
 
 	Vector3 start_pos = size * -0.5;
 
@@ -511,6 +664,7 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 	Vector<Vector3> normals;
 	Vector<float> tangents;
 	Vector<Vector2> uvs;
+	Vector<Vector2> uv2s;
 	Vector<int> indices;
 	point = 0;
 
@@ -525,18 +679,24 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= subdivide_h + 1; j++) {
+		float v = j;
+		float v2 = v / (subdivide_w + 1.0);
+		v /= (2.0 * (subdivide_h + 1.0));
+
 		x = start_pos.x;
 		for (i = 0; i <= subdivide_w + 1; i++) {
 			float u = i;
-			float v = j;
+			float u2 = u / (subdivide_w + 1.0);
 			u /= (3.0 * (subdivide_w + 1.0));
-			v /= (2.0 * (subdivide_h + 1.0));
 
 			// front
 			points.push_back(Vector3(x, -y, -start_pos.z)); // double negative on the Z!
 			normals.push_back(Vector3(0.0, 0.0, 1.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(u, v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(u2 * width_h, v2 * height_v));
+			}
 			point++;
 
 			// back
@@ -544,6 +704,9 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 			normals.push_back(Vector3(0.0, 0.0, -1.0));
 			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + u, v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(u2 * width_h, height_v + padding_v + (v2 * height_v)));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -579,18 +742,24 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
+		float v = j;
+		float v2 = v / (subdivide_h + 1.0);
+		v /= (2.0 * (subdivide_h + 1.0));
+
 		z = start_pos.z;
 		for (i = 0; i <= (subdivide_d + 1); i++) {
 			float u = i;
-			float v = j;
+			float u2 = u / (subdivide_d + 1.0);
 			u /= (3.0 * (subdivide_d + 1.0));
-			v /= (2.0 * (subdivide_h + 1.0));
 
 			// right
 			points.push_back(Vector3(-start_pos.x, -y, -z));
 			normals.push_back(Vector3(1.0, 0.0, 0.0));
 			ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
 			uvs.push_back(Vector2(onethird + u, v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(width_h + padding_h + (u2 * depth_h), v2 * height_v));
+			}
 			point++;
 
 			// left
@@ -598,6 +767,9 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 			normals.push_back(Vector3(-1.0, 0.0, 0.0));
 			ADD_TANGENT(0.0, 0.0, 1.0, 1.0);
 			uvs.push_back(Vector2(u, 0.5 + v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(width_h + padding_h + (u2 * depth_h), height_v + padding_v + (v2 * height_v)));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -633,18 +805,24 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_d + 1); j++) {
+		float v = j;
+		float v2 = v / (subdivide_d + 1.0);
+		v /= (2.0 * (subdivide_d + 1.0));
+
 		x = start_pos.x;
 		for (i = 0; i <= (subdivide_w + 1); i++) {
 			float u = i;
-			float v = j;
+			float u2 = u / (subdivide_w + 1.0);
 			u /= (3.0 * (subdivide_w + 1.0));
-			v /= (2.0 * (subdivide_d + 1.0));
 
 			// top
 			points.push_back(Vector3(-x, -start_pos.y, -z));
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
 			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(onethird + u, 0.5 + v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(u2 * width_h, ((height_v + padding_v) * 2.0) + (v2 * depth_v)));
+			}
 			point++;
 
 			// bottom
@@ -652,6 +830,9 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + u, 0.5 + v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(width_h + padding_h + (u2 * depth_h), ((height_v + padding_v) * 2.0) + (v2 * width_v)));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -686,6 +867,9 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 	p_arr[RS::ARRAY_NORMAL] = normals;
 	p_arr[RS::ARRAY_TANGENT] = tangents;
 	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	if (p_add_uv2) {
+		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+	}
 	p_arr[RS::ARRAY_INDEX] = indices;
 }
 
@@ -708,6 +892,7 @@ void BoxMesh::_bind_methods() {
 
 void BoxMesh::set_size(const Vector3 &p_size) {
 	size = p_size;
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -748,18 +933,58 @@ BoxMesh::BoxMesh() {}
 	CylinderMesh
 */
 
-void CylinderMesh::_create_mesh_array(Array &p_arr) const {
-	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings, cap_top, cap_bottom);
+void CylinderMesh::_update_lightmap_size() {
+	if (get_add_uv2()) {
+		// size must have changed, update lightmap size hint
+		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
+		float padding = get_uv2_padding();
+
+		float top_circumference = top_radius * Math_PI * 2.0;
+		float bottom_circumference = bottom_radius * Math_PI * 2.0;
+
+		float _width = MAX(top_circumference, bottom_circumference) / texel_size + padding;
+		_width = MAX(_width, (((top_radius + bottom_radius) / texel_size) + padding) * 2.0); // this is extremely unlikely to be larger, will only happen if padding is larger then our diameter.
+		_lightmap_size_hint.x = MAX(1.0, _width);
+
+		float _height = ((height + (MAX(top_radius, bottom_radius) * 2.0)) / texel_size) + (2.0 * padding);
+
+		_lightmap_size_hint.y = MAX(1.0, _height);
+
+		set_lightmap_size_hint(_lightmap_size_hint);
+	}
 }
 
-void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings, bool cap_top, bool cap_bottom) {
+void CylinderMesh::_create_mesh_array(Array &p_arr) const {
+	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
+	float _uv2_padding = get_uv2_padding() * texel_size;
+
+	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings, cap_top, cap_bottom, _add_uv2, _uv2_padding);
+}
+
+void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings, bool cap_top, bool cap_bottom, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
-	float x, y, z, u, v, radius;
+	float x, y, z, u, v, radius, radius_h;
+
+	// Only used if we calculate UV2
+	float top_circumference = top_radius * Math_PI * 2.0;
+	float bottom_circumference = bottom_radius * Math_PI * 2.0;
+	float vertical_length = height + MAX(2.0 * top_radius, 2.0 * bottom_radius) + (2.0 * p_uv2_padding);
+	float height_v = height / vertical_length;
+	float padding_v = p_uv2_padding / vertical_length;
+
+	float horizonal_length = MAX(MAX(2.0 * (top_radius + bottom_radius + p_uv2_padding), top_circumference + p_uv2_padding), bottom_circumference + p_uv2_padding);
+	float center_h = 0.5 * (horizonal_length - p_uv2_padding) / horizonal_length;
+	float top_h = top_circumference / horizonal_length;
+	float bottom_h = bottom_circumference / horizonal_length;
+	float padding_h = p_uv2_padding / horizonal_length;
 
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
 	Vector<float> tangents;
 	Vector<Vector2> uvs;
+	Vector<Vector2> uv2s;
 	Vector<int> indices;
 	point = 0;
 
@@ -777,6 +1002,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 		v /= (rings + 1);
 
 		radius = top_radius + ((bottom_radius - top_radius) * v);
+		radius_h = top_h + ((bottom_h - top_h) * v);
 
 		y = height * v;
 		y = (height * 0.5) - y;
@@ -793,6 +1019,9 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			normals.push_back(Vector3(x, side_normal_y, z).normalized());
 			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v * 0.5));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(center_h + (u - 0.5) * radius_h, v * height_v));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -810,6 +1039,12 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 		thisrow = point;
 	};
 
+	// Adjust for buttom section, only used if we calculate UV2s
+	top_h = top_radius / horizonal_length;
+	float top_v = top_radius / vertical_length;
+	bottom_h = bottom_radius / horizonal_length;
+	float bottom_v = bottom_radius / vertical_length;
+
 	// add top
 	if (cap_top && top_radius > 0.0) {
 		y = height * 0.5;
@@ -819,6 +1054,9 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 		normals.push_back(Vector3(0.0, 1.0, 0.0));
 		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
 		uvs.push_back(Vector2(0.25, 0.75));
+		if (p_add_uv2) {
+			uv2s.push_back(Vector2(top_h, height_v + padding_v + MAX(top_v, bottom_v)));
+		}
 		point++;
 
 		for (i = 0; i <= radial_segments; i++) {
@@ -836,6 +1074,9 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
 			uvs.push_back(Vector2(u, v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(top_h + (x * top_h), height_v + padding_v + MAX(top_v, bottom_v) + (z * top_v)));
+			}
 			point++;
 
 			if (i > 0) {
@@ -855,6 +1096,9 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 		normals.push_back(Vector3(0.0, -1.0, 0.0));
 		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
 		uvs.push_back(Vector2(0.75, 0.75));
+		if (p_add_uv2) {
+			uv2s.push_back(Vector2(top_h + top_h + padding_h + bottom_h, height_v + padding_v + MAX(top_v, bottom_v)));
+		}
 		point++;
 
 		for (i = 0; i <= radial_segments; i++) {
@@ -872,6 +1116,9 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
 			uvs.push_back(Vector2(u, v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(top_h + top_h + padding_h + bottom_h + (x * bottom_h), height_v + padding_v + MAX(top_v, bottom_v) - (z * bottom_v)));
+			}
 			point++;
 
 			if (i > 0) {
@@ -886,6 +1133,9 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	p_arr[RS::ARRAY_NORMAL] = normals;
 	p_arr[RS::ARRAY_TANGENT] = tangents;
 	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	if (p_add_uv2) {
+		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+	}
 	p_arr[RS::ARRAY_INDEX] = indices;
 }
 
@@ -919,6 +1169,7 @@ void CylinderMesh::_bind_methods() {
 
 void CylinderMesh::set_top_radius(const float p_radius) {
 	top_radius = p_radius;
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -928,6 +1179,7 @@ float CylinderMesh::get_top_radius() const {
 
 void CylinderMesh::set_bottom_radius(const float p_radius) {
 	bottom_radius = p_radius;
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -937,6 +1189,7 @@ float CylinderMesh::get_bottom_radius() const {
 
 void CylinderMesh::set_height(const float p_height) {
 	height = p_height;
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -986,9 +1239,25 @@ CylinderMesh::CylinderMesh() {}
   PlaneMesh
 */
 
+void PlaneMesh::_update_lightmap_size() {
+	if (get_add_uv2()) {
+		// size must have changed, update lightmap size hint
+		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
+		float padding = get_uv2_padding();
+
+		_lightmap_size_hint.x = MAX(1.0, (size.x / texel_size) + padding);
+		_lightmap_size_hint.y = MAX(1.0, (size.y / texel_size) + padding);
+
+		set_lightmap_size_hint(_lightmap_size_hint);
+	}
+}
+
 void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, z;
+
+	// Plane mesh can use default UV2 calculation as implemented in Primitive Mesh
 
 	Size2 start_pos = size * -0.5;
 
@@ -1088,6 +1357,7 @@ void PlaneMesh::_bind_methods() {
 
 void PlaneMesh::set_size(const Size2 &p_size) {
 	size = p_size;
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -1137,11 +1407,48 @@ PlaneMesh::PlaneMesh() {}
   PrismMesh
 */
 
+void PrismMesh::_update_lightmap_size() {
+	if (get_add_uv2()) {
+		// size must have changed, update lightmap size hint
+		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
+		float padding = get_uv2_padding();
+
+		// left_to_right does not effect the surface area of the prism so we ignore that.
+		// TODO we could combine the two triangles and save some space but we need to re-align the uv1 and adjust the tangent.
+
+		float width = (size.x + size.z) / texel_size;
+		float length = (size.y + size.y + size.z) / texel_size;
+
+		_lightmap_size_hint.x = MAX(1.0, width) + 2.0 * padding;
+		_lightmap_size_hint.y = MAX(1.0, length) + 3.0 * padding;
+
+		set_lightmap_size_hint(_lightmap_size_hint);
+	}
+}
+
 void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 	float onethird = 1.0 / 3.0;
 	float twothirds = 2.0 / 3.0;
+
+	// Only used if we calculate UV2
+	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
+	float _uv2_padding = get_uv2_padding() * texel_size;
+
+	float horizontal_total = size.x + size.z + 2.0 * _uv2_padding;
+	float width_h = size.x / horizontal_total;
+	float depth_h = size.z / horizontal_total;
+	float padding_h = _uv2_padding / horizontal_total;
+
+	float vertical_total = (size.y + size.y + size.z) + (3.0 * _uv2_padding);
+	float height_v = size.y / vertical_total;
+	float depth_v = size.z / vertical_total;
+	float padding_v = _uv2_padding / vertical_total;
+
+	// and start building
 
 	Vector3 start_pos = size * -0.5;
 
@@ -1151,6 +1458,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	Vector<Vector3> normals;
 	Vector<float> tangents;
 	Vector<Vector2> uvs;
+	Vector<Vector2> uv2s;
 	Vector<int> indices;
 	point = 0;
 
@@ -1171,12 +1479,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 		float offset_front = (1.0 - scale) * onethird * left_to_right;
 		float offset_back = (1.0 - scale) * onethird * (1.0 - left_to_right);
 
+		float v = j;
+		float v2 = j / (subdivide_h + 1.0);
+		v /= (2.0 * (subdivide_h + 1.0));
+
 		x = 0.0;
 		for (i = 0; i <= (subdivide_w + 1); i++) {
 			float u = i;
-			float v = j;
+			float u2 = i / (subdivide_w + 1.0);
 			u /= (3.0 * (subdivide_w + 1.0));
-			v /= (2.0 * (subdivide_h + 1.0));
 
 			u *= scale;
 
@@ -1185,6 +1496,9 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			normals.push_back(Vector3(0.0, 0.0, 1.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(offset_front + u, v));
+			if (_add_uv2) {
+				uv2s.push_back(Vector2(u2 * scale * width_h, v2 * height_v));
+			}
 			point++;
 
 			/* back */
@@ -1192,6 +1506,9 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			normals.push_back(Vector3(0.0, 0.0, -1.0));
 			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + offset_back + u, v));
+			if (_add_uv2) {
+				uv2s.push_back(Vector2(u2 * scale * width_h, height_v + padding_v + v2 * height_v));
+			}
 			point++;
 
 			if (i > 0 && j == 1) {
@@ -1246,6 +1563,10 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
+		float v = j;
+		float v2 = j / (subdivide_h + 1.0);
+		v /= (2.0 * (subdivide_h + 1.0));
+
 		float left, right;
 		float scale = (y - start_pos.y) / size.y;
 
@@ -1255,15 +1576,17 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 		z = start_pos.z;
 		for (i = 0; i <= (subdivide_d + 1); i++) {
 			float u = i;
-			float v = j;
+			float u2 = u / (subdivide_d + 1.0);
 			u /= (3.0 * (subdivide_d + 1.0));
-			v /= (2.0 * (subdivide_h + 1.0));
 
 			/* right */
 			points.push_back(Vector3(right, -y, -z));
 			normals.push_back(normal_right);
 			ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
 			uvs.push_back(Vector2(onethird + u, v));
+			if (_add_uv2) {
+				uv2s.push_back(Vector2(width_h + padding_h + u2 * depth_h, v2 * height_v));
+			}
 			point++;
 
 			/* left */
@@ -1271,6 +1594,9 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			normals.push_back(normal_left);
 			ADD_TANGENT(0.0, 0.0, 1.0, 1.0);
 			uvs.push_back(Vector2(u, 0.5 + v));
+			if (_add_uv2) {
+				uv2s.push_back(Vector2(width_h + padding_h + u2 * depth_h, height_v + padding_v + v2 * height_v));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -1306,18 +1632,24 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_d + 1); j++) {
+		float v = j;
+		float v2 = v / (subdivide_d + 1.0);
+		v /= (2.0 * (subdivide_d + 1.0));
+
 		x = start_pos.x;
 		for (i = 0; i <= (subdivide_w + 1); i++) {
 			float u = i;
-			float v = j;
+			float u2 = u / (subdivide_w + 1.0);
 			u /= (3.0 * (subdivide_w + 1.0));
-			v /= (2.0 * (subdivide_d + 1.0));
 
 			/* bottom */
 			points.push_back(Vector3(x, start_pos.y, -z));
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + u, 0.5 + v));
+			if (_add_uv2) {
+				uv2s.push_back(Vector2(u2 * width_h, 2.0 * (height_v + padding_v) + v2 * depth_v));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -1342,6 +1674,9 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	p_arr[RS::ARRAY_NORMAL] = normals;
 	p_arr[RS::ARRAY_TANGENT] = tangents;
 	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	if (_add_uv2) {
+		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+	}
 	p_arr[RS::ARRAY_INDEX] = indices;
 }
 
@@ -1377,6 +1712,7 @@ float PrismMesh::get_left_to_right() const {
 
 void PrismMesh::set_size(const Vector3 &p_size) {
 	size = p_size;
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -1417,15 +1753,42 @@ PrismMesh::PrismMesh() {}
   SphereMesh
 */
 
-void SphereMesh::_create_mesh_array(Array &p_arr) const {
-	create_mesh_array(p_arr, radius, height, radial_segments, rings, is_hemisphere);
+void SphereMesh::_update_lightmap_size() {
+	if (get_add_uv2()) {
+		// size must have changed, update lightmap size hint
+		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
+		float padding = get_uv2_padding();
+
+		float _width = radius * Math_TAU;
+		_lightmap_size_hint.x = MAX(1.0, (_width / texel_size) + padding);
+		float _height = (is_hemisphere ? 1.0 : 0.5) * height * Math_PI; // note, with hemisphere height is our radius, while with a full sphere it is the diameter..
+		_lightmap_size_hint.y = MAX(1.0, (_height / texel_size) + padding);
+
+		set_lightmap_size_hint(_lightmap_size_hint);
+	}
 }
 
-void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int radial_segments, int rings, bool is_hemisphere) {
+void SphereMesh::_create_mesh_array(Array &p_arr) const {
+	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
+	float _uv2_padding = get_uv2_padding() * texel_size;
+
+	create_mesh_array(p_arr, radius, height, radial_segments, rings, is_hemisphere, _add_uv2, _uv2_padding);
+}
+
+void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int radial_segments, int rings, bool is_hemisphere, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 
 	float scale = height * (is_hemisphere ? 1.0 : 0.5);
+
+	// Only used if we calculate UV2
+	float circumference = radius * Math_TAU;
+	float horizontal_length = circumference + p_uv2_padding;
+	float center_h = 0.5 * circumference / horizontal_length;
+
+	float height_v = scale * Math_PI / ((scale * Math_PI) + p_uv2_padding);
 
 	// set our bounding box
 
@@ -1433,6 +1796,7 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 	Vector<Vector3> normals;
 	Vector<float> tangents;
 	Vector<Vector2> uvs;
+	Vector<Vector2> uv2s;
 	Vector<int> indices;
 	point = 0;
 
@@ -1470,6 +1834,10 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 			};
 			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v));
+			if (p_add_uv2) {
+				float w_h = w * 2.0 * center_h;
+				uv2s.push_back(Vector2(center_h + ((u - 0.5) * w_h), v * height_v));
+			}
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -1491,6 +1859,9 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 	p_arr[RS::ARRAY_NORMAL] = normals;
 	p_arr[RS::ARRAY_TANGENT] = tangents;
 	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	if (p_add_uv2) {
+		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+	}
 	p_arr[RS::ARRAY_INDEX] = indices;
 }
 
@@ -1517,6 +1888,7 @@ void SphereMesh::_bind_methods() {
 
 void SphereMesh::set_radius(const float p_radius) {
 	radius = p_radius;
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -1526,6 +1898,7 @@ float SphereMesh::get_radius() const {
 
 void SphereMesh::set_height(const float p_height) {
 	height = p_height;
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -1553,6 +1926,7 @@ int SphereMesh::get_rings() const {
 
 void SphereMesh::set_is_hemisphere(const bool p_is_hemisphere) {
 	is_hemisphere = p_is_hemisphere;
+	_update_lightmap_size();
 	_request_update();
 }
 
@@ -1566,6 +1940,31 @@ SphereMesh::SphereMesh() {}
   TorusMesh
 */
 
+void TorusMesh::_update_lightmap_size() {
+	if (get_add_uv2()) {
+		// size must have changed, update lightmap size hint
+		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
+		float padding = get_uv2_padding();
+
+		float min_radius = inner_radius;
+		float max_radius = outer_radius;
+
+		if (min_radius > max_radius) {
+			SWAP(min_radius, max_radius);
+		}
+
+		float radius = (max_radius - min_radius) * 0.5;
+
+		float _width = max_radius * Math_TAU;
+		_lightmap_size_hint.x = MAX(1.0, (_width / texel_size) + padding);
+		float _height = radius * Math_TAU;
+		_lightmap_size_hint.y = MAX(1.0, (_height / texel_size) + padding);
+
+		set_lightmap_size_hint(_lightmap_size_hint);
+	}
+}
+
 void TorusMesh::_create_mesh_array(Array &p_arr) const {
 	// set our bounding box
 
@@ -1573,6 +1972,7 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 	Vector<Vector3> normals;
 	Vector<float> tangents;
 	Vector<Vector2> uvs;
+	Vector<Vector2> uv2s;
 	Vector<int> indices;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1592,6 +1992,17 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 
 	float radius = (max_radius - min_radius) * 0.5;
 
+	// Only used if we calculate UV2
+	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
+	float _uv2_padding = get_uv2_padding() * texel_size;
+
+	float horizontal_total = max_radius * Math_TAU + _uv2_padding;
+	float max_h = max_radius * Math_TAU / horizontal_total;
+	float delta_h = (max_radius - min_radius) * Math_TAU / horizontal_total;
+
+	float height_v = radius * Math_TAU / (radius * Math_TAU + _uv2_padding);
+
 	for (int i = 0; i <= rings; i++) {
 		int prevrow = (i - 1) * (ring_segments + 1);
 		int thisrow = i * (ring_segments + 1);
@@ -1607,10 +2018,17 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 			Vector2 normalj = Vector2(-Math::cos(angj), Math::sin(angj));
 			Vector2 normalk = normalj * radius + Vector2(min_radius + radius, 0);
 
+			float offset_h = 0.5 * (1.0 - normalj.x) * delta_h;
+			float adj_h = max_h - offset_h;
+			offset_h *= 0.5;
+
 			points.push_back(Vector3(normali.x * normalk.x, normalk.y, normali.y * normalk.x));
 			normals.push_back(Vector3(normali.x * normalj.x, normalj.y, normali.y * normalj.x));
 			ADD_TANGENT(-Math::cos(angi), 0.0, Math::sin(angi), 1.0);
 			uvs.push_back(Vector2(inci, incj));
+			if (_add_uv2) {
+				uv2s.push_back(Vector2(offset_h + inci * adj_h, incj * height_v));
+			}
 
 			if (i > 0 && j > 0) {
 				indices.push_back(thisrow + j - 1);
@@ -1628,6 +2046,9 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 	p_arr[RS::ARRAY_NORMAL] = normals;
 	p_arr[RS::ARRAY_TANGENT] = tangents;
 	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	if (_add_uv2) {
+		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+	}
 	p_arr[RS::ARRAY_INDEX] = indices;
 }
 
@@ -1785,6 +2206,8 @@ Transform3D TubeTrailMesh::get_builtin_bind_pose(int p_index) const {
 }
 
 void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
+	// Seeing use case for TubeTrailMesh, no need to do anything more then default UV2 calculation
+
 	PackedVector3Array points;
 	PackedVector3Array normals;
 	PackedFloat32Array tangents;
@@ -2109,6 +2532,8 @@ Transform3D RibbonTrailMesh::get_builtin_bind_pose(int p_index) const {
 }
 
 void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
+	// Seeing use case of ribbon trail mesh, no need to implement special UV2 calculation
+
 	PackedVector3Array points;
 	PackedVector3Array normals;
 	PackedFloat32Array tangents;
