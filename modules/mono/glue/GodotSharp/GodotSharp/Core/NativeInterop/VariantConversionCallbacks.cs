@@ -1,11 +1,15 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop;
 
 // TODO: Change VariantConversionCallbacks<T>. Store the callback in a static field for quick repeated access, instead of checking every time.
 internal static unsafe class VariantConversionCallbacks
 {
+    internal static System.Collections.Generic.Dictionary<Type, (IntPtr ToVariant, IntPtr FromVariant)>
+        GenericConversionCallbacks = new();
+
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     internal static delegate*<in T, godot_variant> GetToVariantCallback<T>()
     {
@@ -501,6 +505,26 @@ internal static unsafe class VariantConversionCallbacks
         {
             return (delegate*<in T, godot_variant>)(delegate*<in Variant, godot_variant>)
                 &FromVariant;
+        }
+
+        // TODO:
+        //   IsGenericType and GetGenericTypeDefinition don't work in NativeAOT's reflection-free mode.
+        //   We could make the Godot collections implement an interface and use IsAssignableFrom instead.
+        //   Or we could just skip the check and always look for a conversion callback for the type.
+        if (typeOfT.IsGenericType)
+        {
+            var genericTypeDef = typeOfT.GetGenericTypeDefinition();
+
+            if (genericTypeDef == typeof(Godot.Collections.Dictionary<,>) ||
+                genericTypeDef == typeof(Godot.Collections.Array<>))
+            {
+                RuntimeHelpers.RunClassConstructor(typeOfT.TypeHandle);
+
+                if (GenericConversionCallbacks.TryGetValue(typeOfT, out var genericConversion))
+                {
+                    return (delegate*<in T, godot_variant>)genericConversion.ToVariant;
+                }
+            }
         }
 
         return null;
@@ -1004,6 +1028,26 @@ internal static unsafe class VariantConversionCallbacks
         {
             return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Variant>)
                 &ToVariant;
+        }
+
+        // TODO:
+        //   IsGenericType and GetGenericTypeDefinition don't work in NativeAOT's reflection-free mode.
+        //   We could make the Godot collections implement an interface and use IsAssignableFrom instead.
+        //   Or we could just skip the check and always look for a conversion callback for the type.
+        if (typeOfT.IsGenericType)
+        {
+            var genericTypeDef = typeOfT.GetGenericTypeDefinition();
+
+            if (genericTypeDef == typeof(Godot.Collections.Dictionary<,>) ||
+                genericTypeDef == typeof(Godot.Collections.Array<>))
+            {
+                RuntimeHelpers.RunClassConstructor(typeOfT.TypeHandle);
+
+                if (GenericConversionCallbacks.TryGetValue(typeOfT, out var genericConversion))
+                {
+                    return (delegate*<in godot_variant, T>)genericConversion.FromVariant;
+                }
+            }
         }
 
         // ReSharper restore RedundantCast
