@@ -721,10 +721,19 @@ namespace Godot.NativeInterop
             if (p_managed_callable.Delegate != null)
             {
                 var gcHandle = CustomGCHandle.AllocStrong(p_managed_callable.Delegate);
-                IntPtr objectPtr = p_managed_callable.Target != null ? Object.GetPtr(p_managed_callable.Target) : IntPtr.Zero;
-                NativeFuncs.godotsharp_callable_new_with_delegate(
-                    GCHandle.ToIntPtr(gcHandle), objectPtr, out godot_callable callable);
-                return callable;
+
+                IntPtr objectPtr = p_managed_callable.Target != null ?
+                    Object.GetPtr(p_managed_callable.Target) :
+                    IntPtr.Zero;
+
+                unsafe
+                {
+                    NativeFuncs.godotsharp_callable_new_with_delegate(
+                        GCHandle.ToIntPtr(gcHandle), (IntPtr)p_managed_callable.Trampoline,
+                        objectPtr, out godot_callable callable);
+
+                    return callable;
+                }
             }
             else
             {
@@ -748,19 +757,22 @@ namespace Godot.NativeInterop
         public static Callable ConvertCallableToManaged(in godot_callable p_callable)
         {
             if (NativeFuncs.godotsharp_callable_get_data_for_marshalling(p_callable,
-                    out IntPtr delegateGCHandle, out IntPtr godotObject,
-                    out godot_string_name name).ToBool())
+                    out IntPtr delegateGCHandle, out IntPtr trampoline,
+                    out IntPtr godotObject, out godot_string_name name).ToBool())
             {
                 if (delegateGCHandle != IntPtr.Zero)
                 {
-                    return new Callable((Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target);
+                    unsafe
+                    {
+                        return Callable.CreateWithUnsafeTrampoline(
+                            (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target,
+                            (delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void>)trampoline);
+                    }
                 }
-                else
-                {
-                    return new Callable(
-                        InteropUtils.UnmanagedGetManaged(godotObject),
-                        StringName.CreateTakingOwnershipOfDisposableValue(name));
-                }
+
+                return new Callable(
+                    InteropUtils.UnmanagedGetManaged(godotObject),
+                    StringName.CreateTakingOwnershipOfDisposableValue(name));
             }
 
             // Some other unsupported callable

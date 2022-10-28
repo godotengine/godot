@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Godot.NativeInterop;
 
+// TODO: Change VariantConversionCallbacks<T>. Store the callback in a static field for quick repeated access, instead of checking every time.
 internal static unsafe class VariantConversionCallbacks
 {
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]

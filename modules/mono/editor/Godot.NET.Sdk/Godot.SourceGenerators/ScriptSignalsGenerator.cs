@@ -167,6 +167,7 @@ namespace Godot.SourceGenerators
                             Common.ReportSignalDelegateSignatureMustReturnVoid(context, signalDelegateSymbol);
                         }
                     }
+
                     continue;
                 }
 
@@ -257,14 +258,14 @@ namespace Godot.SourceGenerators
             {
                 source.Append(
                     "    protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, ");
-                source.Append("NativeVariantPtrArgs args, int argCount)\n    {\n");
+                source.Append("NativeVariantPtrArgs args)\n    {\n");
 
                 foreach (var signal in godotSignalDelegates)
                 {
                     GenerateSignalEventInvoker(signal, source);
                 }
 
-                source.Append("        base.RaiseGodotClassSignalCallbacks(signal, args, argCount);\n");
+                source.Append("        base.RaiseGodotClassSignalCallbacks(signal, args);\n");
 
                 source.Append("    }\n");
             }
@@ -404,7 +405,7 @@ namespace Godot.SourceGenerators
 
             source.Append("        if (signal == SignalName.");
             source.Append(signalName);
-            source.Append(" && argCount == ");
+            source.Append(" && args.Count == ");
             source.Append(invokeMethodData.ParamTypes.Length);
             source.Append(") {\n");
             source.Append("            backing_");
