@@ -2444,10 +2444,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			return 0; // Jump back.
 		}
 		case WM_MOUSELEAVE: {
-			old_invalid = true;
-			windows[window_id].mouse_outside = true;
+			if (window_mouseover_id == window_id) {
+				old_invalid = true;
+				window_mouseover_id = INVALID_WINDOW_ID;
 
-			_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+				_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+			}
 
 		} break;
 		case WM_INPUT: {
@@ -2678,17 +2680,21 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			if (windows[window_id].mouse_outside) {
+			if (window_mouseover_id != window_id) {
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
+					if (window_mouseover_id != INVALID_WINDOW_ID) {
+						// Leave previous window.
+						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+					}
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
 				}
 
 				CursorShape c = cursor_shape;
 				cursor_shape = CURSOR_MAX;
 				cursor_set_shape(c);
-				windows[window_id].mouse_outside = false;
+				window_mouseover_id = window_id;
 
 				// Once-off notification, must call again.
 				track_mouse_leave_event(hWnd);
@@ -2779,17 +2785,29 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			if (windows[window_id].mouse_outside) {
+			DisplayServer::WindowID over_id = get_window_at_screen_position(mouse_get_position());
+			if (!Rect2(window_get_position(over_id), Point2(windows[over_id].width, windows[over_id].height)).has_point(mouse_get_position())) {
+				// Don't consider the windowborder as part of the window.
+				over_id = INVALID_WINDOW_ID;
+			}
+			if (window_mouseover_id != over_id) {
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
-					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+					if (window_mouseover_id != INVALID_WINDOW_ID) {
+						// Leave previous window.
+						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+					}
+
+					if (over_id != INVALID_WINDOW_ID) {
+						_send_window_event(windows[over_id], WINDOW_EVENT_MOUSE_ENTER);
+					}
 				}
 
 				CursorShape c = cursor_shape;
 				cursor_shape = CURSOR_MAX;
 				cursor_set_shape(c);
-				windows[window_id].mouse_outside = false;
+				window_mouseover_id = over_id;
 
 				// Once-off notification, must call again.
 				track_mouse_leave_event(hWnd);
@@ -2800,9 +2818,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
+			DisplayServer::WindowID receiving_window_id = _get_focused_window_or_popup();
+			if (receiving_window_id == INVALID_WINDOW_ID) {
+				receiving_window_id = window_id;
+			}
 			Ref<InputEventMouseMotion> mm;
 			mm.instantiate();
-			mm->set_window_id(window_id);
+			mm->set_window_id(receiving_window_id);
 			mm->set_ctrl_pressed((wParam & MK_CONTROL) != 0);
 			mm->set_shift_pressed((wParam & MK_SHIFT) != 0);
 			mm->set_alt_pressed(alt_mem);
@@ -2859,9 +2881,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_has_focus || window_get_active_popup() == window_id) {
-				Input::get_singleton()->parse_input_event(mm);
-			}
+
+			Input::get_singleton()->parse_input_event(mm);
 
 		} break;
 		case WM_LBUTTONDOWN:
