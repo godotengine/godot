@@ -72,7 +72,7 @@ public:
 		WINDOW_VIEW,
 	};
 
-	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Size2i &, Error &r_error);
+	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Point2i *, const Size2i &, Error &r_error);
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
@@ -483,7 +483,7 @@ public:
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
-	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
 
 	DisplayServer();
 	~DisplayServer();
