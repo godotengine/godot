@@ -163,7 +163,7 @@
 			</description>
 		</signal>
 		<signal name="velocity_computed">
-			<param index="0" name="safe_velocity" type="Vector3" />
+			<param index="0" name="safe_velocity" type="Vector2" />
 			<description>
 				Notifies when the collision avoidance velocity is calculated. Emitted by [method set_velocity]. Only emitted when [member avoidance_enabled] is true.
 			</description>
