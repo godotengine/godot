@@ -269,9 +269,17 @@ bool OpenXRAPI::create_instance() {
 		XR_CURRENT_API_VERSION // apiVersion
 	};
 
+	void *next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		void *np = wrapper->set_instance_create_info_and_get_next_pointer(next_pointer);
+		if (np != nullptr) {
+			next_pointer = np;
+		}
+	}
+
 	XrInstanceCreateInfo instance_create_info = {
 		XR_TYPE_INSTANCE_CREATE_INFO, // type
-		nullptr, // next
+		next_pointer, // next
 		0, // createFlags
 		application_info, // applicationInfo
 		0, // enabledApiLayerCount, need to find out if we need support for this?
