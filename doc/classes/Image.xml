@@ -18,6 +18,7 @@
 			<param index="1" name="contrast" type="float" />
 			<param index="2" name="saturation" type="float" />
 			<description>
+				Adjusts the image's [param brightness], [param contrast] and [param saturation].
 			</description>
 		</method>
 		<method name="blend_rect">
@@ -86,6 +87,7 @@
 			<param index="1" name="channels" type="int" enum="Image.UsedChannels" />
 			<param index="2" name="lossy_quality" type="float" default="0.7" />
 			<description>
+				Compresses the image to use less memory based on the [param channels]. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available. See [enum CompressMode] and [enum UsedChannels] constants.
 			</description>
 		</method>
 		<method name="compute_image_metrics">
@@ -157,6 +159,7 @@
 			<return type="int" enum="Image.UsedChannels" />
 			<param index="0" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<description>
+				Returns the image's detected channels. See [enum UsedChannels] and [enum CompressSource] constants.
 			</description>
 		</method>
 		<method name="fill">
@@ -700,16 +703,22 @@
 			Use BPTC compression.
 		</constant>
 		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">
+			Only the Luminance (brightness) channel is used for compression.
 		</constant>
 		<constant name="USED_CHANNELS_LA" value="1" enum="UsedChannels">
+			Luminance (brightness) and Alpha channels are used for compression.
 		</constant>
 		<constant name="USED_CHANNELS_R" value="2" enum="UsedChannels">
+			Only the Red channel is used for compression.
 		</constant>
 		<constant name="USED_CHANNELS_RG" value="3" enum="UsedChannels">
+			Red and Green channels are used for compression.
 		</constant>
 		<constant name="USED_CHANNELS_RGB" value="4" enum="UsedChannels">
+			Red, Green and Blue channels are used for compression.
 		</constant>
 		<constant name="USED_CHANNELS_RGBA" value="5" enum="UsedChannels">
+			Red, Green, Blue and Alpha channels are used for compression.
 		</constant>
 		<constant name="COMPRESS_SOURCE_GENERIC" value="0" enum="CompressSource">
 			Source texture (before compression) is a regular texture. Default for all textures.
