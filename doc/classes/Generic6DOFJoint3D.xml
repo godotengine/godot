@@ -115,7 +115,7 @@
 			The minimum rotation in positive direction to break loose and rotate around the X axis.
 		</member>
 		<member name="angular_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y" default="1.0">
-			The amount of rotational damping across the Y axis. The lower, the more dampening occurs.
+			The amount of rotational damping across the Y axis. The lower, the more damping occurs.
 		</member>
 		<member name="angular_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="true">
 			If [code]true[/code], rotation across the Y axis is limited.
@@ -139,7 +139,7 @@
 			The minimum rotation in positive direction to break loose and rotate around the Y axis.
 		</member>
 		<member name="angular_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z" default="1.0">
-			The amount of rotational damping across the Z axis. The lower, the more dampening occurs.
+			The amount of rotational damping across the Z axis. The lower, the more damping occurs.
 		</member>
 		<member name="angular_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="true">
 			If [code]true[/code], rotation across the Z axis is limited.
@@ -357,7 +357,7 @@
 			The speed of all rotations across the axes.
 		</constant>
 		<constant name="PARAM_ANGULAR_DAMPING" value="13" enum="Param">
-			The amount of rotational damping across the axes. The lower, the more dampening occurs.
+			The amount of rotational damping across the axes. The lower, the more damping occurs.
 		</constant>
 		<constant name="PARAM_ANGULAR_RESTITUTION" value="14" enum="Param">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
