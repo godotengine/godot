@@ -373,16 +373,16 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 static String _get_global_shader_uniform_from_type_and_index(const String &p_buffer, const String &p_index, ShaderLanguage::DataType p_type) {
 	switch (p_type) {
 		case ShaderLanguage::TYPE_BOOL: {
-			return "(floatBitsToUint(" + p_buffer + "[" + p_index + "].x) != 0)";
+			return "bool(floatBitsToUint(" + p_buffer + "[" + p_index + "].x))";
 		}
 		case ShaderLanguage::TYPE_BVEC2: {
-			return "bvec2(floatBitsToUint(" + p_buffer + "[" + p_index + "].x), floatBitsToUint(" + p_buffer + "[" + p_index + "].y))";
+			return "bvec2(floatBitsToUint(" + p_buffer + "[" + p_index + "].xy))";
 		}
 		case ShaderLanguage::TYPE_BVEC3: {
-			return "bvec3(floatBitsToUint(" + p_buffer + "[" + p_index + "].x), floatBitsToUint(" + p_buffer + "[" + p_index + "].y), floatBitsToUint(" + p_buffer + "[" + p_index + "].z))";
+			return "bvec3(floatBitsToUint(" + p_buffer + "[" + p_index + "].xyz))";
 		}
 		case ShaderLanguage::TYPE_BVEC4: {
-			return "bvec4(floatBitsToUint(" + p_buffer + "[" + p_index + "].x), floatBitsToUint(" + p_buffer + "[" + p_index + "].y), floatBitsToUint(" + p_buffer + "[" + p_index + "].z), floatBitsToUint(" + p_buffer + "[" + p_index + "].w))";
+			return "bvec4(floatBitsToUint(" + p_buffer + "[" + p_index + "].xyzw))";
 		}
 		case ShaderLanguage::TYPE_INT: {
 			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].x)";
