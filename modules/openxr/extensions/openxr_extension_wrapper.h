@@ -65,6 +65,7 @@ public:
 	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; }
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; }
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; }
+	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; }
 
 	virtual void on_before_instance_created() {}
 	virtual void on_instance_created(const XrInstance p_instance) {}
