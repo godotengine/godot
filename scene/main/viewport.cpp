@@ -1669,6 +1669,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			_gui_cancel_tooltip();
 
 			if (over) {
+				if (!gui.mouse_over) {
+					_drop_physics_mouseover();
+				}
 				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
 				gui.mouse_over = over;
 			}
@@ -3039,8 +3042,6 @@ bool Viewport::gui_is_drag_successful() const {
 }
 
 void Viewport::set_input_as_handled() {
-	_drop_physics_mouseover();
-
 	if (!handle_input_locally) {
 		ERR_FAIL_COND(!is_inside_tree());
 		Viewport *vp = this;
