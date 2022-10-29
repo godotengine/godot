@@ -251,7 +251,7 @@
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] command line argument. See also [member application/run/disable_stderr].
+			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. See also [member application/run/disable_stderr].
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
@@ -297,7 +297,7 @@
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
 			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
@@ -480,7 +480,7 @@
 			Print GPU profile information to standard output every second. This includes how long each frame takes the GPU to render on average, broken down into different steps of the render pipeline, such as CanvasItems, shadows, glow, etc.
 		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
-			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] command line argument, even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
+			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
 		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
@@ -630,7 +630,7 @@
 		</member>
 		<member name="editor/movie_writer/fps" type="int" setter="" getter="" default="60">
 			The number of frames per second to record in the video when writing a movie. Simulation speed will adjust to always match the specified framerate, which means the engine will appear to run slower at higher [member editor/movie_writer/fps] values. Certain FPS values will require you to adjust [member editor/movie_writer/mix_rate] to prevent audio from desynchronizing over time.
-			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument.
+			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="editor/movie_writer/mix_rate" type="int" setter="" getter="" default="48000">
 			The audio mix rate to use in the recorded audio when writing a movie (in Hz). This can be different from [member audio/driver/mix_rate], but this value must be divisible by [member editor/movie_writer/fps] to prevent audio from desynchronizing over time.
@@ -694,7 +694,8 @@
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
 		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
-			If [code]true[/code], swaps Cancel and OK buttons in dialogs on Windows and UWP to follow interface conventions.
+			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows and UWP to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
+			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 			Maximum undo/redo history size for [TextEdit] fields.
@@ -1017,7 +1018,7 @@
 		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
@@ -1082,8 +1083,8 @@
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
 			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] command line argument.
-			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
