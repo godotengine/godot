@@ -107,7 +107,7 @@
 			<param index="0" name="joint_idx" type="int" />
 			<param index="1" name="damping" type="float" />
 			<description>
-				Sets the amount of dampening of the Jiggle joint at [param joint_idx].
+				Sets the amount of damping of the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="set_jiggle_joint_gravity">
@@ -160,7 +160,7 @@
 	</methods>
 	<members>
 		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="0.75">
-			The default amount of dampening applied to the Jiggle joints, if they are not overridden. Higher values lead to more of the calculated velocity being applied.
+			The default amount of damping applied to the Jiggle joints, if they are not overridden. Higher values lead to more of the calculated velocity being applied.
 		</member>
 		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2(0, 6)">
 			The default amount of gravity applied to the Jiggle joints, if they are not overridden.

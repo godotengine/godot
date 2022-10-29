@@ -4,7 +4,7 @@
 		Plays positional sound in 3D space.
 	</brief_description>
 	<description>
-		Plays a sound effect with directed sound effects, dampens with distance if needed, generates effect of hearable position in space. For greater realism, a low-pass filter is automatically applied to distant sounds. This can be disabled by setting [member attenuation_filter_cutoff_hz] to [code]20500[/code].
+		Plays audio with positional sound effects, based on the relative position of the audio listener. Positional effects include distance attenuation, directionality, and the Doppler effect. For greater realism, a low-pass filter is applied to distant sounds. This can be disabled by setting [member attenuation_filter_cutoff_hz] to [code]20500[/code].
 		By default, audio is heard from the camera position. This can be changed by adding an [AudioListener3D] node to the scene and enabling it by calling [method AudioListener3D.make_current] on it.
 		See also [AudioStreamPlayer] to play a sound non-positionally.
 		[b]Note:[/b] Hiding an [AudioStreamPlayer3D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer3D]'s audio output, set [member volume_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
@@ -57,7 +57,7 @@
 			Determines which [Area3D] layers affect the sound for reverb and audio bus effects. Areas can be used to redirect [AudioStream]s so that they play in a certain audio bus. An example of how you might use this is making a "water" area so that sounds played in the water are redirected through an audio bus to make them sound like they are being played underwater.
 		</member>
 		<member name="attenuation_filter_cutoff_hz" type="float" setter="set_attenuation_filter_cutoff_hz" getter="get_attenuation_filter_cutoff_hz" default="5000.0">
-			Dampens audio using a low-pass filter above this frequency, in Hz. To disable the dampening effect entirely, set this to [code]20500[/code] as this frequency is above the human hearing limit.
+			The cutoff frequency of the attenuation low-pass filter, in Hz. A sound above this frequency is attenuated more than a sound below this frequency. To disable this effect, set this to [code]20500[/code] as this frequency is above the human hearing limit.
 		</member>
 		<member name="attenuation_filter_db" type="float" setter="set_attenuation_filter_db" getter="get_attenuation_filter_db" default="-24.0">
 			Amount how much the filter affects the loudness, in decibels.
@@ -76,13 +76,13 @@
 			Decides in which step the Doppler effect should be calculated.
 		</member>
 		<member name="emission_angle_degrees" type="float" setter="set_emission_angle" getter="get_emission_angle" default="45.0">
-			The angle in which the audio reaches cameras undampened.
+			The angle in which the audio reaches a listener unattenuated.
 		</member>
 		<member name="emission_angle_enabled" type="bool" setter="set_emission_angle_enabled" getter="is_emission_angle_enabled" default="false">
-			If [code]true[/code], the audio should be dampened according to the direction of the sound.
+			If [code]true[/code], the audio should be attenuated according to the direction of the sound.
 		</member>
 		<member name="emission_angle_filter_attenuation_db" type="float" setter="set_emission_angle_filter_attenuation_db" getter="get_emission_angle_filter_attenuation_db" default="-12.0">
-			Dampens audio if camera is outside of [member emission_angle_degrees] and [member emission_angle_enabled] is set by this factor, in decibels.
+			Attenuation factor used if listener is outside of [member emission_angle_degrees] and [member emission_angle_enabled] is set, in decibels.
 		</member>
 		<member name="max_db" type="float" setter="set_max_db" getter="get_max_db" default="3.0">
 			Sets the absolute maximum of the soundlevel, in decibels.
@@ -112,7 +112,7 @@
 			The factor for the attenuation effect. Higher values make the sound audible over a larger distance.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
-			The base sound level unaffected by dampening, in decibels.
+			The base sound level before attenuation, in decibels.
 		</member>
 	</members>
 	<signals>
@@ -124,16 +124,16 @@
 	</signals>
 	<constants>
 		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0" enum="AttenuationModel">
-			Linear dampening of loudness according to distance.
+			Attenuation of loudness according to linear distance.
 		</constant>
 		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1" enum="AttenuationModel">
-			Squared dampening of loudness according to distance.
+			Attenuation of loudness according to squared distance.
 		</constant>
 		<constant name="ATTENUATION_LOGARITHMIC" value="2" enum="AttenuationModel">
-			Logarithmic dampening of loudness according to distance.
+			Attenuation of loudness according to logarithmic distance.
 		</constant>
 		<constant name="ATTENUATION_DISABLED" value="3" enum="AttenuationModel">
-			No dampening of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer]. [constant ATTENUATION_DISABLED] can be combined with a [member max_distance] value greater than [code]0.0[/code] to achieve linear attenuation clamped to a sphere of a defined size.
+			No attenuation of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer]. [constant ATTENUATION_DISABLED] can be combined with a [member max_distance] value greater than [code]0.0[/code] to achieve linear attenuation clamped to a sphere of a defined size.
 		</constant>
 		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
 			Disables doppler tracking.

@@ -1049,16 +1049,16 @@
 			Constant to set/get a body's gravity multiplier.
 		</constant>
 		<constant name="BODY_PARAM_LINEAR_DAMP_MODE" value="6" enum="BodyParameter">
-			Constant to set/get a body's linear dampening mode. See [enum BodyDampMode] for possible values.
+			Constant to set/get a body's linear damping mode. See [enum BodyDampMode] for possible values.
 		</constant>
 		<constant name="BODY_PARAM_ANGULAR_DAMP_MODE" value="7" enum="BodyParameter">
-			Constant to set/get a body's angular dampening mode. See [enum BodyDampMode] for possible values.
+			Constant to set/get a body's angular damping mode. See [enum BodyDampMode] for possible values.
 		</constant>
 		<constant name="BODY_PARAM_LINEAR_DAMP" value="8" enum="BodyParameter">
-			Constant to set/get a body's linear dampening factor.
+			Constant to set/get a body's linear damping factor.
 		</constant>
 		<constant name="BODY_PARAM_ANGULAR_DAMP" value="9" enum="BodyParameter">
-			Constant to set/get a body's angular dampening factor.
+			Constant to set/get a body's angular damping factor.
 		</constant>
 		<constant name="BODY_PARAM_MAX" value="10" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.
