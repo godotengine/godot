@@ -356,6 +356,7 @@ class DisplayServerWindows : public DisplayServer {
 		HWND hWnd;
 
 		Vector<Vector2> mpath;
+		Ref<Image> icon;
 
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
@@ -426,7 +427,6 @@ class DisplayServerWindows : public DisplayServer {
 	HHOOK mouse_monitor = nullptr;
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
-	Ref<Image> icon;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 	WindowID window_id_counter = MAIN_WINDOW_ID;
@@ -620,7 +620,8 @@ public:
 	virtual void swap_buffers() override;
 
 	virtual void set_native_icon(const String &p_filename) override;
-	virtual void set_icon(const Ref<Image> &p_icon) override;
+
+	virtual void window_set_icon(const Ref<Image> &p_icon, WindowID p_window) override;
 
 	virtual void set_context(Context p_context) override;
 

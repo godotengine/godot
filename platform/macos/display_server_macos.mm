@@ -3366,8 +3366,12 @@ void DisplayServerMacOS::set_native_icon(const String &p_filename) {
 	[NSApp setApplicationIconImage:icon];
 }
 
-void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
+void DisplayServerMacOS::window_set_icon(const Ref<Image> &p_icon, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+
+	if (p_window != MAIN_WINDOW_ID) {
+		return; // Ignore attempts to change non-main window icons, macOS windows don't have icons.
+	}
 
 	Ref<Image> img = p_icon;
 	img = img->duplicate();

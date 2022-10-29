@@ -442,7 +442,7 @@ public:
 	virtual void set_context(Context p_context) override;
 
 	virtual void set_native_icon(const String &p_filename) override;
-	virtual void set_icon(const Ref<Image> &p_icon) override;
+	virtual void window_set_icon(const Ref<Image> &p_icon, WindowID p_window) override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();

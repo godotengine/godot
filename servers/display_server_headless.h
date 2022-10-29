@@ -127,7 +127,7 @@ public:
 
 	void process_events() override {}
 
-	void set_icon(const Ref<Image> &p_icon) override {}
+	void window_set_icon(const Ref<Image> &p_icon, WindowID p_window = MAIN_WINDOW_ID) override {}
 
 	DisplayServerHeadless() {}
 	~DisplayServerHeadless() {}

@@ -214,7 +214,7 @@ public:
 	virtual void process_events() override;
 
 	// icon
-	virtual void set_icon(const Ref<Image> &p_icon) override;
+	virtual void window_set_icon(const Ref<Image> &p_icon, WindowID p_window) override;
 
 	// others
 	virtual bool get_swap_cancel_ok() override;

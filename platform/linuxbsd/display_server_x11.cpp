@@ -4310,7 +4310,7 @@ int set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
 	return 0;
 }
 
-void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
+void DisplayServerX11::window_set_icon(const Ref<Image> &p_icon, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	WindowData &wd = windows[MAIN_WINDOW_ID];

@@ -861,12 +861,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_icon">
-			<return type="void" />
-			<param index="0" name="image" type="Image" />
-			<description>
-			</description>
-		</method>
 		<method name="set_native_icon">
 			<return type="void" />
 			<param index="0" name="filename" type="String" />
@@ -1192,6 +1186,13 @@
 			<param index="2" name="window_id" type="int" default="0" />
 			<description>
 				Enables or disables the given window's given [param flag]. See [enum WindowFlags] for possible values and their behavior.
+			</description>
+		</method>
+		<method name="window_set_icon">
+			<return type="void" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="window_id" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="window_set_ime_active">

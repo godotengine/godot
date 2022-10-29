@@ -345,6 +345,10 @@
 		<member name="extend_to_title" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] contents is expanded to the full size of the window, window title bar is transparent.
 		</member>
+		<member name="icon" type="Image" setter="set_icon" getter="get_icon">
+			The [Window] icon.
+			[b]Note:[/b] If no icon is set, the [Window] will inherit the main window icon.
+		</member>
 		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be bigger than this size.
 			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].

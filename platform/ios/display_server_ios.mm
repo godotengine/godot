@@ -485,6 +485,10 @@ void DisplayServerIOS::window_set_title(const String &p_title, WindowID p_window
 	// Probably not supported for iOS
 }
 
+void DisplayServerIOS::window_set_icon(const Ref<Image> &p_icon, WindowID p_window) {
+	// Not supported for iOS
+}
+
 int DisplayServerIOS::window_get_current_screen(WindowID p_window) const {
 	return SCREEN_OF_MAIN_WINDOW;
 }

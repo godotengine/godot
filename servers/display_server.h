@@ -469,7 +469,7 @@ public:
 	virtual void swap_buffers();
 
 	virtual void set_native_icon(const String &p_filename);
-	virtual void set_icon(const Ref<Image> &p_icon);
+	virtual void window_set_icon(const Ref<Image> &p_icon, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	enum Context {
 		CONTEXT_EDITOR,

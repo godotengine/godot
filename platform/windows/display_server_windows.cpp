@@ -649,14 +649,18 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		wd.is_popup = true;
 	}
 
-	// Inherit icons from MAIN_WINDOW for all sub windows.
-	HICON mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
-	if (mainwindow_icon) {
-		SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
-	}
-	mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_BIG, 0);
-	if (mainwindow_icon) {
-		SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
+	if (wd.icon.is_valid()) { // Make sure there is a valid icon specified, if not, use the main window icon
+		window_set_icon(wd.icon, window_id);
+	} else {
+		// Inherit icons from MAIN_WINDOW for all sub windows without a specified icon.
+		HICON mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
+		if (mainwindow_icon) {
+			SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+		}
+		mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_BIG, 0);
+		if (mainwindow_icon) {
+			SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
+		}
 	}
 	return window_id;
 }
@@ -1181,8 +1185,8 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
-	if (icon.is_valid()) {
-		set_icon(icon);
+	if (wd.icon.is_valid()) {
+		window_set_icon(wd.icon, p_window);
 	}
 
 	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
@@ -1951,18 +1955,31 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	memdelete(icon_dir);
 }
 
-void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
+void DisplayServerWindows::window_set_icon(const Ref<Image> &p_icon, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!p_icon.is_valid());
-	if (icon != p_icon) {
-		icon = p_icon->duplicate();
-		if (icon->get_format() != Image::FORMAT_RGBA8) {
-			icon->convert(Image::FORMAT_RGBA8);
+	WindowData &wd = windows[p_window];
+
+	if (p_icon.is_null()) { // If the icon is null, we set the default icon.
+		HICON mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
+		if (mainwindow_icon) {
+			SendMessage(windows[p_window].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+		}
+		mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_BIG, 0);
+		if (mainwindow_icon) {
+			SendMessage(windows[p_window].hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
+		}
+		return;
+	} else {
+		if (wd.icon != p_icon) {
+			wd.icon = p_icon->duplicate();
+			if (wd.icon->get_format() != Image::FORMAT_RGBA8) {
+				wd.icon->convert(Image::FORMAT_RGBA8);
+			}
 		}
 	}
-	int w = icon->get_width();
-	int h = icon->get_height();
+	int w = wd.icon->get_width();
+	int h = wd.icon->get_height();
 
 	// Create temporary bitmap buffer.
 	int icon_len = 40 + h * w * 4;
@@ -1983,7 +2000,7 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	encode_uint32(0, &icon_bmp[36]);
 
 	uint8_t *wr = &icon_bmp[40];
-	const uint8_t *r = icon->get_data().ptr();
+	const uint8_t *r = wd.icon->get_data().ptr();
 
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
@@ -1999,10 +2016,10 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
 
 	// Set the icon for the window.
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
+	SendMessage(windows[p_window].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
 
 	// Set the icon in the task manager (should we do this?).
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+	SendMessage(windows[p_window].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
 }
 
 void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {

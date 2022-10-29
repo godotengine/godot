@@ -63,6 +63,18 @@ String Window::get_title() const {
 	return title;
 }
 
+void Window::set_icon(const Ref<Image> &p_icon) {
+	icon = p_icon;
+
+#ifdef WINDOWS_ENABLED // Only works on windows
+	DisplayServer::get_singleton()->window_set_icon(p_icon, window_id);
+#endif
+}
+
+Ref<Image> Window::get_icon() const {
+	return icon;
+}
+
 void Window::set_current_screen(int p_screen) {
 	current_screen = p_screen;
 	if (window_id == DisplayServer::INVALID_WINDOW_ID) {
@@ -258,6 +270,9 @@ void Window::_make_window() {
 	}
 #endif
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
+	if (icon.is_valid()) { // If there is a specified icon, set it to be the window icon, otherwise, do nothing.
+		DisplayServer::get_singleton()->window_set_icon(icon, window_id);
+	}
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	if (is_in_edited_scene_root()) {
@@ -1645,6 +1660,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
 
+	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &Window::set_icon);
+	ClassDB::bind_method(D_METHOD("get_icon"), &Window::get_icon);
+
 	ClassDB::bind_method(D_METHOD("set_current_screen", "index"), &Window::set_current_screen);
 	ClassDB::bind_method(D_METHOD("get_current_screen"), &Window::get_current_screen);
 
@@ -1757,6 +1775,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "minsize", "fallback_ratio"), &Window::popup_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Image"), "set_icon", "get_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen"), "set_mode", "get_mode");
