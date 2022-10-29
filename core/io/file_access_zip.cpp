@@ -147,14 +147,13 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	}
 
 	// check if encryption password is not empty
-	if(password.length()) {
-		if(unzOpenCurrentFilePassword(pkg, password) != UNZ_OK) {
+	if (password.length()) {
+		if (unzOpenCurrentFilePassword(pkg, password) != UNZ_OK) {
 			unzClose(pkg);
 			ERR_FAIL_V(nullptr);
 		}
-	}
-	else {
-		if(unzOpenCurrentFile(pkg) != UNZ_OK) {
+	} else {
+		if (unzOpenCurrentFile(pkg) != UNZ_OK) {
 			unzClose(pkg);
 			ERR_FAIL_V(nullptr);
 		}
