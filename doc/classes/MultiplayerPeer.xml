@@ -25,16 +25,34 @@
 				Returns the current state of the connection. See [enum ConnectionStatus].
 			</description>
 		</method>
+		<method name="get_packet_channel" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the channel over which the next available packet was received. See [method PacketPeer.get_available_packet_count].
+			</description>
+		</method>
+		<method name="get_packet_mode" qualifiers="const">
+			<return type="int" enum="MultiplayerPeer.TransferMode" />
+			<description>
+				Returns the [enum MultiplayerPeer.TransferMode] the remote peer used to send the next available packet. See [method PacketPeer.get_available_packet_count].
+			</description>
+		</method>
 		<method name="get_packet_peer" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the ID of the [MultiplayerPeer] who sent the most recent packet.
+				Returns the ID of the [MultiplayerPeer] who sent the next available packet. See [method PacketPeer.get_available_packet_count].
 			</description>
 		</method>
 		<method name="get_unique_id" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the ID of this [MultiplayerPeer].
+			</description>
+		</method>
+		<method name="is_server_relay_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the server can act as a relay in the current configuration (i.e. if the higher level [MultiplayerAPI] should notify connected clients of other peers, and implement a relay protocol to allow communication between them).
 			</description>
 		</method>
 		<method name="poll">

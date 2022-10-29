@@ -994,6 +994,8 @@ public:
 
 	virtual void set_print_gpu_profile(bool p_enable) override;
 
+	virtual Size2i get_maximum_viewport_size() const override;
+
 	RenderingServerDefault(bool p_create_thread = false);
 	~RenderingServerDefault();
 };

@@ -9686,6 +9686,10 @@ uint64_t RenderingDeviceVulkan::limit_get(Limit p_limit) const {
 			return limits.maxComputeWorkGroupSize[1];
 		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
 			return limits.maxComputeWorkGroupSize[2];
+		case LIMIT_MAX_VIEWPORT_DIMENSIONS_X:
+			return limits.maxViewportDimensions[0];
+		case LIMIT_MAX_VIEWPORT_DIMENSIONS_Y:
+			return limits.maxViewportDimensions[1];
 		case LIMIT_SUBGROUP_SIZE: {
 			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
 			return subgroup_capabilities.size;

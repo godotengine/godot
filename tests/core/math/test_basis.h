@@ -170,8 +170,7 @@ void test_rotation(Vector3 deg_original_euler, RotOrder rot_order) {
 
 	// Double check `to_rotation` decomposing with XYZ rotation order.
 	const Vector3 euler_xyz_from_rotation = to_rotation.get_euler(Basis::EULER_ORDER_XYZ);
-	Basis rotation_from_xyz_computed_euler;
-	rotation_from_xyz_computed_euler.set_euler(euler_xyz_from_rotation, Basis::EULER_ORDER_XYZ);
+	Basis rotation_from_xyz_computed_euler = Basis::from_euler(euler_xyz_from_rotation, Basis::EULER_ORDER_XYZ);
 
 	res = to_rotation.inverse() * rotation_from_xyz_computed_euler;
 

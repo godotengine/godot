@@ -986,8 +986,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_repeat", "mode"), &CanvasItem::set_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &CanvasItem::get_texture_repeat);
 
-	ClassDB::bind_method(D_METHOD("set_clip_children", "enable"), &CanvasItem::set_clip_children);
-	ClassDB::bind_method(D_METHOD("is_clipping_children"), &CanvasItem::is_clipping_children);
+	ClassDB::bind_method(D_METHOD("set_clip_children_mode", "mode"), &CanvasItem::set_clip_children_mode);
+	ClassDB::bind_method(D_METHOD("get_clip_children_mode"), &CanvasItem::get_clip_children_mode);
 
 	GDVIRTUAL_BIND(_draw);
 
@@ -997,7 +997,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "self_modulate"), "set_self_modulate", "get_self_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_children"), "set_clip_children", "is_clipping_children");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_children", PROPERTY_HINT_ENUM, "Disabled,Clip Only,Clip + Draw"), "set_clip_children_mode", "get_clip_children_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 
 	ADD_GROUP("Texture", "texture_");
@@ -1035,6 +1035,11 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_REPEAT_ENABLED);
 	BIND_ENUM_CONSTANT(TEXTURE_REPEAT_MIRROR);
 	BIND_ENUM_CONSTANT(TEXTURE_REPEAT_MAX);
+
+	BIND_ENUM_CONSTANT(CLIP_CHILDREN_DISABLED);
+	BIND_ENUM_CONSTANT(CLIP_CHILDREN_ONLY);
+	BIND_ENUM_CONSTANT(CLIP_CHILDREN_AND_DRAW);
+	BIND_ENUM_CONSTANT(CLIP_CHILDREN_MAX);
 }
 
 Transform2D CanvasItem::get_canvas_transform() const {
@@ -1185,20 +1190,23 @@ void CanvasItem::set_texture_repeat(TextureRepeat p_texture_repeat) {
 	notify_property_list_changed();
 }
 
-void CanvasItem::set_clip_children(bool p_enabled) {
-	if (clip_children == p_enabled) {
+void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
+	ERR_FAIL_COND(p_clip_mode >= CLIP_CHILDREN_MAX);
+
+	if (clip_children_mode == p_clip_mode) {
 		return;
 	}
-	clip_children = p_enabled;
+	clip_children_mode = p_clip_mode;
 
 	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
 		//avoid accidental bugs, make this not work on CanvasGroup
 		return;
 	}
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), clip_children ? RS::CANVAS_GROUP_MODE_OPAQUE : RS::CANVAS_GROUP_MODE_DISABLED);
+
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode));
 }
-bool CanvasItem::is_clipping_children() const {
-	return clip_children;
+CanvasItem::ClipChildrenMode CanvasItem::get_clip_children_mode() const {
+	return clip_children_mode;
 }
 
 CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {

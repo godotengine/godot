@@ -830,6 +830,13 @@
 		</member>
 		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
 		</member>
+		<member name="input/ui_text_add_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
+			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret and selects the next occurrence.
+			If no selection is currently active with the last caret in text fields, selects the word currently under the caret.
+			The action can be performed sequentially for all occurrences of the selection of the last caret and for all existing carets.
+			The viewport is adjusted to the latest newly added caret.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_text_backspace" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to delete the character before the text cursor.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -984,7 +991,7 @@
 		</member>
 		<member name="input/ui_text_select_word_under_caret" type="Dictionary" setter="" getter="">
 			If no selection is currently active, selects the word currently under the caret in text fields. If a selection is currently active, deselects the current selection.
-			[b]Note:[/b] Currently, this is only implemented in [TextEdit], not [LineEdit].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_submit" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to submit a text field.
