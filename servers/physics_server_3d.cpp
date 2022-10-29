@@ -169,19 +169,19 @@ PhysicsDirectBodyState3D::PhysicsDirectBodyState3D() {}
 
 ///////////////////////////////////////////////////////
 
-void PhysicsRayQueryParameters3D::set_exclude(const Vector<RID> &p_exclude) {
+void PhysicsRayQueryParameters3D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
 		parameters.exclude.insert(p_exclude[i]);
 	}
 }
 
-Vector<RID> PhysicsRayQueryParameters3D::get_exclude() const {
-	Vector<RID> ret;
+TypedArray<RID> PhysicsRayQueryParameters3D::get_exclude() const {
+	TypedArray<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
 	for (const RID &E : parameters.exclude) {
-		ret.write[idx++] = E;
+		ret[idx++] = E;
 	}
 	return ret;
 }
@@ -225,7 +225,7 @@ void PhysicsRayQueryParameters3D::_bind_methods() {
 
 ///////////////////////////////////////////////////////
 
-Ref<PhysicsRayQueryParameters3D> PhysicsRayQueryParameters3D::create(Vector3 p_from, Vector3 p_to, uint32_t p_mask, const Vector<RID> &p_exclude) {
+Ref<PhysicsRayQueryParameters3D> PhysicsRayQueryParameters3D::create(Vector3 p_from, Vector3 p_to, uint32_t p_mask, const TypedArray<RID> &p_exclude) {
 	Ref<PhysicsRayQueryParameters3D> params;
 	params.instantiate();
 	params->set_from(p_from);
