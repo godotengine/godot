@@ -63,7 +63,11 @@ private:
 
 	FileAccess::CreateFunc fa_create_func;
 
+	CharString password;
+
 public:
+	void set_password(const CharString &pass); // set or clear the zip legacy encryption password
+
 	void close_handle(unzFile p_file) const;
 	unzFile get_file_handle(String p_file) const;
 
