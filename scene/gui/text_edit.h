@@ -333,6 +333,7 @@ private:
 	ScriptCodeCompletionOption completion_current;
 	String completion_base;
 	int completion_index;
+	int completion_force_item_center;
 	Rect2i completion_rect;
 	int completion_line_ofs;
 	String completion_hint;

@@ -1691,7 +1691,7 @@ void TextEdit::_notification(int p_what) {
 				const int icon_area_width = icon_area_size.width + icon_hsep;
 				width += icon_area_size.width + icon_hsep;
 
-				const int line_from = CLAMP(completion_index - row_count / 2, 0, completion_options_size - row_count);
+				const int line_from = CLAMP((completion_force_item_center < 0 ? completion_index : completion_force_item_center) - row_count / 2, 0, completion_options_size - row_count);
 
 				for (int i = 0; i < row_count; i++) {
 					int l = line_from + i;
@@ -2417,6 +2417,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (completion_index > 0) {
 					completion_index--;
 					completion_current = completion_options[completion_index];
+					completion_force_item_center = -1;
 					update();
 				}
 			}
@@ -2424,13 +2425,17 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (completion_index < completion_options.size() - 1) {
 					completion_index++;
 					completion_current = completion_options[completion_index];
+					completion_force_item_center = -1;
 					update();
 				}
 			}
 
 			if (mb->get_button_index() == BUTTON_LEFT) {
-				completion_index = CLAMP(completion_line_ofs + (mb->get_position().y - completion_rect.position.y) / get_row_height(), 0, completion_options.size() - 1);
+				if (completion_force_item_center == -1) {
+					completion_force_item_center = completion_index;
+				}
 
+				completion_index = CLAMP(completion_line_ofs + (mb->get_position().y - completion_rect.position.y) / get_row_height(), 0, completion_options.size() - 1);
 				completion_current = completion_options[completion_index];
 				update();
 				if (mb->is_doubleclick()) {
@@ -2826,6 +2831,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 							completion_index = completion_options.size() - 1;
 						}
 						completion_current = completion_options[completion_index];
+						completion_force_item_center = -1;
 						update();
 
 						accept_event();
@@ -2839,6 +2845,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 							completion_index = 0;
 						}
 						completion_current = completion_options[completion_index];
+						completion_force_item_center = -1;
 						update();
 
 						accept_event();
@@ -2851,6 +2858,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 							completion_index = 0;
 						}
 						completion_current = completion_options[completion_index];
+						completion_force_item_center = -1;
 						update();
 						accept_event();
 						return;
@@ -2862,6 +2870,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 							completion_index = completion_options.size() - 1;
 						}
 						completion_current = completion_options[completion_index];
+						completion_force_item_center = -1;
 						update();
 						accept_event();
 						return;
@@ -2870,6 +2879,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					if (k->get_scancode() == KEY_HOME && completion_index > 0) {
 						completion_index = 0;
 						completion_current = completion_options[completion_index];
+						completion_force_item_center = -1;
 						update();
 						accept_event();
 						return;
@@ -2878,6 +2888,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					if (k->get_scancode() == KEY_END && completion_index < completion_options.size() - 1) {
 						completion_index = completion_options.size() - 1;
 						completion_current = completion_options[completion_index];
+						completion_force_item_center = -1;
 						update();
 						accept_event();
 						return;
@@ -6922,6 +6933,7 @@ void TextEdit::_update_completion_candidates() {
 
 	completion_options.clear();
 	completion_index = 0;
+	completion_force_item_center = -1;
 	completion_base = s;
 	Vector<float> sim_cache;
 	bool single_quote = s.begins_with("'");
@@ -7035,6 +7047,7 @@ void TextEdit::code_complete(const List<ScriptCodeCompletionOption> &p_strings, 
 	completion_forced = p_forced;
 	completion_current = ScriptCodeCompletionOption();
 	completion_index = 0;
+	completion_force_item_center = -1;
 	_update_completion_candidates();
 }
 
