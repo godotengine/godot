@@ -1241,7 +1241,7 @@
 			A factor that gets multiplied onto all rotations across the axes.
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="13" enum="G6DOFJointAxisParam">
-			The amount of rotational damping across the axes. The lower, the more dampening occurs.
+			The amount of rotational damping across the axes. The lower, the more damping occurs.
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="14" enum="G6DOFJointAxisParam">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
@@ -1392,16 +1392,16 @@
 			Constant to set/get a body's gravity multiplier.
 		</constant>
 		<constant name="BODY_PARAM_LINEAR_DAMP_MODE" value="6" enum="BodyParameter">
-			Constant to set/get a body's linear dampening mode. See [enum BodyDampMode] for possible values.
+			Constant to set/get a body's linear damping mode. See [enum BodyDampMode] for possible values.
 		</constant>
 		<constant name="BODY_PARAM_ANGULAR_DAMP_MODE" value="7" enum="BodyParameter">
-			Constant to set/get a body's angular dampening mode. See [enum BodyDampMode] for possible values.
+			Constant to set/get a body's angular damping mode. See [enum BodyDampMode] for possible values.
 		</constant>
 		<constant name="BODY_PARAM_LINEAR_DAMP" value="8" enum="BodyParameter">
-			Constant to set/get a body's linear dampening factor.
+			Constant to set/get a body's linear damping factor.
 		</constant>
 		<constant name="BODY_PARAM_ANGULAR_DAMP" value="9" enum="BodyParameter">
-			Constant to set/get a body's angular dampening factor.
+			Constant to set/get a body's angular damping factor.
 		</constant>
 		<constant name="BODY_PARAM_MAX" value="10" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.
