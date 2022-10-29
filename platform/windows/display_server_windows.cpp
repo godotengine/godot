@@ -2444,10 +2444,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			return 0; // Jump back.
 		}
 		case WM_MOUSELEAVE: {
-			old_invalid = true;
-			windows[window_id].mouse_outside = true;
+			if (window_mouseover_id == window_id) {
+				old_invalid = true;
+				window_mouseover_id = INVALID_WINDOW_ID;
 
-			_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+				_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+			}
 
 		} break;
 		case WM_INPUT: {
@@ -2678,17 +2680,21 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			if (windows[window_id].mouse_outside) {
+			if (window_mouseover_id != window_id) {
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
+					if (window_mouseover_id != INVALID_WINDOW_ID) {
+						// Leave previous window.
+						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+					}
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
 				}
 
 				CursorShape c = cursor_shape;
 				cursor_shape = CURSOR_MAX;
 				cursor_set_shape(c);
-				windows[window_id].mouse_outside = false;
+				window_mouseover_id = window_id;
 
 				// Once-off notification, must call again.
 				track_mouse_leave_event(hWnd);
@@ -2779,17 +2785,29 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			if (windows[window_id].mouse_outside) {
+			DisplayServer::WindowID over_id = get_window_at_screen_position(mouse_get_position());
+			if (!Rect2(window_get_position(over_id), Point2(windows[over_id].width, windows[over_id].height)).has_point(mouse_get_position())) {
+				// Don't consider the windowborder as part of the window.
+				over_id = INVALID_WINDOW_ID;
+			}
+			if (window_mouseover_id != over_id) {
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
-					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+					if (window_mouseover_id != INVALID_WINDOW_ID) {
+						// Leave previous window.
+						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+					}
+
+					if (over_id != INVALID_WINDOW_ID) {
+						_send_window_event(windows[over_id], WINDOW_EVENT_MOUSE_ENTER);
+					}
 				}
 
 				CursorShape c = cursor_shape;
 				cursor_shape = CURSOR_MAX;
 				cursor_set_shape(c);
-				windows[window_id].mouse_outside = false;
+				window_mouseover_id = over_id;
 
 				// Once-off notification, must call again.
 				track_mouse_leave_event(hWnd);
@@ -2800,9 +2818,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
+			DisplayServer::WindowID receiving_window_id = _get_focused_window_or_popup();
+			if (receiving_window_id == INVALID_WINDOW_ID) {
+				receiving_window_id = window_id;
+			}
 			Ref<InputEventMouseMotion> mm;
 			mm.instantiate();
-			mm->set_window_id(window_id);
+			mm->set_window_id(receiving_window_id);
 			mm->set_ctrl_pressed((wParam & MK_CONTROL) != 0);
 			mm->set_shift_pressed((wParam & MK_SHIFT) != 0);
 			mm->set_alt_pressed(alt_mem);
@@ -2859,9 +2881,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_has_focus || window_get_active_popup() == window_id) {
-				Input::get_singleton()->parse_input_event(mm);
-			}
+
+			Input::get_singleton()->parse_input_event(mm);
 
 		} break;
 		case WM_LBUTTONDOWN:
@@ -3704,7 +3725,7 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 	}
 }
 
-DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
 	drop_events = false;
 	key_event_pos = 0;
 
@@ -3856,6 +3877,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
 
+	if (p_position != nullptr) {
+		window_position = *p_position;
+	}
+
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution));
 	ERR_FAIL_COND_MSG(main_window == INVALID_WINDOW_ID, "Failed to create main window.");
 
@@ -3919,8 +3944,8 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();

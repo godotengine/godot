@@ -826,7 +826,7 @@ VARIANT_ACCESSOR_NUMBER(Projection::Planes)
 template <>
 struct VariantInternalAccessor<Basis::EulerOrder> {
 	static _FORCE_INLINE_ Basis::EulerOrder get(const Variant *v) { return Basis::EulerOrder(*VariantInternal::get_int(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, Basis::EulerOrder p_value) { *VariantInternal::get_int(v) = p_value; }
+	static _FORCE_INLINE_ void set(Variant *v, Basis::EulerOrder p_value) { *VariantInternal::get_int(v) = (int64_t)p_value; }
 };
 
 template <>

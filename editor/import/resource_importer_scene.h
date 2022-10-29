@@ -474,7 +474,7 @@ Transform3D ResourceImporterScene::get_collision_shapes_transform(const M &p_opt
 		}
 
 		if (p_options.has(SNAME("primitive/rotation"))) {
-			transform.basis.set_euler((p_options[SNAME("primitive/rotation")].operator Vector3() / 180.0) * Math_PI);
+			transform.basis = Basis::from_euler(p_options[SNAME("primitive/rotation")].operator Vector3() * (Math_PI / 180.0));
 		}
 	}
 	return transform;

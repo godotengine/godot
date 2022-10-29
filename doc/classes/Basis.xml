@@ -70,7 +70,7 @@
 			<param index="0" name="euler" type="Vector3" />
 			<param index="1" name="order" type="int" default="2" />
 			<description>
-				Creates a [Basis] from the given [Vector3] representing Euler angles. [param order] determines in what order rotation components are applied. Defaults to [constant EULER_ORDER_YXZ].
+				Constructs a pure rotation Basis matrix from Euler angles in the specified Euler rotation order. By default, use YXZ order (most common).
 			</description>
 		</method>
 		<method name="from_scale" qualifiers="static">

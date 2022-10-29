@@ -44,6 +44,22 @@ int ENetMultiplayerPeer::get_packet_peer() const {
 	return incoming_packets.front()->get().from;
 }
 
+MultiplayerPeer::TransferMode ENetMultiplayerPeer::get_packet_mode() const {
+	ERR_FAIL_COND_V_MSG(!_is_active(), TRANSFER_MODE_RELIABLE, "The multiplayer instance isn't currently active.");
+	ERR_FAIL_COND_V(incoming_packets.size() == 0, TRANSFER_MODE_RELIABLE);
+	return incoming_packets.front()->get().transfer_mode;
+}
+
+int ENetMultiplayerPeer::get_packet_channel() const {
+	ERR_FAIL_COND_V_MSG(!_is_active(), 1, "The multiplayer instance isn't currently active.");
+	ERR_FAIL_COND_V(incoming_packets.size() == 0, 1);
+	int ch = incoming_packets.front()->get().channel;
+	if (ch >= SYSCH_MAX) { // First 2 channels are reserved.
+		return ch - SYSCH_MAX + 1;
+	}
+	return 0;
+}
+
 Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_max_channels, int p_in_bandwidth, int p_out_bandwidth) {
 	ERR_FAIL_COND_V_MSG(_is_active(), ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
 	set_refuse_new_connections(false);
@@ -114,6 +130,22 @@ Error ENetMultiplayerPeer::add_mesh_peer(int p_id, Ref<ENetConnection> p_host) {
 	return OK;
 }
 
+void ENetMultiplayerPeer::_store_packet(int32_t p_source, ENetConnection::Event &p_event) {
+	Packet packet;
+	packet.packet = p_event.packet;
+	packet.channel = p_event.channel_id;
+	packet.from = p_source;
+	if (p_event.packet->flags & ENET_PACKET_FLAG_RELIABLE) {
+		packet.transfer_mode = TRANSFER_MODE_RELIABLE;
+	} else if (p_event.packet->flags & ENET_PACKET_FLAG_UNSEQUENCED) {
+		packet.transfer_mode = TRANSFER_MODE_UNRELIABLE;
+	} else {
+		packet.transfer_mode = TRANSFER_MODE_UNRELIABLE_ORDERED;
+	}
+	packet.packet->referenceCount++;
+	incoming_packets.push_back(packet);
+}
+
 bool ENetMultiplayerPeer::_parse_server_event(ENetConnection::EventType p_type, ENetConnection::Event &p_event) {
 	switch (p_type) {
 		case ENetConnection::EVENT_CONNECT: {
@@ -131,9 +163,6 @@ bool ENetMultiplayerPeer::_parse_server_event(ENetConnection::EventType p_type, 
 			peers[id] = p_event.peer;
 
 			emit_signal(SNAME("peer_connected"), id);
-			if (server_relay) {
-				_notify_peers(id, true);
-			}
 			return false;
 		}
 		case ENetConnection::EVENT_DISCONNECT: {
@@ -145,50 +174,11 @@ bool ENetMultiplayerPeer::_parse_server_event(ENetConnection::EventType p_type, 
 
 			emit_signal(SNAME("peer_disconnected"), id);
 			peers.erase(id);
-			if (server_relay) {
-				_notify_peers(id, false);
-			}
 			return false;
 		}
 		case ENetConnection::EVENT_RECEIVE: {
-			if (p_event.channel_id == SYSCH_CONFIG) {
-				_destroy_unused(p_event.packet);
-				ERR_FAIL_V_MSG(false, "Only server can send config messages");
-			} else {
-				if (p_event.packet->dataLength < 8) {
-					_destroy_unused(p_event.packet);
-					ERR_FAIL_V_MSG(false, "Invalid packet size");
-				}
-
-				uint32_t source = decode_uint32(&p_event.packet->data[0]);
-				int target = decode_uint32(&p_event.packet->data[4]);
-
-				uint32_t id = p_event.peer->get_meta(SNAME("_net_id"));
-				// Someone is cheating and trying to fake the source!
-				if (source != id) {
-					_destroy_unused(p_event.packet);
-					ERR_FAIL_V_MSG(false, "Someone is cheating and trying to fake the source!");
-				}
-
-				Packet packet;
-				packet.packet = p_event.packet;
-				packet.channel = p_event.channel_id;
-				packet.from = id;
-
-				// Even if relaying is disabled, these targets are valid as incoming packets.
-				if (target == 1 || target == 0 || target < -1) {
-					packet.packet->referenceCount++;
-					incoming_packets.push_back(packet);
-				}
-
-				if (server_relay && target != 1) {
-					packet.packet->referenceCount++;
-					_relay(source, target, p_event.channel_id, p_event.packet);
-					packet.packet->referenceCount--;
-					_destroy_unused(p_event.packet);
-				}
-				// Destroy packet later
-			}
+			int32_t source = p_event.peer->get_meta(SNAME("_net_id"));
+			_store_packet(source, p_event);
 			return false;
 		}
 		default:
@@ -215,44 +205,7 @@ bool ENetMultiplayerPeer::_parse_client_event(ENetConnection::EventType p_type, 
 			return true;
 		}
 		case ENetConnection::EVENT_RECEIVE: {
-			if (p_event.channel_id == SYSCH_CONFIG) {
-				// Config message
-				if (p_event.packet->dataLength != 8) {
-					_destroy_unused(p_event.packet);
-					ERR_FAIL_V(false);
-				}
-
-				int msg = decode_uint32(&p_event.packet->data[0]);
-				int id = decode_uint32(&p_event.packet->data[4]);
-
-				switch (msg) {
-					case SYSMSG_ADD_PEER: {
-						peers[id] = Ref<ENetPacketPeer>();
-						emit_signal(SNAME("peer_connected"), id);
-
-					} break;
-					case SYSMSG_REMOVE_PEER: {
-						peers.erase(id);
-						emit_signal(SNAME("peer_disconnected"), id);
-					} break;
-				}
-				_destroy_unused(p_event.packet);
-			} else {
-				if (p_event.packet->dataLength < 8) {
-					_destroy_unused(p_event.packet);
-					ERR_FAIL_V_MSG(false, "Invalid packet size");
-				}
-
-				uint32_t source = decode_uint32(&p_event.packet->data[0]);
-				Packet packet;
-				packet.packet = p_event.packet;
-				packet.from = source;
-				packet.channel = p_event.channel_id;
-
-				packet.packet->referenceCount++;
-				incoming_packets.push_back(packet);
-				// Destroy packet later
-			}
+			_store_packet(1, p_event);
 			return false;
 		}
 		default:
@@ -273,18 +226,7 @@ bool ENetMultiplayerPeer::_parse_mesh_event(ENetConnection::EventType p_type, EN
 			hosts.erase(p_peer_id);
 			return true;
 		case ENetConnection::EVENT_RECEIVE: {
-			if (p_event.packet->dataLength < 8) {
-				_destroy_unused(p_event.packet);
-				ERR_FAIL_V_MSG(false, "Invalid packet size");
-			}
-
-			Packet packet;
-			packet.packet = p_event.packet;
-			packet.from = p_peer_id;
-			packet.channel = p_event.channel_id;
-
-			packet.packet->referenceCount++;
-			incoming_packets.push_back(packet);
+			_store_packet(p_peer_id, p_event);
 			return false;
 		} break;
 		default:
@@ -376,6 +318,10 @@ bool ENetMultiplayerPeer::is_server() const {
 	return active_mode == MODE_SERVER;
 }
 
+bool ENetMultiplayerPeer::is_server_relay_supported() const {
+	return active_mode == MODE_SERVER || active_mode == MODE_CLIENT;
+}
+
 void ENetMultiplayerPeer::close_connection(uint32_t wait_usec) {
 	if (!_is_active()) {
 		return;
@@ -422,8 +368,8 @@ Error ENetMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_si
 	current_packet = incoming_packets.front()->get();
 	incoming_packets.pop_front();
 
-	*r_buffer = (const uint8_t *)(&current_packet.packet->data[8]);
-	r_buffer_size = current_packet.packet->dataLength - 8;
+	*r_buffer = (const uint8_t *)(current_packet.packet->data);
+	r_buffer_size = current_packet.packet->dataLength;
 
 	return OK;
 }
@@ -457,15 +403,13 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 	}
 
 #ifdef DEBUG_ENABLED
-	if ((packet_flags & ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT) && p_buffer_size + 8 > ENET_HOST_DEFAULT_MTU) {
-		WARN_PRINT_ONCE(vformat("Sending %d bytes unrealiably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size + 8, ENET_HOST_DEFAULT_MTU));
+	if ((packet_flags & ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT) && p_buffer_size > ENET_HOST_DEFAULT_MTU) {
+		WARN_PRINT_ONCE(vformat("Sending %d bytes unrealiably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size, ENET_HOST_DEFAULT_MTU));
 	}
 #endif
 
-	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size + 8, packet_flags);
-	encode_uint32(unique_id, &packet->data[0]); // Source ID
-	encode_uint32(target_peer, &packet->data[4]); // Dest ID
-	memcpy(&packet->data[8], p_buffer, p_buffer_size);
+	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size, packet_flags);
+	memcpy(&packet->data[0], p_buffer, p_buffer_size);
 
 	if (is_server()) {
 		if (target_peer == 0) {
@@ -548,16 +492,6 @@ void ENetMultiplayerPeer::set_refuse_new_connections(bool p_enabled) {
 	MultiplayerPeer::set_refuse_new_connections(p_enabled);
 }
 
-void ENetMultiplayerPeer::set_server_relay_enabled(bool p_enabled) {
-	ERR_FAIL_COND_MSG(_is_active(), "Server relaying can't be toggled while the multiplayer instance is active.");
-
-	server_relay = p_enabled;
-}
-
-bool ENetMultiplayerPeer::is_server_relay_enabled() const {
-	return server_relay;
-}
-
 Ref<ENetConnection> ENetMultiplayerPeer::get_host() const {
 	ERR_FAIL_COND_V(!_is_active(), nullptr);
 	ERR_FAIL_COND_V(active_mode == MODE_MESH, nullptr);
@@ -577,70 +511,6 @@ void ENetMultiplayerPeer::_destroy_unused(ENetPacket *p_packet) {
 	}
 }
 
-void ENetMultiplayerPeer::_relay(int p_from, int p_to, enet_uint8 p_channel, ENetPacket *p_packet) {
-	if (p_to == 0) {
-		// Re-send to everyone but sender :|
-		for (KeyValue<int, Ref<ENetPacketPeer>> &E : peers) {
-			if (E.key == p_from) {
-				continue;
-			}
-
-			E.value->send(p_channel, p_packet);
-		}
-	} else if (p_to < 0) {
-		// Re-send to everyone but excluded and sender.
-		for (KeyValue<int, Ref<ENetPacketPeer>> &E : peers) {
-			if (E.key == p_from || E.key == -p_to) { // Do not resend to self, also do not send to excluded
-				continue;
-			}
-
-			E.value->send(p_channel, p_packet);
-		}
-	} else {
-		// To someone else, specifically
-		ERR_FAIL_COND(!peers.has(p_to));
-		ENetPacket *packet = enet_packet_create(p_packet->data, p_packet->dataLength, p_packet->flags);
-		peers[p_to]->send(p_channel, packet);
-	}
-}
-
-void ENetMultiplayerPeer::_notify_peers(int p_id, bool p_connected) {
-	if (p_connected) {
-		ERR_FAIL_COND(!peers.has(p_id));
-		// Someone connected, notify all the peers available.
-		Ref<ENetPacketPeer> peer = peers[p_id];
-		ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
-		encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
-		encode_uint32(p_id, &packet->data[4]);
-		for (KeyValue<int, Ref<ENetPacketPeer>> &E : peers) {
-			if (E.key == p_id) {
-				continue;
-			}
-			// Send new peer to existing peer.
-			E.value->send(SYSCH_CONFIG, packet);
-			// Send existing peer to new peer.
-			// This packet will be automatically destroyed by ENet after send.
-			ENetPacket *packet2 = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
-			encode_uint32(SYSMSG_ADD_PEER, &packet2->data[0]);
-			encode_uint32(E.key, &packet2->data[4]);
-			peer->send(SYSCH_CONFIG, packet2);
-		}
-		_destroy_unused(packet);
-	} else {
-		// Server just received a client disconnect and is in relay mode, notify everyone else.
-		ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
-		encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
-		encode_uint32(p_id, &packet->data[4]);
-		for (KeyValue<int, Ref<ENetPacketPeer>> &E : peers) {
-			if (E.key == p_id) {
-				continue;
-			}
-			E.value->send(SYSCH_CONFIG, packet);
-		}
-		_destroy_unused(packet);
-	}
-}
-
 void ENetMultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "max_channels", "in_bandwidth", "out_bandwidth"), &ENetMultiplayerPeer::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "channel_count", "in_bandwidth", "out_bandwidth", "local_port"), &ENetMultiplayerPeer::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0));
@@ -649,12 +519,9 @@ void ENetMultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close_connection", "wait_usec"), &ENetMultiplayerPeer::close_connection, DEFVAL(100));
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &ENetMultiplayerPeer::set_bind_ip);
 
-	ClassDB::bind_method(D_METHOD("set_server_relay_enabled", "enabled"), &ENetMultiplayerPeer::set_server_relay_enabled);
-	ClassDB::bind_method(D_METHOD("is_server_relay_enabled"), &ENetMultiplayerPeer::is_server_relay_enabled);
 	ClassDB::bind_method(D_METHOD("get_host"), &ENetMultiplayerPeer::get_host);
 	ClassDB::bind_method(D_METHOD("get_peer", "id"), &ENetMultiplayerPeer::get_peer);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "host", PROPERTY_HINT_RESOURCE_TYPE, "ENetConnection", PROPERTY_USAGE_NONE), "", "get_host");
 }
 
