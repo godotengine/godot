@@ -696,25 +696,15 @@ void Viewport::_process_picking() {
 		}
 
 #ifndef _3D_DISABLED
-		bool captured = false;
-
+		CollisionObject3D *capture_object = nullptr;
 		if (physics_object_capture.is_valid()) {
-			CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
-			if (co && camera_3d) {
-				_collision_object_3d_input_event(co, camera_3d, ev, Vector3(), Vector3(), 0);
-				captured = true;
-				if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
-					physics_object_capture = ObjectID();
-				}
-
-			} else {
+			capture_object = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
+			if (!capture_object || !camera_3d || (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed())) {
 				physics_object_capture = ObjectID();
 			}
 		}
 
-		if (captured) {
-			// None.
-		} else if (pos == last_pos) {
+		if (pos == last_pos) {
 			if (last_id.is_valid()) {
 				if (ObjectDB::get_instance(last_id) && last_object) {
 					// Good, exists.
@@ -740,13 +730,12 @@ void Viewport::_process_picking() {
 
 					bool col = space->intersect_ray(ray_params, result);
 					ObjectID new_collider;
-					if (col) {
-						CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);
-						if (co && co->can_process()) {
-							_collision_object_3d_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
+					CollisionObject3D *co = col ? Object::cast_to<CollisionObject3D>(result.collider) : nullptr;
+					if (co && co->can_process()) {
+						new_collider = result.collider_id;
+						if (!capture_object) {
 							last_object = co;
 							last_id = result.collider_id;
-							new_collider = last_id;
 							if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 								physics_object_capture = last_id;
 							}
@@ -755,20 +744,22 @@ void Viewport::_process_picking() {
 
 					if (is_mouse && new_collider != physics_object_over) {
 						if (physics_object_over.is_valid()) {
-							CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
-							if (co) {
-								co->_mouse_exit();
+							CollisionObject3D *previous_co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
+							if (previous_co) {
+								previous_co->_mouse_exit();
 							}
 						}
 
 						if (new_collider.is_valid()) {
-							CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(new_collider));
-							if (co) {
-								co->_mouse_enter();
-							}
+							co->_mouse_enter();
 						}
 
 						physics_object_over = new_collider;
+					}
+					if (capture_object) {
+						_collision_object_3d_input_event(capture_object, camera_3d, ev, result.position, result.normal, result.shape);
+					} else if (new_collider.is_valid()) {
+						_collision_object_3d_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
 					}
 				}
 
