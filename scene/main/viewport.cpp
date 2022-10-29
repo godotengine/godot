@@ -3043,8 +3043,11 @@ bool Viewport::gui_is_drag_successful() const {
 void Viewport::set_input_as_handled() {
 	const Ref<InputEventMouseMotion> mm = last_event;
 	if (mm.is_valid()) {
+		// Option 1:
 		// physics_picking_events.push_back(mm);
 		// _process_picking();
+
+		// Option 2:
 		_drop_physics_mouseover();
 	}
 
