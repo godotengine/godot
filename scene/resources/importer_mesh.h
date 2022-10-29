@@ -63,12 +63,6 @@ class ImporterMesh : public Resource {
 		String name;
 		uint32_t flags = 0;
 
-		struct LODComparator {
-			_FORCE_INLINE_ bool operator()(const LOD &l, const LOD &r) const {
-				return l.distance < r.distance;
-			}
-		};
-
 		void split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals);
 		static void _split_normals(Array &r_arrays, const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals);
 	};

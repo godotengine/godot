@@ -645,7 +645,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		}
 
 		surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
-		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
 
 		for (int j = 0; j < surfaces.write[i].lods.size(); j++) {
 			Surface::LOD &lod = surfaces.write[i].lods.write[j];
