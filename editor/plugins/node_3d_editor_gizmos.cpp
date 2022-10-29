@@ -1159,7 +1159,7 @@ int EditorNode3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_
 }
 
 Vector<int> EditorNode3DGizmoPlugin::subgizmos_intersect_frustum(const EditorNode3DGizmo *p_gizmo, const Camera3D *p_camera, const Vector<Plane> &p_frustum) const {
-	TypedArray<Transform3D> frustum;
+	TypedArray<Plane> frustum;
 	frustum.resize(p_frustum.size());
 	for (int i = 0; i < p_frustum.size(); i++) {
 		frustum[i] = p_frustum[i];
