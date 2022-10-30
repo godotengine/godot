@@ -143,6 +143,8 @@ private:
 	float _min_value;
 	float _max_value;
 	int _minmax_set_once; // Encodes whether min and max have been set a first time, first bit for min and second for max.
+protected:
+	_FORCE_INLINE_ bool is_cache_dirty() const { return _baked_cache_dirty; }
 };
 
 VARIANT_ENUM_CAST(Curve::TangentMode)

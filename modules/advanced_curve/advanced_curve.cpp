@@ -99,7 +99,7 @@ void AdvancedCurve::bake_samples(){
 
 float AdvancedCurve::get_area(const float& from, const float& to){
 	if (from >= to) return 0.0;
-	if (is_samples_polluted()) bake_samples();
+	if (is_samples_polluted() || is_cache_dirty()) bake_samples();
 	if (is_samples_polluted()) return 0.0;
 	auto local_from = from / range;
 	auto local_to = to / range;
