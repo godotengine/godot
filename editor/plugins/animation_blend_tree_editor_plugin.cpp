@@ -153,7 +153,8 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SNAME("font_color"), SNAME("Label")));
 			name->connect("text_submitted", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
-			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(name, agnode), CONNECT_DEFERRED);
+			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
+			name->connect("text_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
 			node->set_show_close_button(true);
 			node->connect("close_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_request).bind(E), CONNECT_DEFERRED);
@@ -993,13 +994,18 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	}
 
 	update_graph(); // Needed to update the signal connections with the new name.
+	current_node_rename_text = String();
 }
 
-void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Node *le, Ref<AnimationNode> p_node) {
-	if (le == nullptr) {
+void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Ref<AnimationNode> p_node) {
+	if (current_node_rename_text.is_empty()) {
 		return; // The text_submitted signal triggered the graph update and freed the LineEdit.
 	}
-	_node_renamed(le->call("get_text"), p_node);
+	_node_renamed(current_node_rename_text, p_node);
+}
+
+void AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed(const String &p_text) {
+	current_node_rename_text = p_text;
 }
 
 bool AnimationNodeBlendTreeEditor::can_edit(const Ref<AnimationNode> &p_node) {
