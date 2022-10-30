@@ -2425,10 +2425,15 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 				switch (err.error) {
 					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
-						PropertyInfo wrong_arg = function_info.arguments[err.argument];
-						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*", function_name, err.argument + 1,
-										   type_from_property(wrong_arg).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
-								p_call->arguments[err.argument]);
+						if (err.argument < function_info.arguments.size()) {
+							PropertyInfo wrong_arg = function_info.arguments[err.argument];
+							push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*", function_name, err.argument + 1,
+											type_from_property(wrong_arg).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
+									p_call->arguments[err.argument]);
+						} else { // Might happen in vararg function.
+							push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d is %s.)*", function_name, err.argument + 1,
+											p_call->arguments[err.argument]->get_datatype().to_string()), p_call->arguments[err.argument]);
+						}
 					} break;
 					case Callable::CallError::CALL_ERROR_INVALID_METHOD:
 						push_error(vformat(R"(Invalid call for function "%s".)", function_name), p_call);
