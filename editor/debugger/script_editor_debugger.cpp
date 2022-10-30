@@ -930,6 +930,11 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	tabs->set_current_tab(0);
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
+
+	Array msg;
+	msg.push_back(session_id);
+	_put_msg("set_session_id", msg);
+
 	emit_signal(SNAME("started"));
 }
 

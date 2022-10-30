@@ -111,6 +111,7 @@ private:
 	};
 	FileDialogPurpose file_dialog_purpose;
 
+	int session_id = -1;
 	int error_count;
 	int warning_count;
 

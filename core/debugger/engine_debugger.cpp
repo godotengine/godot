@@ -180,6 +180,14 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 	allow_focus_steal_fn = p_allow_focus_steal_fn;
 }
 
+void EngineDebugger::set_session_id(int p_session_id) {
+	session_id = p_session_id;
+}
+
+int EngineDebugger::get_session_id() {
+	return session_id;
+}
+
 void EngineDebugger::deinitialize() {
 	if (singleton) {
 		// Stop all profilers

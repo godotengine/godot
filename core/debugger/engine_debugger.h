@@ -85,6 +85,8 @@ public:
 	};
 
 private:
+	int session_id = -1;
+
 	double frame_time = 0.0;
 	double process_time = 0.0;
 	double physics_time = 0.0;
@@ -127,6 +129,9 @@ public:
 	Error capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured);
 
 	void line_poll();
+
+	void set_session_id(int p_session_id);
+	int get_session_id();
 
 	virtual void poll_events(bool p_is_idle) {}
 	virtual void send_message(const String &p_msg, const Array &p_data) = 0;

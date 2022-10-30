@@ -632,6 +632,8 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 		script_debugger->set_skip_breakpoints(p_data[0]);
 	} else if (p_cmd == "break") {
 		script_debugger->debug(script_debugger->get_break_language());
+	} else if (p_cmd == "set_session_id") {
+		set_session_id(p_data[0]);
 	} else {
 		r_captured = false;
 	}

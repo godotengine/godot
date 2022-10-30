@@ -1739,6 +1739,10 @@ bool EngineDebugger::has_capture(const StringName &p_name) {
 	return ::EngineDebugger::has_capture(p_name);
 }
 
+int EngineDebugger::get_session_id() {
+	return ::EngineDebugger::get_singleton()->get_session_id();
+}
+
 void EngineDebugger::send_message(const String &p_msg, const Array &p_data) {
 	ERR_FAIL_COND_MSG(!::EngineDebugger::is_active(), "Can't send message. No active debugger");
 	::EngineDebugger::get_singleton()->send_message(p_msg, p_data);
@@ -1784,6 +1788,8 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("register_message_capture", "name", "callable"), &EngineDebugger::register_message_capture);
 	ClassDB::bind_method(D_METHOD("unregister_message_capture", "name"), &EngineDebugger::unregister_message_capture);
 	ClassDB::bind_method(D_METHOD("has_capture", "name"), &EngineDebugger::has_capture);
+
+	ClassDB::bind_method(D_METHOD("get_session_id"), &EngineDebugger::get_session_id);
 
 	ClassDB::bind_method(D_METHOD("send_message", "message", "data"), &EngineDebugger::send_message);
 }

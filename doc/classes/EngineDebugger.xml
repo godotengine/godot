@@ -9,6 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_session_id">
+			<return type="int" />
+			<description>
+				Returns session id of this instance. If the value is negative, the session is invalid.
+			</description>
+		</method>
 		<method name="has_capture">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />

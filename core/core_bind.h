@@ -563,6 +563,8 @@ public:
 	void unregister_message_capture(const StringName &p_name);
 	bool has_capture(const StringName &p_name);
 
+	int get_session_id();
+
 	void send_message(const String &p_msg, const Array &p_data);
 
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);

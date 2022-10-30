@@ -111,7 +111,8 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 
 	tabs->add_child(node);
 
-	node->set_name("Session " + itos(tabs->get_tab_count()));
+	node->session_id = tabs->get_tab_count();
+	node->set_name("Session " + itos(node->session_id));
 	if (tabs->get_tab_count() > 1) {
 		node->clear_style();
 		tabs->set_tabs_visible(true);
