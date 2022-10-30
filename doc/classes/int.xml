@@ -161,12 +161,14 @@
 			<return type="Vector4" />
 			<param index="0" name="right" type="Vector4" />
 			<description>
+				Multiplies each component of the [Vector4] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector4i" />
 			<param index="0" name="right" type="Vector4i" />
 			<description>
+				Multiplies each component of the [Vector4i] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -187,12 +189,20 @@
 			<return type="float" />
 			<param index="0" name="right" type="float" />
 			<description>
+				Raises an [int] to a power of a [float]. The result is a [float].
+				[codeblock]
+				print(8**0.25) # 1.68179283050743
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator **">
 			<return type="int" />
 			<param index="0" name="right" type="int" />
 			<description>
+				Raises an [int] to a power of a [int].
+				[codeblock]
+				print(5**5) # 3125
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator +">
