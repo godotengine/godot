@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GraphFrame" inherits="GraphControl" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		GraphFrame is a special [GraphControl] that can be used to organize other nodes inside a [GraphEdit].
+	</brief_description>
+	<description>
+		A GraphFrame is drawn behind other [GraphControl]s and can be used to organize them. It can be used to group nodes together, label them and make the graph clearer.
+		If a GraphFrame is moved, all the nodes inside it will be moved as well including other GraphFrames.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+			Base text writing direction.
+		</member>
+		<member name="tint_color" type="Color" setter="set_tint_color" getter="get_tint_color" default="Color(0.4, 0.8, 0.4, 1)">
+			Color used to tint the frame.
+		</member>
+		<member name="tint_color_enabled" type="bool" setter="set_tint_color_enabled" getter="is_tint_color_enabled" default="false">
+			If [code]true[/code], the tint color will be used to tint the frame.
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			Title of the frame.
+		</member>
+	</members>
+	<theme_items>
+		<theme_item name="resizer_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			The color modulation applied to the resizer icon.
+		</theme_item>
+		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Color of the title text.
+		</theme_item>
+		<theme_item name="close_h_offset" data_type="constant" type="int" default="-12">
+			Horizontal offset of the close button.
+		</theme_item>
+		<theme_item name="close_v_offset" data_type="constant" type="int" default="22">
+			Vertical offset of the close button.
+		</theme_item>
+		<theme_item name="title_v_offset" data_type="constant" type="int" default="26">
+			Vertical offset of the title.
+		</theme_item>
+		<theme_item name="title_font" data_type="font" type="Font">
+			Font used for the title.
+		</theme_item>
+		<theme_item name="frame" data_type="style" type="StyleBox">
+			The [StyleBox] used to draw the frame.
+		</theme_item>
+		<theme_item name="selected_frame" data_type="style" type="StyleBox">
+			The [StyleBox] used to draw the frame when selected.
+		</theme_item>
+	</theme_items>
+</class>

@@ -326,6 +326,14 @@ void VisualShaderNode::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
 }
 
+bool VisualShaderNode::is_closable() const {
+	return closable;
+}
+
+void VisualShaderNode::set_closable(bool p_closable) {
+	closable = p_closable;
+}
+
 Vector<VisualShader::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	return Vector<VisualShader::DefaultTextureParam>();
 }
@@ -4057,6 +4065,22 @@ String VisualShaderNodeComment::get_description() const {
 	return description;
 }
 
+void VisualShaderNodeComment::set_tint_color_enabled(bool p_enabled) {
+	tint_color_enabled = p_enabled;
+}
+
+bool VisualShaderNodeComment::is_tint_color_enabled() const {
+	return tint_color_enabled;
+}
+
+void VisualShaderNodeComment::set_tint_color(const Color &p_color) {
+	tint_color = p_color;
+}
+
+Color VisualShaderNodeComment::get_tint_color() const {
+	return tint_color;
+}
+
 String VisualShaderNodeComment::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return String();
 }
@@ -4068,8 +4092,16 @@ void VisualShaderNodeComment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeComment::set_description);
 	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeComment::get_description);
 
+	ClassDB::bind_method(D_METHOD("set_tint_color_enabled", "p_enable"), &VisualShaderNodeComment::set_tint_color_enabled);
+	ClassDB::bind_method(D_METHOD("is_tint_color_enabled"), &VisualShaderNodeComment::is_tint_color_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_tint_color", "p_color"), &VisualShaderNodeComment::set_tint_color);
+	ClassDB::bind_method(D_METHOD("get_tint_color"), &VisualShaderNodeComment::get_tint_color);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tint_color_enabled"), "set_tint_color_enabled", "is_tint_color_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
 }
 
 VisualShaderNodeComment::VisualShaderNodeComment() {

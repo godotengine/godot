@@ -167,7 +167,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
 			name->connect("text_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
-			node->set_show_close_button(true);
+			agnode->set_closable(true);
 			node->connect("close_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_request).bind(E), CONNECT_DEFERRED);
 		}
 
@@ -531,14 +531,19 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 		for (int i = 0; i < graph->get_child_count(); i++) {
 			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 			if (gn) {
-				if (gn->is_selected() && gn->is_close_button_visible()) {
+				String name = gn->get_name();
+				Ref<AnimationNode> anode = blend_tree->get_node(name);
+				if (gn->is_selected() && anode->is_closable()) {
 					to_erase.push_back(gn->get_name());
 				}
 			}
 		}
 	} else {
 		for (int i = 0; i < p_nodes.size(); i++) {
-			to_erase.push_back(p_nodes[i]);
+			Ref<AnimationNode> anode = blend_tree->get_node(p_nodes[i]);
+			if (anode->is_closable()) {
+				to_erase.push_back(p_nodes[i]);
+			}
 		}
 	}
 
@@ -1091,13 +1096,13 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->set_connection_lines_curvature(graph_lines_curvature);
 
 	VSeparator *vs = memnew(VSeparator);
-	graph->get_zoom_hbox()->add_child(vs);
-	graph->get_zoom_hbox()->move_child(vs, 0);
+	graph->get_menu_hbox()->add_child(vs);
+	graph->get_menu_hbox()->move_child(vs, 0);
 
 	add_node = memnew(MenuButton);
-	graph->get_zoom_hbox()->add_child(add_node);
+	graph->get_menu_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node..."));
-	graph->get_zoom_hbox()->move_child(add_node, 0);
+	graph->get_menu_hbox()->move_child(add_node, 0);
 	add_node->get_popup()->connect("id_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_add_node));
 	add_node->get_popup()->connect("popup_hide", callable_mp(this, &AnimationNodeBlendTreeEditor::_popup_hide), CONNECT_DEFERRED);
 	add_node->connect("about_to_popup", callable_mp(this, &AnimationNodeBlendTreeEditor::_update_options_menu).bind(false));

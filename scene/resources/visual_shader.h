@@ -265,6 +265,7 @@ class VisualShaderNode : public Resource {
 protected:
 	bool simple_decl = true;
 	bool disabled = false;
+	bool closable = false;
 
 	static void _bind_methods();
 
@@ -329,6 +330,9 @@ public:
 
 	bool is_disabled() const;
 	void set_disabled(bool p_disabled = true);
+
+	bool is_closable() const;
+	void set_closable(bool p_closable = true);
 
 	virtual Vector<StringName> get_editable_properties() const;
 	virtual HashMap<StringName, String> get_editable_properties_names() const;
@@ -657,6 +661,8 @@ class VisualShaderNodeComment : public VisualShaderNodeResizableBase {
 protected:
 	String title = "Comment";
 	String description = "";
+	bool tint_color_enabled = false;
+	Color tint_color = Color(0.4, 0.8, 0.4);
 
 protected:
 	static void _bind_methods();
@@ -679,6 +685,12 @@ public:
 
 	void set_description(const String &p_description);
 	String get_description() const;
+
+	void set_tint_color_enabled(bool p_enable);
+	bool is_tint_color_enabled() const;
+
+	void set_tint_color(const Color &p_color);
+	Color get_tint_color() const;
 
 	VisualShaderNodeComment();
 };

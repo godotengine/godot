@@ -12,6 +12,10 @@
 		<member name="description" type="String" setter="set_description" getter="get_description" default="&quot;&quot;">
 			An additional description which placed below the title.
 		</member>
+		<member name="tint_color" type="Color" setter="set_tint_color" getter="get_tint_color" default="Color(0.4, 0.8, 0.4, 1)">
+		</member>
+		<member name="tint_color_enabled" type="bool" setter="set_tint_color_enabled" getter="is_tint_color_enabled" default="false">
+		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;Comment&quot;">
 			A title of the node.
 		</member>

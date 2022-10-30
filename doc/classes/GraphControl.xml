@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GraphControl" inherits="Container" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		GraphControl is a [Container] control that provides the basic functionality to be used inside a [GraphEdit] control (as a child), meaning it will be selectable and transformable by the graph editor.
+	</brief_description>
+	<description>
+		GraphControl allows to create your own custom nodes which can be used as a child of a [GraphEdit] node, but they won't be able to connect to other nodes.
+		To create a custom node that can connect to other nodes, extend [GraphNode].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="draggable" type="bool" setter="set_draggable" getter="is_draggable" default="true">
+			If [code]true[/code], the user can drag the GraphControl.
+		</member>
+		<member name="position_offset" type="Vector2" setter="set_position_offset" getter="get_position_offset" default="Vector2(0, 0)">
+			The offset of the GraphControl, relative to the scroll offset of the [GraphEdit].
+			[b]Note:[/b] You cannot use the position offset directly, as [GraphEdit] is a [Container].
+		</member>
+		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
+			If [code]true[/code], the user can resize the GraphControl.
+			[b]Note:[/b] Dragging the handle will only emit the [signal resize_request] signal, the GraphControl needs to be resized manually.
+		</member>
+		<member name="selectable" type="bool" setter="set_selectable" getter="is_selectable" default="true">
+			If [code]true[/code], the user can select the GraphControl.
+		</member>
+		<member name="selected" type="bool" setter="set_selected" getter="is_selected" default="false">
+			If [code]true[/code], the GraphControl is selected.
+		</member>
+	</members>
+	<signals>
+		<signal name="close_request">
+			<description>
+				Emitted when the GraphControl is requested to be closed.
+			</description>
+		</signal>
+		<signal name="dragged">
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<description>
+				Emitted when the GraphControl is dragged.
+			</description>
+		</signal>
+		<signal name="node_deselected">
+			<description>
+				Emitted when the GraphControl is deselected.
+			</description>
+		</signal>
+		<signal name="node_selected">
+			<description>
+				Emitted when the GraphControl is selected.
+			</description>
+		</signal>
+		<signal name="position_offset_changed">
+			<description>
+				Emitted when the GraphControl is moved.
+			</description>
+		</signal>
+		<signal name="raise_request">
+			<description>
+				Emitted when the GraphControl is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphControl.
+			</description>
+		</signal>
+		<signal name="resize_request">
+			<param index="0" name="new_minsize" type="Vector2" />
+			<description>
+				Emitted when the GraphControl is requested to be resized. Happens on dragging the resizer handle (see [member resizable]).
+			</description>
+		</signal>
+	</signals>
+</class>

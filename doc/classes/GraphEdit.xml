@@ -26,12 +26,12 @@
 			<param index="2" name="mouse_position" type="Vector2" />
 			<description>
 				Returns whether the [param mouse_position] is in the input hot zone.
-				By default, a hot zone is a [Rect2] positioned such that its center is at [param in_node].[method GraphNode.get_connection_input_position]([param in_port]) (For output's case, call [method GraphNode.get_connection_output_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
+				By default, a hot zone is a [Rect2] positioned such that its center is at [param in_node].[method GraphNode.get_port_input_position]([param in_port]) (For output's case, call [method GraphNode.get_port_output_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_input_hotzone(in_node, in_port, mouse_position):
-				    var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos: Vector2 = in_node.get_position() + in_node.get_connection_input_position(in_port) - port_size / 2
+				    var port_size : Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+				    var port_pos : Vector2 = in_node.get_position() + in_node.get_port_input_position(in_port) - port_size / 2
 				    var rect = Rect2(port_pos, port_size)
 
 				    return rect.has_point(mouse_position)
@@ -48,8 +48,8 @@
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_output_hotzone(in_node, in_port, mouse_position):
-				    var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos: Vector2 = in_node.get_position() + in_node.get_connection_output_position(in_port) - port_size / 2
+				    var port_size : Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+				    var port_pos : Vector2 = in_node.get_position() + in_node.get_port_output_position(in_port) - port_size / 2
 				    var rect = Rect2(port_pos, port_size)
 
 				    return rect.has_point(mouse_position)
@@ -157,7 +157,7 @@
 				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
 			</description>
 		</method>
-		<method name="get_zoom_hbox">
+		<method name="get_menu_hbox">
 			<return type="HBoxContainer" />
 			<description>
 				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph. You can use this method to reposition the toolbar or to add your own custom controls to it.

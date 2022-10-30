@@ -699,10 +699,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	graphnode_normal->set_border_color(Color(0.325, 0.325, 0.325, 0.6));
 	Ref<StyleBoxFlat> graphnode_selected = graphnode_normal->duplicate();
 	graphnode_selected->set_border_color(Color(0.625, 0.625, 0.625, 0.6));
-	Ref<StyleBoxFlat> graphnode_comment_normal = make_flat_stylebox(style_pressed_color, 18, 42, 18, 12, 3, true, 2);
-	graphnode_comment_normal->set_border_color(style_pressed_color);
-	Ref<StyleBoxFlat> graphnode_comment_selected = graphnode_comment_normal->duplicate();
-	graphnode_comment_selected->set_border_color(style_hover_color);
 	Ref<StyleBoxFlat> graphnode_breakpoint = make_flat_stylebox(style_pressed_color, 18, 42, 18, 12, 6, true, 4);
 	graphnode_breakpoint->set_border_color(Color(0.9, 0.29, 0.3));
 	Ref<StyleBoxFlat> graphnode_position = make_flat_stylebox(style_pressed_color, 18, 42, 18, 12, 6, true, 4);
@@ -711,25 +707,52 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("frame", "GraphNode", graphnode_normal);
 	theme->set_stylebox("selected_frame", "GraphNode", graphnode_selected);
-	theme->set_stylebox("comment", "GraphNode", graphnode_comment_normal);
-	theme->set_stylebox("comment_focus", "GraphNode", graphnode_comment_selected);
 	theme->set_stylebox("breakpoint", "GraphNode", graphnode_breakpoint);
 	theme->set_stylebox("position", "GraphNode", graphnode_position);
 	theme->set_stylebox("slot", "GraphNode", graphnode_slot);
 
 	theme->set_icon("port", "GraphNode", icons["graph_port"]);
-	theme->set_icon("close", "GraphNode", icons["close"]);
 	theme->set_icon("resizer", "GraphNode", icons["resizer_se"]);
 	theme->set_font("title_font", "GraphNode", Ref<Font>());
 	theme->set_color("title_color", "GraphNode", control_font_color);
-	theme->set_color("close_color", "GraphNode", control_font_color);
 	theme->set_color("resizer_color", "GraphNode", control_font_color);
 	theme->set_constant("separation", "GraphNode", 2 * scale);
-	theme->set_constant("title_offset", "GraphNode", 26 * scale);
+	theme->set_constant("title_v_offset", "GraphNode", 26 * scale);
 	theme->set_constant("title_h_offset", "GraphNode", 0);
-	theme->set_constant("close_offset", "GraphNode", 22 * scale);
-	theme->set_constant("close_h_offset", "GraphNode", 12 * scale);
+	theme->set_constant("close_v_offset", "GraphNode", 22 * scale);
+	theme->set_constant("close_h_offset", "GraphNode", -12 * scale);
 	theme->set_constant("port_offset", "GraphNode", 0);
+
+	// Variation for the GraphNode close button.
+	theme->set_type_variation("GraphNodeCloseButton", "Button");
+	Ref<StyleBoxEmpty> gn_close_btn_sb = make_empty_stylebox(0, 0, 0, 0);
+	theme->set_stylebox("normal", "GraphNodeCloseButton", gn_close_btn_sb);
+	theme->set_stylebox("hover", "GraphNodeCloseButton", gn_close_btn_sb);
+	theme->set_stylebox("pressed", "GraphNodeCloseButton", gn_close_btn_sb);
+	theme->set_stylebox("focus", "GraphNodeCloseButton", gn_close_btn_sb);
+	theme->set_stylebox("disabled", "GraphNodeCloseButton", gn_close_btn_sb);
+
+	theme->set_color("icon_normal_color", "GraphNodeCloseButton", control_font_color);
+	theme->set_color("icon_pressed_color", "GraphNodeCloseButton", control_font_pressed_color);
+
+	theme->set_icon("close", "GraphNodeCloseButton", icons["close"]);
+
+	// GraphFrame
+	Ref<StyleBoxFlat> graphnode_comment_normal = make_flat_stylebox(style_pressed_color, 18, 42, 18, 12, 3, true, 2);
+	graphnode_comment_normal->set_border_color(style_pressed_color);
+	Ref<StyleBoxFlat> graphnode_comment_selected = graphnode_comment_normal->duplicate();
+	graphnode_comment_selected->set_border_color(style_hover_color);
+	theme->set_stylebox("frame", "GraphFrame", graphnode_comment_normal);
+	theme->set_stylebox("selected_frame", "GraphFrame", graphnode_comment_selected);
+
+	theme->set_font("title_font", "GraphFrame", Ref<Font>());
+
+	theme->set_color("title_color", "GraphFrame", control_font_color);
+	theme->set_color("resizer_color", "GraphFrame", control_font_color);
+
+	theme->set_constant("title_v_offset", "GraphFrame", 26 * scale);
+	theme->set_constant("close_v_offset", "GraphFrame", 22 * scale);
+	theme->set_constant("close_h_offset", "GraphFrame", -12 * scale);
 
 	// Tree
 
