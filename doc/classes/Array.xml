@@ -272,6 +272,7 @@
 				array.Fill(0); // Initialize the 10 elements to 0.
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] If [param value] is of a reference type ([Object]-derived, [Array], [Dictionary], etc.) then the array is filled with the references to the same object, i.e. no duplicates are created.
 			</description>
 		</method>
 		<method name="filter" qualifiers="const">
