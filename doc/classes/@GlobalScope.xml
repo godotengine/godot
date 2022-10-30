@@ -2789,13 +2789,13 @@
 			The property is serialized and saved in the scene file (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags">
-			The property is shown in the editor Inspector (default).
+			The property is shown in the [EditorInspector] (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags">
-			The property can be checked in the editor inspector.
+			The property can be checked in the [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKED" value="16" enum="PropertyUsageFlags">
-			The property is checked in the editor inspector.
+			The property is checked in the [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="32" enum="PropertyUsageFlags">
 			The property is a translatable string.
@@ -2853,7 +2853,7 @@
 		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags">
-			The property is read-only in the editor Inspector.
+			The property is read-only in the [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="536870912" enum="PropertyUsageFlags">
 			The property is an array.
