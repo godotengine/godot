@@ -85,7 +85,6 @@ void GraphControl::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			// _shape_title();
 			update_minimum_size();
 			queue_redraw();
 		} break;
@@ -153,7 +152,7 @@ void GraphControl::gui_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
-		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphNode must be the child of a GraphEdit node.");
+		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphControl must be the child of a GraphEdit node.");
 
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			Vector2 mpos = mb->get_position();

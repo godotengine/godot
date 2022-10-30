@@ -9,13 +9,20 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_titlebar_hbox">
+			<return type="HBoxContainer" />
+			<description>
+				Returns the [HBoxContainer] used for the title bar, only containing a [Label] for displaying the title by default.
+				This can be used to add custom controls to the title bar such as option or close buttons.
+			</description>
+		</method>
+	</methods>
 	<members>
-		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+		<member name="drag_margin" type="int" setter="set_drag_margin" getter="get_drag_margin" default="12">
+			The margin around the frame that can be used to drag the frame.
 		</member>
-		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
-			Base text writing direction.
-		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
 		<member name="tint_color" type="Color" setter="set_tint_color" getter="get_tint_color" default="Color(0.4, 0.8, 0.4, 1)">
 			Color used to tint the frame.
 		</member>
@@ -25,31 +32,28 @@
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 			Title of the frame.
 		</member>
+		<member name="title_centered" type="bool" setter="set_title_centered" getter="is_title_centered" default="true">
+			Determines whether the title is aligned to the left/right or centered.
+		</member>
 	</members>
 	<theme_items>
 		<theme_item name="resizer_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The color modulation applied to the resizer icon.
 		</theme_item>
-		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
-			Color of the title text.
-		</theme_item>
-		<theme_item name="close_h_offset" data_type="constant" type="int" default="-12">
-			Horizontal offset of the close button.
-		</theme_item>
-		<theme_item name="close_v_offset" data_type="constant" type="int" default="22">
-			Vertical offset of the close button.
-		</theme_item>
-		<theme_item name="title_v_offset" data_type="constant" type="int" default="26">
-			Vertical offset of the title.
-		</theme_item>
-		<theme_item name="title_font" data_type="font" type="Font">
-			Font used for the title.
+		<theme_item name="resizer" data_type="icon" type="Texture2D">
+			The icon used for the resizer.
 		</theme_item>
 		<theme_item name="frame" data_type="style" type="StyleBox">
-			The [StyleBox] used to draw the frame.
+			The [StyleBox] used for the frame.
 		</theme_item>
-		<theme_item name="selected_frame" data_type="style" type="StyleBox">
-			The [StyleBox] used to draw the frame when selected.
+		<theme_item name="frame_selected" data_type="style" type="StyleBox">
+			The [StyleBox] used for the frame when selected.
+		</theme_item>
+		<theme_item name="titlebar" data_type="style" type="StyleBox">
+			The [StyleBox] used for the title bar.
+		</theme_item>
+		<theme_item name="titlebar_selected" data_type="style" type="StyleBox">
+			The [StyleBox] used for the title bar when selected.
 		</theme_item>
 	</theme_items>
 </class>

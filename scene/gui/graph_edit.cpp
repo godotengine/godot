@@ -1147,9 +1147,9 @@ void GraphEdit::_minimap_draw() {
 		Ref<StyleBoxFlat> sb_minimap = minimap->get_theme_stylebox(SNAME("node"))->duplicate();
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sbf = graph_node->get_theme_stylebox(graph_node->is_selected() ? SNAME("selected_frame") : SNAME("frame"));
-		if (sbf.is_valid()) {
-			Color node_color = sbf->get_bg_color();
+		Ref<StyleBoxFlat> sb_frame = graph_node->get_theme_stylebox(graph_node->is_selected() ? SNAME("frame_selected") : SNAME("frame"));
+		if (sb_frame.is_valid()) {
+			Color node_color = sb_frame->get_bg_color();
 			if (graph_node->is_tint_color_enabled()) {
 				node_color = graph_node->get_tint_color();
 			}
@@ -1173,7 +1173,7 @@ void GraphEdit::_minimap_draw() {
 		Ref<StyleBoxFlat> sb_minimap = minimap->get_theme_stylebox(SNAME("node"))->duplicate();
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sbf = graph_node->get_theme_stylebox(graph_node->is_selected() ? "selected_frame" : "frame");
+		Ref<StyleBoxFlat> sbf = graph_node->get_theme_stylebox(graph_node->is_selected() ? "frame_selected" : "frame");
 		if (sbf.is_valid()) {
 			Color node_color = sbf->get_border_color();
 			sb_minimap->set_bg_color(node_color);

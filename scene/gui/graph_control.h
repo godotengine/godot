@@ -31,20 +31,12 @@
 #ifndef BASE_GRAPH_NODE_H
 #define BASE_GRAPH_NODE_H
 
-#include "scene/gui/button.h"
 #include "scene/gui/container.h"
-#include "scene/resources/text_line.h"
 
 class GraphControl : public Container {
 	GDCLASS(GraphControl, Container);
 
 protected:
-	Control *titlebar_control = nullptr;
-
-	Dictionary opentype_features;
-	String language;
-	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-
 	bool selected = false;
 	bool resizable = false;
 	bool resizing = false;
@@ -56,8 +48,6 @@ protected:
 	Vector2 resizing_from_size;
 
 	Vector2 position_offset;
-
-	Vector<int> cache_y;
 
 	void _close_requested();
 

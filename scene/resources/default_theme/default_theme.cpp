@@ -694,65 +694,73 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("icon_max_width", "PopupMenu", 0);
 
 	// GraphNode
-	Ref<StyleBoxFlat> graphnode_normal = make_flat_stylebox(style_normal_color, 18, 42, 18, 12);
-	graphnode_normal->set_border_width(SIDE_TOP, 30);
+
+	Ref<StyleBoxFlat> graphnode_normal = make_flat_stylebox(style_normal_color, 18, 12, 18, 12);
 	graphnode_normal->set_border_color(Color(0.325, 0.325, 0.325, 0.6));
 	Ref<StyleBoxFlat> graphnode_selected = graphnode_normal->duplicate();
 	graphnode_selected->set_border_color(Color(0.625, 0.625, 0.625, 0.6));
-	Ref<StyleBoxFlat> graphnode_breakpoint = make_flat_stylebox(style_pressed_color, 18, 42, 18, 12, 6, true, 4);
-	graphnode_breakpoint->set_border_color(Color(0.9, 0.29, 0.3));
-	Ref<StyleBoxFlat> graphnode_position = make_flat_stylebox(style_pressed_color, 18, 42, 18, 12, 6, true, 4);
-	graphnode_position->set_border_color(Color(0.98, 0.89, 0.27));
+
+	Ref<StyleBoxFlat> graphn_sb_titlebar = make_flat_stylebox(style_normal_color.lightened(0.3), 4, 4, 4, 4);
+	Ref<StyleBoxFlat> graphn_sb_titlebar_selected = graphnode_normal->duplicate();
+	graphn_sb_titlebar_selected->set_bg_color(Color(1.0, 0.625, 0.625, 0.6));
 	Ref<StyleBoxEmpty> graphnode_slot = make_empty_stylebox(0, 0, 0, 0);
 
 	theme->set_stylebox("frame", "GraphNode", graphnode_normal);
-	theme->set_stylebox("selected_frame", "GraphNode", graphnode_selected);
-	theme->set_stylebox("breakpoint", "GraphNode", graphnode_breakpoint);
-	theme->set_stylebox("position", "GraphNode", graphnode_position);
+	theme->set_stylebox("frame_selected", "GraphNode", graphnode_selected);
+	theme->set_stylebox("titlebar", "GraphNode", graphn_sb_titlebar);
+	theme->set_stylebox("titlebar_selected", "GraphNode", graphn_sb_titlebar_selected);
 	theme->set_stylebox("slot", "GraphNode", graphnode_slot);
-
 	theme->set_icon("port", "GraphNode", icons["graph_port"]);
 	theme->set_icon("resizer", "GraphNode", icons["resizer_se"]);
-	theme->set_font("title_font", "GraphNode", Ref<Font>());
-	theme->set_color("title_color", "GraphNode", control_font_color);
 	theme->set_color("resizer_color", "GraphNode", control_font_color);
 	theme->set_constant("separation", "GraphNode", 2 * scale);
-	theme->set_constant("title_v_offset", "GraphNode", 26 * scale);
-	theme->set_constant("title_h_offset", "GraphNode", 0);
-	theme->set_constant("close_v_offset", "GraphNode", 22 * scale);
-	theme->set_constant("close_h_offset", "GraphNode", -12 * scale);
-	theme->set_constant("port_offset", "GraphNode", 0);
+	theme->set_constant("port_h_offset", "GraphNode", 0);
 
-	// Variation for the GraphNode close button.
-	theme->set_type_variation("GraphNodeCloseButton", "Button");
-	Ref<StyleBoxEmpty> gn_close_btn_sb = make_empty_stylebox(0, 0, 0, 0);
-	theme->set_stylebox("normal", "GraphNodeCloseButton", gn_close_btn_sb);
-	theme->set_stylebox("hover", "GraphNodeCloseButton", gn_close_btn_sb);
-	theme->set_stylebox("pressed", "GraphNodeCloseButton", gn_close_btn_sb);
-	theme->set_stylebox("focus", "GraphNodeCloseButton", gn_close_btn_sb);
-	theme->set_stylebox("disabled", "GraphNodeCloseButton", gn_close_btn_sb);
+	// GraphNodes's title Label
 
-	theme->set_color("icon_normal_color", "GraphNodeCloseButton", control_font_color);
-	theme->set_color("icon_pressed_color", "GraphNodeCloseButton", control_font_pressed_color);
+	theme->set_type_variation("GraphNodeTitleLabel", "Label");
 
-	theme->set_icon("close", "GraphNodeCloseButton", icons["close"]);
+	theme->set_stylebox("normal", "GraphNodeTitleLabel", memnew(StyleBoxEmpty));
+	theme->set_font("font", "GraphNodeTitleLabel", Ref<Font>());
+	theme->set_font_size("font_size", "GraphNodeTitleLabel", -1);
+	theme->set_color("font_color", "GraphNodeTitleLabel", Color(1, 1, 1));
+	theme->set_color("font_shadow_color", "GraphNodeTitleLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_outline_color", "GraphNodeTitleLabel", Color(1, 1, 1));
+	theme->set_constant("shadow_offset_x", "GraphNodeTitleLabel", 1 * scale);
+	theme->set_constant("shadow_offset_y", "GraphNodeTitleLabel", 1 * scale);
+	theme->set_constant("outline_size", "GraphNodeTitleLabel", 0);
+	theme->set_constant("shadow_outline_size", "GraphNodeTitleLabel", 1 * scale);
+	theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * scale);
 
 	// GraphFrame
-	Ref<StyleBoxFlat> graphnode_comment_normal = make_flat_stylebox(style_pressed_color, 18, 42, 18, 12, 3, true, 2);
-	graphnode_comment_normal->set_border_color(style_pressed_color);
-	Ref<StyleBoxFlat> graphnode_comment_selected = graphnode_comment_normal->duplicate();
-	graphnode_comment_selected->set_border_color(style_hover_color);
-	theme->set_stylebox("frame", "GraphFrame", graphnode_comment_normal);
-	theme->set_stylebox("selected_frame", "GraphFrame", graphnode_comment_selected);
 
-	theme->set_font("title_font", "GraphFrame", Ref<Font>());
+	Ref<StyleBoxFlat> graphframe_sb = make_flat_stylebox(style_pressed_color, 18, 12, 18, 12, 3, true, 2);
+	graphframe_sb->set_expand_margin(SIDE_TOP, 38 * scale);
+	graphframe_sb->set_border_color(style_pressed_color);
+	Ref<StyleBoxFlat> graphframe_sb_selected = graphframe_sb->duplicate();
+	graphframe_sb_selected->set_border_color(style_hover_color);
 
-	theme->set_color("title_color", "GraphFrame", control_font_color);
+	theme->set_stylebox("frame", "GraphFrame", graphframe_sb);
+	theme->set_stylebox("frame_selected", "GraphFrame", graphframe_sb_selected);
+	theme->set_stylebox("titlebar", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
+	theme->set_stylebox("titlebar_selected", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
+	theme->set_icon("resizer", "GraphFrame", icons["resizer_se"]);
 	theme->set_color("resizer_color", "GraphFrame", control_font_color);
 
-	theme->set_constant("title_v_offset", "GraphFrame", 26 * scale);
-	theme->set_constant("close_v_offset", "GraphFrame", 22 * scale);
-	theme->set_constant("close_h_offset", "GraphFrame", -12 * scale);
+	// GraphFrame's title Label
+
+	theme->set_type_variation("GraphFrameTitleLabel", "Label");
+
+	theme->set_stylebox("normal", "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
+	theme->set_font_size("font_size", "GraphFrameTitleLabel", 22);
+	theme->set_color("font_color", "GraphFrameTitleLabel", Color(1, 1, 1));
+	theme->set_color("font_shadow_color", "GraphFrameTitleLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_outline_color", "GraphFrameTitleLabel", Color(1, 1, 1));
+	theme->set_constant("shadow_offset_x", "GraphFrameTitleLabel", 1 * scale);
+	theme->set_constant("shadow_offset_y", "GraphFrameTitleLabel", 1 * scale);
+	theme->set_constant("outline_size", "GraphFrameTitleLabel", 0);
+	theme->set_constant("shadow_outline_size", "GraphFrameTitleLabel", 1 * scale);
+	theme->set_constant("line_spacing", "GraphFrameTitleLabel", 3 * scale);
 
 	// Tree
 

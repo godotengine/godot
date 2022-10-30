@@ -32,7 +32,8 @@
 #define GRAPH_NODE_H
 
 #include "scene/gui/graph_control.h"
-#include "scene/resources/text_line.h"
+
+class HBoxContainer;
 
 class GraphNode : public GraphControl {
 	GDCLASS(GraphNode, GraphControl);
@@ -42,12 +43,12 @@ private:
 		bool enable_left = false;
 		int type_left = 0;
 		Color color_left = Color(1, 1, 1, 1);
-		Ref<Texture2D> custom_slot_left;
+		Ref<Texture2D> custom_port_icon_left;
 
 		bool enable_right = false;
 		int type_right = 0;
 		Color color_right = Color(1, 1, 1, 1);
-		Ref<Texture2D> custom_slot_right;
+		Ref<Texture2D> custom_port_icon_right;
 
 		bool draw_stylebox = true;
 	};
@@ -65,18 +66,21 @@ private:
 		int final_size;
 	};
 
-	String title;
-	Ref<TextLine> title_buf;
+	HBoxContainer *titlebar_hbox;
+	Label *title_label;
 
-	Vector<PortCache> input_port_cache;
-	Vector<PortCache> output_port_cache;
+	String title;
+
+	Vector<PortCache> left_port_cache;
+	Vector<PortCache> right_port_cache;
 
 	HashMap<int, Slot> slot_table;
+
+	Vector<int> slot_y_cache;
 
 	bool port_pos_dirty = true;
 
 	void _port_pos_update();
-	void _shape_title();
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
@@ -93,11 +97,7 @@ public:
 	void set_title(const String &p_title);
 	String get_title() const;
 
-	void set_text_direction(TextDirection p_text_direction);
-	TextDirection get_text_direction() const;
-
-	void set_language(const String &p_language);
-	String get_language() const;
+	HBoxContainer *get_titlebar_hbox();
 
 	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>(), bool p_draw_stylebox = true);
 	void clear_slot(int p_idx);

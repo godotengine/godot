@@ -33,12 +33,20 @@
 
 #include "scene/gui/graph_control.h"
 
+class HBoxContainer;
+
 class GraphFrame : public GraphControl {
 	GDCLASS(GraphFrame, GraphControl);
 
 private:
 	String title;
-	Ref<TextLine> title_buf;
+
+	HBoxContainer *titlebar_hbox;
+	Label *title_label;
+
+	bool title_centered = true;
+
+	int drag_margin = 12;
 
 	bool tint_color_enabled = false;
 	Color tint_color = Color(0.4, 0.8, 0.4);
@@ -49,17 +57,17 @@ protected:
 
 	virtual void _resort() override;
 
-	void _shape_title();
-
 public:
 	void set_title(const String &p_title);
 	String get_title() const;
 
-	void set_text_direction(TextDirection p_text_direction);
-	TextDirection get_text_direction() const;
+	void set_title_centered(bool p_centered);
+	bool is_title_centered() const;
 
-	void set_language(const String &p_language);
-	String get_language() const;
+	HBoxContainer *get_titlebar_hbox();
+
+	void set_drag_margin(int p_margin);
+	int get_drag_margin() const;
 
 	void set_tint_color_enabled(bool p_enable);
 	bool is_tint_color_enabled() const;
@@ -67,7 +75,7 @@ public:
 	void set_tint_color(const Color &p_tint_color);
 	Color get_tint_color() const;
 
-	bool has_point(const Point2 &p_point) const override;
+	virtual bool has_point(const Point2 &p_point) const override;
 	virtual Size2 get_minimum_size() const override;
 
 	GraphFrame();

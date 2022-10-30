@@ -31,6 +31,8 @@
 #include "graph_frame.h"
 
 #include "core/string/translation.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/label.h"
 
 struct _MinSizeCache {
 	int min_size;
@@ -41,66 +43,69 @@ struct _MinSizeCache {
 void GraphFrame::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			Ref<StyleBox> sb_frame = get_theme_stylebox(selected ? SNAME("selected_frame") : SNAME("frame"));
-			Ref<StyleBoxFlat> sb_frame_flat = sb_frame;
-			Ref<StyleBoxTexture> sb_frame_texture = sb_frame;
+			// Used for layout calculations.
+			Ref<StyleBox> sb_frame = get_theme_stylebox(SNAME("frame"));
+			Ref<StyleBox> sb_titlebar = get_theme_stylebox(SNAME("titlebar"));
 
+			// Used for drawing.
+			Ref<StyleBox> sb_to_draw_frame = get_theme_stylebox(selected ? SNAME("frame_selected") : SNAME("frame"));
+			Ref<StyleBox> sb_to_draw_titlebar = get_theme_stylebox(selected ? SNAME("titlebar_selected") : SNAME("titlebar"));
+			Ref<StyleBoxFlat> sb_frame_flat = sb_to_draw_frame;
+			Ref<StyleBoxTexture> sb_frame_texture = sb_to_draw_frame;
+
+			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_size() + sb_titlebar->get_minimum_size());
+			Size2 body_size = get_size();
+			body_size.y -= titlebar_rect.size.height;
+			Rect2 body_rect(0, titlebar_rect.size.height, body_size.width, body_size.height);
+
+			// Draw body stylebox.
 			//TODO: [Optimization] These StyleBoxes could be cached eventually.
 			if (tint_color_enabled) {
 				if (sb_frame_flat.is_valid()) {
 					sb_frame_flat = sb_frame_flat->duplicate();
 					sb_frame_flat->set_bg_color(tint_color);
-					sb_frame_flat->set_border_color(tint_color.darkened(0.2));
-					draw_style_box(sb_frame_flat, Rect2(Point2(), get_size()));
+					sb_frame_flat->set_border_color(tint_color.lightened(0.3));
+					draw_style_box(sb_frame_flat, body_rect);
 				} else if (sb_frame_texture.is_valid()) {
 					sb_frame_texture = sb_frame_flat->duplicate();
 					sb_frame_texture->set_modulate(tint_color);
-					draw_style_box(sb_frame_texture, Rect2(Point2(), get_size()));
+					draw_style_box(sb_frame_texture, body_rect);
 				}
 			} else {
-				draw_style_box(sb_frame_flat, Rect2(Point2(), get_size()));
+				draw_style_box(sb_frame_flat, body_rect);
 			}
+
+			// Draw title bar stylebox above.
+			draw_style_box(sb_to_draw_titlebar, titlebar_rect);
 
 			Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
 			Color resizer_color = get_theme_color(SNAME("resizer_color"));
-			int title_offset = get_theme_constant(SNAME("title_v_offset"));
-			int title_h_offset = get_theme_constant(SNAME("title_h_offset"));
-			Color title_color = get_theme_color(SNAME("title_color"));
-
-			title_buf->draw(get_canvas_item(), Point2(sb_frame->get_margin(SIDE_LEFT) + title_h_offset, -title_buf->get_size().y + title_offset), title_color);
-
 			if (resizable) {
 				draw_texture(resizer, get_size() - resizer->get_size(), resizer_color);
 			}
-		} break;
-
-		case NOTIFICATION_SORT_CHILDREN: {
-			_resort();
-		} break;
-
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED:
-		case NOTIFICATION_THEME_CHANGED: {
-			_shape_title();
-
-			update_minimum_size();
-			queue_redraw();
 		} break;
 	}
 }
 
 void GraphFrame::_resort() {
-	Size2 size = get_size();
 	Ref<StyleBox> sb_frame = get_theme_stylebox(SNAME("frame"));
+	Ref<StyleBox> sb_titlebar = get_theme_stylebox(SNAME("titlebar"));
 
-	Point2 ofs;
-	if (sb_frame.is_valid()) {
-		size -= sb_frame->get_minimum_size();
-		ofs += sb_frame->get_offset();
-	}
+	// Resort titlebar first.
+	Size2 titlebar_size = Size2(get_size().width, titlebar_hbox->get_size().height);
+	titlebar_size -= sb_titlebar->get_minimum_size();
+	Rect2 titlebar_rect = Rect2(sb_titlebar->get_offset(), titlebar_size);
 
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+	fit_child_in_rect(titlebar_hbox, titlebar_rect);
+
+	// After resort the children of the titlebar container may have changed their height (e.g. Label autowrap).
+	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
+
+	Size2 size = get_size() - sb_frame->get_minimum_size() - Size2(0, titlebar_min_size.height + sb_titlebar->get_minimum_size().height);
+	Point2 offset = Point2(sb_frame->get_margin(SIDE_LEFT), sb_frame->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height);
+
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
 		if (!c || !c->is_visible_in_tree()) {
 			continue;
 		}
@@ -108,32 +113,21 @@ void GraphFrame::_resort() {
 			continue;
 		}
 
-		fit_child_in_rect(c, Rect2(ofs, size));
+		fit_child_in_rect(c, Rect2(offset, size));
 	}
-}
-
-void GraphFrame::_shape_title() {
-	Ref<Font> font = get_theme_font(SNAME("title_font"));
-	int font_size = get_theme_font_size(SNAME("title_font_size"));
-
-	title_buf->clear();
-	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
-		title_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
-	} else {
-		title_buf->set_direction((TextServer::Direction)text_direction);
-	}
-	title_buf->add_string(title, font, font_size, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void GraphFrame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &GraphFrame::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &GraphFrame::get_title);
 
-	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &GraphFrame::set_text_direction);
-	ClassDB::bind_method(D_METHOD("get_text_direction"), &GraphFrame::get_text_direction);
+	ClassDB::bind_method(D_METHOD("get_titlebar_hbox"), &GraphFrame::get_titlebar_hbox);
 
-	ClassDB::bind_method(D_METHOD("set_language", "language"), &GraphFrame::set_language);
-	ClassDB::bind_method(D_METHOD("get_language"), &GraphFrame::get_language);
+	ClassDB::bind_method(D_METHOD("set_title_centered", "centered"), &GraphFrame::set_title_centered);
+	ClassDB::bind_method(D_METHOD("is_title_centered"), &GraphFrame::is_title_centered);
+
+	ClassDB::bind_method(D_METHOD("set_drag_margin", "drag_margin"), &GraphFrame::set_drag_margin);
+	ClassDB::bind_method(D_METHOD("get_drag_margin"), &GraphFrame::get_drag_margin);
 
 	ClassDB::bind_method(D_METHOD("set_tint_color_enabled", "p_enable"), &GraphFrame::set_tint_color_enabled);
 	ClassDB::bind_method(D_METHOD("is_tint_color_enabled"), &GraphFrame::is_tint_color_enabled);
@@ -142,14 +136,11 @@ void GraphFrame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tint_color"), &GraphFrame::get_tint_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "title_centered"), "set_title_centered", "is_title_centered");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "drag_margin", PROPERTY_HINT_RANGE, "0,128,1"), "set_drag_margin", "get_drag_margin");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tint_color_enabled"), "set_tint_color_enabled", "is_tint_color_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
-
-	ADD_GROUP("BiDi", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
-	ADD_GROUP("", "");
 }
 
 void GraphFrame::set_title(const String &p_title) {
@@ -157,9 +148,9 @@ void GraphFrame::set_title(const String &p_title) {
 		return;
 	}
 	title = p_title;
-	_shape_title();
-
-	queue_redraw();
+	if (title_label) {
+		title_label->set_text(title);
+	}
 	update_minimum_size();
 }
 
@@ -167,29 +158,30 @@ String GraphFrame::get_title() const {
 	return title;
 }
 
-void GraphFrame::set_text_direction(Control::TextDirection p_text_direction) {
-	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
-	if (text_direction != p_text_direction) {
-		text_direction = p_text_direction;
-		_shape_title();
-		queue_redraw();
+void GraphFrame::set_title_centered(bool p_centered) {
+	if (title_centered == p_centered) {
+		return;
+	}
+	title_centered = p_centered;
+	if (title_label != nullptr) {
+		title_label->set_horizontal_alignment(title_centered ? HORIZONTAL_ALIGNMENT_CENTER : HORIZONTAL_ALIGNMENT_LEFT);
 	}
 }
 
-Control::TextDirection GraphFrame::get_text_direction() const {
-	return text_direction;
+bool GraphFrame::is_title_centered() const {
+	return title_centered;
 }
 
-void GraphFrame::set_language(const String &p_language) {
-	if (language != p_language) {
-		language = p_language;
-		_shape_title();
-		queue_redraw();
-	}
+HBoxContainer *GraphFrame::get_titlebar_hbox() {
+	return titlebar_hbox;
 }
 
-String GraphFrame::get_language() const {
-	return language;
+void GraphFrame::set_drag_margin(int p_margin) {
+	drag_margin = p_margin;
+}
+
+int GraphFrame::get_drag_margin() const {
+	return drag_margin;
 }
 
 void GraphFrame::set_tint_color_enabled(bool p_enable) {
@@ -212,13 +204,24 @@ Color GraphFrame::get_tint_color() const {
 
 bool GraphFrame::has_point(const Point2 &p_point) const {
 	Ref<StyleBox> frame = get_theme_stylebox(SNAME("frame"));
+	Ref<StyleBox> titlebar = get_theme_stylebox(SNAME("titlebar"));
 	Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
 
 	if (Rect2(get_size() - resizer->get_size(), resizer->get_size()).has_point(p_point)) {
 		return true;
 	}
 
-	if (Rect2(0, 0, get_size().width, frame->get_margin(SIDE_TOP)).has_point(p_point)) {
+	// For grabbing on the titlebar.
+	int titlebar_height = titlebar_hbox->get_size().height + titlebar->get_minimum_size().height;
+	if (Rect2(0, 0, get_size().width, titlebar_height).has_point(p_point)) {
+		return true;
+	}
+
+	// Allow grabbing on all sides of the frame.
+	Rect2 frame_rect = Rect2(0, 0, get_size().width, get_size().height);
+	Rect2 no_drag_rect = frame_rect.grow(-drag_margin);
+
+	if (frame_rect.has_point(p_point) && !no_drag_rect.has_point(p_point)) {
 		return true;
 	}
 
@@ -227,11 +230,12 @@ bool GraphFrame::has_point(const Point2 &p_point) const {
 
 Size2 GraphFrame::get_minimum_size() const {
 	Ref<StyleBox> sb_frame = get_theme_stylebox(SNAME("frame"));
+	Ref<StyleBox> sb_titlebar = get_theme_stylebox(SNAME("titlebar"));
 
-	Size2 minsize;
+	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
 
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
 		if (!c) {
 			continue;
 		}
@@ -252,5 +256,15 @@ Size2 GraphFrame::get_minimum_size() const {
 }
 
 GraphFrame::GraphFrame() {
-	title_buf.instantiate();
+	titlebar_hbox = memnew(HBoxContainer);
+	titlebar_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(titlebar_hbox, false, INTERNAL_MODE_FRONT);
+
+	title_label = memnew(Label);
+	title_label->set_theme_type_variation("GraphFrameTitleLabel");
+	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	title_label->set_horizontal_alignment(title_centered ? HORIZONTAL_ALIGNMENT_CENTER : HORIZONTAL_ALIGNMENT_LEFT);
+	titlebar_hbox->add_child(title_label);
+
+	set_mouse_filter(MOUSE_FILTER_STOP);
 }

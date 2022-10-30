@@ -166,9 +166,7 @@ private:
 	bool arrange_nodes_button_hidden = false;
 
 	bool connecting = false;
-
-	//TODO: @Geometror Rename to connection?
-	StringName connecting_from;
+	String connecting_from;
 	bool connecting_out = false;
 	int connecting_index = 0;
 	int connecting_type = 0;
@@ -225,8 +223,6 @@ private:
 	int background_nodes_separator_idx = 0;
 
 	HashMap<StringName, Vector<GraphControl *>> frame_enclosed_nodes;
-
-	Vector<Rect2> debug_rects;
 
 	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);

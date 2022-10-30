@@ -38,6 +38,7 @@
 #include "scene/resources/visual_shader.h"
 
 class CodeEdit;
+class ColorPicker;
 class CurveEditor;
 class GraphEdit;
 class GraphControl;

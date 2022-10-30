@@ -121,6 +121,13 @@
 				Returns the right (output) type of the slot [param slot_idx].
 			</description>
 		</method>
+		<method name="get_titlebar_hbox">
+			<return type="HBoxContainer" />
+			<description>
+				Returns the [HBoxContainer] used for the title bar, only containing a [Label] for displaying the title by default.
+				This can be used to add custom controls to the title bar such as option or close buttons.
+			</description>
+		</method>
 		<method name="is_slot_draw_stylebox" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="slot_idx" type="int" />
@@ -222,13 +229,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
-		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
-		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
-			Base text writing direction.
-		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 			The text displayed in the GraphNode's title bar.
 		</member>
@@ -245,29 +246,11 @@
 		<theme_item name="resizer_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The color modulation applied to the resizer icon.
 		</theme_item>
-		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
-			Color of the title text.
-		</theme_item>
-		<theme_item name="close_h_offset" data_type="constant" type="int" default="-12">
-			The horizontal offset of the close button.
-		</theme_item>
-		<theme_item name="close_v_offset" data_type="constant" type="int" default="22">
-			The vertical offset of the close button.
-		</theme_item>
-		<theme_item name="port_offset" data_type="constant" type="int" default="0">
+		<theme_item name="port_h_offset" data_type="constant" type="int" default="0">
 			Horizontal offset for the ports.
 		</theme_item>
 		<theme_item name="separation" data_type="constant" type="int" default="2">
 			The vertical distance between ports.
-		</theme_item>
-		<theme_item name="title_h_offset" data_type="constant" type="int" default="0">
-			Horizontal offset of the title text.
-		</theme_item>
-		<theme_item name="title_v_offset" data_type="constant" type="int" default="26">
-			Vertical offset of the title text.
-		</theme_item>
-		<theme_item name="title_font" data_type="font" type="Font">
-			Font used for the title text.
 		</theme_item>
 		<theme_item name="port" data_type="icon" type="Texture2D">
 			The icon used for representing ports.
@@ -275,20 +258,20 @@
 		<theme_item name="resizer" data_type="icon" type="Texture2D">
 			The icon used for resizer, visible when the node is resizable.
 		</theme_item>
-		<theme_item name="breakpoint" data_type="style" type="StyleBox">
-			The background used when [member overlay] is set to [constant OVERLAY_BREAKPOINT].
-		</theme_item>
 		<theme_item name="frame" data_type="style" type="StyleBox">
-			The [StyleBox] used for the frame.
+			The default background for the slot area of the [GraphNode].
 		</theme_item>
-		<theme_item name="position" data_type="style" type="StyleBox">
-			The background used when [member overlay] is set to [constant OVERLAY_POSITION].
-		</theme_item>
-		<theme_item name="selected_frame" data_type="style" type="StyleBox">
-			The [StyleBox] used when the [GraphNode] is selected.
+		<theme_item name="frame_selected" data_type="style" type="StyleBox">
+			The [StyleBox] used for the slot area when selected.
 		</theme_item>
 		<theme_item name="slot" data_type="style" type="StyleBox">
 			The [StyleBox] used for each slot of the [GraphNode].
+		</theme_item>
+		<theme_item name="titlebar" data_type="style" type="StyleBox">
+			The [StyleBox] used for the title bar of the [GraphNode].
+		</theme_item>
+		<theme_item name="titlebar_selected" data_type="style" type="StyleBox">
+			The [StyleBox] used for the title bar of the [GraphNode] when it is selected.
 		</theme_item>
 	</theme_items>
 </class>
