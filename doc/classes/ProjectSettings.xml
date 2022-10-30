@@ -565,6 +565,9 @@
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
 			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
 		</member>
+		<member name="display/window/ios/allow_high_refresh_rate" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], iOS devices that support high refresh rate/"ProMotion" will be allowed to render at up to 120 frames per second.
+		</member>
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
 		</member>
