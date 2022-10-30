@@ -631,7 +631,7 @@
 			Connects a signal in deferred mode. This way, signal emissions are stored in a queue, then set on idle time.
 		</constant>
 		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
-			Persisting connections are saved when the object is serialized to file.
+			Persisting connections are saved when the object is serialized to file or duplicated via [method Node.duplicate].
 		</constant>
 		<constant name="CONNECT_ONE_SHOT" value="4" enum="ConnectFlags">
 			One-shot connections disconnect themselves after emission.

@@ -983,7 +983,7 @@
 			Never process. Completely disables processing, ignoring the [SceneTree]'s paused property. This is the inverse of [constant PROCESS_MODE_ALWAYS].
 		</constant>
 		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
-			Duplicate the node's signals.
+			Duplicate the node's outgoing signals that have been set with the [constant Object.CONNECT_PERSIST] flag.
 		</constant>
 		<constant name="DUPLICATE_GROUPS" value="2" enum="DuplicateFlags">
 			Duplicate the node's groups.
