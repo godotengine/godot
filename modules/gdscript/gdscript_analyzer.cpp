@@ -985,21 +985,26 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 
 					if (getter_function == nullptr) {
 						push_error(vformat(R"(Getter "%s" not found.)", member.variable->getter_pointer->name), member.variable);
-
-					} else if (getter_function->parameters.size() != 0 || getter_function->datatype.has_no_type()) {
-						push_error(vformat(R"(Function "%s" cannot be used as getter because of its signature.)", getter_function->identifier->name), member.variable);
-
-					} else if (!is_type_compatible(member.variable->datatype, getter_function->datatype, true)) {
-						push_error(vformat(R"(Function with return type "%s" cannot be used as getter for a property of type "%s".)", getter_function->datatype.to_string(), member.variable->datatype.to_string()), member.variable);
-
 					} else {
-						has_valid_getter = true;
-
-#ifdef DEBUG_ENABLED
-						if (member.variable->datatype.builtin_type == Variant::INT && getter_function->datatype.builtin_type == Variant::FLOAT) {
-							parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
+						GDScriptParser::DataType return_datatype = getter_function->datatype;
+						if (getter_function->return_type != nullptr) {
+							return_datatype = getter_function->return_type->datatype;
+							return_datatype.is_meta_type = false;
 						}
+
+						if (getter_function->parameters.size() != 0 || return_datatype.has_no_type()) {
+							push_error(vformat(R"(Function "%s" cannot be used as getter because of its signature.)", getter_function->identifier->name), member.variable);
+						} else if (!is_type_compatible(member.variable->datatype, return_datatype, true)) {
+							push_error(vformat(R"(Function with return type "%s" cannot be used as getter for a property of type "%s".)", return_datatype.to_string(), member.variable->datatype.to_string()), member.variable);
+
+						} else {
+							has_valid_getter = true;
+#ifdef DEBUG_ENABLED
+							if (member.variable->datatype.builtin_type == Variant::INT && return_datatype.builtin_type == Variant::FLOAT) {
+								parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
+							}
 #endif
+						}
 					}
 				}
 
