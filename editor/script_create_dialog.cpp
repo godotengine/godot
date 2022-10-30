@@ -482,6 +482,7 @@ void ScriptCreateDialog::_built_in_pressed() {
 
 void ScriptCreateDialog::_use_template_pressed() {
 	is_using_templates = use_templates->is_pressed();
+	EditorSettings::get_singleton()->set_project_metadata("script_setup", "use_templates", is_using_templates);
 	_update_dialog();
 }
 
@@ -1032,9 +1033,12 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(class_name);
 
 	/* Templates */
+
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	HBoxContainer *template_hb = memnew(HBoxContainer);
 	template_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	is_using_templates = EditorSettings::get_singleton()->get_project_metadata("script_setup", "use_templates", true);
 
 	use_templates = memnew(CheckBox);
 	use_templates->set_pressed(is_using_templates);
