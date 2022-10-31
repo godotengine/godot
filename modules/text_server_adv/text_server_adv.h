@@ -450,6 +450,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 		HashMap<int, bool> jstops;
 		HashMap<int, bool> breaks;
+		int break_inserts = 0;
 		bool break_ops_valid = false;
 		bool js_ops_valid = false;
 
