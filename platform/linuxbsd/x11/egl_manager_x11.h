@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GL_MANAGER_X11_H
-#define GL_MANAGER_X11_H
+#ifndef EGL_MANAGER_X11_H
+#define EGL_MANAGER_X11_H
 
 #ifdef X11_ENABLED
 
@@ -48,4 +48,4 @@ private:
 #endif // GLES3_ENABLED
 #endif // X11_ENABLED
 
-#endif // GL_MANAGER_X11_H
+#endif // EGL_MANAGER_X11_H
