@@ -4392,6 +4392,27 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 	return nullptr;
 }
 
+bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
+	ERR_FAIL_COND_V(!p_object, false);
+
+	Ref<Script> scr = p_object->get_script();
+	if (scr.is_null() && Object::cast_to<Script>(p_object)) {
+		scr = p_object;
+	}
+
+	if (scr.is_valid()) {
+		Ref<Script> base_script = scr;
+		while (base_script.is_valid()) {
+			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
+			if (name == p_class) {
+				return true;
+			}
+			base_script = base_script->get_base_script();
+		}
+	}
+	return false;
+}
+
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 	if (singleton->cmdline_export_mode) {
 		print_line(p_task + ": begin: " + p_label + " steps: " + itos(p_steps));

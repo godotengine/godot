@@ -827,6 +827,8 @@ public:
 	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
 	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
+	bool is_object_of_custom_type(const Object *p_object, const StringName &p_class);
+
 	void show_accept(const String &p_text, const String &p_title);
 	void show_save_accept(const String &p_text, const String &p_title);
 	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
