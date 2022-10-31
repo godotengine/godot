@@ -2882,6 +2882,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 
+			if (!windows[receiving_window_id].window_has_focus) {
+				// In case of unfocused Popups, adjust event position.
+				Point2i pos = mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id);
+				mm->set_position(pos);
+				mm->set_global_position(pos);
+			}
 			Input::get_singleton()->parse_input_event(mm);
 
 		} break;
