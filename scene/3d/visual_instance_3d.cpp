@@ -34,10 +34,8 @@
 
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;
-	if (GDVIRTUAL_CALL(_get_aabb, ret)) {
-		return ret;
-	}
-	return AABB();
+	GDVIRTUAL_CALL(_get_aabb, ret);
+	return ret;
 }
 
 void VisualInstance3D::_update_visibility() {

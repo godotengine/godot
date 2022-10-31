@@ -59,19 +59,15 @@
 /*** SYNTAX HIGHLIGHTER ****/
 
 String EditorSyntaxHighlighter::_get_name() const {
-	String ret;
-	if (GDVIRTUAL_CALL(_get_name, ret)) {
-		return ret;
-	}
-	return "Unnamed";
+	String ret = "Unnamed";
+	GDVIRTUAL_CALL(_get_name, ret);
+	return ret;
 }
 
 PackedStringArray EditorSyntaxHighlighter::_get_supported_languages() const {
 	PackedStringArray ret;
-	if (GDVIRTUAL_CALL(_get_supported_languages, ret)) {
-		return ret;
-	}
-	return PackedStringArray();
+	GDVIRTUAL_CALL(_get_supported_languages, ret);
+	return ret;
 }
 
 Ref<EditorSyntaxHighlighter> EditorSyntaxHighlighter::_create() const {

@@ -51,45 +51,35 @@ Error GLTFDocumentExtension::import_post(Ref<GLTFState> p_state, Node *p_root) {
 	ERR_FAIL_NULL_V(p_root, ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
 	int err = OK;
-	if (GDVIRTUAL_CALL(_import_post, p_state, p_root, err)) {
-		return Error(err);
-	}
-	return OK;
+	GDVIRTUAL_CALL(_import_post, p_state, p_root, err);
+	return Error(err);
 }
 
 Error GLTFDocumentExtension::import_preflight(Ref<GLTFState> p_state) {
 	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
 	int err = OK;
-	if (GDVIRTUAL_CALL(_import_preflight, p_state, err)) {
-		return Error(err);
-	}
-	return OK;
+	GDVIRTUAL_CALL(_import_preflight, p_state, err);
+	return Error(err);
 }
 
 Error GLTFDocumentExtension::import_post_parse(Ref<GLTFState> p_state) {
 	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
 	int err = OK;
-	if (GDVIRTUAL_CALL(_import_post_parse, p_state, err)) {
-		return Error(err);
-	}
-	return OK;
+	GDVIRTUAL_CALL(_import_post_parse, p_state, err);
+	return Error(err);
 }
 
 Error GLTFDocumentExtension::export_post(Ref<GLTFState> p_state) {
 	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
 	int err = OK;
-	if (GDVIRTUAL_CALL(_export_post, p_state, err)) {
-		return Error(err);
-	}
-	return OK;
+	GDVIRTUAL_CALL(_export_post, p_state, err);
+	return Error(err);
 }
 Error GLTFDocumentExtension::export_preflight(Node *p_root) {
 	ERR_FAIL_NULL_V(p_root, ERR_INVALID_PARAMETER);
 	int err = OK;
-	if (GDVIRTUAL_CALL(_export_preflight, p_root, err)) {
-		return Error(err);
-	}
-	return OK;
+	GDVIRTUAL_CALL(_export_preflight, p_root, err);
+	return Error(err);
 }
 
 Error GLTFDocumentExtension::import_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_dict, Node *p_node) {
@@ -97,10 +87,8 @@ Error GLTFDocumentExtension::import_node(Ref<GLTFState> p_state, Ref<GLTFNode> p
 	ERR_FAIL_NULL_V(p_gltf_node, ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 	int err = OK;
-	if (GDVIRTUAL_CALL(_import_node, p_state, p_gltf_node, r_dict, p_node, err)) {
-		return Error(err);
-	}
-	return OK;
+	GDVIRTUAL_CALL(_import_node, p_state, p_gltf_node, r_dict, p_node, err);
+	return Error(err);
 }
 
 Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_dict, Node *p_node) {
@@ -108,8 +96,6 @@ Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p
 	ERR_FAIL_NULL_V(p_gltf_node, ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 	int err = OK;
-	if (GDVIRTUAL_CALL(_export_node, p_state, p_gltf_node, r_dict, p_node, err)) {
-		return Error(err);
-	}
-	return OK;
+	GDVIRTUAL_CALL(_export_node, p_state, p_gltf_node, r_dict, p_node, err);
+	return Error(err);
 }

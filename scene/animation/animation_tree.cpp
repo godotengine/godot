@@ -50,10 +50,8 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
 	Variant ret;
-	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
-		return ret;
-	}
-	return Variant();
+	GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret);
+	return ret;
 }
 
 void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_value) {
@@ -312,12 +310,9 @@ String AnimationNode::get_input_name(int p_input) {
 }
 
 String AnimationNode::get_caption() const {
-	String ret;
-	if (GDVIRTUAL_CALL(_get_caption, ret)) {
-		return ret;
-	}
-
-	return "Node";
+	String ret = "Node";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 void AnimationNode::add_input(const String &p_name) {
@@ -344,12 +339,9 @@ void AnimationNode::remove_input(int p_index) {
 }
 
 double AnimationNode::process(double p_time, bool p_seek, bool p_seek_root) {
-	double ret;
-	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_seek_root, ret)) {
-		return ret;
-	}
-
-	return 0;
+	double ret = 0;
+	GDVIRTUAL_CALL(_process, p_time, p_seek, p_seek_root, ret);
+	return ret;
 }
 
 void AnimationNode::set_filter_path(const NodePath &p_path, bool p_enable) {
@@ -373,12 +365,9 @@ bool AnimationNode::is_path_filtered(const NodePath &p_path) const {
 }
 
 bool AnimationNode::has_filter() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_has_filter, ret)) {
-		return ret;
-	}
-
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_has_filter, ret);
+	return ret;
 }
 
 Array AnimationNode::_get_filters() const {
@@ -407,10 +396,8 @@ void AnimationNode::_validate_property(PropertyInfo &p_property) const {
 
 Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 	Ref<AnimationNode> ret;
-	if (GDVIRTUAL_CALL(_get_child_by_name, p_name, ret)) {
-		return ret;
-	}
-	return Ref<AnimationNode>();
+	GDVIRTUAL_CALL(_get_child_by_name, p_name, ret);
+	return ret;
 }
 
 void AnimationNode::_bind_methods() {
