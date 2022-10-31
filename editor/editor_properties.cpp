@@ -32,6 +32,7 @@
 
 #include "editor/editor_resource_preview.h"
 #include "editor/filesystem_dock.h"
+#include "editor/project_settings_editor.h"
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
 #include "editor_scale.h"
@@ -1015,7 +1016,6 @@ void EditorPropertyLayers::update_property() {
 void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	layer_type = p_layer_type;
 
-	String basename;
 	int layer_group_size = 0;
 	int layer_count = 0;
 	switch (p_layer_type) {
@@ -1059,13 +1059,8 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	Vector<String> names;
 	Vector<String> tooltips;
 	for (int i = 0; i < layer_count; i++) {
-		String name;
-
-		if (ProjectSettings::get_singleton()->has_setting(basename + "/layer_" + itos(i + 1))) {
-			name = ProjectSettings::get_singleton()->get(basename + "/layer_" + itos(i + 1));
-		}
-
-		if (name == "") {
+		String name = _get_layer_name(i);
+		if (name.empty()) {
 			name = TTR("Layer") + " " + itos(i + 1);
 		}
 
@@ -1081,17 +1076,24 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 
 void EditorPropertyLayers::_button_pressed() {
 	int layer_count = grid->layer_count;
-	int layer_group_size = grid->layer_group_size;
 
 	layers->clear();
 	for (int i = 0; i < layer_count; i++) {
-		if ((i != 0) && ((i % layer_group_size) == 0)) {
-			layers->add_separator();
+		const String name = _get_layer_name(i);
+		if (name.empty()) {
+			continue;
 		}
-		layers->add_check_item(grid->names[i], i);
+		layers->add_check_item(name, i);
 		int idx = layers->get_item_index(i);
 		layers->set_item_checked(idx, grid->value & (1 << i));
 	}
+
+	if (layers->get_item_count() == 0) {
+		layers->add_item(TTR("No Named Layers"));
+		layers->set_item_disabled(0, true);
+	}
+	layers->add_separator();
+	layers->add_icon_item(get_icon("Edit", "EditorIcons"), TTR("Edit Layer Names"), grid->layer_count);
 
 	Rect2 gp = button->get_global_rect();
 	layers->set_as_minsize();
@@ -1101,18 +1103,31 @@ void EditorPropertyLayers::_button_pressed() {
 }
 
 void EditorPropertyLayers::_menu_pressed(int p_menu) {
-	if (grid->value & (1 << p_menu)) {
-		grid->value &= ~(1 << p_menu);
+	if (p_menu == grid->layer_count) {
+		ProjectSettingsEditor::get_singleton()->popup_project_settings();
+		ProjectSettingsEditor::get_singleton()->set_general_page(basename);
 	} else {
-		grid->value |= (1 << p_menu);
+		if (grid->value & (1 << p_menu)) {
+			grid->value &= ~(1 << p_menu);
+		} else {
+			grid->value |= (1 << p_menu);
+		}
+		grid->update();
+		layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
+		_grid_changed(grid->value);
 	}
-	grid->update();
-	layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
-	_grid_changed(grid->value);
 }
 
 void EditorPropertyLayers::_refresh_names() {
 	setup(layer_type);
+}
+
+String EditorPropertyLayers::_get_layer_name(int p_index) const {
+	const String property_name = basename + vformat("/layer_%d", p_index + 1);
+	if (ProjectSettings::get_singleton()->has_setting(property_name)) {
+		return ProjectSettings::get_singleton()->get(property_name);
+	}
+	return String();
 }
 
 void EditorPropertyLayers::_bind_methods() {

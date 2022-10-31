@@ -1555,6 +1555,11 @@ void ProjectSettingsEditor::set_plugins_page() {
 	tab_container->set_current_tab(plugin_settings->get_index());
 }
 
+void ProjectSettingsEditor::set_general_page(const String &p_category) {
+	tab_container->set_current_tab(general_editor->get_index());
+	globals_editor->set_current_section(p_category);
+}
+
 TabContainer *ProjectSettingsEditor::get_tabs() {
 	return tab_container;
 }
@@ -1651,15 +1656,15 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	add_child(tab_container);
 
-	VBoxContainer *props_base = memnew(VBoxContainer);
-	props_base->set_alignment(BoxContainer::ALIGN_BEGIN);
-	props_base->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	tab_container->add_child(props_base);
-	props_base->set_name(TTR("General"));
+	general_editor = memnew(VBoxContainer);
+	general_editor->set_alignment(BoxContainer::ALIGN_BEGIN);
+	general_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tab_container->add_child(general_editor);
+	general_editor->set_name(TTR("General"));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	props_base->add_child(hbc);
+	general_editor->add_child(hbc);
 
 	search_button = memnew(Button);
 	search_button->set_toggle_mode(true);
@@ -1707,7 +1712,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	search_bar->add_child(search_box);
 
 	globals_editor = memnew(SectionedInspector);
-	props_base->add_child(globals_editor);
+	general_editor->add_child(globals_editor);
 	globals_editor->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
@@ -1734,7 +1739,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	set_hide_on_ok(true);
 
 	restart_container = memnew(PanelContainer);
-	props_base->add_child(restart_container);
+	general_editor->add_child(restart_container);
 	HBoxContainer *restart_hb = memnew(HBoxContainer);
 	restart_container->add_child(restart_hb);
 	restart_icon = memnew(TextureRect);

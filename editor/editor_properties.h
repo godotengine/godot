@@ -269,10 +269,13 @@ private:
 	LayerType layer_type;
 	PopupMenu *layers;
 	Button *button;
+	String basename;
 
 	void _button_pressed();
 	void _menu_pressed(int p_menu);
 	void _refresh_names();
+
+	String _get_layer_name(int p_index) const;
 
 protected:
 	static void _bind_methods();
