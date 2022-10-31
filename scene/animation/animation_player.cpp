@@ -2066,7 +2066,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 	// Forcing the use of the original root because the scene where original player belongs may be not the active one
 	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(get_node(get_root()));
 	aux_player->seek(0.0f, true);
-	aux_player->queue_delete();
+	aux_player->queue_free();
 
 	if (p_user_initiated) {
 		Ref<AnimatedValuesBackup> new_values = aux_player->backup_animated_values();

@@ -1161,7 +1161,7 @@ void Viewport::_gui_cancel_tooltip() {
 		gui.tooltip_timer = Ref<SceneTreeTimer>();
 	}
 	if (gui.tooltip_popup) {
-		gui.tooltip_popup->queue_delete();
+		gui.tooltip_popup->queue_free();
 	}
 }
 

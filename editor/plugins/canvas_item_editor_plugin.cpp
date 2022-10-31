@@ -5543,7 +5543,7 @@ void CanvasItemEditorViewport::_remove_preview() {
 	if (preview_node->get_parent()) {
 		for (int i = preview_node->get_child_count() - 1; i >= 0; i--) {
 			Node *node = preview_node->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			preview_node->remove_child(node);
 		}
 		EditorNode::get_singleton()->get_scene_root()->remove_child(preview_node);
