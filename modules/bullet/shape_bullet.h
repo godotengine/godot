@@ -36,9 +36,18 @@
 #include "rid_bullet.h"
 #include "servers/physics_server.h"
 
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-copy-with-user-provided-copy"
+#endif
+
 #include <LinearMath/btAlignedObjectArray.h>
 #include <LinearMath/btScalar.h>
 #include <LinearMath/btVector3.h>
+
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic pop
+#endif
 
 /**
 	@author AndreaCatania
