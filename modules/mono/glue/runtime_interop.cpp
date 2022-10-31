@@ -447,15 +447,16 @@ void godotsharp_packed_string_array_add(PackedStringArray *r_dest, const String 
 	r_dest->append(*p_element);
 }
 
-void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, const Object *p_object, Callable *r_callable) {
+void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, void *p_trampoline,
+		const Object *p_object, Callable *r_callable) {
 	// TODO: Use pooling for ManagedCallable instances.
 	ObjectID objid = p_object ? p_object->get_instance_id() : ObjectID();
-	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle, objid));
+	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle, p_trampoline, objid));
 	memnew_placement(r_callable, Callable(managed_callable));
 }
 
 bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
-		GCHandleIntPtr *r_delegate_handle, Object **r_object, StringName *r_name) {
+		GCHandleIntPtr *r_delegate_handle, void **r_trampoline, Object **r_object, StringName *r_name) {
 	if (p_callable->is_custom()) {
 		CallableCustom *custom = p_callable->get_custom();
 		CallableCustom::CompareEqualFunc compare_equal_func = custom->get_compare_equal_func();
@@ -463,18 +464,21 @@ bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
 		if (compare_equal_func == ManagedCallable::compare_equal_func_ptr) {
 			ManagedCallable *managed_callable = static_cast<ManagedCallable *>(custom);
 			*r_delegate_handle = managed_callable->get_delegate();
+			*r_trampoline = managed_callable->get_trampoline();
 			*r_object = nullptr;
 			memnew_placement(r_name, StringName());
 			return true;
 		} else if (compare_equal_func == SignalAwaiterCallable::compare_equal_func_ptr) {
 			SignalAwaiterCallable *signal_awaiter_callable = static_cast<SignalAwaiterCallable *>(custom);
 			*r_delegate_handle = { nullptr };
+			*r_trampoline = nullptr;
 			*r_object = ObjectDB::get_instance(signal_awaiter_callable->get_object());
 			memnew_placement(r_name, StringName(signal_awaiter_callable->get_signal()));
 			return true;
 		} else if (compare_equal_func == EventSignalCallable::compare_equal_func_ptr) {
 			EventSignalCallable *event_signal_callable = static_cast<EventSignalCallable *>(custom);
 			*r_delegate_handle = { nullptr };
+			*r_trampoline = nullptr;
 			*r_object = ObjectDB::get_instance(event_signal_callable->get_object());
 			memnew_placement(r_name, StringName(event_signal_callable->get_signal()));
 			return true;
@@ -482,11 +486,13 @@ bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
 
 		// Some other CallableCustom. We only support ManagedCallable.
 		*r_delegate_handle = { nullptr };
+		*r_trampoline = nullptr;
 		*r_object = nullptr;
 		memnew_placement(r_name, StringName());
 		return false;
 	} else {
 		*r_delegate_handle = { nullptr };
+		*r_trampoline = nullptr;
 		*r_object = ObjectDB::get_instance(p_callable->get_object_id());
 		memnew_placement(r_name, StringName(p_callable->get_method()));
 		return true;

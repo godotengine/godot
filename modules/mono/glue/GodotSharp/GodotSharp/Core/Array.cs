@@ -489,25 +489,37 @@ namespace Godot.Collections
         ICollection<T>,
         IEnumerable<T>
     {
+        private static godot_variant ToVariantFunc(in Array<T> godotArray) =>
+            VariantUtils.CreateFromArray(godotArray);
+
+        private static Array<T> FromVariantFunc(in godot_variant variant) =>
+            VariantUtils.ConvertToArrayObject<T>(variant);
+
         // ReSharper disable StaticMemberInGenericType
         // Warning is about unique static fields being created for each generic type combination:
         // https://www.jetbrains.com/help/resharper/StaticMemberInGenericType.html
         // In our case this is exactly what we want.
 
-        private static unsafe delegate* managed<in T, godot_variant> _convertToVariantCallback;
-        private static unsafe delegate* managed<in godot_variant, T> _convertToManagedCallback;
+        private static readonly unsafe delegate* managed<in T, godot_variant> ConvertToVariantCallback;
+        private static readonly unsafe delegate* managed<in godot_variant, T> ConvertToManagedCallback;
 
         // ReSharper restore StaticMemberInGenericType
 
         static unsafe Array()
         {
-            _convertToVariantCallback = VariantConversionCallbacks.GetToVariantCallback<T>();
-            _convertToManagedCallback = VariantConversionCallbacks.GetToManagedCallback<T>();
+            VariantConversionCallbacks.GenericConversionCallbacks[typeof(Array<T>)] =
+            (
+                (IntPtr)(delegate* managed<in Array<T>, godot_variant>)&ToVariantFunc,
+                (IntPtr)(delegate* managed<in godot_variant, Array<T>>)&FromVariantFunc
+            );
+
+            ConvertToVariantCallback = VariantConversionCallbacks.GetToVariantCallback<T>();
+            ConvertToManagedCallback = VariantConversionCallbacks.GetToManagedCallback<T>();
         }
 
         private static unsafe void ValidateVariantConversionCallbacks()
         {
-            if (_convertToVariantCallback == null || _convertToManagedCallback == null)
+            if (ConvertToVariantCallback == null || ConvertToManagedCallback == null)
             {
                 throw new InvalidOperationException(
                     $"The array element type is not supported for conversion to Variant: '{typeof(T).FullName}'.");
@@ -653,7 +665,7 @@ namespace Godot.Collections
             get
             {
                 _underlyingArray.GetVariantBorrowElementAt(index, out godot_variant borrowElem);
-                return _convertToManagedCallback(borrowElem);
+                return ConvertToManagedCallback(borrowElem);
             }
             set
             {
@@ -663,7 +675,7 @@ namespace Godot.Collections
                 godot_variant* ptrw = NativeFuncs.godotsharp_array_ptrw(ref self);
                 godot_variant* itemPtr = &ptrw[index];
                 (*itemPtr).Dispose();
-                *itemPtr = _convertToVariantCallback(value);
+                *itemPtr = ConvertToVariantCallback(value);
             }
         }
 
@@ -675,7 +687,7 @@ namespace Godot.Collections
         /// <returns>The index of the item, or -1 if not found.</returns>
         public unsafe int IndexOf(T item)
         {
-            using var variantValue = _convertToVariantCallback(item);
+            using var variantValue = ConvertToVariantCallback(item);
             var self = (godot_array)_underlyingArray.NativeValue;
             return NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
         }
@@ -693,7 +705,7 @@ namespace Godot.Collections
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
-            using var variantValue = _convertToVariantCallback(item);
+            using var variantValue = ConvertToVariantCallback(item);
             var self = (godot_array)_underlyingArray.NativeValue;
             NativeFuncs.godotsharp_array_insert(ref self, index, variantValue);
         }
@@ -726,7 +738,7 @@ namespace Godot.Collections
         /// <returns>The new size after adding the item.</returns>
         public unsafe void Add(T item)
         {
-            using var variantValue = _convertToVariantCallback(item);
+            using var variantValue = ConvertToVariantCallback(item);
             var self = (godot_array)_underlyingArray.NativeValue;
             _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
         }

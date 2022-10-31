@@ -188,14 +188,14 @@ namespace Godot.SourceGenerators
             if (godotClassMethods.Length > 0)
             {
                 source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
-                source.Append("NativeVariantPtrArgs args, int argCount, out godot_variant ret)\n    {\n");
+                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
 
                 foreach (var method in godotClassMethods)
                 {
                     GenerateMethodInvoker(method, source);
                 }
 
-                source.Append("        return base.InvokeGodotClassMethod(method, args, argCount, out ret);\n");
+                source.Append("        return base.InvokeGodotClassMethod(method, args, out ret);\n");
 
                 source.Append("    }\n");
             }
@@ -364,7 +364,7 @@ namespace Godot.SourceGenerators
 
             source.Append("        if (method == MethodName.");
             source.Append(methodName);
-            source.Append(" && argCount == ");
+            source.Append(" && args.Count == ");
             source.Append(method.ParamTypes.Length);
             source.Append(") {\n");
 
