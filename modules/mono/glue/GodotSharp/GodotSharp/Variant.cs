@@ -766,6 +766,58 @@ public partial struct Variant : IDisposable
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSignalInfo(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(byte[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(int[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(long[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(float[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(double[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(string[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(Vector2[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(Vector3[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(Color[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(Godot.Object[] from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfGodotObject(from));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(StringName[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(NodePath[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(RID[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<byte> from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedByteArray(from));
 
@@ -800,10 +852,6 @@ public partial struct Variant : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<Color> from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedColorArray(from));
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Godot.Object[] from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfGodotObject(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<StringName> from) =>
