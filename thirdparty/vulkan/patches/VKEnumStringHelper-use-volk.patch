@@ -1,8 +1,8 @@
 diff --git a/thirdparty/vulkan/vk_enum_string_helper.h b/thirdparty/vulkan/vk_enum_string_helper.h
-index 4c36430341..004a861774 100644
+index 65b3322c07..e8c61aaf15 100644
 --- a/thirdparty/vulkan/vk_enum_string_helper.h
 +++ b/thirdparty/vulkan/vk_enum_string_helper.h
-@@ -36,7 +36,11 @@
+@@ -37,7 +37,11 @@
  #endif
  
  #include <string>

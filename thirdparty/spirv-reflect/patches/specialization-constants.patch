@@ -1,5 +1,5 @@
 diff --git a/thirdparty/spirv-reflect/spirv_reflect.c b/thirdparty/spirv-reflect/spirv_reflect.c
-index cdcf3ca663..c174ae1900 100644
+index 8c70ebecfb..c5ed7ab07d 100644
 --- a/thirdparty/spirv-reflect/spirv_reflect.c
 +++ b/thirdparty/spirv-reflect/spirv_reflect.c
 @@ -126,6 +126,9 @@ typedef struct SpvReflectPrvDecorations {
@@ -12,7 +12,7 @@ index cdcf3ca663..c174ae1900 100644
    SpvReflectPrvStringDecoration   semantic;
    uint32_t                        array_stride;
    uint32_t                        matrix_stride;
-@@ -639,6 +642,9 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
+@@ -641,6 +644,9 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
      p_parser->nodes[i].decorations.offset.value = (uint32_t)INVALID_VALUE;
      p_parser->nodes[i].decorations.uav_counter_buffer.value = (uint32_t)INVALID_VALUE;
      p_parser->nodes[i].decorations.built_in = (SpvBuiltIn)INVALID_VALUE;
@@ -22,7 +22,7 @@ index cdcf3ca663..c174ae1900 100644
    }
    // Mark source file id node
    p_parser->source_file_id = (uint32_t)INVALID_VALUE;
-@@ -829,10 +835,16 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
+@@ -837,10 +843,16 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
          CHECKED_READU32(p_parser, p_node->word_offset + 2, p_node->result_id);
        }
        break;
@@ -41,7 +41,7 @@ index cdcf3ca663..c174ae1900 100644
        case SpvOpSpecConstantComposite:
        case SpvOpSpecConstantOp: {
          CHECKED_READU32(p_parser, p_node->word_offset + 1, p_node->result_type_id);
-@@ -864,7 +876,7 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
+@@ -872,7 +884,7 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
          CHECKED_READU32(p_parser, p_node->word_offset + 3, p_access_chain->base_id);
          //
          // SPIRV_ACCESS_CHAIN_INDEX_OFFSET (4) is the number of words up until the first index:
@@ -50,7 +50,7 @@ index cdcf3ca663..c174ae1900 100644
          //
          p_access_chain->index_count = (node_word_count - SPIRV_ACCESS_CHAIN_INDEX_OFFSET);
          if (p_access_chain->index_count > 0) {
-@@ -1346,6 +1358,9 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
+@@ -1354,6 +1366,9 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
          skip = true;
        }
        break;
@@ -60,7 +60,7 @@ index cdcf3ca663..c174ae1900 100644
        case SpvDecorationRelaxedPrecision:
        case SpvDecorationBlock:
        case SpvDecorationBufferBlock:
-@@ -1495,7 +1510,14 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
+@@ -1503,7 +1518,14 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
          p_target_decorations->input_attachment_index.word_offset = word_offset;
        }
        break;
@@ -76,7 +76,7 @@ index cdcf3ca663..c174ae1900 100644
        case SpvReflectDecorationHlslCounterBufferGOOGLE: {
          uint32_t word_offset = p_node->word_offset + member_offset+ 3;
          CHECKED_READU32(p_parser, word_offset, p_target_decorations->uav_counter_buffer.value);
-@@ -1803,6 +1825,13 @@ static SpvReflectResult ParseType(
+@@ -1811,6 +1833,13 @@ static SpvReflectResult ParseType(
          p_type->type_flags |= SPV_REFLECT_TYPE_FLAG_EXTERNAL_ACCELERATION_STRUCTURE;
        }
        break;
@@ -90,7 +90,7 @@ index cdcf3ca663..c174ae1900 100644
      }
  
      if (result == SPV_REFLECT_RESULT_SUCCESS) {
-@@ -3332,6 +3361,69 @@ static SpvReflectResult ParseExecutionModes(
+@@ -3378,6 +3407,69 @@ static SpvReflectResult ParseExecutionModes(
    return SPV_REFLECT_RESULT_SUCCESS;
  }
  
@@ -160,7 +160,7 @@ index cdcf3ca663..c174ae1900 100644
  static SpvReflectResult ParsePushConstantBlocks(
    SpvReflectPrvParser*    p_parser, 
    SpvReflectShaderModule* p_module)
-@@ -3717,6 +3809,12 @@ static SpvReflectResult CreateShaderModule(
+@@ -3763,6 +3855,12 @@ static SpvReflectResult CreateShaderModule(
      result = ParsePushConstantBlocks(&parser, p_module);
      SPV_REFLECT_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS);
    }
@@ -173,9 +173,9 @@ index cdcf3ca663..c174ae1900 100644
    if (result == SPV_REFLECT_RESULT_SUCCESS) {
      result = ParseEntryPoints(&parser, p_module);
      SPV_REFLECT_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS);
-@@ -3875,6 +3973,9 @@ void spvReflectDestroyShaderModule(SpvReflectShaderModule* p_module)
-     SafeFree(p_entry->execution_modes);
+@@ -3926,6 +4024,9 @@ void spvReflectDestroyShaderModule(SpvReflectShaderModule* p_module)
    }
+   SafeFree(p_module->capabilities);
    SafeFree(p_module->entry_points);
 +// -- GODOT begin --
 +  SafeFree(p_module->specialization_constants);
@@ -183,7 +183,7 @@ index cdcf3ca663..c174ae1900 100644
  
    // Push constants
    for (size_t i = 0; i < p_module->push_constant_block_count; ++i) {
-@@ -4145,6 +4246,38 @@ SpvReflectResult spvReflectEnumerateEntryPointInterfaceVariables(
+@@ -4196,6 +4297,38 @@ SpvReflectResult spvReflectEnumerateEntryPointInterfaceVariables(
    return SPV_REFLECT_RESULT_SUCCESS;
  }
  
@@ -223,7 +223,7 @@ index cdcf3ca663..c174ae1900 100644
    const SpvReflectShaderModule* p_module,
    uint32_t*                     p_count,
 diff --git a/thirdparty/spirv-reflect/spirv_reflect.h b/thirdparty/spirv-reflect/spirv_reflect.h
-index 02b81613a1..02850f8811 100644
+index 690ae6c105..1ea99d8266 100644
 --- a/thirdparty/spirv-reflect/spirv_reflect.h
 +++ b/thirdparty/spirv-reflect/spirv_reflect.h
 @@ -329,6 +329,28 @@ typedef struct SpvReflectTypeDescription {
@@ -255,7 +255,7 @@ index 02b81613a1..02850f8811 100644
  
  /*! @struct SpvReflectInterfaceVariable
  
-@@ -483,6 +505,10 @@ typedef struct SpvReflectShaderModule {
+@@ -493,6 +515,10 @@ typedef struct SpvReflectShaderModule {
    SpvReflectInterfaceVariable*      interface_variables;                              // Uses value(s) from first entry point
    uint32_t                          push_constant_block_count;                        // Uses value(s) from first entry point
    SpvReflectBlockVariable*          push_constant_blocks;                             // Uses value(s) from first entry point
@@ -266,7 +266,7 @@ index 02b81613a1..02850f8811 100644
  
    struct Internal {
      SpvReflectModuleFlags           module_flags;
-@@ -755,6 +781,33 @@ SpvReflectResult spvReflectEnumerateInputVariables(
+@@ -765,6 +791,33 @@ SpvReflectResult spvReflectEnumerateInputVariables(
    SpvReflectInterfaceVariable** pp_variables
  );
  

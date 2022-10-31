@@ -142,6 +142,15 @@ struct TBuiltInResource {
     int maxTaskWorkGroupSizeY_NV;
     int maxTaskWorkGroupSizeZ_NV;
     int maxMeshViewCountNV;
+    int maxMeshOutputVerticesEXT;
+    int maxMeshOutputPrimitivesEXT;
+    int maxMeshWorkGroupSizeX_EXT;
+    int maxMeshWorkGroupSizeY_EXT;
+    int maxMeshWorkGroupSizeZ_EXT;
+    int maxTaskWorkGroupSizeX_EXT;
+    int maxTaskWorkGroupSizeY_EXT;
+    int maxTaskWorkGroupSizeZ_EXT;
+    int maxMeshViewCountEXT;
     int maxDualSourceDrawBuffersEXT;
 
     TLimits limits;

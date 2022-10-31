@@ -176,7 +176,7 @@ commits.
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: 11.8.0 (c34bb3b6c55f6ab084124ad964be95a699700d34, 2022)
+- Version: 11.12.0 / sdk-1.3.231.1 (5755de46b07e4374c05fb1081f65f7ae1f8cca81, 2022)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -195,7 +195,6 @@ Files extracted from upstream source:
   to `glslang/build_info.h`
 - `LICENSE.txt`
 - Unnecessary files like `CMakeLists.txt`, `*.m4` and `updateGrammar` removed.
-- Patch in `patches/unused_cleanup.diff` must be applied.
 
 
 ## graphite
@@ -606,11 +605,10 @@ Godot. See the patch in the `patches` folder for details.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: git (1ef99b09fa7ce5aee2c5cf70c61a4f7458d27e09, 2022)
+- Version: sdk-1.3.231.1 (b68b5a8a5d8ab5fce79e6596f3a731291046393a, 2022)
 - License: Apache 2.0
 
-Does not track Vulkan SDK releases closely, but try to package a commit newer
-than the matching glslang and Vulkan headers, just in case.
+Now tracks Vulkan SDK releases, so keep it in sync with volk / vulkan.
 
 Files extracted from upstream source:
 
@@ -620,7 +618,7 @@ Files extracted from upstream source:
 
 Some downstream changes have been made and are identified by
 `// -- GODOT begin --` and `// -- GODOT end --` comments.
-They can be reapplied using the patch included in the `patches`
+They can be reapplied using the patches included in the `patches`
 folder.
 
 
@@ -685,7 +683,7 @@ folder.
 ## volk
 
 - Upstream: https://github.com/zeux/volk
-- Version: 1.3.204 (92ba7c9f112a82cecf452ebf4b7c46f149a5799e, 2022)
+- Version: sdk-1.3.231.1 (f29df7d2834c434b39169d5b2e4dde8c05a5adc1, 2022)
 - License: MIT
 
 Unless there is a specific reason to package a more recent version, please stick
@@ -694,7 +692,6 @@ to tagged releases. All Vulkan libraries and headers should be kept in sync so:
 - Update Vulkan SDK components to the matching tag (see "vulkan").
 - Update glslang (see "glslang").
 - Update spirv-reflect (see "spirv-reflect").
-
 
 Files extracted from upstream source:
 
@@ -705,7 +702,7 @@ Files extracted from upstream source:
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Headers
-- Version: 1.3.204 (1dace16d8044758d32736eb59802d171970e9448, 2022)
+- Version: sdk-1.3.231.1 (98f440ce6868c94f5ec6e198cc1adda4760e8849, 2022)
 - License: Apache 2.0
 
 The vendored version should be kept in sync with volk, see above.

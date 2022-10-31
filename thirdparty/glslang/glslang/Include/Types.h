@@ -443,6 +443,18 @@ enum TLayoutDepth {
     EldCount
 };
 
+enum TLayoutStencil {
+    ElsNone,
+    ElsRefUnchangedFrontAMD,
+    ElsRefGreaterFrontAMD,
+    ElsRefLessFrontAMD,
+    ElsRefUnchangedBackAMD,
+    ElsRefGreaterBackAMD,
+    ElsRefLessBackAMD,
+
+    ElsCount
+};
+
 enum TBlendEquationShift {
     // No 'EBlendNone':
     // These are used as bit-shift amounts.  A mask of such shifts will have type 'int',
@@ -552,6 +564,7 @@ public:
         perViewNV = false;
         perTaskNV = false;
 #endif
+        pervertexEXT = false;
     }
 
     void clearMemory()
@@ -604,7 +617,8 @@ public:
     bool isNoContraction() const { return false; }
     void setNoContraction() { }
     bool isPervertexNV() const { return false; }
-    void setNullInit() { }
+    bool isPervertexEXT() const { return pervertexEXT; }
+    void setNullInit() {}
     bool isNullInit() const { return false; }
     void setSpirvByReference() { }
     bool isSpirvByReference() { return false; }
@@ -615,6 +629,7 @@ public:
     bool nopersp      : 1;
     bool explicitInterp : 1;
     bool pervertexNV  : 1;
+    bool pervertexEXT : 1;
     bool perPrimitiveNV : 1;
     bool perViewNV : 1;
     bool perTaskNV : 1;
@@ -663,12 +678,13 @@ public:
     }
     bool isAuxiliary() const
     {
-        return centroid || patch || sample || pervertexNV;
+        return centroid || patch || sample || pervertexNV || pervertexEXT;
     }
     bool isPatch() const { return patch; }
     bool isNoContraction() const { return noContraction; }
     void setNoContraction() { noContraction = true; }
     bool isPervertexNV() const { return pervertexNV; }
+    bool isPervertexEXT() const { return pervertexEXT; }
     void setNullInit() { nullInit = true; }
     bool isNullInit() const { return nullInit; }
     void setSpirvByReference() { spirvByReference = true; }
@@ -701,6 +717,7 @@ public:
         case EvqVaryingOut:
         case EvqFragColor:
         case EvqFragDepth:
+        case EvqFragStencil:
             return true;
         default:
             return false;
@@ -768,6 +785,7 @@ public:
         case EvqVaryingOut:
         case EvqFragColor:
         case EvqFragDepth:
+        case EvqFragStencil:
             return true;
         default:
             return false;
@@ -815,7 +833,7 @@ public:
             }
             storage = EvqUniform;
             break;
-        case EbsStorageBuffer : 
+        case EbsStorageBuffer :
             storage = EvqBuffer;
             break;
 #ifndef GLSLANG_WEB
@@ -838,6 +856,7 @@ public:
     bool isPerPrimitive() const { return perPrimitiveNV; }
     bool isPerView() const { return perViewNV; }
     bool isTaskMemory() const { return perTaskNV; }
+    bool isTaskPayload() const { return storage == EvqtaskPayloadSharedEXT; }
     bool isAnyPayload() const {
         return storage == EvqPayload || storage == EvqPayloadIn;
     }
@@ -856,8 +875,8 @@ public:
         case EShLangTessEvaluation:
             return ! patch && isPipeInput();
         case EShLangFragment:
-            return pervertexNV && isPipeInput();
-        case EShLangMeshNV:
+            return (pervertexNV || pervertexEXT) && isPipeInput();
+        case EShLangMesh:
             return ! perTaskNV && isPipeOutput();
 
         default:
@@ -1235,6 +1254,18 @@ public:
         default:           return "none";
         }
     }
+    static const char* getLayoutStencilString(TLayoutStencil s)
+    {
+        switch (s) {
+        case ElsRefUnchangedFrontAMD: return "stencil_ref_unchanged_front_amd";
+        case ElsRefGreaterFrontAMD:   return "stencil_ref_greater_front_amd";
+        case ElsRefLessFrontAMD:      return "stencil_ref_less_front_amd";
+        case ElsRefUnchangedBackAMD:  return "stencil_ref_unchanged_back_amd";
+        case ElsRefGreaterBackAMD:    return "stencil_ref_greater_back_amd";
+        case ElsRefLessBackAMD:       return "stencil_ref_less_back_amd";
+        default:                      return "none";
+        }
+    }
     static const char* getBlendEquationString(TBlendEquationShift e)
     {
         switch (e) {
@@ -1332,7 +1363,9 @@ struct TShaderQualifiers {
 #ifndef GLSLANG_WEB
     bool earlyFragmentTests;  // fragment input
     bool postDepthCoverage;   // fragment input
+    bool earlyAndLateFragmentTestsAMD; //fragment input
     TLayoutDepth layoutDepth;
+    TLayoutStencil layoutStencil;
     bool blendEquation;       // true if any blend equation was specified
     int numViews;             // multiview extenstions
     TInterlockOrdering interlockOrdering;
@@ -1342,6 +1375,7 @@ struct TShaderQualifiers {
     int primitives;                     // mesh shader "max_primitives"DerivativeGroupLinear;   // true if layout derivative_group_linearNV set
     bool layoutPrimitiveCulling;        // true if layout primitive_culling set
     TLayoutDepth getDepth() const { return layoutDepth; }
+    TLayoutStencil getStencil() const { return layoutStencil; }
 #else
     TLayoutDepth getDepth() const { return EldNone; }
 #endif
@@ -1367,8 +1401,10 @@ struct TShaderQualifiers {
         localSizeSpecId[2] = TQualifier::layoutNotSet;
 #ifndef GLSLANG_WEB
         earlyFragmentTests = false;
+        earlyAndLateFragmentTestsAMD = false;
         postDepthCoverage = false;
         layoutDepth = EldNone;
+        layoutStencil = ElsNone;
         blendEquation = false;
         numViews = TQualifier::layoutNotSet;
         layoutOverrideCoverage      = false;
@@ -1420,10 +1456,14 @@ struct TShaderQualifiers {
 #ifndef GLSLANG_WEB
         if (src.earlyFragmentTests)
             earlyFragmentTests = true;
+        if (src.earlyAndLateFragmentTestsAMD)
+            earlyAndLateFragmentTestsAMD = true;
         if (src.postDepthCoverage)
             postDepthCoverage = true;
         if (src.layoutDepth)
             layoutDepth = src.layoutDepth;
+        if (src.layoutStencil)
+            layoutStencil = src.layoutStencil;
         if (src.blendEquation)
             blendEquation = src.blendEquation;
         if (src.numViews != TQualifier::layoutNotSet)
@@ -2142,7 +2182,8 @@ public:
     const char* getPrecisionQualifierString() const { return ""; }
     TString getBasicTypeString() const { return ""; }
 #else
-    TString getCompleteString() const
+    TString getCompleteString(bool syntactic = false, bool getQualifiers = true, bool getPrecision = true,
+                              bool getType = true, TString name = "", TString structName = "") const
     {
         TString typeString;
 
@@ -2150,232 +2191,337 @@ public:
         const auto appendUint = [&](unsigned int u) { typeString.append(std::to_string(u).c_str()); };
         const auto appendInt  = [&](int i)          { typeString.append(std::to_string(i).c_str()); };
 
-        if (qualifier.hasSprivDecorate())
+        if (getQualifiers) {
+          if (qualifier.hasSprivDecorate())
             appendStr(qualifier.getSpirvDecorateQualifierString().c_str());
 
-        if (qualifier.hasLayout()) {
+          if (qualifier.hasLayout()) {
             // To reduce noise, skip this if the only layout is an xfb_buffer
             // with no triggering xfb_offset.
             TQualifier noXfbBuffer = qualifier;
             noXfbBuffer.layoutXfbBuffer = TQualifier::layoutXfbBufferEnd;
             if (noXfbBuffer.hasLayout()) {
-                appendStr("layout(");
-                if (qualifier.hasAnyLocation()) {
-                    appendStr(" location=");
-                    appendUint(qualifier.layoutLocation);
-                    if (qualifier.hasComponent()) {
-                        appendStr(" component=");
-                        appendUint(qualifier.layoutComponent);
-                    }
-                    if (qualifier.hasIndex()) {
-                        appendStr(" index=");
-                        appendUint(qualifier.layoutIndex);
-                    }
+              appendStr("layout(");
+              if (qualifier.hasAnyLocation()) {
+                appendStr(" location=");
+                appendUint(qualifier.layoutLocation);
+                if (qualifier.hasComponent()) {
+                  appendStr(" component=");
+                  appendUint(qualifier.layoutComponent);
                 }
-                if (qualifier.hasSet()) {
-                    appendStr(" set=");
-                    appendUint(qualifier.layoutSet);
+                if (qualifier.hasIndex()) {
+                  appendStr(" index=");
+                  appendUint(qualifier.layoutIndex);
                 }
-                if (qualifier.hasBinding()) {
-                    appendStr(" binding=");
-                    appendUint(qualifier.layoutBinding);
-                }
-                if (qualifier.hasStream()) {
-                    appendStr(" stream=");
-                    appendUint(qualifier.layoutStream);
-                }
-                if (qualifier.hasMatrix()) {
-                    appendStr(" ");
-                    appendStr(TQualifier::getLayoutMatrixString(qualifier.layoutMatrix));
-                }
-                if (qualifier.hasPacking()) {
-                    appendStr(" ");
-                    appendStr(TQualifier::getLayoutPackingString(qualifier.layoutPacking));
-                }
-                if (qualifier.hasOffset()) {
-                    appendStr(" offset=");
-                    appendInt(qualifier.layoutOffset);
-                }
-                if (qualifier.hasAlign()) {
-                    appendStr(" align=");
-                    appendInt(qualifier.layoutAlign);
-                }
-                if (qualifier.hasFormat()) {
-                    appendStr(" ");
-                    appendStr(TQualifier::getLayoutFormatString(qualifier.layoutFormat));
-                }
-                if (qualifier.hasXfbBuffer() && qualifier.hasXfbOffset()) {
-                    appendStr(" xfb_buffer=");
-                    appendUint(qualifier.layoutXfbBuffer);
-                }
-                if (qualifier.hasXfbOffset()) {
-                    appendStr(" xfb_offset=");
-                    appendUint(qualifier.layoutXfbOffset);
-                }
-                if (qualifier.hasXfbStride()) {
-                    appendStr(" xfb_stride=");
-                    appendUint(qualifier.layoutXfbStride);
-                }
-                if (qualifier.hasAttachment()) {
-                    appendStr(" input_attachment_index=");
-                    appendUint(qualifier.layoutAttachment);
-                }
-                if (qualifier.hasSpecConstantId()) {
-                    appendStr(" constant_id=");
-                    appendUint(qualifier.layoutSpecConstantId);
-                }
-                if (qualifier.layoutPushConstant)
-                    appendStr(" push_constant");
-                if (qualifier.layoutBufferReference)
-                    appendStr(" buffer_reference");
-                if (qualifier.hasBufferReferenceAlign()) {
-                    appendStr(" buffer_reference_align=");
-                    appendUint(1u << qualifier.layoutBufferReferenceAlign);
-                }
+              }
+              if (qualifier.hasSet()) {
+                appendStr(" set=");
+                appendUint(qualifier.layoutSet);
+              }
+              if (qualifier.hasBinding()) {
+                appendStr(" binding=");
+                appendUint(qualifier.layoutBinding);
+              }
+              if (qualifier.hasStream()) {
+                appendStr(" stream=");
+                appendUint(qualifier.layoutStream);
+              }
+              if (qualifier.hasMatrix()) {
+                appendStr(" ");
+                appendStr(TQualifier::getLayoutMatrixString(qualifier.layoutMatrix));
+              }
+              if (qualifier.hasPacking()) {
+                appendStr(" ");
+                appendStr(TQualifier::getLayoutPackingString(qualifier.layoutPacking));
+              }
+              if (qualifier.hasOffset()) {
+                appendStr(" offset=");
+                appendInt(qualifier.layoutOffset);
+              }
+              if (qualifier.hasAlign()) {
+                appendStr(" align=");
+                appendInt(qualifier.layoutAlign);
+              }
+              if (qualifier.hasFormat()) {
+                appendStr(" ");
+                appendStr(TQualifier::getLayoutFormatString(qualifier.layoutFormat));
+              }
+              if (qualifier.hasXfbBuffer() && qualifier.hasXfbOffset()) {
+                appendStr(" xfb_buffer=");
+                appendUint(qualifier.layoutXfbBuffer);
+              }
+              if (qualifier.hasXfbOffset()) {
+                appendStr(" xfb_offset=");
+                appendUint(qualifier.layoutXfbOffset);
+              }
+              if (qualifier.hasXfbStride()) {
+                appendStr(" xfb_stride=");
+                appendUint(qualifier.layoutXfbStride);
+              }
+              if (qualifier.hasAttachment()) {
+                appendStr(" input_attachment_index=");
+                appendUint(qualifier.layoutAttachment);
+              }
+              if (qualifier.hasSpecConstantId()) {
+                appendStr(" constant_id=");
+                appendUint(qualifier.layoutSpecConstantId);
+              }
+              if (qualifier.layoutPushConstant)
+                appendStr(" push_constant");
+              if (qualifier.layoutBufferReference)
+                appendStr(" buffer_reference");
+              if (qualifier.hasBufferReferenceAlign()) {
+                appendStr(" buffer_reference_align=");
+                appendUint(1u << qualifier.layoutBufferReferenceAlign);
+              }
 
-                if (qualifier.layoutPassthrough)
-                    appendStr(" passthrough");
-                if (qualifier.layoutViewportRelative)
-                    appendStr(" layoutViewportRelative");
-                if (qualifier.layoutSecondaryViewportRelativeOffset != -2048) {
-                    appendStr(" layoutSecondaryViewportRelativeOffset=");
-                    appendInt(qualifier.layoutSecondaryViewportRelativeOffset);
-                }
-                if (qualifier.layoutShaderRecord)
-                    appendStr(" shaderRecordNV");
+              if (qualifier.layoutPassthrough)
+                appendStr(" passthrough");
+              if (qualifier.layoutViewportRelative)
+                appendStr(" layoutViewportRelative");
+              if (qualifier.layoutSecondaryViewportRelativeOffset != -2048) {
+                appendStr(" layoutSecondaryViewportRelativeOffset=");
+                appendInt(qualifier.layoutSecondaryViewportRelativeOffset);
+              }
+              if (qualifier.layoutShaderRecord)
+                appendStr(" shaderRecordNV");
 
-                appendStr(")");
+              appendStr(")");
             }
-        }
+          }
 
-        if (qualifier.invariant)
+          if (qualifier.invariant)
             appendStr(" invariant");
-        if (qualifier.noContraction)
+          if (qualifier.noContraction)
             appendStr(" noContraction");
-        if (qualifier.centroid)
+          if (qualifier.centroid)
             appendStr(" centroid");
-        if (qualifier.smooth)
+          if (qualifier.smooth)
             appendStr(" smooth");
-        if (qualifier.flat)
+          if (qualifier.flat)
             appendStr(" flat");
-        if (qualifier.nopersp)
+          if (qualifier.nopersp)
             appendStr(" noperspective");
-        if (qualifier.explicitInterp)
+          if (qualifier.explicitInterp)
             appendStr(" __explicitInterpAMD");
-        if (qualifier.pervertexNV)
+          if (qualifier.pervertexNV)
             appendStr(" pervertexNV");
-        if (qualifier.perPrimitiveNV)
+          if (qualifier.pervertexEXT)
+              appendStr(" pervertexEXT");
+          if (qualifier.perPrimitiveNV)
             appendStr(" perprimitiveNV");
-        if (qualifier.perViewNV)
+          if (qualifier.perViewNV)
             appendStr(" perviewNV");
-        if (qualifier.perTaskNV)
+          if (qualifier.perTaskNV)
             appendStr(" taskNV");
-        if (qualifier.patch)
+          if (qualifier.patch)
             appendStr(" patch");
-        if (qualifier.sample)
+          if (qualifier.sample)
             appendStr(" sample");
-        if (qualifier.coherent)
+          if (qualifier.coherent)
             appendStr(" coherent");
-        if (qualifier.devicecoherent)
+          if (qualifier.devicecoherent)
             appendStr(" devicecoherent");
-        if (qualifier.queuefamilycoherent)
+          if (qualifier.queuefamilycoherent)
             appendStr(" queuefamilycoherent");
-        if (qualifier.workgroupcoherent)
+          if (qualifier.workgroupcoherent)
             appendStr(" workgroupcoherent");
-        if (qualifier.subgroupcoherent)
+          if (qualifier.subgroupcoherent)
             appendStr(" subgroupcoherent");
-        if (qualifier.shadercallcoherent)
+          if (qualifier.shadercallcoherent)
             appendStr(" shadercallcoherent");
-        if (qualifier.nonprivate)
+          if (qualifier.nonprivate)
             appendStr(" nonprivate");
-        if (qualifier.volatil)
+          if (qualifier.volatil)
             appendStr(" volatile");
-        if (qualifier.restrict)
+          if (qualifier.restrict)
             appendStr(" restrict");
-        if (qualifier.readonly)
+          if (qualifier.readonly)
             appendStr(" readonly");
-        if (qualifier.writeonly)
+          if (qualifier.writeonly)
             appendStr(" writeonly");
-        if (qualifier.specConstant)
+          if (qualifier.specConstant)
             appendStr(" specialization-constant");
-        if (qualifier.nonUniform)
+          if (qualifier.nonUniform)
             appendStr(" nonuniform");
-        if (qualifier.isNullInit())
+          if (qualifier.isNullInit())
             appendStr(" null-init");
-        if (qualifier.isSpirvByReference())
+          if (qualifier.isSpirvByReference())
             appendStr(" spirv_by_reference");
-        if (qualifier.isSpirvLiteral())
+          if (qualifier.isSpirvLiteral())
             appendStr(" spirv_literal");
-        appendStr(" ");
-        appendStr(getStorageQualifierString());
-        if (isArray()) {
-            for(int i = 0; i < (int)arraySizes->getNumDims(); ++i) {
+          appendStr(" ");
+          appendStr(getStorageQualifierString());
+        }
+        if (getType) {
+          if (syntactic) {
+            if (getPrecision && qualifier.precision != EpqNone) {
+              appendStr(" ");
+              appendStr(getPrecisionQualifierString());
+            }
+            if (isVector() || isMatrix()) {
+              appendStr(" ");
+              switch (basicType) {
+              case EbtDouble:
+                appendStr("d");
+                break;
+              case EbtInt:
+                appendStr("i");
+                break;
+              case EbtUint:
+                appendStr("u");
+                break;
+              case EbtBool:
+                appendStr("b");
+                break;
+              case EbtFloat:
+              default:
+                break;
+              }
+              if (isVector()) {
+                appendStr("vec");
+                appendInt(vectorSize);
+              } else {
+                appendStr("mat");
+                appendInt(matrixCols);
+                appendStr("x");
+                appendInt(matrixRows);
+              }
+            } else if (isStruct() && structure) {
+                appendStr(" ");
+                appendStr(structName.c_str());
+                appendStr("{");
+                bool hasHiddenMember = true;
+                for (size_t i = 0; i < structure->size(); ++i) {
+                  if (!(*structure)[i].type->hiddenMember()) {
+                    if (!hasHiddenMember)
+                      appendStr(", ");
+                    typeString.append((*structure)[i].type->getCompleteString(syntactic, getQualifiers, getPrecision, getType, (*structure)[i].type->getFieldName()));
+                    hasHiddenMember = false;
+                  }
+                }
+                appendStr("}");
+            } else {
+                appendStr(" ");
+                switch (basicType) {
+                case EbtDouble:
+                  appendStr("double");
+                  break;
+                case EbtInt:
+                  appendStr("int");
+                  break;
+                case EbtUint:
+                  appendStr("uint");
+                  break;
+                case EbtBool:
+                  appendStr("bool");
+                  break;
+                case EbtFloat:
+                  appendStr("float");
+                  break;
+                default:
+                  appendStr("unexpected");
+                  break;
+                }
+            }
+            if (name.length() > 0) {
+              appendStr(" ");
+              appendStr(name.c_str());
+            }
+            if (isArray()) {
+              for (int i = 0; i < (int)arraySizes->getNumDims(); ++i) {
                 int size = arraySizes->getDimSize(i);
                 if (size == UnsizedArraySize && i == 0 && arraySizes->isVariablyIndexed())
-                    appendStr(" runtime-sized array of");
+                  appendStr("[]");
                 else {
-                    if (size == UnsizedArraySize) {
-                        appendStr(" unsized");
-                        if (i == 0) {
-                            appendStr(" ");
-                            appendInt(arraySizes->getImplicitSize());
-                        }
-                    } else {
-                        appendStr(" ");
-                        appendInt(arraySizes->getDimSize(i));
-                    }
-                    appendStr("-element array of");
+                  if (size == UnsizedArraySize) {
+                    appendStr("[");
+                    if (i == 0)
+                      appendInt(arraySizes->getImplicitSize());
+                    appendStr("]");
+                  }
+                  else {
+                    appendStr("[");
+                    appendInt(arraySizes->getDimSize(i));
+                    appendStr("]");
+                  }
                 }
+              }
             }
-        }
-        if (isParameterized()) {
-            appendStr("<");
-            for(int i = 0; i < (int)typeParameters->getNumDims(); ++i) {
+          }
+          else {
+            if (isArray()) {
+              for (int i = 0; i < (int)arraySizes->getNumDims(); ++i) {
+                int size = arraySizes->getDimSize(i);
+                if (size == UnsizedArraySize && i == 0 && arraySizes->isVariablyIndexed())
+                  appendStr(" runtime-sized array of");
+                else {
+                  if (size == UnsizedArraySize) {
+                    appendStr(" unsized");
+                    if (i == 0) {
+                      appendStr(" ");
+                      appendInt(arraySizes->getImplicitSize());
+                    }
+                  }
+                  else {
+                    appendStr(" ");
+                    appendInt(arraySizes->getDimSize(i));
+                  }
+                  appendStr("-element array of");
+                }
+              }
+            }
+            if (isParameterized()) {
+              appendStr("<");
+              for (int i = 0; i < (int)typeParameters->getNumDims(); ++i) {
                 appendInt(typeParameters->getDimSize(i));
                 if (i != (int)typeParameters->getNumDims() - 1)
+                  appendStr(", ");
+              }
+              appendStr(">");
+            }
+            if (getPrecision && qualifier.precision != EpqNone) {
+              appendStr(" ");
+              appendStr(getPrecisionQualifierString());
+            }
+            if (isMatrix()) {
+              appendStr(" ");
+              appendInt(matrixCols);
+              appendStr("X");
+              appendInt(matrixRows);
+              appendStr(" matrix of");
+            }
+            else if (isVector()) {
+              appendStr(" ");
+              appendInt(vectorSize);
+              appendStr("-component vector of");
+            }
+
+            appendStr(" ");
+            typeString.append(getBasicTypeString());
+
+            if (qualifier.builtIn != EbvNone) {
+              appendStr(" ");
+              appendStr(getBuiltInVariableString());
+            }
+
+            // Add struct/block members
+            if (isStruct() && structure) {
+              appendStr("{");
+              bool hasHiddenMember = true;
+              for (size_t i = 0; i < structure->size(); ++i) {
+                if (!(*structure)[i].type->hiddenMember()) {
+                  if (!hasHiddenMember)
                     appendStr(", ");
-            }
-            appendStr(">");
-        }
-        if (qualifier.precision != EpqNone) {
-            appendStr(" ");
-            appendStr(getPrecisionQualifierString());
-        }
-        if (isMatrix()) {
-            appendStr(" ");
-            appendInt(matrixCols);
-            appendStr("X");
-            appendInt(matrixRows);
-            appendStr(" matrix of");
-        } else if (isVector()) {
-            appendStr(" ");
-            appendInt(vectorSize);
-            appendStr("-component vector of");
-        }
-
-        appendStr(" ");
-        typeString.append(getBasicTypeString());
-
-        if (qualifier.builtIn != EbvNone) {
-            appendStr(" ");
-            appendStr(getBuiltInVariableString());
-        }
-
-        // Add struct/block members
-        if (isStruct() && structure) {
-            appendStr("{");
-            bool hasHiddenMember = true;
-            for (size_t i = 0; i < structure->size(); ++i) {
-                if (! (*structure)[i].type->hiddenMember()) {
-                    if (!hasHiddenMember) 
-                        appendStr(", ");
-                    typeString.append((*structure)[i].type->getCompleteString());
-                    typeString.append(" ");
-                    typeString.append((*structure)[i].type->getFieldName());
-                    hasHiddenMember = false;
+                  typeString.append((*structure)[i].type->getCompleteString());
+                  typeString.append(" ");
+                  typeString.append((*structure)[i].type->getFieldName());
+                  hasHiddenMember = false;
                 }
+              }
+              appendStr("}");
             }
-            appendStr("}");
+          }
         }
 
         return typeString;
@@ -2398,7 +2544,7 @@ public:
     void setStruct(TTypeList* s) { assert(isStruct()); structure = s; }
     TTypeList* getWritableStruct() const { assert(isStruct()); return structure; }  // This should only be used when known to not be sharing with other threads
     void setBasicType(const TBasicType& t) { basicType = t; }
-    
+
     int computeNumComponents() const
     {
         int components = 0;
@@ -2444,10 +2590,20 @@ public:
     //  type definitions, and member names to be considered the same type.
     //  This rule applies recursively for nested or embedded types."
     //
-    bool sameStructType(const TType& right) const
+    // If type mismatch in structure, return member indices through lpidx and rpidx.
+    // If matching members for either block are exhausted, return -1 for exhausted
+    // block and the index of the unmatched member. Otherwise return {-1,-1}.
+    //
+    bool sameStructType(const TType& right, int* lpidx = nullptr, int* rpidx = nullptr) const
     {
-        // TODO: Why return true when neither types are structures?
+        // Initialize error to general type mismatch.
+        if (lpidx != nullptr) {
+            *lpidx = -1;
+            *rpidx = -1;
+        }
+
         // Most commonly, they are both nullptr, or the same pointer to the same actual structure
+        // TODO: Why return true when neither types are structures?
         if ((!isStruct() && !right.isStruct()) ||
             (isStruct() && right.isStruct() && structure == right.structure))
             return true;
@@ -2464,11 +2620,17 @@ public:
         bool isGLPerVertex = *typeName == "gl_PerVertex";
 
         // Both being nullptr was caught above, now they both have to be structures of the same number of elements
-        if (structure->size() != right.structure->size() && !isGLPerVertex)
+        if (lpidx == nullptr &&
+            (structure->size() != right.structure->size() && !isGLPerVertex)) {
             return false;
+        }
 
         // Compare the names and types of all the members, which have to match
         for (size_t li = 0, ri = 0; li < structure->size() || ri < right.structure->size(); ++li, ++ri) {
+            if (lpidx != nullptr) {
+                *lpidx = static_cast<int>(li);
+                *rpidx = static_cast<int>(ri);
+            }
             if (li < structure->size() && ri < right.structure->size()) {
                 if ((*structure)[li].type->getFieldName() == (*right.structure)[ri].type->getFieldName()) {
                     if (*(*structure)[li].type != *(*right.structure)[ri].type)
@@ -2498,11 +2660,19 @@ public:
                 }
             // If we get here, then there should only be inconsistently declared members left
             } else if (li < structure->size()) {
-                if (!(*structure)[li].type->hiddenMember() && !isInconsistentGLPerVertexMember((*structure)[li].type->getFieldName()))
+                if (!(*structure)[li].type->hiddenMember() && !isInconsistentGLPerVertexMember((*structure)[li].type->getFieldName())) {
+                    if (lpidx != nullptr) {
+                        *rpidx = -1;
+                    }
                     return false;
+                }
             } else {
-                if (!(*right.structure)[ri].type->hiddenMember() && !isInconsistentGLPerVertexMember((*right.structure)[ri].type->getFieldName()))
+                if (!(*right.structure)[ri].type->hiddenMember() && !isInconsistentGLPerVertexMember((*right.structure)[ri].type->getFieldName())) {
+                    if (lpidx != nullptr) {
+                        *lpidx = -1;
+                    }
                     return false;
+                }
             }
         }
 
@@ -2526,10 +2696,15 @@ public:
         return *referentType == *right.referentType;
     }
 
-   // See if two types match, in all aspects except arrayness
-    bool sameElementType(const TType& right) const
+    // See if two types match, in all aspects except arrayness
+    // If mismatch in structure members, return member indices in lpidx and rpidx.
+    bool sameElementType(const TType& right, int* lpidx = nullptr, int* rpidx = nullptr) const
     {
-        return basicType == right.basicType && sameElementShape(right);
+        if (lpidx != nullptr) {
+            *lpidx = -1;
+            *rpidx = -1;
+        }
+        return basicType == right.basicType && sameElementShape(right, lpidx, rpidx);
     }
 
     // See if two type's arrayness match
@@ -2563,15 +2738,20 @@ public:
 #endif
 
     // See if two type's elements match in all ways except basic type
-    bool sameElementShape(const TType& right) const
+    // If mismatch in structure members, return member indices in lpidx and rpidx.
+    bool sameElementShape(const TType& right, int* lpidx = nullptr, int* rpidx = nullptr) const
     {
-        return    sampler == right.sampler    &&
+        if (lpidx != nullptr) {
+            *lpidx = -1;
+            *rpidx = -1;
+        }
+        return ((basicType != EbtSampler && right.basicType != EbtSampler) || sampler == right.sampler) &&
                vectorSize == right.vectorSize &&
                matrixCols == right.matrixCols &&
                matrixRows == right.matrixRows &&
                   vector1 == right.vector1    &&
               isCoopMat() == right.isCoopMat() &&
-               sameStructType(right)          &&
+               sameStructType(right, lpidx, rpidx) &&
                sameReferenceType(right);
     }
 

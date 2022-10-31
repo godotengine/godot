@@ -61,6 +61,15 @@ struct TVarEntryInfo {
     int newComponent;
     int newIndex;
     EShLanguage stage;
+
+    void clearNewAssignments() {
+        newBinding = -1;
+        newSet = -1;
+        newLocation = -1;
+        newComponent = -1;
+        newIndex = -1;
+    }
+
     struct TOrderById {
         inline bool operator()(const TVarEntryInfo& l, const TVarEntryInfo& r) { return l.id < r.id; }
     };
