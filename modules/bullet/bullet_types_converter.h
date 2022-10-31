@@ -36,9 +36,18 @@
 #include "core/math/vector3.h"
 #include "core/typedefs.h"
 
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-copy-with-user-provided-copy"
+#endif
+
 #include <LinearMath/btMatrix3x3.h>
 #include <LinearMath/btTransform.h>
 #include <LinearMath/btVector3.h>
+
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic pop
+#endif
 
 /**
 	@author AndreaCatania
