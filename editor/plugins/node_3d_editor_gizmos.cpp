@@ -1937,6 +1937,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 #undef ADD_QUAD
 
 	p_gizmo->add_lines(lines, material);
+	p_gizmo->add_collision_segments(lines);
 	p_gizmo->add_handles(handles, get_material("handles"));
 }
 
