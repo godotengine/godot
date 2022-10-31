@@ -396,7 +396,14 @@ void OS_IOS::vibrate_handheld(int p_duration_ms) {
 }
 
 bool OS_IOS::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "mobile";
+	if (p_feature == "system_fonts") {
+		return true;
+	}
+	if (p_feature == "mobile") {
+		return true;
+	}
+
+	return false;
 }
 
 void OS_IOS::on_focus_out() {

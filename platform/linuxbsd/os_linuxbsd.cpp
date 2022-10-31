@@ -481,7 +481,16 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc";
+#ifdef FONTCONFIG_ENABLED
+	if (p_feature == "system_fonts") {
+		return font_config_initialized;
+	}
+#endif
+	if (p_feature == "pc") {
+		return true;
+	}
+
+	return false;
 }
 
 uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
