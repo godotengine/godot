@@ -396,7 +396,7 @@ void TileMapEditorTilesPlugin::_update_scenes_collection_view() {
 	}
 
 	// Icon size update.
-	int int_size = int(EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size")) * EDSCALE;
+	int int_size = int(EDITOR_GET("filesystem/file_dialog/thumbnail_size")) * EDSCALE;
 	scene_tiles_list->set_fixed_icon_size(Vector2(int_size, int_size));
 }
 
@@ -739,7 +739,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 		if (drag_type == DRAG_TYPE_MOVE || (drag_type == DRAG_TYPE_SELECT && !Input::get_singleton()->is_key_pressed(Key::CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			// Do nothing
 		} else {
-			Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 			tile_map->draw_cells_outline(p_overlay, tile_map_selection, selection_color, xform);
 		}
@@ -844,9 +844,9 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 			const int fading = 5;
 
 			// Draw the lines of the grid behind the preview.
-			bool display_grid = EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid");
+			bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
 			if (display_grid) {
-				Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+				Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 				if (drawn_grid_rect.size.x > 0 && drawn_grid_rect.size.y > 0) {
 					drawn_grid_rect = drawn_grid_rect.grow(fading);
 					for (int x = drawn_grid_rect.position.x; x < (drawn_grid_rect.position.x + drawn_grid_rect.size.x); x++) {
@@ -1682,7 +1682,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 	}
 
 	// Draw the selection.
-	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	for (const TileMapCell &E : tile_set_selection) {
 		if (E.source_id == source_id && E.alternative_tile == 0) {
@@ -3023,9 +3023,9 @@ void TileMapEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_o
 			const int fading = 5;
 
 			// Draw the lines of the grid behind the preview.
-			bool display_grid = EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid");
+			bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
 			if (display_grid) {
-				Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+				Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 				if (drawn_grid_rect.size.x > 0 && drawn_grid_rect.size.y > 0) {
 					drawn_grid_rect = drawn_grid_rect.grow(fading);
 					for (int x = drawn_grid_rect.position.x; x < (drawn_grid_rect.position.x + drawn_grid_rect.size.x); x++) {
@@ -3420,7 +3420,7 @@ void TileMapEditor::_notification(int p_what) {
 			warning_pattern_texture = get_theme_icon(SNAME("WarningPattern"), SNAME("EditorIcons"));
 			advanced_menu_button->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 			toggle_grid_button->set_icon(get_theme_icon(SNAME("Grid"), SNAME("EditorIcons")));
-			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
+			toggle_grid_button->set_pressed(EDITOR_GET("editors/tiles_editor/display_grid"));
 			toggle_highlight_selected_layer_button->set_icon(get_theme_icon(SNAME("TileMapHighlightSelected"), SNAME("EditorIcons")));
 		} break;
 
@@ -3435,7 +3435,7 @@ void TileMapEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
+			toggle_grid_button->set_pressed(EDITOR_GET("editors/tiles_editor/display_grid"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3878,9 +3878,9 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	// Draw the grid.
-	bool display_grid = EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid");
+	bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
 	if (display_grid) {
-		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 		for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
 			for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
 				Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
