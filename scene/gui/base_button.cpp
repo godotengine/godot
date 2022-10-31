@@ -218,13 +218,12 @@ bool BaseButton::is_disabled() const {
 }
 
 void BaseButton::set_pressed(bool p_pressed) {
-	if (!toggle_mode) {
+	bool prev_pressed = status.pressed;
+	set_pressed_no_signal(p_pressed);
+
+	if (status.pressed == prev_pressed) {
 		return;
 	}
-	if (status.pressed == p_pressed) {
-		return;
-	}
-	status.pressed = p_pressed;
 
 	if (p_pressed) {
 		_unpress_group();
@@ -233,8 +232,6 @@ void BaseButton::set_pressed(bool p_pressed) {
 		}
 	}
 	_toggled(status.pressed);
-
-	queue_redraw();
 }
 
 void BaseButton::set_pressed_no_signal(bool p_pressed) {
