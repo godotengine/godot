@@ -118,7 +118,7 @@ struct Ligature
 	match_positions[i] += delta;
 	if (i)
 	  *p++ = ',';
-	sprintf (p, "%u", match_positions[i]);
+	snprintf (p, sizeof(buf), "%u", match_positions[i]);
 	p += strlen(p);
       }
 
