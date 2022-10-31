@@ -597,6 +597,7 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _move_caret_document_start(bool p_select);
 	void _move_caret_document_end(bool p_select);
+	bool _should_remove_secondary_carets();
 
 	// Used in add_caret_at_carets
 	void _get_above_below_caret_line_column(int p_old_line, int p_old_wrap_index, int p_old_column, bool p_below, int &p_new_line, int &p_new_column, int p_last_fit_x = -1) const;
