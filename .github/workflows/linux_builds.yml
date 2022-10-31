@@ -102,6 +102,9 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
+      - name: Setup GCC problem matcher
+        uses: ammaraskar/gcc-problem-matcher@master
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
