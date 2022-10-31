@@ -33,7 +33,16 @@
 
 #include "core/int_types.h"
 
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-copy-with-user-provided-copy"
+#endif
+
 #include <btBulletDynamicsCommon.h>
+
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic pop
+#endif
 
 /**
 	@author AndreaCatania
