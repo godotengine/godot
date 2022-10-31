@@ -331,6 +331,10 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_text_caret_document_start.macos",            TTRC("Caret Document Start") },
     { "ui_text_caret_document_end",                    TTRC("Caret Document End") },
     { "ui_text_caret_document_end.macos",              TTRC("Caret Document End") },
+    { "ui_text_caret_add_below",                       TTRC("Caret Add Below") },
+    { "ui_text_caret_add_below.macos",                 TTRC("Caret Add Below") },
+    { "ui_text_caret_add_above",                       TTRC("Caret Add Above") },
+    { "ui_text_caret_add_above.macos",                 TTRC("Caret Add Above") },
     { "ui_text_scroll_up",                             TTRC("Scroll Up") },
     { "ui_text_scroll_up.macos",                       TTRC("Scroll Up") },
     { "ui_text_scroll_down",                           TTRC("Scroll Down") },
@@ -616,6 +620,24 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_end.macos", inputs);
+
+	// Text Caret Addition Below/Above
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_text_caret_add_below", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_text_caret_add_below.macos", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_text_caret_add_above", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::O | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_text_caret_add_above.macos", inputs);
 
 	// Text Scrolling
 
