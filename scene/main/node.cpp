@@ -1466,12 +1466,23 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 	if (unlikely(!node)) {
+		// Try to get a clear description of this node in the error message.
+		String desc;
+		if (is_inside_tree()) {
+			desc = get_path();
+		} else {
+			desc = get_name();
+			if (desc.empty()) {
+				desc = get_class();
+			}
+		}
+
 		if (p_path.is_absolute()) {
 			ERR_FAIL_V_MSG(nullptr,
-					vformat("(Node not found: \"%s\" (absolute path attempted from \"%s\").)", p_path, get_path()));
+					vformat("(Node not found: \"%s\" (absolute path attempted from \"%s\").)", p_path, desc));
 		} else {
 			ERR_FAIL_V_MSG(nullptr,
-					vformat("(Node not found: \"%s\" (relative to \"%s\").)", p_path, get_path()));
+					vformat("(Node not found: \"%s\" (relative to \"%s\").)", p_path, desc));
 		}
 	}
 
