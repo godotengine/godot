@@ -1603,11 +1603,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// Now validate whether the selected driver matches with the renderer.
 		bool valid_combination = false;
 		Vector<String> available_drivers;
+#ifdef VULKAN_ENABLED
 		if (rendering_method == "forward_plus" || rendering_method == "mobile") {
 			available_drivers.push_back("vulkan");
-		} else if (rendering_method == "gl_compatibility") {
+		}
+#endif
+#ifdef GLES3_ENABLED
+		if (rendering_method == "gl_compatibility") {
 			available_drivers.push_back("opengl3");
-		} else {
+		}
+#endif
+		if (available_drivers.is_empty()) {
 			OS::get_singleton()->print("Unknown renderer name '%s', aborting.\n", rendering_method.utf8().get_data());
 			goto error;
 		}
