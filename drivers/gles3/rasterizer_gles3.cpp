@@ -79,12 +79,10 @@
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
 #include <GLES3/gl3platform.h>
-
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+#define EGL_ENABLED
 #endif
 
-#if WAYLAND_ENABLED
+#if EGL_ENABLED
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #endif

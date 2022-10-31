@@ -76,6 +76,8 @@ private:
 	Error _gldisplay_create_context(GLDisplay &p_gldisplay);
 
 public:
+	int display_get_native_visual_id(void *p_display);
+
 	Error window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height);
 
 	void window_destroy(DisplayServer::WindowID p_window_id);
@@ -89,7 +91,7 @@ public:
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
-	virtual Error initialize() { return OK; };
+	Error initialize();
 
 	EGLManager();
 	virtual ~EGLManager();

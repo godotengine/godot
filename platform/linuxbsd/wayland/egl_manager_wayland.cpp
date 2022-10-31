@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gl_manager_wayland.h"
+#include "egl_manager_wayland.h"
 
 const char *EGLManagerWayland::_get_platform_extension_name() const {
 	return "EGL_KHR_platform_wayland";
@@ -36,17 +36,4 @@ const char *EGLManagerWayland::_get_platform_extension_name() const {
 
 EGLenum EGLManagerWayland::_get_platform_extension_enum() const {
 	return EGL_PLATFORM_WAYLAND_KHR;
-}
-
-Error EGLManagerWayland::initialize() {
-	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-	// The above method should always work. If it doesn't, something's very wrong.
-	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
-
-	const char *platform = _get_platform_extension_name();
-	if (!extensions_string.split(" ").find(platform)) {
-		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
-	}
-
-	return OK;
 }

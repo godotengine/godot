@@ -40,8 +40,6 @@ class EGLManagerWayland : public EGLManager {
 public:
 	virtual const char *_get_platform_extension_name() const override;
 	virtual EGLenum _get_platform_extension_enum() const;
-
-	virtual Error initialize();
 };
 
 #endif // GLES3_ENABLED

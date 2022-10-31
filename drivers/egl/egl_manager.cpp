@@ -124,6 +124,22 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	return OK;
 }
 
+int EGLManager::display_get_native_visual_id(void *p_display) {
+	int gldisplay_id = _get_gldisplay_id(p_display);
+	// TODO: Better error handling.
+	ERR_FAIL_COND_V(gldisplay_id < 0, ERR_CANT_CREATE);
+
+	GLDisplay gldisplay = displays[gldisplay_id];
+
+	EGLint native_visual_id = -1;
+
+	if (!eglGetConfigAttrib(gldisplay.egl_display, gldisplay.egl_context, EGL_NATIVE_VISUAL_ID, &native_visual_id)) {
+		ERR_FAIL_V(-1);
+	}
+
+	return native_visual_id;
+}
+
 Error EGLManager::window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height) {
 	int gldisplay_id = _get_gldisplay_id(p_display);
 	// TODO: Better error handling.
@@ -257,6 +273,21 @@ void EGLManager::set_use_vsync(bool p_use) {
 
 bool EGLManager::is_using_vsync() const {
 	return use_vsync;
+}
+
+Error EGLManager::initialize() {
+	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	// The above method should always work. If it doesn't, something's very wrong.
+	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
+
+	const char *platform = _get_platform_extension_name();
+	if (extensions_string.split(" ").find(platform) < 0) {
+		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
+	}
+
+	print_verbose(vformat("Available extensions: %s", extensions_string));
+
+	return OK;
 }
 
 EGLManager::EGLManager() {

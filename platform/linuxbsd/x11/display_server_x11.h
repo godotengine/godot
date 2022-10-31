@@ -105,7 +105,8 @@ class DisplayServerX11 : public DisplayServer {
 	int xdnd_version = 5;
 
 #if defined(GLES3_ENABLED)
-	GLManager_X11 *gl_manager = nullptr;
+	EGLManagerX11 *egl_manager = nullptr;
+	XVisualInfo visual_info_gl;
 #endif
 #if defined(VULKAN_ENABLED)
 	VulkanContextX11 *context_vulkan = nullptr;

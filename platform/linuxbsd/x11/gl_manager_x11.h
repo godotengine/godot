@@ -35,89 +35,14 @@
 
 #ifdef GLES3_ENABLED
 
-#include "core/os/os.h"
-#include "core/templates/local_vector.h"
-#include "servers/display_server.h"
+#include "drivers/egl/egl_manager.h"
+
 #include <X11/Xlib.h>
-#include <X11/extensions/Xrender.h>
 
-struct GLManager_X11_Private;
-
-class GLManager_X11 {
-public:
-	enum ContextType {
-		GLES_3_0_COMPATIBLE,
-	};
-
+class EGLManagerX11 : public EGLManager {
 private:
-	// any data specific to the window
-	struct GLWindow {
-		bool in_use = false;
-
-		// the external ID .. should match the GL window number .. unused I think
-		DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
-		int width = 0;
-		int height = 0;
-		::Window x11_window;
-		int gldisplay_id = 0;
-	};
-
-	struct GLDisplay {
-		GLDisplay() { context = nullptr; }
-		~GLDisplay();
-		GLManager_X11_Private *context = nullptr;
-		::Display *x11_display;
-		XVisualInfo x_vi;
-	};
-
-	// just for convenience, window and display struct
-	struct XWinDisp {
-		::Window x11_window;
-		::Display *x11_display;
-	} _x_windisp;
-
-	LocalVector<GLWindow> _windows;
-	LocalVector<GLDisplay> _displays;
-
-	GLWindow *_current_window = nullptr;
-
-	void _internal_set_current_window(GLWindow *p_win);
-
-	GLWindow &get_window(unsigned int id) { return _windows[id]; }
-	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
-
-	const GLDisplay &get_current_display() const { return _displays[_current_window->gldisplay_id]; }
-	const GLDisplay &get_display(unsigned int id) { return _displays[id]; }
-
-	bool double_buffer;
-	bool direct_render;
-	int glx_minor, glx_major;
-	bool use_vsync;
-	ContextType context_type;
-
-private:
-	int _find_or_create_display(Display *p_x11_display);
-	Error _create_context(GLDisplay &gl_display);
-
-public:
-	XVisualInfo get_vi(Display *p_display);
-	Error window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height);
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
-
-	void release_current();
-	void make_current();
-	void swap_buffers();
-
-	void window_make_current(DisplayServer::WindowID p_window_id);
-
-	Error initialize();
-
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
-
-	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);
-	~GLManager_X11();
+	virtual const char *_get_platform_extension_name() const override;
+	virtual EGLenum _get_platform_extension_enum() const override;
 };
 
 #endif // GLES3_ENABLED

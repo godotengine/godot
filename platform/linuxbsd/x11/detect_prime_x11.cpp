@@ -31,6 +31,12 @@
 #ifdef X11_ENABLED
 #if defined(GLES3_ENABLED)
 
+// TODO: Port to EGL.
+int detect_prime() {
+	return 0;
+}
+
+#if 0
 #include "detect_prime_x11.h"
 
 #include "core/string/print_string.h"
@@ -244,5 +250,6 @@ int detect_prime() {
 	return preferred;
 }
 
+#endif
 #endif
 #endif
