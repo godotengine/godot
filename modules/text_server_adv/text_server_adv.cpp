@@ -4622,7 +4622,8 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 						sd->breaks[pos] = false;
 
 						int pos_p = pos - 1 - sd->start;
-						if (pos - sd->start != sd->end && !is_whitespace(sd->text[pos_p])) {
+						char32_t c = sd->text[pos_p];
+						if (pos - sd->start != sd->end && !is_whitespace(c) && (c != 0xfffc)) {
 							sd->break_inserts++;
 						}
 					}
