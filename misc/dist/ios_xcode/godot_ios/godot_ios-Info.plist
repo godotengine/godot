@@ -58,5 +58,6 @@
 	</array>
 	$additional_plist_content
 	$plist_launch_screen_name
+	<key>CADisableMinimumFrameDurationOnPhone</key><true/>
 </dict>
 </plist>
