@@ -72,6 +72,9 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
+      - name: Setup GCC problem matcher
+        uses: ammaraskar/gcc-problem-matcher@master
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
