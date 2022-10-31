@@ -31,9 +31,18 @@
 #ifndef GODOT_RAY_WORLD_ALGORITHM_H
 #define GODOT_RAY_WORLD_ALGORITHM_H
 
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-copy-with-user-provided-copy"
+#endif
+
 #include <BulletCollision/CollisionDispatch/btActivatingCollisionAlgorithm.h>
 #include <BulletCollision/CollisionDispatch/btCollisionCreateFunc.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
+
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic pop
+#endif
 
 /**
 	@author AndreaCatania

@@ -33,8 +33,17 @@
 
 #include "servers/physics_server.h"
 
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-copy-with-user-provided-copy"
+#endif
+
 #include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
 #include <btBulletDynamicsCommon.h>
+
+#if defined(__clang__) && (__clang_major__ >= 13)
+#pragma clang diagnostic pop
+#endif
 
 /**
 	@author AndreaCatania
