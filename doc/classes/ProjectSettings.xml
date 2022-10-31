@@ -984,6 +984,10 @@
 			Default [InputEventAction] to insert a new line after the current one.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_text_remove_secondary_carets" type="Dictionary" setter="" getter="">
+			If multiple carets are currently active, clear additional carets and keep just one caret.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_text_scroll_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to scroll down one line of text.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
