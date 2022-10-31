@@ -1336,6 +1336,8 @@ EditorAudioBuses::EditorAudioBuses() {
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));
 
+	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &EditorAudioBuses::_update_buses));
+
 	set_process(true);
 }
 
