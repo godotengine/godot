@@ -3560,6 +3560,14 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	return addon_name_to_plugin.has("res://addons/" + p_addon + "/plugin.cfg");
 }
 
+void EditorNode::set_movie_maker_enabled(bool p_enabled) {
+	write_movie_button->set_pressed(p_enabled);
+}
+
+bool EditorNode::is_movie_maker_enabled() const {
+	return write_movie_button->is_pressed();
+}
+
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	int new_index = editor_data.get_edited_scene();
 	int old_index = new_index;

@@ -289,6 +289,14 @@ bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
 	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
 }
 
+void EditorInterface::set_movie_maker_enabled(bool p_enabled) {
+	EditorNode::get_singleton()->set_movie_maker_enabled(p_enabled);
+}
+
+bool EditorInterface::is_movie_maker_enabled() const {
+	return EditorNode::get_singleton()->is_movie_maker_enabled();
+}
+
 EditorInspector *EditorInterface::get_inspector() const {
 	return InspectorDock::get_inspector_singleton();
 }
@@ -363,6 +371,9 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_movie_maker_enabled", "enabled"), &EditorInterface::set_movie_maker_enabled);
+	ClassDB::bind_method(D_METHOD("is_movie_maker_enabled"), &EditorInterface::is_movie_maker_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_inspector"), &EditorInterface::get_inspector);
 
