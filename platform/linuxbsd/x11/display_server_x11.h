@@ -51,7 +51,7 @@
 #endif
 
 #if defined(GLES3_ENABLED)
-#include "gl_manager_x11.h"
+#include "egl_manager_x11.h"
 #endif
 
 #if defined(VULKAN_ENABLED)

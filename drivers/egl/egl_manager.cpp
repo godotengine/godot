@@ -30,6 +30,8 @@
 
 #include "egl_manager.h"
 
+#ifdef EGL_ENABLED
+
 // Creates and caches a GLDisplay. Returns -1 on error.
 int EGLManager::_get_gldisplay_id(void *p_display) {
 	// Look for a cached GLDisplay.
@@ -298,3 +300,5 @@ EGLManager::~EGLManager() {
 		eglTerminate(displays[i].egl_display);
 	}
 }
+
+#endif // EGL_ENABLED
