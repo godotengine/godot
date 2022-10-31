@@ -368,8 +368,29 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->pop();
 	if (!p_method.qualifiers.is_empty()) {
 		class_desc->push_color(qualifier_color);
-		class_desc->add_text(" ");
-		_add_text(p_method.qualifiers);
+
+		PackedStringArray qualifiers = p_method.qualifiers.split_spaces();
+		for (const String &qualifier : qualifiers) {
+			String hint;
+			if (qualifier == "vararg") {
+				hint = TTR("This method supports a variable number of arguments.");
+			} else if (qualifier == "virtual") {
+				hint = TTR("This method is called by the engine.\nIt can be overriden to customise built-in behavior.");
+			} else if (qualifier == "const") {
+				hint = TTR("This method has no side effects.\nIt does not modify the object in any way.");
+			} else if (qualifier == "static") {
+				hint = TTR("This method does not need an instance to be called.\nIt can be called directly using the class name.");
+			}
+
+			class_desc->add_text(" ");
+			if (!hint.is_empty()) {
+				class_desc->push_hint(hint);
+				class_desc->add_text(qualifier);
+				class_desc->pop();
+			} else {
+				class_desc->add_text(qualifier);
+			}
+		}
 		class_desc->pop();
 	}
 
