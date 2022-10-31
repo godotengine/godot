@@ -186,6 +186,7 @@
 				array.resize(10)
 				array.fill(0) # Initialize the 10 elements to 0.
 				[/codeblock]
+				[b]Note:[/b] If [code]value[/code] is of a reference type ([Object]-derived, [Array], [Dictionary], etc.) then the array is filled with the references to the same object, i.e. no duplicates are created.
 			</description>
 		</method>
 		<method name="find">
