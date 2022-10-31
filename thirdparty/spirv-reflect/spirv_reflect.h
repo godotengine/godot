@@ -478,6 +478,14 @@ typedef struct SpvReflectEntryPoint {
   uint32_t                          output_vertices; // valid for geometry, tesselation
 } SpvReflectEntryPoint;
 
+/*! @struct SpvReflectCapability
+
+*/
+typedef struct SpvReflectCapability {
+  SpvCapability                     value;
+  uint32_t                          word_offset;
+} SpvReflectCapability;
+
 /*! @struct SpvReflectShaderModule
 
 */
@@ -491,6 +499,8 @@ typedef struct SpvReflectShaderModule {
   uint32_t                          source_language_version;
   const char*                       source_file;
   const char*                       source_source;
+  uint32_t                          capability_count;
+  SpvReflectCapability*             capabilities;
   SpvExecutionModel                 spirv_execution_model;                            // Uses value(s) from first entry point
   SpvReflectShaderStageFlagBits     shader_stage;                                     // Uses value(s) from first entry point
   uint32_t                          descriptor_binding_count;                         // Uses value(s) from first entry point
