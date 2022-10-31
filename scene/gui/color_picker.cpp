@@ -368,11 +368,10 @@ void ColorPicker::create_slider(GridContainer *gc, int idx) {
 
 	SpinBox *val = memnew(SpinBox);
 	slider->share(val);
+	val->set_select_all_on_focus(true);
 	gc->add_child(val);
 
 	LineEdit *vle = val->get_line_edit();
-	vle->connect("focus_entered", callable_mp(this, &ColorPicker::_focus_enter), CONNECT_DEFERRED);
-	vle->connect("focus_exited", callable_mp(this, &ColorPicker::_focus_exit));
 	vle->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
 	vle->connect("gui_input", callable_mp(this, &ColorPicker::_line_edit_input));
 	vle->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
@@ -1415,47 +1414,11 @@ void ColorPicker::_screen_pick_pressed() {
 	//screen->show_modal();
 }
 
-void ColorPicker::_focus_enter() {
-	bool has_ctext_focus = c_text->has_focus();
-	if (has_ctext_focus) {
-		c_text->select_all();
-	} else {
-		c_text->select(0, 0);
-	}
-
-	for (int i = 0; i < current_slider_count; i++) {
-		if (values[i]->get_line_edit()->has_focus() && !has_ctext_focus) {
-			values[i]->get_line_edit()->select_all();
-		} else {
-			values[i]->get_line_edit()->select(0, 0);
-		}
-	}
-	if (alpha_value->get_line_edit()->has_focus() && !has_ctext_focus) {
-		alpha_value->get_line_edit()->select_all();
-	} else {
-		alpha_value->get_line_edit()->select(0, 0);
-	}
-}
-
-void ColorPicker::_focus_exit() {
-	for (int i = 0; i < current_slider_count; i++) {
-		if (!values[i]->get_line_edit()->get_menu()->is_visible()) {
-			values[i]->get_line_edit()->select(0, 0);
-		}
-	}
-	if (!alpha_value->get_line_edit()->get_menu()->is_visible()) {
-		alpha_value->get_line_edit()->select(0, 0);
-	}
-
-	c_text->select(0, 0);
-}
-
 void ColorPicker::_html_focus_exit() {
 	if (c_text->is_menu_visible()) {
 		return;
 	}
 	_html_submitted(c_text->get_text());
-	_focus_exit();
 }
 
 void ColorPicker::set_presets_enabled(bool p_enabled) {
@@ -1666,9 +1629,9 @@ ColorPicker::ColorPicker() :
 
 	c_text = memnew(LineEdit);
 	hhb->add_child(c_text);
+	c_text->set_select_all_on_focus(true);
 	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
-	c_text->connect("focus_entered", callable_mp(this, &ColorPicker::_focus_enter), CONNECT_DEFERRED);
 	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_html_focus_exit));
 
 	wheel_edit = memnew(AspectRatioContainer);
