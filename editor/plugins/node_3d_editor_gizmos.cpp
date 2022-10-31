@@ -2277,10 +2277,10 @@ void Label3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	pos3d_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
-	cursor_points = Vector<Vector3>();
 
+	Vector<Vector3> cursor_points;
 	Vector<Color> cursor_colors;
-	const float cs = 0.25;
+	const float cs = 1.0;
 	// Add more points to create a "hard stop" in the color gradient.
 	cursor_points.push_back(Vector3(+cs, 0, 0));
 	cursor_points.push_back(Vector3());
@@ -2348,9 +2348,22 @@ int Marker3DGizmoPlugin::get_priority() const {
 }
 
 void Marker3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	const Marker3D *marker = Object::cast_to<Marker3D>(p_gizmo->get_node_3d());
+	const real_t extents = marker->get_gizmo_extents();
+	const Transform3D xform(Basis::from_scale(Vector3(extents, extents, extents)));
+
 	p_gizmo->clear();
-	p_gizmo->add_mesh(pos3d_mesh);
-	p_gizmo->add_collision_segments(cursor_points);
+	p_gizmo->add_mesh(pos3d_mesh, Ref<Material>(), xform);
+
+	const Vector<Vector3> points = {
+		Vector3(-extents, 0, 0),
+		Vector3(+extents, 0, 0),
+		Vector3(0, -extents, 0),
+		Vector3(0, +extents, 0),
+		Vector3(0, 0, -extents),
+		Vector3(0, 0, +extents),
+	};
+	p_gizmo->add_collision_segments(points);
 }
 
 ////

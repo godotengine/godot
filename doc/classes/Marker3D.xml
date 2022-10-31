@@ -8,4 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="gizmo_extents" type="float" setter="set_gizmo_extents" getter="get_gizmo_extents" default="0.25">
+			Size of the gizmo cross that appears in the editor.
+		</member>
+	</members>
 </class>
