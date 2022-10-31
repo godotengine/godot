@@ -64,6 +64,7 @@ bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
 	GDVIRTUAL_CALL(_is_pixel_opaque, p_x, p_y, ret);
 	return ret;
 }
+
 bool Texture2D::has_alpha() const {
 	bool ret = true;
 	GDVIRTUAL_CALL(_has_alpha, ret);

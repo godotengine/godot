@@ -21,7 +21,7 @@
 			<param index="3" name="lossy_quality" type="float" default="0.8" />
 			<description>
 				Initializes the compressed texture from a base image. The compression mode must be provided.
-				If this image will be used as a normal map, the "normal map" flag is recommended, to ensure optimum quality.
+				[param normal_map] is recommended to ensure optimum quality if this image will be used as a normal map.
 				If lossy compression is requested, the quality setting can optionally be provided. This maps to Lossy WebP compression quality.
 			</description>
 		</method>
