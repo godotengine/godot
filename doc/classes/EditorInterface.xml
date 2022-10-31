@@ -249,7 +249,7 @@
 		</method>
 		<method name="set_movie_maker_enabled">
 			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
+			<param index="0" name="enabled" type="bool" />
 			<description>
 				Sets whether Movie Maker mode is enabled in the editor. See also [method is_movie_maker_enabled]. See [MovieWriter] for more information.
 			</description>
