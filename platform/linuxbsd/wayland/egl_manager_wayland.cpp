@@ -30,6 +30,10 @@
 
 #include "egl_manager_wayland.h"
 
+#ifdef WAYLAND_ENABLED
+#ifdef EGL_ENABLED
+#ifdef GLES3_ENABLED
+
 const char *EGLManagerWayland::_get_platform_extension_name() const {
 	return "EGL_KHR_platform_wayland";
 }
@@ -37,3 +41,7 @@ const char *EGLManagerWayland::_get_platform_extension_name() const {
 EGLenum EGLManagerWayland::_get_platform_extension_enum() const {
 	return EGL_PLATFORM_WAYLAND_KHR;
 }
+
+#endif // GLES3_ENABLED
+#endif // EGL_ENABLED
+#endif // WAYLAND_ENABLED

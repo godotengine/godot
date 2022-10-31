@@ -31,6 +31,7 @@
 #ifndef EGL_MANAGER_H
 #define EGL_MANAGER_H
 
+#ifdef EGL_ENABLED
 #ifdef GLES3_ENABLED
 
 #include <EGL/egl.h>
@@ -98,5 +99,5 @@ public:
 };
 
 #endif // GLES3_ENABLED
-
+#endif // EGL_ENABLED
 #endif // EGL_MANAGER_H

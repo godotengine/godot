@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_manager_x11.h                                                     */
+/*  egl_manager_x11.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,24 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GL_MANAGER_X11_H
-#define GL_MANAGER_X11_H
+#include "egl_manager_x11.h"
 
 #ifdef X11_ENABLED
-
+#ifdef EGL_ENABLED
 #ifdef GLES3_ENABLED
 
-#include "drivers/egl/egl_manager.h"
+const char *EGLManagerX11::_get_platform_extension_name() const {
+	return "EGL_KHR_platform_x11";
+}
 
-#include <X11/Xlib.h>
-
-class EGLManagerX11 : public EGLManager {
-private:
-	virtual const char *_get_platform_extension_name() const override;
-	virtual EGLenum _get_platform_extension_enum() const override;
-};
+EGLenum EGLManagerX11::_get_platform_extension_enum() const {
+	return EGL_PLATFORM_X11_KHR;
+}
 
 #endif // GLES3_ENABLED
+#endif // EGL_ENABLED
 #endif // X11_ENABLED
-
-#endif // GL_MANAGER_X11_H
