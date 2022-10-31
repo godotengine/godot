@@ -341,11 +341,6 @@ void WebRTCMultiplayerPeer::remove_peer(int p_peer_id) {
 		peer->connected = false;
 		emit_signal(SNAME("peer_disconnected"), p_peer_id);
 		if (network_mode == MODE_CLIENT && p_peer_id == TARGET_PEER_SERVER) {
-			if (connection_status == CONNECTION_CONNECTING) {
-				emit_signal(SNAME("connection_failed"));
-			} else {
-				emit_signal(SNAME("server_disconnected"));
-			}
 			connection_status = CONNECTION_DISCONNECTED;
 		}
 	}

@@ -113,9 +113,6 @@ protected:
 	void _add_peer(int p_id);
 	void _admit_peer(int p_id);
 	void _del_peer(int p_id);
-	void _connected_to_server();
-	void _connection_failed();
-	void _server_disconnected();
 	void _update_status();
 
 public:

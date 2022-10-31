@@ -123,9 +123,6 @@ void MultiplayerPeer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("server_disconnected"));
-	ADD_SIGNAL(MethodInfo("connection_succeeded"));
-	ADD_SIGNAL(MethodInfo("connection_failed"));
 }
 
 /*************/

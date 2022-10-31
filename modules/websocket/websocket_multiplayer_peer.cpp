@@ -264,9 +264,7 @@ void WebSocketMultiplayerPeer::_poll_client() {
 		}
 	} else if (peer->get_ready_state() == WebSocketPeer::STATE_CLOSED) {
 		if (connection_status == CONNECTION_CONNECTED) {
-			emit_signal(SNAME("server_disconnected"));
-		} else {
-			emit_signal(SNAME("connection_failed"));
+			emit_signal(SNAME("peer_disconnected"), 1);
 		}
 		_clear();
 		return;
@@ -276,7 +274,6 @@ void WebSocketMultiplayerPeer::_poll_client() {
 		ERR_FAIL_COND(!pending_peers.has(1)); // Bug.
 		if (OS::get_singleton()->get_ticks_msec() - pending_peers[1].time > handshake_timeout) {
 			print_verbose(vformat("WebSocket handshake timed out after %.3f seconds.", handshake_timeout * 0.001));
-			emit_signal(SNAME("connection_failed"));
 			_clear();
 			return;
 		}
