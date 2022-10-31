@@ -98,4 +98,5 @@ public:
 };
 
 #endif // EGL_ENABLED
+
 #endif // EGL_MANAGER_H
