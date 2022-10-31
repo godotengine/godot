@@ -55,6 +55,11 @@ void SceneMultiplayer::_update_status() {
 	MultiplayerPeer::ConnectionStatus status = multiplayer_peer.is_valid() ? multiplayer_peer->get_connection_status() : MultiplayerPeer::CONNECTION_DISCONNECTED;
 	if (last_connection_status != status) {
 		if (status == MultiplayerPeer::CONNECTION_DISCONNECTED) {
+			if (last_connection_status == MultiplayerPeer::CONNECTION_CONNECTING) {
+				emit_signal(SNAME("connection_failed"));
+			} else {
+				emit_signal(SNAME("server_disconnected"));
+			}
 			clear();
 		}
 		last_connection_status = status;
@@ -195,9 +200,6 @@ void SceneMultiplayer::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) 
 	if (multiplayer_peer.is_valid()) {
 		multiplayer_peer->disconnect("peer_connected", callable_mp(this, &SceneMultiplayer::_add_peer));
 		multiplayer_peer->disconnect("peer_disconnected", callable_mp(this, &SceneMultiplayer::_del_peer));
-		multiplayer_peer->disconnect("connection_succeeded", callable_mp(this, &SceneMultiplayer::_connected_to_server));
-		multiplayer_peer->disconnect("connection_failed", callable_mp(this, &SceneMultiplayer::_connection_failed));
-		multiplayer_peer->disconnect("server_disconnected", callable_mp(this, &SceneMultiplayer::_server_disconnected));
 		clear();
 	}
 
@@ -206,9 +208,6 @@ void SceneMultiplayer::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) 
 	if (multiplayer_peer.is_valid()) {
 		multiplayer_peer->connect("peer_connected", callable_mp(this, &SceneMultiplayer::_add_peer));
 		multiplayer_peer->connect("peer_disconnected", callable_mp(this, &SceneMultiplayer::_del_peer));
-		multiplayer_peer->connect("connection_succeeded", callable_mp(this, &SceneMultiplayer::_connected_to_server));
-		multiplayer_peer->connect("connection_failed", callable_mp(this, &SceneMultiplayer::_connection_failed));
-		multiplayer_peer->connect("server_disconnected", callable_mp(this, &SceneMultiplayer::_server_disconnected));
 	}
 	_update_status();
 }
@@ -385,6 +384,9 @@ void SceneMultiplayer::_admit_peer(int p_id) {
 	connected_peers.insert(p_id);
 	cache->on_peer_change(p_id, true);
 	replicator->on_peer_change(p_id, true);
+	if (p_id == 1) {
+		emit_signal(SNAME("connected_to_server"));
+	}
 	emit_signal(SNAME("peer_connected"), p_id);
 }
 
@@ -428,19 +430,6 @@ void SceneMultiplayer::disconnect_peer(int p_id) {
 		connected_peers.has(p_id);
 	}
 	multiplayer_peer->disconnect_peer(p_id);
-}
-
-void SceneMultiplayer::_connected_to_server() {
-	emit_signal(SNAME("connected_to_server"));
-}
-
-void SceneMultiplayer::_connection_failed() {
-	emit_signal(SNAME("connection_failed"));
-}
-
-void SceneMultiplayer::_server_disconnected() {
-	replicator->on_reset();
-	emit_signal(SNAME("server_disconnected"));
 }
 
 Error SceneMultiplayer::send_bytes(Vector<uint8_t> p_data, int p_to, MultiplayerPeer::TransferMode p_mode, int p_channel) {
