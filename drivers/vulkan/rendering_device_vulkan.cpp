@@ -2160,14 +2160,35 @@ RID RenderingDeviceVulkan::texture_create_from_extension(TextureType p_type, Dat
 	texture.height = p_height;
 	texture.depth = p_depth;
 	texture.layers = p_layers;
-	texture.mipmaps = 0; // Maybe make this settable too?
+	texture.mipmaps = 1;
 	texture.usage_flags = p_flags;
 	texture.base_mipmap = 0;
 	texture.base_layer = 0;
 	texture.allowed_shared_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
 	texture.allowed_shared_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
 
-	// Do we need to do something with texture.layout?
+	// Set base layout based on usage priority.
+
+	if (texture.usage_flags & TEXTURE_USAGE_SAMPLING_BIT) {
+		// First priority, readable.
+		texture.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	} else if (texture.usage_flags & TEXTURE_USAGE_STORAGE_BIT) {
+		// Second priority, storage.
+
+		texture.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+	} else if (texture.usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+		// Third priority, color or depth.
+
+		texture.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	} else if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		texture.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	} else {
+		texture.layout = VK_IMAGE_LAYOUT_GENERAL;
+	}
 
 	if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 		texture.read_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -3401,6 +3422,16 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	LocalVector<int32_t> attachment_last_pass;
 	attachment_last_pass.resize(p_attachments.size());
 
+	if (p_view_count > 1) {
+		const VulkanContext::MultiviewCapabilities capabilities = context->get_multiview_capabilities();
+
+		// This only works with multiview!
+		ERR_FAIL_COND_V_MSG(!capabilities.is_supported, VK_NULL_HANDLE, "Multiview not supported");
+
+		// Make sure we limit this to the number of views we support.
+		ERR_FAIL_COND_V_MSG(p_view_count > capabilities.max_view_count, VK_NULL_HANDLE, "Hardware does not support requested number of views for Multiview render pass");
+	}
+
 	// These are only used if we use multiview but we need to define them in scope.
 	const uint32_t view_mask = (1 << p_view_count) - 1;
 	const uint32_t correlation_mask = (1 << p_view_count) - 1;
@@ -3701,7 +3732,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				attachment_last_pass[attachment] = i;
 			}
-			reference.aspectMask = 0;
+			reference.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			color_references.push_back(reference);
 		}
 
@@ -3723,7 +3754,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				attachment_last_pass[attachment] = i;
 			}
-			reference.aspectMask = 0; // TODO: We need to set this here, possibly VK_IMAGE_ASPECT_COLOR_BIT?
+			reference.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			input_references.push_back(reference);
 		}
 
@@ -3752,7 +3783,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 				attachment_last_pass[attachment] = i;
 			}
-			reference.aspectMask = 0;
+			reference.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			resolve_references.push_back(reference);
 		}
 
@@ -3767,7 +3798,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
 			depth_stencil_reference.attachment = attachment_remap[attachment];
 			depth_stencil_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-			depth_stencil_reference.aspectMask = 0;
+			depth_stencil_reference.aspectMask = VK_IMAGE_ASPECT_NONE;
 			attachment_last_pass[attachment] = i;
 
 			if (is_multisample_first) {
@@ -3793,7 +3824,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			vrs_reference.pNext = nullptr;
 			vrs_reference.attachment = attachment_remap[attachment];
 			vrs_reference.layout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
-			vrs_reference.aspectMask = 0;
+			vrs_reference.aspectMask = VK_IMAGE_ASPECT_NONE;
 
 			Size2i texel_size = context->get_vrs_capabilities().max_texel_size;
 
@@ -3934,16 +3965,9 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	Vector<uint32_t> view_masks;
 	VkRenderPassMultiviewCreateInfo render_pass_multiview_create_info;
 
-	if (p_view_count > 1) {
-		// This may no longer be needed with the new settings already including this.
-
-		const VulkanContext::MultiviewCapabilities capabilities = context->get_multiview_capabilities();
-
-		// For now this only works with multiview!
-		ERR_FAIL_COND_V_MSG(!capabilities.is_supported, VK_NULL_HANDLE, "Multiview not supported");
-
-		// Make sure we limit this to the number of views we support.
-		ERR_FAIL_COND_V_MSG(p_view_count > capabilities.max_view_count, VK_NULL_HANDLE, "Hardware does not support requested number of views for Multiview render pass");
+	if ((p_view_count > 1) && !context->supports_renderpass2()) {
+		// This is only required when using vkCreateRenderPass, we add it if vkCreateRenderPass2KHR is not supported
+		// resulting this in being passed to our vkCreateRenderPass fallback.
 
 		// Set view masks for each subpass.
 		for (uint32_t i = 0; i < subpasses.size(); i++) {
