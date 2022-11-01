@@ -92,7 +92,8 @@
 			<argument index="1" name="offset" type="int" default="0" />
 			<argument index="2" name="end" type="int" default="-1" />
 			<description>
-				Searches the text for the compiled pattern. Returns a [RegExMatch] container of the first matching result if found, otherwise [code]null[/code]. The region to search within can be specified without modifying where the start and end anchor would be.
+				Searches the text for the compiled pattern. Returns a [RegExMatch] container of the first matching result if found, otherwise [code]null[/code].
+				The region to search within can be specified with [code]offset[/code] and [code]end[/code]. This is useful when searching for another match in the same [code]subject[/code] by calling this method again after a previous success. Setting these parameters differs from passing over a shortened string. For example, the start anchor [code]^[/code] is not affected by [code]offset[/code], and the character before [code]offset[/code] will be checked for the word boundary [code]\b[/code].
 			</description>
 		</method>
 		<method name="search_all" qualifiers="const">
@@ -101,7 +102,8 @@
 			<argument index="1" name="offset" type="int" default="0" />
 			<argument index="2" name="end" type="int" default="-1" />
 			<description>
-				Searches the text for the compiled pattern. Returns an array of [RegExMatch] containers for each non-overlapping result. If no results were found, an empty array is returned instead. The region to search within can be specified without modifying where the start and end anchor would be.
+				Searches the text for the compiled pattern. Returns an array of [RegExMatch] containers for each non-overlapping result. If no results were found, an empty array is returned instead.
+				The region to search within can be specified with [code]offset[/code] and [code]end[/code]. This is useful when searching for another match in the same [code]subject[/code] by calling this method again after a previous success. Setting these parameters differs from passing over a shortened string. For example, the start anchor [code]^[/code] is not affected by [code]offset[/code], and the character before [code]offset[/code] will be checked for the word boundary [code]\b[/code].
 			</description>
 		</method>
 		<method name="sub" qualifiers="const">
@@ -112,7 +114,8 @@
 			<argument index="3" name="offset" type="int" default="0" />
 			<argument index="4" name="end" type="int" default="-1" />
 			<description>
-				Searches the text for the compiled pattern and replaces it with the specified string. Escapes and backreferences such as [code]$1[/code] and [code]$name[/code] are expanded and resolved. By default, only the first instance is replaced, but it can be changed for all instances (global replacement). The region to search within can be specified without modifying where the start and end anchor would be.
+				Searches the text for the compiled pattern and replaces it with the specified string. Escapes and backreferences such as [code]$1[/code] and [code]$name[/code] are expanded and resolved. By default, only the first instance is replaced, but it can be changed for all instances (global replacement).
+				The region to search within can be specified with [code]offset[/code] and [code]end[/code]. This is useful when searching for another match in the same [code]subject[/code] by calling this method again after a previous success. Setting these parameters differs from passing over a shortened string. For example, the start anchor [code]^[/code] is not affected by [code]offset[/code], and the character before [code]offset[/code] will be checked for the word boundary [code]\b[/code].
 			</description>
 		</method>
 	</methods>
