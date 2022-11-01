@@ -3524,6 +3524,7 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipamp) const {
 
 void Image::bump_map_to_normal_map(float bump_scale) {
 	ERR_FAIL_COND(!_can_modify(format));
+	clear_mipmaps();
 	convert(Image::FORMAT_RF);
 
 	Vector<uint8_t> result_image; //rgba output
