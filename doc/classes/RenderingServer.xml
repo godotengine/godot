@@ -3024,6 +3024,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_get_rd_texture" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="srgb" type="bool" default="false" />
+			<description>
+				Returns a texture [RID] that can be used with [RenderingDevice].
+			</description>
+		</method>
 		<method name="texture_proxy_create">
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />

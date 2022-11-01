@@ -212,6 +212,7 @@ public:
 	FUNC1(texture_debug_usage, List<TextureInfo> *)
 
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
+	FUNC2RC(RID, texture_get_rd_texture_rid, RID, bool)
 
 	/* SHADER API */
 
