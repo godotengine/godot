@@ -5751,8 +5751,10 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 			ResourceLoader::get_recognized_extensions_for_type("Texture2D", &texture_extensions);
 
 			for (int i = 0; i < files.size(); i++) {
+				String extension = files[i].get_extension().to_lower();
+
 				// Check if dragged files with texture or scene extension can be created at least once.
-				if (texture_extensions.find(files[i].get_extension()) || scene_extensions.find(files[i].get_extension())) {
+				if (texture_extensions.find(extension) || scene_extensions.find(extension)) {
 					Ref<Resource> res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;
