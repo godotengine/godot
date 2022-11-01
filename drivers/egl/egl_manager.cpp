@@ -135,7 +135,7 @@ int EGLManager::display_get_native_visual_id(void *p_display) {
 
 	EGLint native_visual_id = -1;
 
-	if (!eglGetConfigAttrib(gldisplay.egl_display, gldisplay.egl_context, EGL_NATIVE_VISUAL_ID, &native_visual_id)) {
+	if (!eglGetConfigAttrib(gldisplay.egl_display, gldisplay.egl_config, EGL_NATIVE_VISUAL_ID, &native_visual_id)) {
 		ERR_FAIL_V(-1);
 	}
 

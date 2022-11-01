@@ -4894,6 +4894,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		int visual_id = egl_manager->display_get_native_visual_id(x11_display);
 		ERR_FAIL_COND_MSG(visual_id < 0, "Unable to get a visual id.");
 
+		visual_info_template.visualid = (VisualID)visual_id;
+
 		int number_of_visuals = 0;
 		XVisualInfo *vi_list = XGetVisualInfo(x11_display, VisualIDMask, &visual_info_template, &number_of_visuals);
 		ERR_FAIL_COND(number_of_visuals <= 0);
