@@ -295,7 +295,7 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 	}
 }
 
-void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount) {
+void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, const RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount) {
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
 	ERR_FAIL_COND_MSG(peer.is_null(), "Attempt to call RPC without active multiplayer peer.");
 
@@ -311,12 +311,35 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 		ERR_FAIL_MSG("Attempt to call RPC with unknown peer ID: " + itos(p_to) + ".");
 	}
 
-	// See if all peers have cached path (if so, call can be fast).
-	int psc_id;
-	const bool has_all_peers = multiplayer->get_path_cache()->send_object_cache(p_from, p_to, psc_id);
+	// See if all peers have cached path (if so, call can be fast) while building the RPC target list.
+	HashSet<int> targets;
+	Ref<SceneCacheInterface> cache = multiplayer->get_path_cache();
+	int psc_id = -1;
+	bool has_all_peers = true;
+	const ObjectID oid = p_node->get_instance_id();
+	if (p_to > 0) {
+		ERR_FAIL_COND_MSG(!multiplayer->get_replicator()->is_rpc_visible(oid, p_to), "Attempt to call an RPC to a peer that cannot see this node. Peer ID: " + itos(p_to));
+		targets.insert(p_to);
+		has_all_peers = cache->send_object_cache(p_node, p_to, psc_id);
+	} else {
+		bool restricted = !multiplayer->get_replicator()->is_rpc_visible(oid, 0);
+		for (const int &P : multiplayer->get_connected_peers()) {
+			if (p_to < 0 && P == -p_to) {
+				continue; // Excluded peer.
+			}
+			if (restricted && !multiplayer->get_replicator()->is_rpc_visible(oid, P)) {
+				continue; // Not visible to this peer.
+			}
+			targets.insert(P);
+			bool has_peer = cache->send_object_cache(p_node, P, psc_id);
+			has_all_peers = has_all_peers && has_peer;
+		}
+	}
+	if (targets.is_empty()) {
+		return; // No one in sight.
+	}
 
 	// Create base packet, lots of hardcode because it must be tight.
-
 	int ofs = 0;
 
 #define MAKE_ROOM(m_amount)             \
@@ -399,7 +422,7 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 	ERR_FAIL_COND(name_id_compression > 1);
 
 #ifdef DEBUG_ENABLED
-	_profile_node_data("rpc_out", p_from->get_instance_id(), ofs);
+	_profile_node_data("rpc_out", p_node->get_instance_id(), ofs);
 #endif
 
 	// We can now set the meta
@@ -410,8 +433,9 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 	peer->set_transfer_mode(p_config.transfer_mode);
 
 	if (has_all_peers) {
-		// They all have verified paths, so send fast.
-		multiplayer->send_command(p_to, packet_cache.ptr(), ofs);
+		for (const int P : targets) {
+			multiplayer->send_command(P, packet_cache.ptr(), ofs);
+		}
 	} else {
 		// Unreachable because the node ID is never compressed if the peers doesn't know it.
 		CRASH_COND(node_id_compression != NETWORK_NODE_ID_COMPRESSION_32);
@@ -419,23 +443,15 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 		// Not all verified path, so send one by one.
 
 		// Append path at the end, since we will need it for some packets.
-		NodePath from_path = multiplayer->get_root_path().rel_path_to(p_from->get_path());
+		NodePath from_path = multiplayer->get_root_path().rel_path_to(p_node->get_path());
 		CharString pname = String(from_path).utf8();
 		int path_len = encode_cstring(pname.get_data(), nullptr);
 		MAKE_ROOM(ofs + path_len);
 		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
 
-		for (const int &P : multiplayer->get_connected_peers()) {
-			if (p_to < 0 && P == -p_to) {
-				continue; // Continue, excluded.
-			}
-
-			if (p_to > 0 && P != p_to) {
-				continue; // Continue, not for this peer.
-			}
-
+		// Not all verified path, so check which needs the longer packet.
+		for (const int P : targets) {
 			bool confirmed = multiplayer->get_path_cache()->is_cache_confirmed(from_path, P);
-
 			if (confirmed) {
 				// This one confirmed path, so use id.
 				encode_uint32(psc_id, &(packet_cache.write[1]));
