@@ -491,6 +491,8 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
+	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const override;
+
 	//internal usage
 	_FORCE_INLINE_ TextureType texture_get_type(RID p_texture) {
 		RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
