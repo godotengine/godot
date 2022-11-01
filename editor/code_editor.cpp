@@ -905,7 +905,7 @@ void CodeTextEditor::_line_col_changed() {
 }
 
 void CodeTextEditor::_text_changed() {
-	if (text_editor->is_insert_text_operation()) {
+	if (code_complete_enabled && text_editor->is_insert_text_operation()) {
 		code_complete_timer_line = text_editor->get_caret_line();
 		code_complete_timer->start();
 	}
@@ -1736,6 +1736,7 @@ void CodeTextEditor::_apply_settings_change() {
 
 	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
+	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
 	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 }
@@ -2010,6 +2011,7 @@ CodeTextEditor::CodeTextEditor() {
 	idle->set_one_shot(true);
 	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 
+	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
 	code_complete_timer->set_one_shot(true);
