@@ -110,7 +110,9 @@ void EditorNode3DGizmo::clear() {
 	collision_mesh = Ref<TriangleMesh>();
 	instances.clear();
 	handles.clear();
+	handle_ids.clear();
 	secondary_handles.clear();
+	secondary_handle_ids.clear();
 }
 
 void EditorNode3DGizmo::redraw() {
@@ -406,12 +408,15 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 		return;
 	}
 
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
+
+	Vector<Vector3> &handle_list = p_secondary ? secondary_handles : handles;
+	Vector<int> &id_list = p_secondary ? secondary_handle_ids : handle_ids;
 
 	if (p_ids.is_empty()) {
-		ERR_FAIL_COND_MSG((!handles.is_empty() && !handle_ids.is_empty()) || (!secondary_handles.is_empty() && !secondary_handle_ids.is_empty()), "Fail");
+		ERR_FAIL_COND_MSG(!id_list.is_empty(), "IDs must be provided for all handles, as handles with IDs already exist.");
 	} else {
-		ERR_FAIL_COND_MSG(handles.size() != handle_ids.size() || secondary_handles.size() != secondary_handle_ids.size(), "Fail");
+		ERR_FAIL_COND_MSG(p_handles.size() != p_ids.size(), "The number of IDs should be the same as the number of handles.");
 	}
 
 	bool is_current_hover_gizmo = Node3DEditor::get_singleton()->get_current_hover_gizmo() == this;
@@ -464,19 +469,17 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	}
 	instances.push_back(ins);
 
-	Vector<Vector3> &h = p_secondary ? secondary_handles : handles;
-	int current_size = h.size();
-	h.resize(current_size + p_handles.size());
+	int current_size = handle_list.size();
+	handle_list.resize(current_size + p_handles.size());
 	for (int i = 0; i < p_handles.size(); i++) {
-		h.write[current_size + i] = p_handles[i];
+		handle_list.write[current_size + i] = p_handles[i];
 	}
 
 	if (!p_ids.is_empty()) {
-		Vector<int> &ids = p_secondary ? secondary_handle_ids : handle_ids;
-		current_size = ids.size();
-		ids.resize(current_size + p_ids.size());
+		current_size = id_list.size();
+		id_list.resize(current_size + p_ids.size());
 		for (int i = 0; i < p_ids.size(); i++) {
-			ids.write[current_size + i] = p_ids[i];
+			id_list.write[current_size + i] = p_ids[i];
 		}
 	}
 }
