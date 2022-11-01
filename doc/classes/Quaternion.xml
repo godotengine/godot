@@ -43,12 +43,6 @@
 		</constructor>
 		<constructor name="Quaternion">
 			<return type="Quaternion" />
-			<param index="0" name="euler_yxz" type="Vector3" />
-			<description>
-			</description>
-		</constructor>
-		<constructor name="Quaternion">
-			<return type="Quaternion" />
 			<param index="0" name="from" type="Basis" />
 			<description>
 				Constructs a quaternion from the given [Basis].
@@ -84,6 +78,13 @@
 		<method name="exp" qualifiers="const">
 			<return type="Quaternion" />
 			<description>
+			</description>
+		</method>
+		<method name="from_euler" qualifiers="static">
+			<return type="Quaternion" />
+			<param index="0" name="euler" type="Vector3" />
+			<description>
+				Constructs a Quaternion from Euler angles in YXZ rotation order.
 			</description>
 		</method>
 		<method name="get_angle" qualifiers="const">

@@ -1806,6 +1806,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, spherical_cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Quaternion, spherical_cubic_interpolate_in_time, sarray("b", "pre_a", "post_b", "weight", "b_t", "pre_a_t", "post_b_t"), varray());
 	bind_method(Quaternion, get_euler, sarray(), varray());
+	bind_static_method(Quaternion, from_euler, sarray("euler"), varray());
 	bind_method(Quaternion, get_axis, sarray(), varray());
 	bind_method(Quaternion, get_angle, sarray(), varray());
 
