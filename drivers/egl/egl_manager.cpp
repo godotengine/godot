@@ -287,8 +287,6 @@ Error EGLManager::initialize() {
 		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
 	}
 
-	print_verbose(vformat("Available extensions: %s", extensions_string));
-
 	return OK;
 }
 
