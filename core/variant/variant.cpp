@@ -1420,7 +1420,7 @@ Variant::operator signed int() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<int>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1438,7 +1438,7 @@ Variant::operator unsigned int() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<unsigned int>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1456,7 +1456,7 @@ Variant::operator int64_t() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<int64_t>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1474,7 +1474,7 @@ Variant::operator uint64_t() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<uint64_t>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1503,7 +1503,7 @@ Variant::operator signed long() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<signed long>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1523,7 +1523,7 @@ Variant::operator unsigned long() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<unsigned long>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1544,7 +1544,7 @@ Variant::operator signed short() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<signed short>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1562,7 +1562,7 @@ Variant::operator unsigned short() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<short>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1580,7 +1580,7 @@ Variant::operator signed char() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<char>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1598,7 +1598,7 @@ Variant::operator unsigned char() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._float;
+			return static_cast<unsigned char>(_data._float);
 		case STRING:
 			return operator String().to_int();
 		default: {
