@@ -3674,20 +3674,41 @@ void SpatialEditorViewport::assign_pending_data_pointers(Spatial *p_preview_node
 
 Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const {
 	const float MAX_DISTANCE = 50.0;
+	const float FALLBACK_DISTANCE = 5.0;
 
 	Vector3 world_ray = _get_ray(p_pos);
 	Vector3 world_pos = _get_ray_pos(p_pos);
 
-	Vector3 point = world_pos + world_ray * MAX_DISTANCE;
-
 	PhysicsDirectSpaceState *ss = get_tree()->get_root()->get_world()->get_direct_space_state();
 	PhysicsDirectSpaceState::RayResult result;
 
-	if (ss->intersect_ray(world_pos, world_pos + world_ray * MAX_DISTANCE, result)) {
-		point = result.position;
+	if (ss->intersect_ray(world_pos, world_pos + world_ray * camera->get_zfar(), result)) {
+		return result.position;
 	}
 
-	return point;
+	const bool is_orthogonal = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
+
+	// The XZ plane.
+	Vector3 intersection;
+	Plane plane(Vector3(0, 1, 0), 0);
+	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
+		if (is_orthogonal || world_pos.distance_to(intersection) <= MAX_DISTANCE) {
+			return intersection;
+		}
+	}
+
+	// Plane facing the camera using fallback distance.
+	if (is_orthogonal) {
+		plane = Plane(cursor.pos - world_ray * (cursor.distance - FALLBACK_DISTANCE), world_ray);
+	} else {
+		plane = Plane(world_pos + world_ray * FALLBACK_DISTANCE, world_ray);
+	}
+	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
+		return intersection;
+	}
+
+	// Not likely, but just in case...
+	return world_pos + world_ray * FALLBACK_DISTANCE;
 }
 
 AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, bool p_exclude_toplevel_transform) {
@@ -3959,7 +3980,7 @@ bool SpatialEditorViewport::can_drop_data_fw(const Point2 &p_point, const Varian
 	}
 
 	if (can_instance) {
-		Transform global_transform = Transform(Basis(), _get_instance_position(p_point));
+		Transform global_transform = Transform(Basis(), spatial_editor->snap_point(_get_instance_position(p_point)));
 		preview_node->set_global_transform(global_transform);
 	}
 
