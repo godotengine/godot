@@ -100,6 +100,7 @@ private:
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
+		FILE_IMPORT,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH,
 		FILE_NEW_RESOURCE,
@@ -159,6 +160,8 @@ private:
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog;
 	CreateDialog *new_resource_dialog;
+	EditorFileDialog *import_files_dialog = nullptr;
+	ConfirmationDialog *import_overwrite_dialog = nullptr;
 
 	bool always_show_folders;
 
@@ -236,6 +239,9 @@ private:
 	void _move_with_overwrite();
 	Vector<String> _check_existing();
 	void _move_operation_confirm(const String &p_to_path, bool overwrite = false);
+	void _import_files_with_overwrite();
+	void _import_files_selected(const PoolStringArray &p_file);
+	void _import_files(bool p_overwrite = false);
 
 	void _tree_rmb_option(int p_option);
 	void _file_list_rmb_option(int p_option);

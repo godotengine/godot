@@ -39,6 +39,7 @@
 #include "core/project_settings.h"
 #include "editor/scene_create_dialog.h"
 #include "editor_feature_profile.h"
+#include "editor_file_dialog.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
 #include "editor_scale.h"
@@ -1591,6 +1592,56 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 	}
 }
 
+void FileSystemDock::_import_files_with_overwrite() {
+	_import_files(true);
+}
+
+void FileSystemDock::_import_files_selected(const PoolStringArray &p_files) {
+	to_move.clear();
+
+	for (int i = 0; i < p_files.size(); i++) {
+		to_move.push_back(FileOrFolder(p_files[i], !p_files[i].ends_with("/")));
+	}
+
+	to_move_path = path.get_base_dir();
+	Vector<String> conflicting_items = _check_existing();
+
+	if (!conflicting_items.empty()) {
+		import_overwrite_dialog->set_text(vformat(
+				TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them?"),
+				to_move_path,
+				String("\n").join(conflicting_items)));
+		import_overwrite_dialog->popup_centered();
+		return;
+	}
+
+	_import_files();
+}
+
+void FileSystemDock::_import_files(bool p_overwrite) {
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	for (int i = 0; i < to_move.size(); i++) {
+		String from = to_move[i].path;
+		String to = to_move_path.plus_file(from.get_file());
+
+		// We shouldn't replace folders with files
+		if (DirAccess::exists(to)) {
+			continue;
+		}
+
+		if (FileAccess::exists(to) && !p_overwrite) {
+			continue;
+		}
+
+		da->copy(from, to);
+	}
+
+	EditorFileSystem::get_singleton()->scan_changes();
+
+	memdelete(da);
+}
+
 Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) {
 	// Build a list of selected items with the active one at the first position.
 	Vector<String> selected_strings;
@@ -1874,6 +1925,10 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 
 			ERR_FAIL_COND_MSG(reimport.size() == 0, "You need to select files to reimport them.");
+		} break;
+
+		case FILE_IMPORT: {
+			import_files_dialog->popup_centered_ratio();
 		} break;
 
 		case FILE_NEW_FOLDER: {
@@ -2437,6 +2492,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			p_popup->add_separator();
 		}
 
+		p_popup->add_icon_item(get_icon("ActionCopy", "EditorIcons"), TTR("Import Files"), FILE_IMPORT);
+
 		String fpath = p_paths[0];
 		String item_text = fpath.ends_with("/") ? TTR("Open in File Manager") : TTR("Show in File Manager");
 		p_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), item_text, FILE_SHOW_IN_EXPLORER);
@@ -2476,6 +2533,7 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	tree_popup->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	tree_popup->add_separator();
+	tree_popup->add_icon_item(get_icon("ActionCopy", "EditorIcons"), TTR("Import Files"), FILE_IMPORT);
 	tree_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
 
 	tree_popup->set_position(tree->get_global_position() + p_pos);
@@ -2526,6 +2584,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
 	file_list_popup->add_icon_item(get_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_list_popup->add_separator();
+	file_list_popup->add_icon_item(get_icon("ActionCopy", "EditorIcons"), TTR("Import Files"), FILE_IMPORT);
 	file_list_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->set_position(files->get_global_position() + p_pos);
 	file_list_popup->popup();
@@ -2751,6 +2810,8 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_move_with_overwrite"), &FileSystemDock::_move_with_overwrite);
 	ClassDB::bind_method(D_METHOD("_rename_operation_confirm"), &FileSystemDock::_rename_operation_confirm);
 	ClassDB::bind_method(D_METHOD("_duplicate_operation_confirm"), &FileSystemDock::_duplicate_operation_confirm);
+	ClassDB::bind_method(D_METHOD("_import_files_with_overwrite"), &FileSystemDock::_import_files_with_overwrite);
+	ClassDB::bind_method(D_METHOD("_import_files_selected"), &FileSystemDock::_import_files_selected);
 
 	ClassDB::bind_method(D_METHOD("_search_changed"), &FileSystemDock::_search_changed);
 
@@ -2982,6 +3043,19 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(new_resource_dialog);
 	new_resource_dialog->set_base_type("Resource");
 	new_resource_dialog->connect("create", this, "_resource_created");
+
+	import_files_dialog = memnew(EditorFileDialog);
+	add_child(import_files_dialog);
+	import_files_dialog->connect("files_selected", this, "_import_files_selected");
+	import_files_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILES);
+	import_files_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	import_files_dialog->clear_filters();
+	import_files_dialog->set_title(TTR("Import Files from Disk"));
+
+	import_overwrite_dialog = memnew(ConfirmationDialog);
+	import_overwrite_dialog->get_ok()->set_text(TTR("Overwrite"));
+	add_child(import_overwrite_dialog);
+	import_overwrite_dialog->connect("confirmed", this, "_import_files_with_overwrite");
 
 	searched_string = String();
 	uncollapsed_paths_before_search = Vector<String>();
