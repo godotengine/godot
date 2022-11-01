@@ -790,6 +790,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 #ifdef GLES_OVER_GL
 	// OpenGL 3.3 supports glGetTexImage which is faster and simpler than glReadPixels.
+	// It also allows for reading compressed textures, mipmaps, and more formats.
 	Vector<uint8_t> data;
 
 	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->real_format, texture->mipmaps > 1);
@@ -826,8 +827,65 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		image->convert(texture->format);
 	}
 #else
-	// Support for Web and Mobile will come later.
-	Ref<Image> image;
+
+	Vector<uint8_t> data;
+
+	// On web and mobile we always read an RGBA8 image with no mipmaps.
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
+
+	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
+	uint8_t *w = data.ptrw();
+
+	GLuint temp_framebuffer;
+	glGenFramebuffers(1, &temp_framebuffer);
+
+	GLuint temp_color_texture;
+	glGenTextures(1, &temp_color_texture);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
+
+	glBindTexture(GL_TEXTURE_2D, temp_color_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, temp_color_texture, 0);
+
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDepthFunc(GL_LEQUAL);
+	glColorMask(1, 1, 1, 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture->tex_id);
+
+	glViewport(0, 0, texture->alloc_width, texture->alloc_height);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	CopyEffects::get_singleton()->copy_to_rect(Rect2i(0, 0, 1.0, 1.0));
+
+	glReadPixels(0, 0, texture->alloc_width, texture->alloc_height, GL_RGBA, GL_UNSIGNED_BYTE, &w[0]);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteTextures(1, &temp_color_texture);
+	glDeleteFramebuffers(1, &temp_framebuffer);
+
+	data.resize(data_size);
+
+	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+	Ref<Image> image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
+	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+
+	if (texture->format != Image::FORMAT_RGBA8) {
+		image->convert(texture->format);
+	}
+
+	if (texture->mipmaps > 1) {
+		image->generate_mipmaps();
+	}
+
 #endif
 
 #ifdef TOOLS_ENABLED
