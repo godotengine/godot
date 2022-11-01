@@ -526,15 +526,14 @@
 		<signal name="id_focused">
 			<param index="0" name="id" type="int" />
 			<description>
-				Emitted when user navigated to an item of some [param id] using [code]ui_up[/code] or [code]ui_down[/code] action.
+				Emitted when the user navigated to an item of some [param id] using the [member ProjectSettings.input/ui_up] or [member ProjectSettings.input/ui_down] input action.
 			</description>
 		</signal>
 		<signal name="id_pressed">
 			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when an item of some [param id] is pressed or its accelerator is activated.
-
-				[b]Note:[/b] If [param id] is negative (either explicitly or due to overflow), this will return the correponding index instead.
+				[b]Note:[/b] If [param id] is negative (either explicitly or due to overflow), this will return the corresponding index instead.
 			</description>
 		</signal>
 		<signal name="index_pressed">

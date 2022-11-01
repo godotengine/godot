@@ -36,7 +36,7 @@
 			Collection of actions for this action set.
 		</member>
 		<member name="localized_name" type="String" setter="set_localized_name" getter="get_localized_name" default="&quot;&quot;">
-			The localised name of this action set.
+			The localized name of this action set.
 		</member>
 		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="0">
 			The priority for this action set.

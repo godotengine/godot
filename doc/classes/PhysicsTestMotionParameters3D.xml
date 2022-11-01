@@ -33,7 +33,7 @@
 		</member>
 		<member name="recovery_as_collision" type="bool" setter="set_recovery_as_collision_enabled" getter="is_recovery_as_collision_enabled" default="false">
 			If set to [code]true[/code], any depenetration from the recovery phase is reported as a collision; this is used e.g. by [CharacterBody3D] for improving floor detection during floor snapping.
-			If set to [code]false[/code], only collisions resulting from the motion are reported, which is generally the desired behaviour.
+			If set to [code]false[/code], only collisions resulting from the motion are reported, which is generally the desired behavior.
 		</member>
 	</members>
 </class>

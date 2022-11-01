@@ -251,7 +251,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="min_width" type="int" />
 			<description>
-				Overrides the calculated minimum width of a column. It can be set to `0` to restore the default behavior. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
+				Overrides the calculated minimum width of a column. It can be set to [code]0[/code] to restore the default behavior. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
 			</description>
 		</method>
 		<method name="set_column_expand">

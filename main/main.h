@@ -76,7 +76,7 @@ public:
 	static void cleanup(bool p_force = false);
 };
 
-// Test main override is for the testing behaviour.
+// Test main override is for the testing behavior.
 #define TEST_MAIN_OVERRIDE                                         \
 	bool run_test = false;                                         \
 	int return_code = Main::test_entrypoint(argc, argv, run_test); \

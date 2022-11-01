@@ -206,7 +206,7 @@ void OpenXRHand::_update_skeleton() {
 	const OpenXRHandTrackingExtension::HandTracker *hand_tracker = hand_tracking_ext->get_hand_tracker(hand);
 	const float ws = XRServer::get_singleton()->get_world_scale();
 
-	if (hand_tracker->is_initialised && hand_tracker->locations.isActive) {
+	if (hand_tracker->is_initialized && hand_tracker->locations.isActive) {
 		for (int i = 0; i < XR_HAND_JOINT_COUNT_EXT; i++) {
 			confidences[i] = XRPose::XR_TRACKING_CONFIDENCE_NONE;
 			quaternions[i] = Quaternion();

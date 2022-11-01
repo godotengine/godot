@@ -212,7 +212,7 @@ int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double 
 void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
 	MouseButton input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
-	// started inside the canvas; imitating desktop app behaviour.
+	// started inside the canvas; imitating desktop app behavior.
 	if (!get_singleton()->cursor_inside_canvas && input_mask == MouseButton::NONE) {
 		return;
 	}

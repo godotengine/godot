@@ -2337,7 +2337,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			// Normal left shoud deselect and place at selection start.
+			// Normal left should deselect and place at selection start.
 			SEND_GUI_ACTION(text_edit, "ui_text_caret_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 
@@ -2497,7 +2497,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			// Normal right shoud deselect and place at selection start.
+			// Normal right should deselect and place at selection start.
 			SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);

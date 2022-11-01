@@ -216,7 +216,7 @@
 		<signal name="item_focused">
 			<param index="0" name="index" type="int" />
 			<description>
-				Emitted when the user navigates to an item using the [code]ui_up[/code] or [code]ui_down[/code] actions. The index of the item selected is passed as argument.
+				Emitted when the user navigates to an item using the [member ProjectSettings.input/ui_up] or [member ProjectSettings.input/ui_down] input actions. The index of the item selected is passed as argument.
 			</description>
 		</signal>
 		<signal name="item_selected">

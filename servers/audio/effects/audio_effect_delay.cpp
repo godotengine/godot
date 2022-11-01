@@ -94,7 +94,7 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 
 		//apply lowpass and feedback gain
 		AudioFrame fb_in = out * feedback_level_f * lpf_ic + h * lpf_c;
-		fb_in.undenormalise(); //avoid denormals
+		fb_in.undenormalize(); //avoid denormals
 
 		h = fb_in;
 		fb_buf[feedback_buffer_pos] = fb_in;

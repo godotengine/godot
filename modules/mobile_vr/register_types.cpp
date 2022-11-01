@@ -53,7 +53,7 @@ void uninitialize_mobile_vr_module(ModuleInitializationLevel p_level) {
 	}
 
 	if (mobile_vr.is_valid()) {
-		// uninitialise our interface if it is initialised
+		// uninitialize our interface if it is initialized
 		if (mobile_vr->is_initialized()) {
 			mobile_vr->uninitialize();
 		}

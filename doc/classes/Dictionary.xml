@@ -339,7 +339,7 @@
 			<return type="Variant" />
 			<param index="0" name="key" type="Variant" />
 			<description>
-				Retunrs a value at the given [param key] or [code]null[/code] and error if the key does not exist. For safe access, use [method get] or [method has].
+				Returns a value at the given [param key] or [code]null[/code] and error if the key does not exist. For safe access, use [method get] or [method has].
 			</description>
 		</operator>
 	</operators>

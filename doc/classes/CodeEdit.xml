@@ -4,7 +4,7 @@
 		Multiline text control intended for editing code.
 	</brief_description>
 	<description>
-		CodeEdit is a specialised [TextEdit] designed for editing plain text code files. It contains a bunch of features commonly found in code editors such as line numbers, line folding, code completion, indent management and string / comment management.
+		CodeEdit is a specialized [TextEdit] designed for editing plain text code files. It contains a bunch of features commonly found in code editors such as line numbers, line folding, code completion, indent management and string / comment management.
 		[b]Note:[/b] By default [CodeEdit] always use left-to-right text direction to correctly display source code.
 	</description>
 	<tutorials>

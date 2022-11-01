@@ -232,7 +232,7 @@
 			<param index="0" name="draw_list" type="int" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Sets blend constants for draw list, blend constants are used only if the graphics pipeline is created with [code]DYNAMIC_STATE_BLEND_CONSTANTS[/code] flag set.
+				Sets blend constants for draw list, blend constants are used only if the graphics pipeline is created with [constant DYNAMIC_STATE_BLEND_CONSTANTS] flag set.
 			</description>
 		</method>
 		<method name="draw_list_set_push_constant">

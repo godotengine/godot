@@ -70,7 +70,7 @@
 			<param index="0" name="to_dir" type="String" />
 			<description>
 				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Returns one of the [enum Error] code constants ([constant OK] on success).
 			</description>
 		</method>
 		<method name="copy">
@@ -81,7 +81,7 @@
 			<description>
 				Copies the [param from] file to the [param to] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
 				If [param chmod_flags] is different than [code]-1[/code], the Unix permissions for the destination path will be set to the provided value, if available on the current operating system.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Returns one of the [enum Error] code constants ([constant OK] on success).
 			</description>
 		</method>
 		<method name="copy_absolute" qualifiers="static">
@@ -221,7 +221,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Creates a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Returns one of the [enum Error] code constants ([constant OK] on success).
 			</description>
 		</method>
 		<method name="make_dir_absolute" qualifiers="static">
@@ -236,7 +236,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Creates a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Returns one of the [enum Error] code constants ([constant OK] on success).
 			</description>
 		</method>
 		<method name="make_dir_recursive_absolute" qualifiers="static">
@@ -260,7 +260,7 @@
 			<description>
 				Permanently deletes the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
 				If you don't want to delete the file/directory permanently, use [method OS.move_to_trash] instead.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Returns one of the [enum Error] code constants ([constant OK] on success).
 			</description>
 		</method>
 		<method name="remove_absolute" qualifiers="static">
@@ -276,7 +276,7 @@
 			<param index="1" name="to" type="String" />
 			<description>
 				Renames (move) the [param from] file or directory to the [param to] destination. Both arguments should be paths to files or directories, either relative or absolute. If the destination file or directory exists and is not access-protected, it will be overwritten.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Returns one of the [enum Error] code constants ([constant OK] on success).
 			</description>
 		</method>
 		<method name="rename_absolute" qualifiers="static">

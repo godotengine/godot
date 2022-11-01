@@ -9,7 +9,8 @@
 		- Border width (individual width for each border)
 		- Rounded corners (individual radius for each corner)
 		- Shadow (with blur and offset)
-		Setting corner radius to high values is allowed. As soon as corners overlap, the stylebox will switch to a relative system. Example:
+		Setting corner radius to high values is allowed. As soon as corners overlap, the stylebox will switch to a relative system.
+		[b]Example:[/b]
 		[codeblock]
 		height = 30
 		corner_radius_top_left = 50

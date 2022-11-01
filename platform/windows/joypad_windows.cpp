@@ -167,7 +167,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	const GUID &guid = instance->guidProduct;
 	char uid[128];
 
-	ERR_FAIL_COND_V_MSG(memcmp(&guid.Data4[2], "PIDVID", 6), false, "DirectInput device not recognised.");
+	ERR_FAIL_COND_V_MSG(memcmp(&guid.Data4[2], "PIDVID", 6), false, "DirectInput device not recognized.");
 	WORD type = BSWAP16(0x03);
 	WORD vendor = BSWAP16(LOWORD(guid.Data1));
 	WORD product = BSWAP16(HIWORD(guid.Data1));

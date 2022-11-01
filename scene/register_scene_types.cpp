@@ -1184,7 +1184,7 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_shader_include);
 	resource_loader_shader_include.unref();
 
-	// StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
+	// StandardMaterial3D is not initialized when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED
 	BaseMaterial3D::finish_shaders();
 	PhysicalSkyMaterial::cleanup_shader();

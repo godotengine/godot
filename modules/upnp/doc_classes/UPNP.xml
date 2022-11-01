@@ -74,7 +74,7 @@
 			<param index="3" name="proto" type="String" default="&quot;UDP&quot;" />
 			<param index="4" name="duration" type="int" default="0" />
 			<description>
-				Adds a mapping to forward the external [code]port[/code] (between 1 and 65535, although recommended to use port 1024 or above) on the default gateway (see [method get_gateway]) to the [code]internal_port[/code] on the local machine for the given protocol [code]proto[/code] (either [code]TCP[/code] or [code]UDP[/code], with UDP being the default). If a port mapping for the given port and protocol combination already exists on that gateway device, this method tries to overwrite it. If that is not desired, you can retrieve the gateway manually with [method get_gateway] and call [method add_port_mapping] on it, if any. Note that forwarding a well-known port (below 1024) with UPnP may fail depending on the device.
+				Adds a mapping to forward the external [code]port[/code] (between 1 and 65535, although recommended to use port 1024 or above) on the default gateway (see [method get_gateway]) to the [code]internal_port[/code] on the local machine for the given protocol [code]proto[/code] (either [code]"TCP"[/code] or [code]"UDP"[/code], with UDP being the default). If a port mapping for the given port and protocol combination already exists on that gateway device, this method tries to overwrite it. If that is not desired, you can retrieve the gateway manually with [method get_gateway] and call [method add_port_mapping] on it, if any. Note that forwarding a well-known port (below 1024) with UPnP may fail depending on the device.
 				Depending on the gateway device, if a mapping for that port already exists, it will either be updated or it will refuse this command due to that conflict, especially if the existing mapping for that port wasn't created via UPnP or points to a different network address (or device) than this one.
 				If [code]internal_port[/code] is [code]0[/code] (the default), the same port number is used for both the external and the internal port (the [code]port[/code] value).
 				The description ([code]desc[/code]) is shown in some routers management UIs and can be used to point out which application added the mapping.
@@ -93,7 +93,7 @@
 			<param index="0" name="port" type="int" />
 			<param index="1" name="proto" type="String" default="&quot;UDP&quot;" />
 			<description>
-				Deletes the port mapping for the given port and protocol combination on the default gateway (see [method get_gateway]) if one exists. [code]port[/code] must be a valid port between 1 and 65535, [code]proto[/code] can be either [code]TCP[/code] or [code]UDP[/code]. May be refused for mappings pointing to addresses other than this one, for well-known ports (below 1024), or for mappings not added via UPnP. See [enum UPNPResult] for possible return values.
+				Deletes the port mapping for the given port and protocol combination on the default gateway (see [method get_gateway]) if one exists. [code]port[/code] must be a valid port between 1 and 65535, [code]proto[/code] can be either [code]"TCP"[/code] or [code]"UDP"[/code]. May be refused for mappings pointing to addresses other than this one, for well-known ports (below 1024), or for mappings not added via UPnP. See [enum UPNPResult] for possible return values.
 			</description>
 		</method>
 		<method name="discover">

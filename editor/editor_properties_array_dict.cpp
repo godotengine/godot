@@ -466,7 +466,7 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		Variant array = object->get_array();
 
-		// Handle the case where array is not initialised yet.
+		// Handle the case where array is not initialized yet.
 		if (!array.is_array()) {
 			Callable::CallError ce;
 			Variant::construct(array_type, array, nullptr, 0, ce);

@@ -361,7 +361,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 	uint32_t w = p_size, h = p_size;
 
 	EffectsRD *effects = RendererCompositorRD::singleton->get_effects();
-	ERR_FAIL_NULL_MSG(effects, "Effects haven't been initialised");
+	ERR_FAIL_NULL_MSG(effects, "Effects haven't been initialized");
 	bool prefer_raster_effects = effects->get_prefer_raster_effects();
 
 	if (p_use_array) {
@@ -465,7 +465,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 
 void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
-	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialised");
+	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialized");
 	bool prefer_raster_effects = copy_effects->get_prefer_raster_effects();
 
 	if (prefer_raster_effects) {
@@ -523,7 +523,7 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 
 void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_arrays, int p_cube_side, int p_base_layer, uint32_t p_sky_ggx_samples_quality) {
 	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
-	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialised");
+	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialized");
 	bool prefer_raster_effects = copy_effects->get_prefer_raster_effects();
 
 	if (prefer_raster_effects) {
@@ -592,7 +592,7 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 
 void SkyRD::ReflectionData::update_reflection_mipmaps(int p_start, int p_end) {
 	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
-	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialised");
+	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialized");
 	bool prefer_raster_effects = copy_effects->get_prefer_raster_effects();
 
 	RD::get_singleton()->draw_command_begin_label("Update Radiance Cubemap Array Mipmaps");

@@ -217,7 +217,7 @@
 		</theme_item>
 		<theme_item name="side_margin" data_type="constant" type="int" default="8">
 			The space at the left or right edges of the tab bar, accordingly with the current [member tab_alignment].
-			The margin is ignored with [code]ALIGNMENT_RIGHT[/code] if the tabs are clipped (see [member clip_tabs]) or a popup has been set (see [method set_popup]). The margin is always ignored with [code]ALIGNMENT_CENTER[/code].
+			The margin is ignored with [constant TabBar.ALIGNMENT_RIGHT] if the tabs are clipped (see [member clip_tabs]) or a popup has been set (see [method set_popup]). The margin is always ignored with [constant TabBar.ALIGNMENT_CENTER].
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			The font used to draw tab names.

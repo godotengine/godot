@@ -138,7 +138,7 @@
 		<method name="_is_initialized" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this interface has been initialised.
+				Returns [code]true[/code] if this interface has been initialized.
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">

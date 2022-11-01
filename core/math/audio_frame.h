@@ -34,7 +34,7 @@
 #include "core/math/vector2.h"
 #include "core/typedefs.h"
 
-static inline float undenormalise(volatile float f) {
+static inline float undenormalize(volatile float f) {
 	union {
 		uint32_t i;
 		float f;
@@ -101,9 +101,9 @@ struct AudioFrame {
 		r /= p_sample;
 	}
 
-	_ALWAYS_INLINE_ void undenormalise() {
-		l = ::undenormalise(l);
-		r = ::undenormalise(r);
+	_ALWAYS_INLINE_ void undenormalize() {
+		l = ::undenormalize(l);
+		r = ::undenormalize(r);
 	}
 
 	_FORCE_INLINE_ AudioFrame lerp(const AudioFrame &p_b, float p_t) const {

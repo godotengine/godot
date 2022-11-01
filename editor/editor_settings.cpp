@@ -159,7 +159,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 			if (!sc->has_meta("original")) {
 				// Getting the meta when it doesn't exist will return an empty array. If the 'shortcut_events' have been cleared,
-				// we still want save the shortcut in this case so that shortcuts that the user has customised are not reset,
+				// we still want save the shortcut in this case so that shortcuts that the user has customized are not reset,
 				// even if the 'original' has not been populated yet. This can happen when calling save() from the Project Manager.
 				save_array.push_back(dict);
 				continue;

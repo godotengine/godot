@@ -137,7 +137,7 @@
 		</member>
 		<member name="floor_snap_length" type="float" setter="set_floor_snap_length" getter="get_floor_snap_length" default="0.1">
 			Sets a snapping distance. When set to a value different from [code]0.0[/code], the body is kept attached to slopes when calling [method move_and_slide]. The snapping vector is determined by the given distance along the opposite direction of the [member up_direction].
-			As long as the snapping vector is in contact with the ground and the body moves against `up_direction`, the body will remain attached to the surface. Snapping is not applied if the body moves along `up_direction`, so it will be able to detach from the ground when jumping.
+			As long as the snapping vector is in contact with the ground and the body moves against [member up_direction], the body will remain attached to the surface. Snapping is not applied if the body moves along [member up_direction], so it will be able to detach from the ground when jumping.
 		</member>
 		<member name="floor_stop_on_slope" type="bool" setter="set_floor_stop_on_slope_enabled" getter="is_floor_stop_on_slope_enabled" default="true">
 			If [code]true[/code], the body will not slide on slopes when calling [method move_and_slide] when the body is standing still.

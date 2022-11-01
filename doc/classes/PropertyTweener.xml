@@ -13,7 +13,8 @@
 		<method name="as_relative">
 			<return type="PropertyTweener" />
 			<description>
-				When called, the final value will be used as a relative value instead. Example:
+				When called, the final value will be used as a relative value instead.
+				[b]Example:[/b]
 				[codeblock]
 				var tween = get_tree().create_tween()
 				tween.tween_property(self, "position", Vector2.RIGHT * 100, 1).as_relative() #the node will move by 100 pixels to the right
@@ -24,7 +25,8 @@
 			<return type="PropertyTweener" />
 			<param index="0" name="value" type="Variant" />
 			<description>
-				Sets a custom initial value to the [PropertyTweener]. Example:
+				Sets a custom initial value to the [PropertyTweener].
+				[b]Example:[/b]
 				[codeblock]
 				var tween = get_tree().create_tween()
 				tween.tween_property(self, "position", Vector2(200, 100), 1).from(Vector2(100, 100)) #this will move the node from position (100, 100) to (200, 100)

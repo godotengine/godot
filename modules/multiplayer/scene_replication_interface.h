@@ -75,7 +75,7 @@ private:
 	HashSet<ObjectID> spawned_nodes;
 	HashSet<ObjectID> sync_nodes;
 
-	// Pending spawn informations.
+	// Pending spawn information.
 	ObjectID pending_spawn;
 	int pending_spawn_remote = 0;
 	const uint8_t *pending_buffer = nullptr;

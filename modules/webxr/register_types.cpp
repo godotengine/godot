@@ -57,7 +57,7 @@ void uninitialize_webxr_module(ModuleInitializationLevel p_level) {
 
 #ifdef WEB_ENABLED
 	if (webxr.is_valid()) {
-		// uninitialise our interface if it is initialised
+		// uninitialize our interface if it is initialized
 		if (webxr->is_initialized()) {
 			webxr->uninitialize();
 		}

@@ -30,7 +30,7 @@
 		<method name="clean_dupes">
 			<return type="void" />
 			<description>
-				Removes points that are closer than [code]CMP_EPSILON[/code] (0.00001) units to their neighbor on the curve.
+				Removes duplicate points, i.e. points that are less than 0.00001 units (engine epsilon value) away from their neighbor on the curve.
 			</description>
 		</method>
 		<method name="clear_points">

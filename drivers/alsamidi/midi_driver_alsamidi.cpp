@@ -43,7 +43,7 @@ MIDIDriverALSAMidi::MessageCategory MIDIDriverALSAMidi::msg_category(uint8_t msg
 	} else if (msg_part >= 0xf0) {
 		// System Exclusive begin/end are specified as System Common Category messages,
 		// but we separate them here and give them their own categories as their
-		// behaviour is significantly different.
+		// behavior is significantly different.
 		if (msg_part == 0xf0) {
 			return MessageCategory::SysExBegin;
 		} else if (msg_part == 0xf7) {

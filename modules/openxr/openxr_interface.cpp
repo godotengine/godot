@@ -96,7 +96,7 @@ void OpenXRInterface::_load_action_map() {
 
 	// This may seem a bit duplicitous to a little bit of background info here.
 	// OpenXRActionMap (with all its sub resource classes) is a class that allows us to configure and store an action map in.
-	// This gives the user the ability to edit the action map in a UI and customise the actions.
+	// This gives the user the ability to edit the action map in a UI and customize the actions.
 	// OpenXR however requires us to submit an action map and it takes over from that point and we can no longer change it.
 	// This system does that push and we store the info needed to then work with this action map going forward.
 
@@ -166,7 +166,7 @@ void OpenXRInterface::_load_action_map() {
 					}
 				}
 
-				// Only add our action if we have atleast one valid toplevel path
+				// Only add our action if we have at least one valid toplevel path
 				if (trackers_for_action.size() > 0) {
 					Action *action = create_action(action_set, xr_action->get_name(), xr_action->get_localized_name(), xr_action->get_action_type(), trackers_for_action);
 					if (action) {
@@ -355,7 +355,7 @@ OpenXRInterface::Tracker *OpenXRInterface::find_tracker(const String &p_tracker_
 	Ref<XRPositionalTracker> positional_tracker;
 	positional_tracker.instantiate();
 
-	// We have standardised some names to make things nicer to the user so lets recognise the toplevel paths related to these.
+	// We have standardized some names to make things nicer to the user so lets recognize the toplevel paths related to these.
 	if (p_tracker_name == "/user/hand/left") {
 		positional_tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 		positional_tracker->set_tracker_name("left_hand");

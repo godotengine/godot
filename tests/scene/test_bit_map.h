@@ -234,7 +234,7 @@ TEST_CASE("[BitMap] Resize") {
 TEST_CASE("[BitMap] Grow and shrink mask") {
 	const Size2i dim{ 256, 256 };
 	BitMap bit_map{};
-	bit_map.grow_mask(100, Rect2i(0, 0, 128, 128)); // Check if method does not crash when working with an uninitialised bit map.
+	bit_map.grow_mask(100, Rect2i(0, 0, 128, 128)); // Check if method does not crash when working with an uninitialized bit map.
 	CHECK_MESSAGE(bit_map.get_size() == Size2i(0, 0), "Size should still be equal to 0x0");
 
 	bit_map.create(dim);
@@ -335,21 +335,21 @@ TEST_CASE("[BitMap] Blit") {
 
 	blit_bit_map.instantiate();
 
-	// Testing if uninitialised blit bit map and uninitialised bit map does not crash
+	// Testing if uninitialized blit bit map and uninitialized bit map does not crash
 	bit_map.blit(blit_pos, blit_bit_map);
 
-	// Testing if uninitialised bit map does not crash
+	// Testing if uninitialized bit map does not crash
 	blit_bit_map->create(blit_size);
 	bit_map.blit(blit_pos, blit_bit_map);
 
-	// Testing if uninitialised bit map does not crash
+	// Testing if uninitialized bit map does not crash
 	blit_bit_map.unref();
 	blit_bit_map.instantiate();
 	CHECK_MESSAGE(blit_bit_map->get_size() == Point2i(0, 0), "Size should be cleared by unref and instance calls.");
 	bit_map.create(bit_map_size);
 	bit_map.blit(Point2i(128, 128), blit_bit_map);
 
-	// Testing if both initialised does not crash.
+	// Testing if both initialized does not crash.
 	blit_bit_map->create(blit_size);
 	bit_map.blit(blit_pos, blit_bit_map);
 

@@ -375,7 +375,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 			if (qualifier == "vararg") {
 				hint = TTR("This method supports a variable number of arguments.");
 			} else if (qualifier == "virtual") {
-				hint = TTR("This method is called by the engine.\nIt can be overriden to customise built-in behavior.");
+				hint = TTR("This method is called by the engine.\nIt can be overridden to customize built-in behavior.");
 			} else if (qualifier == "const") {
 				hint = TTR("This method has no side effects.\nIt does not modify the object in any way.");
 			} else if (qualifier == "static") {
