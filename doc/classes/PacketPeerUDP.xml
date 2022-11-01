@@ -25,8 +25,7 @@
 			</description>
 		</method>
 		<method name="get_local_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the local port to which this peer is bound.
 			</description>
