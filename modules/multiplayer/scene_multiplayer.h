@@ -171,6 +171,7 @@ public:
 	bool is_server_relay_enabled() const;
 
 	Ref<SceneCacheInterface> get_path_cache() { return cache; }
+	Ref<SceneReplicationInterface> get_replicator() { return replicator; }
 
 	SceneMultiplayer();
 	~SceneMultiplayer();

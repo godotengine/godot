@@ -125,6 +125,8 @@ public:
 	Error on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
 	Error on_sync_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
 
+	bool is_rpc_visible(const ObjectID &p_oid, int p_peer) const;
+
 	SceneReplicationInterface(SceneMultiplayer *p_multiplayer) {
 		multiplayer = p_multiplayer;
 	}
