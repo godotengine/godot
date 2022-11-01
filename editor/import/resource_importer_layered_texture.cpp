@@ -135,7 +135,7 @@ String ResourceImporterLayeredTexture::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterLayeredTexture::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless (PNG),Lossy (WebP),Video RAM (S3TC/ETC/BPTC),Uncompressed,Basis Universal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Lossy,VRAM Compressed,VRAM Uncompressed,Basis Universal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/bptc_ldr", PROPERTY_HINT_ENUM, "Disabled,Enabled,RGBA Only"), 0));
@@ -418,7 +418,7 @@ String ResourceImporterLayeredTexture::get_import_settings_string() const {
 	int index = 0;
 	while (compression_formats[index]) {
 		String setting_path = "rendering/textures/vram_compression/import_" + String(compression_formats[index]);
-		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		bool test = GLOBAL_GET(setting_path);
 		if (test) {
 			s += String(compression_formats[index]);
 		}
@@ -450,7 +450,7 @@ bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_p
 	bool valid = true;
 	while (compression_formats[index]) {
 		String setting_path = "rendering/textures/vram_compression/import_" + String(compression_formats[index]);
-		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		bool test = GLOBAL_GET(setting_path);
 		if (test) {
 			if (!formats_imported.has(compression_formats[index])) {
 				valid = false;
@@ -484,7 +484,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	// Must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
 	// Android, GLES 2.x
 
-	bool can_bptc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc");
+	bool can_bptc = GLOBAL_GET("rendering/textures/vram_compression/import_bptc");
 	if (can_bptc) {
 		r_texture_import->formats_imported.push_back("bptc"); // BPTC needs to be added anyway.
 	}
@@ -492,7 +492,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	ERR_FAIL_NULL(r_texture_import->image);
 	bool is_hdr = (r_texture_import->image->get_format() >= Image::FORMAT_RF && r_texture_import->image->get_format() <= Image::FORMAT_RGBE9995);
 	bool is_ldr = (r_texture_import->image->get_format() >= Image::FORMAT_L8 && r_texture_import->image->get_format() <= Image::FORMAT_RGB565);
-	bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
+	bool can_s3tc = GLOBAL_GET("rendering/textures/vram_compression/import_s3tc");
 	ERR_FAIL_NULL(r_texture_import->slices);
 	// Can compress hdr, but hdr with alpha is not compressible.
 	if (r_texture_import->hdr_compression == 2) {
@@ -530,7 +530,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 		}
 	}
 	if (!(r_texture_import->used_channels == Image::USED_CHANNELS_LA || r_texture_import->used_channels == Image::USED_CHANNELS_RGBA)) {
-		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2")) {
+		if (GLOBAL_GET("rendering/textures/vram_compression/import_etc2")) {
 			_save_tex(*r_texture_import->slices, r_texture_import->save_path + ".etc2." + extension, r_texture_import->compress_mode, r_texture_import->lossy, Image::COMPRESS_ETC2, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true);
 			r_texture_import->platform_variants->push_back("etc2");
 			r_texture_import->formats_imported.push_back("etc2");

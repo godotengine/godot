@@ -84,6 +84,7 @@
 #include "tests/core/variant/test_dictionary.h"
 #include "tests/core/variant/test_variant.h"
 #include "tests/scene/test_animation.h"
+#include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_code_edit.h"
@@ -199,7 +200,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			OS::get_singleton()->set_has_server_feature_callback(nullptr);
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				if (String("headless") == DisplayServer::get_create_function_name(i)) {
-					DisplayServer::create(i, "", DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServer::VSyncMode::VSYNC_ENABLED, 0, Vector2i(0, 0), err);
+					DisplayServer::create(i, "", DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServer::VSyncMode::VSYNC_ENABLED, 0, nullptr, Vector2i(0, 0), err);
 					break;
 				}
 			}

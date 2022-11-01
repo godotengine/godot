@@ -1581,6 +1581,10 @@
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z" value="34" enum="Limit">
 		</constant>
+		<constant name="LIMIT_MAX_VIEWPORT_DIMENSIONS_X" value="35" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_VIEWPORT_DIMENSIONS_Y" value="36" enum="Limit">
+		</constant>
 		<constant name="MEMORY_TEXTURES" value="0" enum="MemoryType">
 		</constant>
 		<constant name="MEMORY_BUFFERS" value="1" enum="MemoryType">

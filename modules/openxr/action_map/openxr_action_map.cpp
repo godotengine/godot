@@ -224,7 +224,7 @@ void OpenXRActionMap::create_default_action_sets() {
 
 	// Create our interaction profiles
 	Ref<OpenXRInteractionProfile> profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/khr/simple_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
@@ -236,7 +236,7 @@ void OpenXRActionMap::create_default_action_sets() {
 
 	// Create our Vive controller profile
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
@@ -257,7 +257,7 @@ void OpenXRActionMap::create_default_action_sets() {
 
 	// Create our WMR controller profile
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/microsoft/motion_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
@@ -280,7 +280,7 @@ void OpenXRActionMap::create_default_action_sets() {
 
 	// Create our Meta touch controller profile
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/oculus/touch_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
@@ -305,7 +305,7 @@ void OpenXRActionMap::create_default_action_sets() {
 
 	// Create our Valve index controller profile
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/valve/index_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
@@ -333,7 +333,7 @@ void OpenXRActionMap::create_default_action_sets() {
 
 	// Create our HP MR controller profile
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/hp/mixed_reality_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
@@ -356,7 +356,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	// Create our Samsung Odyssey controller profile,
 	// Note that this controller is only identified specifically on WMR, on SteamVR this is identified as a normal WMR controller.
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/samsung/odyssey_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
@@ -379,7 +379,7 @@ void OpenXRActionMap::create_default_action_sets() {
 
 	// Create our Vive Cosmos controller
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_cosmos_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
@@ -403,7 +403,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	// Note, Vive Focus 3 currently is not yet supported as a stand alone device
 	// however HTC currently has a beta OpenXR runtime in testing we may support in the near future
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_focus3_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
@@ -427,7 +427,7 @@ void OpenXRActionMap::create_default_action_sets() {
 
 	// Create our Huawei controller
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/huawei/controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");

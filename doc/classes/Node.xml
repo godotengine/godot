@@ -39,7 +39,7 @@
 		<method name="_get_configuration_warnings" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
-				The elements in the array returned from this method are displayed as warnings in the Scene Dock if the script that overrides it is a [code]tool[/code] script.
+				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script.
 				Returning an empty array produces no warnings.
 				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
 			</description>
@@ -560,7 +560,7 @@
 		<method name="print_tree_pretty">
 			<return type="void" />
 			<description>
-				Similar to [method print_tree], this prints the tree to stdout. This version displays a more graphical representation similar to what is displayed in the scene inspector. It is useful for inspecting larger trees.
+				Similar to [method print_tree], this prints the tree to stdout. This version displays a more graphical representation similar to what is displayed in the Scene Dock. It is useful for inspecting larger trees.
 				[b]Example output:[/b]
 				[codeblock]
 				 ┖╴TheGame

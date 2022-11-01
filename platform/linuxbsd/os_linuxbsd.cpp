@@ -250,6 +250,10 @@ String OS_LinuxBSD::get_version() const {
 }
 
 Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
+	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+		return Vector<String>();
+	}
+
 	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name(); // e.g. `NVIDIA GeForce GTX 970`
 	const String rendering_device_vendor = RenderingServer::get_singleton()->get_rendering_device()->get_device_vendor_name(); // e.g. `NVIDIA`
 	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`

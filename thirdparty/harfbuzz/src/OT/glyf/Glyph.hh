@@ -102,17 +102,19 @@ struct Glyph
                              hb_bytes_t &dest_bytes /* OUT */) const
   {
     GlyphHeader *glyph_header = nullptr;
-    if (all_points.length > 4)
+    if (type != EMPTY && all_points.length > 4)
     {
       glyph_header = (GlyphHeader *) hb_calloc (1, GlyphHeader::static_size);
       if (unlikely (!glyph_header)) return false;
     }
 
-    int xMin, xMax;
-    xMin = xMax = roundf (all_points[0].x);
-
-    int yMin, yMax;
-    yMin = yMax = roundf (all_points[0].y);
+    int xMin = 0, xMax = 0;
+    int yMin = 0, yMax = 0;
+    if (all_points.length > 4)
+    {
+      xMin = xMax = roundf (all_points[0].x);
+      yMin = yMax = roundf (all_points[0].y);
+    }
 
     for (unsigned i = 1; i < all_points.length - 4; i++)
     {
@@ -128,7 +130,7 @@ struct Glyph
 
     /*for empty glyphs: all_points only include phantom points.
      *just update metrics and then return */
-    if (all_points.length == 4)
+    if (!glyph_header)
       return true;
 
     glyph_header->numberOfContours = header->numberOfContours;
@@ -145,10 +147,17 @@ struct Glyph
                                   hb_font_t *font,
                                   const glyf_accelerator_t &glyf,
                                   hb_bytes_t &dest_start,  /* IN/OUT */
-                                  hb_bytes_t &dest_end /* OUT */) const
+                                  hb_bytes_t &dest_end /* OUT */)
   {
     contour_point_vector_t all_points, deltas;
-    get_points (font, glyf, all_points, &deltas, false);
+    if (!get_points (font, glyf, all_points, &deltas, false, false))
+      return false;
+
+    // .notdef, set type to empty so we only update metrics and don't compile bytes for
+    // it
+    if (gid == 0 &&
+        !(plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
+      type = EMPTY;
 
     switch (type) {
     case COMPOSITE:
@@ -171,7 +180,12 @@ struct Glyph
       break;
     }
 
-    return compile_header_bytes (plan, all_points, dest_start);
+    if (!compile_header_bytes (plan, all_points, dest_start))
+    {
+      dest_end.fini ();
+      return false;
+    }
+    return true;
   }
 
 
@@ -182,6 +196,7 @@ struct Glyph
   bool get_points (hb_font_t *font, const accelerator_t &glyf_accelerator,
 		   contour_point_vector_t &all_points /* OUT */,
 		   contour_point_vector_t *deltas = nullptr, /* OUT */
+		   bool shift_points_hori = true,
 		   bool use_my_metrics = true,
 		   bool phantom_only = false,
 		   unsigned int depth = 0) const
@@ -238,8 +253,7 @@ struct Glyph
     if (deltas != nullptr && depth == 0 && type == COMPOSITE)
     {
       if (unlikely (!deltas->resize (points.length))) return false;
-      for (unsigned i = 0 ; i < points.length; i++)
-        deltas->arrayZ[i] = points.arrayZ[i];
+      deltas->copy_vector (points);
     }
 
 #ifndef HB_NO_VAR
@@ -271,13 +285,8 @@ struct Glyph
         comp_points.reset ();
 	if (unlikely (!glyf_accelerator.glyph_for_gid (item.get_gid ())
 				       .get_points (font, glyf_accelerator, comp_points,
-						    deltas, use_my_metrics, phantom_only, depth + 1)))
+						    deltas, shift_points_hori, use_my_metrics, phantom_only, depth + 1)))
 	  return false;
-
-	/* Copy phantom points from component if USE_MY_METRICS flag set */
-	if (use_my_metrics && item.is_use_my_metrics ())
-	  for (unsigned int i = 0; i < PHANTOM_COUNT; i++)
-	    phantoms[i] = comp_points[comp_points.length - PHANTOM_COUNT + i];
 
 	/* Apply component transformation & translation */
 	item.transform_points (comp_points);
@@ -299,6 +308,11 @@ struct Glyph
 	  }
 	}
 
+	/* Copy phantom points from component if USE_MY_METRICS flag set */
+	if (use_my_metrics && item.is_use_my_metrics ())
+	  for (unsigned int i = 0; i < PHANTOM_COUNT; i++)
+	    phantoms[i] = comp_points[comp_points.length - PHANTOM_COUNT + i];
+
 	all_points.extend (comp_points.sub_array (0, comp_points.length - PHANTOM_COUNT));
 
 	comp_index++;
@@ -310,7 +324,7 @@ struct Glyph
       all_points.extend (phantoms);
     }
 
-    if (depth == 0) /* Apply at top level */
+    if (depth == 0 && shift_points_hori) /* Apply at top level */
     {
       /* Undocumented rasterizer behavior:
        * Shift points horizontally by the updated left side bearing
@@ -332,10 +346,16 @@ struct Glyph
 
   hb_bytes_t get_bytes () const { return bytes; }
 
-  Glyph (hb_bytes_t bytes_ = hb_bytes_t (),
-	 hb_codepoint_t gid_ = (hb_codepoint_t) -1) : bytes (bytes_),
-						      header (bytes.as<GlyphHeader> ()),
-						      gid (gid_)
+  Glyph () : bytes (),
+             header (bytes.as<GlyphHeader> ()),
+             gid (-1),
+             type(EMPTY)
+  {}
+
+  Glyph (hb_bytes_t bytes_,
+	 hb_codepoint_t gid_ = (unsigned) -1) : bytes (bytes_),
+                                                header (bytes.as<GlyphHeader> ()),
+                                                gid (gid_)
   {
     int num_contours = header->numberOfContours;
     if (unlikely (num_contours == 0)) type = EMPTY;

@@ -1242,7 +1242,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 		String name;
 
 		if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", i + 1))) {
-			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i + 1));
+			name = GLOBAL_GET(basename + vformat("/layer_%d", i + 1));
 		}
 
 		if (name.is_empty()) {
@@ -1270,7 +1270,7 @@ void EditorPropertyLayers::set_layer_name(int p_index, const String &p_name) {
 String EditorPropertyLayers::get_layer_name(int p_index) const {
 	const String property_name = basename + vformat("/layer_%d", p_index + 1);
 	if (ProjectSettings::get_singleton()->has_setting(property_name)) {
-		return ProjectSettings::get_singleton()->get(property_name);
+		return GLOBAL_GET(property_name);
 	}
 	return String();
 }
@@ -3699,7 +3699,8 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 	}
 
 	for (const StringName &E : valid_types) {
-		if (dropped_node->is_class(E)) {
+		if (dropped_node->is_class(E) ||
+				EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, E)) {
 			return true;
 		}
 	}

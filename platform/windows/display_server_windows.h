@@ -323,6 +323,8 @@ class DisplayServerWindows : public DisplayServer {
 		LPARAM lParam;
 	};
 
+	WindowID window_mouseover_id = INVALID_WINDOW_ID;
+
 	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
 	int key_event_pos;
 
@@ -398,7 +400,6 @@ class DisplayServerWindows : public DisplayServer {
 
 		Size2 window_rect;
 		Point2 last_pos;
-		bool mouse_outside = true;
 
 		ObjectID instance_id;
 
@@ -623,11 +624,11 @@ public:
 
 	virtual void set_context(Context p_context) override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_windows_driver();
 
-	DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerWindows();
 };
 

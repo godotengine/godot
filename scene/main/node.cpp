@@ -1341,12 +1341,23 @@ Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 
 	if (unlikely(!node)) {
+		// Try to get a clear description of this node in the error message.
+		String desc;
+		if (is_inside_tree()) {
+			desc = get_path();
+		} else {
+			desc = get_name();
+			if (desc.is_empty()) {
+				desc = get_class();
+			}
+		}
+
 		if (p_path.is_absolute()) {
 			ERR_FAIL_V_MSG(nullptr,
-					vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, get_path()));
+					vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, desc));
 		} else {
 			ERR_FAIL_V_MSG(nullptr,
-					vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, get_path()));
+					vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, desc));
 		}
 	}
 
@@ -2569,7 +2580,7 @@ void Node::print_orphan_nodes() {
 #endif
 }
 
-void Node::queue_delete() {
+void Node::queue_free() {
 	if (is_inside_tree()) {
 		get_tree()->queue_delete(this);
 	} else {
@@ -2811,7 +2822,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
 
-	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_delete);
+	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_free);
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 
@@ -2947,7 +2958,7 @@ void Node::_bind_methods() {
 }
 
 String Node::_get_name_num_separator() {
-	switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_num_separator").operator int()) {
+	switch (GLOBAL_GET("editor/node_naming/name_num_separator").operator int()) {
 		case 0:
 			return "";
 		case 1:

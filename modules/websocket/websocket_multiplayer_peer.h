@@ -42,9 +42,6 @@ class WebSocketMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(WebSocketMultiplayerPeer, MultiplayerPeer);
 
 private:
-	Vector<uint8_t> _make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size);
-	void _store_pkt(int32_t p_source, int32_t p_dest, const uint8_t *p_data, uint32_t p_data_size);
-	Error _server_relay(int32_t p_from, int32_t p_to, const uint8_t *p_buffer, uint32_t p_buffer_size);
 	Ref<WebSocketPeer> _create_peer();
 
 protected:
@@ -59,7 +56,6 @@ protected:
 
 	struct Packet {
 		int source = 0;
-		int destination = 0;
 		uint8_t *data = nullptr;
 		uint32_t size = 0;
 	};
@@ -90,20 +86,18 @@ protected:
 
 	static void _bind_methods();
 
-	void _send_ack(Ref<WebSocketPeer> p_peer, int32_t p_peer_id);
-	void _send_sys(Ref<WebSocketPeer> p_peer, uint8_t p_type, int32_t p_peer_id);
-	void _send_del(int32_t p_peer_id);
-	void _process_multiplayer(Ref<WebSocketPeer> p_peer, uint32_t p_peer_id);
-
 	void _poll_client();
 	void _poll_server();
 	void _clear();
 
 public:
 	/* MultiplayerPeer */
-	void set_target_peer(int p_target_peer) override;
-	int get_packet_peer() const override;
-	int get_unique_id() const override;
+	virtual void set_target_peer(int p_target_peer) override;
+	virtual int get_packet_peer() const override;
+	virtual int get_packet_channel() const override { return 0; }
+	virtual TransferMode get_packet_mode() const override { return TRANSFER_MODE_RELIABLE; }
+	virtual int get_unique_id() const override;
+	virtual bool is_server_relay_supported() const override { return true; }
 
 	virtual int get_max_packet_size() const override;
 	virtual bool is_server() const override;

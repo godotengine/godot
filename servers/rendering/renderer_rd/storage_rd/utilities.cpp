@@ -321,3 +321,11 @@ RenderingDevice::DeviceType Utilities::get_video_adapter_type() const {
 String Utilities::get_video_adapter_api_version() const {
 	return RenderingDevice::get_singleton()->get_device_api_version();
 }
+
+Size2i Utilities::get_maximum_viewport_size() const {
+	RenderingDevice *device = RenderingDevice::get_singleton();
+
+	int max_x = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_X);
+	int max_y = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_Y);
+	return Size2i(max_x, max_y);
+}

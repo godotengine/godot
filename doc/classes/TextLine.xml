@@ -144,6 +144,7 @@
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Sets text alignment within the line as if the line was horizontal.
 		</member>
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.

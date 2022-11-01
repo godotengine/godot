@@ -222,6 +222,7 @@ public:
 
 	virtual Error reload(bool p_keep_state = false) override;
 
+	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	void set_script_path(const String &p_path) { path = p_path; } //because subclasses need a path too...
 	Error load_source_code(const String &p_path);
 	Error load_byte_code(const String &p_path);

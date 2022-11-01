@@ -64,6 +64,7 @@ public:
 	int max_texture_image_units = 0;
 	int max_texture_size = 0;
 	int max_uniform_buffer_size = 0;
+	int max_viewport_size = 0;
 	int max_renderable_elements = 0;
 	int max_renderable_lights = 0;
 	int max_lights_per_object = 0;

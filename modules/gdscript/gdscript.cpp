@@ -1050,6 +1050,11 @@ Error GDScript::load_byte_code(const String &p_path) {
 	return ERR_COMPILATION_FAILED;
 }
 
+void GDScript::set_path(const String &p_path, bool p_take_over) {
+	Script::set_path(p_path, p_take_over);
+	this->path = p_path;
+}
+
 Error GDScript::load_source_code(const String &p_path) {
 	Vector<uint8_t> sourcef;
 	Error err;

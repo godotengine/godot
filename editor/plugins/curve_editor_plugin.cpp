@@ -799,7 +799,7 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	Curve &curve = **curve_ref;
 
 	// FIXME: Should be ported to use p_size as done in b2633a97
-	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+	int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 	Ref<Image> img_ref;
 	img_ref.instantiate();

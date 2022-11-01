@@ -44,8 +44,46 @@ struct InstanceRecord
 {
   friend struct fvar;
 
-  hb_array_t<const HBFixed> get_coordinates (unsigned int axis_count) const
+  hb_array_t<const F16DOT16> get_coordinates (unsigned int axis_count) const
   { return coordinatesZ.as_array (axis_count); }
+
+  bool subset (hb_subset_context_t *c,
+               unsigned axis_count,
+               bool has_postscript_nameid) const
+  {
+    TRACE_SUBSET (this);
+    if (unlikely (!c->serializer->embed (subfamilyNameID))) return_trace (false);
+    if (unlikely (!c->serializer->embed (flags))) return_trace (false);
+
+    const hb_array_t<const F16DOT16> coords = get_coordinates (axis_count);
+    const hb_hashmap_t<hb_tag_t, float> *axes_location = c->plan->user_axes_location;
+    for (unsigned i = 0 ; i < axis_count; i++)
+    {
+      unsigned *axis_tag;
+      // only keep instances whose coordinates == pinned axis location
+      if (!c->plan->axes_old_index_tag_map->has (i, &axis_tag)) continue;
+
+      if (axes_location->has (*axis_tag) &&
+          fabsf (axes_location->get (*axis_tag) - coords[i].to_float ()) > 0.001f)
+        return_trace (false);
+
+      if (!c->plan->axes_index_map->has (i))
+        continue;
+
+      if (!c->serializer->embed (coords[i]))
+        return_trace (false);
+    }
+
+    if (has_postscript_nameid)
+    {
+      NameID name_id;
+      name_id = StructAfter<NameID> (coords);
+      if (!c->serializer->embed (name_id))
+        return_trace (false);
+    }
+
+    return_trace (true);
+  }
 
   bool sanitize (hb_sanitize_context_t *c, unsigned int axis_count) const
   {
@@ -58,7 +96,7 @@ struct InstanceRecord
   NameID	subfamilyNameID;/* The name ID for entries in the 'name' table
 				 * that provide subfamily names for this instance. */
   HBUINT16	flags;		/* Reserved for future use — set to 0. */
-  UnsizedArrayOf<HBFixed>
+  UnsizedArrayOf<F16DOT16>
 		coordinatesZ;	/* The coordinates array for this instance. */
   //NameID	postScriptNameIDX;/*Optional. The name ID for entries in the 'name'
   //				  * table that provide PostScript names for this
@@ -151,9 +189,9 @@ struct AxisRecord
   public:
   Tag		axisTag;	/* Tag identifying the design variation for the axis. */
   protected:
-  HBFixed	minValue;	/* The minimum coordinate value for the axis. */
-  HBFixed	defaultValue;	/* The default coordinate value for the axis. */
-  HBFixed	maxValue;	/* The maximum coordinate value for the axis. */
+  F16DOT16	minValue;	/* The minimum coordinate value for the axis. */
+  F16DOT16	defaultValue;	/* The default coordinate value for the axis. */
+  F16DOT16	maxValue;	/* The maximum coordinate value for the axis. */
   public:
   HBUINT16	flags;		/* Axis flags. */
   NameID	axisNameID;	/* The name ID for entries in the 'name' table that
@@ -268,7 +306,7 @@ struct fvar
 
     if (coords_length && *coords_length)
     {
-      hb_array_t<const HBFixed> instanceCoords = instance->get_coordinates (axisCount)
+      hb_array_t<const F16DOT16> instanceCoords = instance->get_coordinates (axisCount)
 							 .sub_array (0, coords_length);
       for (unsigned int i = 0; i < instanceCoords.length; i++)
 	coords[i] = instanceCoords.arrayZ[i].to_float ();
@@ -301,7 +339,7 @@ struct fvar
 
       if (hb_any (+ hb_zip (instance->get_coordinates (axisCount), hb_range ((unsigned)axisCount))
                   | hb_filter (pinned_axes, hb_second)
-                  | hb_map ([&] (const hb_pair_t<const HBFixed&, unsigned>& _)
+                  | hb_map ([&] (const hb_pair_t<const F16DOT16&, unsigned>& _)
                             {
                               hb_tag_t axis_tag = pinned_axes.get (_.second);
                               float location = user_axes_location->get (axis_tag);
@@ -319,6 +357,48 @@ struct fvar
         if (post_script_name_id != HB_OT_NAME_ID_INVALID) nameids->add (post_script_name_id);
       }
     }
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    unsigned retained_axis_count = c->plan->axes_index_map->get_population ();
+    if (!retained_axis_count) //all axes are pinned
+      return_trace (false);
+
+    fvar *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    if (!c->serializer->check_assign (out->axisCount, retained_axis_count, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return_trace (false);
+
+    bool has_postscript_nameid = false;
+    if (instanceSize >= axisCount * 4 + 6)
+      has_postscript_nameid = true;
+
+    if (!c->serializer->check_assign (out->instanceSize, retained_axis_count * 4 + (has_postscript_nameid ? 6 : 4),
+                                      HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return_trace (false);
+
+    auto axes_records = get_axes ();
+    for (unsigned i = 0 ; i < (unsigned)axisCount; i++)
+    {
+      if (!c->plan->axes_index_map->has (i)) continue;
+      if (unlikely (!c->serializer->embed (axes_records[i])))
+        return_trace (false);
+    }
+
+    if (!c->serializer->check_assign (out->firstAxis, get_size (), HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return_trace (false);
+
+    for (unsigned i = 0 ; i < (unsigned)instanceCount; i++)
+    {
+      const InstanceRecord *instance = get_instance (i);
+      auto snap = c->serializer->snapshot ();
+      if (!instance->subset (c, axisCount, has_postscript_nameid))
+        c->serializer->revert (snap);
+    }
+    return_trace (true);
   }
 
   public:
@@ -346,8 +426,8 @@ struct fvar
   HBUINT16	instanceCount;	/* The number of named instances defined in the font
 				 * (the number of records in the instances array). */
   HBUINT16	instanceSize;	/* The size in bytes of each InstanceRecord — set
-				 * to either axisCount * sizeof(HBFixed) + 4, or to
-				 * axisCount * sizeof(HBFixed) + 6. */
+				 * to either axisCount * sizeof(F16DOT16) + 4, or to
+				 * axisCount * sizeof(F16DOT16) + 6. */
 
   public:
   DEFINE_SIZE_STATIC (16);

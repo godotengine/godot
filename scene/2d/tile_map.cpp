@@ -1297,7 +1297,7 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 		return;
 	}
 
-	// Draw a placeholder for scenes needing one.
+	// Draw a placeholder for tiles needing one.
 	RenderingServer *rs = RenderingServer::get_singleton();
 	Vector2 quadrant_pos = map_to_local(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
 	for (const Vector2i &E_cell : p_quadrant->cells) {
@@ -1330,9 +1330,9 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 							0.8);
 
 					// Draw a placeholder tile.
-					Transform2D xform;
-					xform.set_origin(map_to_local(E_cell) - quadrant_pos);
-					rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
+					Transform2D cell_to_quadrant;
+					cell_to_quadrant.set_origin(map_to_local(E_cell) - quadrant_pos);
+					rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, cell_to_quadrant);
 					rs->canvas_item_add_circle(p_quadrant->debug_canvas_item, Vector2(), MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 4.0, color);
 				}
 			}
@@ -1632,13 +1632,13 @@ void TileMap::_physics_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	color.push_back(debug_collision_color);
 
 	Vector2 quadrant_pos = map_to_local(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
-	Transform2D qudrant_xform;
-	qudrant_xform.set_origin(quadrant_pos);
-	Transform2D global_transform_inv = (get_global_transform() * qudrant_xform).affine_inverse();
+	Transform2D quadrant_to_local;
+	quadrant_to_local.set_origin(quadrant_pos);
+	Transform2D global_to_quadrant = (get_global_transform() * quadrant_to_local).affine_inverse();
 
 	for (RID body : p_quadrant->bodies) {
-		Transform2D xform = Transform2D(ps->body_get_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM)) * global_transform_inv;
-		rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
+		Transform2D body_to_quadrant = global_to_quadrant * Transform2D(ps->body_get_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM));
+		rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, body_to_quadrant);
 		for (int shape_index = 0; shape_index < ps->body_get_shape_count(body); shape_index++) {
 			const RID &shape = ps->body_get_shape(body, shape_index);
 			PhysicsServer2D::ShapeType type = ps->shape_get_type(shape);
@@ -1815,9 +1815,9 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 					tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 				}
 
-				Transform2D xform;
-				xform.set_origin(map_to_local(E_cell) - quadrant_pos);
-				rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
+				Transform2D cell_to_quadrant;
+				cell_to_quadrant.set_origin(map_to_local(E_cell) - quadrant_pos);
+				rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, cell_to_quadrant);
 
 				for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
 					Ref<NavigationPolygon> navpoly = tile_data->get_navigation_polygon(layer_index);
@@ -1863,7 +1863,7 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 		for (const KeyValue<Vector2i, String> &E : q.scenes) {
 			Node *node = get_node_or_null(E.value);
 			if (node) {
-				node->queue_delete();
+				node->queue_free();
 			}
 		}
 
@@ -1911,7 +1911,7 @@ void TileMap::_scenes_cleanup_quadrant(TileMapQuadrant *p_quadrant) {
 	for (const KeyValue<Vector2i, String> &E : p_quadrant->scenes) {
 		Node *node = get_node_or_null(E.value);
 		if (node) {
-			node->queue_delete();
+			node->queue_free();
 		}
 	}
 
@@ -1956,9 +1956,9 @@ void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 							0.8);
 
 					// Draw a placeholder tile.
-					Transform2D xform;
-					xform.set_origin(map_to_local(E_cell) - quadrant_pos);
-					rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
+					Transform2D cell_to_quadrant;
+					cell_to_quadrant.set_origin(map_to_local(E_cell) - quadrant_pos);
+					rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, cell_to_quadrant);
 					rs->canvas_item_add_circle(p_quadrant->debug_canvas_item, Vector2(), MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 4.0, color);
 				}
 			}
@@ -4056,9 +4056,5 @@ TileMap::TileMap() {
 }
 
 TileMap::~TileMap() {
-	if (tile_set.is_valid()) {
-		tile_set->disconnect("changed", callable_mp(this, &TileMap::_tile_set_changed));
-	}
-
 	_clear_internals();
 }

@@ -1087,7 +1087,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		_draw_fbg_boxes(ci, rid, fbg_line_off, it_from, it_to, chr_range.x, chr_range.y, 0);
 
 		// Draw main text.
-		Color selection_fg = theme_cache.font_selected_color;
 		Color selection_bg = theme_cache.selection_color;
 
 		int sel_start = -1;
@@ -1276,8 +1275,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				}
 			}
 
-			if (selected) {
-				font_color = override_selected_font_color ? selection_fg : font_color;
+			if (selected && use_selected_font_color) {
+				font_color = theme_cache.font_selected_color;
 			}
 
 			// Draw glyphs.
@@ -1286,9 +1285,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				if (txt_visible) {
 					if (!skip) {
 						if (frid != RID()) {
-							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, selected ? selection_fg : font_color);
+							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, font_color);
 						} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-							TS->draw_hex_code_box(ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, selected ? selection_fg : font_color);
+							TS->draw_hex_code_box(ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, font_color);
 						}
 					}
 					r_processed_glyphs++;
@@ -1688,6 +1687,7 @@ void RichTextLabel::_update_theme_item_cache() {
 
 	theme_cache.default_color = get_theme_color(SNAME("default_color"));
 	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
+	use_selected_font_color = theme_cache.font_selected_color != Color(0, 0, 0, 0);
 	theme_cache.selection_color = get_theme_color(SNAME("selection_color"));
 	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
 	theme_cache.font_shadow_color = get_theme_color(SNAME("font_shadow_color"));
@@ -3564,14 +3564,6 @@ bool RichTextLabel::is_hint_underlined() const {
 	return underline_hint;
 }
 
-void RichTextLabel::set_override_selected_font_color(bool p_override_selected_font_color) {
-	override_selected_font_color = p_override_selected_font_color;
-}
-
-bool RichTextLabel::is_overriding_selected_font_color() const {
-	return override_selected_font_color;
-}
-
 void RichTextLabel::set_offset(int p_pixel) {
 	vscroll->set_value(p_pixel);
 }
@@ -5294,9 +5286,6 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hint_underline", "enable"), &RichTextLabel::set_hint_underline);
 	ClassDB::bind_method(D_METHOD("is_hint_underlined"), &RichTextLabel::is_hint_underlined);
 
-	ClassDB::bind_method(D_METHOD("set_override_selected_font_color", "override"), &RichTextLabel::set_override_selected_font_color);
-	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &RichTextLabel::is_overriding_selected_font_color);
-
 	ClassDB::bind_method(D_METHOD("set_scroll_active", "active"), &RichTextLabel::set_scroll_active);
 	ClassDB::bind_method(D_METHOD("is_scroll_active"), &RichTextLabel::is_scroll_active);
 
@@ -5406,7 +5395,6 @@ void RichTextLabel::_bind_methods() {
 
 	ADD_GROUP("Text Selection", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selection_enabled"), "set_selection_enabled", "is_selection_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 
 	ADD_GROUP("Displayed Text", "");
@@ -5655,6 +5643,8 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 	Vector2i fbg_index = Vector2i(end, start);
 	Color last_color = Color(0, 0, 0, 0);
 	bool draw_box = false;
+	int hpad = get_theme_constant(SNAME("text_highlight_h_padding"));
+	int vpad = get_theme_constant(SNAME("text_highlight_v_padding"));
 	// Draw a box based on color tags associated with glyphs
 	for (int i = start; i < end; i++) {
 		Item *it = _get_item_at_pos(it_from, it_to, i);
@@ -5684,8 +5674,8 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 		if (draw_box) {
 			Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, fbg_index.y);
 			for (int j = 0; j < sel.size(); j++) {
-				Vector2 rect_off = line_off + Vector2(sel[j].x, -TS->shaped_text_get_ascent(p_rid));
-				Vector2 rect_size = Vector2(sel[j].y - sel[j].x, TS->shaped_text_get_size(p_rid).y);
+				Vector2 rect_off = line_off + Vector2(sel[j].x - hpad, -TS->shaped_text_get_ascent(p_rid) - vpad);
+				Vector2 rect_size = Vector2(sel[j].y - sel[j].x + 2 * hpad, TS->shaped_text_get_size(p_rid).y + 2 * vpad);
 				RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
 			}
 			fbg_index = Vector2i(end, start);
@@ -5703,8 +5693,8 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 	if (last_color.a > 0) {
 		Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, end);
 		for (int i = 0; i < sel.size(); i++) {
-			Vector2 rect_off = line_off + Vector2(sel[i].x, -TS->shaped_text_get_ascent(p_rid));
-			Vector2 rect_size = Vector2(sel[i].y - sel[i].x, TS->shaped_text_get_size(p_rid).y);
+			Vector2 rect_off = line_off + Vector2(sel[i].x - hpad, -TS->shaped_text_get_ascent(p_rid) - vpad);
+			Vector2 rect_size = Vector2(sel[i].y - sel[i].x + 2 * hpad, TS->shaped_text_get_size(p_rid).y + 2 * vpad);
 			RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
 		}
 	}

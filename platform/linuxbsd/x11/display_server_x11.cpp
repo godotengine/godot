@@ -126,7 +126,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_HIDPI:
 		case FEATURE_ICON:
-		case FEATURE_NATIVE_ICON:
+		//case FEATURE_NATIVE_ICON:
 		case FEATURE_SWAP_BUFFERS:
 #ifdef DBUS_ENABLED
 		case FEATURE_KEEP_SCREEN_ON:
@@ -4422,8 +4422,8 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();
@@ -4683,7 +4683,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	return id;
 }
 
-DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -4922,6 +4922,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	Point2i window_position(
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
+
+	if (p_position != nullptr) {
+		window_position = *p_position;
+	}
+
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
 	if (main_window == INVALID_WINDOW_ID) {
 		r_error = ERR_CANT_CREATE;

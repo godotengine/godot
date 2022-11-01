@@ -433,7 +433,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_color", "TextEdit", control_font_color);
-	theme->set_color("font_selected_color", "TextEdit", control_font_pressed_color);
+	theme->set_color("font_selected_color", "TextEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_readonly_color", "TextEdit", control_font_disabled_color);
 	theme->set_color("font_placeholder_color", "TextEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "TextEdit", Color(1, 1, 1));
@@ -476,7 +476,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("completion_scroll_hovered_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.4));
 	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "CodeEdit", control_font_color);
-	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0));
+	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
 	theme->set_color("font_placeholder_color", "CodeEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "CodeEdit", Color(1, 1, 1));
@@ -959,7 +959,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("mono_font_size", "RichTextLabel", -1);
 
 	theme->set_color("default_color", "RichTextLabel", Color(1, 1, 1));
-	theme->set_color("font_selected_color", "RichTextLabel", Color(0, 0, 0));
+	theme->set_color("font_selected_color", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
 
 	theme->set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0));
@@ -979,6 +979,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("table_odd_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_color("table_even_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_color("table_border", "RichTextLabel", Color(0, 0, 0, 0));
+
+	theme->set_constant("text_highlight_h_padding", "RichTextLabel", 3 * scale);
+	theme->set_constant("text_highlight_v_padding", "RichTextLabel", 3 * scale);
 
 	// Containers
 

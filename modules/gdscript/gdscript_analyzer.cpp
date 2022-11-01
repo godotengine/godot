@@ -1602,8 +1602,8 @@ void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
 	reduce_expression(p_assert->condition);
 	if (p_assert->message != nullptr) {
 		reduce_expression(p_assert->message);
-		if (!p_assert->message->is_constant || p_assert->message->reduced_value.get_type() != Variant::STRING) {
-			push_error(R"(Expected constant string for assert error message.)", p_assert->message);
+		if (!p_assert->message->get_datatype().has_no_type() && (p_assert->message->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_assert->message->get_datatype().builtin_type != Variant::STRING)) {
+			push_error(R"(Expected string for assert error message.)", p_assert->message);
 		}
 	}
 
@@ -2425,9 +2425,15 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 				switch (err.error) {
 					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
-						PropertyInfo wrong_arg = function_info.arguments[err.argument];
+						String expected_type_name;
+						if (err.argument < function_info.arguments.size()) {
+							expected_type_name = type_from_property(function_info.arguments[err.argument]).to_string();
+						} else {
+							expected_type_name = Variant::get_type_name((Variant::Type)err.expected);
+						}
+
 						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*", function_name, err.argument + 1,
-										   type_from_property(wrong_arg).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
+										   expected_type_name, p_call->arguments[err.argument]->get_datatype().to_string()),
 								p_call->arguments[err.argument]);
 					} break;
 					case Callable::CallError::CALL_ERROR_INVALID_METHOD:

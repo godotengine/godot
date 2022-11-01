@@ -124,7 +124,7 @@ TEST_CASE("[Image] Saving and loading") {
 			image_jpg->load_jpg_from_buffer(data_jpg) == OK,
 			"The JPG image should load successfully.");
 
-	// Load WEBP
+	// Load WebP
 	Ref<Image> image_webp = memnew(Image());
 	Ref<FileAccess> f_webp = FileAccess::open(TestUtils::get_data_path("images/icon.webp"), FileAccess::READ, &err);
 	PackedByteArray data_webp;
@@ -132,7 +132,7 @@ TEST_CASE("[Image] Saving and loading") {
 	f_webp->get_buffer(data_webp.ptrw(), f_webp->get_length());
 	CHECK_MESSAGE(
 			image_webp->load_webp_from_buffer(data_webp) == OK,
-			"The WEBP image should load successfully.");
+			"The WebP image should load successfully.");
 
 	// Load PNG
 	Ref<Image> image_png = memnew(Image());

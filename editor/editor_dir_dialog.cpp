@@ -57,7 +57,7 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 	}
 
 	//this should be handled by EditorFileSystem already
-	//bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
+	//bool show_hidden = EDITOR_GET("filesystem/file_dialog/show_hidden_files");
 	updating = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		TreeItem *ti = tree->create_item(p_item);

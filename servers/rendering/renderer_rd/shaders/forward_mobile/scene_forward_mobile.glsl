@@ -1172,8 +1172,14 @@ void main() {
 	} //Reflection probes
 
 	// finalize ambient light here
-	ambient_light *= albedo.rgb;
-	ambient_light *= ao;
+	{
+#if defined(AMBIENT_LIGHT_DISABLED)
+		ambient_light = vec3(0.0, 0.0, 0.0);
+#else
+		ambient_light *= albedo.rgb;
+		ambient_light *= ao;
+#endif // AMBIENT_LIGHT_DISABLED
+	}
 
 	// convert ao to direct light ao
 	ao = mix(1.0, ao, ao_light_affect);

@@ -284,6 +284,8 @@ public:
 	RID default_canvas_texture;
 	RID default_canvas_group_material;
 	RID default_canvas_group_shader;
+	RID default_clip_children_material;
+	RID default_clip_children_shader;
 
 	typedef void Texture;
 

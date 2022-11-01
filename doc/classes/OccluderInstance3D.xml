@@ -42,7 +42,7 @@
 		</member>
 		<member name="occluder" type="Occluder3D" setter="set_occluder" getter="get_occluder">
 			The occluder resource for this [OccluderInstance3D]. You can generate an occluder resource by selecting an [OccluderInstance3D] node then using the [b]Bake Occluders[/b] button at the top of the editor.
-			You can also draw your own 2D occluder polygon by adding a new [PolygonOccluder3D] resource to the [member occluder] property in the inspector.
+			You can also draw your own 2D occluder polygon by adding a new [PolygonOccluder3D] resource to the [member occluder] property in the Inspector.
 			Alternatively, you can select a primitive occluder to use: [QuadOccluder3D], [BoxOccluder3D] or [SphereOccluder3D].
 		</member>
 	</members>

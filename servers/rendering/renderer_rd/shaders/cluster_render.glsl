@@ -64,7 +64,7 @@ void main() {
 #version 450
 
 #VERSION_DEFINES
-
+#ifndef MOLTENVK_USED // Metal will corrupt GPU state otherwise
 #if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic) && defined(has_GL_KHR_shader_subgroup_vote)
 
 #extension GL_KHR_shader_subgroup_ballot : enable
@@ -72,6 +72,7 @@ void main() {
 #extension GL_KHR_shader_subgroup_vote : enable
 
 #define USE_SUBGROUPS
+#endif
 #endif
 
 layout(location = 0) in float depth_interp;

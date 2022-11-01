@@ -73,7 +73,7 @@ Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
 Vector<uint8_t> _webp_lossless_pack(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_V(p_image.is_null() || p_image->is_empty(), Vector<uint8_t>());
 
-	int compression_level = ProjectSettings::get_singleton()->get("rendering/textures/lossless_compression/webp_compression_level");
+	int compression_level = GLOBAL_GET("rendering/textures/lossless_compression/webp_compression_level");
 	compression_level = CLAMP(compression_level, 0, 9);
 
 	Ref<Image> img = p_image->duplicate();
@@ -139,7 +139,7 @@ Ref<Image> _webp_unpack(const Vector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_V(r[0] != 'R' || r[1] != 'I' || r[2] != 'F' || r[3] != 'F' || r[8] != 'W' || r[9] != 'E' || r[10] != 'B' || r[11] != 'P', Ref<Image>());
 	WebPBitstreamFeatures features;
 	if (WebPGetFeatures(r, size, &features) != VP8_STATUS_OK) {
-		ERR_FAIL_V_MSG(Ref<Image>(), "Error unpacking WEBP image.");
+		ERR_FAIL_V_MSG(Ref<Image>(), "Error unpacking WebP image.");
 	}
 
 	Vector<uint8_t> dst_image;

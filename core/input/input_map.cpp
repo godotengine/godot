@@ -257,7 +257,7 @@ void InputMap::load_from_project_settings() {
 
 		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
 
-		Dictionary action = ProjectSettings::get_singleton()->get(pi.name);
+		Dictionary action = GLOBAL_GET(pi.name);
 		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : 0.5f;
 		Array events = action["events"];
 
@@ -331,12 +331,17 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_text_caret_document_start.macos",            TTRC("Caret Document Start") },
     { "ui_text_caret_document_end",                    TTRC("Caret Document End") },
     { "ui_text_caret_document_end.macos",              TTRC("Caret Document End") },
+    { "ui_text_caret_add_below",                       TTRC("Caret Add Below") },
+    { "ui_text_caret_add_below.macos",                 TTRC("Caret Add Below") },
+    { "ui_text_caret_add_above",                       TTRC("Caret Add Above") },
+    { "ui_text_caret_add_above.macos",                 TTRC("Caret Add Above") },
     { "ui_text_scroll_up",                             TTRC("Scroll Up") },
     { "ui_text_scroll_up.macos",                       TTRC("Scroll Up") },
     { "ui_text_scroll_down",                           TTRC("Scroll Down") },
     { "ui_text_scroll_down.macos",                     TTRC("Scroll Down") },
     { "ui_text_select_all",                            TTRC("Select All") },
     { "ui_text_select_word_under_caret",               TTRC("Select Word Under Caret") },
+    { "ui_text_add_selection_for_next_occurrence",     TTRC("Add Selection for Next Occurrence") },
     { "ui_text_toggle_insert_mode",                    TTRC("Toggle Insert Mode") },
     { "ui_text_submit",                                TTRC("Text Submitted") },
     { "ui_graph_duplicate",                            TTRC("Duplicate Nodes") },
@@ -616,6 +621,24 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_end.macos", inputs);
 
+	// Text Caret Addition Below/Above
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_text_caret_add_below", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_text_caret_add_below.macos", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_text_caret_add_above", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::O | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_text_caret_add_above.macos", inputs);
+
 	// Text Scrolling
 
 	inputs = List<Ref<InputEvent>>();
@@ -641,8 +664,12 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_select_all", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(Key::D | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::G | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_select_word_under_caret", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::D | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_text_add_selection_for_next_occurrence", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::INSERT));

@@ -277,6 +277,8 @@ public:
 
 struct GodotConvexPolygonShape3D : public GodotShape3D {
 	Geometry3D::MeshData mesh;
+	LocalVector<int> extreme_vertices;
+	LocalVector<LocalVector<int>> vertex_neighbors;
 
 	void _setup(const Vector<Vector3> &p_vertices);
 

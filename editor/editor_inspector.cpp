@@ -1062,10 +1062,8 @@ void EditorInspectorPlugin::add_property_editor_for_multiple_properties(const St
 
 bool EditorInspectorPlugin::can_handle(Object *p_object) {
 	bool success = false;
-	if (GDVIRTUAL_CALL(_can_handle, p_object, success)) {
-		return success;
-	}
-	return false;
+	GDVIRTUAL_CALL(_can_handle, p_object, success);
+	return success;
 }
 
 void EditorInspectorPlugin::parse_begin(Object *p_object) {
@@ -1082,10 +1080,8 @@ void EditorInspectorPlugin::parse_group(Object *p_object, const String &p_group)
 
 bool EditorInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	bool ret = false;
-	if (GDVIRTUAL_CALL(_parse_property, p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide, ret)) {
-		return ret;
-	}
-	return false;
+	GDVIRTUAL_CALL(_parse_property, p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide, ret);
+	return ret;
 }
 
 void EditorInspectorPlugin::parse_end(Object *p_object) {
@@ -2527,7 +2523,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 
 		if (ep) {
 			ep->object = object;
-			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
+			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(false));
 			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 			ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
 			ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
@@ -3876,7 +3872,7 @@ void EditorInspector::_notification(int p_what) {
 				update_scroll_request = -1;
 			}
 			if (update_tree_pending) {
-				refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+				refresh_countdown = float(EDITOR_GET("docks/property_editor/auto_refresh_interval"));
 			} else if (refresh_countdown > 0) {
 				refresh_countdown -= get_process_delta_time();
 				if (refresh_countdown <= 0) {
@@ -3889,7 +3885,7 @@ void EditorInspector::_notification(int p_what) {
 							}
 						}
 					}
-					refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+					refresh_countdown = float(EDITOR_GET("docks/property_editor/auto_refresh_interval"));
 				}
 			}
 
@@ -4095,7 +4091,7 @@ EditorInspector::EditorInspector() {
 	get_v_scroll_bar()->connect("value_changed", callable_mp(this, &EditorInspector::_vscroll_changed));
 	update_scroll_request = -1;
 	if (EditorSettings::get_singleton()) {
-		refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+		refresh_countdown = float(EDITOR_GET("docks/property_editor/auto_refresh_interval"));
 	} else {
 		//used when class is created by the docgen to dump default values of everything bindable, editorsettings may not be created
 		refresh_countdown = 0.33;

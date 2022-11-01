@@ -1161,7 +1161,7 @@ void Viewport::_gui_cancel_tooltip() {
 		gui.tooltip_timer = Ref<SceneTreeTimer>();
 	}
 	if (gui.tooltip_popup) {
-		gui.tooltip_popup->queue_delete();
+		gui.tooltip_popup->queue_free();
 	}
 }
 
@@ -1261,11 +1261,17 @@ void Viewport::_gui_show_tooltip() {
 
 	tooltip_owner->add_child(gui.tooltip_popup);
 
-	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
+	Point2 tooltip_offset = GLOBAL_GET("display/mouse_cursor/tooltip_position_offset");
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
+	r.size = r.size.min(panel->get_max_size());
 
 	Window *window = gui.tooltip_popup->get_parent_visible_window();
-	Rect2i vr = window->get_usable_parent_rect();
+	Rect2i vr;
+	if (gui.tooltip_popup->is_embedded()) {
+		vr = gui.tooltip_popup->_get_embedder()->get_visible_rect();
+	} else {
+		vr = window->get_usable_parent_rect();
+	}
 
 	if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 		// Place it in the opposite direction. If it fails, just hug the border.
@@ -1403,10 +1409,6 @@ Control *Viewport::gui_find_control(const Point2 &p_global) {
 }
 
 Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform) {
-	if (Object::cast_to<Viewport>(p_node)) {
-		return nullptr;
-	}
-
 	if (!p_node->is_visible()) {
 		return nullptr; // Canvas item hidden, discard.
 	}

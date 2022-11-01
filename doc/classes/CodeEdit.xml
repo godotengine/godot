@@ -616,8 +616,8 @@
 		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Sets the font [Color] when [member TextEdit.editable] is disabled.
 		</theme_item>
-		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			Sets the [Color] of the selected text. [member TextEdit.override_selected_font_color] has to be enabled.
+		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			Sets the [Color] of the selected text. If equal to [code]Color(0, 0, 0, 0)[/code], it will be ignored.
 		</theme_item>
 		<theme_item name="line_length_guideline_color" data_type="color" type="Color" default="Color(0.3, 0.5, 0.8, 0.1)">
 			[Color] of the main line length guideline, secondary guidelines will have 50% alpha applied.

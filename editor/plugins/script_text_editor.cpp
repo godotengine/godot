@@ -151,7 +151,7 @@ void ScriptTextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	code_editor->update_line_and_column();
 }
 
-void ScriptTextEditor::enable_editor() {
+void ScriptTextEditor::enable_editor(Control *p_shortcut_context) {
 	if (editor_enabled) {
 		return;
 	}
@@ -161,6 +161,15 @@ void ScriptTextEditor::enable_editor() {
 	_enable_code_editor();
 
 	_validate_script();
+
+	if (p_shortcut_context) {
+		for (int i = 0; i < edit_hb->get_child_count(); ++i) {
+			Control *c = cast_to<Control>(edit_hb->get_child(i));
+			if (c) {
+				c->set_shortcut_context(p_shortcut_context);
+			}
+		}
+	}
 }
 
 void ScriptTextEditor::_load_theme_settings() {
@@ -316,7 +325,7 @@ bool ScriptTextEditor::show_members_overview() {
 }
 
 void ScriptTextEditor::update_settings() {
-	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, EditorSettings::get_singleton()->get("text_editor/appearance/gutters/show_info_gutter"));
+	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, EDITOR_GET("text_editor/appearance/gutters/show_info_gutter"));
 	code_editor->update_editor_settings();
 }
 
@@ -689,7 +698,7 @@ static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_curr
 }
 
 void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_for_script) {
-	if (!bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
+	if (!bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
 		return;
 	}
 
@@ -1784,7 +1793,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		int row = pos.y;
 		int col = pos.x;
 
-		tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
+		tx->set_move_caret_on_right_click_enabled(EDITOR_GET("text_editor/behavior/navigation/move_caret_on_right_click"));
 		if (tx->is_move_caret_on_right_click_enabled()) {
 			tx->remove_secondary_carets();
 			if (tx->has_selection()) {
@@ -2130,7 +2139,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	update_settings();
 
-	code_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
+	code_editor->get_text_editor()->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);

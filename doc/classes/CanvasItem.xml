@@ -416,7 +416,7 @@
 		<method name="get_global_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the global transform matrix of this item.
+				Returns the global transform matrix of this item, i.e. the combined transform up to the topmost [CanvasItem] node. The topmost item is a [CanvasItem] that either has no parent, has non-[CanvasItem] parent or it has [member top_level] enabled.
 			</description>
 		</method>
 		<method name="get_global_transform_with_canvas" qualifiers="const">
@@ -535,7 +535,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="clip_children" type="bool" setter="set_clip_children" getter="is_clipping_children" default="false">
+		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
 			Allows the current node to clip children nodes, essentially acting as a mask.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
@@ -652,6 +652,14 @@
 		</constant>
 		<constant name="TEXTURE_REPEAT_MAX" value="4" enum="TextureRepeat">
 			Represents the size of the [enum TextureRepeat] enum.
+		</constant>
+		<constant name="CLIP_CHILDREN_DISABLED" value="0" enum="ClipChildrenMode">
+		</constant>
+		<constant name="CLIP_CHILDREN_ONLY" value="1" enum="ClipChildrenMode">
+		</constant>
+		<constant name="CLIP_CHILDREN_AND_DRAW" value="2" enum="ClipChildrenMode">
+		</constant>
+		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
 		</constant>
 	</constants>
 </class>

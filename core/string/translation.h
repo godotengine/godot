@@ -102,6 +102,7 @@ class TranslationServer : public Object {
 
 	static TranslationServer *singleton;
 	bool _load_translations(const String &p_from);
+	String _standardize_locale(const String &p_locale, bool p_add_defaults) const;
 
 	StringName _get_message_from_translations(const StringName &p_message, const StringName &p_context, const String &p_locale, bool plural, const String &p_message_plural = "", int p_n = 0) const;
 

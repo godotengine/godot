@@ -38,8 +38,8 @@
 Error ResourceSaverWebP::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<ImageTexture> texture = p_resource;
 
-	ERR_FAIL_COND_V_MSG(!texture.is_valid(), ERR_INVALID_PARAMETER, "Can't save invalid texture as WEBP.");
-	ERR_FAIL_COND_V_MSG(!texture->get_width(), ERR_INVALID_PARAMETER, "Can't save empty texture as WEBP.");
+	ERR_FAIL_COND_V_MSG(!texture.is_valid(), ERR_INVALID_PARAMETER, "Can't save invalid texture as WebP.");
+	ERR_FAIL_COND_V_MSG(!texture->get_width(), ERR_INVALID_PARAMETER, "Can't save empty texture as WebP.");
 
 	Ref<Image> img = texture->get_image();
 
@@ -52,7 +52,7 @@ Error ResourceSaverWebP::save_image(const String &p_path, const Ref<Image> &p_im
 	Vector<uint8_t> buffer = save_image_to_buffer(p_img, p_lossy, p_quality);
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save WEBP at path: '%s'.", p_path));
+	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save WebP at path: '%s'.", p_path));
 
 	const uint8_t *reader = buffer.ptr();
 

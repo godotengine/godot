@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef VULKAN_ENABLED
+
 #include "vulkan_context_x11.h"
 
 #ifdef USE_VOLK
@@ -59,3 +61,5 @@ VulkanContextX11::VulkanContextX11() {
 
 VulkanContextX11::~VulkanContextX11() {
 }
+
+#endif // VULKAN_ENABLED

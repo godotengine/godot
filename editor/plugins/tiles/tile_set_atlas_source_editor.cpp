@@ -671,7 +671,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		}
 	}
 	for (int i = tile_set->get_occlusion_layers_count(); tile_data_editors.has(vformat("occlusion_layer_%d", i)); i++) {
-		tile_data_editors[vformat("occlusion_layer_%d", i)]->queue_delete();
+		tile_data_editors[vformat("occlusion_layer_%d", i)]->queue_free();
 		tile_data_editors.erase(vformat("occlusion_layer_%d", i));
 	}
 
@@ -710,7 +710,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		}
 	}
 	for (int i = tile_set->get_physics_layers_count(); tile_data_editors.has(vformat("physics_layer_%d", i)); i++) {
-		tile_data_editors[vformat("physics_layer_%d", i)]->queue_delete();
+		tile_data_editors[vformat("physics_layer_%d", i)]->queue_free();
 		tile_data_editors.erase(vformat("physics_layer_%d", i));
 	}
 
@@ -728,7 +728,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		}
 	}
 	for (int i = tile_set->get_navigation_layers_count(); tile_data_editors.has(vformat("navigation_layer_%d", i)); i++) {
-		tile_data_editors[vformat("navigation_layer_%d", i)]->queue_delete();
+		tile_data_editors[vformat("navigation_layer_%d", i)]->queue_free();
 		tile_data_editors.erase(vformat("navigation_layer_%d", i));
 	}
 
@@ -750,7 +750,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		}
 	}
 	for (int i = tile_set->get_custom_data_layers_count(); tile_data_editors.has(vformat("custom_data_%d", i)); i++) {
-		tile_data_editors[vformat("custom_data_%d", i)]->queue_delete();
+		tile_data_editors[vformat("custom_data_%d", i)]->queue_free();
 		tile_data_editors.erase(vformat("custom_data_%d", i));
 	}
 
@@ -884,7 +884,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 
 	// Create a bunch of buttons to add alternative tiles.
 	for (int i = 0; i < alternative_tiles_control->get_child_count(); i++) {
-		alternative_tiles_control->get_child(i)->queue_delete();
+		alternative_tiles_control->get_child(i)->queue_free();
 	}
 
 	Vector2i pos;
@@ -1667,7 +1667,7 @@ Array TileSetAtlasSourceEditor::_get_selection_as_array() {
 
 void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 	// Colors.
-	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 
 	// Draw the selected tile.
@@ -1958,7 +1958,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_mouse_exited() {
 }
 
 void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
-	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 
 	// Update the hovered alternative tile.

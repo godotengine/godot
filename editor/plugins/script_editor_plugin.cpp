@@ -59,19 +59,15 @@
 /*** SYNTAX HIGHLIGHTER ****/
 
 String EditorSyntaxHighlighter::_get_name() const {
-	String ret;
-	if (GDVIRTUAL_CALL(_get_name, ret)) {
-		return ret;
-	}
-	return "Unnamed";
+	String ret = "Unnamed";
+	GDVIRTUAL_CALL(_get_name, ret);
+	return ret;
 }
 
 PackedStringArray EditorSyntaxHighlighter::_get_supported_languages() const {
 	PackedStringArray ret;
-	if (GDVIRTUAL_CALL(_get_supported_languages, ret)) {
-		return ret;
-	}
-	return PackedStringArray();
+	GDVIRTUAL_CALL(_get_supported_languages, ret);
+	return ret;
 }
 
 Ref<EditorSyntaxHighlighter> EditorSyntaxHighlighter::_create() const {
@@ -405,7 +401,7 @@ String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *_se) {
 }
 
 void ScriptEditor::_breaked(bool p_breaked, bool p_can_debug) {
-	if (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
+	if (bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
 		return;
 	}
 
@@ -1488,7 +1484,7 @@ void ScriptEditor::_show_save_theme_as_dialog() {
 	file_dialog_option = THEME_SAVE_AS;
 	file_dialog->clear_filters();
 	file_dialog->add_filter("*.tet");
-	file_dialog->set_current_path(EditorPaths::get_singleton()->get_text_editor_themes_dir().path_join(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
+	file_dialog->set_current_path(EditorPaths::get_singleton()->get_text_editor_themes_dir().path_join(EDITOR_GET("text_editor/theme/color_theme")));
 	file_dialog->popup_file_dialog();
 	file_dialog->set_title(TTR("Save Theme As..."));
 }
@@ -1734,7 +1730,7 @@ void ScriptEditor::ensure_select_current() {
 	if (tab_container->get_tab_count() && tab_container->get_current_tab() >= 0) {
 		ScriptEditorBase *se = _get_current_editor();
 		if (se) {
-			se->enable_editor();
+			se->enable_editor(this);
 
 			if (!grab_focus_block && is_visible_in_tree()) {
 				se->ensure_focus();
@@ -1823,7 +1819,7 @@ void ScriptEditor::_update_members_overview() {
 	}
 
 	Vector<String> functions = se->get_functions();
-	if (EditorSettings::get_singleton()->get("text_editor/script_list/sort_members_outline_alphabetically")) {
+	if (EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically")) {
 		functions.sort();
 	}
 
@@ -1890,9 +1886,9 @@ void ScriptEditor::_update_help_overview() {
 }
 
 void ScriptEditor::_update_script_colors() {
-	bool script_temperature_enabled = EditorSettings::get_singleton()->get("text_editor/script_list/script_temperature_enabled");
+	bool script_temperature_enabled = EDITOR_GET("text_editor/script_list/script_temperature_enabled");
 
-	int hist_size = EditorSettings::get_singleton()->get("text_editor/script_list/script_temperature_history_size");
+	int hist_size = EDITOR_GET("text_editor/script_list/script_temperature_history_size");
 	Color hot_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 	hot_color.set_s(hot_color.get_s() * 0.9);
 	Color cold_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
@@ -1936,9 +1932,9 @@ void ScriptEditor::_update_script_names() {
 	}
 
 	script_list->clear();
-	bool split_script_help = EditorSettings::get_singleton()->get("text_editor/script_list/group_help_pages");
-	ScriptSortBy sort_by = (ScriptSortBy)(int)EditorSettings::get_singleton()->get("text_editor/script_list/sort_scripts_by");
-	ScriptListName display_as = (ScriptListName)(int)EditorSettings::get_singleton()->get("text_editor/script_list/list_script_names_as");
+	bool split_script_help = EDITOR_GET("text_editor/script_list/group_help_pages");
+	ScriptSortBy sort_by = (ScriptSortBy)(int)EDITOR_GET("text_editor/script_list/sort_scripts_by");
+	ScriptListName display_as = (ScriptListName)(int)EDITOR_GET("text_editor/script_list/list_script_names_as");
 
 	Vector<_ScriptEditorItemData> sedata;
 
@@ -2006,7 +2002,7 @@ void ScriptEditor::_update_script_names() {
 		Vector<String> full_script_paths;
 		for (int j = 0; j < sedata.size(); j++) {
 			String name = sedata[j].name.replace("(*)", "");
-			ScriptListName script_display = (ScriptListName)(int)EditorSettings::get_singleton()->get("text_editor/script_list/list_script_names_as");
+			ScriptListName script_display = (ScriptListName)(int)EDITOR_GET("text_editor/script_list/list_script_names_as");
 			switch (script_display) {
 				case DISPLAY_NAME: {
 					name = name.get_file();
@@ -2108,7 +2104,7 @@ void ScriptEditor::_update_script_names() {
 
 			ScriptEditorBase *se = _get_current_editor();
 			if (se) {
-				se->enable_editor();
+				se->enable_editor(this);
 				_update_selected_editor_menu();
 			}
 		}
@@ -2188,10 +2184,10 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	// Don't open dominant script if using an external editor.
 	bool use_external_editor =
-			EditorSettings::get_singleton()->get("text_editor/external/use_external_editor") ||
+			EDITOR_GET("text_editor/external/use_external_editor") ||
 			(scr.is_valid() && scr->get_language()->overrides_external_editor());
 	use_external_editor = use_external_editor && !(scr.is_valid() && scr->is_built_in()); // Ignore external editor for built-in scripts.
-	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/behavior/files/open_dominant_script_on_scene_change");
+	const bool open_dominant = EDITOR_GET("text_editor/behavior/files/open_dominant_script_on_scene_change");
 
 	const bool should_open = (open_dominant && !use_external_editor) || !EditorNode::get_singleton()->is_changing_scene();
 
@@ -2209,8 +2205,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
 			p_resource->get_path().is_resource_file() &&
 			!p_resource->is_class("VisualScript")) {
-		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
-		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
+		String path = EDITOR_GET("text_editor/external/exec_path");
+		String flags = EDITOR_GET("text_editor/external/exec_flags");
 
 		List<String> args;
 		bool has_file_flag = false;
@@ -2273,7 +2269,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 		if ((scr != nullptr && se->get_edited_resource() == p_resource) || se->get_edited_resource()->get_path() == p_resource->get_path()) {
 			if (should_open) {
-				se->enable_editor();
+				se->enable_editor(this);
 
 				if (tab_container->get_current_tab() != i) {
 					_go_to_tab(i);
@@ -2329,7 +2325,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	tab_container->add_child(se);
 
 	if (p_grab_focus) {
-		se->enable_editor();
+		se->enable_editor(this);
 	}
 
 	// If we delete a script within the filesystem, the original resource path
@@ -2658,26 +2654,26 @@ void ScriptEditor::_save_layout() {
 
 void ScriptEditor::_editor_settings_changed() {
 	textfile_extensions.clear();
-	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (const String &E : textfile_ext) {
 		textfile_extensions.insert(E);
 	}
 
-	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/trim_trailing_whitespace_on_save");
-	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/convert_indent_on_save");
-	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/behavior/indent/type");
+	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
+	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
+	use_space_indentation = EDITOR_GET("text_editor/behavior/indent/type");
 
-	members_overview_enabled = EditorSettings::get_singleton()->get("text_editor/script_list/show_members_overview");
-	help_overview_enabled = EditorSettings::get_singleton()->get("text_editor/help/show_help_index");
+	members_overview_enabled = EDITOR_GET("text_editor/script_list/show_members_overview");
+	help_overview_enabled = EDITOR_GET("text_editor/help/show_help_index");
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 
 	_update_autosave_timer();
 
 	if (current_theme.is_empty()) {
-		current_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
-	} else if (current_theme != String(EditorSettings::get_singleton()->get("text_editor/theme/color_theme"))) {
-		current_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
+		current_theme = EDITOR_GET("text_editor/theme/color_theme");
+	} else if (current_theme != String(EDITOR_GET("text_editor/theme/color_theme"))) {
+		current_theme = EDITOR_GET("text_editor/theme/color_theme");
 		EditorSettings::get_singleton()->load_text_editor_theme();
 	}
 
@@ -2760,7 +2756,7 @@ void ScriptEditor::_update_autosave_timer() {
 		return;
 	}
 
-	float autosave_time = EditorSettings::get_singleton()->get("text_editor/behavior/files/autosave_interval_secs");
+	float autosave_time = EDITOR_GET("text_editor/behavior/files/autosave_interval_secs");
 	if (autosave_time > 0) {
 		autosave_timer->set_wait_time(autosave_time);
 		autosave_timer->start();
@@ -3438,10 +3434,10 @@ TypedArray<ScriptEditorBase> ScriptEditor::_get_open_script_editors() const {
 void ScriptEditor::set_scene_root_script(Ref<Script> p_script) {
 	// Don't open dominant script if using an external editor.
 	bool use_external_editor =
-			EditorSettings::get_singleton()->get("text_editor/external/use_external_editor") ||
+			EDITOR_GET("text_editor/external/use_external_editor") ||
 			(p_script.is_valid() && p_script->get_language()->overrides_external_editor());
 	use_external_editor = use_external_editor && !(p_script.is_valid() && p_script->is_built_in()); // Ignore external editor for built-in scripts.
-	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/behavior/files/open_dominant_script_on_scene_change");
+	const bool open_dominant = EDITOR_GET("text_editor/behavior/files/open_dominant_script_on_scene_change");
 
 	if (open_dominant && !use_external_editor && p_script.is_valid()) {
 		edit(p_script);
@@ -3632,8 +3628,8 @@ ScriptEditor::ScriptEditor() {
 	waiting_update_names = false;
 	pending_auto_reload = false;
 	auto_reload_running_scripts = true;
-	members_overview_enabled = EditorSettings::get_singleton()->get("text_editor/script_list/show_members_overview");
-	help_overview_enabled = EditorSettings::get_singleton()->get("text_editor/help/show_help_index");
+	members_overview_enabled = EDITOR_GET("text_editor/script_list/show_members_overview");
+	help_overview_enabled = EDITOR_GET("text_editor/help/show_help_index");
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	add_child(main_container);
@@ -3692,7 +3688,7 @@ ScriptEditor::ScriptEditor() {
 	members_overview_alphabeta_sort_button->set_flat(true);
 	members_overview_alphabeta_sort_button->set_tooltip_text(TTR("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
-	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/script_list/sort_members_outline_alphabetically"));
+	members_overview_alphabeta_sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
 	members_overview_alphabeta_sort_button->connect("toggled", callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
 
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
@@ -3934,9 +3930,9 @@ ScriptEditor::ScriptEditor() {
 	history_pos = -1;
 
 	edit_pass = 0;
-	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/trim_trailing_whitespace_on_save");
-	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/convert_indent_on_save");
-	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/behavior/indent/type");
+	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
+	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
+	use_space_indentation = EDITOR_GET("text_editor/behavior/indent/type");
 
 	ScriptServer::edit_request_func = _open_script_request;
 

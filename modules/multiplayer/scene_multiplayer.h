@@ -49,6 +49,17 @@ public:
 		NETWORK_COMMAND_SPAWN,
 		NETWORK_COMMAND_DESPAWN,
 		NETWORK_COMMAND_SYNC,
+		NETWORK_COMMAND_SYS,
+	};
+
+	enum SysCommands {
+		SYS_COMMAND_ADD_PEER,
+		SYS_COMMAND_DEL_PEER,
+		SYS_COMMAND_RELAY,
+	};
+
+	enum {
+		SYS_CMD_SIZE = 6, // Command + sys command + peer_id (+ optional payload).
 	};
 
 	// For each command, the 4 MSB can contain custom flags, as defined by subsystems.
@@ -74,6 +85,8 @@ private:
 
 	NodePath root_path;
 	bool allow_object_decoding = false;
+	bool server_relay = true;
+	Ref<StreamPeerBuffer> relay_buffer;
 
 	Ref<SceneCacheInterface> cache;
 	Ref<SceneReplicationInterface> replicator;
@@ -84,6 +97,7 @@ protected:
 
 	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void _process_sys(int p_from, const uint8_t *p_packet, int p_packet_len, MultiplayerPeer::TransferMode p_mode, int p_channel);
 
 	void _add_peer(int p_id);
 	void _del_peer(int p_id);
@@ -111,6 +125,7 @@ public:
 	void set_root_path(const NodePath &p_path);
 	NodePath get_root_path() const;
 
+	Error send_command(int p_to, const uint8_t *p_packet, int p_packet_len); // Used internally to relay packets when needed.
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 	String get_rpc_md5(const Object *p_obj);
 
@@ -122,6 +137,9 @@ public:
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
+
+	void set_server_relay_enabled(bool p_enabled);
+	bool is_server_relay_enabled() const;
 
 	Ref<SceneCacheInterface> get_path_cache() { return cache; }
 

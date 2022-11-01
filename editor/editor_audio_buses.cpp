@@ -1036,7 +1036,7 @@ void EditorAudioBuses::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			if (drop_end) {
-				drop_end->queue_delete();
+				drop_end->queue_free();
 				drop_end = nullptr;
 			}
 		} break;
@@ -1208,7 +1208,7 @@ void EditorAudioBuses::_load_layout() {
 }
 
 void EditorAudioBuses::_load_default_layout() {
-	String layout_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
+	String layout_path = GLOBAL_GET("audio/buses/default_bus_layout");
 
 	Ref<AudioBusLayout> state = ResourceLoader::load(layout_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (state.is_null()) {
@@ -1273,7 +1273,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	add_child(top_hb);
 
 	file = memnew(Label);
-	String layout_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
+	String layout_path = GLOBAL_GET("audio/buses/default_bus_layout");
 	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
 	file->set_clip_text(true);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1328,7 +1328,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
-	edited_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
+	edited_path = GLOBAL_GET("audio/buses/default_bus_layout");
 
 	file_dialog = memnew(EditorFileDialog);
 	List<String> ext;
