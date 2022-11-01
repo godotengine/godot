@@ -108,7 +108,6 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 		eglChooseConfig(p_gldisplay.egl_display, attribs, &p_gldisplay.egl_config, 1, &config_number);
 	}
 
-	// TODO: Better error handling.
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
 
 	ERR_FAIL_COND_V(config_number == 0, ERR_UNCONFIGURED);
@@ -120,7 +119,6 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	};
 
 	p_gldisplay.egl_context = eglCreateContext(p_gldisplay.egl_display, p_gldisplay.egl_config, EGL_NO_CONTEXT, context_attribs);
-	// TODO: Better error handling.
 	ERR_FAIL_COND_V_MSG(p_gldisplay.egl_context == EGL_NO_CONTEXT, ERR_CANT_CREATE, vformat("Can't create an EGL context. Error code: %d", eglGetError()));
 
 	return OK;
@@ -128,7 +126,6 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 
 int EGLManager::display_get_native_visual_id(void *p_display) {
 	int gldisplay_id = _get_gldisplay_id(p_display);
-	// TODO: Better error handling.
 	ERR_FAIL_COND_V(gldisplay_id < 0, ERR_CANT_CREATE);
 
 	GLDisplay gldisplay = displays[gldisplay_id];
@@ -144,7 +141,6 @@ int EGLManager::display_get_native_visual_id(void *p_display) {
 
 Error EGLManager::window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height) {
 	int gldisplay_id = _get_gldisplay_id(p_display);
-	// TODO: Better error handling.
 	ERR_FAIL_COND_V(gldisplay_id < 0, ERR_CANT_CREATE);
 
 	GLDisplay &gldisplay = displays[gldisplay_id];
@@ -160,7 +156,6 @@ Error EGLManager::window_create(DisplayServer::WindowID p_window_id, void *p_dis
 
 	glwindow.egl_surface = eglCreatePlatformWindowSurface(gldisplay.egl_display, gldisplay.egl_config, p_native_window, NULL);
 
-	// TODO: Better error handling.
 	if (glwindow.egl_surface == EGL_NO_SURFACE) {
 		return ERR_CANT_CREATE;
 	}
@@ -233,7 +228,7 @@ void EGLManager::swap_buffers() {
 }
 
 void EGLManager::window_make_current(DisplayServer::WindowID p_window_id) {
-	if (p_window_id == -1) {
+	if (p_window_id == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
 
