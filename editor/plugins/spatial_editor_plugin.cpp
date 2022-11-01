@@ -3945,7 +3945,8 @@ bool SpatialEditorViewport::can_drop_data_fw(const Point2 &p_point, const Varian
 			ResourceLoader::get_recognized_extensions_for_type("Mesh", &mesh_extensions);
 
 			for (int i = 0; i < files.size(); i++) {
-				if (mesh_extensions.find(files[i].get_extension()) || scene_extensions.find(files[i].get_extension())) {
+				String extension = files[i].get_extension().to_lower();
+				if (mesh_extensions.find(extension) || scene_extensions.find(extension)) {
 					RES res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;
