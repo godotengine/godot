@@ -140,13 +140,13 @@ TEST_CASE("[Animation] Create 3D rotation track") {
 	Ref<Animation> animation = memnew(Animation);
 	const int track_index = animation->add_track(Animation::TYPE_ROTATION_3D);
 	animation->track_set_path(track_index, NodePath("Enemy:rotation"));
-	animation->rotation_track_insert_key(track_index, 0.0, Quaternion(Vector3(0, 1, 2)));
-	animation->rotation_track_insert_key(track_index, 0.5, Quaternion(Vector3(3.5, 4, 5)));
+	animation->rotation_track_insert_key(track_index, 0.0, Quaternion::from_euler(Vector3(0, 1, 2)));
+	animation->rotation_track_insert_key(track_index, 0.5, Quaternion::from_euler(Vector3(3.5, 4, 5)));
 
 	CHECK(animation->get_track_count() == 1);
 	CHECK(!animation->track_is_compressed(0));
-	CHECK(Quaternion(animation->track_get_key_value(0, 0)).is_equal_approx(Quaternion(Vector3(0, 1, 2))));
-	CHECK(Quaternion(animation->track_get_key_value(0, 1)).is_equal_approx(Quaternion(Vector3(3.5, 4, 5))));
+	CHECK(Quaternion(animation->track_get_key_value(0, 0)).is_equal_approx(Quaternion::from_euler(Vector3(0, 1, 2))));
+	CHECK(Quaternion(animation->track_get_key_value(0, 1)).is_equal_approx(Quaternion::from_euler(Vector3(3.5, 4, 5))));
 
 	Quaternion r_interpolation;
 

@@ -507,35 +507,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Quaternion"/> that will perform a rotation specified by
-        /// Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last),
-        /// given in the vector format as (X angle, Y angle, Z angle).
-        /// </summary>
-        /// <param name="eulerYXZ">Euler angles that the quaternion will be rotated by.</param>
-        public Quaternion(Vector3 eulerYXZ)
-        {
-            real_t halfA1 = eulerYXZ.y * 0.5f;
-            real_t halfA2 = eulerYXZ.x * 0.5f;
-            real_t halfA3 = eulerYXZ.z * 0.5f;
-
-            // R = Y(a1).X(a2).Z(a3) convention for Euler angles.
-            // Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
-            // a3 is the angle of the first rotation, following the notation in this reference.
-
-            real_t cosA1 = Mathf.Cos(halfA1);
-            real_t sinA1 = Mathf.Sin(halfA1);
-            real_t cosA2 = Mathf.Cos(halfA2);
-            real_t sinA2 = Mathf.Sin(halfA2);
-            real_t cosA3 = Mathf.Cos(halfA3);
-            real_t sinA3 = Mathf.Sin(halfA3);
-
-            x = (sinA1 * cosA2 * sinA3) + (cosA1 * sinA2 * cosA3);
-            y = (sinA1 * cosA2 * cosA3) - (cosA1 * sinA2 * sinA3);
-            z = (cosA1 * cosA2 * sinA3) - (sinA1 * sinA2 * cosA3);
-            w = (sinA1 * sinA2 * sinA3) + (cosA1 * cosA2 * cosA3);
-        }
-
-        /// <summary>
         /// Constructs a <see cref="Quaternion"/> that will rotate around the given axis
         /// by the specified angle. The axis must be a normalized vector.
         /// </summary>
@@ -570,6 +541,37 @@ namespace Godot
                 z = axis.z * s;
                 w = cosAngle;
             }
+        }
+
+        /// <summary>
+        /// Constructs a <see cref="Quaternion"/> that will perform a rotation specified by
+        /// Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last),
+        /// given in the vector format as (X angle, Y angle, Z angle).
+        /// </summary>
+        /// <param name="eulerYXZ">Euler angles that the quaternion will be rotated by.</param>
+        public static Quaternion FromEuler(Vector3 eulerYXZ)
+        {
+            real_t halfA1 = eulerYXZ.y * 0.5f;
+            real_t halfA2 = eulerYXZ.x * 0.5f;
+            real_t halfA3 = eulerYXZ.z * 0.5f;
+
+            // R = Y(a1).X(a2).Z(a3) convention for Euler angles.
+            // Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
+            // a3 is the angle of the first rotation, following the notation in this reference.
+
+            real_t cosA1 = Mathf.Cos(halfA1);
+            real_t sinA1 = Mathf.Sin(halfA1);
+            real_t cosA2 = Mathf.Cos(halfA2);
+            real_t sinA2 = Mathf.Sin(halfA2);
+            real_t cosA3 = Mathf.Cos(halfA3);
+            real_t sinA3 = Mathf.Sin(halfA3);
+
+            return new Quaternion(
+                (sinA1 * cosA2 * sinA3) + (cosA1 * sinA2 * cosA3),
+                (sinA1 * cosA2 * cosA3) - (cosA1 * sinA2 * sinA3),
+                (cosA1 * cosA2 * sinA3) - (sinA1 * sinA2 * cosA3),
+                (sinA1 * sinA2 * sinA3) + (cosA1 * cosA2 * cosA3)
+            );
         }
 
         /// <summary>

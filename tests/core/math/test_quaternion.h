@@ -47,9 +47,9 @@ Quaternion quat_euler_yxz_deg(Vector3 angle) {
 
 	// Generate YXZ (Z-then-X-then-Y) Quaternion using single-axis Euler
 	// constructor and quaternion product, both tested separately.
-	Quaternion q_y(Vector3(0.0, yaw, 0.0));
-	Quaternion q_p(Vector3(pitch, 0.0, 0.0));
-	Quaternion q_r(Vector3(0.0, 0.0, roll));
+	Quaternion q_y = Quaternion::from_euler(Vector3(0.0, yaw, 0.0));
+	Quaternion q_p = Quaternion::from_euler(Vector3(pitch, 0.0, 0.0));
+	Quaternion q_r = Quaternion::from_euler(Vector3(0.0, 0.0, roll));
 	// Roll-Z is followed by Pitch-X, then Yaw-Y.
 	Quaternion q_yxz = q_y * q_p * q_r;
 
@@ -134,21 +134,21 @@ TEST_CASE("[Quaternion] Construct Euler SingleAxis") {
 	double roll = Math::deg_to_rad(10.0);
 
 	Vector3 euler_y(0.0, yaw, 0.0);
-	Quaternion q_y(euler_y);
+	Quaternion q_y = Quaternion::from_euler(euler_y);
 	CHECK(q_y[0] == doctest::Approx(0.0));
 	CHECK(q_y[1] == doctest::Approx(0.382684));
 	CHECK(q_y[2] == doctest::Approx(0.0));
 	CHECK(q_y[3] == doctest::Approx(0.923879));
 
 	Vector3 euler_p(pitch, 0.0, 0.0);
-	Quaternion q_p(euler_p);
+	Quaternion q_p = Quaternion::from_euler(euler_p);
 	CHECK(q_p[0] == doctest::Approx(0.258819));
 	CHECK(q_p[1] == doctest::Approx(0.0));
 	CHECK(q_p[2] == doctest::Approx(0.0));
 	CHECK(q_p[3] == doctest::Approx(0.965926));
 
 	Vector3 euler_r(0.0, 0.0, roll);
-	Quaternion q_r(euler_r);
+	Quaternion q_r = Quaternion::from_euler(euler_r);
 	CHECK(q_r[0] == doctest::Approx(0.0));
 	CHECK(q_r[1] == doctest::Approx(0.0));
 	CHECK(q_r[2] == doctest::Approx(0.0871558));
@@ -163,11 +163,11 @@ TEST_CASE("[Quaternion] Construct Euler YXZ dynamic axes") {
 	// Generate YXZ comparison data (Z-then-X-then-Y) using single-axis Euler
 	// constructor and quaternion product, both tested separately.
 	Vector3 euler_y(0.0, yaw, 0.0);
-	Quaternion q_y(euler_y);
+	Quaternion q_y = Quaternion::from_euler(euler_y);
 	Vector3 euler_p(pitch, 0.0, 0.0);
-	Quaternion q_p(euler_p);
+	Quaternion q_p = Quaternion::from_euler(euler_p);
 	Vector3 euler_r(0.0, 0.0, roll);
-	Quaternion q_r(euler_r);
+	Quaternion q_r = Quaternion::from_euler(euler_r);
 
 	// Roll-Z is followed by Pitch-X.
 	Quaternion check_xz = q_p * q_r;
@@ -176,7 +176,7 @@ TEST_CASE("[Quaternion] Construct Euler YXZ dynamic axes") {
 
 	// Test construction from YXZ Euler angles.
 	Vector3 euler_yxz(pitch, yaw, roll);
-	Quaternion q(euler_yxz);
+	Quaternion q = Quaternion::from_euler(euler_yxz);
 	CHECK(q[0] == doctest::Approx(check_yxz[0]));
 	CHECK(q[1] == doctest::Approx(check_yxz[1]));
 	CHECK(q[2] == doctest::Approx(check_yxz[2]));
@@ -191,7 +191,7 @@ TEST_CASE("[Quaternion] Construct Basis Euler") {
 	double pitch = Math::deg_to_rad(30.0);
 	double roll = Math::deg_to_rad(10.0);
 	Vector3 euler_yxz(pitch, yaw, roll);
-	Quaternion q_yxz(euler_yxz);
+	Quaternion q_yxz = Quaternion::from_euler(euler_yxz);
 	Basis basis_axes = Basis::from_euler(euler_yxz);
 	Quaternion q(basis_axes);
 	CHECK(q.is_equal_approx(q_yxz));
@@ -209,7 +209,7 @@ TEST_CASE("[Quaternion] Construct Basis Axes") {
 	// Quaternion from local calculation.
 	Quaternion q_local = quat_euler_yxz_deg(Vector3(31.41, -49.16, 12.34));
 	// Quaternion from Euler angles constructor.
-	Quaternion q_euler(euler_yxz);
+	Quaternion q_euler = Quaternion::from_euler(euler_yxz);
 	CHECK(q_calc.is_equal_approx(q_local));
 	CHECK(q_local.is_equal_approx(q_euler));
 
@@ -253,21 +253,21 @@ TEST_CASE("[Quaternion] Product") {
 	double roll = Math::deg_to_rad(10.0);
 
 	Vector3 euler_y(0.0, yaw, 0.0);
-	Quaternion q_y(euler_y);
+	Quaternion q_y = Quaternion::from_euler(euler_y);
 	CHECK(q_y[0] == doctest::Approx(0.0));
 	CHECK(q_y[1] == doctest::Approx(0.382684));
 	CHECK(q_y[2] == doctest::Approx(0.0));
 	CHECK(q_y[3] == doctest::Approx(0.923879));
 
 	Vector3 euler_p(pitch, 0.0, 0.0);
-	Quaternion q_p(euler_p);
+	Quaternion q_p = Quaternion::from_euler(euler_p);
 	CHECK(q_p[0] == doctest::Approx(0.258819));
 	CHECK(q_p[1] == doctest::Approx(0.0));
 	CHECK(q_p[2] == doctest::Approx(0.0));
 	CHECK(q_p[3] == doctest::Approx(0.965926));
 
 	Vector3 euler_r(0.0, 0.0, roll);
-	Quaternion q_r(euler_r);
+	Quaternion q_r = Quaternion::from_euler(euler_r);
 	CHECK(q_r[0] == doctest::Approx(0.0));
 	CHECK(q_r[1] == doctest::Approx(0.0));
 	CHECK(q_r[2] == doctest::Approx(0.0871558));
