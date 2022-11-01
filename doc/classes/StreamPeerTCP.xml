@@ -10,12 +10,9 @@
 	</tutorials>
 	<methods>
 		<method name="bind">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="host" type="String" default="&quot;*&quot;">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="port" type="int" />
+			<argument index="1" name="host" type="String" default="&quot;*&quot;" />
 			<description>
 				Opens the TCP socket, and binds it to the specified local address.
 				This method is generally not needed, and only used to force the subsequent call to [method connect_to_host] to use the specified [code]host[/code] and [code]port[/code] as source address. This can be desired in some NAT punchthrough techniques, or when forcing the source network interface.
@@ -48,8 +45,7 @@
 			</description>
 		</method>
 		<method name="get_local_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the local port to which this peer is bound.
 			</description>

@@ -56,8 +56,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_local_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the local port this server is listening to.
 			</description>
