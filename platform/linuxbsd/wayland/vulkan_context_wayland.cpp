@@ -30,6 +30,8 @@
 
 #include "vulkan_context_wayland.h"
 
+#ifdef VULKAN_ENABLED
+
 #ifdef USE_VOLK
 #include <volk.h>
 #else
@@ -59,3 +61,5 @@ VulkanContextWayland::VulkanContextWayland() {
 
 VulkanContextWayland::~VulkanContextWayland() {
 }
+
+#endif // VULKAN_ENABLED

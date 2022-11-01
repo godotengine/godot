@@ -31,6 +31,8 @@
 #ifndef VULKAN_CONTEXT_WAYLAND_H
 #define VULKAN_CONTEXT_WAYLAND_H
 
+#ifdef VULKAN_ENABLED
+
 #include "drivers/vulkan/vulkan_context.h"
 
 class VulkanContextWayland : public VulkanContext {
@@ -42,5 +44,7 @@ public:
 	VulkanContextWayland();
 	~VulkanContextWayland();
 };
+
+#endif // VULKAN_ENABLED
 
 #endif // VULKAN_CONTEXT_WAYLAND_H
