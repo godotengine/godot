@@ -1004,7 +1004,7 @@ void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 #define MULTIMESH_DIRTY_REGION_SIZE 512
 
 void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
-	if (multimesh->data_cache.size() > 0) {
+	if (multimesh->data_cache.size() > 0 || multimesh->instances == 0) {
 		return; //already local
 	}
 	ERR_FAIL_COND(multimesh->data_cache.size() > 0);
@@ -1421,7 +1421,7 @@ Vector<float> MeshStorage::multimesh_get_buffer(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Vector<float>());
 	Vector<float> ret;
-	if (multimesh->buffer == 0) {
+	if (multimesh->buffer == 0 || multimesh->instances == 0) {
 		return Vector<float>();
 	} else if (multimesh->data_cache.size()) {
 		ret = multimesh->data_cache;

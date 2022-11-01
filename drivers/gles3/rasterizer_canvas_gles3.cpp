@@ -587,6 +587,13 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		_record_item_commands(ci, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken);
 	}
 
+	if (r_last_index >= index) {
+		// Nothing to render, just return.
+		state.current_batch_index = 0;
+		state.canvas_instance_batches.clear();
+		return;
+	}
+
 	// Copy over all data needed for rendering.
 	glBindBuffer(GL_UNIFORM_BUFFER, state.canvas_instance_data_buffers[state.current_buffer].ubo);
 #ifdef WEB_ENABLED
