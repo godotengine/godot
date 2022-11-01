@@ -1377,7 +1377,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 					if (all_is_constant) {
 						switch (args.size()) {
 							case 1:
-								reduced = args[0];
+								reduced = (int32_t)args[0];
 								break;
 							case 2:
 								reduced = Vector2i(args[0], args[1]);
