@@ -126,6 +126,8 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override { return Size2(); };
 
+	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const override { return RID(); };
+
 	/* DECAL API */
 	virtual RID decal_allocate() override { return RID(); }
 	virtual void decal_initialize(RID p_rid) override {}

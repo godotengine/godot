@@ -484,6 +484,8 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
+	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const override;
+
 	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
 	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer = 0);
 	//Ref<Image> texture_get_data(RID p_texture, int p_layer = 0) const;
