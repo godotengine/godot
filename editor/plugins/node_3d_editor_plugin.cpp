@@ -4129,11 +4129,13 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			ResourceLoader::get_recognized_extensions_for_type("Texture", &texture_extensions);
 
 			for (int i = 0; i < files.size(); i++) {
+				String extension = files[i].get_extension().to_lower();
+
 				// Check if dragged files with mesh or scene extension can be created at least once.
-				if (mesh_extensions.find(files[i].get_extension()) ||
-						scene_extensions.find(files[i].get_extension()) ||
-						material_extensions.find(files[i].get_extension()) ||
-						texture_extensions.find(files[i].get_extension())) {
+				if (mesh_extensions.find(extension) ||
+						scene_extensions.find(extension) ||
+						material_extensions.find(extension) ||
+						texture_extensions.find(extension)) {
 					Ref<Resource> res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;
