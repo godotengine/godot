@@ -2067,6 +2067,11 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				accept_event();
 				return;
 			}
+			if (k->is_action("ui_text_remove_secondary_carets", true) && _should_remove_secondary_carets()) {
+				remove_secondary_carets();
+				accept_event();
+				return;
+			}
 			if (k->is_action("ui_cut", true)) {
 				cut();
 				accept_event();
@@ -2817,6 +2822,10 @@ void TextEdit::_move_caret_document_end(bool p_select) {
 	if (p_select) {
 		_post_shift_selection(0);
 	}
+}
+
+bool TextEdit::_should_remove_secondary_carets() {
+	return carets.size() > 1;
 }
 
 void TextEdit::_get_above_below_caret_line_column(int p_old_line, int p_old_wrap_index, int p_old_column, bool p_below, int &p_new_line, int &p_new_column, int p_last_fit_x) const {
