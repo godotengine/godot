@@ -3098,6 +3098,7 @@ Ref<Image> Image::rgbe_to_srgb() {
 void Image::bumpmap_to_normalmap(float bump_scale) {
 	ERR_FAIL_COND(!_can_modify(format));
 	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
+	clear_mipmaps();
 	convert(Image::FORMAT_RF);
 
 	PoolVector<uint8_t> result_image; //rgba output
