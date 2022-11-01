@@ -209,6 +209,9 @@ void BaseButton::set_disabled(bool p_disabled) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		set_focus_mode(FOCUS_NONE);
+	} else {
+		set_focus_mode(FOCUS_ALL);
 	}
 	queue_redraw();
 }
