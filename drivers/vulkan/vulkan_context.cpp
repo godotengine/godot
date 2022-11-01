@@ -1336,7 +1336,7 @@ Error VulkanContext::_create_device() {
 		vulkan11features.shaderDrawParameters = 0;
 		nextptr = &vulkan11features;
 	} else {
-		// On Vulkan 1.0 and 1.1 we use our older structs to initialise these features.
+		// On Vulkan 1.0 and 1.1 we use our older structs to initialize these features.
 		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
 		storage_feature.pNext = nextptr;
 		storage_feature.storageBuffer16BitAccess = storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
@@ -1483,7 +1483,7 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 		color_space = surfFormats[0].colorSpace;
 	} else {
 		// These should be ordered with the ones we want to use on top and fallback modes further down
-		// we want a 32bit RGBA unsigned normalised buffer or similar.
+		// we want a 32bit RGBA unsigned normalized buffer or similar.
 		const VkFormat allowed_formats[] = {
 			VK_FORMAT_B8G8R8A8_UNORM,
 			VK_FORMAT_R8G8B8A8_UNORM

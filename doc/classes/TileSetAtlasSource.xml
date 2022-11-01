@@ -6,9 +6,7 @@
 	<description>
 		An atlas is a grid of tiles laid out on a texture. Each tile in the grid must be exposed using [method create_tile]. Those tiles are then indexed using their coordinates in the grid.
 		Each tile can also have a size in the grid coordinates, making it more or less cells in the atlas.
-
 		Alternatives version of a tile can be created using [method create_alternative_tile], which are then indexed using an alternative ID. The main tile (the one in the grid), is accessed with an alternative ID equal to 0.
-
 		Each tile alternate has a set of properties that is defined by the source's [TileSet] layers. Those properties are stored in a TileData object that can be accessed and modified using [method get_tile_data].
 		As TileData properties are stored directly in the TileSetAtlasSource resource, their properties might also be set using [code]TileSetAtlasSource.set("&lt;coords_x&gt;:&lt;coords_y&gt;/&lt;alternative_id&gt;/&lt;tile_data_property&gt;")[/code].
 	</description>

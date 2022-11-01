@@ -134,7 +134,7 @@
 		<method name="get_cache_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
+				Returns the [i]global[/i] cache data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -192,7 +192,7 @@
 		<method name="get_config_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
+				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -200,14 +200,14 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns an array of MIDI device names.
-				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
+				The returned array will be empty if the system MIDI driver has not previously been initialized with [method open_midi_inputs].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
+				Returns the [i]global[/i] user data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>

@@ -833,7 +833,7 @@ void TextEdit::_notification(int p_what) {
 									continue;
 								}
 
-								// If we've changed colour we are at the start of a new section, therefore we need to go back to the end
+								// If we've changed color we are at the start of a new section, therefore we need to go back to the end
 								// of the previous section to draw it, we'll also add the character back on.
 								if (color != previous_color) {
 									characters--;
@@ -2659,7 +2659,7 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 			set_caret_line(get_caret_line(caret_idx), false, true, 0, caret_idx);
 			set_caret_column(column, caret_idx == 0, caret_idx);
 
-			// Now we can clean up the overlaping caret.
+			// Now we can clean up the overlapping caret.
 			if (overlapping_caret_index != -1) {
 				backspace(overlapping_caret_index);
 				i++;
@@ -6560,7 +6560,7 @@ void TextEdit::_cut_internal(int p_caret) {
 		int indent_level = get_indent_level(cl);
 		double hscroll = get_h_scroll();
 
-		// Check for overlaping carets.
+		// Check for overlapping carets.
 		// We don't need to worry about selections as that is caught before this entire section.
 		for (int j = i - 1; j >= 0; j--) {
 			if (get_caret_line(caret_edit_order[j]) == cl) {

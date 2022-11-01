@@ -102,7 +102,7 @@ void OpenXRHandTrackingExtension::on_state_ready() {
 	// Setup our hands and reset data
 	for (int i = 0; i < MAX_OPENXR_TRACKED_HANDS; i++) {
 		// we'll do this later
-		hand_trackers[i].is_initialised = false;
+		hand_trackers[i].is_initialized = false;
 		hand_trackers[i].hand_tracker = XR_NULL_HANDLE;
 
 		hand_trackers[i].aimState.aimPose = { { 0.0, 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 } };
@@ -144,7 +144,7 @@ void OpenXRHandTrackingExtension::on_process() {
 			if (XR_FAILED(result)) {
 				// not successful? then we do nothing.
 				print_line("OpenXR: Failed to obtain hand tracking information [", openxr_api->get_error_string(result), "]");
-				hand_trackers[i].is_initialised = false;
+				hand_trackers[i].is_initialized = false;
 			} else {
 				void *next_pointer = nullptr;
 				if (hand_tracking_aim_state_ext) {
@@ -172,11 +172,11 @@ void OpenXRHandTrackingExtension::on_process() {
 				hand_trackers[i].locations.jointCount = XR_HAND_JOINT_COUNT_EXT;
 				hand_trackers[i].locations.jointLocations = hand_trackers[i].joint_locations;
 
-				hand_trackers[i].is_initialised = true;
+				hand_trackers[i].is_initialized = true;
 			}
 		}
 
-		if (hand_trackers[i].is_initialised) {
+		if (hand_trackers[i].is_initialized) {
 			void *next_pointer = nullptr;
 
 			XrHandJointsMotionRangeInfoEXT motionRangeInfo;
@@ -240,7 +240,7 @@ void OpenXRHandTrackingExtension::cleanup_hand_tracking() {
 		if (hand_trackers[i].hand_tracker != XR_NULL_HANDLE) {
 			xrDestroyHandTrackerEXT(hand_trackers[i].hand_tracker);
 
-			hand_trackers[i].is_initialised = false;
+			hand_trackers[i].is_initialized = false;
 			hand_trackers[i].hand_tracker = XR_NULL_HANDLE;
 		}
 	}

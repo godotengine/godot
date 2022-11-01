@@ -227,7 +227,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	// Make text split by new lines their own message.
 	// See #41321 for reasoning. At time of writing, multiple print()'s in running projects
 	// get grouped together and sent to the editor log as one message. This can mess with the
-	// search functionality (see the comments on the PR above for more details). This behaviour
+	// search functionality (see the comments on the PR above for more details). This behavior
 	// also matches that of other IDE's.
 	Vector<String> lines = p_msg.split("\n", true);
 

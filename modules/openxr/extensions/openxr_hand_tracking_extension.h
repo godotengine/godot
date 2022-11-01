@@ -40,7 +40,7 @@
 class OpenXRHandTrackingExtension : public OpenXRExtensionWrapper {
 public:
 	struct HandTracker {
-		bool is_initialised = false;
+		bool is_initialized = false;
 		XrHandJointsMotionRangeEXT motion_range = XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT;
 
 		XrHandTrackerEXT hand_tracker = XR_NULL_HANDLE;

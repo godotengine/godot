@@ -572,7 +572,8 @@
 			<return type="float" />
 			<param index="0" name="lin" type="float" />
 			<description>
-				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear). Example:
+				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear).
+				[b]Example:[/b]
 				[codeblock]
 				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
 				# Its range must be configured to go from 0 to 1.
@@ -841,7 +842,7 @@
 			<return type="PackedInt64Array" />
 			<param index="0" name="seed" type="int" />
 			<description>
-				Given a [param seed], returns a [PackedInt64Array] of size [code]2[/code], where its first element is the randomised [int] value, and the second element is the same as [param seed]. Passing the same [param seed] consistently returns the same array.
+				Given a [param seed], returns a [PackedInt64Array] of size [code]2[/code], where its first element is the randomized [int] value, and the second element is the same as [param seed]. Passing the same [param seed] consistently returns the same array.
 				[b]Note:[/b] "Seed" here refers to the internal state of the pseudo random number generator, currently implemented as a 64 bit integer.
 				[codeblock]
 				var a = rand_from_seed(4)
@@ -2487,7 +2488,8 @@
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred.
-			Since [constant OK] has value 0, and all other error constants are positive integers, it can also be used in boolean checks. For example:
+			Since [constant OK] has value 0, and all other error constants are positive integers, it can also be used in boolean checks.
+			[b]Example:[/b]
 			[codeblock]
 			var error = method_that_returns_error()
 			if error != OK:
@@ -2648,7 +2650,8 @@
 			The property has no hint for the editor.
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
-			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_less"[/code].
+			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
+			[b]Example:[/b] [code]"-360,360,1,or_greater,or_less"[/code].
 			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians"[/code] for editing radian angles in degrees, [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
@@ -2722,7 +2725,8 @@
 		<constant name="PROPERTY_HINT_OBJECT_ID" value="24" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="25" enum="PropertyHint">
-			Hints that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For example:
+			Hints that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types.
+			[b]Example:[/b]
 			[codeblock]
 			hint_string = "%s:" % [TYPE_INT] # Array of integers.
 			hint_string = "%s:%s:" % [TYPE_ARRAY, TYPE_REAL] # Two-dimensional array of floats.

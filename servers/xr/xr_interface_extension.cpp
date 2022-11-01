@@ -106,15 +106,15 @@ uint32_t XRInterfaceExtension::get_capabilities() const {
 }
 
 bool XRInterfaceExtension::is_initialized() const {
-	bool initialised = false;
-	GDVIRTUAL_CALL(_is_initialized, initialised);
-	return initialised;
+	bool initialized = false;
+	GDVIRTUAL_CALL(_is_initialized, initialized);
+	return initialized;
 }
 
 bool XRInterfaceExtension::initialize() {
-	bool initialised = false;
-	GDVIRTUAL_CALL(_initialize, initialised);
-	return initialised;
+	bool initialized = false;
+	GDVIRTUAL_CALL(_initialize, initialized);
+	return initialized;
 }
 
 void XRInterfaceExtension::uninitialize() {
