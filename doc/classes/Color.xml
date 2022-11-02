@@ -231,6 +231,12 @@
 				Returns the name of a color with the given index. You can get the index from [method find_named_color] or iteratively from [method get_named_color_count].
 			</description>
 		</method>
+		<method name="get_named_colors" qualifiers="static">
+			<return type="Dictionary" />
+			<description>
+				Returns all of the available color constants, as a [Dictionary]. Each key is an uppercase name corresponding to the color.
+			</description>
+		</method>
 		<method name="hex" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
