@@ -58,6 +58,13 @@
 				Returns the collided [Object] of one of the multiple collisions at [code]index[/code], or [code]null[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Returns the [RID] of the collided object of one of the multiple collisions at [code]index[/code].
+			</description>
+		</method>
 		<method name="get_collider_shape" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="index" type="int" />

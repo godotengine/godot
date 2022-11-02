@@ -107,6 +107,11 @@ Object *ShapeCast2D::get_collider(int p_idx) const {
 	return ObjectDB::get_instance(result[p_idx].collider_id);
 }
 
+RID ShapeCast2D::get_collider_rid(int p_idx) const {
+	ERR_FAIL_INDEX_V_MSG(p_idx, result.size(), RID(), "No collider RID found.");
+	return result[p_idx].rid;
+}
+
 int ShapeCast2D::get_collider_shape(int p_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_idx, result.size(), -1, "No collider shape found.");
 	return result[p_idx].shape;
@@ -412,6 +417,7 @@ void ShapeCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("force_shapecast_update"), &ShapeCast2D::force_shapecast_update);
 
 	ClassDB::bind_method(D_METHOD("get_collider", "index"), &ShapeCast2D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_rid", "index"), &ShapeCast2D::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider_shape", "index"), &ShapeCast2D::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collision_point", "index"), &ShapeCast2D::get_collision_point);
 	ClassDB::bind_method(D_METHOD("get_collision_normal", "index"), &ShapeCast2D::get_collision_normal);
