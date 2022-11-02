@@ -327,10 +327,12 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->pop(); //meta
 	}
 
-	class_desc->push_color(symbol_color);
-	class_desc->add_text("(");
-	class_desc->pop();
+	const String non_breaking_space = String::chr(160);
+	const String zero_width_space = String::chr(8203);
 
+	class_desc->push_color(symbol_color);
+	class_desc->add_text("(" + zero_width_space);
+	class_desc->pop();
 	for (int j = 0; j < p_method.arguments.size(); j++) {
 		class_desc->push_color(text_color);
 		if (j > 0) {
@@ -338,14 +340,14 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		}
 
 		_add_text(p_method.arguments[j].name);
-		class_desc->add_text(": ");
+		class_desc->add_text(":" + non_breaking_space);
 		_add_type(p_method.arguments[j].type, p_method.arguments[j].enumeration);
 		if (!p_method.arguments[j].default_value.is_empty()) {
 			class_desc->push_color(symbol_color);
-			class_desc->add_text(" = ");
+			class_desc->add_text(non_breaking_space + "=" + non_breaking_space);
 			class_desc->pop();
 			class_desc->push_color(value_color);
-			_add_text(_fix_constant(p_method.arguments[j].default_value));
+			_add_text(_fix_constant(p_method.arguments[j].default_value).replace(" ", non_breaking_space));
 			class_desc->pop();
 		}
 
