@@ -296,10 +296,14 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
 	method_line[p_method.name] = class_desc->get_paragraph_count() - 2; //gets overridden if description
 
+	const Color cell_color_even = Color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")), 0.6);
+	const Color cell_color_odd = cell_color_even.lerp(get_theme_color(SNAME("accent_color"), SNAME("Editor")), 0.06);
+
 	const bool is_vararg = p_method.qualifiers.contains("vararg");
 
 	if (p_overview) {
 		class_desc->push_cell();
+		class_desc->set_cell_row_background_color(cell_color_even, cell_color_odd);
 		class_desc->push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
 	} else {
 		_add_bulletpoint();
@@ -311,6 +315,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->pop(); //align
 		class_desc->pop(); //cell
 		class_desc->push_cell();
+		class_desc->set_cell_row_background_color(cell_color_even, cell_color_odd);
 	} else {
 		class_desc->add_text(" ");
 	}
@@ -366,6 +371,11 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->push_color(symbol_color);
 	class_desc->add_text(")");
 	class_desc->pop();
+	if (p_overview) {
+		class_desc->pop(); //cell
+		class_desc->push_cell();
+		class_desc->set_cell_row_background_color(cell_color_even, cell_color_odd);
+	}
 	if (!p_method.qualifiers.is_empty()) {
 		class_desc->push_color(qualifier_color);
 
@@ -391,7 +401,12 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 				class_desc->add_text(qualifier);
 			}
 		}
-		class_desc->pop();
+		class_desc->pop(); // qualifier color
+	} else {
+		class_desc->add_text(" "); // HACK: Without this, the table cell is not sized correctly.
+	}
+	if (p_overview) {
+		class_desc->pop(); // Cell 3.
 	}
 
 	if (p_method.is_deprecated) {
@@ -400,10 +415,6 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 
 	if (p_method.is_experimental) {
 		EXPERIMENTAL_DOC_TAG;
-	}
-
-	if (p_overview) {
-		class_desc->pop(); //cell
 	}
 }
 
@@ -441,8 +452,9 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 	class_desc->add_newline();
 	class_desc->push_font(font);
 	class_desc->push_indent(1);
-	class_desc->push_table(2);
+	class_desc->push_table(3);
 	class_desc->set_table_column_expand(1, true);
+	class_desc->set_table_column_expand(2, true);
 
 	bool any_previous = false;
 	for (int pass = 0; pass < 2; pass++) {
@@ -456,6 +468,9 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 		}
 
 		if (any_previous && !m.is_empty()) {
+			class_desc->push_cell();
+			class_desc->set_cell_padding(Rect2(0, 0, 0, 20 * EDSCALE));
+			class_desc->pop(); //cell
 			class_desc->push_cell();
 			class_desc->pop(); //cell
 			class_desc->push_cell();
@@ -476,6 +491,9 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 			}
 
 			if (is_new_group && pass == 1) {
+				class_desc->push_cell();
+				class_desc->set_cell_padding(Rect2(0, 0, 0, 20 * EDSCALE));
+				class_desc->pop(); //cell
 				class_desc->push_cell();
 				class_desc->pop(); //cell
 				class_desc->push_cell();
