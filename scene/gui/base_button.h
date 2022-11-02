@@ -53,6 +53,7 @@ private:
 	bool keep_pressed_outside = false;
 	Ref<Shortcut> shortcut;
 	ObjectID shortcut_context;
+	bool shortcut_feedback = true;
 
 	ActionMode action_mode = ACTION_MODE_BUTTON_RELEASE;
 	struct Status {
@@ -60,6 +61,7 @@ private:
 		bool hovering = false;
 		bool press_attempt = false;
 		bool pressing_inside = false;
+		bool shortcut_press = false;
 
 		bool disabled = false;
 
@@ -130,6 +132,9 @@ public:
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
+
+	void set_shortcut_feedback(bool p_feedback);
+	bool is_shortcut_feedback() const;
 
 	BaseButton();
 	~BaseButton();
