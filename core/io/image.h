@@ -377,7 +377,7 @@ public:
 	void fill_rect(const Rect2i &p_rect, const Color &p_color);
 
 	Rect2i get_used_rect() const;
-	Ref<Image> get_rect(const Rect2i &p_area) const;
+	Ref<Image> get_region(const Rect2i &p_area) const;
 
 	static void set_compress_bc_func(void (*p_compress_func)(Image *, float, UsedChannels));
 	static void set_compress_bptc_func(void (*p_compress_func)(Image *, float, UsedChannels));
