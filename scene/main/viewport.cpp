@@ -362,6 +362,7 @@ void Viewport::_notification(int p_what) {
 
 			current_canvas = find_world_2d()->get_canvas();
 			RenderingServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
+			RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
 			_update_audio_listener_2d();
 #ifndef _3D_DISABLED
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
@@ -990,11 +991,6 @@ bool Viewport::has_transparent_background() const {
 
 void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	if (world_2d == p_world_2d) {
-		return;
-	}
-
-	if (parent && parent->find_world_2d() == p_world_2d) {
-		WARN_PRINT("Unable to use parent world_2d as world_2d");
 		return;
 	}
 
@@ -3249,6 +3245,29 @@ Transform2D Viewport::get_screen_transform() const {
 	return _get_input_pre_xform().affine_inverse() * get_final_transform();
 }
 
+void Viewport::set_canvas_cull_mask(uint32_t p_canvas_cull_mask) {
+	canvas_cull_mask = p_canvas_cull_mask;
+	RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
+}
+
+uint32_t Viewport::get_canvas_cull_mask() const {
+	return canvas_cull_mask;
+}
+
+void Viewport::set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable) {
+	ERR_FAIL_INDEX(p_layer, 32);
+	if (p_enable) {
+		set_canvas_cull_mask(canvas_cull_mask | (1 << p_layer));
+	} else {
+		set_canvas_cull_mask(canvas_cull_mask & (~(1 << p_layer)));
+	}
+}
+
+bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, 32, false);
+	return (canvas_cull_mask & (1 << p_layer));
+}
+
 #ifndef _3D_DISABLED
 AudioListener3D *Viewport::get_audio_listener_3d() const {
 	return audio_listener_3d;
@@ -3820,6 +3839,12 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_embedding_subwindows", "enable"), &Viewport::set_embedding_subwindows);
 	ClassDB::bind_method(D_METHOD("is_embedding_subwindows"), &Viewport::is_embedding_subwindows);
 
+	ClassDB::bind_method(D_METHOD("set_canvas_cull_mask", "mask"), &Viewport::set_canvas_cull_mask);
+	ClassDB::bind_method(D_METHOD("get_canvas_cull_mask"), &Viewport::get_canvas_cull_mask);
+
+	ClassDB::bind_method(D_METHOD("set_canvas_cull_mask_bit", "layer", "enable"), &Viewport::set_canvas_cull_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_canvas_cull_mask_bit", "layer"), &Viewport::get_canvas_cull_mask_bit);
+
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_repeat", "mode"), &Viewport::set_default_canvas_item_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_repeat"), &Viewport::get_default_canvas_item_texture_repeat);
 
@@ -3925,6 +3950,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "positional_shadow_atlas_quad_3", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_positional_shadow_atlas_quadrant_subdiv", "get_positional_shadow_atlas_quadrant_subdiv", 3);
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "canvas_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_canvas_transform", "get_canvas_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_canvas_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_canvas_transform", "get_global_canvas_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_canvas_cull_mask", "get_canvas_cull_mask");
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
