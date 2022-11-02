@@ -86,6 +86,8 @@ class TextureRegionEditor : public AcceptDialog {
 	Ref<StyleBoxTexture> obj_styleBox;
 	Ref<AtlasTexture> atlas_tex;
 
+	Ref<CanvasTexture> preview_tex;
+
 	Rect2 rect;
 	Rect2 rect_prev;
 	float prev_margin = 0.0f;
