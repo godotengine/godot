@@ -79,7 +79,9 @@
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
 #include <GLES3/gl3platform.h>
-#define EGL_ENABLED
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 #endif
 
 #if EGL_ENABLED
@@ -202,7 +204,7 @@ void RasterizerGLES3::finalize() {
 
 RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
-#ifdef EGLAPI
+#ifdef EGL_ENABLED
 	if (!gladLoadGLLoader((GLADloadproc)eglGetProcAddress)) {
 		ERR_PRINT("Error initializing GLAD");
 		return;
@@ -215,8 +217,8 @@ RasterizerGLES3::RasterizerGLES3() {
 		// or we need to actually test for this situation before constructing this.
 		return;
 	}
-#endif
-#endif
+#endif // EGL_ENABLED
+#endif // GLAD_ENABLED
 
 #ifdef GLAD_ENABLED
 	if (OS::get_singleton()->is_stdout_verbose()) {
