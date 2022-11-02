@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MultiplayerPeer" inherits="PacketPeer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A high-level network interface to simplify multiplayer interactions.
+		Abstract class for specialized [PacketPeer]s used by the [MultiplayerAPI].
 	</brief_description>
 	<description>
-		Manages the connection to multiplayer peers. Assigns unique IDs to each client connected to the server. See also [MultiplayerAPI].
-		[b]Note:[/b] The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
+		Manages the connection with one or more remote peers acting as server or client and assigning unique IDs to each of them. See also [MultiplayerAPI].
+		[b]Note:[/b] The [MultiplayerAPI] protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>
@@ -97,49 +97,34 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="connection_failed">
-			<description>
-				Emitted when a connection attempt fails.
-			</description>
-		</signal>
-		<signal name="connection_succeeded">
-			<description>
-				Emitted when a connection attempt succeeds.
-			</description>
-		</signal>
 		<signal name="peer_connected">
 			<param index="0" name="id" type="int" />
 			<description>
-				Emitted by the server when a client connects.
+				Emitted when a remote peer connects.
 			</description>
 		</signal>
 		<signal name="peer_disconnected">
 			<param index="0" name="id" type="int" />
 			<description>
-				Emitted by the server when a client disconnects.
-			</description>
-		</signal>
-		<signal name="server_disconnected">
-			<description>
-				Emitted by clients when the server disconnects.
+				Emitted when a remote peer has disconnected.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="CONNECTION_DISCONNECTED" value="0" enum="ConnectionStatus">
-			The ongoing connection disconnected.
+			The MultiplayerPeer is disconnected.
 		</constant>
 		<constant name="CONNECTION_CONNECTING" value="1" enum="ConnectionStatus">
-			A connection attempt is ongoing.
+			The MultiplayerPeer is currently connecting to a server.
 		</constant>
 		<constant name="CONNECTION_CONNECTED" value="2" enum="ConnectionStatus">
-			The connection attempt succeeded.
+			This MultiplayerPeer is connected.
 		</constant>
 		<constant name="TARGET_PEER_BROADCAST" value="0">
-			Packets are sent to the server and then redistributed to other peers.
+			Packets are sent to all connected peers.
 		</constant>
 		<constant name="TARGET_PEER_SERVER" value="1">
-			Packets are sent to the server alone.
+			Packets are sent to the remote peer acting as server.
 		</constant>
 		<constant name="TRANSFER_MODE_UNRELIABLE" value="0" enum="TransferMode">
 			Packets are not acknowledged, no resend attempts are made for lost packets. Packets may arrive in any order. Potentially faster than [constant TRANSFER_MODE_UNRELIABLE_ORDERED]. Use for non-critical data, and always consider whether the order matters.

@@ -159,10 +159,7 @@ void ENetMultiplayerPeer::_disconnect_inactive_peers() {
 		if (hosts.has(P)) {
 			hosts.erase(P);
 		}
-		if (active_mode == MODE_CLIENT) {
-			ERR_CONTINUE(P != TARGET_PEER_SERVER);
-			emit_signal(SNAME("server_disconnected"));
-		}
+		ERR_CONTINUE(active_mode == MODE_CLIENT && P != TARGET_PEER_SERVER);
 		emit_signal(SNAME("peer_disconnected"), P);
 	}
 }
@@ -186,14 +183,10 @@ void ENetMultiplayerPeer::poll() {
 				if (ret == ENetConnection::EVENT_CONNECT) {
 					connection_status = CONNECTION_CONNECTED;
 					emit_signal(SNAME("peer_connected"), 1);
-					emit_signal(SNAME("connection_succeeded"));
 				} else if (ret == ENetConnection::EVENT_DISCONNECT) {
 					if (connection_status == CONNECTION_CONNECTED) {
 						// Client just disconnected from server.
-						emit_signal(SNAME("server_disconnected"));
 						emit_signal(SNAME("peer_disconnected"), 1);
-					} else {
-						emit_signal(SNAME("connection_failed"));
 					}
 					close();
 				} else if (ret == ENetConnection::EVENT_RECEIVE) {
