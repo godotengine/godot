@@ -40,6 +40,7 @@
 #include "storage/texture_storage.h"
 
 #include "shaders/canvas.glsl.gen.h"
+#include "shaders/canvas_occlusion.glsl.gen.h"
 
 class RasterizerSceneGLES3;
 
@@ -102,9 +103,39 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 
 	struct CanvasLight {
 		RID texture;
+		struct {
+			bool enabled = false;
+			float z_far;
+			float y_offset;
+			Transform2D directional_xform;
+		} shadow;
 	};
 
 	RID_Owner<CanvasLight> canvas_light_owner;
+
+	struct OccluderPolygon {
+		RS::CanvasOccluderPolygonCullMode cull_mode = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
+		int line_point_count = 0;
+		GLuint vertex_buffer = 0;
+		GLuint vertex_array = 0;
+		GLuint index_buffer = 0;
+
+		int sdf_point_count = 0;
+		int sdf_index_count = 0;
+		GLuint sdf_vertex_buffer = 0;
+		GLuint sdf_vertex_array = 0;
+		GLuint sdf_index_buffer = 0;
+		bool sdf_is_lines = false;
+	};
+
+	RID_Owner<OccluderPolygon> occluder_polygon_owner;
+
+	void _update_shadow_atlas();
+
+	struct {
+		CanvasOcclusionShaderGLES3 shader;
+		RID shader_version;
+	} shadow_render;
 
 	struct LightUniform {
 		float matrix[8]; //light to texture coordinate matrix
@@ -153,9 +184,9 @@ public:
 	};
 
 	struct PolygonBuffers {
-		GLuint vertex_buffer;
-		GLuint vertex_array;
-		GLuint index_buffer;
+		GLuint vertex_buffer = 0;
+		GLuint vertex_array = 0;
+		GLuint index_buffer = 0;
 		int count = 0;
 		bool color_disabled = false;
 		Color color;
@@ -265,6 +296,11 @@ public:
 
 		LightUniform *light_uniforms = nullptr;
 
+		GLuint shadow_texture = 0;
+		GLuint shadow_depth_buffer = 0;
+		GLuint shadow_fb = 0;
+		int shadow_texture_size = 2048;
+
 		bool using_directional_lights = false;
 
 		RID current_tex = RID();
@@ -295,9 +331,6 @@ public:
 	void draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample);
 
 	void reset_canvas();
-	void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, Projection *p_xform_cache);
-
-	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) override;
 
 	RID light_create() override;
 	void light_set_texture(RID p_rid, RID p_texture) override;

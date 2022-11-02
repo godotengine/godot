@@ -368,7 +368,7 @@ Size2i Utilities::get_maximum_viewport_size() const {
 		return Size2i();
 	}
 
-	return Size2i(config->max_viewport_size, config->max_viewport_size);
+	return Size2i(config->max_viewport_size[0], config->max_viewport_size[1]);
 }
 
 #endif // GLES3_ENABLED
