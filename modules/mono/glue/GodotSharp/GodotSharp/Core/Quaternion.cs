@@ -572,6 +572,30 @@ namespace Godot
             }
         }
 
+        public Quaternion(Vector3 arcFrom, Vector3 arcTo)
+        {
+            Vector3 c = arcFrom.Cross(arcTo);
+            real_t d = arcFrom.Dot(arcTo);
+
+            if (d < -1.0f + Mathf.Epsilon)
+            {
+                x = 0f;
+                y = 1f;
+                z = 0f;
+                w = 0f;
+            }
+            else
+            {
+                real_t s = Mathf.Sqrt((1.0f + d) * 2.0f);
+                real_t rs = 1.0f / s;
+
+                x = c.x * rs;
+                y = c.y * rs;
+                z = c.z * rs;
+                w = s * 0.5f;
+            }
+        }
+
         /// <summary>
         /// Composes these two quaternions by multiplying them together.
         /// This has the effect of rotating the second quaternion
