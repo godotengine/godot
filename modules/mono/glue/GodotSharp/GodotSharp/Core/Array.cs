@@ -326,7 +326,7 @@ namespace Godot.Collections
         internal static extern Error godot_icall_Array_Resize(IntPtr ptr, int newSize);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Error godot_icall_Array_Shuffle(IntPtr ptr);
+        internal static extern void godot_icall_Array_Shuffle(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void godot_icall_Array_Generic_GetElementTypeInfo(Type elemType, out int elemTypeEncoding, out IntPtr elemTypeClass);
