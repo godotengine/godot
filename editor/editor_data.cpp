@@ -457,12 +457,10 @@ Callable EditorData::get_move_array_element_function(const StringName &p_class) 
 }
 
 void EditorData::remove_editor_plugin(EditorPlugin *p_plugin) {
-	p_plugin->undo_redo = Ref<EditorUndoRedoManager>();
 	editor_plugins.erase(p_plugin);
 }
 
 void EditorData::add_editor_plugin(EditorPlugin *p_plugin) {
-	p_plugin->undo_redo = undo_redo_manager;
 	editor_plugins.push_back(p_plugin);
 }
 

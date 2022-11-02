@@ -31,7 +31,6 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
-#include "editor/editor_undo_redo_manager.h"
 #include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -305,8 +304,6 @@ public:
 class EditorInspectorArray : public EditorInspectorSection {
 	GDCLASS(EditorInspectorArray, EditorInspectorSection);
 
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	enum Mode {
 		MODE_NONE,
 		MODE_USE_COUNT_PROPERTY,
@@ -401,8 +398,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
-
 	void setup_with_move_element_function(Object *p_object, String p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "");
 	void setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
 	VBoxContainer *get_vbox(int p_index);
@@ -441,7 +436,6 @@ public:
 class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	enum {
 		MAX_PLUGINS = 1024
 	};
@@ -554,8 +548,6 @@ public:
 	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
-
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 
 	String get_selected_path() const;
 

@@ -40,7 +40,6 @@ class VBoxContainer;
 class LineEdit;
 class Tree;
 class OptionButton;
-class EditorUndoRedoManager;
 
 class EditorLocaleDialog : public ConfirmationDialog {
 	GDCLASS(EditorLocaleDialog, ConfirmationDialog);
@@ -62,8 +61,6 @@ class EditorLocaleDialog : public ConfirmationDialog {
 	Tree *lang_list = nullptr;
 	Tree *script_list = nullptr;
 	Tree *cnt_list = nullptr;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool locale_set = false;
 	bool updating_lists = false;

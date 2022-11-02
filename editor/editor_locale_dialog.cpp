@@ -141,6 +141,7 @@ void EditorLocaleDialog::_filter_lang_option_changed() {
 
 	f_lang_all.sort();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Changed Locale Language Filter"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/language_filter", f_lang_all);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/language_filter", prev);
@@ -174,6 +175,7 @@ void EditorLocaleDialog::_filter_script_option_changed() {
 
 	f_script_all.sort();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Changed Locale Script Filter"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/script_filter", f_script_all);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/script_filter", prev);
@@ -207,6 +209,7 @@ void EditorLocaleDialog::_filter_cnt_option_changed() {
 
 	f_cnt_all.sort();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Changed Locale Country Filter"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/country_filter", f_cnt_all);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/country_filter", prev);
@@ -221,6 +224,7 @@ void EditorLocaleDialog::_filter_mode_changed(int p_mode) {
 		prev = GLOBAL_GET("internationalization/locale/locale_filter_mode");
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Changed Locale Filter Mode"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter_mode", f_mode);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter_mode", prev);
@@ -385,8 +389,6 @@ void EditorLocaleDialog::popup_locale_dialog() {
 }
 
 EditorLocaleDialog::EditorLocaleDialog() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	set_title(TTR("Select a Locale"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
