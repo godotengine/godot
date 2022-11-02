@@ -2688,7 +2688,7 @@ void EditorPropertyQuaternion::_custom_value_changed(double val) {
 	v.y = Math::deg_to_rad(edit_euler.y);
 	v.z = Math::deg_to_rad(edit_euler.z);
 
-	Quaternion temp_q = Quaternion(v);
+	Quaternion temp_q = Quaternion::from_euler(v);
 	spin[0]->set_value(temp_q.x);
 	spin[1]->set_value(temp_q.y);
 	spin[2]->set_value(temp_q.z);

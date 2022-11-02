@@ -86,7 +86,7 @@ TEST_SUITE("Validate tests") {
 		Plane plane(Vector3(1, 1, 1), 1.0);
 		INFO(plane);
 
-		Quaternion quat(Vector3(0.5, 1.0, 2.0));
+		Quaternion quat = Quaternion::from_euler(Vector3(0.5, 1.0, 2.0));
 		INFO(quat);
 
 		AABB aabb(Vector3(), Vector3(100, 100, 100));

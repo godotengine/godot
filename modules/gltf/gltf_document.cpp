@@ -6289,7 +6289,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
 				Vector3 rotation_radian = p_animation->track_get_key_value(p_track_i, key_i);
-				p_track.rotation_track.values.write[key_i] = Quaternion(rotation_radian);
+				p_track.rotation_track.values.write[key_i] = Quaternion::from_euler(rotation_radian);
 			}
 		} else if (path.contains(":scale")) {
 			p_track.scale_track.times = times;
