@@ -176,16 +176,16 @@ static const int max_touches = 8;
 	if (self.useCADisplayLink) {
 		self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
 
-		// Approximate frame rate
-		// assumes device refreshes at 60 fps
-		int displayFPS = (NSInteger)(1.0 / self.renderingInterval);
-
-		self.displayLink.preferredFramesPerSecond = displayFPS;
+		if (GLOBAL_GET("display/window/ios/allow_high_refresh_rate")) {
+			self.displayLink.preferredFramesPerSecond = 120;
+		} else {
+			self.displayLink.preferredFramesPerSecond = 60;
+		}
 
 		// Setup DisplayLink in main thread
 		[self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 	} else {
-		self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:self.renderingInterval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
+		self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:(1.0 / 60) target:self selector:@selector(drawView) userInfo:nil repeats:YES];
 	}
 }
 
