@@ -40,7 +40,7 @@
 #endif
 
 #ifdef X11_ENABLED
-#include "display_server_x11.h"
+#include "x11/display_server_x11.h"
 #endif
 
 #ifdef HAVE_MNTENT

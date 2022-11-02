@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+Import("env")
+
+source_files = [
+    "display_server_x11.cpp",
+    "key_mapping_x11.cpp",
+]
+
+if env["vulkan"]:
+    source_files.append("vulkan_context_x11.cpp")
+
+if env["opengl3"]:
+    source_files.append(["gl_manager_x11.cpp", "detect_prime_x11.cpp"])
+
+objects = []
+
+for source_file in source_files:
+    objects.append(env.Object(source_file))
+
+Return("objects")
