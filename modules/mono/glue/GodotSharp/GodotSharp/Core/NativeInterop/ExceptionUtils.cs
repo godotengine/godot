@@ -99,10 +99,41 @@ namespace Godot.NativeInterop
             }
         }
 
+        private static void InvokeUserUnhandledExceptionReporter(Exception e)
+        {
+            try
+            {
+                Godot.Logging.InvokeUnhandledExceptionReporter(e);
+            }
+            catch (Exception refailure)
+            {
+                // We try again, just in the hopes that we can attempt to report a failure in their callback system.
+                try
+                {
+                    Godot.Logging.InvokeUnhandledExceptionReporter(refailure);
+                }
+                catch (Exception)
+                {
+                    // Well, that's probably not going to work. Sorry.
+                    // Try to report something anyway.
+                    try
+                    {
+                        GD.PushError("User exception handler threw an exception, giving up");
+                    }
+                    catch (Exception)
+                    {
+                        // fine, never mind
+                    }
+                }
+            }
+        }
+
         public static void LogException(Exception e)
         {
             try
             {
+                InvokeUserUnhandledExceptionReporter(e);
+
                 if (NativeFuncs.godotsharp_internal_script_debugger_is_active())
                 {
                     SendToScriptDebugger(e);
@@ -122,6 +153,8 @@ namespace Godot.NativeInterop
         {
             try
             {
+                InvokeUserUnhandledExceptionReporter(e);
+
                 if (NativeFuncs.godotsharp_internal_script_debugger_is_active())
                 {
                     SendToScriptDebugger(e);
