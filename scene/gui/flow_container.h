@@ -36,11 +36,19 @@
 class FlowContainer : public Container {
 	GDCLASS(FlowContainer, Container);
 
+public:
+	enum AlignmentMode {
+		ALIGNMENT_BEGIN,
+		ALIGNMENT_CENTER,
+		ALIGNMENT_END
+	};
+
 private:
 	int cached_size = 0;
 	int cached_line_count = 0;
 
 	bool vertical = false;
+	AlignmentMode alignment = ALIGNMENT_BEGIN;
 
 	struct ThemeCache {
 		int h_separation = 0;
@@ -60,6 +68,9 @@ protected:
 
 public:
 	int get_line_count() const;
+
+	void set_alignment(AlignmentMode p_alignment);
+	AlignmentMode get_alignment() const;
 
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
@@ -87,5 +98,7 @@ public:
 	VFlowContainer() :
 			FlowContainer(true) { is_fixed = true; }
 };
+
+VARIANT_ENUM_CAST(FlowContainer::AlignmentMode);
 
 #endif // FLOW_CONTAINER_H
