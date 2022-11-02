@@ -2760,9 +2760,9 @@
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="40" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="41" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
 			Hints that a [String] property is a locale code. Editing it will show a locale dialog for picking language and country.
