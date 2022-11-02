@@ -1220,7 +1220,9 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		RendererCompositorRD::singleton->get_effects()->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
 	}
 
-	copy_push_constant.total_particles *= copy_push_constant.total_particles;
+	if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+		copy_push_constant.total_particles *= particles->trail_bind_poses.size();
+	}
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	uint32_t copy_pipeline = do_sort ? ParticlesShader::COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER : ParticlesShader::COPY_MODE_FILL_INSTANCES;
