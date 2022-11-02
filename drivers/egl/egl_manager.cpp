@@ -114,7 +114,7 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 
 	EGLint context_attribs[] = {
 		EGL_CONTEXT_MAJOR_VERSION, 3,
-		EGL_CONTEXT_MINOR_VERSION, 2,
+		EGL_CONTEXT_MINOR_VERSION, 3,
 		EGL_NONE
 	};
 
