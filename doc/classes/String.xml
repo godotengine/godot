@@ -940,12 +940,6 @@
 			<description>
 			</description>
 		</operator>
-		<operator name="operator +">
-			<return type="String" />
-			<param index="0" name="right" type="int" />
-			<description>
-			</description>
-		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
