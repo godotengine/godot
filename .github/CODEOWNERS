@@ -37,6 +37,7 @@ doc_classes/*                       @godotengine/documentation
 
 ## Rendering
 /drivers/dummy/                     @godotengine/rendering
+/drivers/gles3/                     @godotengine/rendering
 /drivers/spirv-reflect/             @godotengine/rendering
 /drivers/vulkan/                    @godotengine/rendering
 
