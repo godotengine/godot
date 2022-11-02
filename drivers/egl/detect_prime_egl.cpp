@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  detect_prime_x11.cpp                                                 */
+/*  detect_prime_egl.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef X11_ENABLED
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
+#ifdef EGL_ENABLED
 
-#include "detect_prime_x11.h"
+#include "detect_prime_egl.h"
 
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 
 #include <stdlib.h>
 
-#include <GL/gl.h>
-#include <GL/glx.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include <GL/glcorearb.h>
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #include <cstring>
 
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-#define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
-#define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
-
-typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
 
 struct vendor {
 	const char *glxvendor = nullptr;
@@ -73,60 +68,36 @@ vendor vendormap[] = {
 
 // Runs inside a child. Exiting will not quit the engine.
 void create_context() {
-	Display *x11_display = XOpenDisplay(nullptr);
-	Window x11_window;
-	GLXContext glx_context;
+	EGLDisplay egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	EGLConfig egl_config;
+	EGLContext egl_context = EGL_NO_CONTEXT;
 
-	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
+	eglInitialize(egl_display, NULL, NULL);
 
-	static int visual_attribs[] = {
-		GLX_RENDER_TYPE, GLX_RGBA_BIT,
-		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-		GLX_DOUBLEBUFFER, true,
-		GLX_RED_SIZE, 1,
-		GLX_GREEN_SIZE, 1,
-		GLX_BLUE_SIZE, 1,
-		GLX_DEPTH_SIZE, 24,
-		None
+	EGLint attribs[] = {
+		EGL_RED_SIZE,
+		1,
+		EGL_BLUE_SIZE,
+		1,
+		EGL_GREEN_SIZE,
+		1,
+		EGL_DEPTH_SIZE,
+		24,
+		EGL_NONE,
 	};
 
-	int fbcount;
-	GLXFBConfig fbconfig = nullptr;
-	XVisualInfo *vi = nullptr;
+	EGLint config_count = 0;
+	eglChooseConfig(egl_display, attribs, &egl_config, 1, &config_count);
 
-	XSetWindowAttributes swa;
-	swa.event_mask = StructureNotifyMask;
-	swa.border_pixel = 0;
-	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
-
-	GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
-	if (!fbc) {
-		exit(1);
-	}
-
-	vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
-
-	fbconfig = fbc[0];
-
-	static int context_attribs[] = {
-		GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-		GLX_CONTEXT_MINOR_VERSION_ARB, 3,
-		GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
-		GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-		None
+	EGLint context_attribs[] = {
+		EGL_CONTEXT_MAJOR_VERSION, 3,
+		EGL_CONTEXT_MINOR_VERSION, 3,
+		EGL_NONE
 	};
 
-	glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, nullptr, true, context_attribs);
+	egl_context = eglCreateContext(egl_display, egl_config, EGL_NO_CONTEXT, context_attribs);
 
-	swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
-	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, 10, 10, 0, vi->depth, InputOutput, vi->visual, valuemask, &swa);
-
-	if (!x11_window) {
-		exit(1);
-	}
-
-	glXMakeCurrent(x11_display, x11_window, glx_context);
-	XFree(vi);
+	eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context);
 }
 
 int detect_prime() {
@@ -191,6 +162,7 @@ int detect_prime() {
 			}
 			create_context();
 
+			PFNGLGETSTRINGPROC glGetString = (PFNGLGETSTRINGPROC)eglGetProcAddress("glGetString");
 			const char *vendor = (const char *)glGetString(GL_VENDOR);
 			const char *renderer = (const char *)glGetString(GL_RENDERER);
 
@@ -244,5 +216,5 @@ int detect_prime() {
 	return preferred;
 }
 
-#endif
-#endif
+#endif // EGL_ENABLED
+#endif // GLES3_ENABLED

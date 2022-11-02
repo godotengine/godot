@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_manager_x11.h                                                     */
+/*  egl_manager.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,82 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GL_MANAGER_X11_H
-#define GL_MANAGER_X11_H
+#ifndef EGL_MANAGER_H
+#define EGL_MANAGER_H
 
-#ifdef X11_ENABLED
+#ifdef EGL_ENABLED
 
-#ifdef GLES3_ENABLED
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
-#include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrender.h>
 
-struct GLManager_X11_Private;
-
-class GLManager_X11 {
-public:
-	enum ContextType {
-		GLES_3_0_COMPATIBLE,
-	};
-
+class EGLManager {
 private:
-	// any data specific to the window
-	struct GLWindow {
-		bool in_use = false;
-
-		// the external ID .. should match the GL window number .. unused I think
-		DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
-		int width = 0;
-		int height = 0;
-		::Window x11_window;
-		int gldisplay_id = 0;
-	};
-
+	// An EGL-side rappresentation of a display with its own rendering
+	// context.
 	struct GLDisplay {
-		GLDisplay() { context = nullptr; }
-		~GLDisplay();
-		GLManager_X11_Private *context = nullptr;
-		::Display *x11_display;
-		XVisualInfo x_vi;
+		void *display = nullptr;
+
+		EGLDisplay egl_display = EGL_NO_DISPLAY;
+		EGLContext egl_context = EGL_NO_CONTEXT;
+		EGLConfig egl_config;
 	};
 
-	// just for convenience, window and display struct
-	struct XWinDisp {
-		::Window x11_window;
-		::Display *x11_display;
-	} _x_windisp;
+	// EGL specific window data.
+	struct GLWindow {
+		bool initialized = false;
 
-	LocalVector<GLWindow> _windows;
-	LocalVector<GLDisplay> _displays;
+		// An handle to the GLDisplay associated with this window.
+		int gldisplay_id = -1;
 
-	GLWindow *_current_window = nullptr;
+		EGLSurface egl_surface = EGL_NO_SURFACE;
+	};
 
-	void _internal_set_current_window(GLWindow *p_win);
+	LocalVector<GLDisplay> displays;
+	LocalVector<GLWindow> windows;
 
-	GLWindow &get_window(unsigned int id) { return _windows[id]; }
-	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
+	GLWindow *current_window = nullptr;
 
-	const GLDisplay &get_current_display() const { return _displays[_current_window->gldisplay_id]; }
-	const GLDisplay &get_display(unsigned int id) { return _displays[id]; }
+	// On EGL the default swap interval is 1 and thus vsync is on by defualt.
+	bool use_vsync = true;
 
-	bool double_buffer;
-	bool direct_render;
-	int glx_minor, glx_major;
-	bool use_vsync;
-	ContextType context_type;
+	virtual const char *_get_platform_extension_name() const = 0;
+	virtual EGLenum _get_platform_extension_enum() const = 0;
 
-private:
-	int _find_or_create_display(Display *p_x11_display);
-	Error _create_context(GLDisplay &gl_display);
+	int _get_gldisplay_id(void *p_display);
+	Error _gldisplay_create_context(GLDisplay &p_gldisplay);
 
 public:
-	XVisualInfo get_vi(Display *p_display);
-	Error window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height);
+	int display_get_native_visual_id(void *p_display);
+
+	Error window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height);
+
 	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
 	void release_current();
 	void make_current();
@@ -111,16 +88,15 @@ public:
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
 
-	Error initialize();
-
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
-	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);
-	~GLManager_X11();
+	Error initialize();
+
+	EGLManager();
+	virtual ~EGLManager();
 };
 
-#endif // GLES3_ENABLED
-#endif // X11_ENABLED
+#endif // EGL_ENABLED
 
-#endif // GL_MANAGER_X11_H
+#endif // EGL_MANAGER_H

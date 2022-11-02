@@ -36,7 +36,7 @@
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
-#include "detect_prime_x11.h"
+#include "drivers/egl/detect_prime_egl.h"
 #include "key_mapping_x11.h"
 #include "main/main.h"
 #include "scene/resources/texture.h"
@@ -1282,8 +1282,8 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 #endif
 #ifdef GLES3_ENABLED
-	if (gl_manager) {
-		gl_manager->window_destroy(p_id);
+	if (egl_manager) {
+		egl_manager->window_destroy(p_id);
 	}
 #endif
 
@@ -1475,8 +1475,8 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 
 void DisplayServerX11::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_make_current(p_window_id);
+	if (egl_manager) {
+		egl_manager->window_make_current(p_window_id);
 	}
 #endif
 }
@@ -1734,11 +1734,6 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 #if defined(VULKAN_ENABLED)
 	if (context_vulkan) {
 		context_vulkan->window_resize(p_window, xwa.width, xwa.height);
-	}
-#endif
-#if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_resize(p_window, xwa.width, xwa.height);
 	}
 #endif
 }
@@ -3170,11 +3165,6 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
-#if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_resize(window_id, wd.size.width, wd.size.height);
-	}
-#endif
 
 	if (!wd.rect_changed_callback.is_null()) {
 		Rect2i r = new_rect;
@@ -4231,24 +4221,24 @@ void DisplayServerX11::process_events() {
 
 void DisplayServerX11::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->release_current();
+	if (egl_manager) {
+		egl_manager->release_current();
 	}
 #endif
 }
 
 void DisplayServerX11::make_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->make_current();
+	if (egl_manager) {
+		egl_manager->make_current();
 	}
 #endif
 }
 
 void DisplayServerX11::swap_buffers() {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->swap_buffers();
+	if (egl_manager) {
+		egl_manager->swap_buffers();
 	}
 #endif
 }
@@ -4398,8 +4388,8 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 #endif
 
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
+	if (egl_manager) {
+		egl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
 	}
 #endif
 }
@@ -4412,8 +4402,8 @@ DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_wind
 	}
 #endif
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	if (egl_manager) {
+		return egl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
@@ -4461,8 +4451,8 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	bool vi_selected = false;
 
 #ifdef GLES3_ENABLED
-	if (gl_manager) {
-		visualInfo = gl_manager->get_vi(x11_display);
+	if (egl_manager) {
+		visualInfo = visual_info_gl;
 		vi_selected = true;
 	}
 #endif
@@ -4657,8 +4647,8 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		}
 #endif
 #ifdef GLES3_ENABLED
-		if (gl_manager) {
-			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+		if (egl_manager) {
+			Error err = egl_manager->window_create(id, x11_display, &wd.x11_window, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
 		}
 #endif
@@ -4890,23 +4880,35 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			}
 		}
 
-		GLManager_X11::ContextType opengl_api_type = GLManager_X11::GLES_3_0_COMPATIBLE;
+		egl_manager = memnew(EGLManagerX11());
 
-		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
-
-		if (gl_manager->initialize() != OK) {
-			memdelete(gl_manager);
-			gl_manager = nullptr;
+		if (egl_manager->initialize() != OK) {
+			memdelete(egl_manager);
+			egl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 		driver_found = true;
 
+		XVisualInfo visual_info_template;
+		int visual_id = egl_manager->display_get_native_visual_id(x11_display);
+		ERR_FAIL_COND_MSG(visual_id < 0, "Unable to get a visual id.");
+
+		visual_info_template.visualid = (VisualID)visual_id;
+
+		int number_of_visuals = 0;
+		XVisualInfo *vi_list = XGetVisualInfo(x11_display, VisualIDMask, &visual_info_template, &number_of_visuals);
+		ERR_FAIL_COND(number_of_visuals <= 0);
+
+		visual_info_gl = vi_list[0];
+
+		XFree(vi_list);
+
 		if (true) {
 			RasterizerGLES3::make_current();
 		} else {
-			memdelete(gl_manager);
-			gl_manager = nullptr;
+			memdelete(egl_manager);
+			egl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
@@ -5122,8 +5124,8 @@ DisplayServerX11::~DisplayServerX11() {
 		}
 #endif
 #ifdef GLES3_ENABLED
-		if (gl_manager) {
-			gl_manager->window_destroy(E.key);
+		if (egl_manager) {
+			egl_manager->window_destroy(E.key);
 		}
 #endif
 
@@ -5151,9 +5153,9 @@ DisplayServerX11::~DisplayServerX11() {
 #endif
 
 #ifdef GLES3_ENABLED
-	if (gl_manager) {
-		memdelete(gl_manager);
-		gl_manager = nullptr;
+	if (egl_manager) {
+		memdelete(egl_manager);
+		egl_manager = nullptr;
 	}
 #endif
 

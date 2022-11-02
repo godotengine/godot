@@ -84,6 +84,11 @@
 #include <EGL/eglext.h>
 #endif
 
+#if EGL_ENABLED
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif
+
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define strcpy strcpy_s
 #endif
@@ -199,6 +204,12 @@ void RasterizerGLES3::finalize() {
 
 RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
+#ifdef EGL_ENABLED
+	if (!gladLoadGLLoader((GLADloadproc)eglGetProcAddress)) {
+		ERR_PRINT("Error initializing GLAD");
+		return;
+	}
+#else
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
 		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
@@ -206,7 +217,8 @@ RasterizerGLES3::RasterizerGLES3() {
 		// or we need to actually test for this situation before constructing this.
 		return;
 	}
-#endif
+#endif // EGL_ENABLED
+#endif // GLAD_ENABLED
 
 #ifdef GLAD_ENABLED
 	if (OS::get_singleton()->is_stdout_verbose()) {

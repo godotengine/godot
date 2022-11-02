@@ -356,7 +356,8 @@ def configure(env: "Environment"):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        env.ParseConfig("pkg-config gl --cflags --libs")
+
+        env.ParseConfig("pkg-config egl --cflags --libs")
 
     env.Append(LIBS=["pthread"])
 

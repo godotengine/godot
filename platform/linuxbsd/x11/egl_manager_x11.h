@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  detect_prime_x11.h                                                   */
+/*  egl_manager_x11.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DETECT_PRIME_X11_H
-#define DETECT_PRIME_X11_H
+#ifndef EGL_MANAGER_X11_H
+#define EGL_MANAGER_X11_H
 
-#if defined(X11_ENABLED) && defined(GLES3_ENABLED)
+#ifdef X11_ENABLED
 
-int detect_prime();
+#ifdef GLES3_ENABLED
 
-#endif // X11_ENABLED && GLES3_ENABLED
+#include "drivers/egl/egl_manager.h"
 
-#endif // DETECT_PRIME_X11_H
+#include <X11/Xlib.h>
+
+class EGLManagerX11 : public EGLManager {
+private:
+	virtual const char *_get_platform_extension_name() const override;
+	virtual EGLenum _get_platform_extension_enum() const override;
+};
+
+#endif // GLES3_ENABLED
+#endif // X11_ENABLED
+
+#endif // EGL_MANAGER_X11_H
