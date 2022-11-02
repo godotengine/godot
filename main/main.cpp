@@ -620,7 +620,7 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
  * - setup(execpath, argc, argv, p_second_phase) is the main entry point for all platforms,
  *   responsible for the initialization of all low level singletons and core types, and parsing
  *   command line arguments to configure things accordingly.
- *   If p_second_phase is true, it will chain into setup2() (default behaviour). This is
+ *   If p_second_phase is true, it will chain into setup2() (default behavior). This is
  *   disabled on some platforms (Android, iOS, UWP) which trigger the second step in their
  *   own time.
  *

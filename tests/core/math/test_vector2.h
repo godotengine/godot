@@ -382,13 +382,13 @@ TEST_CASE("[Vector2] Plane methods") {
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
 			vector.bounce(vector_non_normal).is_equal_approx(Vector2()),
-			"Vector2 bounce should return empty Vector2 with non-normalised input.");
+			"Vector2 bounce should return empty Vector2 with non-normalized input.");
 	CHECK_MESSAGE(
 			vector.reflect(vector_non_normal).is_equal_approx(Vector2()),
-			"Vector2 reflect should return empty Vector2 with non-normalised input.");
+			"Vector2 reflect should return empty Vector2 with non-normalized input.");
 	CHECK_MESSAGE(
 			vector.slide(vector_non_normal).is_equal_approx(Vector2()),
-			"Vector2 slide should return empty Vector2 with non-normalised input.");
+			"Vector2 slide should return empty Vector2 with non-normalized input.");
 	ERR_PRINT_ON;
 }
 

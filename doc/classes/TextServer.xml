@@ -1416,7 +1416,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<description>
-				Sets desired text direction. If set to [code]TEXT_DIRECTION_AUTO[/code], direction will be detected based on the buffer contents and current locale.
+				Sets desired text direction. If set to [constant DIRECTION_AUTO], direction will be detected based on the buffer contents and current locale.
 				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
 			</description>
 		</method>
@@ -1823,7 +1823,7 @@
 			Font have fixed-width characters.
 		</constant>
 		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
-			Use default behavior. Same as [code]STRUCTURED_TEXT_NONE[/code] unless specified otherwise in the control description.
+			Use default behavior. Same as [constant STRUCTURED_TEXT_NONE] unless specified otherwise in the control description.
 		</constant>
 		<constant name="STRUCTURED_TEXT_URI" value="1" enum="StructuredTextParser">
 			BiDi override for URI.

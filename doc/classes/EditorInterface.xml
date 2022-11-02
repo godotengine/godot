@@ -222,7 +222,7 @@
 		<method name="save_scene">
 			<return type="int" enum="Error" />
 			<description>
-				Saves the scene. Returns either [code]OK[/code] or [code]ERR_CANT_CREATE[/code] (see [@GlobalScope] constants).
+				Saves the scene. Returns either [constant OK] or [constant ERR_CANT_CREATE].
 			</description>
 		</method>
 		<method name="save_scene_as">

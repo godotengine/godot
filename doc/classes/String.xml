@@ -239,7 +239,7 @@
 			<description>
 				Splits a string using a [param delimiter] and returns a substring at index [param slice]. Returns an empty string if the index doesn't exist.
 				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
-				Example:
+				[b]Example:[/b]
 				[codeblock]
 				print("i/am/example/string".get_slice("/", 2)) # Prints 'example'.
 				[/codeblock]
@@ -408,7 +408,7 @@
 			<param index="0" name="parts" type="PackedStringArray" />
 			<description>
 				Returns a [String] which is the concatenation of the [param parts]. The separator between elements is the string providing this method.
-				Example:
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				print(", ".join(["One", "Two", "Three", "Four"]))
@@ -430,7 +430,7 @@
 			<param index="0" name="length" type="int" />
 			<description>
 				Returns a number of characters from the left of the string. If negative [param length] is used, the characters are counted downwards from [String]'s length.
-				Examples:
+				[b]Example:[/b]
 				[codeblock]
 				print("sample text".left(3)) #prints "sam"
 				print("sample text".left(-3)) #prints "sample t"
@@ -514,7 +514,7 @@
 				Converts a [float] to a string representation of a decimal number.
 				The number of decimal places can be specified with [param decimals]. If [param decimals] is [code]-1[/code] (default), decimal places will be automatically adjusted so that the string representation has 14 significant digits (counting both digits to the left and the right of the decimal point).
 				Trailing zeros are not included in the string. The last digit will be rounded and not truncated.
-				Some examples:
+				[b]Example:[/b]
 				[codeblock]
 				String.num(3.141593)     # "3.141593"
 				String.num(3.141593, 3)  # "3.142"
@@ -617,7 +617,7 @@
 			<param index="0" name="length" type="int" />
 			<description>
 				Returns a number of characters from the right of the string. If negative [param length] is used, the characters are counted downwards from [String]'s length.
-				Examples:
+				[b]Example:[/b]
 				[codeblock]
 				print("sample text".right(3)) #prints "ext"
 				print("sample text".right(-3)) #prints "ple text"
@@ -642,7 +642,7 @@
 				The splits in the returned array are sorted in the same order as the original string, from left to right.
 				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
 				If [param maxsplit] is specified, it defines the number of splits to do from the right up to [param maxsplit]. The default value of 0 means that all items are split, thus giving the same result as [method split].
-				Example:
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_string = "One,Two,Three,Four"
@@ -718,7 +718,7 @@
 				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
 				If [param maxsplit] is specified, it defines the number of splits to do from the left up to [param maxsplit]. The default value of [code]0[/code] means that all items are split.
 				If you need only one element from the array at a specific index, [method get_slice] is a more performant option.
-				Example:
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_string = "One,Two,Three,Four"

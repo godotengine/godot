@@ -64,7 +64,7 @@ TEST_CASE("[Geometry2D] Point in triangle") {
 
 	// This tests points on the edge of the triangle. They are treated as being outside the triangle.
 	// In `is_point_in_circle` and `is_point_in_polygon` they are treated as being inside, so in order the make
-	// the behaviour consistent this may change in the future (see issue #44717 and PR #44274).
+	// the behavior consistent this may change in the future (see issue #44717 and PR #44274).
 	CHECK_FALSE(Geometry2D::is_point_in_triangle(Vector2(1, 1), Vector2(-1, 1), Vector2(0, -1), Vector2(1, 1)));
 	CHECK_FALSE(Geometry2D::is_point_in_triangle(Vector2(0, 1), Vector2(-1, 1), Vector2(0, -1), Vector2(1, 1)));
 }

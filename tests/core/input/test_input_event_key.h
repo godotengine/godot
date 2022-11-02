@@ -102,7 +102,7 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 	// as text. These cases are a bit weird, since None has no textual representation
 	// (find_keycode_name(Key::NONE) results in a nullptr). Thus, these tests look weird
 	// with only (Physical) or a lonely modifier with (Physical) but (as far as I
-	// understand the code, that is intended behaviour.
+	// understand the code, that is intended behavior.
 
 	// Key is None without a physical key.
 	none_key.set_keycode(Key::NONE);

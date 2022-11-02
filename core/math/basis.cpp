@@ -815,7 +815,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		return;
 	}
 	// As we have reached here there are no singularities so we can handle normally.
-	double s = Math::sqrt((rows[2][1] - rows[1][2]) * (rows[2][1] - rows[1][2]) + (rows[0][2] - rows[2][0]) * (rows[0][2] - rows[2][0]) + (rows[1][0] - rows[0][1]) * (rows[1][0] - rows[0][1])); // Used to normalise.
+	double s = Math::sqrt((rows[2][1] - rows[1][2]) * (rows[2][1] - rows[1][2]) + (rows[0][2] - rows[2][0]) * (rows[0][2] - rows[2][0]) + (rows[1][0] - rows[0][1]) * (rows[1][0] - rows[0][1])); // Used to normalize.
 
 	if (Math::abs(s) < CMP_EPSILON) {
 		// Prevent divide by zero, should not happen if matrix is orthogonal and should be caught by singularity test above.

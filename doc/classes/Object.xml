@@ -108,7 +108,8 @@
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [param method] on the object and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Calls the [param method] on the object and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -126,7 +127,8 @@
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [param method] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Calls the [param method] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -318,7 +320,8 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Emits the given [param signal]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Emits the given [param signal]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				emit_signal("hit", "sword", 100)
@@ -366,7 +369,8 @@
 			<return type="Variant" />
 			<param index="0" name="property_path" type="NodePath" />
 			<description>
-				Gets the object's property indexed by the given [param property_path]. The path should be a [NodePath] relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Examples: [code]"position:x"[/code] or [code]"material:next_pass:blend_mode"[/code].
+				Gets the object's property indexed by the given [param property_path]. The path should be a [NodePath] relative to the current object and can use the colon character ([code]:[/code]) to access nested properties.
+				[b]Examples:[/b] [code]"position:x"[/code] or [code]"material:next_pass:blend_mode"[/code].
 				[b]Note:[/b] Even though the method takes [NodePath] argument, it doesn't support actual paths to [Node]s in the scene tree, only colon-separated sub-property paths. For the purpose of nodes, use [method Node.get_node_and_resource] instead.
 			</description>
 		</method>
@@ -535,7 +539,8 @@
 			<param index="0" name="property_path" type="NodePath" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Assigns a new value to the property identified by the [param property_path]. The path should be a [NodePath] relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Example:
+				Assigns a new value to the property identified by the [param property_path]. The path should be a [NodePath] relative to the current object and can use the colon character ([code]:[/code]) to access nested properties.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var node = Node2D.new()

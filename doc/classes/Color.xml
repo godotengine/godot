@@ -197,7 +197,7 @@
 			<description>
 				Returns the luminance of the color in the [code][0.0, 1.0][/code] range.
 				This is useful when determining light or dark color. Colors with a luminance smaller than 0.5 can be generally considered dark.
-				[b]Note:[/b] [method get_luminance] relies on the colour being in the linear color space to return an accurate relative luminance value. If the color is in the sRGB color space, use [method srgb_to_linear] to convert it to the linear color space first.
+				[b]Note:[/b] [method get_luminance] relies on the color being in the linear color space to return an accurate relative luminance value. If the color is in the sRGB color space, use [method srgb_to_linear] to convert it to the linear color space first.
 			</description>
 		</method>
 		<method name="hex" qualifiers="static">
