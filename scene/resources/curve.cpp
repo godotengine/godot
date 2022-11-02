@@ -936,6 +936,46 @@ Vector2 Curve2D::sample_baked(real_t p_offset, bool p_cubic) const {
 	}
 }
 
+Transform2D Curve2D::sample_baked_with_rotation(real_t p_offset, bool p_cubic, bool p_loop, real_t p_lookahead) const {
+	real_t path_length = get_baked_length(); // Ensure baked.
+	ERR_FAIL_COND_V_MSG(path_length == 0, Transform2D(), "Length of Curve2D is 0.");
+
+	Vector2 pos = sample_baked(p_offset, p_cubic);
+
+	real_t ahead = p_offset + p_lookahead;
+
+	if (p_loop && ahead >= path_length) {
+		// If our lookahead will loop, we need to check if the path is closed.
+		int point_count = get_point_count();
+		if (point_count > 0) {
+			Vector2 start_point = get_point_position(0);
+			Vector2 end_point = get_point_position(point_count - 1);
+			if (start_point == end_point) {
+				// Since the path is closed we want to 'smooth off'
+				// the corner at the start/end.
+				// So we wrap the lookahead back round.
+				ahead = Math::fmod(ahead, path_length);
+			}
+		}
+	}
+
+	Vector2 ahead_pos = sample_baked(ahead, p_cubic);
+
+	Vector2 tangent_to_curve;
+	if (ahead_pos == pos) {
+		// This will happen at the end of non-looping or non-closed paths.
+		// We'll try a look behind instead, in order to get a meaningful angle.
+		tangent_to_curve =
+				(pos - sample_baked(p_offset - p_lookahead, p_cubic)).normalized();
+	} else {
+		tangent_to_curve = (ahead_pos - pos).normalized();
+	}
+
+	Vector2 normal_of_curve = -tangent_to_curve.orthogonal();
+
+	return Transform2D(normal_of_curve, tangent_to_curve, pos);
+}
+
 PackedVector2Array Curve2D::get_baked_points() const {
 	if (baked_cache_dirty) {
 		_bake();
@@ -1184,6 +1224,7 @@ void Curve2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve2D::get_baked_length);
 	ClassDB::bind_method(D_METHOD("sample_baked", "offset", "cubic"), &Curve2D::sample_baked, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("sample_baked_with_rotation", "offset", "cubic", "loop", "lookahead"), &Curve2D::sample_baked_with_rotation, DEFVAL(false), DEFVAL(true), DEFVAL(4.0));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve2D::get_baked_points);
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_point"), &Curve2D::get_closest_point);
 	ClassDB::bind_method(D_METHOD("get_closest_offset", "to_point"), &Curve2D::get_closest_offset);
