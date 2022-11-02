@@ -158,8 +158,7 @@ void ColorModeHSV::slider_draw(int p_which) {
 		right_color.a = 1;
 	} else if (p_which == 0) {
 		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_hue"), SNAME("ColorPicker"));
-		slider->draw_set_transform(Point2(), -Math_PI / 2, Size2(1.0, 1.0));
-		slider->draw_texture_rect(hue, Rect2(Vector2(margin * -1, 0), Vector2(margin, size.x)), false);
+		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false);
 		return;
 	} else {
 		Color s_col;
@@ -290,8 +289,7 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 
 	if (p_which == 0) { // H
 		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_okhsl_hue"), SNAME("ColorPicker"));
-		slider->draw_set_transform(Point2(), -Math_PI / 2, Size2(1.0, 1.0));
-		slider->draw_texture_rect(hue, Rect2(Vector2(margin * -1, 0), Vector2(margin, size.x)), false);
+		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false);
 		return;
 	}
 
