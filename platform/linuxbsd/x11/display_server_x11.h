@@ -47,7 +47,7 @@
 #include "servers/rendering_server.h"
 
 #if defined(SPEECHD_ENABLED)
-#include "tts_linux.h"
+#include "../tts_linux.h"
 #endif
 
 #if defined(GLES3_ENABLED)
@@ -56,12 +56,12 @@
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/linuxbsd/vulkan_context_x11.h"
+#include "vulkan_context_x11.h"
 #endif
 
 #if defined(DBUS_ENABLED)
-#include "freedesktop_portal_desktop.h"
-#include "freedesktop_screensaver.h"
+#include "../freedesktop_portal_desktop.h"
+#include "../freedesktop_screensaver.h"
 #endif
 
 #include <X11/Xcursor/Xcursor.h>
