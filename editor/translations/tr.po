@@ -85,6 +85,7 @@
 # bsr <bsndrn16@gmail.com>, 2022.
 # Ramazan SANCAR <ramazansancar4545@gmail.com>, 2022.
 # Burak Orcun OZKABLAN <borcunozkablan@gmail.com>, 2022.
+# Eray Sahin <eraysahinmoon@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
@@ -27670,7 +27671,7 @@ msgstr "Baypas"
 
 #: servers/audio/effects/audio_effect_distortion.cpp
 msgid "Pre Gain"
-msgstr ""
+msgstr "Ön Kazanç"
 
 #: servers/audio/effects/audio_effect_distortion.cpp
 msgid "Keep Hf Hz"
@@ -27708,11 +27709,11 @@ msgstr ""
 
 #: servers/audio/effects/audio_effect_phaser.cpp
 msgid "Range Min Hz"
-msgstr ""
+msgstr "Minimum Hz Aralığı"
 
 #: servers/audio/effects/audio_effect_phaser.cpp
 msgid "Range Max Hz"
-msgstr ""
+msgstr "Maximum Hz Aralığı"
 
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
 msgid "Oversampling"
@@ -27776,7 +27777,7 @@ msgstr "Harmanlama Süresini Değiştir"
 
 #: servers/audio_server.cpp
 msgid "Video Delay Compensation (ms)"
-msgstr ""
+msgstr "Video Gecikme Telafisi (ms)"
 
 #: servers/audio_server.cpp
 #, fuzzy
@@ -27823,7 +27824,7 @@ msgstr ""
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Inverse Mass"
-msgstr ""
+msgstr "Ters Kütle"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 #, fuzzy
@@ -27832,7 +27833,7 @@ msgstr "Sola Serbest Bakış"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Total Angular Damp"
-msgstr ""
+msgstr "Açısal"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 #, fuzzy
@@ -27985,11 +27986,11 @@ msgstr "PNG Uzantısını Kullanmaya Zorla"
 
 #: servers/visual_server.cpp
 msgid "WebP Compression Level"
-msgstr ""
+msgstr "WebP Kompresyon Seviyesi"
 
 #: servers/visual_server.cpp
 msgid "Time Rollover Secs"
-msgstr ""
+msgstr "Zaman Geçişi Saniye"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -28027,11 +28028,11 @@ msgstr "Merkez Seçimi"
 
 #: servers/visual_server.cpp
 msgid "High Quality GGX"
-msgstr ""
+msgstr "Yüksek Kaliteli GGX"
 
 #: servers/visual_server.cpp
 msgid "Irradiance Max Size"
-msgstr ""
+msgstr "Maksimum Işınım Boyutu"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -28072,11 +28073,11 @@ msgstr "Bu Satıcılar İçin Devre Dışı Bırak"
 
 #: servers/visual_server.cpp
 msgid "Anisotropic Filter Level"
-msgstr ""
+msgstr "Anisotropik Filtreleme Seviyesi"
 
 #: servers/visual_server.cpp
 msgid "Use Nearest Mipmap Filter"
-msgstr ""
+msgstr "En Yakın Mipmap Filtresini Kullan"
 
 #: servers/visual_server.cpp
 msgid "Skinning"
