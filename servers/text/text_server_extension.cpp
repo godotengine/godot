@@ -182,8 +182,8 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_has_char, "font_rid", "char");
 	GDVIRTUAL_BIND(_font_get_supported_chars, "font_rid");
 
-	GDVIRTUAL_BIND(_font_render_range, "font_rid", "size", "start", "end");
-	GDVIRTUAL_BIND(_font_render_glyph, "font_rid", "size", "index");
+	GDVIRTUAL_BIND(_font_render_range, "font_rid", "size", "start", "end", "include_sideways");
+	GDVIRTUAL_BIND(_font_render_glyph, "font_rid", "size", "index", "include_sideways");
 
 	GDVIRTUAL_BIND(_font_draw_glyph, "font_rid", "canvas", "size", "pos", "index", "color");
 	GDVIRTUAL_BIND(_font_draw_glyph_outline, "font_rid", "canvas", "size", "outline_size", "pos", "index", "color");
@@ -280,6 +280,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_get_object_rect, "shaped", "key");
 
 	GDVIRTUAL_BIND(_shaped_text_get_size, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_get_vertical_bounds, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_ascent, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_descent, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_width, "shaped");
@@ -837,12 +838,12 @@ String TextServerExtension::font_get_supported_chars(const RID &p_font_rid) cons
 	return ret;
 }
 
-void TextServerExtension::font_render_range(const RID &p_font_rid, const Vector2i &p_size, int64_t p_start, int64_t p_end) {
-	GDVIRTUAL_CALL(_font_render_range, p_font_rid, p_size, p_start, p_end);
+void TextServerExtension::font_render_range(const RID &p_font_rid, const Vector2i &p_size, int64_t p_start, int64_t p_end, bool p_include_sideways) {
+	GDVIRTUAL_CALL(_font_render_range, p_font_rid, p_size, p_start, p_end, p_include_sideways);
 }
 
-void TextServerExtension::font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index) {
-	GDVIRTUAL_CALL(_font_render_glyph, p_font_rid, p_size, p_index);
+void TextServerExtension::font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index, bool p_include_sideways) {
+	GDVIRTUAL_CALL(_font_render_glyph, p_font_rid, p_size, p_index, p_include_sideways);
 }
 
 void TextServerExtension::font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
@@ -1208,6 +1209,12 @@ Rect2 TextServerExtension::shaped_text_get_object_rect(const RID &p_shaped, cons
 Size2 TextServerExtension::shaped_text_get_size(const RID &p_shaped) const {
 	Size2 ret;
 	GDVIRTUAL_CALL(_shaped_text_get_size, p_shaped, ret);
+	return ret;
+}
+
+Size2 TextServerExtension::shaped_text_get_vertical_bounds(const RID &p_shaped) const {
+	Size2 ret;
+	GDVIRTUAL_CALL(_shaped_text_get_vertical_bounds, p_shaped, ret);
 	return ret;
 }
 

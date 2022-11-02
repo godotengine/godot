@@ -336,8 +336,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_has_char", "font_rid", "char"), &TextServer::font_has_char);
 	ClassDB::bind_method(D_METHOD("font_get_supported_chars", "font_rid"), &TextServer::font_get_supported_chars);
 
-	ClassDB::bind_method(D_METHOD("font_render_range", "font_rid", "size", "start", "end"), &TextServer::font_render_range);
-	ClassDB::bind_method(D_METHOD("font_render_glyph", "font_rid", "size", "index"), &TextServer::font_render_glyph);
+	ClassDB::bind_method(D_METHOD("font_render_range", "font_rid", "size", "start", "end", "include_sideways"), &TextServer::font_render_range, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("font_render_glyph", "font_rid", "size", "index", "include_sideways"), &TextServer::font_render_glyph, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("font_draw_glyph", "font_rid", "canvas", "size", "pos", "index", "color"), &TextServer::font_draw_glyph, DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("font_draw_glyph_outline", "font_rid", "canvas", "size", "outline_size", "pos", "index", "color"), &TextServer::font_draw_glyph_outline, DEFVAL(Color(1, 1, 1)));
@@ -427,8 +427,8 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_objects", "shaped"), &TextServer::shaped_text_get_objects);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_object_rect", "shaped", "key"), &TextServer::shaped_text_get_object_rect);
-
 	ClassDB::bind_method(D_METHOD("shaped_text_get_size", "shaped"), &TextServer::shaped_text_get_size);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_vertical_bounds", "shaped"), &TextServer::shaped_text_get_vertical_bounds);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ascent", "shaped"), &TextServer::shaped_text_get_ascent);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_descent", "shaped"), &TextServer::shaped_text_get_descent);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_width", "shaped"), &TextServer::shaped_text_get_width);
@@ -447,6 +447,7 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shaped_text_draw", "shaped", "canvas", "pos", "clip_l", "clip_r", "color"), &TextServer::shaped_text_draw, DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("shaped_text_draw_outline", "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color"), &TextServer::shaped_text_draw_outline, DEFVAL(-1), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("shaped_text_draw_custom", "shaped", "canvas", "pos", "clip_l", "clip_r", "callback"), &TextServer::_shaped_text_draw_custom);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_dominant_direction_in_range", "shaped", "start", "end"), &TextServer::shaped_text_get_dominant_direction_in_range);
 
@@ -479,6 +480,11 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_VBGR);
 	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_MAX);
 
+	/* LinePosition */
+	BIND_ENUM_CONSTANT(UNDERLINE);
+	BIND_ENUM_CONSTANT(OVERDERLINE);
+	BIND_ENUM_CONSTANT(STRIKETHROUGH);
+
 	/* Direction */
 	BIND_ENUM_CONSTANT(DIRECTION_AUTO);
 	BIND_ENUM_CONSTANT(DIRECTION_LTR);
@@ -486,7 +492,9 @@ void TextServer::_bind_methods() {
 
 	/* Orientation */
 	BIND_ENUM_CONSTANT(ORIENTATION_HORIZONTAL);
-	BIND_ENUM_CONSTANT(ORIENTATION_VERTICAL);
+	BIND_ENUM_CONSTANT(ORIENTATION_VERTICAL_UPRIGHT);
+	BIND_ENUM_CONSTANT(ORIENTATION_VERTICAL_MIXED);
+	BIND_ENUM_CONSTANT(ORIENTATION_VERTICAL_SIDEWAYS);
 
 	/* JustificationFlag */
 	BIND_BITFIELD_FLAG(JUSTIFICATION_NONE);
@@ -604,7 +612,9 @@ void TextServer::_bind_methods() {
 }
 
 Vector2 TextServer::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {
-	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
+	int32_t glyph_index = p_index & 0x1fffff; // Extract glpyh index.
+
+	int w = ((glyph_index <= 0xFF) ? 1 : ((glyph_index <= 0xFFFF) ? 2 : 3));
 	int sp = MAX(0, w - 1);
 	int sz = MAX(1, Math::round(p_size / 15.f));
 
@@ -642,7 +652,9 @@ void TextServer::draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Ve
 		return;
 	}
 
-	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
+	int32_t glyph_index = p_index & 0x1fffff; // Extract glpyh index.
+
+	int w = ((glyph_index <= 0xFF) ? 1 : ((glyph_index <= 0xFFFF) ? 2 : 3));
 	int sp = MAX(0, w - 1);
 	int sz = MAX(1, Math::round(p_size / 15.f));
 
@@ -655,18 +667,18 @@ void TextServer::draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Ve
 	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, 0), Size2(size.x, sz)), p_color);
 	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, size.y - sz), Size2(size.x, sz)), p_color);
 
-	uint8_t a = p_index & 0x0F;
-	uint8_t b = (p_index >> 4) & 0x0F;
-	uint8_t c = (p_index >> 8) & 0x0F;
-	uint8_t d = (p_index >> 12) & 0x0F;
-	uint8_t e = (p_index >> 16) & 0x0F;
-	uint8_t f = (p_index >> 20) & 0x0F;
+	uint8_t a = glyph_index & 0x0F;
+	uint8_t b = (glyph_index >> 4) & 0x0F;
+	uint8_t c = (glyph_index >> 8) & 0x0F;
+	uint8_t d = (glyph_index >> 12) & 0x0F;
+	uint8_t e = (glyph_index >> 16) & 0x0F;
+	uint8_t f = (glyph_index >> 20) & 0x0F;
 
 	// Draw hex code.
-	if (p_index <= 0xFF) {
+	if (glyph_index <= 0xFF) {
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 2) * sz, b, p_color);
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 8) * sz, a, p_color);
-	} else if (p_index <= 0xFFFF) {
+	} else if (glyph_index <= 0xFFFF) {
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 2) * sz, d, p_color);
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(6, 2) * sz, c, p_color);
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 8) * sz, b, p_color);
@@ -686,8 +698,15 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 
 	ERR_FAIL_COND_V(p_width.is_empty(), lines);
 
-	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
+
+	if (p_break_flags == BREAK_NONE) {
+		lines.push_back(MAX(p_start, range.x));
+		lines.push_back(range.y);
+		return lines;
+	}
+
+	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 
 	real_t width = 0.f;
 	int line_start = MAX(p_start, range.x);
@@ -805,8 +824,15 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, double p_width, int64_t p_start, BitField<TextServer::LineBreakFlag> p_break_flags) const {
 	PackedInt32Array lines;
 
-	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
+
+	if (p_break_flags == BREAK_NONE) {
+		lines.push_back(MAX(p_start, range.x));
+		lines.push_back(range.y);
+		return lines;
+	}
+
+	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 
 	double width = 0.f;
 	int line_start = MAX(p_start, range.x);
@@ -1375,9 +1401,8 @@ int64_t TextServer::shaped_text_prev_grapheme_pos(const RID &p_shaped, int64_t p
 	return p_pos;
 }
 
-void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Color &p_color) const {
+void TextServer::shaped_text_draw_custom(const RID &p_shaped, const Vector2 &p_pos, double p_clip_l, double p_clip_r, std::function<bool(const Glyph &, const Vector2 &, int)> p_draw_fn, int p_line_id) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
-	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
 
 	bool rtl = shaped_text_get_direction(p_shaped) == DIRECTION_RTL;
 
@@ -1395,7 +1420,9 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 	if (rtl && ellipsis_pos >= 0) {
 		for (int i = ellipsis_gl_size - 1; i >= 0; i--) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
+				if (!p_draw_fn(ellipsis_glyphs[i], ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), p_line_id)) {
+					return;
+				}
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
@@ -1421,11 +1448,11 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 			if (p_clip_r > 0) {
 				// Clip right / bottom.
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					if (ofs.x - p_pos.x + glyphs[i].advance > p_clip_r) {
+					if (Math::floor(ofs.x - p_pos.x + glyphs[i].advance) > p_clip_r) {
 						return;
 					}
 				} else {
-					if (ofs.y - p_pos.y + glyphs[i].advance > p_clip_r) {
+					if (Math::floor(ofs.y - p_pos.y + glyphs[i].advance) > p_clip_r) {
 						return;
 					}
 				}
@@ -1433,22 +1460,19 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 			if (p_clip_l > 0) {
 				// Clip left / top.
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					if (ofs.x - p_pos.x < p_clip_l) {
+					if (Math::ceil(ofs.x - p_pos.x) < p_clip_l) {
 						ofs.x += glyphs[i].advance;
 						continue;
 					}
 				} else {
-					if (ofs.y - p_pos.y < p_clip_l) {
+					if (Math::ceil(ofs.y - p_pos.y) < p_clip_l) {
 						ofs.y += glyphs[i].advance;
 						continue;
 					}
 				}
 			}
-
-			if (glyphs[i].font_rid != RID()) {
-				font_draw_glyph(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
-			} else if (hex_codes && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
-				TextServer::draw_hex_code_box(p_canvas, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
+			if (!p_draw_fn(glyphs[i], ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), p_line_id)) {
+				return;
 			}
 			if (orientation == ORIENTATION_HORIZONTAL) {
 				ofs.x += glyphs[i].advance;
@@ -1461,7 +1485,9 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 	if (!rtl && ellipsis_pos >= 0) {
 		for (int i = 0; i < ellipsis_gl_size; i++) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
+				if (!p_draw_fn(ellipsis_glyphs[i], ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), p_line_id)) {
+					return;
+				}
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
@@ -1472,96 +1498,67 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 	}
 }
 
+void TextServer::_shaped_text_draw_custom(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Callable &p_callback) const {
+	shaped_text_draw_custom(
+			p_shaped,
+			p_pos,
+			p_clip_l,
+			p_clip_r,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				Dictionary glyph;
+
+				glyph["start"] = p_gl.start;
+				glyph["end"] = p_gl.end;
+				glyph["repeat"] = p_gl.repeat;
+				glyph["count"] = p_gl.count;
+				glyph["flags"] = p_gl.flags;
+				glyph["offset"] = Vector2(p_gl.x_off, p_gl.y_off);
+				glyph["advance"] = p_gl.advance;
+				glyph["font_rid"] = p_gl.font_rid;
+				glyph["font_size"] = p_gl.font_size;
+				glyph["index"] = p_gl.index;
+
+				Variant args[] = { glyph, p_ofs, p_canvas };
+				const Variant *args_ptr[] = { &args[0], &args[1], &args[2] };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp(args_ptr, 3, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT_ONCE("Error calling glyph draw callback method " + Variant::get_callable_error_text(p_callback, args_ptr, 3, ce));
+				}
+				return ret.operator bool();
+			});
+}
+
+void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Color &p_color) const {
+	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
+	shaped_text_draw_custom(
+			p_shaped,
+			p_pos,
+			p_clip_l,
+			p_clip_r,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				if (p_gl.font_rid != RID()) {
+					font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs, p_gl.index, p_color);
+				} else if (hex_codes && ((p_gl.flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL)) {
+					TextServer::draw_hex_code_box(p_canvas, p_gl.font_size, p_ofs, p_gl.index, p_color);
+				}
+				return true;
+			});
+}
+
 void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, int64_t p_outline_size, const Color &p_color) const {
-	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
-
-	bool rtl = (shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL);
-
-	int ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped);
-	int trim_pos = shaped_text_get_trim_pos(p_shaped);
-
-	const Glyph *ellipsis_glyphs = shaped_text_get_ellipsis_glyphs(p_shaped);
-	int ellipsis_gl_size = shaped_text_get_ellipsis_glyph_count(p_shaped);
-
-	int v_size = shaped_text_get_glyph_count(p_shaped);
-	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
-	Vector2 ofs = p_pos;
-	// Draw RTL ellipsis string when needed.
-	if (rtl && ellipsis_pos >= 0) {
-		for (int i = ellipsis_gl_size - 1; i >= 0; i--) {
-			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
-				if (orientation == ORIENTATION_HORIZONTAL) {
-					ofs.x += ellipsis_glyphs[i].advance;
-				} else {
-					ofs.y += ellipsis_glyphs[i].advance;
+	shaped_text_draw_custom(
+			p_shaped,
+			p_pos,
+			p_clip_l,
+			p_clip_r,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				if (p_gl.font_rid != RID()) {
+					font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_outline_size, p_ofs, p_gl.index, p_color);
 				}
-			}
-		}
-	}
-	// Draw at the baseline.
-	for (int i = 0; i < v_size; i++) {
-		if (trim_pos >= 0) {
-			if (rtl) {
-				if (i < trim_pos) {
-					continue;
-				}
-			} else {
-				if (i >= trim_pos) {
-					break;
-				}
-			}
-		}
-		for (int j = 0; j < glyphs[i].repeat; j++) {
-			if (p_clip_r > 0) {
-				// Clip right / bottom.
-				if (orientation == ORIENTATION_HORIZONTAL) {
-					if (ofs.x - p_pos.x + glyphs[i].advance > p_clip_r) {
-						return;
-					}
-				} else {
-					if (ofs.y - p_pos.y + glyphs[i].advance > p_clip_r) {
-						return;
-					}
-				}
-			}
-			if (p_clip_l > 0) {
-				// Clip left / top.
-				if (orientation == ORIENTATION_HORIZONTAL) {
-					if (ofs.x - p_pos.x < p_clip_l) {
-						ofs.x += glyphs[i].advance;
-						continue;
-					}
-				} else {
-					if (ofs.y - p_pos.y < p_clip_l) {
-						ofs.y += glyphs[i].advance;
-						continue;
-					}
-				}
-			}
-			if (glyphs[i].font_rid != RID()) {
-				font_draw_glyph_outline(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, p_outline_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
-			}
-			if (orientation == ORIENTATION_HORIZONTAL) {
-				ofs.x += glyphs[i].advance;
-			} else {
-				ofs.y += glyphs[i].advance;
-			}
-		}
-	}
-	// Draw LTR ellipsis string when needed.
-	if (!rtl && ellipsis_pos >= 0) {
-		for (int i = 0; i < ellipsis_gl_size; i++) {
-			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
-				if (orientation == ORIENTATION_HORIZONTAL) {
-					ofs.x += ellipsis_glyphs[i].advance;
-				} else {
-					ofs.y += ellipsis_glyphs[i].advance;
-				}
-			}
-		}
-	}
+				return true;
+			});
 }
 
 void TextServer::_diacritics_map_add(const String &p_from, char32_t p_to) {

@@ -26,8 +26,14 @@
 		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
 			Font size of the [TextMesh]'s text.
 		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="500.0">
+			Text height (in pixels), used for alignment.
+		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
+		</member>
+		<member name="invert_line_order" type="bool" setter="set_invert_line_order" getter="get_invert_line_order" default="false">
+			If [code]true[/code], line drawing order is inverted.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for text shaping algorithms, if left empty current locale is used instead.
@@ -37,6 +43,9 @@
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The text drawing offset (in pixels).
+		</member>
+		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="TextServer.Orientation" default="0">
+			Text orientation.
 		</member>
 		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
 			The size of one pixel's width on the text to scale it in 3D.
@@ -53,6 +62,9 @@
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="TextServer.Direction" default="0">
 			Base text writing direction.
 		</member>
+		<member name="uniform_line_height" type="bool" setter="set_uniform_line_height" getter="get_uniform_line_height" default="false">
+			If [code]true[/code], heigth of every line is set to the maximum line height.
+		</member>
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
 			If [code]true[/code], all the text displays as UPPERCASE.
 		</member>
@@ -60,7 +72,7 @@
 			Controls the text's vertical alignment. Supports top, center, bottom. Set it to one of the [enum VerticalAlignment] constants.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="500.0">
-			Text width (in pixels), used for fill alignment.
+			Text width (in pixels), used for autowrap and alignment.
 		</member>
 	</members>
 </class>

@@ -33,7 +33,7 @@
 
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
-#include "servers/text_server.h"
+#include "scene/resources/text_paragraph.h"
 
 ///@TODO probably should change a few integers to unsigned integers...
 
@@ -581,25 +581,20 @@ private:
 	};
 	mutable HashMap<GlyphMeshKey, GlyphMeshData, GlyphMeshKeyHasher> cache;
 
-	RID text_rid;
-	mutable Vector<RID> lines_rid;
-
 	String text;
 	String xl_text;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
+	bool uppercase = false;
+
+	bool text_set = false;
+	Ref<TextParagraph> text_para;
+
+	Point2 lbl_offset;
 
 	int font_size = 16;
 	Ref<Font> font_override;
 
-	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
-	float width = 500.0;
-	float line_spacing = 0.f;
-	Point2 lbl_offset;
-
-	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
-	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_CENTER;
-	bool uppercase = false;
 	String language;
-	TextServer::Direction text_direction = TextServer::DIRECTION_AUTO;
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
@@ -607,13 +602,12 @@ private:
 	real_t pixel_size = 0.01;
 	real_t curve_step = 0.5;
 
-	mutable bool dirty_lines = true;
-	mutable bool dirty_text = true;
-	mutable bool dirty_font = true;
-	mutable bool dirty_cache = true;
+	mutable bool dirty_cache = true; //?????
 
 	void _generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph &p_glyph) const;
-	void _font_changed();
+	void _update_text();
+	void _update_fonts();
+	void _invalidate_fonts();
 
 protected:
 	static void _bind_methods();
@@ -652,6 +646,15 @@ public:
 	void set_text_direction(TextServer::Direction p_text_direction);
 	TextServer::Direction get_text_direction() const;
 
+	void set_orientation(TextServer::Orientation p_orientation);
+	TextServer::Orientation get_orientation() const;
+
+	void set_uniform_line_height(bool p_enabled);
+	bool get_uniform_line_height() const;
+
+	void set_invert_line_order(bool p_enabled);
+	bool get_invert_line_order() const;
+
 	void set_language(const String &p_language);
 	String get_language() const;
 
@@ -666,6 +669,9 @@ public:
 
 	void set_width(real_t p_width);
 	real_t get_width() const;
+
+	void set_height(float p_height);
+	float get_height() const;
 
 	void set_depth(real_t p_depth);
 	real_t get_depth() const;

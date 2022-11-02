@@ -299,10 +299,10 @@ public:
 	GDVIRTUAL2RC(bool, _font_has_char, RID, int64_t);
 	GDVIRTUAL1RC(String, _font_get_supported_chars, RID);
 
-	virtual void font_render_range(const RID &p_font, const Vector2i &p_size, int64_t p_start, int64_t p_end) override;
-	virtual void font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index) override;
-	GDVIRTUAL4(_font_render_range, RID, const Vector2i &, int64_t, int64_t);
-	GDVIRTUAL3(_font_render_glyph, RID, const Vector2i &, int64_t);
+	virtual void font_render_range(const RID &p_font, const Vector2i &p_size, int64_t p_start, int64_t p_end, bool p_include_sideways = false) override;
+	virtual void font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index, bool p_include_sideways = false) override;
+	GDVIRTUAL5(_font_render_range, RID, const Vector2i &, int64_t, int64_t, bool);
+	GDVIRTUAL4(_font_render_glyph, RID, const Vector2i &, int64_t, bool);
 
 	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
 	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
@@ -463,12 +463,14 @@ public:
 	GDVIRTUAL2RC(Rect2, _shaped_text_get_object_rect, RID, const Variant &);
 
 	virtual Size2 shaped_text_get_size(const RID &p_shaped) const override;
+	virtual Size2 shaped_text_get_vertical_bounds(const RID &p_shaped) const override;
 	virtual double shaped_text_get_ascent(const RID &p_shaped) const override;
 	virtual double shaped_text_get_descent(const RID &p_shaped) const override;
 	virtual double shaped_text_get_width(const RID &p_shaped) const override;
 	virtual double shaped_text_get_underline_position(const RID &p_shaped) const override;
 	virtual double shaped_text_get_underline_thickness(const RID &p_shaped) const override;
 	GDVIRTUAL1RC(Size2, _shaped_text_get_size, RID);
+	GDVIRTUAL1RC(Size2, _shaped_text_get_vertical_bounds, RID);
 	GDVIRTUAL1RC(double, _shaped_text_get_ascent, RID);
 	GDVIRTUAL1RC(double, _shaped_text_get_descent, RID);
 	GDVIRTUAL1RC(double, _shaped_text_get_width, RID);

@@ -55,8 +55,20 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Label3D::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &Label3D::get_text_direction);
 
+	ClassDB::bind_method(D_METHOD("set_orientation", "orientation"), &Label3D::set_orientation);
+	ClassDB::bind_method(D_METHOD("get_orientation"), &Label3D::get_orientation);
+
+	ClassDB::bind_method(D_METHOD("set_uniform_line_height", "enabled"), &Label3D::set_uniform_line_height);
+	ClassDB::bind_method(D_METHOD("get_uniform_line_height"), &Label3D::get_uniform_line_height);
+
+	ClassDB::bind_method(D_METHOD("set_invert_line_order", "enabled"), &Label3D::set_invert_line_order);
+	ClassDB::bind_method(D_METHOD("get_invert_line_order"), &Label3D::get_invert_line_order);
+
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Label3D::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &Label3D::get_language);
+
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Label3D::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Label3D::get_text_overrun_behavior);
 
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &Label3D::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &Label3D::get_structured_text_bidi_override);
@@ -91,6 +103,9 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &Label3D::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &Label3D::get_width);
 
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &Label3D::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &Label3D::get_height);
+
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &Label3D::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &Label3D::get_pixel_size);
 
@@ -114,8 +129,8 @@ void Label3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &Label3D::generate_triangle_mesh);
 
+	ClassDB::bind_method(D_METHOD("_invalidate_fonts"), &Label3D::_invalidate_fonts);
 	ClassDB::bind_method(D_METHOD("_queue_update"), &Label3D::_queue_update);
-	ClassDB::bind_method(D_METHOD("_font_changed"), &Label3D::_font_changed);
 	ClassDB::bind_method(D_METHOD("_im_update"), &Label3D::_im_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
@@ -142,10 +157,15 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1,suffix:px"), "set_outline_size", "get_outline_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_NONE, "suffix:px"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_ENUM, "Horizontal,Vertical Upright,Vertical Mixed,Vertical Sideways"), "set_orientation", "get_orientation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uniform_line_height"), "set_uniform_line_height", "get_uniform_line_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_line_order"), "set_invert_line_order", "get_invert_line_order");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left"), "set_text_direction", "get_text_direction");
@@ -188,12 +208,12 @@ void Label3D::_notification(int p_what) {
 			}
 			Viewport *viewport = get_viewport();
 			ERR_FAIL_COND(!viewport);
-			viewport->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
+			viewport->connect("size_changed", callable_mp(this, &Label3D::_invalidate_fonts));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			Viewport *viewport = get_viewport();
 			ERR_FAIL_COND(!viewport);
-			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
+			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_invalidate_fonts));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			String new_text = tr(text);
@@ -201,14 +221,64 @@ void Label3D::_notification(int p_what) {
 				return; // Nothing new.
 			}
 			xl_text = new_text;
-			dirty_text = true;
+			_update_text();
 			_queue_update();
 		} break;
 	}
 }
 
 void Label3D::_im_update() {
-	_shape();
+	// Clear mesh.
+	RS::get_singleton()->mesh_clear(mesh);
+	aabb = AABB();
+
+	// Clear materials.
+	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
+		RenderingServer::get_singleton()->free(E.value.material);
+	}
+	surfaces.clear();
+	Vector2 ofs;
+	if (text_para->get_orientation() == TextServer::ORIENTATION_VERTICAL_MIXED) {
+		ofs = -Vector2(text_para->get_width(), text_para->get_height()) / 2.0;
+	} else {
+		ofs = -Vector2(text_para->get_height(), text_para->get_width()) / 2.0;
+	}
+
+	// Text outline surfaces.
+	if (outline_modulate.a != 0.0 && outline_size > 0) {
+		text_para->draw_custom(
+				ofs,
+				[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+					_generate_glyph_surfaces(p_gl, lbl_offset + Vector2(p_ofs.x, -p_ofs.y) * pixel_size, outline_modulate, outline_render_priority, outline_size);
+					return true;
+				});
+	}
+
+	// Main text surfaces.
+	text_para->draw_custom(
+			ofs,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				_generate_glyph_surfaces(p_gl, lbl_offset + Vector2(p_ofs.x, -p_ofs.y) * pixel_size, modulate, render_priority);
+				return true;
+			});
+
+	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
+		Array mesh_array;
+		mesh_array.resize(RS::ARRAY_MAX);
+		mesh_array[RS::ARRAY_VERTEX] = E.value.mesh_vertices;
+		mesh_array[RS::ARRAY_NORMAL] = E.value.mesh_normals;
+		mesh_array[RS::ARRAY_TANGENT] = E.value.mesh_tangents;
+		mesh_array[RS::ARRAY_COLOR] = E.value.mesh_colors;
+		mesh_array[RS::ARRAY_TEX_UV] = E.value.mesh_uvs;
+		mesh_array[RS::ARRAY_INDEX] = E.value.indices;
+
+		RS::SurfaceData sd;
+		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, mesh_array);
+
+		sd.material = E.value.material;
+
+		RS::get_singleton()->mesh_add_surface(mesh, sd);
+	}
 
 	triangle_mesh.unref();
 	update_gizmos();
@@ -243,54 +313,25 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 	faces.resize(6);
 	Vector3 *facesw = faces.ptrw();
 
-	float total_h = 0.0;
-	float max_line_w = 0.0;
-	for (int i = 0; i < lines_rid.size(); i++) {
-		total_h += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
-		max_line_w = MAX(max_line_w, TS->shaped_text_get_width(lines_rid[i]));
+	Rect2 final_rect;
+	if (text_para->get_orientation() == TextServer::ORIENTATION_VERTICAL_MIXED) {
+		final_rect.position = lbl_offset - pixel_size * Vector2(text_para->get_width(), text_para->get_height()) / 2.0;
+		final_rect.size = pixel_size * Size2(text_para->get_width(), text_para->get_height());
+	} else {
+		final_rect.position = lbl_offset - pixel_size * Vector2(text_para->get_height(), text_para->get_width()) / 2.0;
+		final_rect.size = pixel_size * Size2(text_para->get_height(), text_para->get_width());
 	}
-
-	float vbegin = 0;
-	switch (vertical_alignment) {
-		case VERTICAL_ALIGNMENT_FILL:
-		case VERTICAL_ALIGNMENT_TOP: {
-			// Nothing.
-		} break;
-		case VERTICAL_ALIGNMENT_CENTER: {
-			vbegin = (total_h - line_spacing) / 2.0;
-		} break;
-		case VERTICAL_ALIGNMENT_BOTTOM: {
-			vbegin = (total_h - line_spacing);
-		} break;
-	}
-
-	Vector2 offset = Vector2(0, vbegin);
-	switch (horizontal_alignment) {
-		case HORIZONTAL_ALIGNMENT_LEFT:
-			break;
-		case HORIZONTAL_ALIGNMENT_FILL:
-		case HORIZONTAL_ALIGNMENT_CENTER: {
-			offset.x = -max_line_w / 2.0;
-		} break;
-		case HORIZONTAL_ALIGNMENT_RIGHT: {
-			offset.x = -max_line_w;
-		} break;
-	}
-
-	Rect2 final_rect = Rect2(offset + lbl_offset, Size2(max_line_w, total_h));
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
 		return Ref<TriangleMesh>();
 	}
 
-	real_t px_size = get_pixel_size();
-
 	Vector2 vertices[4] = {
 
-		(final_rect.position + Vector2(0, -final_rect.size.y)) * px_size,
-		(final_rect.position + Vector2(final_rect.size.x, -final_rect.size.y)) * px_size,
-		(final_rect.position + Vector2(final_rect.size.x, 0)) * px_size,
-		final_rect.position * px_size,
+		(final_rect.position + Vector2(0, -final_rect.size.y)),
+		(final_rect.position + Vector2(final_rect.size.x, -final_rect.size.y)),
+		(final_rect.position + Vector2(final_rect.size.x, 0)),
+		final_rect.position,
 
 	};
 
@@ -313,134 +354,129 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 	return triangle_mesh;
 }
 
-void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, const Color &p_modulate, int p_priority, int p_outline_size) {
-	for (int j = 0; j < p_glyph.repeat; j++) {
-		Vector2 gl_of;
-		Vector2 gl_sz;
-		Rect2 gl_uv;
-		Size2 texs;
-		RID tex;
+void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, const Vector2 &p_offset, const Color &p_modulate, int p_priority, int p_outline_size) {
+	Vector2 gl_of;
+	Vector2 gl_sz;
+	Rect2 gl_uv;
+	Size2 texs;
+	RID tex;
 
-		if (p_glyph.font_rid != RID()) {
-			tex = TS->font_get_glyph_texture_rid(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
-			if (tex != RID()) {
-				gl_of = (TS->font_get_glyph_offset(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) + Vector2(p_glyph.x_off, p_glyph.y_off)) * pixel_size;
-				gl_sz = TS->font_get_glyph_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) * pixel_size;
-				gl_uv = TS->font_get_glyph_uv_rect(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
-				texs = TS->font_get_glyph_texture_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
-			}
-		} else {
-			gl_sz = TS->get_hex_code_box_size(p_glyph.font_size, p_glyph.index) * pixel_size;
-			gl_of = Vector2(0, -gl_sz.y);
-		}
-
-		bool msdf = TS->font_is_multichannel_signed_distance_field(p_glyph.font_rid);
-
-		SurfaceKey key = SurfaceKey(tex.get_id(), p_priority, p_outline_size);
-		if (!surfaces.has(key)) {
-			SurfaceData surf;
-			surf.material = RenderingServer::get_singleton()->material_create();
-			// Set defaults for material, names need to match up those in StandardMaterial3D
-			RS::get_singleton()->material_set_param(surf.material, "albedo", Color(1, 1, 1, 1));
-			RS::get_singleton()->material_set_param(surf.material, "specular", 0.5);
-			RS::get_singleton()->material_set_param(surf.material, "metallic", 0.0);
-			RS::get_singleton()->material_set_param(surf.material, "roughness", 1.0);
-			RS::get_singleton()->material_set_param(surf.material, "uv1_offset", Vector3(0, 0, 0));
-			RS::get_singleton()->material_set_param(surf.material, "uv1_scale", Vector3(1, 1, 1));
-			RS::get_singleton()->material_set_param(surf.material, "uv2_offset", Vector3(0, 0, 0));
-			RS::get_singleton()->material_set_param(surf.material, "uv2_scale", Vector3(1, 1, 1));
-			RS::get_singleton()->material_set_param(surf.material, "alpha_scissor_threshold", alpha_scissor_threshold);
-			if (msdf) {
-				RS::get_singleton()->material_set_param(surf.material, "msdf_pixel_range", TS->font_get_msdf_pixel_range(p_glyph.font_rid));
-				RS::get_singleton()->material_set_param(surf.material, "msdf_outline_size", p_outline_size);
-			}
-
-			RID shader_rid;
-			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), true, get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, &shader_rid);
-
-			RS::get_singleton()->material_set_shader(surf.material, shader_rid);
-			RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
-			if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
-				RS::get_singleton()->material_set_render_priority(surf.material, p_priority);
-			} else {
-				surf.z_shift = p_priority * pixel_size;
-			}
-
-			surfaces[key] = surf;
-		}
-		SurfaceData &s = surfaces[key];
-
-		s.mesh_vertices.resize((s.offset + 1) * 4);
-		s.mesh_normals.resize((s.offset + 1) * 4);
-		s.mesh_tangents.resize((s.offset + 1) * 16);
-		s.mesh_colors.resize((s.offset + 1) * 4);
-		s.mesh_uvs.resize((s.offset + 1) * 4);
-
-		s.mesh_vertices.write[(s.offset * 4) + 3] = Vector3(r_offset.x + gl_of.x, r_offset.y - gl_of.y - gl_sz.y, s.z_shift);
-		s.mesh_vertices.write[(s.offset * 4) + 2] = Vector3(r_offset.x + gl_of.x + gl_sz.x, r_offset.y - gl_of.y - gl_sz.y, s.z_shift);
-		s.mesh_vertices.write[(s.offset * 4) + 1] = Vector3(r_offset.x + gl_of.x + gl_sz.x, r_offset.y - gl_of.y, s.z_shift);
-		s.mesh_vertices.write[(s.offset * 4) + 0] = Vector3(r_offset.x + gl_of.x, r_offset.y - gl_of.y, s.z_shift);
-
-		for (int i = 0; i < 4; i++) {
-			s.mesh_normals.write[(s.offset * 4) + i] = Vector3(0.0, 0.0, 1.0);
-			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 0] = 1.0;
-			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 1] = 0.0;
-			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 2] = 0.0;
-			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 3] = 1.0;
-			s.mesh_colors.write[(s.offset * 4) + i] = p_modulate;
-			s.mesh_uvs.write[(s.offset * 4) + i] = Vector2();
-
-			if (aabb == AABB()) {
-				aabb.position = s.mesh_vertices[(s.offset * 4) + i];
-			} else {
-				aabb.expand_to(s.mesh_vertices[(s.offset * 4) + i]);
-			}
-		}
-
+	if (p_glyph.font_rid != RID()) {
+		tex = TS->font_get_glyph_texture_rid(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
 		if (tex != RID()) {
-			s.mesh_uvs.write[(s.offset * 4) + 3] = Vector2(gl_uv.position.x / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
-			s.mesh_uvs.write[(s.offset * 4) + 2] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
-			s.mesh_uvs.write[(s.offset * 4) + 1] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, gl_uv.position.y / texs.y);
-			s.mesh_uvs.write[(s.offset * 4) + 0] = Vector2(gl_uv.position.x / texs.x, gl_uv.position.y / texs.y);
+			gl_of = TS->font_get_glyph_offset(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) * pixel_size;
+			gl_sz = TS->font_get_glyph_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) * pixel_size;
+			gl_uv = TS->font_get_glyph_uv_rect(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
+			texs = TS->font_get_glyph_texture_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
+		}
+	} else {
+		gl_sz = TS->get_hex_code_box_size(p_glyph.font_size, p_glyph.index) * pixel_size;
+		gl_of = Vector2(0, -gl_sz.y);
+	}
+
+	bool msdf = TS->font_is_multichannel_signed_distance_field(p_glyph.font_rid);
+
+	SurfaceKey key = SurfaceKey(tex.get_id(), p_priority, p_outline_size);
+	if (!surfaces.has(key)) {
+		SurfaceData surf;
+		surf.material = RenderingServer::get_singleton()->material_create();
+		// Set defaults for material, names need to match up those in StandardMaterial3D
+		RS::get_singleton()->material_set_param(surf.material, "albedo", Color(1, 1, 1, 1));
+		RS::get_singleton()->material_set_param(surf.material, "specular", 0.5);
+		RS::get_singleton()->material_set_param(surf.material, "metallic", 0.0);
+		RS::get_singleton()->material_set_param(surf.material, "roughness", 1.0);
+		RS::get_singleton()->material_set_param(surf.material, "uv1_offset", Vector3(0, 0, 0));
+		RS::get_singleton()->material_set_param(surf.material, "uv1_scale", Vector3(1, 1, 1));
+		RS::get_singleton()->material_set_param(surf.material, "uv2_offset", Vector3(0, 0, 0));
+		RS::get_singleton()->material_set_param(surf.material, "uv2_scale", Vector3(1, 1, 1));
+		RS::get_singleton()->material_set_param(surf.material, "alpha_scissor_threshold", alpha_scissor_threshold);
+		if (msdf) {
+			RS::get_singleton()->material_set_param(surf.material, "msdf_pixel_range", TS->font_get_msdf_pixel_range(p_glyph.font_rid));
+			RS::get_singleton()->material_set_param(surf.material, "msdf_outline_size", p_outline_size);
 		}
 
-		s.indices.resize((s.offset + 1) * 6);
-		s.indices.write[(s.offset * 6) + 0] = (s.offset * 4) + 0;
-		s.indices.write[(s.offset * 6) + 1] = (s.offset * 4) + 1;
-		s.indices.write[(s.offset * 6) + 2] = (s.offset * 4) + 2;
-		s.indices.write[(s.offset * 6) + 3] = (s.offset * 4) + 0;
-		s.indices.write[(s.offset * 6) + 4] = (s.offset * 4) + 2;
-		s.indices.write[(s.offset * 6) + 5] = (s.offset * 4) + 3;
+		RID shader_rid;
+		StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), true, get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, &shader_rid);
 
-		s.offset++;
-		r_offset.x += p_glyph.advance * pixel_size;
+		RS::get_singleton()->material_set_shader(surf.material, shader_rid);
+		RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
+		if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
+			RS::get_singleton()->material_set_render_priority(surf.material, p_priority);
+		} else {
+			surf.z_shift = p_priority * pixel_size;
+		}
+
+		surfaces[key] = surf;
 	}
+	SurfaceData &s = surfaces[key];
+
+	s.mesh_vertices.resize((s.offset + 1) * 4);
+	s.mesh_normals.resize((s.offset + 1) * 4);
+	s.mesh_tangents.resize((s.offset + 1) * 16);
+	s.mesh_colors.resize((s.offset + 1) * 4);
+	s.mesh_uvs.resize((s.offset + 1) * 4);
+
+	s.mesh_vertices.write[(s.offset * 4) + 3] = Vector3(p_offset.x + gl_of.x, p_offset.y - gl_of.y - gl_sz.y, s.z_shift);
+	s.mesh_vertices.write[(s.offset * 4) + 2] = Vector3(p_offset.x + gl_of.x + gl_sz.x, p_offset.y - gl_of.y - gl_sz.y, s.z_shift);
+	s.mesh_vertices.write[(s.offset * 4) + 1] = Vector3(p_offset.x + gl_of.x + gl_sz.x, p_offset.y - gl_of.y, s.z_shift);
+	s.mesh_vertices.write[(s.offset * 4) + 0] = Vector3(p_offset.x + gl_of.x, p_offset.y - gl_of.y, s.z_shift);
+
+	for (int i = 0; i < 4; i++) {
+		s.mesh_normals.write[(s.offset * 4) + i] = Vector3(0.0, 0.0, 1.0);
+		s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 0] = 1.0;
+		s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 1] = 0.0;
+		s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 2] = 0.0;
+		s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 3] = 1.0;
+		s.mesh_colors.write[(s.offset * 4) + i] = p_modulate;
+		s.mesh_uvs.write[(s.offset * 4) + i] = Vector2();
+
+		if (aabb == AABB()) {
+			aabb.position = s.mesh_vertices[(s.offset * 4) + i];
+		} else {
+			aabb.expand_to(s.mesh_vertices[(s.offset * 4) + i]);
+		}
+	}
+
+	if (tex != RID()) {
+		s.mesh_uvs.write[(s.offset * 4) + 3] = Vector2(gl_uv.position.x / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
+		s.mesh_uvs.write[(s.offset * 4) + 2] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
+		s.mesh_uvs.write[(s.offset * 4) + 1] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, gl_uv.position.y / texs.y);
+		s.mesh_uvs.write[(s.offset * 4) + 0] = Vector2(gl_uv.position.x / texs.x, gl_uv.position.y / texs.y);
+	}
+
+	s.indices.resize((s.offset + 1) * 6);
+	s.indices.write[(s.offset * 6) + 0] = (s.offset * 4) + 0;
+	s.indices.write[(s.offset * 6) + 1] = (s.offset * 4) + 1;
+	s.indices.write[(s.offset * 6) + 2] = (s.offset * 4) + 2;
+	s.indices.write[(s.offset * 6) + 3] = (s.offset * 4) + 0;
+	s.indices.write[(s.offset * 6) + 4] = (s.offset * 4) + 2;
+	s.indices.write[(s.offset * 6) + 5] = (s.offset * 4) + 3;
+
+	s.offset++;
 }
 
-void Label3D::_shape() {
-	// Clear mesh.
-	RS::get_singleton()->mesh_clear(mesh);
-	aabb = AABB();
+PackedStringArray Label3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
-	// Clear materials.
-	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
-		RenderingServer::get_singleton()->free(E.value.material);
-	}
-	surfaces.clear();
-
+	// Ensure that the font can render all of the required glyphs.
 	Ref<Font> font = _get_font_or_default();
-	ERR_FAIL_COND(font.is_null());
 
-	// Update text buffer.
-	if (dirty_text) {
-		TS->shaped_text_clear(text_rid);
-		TS->shaped_text_set_direction(text_rid, text_direction);
-
-		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
+	if (font.is_valid()) {
+		if (text_para->has_invalid_glyphs()) {
+			warnings.push_back(RTR("The current font does not support rendering one or more characters used in this Label3D's text."));
 		}
+	}
+
+	return warnings;
+}
+
+void Label3D::_update_text() {
+	Ref<Font> font = _get_font_or_default();
+
+	text_para->clear();
+	if (font.is_valid()) {
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		text_para->add_string(txt, font, font_size, language);
 
 		TypedArray<Vector2i> stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
@@ -448,142 +484,35 @@ void Label3D::_shape() {
 		} else {
 			stt = TS->parse_structured_text(st_parser, st_args, txt);
 		}
-		TS->shaped_text_set_bidi_override(text_rid, stt);
-
-		dirty_text = false;
-		dirty_font = false;
-		dirty_lines = true;
-	} else if (dirty_font) {
-		int spans = TS->shaped_get_span_count(text_rid);
-		for (int i = 0; i < spans; i++) {
-			TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
-		}
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-		}
-
-		dirty_font = false;
-		dirty_lines = true;
+		text_para->set_bidi_override(stt);
+		text_set = true;
+	} else {
+		text_set = false;
 	}
+}
 
-	if (dirty_lines) {
-		for (int i = 0; i < lines_rid.size(); i++) {
-			TS->free_rid(lines_rid[i]);
-		}
-		lines_rid.clear();
+void Label3D::_update_fonts() {
+	if (!text_set) {
+		_update_text();
+	} else {
+		Ref<Font> font = _get_font_or_default();
 
-		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
-		switch (autowrap_mode) {
-			case TextServer::AUTOWRAP_WORD_SMART:
-				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
-				break;
-			case TextServer::AUTOWRAP_WORD:
-				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
-				break;
-			case TextServer::AUTOWRAP_ARBITRARY:
-				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
-				break;
-			case TextServer::AUTOWRAP_OFF:
-				break;
-		}
-		autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
-
-		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
-		float max_line_w = 0.0;
-		for (int i = 0; i < line_breaks.size(); i = i + 2) {
-			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
-			max_line_w = MAX(max_line_w, TS->shaped_text_get_width(line));
-			lines_rid.push_back(line);
-		}
-
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			for (int i = 0; i < lines_rid.size() - 1; i++) {
-				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA);
+		if (font.is_valid()) {
+			int spans = text_para->get_span_count();
+			for (int i = 0; i < spans; i++) {
+				text_para->update_span_font(i, font, font_size);
 			}
 		}
-		dirty_lines = false;
-	}
-
-	// Generate surfaces and materials.
-	float total_h = 0.0;
-	for (int i = 0; i < lines_rid.size(); i++) {
-		total_h += (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size;
-	}
-
-	float vbegin = 0.0;
-	switch (vertical_alignment) {
-		case VERTICAL_ALIGNMENT_FILL:
-		case VERTICAL_ALIGNMENT_TOP: {
-			// Nothing.
-		} break;
-		case VERTICAL_ALIGNMENT_CENTER: {
-			vbegin = (total_h - line_spacing * pixel_size) / 2.0;
-		} break;
-		case VERTICAL_ALIGNMENT_BOTTOM: {
-			vbegin = (total_h - line_spacing * pixel_size);
-		} break;
-	}
-
-	Vector2 offset = Vector2(0, vbegin + lbl_offset.y * pixel_size);
-	for (int i = 0; i < lines_rid.size(); i++) {
-		const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
-		int gl_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
-		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
-
-		switch (horizontal_alignment) {
-			case HORIZONTAL_ALIGNMENT_LEFT:
-				offset.x = 0.0;
-				break;
-			case HORIZONTAL_ALIGNMENT_FILL:
-			case HORIZONTAL_ALIGNMENT_CENTER: {
-				offset.x = -line_width / 2.0;
-			} break;
-			case HORIZONTAL_ALIGNMENT_RIGHT: {
-				offset.x = -line_width;
-			} break;
-		}
-		offset.x += lbl_offset.x * pixel_size;
-		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
-
-		if (outline_modulate.a != 0.0 && outline_size > 0) {
-			// Outline surfaces.
-			Vector2 ol_offset = offset;
-			for (int j = 0; j < gl_size; j++) {
-				_generate_glyph_surfaces(glyphs[j], ol_offset, outline_modulate, outline_render_priority, outline_size);
-			}
-		}
-
-		// Main text surfaces.
-		for (int j = 0; j < gl_size; j++) {
-			_generate_glyph_surfaces(glyphs[j], offset, modulate, render_priority);
-		}
-		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing) * pixel_size;
-	}
-
-	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
-		Array mesh_array;
-		mesh_array.resize(RS::ARRAY_MAX);
-		mesh_array[RS::ARRAY_VERTEX] = E.value.mesh_vertices;
-		mesh_array[RS::ARRAY_NORMAL] = E.value.mesh_normals;
-		mesh_array[RS::ARRAY_TANGENT] = E.value.mesh_tangents;
-		mesh_array[RS::ARRAY_COLOR] = E.value.mesh_colors;
-		mesh_array[RS::ARRAY_TEX_UV] = E.value.mesh_uvs;
-		mesh_array[RS::ARRAY_INDEX] = E.value.indices;
-
-		RS::SurfaceData sd;
-		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, mesh_array);
-
-		sd.material = E.value.material;
-
-		RS::get_singleton()->mesh_add_surface(mesh, sd);
 	}
 }
 
 void Label3D::set_text(const String &p_string) {
-	text = p_string;
-	xl_text = tr(p_string);
-	dirty_text = true;
-	_queue_update();
+	if (text != p_string) {
+		text = p_string;
+		xl_text = tr(p_string);
+		_update_text();
+		_queue_update();
+	}
 }
 
 String Label3D::get_text() const {
@@ -592,48 +521,78 @@ String Label3D::get_text() const {
 
 void Label3D::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
-	if (horizontal_alignment != p_alignment) {
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			dirty_lines = true; // Reshape lines.
-		}
-		horizontal_alignment = p_alignment;
+	if (text_para->get_horizontal_alignment() != p_alignment) {
+		text_para->set_horizontal_alignment(p_alignment);
 		_queue_update();
 	}
 }
 
 HorizontalAlignment Label3D::get_horizontal_alignment() const {
-	return horizontal_alignment;
+	return text_para->get_horizontal_alignment();
 }
 
 void Label3D::set_vertical_alignment(VerticalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
-	if (vertical_alignment != p_alignment) {
-		vertical_alignment = p_alignment;
+	if (text_para->get_vertical_alignment() != p_alignment) {
+		text_para->set_vertical_alignment(p_alignment);
 		_queue_update();
 	}
 }
 
 VerticalAlignment Label3D::get_vertical_alignment() const {
-	return vertical_alignment;
+	return text_para->get_vertical_alignment();
 }
 
 void Label3D::set_text_direction(TextServer::Direction p_text_direction) {
-	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
-	if (text_direction != p_text_direction) {
-		text_direction = p_text_direction;
-		dirty_text = true;
+	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 2);
+	if (text_para->get_direction() != p_text_direction) {
+		text_para->set_direction(p_text_direction);
 		_queue_update();
 	}
 }
 
 TextServer::Direction Label3D::get_text_direction() const {
-	return text_direction;
+	return text_para->get_direction();
+}
+
+void Label3D::set_orientation(TextServer::Orientation p_orientation) {
+	ERR_FAIL_COND((int)p_orientation < 0 || (int)p_orientation > 3);
+	if (text_para->get_orientation() != p_orientation) {
+		text_para->set_orientation(p_orientation);
+		_queue_update();
+	}
+}
+
+TextServer::Orientation Label3D::get_orientation() const {
+	return text_para->get_orientation();
+}
+
+void Label3D::set_uniform_line_height(bool p_enabled) {
+	if (text_para->get_uniform_line_height() != p_enabled) {
+		text_para->set_uniform_line_height(p_enabled);
+		_queue_update();
+	}
+}
+
+bool Label3D::get_uniform_line_height() const {
+	return text_para->get_uniform_line_height();
+}
+
+void Label3D::set_invert_line_order(bool p_enabled) {
+	if (text_para->get_invert_line_order() != p_enabled) {
+		text_para->set_invert_line_order(p_enabled);
+		_queue_update();
+	}
+}
+
+bool Label3D::get_invert_line_order() const {
+	return text_para->get_invert_line_order();
 }
 
 void Label3D::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
-		dirty_text = true;
+		_update_text();
 		_queue_update();
 	}
 }
@@ -645,7 +604,7 @@ String Label3D::get_language() const {
 void Label3D::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
-		dirty_text = true;
+		_update_text();
 		_queue_update();
 	}
 }
@@ -657,7 +616,7 @@ TextServer::StructuredTextParser Label3D::get_structured_text_bidi_override() co
 void Label3D::set_structured_text_bidi_override_options(Array p_args) {
 	if (st_args != p_args) {
 		st_args = p_args;
-		dirty_text = true;
+		_update_text();
 		_queue_update();
 	}
 }
@@ -669,7 +628,7 @@ Array Label3D::get_structured_text_bidi_override_options() const {
 void Label3D::set_uppercase(bool p_uppercase) {
 	if (uppercase != p_uppercase) {
 		uppercase = p_uppercase;
-		dirty_text = true;
+		_update_text();
 		_queue_update();
 	}
 }
@@ -702,20 +661,20 @@ int Label3D::get_outline_render_priority() const {
 	return outline_render_priority;
 }
 
-void Label3D::_font_changed() {
-	dirty_font = true;
+void Label3D::_invalidate_fonts() {
+	_update_fonts();
 	_queue_update();
 }
 
 void Label3D::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
 		if (font_override.is_valid()) {
-			font_override->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_invalidate_fonts"));
 		}
 		font_override = p_font;
-		dirty_font = true;
+		_update_fonts();
 		if (font_override.is_valid()) {
-			font_override->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_invalidate_fonts"));
 		}
 		_queue_update();
 	}
@@ -727,7 +686,7 @@ Ref<Font> Label3D::get_font() const {
 
 Ref<Font> Label3D::_get_font_or_default() const {
 	if (theme_font.is_valid()) {
-		theme_font->disconnect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font->disconnect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_invalidate_fonts"));
 		theme_font.unref();
 	}
 
@@ -745,7 +704,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_invalidate_fonts"));
 				}
 				return f;
 			}
@@ -762,7 +721,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_invalidate_fonts"));
 				}
 				return f;
 			}
@@ -773,7 +732,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 	Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
 	if (f.is_valid()) {
 		theme_font = f;
-		theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_invalidate_fonts"));
 	}
 	return f;
 }
@@ -781,7 +740,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 void Label3D::set_font_size(int p_size) {
 	if (font_size != p_size) {
 		font_size = p_size;
-		dirty_font = true;
+		_update_fonts();
 		_queue_update();
 	}
 }
@@ -826,7 +785,24 @@ Color Label3D::get_outline_modulate() const {
 void Label3D::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode != p_mode) {
 		autowrap_mode = p_mode;
-		dirty_lines = true;
+
+		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
+		switch (autowrap_mode) {
+			case TextServer::AUTOWRAP_WORD_SMART:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_WORD:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_ARBITRARY:
+				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_OFF:
+				break;
+		}
+		autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
+		text_para->set_break_flags(autowrap_flags);
+
 		_queue_update();
 	}
 }
@@ -836,15 +812,25 @@ TextServer::AutowrapMode Label3D::get_autowrap_mode() const {
 }
 
 void Label3D::set_width(float p_width) {
-	if (width != p_width) {
-		width = p_width;
-		dirty_lines = true;
+	if (text_para->get_width() != p_width) {
+		text_para->set_width(p_width);
 		_queue_update();
 	}
 }
 
 float Label3D::get_width() const {
-	return width;
+	return text_para->get_width();
+}
+
+void Label3D::set_height(float p_height) {
+	if (text_para->get_height() != p_height) {
+		text_para->set_height(p_height);
+		_queue_update();
+	}
+}
+
+float Label3D::get_height() const {
+	return text_para->get_height();
 }
 
 void Label3D::set_pixel_size(real_t p_amount) {
@@ -869,15 +855,27 @@ Point2 Label3D::get_offset() const {
 	return lbl_offset;
 }
 
+void Label3D::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
+	if (text_para->get_text_overrun_behavior() != p_behavior) {
+		text_para->set_text_overrun_behavior(p_behavior);
+
+		_queue_update();
+	}
+}
+
+TextServer::OverrunBehavior Label3D::get_text_overrun_behavior() const {
+	return text_para->get_text_overrun_behavior();
+}
+
 void Label3D::set_line_spacing(float p_line_spacing) {
-	if (line_spacing != p_line_spacing) {
-		line_spacing = p_line_spacing;
+	if (text_para->get_extra_line_spacing() != p_line_spacing) {
+		text_para->set_extra_line_spacing(p_line_spacing);
 		_queue_update();
 	}
 }
 
 float Label3D::get_line_spacing() const {
-	return line_spacing;
+	return text_para->get_extra_line_spacing();
 }
 
 void Label3D::set_draw_flag(DrawFlags p_flag, bool p_enable) {
@@ -945,7 +943,13 @@ Label3D::Label3D() {
 		flags[i] = (i == FLAG_DOUBLE_SIDED);
 	}
 
-	text_rid = TS->create_shaped_text();
+	text_para.instantiate();
+	text_para->set_width(500.0);
+	text_para->set_height(500.0);
+	text_para->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	text_para->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	text_para->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES);
+	text_para->set_clip(false);
 
 	mesh = RenderingServer::get_singleton()->mesh_create();
 
@@ -959,13 +963,6 @@ Label3D::Label3D() {
 }
 
 Label3D::~Label3D() {
-	for (int i = 0; i < lines_rid.size(); i++) {
-		TS->free_rid(lines_rid[i]);
-	}
-	lines_rid.clear();
-
-	TS->free_rid(text_rid);
-
 	RenderingServer::get_singleton()->free(mesh);
 	for (KeyValue<SurfaceKey, SurfaceData> E : surfaces) {
 		RenderingServer::get_singleton()->free(E.value.material);

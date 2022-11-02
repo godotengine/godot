@@ -31,6 +31,8 @@
 #ifndef TEXT_SERVER_H
 #define TEXT_SERVER_H
 
+#include <functional>
+
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/templates/rid.h"
@@ -47,6 +49,12 @@ class TextServer : public RefCounted {
 	GDCLASS(TextServer, RefCounted);
 
 public:
+	enum LinePosition {
+		UNDERLINE,
+		OVERDERLINE,
+		STRIKETHROUGH,
+	};
+
 	enum FontAntialiasing {
 		FONT_ANTIALIASING_NONE,
 		FONT_ANTIALIASING_GRAY,
@@ -65,12 +73,14 @@ public:
 	enum Direction {
 		DIRECTION_AUTO,
 		DIRECTION_LTR,
-		DIRECTION_RTL
+		DIRECTION_RTL,
 	};
 
 	enum Orientation {
 		ORIENTATION_HORIZONTAL,
-		ORIENTATION_VERTICAL
+		ORIENTATION_VERTICAL_UPRIGHT,
+		ORIENTATION_VERTICAL_MIXED,
+		ORIENTATION_VERTICAL_SIDEWAYS,
 	};
 
 	enum JustificationFlag {
@@ -200,6 +210,11 @@ public:
 		STRUCTURED_TEXT_LIST,
 		STRUCTURED_TEXT_NONE,
 		STRUCTURED_TEXT_CUSTOM
+	};
+
+	enum GlyphRotation {
+		GLYPH_ROT_NO,
+		GLYPH_ROT_CW
 	};
 
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
@@ -362,8 +377,8 @@ public:
 	virtual bool font_has_char(const RID &p_font_rid, int64_t p_char) const = 0;
 	virtual String font_get_supported_chars(const RID &p_font_rid) const = 0;
 
-	virtual void font_render_range(const RID &p_font, const Vector2i &p_size, int64_t p_start, int64_t p_end) = 0;
-	virtual void font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index) = 0;
+	virtual void font_render_range(const RID &p_font, const Vector2i &p_size, int64_t p_start, int64_t p_end, bool p_include_sideways = false) = 0;
+	virtual void font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index, bool p_include_sideways = false) = 0;
 
 	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
 	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
@@ -463,6 +478,7 @@ public:
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const = 0;
 
 	virtual Size2 shaped_text_get_size(const RID &p_shaped) const = 0;
+	virtual Size2 shaped_text_get_vertical_bounds(const RID &p_shaped) const = 0;
 	virtual double shaped_text_get_ascent(const RID &p_shaped) const = 0;
 	virtual double shaped_text_get_descent(const RID &p_shaped) const = 0;
 	virtual double shaped_text_get_width(const RID &p_shaped) const = 0;
@@ -486,6 +502,8 @@ public:
 	// The pen position is always placed on the baseline and moveing left to right.
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
 	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void shaped_text_draw_custom(const RID &p_shaped, const Vector2 &p_pos, double p_clip_l, double p_clip_r, std::function<bool(const Glyph &, const Vector2 &, int)> p_draw_fn, int p_line_id = 0) const;
+	void _shaped_text_draw_custom(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Callable &p_callback) const;
 
 	// Number conversion.
 	virtual String format_number(const String &p_string, const String &p_language = "") const = 0;
@@ -516,8 +534,8 @@ public:
 /*************************************************************************/
 
 struct Glyph {
-	int start = -1; // Start offset in the source string.
-	int end = -1; // End offset in the source string.
+	int32_t start = -1; // Start offset in the source string.
+	int32_t end = -1; // End offset in the source string.
 
 	uint8_t count = 0; // Number of glyphs in the grapheme, set in the first glyph only.
 	uint8_t repeat = 1; // Draw multiple times in the row.
@@ -528,8 +546,15 @@ struct Glyph {
 	float advance = 0.f; // Advance to the next glyph along baseline(x for horizontal layout, y for vertical).
 
 	RID font_rid; // Font resource.
-	int font_size = 0; // Font size;
-	int32_t index = 0; // Glyph index (font specific) or UTF-32 codepoint (for the invalid glyphs).
+	int32_t font_size = 0; // Font size;
+
+	int32_t index = 0; // Glyph index (font specific) or UTF-32 codepoint (for the invalid glyphs) and rendering subvariant.
+	// Bits 0-20, UTF-32 codepoint (0..0x10FFFF) or glyph index (0..0x1FFFFF).
+	// Bits 21-22 - Rotation (00 - upright, 01 - CW, 10 - CCW).
+	// Bits 23-25 - Reserved, should not be set.
+	// Bits 26-28 - LCD layout (FontLCDSubpixelLayout values, 000-100), should not be set in the shaped data, used for glyph cache only.
+	// Bits 29-30 - Subpixel X-shift, 1/2 (n << 4) or 1/4 (n << 5), 26.6 fractional units, should not be set in the shaped data, used for glyph cache only.
+	// Bits 31 - Reserved, should not be set.
 
 	bool operator==(const Glyph &p_a) const;
 	bool operator!=(const Glyph &p_a) const;
@@ -584,6 +609,7 @@ public:
 
 #define TS TextServerManager::get_singleton()->get_primary_interface()
 
+VARIANT_ENUM_CAST(TextServer::LinePosition);
 VARIANT_ENUM_CAST(TextServer::VisibleCharactersBehavior);
 VARIANT_ENUM_CAST(TextServer::AutowrapMode);
 VARIANT_ENUM_CAST(TextServer::OverrunBehavior);

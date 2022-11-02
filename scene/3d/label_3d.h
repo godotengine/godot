@@ -33,8 +33,7 @@
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/font.h"
-
-#include "servers/text_server.h"
+#include "scene/resources/text_paragraph.h"
 
 class Label3D : public GeometryInstance3D {
 	GDCLASS(Label3D, GeometryInstance3D);
@@ -100,35 +99,30 @@ private:
 
 	HashMap<SurfaceKey, SurfaceData, SurfaceKeyHasher> surfaces;
 
-	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
-	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_CENTER;
 	String text;
 	String xl_text;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	bool uppercase = false;
 
-	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
-	float width = 500.0;
+	bool text_set = false;
+	Ref<TextParagraph> text_para;
 
-	int font_size = 32;
+	Point2 lbl_offset;
+
 	Ref<Font> font_override;
 	mutable Ref<Font> theme_font;
+
+	int font_size = 32;
 	Color modulate = Color(1, 1, 1, 1);
-	Point2 lbl_offset;
-	int outline_render_priority = -1;
 	int render_priority = 0;
 
 	int outline_size = 12;
 	Color outline_modulate = Color(0, 0, 0, 1);
-
-	float line_spacing = 0.f;
+	int outline_render_priority = -1;
 
 	String language;
-	TextServer::Direction text_direction = TextServer::DIRECTION_AUTO;
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
-
-	RID text_rid;
-	Vector<RID> lines_rid;
 
 	RID base_material;
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
@@ -136,28 +130,25 @@ private:
 
 	bool pending_update = false;
 
-	bool dirty_lines = true;
-	bool dirty_font = true;
-	bool dirty_text = true;
-
-	void _generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, const Color &p_modulate, int p_priority = 0, int p_outline_size = 0);
+	void _generate_glyph_surfaces(const Glyph &p_glyph, const Vector2 &p_offset, const Color &p_modulate, int p_priority = 0, int p_outline_size = 0);
+	void _update_text();
+	void _update_fonts();
+	void _invalidate_fonts();
 
 protected:
 	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
 
 	void _notification(int p_what);
-
 	static void _bind_methods();
 
 	void _validate_property(PropertyInfo &p_property) const;
 
 	void _im_update();
-	void _font_changed();
 	void _queue_update();
 
-	void _shape();
-
 public:
+	virtual PackedStringArray get_configuration_warnings() const override;
+
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
 
@@ -175,6 +166,15 @@ public:
 
 	void set_text_direction(TextServer::Direction p_text_direction);
 	TextServer::Direction get_text_direction() const;
+
+	void set_orientation(TextServer::Orientation p_orientation);
+	TextServer::Orientation get_orientation() const;
+
+	void set_uniform_line_height(bool p_enabled);
+	bool get_uniform_line_height() const;
+
+	void set_invert_line_order(bool p_enabled);
+	bool get_invert_line_order() const;
 
 	void set_language(const String &p_language);
 	String get_language() const;
@@ -212,6 +212,12 @@ public:
 
 	void set_width(float p_width);
 	float get_width() const;
+
+	void set_height(float p_height);
+	float get_height() const;
+
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_pixel_size(real_t p_amount);
 	real_t get_pixel_size() const;

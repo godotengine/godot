@@ -127,6 +127,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
 
 	// Hide from the main UI, only for advanced import dialog.
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "preload_sideways", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "preload", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), Array()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "language_support", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), Dictionary()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "script_support", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), Dictionary()));
@@ -149,6 +150,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	int px_range = p_options["msdf_pixel_range"];
 	int px_size = p_options["msdf_size"];
 	Dictionary ot_ov = p_options["opentype_features"];
+	bool preload_sideways = p_options["preload_sideways"];
 
 	bool autohinter = p_options["force_autohinter"];
 	bool allow_system_fallback = p_options["allow_system_fallback"];
@@ -209,7 +211,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 		Array chars = preload_config["chars"];
 		for (int j = 0; j < chars.size(); j++) {
 			char32_t c = chars[j].operator int();
-			TS->font_render_range(conf_rid, size, c, c);
+			TS->font_render_range(conf_rid, size, c, c, preload_sideways);
 		}
 
 		Array glyphs = preload_config["glyphs"];

@@ -982,6 +982,7 @@ void DynamicFontImportSettings::_re_import() {
 		configurations.push_back(preload_config);
 	}
 	main_settings["preload"] = configurations;
+	main_settings["preload_sideways"] = import_settings_data->get("preload_sideways");
 	main_settings["language_support"] = import_settings_data->get("language_support");
 	main_settings["script_support"] = import_settings_data->get("script_support");
 	main_settings["opentype_features"] = import_settings_data->get("opentype_features");
@@ -1255,6 +1256,9 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "language_support"), Dictionary()));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "script_support"), Dictionary()));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "opentype_features"), Dictionary()));
+
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Preload", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "preload_sideways", PROPERTY_HINT_NONE, ""), false));
 
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Fallbacks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));

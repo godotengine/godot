@@ -603,7 +603,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph) const {
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(p_font_data, p_size), false);
 
-	int32_t glyph_index = p_glyph & 0xffffff; // Remove subpixel shifts.
+	int32_t glyph_index = p_glyph & 0x1fffff; // Extract glyph index.
 
 	FontForSizeFallback *fd = p_font_data->cache[p_size];
 	if (fd->glyph_map.has(p_glyph)) {
@@ -655,10 +655,10 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 
 		if (!p_font_data->msdf) {
 			if ((p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && p_size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
-				FT_Pos xshift = (int)((p_glyph >> 27) & 3) << 4;
+				FT_Pos xshift = (int)((p_glyph >> 29) & 3) << 4;
 				FT_Outline_Translate(&fd->face->glyph->outline, xshift, 0);
 			} else if ((p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && p_size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-				FT_Pos xshift = (int)((p_glyph >> 27) & 3) << 5;
+				FT_Pos xshift = (int)((p_glyph >> 29) & 3) << 5;
 				FT_Outline_Translate(&fd->face->glyph->outline, xshift, 0);
 			}
 		}
@@ -683,7 +683,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 				aa_mode = FT_RENDER_MODE_NORMAL;
 			} break;
 			case FONT_ANTIALIASING_LCD: {
-				int aa_layout = (int)((p_glyph >> 24) & 7);
+				int aa_layout = (int)((p_glyph >> 26) & 7);
 				switch (aa_layout) {
 					case FONT_LCD_SUBPIXEL_LAYOUT_HRGB: {
 						aa_mode = FT_RENDER_MODE_LCD;
@@ -1732,7 +1732,7 @@ Vector2 TextServerFallback::_font_get_glyph_advance(const RID &p_font_rid, int64
 	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
 		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
 		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
-			mod = (layout << 24);
+			mod = (layout << 26);
 		}
 	}
 
@@ -1785,7 +1785,7 @@ Vector2 TextServerFallback::_font_get_glyph_offset(const RID &p_font_rid, const 
 	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
 		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
 		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
-			mod = (layout << 24);
+			mod = (layout << 26);
 		}
 	}
 
@@ -1830,7 +1830,7 @@ Vector2 TextServerFallback::_font_get_glyph_size(const RID &p_font_rid, const Ve
 	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
 		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
 		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
-			mod = (layout << 24);
+			mod = (layout << 26);
 		}
 	}
 
@@ -1875,7 +1875,7 @@ Rect2 TextServerFallback::_font_get_glyph_uv_rect(const RID &p_font_rid, const V
 	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
 		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
 		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
-			mod = (layout << 24);
+			mod = (layout << 26);
 		}
 	}
 
@@ -1915,7 +1915,7 @@ int64_t TextServerFallback::_font_get_glyph_texture_idx(const RID &p_font_rid, c
 	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
 		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
 		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
-			mod = (layout << 24);
+			mod = (layout << 26);
 		}
 	}
 
@@ -1955,7 +1955,7 @@ RID TextServerFallback::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
 		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
 		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
-			mod = (layout << 24);
+			mod = (layout << 26);
 		}
 	}
 
@@ -2001,7 +2001,7 @@ Size2 TextServerFallback::_font_get_glyph_texture_size(const RID &p_font_rid, co
 	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
 		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
 		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
-			mod = (layout << 24);
+			mod = (layout << 26);
 		}
 	}
 
@@ -2047,7 +2047,7 @@ Dictionary TextServerFallback::_font_get_glyph_contours(const RID &p_font_rid, i
 	PackedVector3Array points;
 	PackedInt32Array contours;
 
-	int32_t index = p_index & 0xffffff; // Remove subpixel shifts.
+	int32_t index = p_index & 0x1fffff; // Extract glyph index.
 
 	int error = FT_Load_Glyph(fd->cache[size]->face, FT_Get_Char_Index(fd->cache[size]->face, index), FT_LOAD_NO_BITMAP | (fd->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
 	ERR_FAIL_COND_V(error, Dictionary());
@@ -2227,7 +2227,7 @@ String TextServerFallback::_font_get_supported_chars(const RID &p_font_rid) cons
 	return chars;
 }
 
-void TextServerFallback::_font_render_range(const RID &p_font_rid, const Vector2i &p_size, int64_t p_start, int64_t p_end) {
+void TextServerFallback::_font_render_range(const RID &p_font_rid, const Vector2i &p_size, int64_t p_start, int64_t p_end, bool p_include_sideways) {
 	FontFallback *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND(!fd);
 	ERR_FAIL_COND_MSG((p_start >= 0xd800 && p_start <= 0xdfff) || (p_start > 0x10ffff), "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_start, 16) + ".");
@@ -2245,15 +2245,15 @@ void TextServerFallback::_font_render_range(const RID &p_font_rid, const Vector2
 			} else {
 				for (int aa = 0; aa < ((fd->antialiasing == FONT_ANTIALIASING_LCD) ? FONT_LCD_SUBPIXEL_LAYOUT_MAX : 1); aa++) {
 					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
-						_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24));
-						_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24));
-						_ensure_glyph(fd, size, (int32_t)idx | (2 << 27) | (aa << 24));
-						_ensure_glyph(fd, size, (int32_t)idx | (3 << 27) | (aa << 24));
+						_ensure_glyph(fd, size, (int32_t)idx | (0 << 29) | (aa << 26));
+						_ensure_glyph(fd, size, (int32_t)idx | (1 << 29) | (aa << 26));
+						_ensure_glyph(fd, size, (int32_t)idx | (2 << 29) | (aa << 26));
+						_ensure_glyph(fd, size, (int32_t)idx | (3 << 29) | (aa << 26));
 					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-						_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24));
-						_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24));
+						_ensure_glyph(fd, size, (int32_t)idx | (1 << 29) | (aa << 26));
+						_ensure_glyph(fd, size, (int32_t)idx | (0 << 29) | (aa << 26));
 					} else {
-						_ensure_glyph(fd, size, (int32_t)idx | (aa << 24));
+						_ensure_glyph(fd, size, (int32_t)idx | (aa << 26));
 					}
 				}
 			}
@@ -2262,7 +2262,7 @@ void TextServerFallback::_font_render_range(const RID &p_font_rid, const Vector2
 	}
 }
 
-void TextServerFallback::_font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index) {
+void TextServerFallback::_font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index, bool p_include_sideways) {
 	FontFallback *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND(!fd);
 
@@ -2270,22 +2270,22 @@ void TextServerFallback::_font_render_glyph(const RID &p_font_rid, const Vector2
 	Vector2i size = _get_size_outline(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 #ifdef MODULE_FREETYPE_ENABLED
-	int32_t idx = p_index & 0xffffff; // Remove subpixel shifts.
+	int32_t idx = p_index & 0x1fffff; // Extract glyph index.
 	if (fd->cache[size]->face) {
 		if (fd->msdf) {
 			_ensure_glyph(fd, size, (int32_t)idx);
 		} else {
 			for (int aa = 0; aa < ((fd->antialiasing == FONT_ANTIALIASING_LCD) ? FONT_LCD_SUBPIXEL_LAYOUT_MAX : 1); aa++) {
 				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
-					_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24));
-					_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24));
-					_ensure_glyph(fd, size, (int32_t)idx | (2 << 27) | (aa << 24));
-					_ensure_glyph(fd, size, (int32_t)idx | (3 << 27) | (aa << 24));
+					_ensure_glyph(fd, size, (int32_t)idx | (0 << 29) | (aa << 26));
+					_ensure_glyph(fd, size, (int32_t)idx | (1 << 29) | (aa << 26));
+					_ensure_glyph(fd, size, (int32_t)idx | (2 << 29) | (aa << 26));
+					_ensure_glyph(fd, size, (int32_t)idx | (3 << 29) | (aa << 26));
 				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-					_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24));
-					_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24));
+					_ensure_glyph(fd, size, (int32_t)idx | (1 << 29) | (aa << 26));
+					_ensure_glyph(fd, size, (int32_t)idx | (0 << 29) | (aa << 26));
 				} else {
-					_ensure_glyph(fd, size, (int32_t)idx | (aa << 24));
+					_ensure_glyph(fd, size, (int32_t)idx | (aa << 26));
 				}
 			}
 		}
@@ -2301,26 +2301,26 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 	Vector2i size = _get_size(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 
-	int32_t index = p_index & 0xffffff; // Remove subpixel shifts.
+	int32_t index = p_index & 0x3ffffff; // Remove subpixel shifts and LCD AA data (keep rotation bits).
 	bool lcd_aa = false;
 
 #ifdef MODULE_FREETYPE_ENABLED
 	if (!fd->msdf && fd->cache[size]->face) {
-		// LCD layout, bits 24, 25, 26
+		// LCD layout, bits 26-28.
 		if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
 			TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
 			if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
 				lcd_aa = true;
-				index = index | (layout << 24);
+				index = index | (layout << 26);
 			}
 		}
-		// Subpixel X-shift, bits 27, 28
+		// Subpixel X-shift, bits 29-30.
 		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
 			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
-			index = index | (xshift << 27);
+			index = index | (xshift << 29);
 		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
 			int xshift = (int)(Math::floor(2 * (p_pos.x + 0.25)) - 2 * Math::floor(p_pos.x + 0.25));
-			index = index | (xshift << 27);
+			index = index | (xshift << 29);
 		}
 	}
 #endif
@@ -2393,26 +2393,26 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 	Vector2i size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 
-	int32_t index = p_index & 0xffffff; // Remove subpixel shifts.
+	int32_t index = p_index & 0x3ffffff; // Remove subpixel shifts and LCD AA data (keep rotation bits).
 	bool lcd_aa = false;
 
 #ifdef MODULE_FREETYPE_ENABLED
 	if (!fd->msdf && fd->cache[size]->face) {
-		// LCD layout, bits 24, 25, 26
+		// LCD layout, bits 26-28.
 		if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
 			TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
 			if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
 				lcd_aa = true;
-				index = index | (layout << 24);
+				index = index | (layout << 26);
 			}
 		}
-		// Subpixel X-shift, bits 27, 28
+		// Subpixel X-shift, bits 29-30.
 		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
 			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
-			index = index | (xshift << 27);
+			index = index | (xshift << 29);
 		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
 			int xshift = (int)(Math::floor(2 * (p_pos.x + 0.25)) - 2 * Math::floor(p_pos.x + 0.25));
-			index = index | (xshift << 27);
+			index = index | (xshift << 29);
 		}
 	}
 #endif
@@ -2680,7 +2680,9 @@ RID TextServerFallback::_create_shaped_text(TextServer::Direction p_direction, T
 
 	ShapedTextDataFallback *sd = memnew(ShapedTextDataFallback);
 	sd->direction = p_direction;
-	sd->orientation = p_orientation;
+	if (p_orientation == ORIENTATION_HORIZONTAL) {
+		ERR_PRINT_ONCE("Vertical layout is not supported by this text server.");
+	}
 
 	return shaped_owner.make_rid(sd);
 }
@@ -2738,13 +2740,8 @@ void TextServerFallback::_shaped_text_set_orientation(const RID &p_shaped, TextS
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND(!sd);
 
-	MutexLock lock(sd->mutex);
-	if (sd->orientation != p_orientation) {
-		if (sd->parent != RID()) {
-			full_copy(sd);
-		}
-		sd->orientation = p_orientation;
-		invalidate(sd);
+	if (p_orientation == ORIENTATION_HORIZONTAL) {
+		ERR_PRINT_ONCE("Vertical layout is not supported by this text server.");
 	}
 }
 
@@ -2753,11 +2750,7 @@ void TextServerFallback::_shaped_text_set_bidi_override(const RID &p_shaped, con
 }
 
 TextServer::Orientation TextServerFallback::_shaped_text_get_orientation(const RID &p_shaped) const {
-	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
-	ERR_FAIL_COND_V(!sd, TextServer::ORIENTATION_HORIZONTAL);
-
-	MutexLock lock(sd->mutex);
-	return sd->orientation;
+	return ORIENTATION_HORIZONTAL;
 }
 
 void TextServerFallback::_shaped_text_set_preserve_invalid(const RID &p_shaped, bool p_enabled) {
@@ -2979,34 +2972,19 @@ bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const V
 				}
 			}
 			if (key != Variant()) {
-				if (sd->orientation == ORIENTATION_HORIZONTAL) {
-					sd->objects[key].rect.position.x = sd->width;
-					sd->width += sd->objects[key].rect.size.x;
-					sd->glyphs.write[i].advance = sd->objects[key].rect.size.x;
-				} else {
-					sd->objects[key].rect.position.y = sd->width;
-					sd->width += sd->objects[key].rect.size.y;
-					sd->glyphs.write[i].advance = sd->objects[key].rect.size.y;
-				}
+				sd->objects[key].rect.position.x = sd->width;
+				sd->width += sd->objects[key].rect.size.x;
+				sd->glyphs.write[i].advance = sd->objects[key].rect.size.x;
 			} else {
 				if (gl.font_rid.is_valid()) {
-					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size));
-						sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size));
-					} else {
-						sd->ascent = MAX(sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-						sd->descent = MAX(sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-					}
+					sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size));
+					sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size));
+
 					sd->upos = MAX(sd->upos, _font_get_underline_position(gl.font_rid, gl.font_size));
 					sd->uthk = MAX(sd->uthk, _font_get_underline_thickness(gl.font_rid, gl.font_size));
 				} else if (sd->preserve_invalid || (sd->preserve_control && is_control(gl.index))) {
 					// Glyph not found, replace with hex code box.
-					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
-					} else {
-						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
-						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
-					}
+					sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
 				}
 				sd->width += gl.advance * gl.repeat;
 			}
@@ -3022,69 +3000,36 @@ void TextServerFallback::_realign(ShapedTextDataFallback *p_sd) const {
 	double full_descent = p_sd->descent;
 	for (KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : p_sd->objects) {
 		if ((E.value.pos >= p_sd->start) && (E.value.pos < p_sd->end)) {
-			if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
-				switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
-					case INLINE_ALIGNMENT_TO_TOP: {
-						E.value.rect.position.y = -p_sd->ascent;
-					} break;
-					case INLINE_ALIGNMENT_TO_CENTER: {
-						E.value.rect.position.y = (-p_sd->ascent + p_sd->descent) / 2;
-					} break;
-					case INLINE_ALIGNMENT_TO_BASELINE: {
-						E.value.rect.position.y = 0;
-					} break;
-					case INLINE_ALIGNMENT_TO_BOTTOM: {
-						E.value.rect.position.y = p_sd->descent;
-					} break;
-				}
-				switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
-					case INLINE_ALIGNMENT_BOTTOM_TO: {
-						E.value.rect.position.y -= E.value.rect.size.y;
-					} break;
-					case INLINE_ALIGNMENT_CENTER_TO: {
-						E.value.rect.position.y -= E.value.rect.size.y / 2;
-					} break;
-					case INLINE_ALIGNMENT_BASELINE_TO: {
-						E.value.rect.position.y -= E.value.baseline;
-					} break;
-					case INLINE_ALIGNMENT_TOP_TO: {
-						// NOP
-					} break;
-				}
-				full_ascent = MAX(full_ascent, -E.value.rect.position.y);
-				full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
-			} else {
-				switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
-					case INLINE_ALIGNMENT_TO_TOP: {
-						E.value.rect.position.x = -p_sd->ascent;
-					} break;
-					case INLINE_ALIGNMENT_TO_CENTER: {
-						E.value.rect.position.x = (-p_sd->ascent + p_sd->descent) / 2;
-					} break;
-					case INLINE_ALIGNMENT_TO_BASELINE: {
-						E.value.rect.position.x = 0;
-					} break;
-					case INLINE_ALIGNMENT_TO_BOTTOM: {
-						E.value.rect.position.x = p_sd->descent;
-					} break;
-				}
-				switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
-					case INLINE_ALIGNMENT_BOTTOM_TO: {
-						E.value.rect.position.x -= E.value.rect.size.x;
-					} break;
-					case INLINE_ALIGNMENT_CENTER_TO: {
-						E.value.rect.position.x -= E.value.rect.size.x / 2;
-					} break;
-					case INLINE_ALIGNMENT_BASELINE_TO: {
-						E.value.rect.position.x -= E.value.baseline;
-					} break;
-					case INLINE_ALIGNMENT_TOP_TO: {
-						// NOP
-					} break;
-				}
-				full_ascent = MAX(full_ascent, -E.value.rect.position.x);
-				full_descent = MAX(full_descent, E.value.rect.position.x + E.value.rect.size.x);
+			switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+				case INLINE_ALIGNMENT_TO_TOP: {
+					E.value.rect.position.y = -p_sd->ascent;
+				} break;
+				case INLINE_ALIGNMENT_TO_CENTER: {
+					E.value.rect.position.y = (-p_sd->ascent + p_sd->descent) / 2;
+				} break;
+				case INLINE_ALIGNMENT_TO_BASELINE: {
+					E.value.rect.position.y = 0;
+				} break;
+				case INLINE_ALIGNMENT_TO_BOTTOM: {
+					E.value.rect.position.y = p_sd->descent;
+				} break;
 			}
+			switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+				case INLINE_ALIGNMENT_BOTTOM_TO: {
+					E.value.rect.position.y -= E.value.rect.size.y;
+				} break;
+				case INLINE_ALIGNMENT_CENTER_TO: {
+					E.value.rect.position.y -= E.value.rect.size.y / 2;
+				} break;
+				case INLINE_ALIGNMENT_BASELINE_TO: {
+					E.value.rect.position.y -= E.value.baseline;
+				} break;
+				case INLINE_ALIGNMENT_TOP_TO: {
+					// NOP
+				} break;
+			}
+			full_ascent = MAX(full_ascent, -E.value.rect.position.y);
+			full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
 		}
 	}
 	p_sd->ascent = full_ascent;
@@ -3113,7 +3058,6 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 	new_sd->start = p_start;
 	new_sd->end = p_start + p_length;
 
-	new_sd->orientation = sd->orientation;
 	new_sd->direction = sd->direction;
 	new_sd->custom_punct = sd->custom_punct;
 	new_sd->para_direction = sd->para_direction;
@@ -3147,30 +3091,15 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 					}
 				}
 				if (find_embedded) {
-					if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
-						new_sd->objects[key].rect.position.x = new_sd->width;
-						new_sd->width += new_sd->objects[key].rect.size.x;
-					} else {
-						new_sd->objects[key].rect.position.y = new_sd->width;
-						new_sd->width += new_sd->objects[key].rect.size.y;
-					}
+					new_sd->objects[key].rect.position.x = new_sd->width;
+					new_sd->width += new_sd->objects[key].rect.size.x;
 				} else {
 					if (gl.font_rid.is_valid()) {
-						if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
-							new_sd->ascent = MAX(new_sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size));
-							new_sd->descent = MAX(new_sd->descent, _font_get_descent(gl.font_rid, gl.font_size));
-						} else {
-							new_sd->ascent = MAX(new_sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-							new_sd->descent = MAX(new_sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-						}
+						new_sd->ascent = MAX(new_sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size));
+						new_sd->descent = MAX(new_sd->descent, _font_get_descent(gl.font_rid, gl.font_size));
 					} else if (new_sd->preserve_invalid || (new_sd->preserve_control && is_control(gl.index))) {
 						// Glyph not found, replace with hex code box.
-						if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
-							new_sd->ascent = MAX(new_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
-						} else {
-							new_sd->ascent = MAX(new_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
-							new_sd->descent = MAX(new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
-						}
+						new_sd->ascent = MAX(new_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
 					}
 					new_sd->width += gl.advance * gl.repeat;
 				}
@@ -3650,24 +3579,16 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 		const ShapedTextDataFallback::Span &span = sd->spans[i];
 		if (span.embedded_key != Variant()) {
 			// Embedded object.
-			if (sd->orientation == ORIENTATION_HORIZONTAL) {
-				sd->objects[span.embedded_key].rect.position.x = sd->width;
-				sd->width += sd->objects[span.embedded_key].rect.size.x;
-			} else {
-				sd->objects[span.embedded_key].rect.position.y = sd->width;
-				sd->width += sd->objects[span.embedded_key].rect.size.y;
-			}
+			sd->objects[span.embedded_key].rect.position.x = sd->width;
+			sd->width += sd->objects[span.embedded_key].rect.size.x;
+
 			Glyph gl;
 			gl.start = span.start;
 			gl.end = span.end;
 			gl.count = 1;
 			gl.index = 0;
 			gl.flags = GRAPHEME_IS_VALID | GRAPHEME_IS_VIRTUAL;
-			if (sd->orientation == ORIENTATION_HORIZONTAL) {
-				gl.advance = sd->objects[span.embedded_key].rect.size.x;
-			} else {
-				gl.advance = sd->objects[span.embedded_key].rect.size.y;
-			}
+			gl.advance = sd->objects[span.embedded_key].rect.size.x;
 			sd->glyphs.push_back(gl);
 		} else {
 			// Text span.
@@ -3861,19 +3782,11 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				if (gl.font_rid.is_valid()) {
 					bool subpos = (scale != 1.0) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_HALF) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_QUARTER) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_AUTO && gl.font_size <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE);
 					if (sd->text[j - sd->start] != 0 && !is_linebreak(sd->text[j - sd->start])) {
-						if (sd->orientation == ORIENTATION_HORIZONTAL) {
-							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x;
-							gl.x_off = 0;
-							gl.y_off = 0;
-							sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size));
-							sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size));
-						} else {
-							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).y;
-							gl.x_off = -Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5);
-							gl.y_off = _font_get_ascent(gl.font_rid, gl.font_size);
-							sd->ascent = MAX(sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-							sd->descent = MAX(sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-						}
+						gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x;
+						gl.x_off = 0;
+						gl.y_off = 0;
+						sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size));
+						sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size));
 					}
 					if (j < sd->end - 1) {
 						// Do not add extra spacing to the last glyph of the string.
@@ -3890,26 +3803,16 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 					if (sd->glyphs.size() > 0) {
 						Glyph &prev_gl = sd->glyphs.write[sd->glyphs.size() - 1];
 						if (prev_gl.font_rid == gl.font_rid && prev_gl.font_size == gl.font_size) {
-							if (sd->orientation == ORIENTATION_HORIZONTAL) {
-								prev_gl.advance += _font_get_kerning(gl.font_rid, gl.font_size, Vector2i(prev_gl.index, gl.index)).x;
-							} else {
-								prev_gl.advance += _font_get_kerning(gl.font_rid, gl.font_size, Vector2i(prev_gl.index, gl.index)).y;
-							}
+							prev_gl.advance += _font_get_kerning(gl.font_rid, gl.font_size, Vector2i(prev_gl.index, gl.index)).x;
 						}
 					}
-					if (sd->orientation == ORIENTATION_HORIZONTAL && !subpos) {
+					if (!subpos) {
 						gl.advance = Math::round(gl.advance);
 					}
 				} else if (sd->preserve_invalid || (sd->preserve_control && is_control(gl.index))) {
 					// Glyph not found, replace with hex code box.
-					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						gl.advance = get_hex_code_box_size(gl.font_size, gl.index).x;
-						sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
-					} else {
-						gl.advance = get_hex_code_box_size(gl.font_size, gl.index).y;
-						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
-						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
-					}
+					gl.advance = get_hex_code_box_size(gl.font_size, gl.index).x;
+					sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
 				}
 				sd->width += gl.advance;
 				sd->glyphs.push_back(gl);
@@ -4007,11 +3910,48 @@ Size2 TextServerFallback::_shaped_text_get_size(const RID &p_shaped) const {
 	if (!sd->valid) {
 		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
 	}
-	if (sd->orientation == TextServer::ORIENTATION_HORIZONTAL) {
-		return Size2(sd->width, sd->ascent + sd->descent + sd->extra_spacing[SPACING_TOP] + sd->extra_spacing[SPACING_BOTTOM]).ceil();
-	} else {
-		return Size2(sd->ascent + sd->descent + sd->extra_spacing[SPACING_TOP] + sd->extra_spacing[SPACING_BOTTOM], sd->width).ceil();
+	return Size2(sd->width, sd->ascent + sd->descent + sd->extra_spacing[SPACING_TOP] + sd->extra_spacing[SPACING_BOTTOM]).ceil();
+}
+
+Size2 TextServerFallback::_shaped_text_get_vertical_bounds(const RID &p_shaped) const {
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, Size2());
+
+	MutexLock lock(sd->mutex);
+	if (!sd->valid) {
+		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
 	}
+	int sd_size = sd->glyphs.size();
+	const Glyph *sd_glyphs = sd->glyphs.ptr();
+
+	float max_ascent = 0.0;
+	float max_descent = 0.0;
+
+	for (int i = 0; i < sd_size; i++) {
+		int size = sd_glyphs[i].font_size;
+		if (sd_glyphs[i].font_rid != RID() && size > 0) {
+			FontFallback *fd = font_owner.get_or_null(sd_glyphs[i].font_rid);
+			ERR_FAIL_COND_V(!fd, Size2());
+
+			int32_t index = sd_glyphs[i].index & 0x3ffffff; // Remove subpixel shifts and LCD AA data (keep rotation bits).
+			_ensure_glyph(fd, Vector2i(size, 0), index);
+			const FontGlyph &gl = fd->cache[Vector2i(size, 0)]->glyph_map[index];
+			if (gl.found) {
+				if (fd->msdf) {
+					Size2 csize = gl.rect.size * (double)size / (double)fd->msdf_source_size;
+					Point2 cpos = gl.rect.position * (double)size / (double)fd->msdf_source_size;
+					max_ascent = MAX(max_ascent, -cpos.y);
+					max_descent = MAX(max_descent, csize.y + cpos.y);
+				} else {
+					Size2 csize = gl.rect.size;
+					Point2 cpos = gl.rect.position;
+					max_ascent = MAX(max_ascent, -cpos.y);
+					max_descent = MAX(max_descent, csize.y + cpos.y);
+				}
+			}
+		}
+	}
+	return Size2(max_ascent, max_descent);
 }
 
 double TextServerFallback::_shaped_text_get_ascent(const RID &p_shaped) const {
