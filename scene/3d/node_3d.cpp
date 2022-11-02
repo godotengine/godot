@@ -393,7 +393,7 @@ Node3D::RotationEditMode Node3D::get_rotation_edit_mode() const {
 }
 
 void Node3D::set_rotation_order(RotationOrder p_order) {
-	Basis::EulerOrder order = Basis::EulerOrder(p_order);
+	EulerOrder order = EulerOrder(p_order);
 
 	if (data.euler_rotation_order == order) {
 		return;
