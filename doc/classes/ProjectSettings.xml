@@ -937,6 +937,11 @@
 		<member name="input/ui_text_caret_word_right.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to move the text cursor forward one word.
 		</member>
+		<member name="input/ui_text_clear_carets_and_selection" type="Dictionary" setter="" getter="">
+			If there's only one caret active and with a selection, clears the selection.
+			In case there's more than one caret active, removes the secondary carets and clears their selections.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to accept an autocompetion hint.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -985,10 +990,6 @@
 		</member>
 		<member name="input/ui_text_newline_blank" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to insert a new line after the current one.
-			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
-		</member>
-		<member name="input/ui_text_remove_secondary_carets" type="Dictionary" setter="" getter="">
-			If multiple carets are currently active, clear additional carets and keep just one caret.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_scroll_down" type="Dictionary" setter="" getter="">

@@ -2051,7 +2051,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (is_shortcut_keys_enabled()) {
-			// SELECT ALL, SELECT WORD UNDER CARET, ADD SELECTION FOR NEXT OCCURRENCE, CUT, COPY, PASTE.
+			// SELECT ALL, SELECT WORD UNDER CARET, ADD SELECTION FOR NEXT OCCURRENCE,
+			// CLEAR CARETS AND SELECTIONS, CUT, COPY, PASTE.
 			if (k->is_action("ui_text_select_all", true)) {
 				select_all();
 				accept_event();
@@ -2067,10 +2068,12 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				accept_event();
 				return;
 			}
-			if (k->is_action("ui_text_remove_secondary_carets", true) && _should_remove_secondary_carets()) {
-				remove_secondary_carets();
-				accept_event();
-				return;
+			if (k->is_action("ui_text_clear_carets_and_selection", true)) {
+				// Since the default shortcut is ESC, accepts the event only if it's actually performed.
+				if (_clear_carets_and_selection()) {
+					accept_event();
+					return;
+				}
 			}
 			if (k->is_action("ui_cut", true)) {
 				cut();
@@ -2824,8 +2827,18 @@ void TextEdit::_move_caret_document_end(bool p_select) {
 	}
 }
 
-bool TextEdit::_should_remove_secondary_carets() {
-	return carets.size() > 1;
+bool TextEdit::_clear_carets_and_selection() {
+	if (get_caret_count() > 1) {
+		remove_secondary_carets();
+		return true;
+	}
+
+	if (has_selection()) {
+		deselect();
+		return true;
+	}
+
+	return false;
 }
 
 void TextEdit::_get_above_below_caret_line_column(int p_old_line, int p_old_wrap_index, int p_old_column, bool p_below, int &p_new_line, int &p_new_column, int p_last_fit_x) const {
