@@ -71,6 +71,11 @@ Utilities::~Utilities() {
 
 Vector<uint8_t> Utilities::buffer_get_data(GLenum p_target, GLuint p_buffer, uint32_t p_buffer_size) {
 	Vector<uint8_t> ret;
+
+	if (p_buffer_size == 0) {
+		return ret;
+	}
+
 	ret.resize(p_buffer_size);
 	glBindBuffer(p_target, p_buffer);
 
@@ -363,7 +368,7 @@ Size2i Utilities::get_maximum_viewport_size() const {
 		return Size2i();
 	}
 
-	return Size2i(config->max_viewport_size, config->max_viewport_size);
+	return Size2i(config->max_viewport_size[0], config->max_viewport_size[1]);
 }
 
 #endif // GLES3_ENABLED

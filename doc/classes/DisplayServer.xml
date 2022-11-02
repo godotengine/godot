@@ -1008,8 +1008,8 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Adds a callback, which is called when the utterance has started, finished, canceled or reached a text boundary.
-				- [code]TTS_UTTERANCE_STARTED[/code], [code]TTS_UTTERANCE_ENDED[/code], and [code]TTS_UTTERANCE_CANCELED[/code] callable's method should take one [int] parameter, the utterance id.
-				- [code]TTS_UTTERANCE_BOUNDARY[/code] callable's method should take two [int] parameters, the index of the character and the utterance id.
+				- [constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance id.
+				- [constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance id.
 				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
@@ -1170,7 +1170,7 @@
 			<return type="Vector3i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns left margins ([code]x[/code]), right margins ([code]y[/code]) adn height ([code]z[/code]) of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
+				Returns left margins ([code]x[/code]), right margins ([code]y[/code]) and height ([code]z[/code]) of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
 			</description>
 		</method>
 		<method name="window_get_size" qualifiers="const">

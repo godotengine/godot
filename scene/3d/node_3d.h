@@ -100,7 +100,7 @@ private:
 	struct Data {
 		mutable Transform3D global_transform;
 		mutable Transform3D local_transform;
-		mutable Basis::EulerOrder euler_rotation_order = Basis::EULER_ORDER_YXZ;
+		mutable EulerOrder euler_rotation_order = EulerOrder::YXZ;
 		mutable Vector3 euler_rotation;
 		mutable Vector3 scale = Vector3(1, 1, 1);
 		mutable RotationEditMode rotation_edit_mode = ROTATION_EDIT_MODE_EULER;

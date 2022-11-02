@@ -44,7 +44,7 @@ real_t Quaternion::angle_to(const Quaternion &p_to) const {
 // This implementation uses XYZ convention (Z is the first rotation).
 Vector3 Quaternion::get_euler_xyz() const {
 	Basis m(*this);
-	return m.get_euler(Basis::EULER_ORDER_XYZ);
+	return m.get_euler(EulerOrder::XYZ);
 }
 
 // get_euler_yxz returns a vector containing the Euler angles in the format
@@ -56,7 +56,7 @@ Vector3 Quaternion::get_euler_yxz() const {
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion must be normalized.");
 #endif
 	Basis m(*this);
-	return m.get_euler(Basis::EULER_ORDER_YXZ);
+	return m.get_euler(EulerOrder::YXZ);
 }
 
 void Quaternion::operator*=(const Quaternion &p_q) {
@@ -330,7 +330,7 @@ Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 // (ax, ay, az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
 // This implementation uses YXZ convention (Z is the first rotation).
-Quaternion::Quaternion(const Vector3 &p_euler) {
+Quaternion Quaternion::from_euler(const Vector3 &p_euler) {
 	real_t half_a1 = p_euler.y * 0.5f;
 	real_t half_a2 = p_euler.x * 0.5f;
 	real_t half_a3 = p_euler.z * 0.5f;
@@ -346,8 +346,9 @@ Quaternion::Quaternion(const Vector3 &p_euler) {
 	real_t cos_a3 = Math::cos(half_a3);
 	real_t sin_a3 = Math::sin(half_a3);
 
-	x = sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3;
-	y = sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3;
-	z = -sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3;
-	w = sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3;
+	return Quaternion(
+			sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3,
+			sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3,
+			-sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3,
+			sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3);
 }

@@ -2688,7 +2688,7 @@ void EditorPropertyQuaternion::_custom_value_changed(double val) {
 	v.y = Math::deg_to_rad(edit_euler.y);
 	v.z = Math::deg_to_rad(edit_euler.z);
 
-	Quaternion temp_q = Quaternion(v);
+	Quaternion temp_q = Quaternion::from_euler(v);
 	spin[0]->set_value(temp_q.x);
 	spin[1]->set_value(temp_q.y);
 	spin[2]->set_value(temp_q.z);
@@ -4097,7 +4097,6 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_keying(is_keying());
 				sub_inspector->set_read_only(is_read_only());
 				sub_inspector->set_use_folding(is_using_folding());
-				sub_inspector->set_undo_redo(EditorNode::get_undo_redo());
 
 				sub_inspector_vbox = memnew(VBoxContainer);
 				add_child(sub_inspector_vbox);

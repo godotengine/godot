@@ -40,6 +40,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -2664,7 +2665,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				return;
 			}
 			if (preview_node->is_inside_tree()) {
-				preview_node_pos = _get_instance_position(preview_node_viewport_pos);
+				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos));
 				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
 				preview_node->set_global_transform(preview_gl_transform);
 				if (!preview_node->is_visible()) {
@@ -2898,6 +2899,7 @@ void Node3DEditorViewport::_draw() {
 }
 
 void Node3DEditorViewport::_menu_option(int p_option) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (p_option) {
 		case VIEW_TOP: {
 			cursor.y_rot = 0;
@@ -3748,24 +3750,45 @@ void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, 
 
 Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const {
 	const float MAX_DISTANCE = 50.0;
+	const float FALLBACK_DISTANCE = 5.0;
 
 	Vector3 world_ray = _get_ray(p_pos);
 	Vector3 world_pos = _get_ray_pos(p_pos);
-
-	Vector3 point = world_pos + world_ray * MAX_DISTANCE;
 
 	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
 
 	PhysicsDirectSpaceState3D::RayParameters ray_params;
 	ray_params.from = world_pos;
-	ray_params.to = world_pos + world_ray * MAX_DISTANCE;
+	ray_params.to = world_pos + world_ray * camera->get_far();
 
 	PhysicsDirectSpaceState3D::RayResult result;
 	if (ss->intersect_ray(ray_params, result)) {
-		point = result.position;
+		return result.position;
 	}
 
-	return point;
+	const bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
+
+	// The XZ plane.
+	Vector3 intersection;
+	Plane plane(Vector3(0, 1, 0));
+	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
+		if (is_orthogonal || world_pos.distance_to(intersection) <= MAX_DISTANCE) {
+			return intersection;
+		}
+	}
+
+	// Plane facing the camera using fallback distance.
+	if (is_orthogonal) {
+		plane = Plane(world_ray, cursor.pos - world_ray * (cursor.distance - FALLBACK_DISTANCE));
+	} else {
+		plane = Plane(world_ray, world_pos + world_ray * FALLBACK_DISTANCE);
+	}
+	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
+		return intersection;
+	}
+
+	// Not likely, but just in case...
+	return world_pos + world_ray * FALLBACK_DISTANCE;
 }
 
 AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, bool p_exclude_top_level_transform) {
@@ -4027,15 +4050,16 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(path));
 	}
 
-	editor_data->get_undo_redo()->add_do_method(parent, "add_child", instantiated_scene, true);
-	editor_data->get_undo_redo()->add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
-	editor_data->get_undo_redo()->add_do_reference(instantiated_scene);
-	editor_data->get_undo_redo()->add_undo_method(parent, "remove_child", instantiated_scene);
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	undo_redo->add_do_method(parent, "add_child", instantiated_scene, true);
+	undo_redo->add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_reference(instantiated_scene);
+	undo_redo->add_undo_method(parent, "remove_child", instantiated_scene);
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	editor_data->get_undo_redo()->add_do_method(ed, "live_debug_instance_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), path, new_name);
-	editor_data->get_undo_redo()->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	undo_redo->add_do_method(ed, "live_debug_instance_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), path, new_name);
+	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
@@ -4045,29 +4069,30 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 			gl_transform = parent_node3d->get_global_gizmo_transform();
 		}
 
-		gl_transform.origin = spatial_editor->snap_point(preview_node_pos);
+		gl_transform.origin = preview_node_pos;
 		gl_transform.basis *= node3d->get_transform().basis;
 
-		editor_data->get_undo_redo()->add_do_method(instantiated_scene, "set_global_transform", gl_transform);
+		undo_redo->add_do_method(instantiated_scene, "set_global_transform", gl_transform);
 	}
 
 	return true;
 }
 
 void Node3DEditorViewport::_perform_drop_data() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (spatial_editor->get_preview_material_target().is_valid()) {
 		GeometryInstance3D *geometry_instance = Object::cast_to<GeometryInstance3D>(ObjectDB::get_instance(spatial_editor->get_preview_material_target()));
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(ObjectDB::get_instance(spatial_editor->get_preview_material_target()));
 		if (mesh_instance && spatial_editor->get_preview_material_surface() != -1) {
-			editor_data->get_undo_redo()->create_action(vformat(TTR("Set Surface %d Override Material"), spatial_editor->get_preview_material_surface()));
-			editor_data->get_undo_redo()->add_do_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_material());
-			editor_data->get_undo_redo()->add_undo_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
-			editor_data->get_undo_redo()->commit_action();
+			undo_redo->create_action(vformat(TTR("Set Surface %d Override Material"), spatial_editor->get_preview_material_surface()));
+			undo_redo->add_do_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_material());
+			undo_redo->add_undo_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
+			undo_redo->commit_action();
 		} else if (geometry_instance) {
-			editor_data->get_undo_redo()->create_action(TTR("Set Material Override"));
-			editor_data->get_undo_redo()->add_do_method(geometry_instance, "set_material_override", spatial_editor->get_preview_material());
-			editor_data->get_undo_redo()->add_undo_method(geometry_instance, "set_material_override", spatial_editor->get_preview_reset_material());
-			editor_data->get_undo_redo()->commit_action();
+			undo_redo->create_action(TTR("Set Material Override"));
+			undo_redo->add_do_method(geometry_instance, "set_material_override", spatial_editor->get_preview_material());
+			undo_redo->add_undo_method(geometry_instance, "set_material_override", spatial_editor->get_preview_reset_material());
+			undo_redo->commit_action();
 		}
 
 		_remove_preview_material();
@@ -4078,7 +4103,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 
 	Vector<String> error_files;
 
-	editor_data->get_undo_redo()->create_action(TTR("Create Node"));
+	undo_redo->create_action(TTR("Create Node"));
 
 	for (int i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];
@@ -4096,7 +4121,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 		}
 	}
 
-	editor_data->get_undo_redo()->commit_action();
+	undo_redo->commit_action();
 
 	if (error_files.size() > 0) {
 		String files_str;
@@ -4129,11 +4154,13 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			ResourceLoader::get_recognized_extensions_for_type("Texture", &texture_extensions);
 
 			for (int i = 0; i < files.size(); i++) {
+				String extension = files[i].get_extension().to_lower();
+
 				// Check if dragged files with mesh or scene extension can be created at least once.
-				if (mesh_extensions.find(files[i].get_extension()) ||
-						scene_extensions.find(files[i].get_extension()) ||
-						material_extensions.find(files[i].get_extension()) ||
-						texture_extensions.find(files[i].get_extension())) {
+				if (mesh_extensions.find(extension) ||
+						scene_extensions.find(extension) ||
+						material_extensions.find(extension) ||
+						texture_extensions.find(extension)) {
 					Ref<Resource> res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;
@@ -4262,6 +4289,7 @@ void Node3DEditorViewport::commit_transform() {
 		TTRC("Translate"),
 		TTRC("Scale"),
 	};
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(_transform_name[_edit.mode]);
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -4667,9 +4695,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_edit.gizmo_handle_secondary = false;
 
 	index = p_index;
-	editor_data = SceneTreeDock::get_singleton()->get_editor_data();
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	orthogonal = false;
 	auto_orthogonal = false;
@@ -5753,6 +5779,7 @@ void Node3DEditor::_xform_dialog_action() {
 	t.basis.rotate(rotate);
 	t.origin = translate;
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("XForm Dialog"));
 
 	const List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -5864,6 +5891,7 @@ void Node3DEditor::_update_camera_override_viewport(Object *p_viewport) {
 }
 
 void Node3DEditor::_menu_item_pressed(int p_option) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (p_option) {
 		case MENU_TOOL_SELECT:
 		case MENU_TOOL_MOVE:
@@ -7049,6 +7077,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 		}
 
 		if (snapped_to_floor) {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Snap Nodes to Floor"));
 
 			// Perform snapping if at least one node can be snapped
@@ -7118,6 +7147,7 @@ void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	ERR_FAIL_COND(!base);
 	Node *new_sun = preview_sun->duplicate();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Add Preview Sun to Scene"));
 	undo_redo->add_do_method(base, "add_child", new_sun, true);
 	// Move to the beginning of the scene tree since more "global" nodes
@@ -7151,6 +7181,7 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 		new_env->set_camera_attributes(preview_environment->get_camera_attributes()->duplicate(true));
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Add Preview Environment to Scene"));
 	undo_redo->add_do_method(base, "add_child", new_env, true);
 	// Move to the beginning of the scene tree since more "global" nodes
@@ -7288,14 +7319,6 @@ Vector<int> Node3DEditor::get_subgizmo_selection() {
 		}
 	}
 	return ret;
-}
-
-void Node3DEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
-}
-
-Ref<EditorUndoRedoManager> Node3DEditor::get_undo_redo() {
-	return undo_redo;
 }
 
 void Node3DEditor::add_control_to_menu_panel(Control *p_control) {
@@ -7748,7 +7771,6 @@ Node3DEditor::Node3DEditor() {
 	gizmo.scale = 1.0;
 
 	viewport_environment = Ref<Environment>(memnew(Environment));
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	VBoxContainer *vbc = this;
 
 	custom_camera = nullptr;

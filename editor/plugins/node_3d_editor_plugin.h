@@ -53,7 +53,6 @@ class Node3DEditorViewport;
 class SubViewportContainer;
 class DirectionalLight3D;
 class WorldEnvironment;
-class EditorUndoRedoManager;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
@@ -203,9 +202,7 @@ private:
 	Node *target_node = nullptr;
 	Point2 drop_pos;
 
-	EditorData *editor_data = nullptr;
 	EditorSelection *editor_selection = nullptr;
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	CheckBox *preview_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
@@ -686,7 +683,6 @@ private:
 	HBoxContainer *context_menu_hbox = nullptr;
 
 	void _generate_selection_boxes();
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	int camera_override_viewport_id;
 
@@ -834,9 +830,6 @@ public:
 	void set_state(const Dictionary &p_state);
 
 	Ref<Environment> get_viewport_environment() { return viewport_environment; }
-
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
-	Ref<EditorUndoRedoManager> get_undo_redo();
 
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);

@@ -39,8 +39,6 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
-class EditorUndoRedoManager;
-
 class GroupDialog : public AcceptDialog {
 	GDCLASS(GroupDialog, AcceptDialog);
 
@@ -68,8 +66,6 @@ class GroupDialog : public AcceptDialog {
 	Button *remove_button = nullptr;
 
 	String selected_group;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	void _group_selected();
 
@@ -102,7 +98,6 @@ public:
 	};
 
 	void edit();
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 
 	GroupDialog();
 };
@@ -119,8 +114,6 @@ class GroupsEditor : public VBoxContainer {
 	LineEdit *group_name = nullptr;
 	Button *add = nullptr;
 	Tree *tree = nullptr;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	String selected_group;
 
@@ -143,7 +136,6 @@ public:
 		COPY_GROUP,
 	};
 
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_current(Node *p_node);
 
 	GroupsEditor();
