@@ -580,6 +580,17 @@
 		<member name="interface/inspector/show_low_level_opentype_features" type="bool" setter="" getter="">
 			If [code]true[/code], display OpenType features marked as [code]hidden[/code] by the font file in the [Font] editor.
 		</member>
+		<member name="interface/multi_window/enable" type="bool" setter="" getter="">
+			If [code]true[/code], the multi window support in editor is enabled. The following panels can become dedicated windows (made floating): Docks, Script editor, and Shader editor.
+			[b]Note:[/b] When [member interface/editor/single_window_mode] is [code]true[/code], the multi window support is always disabled.
+		</member>
+		<member name="interface/multi_window/maximize_window" type="bool" setter="" getter="">
+			If [code]true[/code], when panels are made floating they will be maximized.
+			If [code]false[/code], when panels are made floating their position and size will match the ones when they are attached (excluding window border) to the editor window.
+		</member>
+		<member name="interface/multi_window/restore_windows_on_load" type="bool" setter="" getter="">
+			If [code]true[/code], the floating panel position, size, and screen will be saved on editor exit. On next launch the panels that were floating will be made floating in the saved positions, sizes and screens, if possible.
+		</member>
 		<member name="interface/scene_tabs/display_close_button" type="int" setter="" getter="">
 			Controls when the Close (X) button is displayed on scene tabs at the top of the editor.
 		</member>

@@ -833,6 +833,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Script Editor
 	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(default_margin_size, 0, default_margin_size, default_margin_size));
+	theme->set_stylebox("ScriptEditorPanelFloating", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
+
 	theme->set_stylebox("ScriptEditor", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
 
 	// Launch Pad and Play buttons
