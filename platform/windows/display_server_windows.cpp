@@ -2449,6 +2449,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				window_mouseover_id = INVALID_WINDOW_ID;
 
 				_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+			} else if (window_mouseover_id != INVALID_WINDOW_ID) {
+				// This is reached during drag and drop, after dropping in a different window.
+				// Once-off notification, must call again.
+				track_mouse_leave_event(windows[window_mouseover_id].hWnd);
 			}
 
 		} break;
