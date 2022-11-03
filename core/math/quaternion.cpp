@@ -38,25 +38,11 @@ real_t Quaternion::angle_to(const Quaternion &p_to) const {
 	return Math::acos(CLAMP(d * d * 2 - 1, -1, 1));
 }
 
-// get_euler_xyz returns a vector containing the Euler angles in the format
-// (ax,ay,az), where ax is the angle of rotation around x axis,
-// and similar for other axes.
-// This implementation uses XYZ convention (Z is the first rotation).
-Vector3 Quaternion::get_euler_xyz() const {
-	Basis m(*this);
-	return m.get_euler(EulerOrder::XYZ);
-}
-
-// get_euler_yxz returns a vector containing the Euler angles in the format
-// (ax,ay,az), where ax is the angle of rotation around x axis,
-// and similar for other axes.
-// This implementation uses YXZ convention (Z is the first rotation).
-Vector3 Quaternion::get_euler_yxz() const {
+Vector3 Quaternion::get_euler(EulerOrder p_order) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion must be normalized.");
 #endif
-	Basis m(*this);
-	return m.get_euler(EulerOrder::YXZ);
+	return Basis(*this).get_euler(p_order);
 }
 
 void Quaternion::operator*=(const Quaternion &p_q) {

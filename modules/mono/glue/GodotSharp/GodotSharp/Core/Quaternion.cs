@@ -312,7 +312,7 @@ namespace Godot
         /// the rotation angles in the format (X angle, Y angle, Z angle).
         /// </summary>
         /// <returns>The Euler angle representation of this quaternion.</returns>
-        public Vector3 GetEuler()
+        public Vector3 GetEuler(EulerOrder order = EulerOrder.Yxz)
         {
 #if DEBUG
             if (!IsNormalized())
@@ -321,7 +321,7 @@ namespace Godot
             }
 #endif
             var basis = new Basis(this);
-            return basis.GetEuler();
+            return basis.GetEuler(order);
         }
 
         /// <summary>
