@@ -669,9 +669,10 @@ void RendererViewport::draw_viewports() {
 			// This usually is a result of the player taking off their headset and OpenXR telling us to skip
 			// rendering frames.
 			if (xr_interface->pre_draw_viewport(vp->render_target)) {
-				RSG::texture_storage->render_target_set_override_color(vp->render_target, xr_interface->get_color_texture());
-				RSG::texture_storage->render_target_set_override_depth(vp->render_target, xr_interface->get_depth_texture());
-				RSG::texture_storage->render_target_set_override_velocity(vp->render_target, xr_interface->get_velocity_texture());
+				RSG::texture_storage->render_target_set_override(vp->render_target,
+						xr_interface->get_color_texture(),
+						xr_interface->get_depth_texture(),
+						xr_interface->get_velocity_texture());
 
 				// render...
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);
@@ -699,9 +700,7 @@ void RendererViewport::draw_viewports() {
 				}
 			}
 		} else {
-			RSG::texture_storage->render_target_set_override_color(vp->render_target, RID()); // TODO if fullscreen output, we can set this to our texture chain
-			RSG::texture_storage->render_target_set_override_depth(vp->render_target, RID());
-			RSG::texture_storage->render_target_set_override_velocity(vp->render_target, RID());
+			RSG::texture_storage->render_target_set_override(vp->render_target, RID(), RID(), RID());
 
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
