@@ -3892,7 +3892,7 @@ ScriptEditor::ScriptEditor() {
 		vbc->add_child(disk_changed_list);
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
-		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::reload_scripts));
+		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::reload_scripts).bind(false));
 		disk_changed->set_ok_button_text(TTR("Reload"));
 
 		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
