@@ -168,7 +168,11 @@
 // MARK: Orientation
 
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
-	return UIRectEdgeAll;
+	if (GLOBAL_GET("display/window/ios/suppress_ui_gesture")) {
+		return UIRectEdgeAll;
+	} else {
+		return UIRectEdgeNone;
+	}
 }
 
 - (BOOL)shouldAutorotate {
@@ -210,7 +214,11 @@
 }
 
 - (BOOL)prefersStatusBarHidden {
-	return YES;
+	if (GLOBAL_GET("display/window/ios/hide_status_bar")) {
+		return YES;
+	} else {
+		return NO;
+	}
 }
 
 - (BOOL)prefersHomeIndicatorAutoHidden {
