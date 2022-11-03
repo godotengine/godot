@@ -1321,9 +1321,9 @@ void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_de
 		Ref<WaylandDropFilesEventMessage> msg;
 		msg.instantiate();
 
-		msg->files = _string_read_fd(fds[0]).split("\n", false);
+		msg->files = _string_read_fd(fds[0]).split("\r\n", false);
 		for (int i = 0; i < msg->files.size(); i++) {
-			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode().strip_edges();
+			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
 		}
 
 		ss->wls->message_queue.push_back(msg);
