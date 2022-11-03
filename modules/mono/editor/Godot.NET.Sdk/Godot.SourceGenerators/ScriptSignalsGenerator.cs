@@ -276,7 +276,7 @@ namespace Godot.SourceGenerators
                 source.Append(
                     $"    /// <inheritdoc cref=\"{signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal()}\"/>\n");
 
-                source.Append("    public event ")
+                source.Append($"    {signalDelegate.DelegateSymbol.GetAccessibilityKeyword()} event ")
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
                     .Append(" @")
                     .Append(signalName)
