@@ -691,7 +691,7 @@ bool OpenXRAPI::create_swapchains() {
 			print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(swapchain_format_to_use));
 		}
 
-		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
+		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
 			return false;
 		}
 	}
