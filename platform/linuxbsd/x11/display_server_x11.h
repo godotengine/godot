@@ -169,7 +169,6 @@ class DisplayServerX11 : public DisplayServer {
 	HashMap<WindowID, WindowData> windows;
 
 	unsigned int last_mouse_monitor_mask = 0;
-	Vector2i last_mouse_monitor_pos;
 	uint64_t time_since_popup = 0;
 
 	List<WindowID> popup_list;
