@@ -2440,7 +2440,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_connect(int p_
 		// Find the adequate neighbor
 		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
-			if (tile_set->is_valid_terrain_peering_bit(p_terrain_set, bit)) {
+			if (is_existing_neighbor(bit)) {
 				Vector2i neighbor = get_neighbor_cell(coords, bit);
 				if (!can_modify_set.has(neighbor)) {
 					can_modify_list.push_back(neighbor);
@@ -2538,7 +2538,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_path(int p_lay
 		TileSet::CellNeighbor found_bit = TileSet::CELL_NEIGHBOR_MAX;
 		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
-			if (tile_set->is_valid_terrain_peering_bit(p_terrain_set, bit)) {
+			if (is_existing_neighbor(bit)) {
 				if (get_neighbor_cell(p_path[i], bit) == p_path[i + 1]) {
 					found_bit = bit;
 					break;
