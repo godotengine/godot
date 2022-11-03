@@ -380,7 +380,7 @@
 			<return type="int" enum="TextServer.SubpixelPositioning" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns font sub-pixel glyph positioning mode.
+				Returns font subpixel glyph positioning mode.
 			</description>
 		</method>
 		<method name="font_get_supported_chars" qualifiers="const">
@@ -804,7 +804,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="subpixel_positioning" type="int" enum="TextServer.SubpixelPositioning" />
 			<description>
-				Sets font sub-pixel glyph positioning mode.
+				Sets font subpixel glyph positioning mode.
 			</description>
 		</method>
 		<method name="font_set_texture_image">
@@ -1547,23 +1547,23 @@
 		</constant>
 		<constant name="FONT_ANTIALIASING_LCD" value="2" enum="FontAntialiasing">
 			Font glyphs are rasterized for LCD screens.
-			LCD sub-pixel layout is determined by the value of [code]gui/theme/lcd_subpixel_layout[/code] project settings.
-			LCD sub-pixel anti-aliasing mode is suitable only for rendering horizontal, unscaled text in 2D.
+			LCD subpixel layout is determined by the value of [code]gui/theme/lcd_subpixel_layout[/code] project settings.
+			LCD subpixel anti-aliasing mode is suitable only for rendering horizontal, unscaled text in 2D.
 		</constant>
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_NONE" value="0" enum="FontLCDSubpixelLayout">
-			Unknown or unsupported sub-pixel layout, LCD sub-pixel anti-aliasing is disabled.
+			Unknown or unsupported subpixel layout, LCD subpixel antialiasing is disabled.
 		</constant>
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_HRGB" value="1" enum="FontLCDSubpixelLayout">
-			Horizontal RGB sub-pixel layout.
+			Horizontal RGB subpixel layout.
 		</constant>
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_HBGR" value="2" enum="FontLCDSubpixelLayout">
-			Horizontal BGR sub-pixel layout.
+			Horizontal BGR subpixel layout.
 		</constant>
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_VRGB" value="3" enum="FontLCDSubpixelLayout">
-			Vertical RGB sub-pixel layout.
+			Vertical RGB subpixel layout.
 		</constant>
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_VBGR" value="4" enum="FontLCDSubpixelLayout">
-			Vertical BGR sub-pixel layout.
+			Vertical BGR subpixel layout.
 		</constant>
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_MAX" value="5" enum="FontLCDSubpixelLayout">
 		</constant>
