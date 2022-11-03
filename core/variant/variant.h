@@ -490,6 +490,7 @@ public:
 	}
 
 	// Only enum classes that need to be bound need this to be defined.
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(EulerOrder)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
