@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[StringName]s are immutable strings designed for general-purpose representation of unique names (also called "string interning"). [StringName] ensures that only one instance of a given name exists (so two [StringName]s with the same value are the same object). Comparing them is much faster than with regular [String]s, because only the pointers are compared, not the whole strings.
-		You will usually just pass a [String] to methods expecting a [StringName] and it will be automatically converted, but you may occasionally want to construct a [StringName] ahead of time with [StringName] or the literal syntax [code]&amp;"example"[/code].
+		You will usually just pass a [String] to methods expecting a [StringName] and it will be automatically converted, but you may occasionally want to construct a [StringName] ahead of time with [StringName] or, in GDScript, the literal syntax [code]&amp;"example"[/code].
 		See also [NodePath], which is a similar concept specifically designed to store pre-parsed node paths.
 	</description>
 	<tutorials>
@@ -28,7 +28,7 @@
 			<return type="StringName" />
 			<param index="0" name="from" type="String" />
 			<description>
-				Creates a new [StringName] from the given [String]. [code]StringName("example")[/code] is equivalent to [code]&amp;"example"[/code].
+				Creates a new [StringName] from the given [String]. In GDScript, [code]StringName("example")[/code] is equivalent to [code]&amp;"example"[/code].
 			</description>
 		</constructor>
 	</constructors>
@@ -45,48 +45,56 @@
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if this [StringName] is not equivalent to the given [String].
 			</description>
 		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if the [StringName] and [param right] do not refer to the same name. Comparisons between [StringName]s are much faster than regular [String] comparisons.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes before [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order. Useful for sorting.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes before [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order, or if both are equal.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if this [StringName] is equivalent to the given [String].
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if the [StringName] and [param right] refer to the same name. Comparisons between [StringName]s are much faster than regular [String] comparisons.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if the left [StringName] comes after [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order. Useful for sorting.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if the left [StringName] comes after [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order, or if both are equal.
 			</description>
 		</operator>
 	</operators>
