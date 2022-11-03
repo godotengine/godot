@@ -492,9 +492,9 @@ void DynamicFontImportSettings::_variation_add() {
 	TreeItem *vars_item = vars_list->create_item(vars_list_root);
 	ERR_FAIL_NULL(vars_item);
 
-	vars_item->set_text(0, TTR("New configuration"));
+	vars_item->set_text(0, TTR("New Configuration"));
 	vars_item->set_editable(0, true);
-	vars_item->add_button(1, vars_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
+	vars_item->add_button(1, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
 	vars_item->set_button_color(1, 0, Color(1, 1, 1, 0.75));
 
 	Ref<DynamicFontImportSettingsData> import_variation_data;
@@ -885,7 +885,7 @@ void DynamicFontImportSettings::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			add_var->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
 	}
 }
@@ -1044,7 +1044,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 
 					vars_item->set_text(0, cfg_name);
 					vars_item->set_editable(0, true);
-					vars_item->add_button(1, vars_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
+					vars_item->add_button(1, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
 					vars_item->set_button_color(1, 0, Color(1, 1, 1, 0.75));
 
 					Ref<DynamicFontImportSettingsData> import_variation_data_custom;
@@ -1219,7 +1219,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	// Page 2 layout: Configurations
 	VBoxContainer *page2_vb = memnew(VBoxContainer);
-	page2_vb->set_name(TTR("Pre-render configurations"));
+	page2_vb->set_name(TTR("Pre-render Configurations"));
 	main_pages->add_child(page2_vb);
 
 	page2_description = memnew(Label);
@@ -1248,7 +1248,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	add_var = memnew(Button);
 	page2_hb_vars->add_child(add_var);
 	add_var->set_tooltip_text(TTR("Add configuration"));
-	add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+	add_var->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	add_var->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_variation_add));
 
 	vars_list = memnew(Tree);
@@ -1314,12 +1314,12 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	Button *btn_fill = memnew(Button);
 	text_hb->add_child(btn_fill);
-	btn_fill->set_text(TTR("Shape text and add glyphs"));
+	btn_fill->set_text(TTR("Shape Text and Add Glyphs"));
 	btn_fill->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_glyph_text_selected));
 
 	Button *btn_clear = memnew(Button);
 	text_hb->add_child(btn_clear);
-	btn_clear->set_text(TTR("Clear glyph list"));
+	btn_clear->set_text(TTR("Clear Glyph List"));
 	btn_clear->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_glyph_clear));
 
 	// Page 2.2 layout: Character map
