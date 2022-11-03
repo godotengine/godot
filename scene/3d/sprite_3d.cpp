@@ -680,6 +680,7 @@ void Sprite3D::set_region_enabled(bool p_region) {
 
 	region = p_region;
 	_queue_redraw();
+	notify_property_list_changed();
 }
 
 bool Sprite3D::is_region_enabled() const {
@@ -780,6 +781,10 @@ void Sprite3D::_validate_property(PropertyInfo &p_property) const {
 
 	if (p_property.name == "frame_coords") {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+	}
+
+	if (!region && (p_property.name == "region_rect")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

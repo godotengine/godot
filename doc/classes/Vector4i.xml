@@ -133,12 +133,20 @@
 			<return type="Vector4i" />
 			<param index="0" name="right" type="Vector4i" />
 			<description>
+				Gets the remainder of each component of the [Vector4i] with the components of the given [Vector4i]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
+				[codeblock]
+				print(Vector4i(10, -20, 30, -40) % Vector4i(7, 8, 9, 10))  # Prints "(3, -4, 3, 0)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator %">
 			<return type="Vector4i" />
 			<param index="0" name="right" type="int" />
 			<description>
+				Gets the remainder of each component of the [Vector4i] with the the given [int]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
+				[codeblock]
+				print(Vector4i(10, -20, 30, -40) % 7)  # Prints "(3, -6, 2, -5)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator *">

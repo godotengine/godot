@@ -396,7 +396,7 @@ private:
 	int tab_size = 4;
 	bool underline_meta = true;
 	bool underline_hint = true;
-	bool override_selected_font_color = false;
+	bool use_selected_font_color = false;
 
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 

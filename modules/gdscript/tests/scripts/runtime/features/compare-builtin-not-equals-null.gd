@@ -69,6 +69,10 @@ func test():
 	value = Transform3D()
 	print(value != null)
 
+	# Projection
+	value = Projection()
+	print(value != null)
+
 	# Color
 	value = Color()
 	print(value != null)

@@ -357,8 +357,8 @@ void CopyEffects::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, cons
 		copy.push_constant.flags |= COPY_FLAG_ALPHA_TO_ONE;
 	}
 
-	copy.push_constant.section[0] = 0;
-	copy.push_constant.section[1] = 0;
+	copy.push_constant.section[0] = p_rect.position.x;
+	copy.push_constant.section[1] = p_rect.position.y;
 	copy.push_constant.section[2] = p_rect.size.width;
 	copy.push_constant.section[3] = p_rect.size.height;
 	copy.push_constant.target[0] = p_rect.position.x;

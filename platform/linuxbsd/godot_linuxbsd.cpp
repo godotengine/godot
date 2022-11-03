@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (Main::start()) {
+		os.set_exit_code(EXIT_SUCCESS);
 		os.run(); // it is actually the OS that decides how to run
 	}
 	Main::cleanup();

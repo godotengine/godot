@@ -40,7 +40,7 @@
 #endif
 
 #ifdef X11_ENABLED
-#include "display_server_x11.h"
+#include "x11/display_server_x11.h"
 #endif
 
 #ifdef HAVE_MNTENT
@@ -246,6 +246,10 @@ String OS_LinuxBSD::get_version() const {
 }
 
 Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
+	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+		return Vector<String>();
+	}
+
 	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name(); // e.g. `NVIDIA GeForce GTX 970`
 	const String rendering_device_vendor = RenderingServer::get_singleton()->get_rendering_device()->get_device_vendor_name(); // e.g. `NVIDIA`
 	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`
@@ -477,7 +481,16 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc";
+#ifdef FONTCONFIG_ENABLED
+	if (p_feature == "system_fonts") {
+		return font_config_initialized;
+	}
+#endif
+	if (p_feature == "pc") {
+		return true;
+	}
+
+	return false;
 }
 
 uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {

@@ -101,6 +101,9 @@ public:
 	void set_update_on_text_changed(bool p_enabled);
 	bool get_update_on_text_changed() const;
 
+	void set_select_all_on_focus(bool p_enabled);
+	bool is_select_all_on_focus() const;
+
 	void apply();
 	void set_custom_arrow_step(const double p_custom_arrow_step);
 	double get_custom_arrow_step() const;

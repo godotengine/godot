@@ -368,8 +368,29 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->pop();
 	if (!p_method.qualifiers.is_empty()) {
 		class_desc->push_color(qualifier_color);
-		class_desc->add_text(" ");
-		_add_text(p_method.qualifiers);
+
+		PackedStringArray qualifiers = p_method.qualifiers.split_spaces();
+		for (const String &qualifier : qualifiers) {
+			String hint;
+			if (qualifier == "vararg") {
+				hint = TTR("This method supports a variable number of arguments.");
+			} else if (qualifier == "virtual") {
+				hint = TTR("This method is called by the engine.\nIt can be overridden to customize built-in behavior.");
+			} else if (qualifier == "const") {
+				hint = TTR("This method has no side effects.\nIt does not modify the object in any way.");
+			} else if (qualifier == "static") {
+				hint = TTR("This method does not need an instance to be called.\nIt can be called directly using the class name.");
+			}
+
+			class_desc->add_text(" ");
+			if (!hint.is_empty()) {
+				class_desc->push_hint(hint);
+				class_desc->add_text(qualifier);
+				class_desc->pop();
+			} else {
+				class_desc->add_text(qualifier);
+			}
+		}
 		class_desc->pop();
 	}
 
@@ -927,7 +948,7 @@ void EditorHelp::_update_doc() {
 	bool constructor_descriptions = false;
 	bool method_descriptions = false;
 	bool operator_descriptions = false;
-	bool sort_methods = EditorSettings::get_singleton()->get("text_editor/help/sort_functions_alphabetically");
+	bool sort_methods = EDITOR_GET("text_editor/help/sort_functions_alphabetically");
 
 	Vector<DocData::MethodDoc> methods;
 
@@ -2304,7 +2325,6 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
 	rich_text->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
-	rich_text->set_override_selected_font_color(false);
 	rich_text->set_fit_content_height(true);
 	set_custom_minimum_size(Size2(0, 50 * EDSCALE));
 }

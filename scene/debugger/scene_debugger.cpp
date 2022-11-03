@@ -548,14 +548,36 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 	// Flatten tree into list, depth first, use stack to avoid recursion.
 	List<Node *> stack;
 	stack.push_back(p_root);
+	bool is_root = true;
+	const StringName &is_visible_sn = SNAME("is_visible");
+	const StringName &is_visible_in_tree_sn = SNAME("is_visible_in_tree");
 	while (stack.size()) {
 		Node *n = stack[0];
 		stack.pop_front();
+
 		int count = n->get_child_count();
-		nodes.push_back(RemoteNode(count, n->get_name(), n->get_class(), n->get_instance_id()));
 		for (int i = 0; i < count; i++) {
 			stack.push_front(n->get_child(count - i - 1));
 		}
+
+		int view_flags = 0;
+		if (is_root) {
+			// Prevent root window visibility from being changed.
+			is_root = false;
+		} else if (n->has_method(is_visible_sn)) {
+			const Variant visible = n->call(is_visible_sn);
+			if (visible.get_type() == Variant::BOOL) {
+				view_flags = RemoteNode::VIEW_HAS_VISIBLE_METHOD;
+				view_flags |= uint8_t(visible) * RemoteNode::VIEW_VISIBLE;
+			}
+			if (n->has_method(is_visible_in_tree_sn)) {
+				const Variant visible_in_tree = n->call(is_visible_in_tree_sn);
+				if (visible_in_tree.get_type() == Variant::BOOL) {
+					view_flags |= uint8_t(visible_in_tree) * RemoteNode::VIEW_VISIBLE_IN_TREE;
+				}
+			}
+		}
+		nodes.push_back(RemoteNode(count, n->get_name(), n->get_class(), n->get_instance_id(), n->get_scene_file_path(), view_flags));
 	}
 }
 
@@ -565,19 +587,23 @@ void SceneDebuggerTree::serialize(Array &p_arr) {
 		p_arr.push_back(n.name);
 		p_arr.push_back(n.type_name);
 		p_arr.push_back(n.id);
+		p_arr.push_back(n.scene_file_path);
+		p_arr.push_back(n.view_flags);
 	}
 }
 
 void SceneDebuggerTree::deserialize(const Array &p_arr) {
 	int idx = 0;
 	while (p_arr.size() > idx) {
-		ERR_FAIL_COND(p_arr.size() < 4);
-		CHECK_TYPE(p_arr[idx], INT);
-		CHECK_TYPE(p_arr[idx + 1], STRING);
-		CHECK_TYPE(p_arr[idx + 2], STRING);
-		CHECK_TYPE(p_arr[idx + 3], INT);
-		nodes.push_back(RemoteNode(p_arr[idx], p_arr[idx + 1], p_arr[idx + 2], p_arr[idx + 3]));
-		idx += 4;
+		ERR_FAIL_COND(p_arr.size() < 6);
+		CHECK_TYPE(p_arr[idx], INT); // child_count.
+		CHECK_TYPE(p_arr[idx + 1], STRING); // name.
+		CHECK_TYPE(p_arr[idx + 2], STRING); // type_name.
+		CHECK_TYPE(p_arr[idx + 3], INT); // id.
+		CHECK_TYPE(p_arr[idx + 4], STRING); // scene_file_path.
+		CHECK_TYPE(p_arr[idx + 5], INT); // view_flags.
+		nodes.push_back(RemoteNode(p_arr[idx], p_arr[idx + 1], p_arr[idx + 2], p_arr[idx + 3], p_arr[idx + 4], p_arr[idx + 5]));
+		idx += 6;
 	}
 }
 

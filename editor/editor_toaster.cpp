@@ -231,7 +231,7 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 	// Delete the control right away (removed as child) as it might cause issues otherwise when iterative over the vbox_container children.
 	for (unsigned int i = 0; i < to_delete.size(); i++) {
 		vbox_container->remove_child(to_delete[i]);
-		to_delete[i]->queue_delete();
+		to_delete[i]->queue_free();
 		toasts.erase(to_delete[i]);
 	}
 

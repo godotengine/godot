@@ -28,7 +28,7 @@
 			<return type="bool" />
 			<param index="0" name="class_name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if editing for the class specified by [param class_name] is disabled. When disabled, the class will still appear in the Create New Node dialog but the inspector will be read-only when selecting a node that extends the class.
+				Returns [code]true[/code] if editing for the class specified by [param class_name] is disabled. When disabled, the class will still appear in the Create New Node dialog but the Inspector will be read-only when selecting a node that extends the class.
 			</description>
 		</method>
 		<method name="is_class_property_disabled" qualifiers="const">
@@ -36,7 +36,7 @@
 			<param index="0" name="class_name" type="StringName" />
 			<param index="1" name="property" type="StringName" />
 			<description>
-				Returns [code]true[/code] if [param property] is disabled in the class specified by [param class_name]. When a property is disabled, it won't appear in the inspector when selecting a node that extends the class specified by [param class_name].
+				Returns [code]true[/code] if [param property] is disabled in the class specified by [param class_name]. When a property is disabled, it won't appear in the Inspector when selecting a node that extends the class specified by [param class_name].
 			</description>
 		</method>
 		<method name="is_feature_disabled" qualifiers="const">
@@ -73,7 +73,7 @@
 			<param index="0" name="class_name" type="StringName" />
 			<param index="1" name="disable" type="bool" />
 			<description>
-				If [param disable] is [code]true[/code], disables editing for the class specified by [param class_name]. When disabled, the class will still appear in the Create New Node dialog but the inspector will be read-only when selecting a node that extends the class.
+				If [param disable] is [code]true[/code], disables editing for the class specified by [param class_name]. When disabled, the class will still appear in the Create New Node dialog but the Inspector will be read-only when selecting a node that extends the class.
 			</description>
 		</method>
 		<method name="set_disable_class_property">
@@ -82,7 +82,7 @@
 			<param index="1" name="property" type="StringName" />
 			<param index="2" name="disable" type="bool" />
 			<description>
-				If [param disable] is [code]true[/code], disables editing for [param property] in the class specified by [param class_name]. When a property is disabled, it won't appear in the inspector when selecting a node that extends the class specified by [param class_name].
+				If [param disable] is [code]true[/code], disables editing for [param property] in the class specified by [param class_name]. When a property is disabled, it won't appear in the Inspector when selecting a node that extends the class specified by [param class_name].
 			</description>
 		</method>
 		<method name="set_disable_feature">

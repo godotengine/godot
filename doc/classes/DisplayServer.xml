@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DisplayServer" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Singleton for window management functions.
 	</brief_description>
 	<description>
+		[DisplayServer] handles everything related to window management. This is separated from [OS] as a single operating system may support multiple display servers.
+		[b]Headless mode:[/b] Starting the engine with the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] disables all rendering and window management functions. Most functions from [DisplayServer] will return dummy values in this case.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,8 +19,8 @@
 		<method name="clipboard_get_primary" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the user's primary clipboard as a string if possible.
-				[b]Note:[/b] This method is only implemented on Linux.
+				Returns the user's [url=https://unix.stackexchange.com/questions/139191/whats-the-difference-between-primary-selection-and-clipboard-buffer]primary[/url] clipboard as a string if possible. This is the clipboard that is set when the user selects text in any application, rather than when pressing [kbd]Ctrl + C[/kbd]. The clipboard data can then be pasted by clicking the middle mouse button in any application that supports the primary clipboard mechanism.
+				[b]Note:[/b] This method is only implemented on Linux (X11).
 			</description>
 		</method>
 		<method name="clipboard_has" qualifiers="const">
@@ -37,22 +40,14 @@
 			<return type="void" />
 			<param index="0" name="clipboard_primary" type="String" />
 			<description>
-				Sets the user's primary clipboard content to the given string.
-				[b]Note:[/b] This method is only implemented on Linux.
-			</description>
-		</method>
-		<method name="create_sub_window">
-			<return type="int" />
-			<param index="0" name="mode" type="int" enum="DisplayServer.WindowMode" />
-			<param index="1" name="vsync_mode" type="int" enum="DisplayServer.VSyncMode" />
-			<param index="2" name="flags" type="int" />
-			<param index="3" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
-			<description>
+				Sets the user's [url=https://unix.stackexchange.com/questions/139191/whats-the-difference-between-primary-selection-and-clipboard-buffer]primary[/url] clipboard content to the given string. This is the clipboard that is set when the user selects text in any application, rather than when pressing [kbd]Ctrl + C[/kbd]. The clipboard data can then be pasted by clicking the middle mouse button in any application that supports the primary clipboard mechanism.
+				[b]Note:[/b] This method is only implemented on Linux (X11).
 			</description>
 		</method>
 		<method name="cursor_get_shape" qualifiers="const">
 			<return type="int" enum="DisplayServer.CursorShape" />
 			<description>
+				Returns the default mouse cursor shape set by [method cursor_set_shape].
 			</description>
 		</method>
 		<method name="cursor_set_custom_image">
@@ -61,18 +56,14 @@
 			<param index="1" name="shape" type="int" enum="DisplayServer.CursorShape" default="0" />
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
+				Sets a custom mouse cursor image for the defined [param shape]. This means the user's operating system and mouse cursor theme will no longer influence the mouse cursor's appearance. The image must be [code]256x256[/code] or smaller for correct appearance. [param hotspot] can optionally be set to define the area where the cursor will click. By default, [param hotspot] is set to [code]Vector2(0, 0)[/code], which is the top-left corner of the image. See also [method cursor_set_shape].
 			</description>
 		</method>
 		<method name="cursor_set_shape">
 			<return type="void" />
 			<param index="0" name="shape" type="int" enum="DisplayServer.CursorShape" />
 			<description>
-			</description>
-		</method>
-		<method name="delete_sub_window">
-			<return type="void" />
-			<param index="0" name="window_id" type="int" />
-			<description>
+				Sets the default mouse cursor shape. The cursor's appearance will vary depending on the user's operating system and mouse cursor theme. See also [method cursor_get_shape] and [method cursor_set_custom_image].
 			</description>
 		</method>
 		<method name="dialog_input_text">
@@ -82,6 +73,8 @@
 			<param index="2" name="existing_text" type="String" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
+				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] will be called with a [String] argument equal to the text field's contents when the dialog is closed for any reason.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="dialog_show">
@@ -91,17 +84,23 @@
 			<param index="2" name="buttons" type="PackedStringArray" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
+				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] will be called when the dialog is closed for any reason.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="enable_for_stealing_focus">
 			<return type="void" />
 			<param index="0" name="process_id" type="int" />
 			<description>
+				Allows the [param process_id] PID to steal focus from this window. In other words, this disables the operating system's focus stealing protection for the specified PID.
+				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
 		<method name="force_process_and_drop_events">
 			<return type="void" />
 			<description>
+				Forces window manager processing while ignoring all [InputEvent]s. See also [method process_events].
+				[b]Note:[/b] This method is implemented on Windows and macOS.
 			</description>
 		</method>
 		<method name="get_accent_color" qualifiers="const">
@@ -127,27 +126,43 @@
 		<method name="get_name" qualifiers="const">
 			<return type="String" />
 			<description>
+				Returns the name of the [DisplayServer] currently in use. Most operating systems only have a single [DisplayServer], but Linux has access to more than one [DisplayServer] (although only X11 is currently implemented in Godot).
+				The names of built-in display servers are [code]Windows[/code], [code]macOS[/code], [code]X11[/code] (Linux), [code]Android[/code], [code]iOS[/code], [code]web[/code] (HTML5) and [code]headless[/code] (when started with the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]).
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the number of displays available.
 			</description>
 		</method>
 		<method name="get_swap_cancel_ok">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if positions of [b]OK[/b] and [b]Cancel[/b] buttons are swapped in dialogs. This is enabled by default on Windows and UWP to follow interface conventions, and be toggled by changing [member ProjectSettings.gui/common/swap_cancel_ok].
+				[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 			</description>
 		</method>
 		<method name="get_window_at_screen_position" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="position" type="Vector2i" />
 			<description>
+				Returns the ID of the window at the specified screen [param position] (in pixels). On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
+				[codeblock]
+				* (0, 0)        +-------+
+				                |       |
+				+-------------+ |       |
+				|             | |       |
+				|             | |       |
+				+-------------+ +-------+
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_window_list" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<description>
+				Returns the list of Godot window IDs belonging to this process.
+				[b]Note:[/b] Native dialogs are not included in this list.
 			</description>
 		</method>
 		<method name="global_menu_add_check_item">
@@ -359,6 +374,14 @@
 			<param index="1" name="idx" type="int" />
 			<description>
 				Returns the callback of the item at index [param idx].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="menu_root" type="String" />
+			<description>
+				Returns number of items in the global menu with ID [param menu_root].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -665,37 +688,42 @@
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="DisplayServer.Feature" />
 			<description>
+				Returns [code]true[/code] if the specified [param feature] is supported by the current [DisplayServer], [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="ime_get_selection" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
+				Returns the text selection in the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] composition string, with the [Vector2i]'s [code]x[/code] component being the caret position and [code]y[/code] being the length of the selection.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="ime_get_text" qualifiers="const">
 			<return type="String" />
 			<description>
+				Returns the composition string contained within the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] window.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="is_dark_mode" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS is using dark mode.
-				[b]Note:[/b] This method is implemented on macOS, Windows and Linux.
+				[b]Note:[/b] This method is implemented on macOS, Windows and Linux (X11).
 			</description>
 		</method>
 		<method name="is_dark_mode_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS supports dark mode.
-				[b]Note:[/b] This method is implemented on macOS, Windows and Linux.
+				[b]Note:[/b] This method is implemented on macOS, Windows and Linux (X11).
 			</description>
 		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns active keyboard layout index.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_keycode_from_physical" qualifiers="const">
@@ -703,14 +731,14 @@
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Converts a physical (US QWERTY) [param keycode] to one in the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of keyboard layouts.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_language" qualifiers="const">
@@ -718,7 +746,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [param index].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_name" qualifiers="const">
@@ -726,25 +754,27 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the localized name of the keyboard layout at position [param index].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_set_current_layout">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Sets active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				Sets the active keyboard layout.
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
 			</description>
 		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
 			<return type="int" enum="MouseButton" />
 			<description>
+				Returns the current state of mouse buttons (whether each button is pressed) as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together. Equivalent to [method Input.get_mouse_button_mask].
 			</description>
 		</method>
 		<method name="mouse_get_mode" qualifiers="const">
 			<return type="int" enum="DisplayServer.MouseMode" />
 			<description>
+				Returns the current mouse mode. See also [method mouse_set_mode].
 			</description>
 		</method>
 		<method name="mouse_get_position" qualifiers="const">
@@ -757,11 +787,13 @@
 			<return type="void" />
 			<param index="0" name="mouse_mode" type="int" enum="DisplayServer.MouseMode" />
 			<description>
+				Sets the current mouse mode. See also [method mouse_get_mode].
 			</description>
 		</method>
 		<method name="process_events">
 			<return type="void" />
 			<description>
+				Perform window manager processing, including input flushing. See also [method force_process_and_drop_events], [method Input.flush_buffered_events] and [member Input.use_accumulated_input].
 			</description>
 		</method>
 		<method name="screen_get_dpi" qualifiers="const">
@@ -779,7 +811,7 @@
 				 xxhdpi - 480 dpi
 				xxxhdpi - 640 dpi
 				[/codeblock]
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows. Returns [code]72[/code] on unsupported platforms.
+				[b]Note:[/b] This method is implemented on Android, Linux (X11), macOS and Windows. Returns [code]72[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="screen_get_max_scale" qualifiers="const">
@@ -794,12 +826,24 @@
 			<return type="int" enum="DisplayServer.ScreenOrientation" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
+				Returns the [param screen]'s current orientation. See also [method screen_set_orientation].
+				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
 		<method name="screen_get_position" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
+				Returns the screen's top-left corner position in pixels. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
+				[codeblock]
+				* (0, 0)        +-------+
+				                |       |
+				+-------------+ |       |
+				|             | |       |
+				|             | |       |
+				+-------------+ +-------+
+				[/codeblock]
+				See also [method screen_get_size].
 			</description>
 		</method>
 		<method name="screen_get_refresh_rate" qualifiers="const">
@@ -829,29 +873,34 @@
 			<return type="Vector2i" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
+				Returns the screen's size in pixels. See also [method screen_get_position] and [method screen_get_usable_rect].
 			</description>
 		</method>
 		<method name="screen_get_usable_rect" qualifiers="const">
 			<return type="Rect2i" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
+				Returns the portion of the screen that is not obstructed by a status bar in pixels. See also [method screen_get_size].
 			</description>
 		</method>
 		<method name="screen_is_kept_on" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the screen should never be turned off by the operating system's power-saving measures. See also [method screen_set_keep_on].
 			</description>
 		</method>
 		<method name="screen_is_touchscreen" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
+				Returns [code]true[/code] if the screen can send touch events or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
 			</description>
 		</method>
 		<method name="screen_set_keep_on">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
+				Sets whether the screen should never be turned off by the operating system's power-saving measures. See also [method screen_is_kept_on].
 			</description>
 		</method>
 		<method name="screen_set_orientation">
@@ -859,18 +908,21 @@
 			<param index="0" name="orientation" type="int" enum="DisplayServer.ScreenOrientation" />
 			<param index="1" name="screen" type="int" default="-1" />
 			<description>
+				Sets the [param screen]'s [param orientation]. See also [method screen_get_orientation].
 			</description>
 		</method>
 		<method name="set_icon">
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<description>
+				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. To use icons in the operating system's native format, use [method set_native_icon] instead.
 			</description>
 		</method>
 		<method name="set_native_icon">
 			<return type="void" />
 			<param index="0" name="filename" type="String" />
 			<description>
+				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. The file at [param filename] must be in [code].ico[/code] format on Windows or [code].icns[/code] on macOS. By using specially crafted [code].ico[/code] or [code].icns[/code] icons, [method set_native_icon] allows specifying different icons depending on the size the icon is displayed at. This size is determined by the operating system and user preferences (including the display scale factor). To use icons in other formats, use [method set_icon] instead.
 			</description>
 		</method>
 		<method name="tablet_get_current_driver" qualifiers="const">
@@ -911,7 +963,7 @@
 				- [code]name[/code] is voice name.
 				- [code]id[/code] is voice identifier.
 				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_get_voices_for_language" qualifiers="const">
@@ -919,35 +971,35 @@
 			<param index="0" name="language" type="String" />
 			<description>
 				Returns an [PackedStringArray] of voice identifiers for the [param language].
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_is_paused" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the synthesizer is in a paused state.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_is_speaking" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the synthesizer is generating speech, or have utterance waiting in the queue.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_pause">
 			<return type="void" />
 			<description>
 				Puts the synthesizer into a paused state.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_resume">
 			<return type="void" />
 			<description>
 				Resumes the synthesizer if it was paused.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_set_utterance_callback">
@@ -956,10 +1008,10 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Adds a callback, which is called when the utterance has started, finished, canceled or reached a text boundary.
-				- [code]TTS_UTTERANCE_STARTED[/code], [code]TTS_UTTERANCE_ENDED[/code], and [code]TTS_UTTERANCE_CANCELED[/code] callable's method should take one [int] parameter, the utterance id.
-				- [code]TTS_UTTERANCE_BOUNDARY[/code] callable's method should take two [int] parameters, the index of the character and the utterance id.
+				- [constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance id.
+				- [constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance id.
 				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_speak">
@@ -978,16 +1030,16 @@
 				- [param pitch] ranges from [code]0.0[/code] (lowest) to [code]2.0[/code] (highest), [code]1.0[/code] is default pitch for the current voice.
 				- [param rate] ranges from [code]0.1[/code] (lowest) to [code]10.0[/code] (highest), [code]1.0[/code] is a normal speaking rate. Other values act as a percentage relative.
 				- [param utterance_id] is passed as a parameter to the callback functions.
-				[b]Note:[/b] On Windows and Linux, utterance [param text] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
+				[b]Note:[/b] On Windows and Linux (X11), utterance [param text] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
 				[b]Note:[/b] The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_stop">
 			<return type="void" />
 			<description>
 				Stops synthesis in progress and removes all utterances from the queue.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
 		<method name="virtual_keyboard_get_height" qualifiers="const">
@@ -1028,17 +1080,11 @@
 				Sets the mouse cursor position to the given [param position] relative to an origin at the upper left corner of the currently focused game Window Manager window.
 			</description>
 		</method>
-		<method name="window_attach_instance_id">
-			<return type="void" />
-			<param index="0" name="instance_id" type="int" />
-			<param index="1" name="window_id" type="int" default="0" />
-			<description>
-			</description>
-		</method>
 		<method name="window_can_draw" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns [code]true[/code] if anything can be drawn in the window specified by [param window_id], [code]false[/code] otherwise. Using the [code]--disable-render-loop[/code] command line argument or a headless build will return [code]false[/code].
 			</description>
 		</method>
 		<method name="window_get_active_popup" qualifiers="const">
@@ -1051,12 +1097,14 @@
 			<return type="int" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the [method Object.get_instance_id] of the [Window] the [param window_id] is attached to. also [method window_get_attached_instance_id].
 			</description>
 		</method>
 		<method name="window_get_current_screen" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the screen the window specified by [param window_id] is currently positioned on. If the screen overlaps multiple displays, the screen where the window's center is located is returned. See also [method window_set_current_screen].
 			</description>
 		</method>
 		<method name="window_get_flag" qualifiers="const">
@@ -1071,12 +1119,14 @@
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the window's maximum size (in pixels). See also [method window_set_max_size].
 			</description>
 		</method>
 		<method name="window_get_min_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the window's minimum size (in pixels). See also [method window_set_min_size].
 			</description>
 		</method>
 		<method name="window_get_mode" qualifiers="const">
@@ -1092,7 +1142,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Returns internal structure pointers for use in plugins.
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux (X11), macOS and Windows.
 			</description>
 		</method>
 		<method name="window_get_popup_safe_rect" qualifiers="const">
@@ -1113,19 +1163,21 @@
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the size of the window specified by [param window_id] (in pixels), including the borders drawn by the operating system. See also [method window_get_size].
 			</description>
 		</method>
 		<method name="window_get_safe_title_margins" qualifiers="const">
 			<return type="Vector3i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns left margins ([code]x[/code]), right margins ([code]y[/code]) adn height ([code]z[/code]) of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
+				Returns left margins ([code]x[/code]), right margins ([code]y[/code]) and height ([code]z[/code]) of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
 			</description>
 		</method>
 		<method name="window_get_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the size of the window specified by [param window_id] (in pixels), excluding the borders drawn by the operating system. This is also called the "client area". See also [method window_get_real_size], [method window_set_size] and [method window_get_position].
 			</description>
 		</method>
 		<method name="window_get_vsync_mode" qualifiers="const">
@@ -1133,6 +1185,13 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Returns the V-Sync mode of the given window.
+			</description>
+		</method>
+		<method name="window_is_maximize_allowed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns [code]true[/code] if the given window can be maximized (the maximize button is enabled).
 			</description>
 		</method>
 		<method name="window_maximize_on_title_dbl_click" qualifiers="const">
@@ -1153,12 +1212,14 @@
 			<return type="void" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
+				Moves the window specified by [param window_id] to the foreground, so that it is visible over other windows.
 			</description>
 		</method>
 		<method name="window_request_attention">
 			<return type="void" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
+				Makes the window specified by [param window_id] request attention, which is materialized by the window title and taskbar entry blinking until the window is focused. This usually has no visible effect if the window is currently focused. The exact behavior varies depending on the operating system.
 			</description>
 		</method>
 		<method name="window_set_current_screen">
@@ -1166,6 +1227,7 @@
 			<param index="0" name="screen" type="int" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
+				Moves the window specified by [param window_id] to the specified [param screen]. See also [method window_get_current_screen].
 			</description>
 		</method>
 		<method name="window_set_drop_files_callback">
@@ -1173,6 +1235,8 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the [param callback] that should be called when files are dropped from the operating system's file manager to the window specified by [param window_id].
+				[b]Note:[/b] This method is implemented on Windows, macOS, Linux (X11) and Web.
 			</description>
 		</method>
 		<method name="window_set_exclusive">
@@ -1199,6 +1263,7 @@
 			<param index="0" name="active" type="bool" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets whether [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] should be enabled for the window specified by [param window_id]. See also [method window_set_ime_position].
 			</description>
 		</method>
 		<method name="window_set_ime_position">
@@ -1206,6 +1271,7 @@
 			<param index="0" name="position" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the position of the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] popup for the specified [param window_id]. Only effective if [method window_set_ime_active] was set to [code]true[/code] for the specified [param window_id].
 			</description>
 		</method>
 		<method name="window_set_input_event_callback">
@@ -1213,6 +1279,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the [param callback] that should be called when any [InputEvent] is sent to the window specified by [param window_id].
 			</description>
 		</method>
 		<method name="window_set_input_text_callback">
@@ -1220,6 +1287,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the [param callback] that should be called when text is entered using the virtual keyboard to the window specified by [param window_id].
 			</description>
 		</method>
 		<method name="window_set_max_size">
@@ -1227,6 +1295,8 @@
 			<param index="0" name="max_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the maximum size of the window specified by [param window_id] in pixels. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_max_size].
+				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
 			</description>
 		</method>
 		<method name="window_set_min_size">
@@ -1234,8 +1304,9 @@
 			<param index="0" name="min_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the minimum size for the given window to [param min_size] (in pixels).
+				Sets the minimum size for the given window to [param min_size] (in pixels). Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_min_size].
 				[b]Note:[/b] By default, the main window has a minimum size of [code]Vector2i(64, 64)[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
+				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
 			</description>
 		</method>
 		<method name="window_set_mode">
@@ -1276,8 +1347,8 @@
 				DisplayServer.WindowSetMousePassthrough(new Vector2[] {});
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux and macOS it is.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
 			</description>
 		</method>
 		<method name="window_set_popup_safe_rect">
@@ -1293,7 +1364,16 @@
 			<param index="0" name="position" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the position of the given window to [param position].
+				Sets the position of the given window to [param position]. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
+				[codeblock]
+				* (0, 0)        +-------+
+				                |       |
+				+-------------+ |       |
+				|             | |       |
+				|             | |       |
+				+-------------+ +-------+
+				[/codeblock]
+				See also [method window_get_position] and [method window_set_size].
 			</description>
 		</method>
 		<method name="window_set_rect_changed_callback">
@@ -1301,6 +1381,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the [param callback] that will be called when the window specified by [param window_id] is moved or resized.
 			</description>
 		</method>
 		<method name="window_set_size">
@@ -1308,7 +1389,7 @@
 			<param index="0" name="size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the size of the given window to [param size].
+				Sets the size of the given window to [param size] (in pixels). See also [method window_get_size] and [method window_get_position].
 			</description>
 		</method>
 		<method name="window_set_title">
@@ -1317,6 +1398,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the title of the given window to [param title].
+				[b]Note:[/b] Avoid changing the window title every frame, as this can cause performance issues on certain window managers. Try to change the window title only a few times per second at most.
 			</description>
 		</method>
 		<method name="window_set_transient">
@@ -1352,51 +1434,70 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the [param callback] that will be called when an event occurs in the window specified by [param window_id].
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature">
+			Display server supports global menu. This allows the application to display its menu items in the operating system's top bar. [b]macOS[/b]
 		</constant>
 		<constant name="FEATURE_SUBWINDOWS" value="1" enum="Feature">
+			Display server supports multiple windows that can be moved outside of the main window. [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_TOUCHSCREEN" value="2" enum="Feature">
+			Display server supports touchscreen input. [b]Windows, Linux (X11), Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_MOUSE" value="3" enum="Feature">
+			Display server supports mouse input. [b]Windows, macOS, Linux (X11), Android, Web[/b]
 		</constant>
 		<constant name="FEATURE_MOUSE_WARP" value="4" enum="Feature">
+			Display server supports warping mouse coordinates to keep the mouse cursor constrained within an area, but looping when one of the edges is reached. [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_CLIPBOARD" value="5" enum="Feature">
+			Display server supports setting and getting clipboard data. See also [constant FEATURE_CLIPBOARD_PRIMARY]. [b]Windows, macOS, Linux (X11), Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_VIRTUAL_KEYBOARD" value="6" enum="Feature">
+			Display server supports popping up a virtual keyboard when requested to input text without a physical keyboard. [b]Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_CURSOR_SHAPE" value="7" enum="Feature">
+			Display server supports setting the mouse cursor shape to be different from the default. [b]Windows, macOS, Linux (X11), Android, Web[/b]
 		</constant>
 		<constant name="FEATURE_CUSTOM_CURSOR_SHAPE" value="8" enum="Feature">
+			Display server supports setting the mouse cursor shape to a custom image. [b]Windows, macOS, Linux (X11), Web[/b]
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG" value="9" enum="Feature">
+			Display server supports spawning dialogs using the operating system's native look-and-feel. [b]macOS[/b]
 		</constant>
 		<constant name="FEATURE_IME" value="10" enum="Feature">
+			Display server supports [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url], which is commonly used for inputting Chinese/Japanese/Korean text. This is handled by the operating system, rather than by Godot. [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="11" enum="Feature">
+			Display server supports windows can use per-pixel transparency to make windows behind them partially or fully visible. [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_HIDPI" value="12" enum="Feature">
+			Display server supports querying the operating system's display scale factor. This allows for [i]reliable[/i] automatic hiDPI display detection, as opposed to guessing based on the screen resolution and reported display DPI (which can be unreliable due to broken monitor EDID). [b]Windows, macOS[/b]
 		</constant>
 		<constant name="FEATURE_ICON" value="13" enum="Feature">
+			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_NATIVE_ICON" value="14" enum="Feature">
+			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS[/b]
 		</constant>
 		<constant name="FEATURE_ORIENTATION" value="15" enum="Feature">
+			Display server supports changing the screen orientation. [b]Android, iOS[/b]
 		</constant>
 		<constant name="FEATURE_SWAP_BUFFERS" value="16" enum="Feature">
+			Display server supports V-Sync status can be changed from the default (which is forced to be enabled platforms not supporting this feature). [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_CLIPBOARD_PRIMARY" value="18" enum="Feature">
+			Display server supports Primary clipboard can be used. This is a different clipboard from [constant FEATURE_CLIPBOARD]. [b]Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_TEXT_TO_SPEECH" value="19" enum="Feature">
-			Display server supports text-to-speech. See [code]tts_*[/code] methods.
+			Display server supports text-to-speech. See [code]tts_*[/code] methods. [b]Windows, macOS, Linux (X11), Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_EXTEND_TO_TITLE" value="20" enum="Feature">
-			Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE].
+			Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE]. [b]macOS[/b]
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
@@ -1415,24 +1516,34 @@
 			Confines the mouse cursor to the game window, and make it hidden.
 		</constant>
 		<constant name="SCREEN_OF_MAIN_WINDOW" value="-1">
+			Represents the screen where the main window is located. This is usually the default value in functions that allow specifying one of several screens.
 		</constant>
 		<constant name="MAIN_WINDOW_ID" value="0">
+			The ID of the main window spawned by the engine, which can be passed to methods expecting a [code]window_id[/code].
 		</constant>
 		<constant name="INVALID_WINDOW_ID" value="-1">
+			The ID that refers to a nonexisting window. This is be returned by some [DisplayServer] methods if no window matches the requested result.
 		</constant>
 		<constant name="SCREEN_LANDSCAPE" value="0" enum="ScreenOrientation">
+			Default landscape orientation.
 		</constant>
 		<constant name="SCREEN_PORTRAIT" value="1" enum="ScreenOrientation">
+			Default portrait orienstation.
 		</constant>
 		<constant name="SCREEN_REVERSE_LANDSCAPE" value="2" enum="ScreenOrientation">
+			Reverse landscape orientation (upside down).
 		</constant>
 		<constant name="SCREEN_REVERSE_PORTRAIT" value="3" enum="ScreenOrientation">
+			Reverse portrait orientation (upside down).
 		</constant>
 		<constant name="SCREEN_SENSOR_LANDSCAPE" value="4" enum="ScreenOrientation">
+			Automatic landscape orientation (default or reverse depending on sensor).
 		</constant>
 		<constant name="SCREEN_SENSOR_PORTRAIT" value="5" enum="ScreenOrientation">
+			Automatic portrait orientation (default or reverse depending on sensor).
 		</constant>
 		<constant name="SCREEN_SENSOR" value="6" enum="ScreenOrientation">
+			Automatic landscape or portrait orientation (default or reverse depending on sensor).
 		</constant>
 		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">
 			Default text virtual keyboard.
@@ -1460,40 +1571,58 @@
 			Virtual keyboard with additional keys to assist with typing URLs.
 		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
+			Arrow cursor shape. This is the default when not pointing anything that overrides the mouse cursor, such as a [LineEdit] or [TextEdit].
 		</constant>
 		<constant name="CURSOR_IBEAM" value="1" enum="CursorShape">
+			I-beam cursor shape. This is used by default when hovering a control that accepts text input, such as [LineEdit] or [TextEdit].
 		</constant>
 		<constant name="CURSOR_POINTING_HAND" value="2" enum="CursorShape">
+			Pointing hand cursor shape. This is used by default when hovering a [LinkButton] or an URL tag in a [RichTextLabel].⋅
 		</constant>
 		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
+			Crosshair cursor. This is intended to be displayed when the user needs precise aim over an element, such as a rectangle selection tool or a color picker.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
+			Wait cursor. On most cursor themes, this displays a spinning icon [i]besides[/i] the arrow. Intended to be used for non-blocking operations (when the user can do something else at the moment). See also [constant CURSOR_BUSY].
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
+			Wait cursor. On most cursor themes, this [i]replaces[/i] the arrow with a spinning icon. Intended to be used for blocking operations (when the user can't do anything else at the moment). See also [constant CURSOR_WAIT].
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
+			Dragging hand cursor. This is displayed during drag-and-drop operations. See also [constant CURSOR_CAN_DROP].
 		</constant>
 		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
+			"Can drop" cursor. This is displayed during drag-and-drop operations if hovering over a [Control] that can accept the drag-and-drop event. On most cursor themes, this displays a dragging hand with an arrow symbol besides it. See also [constant CURSOR_DRAG].
 		</constant>
 		<constant name="CURSOR_FORBIDDEN" value="8" enum="CursorShape">
+			Forbidden cursor. This is displayed during drag-and-drop operations if the hovered [Control] can't accept the drag-and-drop event.
 		</constant>
 		<constant name="CURSOR_VSIZE" value="9" enum="CursorShape">
+			Vertical resize cursor. Intended to be displayed when the hovered [Control] can be vertically resized using the mouse. See also [constant CURSOR_VSPLIT].
 		</constant>
 		<constant name="CURSOR_HSIZE" value="10" enum="CursorShape">
+			Horizontal resize cursor. Intended to be displayed when the hovered [Control] can be horizontally resized using the mouse. See also [constant CURSOR_HSPLIT].
 		</constant>
 		<constant name="CURSOR_BDIAGSIZE" value="11" enum="CursorShape">
+			Secondary diagonal resize cursor (top-right/bottom-left). Intended to be displayed when the hovered [Control] can be resized on both axes at once using the mouse.
 		</constant>
 		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
+			Main diagonal resize cursor (top-left/bottom-right). Intended to be displayed when the hovered [Control] can be resized on both axes at once using the mouse.
 		</constant>
 		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
+			Move cursor. Intended to be displayed when the hovered [Control] can be moved using the mouse.
 		</constant>
 		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
+			Vertical split cursor. This is displayed when hovering a [Control] with splits that can be vertically resized using the mouse, such as [VSplitContainer]. On some cursor themes, this cursor may have the same appearance as [constant CURSOR_VSIZE].
 		</constant>
 		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
+			Horizontal split cursor. This is displayed when hovering a [Control] with splits that can be horizontally resized using the mouse, such as [HSplitContainer]. On some cursor themes, this cursor may have the same appearance as [constant CURSOR_HSIZE].
 		</constant>
 		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
+			Help cursor. On most cursor themes, this displays a question mark icon instead of the mouse cursor. Intended to be used when the user has requested help on the next element that will be clicked.
 		</constant>
 		<constant name="CURSOR_MAX" value="17" enum="CursorShape">
+			Represents the size of the [enum CursorShape] enum.
 		</constant>
 		<constant name="WINDOW_MODE_WINDOWED" value="0" enum="WindowMode">
 			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
@@ -1505,7 +1634,7 @@
 			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the minimize button is pressed.
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
-			Full screen window mode. Note that this is not [i]exclusive[/i] full screen. On Windows and Linux, a borderless window is used to emulate full screen. On macOS, a new desktop is used to display the running project.
+			Full screen window mode. Note that this is not [i]exclusive[/i] full screen. On Windows and Linux (X11), a borderless window is used to emulate full screen. On macOS, a new desktop is used to display the running project.
 			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
@@ -1525,7 +1654,7 @@
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
 			The window background can be transparent.
 			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
-			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] Transparency support is implemented on Linux (X11), macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks.
@@ -1570,26 +1699,26 @@
 			[b]Note:[/b] This flag is implemented on macOS.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
-			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible).
+			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (nonwithstanding [member Engine.max_fps]).
 		</constant>
 		<constant name="VSYNC_ENABLED" value="1" enum="VSyncMode">
-			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible).
+			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (nonwithstanding [member Engine.max_fps]).
 		</constant>
 		<constant name="VSYNC_ADAPTIVE" value="2" enum="VSyncMode">
-			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible), otherwise vertical synchronization is enabled to avoid tearing.
+			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (nonwithstanding [member Engine.max_fps]).
 		</constant>
 		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
-			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible).
-			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag.
+			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (nonwithstanding [member Engine.max_fps]).
+			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag (also called "Fast" V-Sync mode). [constant VSYNC_MAILBOX] works best when at least twice as many frames as the display refresh rate are rendered.
 		</constant>
 		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
 			Display handle:
-			- Linux: [code]X11::Display*[/code] for the display.
+			- Linux (X11): [code]X11::Display*[/code] for the display.
 		</constant>
 		<constant name="WINDOW_HANDLE" value="1" enum="HandleType">
 			Window handle:
 			- Windows: [code]HWND[/code] for the window.
-			- Linux: [code]X11::Window*[/code] for the window.
+			- Linux (X11): [code]X11::Window*[/code] for the window.
 			- macOS: [code]NSWindow*[/code] for the window.
 			- iOS: [code]UIViewController*[/code] for the view controller.
 			- Android: [code]jObject[/code] for the activity.

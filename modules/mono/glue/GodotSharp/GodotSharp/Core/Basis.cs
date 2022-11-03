@@ -4,21 +4,6 @@ using System.Runtime.InteropServices;
 namespace Godot
 {
     /// <summary>
-    /// Specifies which order Euler angle rotations should be in.
-    /// When composing, the order is the same as the letters. When decomposing,
-    /// the order is reversed (ex: YXZ decomposes Z first, then X, and Y last).
-    /// </summary>
-    public enum EulerOrder
-    {
-        XYZ,
-        XZY,
-        YXZ,
-        YZX,
-        ZXY,
-        ZYX
-    };
-
-    /// <summary>
     /// 3×3 matrix used for 3D rotation and scale.
     /// Almost always used as an orthogonal basis for a Transform.
     ///
@@ -270,11 +255,11 @@ namespace Godot
         /// </summary>
         /// <param name="order">The Euler order to use. By default, use YXZ order (most common).</param>
         /// <returns>A <see cref="Vector3"/> representing the basis rotation in Euler angles.</returns>
-        public Vector3 GetEuler(EulerOrder order = EulerOrder.YXZ)
+        public Vector3 GetEuler(EulerOrder order = EulerOrder.Yxz)
         {
             switch (order)
             {
-                case EulerOrder.XYZ:
+                case EulerOrder.Xyz:
                 {
                     // Euler angles in XYZ convention.
                     // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
@@ -318,7 +303,7 @@ namespace Godot
                     }
                     return euler;
                 }
-                case EulerOrder.XZY:
+                case EulerOrder.Xzy:
                 {
                     // Euler angles in XZY convention.
                     // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
@@ -353,7 +338,7 @@ namespace Godot
                     }
                     return euler;
                 }
-                case EulerOrder.YXZ:
+                case EulerOrder.Yxz:
                 {
                     // Euler angles in YXZ convention.
                     // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
@@ -398,7 +383,7 @@ namespace Godot
 
                     return euler;
                 }
-                case EulerOrder.YZX:
+                case EulerOrder.Yzx:
                 {
                     // Euler angles in YZX convention.
                     // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
@@ -433,7 +418,7 @@ namespace Godot
                     }
                     return euler;
                 }
-                case EulerOrder.ZXY:
+                case EulerOrder.Zxy:
                 {
                     // Euler angles in ZXY convention.
                     // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
@@ -468,7 +453,7 @@ namespace Godot
                     }
                     return euler;
                 }
-                case EulerOrder.ZYX:
+                case EulerOrder.Zyx:
                 {
                     // Euler angles in ZYX convention.
                     // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
@@ -998,7 +983,7 @@ namespace Godot
         /// </summary>
         /// <param name="euler">The Euler angles to use.</param>
         /// <param name="order">The order to compose the Euler angles.</param>
-        public static Basis FromEuler(Vector3 euler, EulerOrder order = EulerOrder.YXZ)
+        public static Basis FromEuler(Vector3 euler, EulerOrder order = EulerOrder.Yxz)
         {
             real_t c, s;
 
@@ -1016,17 +1001,17 @@ namespace Godot
 
             switch (order)
             {
-                case EulerOrder.XYZ:
+                case EulerOrder.Xyz:
                     return xmat * ymat * zmat;
-                case EulerOrder.XZY:
+                case EulerOrder.Xzy:
                     return xmat * zmat * ymat;
-                case EulerOrder.YXZ:
+                case EulerOrder.Yxz:
                     return ymat * xmat * zmat;
-                case EulerOrder.YZX:
+                case EulerOrder.Yzx:
                     return ymat * zmat * xmat;
-                case EulerOrder.ZXY:
+                case EulerOrder.Zxy:
                     return zmat * xmat * ymat;
-                case EulerOrder.ZYX:
+                case EulerOrder.Zyx:
                     return zmat * ymat * xmat;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(order));

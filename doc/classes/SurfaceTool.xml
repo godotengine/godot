@@ -275,28 +275,28 @@
 	</methods>
 	<constants>
 		<constant name="CUSTOM_RGBA8_UNORM" value="0" enum="CustomFormat">
-			Limits range of data passed to `set_custom` to unsigned normalized 0 to 1 stored in 8 bits per channel. See [constant Mesh.ARRAY_CUSTOM_RGBA8_UNORM].
+			Limits range of data passed to [method set_custom] to unsigned normalized 0 to 1 stored in 8 bits per channel. See [constant Mesh.ARRAY_CUSTOM_RGBA8_UNORM].
 		</constant>
 		<constant name="CUSTOM_RGBA8_SNORM" value="1" enum="CustomFormat">
-			Limits range of data passed to `set_custom` to signed normalized -1 to 1 stored in 8 bits per channel. See [constant Mesh.ARRAY_CUSTOM_RGBA8_SNORM].
+			Limits range of data passed to [method set_custom] to signed normalized -1 to 1 stored in 8 bits per channel. See [constant Mesh.ARRAY_CUSTOM_RGBA8_SNORM].
 		</constant>
 		<constant name="CUSTOM_RG_HALF" value="2" enum="CustomFormat">
-			Stores data passed to `set_custom` as half precision floats, and uses only red and green color channels. See [constant Mesh.ARRAY_CUSTOM_RG_HALF].
+			Stores data passed to [method set_custom] as half precision floats, and uses only red and green color channels. See [constant Mesh.ARRAY_CUSTOM_RG_HALF].
 		</constant>
 		<constant name="CUSTOM_RGBA_HALF" value="3" enum="CustomFormat">
-			Stores data passed to `set_custom` as half precision floats and uses all color channels. See [constant Mesh.ARRAY_CUSTOM_RGBA_HALF].
+			Stores data passed to [method set_custom] as half precision floats and uses all color channels. See [constant Mesh.ARRAY_CUSTOM_RGBA_HALF].
 		</constant>
 		<constant name="CUSTOM_R_FLOAT" value="4" enum="CustomFormat">
-			Stores data passed to `set_custom` as full precision floats, and uses only red color channel. See [constant Mesh.ARRAY_CUSTOM_R_FLOAT].
+			Stores data passed to [method set_custom] as full precision floats, and uses only red color channel. See [constant Mesh.ARRAY_CUSTOM_R_FLOAT].
 		</constant>
 		<constant name="CUSTOM_RG_FLOAT" value="5" enum="CustomFormat">
-			Stores data passed to `set_custom` as full precision floats, and uses only red and green color channels. See [constant Mesh.ARRAY_CUSTOM_RG_FLOAT].
+			Stores data passed to [method set_custom] as full precision floats, and uses only red and green color channels. See [constant Mesh.ARRAY_CUSTOM_RG_FLOAT].
 		</constant>
 		<constant name="CUSTOM_RGB_FLOAT" value="6" enum="CustomFormat">
-			Stores data passed to `set_custom` as full precision floats, and uses only red, green and blue color channels. See [constant Mesh.ARRAY_CUSTOM_RGB_FLOAT].
+			Stores data passed to [method set_custom] as full precision floats, and uses only red, green and blue color channels. See [constant Mesh.ARRAY_CUSTOM_RGB_FLOAT].
 		</constant>
 		<constant name="CUSTOM_RGBA_FLOAT" value="7" enum="CustomFormat">
-			Stores data passed to `set_custom` as full precision floats, and uses all color channels. See [constant Mesh.ARRAY_CUSTOM_RGBA_FLOAT].
+			Stores data passed to [method set_custom] as full precision floats, and uses all color channels. See [constant Mesh.ARRAY_CUSTOM_RGBA_FLOAT].
 		</constant>
 		<constant name="CUSTOM_MAX" value="8" enum="CustomFormat">
 			Used to indicate a disabled custom channel.

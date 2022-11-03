@@ -1242,7 +1242,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 		String name;
 
 		if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", i + 1))) {
-			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i + 1));
+			name = GLOBAL_GET(basename + vformat("/layer_%d", i + 1));
 		}
 
 		if (name.is_empty()) {
@@ -1270,7 +1270,7 @@ void EditorPropertyLayers::set_layer_name(int p_index, const String &p_name) {
 String EditorPropertyLayers::get_layer_name(int p_index) const {
 	const String property_name = basename + vformat("/layer_%d", p_index + 1);
 	if (ProjectSettings::get_singleton()->has_setting(property_name)) {
-		return ProjectSettings::get_singleton()->get(property_name);
+		return GLOBAL_GET(property_name);
 	}
 	return String();
 }
@@ -2688,7 +2688,7 @@ void EditorPropertyQuaternion::_custom_value_changed(double val) {
 	v.y = Math::deg_to_rad(edit_euler.y);
 	v.z = Math::deg_to_rad(edit_euler.z);
 
-	Quaternion temp_q = Quaternion(v);
+	Quaternion temp_q = Quaternion::from_euler(v);
 	spin[0]->set_value(temp_q.x);
 	spin[1]->set_value(temp_q.y);
 	spin[2]->set_value(temp_q.z);
@@ -2725,7 +2725,7 @@ void EditorPropertyQuaternion::update_property() {
 	spin[2]->set_value(val.z);
 	spin[3]->set_value(val.w);
 	if (!is_grabbing_euler()) {
-		Vector3 v = val.normalized().get_euler_yxz();
+		Vector3 v = val.normalized().get_euler();
 		edit_euler.x = Math::rad_to_deg(v.x);
 		edit_euler.y = Math::rad_to_deg(v.y);
 		edit_euler.z = Math::rad_to_deg(v.z);
@@ -3699,7 +3699,8 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 	}
 
 	for (const StringName &E : valid_types) {
-		if (dropped_node->is_class(E)) {
+		if (dropped_node->is_class(E) ||
+				EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, E)) {
 			return true;
 		}
 	}
@@ -4096,7 +4097,6 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_keying(is_keying());
 				sub_inspector->set_read_only(is_read_only());
 				sub_inspector->set_use_folding(is_using_folding());
-				sub_inspector->set_undo_redo(EditorNode::get_undo_redo());
 
 				sub_inspector_vbox = memnew(VBoxContainer);
 				add_child(sub_inspector_vbox);

@@ -78,7 +78,7 @@ float Environment::get_sky_custom_fov() const {
 
 void Environment::set_sky_rotation(const Vector3 &p_rotation) {
 	bg_sky_rotation = p_rotation;
-	RS::get_singleton()->environment_set_sky_orientation(environment, Basis(p_rotation));
+	RS::get_singleton()->environment_set_sky_orientation(environment, Basis::from_euler(p_rotation));
 }
 
 Vector3 Environment::get_sky_rotation() const {

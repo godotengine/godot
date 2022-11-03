@@ -13,6 +13,7 @@
 		Similarly, in 2D, a canvas is needed to draw all canvas items.
 		In 3D, all visible objects are comprised of a resource and an instance. A resource can be a mesh, a particle system, a light, or any other 3D object. In order to be visible resources must be attached to an instance using [method instance_set_base]. The instance must also be attached to the scenario using [method instance_set_scenario] in order to be visible.
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
+		[b]Headless mode:[/b] Starting the engine with the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] disables all rendering and window management functions. Most functions from [RenderingServer] will return dummy values in this case.
 	</description>
 	<tutorials>
 		<link title="Optimization using Servers">$DOCS_URL/tutorials/performance/using_servers.html</link>
@@ -496,6 +497,14 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets if the [CanvasItem] uses its parent's material.
+			</description>
+		</method>
+		<method name="canvas_item_set_visibility_layer">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="visibility_layer" type="int" />
+			<description>
+				Sets the rendering visibility layer associated with this [CanvasItem]. Only [Viewport] nodes with a matching rendering mask will render this [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_visibility_notifier">
@@ -3142,6 +3151,14 @@
 				If [code]true[/code], sets the viewport active, else sets it inactive.
 			</description>
 		</method>
+		<method name="viewport_set_canvas_cull_mask">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="canvas_cull_mask" type="int" />
+			<description>
+				Sets the rendering mask associated with this [Viewport]. Only [CanvasItem] nodes with a matching rendering visibility layer will be rendered by this [Viewport].
+			</description>
+		</method>
 		<method name="viewport_set_canvas_stacking">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -4576,9 +4593,11 @@
 		</constant>
 		<constant name="CANVAS_GROUP_MODE_DISABLED" value="0" enum="CanvasGroupMode">
 		</constant>
-		<constant name="CANVAS_GROUP_MODE_OPAQUE" value="1" enum="CanvasGroupMode">
+		<constant name="CANVAS_GROUP_MODE_CLIP_ONLY" value="1" enum="CanvasGroupMode">
 		</constant>
-		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="2" enum="CanvasGroupMode">
+		<constant name="CANVAS_GROUP_MODE_CLIP_AND_DRAW" value="2" enum="CanvasGroupMode">
+		</constant>
+		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="3" enum="CanvasGroupMode">
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_POINT" value="0" enum="CanvasLightMode">
 		</constant>

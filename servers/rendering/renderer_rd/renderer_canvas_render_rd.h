@@ -421,6 +421,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	RID default_canvas_group_shader;
 	RID default_canvas_group_material;
+	RID default_clip_children_material;
+	RID default_clip_children_shader;
 
 	RS::CanvasItemTextureFilter default_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	RS::CanvasItemTextureRepeat default_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
@@ -456,8 +458,6 @@ public:
 	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode);
 
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used);
-
-	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {}
 
 	virtual void set_shadow_texture_size(int p_size);
 

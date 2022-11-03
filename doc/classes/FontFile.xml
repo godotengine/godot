@@ -14,7 +14,6 @@
 		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
 		[b]Note:[/b] A glyph is a bitmap or shape used to draw a one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
 		[b]Note:[/b] If a none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
-
 		[codeblocks]
 		[gdscript]
 		var f = load("res://BarlowCondensed-Bold.ttf")
@@ -262,7 +261,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="texture_index" type="int" />
 			<description>
-				Returns a copy of the array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
+				Returns a copy of the array containing glyph packing data.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
@@ -522,7 +521,7 @@
 			<param index="2" name="texture_index" type="int" />
 			<param index="3" name="offset" type="PackedInt32Array" />
 			<description>
-				Sets array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty (for the fonts without dynamic glyph generation support).
+				Sets array containing glyph packing data.
 			</description>
 		</method>
 		<method name="set_transform">

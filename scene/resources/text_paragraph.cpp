@@ -540,16 +540,90 @@ Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), Rect2());
-	Rect2 xrect = TS->shaped_text_get_object_rect(lines_rid[p_line], p_key);
-	for (int i = 0; i < p_line; i++) {
-		Size2 lsize = TS->shaped_text_get_size(lines_rid[i]);
+
+	Vector2 ofs;
+
+	float h_offset = 0.f;
+	if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
+	} else {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
+	}
+
+	for (int i = 0; i <= p_line; i++) {
+		float l_width = width;
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-			xrect.position.y += lsize.y;
+			ofs.x = 0.f;
+			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
+			if (i <= dropcap_lines) {
+				if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
+					ofs.x -= h_offset;
+				}
+				l_width -= h_offset;
+			}
 		} else {
-			xrect.position.x += lsize.x;
+			ofs.y = 0.f;
+			ofs.x += TS->shaped_text_get_ascent(lines_rid[i]);
+			if (i <= dropcap_lines) {
+				if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
+					ofs.x -= h_offset;
+				}
+				l_width -= h_offset;
+			}
+		}
+		float length = TS->shaped_text_get_width(lines_rid[i]);
+		if (width > 0) {
+			switch (alignment) {
+				case HORIZONTAL_ALIGNMENT_FILL:
+					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += l_width - length;
+						} else {
+							ofs.y += l_width - length;
+						}
+					}
+					break;
+				case HORIZONTAL_ALIGNMENT_LEFT:
+					break;
+				case HORIZONTAL_ALIGNMENT_CENTER: {
+					if (length <= l_width) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += Math::floor((l_width - length) / 2.0);
+						} else {
+							ofs.y += Math::floor((l_width - length) / 2.0);
+						}
+					} else if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += l_width - length;
+						} else {
+							ofs.y += l_width - length;
+						}
+					}
+				} break;
+				case HORIZONTAL_ALIGNMENT_RIGHT: {
+					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += l_width - length;
+					} else {
+						ofs.y += l_width - length;
+					}
+				} break;
+			}
+		}
+		if (i != p_line) {
+			if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+				ofs.x = 0.f;
+				ofs.y += TS->shaped_text_get_descent(lines_rid[i]);
+			} else {
+				ofs.y = 0.f;
+				ofs.x += TS->shaped_text_get_descent(lines_rid[i]);
+			}
 		}
 	}
-	return xrect;
+
+	Rect2 rect = TS->shaped_text_get_object_rect(lines_rid[p_line], p_key);
+	rect.position += ofs;
+
+	return rect;
 }
 
 Size2 TextParagraph::get_line_size(int p_line) const {

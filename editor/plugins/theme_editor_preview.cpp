@@ -459,7 +459,7 @@ void SceneThemeEditorPreview::_reload_scene() {
 
 	for (int i = preview_content->get_child_count() - 1; i >= 0; i--) {
 		Node *node = preview_content->get_child(i);
-		node->queue_delete();
+		node->queue_free();
 		preview_content->remove_child(node);
 	}
 

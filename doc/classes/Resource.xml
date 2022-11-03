@@ -24,7 +24,7 @@
 			<param index="0" name="subresources" type="bool" default="false" />
 			<description>
 				Duplicates this resource, returning a new resource with its [code]export[/code]ed or [constant PROPERTY_USAGE_STORAGE] properties copied from the original.
-				If [param subresources] is [code]false[/code], a shallow copy is returned. Nested resources within subresources are not duplicated and are shared from the original resource. This behavior can be overriden by the [constant PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE] flag.
+				If [param subresources] is [code]false[/code], a shallow copy is returned. Nested resources within subresources are not duplicated and are shared from the original resource. This behavior can be overridden by the [constant PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE] flag.
 				[b]Note:[/b] For custom resources, this method will fail if [method Object._init] has been defined with required parameters.
 			</description>
 		</method>
@@ -51,7 +51,7 @@
 		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of this resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], and so on) are high-level abstractions of resources stored in a specialised server ([DisplayServer], [RenderingServer], etc.), so this function will return the original [RID].
+				Returns the [RID] of this resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], and so on) are high-level abstractions of resources stored in a specialized server ([DisplayServer], [RenderingServer], etc.), so this function will return the original [RID].
 			</description>
 		</method>
 		<method name="setup_local_to_scene">

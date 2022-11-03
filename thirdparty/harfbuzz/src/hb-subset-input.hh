@@ -59,6 +59,7 @@ struct hb_subset_input_t
   };
 
   unsigned flags;
+  bool attach_accelerator_data = false;
   hb_hashmap_t<hb_tag_t, float> *axes_location;
 
   inline unsigned num_sets () const

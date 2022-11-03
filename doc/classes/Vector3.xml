@@ -183,7 +183,7 @@
 		<method name="is_normalized" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the vector is normalized, [code]false[/code] otherwise.
+				Returns [code]true[/code] if the vector is [method normalized], [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_zero_approx" qualifiers="const">
@@ -244,18 +244,22 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
+				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
 			</description>
 		</method>
 		<method name="octahedron_decode" qualifiers="static">
 			<return type="Vector3" />
 			<param index="0" name="uv" type="Vector2" />
 			<description>
+				Returns the [Vector3] from an octahedral-compressed form created using [method octahedron_encode] (stored as a [Vector2]).
 			</description>
 		</method>
 		<method name="octahedron_encode" qualifiers="const">
 			<return type="Vector2" />
 			<description>
+				Returns the octahedral-encoded (oct32) form of this [Vector3] as a [Vector2]. Since a [Vector2] occupies 1/3 less memory compared to [Vector3], this form of compression can be used to pass greater amounts of [method normalized] [Vector3]s without increasing storage or memory requirements. See also [method octahedron_decode].
+				[b]Note:[/b] [method octahedron_encode] can only be used for [method normalized] vectors. [method octahedron_encode] does [i]not[/i] check whether this [Vector3] is normalized, and will return a value that does not decompress to the original value if the [Vector3] is not normalized.
+				[b]Note:[/b] Octahedral compression is [i]lossy[/i], although visual differences are rarely perceptible in real world scenarios.
 			</description>
 		</method>
 		<method name="outer" qualifiers="const">

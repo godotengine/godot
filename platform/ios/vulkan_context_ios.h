@@ -31,6 +31,8 @@
 #ifndef VULKAN_CONTEXT_IOS_H
 #define VULKAN_CONTEXT_IOS_H
 
+#ifdef VULKAN_ENABLED
+
 #include "drivers/vulkan/vulkan_context.h"
 
 #import <UIKit/UIKit.h>
@@ -44,5 +46,7 @@ public:
 	VulkanContextIOS();
 	~VulkanContextIOS();
 };
+
+#endif // VULKAN_ENABLED
 
 #endif // VULKAN_CONTEXT_IOS_H

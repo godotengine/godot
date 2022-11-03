@@ -50,7 +50,6 @@ Error ZIPPacker::close() {
 }
 
 Error ZIPPacker::start_file(String p_path) {
-	ERR_FAIL_COND_V_MSG(zf != NULL, FAILED, "ZIPPacker is already in use.");
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
 	zip_fileinfo zipfi;

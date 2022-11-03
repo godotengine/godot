@@ -368,11 +368,10 @@ void ColorPicker::create_slider(GridContainer *gc, int idx) {
 
 	SpinBox *val = memnew(SpinBox);
 	slider->share(val);
+	val->set_select_all_on_focus(true);
 	gc->add_child(val);
 
 	LineEdit *vle = val->get_line_edit();
-	vle->connect("focus_entered", callable_mp(this, &ColorPicker::_focus_enter), CONNECT_DEFERRED);
-	vle->connect("focus_exited", callable_mp(this, &ColorPicker::_focus_exit));
 	vle->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
 	vle->connect("gui_input", callable_mp(this, &ColorPicker::_line_edit_input));
 	vle->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
@@ -744,7 +743,7 @@ void ColorPicker::add_recent_preset(const Color &p_color) {
 		if (recent_preset_hbc->get_child_count() >= PRESET_COLUMN_COUNT) {
 			recent_preset_cache.pop_front();
 			recent_presets.pop_front();
-			recent_preset_hbc->get_child(PRESET_COLUMN_COUNT - 1)->queue_delete();
+			recent_preset_hbc->get_child(PRESET_COLUMN_COUNT - 1)->queue_free();
 		}
 		recent_presets.push_back(p_color);
 		recent_preset_cache.push_back(p_color);
@@ -770,7 +769,7 @@ void ColorPicker::erase_preset(const Color &p_color) {
 		for (int i = 1; i < preset_container->get_child_count(); i++) {
 			ColorPresetButton *current_btn = Object::cast_to<ColorPresetButton>(preset_container->get_child(i));
 			if (current_btn && p_color == current_btn->get_preset_color()) {
-				current_btn->queue_delete();
+				current_btn->queue_free();
 				break;
 			}
 		}
@@ -794,7 +793,7 @@ void ColorPicker::erase_recent_preset(const Color &p_color) {
 		for (int i = 1; i < recent_preset_hbc->get_child_count(); i++) {
 			ColorPresetButton *current_btn = Object::cast_to<ColorPresetButton>(recent_preset_hbc->get_child(i));
 			if (current_btn && p_color == current_btn->get_preset_color()) {
-				current_btn->queue_delete();
+				current_btn->queue_free();
 				break;
 			}
 		}
@@ -1087,16 +1086,24 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 			Vector<Color> colors;
 			Color col;
 			col.set_ok_hsl(h, s, 1);
-			points.resize(4);
-			colors.resize(4);
-			points.set(0, Vector2());
-			points.set(1, Vector2(c->get_size().x, 0));
+			Color col2;
+			col2.set_ok_hsl(h, s, 0.5);
+			Color col3;
+			col3.set_ok_hsl(h, s, 0);
+			points.resize(6);
+			colors.resize(6);
+			points.set(0, Vector2(c->get_size().x, 0));
+			points.set(1, Vector2(c->get_size().x, c->get_size().y * 0.5));
 			points.set(2, c->get_size());
 			points.set(3, Vector2(0, c->get_size().y));
+			points.set(4, Vector2(0, c->get_size().y * 0.5));
+			points.set(5, Vector2());
 			colors.set(0, col);
-			colors.set(1, col);
-			colors.set(2, Color(0, 0, 0));
-			colors.set(3, Color(0, 0, 0));
+			colors.set(1, col2);
+			colors.set(2, col3);
+			colors.set(3, col3);
+			colors.set(4, col2);
+			colors.set(5, col);
 			c->draw_polygon(points, colors);
 			int y = c->get_size().y - c->get_size().y * CLAMP(v, 0, 1);
 			col.set_ok_hsl(h, 1, v);
@@ -1407,47 +1414,11 @@ void ColorPicker::_screen_pick_pressed() {
 	//screen->show_modal();
 }
 
-void ColorPicker::_focus_enter() {
-	bool has_ctext_focus = c_text->has_focus();
-	if (has_ctext_focus) {
-		c_text->select_all();
-	} else {
-		c_text->select(0, 0);
-	}
-
-	for (int i = 0; i < current_slider_count; i++) {
-		if (values[i]->get_line_edit()->has_focus() && !has_ctext_focus) {
-			values[i]->get_line_edit()->select_all();
-		} else {
-			values[i]->get_line_edit()->select(0, 0);
-		}
-	}
-	if (alpha_value->get_line_edit()->has_focus() && !has_ctext_focus) {
-		alpha_value->get_line_edit()->select_all();
-	} else {
-		alpha_value->get_line_edit()->select(0, 0);
-	}
-}
-
-void ColorPicker::_focus_exit() {
-	for (int i = 0; i < current_slider_count; i++) {
-		if (!values[i]->get_line_edit()->get_menu()->is_visible()) {
-			values[i]->get_line_edit()->select(0, 0);
-		}
-	}
-	if (!alpha_value->get_line_edit()->get_menu()->is_visible()) {
-		alpha_value->get_line_edit()->select(0, 0);
-	}
-
-	c_text->select(0, 0);
-}
-
 void ColorPicker::_html_focus_exit() {
 	if (c_text->is_menu_visible()) {
 		return;
 	}
 	_html_submitted(c_text->get_text());
-	_focus_exit();
 }
 
 void ColorPicker::set_presets_enabled(bool p_enabled) {
@@ -1658,9 +1629,9 @@ ColorPicker::ColorPicker() :
 
 	c_text = memnew(LineEdit);
 	hhb->add_child(c_text);
+	c_text->set_select_all_on_focus(true);
 	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
-	c_text->connect("focus_entered", callable_mp(this, &ColorPicker::_focus_enter), CONNECT_DEFERRED);
 	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_html_focus_exit));
 
 	wheel_edit = memnew(AspectRatioContainer);

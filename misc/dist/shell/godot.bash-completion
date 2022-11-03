@@ -78,7 +78,7 @@ _complete_godot_options() {
 --print-fps
 --script
 --check-only
---export
+--export-release
 --export-debug
 --export-pack
 --convert-3to4
@@ -86,6 +86,7 @@ _complete_godot_options() {
 --doctool
 --no-docbase
 --build-solutions
+--dump-gdextension-interface
 --dump-extension-api
 --test
 " -- "$1"))

@@ -572,7 +572,8 @@
 			<return type="float" />
 			<param index="0" name="lin" type="float" />
 			<description>
-				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear). Example:
+				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear).
+				[b]Example:[/b]
 				[codeblock]
 				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
 				# Its range must be configured to go from 0 to 1.
@@ -841,7 +842,7 @@
 			<return type="PackedInt64Array" />
 			<param index="0" name="seed" type="int" />
 			<description>
-				Given a [param seed], returns a [PackedInt64Array] of size [code]2[/code], where its first element is the randomised [int] value, and the second element is the same as [param seed]. Passing the same [param seed] consistently returns the same array.
+				Given a [param seed], returns a [PackedInt64Array] of size [code]2[/code], where its first element is the randomized [int] value, and the second element is the same as [param seed]. Passing the same [param seed] consistently returns the same array.
 				[b]Note:[/b] "Seed" here refers to the internal state of the pseudo random number generator, currently implemented as a 64 bit integer.
 				[codeblock]
 				var a = rand_from_seed(4)
@@ -1464,6 +1465,24 @@
 		</constant>
 		<constant name="INLINE_ALIGNMENT_TEXT_MASK" value="12" enum="InlineAlignment">
 			A bit mask for [code]INLINE_ALIGNMENT_TO_*[/code] alignment constants.
+		</constant>
+		<constant name="EULER_ORDER_XYZ" value="0" enum="EulerOrder">
+			Specifies that Euler angles should be in XYZ order. When composing, the order is X, Y, Z. When decomposing, the order is reversed, first Z, then Y, and X last.
+		</constant>
+		<constant name="EULER_ORDER_XZY" value="1" enum="EulerOrder">
+			Specifies that Euler angles should be in XZY order. When composing, the order is X, Z, Y. When decomposing, the order is reversed, first Y, then Z, and X last.
+		</constant>
+		<constant name="EULER_ORDER_YXZ" value="2" enum="EulerOrder">
+			Specifies that Euler angles should be in YXZ order. When composing, the order is Y, X, Z. When decomposing, the order is reversed, first Z, then X, and Y last.
+		</constant>
+		<constant name="EULER_ORDER_YZX" value="3" enum="EulerOrder">
+			Specifies that Euler angles should be in YZX order. When composing, the order is Y, Z, X. When decomposing, the order is reversed, first X, then Z, and Y last.
+		</constant>
+		<constant name="EULER_ORDER_ZXY" value="4" enum="EulerOrder">
+			Specifies that Euler angles should be in ZXY order. When composing, the order is Z, X, Y. When decomposing, the order is reversed, first Y, then X, and Z last.
+		</constant>
+		<constant name="EULER_ORDER_ZYX" value="5" enum="EulerOrder">
+			Specifies that Euler angles should be in ZYX order. When composing, the order is Z, Y, X. When decomposing, the order is reversed, first X, then Y, and Z last.
 		</constant>
 		<constant name="KEY_NONE" value="0" enum="Key">
 			Enum value which doesn't correspond to any key. This is used to initialize [enum Key] properties with a generic state.
@@ -2487,7 +2506,8 @@
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred.
-			Since [constant OK] has value 0, and all other error constants are positive integers, it can also be used in boolean checks. For example:
+			Since [constant OK] has value 0, and all other error constants are positive integers, it can also be used in boolean checks.
+			[b]Example:[/b]
 			[codeblock]
 			var error = method_that_returns_error()
 			if error != OK:
@@ -2648,7 +2668,8 @@
 			The property has no hint for the editor.
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
-			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_less"[/code].
+			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
+			[b]Example:[/b] [code]"-360,360,1,or_greater,or_less"[/code].
 			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians"[/code] for editing radian angles in degrees, [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
@@ -2722,7 +2743,8 @@
 		<constant name="PROPERTY_HINT_OBJECT_ID" value="24" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="25" enum="PropertyHint">
-			Hints that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For example:
+			Hints that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types.
+			[b]Example:[/b]
 			[codeblock]
 			hint_string = "%s:" % [TYPE_INT] # Array of integers.
 			hint_string = "%s:%s:" % [TYPE_ARRAY, TYPE_REAL] # Two-dimensional array of floats.
@@ -2760,9 +2782,9 @@
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="40" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="41" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
 			Hints that a [String] property is a locale code. Editing it will show a locale dialog for picking language and country.
@@ -2789,13 +2811,13 @@
 			The property is serialized and saved in the scene file (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags">
-			The property is shown in the editor Inspector (default).
+			The property is shown in the [EditorInspector] (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags">
-			The property can be checked in the editor inspector.
+			The property can be checked in the [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKED" value="16" enum="PropertyUsageFlags">
-			The property is checked in the editor inspector.
+			The property is checked in the [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="32" enum="PropertyUsageFlags">
 			The property is a translatable string.
@@ -2853,7 +2875,7 @@
 		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags">
-			The property is read-only in the editor Inspector.
+			The property is read-only in the [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="536870912" enum="PropertyUsageFlags">
 			The property is an array.

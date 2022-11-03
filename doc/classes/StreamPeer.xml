@@ -44,7 +44,7 @@
 			<return type="Array" />
 			<param index="0" name="bytes" type="int" />
 			<description>
-				Returns a chunk data with the received bytes. The number of bytes to be received can be requested in the [param bytes] argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an [enum @GlobalScope.Error] code and a data array.
+				Returns a chunk data with the received bytes. The number of bytes to be received can be requested in the [param bytes] argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an [enum Error] code and a data array.
 			</description>
 		</method>
 		<method name="get_double">
@@ -63,7 +63,7 @@
 			<return type="Array" />
 			<param index="0" name="bytes" type="int" />
 			<description>
-				Returns a chunk data with the received bytes. The number of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an [enum @GlobalScope.Error] code, and a data array.
+				Returns a chunk data with the received bytes. The number of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an [enum Error] code, and a data array.
 			</description>
 		</method>
 		<method name="get_string">
@@ -144,7 +144,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="data" type="PackedByteArray" />
 			<description>
-				Sends a chunk of data through the connection, blocking if necessary until the data is done sending. This function returns an [enum @GlobalScope.Error] code.
+				Sends a chunk of data through the connection, blocking if necessary until the data is done sending. This function returns an [enum Error] code.
 			</description>
 		</method>
 		<method name="put_double">
@@ -165,7 +165,7 @@
 			<return type="Array" />
 			<param index="0" name="data" type="PackedByteArray" />
 			<description>
-				Sends a chunk of data through the connection. If all the data could not be sent at once, only part of it will. This function returns two values, an [enum @GlobalScope.Error] code and an integer, describing how much data was actually sent.
+				Sends a chunk of data through the connection. If all the data could not be sent at once, only part of it will. This function returns two values, an [enum Error] code and an integer, describing how much data was actually sent.
 			</description>
 		</method>
 		<method name="put_string">
