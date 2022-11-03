@@ -928,9 +928,7 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 			[[fallthrough]];
 		}
 		case ADD_MOVE: {
-			if (p_result == ADD_MOVE) {
-				nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
-			}
+			nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
 			if (nodes_to_move.is_empty()) {
 				return;
 			}
@@ -1731,22 +1729,16 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 
 			drag_to = transform.affine_inverse().xform(m->get_position());
 
-			Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse();
+			Transform2D xform = ci->get_global_transform_with_canvas();
 
 			Point2 drag_to_snapped_begin;
 			Point2 drag_to_snapped_end;
 
-			// last call decides which snapping lines are drawn
-			if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP || drag_type == DRAG_TOP_LEFT) {
-				drag_to_snapped_end = snap_point(xform.affine_inverse().xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
-				drag_to_snapped_begin = snap_point(xform.affine_inverse().xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
-			} else {
-				drag_to_snapped_begin = snap_point(xform.affine_inverse().xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
-				drag_to_snapped_end = snap_point(xform.affine_inverse().xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
-			}
+			drag_to_snapped_end = snap_point(xform.xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
+			drag_to_snapped_begin = snap_point(xform.xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
 
-			Point2 drag_begin = xform.xform(drag_to_snapped_begin);
-			Point2 drag_end = xform.xform(drag_to_snapped_end);
+			Point2 drag_begin = xform.affine_inverse().xform(drag_to_snapped_begin);
+			Point2 drag_end = xform.affine_inverse().xform(drag_to_snapped_end);
 
 			// Horizontal resize
 			if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_BOTTOM_LEFT) {
