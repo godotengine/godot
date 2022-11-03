@@ -182,14 +182,12 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			drag_accum = Vector2();
 			last_drag_accum = Vector2();
 			drag_from = Vector2(prev_h_scroll, prev_v_scroll);
-			drag_touching = screen_is_touchscreen;
+			drag_touching = true;
 			drag_touching_deaccel = false;
 			beyond_deadzone = false;
 			time_since_motion = 0;
-			if (drag_touching) {
-				set_physics_process_internal(true);
-				time_since_motion = 0;
-			}
+			set_physics_process_internal(true);
+			time_since_motion = 0;
 
 		} else {
 			if (drag_touching) {

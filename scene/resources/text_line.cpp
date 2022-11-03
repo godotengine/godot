@@ -317,11 +317,7 @@ float TextLine::get_width() const {
 
 Size2 TextLine::get_size() const {
 	const_cast<TextLine *>(this)->_shape();
-	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-		return Size2(TS->shaped_text_get_size(rid).x, TS->shaped_text_get_size(rid).y);
-	} else {
-		return Size2(TS->shaped_text_get_size(rid).x, TS->shaped_text_get_size(rid).y);
-	}
+	return TS->shaped_text_get_size(rid);
 }
 
 float TextLine::get_line_ascent() const {
