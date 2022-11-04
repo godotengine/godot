@@ -107,7 +107,7 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		for (const String &E : p_features) {
 			tags.append(E);
 		}
-		ERR_FAIL_MSG(vformat("Couldn't export extension: %s. No suitable library found for export flags: %s", p_path, String(", ").join(tags)));
+		ERR_FAIL_MSG(vformat("No suitable library found. The libraries' tags referred to an invalid feature flag. Possible feature flags for your platform: %s", p_path, String(", ").join(tags)));
 	}
 
 	List<String> dependencies;
