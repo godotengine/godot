@@ -581,7 +581,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		_record_item_commands(ci, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken);
 	}
 
-	if (r_last_index >= index) {
+	if (index == 0) {
 		// Nothing to render, just return.
 		state.current_batch_index = 0;
 		state.canvas_instance_batches.clear();
@@ -1325,7 +1325,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 
 void RasterizerCanvasGLES3::_add_to_batch(uint32_t &r_index, bool &r_batch_broken) {
 	if (r_index >= data.max_instances_per_ubo - 1) {
-		WARN_PRINT_ONCE("Trying to draw too many items. Please increase maximum number of items in the project settings 'rendering/gl_compatibility/item_buffer_size'");
+		ERR_PRINT_ONCE("Trying to draw too many items. Please increase maximum number of items in the project settings 'rendering/gl_compatibility/item_buffer_size'");
 		return;
 	}
 
