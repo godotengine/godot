@@ -2584,7 +2584,13 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 				[wd.window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 			}
 			[wd.window_object toggleFullScreen:nil];
+
+			if (old_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+			}
+
 			wd.fullscreen = false;
+			wd.exclusive_fullscreen = false;
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if ([wd.window_object isZoomed]) {
@@ -2609,7 +2615,15 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
 			[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 			[wd.window_object toggleFullScreen:nil];
+
 			wd.fullscreen = true;
+			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				const NSUInteger presentationOptions = NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar;
+				[NSApp setPresentationOptions:presentationOptions];
+				wd.exclusive_fullscreen = true;
+			} else {
+				wd.exclusive_fullscreen = false;
+			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if (![wd.window_object isZoomed]) {
@@ -2626,7 +2640,11 @@ DisplayServer::WindowMode DisplayServerMacOS::window_get_mode(WindowID p_window)
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) { // If fullscreen, it's not in another mode.
-		return WINDOW_MODE_FULLSCREEN;
+		if (wd.exclusive_fullscreen) {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		} else {
+			return WINDOW_MODE_FULLSCREEN;
+		}
 	}
 	if ([wd.window_object isZoomed] && !wd.resize_disabled) {
 		return WINDOW_MODE_MAXIMIZED;
