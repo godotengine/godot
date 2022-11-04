@@ -230,7 +230,13 @@ class DisplayServerWayland : public DisplayServer {
 		uint32_t button_time = 0;
 		uint32_t button_serial = 0;
 
+		uint32_t scroll_type = WL_POINTER_AXIS_SOURCE_WHEEL;
+
+		// The amount "scrolled" in pixels, in each direction.
 		Vector2 scroll_vector;
+
+		// The amount of scroll "clicks" in each direction.
+		Vector2i discrete_scroll_vector;
 	};
 
 	struct SeatState {
@@ -377,6 +383,8 @@ class DisplayServerWayland : public DisplayServer {
 	static void _seat_state_override_cursor_shape(SeatState &p_ss, CursorShape p_shape);
 	static void _seat_state_set_current(SeatState &p_ss);
 	static void _wayland_state_update_cursor(WaylandState &p_wls);
+
+	static void _wayland_state_send_mouse_button(WaylandState &p_wls, MouseButton p_button);
 
 	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 

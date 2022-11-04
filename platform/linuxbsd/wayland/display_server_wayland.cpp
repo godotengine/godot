@@ -990,12 +990,10 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 
 	switch (axis) {
 		case WL_POINTER_AXIS_VERTICAL_SCROLL: {
-			button_pressed = value >= 0 ? MouseButton::WHEEL_DOWN : MouseButton::WHEEL_UP;
 			pd.scroll_vector.y = wl_fixed_to_double(value);
 		} break;
 
 		case WL_POINTER_AXIS_HORIZONTAL_SCROLL: {
-			button_pressed = value >= 0 ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT;
 			pd.scroll_vector.x = wl_fixed_to_double(value);
 		} break;
 	}
@@ -1056,13 +1054,61 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 		wls->message_queue.push_back(msg);
 	}
 
+	if (pd.discrete_scroll_vector - old_pd.discrete_scroll_vector != Vector2i()) {
+		// This is a discrete scroll (eg. from a scroll wheel), so we'll just emit
+		// scroll wheel buttons.
+		if (pd.scroll_vector.y != 0) {
+			MouseButton button = pd.scroll_vector.y > 0 ? MouseButton::WHEEL_DOWN : MouseButton::WHEEL_UP;
+			pd.pressed_button_mask |= mouse_button_to_mask(button);
+		}
+
+		if (pd.scroll_vector.x != 0) {
+			MouseButton button = pd.scroll_vector.x > 0 ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT;
+			pd.pressed_button_mask |= mouse_button_to_mask(button);
+		}
+	} else {
+		if (pd.scroll_vector - old_pd.scroll_vector != Vector2()) {
+			// This is a continuous scroll, so we'll emit a pan gesture.
+			Ref<InputEventPanGesture> pg;
+			pg.instantiate();
+
+			// Set all pressed modifiers.
+			pg->set_shift_pressed(ss->shift_pressed);
+			pg->set_ctrl_pressed(ss->ctrl_pressed);
+			pg->set_alt_pressed(ss->alt_pressed);
+			pg->set_meta_pressed(ss->meta_pressed);
+
+			pg->set_position(pd.position);
+
+			pg->set_window_id(MAIN_WINDOW_ID);
+
+			pg->set_delta(pd.scroll_vector);
+
+			Ref<WaylandInputEventMessage> msg;
+			msg.instantiate();
+
+			msg->event = pg;
+
+			wls->message_queue.push_back(msg);
+		}
+	}
+
 	if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
 		MouseButton pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
 
-		// This is the cleanest and simplest approach I could find to avoid writing the same code 7 times.
-		for (MouseButton test_button : { MouseButton::LEFT, MouseButton::MIDDLE, MouseButton::RIGHT,
-					 MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT,
-					 MouseButton::WHEEL_RIGHT, MouseButton::MB_XBUTTON1, MouseButton::MB_XBUTTON2 }) {
+		const MouseButton buttons_to_test[] = {
+			MouseButton::LEFT,
+			MouseButton::MIDDLE,
+			MouseButton::RIGHT,
+			MouseButton::WHEEL_UP,
+			MouseButton::WHEEL_DOWN,
+			MouseButton::WHEEL_LEFT,
+			MouseButton::WHEEL_RIGHT,
+			MouseButton::MB_XBUTTON1,
+			MouseButton::MB_XBUTTON2,
+		};
+
+		for (MouseButton test_button : buttons_to_test) {
 			MouseButton test_button_mask = mouse_button_to_mask(test_button);
 			if ((pressed_mask_delta & test_button_mask) != MouseButton::NONE) {
 				Ref<InputEventMouseButton> mb;
@@ -1078,6 +1124,18 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 				mb->set_position(pd.position);
 				mb->set_global_position(pd.position);
 
+				if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
+					// If this is a discrete scroll, specify how many "clicks" it did for this
+					// pointer frame.
+					mb->set_factor(abs(pd.discrete_scroll_vector.y));
+				}
+
+				if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
+					// If this is a discrete scroll, specify how many "clicks" it did for this
+					// pointer frame.
+					mb->set_factor(abs(pd.discrete_scroll_vector.x));
+				}
+
 				mb->set_button_mask(pd.pressed_button_mask);
 
 				mb->set_button_index(test_button);
@@ -1085,14 +1143,6 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 				if (pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(pd.position).distance_to(Vector2(old_pd.position)) < 5) {
 					mb->set_double_click(true);
-				}
-
-				if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
-					mb->set_factor(abs(pd.scroll_vector.y / 20));
-				}
-
-				if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
-					mb->set_factor(abs(pd.scroll_vector.x / 20));
 				}
 
 				Ref<WaylandInputEventMessage> msg;
@@ -1132,20 +1182,47 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 		}
 	}
 
+	// Reset the scroll vectors as we already handled them.
+	pd.scroll_vector = Vector2();
+	pd.discrete_scroll_vector = Vector2();
+
 	// Update the data all getters read. Wayland's specification requires us to do
 	// this, since all pointer actions are sent in individual events.
 	old_pd = pd;
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis_source(void *data, struct wl_pointer *wl_pointer, uint32_t axis_source) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	ss->pointer_data_buffer.scroll_type = axis_source;
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis_stop(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis) {
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	PointerData &pd = ss->pointer_data_buffer;
+
+	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+		pd.discrete_scroll_vector.y = discrete;
+	}
+
+	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+		pd.discrete_scroll_vector.x = discrete;
+	}
 }
 
+// TODO: Add support to this event.
 void DisplayServerWayland::_wl_pointer_on_axis_value120(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t value120) {
 }
 
