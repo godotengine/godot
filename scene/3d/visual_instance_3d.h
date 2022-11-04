@@ -140,7 +140,7 @@ public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
 
-	void set_transparecy(float p_transparency);
+	void set_transparency(float p_transparency);
 	float get_transparency() const;
 
 	void set_visibility_range_begin(float p_dist);
