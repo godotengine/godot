@@ -147,7 +147,12 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	if (wd.exclusive_fullscreen) {
+		[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+	}
+
 	wd.fullscreen = false;
+	wd.exclusive_fullscreen = false;
 
 	[(GodotWindow *)wd.window_object setAnimDuration:-1.0f];
 
