@@ -473,18 +473,37 @@ void TextureProgress::_notification(int p_what) {
 								}
 								pts.append(to);
 
+								Ref<AtlasTexture> atlas_progress = progress;
+								bool valid_atlas_progress = atlas_progress.is_valid() && atlas_progress->get_atlas().is_valid();
+								Rect2 region_rect;
+								Size2 atlas_size;
+								if (valid_atlas_progress) {
+									region_rect = atlas_progress->get_region();
+									atlas_size = atlas_progress->get_atlas()->get_size();
+								}
+
 								Vector<Point2> uvs;
 								Vector<Point2> points;
-								uvs.push_back(get_relative_center());
-								points.push_back(progress_offset + Point2(s.x * get_relative_center().x, s.y * get_relative_center().y));
 								for (int i = 0; i < pts.size(); i++) {
 									Point2 uv = unit_val_to_uv(pts[i]);
 									if (uvs.find(uv) >= 0) {
 										continue;
 									}
-									uvs.push_back(uv);
 									points.push_back(progress_offset + Point2(uv.x * s.x, uv.y * s.y));
+									if (valid_atlas_progress) {
+										uv.x = Math::range_lerp(uv.x, 0, 1, region_rect.position.x / atlas_size.x, (region_rect.position.x + region_rect.size.x) / atlas_size.x);
+										uv.y = Math::range_lerp(uv.y, 0, 1, region_rect.position.y / atlas_size.y, (region_rect.position.y + region_rect.size.y) / atlas_size.y);
+									}
+									uvs.push_back(uv);
 								}
+
+								Point2 center_point = get_relative_center();
+								points.push_back(progress_offset + s * center_point);
+								if (valid_atlas_progress) {
+									center_point.x = Math::range_lerp(center_point.x, 0, 1, region_rect.position.x / atlas_size.x, (region_rect.position.x + region_rect.size.x) / atlas_size.x);
+									center_point.y = Math::range_lerp(center_point.y, 0, 1, region_rect.position.y / atlas_size.y, (region_rect.position.y + region_rect.size.y) / atlas_size.y);
+								}
+								uvs.push_back(center_point);
 								Vector<Color> colors;
 								colors.push_back(tint_progress);
 								draw_polygon(points, colors, uvs, progress);
