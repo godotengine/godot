@@ -103,8 +103,6 @@ void RedirectIOToConsole() {
 		RedirectStream("CONIN$", "r", stdin, STD_INPUT_HANDLE);
 		RedirectStream("CONOUT$", "w", stdout, STD_OUTPUT_HANDLE);
 		RedirectStream("CONOUT$", "w", stderr, STD_ERROR_HANDLE);
-
-		printf("\n"); // Make sure our output is starting from the new line.
 	}
 }
 
