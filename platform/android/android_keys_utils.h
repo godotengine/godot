@@ -43,7 +43,6 @@ struct AndroidGodotCodePair {
 
 static AndroidGodotCodePair android_godot_code_pairs[] = {
 	{ AKEYCODE_UNKNOWN, KEY_UNKNOWN }, // (0) Unknown key code.
-	{ AKEYCODE_HOME, KEY_HOME }, // (3) Home key.
 	{ AKEYCODE_BACK, KEY_BACK }, // (4) Back key.
 	{ AKEYCODE_0, KEY_0 }, // (7) '0' key.
 	{ AKEYCODE_1, KEY_1 }, // (8) '1' key.
@@ -63,6 +62,7 @@ static AndroidGodotCodePair android_godot_code_pairs[] = {
 	{ AKEYCODE_DPAD_RIGHT, KEY_RIGHT }, // (22) Directional Pad Right key.
 	{ AKEYCODE_VOLUME_UP, KEY_VOLUMEUP }, // (24) Volume Up key.
 	{ AKEYCODE_VOLUME_DOWN, KEY_VOLUMEDOWN }, // (25) Volume Down key.
+	{ AKEYCODE_POWER, KEY_STANDBY }, // (26) Power key.
 	{ AKEYCODE_CLEAR, KEY_CLEAR }, // (28) Clear key.
 	{ AKEYCODE_A, KEY_A }, // (29) 'A' key.
 	{ AKEYCODE_B, KEY_B }, // (30) 'B' key.
@@ -98,6 +98,7 @@ static AndroidGodotCodePair android_godot_code_pairs[] = {
 	{ AKEYCODE_SHIFT_RIGHT, KEY_SHIFT }, // (60) Right Shift modifier key.
 	{ AKEYCODE_TAB, KEY_TAB }, // (61) Tab key.
 	{ AKEYCODE_SPACE, KEY_SPACE }, // (62) Space key.
+	{ AKEYCODE_ENVELOPE, KEY_LAUNCHMAIL }, // (65) Envelope special function key.
 	{ AKEYCODE_ENTER, KEY_ENTER }, // (66) Enter key.
 	{ AKEYCODE_DEL, KEY_BACKSPACE }, // (67) Backspace key.
 	{ AKEYCODE_GRAVE, KEY_QUOTELEFT }, // (68) '`' (backtick) key.
@@ -114,6 +115,7 @@ static AndroidGodotCodePair android_godot_code_pairs[] = {
 	{ AKEYCODE_MENU, KEY_MENU }, // (82) Menu key.
 	{ AKEYCODE_SEARCH, KEY_SEARCH }, // (84) Search key.
 	{ AKEYCODE_MEDIA_STOP, KEY_MEDIASTOP }, // (86) Stop media key.
+	{ AKEYCODE_MEDIA_NEXT, KEY_MEDIANEXT }, // (87) Play Next media key.
 	{ AKEYCODE_MEDIA_PREVIOUS, KEY_MEDIAPREVIOUS }, // (88) Play Previous media key.
 	{ AKEYCODE_PAGE_UP, KEY_PAGEUP }, // (92) Page Up key.
 	{ AKEYCODE_PAGE_DOWN, KEY_PAGEDOWN }, // (93) Page Down key.
@@ -127,6 +129,8 @@ static AndroidGodotCodePair android_godot_code_pairs[] = {
 	{ AKEYCODE_META_RIGHT, KEY_META }, // (118) Right Meta modifier key.
 	{ AKEYCODE_SYSRQ, KEY_PRINT }, // (120) System Request / Print Screen key.
 	{ AKEYCODE_BREAK, KEY_PAUSE }, // (121) Break / Pause key.
+	{ AKEYCODE_MOVE_HOME, KEY_HOME }, // (122) Home Movement key.
+	{ AKEYCODE_MOVE_END, KEY_END }, // (123) End Movement key.
 	{ AKEYCODE_INSERT, KEY_INSERT }, // (124) Insert key.
 	{ AKEYCODE_FORWARD, KEY_FORWARD }, // (125) Forward key.
 	{ AKEYCODE_MEDIA_PLAY, KEY_MEDIAPLAY }, // (126) Play media key.
