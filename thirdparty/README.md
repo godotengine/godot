@@ -296,7 +296,8 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- all .c, .h in lib/, except arm/ and c64x/ folders
+- all .c, .h in lib/, except c64x/ folder
+- the arm/ folder, with armopts.s.in converted to armopts.s
 - all .h files in include/theora/ as theora/
 - COPYING and LICENSE
 
