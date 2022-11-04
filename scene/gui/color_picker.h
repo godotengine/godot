@@ -86,6 +86,7 @@ public:
 		SHAPE_HSV_WHEEL,
 		SHAPE_VHS_CIRCLE,
 		SHAPE_OKHSL_CIRCLE,
+		SHAPE_NONE,
 
 		SHAPE_MAX
 	};
@@ -125,6 +126,10 @@ private:
 	PopupMenu *shape_popup = nullptr;
 	PopupMenu *mode_popup = nullptr;
 	MenuButton *btn_shape = nullptr;
+	HBoxContainer *mode_hbc = nullptr;
+	HBoxContainer *sample_hbc = nullptr;
+	GridContainer *slider_gc = nullptr;
+	HBoxContainer *hex_hbc = nullptr;
 	MenuButton *btn_mode = nullptr;
 	Button *mode_btns[MODE_BUTTON_COUNT];
 	Ref<ButtonGroup> mode_group = nullptr;
@@ -165,8 +170,12 @@ private:
 	bool updating = true;
 	bool changing_color = false;
 	bool spinning = false;
-	bool presets_enabled = true;
+	bool can_add_swatches = true;
 	bool presets_visible = true;
+	bool color_modes_visible = true;
+	bool sampler_visible = true;
+	bool sliders_visible = true;
+	bool hex_visible = true;
 	bool line_edit_mouse_release = false;
 	bool text_changed = false;
 
@@ -267,11 +276,23 @@ public:
 	void set_deferred_mode(bool p_enabled);
 	bool is_deferred_mode() const;
 
-	void set_presets_enabled(bool p_enabled);
-	bool are_presets_enabled() const;
+	void set_can_add_swatches(bool p_enabled);
+	bool are_swatches_enabled() const;
 
 	void set_presets_visible(bool p_visible);
 	bool are_presets_visible() const;
+
+	void set_modes_visible(bool p_visible);
+	bool are_modes_visible() const;
+
+	void set_sampler_visible(bool p_visible);
+	bool is_sampler_visible() const;
+
+	void set_sliders_visible(bool p_visible);
+	bool are_sliders_visible() const;
+
+	void set_hex_visible(bool p_visible);
+	bool is_hex_visible() const;
 
 	void set_focus_on_line_edit();
 
