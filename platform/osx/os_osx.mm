@@ -329,6 +329,8 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 	if (OS_OSX::singleton->on_top)
 		[OS_OSX::singleton->window_object setLevel:NSFloatingWindowLevel];
 
+	[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+
 	// Force window resize event.
 	[self windowDidResize:notification];
 }
@@ -2883,6 +2885,12 @@ void OS_OSX::set_window_fullscreen(bool p_enabled) {
 				Size2 size = max_size / get_screen_max_scale();
 				[window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 			}
+		}
+		if (p_enabled) {
+			const NSUInteger presentationOptions = NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar;
+			[NSApp setPresentationOptions:presentationOptions];
+		} else {
+			[NSApp setPresentationOptions:NSApplicationPresentationDefault];
 		}
 		[window_object toggleFullScreen:nil];
 	}
