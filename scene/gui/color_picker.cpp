@@ -1529,8 +1529,7 @@ void ColorPicker::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHAPE_OKHSL_CIRCLE);
 }
 
-ColorPicker::ColorPicker() :
-		BoxContainer(true) {
+ColorPicker::ColorPicker() {
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
 	add_child(hb_edit, false, INTERNAL_MODE_FRONT);
 	hb_edit->set_v_size_flags(SIZE_SHRINK_BEGIN);
