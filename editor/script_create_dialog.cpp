@@ -275,7 +275,6 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 
 	bool found = false;
 	bool match = false;
-	int index = 0;
 	for (const String &E : extensions) {
 		if (E.nocasecmp_to(extension) == 0) {
 			found = true;
@@ -284,7 +283,6 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 			}
 			break;
 		}
-		index++;
 	}
 
 	if (!found) {

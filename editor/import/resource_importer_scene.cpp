@@ -1276,14 +1276,12 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 							} break;
 						}
 
-						int idx = 0;
 						for (const Ref<Shape3D> &E : shapes) {
 							CollisionShape3D *cshape = memnew(CollisionShape3D);
 							cshape->set_shape(E);
 							base->add_child(cshape, true);
 
 							cshape->set_owner(base->get_owner());
-							idx++;
 						}
 					}
 				}
