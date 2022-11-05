@@ -374,10 +374,15 @@ void ScriptCreateDialog::_create_new() {
 
 	String parent_class = parent_name->get_text();
 	if (!ClassDB::class_exists(parent_class) && !ScriptServer::is_global_class(parent_class)) {
-		// If base is a custom type, replace with script path instead.
 		const EditorData::CustomType *type = EditorNode::get_editor_data().get_custom_type_by_name(parent_class);
-		ERR_FAIL_NULL(type);
-		parent_class = "\"" + type->script->get_path() + "\"";
+		// parent_class is validated by the input form
+		// If it has reached this point it is either a custom type, or a resource path
+		// type will be a nullptr when it's a script path, and will contain the type info otherwise
+		if (type != nullptr) {
+			// If base is a custom type, replace with script path instead.
+			parent_class = "\"" + type->script->get_path() + "\"";
+		}
+		// Otherwise parent_class is already a resource path, so leave it alone
 	}
 
 	scr = ScriptServer::get_language(language_menu->get_selected())->make_template(sinfo.content, cname_param, parent_class);
