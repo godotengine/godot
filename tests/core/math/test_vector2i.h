@@ -79,13 +79,13 @@ TEST_CASE("[Vector2i] Length methods") {
 			vector1.length_squared() == 200,
 			"Vector2i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.length(), 10 * Math_SQRT2),
+			vector1.length() == doctest::Approx(10 * Math_SQRT2),
 			"Vector2i length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 1300,
 			"Vector2i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector2.length(), 36.05551275463989293119),
+			vector2.length() == doctest::Approx(36.05551275463989293119),
 			"Vector2i length should work as expected.");
 }
 
@@ -127,7 +127,7 @@ TEST_CASE("[Vector2i] Operators") {
 TEST_CASE("[Vector2i] Other methods") {
 	const Vector2i vector = Vector2i(1, 3);
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector.aspect(), (real_t)1.0 / (real_t)3.0),
+			vector.aspect() == doctest::Approx((real_t)1.0 / (real_t)3.0),
 			"Vector2i aspect should work as expected.");
 
 	CHECK_MESSAGE(
