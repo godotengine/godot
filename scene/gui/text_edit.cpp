@@ -1854,6 +1854,12 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		} else {
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (selection_drag_attempt && is_mouse_over_selection()) {
+					remove_secondary_carets();
+
+					Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+					set_caret_line(pos.y, false, true, 0, 0);
+					set_caret_column(pos.x, true, 0);
+
 					deselect();
 				}
 				dragging_minimap = false;
