@@ -604,6 +604,12 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
+	if (strcmp(interface, zwp_pointer_gestures_v1_interface.name) == 0) {
+		globals.wp_pointer_gestures = (struct zwp_pointer_gestures_v1 *)wl_registry_bind(wl_registry, name, &zwp_pointer_gestures_v1_interface, 1);
+		globals.wp_pointer_gestures_name = name;
+		return;
+	}
+
 	if (strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) == 0) {
 		globals.wp_relative_pointer_manager = (struct zwp_relative_pointer_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_relative_pointer_manager_v1_interface, 1);
 		globals.wp_relative_pointer_manager_name = name;
@@ -698,6 +704,15 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		}
 		globals.wp_pointer_constraints = nullptr;
 		globals.wp_pointer_constraints_name = 0;
+		return;
+	}
+
+	if (name == globals.wp_pointer_gestures_name) {
+		if (globals.wp_pointer_gestures) {
+			zwp_pointer_gestures_v1_destroy(globals.wp_pointer_gestures);
+		}
+		globals.wp_pointer_gestures = nullptr;
+		globals.wp_pointer_gestures_name = 0;
 		return;
 	}
 
@@ -821,13 +836,20 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 
 	// Pointer handling.
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
-		ss->cursor_surface = wl_compositor_create_surface(wls->globals.wl_compositor);
+		WaylandGlobals &globals = wls->globals;
+
+		ss->cursor_surface = wl_compositor_create_surface(globals.wl_compositor);
 
 		ss->wl_pointer = wl_seat_get_pointer(wl_seat);
 		wl_pointer_add_listener(ss->wl_pointer, &wl_pointer_listener, ss);
 
-		ss->wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(wls->globals.wp_relative_pointer_manager, ss->wl_pointer);
+		ss->wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(globals.wp_relative_pointer_manager, ss->wl_pointer);
 		zwp_relative_pointer_v1_add_listener(ss->wp_relative_pointer, &wp_relative_pointer_listener, ss);
+
+		if (globals.wp_pointer_gestures) {
+			ss->wp_pointer_gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(globals.wp_pointer_gestures, ss->wl_pointer);
+			zwp_pointer_gesture_pinch_v1_add_listener(ss->wp_pointer_gesture_pinch, &wp_pointer_gesture_pinch_listener, ss);
+		}
 	} else {
 		if (ss->cursor_surface) {
 			wl_surface_destroy(ss->cursor_surface);
@@ -1615,6 +1637,82 @@ void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, s
 	pd.relative_motion.y = wl_fixed_to_double(dy);
 
 	pd.relative_motion_time = uptime_lo;
+}
+
+void DisplayServerWayland::_wp_pointer_gesture_pinch_on_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	if (fingers == 2) {
+		ss->old_pinch_scale = wl_fixed_from_int(1);
+		ss->active_gesture = Gesture::MAGNIFY;
+	}
+}
+
+void DisplayServerWayland::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t time, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t scale, wl_fixed_t rotation) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	PointerData &pd = ss->pointer_data_buffer;
+
+	if (ss->active_gesture == Gesture::MAGNIFY) {
+		Ref<InputEventMagnifyGesture> mg;
+		mg.instantiate();
+
+		mg->set_window_id(MAIN_WINDOW_ID);
+
+		// Set all pressed modifiers.
+		mg->set_shift_pressed(ss->shift_pressed);
+		mg->set_ctrl_pressed(ss->ctrl_pressed);
+		mg->set_alt_pressed(ss->alt_pressed);
+		mg->set_meta_pressed(ss->meta_pressed);
+
+		mg->set_position(pd.position);
+
+		wl_fixed_t scale_delta = scale - ss->old_pinch_scale;
+		mg->set_factor(1 + wl_fixed_to_double(scale_delta));
+
+		Ref<WaylandInputEventMessage> magnify_msg;
+		magnify_msg.instantiate();
+		magnify_msg->event = mg;
+
+		// Since Wayland allows only one gesture at a time and godot instead expects
+		// both of them, we'll have to create two separate input events: one for
+		// magnification and one for panning.
+
+		Ref<InputEventPanGesture> pg;
+		pg.instantiate();
+
+		pg->set_window_id(MAIN_WINDOW_ID);
+
+		// Set all pressed modifiers.
+		pg->set_shift_pressed(ss->shift_pressed);
+		pg->set_ctrl_pressed(ss->ctrl_pressed);
+		pg->set_alt_pressed(ss->alt_pressed);
+		pg->set_meta_pressed(ss->meta_pressed);
+
+		pg->set_position(pd.position);
+		pg->set_delta(Vector2(wl_fixed_to_double(dx), wl_fixed_to_double(dy)));
+
+		Ref<WaylandInputEventMessage> pan_msg;
+		pan_msg.instantiate();
+		pan_msg->event = pg;
+
+		wls->message_queue.push_back(magnify_msg);
+		wls->message_queue.push_back(pan_msg);
+
+		ss->old_pinch_scale = scale;
+	}
+}
+
+void DisplayServerWayland::_wp_pointer_gesture_pinch_on_end(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, int32_t cancelled) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->active_gesture = Gesture::NONE;
 }
 
 void DisplayServerWayland::_wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer) {
@@ -3054,6 +3152,10 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	if (wls.globals.wp_pointer_constraints) {
 		zwp_pointer_constraints_v1_destroy(wls.globals.wp_pointer_constraints);
+	}
+
+	if (wls.globals.wp_pointer_gestures) {
+		zwp_pointer_gestures_v1_destroy(wls.globals.wp_pointer_gestures);
 	}
 
 	if (wls.globals.wp_relative_pointer_manager) {

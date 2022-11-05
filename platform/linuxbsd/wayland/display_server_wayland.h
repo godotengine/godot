@@ -50,6 +50,7 @@
 
 #include "protocol/idle_inhibit.gen.h"
 #include "protocol/pointer_constraints.gen.h"
+#include "protocol/pointer_gestures.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
 #include "protocol/wayland.gen.h"
@@ -93,6 +94,11 @@
 	for (pos = (decltype(pos))(array)->data; (const char *)pos < ((const char *)(array)->data + (array)->size); (pos)++)
 
 class DisplayServerWayland : public DisplayServer {
+	enum class Gesture {
+		NONE,
+		MAGNIFY,
+	};
+
 	// Wayland stuff.
 
 	// Messages used for sending stuff to the main thread to be dispatched there.
@@ -153,6 +159,9 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct zwp_pointer_constraints_v1 *wp_pointer_constraints = nullptr;
 		uint32_t wp_pointer_constraints_name = 0;
+
+		struct zwp_pointer_gestures_v1 *wp_pointer_gestures = nullptr;
+		uint32_t wp_pointer_gestures_name = 0;
 
 		struct zwp_idle_inhibit_manager_v1 *wp_idle_inhibit_manager = nullptr;
 		uint32_t wp_idle_inhibit_manager_name = 0;
@@ -237,6 +246,8 @@ class DisplayServerWayland : public DisplayServer {
 
 		// The amount of scroll "clicks" in each direction.
 		Vector2i discrete_scroll_vector;
+
+		uint32_t pinch_scale = 1;
 	};
 
 	struct SeatState {
@@ -253,6 +264,17 @@ class DisplayServerWayland : public DisplayServer {
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
+
+		struct zwp_pointer_gesture_pinch_v1 *wp_pointer_gesture_pinch = nullptr;
+
+		// NOTE: According to the wp_pointer_gestures protocol specification, there
+		// can be only one active gesture at a time.
+		Gesture active_gesture = Gesture::NONE;
+
+		// Used for delta calculations.
+		// NOTE: The wp_pointer_gestures protocol keeps track of the total scale of
+		// the pinch gesture, while godot instead wants its delta.
+		wl_fixed_t old_pinch_scale = 0;
 
 		struct wl_surface *cursor_surface = nullptr;
 
@@ -467,6 +489,10 @@ class DisplayServerWayland : public DisplayServer {
 
 	static void _wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
 
+	static void _wp_pointer_gesture_pinch_on_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers);
+	static void _wp_pointer_gesture_pinch_on_update(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t time, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t scale, wl_fixed_t rotation);
+	static void _wp_pointer_gesture_pinch_on_end(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, int32_t cancelled);
+
 	static void _wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer);
 	static void _wp_primary_selection_device_on_selection(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *id);
 
@@ -571,6 +597,12 @@ class DisplayServerWayland : public DisplayServer {
 
 	static constexpr struct zwp_relative_pointer_v1_listener wp_relative_pointer_listener = {
 		.relative_motion = _wp_relative_pointer_on_relative_motion,
+	};
+
+	static constexpr struct zwp_pointer_gesture_pinch_v1_listener wp_pointer_gesture_pinch_listener = {
+		.begin = _wp_pointer_gesture_pinch_on_begin,
+		.update = _wp_pointer_gesture_pinch_on_update,
+		.end = _wp_pointer_gesture_pinch_on_end,
 	};
 
 	static constexpr struct zwp_primary_selection_device_v1_listener wp_primary_selection_device_listener = {

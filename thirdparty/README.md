@@ -757,6 +757,8 @@ Files extracted from upstream source:
 - `unstable/relative-pointer/README`
 - `unstable/xdg-decoration/xdg-decoration-unstable-v1.xml`
 - `unstable/xdg-decoration/README`
+- `unstable/pointer-gestures/pointer-gestures-unstable-v1.xml`
+- `unstable/pointer-gestures/README`
 - `COPYING`
 
 
