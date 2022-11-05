@@ -56,10 +56,4 @@ Error VulkanContextWayland::window_create(DisplayServer::WindowID p_window_id, D
 	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
 }
 
-VulkanContextWayland::VulkanContextWayland() {
-}
-
-VulkanContextWayland::~VulkanContextWayland() {
-}
-
 #endif // VULKAN_ENABLED
