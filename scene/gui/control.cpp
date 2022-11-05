@@ -1582,10 +1582,6 @@ void Control::set_block_minimum_size_adjust(bool p_block) {
 	data.block_minimum_size_adjust = p_block;
 }
 
-bool Control::is_minimum_size_adjust_blocked() const {
-	return data.block_minimum_size_adjust;
-}
-
 Size2 Control::get_minimum_size() const {
 	Vector2 ms;
 	GDVIRTUAL_CALL(_get_minimum_size, ms);

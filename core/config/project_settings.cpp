@@ -1069,23 +1069,6 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 	return ret;
 }
 
-Vector<String> ProjectSettings::get_optimizer_presets() const {
-	List<PropertyInfo> pi;
-	ProjectSettings::get_singleton()->get_property_list(&pi);
-	Vector<String> names;
-
-	for (const PropertyInfo &E : pi) {
-		if (!E.name.begins_with("optimizer_presets/")) {
-			continue;
-		}
-		names.push_back(E.name.get_slicec('/', 1));
-	}
-
-	names.sort();
-
-	return names;
-}
-
 void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 	ERR_FAIL_COND(!p_info.has("name"));
 	ERR_FAIL_COND(!p_info.has("type"));
