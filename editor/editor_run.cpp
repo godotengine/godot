@@ -57,8 +57,11 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		args.push_back(resource_path.replace(" ", "%20"));
 	}
 
-	args.push_back("--remote-debug");
-	args.push_back(EditorDebuggerNode::get_singleton()->get_server_uri());
+	const String debug_uri = EditorDebuggerNode::get_singleton()->get_server_uri();
+	if (debug_uri.size()) {
+		args.push_back("--remote-debug");
+		args.push_back(debug_uri);
+	}
 
 	args.push_back("--editor-pid");
 	args.push_back(itos(OS::get_singleton()->get_process_id()));
