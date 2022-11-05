@@ -694,8 +694,8 @@ void CodeEdit::_backspace_internal(int p_caret) {
 		return;
 	}
 
-	if (has_selection()) {
-		delete_selection();
+	if (has_selection(p_caret)) {
+		delete_selection(p_caret);
 		return;
 	}
 
