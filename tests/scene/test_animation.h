@@ -40,8 +40,8 @@ namespace TestAnimation {
 TEST_CASE("[Animation] Empty animation getters") {
 	const Ref<Animation> animation = memnew(Animation);
 
-	CHECK(Math::is_equal_approx(animation->get_length(), real_t(1.0)));
-	CHECK(Math::is_equal_approx(animation->get_step(), real_t(0.1)));
+	CHECK(animation->get_length() == doctest::Approx(real_t(1.0)));
+	CHECK(animation->get_step() == doctest::Approx(real_t(0.1)));
 }
 
 TEST_CASE("[Animation] Create value track") {
@@ -59,33 +59,33 @@ TEST_CASE("[Animation] Create value track") {
 	CHECK(int(animation->track_get_key_value(0, 0)) == 0);
 	CHECK(int(animation->track_get_key_value(0, 1)) == 100);
 
-	CHECK(Math::is_equal_approx(animation->value_track_interpolate(0, -0.2), 0.0));
-	CHECK(Math::is_equal_approx(animation->value_track_interpolate(0, 0.0), 0.0));
-	CHECK(Math::is_equal_approx(animation->value_track_interpolate(0, 0.2), 40.0));
-	CHECK(Math::is_equal_approx(animation->value_track_interpolate(0, 0.4), 80.0));
-	CHECK(Math::is_equal_approx(animation->value_track_interpolate(0, 0.5), 100.0));
-	CHECK(Math::is_equal_approx(animation->value_track_interpolate(0, 0.6), 100.0));
+	CHECK(animation->value_track_interpolate(0, -0.2) == doctest::Approx(0.0));
+	CHECK(animation->value_track_interpolate(0, 0.0) == doctest::Approx(0.0));
+	CHECK(animation->value_track_interpolate(0, 0.2) == doctest::Approx(40.0));
+	CHECK(animation->value_track_interpolate(0, 0.4) == doctest::Approx(80.0));
+	CHECK(animation->value_track_interpolate(0, 0.5) == doctest::Approx(100.0));
+	CHECK(animation->value_track_interpolate(0, 0.6) == doctest::Approx(100.0));
 
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 0), real_t(1.0)));
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 1), real_t(1.0)));
+	CHECK(animation->track_get_key_transition(0, 0) == doctest::Approx(real_t(1.0)));
+	CHECK(animation->track_get_key_transition(0, 1) == doctest::Approx(real_t(1.0)));
 
 	ERR_PRINT_OFF;
 	// Nonexistent keys.
 	CHECK(animation->track_get_key_value(0, 2).is_null());
 	CHECK(animation->track_get_key_value(0, -1).is_null());
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 2), real_t(-1.0)));
+	CHECK(animation->track_get_key_transition(0, 2) == doctest::Approx(real_t(-1.0)));
 	// Nonexistent track (and keys).
 	CHECK(animation->track_get_key_value(1, 0).is_null());
 	CHECK(animation->track_get_key_value(1, 1).is_null());
 	CHECK(animation->track_get_key_value(1, 2).is_null());
 	CHECK(animation->track_get_key_value(1, -1).is_null());
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(1, 0), real_t(-1.0)));
+	CHECK(animation->track_get_key_transition(1, 0) == doctest::Approx(real_t(-1.0)));
 
 	// This is a value track, so the methods below should return errors.
 	CHECK(animation->position_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->rotation_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->scale_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
-	CHECK(Math::is_zero_approx(animation->bezier_track_interpolate(0, 0.0)));
+	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(0.0));
 	CHECK(animation->blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
 }
@@ -123,15 +123,15 @@ TEST_CASE("[Animation] Create 3D position track") {
 	CHECK(r_interpolation.is_equal_approx(Vector3(3.5, 4, 5)));
 
 	// 3D position tracks always use linear interpolation for performance reasons.
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 0), real_t(1.0)));
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 1), real_t(1.0)));
+	CHECK(animation->track_get_key_transition(0, 0) == doctest::Approx(real_t(1.0)));
+	CHECK(animation->track_get_key_transition(0, 1) == doctest::Approx(real_t(1.0)));
 
 	// This is a 3D position track, so the methods below should return errors.
 	ERR_PRINT_OFF;
 	CHECK(animation->value_track_interpolate(0, 0.0).is_null());
 	CHECK(animation->rotation_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->scale_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
-	CHECK(Math::is_zero_approx(animation->bezier_track_interpolate(0, 0.0)));
+	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(0.0));
 	CHECK(animation->blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
 }
@@ -169,15 +169,15 @@ TEST_CASE("[Animation] Create 3D rotation track") {
 	CHECK(r_interpolation.is_equal_approx(Quaternion(0.231055, 0.374912, 0.761204, 0.476048)));
 
 	// 3D rotation tracks always use linear interpolation for performance reasons.
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 0), real_t(1.0)));
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 1), real_t(1.0)));
+	CHECK(animation->track_get_key_transition(0, 0) == doctest::Approx(real_t(1.0)));
+	CHECK(animation->track_get_key_transition(0, 1) == doctest::Approx(real_t(1.0)));
 
 	// This is a 3D rotation track, so the methods below should return errors.
 	ERR_PRINT_OFF;
 	CHECK(animation->value_track_interpolate(0, 0.0).is_null());
 	CHECK(animation->position_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->scale_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
-	CHECK(Math::is_zero_approx(animation->bezier_track_interpolate(0, 0.0)));
+	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(real_t(0.0)));
 	CHECK(animation->blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
 }
@@ -215,15 +215,15 @@ TEST_CASE("[Animation] Create 3D scale track") {
 	CHECK(r_interpolation.is_equal_approx(Vector3(3.5, 4, 5)));
 
 	// 3D scale tracks always use linear interpolation for performance reasons.
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 0), real_t(1.0)));
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 1), real_t(1.0)));
+	CHECK(animation->track_get_key_transition(0, 0) == doctest::Approx(1.0));
+	CHECK(animation->track_get_key_transition(0, 1) == doctest::Approx(1.0));
 
 	// This is a 3D scale track, so the methods below should return errors.
 	ERR_PRINT_OFF;
 	CHECK(animation->value_track_interpolate(0, 0.0).is_null());
 	CHECK(animation->position_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->rotation_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
-	CHECK(Math::is_zero_approx(animation->bezier_track_interpolate(0, 0.0)));
+	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(0.0));
 	CHECK(animation->blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
 }
@@ -242,32 +242,32 @@ TEST_CASE("[Animation] Create blend shape track") {
 	float r_blend = 0.0f;
 
 	CHECK(animation->blend_shape_track_get_key(0, 0, &r_blend) == OK);
-	CHECK(Math::is_equal_approx(r_blend, -1.0f));
+	CHECK(r_blend == doctest::Approx(-1.0f));
 
 	CHECK(animation->blend_shape_track_get_key(0, 1, &r_blend) == OK);
-	CHECK(Math::is_equal_approx(r_blend, 1.0f));
+	CHECK(r_blend == doctest::Approx(1.0f));
 
 	CHECK(animation->blend_shape_track_interpolate(0, -0.2, &r_blend) == OK);
-	CHECK(Math::is_equal_approx(r_blend, -1.0f));
+	CHECK(r_blend == doctest::Approx(-1.0f));
 
 	CHECK(animation->blend_shape_track_interpolate(0, 0.0, &r_blend) == OK);
-	CHECK(Math::is_equal_approx(r_blend, -1.0f));
+	CHECK(r_blend == doctest::Approx(-1.0f));
 
 	CHECK(animation->blend_shape_track_interpolate(0, 0.2, &r_blend) == OK);
-	CHECK(Math::is_equal_approx(r_blend, -0.2f));
+	CHECK(r_blend == doctest::Approx(-0.2f));
 
 	CHECK(animation->blend_shape_track_interpolate(0, 0.4, &r_blend) == OK);
-	CHECK(Math::is_equal_approx(r_blend, 0.6f));
+	CHECK(r_blend == doctest::Approx(0.6f));
 
 	CHECK(animation->blend_shape_track_interpolate(0, 0.5, &r_blend) == OK);
-	CHECK(Math::is_equal_approx(r_blend, 1.0f));
+	CHECK(r_blend == doctest::Approx(1.0f));
 
 	CHECK(animation->blend_shape_track_interpolate(0, 0.6, &r_blend) == OK);
-	CHECK(Math::is_equal_approx(r_blend, 1.0f));
+	CHECK(r_blend == doctest::Approx(1.0f));
 
 	// Blend shape tracks always use linear interpolation for performance reasons.
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 0), real_t(1.0)));
-	CHECK(Math::is_equal_approx(animation->track_get_key_transition(0, 1), real_t(1.0)));
+	CHECK(animation->track_get_key_transition(0, 0) == doctest::Approx(real_t(1.0)));
+	CHECK(animation->track_get_key_transition(0, 1) == doctest::Approx(real_t(1.0)));
 
 	// This is a blend shape track, so the methods below should return errors.
 	ERR_PRINT_OFF;
@@ -275,7 +275,7 @@ TEST_CASE("[Animation] Create blend shape track") {
 	CHECK(animation->position_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->rotation_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->scale_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
-	CHECK(Math::is_zero_approx(animation->bezier_track_interpolate(0, 0.0)));
+	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(0.0));
 	ERR_PRINT_ON;
 }
 
@@ -289,15 +289,15 @@ TEST_CASE("[Animation] Create Bezier track") {
 	CHECK(animation->get_track_count() == 1);
 	CHECK(!animation->track_is_compressed(0));
 
-	CHECK(Math::is_equal_approx(animation->bezier_track_get_key_value(0, 0), real_t(-1.0)));
-	CHECK(Math::is_equal_approx(animation->bezier_track_get_key_value(0, 1), real_t(1.0)));
+	CHECK(animation->bezier_track_get_key_value(0, 0) == doctest::Approx(real_t(-1.0)));
+	CHECK(animation->bezier_track_get_key_value(0, 1) == doctest::Approx(real_t(1.0)));
 
-	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, -0.2), real_t(-1.0)));
-	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.0), real_t(-1.0)));
-	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.2), real_t(-0.76057207584381)));
-	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.4), real_t(-0.39975279569626)));
-	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.5), real_t(1.0)));
-	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.6), real_t(1.0)));
+	CHECK(animation->bezier_track_interpolate(0, -0.2) == doctest::Approx(real_t(-1.0)));
+	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(real_t(-1.0)));
+	CHECK(animation->bezier_track_interpolate(0, 0.2) == doctest::Approx(real_t(-0.76057207584381)));
+	CHECK(animation->bezier_track_interpolate(0, 0.4) == doctest::Approx(real_t(-0.39975279569626)));
+	CHECK(animation->bezier_track_interpolate(0, 0.5) == doctest::Approx(real_t(1.0)));
+	CHECK(animation->bezier_track_interpolate(0, 0.6) == doctest::Approx(real_t(1.0)));
 
 	// This is a bezier track, so the methods below should return errors.
 	ERR_PRINT_OFF;

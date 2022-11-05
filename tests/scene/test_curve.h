@@ -83,54 +83,54 @@ TEST_CASE("[Curve] Custom curve with free tangents") {
 			Math::is_zero_approx(curve->sample(-0.1)),
 			"Custom free curve should return the expected value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(0.1), (real_t)0.352),
+			curve->sample(0.1) == doctest::Approx((real_t)0.352),
 			"Custom free curve should return the expected value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(0.4), (real_t)0.352),
+			curve->sample(0.4) == doctest::Approx((real_t)0.352),
 			"Custom free curve should return the expected value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(0.7), (real_t)0.896),
+			curve->sample(0.7) == doctest::Approx((real_t)0.896),
 			"Custom free curve should return the expected value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(1), 1),
+			curve->sample(1) == doctest::Approx(1),
 			"Custom free curve should return the expected value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(2), 1),
+			curve->sample(2) == doctest::Approx(1),
 			"Custom free curve should return the expected value at offset 0.1.");
 
 	CHECK_MESSAGE(
 			Math::is_zero_approx(curve->sample_baked(-0.1)),
 			"Custom free curve should return the expected baked value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(0.1), (real_t)0.352),
+			curve->sample_baked(0.1) == doctest::Approx((real_t)0.352),
 			"Custom free curve should return the expected baked value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(0.4), (real_t)0.352),
+			curve->sample_baked(0.4) == doctest::Approx((real_t)0.352),
 			"Custom free curve should return the expected baked value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(0.7), (real_t)0.896),
+			curve->sample_baked(0.7) == doctest::Approx((real_t)0.896),
 			"Custom free curve should return the expected baked value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(1), 1),
+			curve->sample_baked(1) == doctest::Approx(1),
 			"Custom free curve should return the expected baked value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(2), 1),
+			curve->sample_baked(2) == doctest::Approx(1),
 			"Custom free curve should return the expected baked value at offset 0.1.");
 
 	curve->remove_point(1);
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(0.1), 0),
+			curve->sample(0.1) == doctest::Approx(0),
 			"Custom free curve should return the expected value at offset 0.1 after removing point at index 1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(0.1), 0),
+			curve->sample_baked(0.1) == doctest::Approx(0),
 			"Custom free curve should return the expected baked value at offset 0.1 after removing point at index 1.");
 
 	curve->clear_points();
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(0.6), 0),
+			curve->sample(0.6) == doctest::Approx(0),
 			"Custom free curve should return the expected value at offset 0.6 after clearing all points.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(0.6), 0),
+			curve->sample_baked(0.6) == doctest::Approx(0),
 			"Custom free curve should return the expected baked value at offset 0.6 after clearing all points.");
 }
 
@@ -143,7 +143,7 @@ TEST_CASE("[Curve] Custom curve with linear tangents") {
 	curve->add_point(Vector2(0.75, 1), 0, 0, Curve::TangentMode::TANGENT_LINEAR, Curve::TangentMode::TANGENT_LINEAR);
 
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->get_point_left_tangent(3), 4),
+			curve->get_point_left_tangent(3) == doctest::Approx(4),
 			"get_point_left_tangent() should return the expected value for point index 3.");
 	CHECK_MESSAGE(
 			Math::is_zero_approx(curve->get_point_right_tangent(3)),
@@ -172,48 +172,48 @@ TEST_CASE("[Curve] Custom curve with linear tangents") {
 			Math::is_zero_approx(curve->sample(-0.1)),
 			"Custom linear curve should return the expected value at offset -0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(0.1), (real_t)0.4),
+			curve->sample(0.1) == doctest::Approx((real_t)0.4),
 			"Custom linear curve should return the expected value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(0.4), (real_t)0.4),
+			curve->sample(0.4) == doctest::Approx((real_t)0.4),
 			"Custom linear curve should return the expected value at offset 0.4.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(0.7), (real_t)0.8),
+			curve->sample(0.7) == doctest::Approx((real_t)0.8),
 			"Custom linear curve should return the expected value at offset 0.7.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(1), 1),
+			curve->sample(1) == doctest::Approx(1),
 			"Custom linear curve should return the expected value at offset 1.0.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(2), 1),
+			curve->sample(2) == doctest::Approx(1),
 			"Custom linear curve should return the expected value at offset 2.0.");
 
 	CHECK_MESSAGE(
 			Math::is_zero_approx(curve->sample_baked(-0.1)),
 			"Custom linear curve should return the expected baked value at offset -0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(0.1), (real_t)0.4),
+			curve->sample_baked(0.1) == doctest::Approx((real_t)0.4),
 			"Custom linear curve should return the expected baked value at offset 0.1.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(0.4), (real_t)0.4),
+			curve->sample_baked(0.4) == doctest::Approx((real_t)0.4),
 			"Custom linear curve should return the expected baked value at offset 0.4.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(0.7), (real_t)0.8),
+			curve->sample_baked(0.7) == doctest::Approx((real_t)0.8),
 			"Custom linear curve should return the expected baked value at offset 0.7.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(1), 1),
+			curve->sample_baked(1) == doctest::Approx(1),
 			"Custom linear curve should return the expected baked value at offset 1.0.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(2), 1),
+			curve->sample_baked(2) == doctest::Approx(1),
 			"Custom linear curve should return the expected baked value at offset 2.0.");
 
 	ERR_PRINT_OFF;
 	curve->remove_point(10);
 	ERR_PRINT_ON;
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample(0.7), (real_t)0.8),
+			curve->sample(0.7) == doctest::Approx((real_t)0.8),
 			"Custom free curve should return the expected value at offset 0.7 after removing point at invalid index 10.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(curve->sample_baked(0.7), (real_t)0.8),
+			curve->sample_baked(0.7) == doctest::Approx((real_t)0.8),
 			"Custom free curve should return the expected baked value at offset 0.7 after removing point at invalid index 10.");
 }
 

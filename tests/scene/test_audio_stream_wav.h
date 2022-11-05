@@ -138,7 +138,7 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 	CHECK(stream->get_data() == test_data);
 
 	SUBCASE("Stream length is computed properly") {
-		CHECK(Math::is_equal_approx(stream->get_length(), double(wav_count / wav_rate)));
+		CHECK(stream->get_length() == doctest::Approx(double(wav_count / wav_rate)));
 	}
 
 	SUBCASE("Stream can be saved as .wav") {

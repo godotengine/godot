@@ -82,13 +82,13 @@ TEST_CASE("[Vector4i] Length methods") {
 			vector1.length_squared() == 400,
 			"Vector4i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.length(), 20),
+			vector1.length() == doctest::Approx(20),
 			"Vector4i length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 5400,
 			"Vector4i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector2.length(), 73.4846922835),
+			vector2.length() == doctest::Approx(73.4846922835),
 			"Vector4i length should work as expected.");
 }
 

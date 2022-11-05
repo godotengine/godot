@@ -52,26 +52,26 @@ TEST_CASE("[Vector3] Angle methods") {
 	const Vector3 vector_y = Vector3(0, 1, 0);
 	const Vector3 vector_yz = Vector3(0, 1, 1);
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector_x.angle_to(vector_y), (real_t)Math_TAU / 4),
+			vector_x.angle_to(vector_y) == doctest::Approx((real_t)Math_TAU / 4),
 			"Vector3 angle_to should work as expected.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector_x.angle_to(vector_yz), (real_t)Math_TAU / 4),
+			vector_x.angle_to(vector_yz) == doctest::Approx((real_t)Math_TAU / 4),
 			"Vector3 angle_to should work as expected.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector_yz.angle_to(vector_x), (real_t)Math_TAU / 4),
+			vector_yz.angle_to(vector_x) == doctest::Approx((real_t)Math_TAU / 4),
 			"Vector3 angle_to should work as expected.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector_y.angle_to(vector_yz), (real_t)Math_TAU / 8),
+			vector_y.angle_to(vector_yz) == doctest::Approx((real_t)Math_TAU / 8),
 			"Vector3 angle_to should work as expected.");
 
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector_x.signed_angle_to(vector_y, vector_y), (real_t)Math_TAU / 4),
+			vector_x.signed_angle_to(vector_y, vector_y) == doctest::Approx((real_t)Math_TAU / 4),
 			"Vector3 signed_angle_to edge case should be positive.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector_x.signed_angle_to(vector_yz, vector_y), (real_t)Math_TAU / -4),
+			vector_x.signed_angle_to(vector_yz, vector_y) == doctest::Approx((real_t)Math_TAU / -4),
 			"Vector3 signed_angle_to should work as expected.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector_yz.signed_angle_to(vector_x, vector_y), (real_t)Math_TAU / 4),
+			vector_yz.signed_angle_to(vector_x, vector_y) == doctest::Approx((real_t)Math_TAU / 4),
 			"Vector3 signed_angle_to should work as expected.");
 }
 
@@ -130,10 +130,10 @@ TEST_CASE("[Vector3] Interpolation methods") {
 			Vector3(4, 6, 2).slerp(Vector3(8, 10, 3), 0.5).is_equal_approx(Vector3(5.90194219811429941053, 8.06758688849378394534, 2.558307894718317120038)),
 			"Vector3 slerp should work as expected.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.slerp(vector2, 0.5).length(), (real_t)6.25831088708303172),
+			vector1.slerp(vector2, 0.5).length() == doctest::Approx((real_t)6.25831088708303172),
 			"Vector3 slerp with different length input should return a vector with an interpolated length.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.angle_to(vector1.slerp(vector2, 0.5)) * 2, vector1.angle_to(vector2)),
+			vector1.angle_to(vector1.slerp(vector2, 0.5)) * 2 == doctest::Approx(vector1.angle_to(vector2)),
 			"Vector3 slerp with different length input should return a vector with an interpolated angle.");
 	CHECK_MESSAGE(
 			vector1.cubic_interpolate(vector2, Vector3(), Vector3(7, 7, 7), 0.5) == Vector3(2.375, 3.5, 4.625),
@@ -153,19 +153,19 @@ TEST_CASE("[Vector3] Length methods") {
 			vector1.length_squared() == 300,
 			"Vector3 length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.length(), 10 * (real_t)Math_SQRT3),
+			vector1.length() == doctest::Approx(10 * (real_t)Math_SQRT3),
 			"Vector3 length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 2900,
 			"Vector3 length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector2.length(), (real_t)53.8516480713450403125),
+			vector2.length() == doctest::Approx((real_t)53.8516480713450403125),
 			"Vector3 length should work as expected.");
 	CHECK_MESSAGE(
 			vector1.distance_squared_to(vector2) == 1400,
 			"Vector3 distance_squared_to should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.distance_to(vector2), (real_t)37.41657386773941385584),
+			vector1.distance_to(vector2) == doctest::Approx((real_t)37.41657386773941385584),
 			"Vector3 distance_to should work as expected.");
 }
 
@@ -473,10 +473,10 @@ TEST_CASE("[Vector3] Linear algebra methods") {
 			(vector_x * 10).dot(vector_x * 10) == 100.0,
 			"Vector3 dot product of same direction vectors should behave as expected.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(a.dot(b), (real_t)75.24),
+			a.dot(b) == doctest::Approx((real_t)75.24),
 			"Vector3 dot should return expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Vector3(-a.x, a.y, -a.z).dot(Vector3(b.x, -b.y, b.z)), (real_t)-75.24),
+			Vector3(-a.x, a.y, -a.z).dot(Vector3(b.x, -b.y, b.z)) == doctest::Approx((real_t)-75.24),
 			"Vector3 dot should return expected value.");
 }
 
