@@ -115,7 +115,6 @@ class ResourceLoaderText {
 	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
 
 public:
-	void set_local_path(const String &p_local_path);
 	Ref<Resource> get_resource();
 	Error load();
 	Error set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid);

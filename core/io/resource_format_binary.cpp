@@ -661,10 +661,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 	return OK; //never reach anyway
 }
 
-void ResourceLoaderBinary::set_local_path(const String &p_local_path) {
-	res_path = p_local_path;
-}
-
 Ref<Resource> ResourceLoaderBinary::get_resource() {
 	return resource;
 }

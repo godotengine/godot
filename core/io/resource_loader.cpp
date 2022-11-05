@@ -1011,13 +1011,6 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 	return true;
 }
 
-void ResourceLoader::remove_custom_resource_format_loader(String script_path) {
-	Ref<ResourceFormatLoader> custom_loader = _find_custom_resource_format_loader(script_path);
-	if (custom_loader.is_valid()) {
-		remove_resource_format_loader(custom_loader);
-	}
-}
-
 void ResourceLoader::set_create_missing_resources_if_class_unavailable(bool p_enable) {
 	create_missing_resources_if_class_unavailable = p_enable;
 }

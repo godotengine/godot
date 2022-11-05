@@ -464,7 +464,6 @@ public:
 	void update_minimum_size();
 
 	void set_block_minimum_size_adjust(bool p_block);
-	bool is_minimum_size_adjust_blocked() const;
 
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;

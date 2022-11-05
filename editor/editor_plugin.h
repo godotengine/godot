@@ -277,9 +277,6 @@ public:
 	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();
 
-	virtual void restore_global_state();
-	virtual void save_global_state();
-
 	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 

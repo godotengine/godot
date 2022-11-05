@@ -49,10 +49,6 @@
 
 ///
 
-void ResourceLoaderText::set_local_path(const String &p_local_path) {
-	res_path = p_local_path;
-}
-
 Ref<Resource> ResourceLoaderText::get_resource() {
 	return resource;
 }

@@ -122,12 +122,6 @@ int EditorSelectionHistory::get_history_pos() {
 	return current_elem_idx;
 }
 
-bool EditorSelectionHistory::is_history_obj_inspector_only(int p_obj) const {
-	ERR_FAIL_INDEX_V(p_obj, history.size(), false);
-	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), false);
-	return history[p_obj].path[history[p_obj].level].inspector_only;
-}
-
 ObjectID EditorSelectionHistory::get_history_obj(int p_obj) const {
 	ERR_FAIL_INDEX_V(p_obj, history.size(), ObjectID());
 	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), ObjectID());
@@ -348,18 +342,6 @@ void EditorData::save_editor_external_data() {
 void EditorData::apply_changes_in_editors() {
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->apply_changes();
-	}
-}
-
-void EditorData::save_editor_global_states() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
-		editor_plugins[i]->save_global_state();
-	}
-}
-
-void EditorData::restore_editor_global_states() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
-		editor_plugins[i]->restore_global_state();
 	}
 }
 

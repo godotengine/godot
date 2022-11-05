@@ -7400,7 +7400,6 @@ EditorNode::EditorNode() {
 
 	_update_recent_scenes();
 
-	editor_data.restore_editor_global_states();
 	set_process_shortcut_input(true);
 
 	load_errors = memnew(RichTextLabel);

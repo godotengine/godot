@@ -385,10 +385,6 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 	ResourceCache::lock.unlock();
 }
 
-bool Resource::is_translation_remapped() const {
-	return remapped_list.in_list();
-}
-
 #ifdef TOOLS_ENABLED
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, const String &p_id) {
@@ -479,9 +475,6 @@ void ResourceCache::clear() {
 	}
 
 	resources.clear();
-}
-
-void ResourceCache::reload_externals() {
 }
 
 bool ResourceCache::has(const String &p_path) {

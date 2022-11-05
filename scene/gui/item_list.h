@@ -191,7 +191,6 @@ public:
 	Variant get_item_metadata(int p_idx) const;
 
 	void set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon);
-	Ref<Texture2D> get_item_tag_icon(int p_idx) const;
 
 	void set_item_tooltip_enabled(int p_idx, const bool p_enabled);
 	bool is_item_tooltip_enabled(int p_idx) const;

@@ -57,18 +57,13 @@ struct _NO_DISCARD_ Face3 {
 	Plane get_plane(ClockDirection p_dir = CLOCKWISE) const;
 	Vector3 get_random_point_inside() const;
 
-	Side get_side_of(const Face3 &p_face, ClockDirection p_clock_dir = CLOCKWISE) const;
-
 	bool is_degenerate() const;
 	real_t get_area() const;
 
-	Vector3 get_median_point() const;
 	Vector3 get_closest_point_to(const Vector3 &p_point) const;
 
 	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection = nullptr) const;
 	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection = nullptr) const;
-
-	ClockDirection get_clock_dir() const; ///< todo, test if this is returning the proper clockwisity
 
 	void get_support(const Vector3 &p_normal, const Transform3D &p_transform, Vector3 *p_vertices, int *p_count, int p_max) const;
 	void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const;

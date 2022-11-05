@@ -225,7 +225,6 @@ public:
 	static ResourceLoaderImport import;
 
 	static bool add_custom_resource_format_loader(String script_path);
-	static void remove_custom_resource_format_loader(String script_path);
 	static void add_custom_loaders();
 	static void remove_custom_loaders();
 

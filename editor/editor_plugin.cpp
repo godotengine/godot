@@ -711,9 +711,6 @@ bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 	return false;
 }
 
-void EditorPlugin::restore_global_state() {}
-void EditorPlugin::save_global_state() {}
-
 void EditorPlugin::add_undo_redo_inspector_hook_callback(Callable p_callable) {
 	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(p_callable);
 }
