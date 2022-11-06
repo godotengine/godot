@@ -232,7 +232,7 @@ private:
 
 		Dependency dependency;
 
-		double trail_length = 1.0;
+		double trail_lifetime = 0.3;
 		bool trails_enabled = false;
 		LocalVector<ParticlesFrameParams> frame_history;
 		LocalVector<ParticlesFrameParams> trail_params;
