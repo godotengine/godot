@@ -244,15 +244,11 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				String full_path = p_full_paths[set_idx];
 
 				// Get rid of file extensions and res:// prefixes.
-				if (scene_name.rfind(".") >= 0) {
-					scene_name = scene_name.substr(0, scene_name.rfind("."));
-				}
+				scene_name = scene_name.get_basename();
 				if (full_path.begins_with("res://")) {
 					full_path = full_path.substr(6);
 				}
-				if (full_path.rfind(".") >= 0) {
-					full_path = full_path.substr(0, full_path.rfind("."));
-				}
+				full_path = full_path.get_basename();
 
 				// Normalize trailing slashes when normalizing directory names.
 				scene_name = scene_name.trim_suffix("/");
@@ -270,7 +266,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 					String parent = full_path.substr(0, difference);
 					int slash_idx = parent.rfind("/");
 					slash_idx = parent.rfind("/", slash_idx - 1);
-					parent = slash_idx >= 0 ? parent.substr(slash_idx + 1) : parent;
+					parent = (slash_idx >= 0 && parent.length() > 1) ? parent.substr(slash_idx + 1) : parent;
 					r_filenames.write[set_idx] = parent + r_filenames[set_idx];
 				}
 			}
@@ -302,15 +298,11 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				String path = p_full_paths[E->get()];
 
 				// Get rid of file extensions and res:// prefixes.
-				if (scene_name.rfind(".") >= 0) {
-					scene_name = scene_name.substr(0, scene_name.rfind("."));
-				}
+				scene_name = scene_name.get_basename();
 				if (path.begins_with("res://")) {
 					path = path.substr(6);
 				}
-				if (path.rfind(".") >= 0) {
-					path = path.substr(0, path.rfind("."));
-				}
+				path = path.get_basename();
 
 				// Normalize trailing slashes when normalizing directory names.
 				scene_name = scene_name.trim_suffix("/");
