@@ -121,6 +121,14 @@ public partial struct Variant : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Variant From<[MustBeVariant] T>(in T from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFrom(from));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T As<[MustBeVariant] T>() =>
+        VariantUtils.ConvertTo<T>(NativeVar.DangerousSelfRef);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool AsBool() =>
         VariantUtils.ConvertToBool((godot_variant)NativeVar);
 

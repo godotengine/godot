@@ -362,45 +362,10 @@ namespace Godot.Collections
         private static Dictionary<TKey, TValue> FromVariantFunc(in godot_variant variant) =>
             VariantUtils.ConvertToDictionaryObject<TKey, TValue>(variant);
 
-        // ReSharper disable StaticMemberInGenericType
-        // Warning is about unique static fields being created for each generic type combination:
-        // https://www.jetbrains.com/help/resharper/StaticMemberInGenericType.html
-        // In our case this is exactly what we want.
-
-        private static readonly unsafe delegate* managed<in TKey, godot_variant> ConvertKeyToVariantCallback;
-        private static readonly unsafe delegate* managed<in godot_variant, TKey> ConvertKeyToManagedCallback;
-        private static readonly unsafe delegate* managed<in TValue, godot_variant> ConvertValueToVariantCallback;
-        private static readonly unsafe delegate* managed<in godot_variant, TValue> ConvertValueToManagedCallback;
-
-        // ReSharper restore StaticMemberInGenericType
-
         static unsafe Dictionary()
         {
-            VariantConversionCallbacks.GenericConversionCallbacks[typeof(Dictionary<TKey, TValue>)] =
-            (
-                (IntPtr)(delegate* managed<in Dictionary<TKey, TValue>, godot_variant>)&ToVariantFunc,
-                (IntPtr)(delegate* managed<in godot_variant, Dictionary<TKey, TValue>>)&FromVariantFunc
-            );
-
-            ConvertKeyToVariantCallback = VariantConversionCallbacks.GetToVariantCallback<TKey>();
-            ConvertKeyToManagedCallback = VariantConversionCallbacks.GetToManagedCallback<TKey>();
-            ConvertValueToVariantCallback = VariantConversionCallbacks.GetToVariantCallback<TValue>();
-            ConvertValueToManagedCallback = VariantConversionCallbacks.GetToManagedCallback<TValue>();
-        }
-
-        private static unsafe void ValidateVariantConversionCallbacks()
-        {
-            if (ConvertKeyToVariantCallback == null || ConvertKeyToManagedCallback == null)
-            {
-                throw new InvalidOperationException(
-                    $"The dictionary key type is not supported for conversion to Variant: '{typeof(TKey).FullName}'.");
-            }
-
-            if (ConvertValueToVariantCallback == null || ConvertValueToManagedCallback == null)
-            {
-                throw new InvalidOperationException(
-                    $"The dictionary value type is not supported for conversion to Variant: '{typeof(TValue).FullName}'.");
-            }
+            VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.ToVariantCb = &ToVariantFunc;
+            VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.FromVariantCb = &FromVariantFunc;
         }
 
         private readonly Dictionary _underlyingDict;
@@ -416,8 +381,6 @@ namespace Godot.Collections
         /// </summary>
         public Dictionary()
         {
-            ValidateVariantConversionCallbacks();
-
             _underlyingDict = new Dictionary();
         }
 
@@ -428,8 +391,6 @@ namespace Godot.Collections
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary(IDictionary<TKey, TValue> dictionary)
         {
-            ValidateVariantConversionCallbacks();
-
             if (dictionary == null)
                 throw new ArgumentNullException(nameof(dictionary));
 
@@ -446,8 +407,6 @@ namespace Godot.Collections
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary(Dictionary dictionary)
         {
-            ValidateVariantConversionCallbacks();
-
             _underlyingDict = dictionary;
         }
 
@@ -481,18 +440,18 @@ namespace Godot.Collections
         /// Returns the value at the given <paramref name="key"/>.
         /// </summary>
         /// <value>The value at the given <paramref name="key"/>.</value>
-        public unsafe TValue this[TKey key]
+        public TValue this[TKey key]
         {
             get
             {
-                using var variantKey = ConvertKeyToVariantCallback(key);
+                using var variantKey = VariantUtils.CreateFrom(key);
                 var self = (godot_dictionary)_underlyingDict.NativeValue;
 
                 if (NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                         variantKey, out godot_variant value).ToBool())
                 {
                     using (value)
-                        return ConvertValueToManagedCallback(value);
+                        return VariantUtils.ConvertTo<TValue>(value);
                 }
                 else
                 {
@@ -501,8 +460,8 @@ namespace Godot.Collections
             }
             set
             {
-                using var variantKey = ConvertKeyToVariantCallback(key);
-                using var variantValue = ConvertValueToVariantCallback(value);
+                using var variantKey = VariantUtils.CreateFrom(key);
+                using var variantValue = VariantUtils.CreateFrom(value);
                 var self = (godot_dictionary)_underlyingDict.NativeValue;
                 NativeFuncs.godotsharp_dictionary_set_value(ref self,
                     variantKey, variantValue);
@@ -541,7 +500,7 @@ namespace Godot.Collections
 
         IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => Values;
 
-        private unsafe KeyValuePair<TKey, TValue> GetKeyValuePair(int index)
+        private KeyValuePair<TKey, TValue> GetKeyValuePair(int index)
         {
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             NativeFuncs.godotsharp_dictionary_key_value_pair_at(ref self, index,
@@ -551,8 +510,8 @@ namespace Godot.Collections
             using (value)
             {
                 return new KeyValuePair<TKey, TValue>(
-                    ConvertKeyToManagedCallback(key),
-                    ConvertValueToManagedCallback(value));
+                    VariantUtils.ConvertTo<TKey>(key),
+                    VariantUtils.ConvertTo<TValue>(value));
             }
         }
 
@@ -562,15 +521,15 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="key">The key at which to add the object.</param>
         /// <param name="value">The object to add.</param>
-        public unsafe void Add(TKey key, TValue value)
+        public void Add(TKey key, TValue value)
         {
-            using var variantKey = ConvertKeyToVariantCallback(key);
+            using var variantKey = VariantUtils.CreateFrom(key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
 
             if (NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool())
                 throw new ArgumentException("An element with the same key already exists.", nameof(key));
 
-            using var variantValue = ConvertValueToVariantCallback(value);
+            using var variantValue = VariantUtils.CreateFrom(value);
             NativeFuncs.godotsharp_dictionary_add(ref self, variantKey, variantValue);
         }
 
@@ -579,9 +538,9 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="key">The key to look for.</param>
         /// <returns>Whether or not this dictionary contains the given key.</returns>
-        public unsafe bool ContainsKey(TKey key)
+        public bool ContainsKey(TKey key)
         {
-            using var variantKey = ConvertKeyToVariantCallback(key);
+            using var variantKey = VariantUtils.CreateFrom(key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             return NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool();
         }
@@ -590,9 +549,9 @@ namespace Godot.Collections
         /// Removes an element from this <see cref="Dictionary{TKey, TValue}"/> by key.
         /// </summary>
         /// <param name="key">The key of the element to remove.</param>
-        public unsafe bool Remove(TKey key)
+        public bool Remove(TKey key)
         {
-            using var variantKey = ConvertKeyToVariantCallback(key);
+            using var variantKey = VariantUtils.CreateFrom(key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             return NativeFuncs.godotsharp_dictionary_remove_key(ref self, variantKey).ToBool();
         }
@@ -603,15 +562,15 @@ namespace Godot.Collections
         /// <param name="key">The key of the element to get.</param>
         /// <param name="value">The value at the given <paramref name="key"/>.</param>
         /// <returns>If an object was found for the given <paramref name="key"/>.</returns>
-        public unsafe bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
-            using var variantKey = ConvertKeyToVariantCallback(key);
+            using var variantKey = VariantUtils.CreateFrom(key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
 
             using (retValue)
-                value = found ? ConvertValueToManagedCallback(retValue) : default;
+                value = found ? VariantUtils.ConvertTo<TValue>(retValue) : default;
 
             return found;
         }
@@ -635,9 +594,9 @@ namespace Godot.Collections
         /// </summary>
         public void Clear() => _underlyingDict.Clear();
 
-        unsafe bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
+        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
-            using var variantKey = ConvertKeyToVariantCallback(item.Key);
+            using var variantKey = VariantUtils.CreateFrom(item.Key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
@@ -647,7 +606,7 @@ namespace Godot.Collections
                 if (!found)
                     return false;
 
-                using var variantValue = ConvertValueToVariantCallback(item.Value);
+                using var variantValue = VariantUtils.CreateFrom(item.Value);
                 return NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool();
             }
         }
@@ -680,9 +639,9 @@ namespace Godot.Collections
             }
         }
 
-        unsafe bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
+        bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            using var variantKey = ConvertKeyToVariantCallback(item.Key);
+            using var variantKey = VariantUtils.CreateFrom(item.Key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
@@ -692,7 +651,7 @@ namespace Godot.Collections
                 if (!found)
                     return false;
 
-                using var variantValue = ConvertValueToVariantCallback(item.Value);
+                using var variantValue = VariantUtils.CreateFrom(item.Value);
                 if (NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool())
                 {
                     return NativeFuncs.godotsharp_dictionary_remove_key(

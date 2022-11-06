@@ -8,7 +8,7 @@ using Godot.Collections;
 
 namespace Godot.NativeInterop
 {
-    public static class VariantUtils
+    public static partial class VariantUtils
     {
         public static godot_variant CreateFromRID(RID from)
             => new() { Type = Variant.Type.Rid, RID = from };
