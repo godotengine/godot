@@ -425,7 +425,7 @@ void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, doub
 	p_length = MIN(10.0, p_length);
 
 	particles->trails_enabled = p_enable;
-	particles->trail_length = p_length;
+	particles->trail_lifetime = p_length;
 
 	_particles_free_data(particles);
 
@@ -1351,7 +1351,7 @@ void ParticlesStorage::update_particles() {
 			int history_size = 1;
 			int trail_steps = 1;
 			if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
-				history_size = MAX(1, int(particles->trail_length * fixed_fps));
+				history_size = MAX(1, int(particles->trail_lifetime * fixed_fps));
 				trail_steps = particles->trail_bind_poses.size();
 			}
 

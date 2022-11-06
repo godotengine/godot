@@ -89,12 +89,17 @@
 			Particle texture. If [code]null[/code], particles will be squares.
 		</member>
 		<member name="trail_enabled" type="bool" setter="set_trail_enabled" getter="is_trail_enabled" default="false">
+			If [code]true[/code], enables particle trails using a mesh skinning system.
+			[b]Note:[/b] Unlike [GPUParticles3D], the number of trail sections and subdivisions is set with the [member trail_sections] and [member trail_section_subdivisions] properties.
 		</member>
-		<member name="trail_length_secs" type="float" setter="set_trail_length" getter="get_trail_length" default="0.3">
+		<member name="trail_lifetime" type="float" setter="set_trail_lifetime" getter="get_trail_lifetime" default="0.3">
+			The amount of time the particle's trail should represent (in seconds). Only effective if [member trail_enabled] is [code]true[/code].
 		</member>
 		<member name="trail_section_subdivisions" type="int" setter="set_trail_section_subdivisions" getter="get_trail_section_subdivisions" default="4">
+			The number of subdivisions to use for the particle trail rendering. Higher values can result in smoother trail curves, at the cost of performance due to increased mesh complexity. See also [member trail_sections]. Only effective if [member trail_enabled] is [code]true[/code].
 		</member>
 		<member name="trail_sections" type="int" setter="set_trail_sections" getter="get_trail_sections" default="8">
+			The number of sections to use for the particle trail rendering. Higher values can result in smoother trail curves, at the cost of performance due to increased mesh complexity. See also [member trail_section_subdivisions]. Only effective if [member trail_enabled] is [code]true[/code].
 		</member>
 		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect" default="Rect2(-100, -100, 200, 200)">
 			The [Rect2] that determines the node's region which needs to be visible on screen for the particle system to be active.

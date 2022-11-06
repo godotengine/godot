@@ -176,22 +176,22 @@ void GPUParticles3D::set_draw_order(DrawOrder p_order) {
 
 void GPUParticles3D::set_trail_enabled(bool p_enabled) {
 	trail_enabled = p_enabled;
-	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
+	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 	update_configuration_warnings();
 }
 
-void GPUParticles3D::set_trail_length(double p_seconds) {
+void GPUParticles3D::set_trail_lifetime(double p_seconds) {
 	ERR_FAIL_COND(p_seconds < 0.001);
-	trail_length = p_seconds;
-	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
+	trail_lifetime = p_seconds;
+	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 }
 
 bool GPUParticles3D::is_trail_enabled() const {
 	return trail_enabled;
 }
 
-double GPUParticles3D::get_trail_length() const {
-	return trail_length;
+double GPUParticles3D::get_trail_lifetime() const {
+	return trail_lifetime;
 }
 
 GPUParticles3D::DrawOrder GPUParticles3D::get_draw_order() const {
@@ -552,10 +552,10 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("emit_particle", "xform", "velocity", "color", "custom", "flags"), &GPUParticles3D::emit_particle);
 
 	ClassDB::bind_method(D_METHOD("set_trail_enabled", "enabled"), &GPUParticles3D::set_trail_enabled);
-	ClassDB::bind_method(D_METHOD("set_trail_length", "secs"), &GPUParticles3D::set_trail_length);
+	ClassDB::bind_method(D_METHOD("set_trail_lifetime", "secs"), &GPUParticles3D::set_trail_lifetime);
 
 	ClassDB::bind_method(D_METHOD("is_trail_enabled"), &GPUParticles3D::is_trail_enabled);
-	ClassDB::bind_method(D_METHOD("get_trail_length"), &GPUParticles3D::get_trail_length);
+	ClassDB::bind_method(D_METHOD("get_trail_lifetime"), &GPUParticles3D::get_trail_lifetime);
 
 	ClassDB::bind_method(D_METHOD("set_transform_align", "align"), &GPUParticles3D::set_transform_align);
 	ClassDB::bind_method(D_METHOD("get_transform_align"), &GPUParticles3D::get_transform_align);
@@ -583,7 +583,7 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,Z-Billboard,Y to Velocity,Z-Billboard + Y to Velocity"), "set_transform_align", "get_transform_align");
 	ADD_GROUP("Trails", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_length_secs", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_trail_length", "get_trail_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
 	ADD_GROUP("Process Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticleProcessMaterial"), "set_process_material", "get_process_material");
 	ADD_GROUP("Draw Passes", "draw_");
@@ -627,7 +627,7 @@ GPUParticles3D::GPUParticles3D() {
 	set_pre_process_time(0);
 	set_explosiveness_ratio(0);
 	set_randomness_ratio(0);
-	set_trail_length(0.3);
+	set_trail_lifetime(0.3);
 	set_visibility_aabb(AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8)));
 	set_use_local_coordinates(false);
 	set_draw_passes(1);

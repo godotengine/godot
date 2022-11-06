@@ -116,8 +116,12 @@
 		<member name="sub_emitter" type="NodePath" setter="set_sub_emitter" getter="get_sub_emitter" default="NodePath(&quot;&quot;)">
 		</member>
 		<member name="trail_enabled" type="bool" setter="set_trail_enabled" getter="is_trail_enabled" default="false">
+			If [code]true[/code], enables particle trails using a mesh skinning system. Designed to work with [RibbonTrailMesh] and [TubeTrailMesh].
+			[b]Note:[/b] [member BaseMaterial3D.use_particle_trails] must also be enabled on the particle mesh's material. Otherwise, setting [member trail_enabled] to [code]true[/code] will have no effect.
+			[b]Note:[/b] Unlike [GPUParticles2D], the number of trail sections and subdivisions is set in the [RibbonTrailMesh] or the [TubeTrailMesh]'s properties.
 		</member>
-		<member name="trail_length_secs" type="float" setter="set_trail_length" getter="get_trail_length" default="0.3">
+		<member name="trail_lifetime" type="float" setter="set_trail_lifetime" getter="get_trail_lifetime" default="0.3">
+			The amount of time the particle's trail should represent (in seconds). Only effective if [member trail_enabled] is [code]true[/code].
 		</member>
 		<member name="transform_align" type="int" setter="set_transform_align" getter="get_transform_align" enum="GPUParticles3D.TransformAlign" default="0">
 		</member>
