@@ -1180,9 +1180,14 @@ Vector<String> String::split(const String &p_splitter, bool p_allow_empty, int p
 	int len = length();
 
 	while (true) {
-		int end = find(p_splitter, from);
-		if (end < 0) {
-			end = len;
+		int end;
+		if (p_splitter.is_empty()) {
+			end = from + 1;
+		} else {
+			end = find(p_splitter, from);
+			if (end < 0) {
+				end = len;
+			}
 		}
 		if (p_allow_empty || (end > from)) {
 			if (p_maxsplit <= 0) {
@@ -1223,7 +1228,15 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 			break;
 		}
 
-		int left_edge = rfind(p_splitter, remaining_len - p_splitter.length());
+		int left_edge;
+		if (p_splitter.is_empty()) {
+			left_edge = remaining_len - 1;
+			if (left_edge == 0) {
+				left_edge--; // Skip to the < 0 condition.
+			}
+		} else {
+			left_edge = rfind(p_splitter, remaining_len - p_splitter.length());
+		}
 
 		if (left_edge < 0) {
 			// no more splitters, we're done
