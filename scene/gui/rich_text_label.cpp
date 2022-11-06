@@ -2375,7 +2375,7 @@ int RichTextLabel::_find_list(Item *p_item, Vector<int> &r_index, Vector<ItemLis
 
 			int index = 1;
 			if (frame != nullptr) {
-				for (int i = list->line + 1; i <= prev_item->line; i++) {
+				for (int i = list->line + 1; i <= prev_item->line && i < (int)frame->lines.size(); i++) {
 					if (_find_list_item(frame->lines[i].from) == list) {
 						index++;
 					}
