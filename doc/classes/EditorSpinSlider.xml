@@ -12,6 +12,7 @@
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			If [code]true[/code], the slider will not draw background.
 		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="hide_slider" type="bool" setter="set_hide_slider" getter="is_hiding_slider" default="false">
 			If [code]true[/code], the slider is hidden.
 		</member>
