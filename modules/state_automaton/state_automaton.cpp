@@ -31,9 +31,9 @@ void State::_bind_methods(){
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "state_name"), "set_state_name", "get_state_name");
 
-	BIND_VMETHOD(MethodInfo(Variant::NIL, STATE_VM_START, PropertyInfo("StateAutomaton")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, STATE_VM_POLL, PropertyInfo("StateAutomaton")));
-	BIND_VMETHOD(MethodInfo(Variant::NIL, STATE_VM_FINALIZE, PropertyInfo("StateAutomaton")));
+	BIND_VMETHOD(MethodInfo(Variant::NIL, STATE_VM_START, PropertyInfo(Variant::OBJECT, "automaton", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "StateAutomaton")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, STATE_VM_POLL, PropertyInfo(Variant::OBJECT, "automaton", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "StateAutomaton")));
+	BIND_VMETHOD(MethodInfo(Variant::NIL, STATE_VM_FINALIZE, PropertyInfo(Variant::OBJECT, "automaton", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "StateAutomaton")));
 }
 
 void State::internal_start(const Ref<StateAutomaton>& machine){

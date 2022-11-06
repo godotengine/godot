@@ -17,6 +17,7 @@ class SettingsServer : public Object {
 public:
 	enum GraphicsPreset {
 		GRAPHICS_CUSTOM,
+		GRAPHICS_LOWEST,
 		GRAPHICS_LOW,
 		GRAPHICS_MEDIUM,
 		GRAPHICS_HIGH,
@@ -31,6 +32,8 @@ public:
 		SHARPEN_INTENSITY,
 		MSAA_LEVEL,
 		SSAA_LEVEL,
+		DEBANDING,
+		GS_END,
 	};
 	enum DisplaySettings {
 		WINDOWED,
@@ -77,6 +80,7 @@ protected:
 	void set_res_internal();
 	void set_ssaa_internal(const float& val);
 	void load_gpp_internal() const;
+	void emit_gs_changed(const uint16_t& setting);
 public:
 	SettingsServer();
 	~SettingsServer();
