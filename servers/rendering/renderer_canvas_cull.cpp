@@ -1964,7 +1964,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 
 			if (!visibility_notifier->enter_callable.is_null()) {
 				if (RSG::threaded) {
-					visibility_notifier->enter_callable.call_deferredp(nullptr, 0);
+					visibility_notifier->enter_callable.call_deferred();
 				} else {
 					Callable::CallError ce;
 					Variant ret;
@@ -1977,7 +1977,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 
 				if (!visibility_notifier->exit_callable.is_null()) {
 					if (RSG::threaded) {
-						visibility_notifier->exit_callable.call_deferredp(nullptr, 0);
+						visibility_notifier->exit_callable.call_deferred();
 					} else {
 						Callable::CallError ce;
 						Variant ret;
