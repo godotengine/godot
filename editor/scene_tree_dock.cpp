@@ -1814,7 +1814,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	// Sort by tree order, so re-adding is easy.
 	p_nodes.sort_custom<Node::Comparator>();
 
-	editor_data->get_undo_redo()->create_action(TTR("Reparent Node"));
+	editor_data->get_undo_redo()->create_action(TTR("Reparent Node"), UndoRedo::MERGE_DISABLE, p_nodes[0]);
 
 	HashMap<Node *, NodePath> path_renames;
 	Vector<StringName> former_names;
@@ -1835,14 +1835,17 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			owners.push_back(E);
 		}
 
-		if (new_parent == node->get_parent() && node->get_index() < p_position_in_parent + ni) {
+		bool same_parent = new_parent == node->get_parent();
+		if (same_parent && node->get_index() < p_position_in_parent + ni) {
 			inc--; // If the child will generate a gap when moved, adjust.
 		}
 
-		editor_data->get_undo_redo()->add_do_method(node->get_parent(), "remove_child", node);
-		editor_data->get_undo_redo()->add_do_method(new_parent, "add_child", node, true);
+		if (!same_parent) {
+			editor_data->get_undo_redo()->add_do_method(node->get_parent(), "remove_child", node);
+			editor_data->get_undo_redo()->add_do_method(new_parent, "add_child", node, true);
+		}
 
-		if (p_position_in_parent >= 0) {
+		if (p_position_in_parent >= 0 || same_parent) {
 			editor_data->get_undo_redo()->add_do_method(new_parent, "move_child", node, p_position_in_parent + inc);
 		}
 
