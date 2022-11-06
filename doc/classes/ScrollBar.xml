@@ -8,9 +8,22 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="is_watching" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the target [ScrollContainer] is sharing its corresponding internal [ScrollBar] with this [ScrollBar] according to the orientation of this [ScrollBar].
+				[b]Note:[/b] Share will only be attempted if both nodes are valid and in the tree.
+				See [method Range.share].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step" default="-1.0">
 			Overrides the step used when clicking increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.
+		</member>
+		<member name="watch_target_path" type="NodePath" setter="set_watch_target_path" getter="get_watch_target_path" default="NodePath(&quot;&quot;)">
+			The [NodePath] of the target [ScrollContainer] that the [ScrollBar] tries to watch. See [method is_watching].
 		</member>
 	</members>
 	<signals>

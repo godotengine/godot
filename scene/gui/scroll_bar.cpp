@@ -33,6 +33,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/main/window.h"
 
 bool ScrollBar::focus_by_default = false;
@@ -323,6 +324,8 @@ void ScrollBar::_notification(int p_what) {
 				drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
 				drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
 			}
+
+			_try_watch();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -332,6 +335,8 @@ void ScrollBar::_notification(int p_what) {
 			}
 
 			drag_node = nullptr;
+
+			watching = false;
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -518,6 +523,41 @@ Size2 ScrollBar::get_minimum_size() const {
 	return minsize;
 }
 
+void ScrollBar::_try_watch() {
+	if (watch_target_path.is_empty()) {
+		return;
+	}
+
+	ScrollContainer *watch_target = Object::cast_to<ScrollContainer>(get_node(watch_target_path));
+	if (watch_target) {
+		ScrollBar *watch_target_bar = orientation == HORIZONTAL ? Object::cast_to<ScrollBar>(watch_target->get_h_scroll_bar()) : Object::cast_to<ScrollBar>(watch_target->get_v_scroll_bar());
+		if (watch_target_bar && watch_target_bar != this) {
+			watch_target_bar->share(this);
+			watching = true;
+		}
+	}
+}
+
+void ScrollBar::set_watch_target_path(const NodePath p_path) {
+	if (watch_target_path == p_path) {
+		return;
+	}
+	watch_target_path = p_path;
+	watching = false;
+
+	if (is_inside_tree()) {
+		_try_watch();
+	}
+}
+
+NodePath ScrollBar::get_watch_target_path() const {
+	return watch_target_path;
+}
+
+bool ScrollBar::is_watching() const {
+	return watching && has_node(watch_target_path);
+}
+
 void ScrollBar::set_custom_step(float p_custom_step) {
 	custom_step = p_custom_step;
 }
@@ -635,12 +675,17 @@ bool ScrollBar::is_smooth_scroll_enabled() const {
 }
 
 void ScrollBar::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_watch_target_path", "path"), &ScrollBar::set_watch_target_path);
+	ClassDB::bind_method(D_METHOD("get_watch_target_path"), &ScrollBar::get_watch_target_path);
+	ClassDB::bind_method(D_METHOD("is_watching"), &ScrollBar::is_watching);
+
 	ClassDB::bind_method(D_METHOD("set_custom_step", "step"), &ScrollBar::set_custom_step);
 	ClassDB::bind_method(D_METHOD("get_custom_step"), &ScrollBar::get_custom_step);
 
 	ADD_SIGNAL(MethodInfo("scrolling"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_custom_step", "get_custom_step");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "watch_target_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "ScrollContainer"), "set_watch_target_path", "get_watch_target_path");
 }
 
 ScrollBar::ScrollBar(Orientation p_orientation) {

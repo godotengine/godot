@@ -45,6 +45,9 @@ class ScrollBar : public Range {
 
 	static bool focus_by_default;
 
+	NodePath watch_target_path;
+	bool watching = false;
+
 	Orientation orientation;
 	Size2 size;
 	float custom_step = -1.0;
@@ -105,6 +108,8 @@ class ScrollBar : public Range {
 	void _drag_node_exit();
 	void _drag_node_input(const Ref<InputEvent> &p_input);
 
+	void _try_watch();
+
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
@@ -114,6 +119,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_watch_target_path(const NodePath p_path);
+	NodePath get_watch_target_path() const;
+	bool is_watching() const;
+
 	void set_custom_step(float p_custom_step);
 	float get_custom_step() const;
 
