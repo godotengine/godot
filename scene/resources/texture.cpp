@@ -3398,7 +3398,9 @@ CameraTexture::~CameraTexture() {
 ///////////////////////////
 
 void PlaceholderTexture2D::set_size(Size2 p_size) {
+	ERR_FAIL_COND_MSG(p_size.x < 0 || p_size.y < 0 || p_size.x > 16384 || p_size.y > 16384, "Texture size has to be within 1 to 16384 range.");
 	size = p_size;
+	_queue_update();
 }
 
 int PlaceholderTexture2D::get_width() const {
@@ -3423,16 +3425,39 @@ RID PlaceholderTexture2D::get_rid() const {
 
 void PlaceholderTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTexture2D::set_size);
+	ClassDB::bind_method(D_METHOD("_update"), &PlaceholderTexture2D::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 }
 
 PlaceholderTexture2D::PlaceholderTexture2D() {
-	rid = RS::get_singleton()->texture_2d_placeholder_create();
+	_queue_update();
 }
 
 PlaceholderTexture2D::~PlaceholderTexture2D() {
 	RS::get_singleton()->free(rid);
+}
+
+void PlaceholderTexture2D::_queue_update() {
+	if (update_pending) {
+		return;
+	}
+	update_pending = true;
+	call_deferred(SNAME("_update"));
+}
+
+void PlaceholderTexture2D::_update() {
+	Ref<Image> image = Image::create_empty(size.x, size.y, false, Image::FORMAT_RGBA8);
+	image->fill(Color(1, 0, 1, 1));
+
+	if (rid.is_valid()) {
+		RID new_texture = RS::get_singleton()->texture_2d_create(image);
+		RS::get_singleton()->texture_replace(rid, new_texture);
+	} else {
+		rid = RS::get_singleton()->texture_2d_create(image);
+	}
+
+	emit_changed();
 }
 
 ///////////////////////////////////////////////

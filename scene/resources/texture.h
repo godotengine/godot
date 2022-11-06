@@ -1004,8 +1004,13 @@ public:
 class PlaceholderTexture2D : public Texture2D {
 	GDCLASS(PlaceholderTexture2D, Texture2D)
 
+private:
 	RID rid;
 	Size2 size = Size2(1, 1);
+
+	bool update_pending = false;
+	void _queue_update();
+	void _update();
 
 protected:
 	static void _bind_methods();
