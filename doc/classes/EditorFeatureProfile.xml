@@ -116,7 +116,10 @@
 		<constant name="FEATURE_IMPORT_DOCK" value="6" enum="Feature">
 			The Import dock. If this feature is disabled, the Import dock won't be visible.
 		</constant>
-		<constant name="FEATURE_MAX" value="7" enum="Feature">
+		<constant name="FEATURE_HISTORY_DOCK" value="7" enum="Feature">
+			The History dock. If this feature is disabled, the History dock won't be visible.
+		</constant>
+		<constant name="FEATURE_MAX" value="8" enum="Feature">
 			Represents the size of the [enum Feature] enum.
 		</constant>
 	</constants>

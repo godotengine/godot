@@ -77,6 +77,7 @@ class EditorUndoRedoManager;
 class ExportTemplateManager;
 class FileDialog;
 class FileSystemDock;
+class HistoryDock;
 class HSplitContainer;
 class ImportDock;
 class LinkButton;
@@ -274,6 +275,7 @@ private:
 	EditorRunNative *run_native = nullptr;
 	EditorSelection *editor_selection = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
+	HistoryDock *history_dock = nullptr;
 
 	ProjectExportDialog *project_export = nullptr;
 	ProjectSettingsEditor *project_settings_editor = nullptr;
