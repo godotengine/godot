@@ -38,9 +38,9 @@
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {
-		set_normal_texture(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
+		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
 	} else {
-		set_normal_texture(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
+		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
 	}
 	set_offset(SIDE_LEFT, 0);
 	set_offset(SIDE_RIGHT, 0);
