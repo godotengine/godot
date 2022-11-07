@@ -1376,7 +1376,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	favorite_box->set_name("FavoriteBox");
 	TextureButton *favorite = memnew(TextureButton);
 	favorite->set_name("FavoriteButton");
-	favorite->set_normal_texture(favorite_icon);
+	favorite->set_texture_normal(favorite_icon);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));

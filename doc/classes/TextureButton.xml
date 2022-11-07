@@ -27,19 +27,19 @@
 		<member name="texture_click_mask" type="BitMap" setter="set_click_mask" getter="get_click_mask">
 			Pure black and white [BitMap] image to use for click detection. On the mask, white pixels represent the button's clickable area. Use it to create buttons with curved shapes.
 		</member>
-		<member name="texture_disabled" type="Texture2D" setter="set_disabled_texture" getter="get_disabled_texture">
+		<member name="texture_disabled" type="Texture2D" setter="set_texture_disabled" getter="get_texture_disabled">
 			Texture to display when the node is disabled. See [member BaseButton.disabled].
 		</member>
-		<member name="texture_focused" type="Texture2D" setter="set_focused_texture" getter="get_focused_texture">
+		<member name="texture_focused" type="Texture2D" setter="set_texture_focused" getter="get_texture_focused">
 			Texture to display when the node has mouse or keyboard focus. [member texture_focused] is displayed [i]over[/i] the base texture, so a partially transparent texture should be used to ensure the base texture remains visible. A texture that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a fully transparent texture of any size. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</member>
-		<member name="texture_hover" type="Texture2D" setter="set_hover_texture" getter="get_hover_texture">
+		<member name="texture_hover" type="Texture2D" setter="set_texture_hover" getter="get_texture_hover">
 			Texture to display when the mouse hovers the node.
 		</member>
-		<member name="texture_normal" type="Texture2D" setter="set_normal_texture" getter="get_normal_texture">
+		<member name="texture_normal" type="Texture2D" setter="set_texture_normal" getter="get_texture_normal">
 			Texture to display by default, when the node is [b]not[/b] in the disabled, focused, hover or pressed state.
 		</member>
-		<member name="texture_pressed" type="Texture2D" setter="set_pressed_texture" getter="get_pressed_texture">
+		<member name="texture_pressed" type="Texture2D" setter="set_texture_pressed" getter="get_texture_pressed">
 			Texture to display on mouse down over the node, if the node has keyboard focus and the player presses the Enter key or if the player presses the [member BaseButton.shortcut] key.
 		</member>
 	</members>
