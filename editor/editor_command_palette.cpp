@@ -171,7 +171,13 @@ void EditorCommandPalette::_confirmed() {
 }
 
 void EditorCommandPalette::open_popup() {
-	popup_centered_clamped(Size2i(600, 440), 0.8f);
+	static bool was_showed = false;
+	if (!was_showed) {
+		was_showed = true;
+		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
+	} else {
+		show();
+	}
 
 	command_search_box->clear();
 	command_search_box->grab_focus();
