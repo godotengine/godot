@@ -99,7 +99,22 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static zip_fileinfo get_zip_fileinfo();
 
-	static Vector<String> get_abis();
+	struct ABI {
+		String abi;
+		String arch;
+
+		bool operator==(const ABI &p_a) const {
+			return p_a.abi == abi;
+		}
+
+		ABI(const String &p_abi, const String &p_arch) {
+			abi = p_abi;
+			arch = p_arch;
+		}
+		ABI() {}
+	};
+
+	static Vector<ABI> get_abis();
 
 	/// List the gdap files in the directory specified by the p_path parameter.
 	static Vector<String> list_gdap_files(const String &p_path);
@@ -152,7 +167,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			const Ref<Image> &foreground,
 			const Ref<Image> &background);
 
-	static Vector<String> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
+	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
@@ -228,7 +243,8 @@ public:
 
 	void _remove_copied_libs();
 
-	String join_list(List<String> parts, const String &separator) const;
+	static String join_list(const List<String> &p_parts, const String &p_separator);
+	static String join_abis(const Vector<ABI> &p_parts, const String &p_separator, bool p_use_arch);
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
