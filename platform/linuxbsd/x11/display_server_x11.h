@@ -155,7 +155,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool borderless = false;
 		bool resize_disabled = false;
 		Vector2i last_position_before_fs;
-		bool focused = true;
+		bool focused = false;
 		bool minimized = false;
 		bool maximized = false;
 		bool is_popup = false;
