@@ -214,45 +214,45 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity">
+		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3(0, 0, 0)">
 			The body's rotational velocity in [i]radians[/i] per second.
 		</member>
-		<member name="center_of_mass" type="Vector3" setter="" getter="get_center_of_mass">
+		<member name="center_of_mass" type="Vector3" setter="" getter="get_center_of_mass" default="Vector3(0, 0, 0)">
 			The body's center of mass position relative to the body's center in the global coordinate system.
 		</member>
-		<member name="center_of_mass_local" type="Vector3" setter="" getter="get_center_of_mass_local">
+		<member name="center_of_mass_local" type="Vector3" setter="" getter="get_center_of_mass_local" default="Vector3(0, 0, 0)">
 			The body's center of mass position in the body's local coordinate system.
 		</member>
-		<member name="inverse_inertia" type="Vector3" setter="" getter="get_inverse_inertia">
+		<member name="inverse_inertia" type="Vector3" setter="" getter="get_inverse_inertia" default="Vector3(0, 0, 0)">
 			The inverse of the inertia of the body.
 		</member>
-		<member name="inverse_inertia_tensor" type="Basis" setter="" getter="get_inverse_inertia_tensor">
+		<member name="inverse_inertia_tensor" type="Basis" setter="" getter="get_inverse_inertia_tensor" default="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
 			The inverse of the inertia tensor of the body.
 		</member>
-		<member name="inverse_mass" type="float" setter="" getter="get_inverse_mass">
+		<member name="inverse_mass" type="float" setter="" getter="get_inverse_mass" default="0.0">
 			The inverse of the mass of the body.
 		</member>
-		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity">
+		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
 			The body's linear velocity in units per second.
 		</member>
-		<member name="principal_inertia_axes" type="Basis" setter="" getter="get_principal_inertia_axes">
+		<member name="principal_inertia_axes" type="Basis" setter="" getter="get_principal_inertia_axes" default="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
 		</member>
-		<member name="sleeping" type="bool" setter="set_sleep_state" getter="is_sleeping">
+		<member name="sleeping" type="bool" setter="set_sleep_state" getter="is_sleeping" default="false">
 			If [code]true[/code], this body is currently sleeping (not active).
 		</member>
-		<member name="step" type="float" setter="" getter="get_step">
+		<member name="step" type="float" setter="" getter="get_step" default="0.0">
 			The timestep (delta) used for the simulation.
 		</member>
-		<member name="total_angular_damp" type="float" setter="" getter="get_total_angular_damp">
+		<member name="total_angular_damp" type="float" setter="" getter="get_total_angular_damp" default="0.0">
 			The rate at which the body stops rotating, if there are not any other forces moving it.
 		</member>
-		<member name="total_gravity" type="Vector3" setter="" getter="get_total_gravity">
+		<member name="total_gravity" type="Vector3" setter="" getter="get_total_gravity" default="Vector3(0, 0, 0)">
 			The total gravity vector being currently applied to this body.
 		</member>
-		<member name="total_linear_damp" type="float" setter="" getter="get_total_linear_damp">
+		<member name="total_linear_damp" type="float" setter="" getter="get_total_linear_damp" default="0.0">
 			The rate at which the body stops moving, if there are not any other forces moving it.
 		</member>
-		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform">
+		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			The body's transformation matrix.
 		</member>
 	</members>
