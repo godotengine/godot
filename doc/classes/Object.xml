@@ -8,7 +8,7 @@
 		You can construct Objects from scripting languages, using [code]Object.new()[/code] in GDScript, or [code]new Object[/code] in C#.
 		Objects do not manage memory. If a class inherits from Object, you will have to delete instances of it manually. To do so, call the [method free] method from your script or delete the instance from C++.
 		Some classes that extend Object add memory management. This is the case of [RefCounted], which counts references and deletes itself automatically when no longer referenced. [Node], another fundamental type, deletes all its children when freed from memory.
-		Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
+		Object export properties are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C# have simpler means to export them.
 		Property membership can be tested directly in GDScript using [code]in[/code]:
 		[codeblocks]
 		[gdscript]
