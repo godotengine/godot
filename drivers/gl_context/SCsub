@@ -6,7 +6,7 @@ if env["platform"] in ["haiku", "macos", "windows", "linuxbsd"]:
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = [
-        "glad.c",
+        "gl.c",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
