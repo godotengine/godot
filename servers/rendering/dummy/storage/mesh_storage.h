@@ -81,6 +81,7 @@ public:
 		s->vertex_count = p_surface.vertex_count;
 		s->index_data = p_surface.index_data;
 		s->index_count = p_surface.index_count;
+		s->aabb = p_surface.aabb;
 		s->skin_data = p_surface.skin_data;
 	}
 
