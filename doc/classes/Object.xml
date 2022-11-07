@@ -420,7 +420,11 @@
 			<return type="Dictionary[]" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns an [Array] of connections for the given [param signal].
+				Returns an [Array] of dictionaries for the outgoing connections of the given [param signal].
+				Each [Dictionary] contains:
+				- [code]flags[/code]: the [enum ConnectFlags] of the connection.
+				- [code]signal[/code]: a reference to the connected [Signal].
+				- [code]callable[/code]: the [Callable] the signal will invoke.
 			</description>
 		</method>
 		<method name="get_signal_list" qualifiers="const">
