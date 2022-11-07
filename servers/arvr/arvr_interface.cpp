@@ -46,6 +46,7 @@ void ARVRInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_render_targetsize"), &ARVRInterface::get_render_targetsize);
 	ClassDB::bind_method(D_METHOD("is_stereo"), &ARVRInterface::is_stereo);
+	ClassDB::bind_method(D_METHOD("get_transform_for_eye", "eye", "transform"), &ARVRInterface::get_transform_for_eye);
 
 	ADD_GROUP("Interface", "interface_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_is_primary", "is_primary");

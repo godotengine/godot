@@ -41,6 +41,14 @@
 				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
 			</description>
 		</method>
+		<method name="get_transform_for_eye">
+			<return type="Transform" />
+			<argument index="0" name="eye" type="int" enum="ARVRInterface.Eyes" />
+			<argument index="1" name="transform" type="Transform" />
+			<description>
+				Returns the transform for an eye multiplied by [code]transform[/code]. The usual value for [code]transform[/code] is the global_transform of the current ARVROrigin.
+			</description>
+		</method>
 		<method name="initialize">
 			<return type="bool" />
 			<description>
