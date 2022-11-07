@@ -463,6 +463,24 @@ public:
 			}
 		}
 	}
+	virtual void debug_get_stack_level_locals(int p_level, Vector<String> *p_locals, Array *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
+		Dictionary ret;
+		if (ret.size() == 0) {
+			return;
+		}
+		if (p_locals != nullptr && ret.has("locals")) {
+			PackedStringArray strings = ret["locals"];
+			for (int i = 0; i < strings.size(); i++) {
+				p_locals->push_back(strings[i]);
+			}
+		}
+		if (p_values != nullptr && ret.has("values")) {
+			Array values = ret["values"];
+			for (int i = 0; i < values.size(); i++) {
+				p_values->push_back(values[i]);
+			}
+		}
+	}
 	GDVIRTUAL3R(Dictionary, _debug_get_stack_level_members, int, int, int)
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;

@@ -37,6 +37,8 @@
 #include "core/string/ustring.h"
 #include "core/version.h"
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
+#include "editor/debugger/editor_expression_evaluator.h"
+#include "editor/debugger/editor_network_profiler.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
@@ -764,6 +766,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			EditorFileSystem::get_singleton()->update_file(p_data[0]);
 		}
 
+	} else if (p_msg == "evaluation_return") {
+		expression_evaluator->add_value(p_data);
 	} else {
 		int colon_index = p_msg.find_char(':');
 		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
@@ -1688,6 +1692,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
 	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
 	ADD_SIGNAL(MethodInfo("stack_frame_var", PropertyInfo(Variant::ARRAY, "data")));
+	ADD_SIGNAL(MethodInfo("evaluation_return", PropertyInfo(Variant::ARRAY, "data")));
 	ADD_SIGNAL(MethodInfo("debug_data", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::ARRAY, "data")));
 	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
@@ -1907,6 +1912,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		file_dialog = memnew(EditorFileDialog);
 		file_dialog->connect("file_selected", callable_mp(this, &ScriptEditorDebugger::_file_selected));
 		add_child(file_dialog);
+	}
+
+	{ // expression evaluator
+		expression_evaluator = memnew(EditorExpressionEvaluator);
+		expression_evaluator->set_name(TTR("Evaluator"));
+		expression_evaluator->set_expression_evaluator(this);
+		tabs->add_child(expression_evaluator);
 	}
 
 	{ //profiler

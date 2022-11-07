@@ -248,6 +248,9 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
 		case 2:
 			type = "Globals/";
 			break;
+		case 3:
+			type = "Evaluated/";
+			break;
 		default:
 			type = "Unknown/";
 	}

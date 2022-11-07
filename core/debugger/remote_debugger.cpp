@@ -36,8 +36,10 @@
 #include "core/debugger/engine_profiler.h"
 #include "core/debugger/script_debugger.h"
 #include "core/input/input.h"
+#include "core/math/expression.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "core/variant/dictionary.h"
 
 class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	Object *performance = nullptr;
@@ -470,6 +472,28 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "set_skip_breakpoints") {
 				ERR_FAIL_COND(data.size() < 1);
 				script_debugger->set_skip_breakpoints(data[0]);
+			} else if (command == "evaluate") {
+				String expression_str = data[0];
+				int frame = data[1];
+
+				DebuggerMarshalls::ScriptStackVariable stvar;
+
+				Vector<String> locals;
+				Array local_vals;
+
+				script_debugger->get_break_language()->debug_get_stack_level_locals(frame, &locals, &local_vals);
+				ERR_FAIL_COND(locals.size() != local_vals.size());
+
+				Expression expression;
+				expression.parse(expression_str, locals);
+				Variant return_val = expression.execute(local_vals, script_debugger->get_break_language()->debug_get_stack_level_instance(frame)->get_owner());
+				script_debugger->get_break_language()->debug_get_current_stack_info();
+
+				stvar.name = expression_str;
+				stvar.value = return_val;
+				stvar.type = 3;
+
+				send_message("evaluation_return", stvar.serialize());
 			} else {
 				bool captured = false;
 				ERR_CONTINUE(_try_capture(command, data, captured) != OK);

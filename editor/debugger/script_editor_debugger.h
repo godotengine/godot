@@ -55,6 +55,7 @@ class SceneDebuggerTree;
 class EditorDebuggerPlugin;
 class DebugAdapterProtocol;
 class DebugAdapterParser;
+class EditorExpressionEvaluator;
 
 class ScriptEditorDebugger : public MarginContainer {
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
@@ -150,6 +151,7 @@ private:
 	EditorProfiler *profiler = nullptr;
 	EditorVisualProfiler *visual_profiler = nullptr;
 	EditorPerformanceProfiler *performance_profiler = nullptr;
+	EditorExpressionEvaluator *expression_evaluator = nullptr;
 
 	OS::ProcessID remote_pid = 0;
 	bool breaked = false;
@@ -230,6 +232,8 @@ public:
 
 	void start(Ref<RemoteDebuggerPeer> p_peer);
 	void stop();
+
+	Ref<RemoteDebuggerPeer> get_peer() const { return peer; };
 
 	void debug_skip_breakpoints();
 	void debug_copy();
