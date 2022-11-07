@@ -816,8 +816,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			if (vsnode->is_output_port_expandable(i)) {
 				TextureButton *expand = memnew(TextureButton);
 				expand->set_toggle_mode(true);
-				expand->set_normal_texture(editor->get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
-				expand->set_pressed_texture(editor->get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
+				expand->set_texture_normal(editor->get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
+				expand->set_texture_pressed(editor->get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
 				expand->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 				expand->set_pressed(vsnode->_is_output_port_expanded(i));
 				expand->connect("pressed", callable_mp(editor, &VisualShaderEditor::_expand_output_port).bind(p_id, i, !vsnode->_is_output_port_expanded(i)), CONNECT_DEFERRED);
@@ -826,8 +826,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			if (vsnode->has_output_port_preview(i) && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
 				TextureButton *preview = memnew(TextureButton);
 				preview->set_toggle_mode(true);
-				preview->set_normal_texture(editor->get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")));
-				preview->set_pressed_texture(editor->get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
+				preview->set_texture_normal(editor->get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")));
+				preview->set_texture_pressed(editor->get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
 				preview->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 
 				register_output_port(p_id, j, preview);

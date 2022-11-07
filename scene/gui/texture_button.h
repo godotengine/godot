@@ -71,18 +71,18 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_normal_texture(const Ref<Texture2D> &p_normal);
-	void set_pressed_texture(const Ref<Texture2D> &p_pressed);
-	void set_hover_texture(const Ref<Texture2D> &p_hover);
-	void set_disabled_texture(const Ref<Texture2D> &p_disabled);
-	void set_focused_texture(const Ref<Texture2D> &p_focused);
+	void set_texture_normal(const Ref<Texture2D> &p_normal);
+	void set_texture_pressed(const Ref<Texture2D> &p_pressed);
+	void set_texture_hover(const Ref<Texture2D> &p_hover);
+	void set_texture_disabled(const Ref<Texture2D> &p_disabled);
+	void set_texture_focused(const Ref<Texture2D> &p_focused);
 	void set_click_mask(const Ref<BitMap> &p_click_mask);
 
-	Ref<Texture2D> get_normal_texture() const;
-	Ref<Texture2D> get_pressed_texture() const;
-	Ref<Texture2D> get_hover_texture() const;
-	Ref<Texture2D> get_disabled_texture() const;
-	Ref<Texture2D> get_focused_texture() const;
+	Ref<Texture2D> get_texture_normal() const;
+	Ref<Texture2D> get_texture_pressed() const;
+	Ref<Texture2D> get_texture_hover() const;
+	Ref<Texture2D> get_texture_disabled() const;
+	Ref<Texture2D> get_texture_focused() const;
 	Ref<BitMap> get_click_mask() const;
 
 	bool get_ignore_texture_size() const;

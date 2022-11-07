@@ -80,9 +80,9 @@ void StyleBoxPreview::_notification(int p_what) {
 				// See https://github.com/godotengine/godot/issues/50743.
 				break;
 			}
-			grid_preview->set_normal_texture(get_theme_icon(SNAME("StyleBoxGridInvisible"), SNAME("EditorIcons")));
-			grid_preview->set_pressed_texture(get_theme_icon(SNAME("StyleBoxGridVisible"), SNAME("EditorIcons")));
-			grid_preview->set_hover_texture(get_theme_icon(SNAME("StyleBoxGridVisible"), SNAME("EditorIcons")));
+			grid_preview->set_texture_normal(get_theme_icon(SNAME("StyleBoxGridInvisible"), SNAME("EditorIcons")));
+			grid_preview->set_texture_pressed(get_theme_icon(SNAME("StyleBoxGridVisible"), SNAME("EditorIcons")));
+			grid_preview->set_texture_hover(get_theme_icon(SNAME("StyleBoxGridVisible"), SNAME("EditorIcons")));
 			checkerboard->set_texture(get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons")));
 		} break;
 	}
