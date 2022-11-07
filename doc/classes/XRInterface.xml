@@ -35,6 +35,16 @@
 				Returns an array of vectors that denotes the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
 			</description>
 		</method>
+		<method name="get_projection_for_view">
+			<return type="Projection" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="near" type="float" />
+			<param index="3" name="far" type="float" />
+			<description>
+				Returns the projection matrix for a view/eye.
+			</description>
+		</method>
 		<method name="get_render_target_size">
 			<return type="Vector2" />
 			<description>
@@ -45,6 +55,16 @@
 			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
 				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
+			</description>
+		</method>
+		<method name="get_transform_for_view">
+			<return type="Transform3D" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="cam_transform" type="Transform3D" />
+			<description>
+				Returns the transform for a view/eye.
+				[param view] is the view/eye index.
+				[param cam_transform] is the transform that maps device coordinates to scene coordinates, typically the global_transform of the current XROrigin3D.
 			</description>
 		</method>
 		<method name="get_view_count">
