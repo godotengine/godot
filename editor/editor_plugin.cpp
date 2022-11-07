@@ -283,6 +283,22 @@ bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
 	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
 }
 
+void EditorInterface::set_plugin_state(const String &p_plugin, const Dictionary &p_state) {
+	EditorPlugin *plugin = EditorNode::get_singleton()->get_editor_data().get_editor(p_plugin);
+	if (plugin) {
+		plugin->set_state(p_state);
+	}
+}
+
+Dictionary EditorInterface::get_plugin_state(const String &p_plugin) const {
+	EditorPlugin *plugin = EditorNode::get_singleton()->get_editor_data().get_editor(p_plugin);
+	if (plugin) {
+		return plugin->get_state();
+	} else {
+		return Dictionary();
+	}
+}
+
 EditorInspector *EditorInterface::get_inspector() const {
 	return EditorNode::get_singleton()->get_inspector();
 }
@@ -344,6 +360,9 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
+	
+	ClassDB::bind_method(D_METHOD("set_plugin_state", "plugin", "state"), &EditorInterface::set_plugin_state);
+	ClassDB::bind_method(D_METHOD("get_plugin_state", "plugin"), &EditorInterface::get_plugin_state);
 
 	ClassDB::bind_method(D_METHOD("get_inspector"), &EditorInterface::get_inspector);
 

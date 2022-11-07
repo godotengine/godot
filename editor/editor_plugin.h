@@ -106,6 +106,9 @@ public:
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
 
+	void set_plugin_state(const String &p_plugin, const Dictionary &p_state);
+	Dictionary get_plugin_state(const String &p_plugin) const;
+
 	EditorInspector *get_inspector() const;
 
 	Error save_scene();
