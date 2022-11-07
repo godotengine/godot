@@ -173,6 +173,21 @@ comments. Apply the patches in the `patches/` folder when syncing on newer upstr
 commits.
 
 
+## glad
+
+- Upstream: https://github.com/Dav1dde/glad
+- Version: 2.0.2 (f237a2bfcec0d9b82b90ec9af4af265c40de7183, 2022)
+- License: CC0 1.0 and Apache 2.0
+
+Files extracted from upstream source:
+- `LICENSE`
+
+Files generated from [upstream web instance](https://gen.glad.sh/):
+- `KHR/khrplatform.h`
+- `gl.c`
+- `glad/gl.h`
+
+
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
