@@ -203,7 +203,10 @@ int detect_prime() {
 				print_verbose("Couldn't write vendor/renderer string.");
 			}
 			close(fdset[1]);
-			exit(0);
+
+			// The function quick_exit() is used because exit() will call destructors on static objects copied by fork().
+			// These objects will be freed anyway when the process finishes execution.
+			quick_exit(0);
 		}
 	}
 
