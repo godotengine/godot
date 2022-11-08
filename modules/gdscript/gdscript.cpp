@@ -629,10 +629,6 @@ void GDScript::_update_doc() {
 		}
 	}
 
-	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
-		E.value->_update_doc();
-	}
-
 	_add_doc(doc);
 }
 #endif
@@ -674,36 +670,14 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 				base_cache = Ref<GDScript>();
 			}
 
-			if (c->extends_used) {
-				String ext_path = "";
-				if (String(c->extends_path) != "" && String(c->extends_path) != get_path()) {
-					ext_path = c->extends_path;
-					if (ext_path.is_relative_path()) {
-						String base_path = get_path();
-						if (base_path.is_empty() || base_path.is_relative_path()) {
-							ERR_PRINT(("Could not resolve relative path for parent class: " + ext_path).utf8().get_data());
-						} else {
-							ext_path = base_path.get_base_dir().path_join(ext_path);
-						}
-					}
-				} else if (c->extends.size() != 0) {
-					const StringName &base_class = c->extends[0];
-
-					if (ScriptServer::is_global_class(base_class)) {
-						ext_path = ScriptServer::get_global_class_path(base_class);
-					}
-				}
-
-				if (!ext_path.is_empty()) {
-					if (ext_path != get_path()) {
-						Ref<GDScript> bf = ResourceLoader::load(ext_path);
-
-						if (bf.is_valid()) {
-							base_cache = bf;
-							bf->inheriters_cache.insert(get_instance_id());
-						}
-					} else {
-						ERR_PRINT(("Path extending itself in  " + ext_path).utf8().get_data());
+			GDScriptParser::DataType base_type = parser.get_tree()->base_type;
+			if (base_type.kind == GDScriptParser::DataType::CLASS) {
+				Ref<GDScript> bf = GDScriptCache::get_full_script(base_type.script_path, err, path);
+				if (err == OK) {
+					bf = Ref<GDScript>(bf->find_class(base_type.class_type->fqcn));
+					if (bf.is_valid()) {
+						base_cache = bf;
+						bf->inheriters_cache.insert(get_instance_id());
 					}
 				}
 			}
@@ -825,13 +799,6 @@ void GDScript::update_exports() {
 #endif
 }
 
-void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, const String &p_path) {
-	p_sc->path = p_path;
-	for (KeyValue<StringName, Ref<GDScript>> &E : p_sc->subclasses) {
-		_set_subclass_path(E.value, p_path);
-	}
-}
-
 String GDScript::_get_debug_path() const {
 	if (is_built_in() && !get_name().is_empty()) {
 		return get_name() + " (" + get_path() + ")";
@@ -860,7 +827,7 @@ Error GDScript::reload(bool p_keep_state) {
 		basedir = basedir.get_base_dir();
 	}
 
-// Loading a template, don't parse.
+	// Loading a template, don't parse.
 #ifdef TOOLS_ENABLED
 	if (EditorPaths::get_singleton() && basedir.begins_with(EditorPaths::get_singleton()->get_project_script_templates_dir())) {
 		return OK;
@@ -913,10 +880,6 @@ Error GDScript::reload(bool p_keep_state) {
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this, p_keep_state);
 
-#ifdef TOOLS_ENABLED
-	_update_doc();
-#endif
-
 	if (err) {
 		if (can_run) {
 			if (EngineDebugger::is_active()) {
@@ -936,14 +899,6 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 	}
 #endif
-
-	valid = true;
-
-	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
-		_set_subclass_path(E.value, path);
-	}
-
-	_init_rpc_methods_properties();
 
 	return OK;
 }
@@ -1051,8 +1006,13 @@ Error GDScript::load_byte_code(const String &p_path) {
 }
 
 void GDScript::set_path(const String &p_path, bool p_take_over) {
-	Script::set_path(p_path, p_take_over);
+	if (is_root_script()) {
+		Script::set_path(p_path, p_take_over);
+	}
 	this->path = p_path;
+	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
+		kv.value->set_path(p_path, p_take_over);
+	}
 }
 
 Error GDScript::load_source_code(const String &p_path) {
@@ -1125,6 +1085,52 @@ bool GDScript::inherits_script(const Ref<Script> &p_script) const {
 	}
 
 	return false;
+}
+
+GDScript *GDScript::find_class(const String &p_qualified_name) {
+	String first = p_qualified_name.get_slice("::", 0);
+
+	GDScript *result = nullptr;
+	if (first.is_empty() || first == name) {
+		result = this;
+	} else if (first == get_root_script()->path) {
+		result = get_root_script();
+	} else if (HashMap<StringName, Ref<GDScript>>::Iterator E = subclasses.find(first)) {
+		result = E->value.ptr();
+	} else if (_owner != nullptr) {
+		// Check parent scope.
+		return _owner->find_class(p_qualified_name);
+	}
+
+	int name_count = p_qualified_name.get_slice_count("::");
+	for (int i = 1; result != nullptr && i < name_count; i++) {
+		String current_name = p_qualified_name.get_slice("::", i);
+		if (HashMap<StringName, Ref<GDScript>>::Iterator E = result->subclasses.find(current_name)) {
+			result = E->value.ptr();
+		} else {
+			// Couldn't find inner class.
+			return nullptr;
+		}
+	}
+
+	return result;
+}
+
+bool GDScript::is_subclass(const GDScript *p_script) {
+	String fqn = p_script->fully_qualified_name;
+	if (!fqn.is_empty() && fqn != fully_qualified_name && fqn.begins_with(fully_qualified_name)) {
+		String fqn_rest = fqn.substr(fully_qualified_name.length());
+		return find_class(fqn_rest) == p_script;
+	}
+	return false;
+}
+
+GDScript *GDScript::get_root_script() {
+	GDScript *result = this;
+	while (result->_owner) {
+		result = result->_owner;
+	}
+	return result;
 }
 
 bool GDScript::has_script_signal(const StringName &p_signal) const {
@@ -1238,25 +1244,11 @@ void GDScript::_init_rpc_methods_properties() {
 		rpc_config = base->rpc_config.duplicate();
 	}
 
-	GDScript *cscript = this;
-	HashMap<StringName, Ref<GDScript>>::Iterator sub_E = subclasses.begin();
-	while (cscript) {
-		// RPC Methods
-		for (KeyValue<StringName, GDScriptFunction *> &E : cscript->member_functions) {
-			Variant config = E.value->get_rpc_config();
-			if (config.get_type() != Variant::NIL) {
-				rpc_config[E.value->get_name()] = config;
-			}
-		}
-
-		if (cscript != this) {
-			++sub_E;
-		}
-
-		if (sub_E) {
-			cscript = sub_E->value.ptr();
-		} else {
-			cscript = nullptr;
+	// RPC Methods
+	for (KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
+		Variant config = E.value->get_rpc_config();
+		if (config.get_type() != Variant::NIL) {
+			rpc_config[E.value->get_name()] = config;
 		}
 	}
 }

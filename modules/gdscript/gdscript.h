@@ -137,7 +137,6 @@ class GDScript : public Script {
 	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
 
-	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
 	String _get_debug_path() const;
 
 #ifdef TOOLS_ENABLED
@@ -178,6 +177,11 @@ public:
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
+	GDScript *find_class(const String &p_qualified_name);
+	bool is_subclass(const GDScript *p_script);
+	GDScript *get_root_script();
+	bool is_root_script() const { return _owner == nullptr; }
+	String get_fully_qualified_name() const { return fully_qualified_name; }
 	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const HashMap<StringName, Variant> &get_constants() const { return constants; }
 	const HashSet<StringName> &get_members() const { return members; }
@@ -223,7 +227,6 @@ public:
 	virtual Error reload(bool p_keep_state = false) override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
-	void set_script_path(const String &p_path) { path = p_path; } //because subclasses need a path too...
 	Error load_source_code(const String &p_path);
 	Error load_byte_code(const String &p_path);
 

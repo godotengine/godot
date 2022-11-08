@@ -3051,8 +3051,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 						r_result.type = ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION;
 						r_result.location = base_type.class_type->get_member(p_symbol).get_line();
 						r_result.class_path = base_type.script_path;
-						r_result.script = GDScriptCache::get_shallow_script(r_result.class_path);
-						return OK;
+						Error err = OK;
+						r_result.script = GDScriptCache::get_shallow_script(r_result.class_path, err);
+						return err;
 					}
 					base_type = base_type.class_type->base_type;
 				}
