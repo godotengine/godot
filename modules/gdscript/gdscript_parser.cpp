@@ -3802,7 +3802,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 				String enum_hint_string;
 				bool first = true;
-				for (const KeyValue<StringName, int> &E : export_type.enum_values) {
+				for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
 					if (!first) {
 						enum_hint_string += ",";
 					} else {

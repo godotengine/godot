@@ -131,7 +131,7 @@ public:
 		ClassNode *class_type = nullptr;
 
 		MethodInfo method_info; // For callable/signals.
-		HashMap<StringName, int> enum_values; // For enums.
+		HashMap<StringName, int64_t> enum_values; // For enums.
 
 		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
