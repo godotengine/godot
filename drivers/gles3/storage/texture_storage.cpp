@@ -647,7 +647,7 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	texture.height = p_image->get_height();
 	texture.alloc_width = texture.width;
 	texture.alloc_height = texture.height;
-	texture.mipmaps = p_image->get_mipmap_count();
+	texture.mipmaps = p_image->get_mipmap_count() + 1;
 	texture.format = p_image->get_format();
 	texture.type = Texture::TYPE_2D;
 	texture.target = GL_TEXTURE_2D;
@@ -2215,7 +2215,11 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 
 	// Load
 	CanvasSdfShaderGLES3::ShaderVariant variant = shrink ? CanvasSdfShaderGLES3::MODE_LOAD_SHRINK : CanvasSdfShaderGLES3::MODE_LOAD;
-	sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	bool success = sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	if (!success) {
+		return;
+	}
+
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::BASE_SIZE, r.size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::SIZE, size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::STRIDE, 0, sdf_shader.shader_version, variant);
@@ -2236,7 +2240,11 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 	int stride = nearest_power_of_2_templated(MAX(size.width, size.height) / 2);
 
 	variant = CanvasSdfShaderGLES3::MODE_PROCESS;
-	sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	success = sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	if (!success) {
+		return;
+	}
+
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::BASE_SIZE, r.size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::SIZE, size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::STRIDE, stride, sdf_shader.shader_version, variant);
@@ -2260,7 +2268,11 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 
 	// Store
 	variant = shrink ? CanvasSdfShaderGLES3::MODE_STORE_SHRINK : CanvasSdfShaderGLES3::MODE_STORE;
-	sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	success = sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	if (!success) {
+		return;
+	}
+
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::BASE_SIZE, r.size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::SIZE, size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::STRIDE, stride, sdf_shader.shader_version, variant);
