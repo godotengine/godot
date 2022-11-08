@@ -196,7 +196,6 @@ private:
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;
 
-	TypedArray<Node> _get_children(bool p_include_internal = true) const;
 	TypedArray<StringName> _get_groups() const;
 
 	Error _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -331,6 +330,7 @@ public:
 
 	int get_child_count(bool p_include_internal = true) const;
 	Node *get_child(int p_index, bool p_include_internal = true) const;
+	TypedArray<Node> get_children(bool p_include_internal = true) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
