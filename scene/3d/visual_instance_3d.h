@@ -40,8 +40,6 @@ class VisualInstance3D : public Node3D {
 	RID instance;
 	uint32_t layers = 1;
 
-	RID _get_visual_instance_rid() const;
-
 protected:
 	void _update_visibility();
 
@@ -119,8 +117,8 @@ private:
 
 	float lod_bias = 1.0;
 
-	mutable HashMap<StringName, Variant> instance_uniforms;
-	mutable HashMap<StringName, StringName> instance_uniform_property_remap;
+	mutable HashMap<StringName, Variant> instance_shader_parameters;
+	mutable HashMap<StringName, StringName> instance_shader_parameter_property_remap;
 
 	float extra_cull_margin = 0.0;
 	LightmapScale lightmap_scale = LIGHTMAP_SCALE_1X;

@@ -74,10 +74,6 @@ RID VisualInstance3D::get_instance() const {
 	return instance;
 }
 
-RID VisualInstance3D::_get_visual_instance_rid() const {
-	return instance;
-}
-
 void VisualInstance3D::set_layer_mask(uint32_t p_mask) {
 	layers = p_mask;
 	RenderingServer::get_singleton()->instance_set_layer_mask(instance, p_mask);
@@ -106,7 +102,6 @@ bool VisualInstance3D::get_layer_mask_value(int p_layer_number) const {
 }
 
 void VisualInstance3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_get_visual_instance_rid"), &VisualInstance3D::_get_visual_instance_rid);
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance3D::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &VisualInstance3D::get_base);
 	ClassDB::bind_method(D_METHOD("get_instance"), &VisualInstance3D::get_instance);
@@ -216,15 +211,20 @@ GeometryInstance3D::VisibilityRangeFadeMode GeometryInstance3D::get_visibility_r
 }
 
 const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringName p_name) const {
-	StringName *r = instance_uniform_property_remap.getptr(p_name);
+	StringName *r = instance_shader_parameter_property_remap.getptr(p_name);
 	if (!r) {
 		String s = p_name;
+#ifndef DISABLE_DEPRECATED
 		if (s.begins_with("shader_uniforms/")) {
-			StringName name = s.replace("shader_uniforms/", "");
-			instance_uniform_property_remap[p_name] = name;
-			return instance_uniform_property_remap.getptr(p_name);
+			s = s.replace("shader_uniforms/", "instance_shader_parameters/");
 		}
-
+#endif // DISABLE_DEPRECATED
+		if (s.begins_with("instance_shader_parameters/")) {
+			StringName pname = StringName(s);
+			StringName name = s.replace("instance_shader_parameters/", "");
+			instance_shader_parameter_property_remap[pname] = name;
+			return instance_shader_parameter_property_remap.getptr(pname);
+		}
 		return nullptr;
 	}
 
@@ -247,7 +247,7 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 		set_gi_mode(GI_MODE_DYNAMIC);
 		return true;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 	return false;
 }
 
@@ -270,13 +270,13 @@ void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		if (def_value.get_type() != Variant::NIL) {
 			has_def_value = true;
 		}
-		if (instance_uniforms.has(pi.name)) {
+		if (instance_shader_parameters.has(pi.name)) {
 			pi.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | (has_def_value ? (PROPERTY_USAGE_CHECKABLE | PROPERTY_USAGE_CHECKED) : PROPERTY_USAGE_NONE);
 		} else {
 			pi.usage = PROPERTY_USAGE_EDITOR | (has_def_value ? PROPERTY_USAGE_CHECKABLE : PROPERTY_USAGE_NONE); //do not save if not changed
 		}
 
-		pi.name = "shader_uniforms/" + pi.name;
+		pi.name = "instance_shader_parameters/" + pi.name;
 		p_list->push_back(pi);
 	}
 }
@@ -315,9 +315,9 @@ void GeometryInstance3D::set_instance_shader_parameter(const StringName &p_name,
 	if (p_value.get_type() == Variant::NIL) {
 		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_name);
 		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_name, def_value);
-		instance_uniforms.erase(p_value);
+		instance_shader_parameters.erase(p_value);
 	} else {
-		instance_uniforms[p_name] = p_value;
+		instance_shader_parameters[p_name] = p_value;
 		if (p_value.get_type() == Variant::OBJECT) {
 			RID tex_id = p_value;
 			RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_name, tex_id);

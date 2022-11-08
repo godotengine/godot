@@ -8178,6 +8178,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					}
 				}
 #endif // DEBUG_ENABLED
+				if (String(shader_type_identifier) != "spatial") {
+					_set_error(vformat(RTR("Uniform instances are not yet implemented for '%s' shaders."), shader_type_identifier));
+					return ERR_PARSE_ERROR;
+				}
 				if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
 					tk = _get_token();
 					if (tk.type != TK_UNIFORM) {
