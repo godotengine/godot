@@ -534,6 +534,7 @@ void GDScriptParser::end_statement(const String &p_context) {
 
 void GDScriptParser::parse_program() {
 	head = alloc_node<ClassNode>();
+	head->fqcn = script_path;
 	current_class = head;
 
 	// If we happen to parse an annotation before extends or class_name keywords, track it.
@@ -646,6 +647,9 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class() {
 
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the class name after "class".)")) {
 		n_class->identifier = parse_identifier();
+		if (n_class->outer) {
+			n_class->fqcn = n_class->outer->fqcn + "::" + n_class->identifier->name;
+		}
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
@@ -684,6 +688,7 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class() {
 void GDScriptParser::parse_class_name() {
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the global class name after "class_name".)")) {
 		current_class->identifier = parse_identifier();
+		current_class->fqcn = String(current_class->identifier->name);
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
