@@ -77,6 +77,7 @@ class ShapeCast3D : public Node3D {
 protected:
 	void _notification(int p_what);
 	void _update_shapecast_state();
+	void _shape_changed();
 	static void _bind_methods();
 
 public:
