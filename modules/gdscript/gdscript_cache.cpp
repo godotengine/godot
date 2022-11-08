@@ -34,6 +34,7 @@
 #include "core/templates/vector.h"
 #include "gdscript.h"
 #include "gdscript_analyzer.h"
+#include "gdscript_compiler.h"
 #include "gdscript_parser.h"
 
 bool GDScriptParserRef::is_valid() const {
@@ -161,7 +162,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 	return source;
 }
 
-Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const String &p_owner) {
+Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->lock);
 	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
@@ -173,11 +174,16 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 		return singleton->shallow_gdscript_cache[p_path];
 	}
 
+	Ref<GDScriptParserRef> parser_ref = get_parser(p_path, GDScriptParserRef::PARSED, r_error);
+	if (r_error != OK) {
+		return Ref<GDScript>();
+	}
+
 	Ref<GDScript> script;
 	script.instantiate();
 	script->set_path(p_path, true);
-	script->set_script_path(p_path);
 	script->load_source_code(p_path);
+	GDScriptCompiler::make_scripts(script.ptr(), parser_ref->get_parser()->get_tree(), true);
 
 	singleton->shallow_gdscript_cache[p_path] = script.ptr();
 	return script;
@@ -200,17 +206,21 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	}
 
 	if (script.is_null()) {
-		script = get_shallow_script(p_path);
-		ERR_FAIL_COND_V(script.is_null(), Ref<GDScript>());
+		script = get_shallow_script(p_path, r_error);
+		if (r_error) {
+			return script;
+		}
 	}
 
-	r_error = script->load_source_code(p_path);
+	if (p_update_from_disk) {
+		r_error = script->load_source_code(p_path);
+	}
 
 	if (r_error) {
 		return script;
 	}
 
-	r_error = script->reload();
+	r_error = script->reload(true);
 	if (r_error) {
 		return script;
 	}
@@ -221,9 +231,25 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	return script;
 }
 
+Ref<GDScript> GDScriptCache::get_cached_script(const String &p_path) {
+	MutexLock lock(singleton->lock);
+
+	if (singleton->full_gdscript_cache.has(p_path)) {
+		return singleton->full_gdscript_cache[p_path];
+	}
+
+	if (singleton->shallow_gdscript_cache.has(p_path)) {
+		return singleton->shallow_gdscript_cache[p_path];
+	}
+
+	return Ref<GDScript>();
+}
+
 Error GDScriptCache::finish_compiling(const String &p_owner) {
+	MutexLock lock(singleton->lock);
+
 	// Mark this as compiled.
-	Ref<GDScript> script = get_shallow_script(p_owner);
+	Ref<GDScript> script = get_cached_script(p_owner);
 	singleton->full_gdscript_cache[p_owner] = script.ptr();
 	singleton->shallow_gdscript_cache.erase(p_owner);
 
