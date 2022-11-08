@@ -5895,8 +5895,7 @@ void EditorNode::_feature_profile_changed() {
 }
 
 void EditorNode::_bind_methods() {
-	GLOBAL_DEF("editor/scene/scene_naming", SCENE_NAME_CASING_SNAKE_CASE);
-	ProjectSettings::get_singleton()->set_custom_property_info("editor/scene/scene_naming", PropertyInfo(Variant::INT, "editor/scene/scene_naming", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"));
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/scene/scene_naming", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"), SCENE_NAME_CASING_SNAKE_CASE);
 	ClassDB::bind_method("edit_current", &EditorNode::edit_current);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
 

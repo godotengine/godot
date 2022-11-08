@@ -270,15 +270,13 @@ void register_server_types() {
 	ServersDebugger::initialize();
 
 	// Physics 2D
-	GLOBAL_DEF(PhysicsServer2DManager::setting_property_name, "DEFAULT");
-	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer2DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
 	PhysicsServer2DManager::get_singleton()->register_server("GodotPhysics2D", callable_mp_static(_createGodotPhysics2DCallback));
 	PhysicsServer2DManager::get_singleton()->set_default_server("GodotPhysics2D");
 
 	// Physics 3D
-	GLOBAL_DEF(PhysicsServer3DManager::setting_property_name, "DEFAULT");
-	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer3DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
 	PhysicsServer3DManager::get_singleton()->register_server("GodotPhysics3D", callable_mp_static(_createGodotPhysics3DCallback));
 	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");

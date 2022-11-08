@@ -887,7 +887,7 @@ void PhysicsServer2DManager::on_servers_changed() {
 	for (int i = get_servers_count() - 1; 0 <= i; --i) {
 		physics_servers += "," + get_server_name(i);
 	}
-	ProjectSettings::get_singleton()->set_custom_property_info(setting_property_name, PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers));
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers));
 }
 
 void PhysicsServer2DManager::_bind_methods() {
