@@ -197,7 +197,7 @@ out vec3 tangent_interp;
 out vec3 binormal_interp;
 #endif
 
-#if defined(MATERIAL_UNIFORMS_USED)
+#ifdef MATERIAL_UNIFORMS_USED
 
 /* clang-format off */
 layout(std140) uniform MaterialUniforms { // ubo:3
@@ -366,7 +366,9 @@ void main() {
 #endif
 #endif
 
+#ifndef MODE_RENDER_DEPTH
 #include "tonemap_inc.glsl"
+#endif
 #include "stdlib_inc.glsl"
 
 /* texture unit usage, N is max_texture_unity-N
@@ -428,7 +430,7 @@ layout(std140) uniform GlobalShaderUniformData { //ubo:1
 
 	/* Material Uniforms */
 
-#if defined(MATERIAL_UNIFORMS_USED)
+#ifdef MATERIAL_UNIFORMS_USED
 
 /* clang-format off */
 layout(std140) uniform MaterialUniforms { // ubo:3
@@ -535,7 +537,7 @@ layout(std140) uniform OmniLightData { // ubo:5
 	LightData omni_lights[MAX_LIGHT_DATA_STRUCTS];
 };
 uniform uint omni_light_indices[MAX_FORWARD_LIGHTS];
-uniform int omni_light_count;
+uniform uint omni_light_count;
 #endif
 
 #ifndef DISABLE_LIGHT_SPOT
@@ -545,7 +547,7 @@ layout(std140) uniform SpotLightData { // ubo:6
 	LightData spot_lights[MAX_LIGHT_DATA_STRUCTS];
 };
 uniform uint spot_light_indices[MAX_FORWARD_LIGHTS];
-uniform int spot_light_count;
+uniform uint spot_light_count;
 #endif
 
 #ifdef USE_ADDITIVE_LIGHTING
@@ -1188,7 +1190,7 @@ void main() {
 #endif //!DISABLE_LIGHT_DIRECTIONAL
 
 #ifndef DISABLE_LIGHT_OMNI
-	for (int i = 0; i < MAX_FORWARD_LIGHTS; i++) {
+	for (uint i = 0u; i < MAX_FORWARD_LIGHTS; i++) {
 		if (i >= omni_light_count) {
 			break;
 		}
@@ -1211,7 +1213,7 @@ void main() {
 #endif // !DISABLE_LIGHT_OMNI
 
 #ifndef DISABLE_LIGHT_SPOT
-	for (int i = 0; i < MAX_FORWARD_LIGHTS; i++) {
+	for (uint i = 0u; i < MAX_FORWARD_LIGHTS; i++) {
 		if (i >= spot_light_count) {
 			break;
 		}

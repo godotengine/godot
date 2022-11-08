@@ -299,10 +299,6 @@ bool GPUParticles2D::get_interpolate() const {
 PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
-	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(RTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles2D\" option for this purpose."));
-	}
-
 	if (process_material.is_null()) {
 		warnings.push_back(RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
 	} else {

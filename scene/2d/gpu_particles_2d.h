@@ -64,7 +64,7 @@ private:
 #endif
 	Ref<Material> process_material;
 
-	DrawOrder draw_order;
+	DrawOrder draw_order = DRAW_ORDER_LIFETIME;
 
 	Ref<Texture2D> texture;
 

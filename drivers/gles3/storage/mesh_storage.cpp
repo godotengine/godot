@@ -87,8 +87,11 @@ void MeshStorage::mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count
 	ERR_FAIL_COND(!mesh);
 
 	ERR_FAIL_COND(mesh->surface_count > 0); //surfaces already exist
-	WARN_PRINT_ONCE("blend shapes not supported by GLES3 renderer yet");
 	mesh->blend_shape_count = p_blend_shape_count;
+
+	if (p_blend_shape_count > 0) {
+		WARN_PRINT_ONCE("blend shapes not supported by GLES3 renderer yet");
+	}
 }
 
 bool MeshStorage::mesh_needs_instance(RID p_mesh, bool p_has_skeleton) {

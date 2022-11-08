@@ -34,6 +34,7 @@
 
 #include "config.h"
 #include "material_storage.h"
+#include "particles_storage.h"
 #include "texture_storage.h"
 
 #include "drivers/gles3/rasterizer_canvas_gles3.h"
@@ -1342,13 +1343,13 @@ MaterialStorage::MaterialStorage() {
 
 	shader_data_request_func[RS::SHADER_SPATIAL] = _create_scene_shader_func;
 	shader_data_request_func[RS::SHADER_CANVAS_ITEM] = _create_canvas_shader_func;
-	shader_data_request_func[RS::SHADER_PARTICLES] = nullptr;
+	shader_data_request_func[RS::SHADER_PARTICLES] = _create_particles_shader_func;
 	shader_data_request_func[RS::SHADER_SKY] = _create_sky_shader_func;
 	shader_data_request_func[RS::SHADER_FOG] = nullptr;
 
 	material_data_request_func[RS::SHADER_SPATIAL] = _create_scene_material_func;
 	material_data_request_func[RS::SHADER_CANVAS_ITEM] = _create_canvas_material_func;
-	material_data_request_func[RS::SHADER_PARTICLES] = nullptr;
+	material_data_request_func[RS::SHADER_PARTICLES] = _create_particles_material_func;
 	material_data_request_func[RS::SHADER_SKY] = _create_sky_material_func;
 	material_data_request_func[RS::SHADER_FOG] = nullptr;
 
@@ -1613,32 +1614,32 @@ MaterialStorage::MaterialStorage() {
 
 	{
 		// Setup Particles compiler
-		/*
-ShaderCompiler::DefaultIdentifierActions actions;
 
-		actions.renames["COLOR"] = "PARTICLE.color";
-		actions.renames["VELOCITY"] = "PARTICLE.velocity";
+		ShaderCompiler::DefaultIdentifierActions actions;
+
+		actions.renames["COLOR"] = "out_color";
+		actions.renames["VELOCITY"] = "out_velocity_flags.xyz";
 		//actions.renames["MASS"] = "mass"; ?
 		actions.renames["ACTIVE"] = "particle_active";
 		actions.renames["RESTART"] = "restart";
-		actions.renames["CUSTOM"] = "PARTICLE.custom";
-		for (int i = 0; i < ParticlesShader::MAX_USERDATAS; i++) {
+		actions.renames["CUSTOM"] = "out_custom";
+		for (int i = 0; i < PARTICLES_MAX_USERDATAS; i++) {
 			String udname = "USERDATA" + itos(i + 1);
-			actions.renames[udname] = "PARTICLE.userdata" + itos(i + 1);
+			actions.renames[udname] = "out_userdata" + itos(i + 1);
 			actions.usage_defines[udname] = "#define USERDATA" + itos(i + 1) + "_USED\n";
 		}
-		actions.renames["TRANSFORM"] = "PARTICLE.xform";
-		actions.renames["TIME"] = "frame_history.data[0].time";
+		actions.renames["TRANSFORM"] = "xform";
+		actions.renames["TIME"] = "time";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
-		actions.renames["LIFETIME"] = "params.lifetime";
+		actions.renames["LIFETIME"] = "lifetime";
 		actions.renames["DELTA"] = "local_delta";
 		actions.renames["NUMBER"] = "particle_number";
 		actions.renames["INDEX"] = "index";
 		//actions.renames["GRAVITY"] = "current_gravity";
-		actions.renames["EMISSION_TRANSFORM"] = "FRAME.emission_transform";
-		actions.renames["RANDOM_SEED"] = "FRAME.random_seed";
+		actions.renames["EMISSION_TRANSFORM"] = "emission_transform";
+		actions.renames["RANDOM_SEED"] = "random_seed";
 		actions.renames["FLAG_EMIT_POSITION"] = "EMISSION_FLAG_HAS_POSITION";
 		actions.renames["FLAG_EMIT_ROT_SCALE"] = "EMISSION_FLAG_HAS_ROTATION_SCALE";
 		actions.renames["FLAG_EMIT_VELOCITY"] = "EMISSION_FLAG_HAS_VELOCITY";
@@ -1660,18 +1661,10 @@ ShaderCompiler::DefaultIdentifierActions actions;
 		actions.render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
 		actions.render_mode_defines["collision_use_scale"] = "#define USE_COLLISION_SCALE\n";
 
-		actions.sampler_array_name = "material_samplers";
-		actions.base_texture_binding_index = 1;
-		actions.texture_layout_set = 3;
-		actions.base_uniform_string = "material.";
-		actions.base_varying_index = 10;
-
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
-		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 
-		particles_shader.compiler.initialize(actions);
-		*/
+		shaders.compiler_particles.initialize(actions);
 	}
 
 	{
@@ -2470,8 +2463,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	RS::ShaderMode new_mode;
 	if (mode_string == "canvas_item") {
 		new_mode = RS::SHADER_CANVAS_ITEM;
-		//} else if (mode_string == "particles") {
-		//	new_mode = RS::SHADER_PARTICLES;
+	} else if (mode_string == "particles") {
+		new_mode = RS::SHADER_PARTICLES;
 	} else if (mode_string == "spatial") {
 		new_mode = RS::SHADER_SPATIAL;
 	} else if (mode_string == "sky") {
@@ -2542,6 +2535,9 @@ void MaterialStorage::shader_set_path_hint(RID p_shader, const String &p_path) {
 	ERR_FAIL_COND(!shader);
 
 	shader->path_hint = p_path;
+	if (shader->data) {
+		shader->data->set_path_hint(p_path);
+	}
 }
 
 String MaterialStorage::shader_get_code(RID p_shader) const {
@@ -2809,6 +2805,10 @@ void MaterialStorage::material_update_dependency(RID p_material, DependencyTrack
 
 /* Canvas Shader Data */
 
+void CanvasShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
+
 void CanvasShaderData::set_code(const String &p_code) {
 	// compile the shader
 
@@ -3007,7 +3007,7 @@ GLES3::ShaderData *GLES3::_create_canvas_shader_func() {
 }
 
 void CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	return update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
+	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
 }
 
 void CanvasMaterialData::bind_uniforms() {
@@ -3042,6 +3042,10 @@ GLES3::MaterialData *GLES3::_create_canvas_material_func(ShaderData *p_shader) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SKY SHADER
+
+void SkyShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
 
 void SkyShaderData::set_code(const String &p_code) {
 	//compile
@@ -3251,7 +3255,7 @@ GLES3::ShaderData *GLES3::_create_sky_shader_func() {
 
 void SkyMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	uniform_set_updated = true;
-	return update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
+	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
 }
 
 SkyMaterialData::~SkyMaterialData() {
@@ -3285,6 +3289,10 @@ void SkyMaterialData::bind_uniforms() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Scene SHADER
+
+void SceneShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
 
 void SceneShaderData::set_code(const String &p_code) {
 	//compile
@@ -3592,7 +3600,7 @@ void SceneMaterialData::set_next_pass(RID p_pass) {
 }
 
 void SceneMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	return update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
+	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
 }
 
 SceneMaterialData::~SceneMaterialData() {
@@ -3614,6 +3622,211 @@ void SceneMaterialData::bind_uniforms() {
 	for (int ti = 0; ti < texture_cache.size(); ti++) {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
 		glActiveTexture(GL_TEXTURE0 + ti);
+		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
+
+		// Set sampler state here as the same texture can be used in multiple places with different flags
+		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*
+		RS::CanvasItemTextureFilter filter = RS::CanvasItemTextureFilter((int(texture_uniforms[ti].filter) + 1) % RS::CANVAS_ITEM_TEXTURE_FILTER_MAX);
+		RS::CanvasItemTextureRepeat repeat = RS::CanvasItemTextureRepeat((int(texture_uniforms[ti].repeat) + 1) % RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
+		texture->gl_set_filter(filter);
+		texture->gl_set_repeat(repeat);
+	}
+}
+
+/* Particles SHADER */
+
+void ParticlesShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
+
+void ParticlesShaderData::set_code(const String &p_code) {
+	//compile
+
+	code = p_code;
+	valid = false;
+	ubo_size = 0;
+	uniforms.clear();
+	uses_collision = false;
+
+	if (code.is_empty()) {
+		return; //just invalid, but no error
+	}
+
+	ShaderCompiler::GeneratedCode gen_code;
+	ShaderCompiler::IdentifierActions actions;
+	actions.entry_point_stages["start"] = ShaderCompiler::STAGE_VERTEX;
+	actions.entry_point_stages["process"] = ShaderCompiler::STAGE_VERTEX;
+
+	actions.usage_flag_pointers["COLLIDED"] = &uses_collision;
+
+	userdata_count = 0;
+	for (uint32_t i = 0; i < PARTICLES_MAX_USERDATAS; i++) {
+		userdatas_used[i] = false;
+		actions.usage_flag_pointers["USERDATA" + itos(i + 1)] = &userdatas_used[i];
+	}
+
+	actions.uniforms = &uniforms;
+
+	Error err = MaterialStorage::get_singleton()->shaders.compiler_particles.compile(RS::SHADER_PARTICLES, code, &actions, path, gen_code);
+	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+
+	if (version.is_null()) {
+		version = MaterialStorage::get_singleton()->shaders.particles_process_shader.version_create();
+	}
+
+	for (uint32_t i = 0; i < PARTICLES_MAX_USERDATAS; i++) {
+		if (userdatas_used[i]) {
+			userdata_count++;
+		}
+	}
+
+	Vector<StringName> texture_uniform_names;
+	for (int i = 0; i < gen_code.texture_uniforms.size(); i++) {
+		texture_uniform_names.push_back(gen_code.texture_uniforms[i].name);
+	}
+
+	MaterialStorage::get_singleton()->shaders.particles_process_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_names);
+	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.particles_process_shader.version_is_valid(version));
+
+	ubo_size = gen_code.uniform_total_size;
+	ubo_offsets = gen_code.uniform_offsets;
+	texture_uniforms = gen_code.texture_uniforms;
+
+	valid = true;
+}
+
+void ParticlesShaderData::set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) {
+	if (!p_texture.is_valid()) {
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
+	} else {
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = HashMap<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
+	}
+}
+
+void ParticlesShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
+	HashMap<int, StringName> order;
+
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL || E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
+		if (E.value.texture_order >= 0) {
+			order[E.value.texture_order + 100000] = E.key;
+		} else {
+			order[E.value.order] = E.key;
+		}
+	}
+
+	String last_group;
+	for (const KeyValue<int, StringName> &E : order) {
+		String group = uniforms[E.value].group;
+		if (!uniforms[E.value].subgroup.is_empty()) {
+			group += "::" + uniforms[E.value].subgroup;
+		}
+
+		if (group != last_group) {
+			PropertyInfo pi;
+			pi.usage = PROPERTY_USAGE_GROUP;
+			pi.name = group;
+			p_param_list->push_back(pi);
+
+			last_group = group;
+		}
+
+		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
+		pi.name = E.value;
+		p_param_list->push_back(pi);
+	}
+}
+
+void ParticlesShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
+		RendererMaterialStorage::InstanceShaderParam p;
+		p.info = ShaderLanguage::uniform_to_property_info(E.value);
+		p.info.name = E.key; //supply name
+		p.index = E.value.instance_index;
+		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.array_size, E.value.hint);
+		p_param_list->push_back(p);
+	}
+}
+
+bool ParticlesShaderData::is_parameter_texture(const StringName &p_param) const {
+	if (!uniforms.has(p_param)) {
+		return false;
+	}
+
+	return uniforms[p_param].texture_order >= 0;
+}
+
+bool ParticlesShaderData::is_animated() const {
+	return false;
+}
+
+bool ParticlesShaderData::casts_shadows() const {
+	return false;
+}
+
+Variant ParticlesShaderData::get_default_parameter(const StringName &p_parameter) const {
+	if (uniforms.has(p_parameter)) {
+		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
+		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
+	}
+	return Variant();
+}
+
+RS::ShaderNativeSourceCode ParticlesShaderData::get_native_source_code() const {
+	return MaterialStorage::get_singleton()->shaders.particles_process_shader.version_get_native_source_code(version);
+}
+
+ParticlesShaderData::~ParticlesShaderData() {
+	if (version.is_valid()) {
+		MaterialStorage::get_singleton()->shaders.particles_process_shader.version_free(version);
+	}
+}
+
+GLES3::ShaderData *GLES3::_create_particles_shader_func() {
+	ParticlesShaderData *shader_data = memnew(ParticlesShaderData);
+	return shader_data;
+}
+
+void ParticleProcessMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
+}
+
+ParticleProcessMaterialData::~ParticleProcessMaterialData() {
+}
+
+GLES3::MaterialData *GLES3::_create_particles_material_func(ShaderData *p_shader) {
+	ParticleProcessMaterialData *material_data = memnew(ParticleProcessMaterialData);
+	material_data->shader_data = static_cast<ParticlesShaderData *>(p_shader);
+	//update will happen later anyway so do nothing.
+	return material_data;
+}
+
+void ParticleProcessMaterialData::bind_uniforms() {
+	// Bind Material Uniforms
+	glBindBufferBase(GL_UNIFORM_BUFFER, GLES3::PARTICLES_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
+
+	RID *textures = texture_cache.ptrw();
+	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
+	for (int ti = 0; ti < texture_cache.size(); ti++) {
+		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
+		glActiveTexture(GL_TEXTURE1 + ti); // Start at GL_TEXTURE1 becuase texture slot 0 is reserved for the heightmap texture.
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
 
 		// Set sampler state here as the same texture can be used in multiple places with different flags

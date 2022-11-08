@@ -108,6 +108,10 @@ RS::InstanceType Utilities::get_base_type(RID p_rid) const {
 		return RS::INSTANCE_LIGHT;
 	} else if (GLES3::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
 		return RS::INSTANCE_LIGHTMAP;
+	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
+		return RS::INSTANCE_PARTICLES;
+	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
+		return RS::INSTANCE_PARTICLES_COLLISION;
 	}
 	return RS::INSTANCE_NONE;
 }
@@ -143,53 +147,18 @@ bool Utilities::free(RID p_rid) {
 	} else if (GLES3::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
 		GLES3::LightStorage::get_singleton()->lightmap_free(p_rid);
 		return true;
+	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
+		GLES3::ParticlesStorage::get_singleton()->particles_free(p_rid);
+		return true;
+	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
+		GLES3::ParticlesStorage::get_singleton()->particles_collision_free(p_rid);
+		return true;
+	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles_collision_instance(p_rid)) {
+		GLES3::ParticlesStorage::get_singleton()->particles_collision_instance_free(p_rid);
+		return true;
 	} else {
 		return false;
 	}
-	/*
-	else if (reflection_probe_owner.owns(p_rid)) {
-		// delete the texture
-		ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_rid);
-		reflection_probe->instance_remove_deps();
-
-		reflection_probe_owner.free(p_rid);
-		memdelete(reflection_probe);
-
-		return true;
-	} else if (lightmap_capture_data_owner.owns(p_rid)) {
-		// delete the texture
-		LightmapCapture *lightmap_capture = lightmap_capture_data_owner.get_or_null(p_rid);
-		lightmap_capture->instance_remove_deps();
-
-		lightmap_capture_data_owner.free(p_rid);
-		memdelete(lightmap_capture);
-		return true;
-
-	} else if (canvas_occluder_owner.owns(p_rid)) {
-		CanvasOccluder *co = canvas_occluder_owner.get_or_null(p_rid);
-		if (co->index_id) {
-			glDeleteBuffers(1, &co->index_id);
-		}
-		if (co->vertex_id) {
-			glDeleteBuffers(1, &co->vertex_id);
-		}
-
-		canvas_occluder_owner.free(p_rid);
-		memdelete(co);
-
-		return true;
-
-	} else if (canvas_light_shadow_owner.owns(p_rid)) {
-		CanvasLightShadow *cls = canvas_light_shadow_owner.get_or_null(p_rid);
-		glDeleteFramebuffers(1, &cls->fbo);
-		glDeleteRenderbuffers(1, &cls->depth);
-		glDeleteTextures(1, &cls->distance);
-		canvas_light_shadow_owner.free(p_rid);
-		memdelete(cls);
-
-		return true;
-	}
-	*/
 }
 
 /* DEPENDENCIES */
@@ -207,6 +176,12 @@ void Utilities::base_update_dependency(RID p_base, DependencyTracker *p_instance
 	} else if (LightStorage::get_singleton()->owns_light(p_base)) {
 		Light *l = LightStorage::get_singleton()->get_light(p_base);
 		p_instance->update_dependency(&l->dependency);
+	} else if (ParticlesStorage::get_singleton()->owns_particles(p_base)) {
+		Dependency *dependency = ParticlesStorage::get_singleton()->particles_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
+	} else if (ParticlesStorage::get_singleton()->owns_particles_collision(p_base)) {
+		Dependency *dependency = ParticlesStorage::get_singleton()->particles_collision_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	}
 }
 

@@ -272,10 +272,6 @@ bool GPUParticles3D::get_interpolate() const {
 PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
 
-	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(RTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
-	}
-
 	bool meshes_found = false;
 	bool anim_material_found = false;
 

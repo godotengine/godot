@@ -70,6 +70,11 @@ protected:
 		bool default_value = false;
 	};
 
+	struct Feedback {
+		const char *name;
+		uint64_t specialization;
+	};
+
 private:
 	//versions
 	CharString general_defines;
@@ -165,6 +170,8 @@ private:
 	int uniform_count = 0;
 	const UBOPair *ubo_pairs = nullptr;
 	int ubo_count = 0;
+	const Feedback *feedbacks;
+	int feedback_count = 0;
 	const TexUnitPair *texunit_pairs = nullptr;
 	int texunit_pair_count = 0;
 	int specialization_count = 0;
@@ -178,13 +185,13 @@ private:
 
 protected:
 	ShaderGLES3();
-	void _setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants);
+	void _setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_feedback_count, const Feedback *p_feedback, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants);
 
-	_FORCE_INLINE_ void _version_bind_shader(RID p_version, int p_variant, uint64_t p_specialization) {
-		ERR_FAIL_INDEX(p_variant, variant_count);
+	_FORCE_INLINE_ bool _version_bind_shader(RID p_version, int p_variant, uint64_t p_specialization) {
+		ERR_FAIL_INDEX_V(p_variant, variant_count, false);
 
 		Version *version = version_owner.get_or_null(p_version);
-		ERR_FAIL_COND(!version);
+		ERR_FAIL_COND_V(!version, false);
 
 		if (version->variants.size() == 0) {
 			_initialize_version(version); //may lack initialization
@@ -210,11 +217,12 @@ protected:
 
 		if (!spec || !spec->ok) {
 			WARN_PRINT_ONCE("shader failed to compile, unable to bind shader.");
-			return;
+			return false;
 		}
 
 		glUseProgram(spec->id);
 		current_shader = spec;
+		return true;
 	}
 
 	_FORCE_INLINE_ int _version_get_uniform(int p_which, RID p_version, int p_variant, uint64_t p_specialization) {
