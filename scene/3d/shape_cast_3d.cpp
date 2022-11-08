@@ -30,6 +30,7 @@
 
 #include "shape_cast_3d.h"
 
+#include "core/core_string_names.h"
 #include "collision_object_3d.h"
 #include "mesh_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
@@ -318,25 +319,35 @@ void ShapeCast3D::resource_changed(Ref<Resource> p_res) {
 	update_gizmos();
 }
 
+void ShapeCast3D::_shape_changed() {
+	update_gizmos();
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_inside_tree() && (is_editor || get_tree()->is_debugging_collisions_hint())) {
+		_update_debug_shape();
+	}
+}
+
 void ShapeCast3D::set_shape(const Ref<Shape3D> &p_shape) {
 	if (p_shape == shape) {
 		return;
 	}
 	if (!shape.is_null()) {
+		shape->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
 		shape->unregister_owner(this);
 	}
 	shape = p_shape;
 	if (!shape.is_null()) {
 		shape->register_owner(this);
+		shape->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
 	}
 	if (p_shape.is_valid()) {
 		shape_rid = shape->get_rid();
 	}
 
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_inside_tree() && (is_editor || get_tree()->is_debugging_collisions_hint())) {
 		_update_debug_shape();
 	}
-
 	update_gizmos();
 	update_configuration_warnings();
 }
