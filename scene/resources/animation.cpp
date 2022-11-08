@@ -5851,18 +5851,18 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			return dst;
 		}
 		case Variant::PACKED_INT32_ARRAY: {
-			const Vector<int32_t> *arr_a = Object::cast_to<Vector<int32_t>>(a);
-			const Vector<int32_t> *arr_b = Object::cast_to<Vector<int32_t>>(b);
-			int32_t sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
+			const Vector<int32_t> arr_a = a;
+			const Vector<int32_t> arr_b = b;
+			int32_t sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
 				return a;
 			} else {
 				Vector<int32_t> v;
 				v.resize(sz);
 				{
 					int32_t *vw = v.ptrw();
-					const int32_t *ar = arr_a->ptr();
-					const int32_t *br = arr_b->ptr();
+					const int32_t *ar = arr_a.ptr();
+					const int32_t *br = arr_b.ptr();
 
 					Variant va;
 					for (int32_t i = 0; i < sz; i++) {
@@ -5874,18 +5874,18 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			}
 		}
 		case Variant::PACKED_INT64_ARRAY: {
-			const Vector<int64_t> *arr_a = Object::cast_to<Vector<int64_t>>(a);
-			const Vector<int64_t> *arr_b = Object::cast_to<Vector<int64_t>>(b);
-			int64_t sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
+			const Vector<int64_t> arr_a = a;
+			const Vector<int64_t> arr_b = b;
+			int64_t sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
 				return a;
 			} else {
 				Vector<int64_t> v;
 				v.resize(sz);
 				{
 					int64_t *vw = v.ptrw();
-					const int64_t *ar = arr_a->ptr();
-					const int64_t *br = arr_b->ptr();
+					const int64_t *ar = arr_a.ptr();
+					const int64_t *br = arr_b.ptr();
 
 					Variant va;
 					for (int64_t i = 0; i < sz; i++) {
@@ -5897,18 +5897,18 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			}
 		}
 		case Variant::PACKED_FLOAT32_ARRAY: {
-			const Vector<float> *arr_a = Object::cast_to<Vector<float>>(a);
-			const Vector<float> *arr_b = Object::cast_to<Vector<float>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
+			const Vector<float> arr_a = a;
+			const Vector<float> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
 				return a;
 			} else {
 				Vector<float> v;
 				v.resize(sz);
 				{
 					float *vw = v.ptrw();
-					const float *ar = arr_a->ptr();
-					const float *br = arr_b->ptr();
+					const float *ar = arr_a.ptr();
+					const float *br = arr_b.ptr();
 
 					Variant va;
 					for (int i = 0; i < sz; i++) {
@@ -5920,18 +5920,18 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			}
 		}
 		case Variant::PACKED_FLOAT64_ARRAY: {
-			const Vector<double> *arr_a = Object::cast_to<Vector<double>>(a);
-			const Vector<double> *arr_b = Object::cast_to<Vector<double>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
+			const Vector<double> arr_a = a;
+			const Vector<double> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
 				return a;
 			} else {
 				Vector<double> v;
 				v.resize(sz);
 				{
 					double *vw = v.ptrw();
-					const double *ar = arr_a->ptr();
-					const double *br = arr_b->ptr();
+					const double *ar = arr_a.ptr();
+					const double *br = arr_b.ptr();
 
 					Variant va;
 					for (int i = 0; i < sz; i++) {
@@ -5943,18 +5943,18 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			}
 		}
 		case Variant::PACKED_VECTOR2_ARRAY: {
-			const Vector<Vector2> *arr_a = Object::cast_to<Vector<Vector2>>(a);
-			const Vector<Vector2> *arr_b = Object::cast_to<Vector<Vector2>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
+			const Vector<Vector2> arr_a = a;
+			const Vector<Vector2> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
 				return a;
 			} else {
 				Vector<Vector2> v;
 				v.resize(sz);
 				{
 					Vector2 *vw = v.ptrw();
-					const Vector2 *ar = arr_a->ptr();
-					const Vector2 *br = arr_b->ptr();
+					const Vector2 *ar = arr_a.ptr();
+					const Vector2 *br = arr_b.ptr();
 
 					for (int i = 0; i < sz; i++) {
 						vw[i] = ar[i].lerp(br[i], c);
@@ -5964,18 +5964,18 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			}
 		}
 		case Variant::PACKED_VECTOR3_ARRAY: {
-			const Vector<Vector3> *arr_a = Object::cast_to<Vector<Vector3>>(a);
-			const Vector<Vector3> *arr_b = Object::cast_to<Vector<Vector3>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
+			const Vector<Vector3> arr_a = a;
+			const Vector<Vector3> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
 				return a;
 			} else {
 				Vector<Vector3> v;
 				v.resize(sz);
 				{
 					Vector3 *vw = v.ptrw();
-					const Vector3 *ar = arr_a->ptr();
-					const Vector3 *br = arr_b->ptr();
+					const Vector3 *ar = arr_a.ptr();
+					const Vector3 *br = arr_b.ptr();
 
 					for (int i = 0; i < sz; i++) {
 						vw[i] = ar[i].lerp(br[i], c);
@@ -5985,18 +5985,18 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			}
 		}
 		case Variant::PACKED_COLOR_ARRAY: {
-			const Vector<Color> *arr_a = Object::cast_to<Vector<Color>>(a);
-			const Vector<Color> *arr_b = Object::cast_to<Vector<Color>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
+			const Vector<Color> arr_a = a;
+			const Vector<Color> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
 				return a;
 			} else {
 				Vector<Color> v;
 				v.resize(sz);
 				{
 					Color *vw = v.ptrw();
-					const Color *ar = arr_a->ptr();
-					const Color *br = arr_b->ptr();
+					const Color *ar = arr_a.ptr();
+					const Color *br = arr_b.ptr();
 
 					for (int i = 0; i < sz; i++) {
 						vw[i] = ar[i].lerp(br[i], c);
