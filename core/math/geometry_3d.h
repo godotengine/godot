@@ -41,6 +41,8 @@ public:
 	static void get_closest_points_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1, Vector3 &r_ps, Vector3 &r_qt);
 	static real_t get_closest_distance_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1);
 
+	static void get_closest_points_between_line_and_circle(const Vector3 &p_line_origin, const Vector3 &p_line_direction, const Vector3 &p_circle_center, const Vector3 &p_circle_normal, const real_t p_circle_radius, Vector<Vector3> &r_line_closest, Vector<Vector3> &r_circle_closest, size_t &r_num_closest_pairs, bool &r_equidistant);
+
 	static inline bool ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = nullptr) {
 		Vector3 e1 = p_v1 - p_v0;
 		Vector3 e2 = p_v2 - p_v0;

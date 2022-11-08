@@ -1726,6 +1726,30 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 		return;
 	}
 
+	// Get axes from closest points between capsule axis and cylinder end caps.
+	Vector<Vector3> circle_closest;
+	circle_closest.resize_zeroed(2);
+	Vector<Vector3> line_closest;
+	line_closest.resize_zeroed(2);
+	size_t num_closest_pairs = 0;
+	bool equidistant;
+	Vector3 cylinder_B_circle1_center = p_transform_b.origin + cylinder_B_axis * cylinder_B->get_height() * 0.5;
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_a.origin, capsule_A_axis, cylinder_B_circle1_center, cylinder_B_axis, cylinder_B->get_radius(), line_closest, circle_closest, num_closest_pairs, equidistant);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis1 = (circle_closest[i] - line_closest[i]).normalized();
+		if (axis1 != Vector3() && !separator.test_axis(axis1)) {
+			return;
+		}
+	}
+	Vector3 cylinder_B_circle2_center = p_transform_b.origin - cylinder_B_axis * cylinder_B->get_height() * 0.5;
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_a.origin, capsule_A_axis, cylinder_B_circle2_center, -cylinder_B_axis, cylinder_B->get_radius(), line_closest, circle_closest, num_closest_pairs, equidistant);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis2 = (circle_closest[i] - line_closest[i]).normalized();
+		if (axis2 != Vector3() && !separator.test_axis(axis2)) {
+			return;
+		}
+	}
+
 	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotCapsuleShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;
 
 	// Fallback to generic algorithm to find the best separating axis.
@@ -1922,6 +1946,48 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 	// Cylinder B lateral surface.
 	if (!separator.test_axis(cylinder_B_axis.cross(cylinder_diff).cross(cylinder_B_axis).normalized())) {
 		return;
+	}
+
+	// Get axes from closest points between cylinder A axis and cylinder B end caps.
+	Vector<Vector3> circle_closest;
+	circle_closest.resize_zeroed(2);
+	Vector<Vector3> line_closest;
+	line_closest.resize_zeroed(2);
+	size_t num_closest_pairs = 0;
+	bool equidistant;
+	Vector3 cylinder_B_circle1_center = p_transform_b.origin + cylinder_B_axis * cylinder_B->get_height() * 0.5;
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_a.origin, cylinder_A_axis, cylinder_B_circle1_center, cylinder_B_axis, cylinder_B->get_radius(), line_closest, circle_closest, num_closest_pairs, equidistant);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (circle_closest[i] - line_closest[i]).normalized();
+		if (axis != Vector3() && !separator.test_axis(axis)) {
+			return;
+		}
+	}
+	Vector3 cylinder_B_circle2_center = p_transform_b.origin - cylinder_B_axis * cylinder_B->get_height() * 0.5;
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_a.origin, cylinder_A_axis, cylinder_B_circle2_center, -cylinder_B_axis, cylinder_B->get_radius(), line_closest, circle_closest, num_closest_pairs, equidistant);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (circle_closest[i] - line_closest[i]).normalized();
+		if (axis != Vector3() && !separator.test_axis(axis)) {
+			return;
+		}
+	}
+
+	// Get axes from closest points between cylinder B axis and cylinder A end caps.
+	Vector3 cylinder_A_circle1_center = p_transform_a.origin + cylinder_A_axis * cylinder_A->get_height() * 0.5;
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_b.origin, cylinder_B_axis, cylinder_A_circle1_center, cylinder_A_axis, cylinder_A->get_radius(), line_closest, circle_closest, num_closest_pairs, equidistant);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (circle_closest[i] - line_closest[i]).normalized();
+		if (axis != Vector3() && !separator.test_axis(axis)) {
+			return;
+		}
+	}
+	Vector3 cylinder_A_circle2_center = p_transform_a.origin - cylinder_A_axis * cylinder_A->get_height() * 0.5;
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_b.origin, cylinder_B_axis, cylinder_A_circle2_center, -cylinder_A_axis, cylinder_A->get_radius(), line_closest, circle_closest, num_closest_pairs, equidistant);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (circle_closest[i] - line_closest[i]).normalized();
+		if (axis != Vector3() && !separator.test_axis(axis)) {
+			return;
+		}
 	}
 
 	real_t proj = cylinder_A_axis.cross(cylinder_B_axis).cross(cylinder_B_axis).dot(cylinder_A_axis);

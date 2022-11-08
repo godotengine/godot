@@ -30,6 +30,9 @@
 
 #include "geometry_3d.h"
 
+#include "polynomial_root_finder.h" // for line-circle and circle-circle
+
+#include "core/templates/hash_set.h"
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
 
@@ -1128,4 +1131,195 @@ Vector<int8_t> Geometry3D::generate_sdf8(const Vector<uint32_t> &p_positive, con
 		wsdf[i] = CLAMP(diff, -128, 127);
 	}
 	return sdf8;
+}
+
+/*
+ * Line-Circle distance (based on DistLine3Circle3.h from David Eberly's Geometric Tools)
+ */
+
+struct LineCirclePointPair {
+	Vector3 line_point;
+	Vector3 circle_point;
+	real_t squared_distance = 0.0;
+	bool equidistant = false;
+};
+
+struct LineCirclePointPairSort {
+	bool operator()(const LineCirclePointPair p_a, const LineCirclePointPair p_b) const {
+		return p_a.squared_distance < p_b.squared_distance;
+	}
+};
+
+void get_point_pair_from_line_parameter(const Vector3 &p_circle_center, const Vector3 &p_circle_normal, const real_t p_circle_radius, const Vector3 &p_line_direction, const Vector3 &p_D, const real_t p_t, Vector3 &r_line_point, Vector3 &r_circle_point) {
+	// GetPair by David Eberly
+	Vector3 delta = p_D + p_t * p_line_direction;
+	r_line_point = p_circle_center + delta;
+	delta -= p_circle_normal.dot(delta) * p_circle_normal;
+	delta.normalize();
+	r_circle_point = p_circle_center + p_circle_radius * delta;
+}
+
+Vector3 get_some_orthogonal_vector(const Vector3 &p_vector, bool p_unit_length) {
+	// GetOrthogonal by David Eberly
+
+	// Construct a single vector orthogonal to the nonzero input vector. If
+	// the maximum absolute component occurs at index i, then the orthogonal
+	// vector U has u[i] = v[i+1], u[i+1] = -v[i], and all other components
+	// zero. The index addition i+1 is computed modulo N. If the input vector
+	// is zero, the output vector is zero. If the input vector is empty, the
+	// output vector is empty. If you want the output to be a unit-length
+	// vector, set unitLength to 'true'.
+
+	real_t cmax = 0.0;
+	size_t imax = 0;
+	for (size_t i = 0; i < 3; ++i) {
+		real_t c = Math::abs(p_vector[i]);
+		if (c > cmax) {
+			cmax = c;
+			imax = i;
+		}
+	}
+
+	Vector3 result;
+	if (cmax > 0.0) {
+		size_t inext = imax + 1;
+		if (inext == 3) {
+			inext = 0;
+		}
+		result[imax] = p_vector[inext];
+		result[inext] = -p_vector[imax];
+		if (p_unit_length) {
+			result.normalize();
+		}
+	}
+	return result;
+}
+
+void Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_line_origin, const Vector3 &p_line_direction, const Vector3 &p_circle_center, const Vector3 &p_circle_normal, const real_t p_circle_radius, Vector<Vector3> &r_line_closest, Vector<Vector3> &r_circle_closest, size_t &r_num_closest_pairs, bool &r_equidistant) {
+	// Based on David Eberly's Distance Between a Line and a Circle: polynomial-based algorithm.
+	// The only difference is the use of Godot's types, and the use of a numerical iterative root finder.
+
+	Vector3 *circle_closest = r_circle_closest.ptrw();
+	Vector3 *line_closest = r_line_closest.ptrw();
+
+	Vector3 D = p_line_origin - p_circle_center;
+	Vector3 NxM = p_circle_normal.cross(p_line_direction);
+	Vector3 NxD = p_circle_normal.cross(D);
+	real_t t;
+
+	if (NxM != Vector3(0, 0, 0)) {
+		if (NxD != Vector3(0, 0, 0)) {
+			real_t NdM = p_circle_normal.dot(p_line_direction);
+			if (NdM != 0.0) {
+				// H(t) = (a*t^2 + 2*b*t + c)*(t + d)^2
+				//        - r^2*(a*t + b)^2
+				//      = h0 + h1*t + h2*t^2 + h3*t^3 + h4*t^4
+				real_t a = NxM.dot(NxM);
+				real_t b = NxM.dot(NxD);
+				real_t c = NxD.dot(NxD);
+				real_t d = p_line_direction.dot(D);
+				real_t rSqr = p_circle_radius * p_circle_radius;
+				real_t aSqr = a * a;
+				real_t bSqr = b * b;
+				real_t dSqr = d * d;
+				real_t h0 = c * dSqr - bSqr * rSqr;
+				real_t h1 = 2.0 * (c * d + b * dSqr - a * b * rSqr);
+				real_t h2 = c + 4.0 * b * d + a * dSqr - aSqr * rSqr;
+				real_t h3 = 2.0 * (b + a * d);
+				real_t h4 = a;
+
+				real_t H_coeffs[5] = { h4, h3, h2, h1, h0 };
+				real_t H_roots[4];
+				int num_roots = real_roots_of_nonconstant_polynomial(4, H_coeffs, H_roots);
+				HashSet<real_t> unique_roots;
+				for (int i = 0; i < num_roots; i++) {
+					unique_roots.insert(H_roots[i]);
+				}
+
+				Vector<LineCirclePointPair> point_pairs;
+				for (real_t real_root : unique_roots) {
+					t = real_root;
+					LineCirclePointPair point_pair;
+					Vector3 NxDelta = NxD + t * NxM;
+					if (NxDelta != Vector3(0, 0, 0)) {
+						get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, point_pair.line_point, point_pair.circle_point);
+						point_pair.equidistant = false;
+					} else {
+						Vector3 U = get_some_orthogonal_vector(p_circle_normal, true);
+						point_pair.line_point = p_circle_center;
+						point_pair.circle_point = p_circle_center + p_circle_radius * U;
+						point_pair.equidistant = true;
+					}
+					Vector3 diff = point_pair.line_point - point_pair.circle_point;
+					point_pair.squared_distance = diff.dot(diff);
+					point_pairs.push_back(point_pair);
+				}
+
+				if (point_pairs.size() == 0) { // Failed to find any real roots.
+					// TODO: investigate this.
+					return;
+				}
+
+				point_pairs.sort_custom<LineCirclePointPairSort>();
+
+				r_num_closest_pairs = 1;
+				circle_closest[0] = point_pairs[0].circle_point;
+				line_closest[0] = point_pairs[0].line_point;
+				if (point_pairs.size() > 1 && Math::is_equal_approx(point_pairs[0].squared_distance, point_pairs[1].squared_distance)) {
+					r_num_closest_pairs = 2;
+					circle_closest[1] = point_pairs[1].circle_point;
+					line_closest[1] = point_pairs[1].line_point;
+				}
+			} else {
+				// The line is parallel to the plane of the circle.
+				// The polynomial has the form
+				// H(t) = (t+v)^2*[(t+v)^2-(r^2-u^2)].
+				real_t u = NxM.dot(D);
+				real_t v = p_line_direction.dot(D);
+				real_t discr = p_circle_radius * p_circle_radius - u * u;
+				if (discr > 0.0) {
+					r_num_closest_pairs = 2;
+					real_t rootDiscr = Math::sqrt(discr);
+					t = -v + rootDiscr;
+					get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[0], circle_closest[0]);
+					t = -v - rootDiscr;
+					get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[1], circle_closest[1]);
+				} else {
+					r_num_closest_pairs = 1;
+					t = -v;
+					get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[0], circle_closest[0]);
+				}
+			}
+		} else {
+			// The line is C+t*M, where M is not parallel to N. The
+			// polynomial is
+			// H(t) = |Cross(N,M)|^2*t^2*(t^2 - r^2*|Cross(N,M)|^2)
+			// where root t = 0 does not correspond to the global
+			// minimum. The other roots produce the global minimum.
+			r_num_closest_pairs = 2;
+			t = p_circle_radius * NxM.length();
+			get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[0], circle_closest[0]);
+			t = -t;
+			get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[1], circle_closest[1]);
+		}
+		r_equidistant = false;
+	} else {
+		if (NxD != Vector3(0, 0, 0)) {
+			// The line is A+t*N (perpendicular to plane) but with
+			// A != C. The polyhomial is
+			// H(t) = |Cross(N,D)|^2*(t + Dot(M,D))^2.
+			r_num_closest_pairs = 1;
+			t = -p_line_direction.dot(D);
+			get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[0], circle_closest[0]);
+			r_equidistant = false;
+		} else {
+			// The line is C+t*N, so C is the closest point for the
+			// line and all circle points are equidistant from it.
+			Vector3 U = get_some_orthogonal_vector(p_circle_normal, true);
+			r_num_closest_pairs = 1;
+			line_closest[0] = p_circle_center;
+			circle_closest[0] = p_circle_center + p_circle_radius * U;
+			r_equidistant = true;
+		}
+	}
 }
