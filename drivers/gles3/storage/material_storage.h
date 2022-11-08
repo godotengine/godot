@@ -44,6 +44,7 @@
 
 #include "../shaders/canvas.glsl.gen.h"
 #include "../shaders/cubemap_filter.glsl.gen.h"
+#include "../shaders/particles.glsl.gen.h"
 #include "../shaders/scene.glsl.gen.h"
 #include "../shaders/sky.glsl.gen.h"
 
@@ -53,6 +54,7 @@ namespace GLES3 {
 
 struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
+	virtual void set_path_hint(const String &p_hint) = 0;
 	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) = 0;
 	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const = 0;
 
@@ -165,6 +167,7 @@ struct CanvasShaderData : public ShaderData {
 	bool uses_time = false;
 
 	virtual void set_code(const String &p_Code);
+	virtual void set_path_hint(const String &p_hint);
 	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
 	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
 	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
@@ -216,6 +219,7 @@ struct SkyShaderData : public ShaderData {
 	bool uses_light;
 
 	virtual void set_code(const String &p_Code);
+	virtual void set_path_hint(const String &p_hint);
 	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
 	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
 	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
@@ -337,6 +341,7 @@ struct SceneShaderData : public ShaderData {
 	uint32_t index = 0;
 
 	virtual void set_code(const String &p_Code);
+	virtual void set_path_hint(const String &p_hint);
 	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
 	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
 	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
@@ -367,6 +372,62 @@ struct SceneMaterialData : public MaterialData {
 };
 
 MaterialData *_create_scene_material_func(ShaderData *p_shader);
+
+/* Particle Shader */
+
+enum {
+	PARTICLES_MAX_USERDATAS = 6
+};
+
+struct ParticlesShaderData : public ShaderData {
+	bool valid = false;
+	RID version;
+	bool uses_collision = false;
+
+	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+
+	Vector<uint32_t> ubo_offsets;
+	uint32_t ubo_size = 0;
+
+	String path;
+	String code;
+	HashMap<StringName, HashMap<int, RID>> default_texture_params;
+
+	bool uses_time = false;
+
+	bool userdatas_used[PARTICLES_MAX_USERDATAS] = {};
+	uint32_t userdata_count = 0;
+
+	virtual void set_code(const String &p_Code);
+	virtual void set_path_hint(const String &p_hint);
+	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
+	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
+	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
+	virtual bool is_parameter_texture(const StringName &p_param) const;
+	virtual bool is_animated() const;
+	virtual bool casts_shadows() const;
+	virtual Variant get_default_parameter(const StringName &p_parameter) const;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
+	ParticlesShaderData() {}
+	virtual ~ParticlesShaderData();
+};
+
+ShaderData *_create_particles_shader_func();
+
+struct ParticleProcessMaterialData : public MaterialData {
+	ParticlesShaderData *shader_data = nullptr;
+	RID uniform_set;
+
+	virtual void set_render_priority(int p_priority) {}
+	virtual void set_next_pass(RID p_pass) {}
+	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void bind_uniforms();
+	virtual ~ParticleProcessMaterialData();
+};
+
+MaterialData *_create_particles_material_func(ShaderData *p_shader);
 
 /* Global shader uniform structs */
 struct GlobalShaderUniforms {
@@ -504,6 +565,7 @@ public:
 		SkyShaderGLES3 sky_shader;
 		SceneShaderGLES3 scene_shader;
 		CubemapFilterShaderGLES3 cubemap_filter_shader;
+		ParticlesShaderGLES3 particles_process_shader;
 
 		ShaderCompiler compiler_canvas;
 		ShaderCompiler compiler_scene;

@@ -41,6 +41,7 @@
 #include "storage/config.h"
 #include "storage/material_storage.h"
 #include "storage/mesh_storage.h"
+#include "storage/particles_storage.h"
 #include "storage/texture_storage.h"
 
 void RasterizerCanvasGLES3::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
@@ -578,7 +579,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 
 		GLES3::CanvasShaderData::BlendMode blend_mode = shader_data_cache ? shader_data_cache->blend_mode : GLES3::CanvasShaderData::BLEND_MODE_MIX;
 
-		_record_item_commands(ci, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken);
+		_record_item_commands(ci, p_to_render_target, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken);
 	}
 
 	if (index == 0) {
@@ -623,7 +624,10 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		uint64_t specialization = 0;
 		specialization |= uint64_t(state.canvas_instance_batches[i].lights_disabled);
 		specialization |= uint64_t(!GLES3::Config::get_singleton()->float_texture_supported) << 1;
-		_bind_material(material_data, variant, specialization);
+		bool success = _bind_material(material_data, variant, specialization);
+		if (!success) {
+			continue;
+		}
 
 		GLES3::CanvasShaderData::BlendMode blend_mode = state.canvas_instance_batches[i].blend_mode;
 
@@ -707,7 +711,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	r_last_index += index;
 }
 
-void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_batch_broken) {
+void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_batch_broken) {
 	RenderingServer::CanvasItemTextureFilter texture_filter = p_item->texture_filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? state.default_filter : p_item->texture_filter;
 
 	if (texture_filter != state.canvas_instance_batches[state.current_batch_index].filter) {
@@ -1064,15 +1068,45 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, const Tran
 					state.canvas_instance_batches[state.current_batch_index].tex = m->texture;
 					_update_transform_2d_to_mat2x3(base_transform * draw_transform * m->transform, state.instance_data_array[r_index].world);
 					modulate = m->modulate;
+
 				} else if (c->type == Item::Command::TYPE_MULTIMESH) {
 					const Item::CommandMultiMesh *mm = static_cast<const Item::CommandMultiMesh *>(c);
 					state.canvas_instance_batches[state.current_batch_index].tex = mm->texture;
-					uint32_t instance_count = GLES3::MeshStorage::get_singleton()->multimesh_get_instances_to_draw(mm->multimesh);
-					if (instance_count > 1) {
-						state.canvas_instance_batches[state.current_batch_index].shader_variant = CanvasShaderGLES3::MODE_INSTANCED;
-					}
+					state.canvas_instance_batches[state.current_batch_index].shader_variant = CanvasShaderGLES3::MODE_INSTANCED;
+
 				} else if (c->type == Item::Command::TYPE_PARTICLES) {
-					WARN_PRINT_ONCE("Particles not supported yet, sorry :(");
+					GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
+					GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+
+					const Item::CommandParticles *pt = static_cast<const Item::CommandParticles *>(c);
+					RID particles = pt->particles;
+					state.canvas_instance_batches[state.current_batch_index].tex = pt->texture;
+					state.canvas_instance_batches[state.current_batch_index].shader_variant = CanvasShaderGLES3::MODE_INSTANCED;
+					bool local_coords = particles_storage->particles_is_using_local_coords(particles);
+
+					if (particles_storage->particles_has_collision(particles) && texture_storage->render_target_is_sdf_enabled(p_render_target)) {
+						// Pass collision information.
+						Transform2D xform;
+						if (local_coords) {
+							xform = p_item->final_transform;
+						} else {
+							xform = p_canvas_transform_inverse;
+						}
+
+						GLuint sdf_texture = texture_storage->render_target_get_sdf_texture(p_render_target);
+
+						Rect2 to_screen;
+						{
+							Rect2 sdf_rect = texture_storage->render_target_get_sdf_rect(p_render_target);
+
+							to_screen.size = Vector2(1.0 / sdf_rect.size.width, 1.0 / sdf_rect.size.height);
+							to_screen.position = -sdf_rect.position * to_screen.size;
+						}
+
+						particles_storage->particles_set_canvas_sdf_collision(pt->particles, true, xform, to_screen, sdf_texture);
+					} else {
+						particles_storage->particles_set_canvas_sdf_collision(pt->particles, false, Transform2D(), Rect2(), 0);
+					}
 				}
 
 				state.canvas_instance_batches[state.current_batch_index].command = c;
@@ -1209,20 +1243,21 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 		case Item::Command::TYPE_MULTIMESH:
 		case Item::Command::TYPE_PARTICLES: {
 			GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
+			GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
 			RID mesh;
 			RID mesh_instance;
-			RID texture;
 			uint32_t instance_count = 1;
-			GLuint multimesh_buffer = 0;
-			uint32_t multimesh_stride = 0;
-			uint32_t multimesh_color_offset = 0;
-			bool multimesh_uses_color = false;
-			bool multimesh_uses_custom_data = false;
+			GLuint instance_buffer = 0;
+			uint32_t instance_stride = 0;
+			uint32_t instance_color_offset = 0;
+			bool instance_uses_color = false;
+			bool instance_uses_custom_data = false;
 
 			if (state.canvas_instance_batches[p_index].command_type == Item::Command::TYPE_MESH) {
 				const Item::CommandMesh *m = static_cast<const Item::CommandMesh *>(state.canvas_instance_batches[p_index].command);
 				mesh = m->mesh;
 				mesh_instance = m->mesh_instance;
+
 			} else if (state.canvas_instance_batches[p_index].command_type == Item::Command::TYPE_MULTIMESH) {
 				const Item::CommandMultiMesh *mm = static_cast<const Item::CommandMultiMesh *>(state.canvas_instance_batches[p_index].command);
 				RID multimesh = mm->multimesh;
@@ -1238,13 +1273,41 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 					break;
 				}
 
-				multimesh_buffer = mesh_storage->multimesh_get_gl_buffer(multimesh);
-				multimesh_stride = mesh_storage->multimesh_get_stride(multimesh);
-				multimesh_color_offset = mesh_storage->multimesh_get_color_offset(multimesh);
-				multimesh_uses_color = mesh_storage->multimesh_uses_colors(multimesh);
-				multimesh_uses_custom_data = mesh_storage->multimesh_uses_custom_data(multimesh);
+				instance_buffer = mesh_storage->multimesh_get_gl_buffer(multimesh);
+				instance_stride = mesh_storage->multimesh_get_stride(multimesh);
+				instance_color_offset = mesh_storage->multimesh_get_color_offset(multimesh);
+				instance_uses_color = mesh_storage->multimesh_uses_colors(multimesh);
+				instance_uses_custom_data = mesh_storage->multimesh_uses_custom_data(multimesh);
+
 			} else if (state.canvas_instance_batches[p_index].command_type == Item::Command::TYPE_PARTICLES) {
-				// Do nothing for now.
+				const Item::CommandParticles *pt = static_cast<const Item::CommandParticles *>(state.canvas_instance_batches[p_index].command);
+				RID particles = pt->particles;
+				mesh = particles_storage->particles_get_draw_pass_mesh(particles, 0);
+
+				ERR_BREAK(particles_storage->particles_get_mode(particles) != RS::PARTICLES_MODE_2D);
+				particles_storage->particles_request_process(particles);
+
+				if (particles_storage->particles_is_inactive(particles)) {
+					break;
+				}
+
+				RenderingServerDefault::redraw_request(); // Active particles means redraw request.
+
+				int dpc = particles_storage->particles_get_draw_passes(particles);
+				if (dpc == 0) {
+					break; // Nothing to draw.
+				}
+
+				instance_count = particles_storage->particles_get_amount(particles);
+				instance_buffer = particles_storage->particles_get_gl_buffer(particles);
+				instance_stride = 12; // 8 bytes for instance transform and 4 bytes for packed color and custom.
+				instance_color_offset = 8; // 8 bytes for instance transform.
+				instance_uses_color = true;
+				instance_uses_custom_data = true;
+			}
+
+			if (instance_buffer == 0) {
+				break;
 			}
 
 			ERR_FAIL_COND(mesh.is_null());
@@ -1277,17 +1340,17 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 
 				if (instance_count > 1) {
 					// Bind instance buffers.
-					glBindBuffer(GL_ARRAY_BUFFER, multimesh_buffer);
+					glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
 					glEnableVertexAttribArray(1);
-					glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
+					glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, instance_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
 					glVertexAttribDivisor(1, 1);
 					glEnableVertexAttribArray(2);
-					glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(4 * 4));
+					glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, instance_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(4 * 4));
 					glVertexAttribDivisor(2, 1);
 
-					if (multimesh_uses_color || multimesh_uses_custom_data) {
+					if (instance_uses_color || instance_uses_custom_data) {
 						glEnableVertexAttribArray(5);
-						glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(multimesh_color_offset * sizeof(float)));
+						glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, instance_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(instance_color_offset * sizeof(float)));
 						glVertexAttribDivisor(5, 1);
 					}
 				}
@@ -1361,17 +1424,17 @@ void RasterizerCanvasGLES3::_new_batch(bool &r_batch_broken, uint32_t &r_index) 
 	_align_instance_data_buffer(r_index);
 }
 
-void RasterizerCanvasGLES3::_bind_material(GLES3::CanvasMaterialData *p_material_data, CanvasShaderGLES3::ShaderVariant p_variant, uint64_t p_specialization) {
+bool RasterizerCanvasGLES3::_bind_material(GLES3::CanvasMaterialData *p_material_data, CanvasShaderGLES3::ShaderVariant p_variant, uint64_t p_specialization) {
 	if (p_material_data) {
 		if (p_material_data->shader_data->version.is_valid() && p_material_data->shader_data->valid) {
 			// Bind uniform buffer and textures
 			p_material_data->bind_uniforms();
-			GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(p_material_data->shader_data->version, p_variant, p_specialization);
+			return GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(p_material_data->shader_data->version, p_variant, p_specialization);
 		} else {
-			GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(data.canvas_shader_default_version, p_variant, p_specialization);
+			return GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(data.canvas_shader_default_version, p_variant, p_specialization);
 		}
 	} else {
-		GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(data.canvas_shader_default_version, p_variant, p_specialization);
+		return GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(data.canvas_shader_default_version, p_variant, p_specialization);
 	}
 }
 
@@ -1435,7 +1498,10 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 	RS::CanvasOccluderPolygonCullMode cull_mode = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 
 	CanvasOcclusionShaderGLES3::ShaderVariant variant = config->float_texture_supported ? CanvasOcclusionShaderGLES3::MODE_SHADOW : CanvasOcclusionShaderGLES3::MODE_SHADOW_RGBA;
-	shadow_render.shader.version_bind_shader(shadow_render.shader_version, variant);
+	bool success = shadow_render.shader.version_bind_shader(shadow_render.shader_version, variant);
+	if (!success) {
+		return;
+	}
 
 	for (int i = 0; i < 4; i++) {
 		glViewport((state.shadow_texture_size / 4) * i, p_shadow_index * 2, (state.shadow_texture_size / 4), 2);
@@ -1553,7 +1619,10 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 	RS::CanvasOccluderPolygonCullMode cull_mode = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 
 	CanvasOcclusionShaderGLES3::ShaderVariant variant = config->float_texture_supported ? CanvasOcclusionShaderGLES3::MODE_SHADOW : CanvasOcclusionShaderGLES3::MODE_SHADOW_RGBA;
-	shadow_render.shader.version_bind_shader(shadow_render.shader_version, variant);
+	bool success = shadow_render.shader.version_bind_shader(shadow_render.shader_version, variant);
+	if (!success) {
+		return;
+	}
 
 	Projection projection;
 	projection.set_orthogonal(-half_size, half_size, -0.5, 0.5, 0.0, distance);
@@ -1685,7 +1754,10 @@ void RasterizerCanvasGLES3::render_sdf(RID p_render_target, LightOccluderInstanc
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	CanvasOcclusionShaderGLES3::ShaderVariant variant = CanvasOcclusionShaderGLES3::MODE_SDF;
-	shadow_render.shader.version_bind_shader(shadow_render.shader_version, variant);
+	bool success = shadow_render.shader.version_bind_shader(shadow_render.shader_version, variant);
+	if (!success) {
+		return;
+	}
 
 	shadow_render.shader.version_set_uniform(CanvasOcclusionShaderGLES3::PROJECTION, Projection(), shadow_render.shader_version, variant);
 	shadow_render.shader.version_set_uniform(CanvasOcclusionShaderGLES3::DIRECTION, 0.0, 0.0, shadow_render.shader_version, variant);
@@ -2555,7 +2627,6 @@ RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
 
 	GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.initialize(global_defines);
 	data.canvas_shader_default_version = GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_create();
-	GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(data.canvas_shader_default_version, CanvasShaderGLES3::MODE_QUAD);
 
 	shadow_render.shader.initialize();
 	shadow_render.shader_version = shadow_render.shader.version_create();
