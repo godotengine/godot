@@ -1251,6 +1251,17 @@ Node *Node::get_child(int p_index, bool p_include_internal) const {
 	}
 }
 
+TypedArray<Node> Node::get_children(bool p_include_internal) const {
+	TypedArray<Node> arr;
+	int cc = get_child_count(p_include_internal);
+	arr.resize(cc);
+	for (int i = 0; i < cc; i++) {
+		arr[i] = get_child(i, p_include_internal);
+	}
+
+	return arr;
+}
+
 Node *Node::_get_child_by_name(const StringName &p_name) const {
 	int cc = data.children.size();
 	Node *const *cd = data.children.ptr();
@@ -2660,17 +2671,6 @@ void Node::queue_free() {
 	}
 }
 
-TypedArray<Node> Node::_get_children(bool p_include_internal) const {
-	TypedArray<Node> arr;
-	int cc = get_child_count(p_include_internal);
-	arr.resize(cc);
-	for (int i = 0; i < cc; i++) {
-		arr[i] = get_child(i, p_include_internal);
-	}
-
-	return arr;
-}
-
 void Node::set_import_path(const NodePath &p_import_path) {
 #ifdef TOOLS_ENABLED
 	data.import_path = p_import_path;
@@ -2824,7 +2824,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("reparent", "new_parent", "keep_global_transform"), &Node::reparent, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
-	ClassDB::bind_method(D_METHOD("get_children", "include_internal"), &Node::_get_children, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_children", "include_internal"), &Node::get_children, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_child", "idx", "include_internal"), &Node::get_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
