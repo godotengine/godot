@@ -30,6 +30,7 @@
 
 #include "geometry_3d.h"
 
+#include "polynomial.h" // for circle-circle
 #include "polynomial_root_finder.h" // for line-circle and circle-circle
 
 #include "core/templates/hash_set.h"
@@ -1320,6 +1321,291 @@ void Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_lin
 			line_closest[0] = p_circle_center;
 			circle_closest[0] = p_circle_center + p_circle_radius * U;
 			r_equidistant = true;
+		}
+	}
+}
+
+/*
+ * Circle-Circle distance (based on DistCircle3Circle3.h from David Eberly's Geometric Tools)
+ */
+
+struct CircleCirclePointPair {
+	Vector3 circle0_point;
+	Vector3 circle1_point;
+	real_t squared_distance = 0.0;
+	bool equidistant = false;
+};
+
+struct CircleCirclePointPairSort {
+	bool operator()(const CircleCirclePointPair p_a, const CircleCirclePointPair p_b) const {
+		return p_a.squared_distance < p_b.squared_distance;
+	}
+};
+
+bool compute_orthonormal_basis(Vector3 &r_vector0, Vector3 &r_vector1, Vector3 &r_vector2) {
+	// ComputeOrthonormalBasis by David Eberly.
+	// Compute a right-handed orthonormal basis from one nonzero vector.
+	// The function returns true when the basis is computed successfully,
+	// in which case the matrix [v0 v1 v2] is a rotation matrix.
+	// If the function returns false, the outputs v0, v1 and v2 are invalid.
+
+	r_vector0.normalize();
+	if (r_vector0 == Vector3(0, 0, 0)) {
+		r_vector1 = Vector3(0, 0, 0);
+		r_vector2 = Vector3(0, 0, 0);
+		return false;
+	}
+	if (Math::abs(r_vector0[0]) > Math::abs(r_vector0[1])) {
+		r_vector1 = Vector3(-r_vector0[2], 0.0, r_vector0[0]);
+	} else {
+		r_vector1 = Vector3(0.0, r_vector0[2], -r_vector0[1]);
+	}
+	r_vector1.normalize();
+	if (r_vector1 == Vector3(0, 0, 0)) {
+		r_vector2 = Vector3(0, 0, 0);
+		return false;
+	}
+	r_vector2 = r_vector0.cross(r_vector1);
+	r_vector2.normalize();
+	return r_vector2 != Vector3(0, 0, 0);
+}
+
+void Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_circle0_center, const Vector3 &p_circle0_normal, const real_t p_circle0_radius, const Vector3 &p_circle1_center, const Vector3 &p_circle1_normal, const real_t p_circle1_radius, Vector<Vector3> &r_circle0_closest, Vector<Vector3> &r_circle1_closest, size_t &r_num_closest_pairs, bool &r_equidistant) {
+	// Based on David Eberly's Distance Between Two Circles algorithm.
+	// The only difference is the use of Godot's types (and a minimalist Polynomial type), and the use of a different numerical iterative root finder.
+
+	Vector3 *circle0_closest = r_circle0_closest.ptrw();
+	Vector3 *circle1_closest = r_circle1_closest.ptrw();
+
+	Vector3 N0 = p_circle0_normal;
+	Vector3 N1 = p_circle1_normal;
+	real_t r0 = p_circle0_radius;
+	real_t r1 = p_circle1_radius;
+	Vector3 D = p_circle1_center - p_circle0_center;
+	Vector3 N0xN1 = N0.cross(N1);
+
+	if (N0xN1 != Vector3(0, 0, 0)) // comparison to the zero vector
+	{
+		// Get parameters for constructing the degree-8 polynomial phi.
+		real_t r0sqr = r0 * r0;
+		real_t r1sqr = r1 * r1;
+
+		// Compute U1 and V1 for the plane of circle1.
+		Vector3 U1, V1;
+		compute_orthonormal_basis(N1, U1, V1);
+
+		// Construct the polynomial phi(cos(theta)).
+		Vector3 N0xD = N0.cross(D);
+		Vector3 N0xU1 = N0.cross(U1);
+		Vector3 N0xV1 = N0.cross(V1);
+		real_t a0 = r1 * D.dot(U1);
+		real_t a1 = r1 * D.dot(V1);
+		real_t a2 = N0xD.dot(N0xD);
+		real_t a3 = r1 * N0xD.dot(N0xU1);
+		real_t a4 = r1 * N0xD.dot(N0xV1);
+		real_t a5 = r1sqr * N0xU1.dot(N0xU1);
+		real_t a6 = r1sqr * N0xU1.dot(N0xV1);
+		real_t a7 = r1sqr * N0xV1.dot(N0xV1);
+		Polynomial p0({ a2 + a7, real_t(2.0) * a3, a5 - a7 });
+		Polynomial p1({ real_t(2.0) * a4, real_t(2.0) * a6 });
+		Polynomial p2({ real_t(0.0), a1 });
+		Polynomial p3(Vector<real_t>{ -a0 });
+		Polynomial p4({ -a6, a4, real_t(2.0) * a6 });
+		Polynomial p5({ -a3, a7 - a5 });
+		Polynomial tmp0({ real_t(1.0), real_t(0.0), real_t(-1.0) });
+		Polynomial tmp1 = p2 * p2 + tmp0 * p3 * p3;
+		Polynomial tmp2 = real_t(2.0) * p2 * p3;
+		Polynomial tmp3 = p4 * p4 + tmp0 * p5 * p5;
+		Polynomial tmp4 = real_t(2.0) * p4 * p5;
+		Polynomial p6 = p0 * tmp1 + tmp0 * p1 * tmp2 - r0sqr * tmp3;
+		Polynomial p7 = p0 * tmp2 + p1 * tmp1 - r0sqr * tmp4;
+
+		Vector<Vector2> pairs;
+		if (p7.degree() > 0 || p7[0] != 0.0) {
+			// H(cs,sn) = p6(cs) + sn * p7(cs)
+			Polynomial phi = p6 * p6 - tmp0 * p7 * p7;
+
+			ERR_FAIL_COND_MSG(phi.degree() == 0, "Unexpected degree for phi.");
+
+			const real_t *phi_coeffs = phi.coefficients_decreasing().ptr();
+			real_t phi_roots[8];
+			int num_roots = real_roots_of_nonconstant_polynomial((int)phi.degree(), phi_coeffs, phi_roots);
+			HashSet<real_t> unique_roots;
+			for (int i = 0; i < num_roots; i++) {
+				unique_roots.insert(phi_roots[i]);
+			}
+
+			for (const real_t &cs : unique_roots) {
+				if (Math::abs(cs) <= 1.0) {
+					real_t temp = p7(cs);
+					if (temp != 0.0) {
+						real_t sn = -p6(cs) / temp;
+						pairs.append(Vector2(cs, sn));
+					} else {
+						temp = MAX(1.0 - cs * cs, 0.0);
+						real_t sn = Math::sqrt(temp);
+						pairs.append(Vector2(cs, sn));
+						if (sn != 0.0) {
+							pairs.append(Vector2(cs, -sn));
+						}
+					}
+				}
+			}
+		} else {
+			// H(cs,sn) = p6(cs)
+			ERR_FAIL_COND_MSG(p6.degree() == 0, "Unexpected degree for p6.");
+
+			const real_t *p6_coeffs = p6.coefficients_decreasing().ptr();
+			real_t p6_roots[4];
+			int num_roots = real_roots_of_nonconstant_polynomial((int)p6.degree(), p6_coeffs, p6_roots);
+			HashSet<real_t> unique_roots;
+			for (int i = 0; i < num_roots; i++) {
+				unique_roots.insert(p6_roots[i]);
+			}
+
+			for (const real_t &cs : unique_roots) {
+				if (Math::abs(cs) <= 1.0) {
+					real_t temp = MAX(1.0 - cs * cs, 0.0);
+					real_t sn = Math::sqrt(temp);
+					pairs.append(Vector2(cs, sn));
+					if (sn != 0.0) {
+						pairs.append(Vector2(cs, -sn));
+					}
+				}
+			}
+		}
+
+		if (pairs.size() == 0) { // Failed to find any real roots.
+			return; // TODO: investigate this.
+		}
+
+		Vector<CircleCirclePointPair> candidates;
+		candidates.resize_zeroed(pairs.size());
+		for (int i = 0; i < pairs.size(); ++i) {
+			CircleCirclePointPair &info = candidates.ptrw()[i];
+			Vector3 delta = D + r1 * (pairs[i].x * U1 + pairs[i].y * V1);
+			info.circle1_point = p_circle0_center + delta;
+			real_t N0dDelta = N0.dot(delta);
+			real_t lenN0xDelta = N0.cross(delta).length();
+			if (lenN0xDelta > 0.0) {
+				real_t diff = lenN0xDelta - r0;
+				info.squared_distance = N0dDelta * N0dDelta + diff * diff;
+				delta -= N0dDelta * p_circle0_normal;
+				delta.normalize();
+				info.circle0_point = p_circle0_center + r0 * delta;
+				info.equidistant = false;
+			} else {
+				Vector3 r0U0 = r0 * get_some_orthogonal_vector(N0, true);
+				Vector3 diff = delta - r0U0;
+				info.squared_distance = diff.dot(diff);
+				info.circle0_point = p_circle0_center + r0U0;
+				info.equidistant = true;
+			}
+		}
+
+		candidates.sort_custom<CircleCirclePointPairSort>();
+
+		r_num_closest_pairs = 1;
+		circle0_closest[0] = candidates[0].circle0_point;
+		circle1_closest[0] = candidates[0].circle1_point;
+		r_equidistant = candidates[0].equidistant;
+		if (candidates.size() > 1 && candidates[1].squared_distance == candidates[0].squared_distance) {
+			r_num_closest_pairs = 2;
+			circle0_closest[1] = candidates[1].circle0_point;
+			circle1_closest[1] = candidates[1].circle1_point;
+		}
+	} else {
+		// The planes of the circles are parallel. Whether the planes
+		// are the same or different, the problem reduces to
+		// determining how two circles in the same plane are
+		// separated, tangent with one circle outside the other,
+		// overlapping or one circle contained inside the other
+		// circle.
+
+		// Based on David Eberly's DoQueryParallelPlanes.
+
+		real_t N0dD = p_circle0_normal.dot(D);
+		Vector3 normProj = N0dD * p_circle0_normal;
+		Vector3 compProj = D - normProj;
+		Vector3 U = compProj;
+		real_t d = U.length();
+		U.normalize();
+
+		// The configuration is determined by the relative location of the
+		// intervals of projection of the circles on to the D-line.
+		// Circle0 projects to [-r0,r0] and circle1 projects to
+		// [d-r1,d+r1].
+		real_t r0 = p_circle0_radius;
+		real_t r1 = p_circle1_radius;
+		real_t dmr1 = d - r1;
+		//real_t distance;
+		if (dmr1 >= r0) // d >= r0 + r1
+		{
+			// The circles are separated (d > r0 + r1) or tangent with one
+			// outside the other (d = r0 + r1).
+			//distance = dmr1 - r0;
+			r_num_closest_pairs = 1;
+			circle0_closest[0] = p_circle0_center + r0 * U;
+			circle1_closest[0] = p_circle1_center - r1 * U;
+			r_equidistant = false;
+		} else { // d < r0 + r1
+			// The cases implicitly use the knowledge that d >= 0.
+			real_t dpr1 = d + r1;
+			if (dpr1 <= r0) {
+				// Circle1 is inside circle0.
+				//distance = r0 - dpr1;
+				r_num_closest_pairs = 1;
+				if (d > 0.0) {
+					circle0_closest[0] = p_circle0_center + r0 * U;
+					circle1_closest[0] = p_circle1_center + r1 * U;
+					r_equidistant = false;
+				} else {
+					// The circles are concentric, so U = (0,0,0).
+					// Construct a vector perpendicular to N0 to use for
+					// closest points.
+					U = get_some_orthogonal_vector(p_circle0_normal, true);
+					circle0_closest[0] = p_circle0_center + r0 * U;
+					circle1_closest[0] = p_circle1_center + r1 * U;
+					r_equidistant = true;
+				}
+			} else if (dmr1 <= -r0) {
+				// Circle0 is inside circle1.
+				//distance = -r0 - dmr1;
+				r_num_closest_pairs = 1;
+				if (d > 0.0) {
+					circle0_closest[0] = p_circle0_center - r0 * U;
+					circle1_closest[0] = p_circle1_center - r1 * U;
+					r_equidistant = false;
+				} else {
+					// The circles are concentric, so U = (0,0,0).
+					// Construct a vector perpendicular to N0 to use for
+					// closest points.
+					U = get_some_orthogonal_vector(p_circle0_normal, true);
+					circle0_closest[0] = p_circle0_center + r0 * U;
+					circle1_closest[0] = p_circle1_center + r1 * U;
+					r_equidistant = true;
+				}
+			} else {
+				// The circles are overlapping.  The two points of
+				// intersection are C0 + s*(C1-C0) +/- h*Cross(N,U), where
+				// s = (1 + (r0^2 - r1^2)/d^2)/2 and
+				// h = sqrt(r0^2 - s^2 * d^2).
+				real_t r0sqr = r0 * r0;
+				real_t r1sqr = r1 * r1;
+				real_t dsqr = d * d;
+				real_t s = (1.0 + (r0sqr - r1sqr) / dsqr) / 2.0;
+				real_t arg = MAX(r0sqr - dsqr * s * s, 0.0);
+				real_t h = Math::sqrt(arg);
+				Vector3 midpoint = p_circle0_center + s * compProj;
+				Vector3 hNxU = h * p_circle0_normal.cross(U);
+				//distance = 0.0;
+				r_num_closest_pairs = 2;
+				circle0_closest[0] = midpoint + hNxU;
+				circle0_closest[1] = midpoint - hNxU;
+				circle1_closest[0] = circle0_closest[0] + normProj;
+				circle1_closest[1] = circle0_closest[1] + normProj;
+				r_equidistant = false;
+			}
 		}
 	}
 }

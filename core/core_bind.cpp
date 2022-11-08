@@ -948,6 +948,22 @@ Vector<Vector3> Geometry3D::get_closest_points_between_line_and_circle(const Vec
 	return closest_pairs;
 }
 
+Vector<Vector3> Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_circle0_center, const Vector3 &p_circle0_normal, const real_t p_circle0_radius, const Vector3 &p_circle1_center, const Vector3 &p_circle1_normal, const real_t p_circle1_radius) {
+	Vector<Vector3> circle0_closest;
+	circle0_closest.resize_zeroed(2);
+	Vector<Vector3> circle1_closest;
+	circle1_closest.resize_zeroed(2);
+	size_t num_closest_pairs = 0;
+	bool equidistant = false;
+	::Geometry3D::get_closest_points_between_circle_and_circle(p_circle0_center, p_circle0_normal, p_circle0_radius, p_circle1_center, p_circle1_normal, p_circle1_radius, circle0_closest, circle1_closest, num_closest_pairs, equidistant);
+	Vector<Vector3> closest_pairs;
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		closest_pairs.append(circle0_closest[i]);
+		closest_pairs.append(circle1_closest[i]);
+	}
+	return closest_pairs;
+}
+
 Variant Geometry3D::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
 	Vector3 res;
 	if (::Geometry3D::ray_intersects_triangle(p_from, p_dir, p_v0, p_v1, p_v2, &res)) {
@@ -1021,6 +1037,8 @@ void Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &Geometry3D::get_closest_point_to_segment_uncapped);
 
 	ClassDB::bind_method(D_METHOD("get_closest_points_between_line_and_circle", "line_origin", "line_direction", "circle_center", "circle_normal", "circle_radius"), &Geometry3D::get_closest_points_between_line_and_circle);
+
+	ClassDB::bind_method(D_METHOD("get_closest_points_between_circle_and_circle", "circle0_center", "circle0_normal", "circle0_radius", "circle1_center", "circle1_normal", "circle1_radius"), &Geometry3D::get_closest_points_between_circle_and_circle);
 
 	ClassDB::bind_method(D_METHOD("ray_intersects_triangle", "from", "dir", "a", "b", "c"), &Geometry3D::ray_intersects_triangle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_triangle", "from", "to", "a", "b", "c"), &Geometry3D::segment_intersects_triangle);
