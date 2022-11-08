@@ -65,7 +65,8 @@
 			<return type="Vector2" />
 			<argument index="0" name="n" type="Vector2" />
 			<description>
-				Returns the vector "bounced off" from a plane defined by the given normal.
+				Returns the vector "bounced off" from a plane defined by the given normal [code]n[/code].
+				[b]Note:[/b] [method bounce] performs [i]physical[/i] reflection, as opposed to [method reflect] which performs [i]mathematical[/i] reflection. Double-check which method you actually need to use, as other engines may use these terms differently.
 			</description>
 		</method>
 		<method name="ceil">
@@ -220,6 +221,7 @@
 			<argument index="0" name="n" type="Vector2" />
 			<description>
 				Returns the vector reflected (i.e. mirrored, or symmetric) over a line defined by the given direction vector [code]n[/code].
+				[b]Note:[/b] [method reflect] performs [i]mathematical[/i] reflection, as opposed to [method bounce] which performs [i]physical[/i] reflection. Double-check which method you actually need to use, as other engines may use these terms differently.
 			</description>
 		</method>
 		<method name="rotated">
