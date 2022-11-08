@@ -97,7 +97,7 @@ private:
 			uint32_t type;
 
 			uint32_t texture_index; //texture index for vector field
-			real_t scale;
+			float scale;
 			uint32_t pad[2];
 		};
 
@@ -106,8 +106,8 @@ private:
 		float prev_system_phase;
 		uint32_t cycle;
 
-		real_t explosiveness;
-		real_t randomness;
+		float explosiveness;
+		float randomness;
 		float time;
 		float delta;
 
