@@ -2554,8 +2554,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	script_frame_time = 0;
 
 	_debug_call_stack_pos = 0;
-	int dmcs = GLOBAL_DEF("debug/settings/gdscript/max_call_stack", 1024);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/gdscript/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
+	int dmcs = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater"), 1024);
 
 	if (EngineDebugger::is_active()) {
 		//debugging enabled!
@@ -2576,10 +2575,7 @@ GDScriptLanguage::GDScriptLanguage() {
 		GDScriptWarning::Code code = (GDScriptWarning::Code)i;
 		Variant default_enabled = GDScriptWarning::get_default_value(code);
 		String path = GDScriptWarning::get_settings_path_from_code(code);
-		GLOBAL_DEF(path, default_enabled);
-
-		PropertyInfo property_info = GDScriptWarning::get_property_info(code);
-		ProjectSettings::get_singleton()->set_custom_property_info(path, property_info);
+		GLOBAL_DEF(GDScriptWarning::get_property_info(code), default_enabled);
 	}
 #endif // DEBUG_ENABLED
 }

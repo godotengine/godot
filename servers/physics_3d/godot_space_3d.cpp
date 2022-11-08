@@ -1252,23 +1252,12 @@ GodotPhysicsDirectSpaceState3D *GodotSpace3D::get_direct_state() {
 GodotSpace3D::GodotSpace3D() {
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_linear", 0.1);
 	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_angular", Math::deg_to_rad(8.0));
-	body_time_to_sleep = GLOBAL_DEF("physics/3d/time_before_sleep", 0.5);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/time_before_sleep", PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
-
-	solver_iterations = GLOBAL_DEF("physics/3d/solver/solver_iterations", 16);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/solver_iterations", PropertyInfo(Variant::INT, "physics/3d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"));
-
-	contact_recycle_radius = GLOBAL_DEF("physics/3d/solver/contact_recycle_radius", 0.01);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"));
-
-	contact_max_separation = GLOBAL_DEF("physics/3d/solver/contact_max_separation", 0.05);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/contact_max_separation", PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"));
-
-	contact_max_allowed_penetration = GLOBAL_DEF("physics/3d/solver/contact_max_allowed_penetration", 0.01);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/contact_max_allowed_penetration", PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"));
-
-	contact_bias = GLOBAL_DEF("physics/3d/solver/default_contact_bias", 0.8);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/default_contact_bias", PropertyInfo(Variant::FLOAT, "physics/3d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"));
+	body_time_to_sleep = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
+	solver_iterations = GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/3d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), 16);
+	contact_recycle_radius = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"), 0.01);
+	contact_max_separation = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"), 0.05);
+	contact_max_allowed_penetration = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"), 0.01);
+	contact_bias = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.8);
 
 	broadphase = GodotBroadPhase3D::create_func();
 	broadphase->set_pair_callback(_broadphase_pair, this);
