@@ -45,8 +45,38 @@
 #include "extensions/openxr_android_extension.h"
 #endif
 
+// We need to have all the graphics API defines before the Vulkan or OpenGL
+// extensions are included, otherwise we'll only get one graphics API.
+#ifdef VULKAN_ENABLED
+#define XR_USE_GRAPHICS_API_VULKAN
+#endif
+#ifdef GLES3_ENABLED
+#ifdef ANDROID
+#define XR_USE_GRAPHICS_API_OPENGL_ES
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
+#else
+#define XR_USE_GRAPHICS_API_OPENGL
+#endif // ANDROID
+#ifdef X11_ENABLED
+#include OPENGL_INCLUDE_H
+#define GL_GLEXT_PROTOTYPES 1
+#define GL3_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/glx.h>
+#include <X11/Xlib.h>
+#endif // X11_ENABLED
+#endif // GLES_ENABLED
+
 #ifdef VULKAN_ENABLED
 #include "extensions/openxr_vulkan_extension.h"
+#endif
+
+#ifdef GLES3_ENABLED
+#include "extensions/openxr_opengl_extension.h"
 #endif
 
 #include "extensions/openxr_composition_layer_depth_extension.h"
@@ -1142,9 +1172,8 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 #endif
 	} else if (p_rendering_driver == "opengl3") {
 #ifdef GLES3_ENABLED
-		// graphics_extension = memnew(OpenXROpenGLExtension(this));
-		// register_extension_wrapper(graphics_extension);
-		ERR_FAIL_V_MSG(false, "OpenXR: OpenGL is not supported at this time.");
+		graphics_extension = memnew(OpenXROpenGLExtension(this));
+		register_extension_wrapper(graphics_extension);
 #else
 		// shouldn't be possible...
 		ERR_FAIL_V(false);
