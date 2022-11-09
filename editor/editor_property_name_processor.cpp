@@ -64,6 +64,10 @@ String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const
 
 	Vector<String> parts = p_name.split("_", false);
 	for (int i = 0; i < parts.size(); i++) {
+		// Articles/conjunctions/prepositions which should only be capitalized if first word.
+		if (i != 0 && stop_words.find(parts[i]) != -1) {
+			continue;
+		}
 		HashMap<String, String>::ConstIterator remap = capitalize_string_remaps.find(parts[i]);
 		if (remap) {
 			parts.write[i] = remap->value;
@@ -143,6 +147,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["gdscript"] = "GDScript";
 	capitalize_string_remaps["ggx"] = "GGX";
 	capitalize_string_remaps["gi"] = "GI";
+	capitalize_string_remaps["gl"] = "GL";
 	capitalize_string_remaps["glb"] = "GLB";
 	capitalize_string_remaps["gles2"] = "GLES2";
 	capitalize_string_remaps["gles3"] = "GLES3";
@@ -157,6 +162,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["html"] = "HTML";
 	capitalize_string_remaps["http"] = "HTTP";
 	capitalize_string_remaps["id"] = "ID";
+	capitalize_string_remaps["ids"] = "IDs";
 	capitalize_string_remaps["igd"] = "IGD";
 	capitalize_string_remaps["ik"] = "IK";
 	capitalize_string_remaps["image@2x"] = "Image @2x";
@@ -223,6 +229,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["svg"] = "SVG";
 	capitalize_string_remaps["taa"] = "TAA";
 	capitalize_string_remaps["tcp"] = "TCP";
+	capitalize_string_remaps["tls"] = "TLS";
 	capitalize_string_remaps["ui"] = "UI";
 	capitalize_string_remaps["url"] = "URL";
 	capitalize_string_remaps["urls"] = "URLs";
@@ -237,6 +244,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["vector2"] = "Vector2";
 	capitalize_string_remaps["vpn"] = "VPN";
 	capitalize_string_remaps["vram"] = "VRAM";
+	capitalize_string_remaps["vrs"] = "VRS";
 	capitalize_string_remaps["vsync"] = "V-Sync";
 	capitalize_string_remaps["wap"] = "WAP";
 	capitalize_string_remaps["webp"] = "WebP";
@@ -246,9 +254,31 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["wifi"] = "Wi-Fi";
 	capitalize_string_remaps["x86"] = "x86";
 	capitalize_string_remaps["xr"] = "XR";
+	capitalize_string_remaps["xray"] = "X-Ray";
 	capitalize_string_remaps["xy"] = "XY";
 	capitalize_string_remaps["xz"] = "XZ";
 	capitalize_string_remaps["yz"] = "YZ";
+
+	// Articles, conjunctions, prepositions.
+	stop_words = LocalVector<String>({
+			"a",
+			"an",
+			"and",
+			"as",
+			"at",
+			"by",
+			"for",
+			"in",
+			"not",
+			"of",
+			"on",
+			"or",
+			"over",
+			"per",
+			"the",
+			"then",
+			"to",
+	});
 }
 
 EditorPropertyNameProcessor::~EditorPropertyNameProcessor() {
