@@ -151,19 +151,6 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 	graphics_binding_gl.glxContext = (GLXContext)glxcontext_handle;
 	graphics_binding_gl.glxDrawable = (GLXDrawable)glxdrawable_handle;
 
-	if (graphics_binding_gl.xDisplay == nullptr) {
-		print_line("OpenXR Failed to get xDisplay from Godot, using XOpenDisplay(nullptr)");
-		graphics_binding_gl.xDisplay = XOpenDisplay(nullptr);
-	}
-	if (graphics_binding_gl.glxContext == nullptr) {
-		print_line("OpenXR Failed to get glxContext from Godot, using glXGetCurrentContext()");
-		graphics_binding_gl.glxContext = glXGetCurrentContext();
-	}
-	if (graphics_binding_gl.glxDrawable == 0) {
-		print_line("OpenXR Failed to get glxDrawable from Godot, using glXGetCurrentDrawable()");
-		graphics_binding_gl.glxDrawable = glXGetCurrentDrawable();
-	}
-
 	// spec says to use proper values but runtimes don't care
 	graphics_binding_gl.visualid = 0;
 	graphics_binding_gl.glxFBConfig = 0;
