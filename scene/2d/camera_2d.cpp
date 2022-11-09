@@ -55,8 +55,12 @@ void Camera2D::_update_scroll() {
 	if (current) {
 		ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
 
-		Transform2D xform = get_camera_transform();
-
+		Transform2D xform;
+		if (is_physics_interpolated_and_enabled()) {
+			xform = _interpolation_data.xform_prev.interpolate_with(_interpolation_data.xform_curr, Engine::get_singleton()->get_physics_interpolation_fraction());
+		} else {
+			xform = get_camera_transform();
+		}
 		viewport->set_canvas_transform(xform);
 
 		Size2 screen_size = viewport->get_visible_rect().size;
@@ -67,13 +71,24 @@ void Camera2D::_update_scroll() {
 }
 
 void Camera2D::_update_process_mode() {
-	// smoothing can be enabled in the editor but will never be active
-	if (process_mode == CAMERA2D_PROCESS_IDLE) {
-		set_process_internal(smoothing_active);
-		set_physics_process_internal(false);
+	if (is_physics_interpolated_and_enabled()) {
+		set_process_internal(is_current());
+		set_physics_process_internal(is_current());
+
+#ifdef TOOLS_ENABLED
+		if (process_mode == CAMERA2D_PROCESS_IDLE) {
+			WARN_PRINT_ONCE("Camera2D overridden to physics process mode due to use of physics interpolation.");
+		}
+#endif
 	} else {
-		set_process_internal(false);
-		set_physics_process_internal(smoothing_active);
+		// Smoothing can be enabled in the editor but will never be active.
+		if (process_mode == CAMERA2D_PROCESS_IDLE) {
+			set_process_internal(smoothing_active);
+			set_physics_process_internal(false);
+		} else {
+			set_process_internal(false);
+			set_physics_process_internal(smoothing_active);
+		}
 	}
 }
 
@@ -178,8 +193,19 @@ Transform2D Camera2D::get_camera_transform() {
 			}
 		}
 
+		// TODO ..
+		// There is a bug here.
+		// Smoothing occurs rather confusingly
+		// during the call to get_camera_transform().
+		// It may be called MULTIPLE TIMES on certain frames,
+		// therefore smoothing is not currently applied only once per frame / tick,
+		// which will result in some haphazard results.
 		if (smoothing_active) {
-			float c = smoothing * (process_mode == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
+			// Note that if we are using physics interpolation,
+			// processing will always be physics based (it ignores the process mode set in the UI).
+			bool physics_process = (process_mode == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
+			float delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
+			float c = smoothing * delta;
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
 		} else {
@@ -234,16 +260,48 @@ Transform2D Camera2D::get_camera_transform() {
 	return (xform).affine_inverse();
 }
 
+void Camera2D::_ensure_update_interpolation_data() {
+	// The curr -> previous update can either occur
+	// on the INTERNAL_PHYSICS_PROCESS OR
+	// on NOTIFICATION_TRANSFORM_CHANGED,
+	// if NOTIFICATION_TRANSFORM_CHANGED takes place
+	// earlier than INTERNAL_PHYSICS_PROCESS on a tick.
+	// This is to ensure that the data keeps flowing, but the new data
+	// doesn't overwrite before prev has been set.
+
+	// Keep the data flowing.
+	uint64_t tick = Engine::get_singleton()->get_physics_frames();
+	if (_interpolation_data.last_update_physics_tick != tick) {
+		_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+		_interpolation_data.last_update_physics_tick = tick;
+	}
+}
+
 void Camera2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_INTERNAL_PROCESS:
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			_update_scroll();
-
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (is_physics_interpolated_and_enabled()) {
+				_ensure_update_interpolation_data();
+				_interpolation_data.xform_curr = get_camera_transform();
+			} else {
+				_update_scroll();
+			}
+		} break;
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			// Force the limits etc to update.
+			_interpolation_data.xform_curr = get_camera_transform();
+			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (!smoothing_active) {
+			if (!smoothing_active && !is_physics_interpolated_and_enabled()) {
 				_update_scroll();
+			}
+			if (is_physics_interpolated_and_enabled()) {
+				_ensure_update_interpolation_data();
+				_interpolation_data.xform_curr = get_camera_transform();
 			}
 
 		} break;
@@ -400,10 +458,15 @@ Camera2D::Camera2DProcessMode Camera2D::get_process_mode() const {
 }
 
 void Camera2D::_make_current(Object *p_which) {
+	bool new_current = false;
+
 	if (p_which == this) {
-		current = true;
-	} else {
-		current = false;
+		new_current = true;
+	}
+
+	if (new_current != current) {
+		current = new_current;
+		_update_process_mode();
 	}
 }
 
@@ -413,6 +476,7 @@ void Camera2D::_set_current(bool p_current) {
 	}
 
 	current = p_current;
+	_update_process_mode();
 	update();
 }
 
@@ -427,6 +491,7 @@ void Camera2D::make_current() {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_make_current", this);
 	}
 	_update_scroll();
+	_update_process_mode();
 }
 
 void Camera2D::clear_current() {
@@ -434,6 +499,7 @@ void Camera2D::clear_current() {
 	if (is_inside_tree()) {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_make_current", (Object *)nullptr);
 	}
+	_update_process_mode();
 }
 
 void Camera2D::set_limit(Margin p_margin, int p_limit) {

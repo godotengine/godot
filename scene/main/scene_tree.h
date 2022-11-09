@@ -313,6 +313,7 @@ public:
 	virtual void input_event(const Ref<InputEvent> &p_event);
 	virtual void init();
 
+	virtual void iteration_prepare();
 	virtual bool iteration(float p_time);
 	virtual void iteration_end();
 	virtual bool idle(float p_time);

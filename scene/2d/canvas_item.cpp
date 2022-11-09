@@ -562,6 +562,10 @@ void CanvasItem::_exit_canvas() {
 	}
 }
 
+void CanvasItem::_physics_interpolated_changed() {
+	VisualServer::get_singleton()->canvas_item_set_interpolated(canvas_item, is_physics_interpolated());
+}
+
 void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -605,6 +609,12 @@ void CanvasItem::_notification(int p_what) {
 			}
 			global_invalid = true;
 		} break;
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (is_visible_in_tree() && is_physics_interpolated()) {
+				VisualServer::get_singleton()->canvas_item_reset_physics_interpolation(canvas_item);
+			}
+		} break;
+
 		case NOTIFICATION_DRAW:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 		} break;

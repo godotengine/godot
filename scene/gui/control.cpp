@@ -3003,6 +3003,8 @@ Control::Control() {
 	}
 	data.focus_mode = FOCUS_NONE;
 	data.modal_prev_focus_owner = 0;
+
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }
 
 Control::~Control() {

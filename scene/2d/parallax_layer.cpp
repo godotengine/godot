@@ -163,4 +163,7 @@ void ParallaxLayer::_bind_methods() {
 
 ParallaxLayer::ParallaxLayer() {
 	motion_scale = Size2(1, 1);
+
+	// ParallaxLayer is always updated every frame so there is no need to interpolate.
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }

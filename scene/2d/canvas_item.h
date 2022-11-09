@@ -218,6 +218,7 @@ private:
 	void _exit_canvas();
 
 	void _notify_transform(CanvasItem *p_node);
+	virtual void _physics_interpolated_changed();
 
 	void _set_on_top(bool p_on_top) { set_draw_behind_parent(!p_on_top); }
 	bool _is_on_top() const { return !is_draw_behind_parent_enabled(); }

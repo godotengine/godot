@@ -23,6 +23,7 @@
 		<member name="motion_scale" type="Vector2" setter="set_motion_scale" getter="get_motion_scale" default="Vector2( 1, 1 )">
 			Multiplies the ParallaxLayer's motion. If an axis is set to [code]0[/code], it will not scroll.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="1" />
 	</members>
 	<constants>
 	</constants>

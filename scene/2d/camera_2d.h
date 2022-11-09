@@ -84,6 +84,7 @@ protected:
 	void _update_process_mode();
 	void _update_scroll();
 	void _setup_viewport();
+	void _ensure_update_interpolation_data();
 
 	void _make_current(Object *p_which);
 	void _set_current(bool p_current);
@@ -93,6 +94,12 @@ protected:
 	bool margin_drawing_enabled;
 
 	Camera2DProcessMode process_mode;
+
+	struct InterpolationData {
+		Transform2D xform_curr;
+		Transform2D xform_prev;
+		uint32_t last_update_physics_tick = 0;
+	} _interpolation_data;
 
 protected:
 	virtual Transform2D get_camera_transform();
