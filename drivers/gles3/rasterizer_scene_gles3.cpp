@@ -1973,6 +1973,8 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		}
 	}
 
+	bool should_request_redraw = false;
+
 	for (uint32_t i = p_from_element; i < p_to_element; i++) {
 		const GeometryInstanceSurface *surf = p_params->elements[i];
 		GeometryInstanceGLES3 *inst = surf->owner;
@@ -2001,6 +2003,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 		if (!mesh_surface) {
 			continue;
+		}
+
+		//request a redraw if one of the shaders uses TIME
+		if (shader->uses_time) {
+			should_request_redraw = true;
 		}
 
 		if constexpr (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
@@ -2226,6 +2233,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			glDisableVertexAttribArray(14);
 			glDisableVertexAttribArray(15);
 		}
+	}
+
+	// Make the actual redraw request
+	if (should_request_redraw) {
+		RenderingServerDefault::redraw_request();
 	}
 }
 
