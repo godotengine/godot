@@ -199,7 +199,10 @@ void Light::_validate_property(PropertyInfo &property) const {
 		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 
-	if (bake_mode != BAKE_ALL && property.name == "light_size") {
+	// DirectionalLight can bake shadowmasks with its bake mode set to Indirect,
+	// so the light size is still relevant to display in this case.
+	const bool can_bake_shadowmask = type == VS::LIGHT_DIRECTIONAL && bake_mode == BAKE_INDIRECT;
+	if (!can_bake_shadowmask && bake_mode != BAKE_ALL && property.name == "light_size") {
 		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 }

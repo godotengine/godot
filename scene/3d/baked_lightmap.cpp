@@ -547,11 +547,36 @@ void BakedLightmap::_save_image(String &r_base_path, Ref<Image> r_img, bool p_us
 	}
 	r_img->unlock();
 
-	if (!use_color) {
+	if (use_color) {
+		if (use_hdr) {
+			if (!use_shadowmask) {
+				// Discard the alpha channel which contains the shadowmask.
+				r_img->convert(Image::FORMAT_RGBH);
+			}
+		} else {
+			if (use_shadowmask) {
+				r_img->convert(Image::FORMAT_RGBA8);
+			} else {
+				// Discard the alpha channel which contains the shadowmask.
+				r_img->convert(Image::FORMAT_RGB8);
+			}
+		}
+	} else {
+		// Grayscale.
 		if (use_hdr) {
 			r_img->convert(Image::FORMAT_RH);
+			// Have to discard the alpha channel as there is no `Image::FORMAT_RAH`.
+			// There is `Image::FORMAT_RGH`, but it would require special handling in the shader.
+			WARN_PRINT("Shadowmapping is not compatible with HDR images using no color. The alpha channel has been stripped, therefore removing shadowmasking.");
 		} else {
-			r_img->convert(Image::FORMAT_L8);
+			if (use_shadowmask) {
+				// Discard color information to keep only luminance.
+				r_img->convert(Image::FORMAT_LA8);
+			} else {
+				// Discard color information to keep only luminance,
+				// and discard the alpha channel which contains the shadowmask.
+				r_img->convert(Image::FORMAT_L8);
+			}
 		}
 	}
 
@@ -753,13 +778,27 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 		lightmapper->add_mesh(md, lightmap_size);
 	}
 
+	// Used to print a warning when more than one baked DirectionalLight is present in the scene
+	// and shadowmasking is enabling (as this use case isn't supported).
+	String shadowmasked_light_name;
+
 	for (int i = 0; i < lights_found.size(); i++) {
 		Light *light = lights_found[i].light;
 		Transform xf = lights_found[i].xform;
 
 		if (Object::cast_to<DirectionalLight>(light)) {
 			DirectionalLight *l = Object::cast_to<DirectionalLight>(light);
+			if (shadowmasked_light_name != String()) {
+				// If shadowmasking is disabled, `shadowmasked_light_name` will remain an empty string,
+				// so this warning won't appear.
+				// If the second DirectionalLight has its bake mode set to Disabled,
+				// this part of the code will never be called either.
+				WARN_PRINT(vformat("The DirectionalLight \"%s\" is configured to cast shadows, but the DirectionalLight \"%s\" before it is already used for shadowmasking. This will lead to incorrect shadows in the distance.\nTo resolve this, set the DirectionalLight \"%s\"'s bake mode to Disabled or disable Use Shadowmask in the BakedLightmap node.", l->get_name(), shadowmasked_light_name, l->get_name()));
+			}
 			lightmapper->add_directional_light(light->get_bake_mode() == Light::BAKE_ALL, -xf.basis.get_axis(Vector3::AXIS_Z).normalized(), l->get_color(), l->get_param(Light::PARAM_ENERGY), l->get_param(Light::PARAM_INDIRECT_ENERGY), l->get_param(Light::PARAM_SIZE));
+			if (use_shadowmask) {
+				shadowmasked_light_name = l->get_name();
+			}
 		} else if (Object::cast_to<OmniLight>(light)) {
 			OmniLight *l = Object::cast_to<OmniLight>(light);
 			lightmapper->add_omni_light(light->get_bake_mode() == Light::BAKE_ALL, xf.origin, l->get_color(), l->get_param(Light::PARAM_ENERGY), l->get_param(Light::PARAM_INDIRECT_ENERGY), l->get_param(Light::PARAM_RANGE), l->get_param(Light::PARAM_ATTENUATION), l->get_param(Light::PARAM_SIZE));
@@ -1380,6 +1419,14 @@ bool BakedLightmap::is_using_color() const {
 	return use_color;
 }
 
+void BakedLightmap::set_use_shadowmask(bool p_enable) {
+	use_shadowmask = p_enable;
+}
+
+bool BakedLightmap::is_using_shadowmask() const {
+	return use_shadowmask;
+}
+
 void BakedLightmap::set_environment_mode(EnvironmentMode p_mode) {
 	environment_mode = p_mode;
 	_change_notify();
@@ -1517,14 +1564,17 @@ void BakedLightmap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_environment_min_light", "min_light"), &BakedLightmap::set_environment_min_light);
 	ClassDB::bind_method(D_METHOD("get_environment_min_light"), &BakedLightmap::get_environment_min_light);
 
-	ClassDB::bind_method(D_METHOD("set_use_denoiser", "use_denoiser"), &BakedLightmap::set_use_denoiser);
+	ClassDB::bind_method(D_METHOD("set_use_denoiser", "enable"), &BakedLightmap::set_use_denoiser);
 	ClassDB::bind_method(D_METHOD("is_using_denoiser"), &BakedLightmap::is_using_denoiser);
 
-	ClassDB::bind_method(D_METHOD("set_use_hdr", "use_denoiser"), &BakedLightmap::set_use_hdr);
+	ClassDB::bind_method(D_METHOD("set_use_hdr", "enable"), &BakedLightmap::set_use_hdr);
 	ClassDB::bind_method(D_METHOD("is_using_hdr"), &BakedLightmap::is_using_hdr);
 
-	ClassDB::bind_method(D_METHOD("set_use_color", "use_denoiser"), &BakedLightmap::set_use_color);
+	ClassDB::bind_method(D_METHOD("set_use_color", "enable"), &BakedLightmap::set_use_color);
 	ClassDB::bind_method(D_METHOD("is_using_color"), &BakedLightmap::is_using_color);
+
+	ClassDB::bind_method(D_METHOD("set_use_shadowmask", "use_denoiser"), &BakedLightmap::set_use_shadowmask);
+	ClassDB::bind_method(D_METHOD("is_using_shadowmask"), &BakedLightmap::is_using_shadowmask);
 
 	ClassDB::bind_method(D_METHOD("set_generate_atlas", "enabled"), &BakedLightmap::set_generate_atlas);
 	ClassDB::bind_method(D_METHOD("is_generate_atlas_enabled"), &BakedLightmap::is_generate_atlas_enabled);
@@ -1564,6 +1614,7 @@ void BakedLightmap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_color"), "set_use_color", "is_using_color");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_shadowmask"), "set_use_shadowmask", "is_using_shadowmask");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "default_texels_per_unit", PROPERTY_HINT_RANGE, "0.0,64.0,0.01,or_greater"), "set_default_texels_per_unit", "get_default_texels_per_unit");
 
@@ -1634,6 +1685,7 @@ BakedLightmap::BakedLightmap() {
 	use_denoiser = true;
 	use_hdr = true;
 	use_color = true;
+	use_shadowmask = true;
 	bias = 0.005;
 
 	generate_atlas = true;

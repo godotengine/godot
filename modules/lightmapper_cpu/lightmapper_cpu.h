@@ -75,6 +75,7 @@ class LightmapperCPU : public Lightmapper {
 
 		Vector3 direct_light;
 		Vector3 output_light;
+		float shadowmask = 1.0;
 
 		float area_coverage;
 	};
@@ -160,11 +161,11 @@ class LightmapperCPU : public Lightmapper {
 
 	void _post_process(uint32_t p_idx, void *r_output);
 	void _compute_seams(const MeshInstance &p_mesh, LocalVector<UVSeam> &r_seams);
-	void _fix_seams(const LocalVector<UVSeam> &p_seams, Vector3 *r_lightmap, Vector2i p_size);
-	void _fix_seam(const Vector2 &p_pos0, const Vector2 &p_pos1, const Vector2 &p_uv0, const Vector2 &p_uv1, const Vector3 *p_read_buffer, Vector3 *r_write_buffer, const Vector2i &p_size);
-	void _dilate_lightmap(Vector3 *r_lightmap, const LocalVector<int> p_indices, Vector2i p_size, int margin);
+	void _fix_seams(const LocalVector<UVSeam> &p_seams, Color *r_lightmap, Vector2i p_size);
+	void _fix_seam(const Vector2 &p_pos0, const Vector2 &p_pos1, const Vector2 &p_uv0, const Vector2 &p_uv1, const Color *p_read_buffer, Color *r_write_buffer, const Vector2i &p_size);
+	void _dilate_lightmap(Color *r_lightmap, const LocalVector<int> p_indices, Vector2i p_size, int margin);
 
-	void _blit_lightmap(const Vector<Vector3> &p_src, const Vector2i &p_size, Ref<Image> &p_dst, int p_x, int p_y, bool p_with_padding);
+	void _blit_lightmap(const Vector<Color> &p_src, const Vector2i &p_size, Ref<Image> &p_dst, int p_x, int p_y, bool p_with_padding);
 
 public:
 	virtual void add_albedo_texture(Ref<Texture> p_texture);

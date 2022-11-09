@@ -2031,12 +2031,17 @@ FRAGMENT_SHADER_CODE
 
 #endif //ubershader-runtime
 
+	// Defined outside the lightmap block to make the ubershader approach work.
+	vec4 lightmap_sample = vec4(1.0);
+
 #ifdef USE_LIGHTMAP //ubershader-runtime
+	// Also store the alpha channel as it's used for shadowmasking further below.
 #ifdef USE_LIGHTMAP_LAYERED //ubershader-runtime
-	ambient_light = LIGHTMAP_TEXTURE_LAYERED_SAMPLE(lightmap_array, vec3(uv2, float(lightmap_layer))).rgb * lightmap_energy;
+	lightmap_sample = LIGHTMAP_TEXTURE_LAYERED_SAMPLE(lightmap_array, vec3(uv2, float(lightmap_layer)));
 #else //ubershader-runtime
-	ambient_light = LIGHTMAP_TEXTURE_SAMPLE(lightmap, uv2).rgb * lightmap_energy;
+	lightmap_sample = LIGHTMAP_TEXTURE_SAMPLE(lightmap, uv2);
 #endif //ubershader-runtime
+	ambient_light = lightmap_sample.rgb * lightmap_energy;
 #endif //ubershader-runtime
 
 #ifdef USE_LIGHTMAP_CAPTURE //ubershader-runtime
@@ -2119,7 +2124,15 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_LIGHT_DIRECTIONAL //ubershader-runtime
 
+	// No lightmaps, fallback to no shadows in the distance.
 	vec3 light_attenuation = vec3(1.0);
+
+#ifdef USE_LIGHTMAP //ubershader-runtime
+	// Take the DirectionalLight's shadow color into account for the shadowmask.
+	// This applies even if the DirectionalLight shadow is disabled, which can be
+	// done to improve performance by disabling shadows for dynamic objects only.
+	light_attenuation = mix(shadow_color_contact.rgb, vec3(1.0), lightmap_sample.a);
+#endif //ubershader-runtime
 
 	float depth_z = -vertex.z;
 #ifdef LIGHT_DIRECTIONAL_SHADOW //ubershader-runtime
@@ -2245,7 +2258,7 @@ FRAGMENT_SHADER_CODE
 			shadow = min(shadow, contact_shadow);
 		}
 #endif //ubershader-runtime
-		light_attenuation = mix(mix(shadow_color_contact.rgb, vec3(1.0), shadow), vec3(1.0), pssm_fade);
+		light_attenuation = mix(mix(shadow_color_contact.rgb, light_attenuation, shadow), light_attenuation, pssm_fade);
 	}
 
 #endif // !defined(SHADOWS_DISABLED)

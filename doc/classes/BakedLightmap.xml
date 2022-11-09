@@ -94,6 +94,10 @@
 			If [code]true[/code], stores the lightmap textures in a high dynamic range format (EXR). If [code]false[/code], stores the lightmap texture in a low dynamic range PNG image. This can be set to [code]false[/code] to reduce disk usage, but light values over 1.0 will be clamped and you may see banding caused by the reduced precision.
 			[b]Note:[/b] Setting [member use_hdr] to [code]true[/code] will decrease lightmap banding even when using the GLES2 backend or if [member ProjectSettings.rendering/quality/depth/hdr] is [code]false[/code].
 		</member>
+		<member name="use_shadowmask" type="bool" setter="set_use_shadowmask" getter="is_using_shadowmask" default="true">
+			If [code]true[/code], bakes the [DirectionalLight]s' direct light shadows into a [i]shadowmask[/i] which is stored in the lightmap textures' alpha channel. This shadowmask is used to keep static shadows visible past the DirectionalLights' [member DirectionalLight.directional_shadow_max_distance] by blending the last shadow split with the shadowmask. This in turn allows you to use a lower [member DirectionalLight.directional_shadow_max_distance] for dynamic objects. Lower real-time shadow distances improve shadow detail and performance while making shadow acne less visible.
+			[b]Note:[/b] Shadowmasking only supports one baked [DirectionalLight] at a time. If you have more than one [DirectionalLight] whose [member Light.light_bake_mode] isn't set to [constant Light.BAKE_DISABLED], the editor will print a warning when baking lightmaps. Shadowmasking doesn't work when using both [member use_hdr] is [code]true[/code] and [member use_color] is [code]false[/code]. There are known visual bugs when using the GLES2 and both [member use_hdr] is [code]false[/code] and [member use_color] is [code]true[/code].
+		</member>
 	</members>
 	<constants>
 		<constant name="BAKE_QUALITY_LOW" value="0" enum="BakeQuality">
