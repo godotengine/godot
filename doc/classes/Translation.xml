@@ -88,6 +88,12 @@
 				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
 			</description>
 		</method>
+		<method name="get_translated_message_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns all the messages (translated text).
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="locale" type="String" setter="set_locale" getter="get_locale" default="&quot;en&quot;">
