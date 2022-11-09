@@ -19,6 +19,7 @@
 		<member name="curve_z" type="Curve" setter="set_curve_z" getter="get_curve_z">
 			The [Curve] that is rendered onto the texture's blue channel.
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="width" type="int" setter="set_width" getter="get_width" default="256">
 			The width of the texture (in pixels). Higher values make it possible to represent high-frequency data better (such as sudden direction changes), at the cost of increased generation time and memory usage.
 		</member>

@@ -12,6 +12,7 @@
 		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
 			The [Gradient] that will be used to fill the texture.
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="use_hdr" type="bool" setter="set_use_hdr" getter="is_using_hdr" default="false">
 			If [code]true[/code], the generated texture will support high dynamic range ([constant Image.FORMAT_RGBAF] format). This allows for glow effects to work if [member Environment.glow_enabled] is [code]true[/code]. If [code]false[/code], the generated texture will use low dynamic range; overbright colors will be clamped ([constant Image.FORMAT_RGBA8] format).
 		</member>

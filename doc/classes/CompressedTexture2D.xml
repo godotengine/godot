@@ -21,5 +21,6 @@
 		<member name="load_path" type="String" setter="load" getter="get_load_path" default="&quot;&quot;">
 			The CompressedTexture's file path to a [code].ctex[/code] file.
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 	</members>
 </class>
