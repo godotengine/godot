@@ -223,11 +223,15 @@ void GDScript::get_script_method_list(List<MethodInfo> *p_list) const {
 			GDScriptFunction *func = E->get();
 			MethodInfo mi;
 			mi.name = E->key();
-			for (int i = 0; i < func->get_argument_count(); i++) {
-				mi.arguments.push_back(func->get_argument_type(i));
-			}
-
 			mi.return_val = func->get_return_type();
+			for (int i = 0; i < func->get_argument_count(); i++) {
+				PropertyInfo arginfo = func->get_argument_type(i);
+				arginfo.name = func->get_argument_name(i);
+				mi.arguments.push_back(arginfo);
+			}
+			for (int i = 0; i < func->get_default_argument_count(); i++) {
+				mi.default_arguments.push_back(func->get_default_argument_value(i));
+			}
 			p_list->push_back(mi);
 		}
 
@@ -276,11 +280,15 @@ MethodInfo GDScript::get_method_info(const StringName &p_method) const {
 	GDScriptFunction *func = E->get();
 	MethodInfo mi;
 	mi.name = E->key();
-	for (int i = 0; i < func->get_argument_count(); i++) {
-		mi.arguments.push_back(func->get_argument_type(i));
-	}
-
 	mi.return_val = func->get_return_type();
+	for (int i = 0; i < func->get_argument_count(); i++) {
+		PropertyInfo arginfo = func->get_argument_type(i);
+		arginfo.name = func->get_argument_name(i);
+		mi.arguments.push_back(arginfo);
+	}
+	for (int i = 0; i < func->get_default_argument_count(); i++) {
+		mi.default_arguments.push_back(func->get_default_argument_value(i));
+	}
 	return mi;
 }
 
@@ -1166,11 +1174,18 @@ void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
 		for (Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.front(); E; E = E->next()) {
+			GDScriptFunction *func = E->get();
 			MethodInfo mi;
 			mi.name = E->key();
+			mi.return_val = func->get_return_type();
 			mi.flags |= METHOD_FLAG_FROM_SCRIPT;
 			for (int i = 0; i < E->get()->get_argument_count(); i++) {
-				mi.arguments.push_back(PropertyInfo(Variant::NIL, "arg" + itos(i)));
+				PropertyInfo arginfo = func->get_argument_type(i);
+				arginfo.name = func->get_argument_name(i);
+				mi.arguments.push_back(arginfo);
+			}
+			for (int i = 0; i < func->get_default_argument_count(); i++) {
+				mi.default_arguments.push_back(func->get_default_argument_value(i));
 			}
 			p_list->push_back(mi);
 		}
