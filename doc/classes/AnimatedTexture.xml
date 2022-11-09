@@ -57,6 +57,7 @@
 		<member name="pause" type="bool" setter="set_pause" getter="get_pause" default="false">
 			If [code]true[/code], the animation will pause where it currently is (i.e. at [member current_frame]). The animation will continue from where it was paused when changing this property to [code]false[/code].
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The animation speed is multiplied by this value. If set to a negative value, the animation is played in reverse.
 		</member>
