@@ -492,6 +492,7 @@ void Viewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			_gui_cancel_tooltip();
 			_drop_physics_mouseover();
 			if (gui.mouse_focus && !gui.forced_mouse_focus) {
 				_drop_mouse_focus();
