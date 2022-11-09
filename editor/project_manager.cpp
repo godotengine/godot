@@ -1223,7 +1223,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
 
 	uint64_t last_edited = 0;
-	if (FileAccess::exists(conf)) {
+	if (cf_err == OK) {
 		// The modification date marks the date the project was last edited.
 		// This is because the `project.godot` file will always be modified
 		// when editing a project (but not when running it).

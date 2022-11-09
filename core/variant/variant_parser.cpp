@@ -1304,6 +1304,7 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 	if (p_simple_tag) {
 		r_tag.name = "";
 		r_tag.fields.clear();
+		bool escaping = false;
 
 		if (p_stream->is_utf8()) {
 			CharString cs;
@@ -1314,7 +1315,15 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 					return ERR_PARSE_ERROR;
 				}
 				if (c == ']') {
-					break;
+					if (escaping) {
+						escaping = false;
+					} else {
+						break;
+					}
+				} else if (c == '\\') {
+					escaping = true;
+				} else {
+					escaping = false;
 				}
 				cs += c;
 			}
@@ -1327,7 +1336,15 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 					return ERR_PARSE_ERROR;
 				}
 				if (c == ']') {
-					break;
+					if (escaping) {
+						escaping = false;
+					} else {
+						break;
+					}
+				} else if (c == '\\') {
+					escaping = true;
+				} else {
+					escaping = false;
 				}
 				r_tag.name += String::chr(c);
 			}
