@@ -583,6 +583,7 @@ public:
 
 	FUNCRID(canvas_item)
 	FUNC2(canvas_item_set_parent, RID, RID)
+	FUNC2(canvas_item_set_name, RID, String)
 
 	FUNC2(canvas_item_set_visible, RID, bool)
 	FUNC2(canvas_item_set_light_mask, RID, int)

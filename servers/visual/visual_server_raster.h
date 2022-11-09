@@ -682,6 +682,7 @@ public:
 
 	BIND0R(RID, canvas_item_create)
 	BIND2(canvas_item_set_parent, RID, RID)
+	BIND2(canvas_item_set_name, RID, String)
 
 	BIND2(canvas_item_set_visible, RID, bool)
 	BIND2(canvas_item_set_light_mask, RID, int)

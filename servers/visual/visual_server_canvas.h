@@ -32,6 +32,7 @@
 #define VISUAL_SERVER_CANVAS_H
 
 #include "rasterizer.h"
+#include "visual_server_constants.h"
 #include "visual_server_viewport.h"
 
 class VisualServerCanvas {
@@ -52,6 +53,9 @@ public:
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
 		int ysort_index;
+#ifdef VISUAL_SERVER_CANVAS_DEBUG_ITEM_NAMES
+		String name;
+#endif
 
 		Vector<Item *> child_items;
 
@@ -154,12 +158,49 @@ public:
 	bool disable_scale;
 
 private:
+	enum CanvasCullMode {
+		CANVAS_CULL_MODE_ITEM,
+		CANVAS_CULL_MODE_NODE,
+	};
+	CanvasCullMode _canvas_cull_mode = CANVAS_CULL_MODE_NODE;
+
 	void _render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights);
-	void _render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
+
 	void _light_mask_canvas_items(int p_z, RasterizerCanvas::Item *p_canvas_item, RasterizerCanvas::Light *p_masked_lights, int p_canvas_layer_id);
 
 	RasterizerCanvas::Item **z_list;
 	RasterizerCanvas::Item **z_last_list;
+
+	// 3.5 and earlier had no hierarchical culling.
+	void _render_canvas_item_cull_by_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
+
+	// Hierarchical culling by scene tree node ///////////////////////////////////
+	void _render_canvas_item_cull_by_node(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_enclosed);
+
+	void _prepare_tree_bounds(Item *p_root);
+	void _calculate_canvas_item_bound(Item *p_canvas_item, Rect2 *r_branch_bound);
+
+	void _finalize_and_merge_local_bound_to_branch(Item *p_canvas_item, Rect2 *r_branch_bound);
+	void _merge_local_bound_to_branch(Item *p_canvas_item, Rect2 *r_branch_bound);
+
+	// If bounds flags are attempted to be modified multithreaded, the
+	// tree could become corrupt. Multithread access may not be possible,
+	// but just in case we use a mutex until proven otherwise.
+	Mutex _bound_mutex;
+
+	void _make_bound_dirty_reparent(Item *p_item);
+	void _make_bound_dirty(Item *p_item, bool p_changing_visibility = false);
+	void _make_bound_dirty_down(Item *p_item);
+
+#ifdef VISUAL_SERVER_CANVAS_CHECK_BOUNDS
+	bool _check_bound_integrity(const Item *p_item);
+	bool _check_bound_integrity_down(const Item *p_item, bool p_bound_dirty);
+	void _print_tree(const Item *p_item);
+	void _print_tree_down(int p_child_id, int p_depth, const Item *p_item, const Item *p_highlight, bool p_hidden = false);
+#else
+	bool _check_bound_integrity(const Item *p_item) { return true; }
+#endif
+	//////////////////////////////////////////////////////////////////////////////
 
 public:
 	void render_canvas(Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect, int p_canvas_layer_id);
@@ -172,6 +213,7 @@ public:
 
 	RID canvas_item_create();
 	void canvas_item_set_parent(RID p_item, RID p_parent);
+	void canvas_item_set_name(RID p_item, String p_name);
 
 	void canvas_item_set_visible(RID p_item, bool p_visible);
 	void canvas_item_set_light_mask(RID p_item, int p_mask);
@@ -208,16 +250,15 @@ public:
 	void canvas_item_set_z_index(RID p_item, int p_z);
 	void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
 	void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect);
+	void canvas_item_clear(RID p_item);
+	void canvas_item_set_draw_index(RID p_item, int p_index);
+	void canvas_item_set_material(RID p_item, RID p_material);
+	void canvas_item_set_use_parent_material(RID p_item, bool p_enable);
+
 	void canvas_item_attach_skeleton(RID p_item, RID p_skeleton);
 	void canvas_item_set_skeleton_relative_xform(RID p_item, Transform2D p_relative_xform);
 	Rect2 _debug_canvas_item_get_rect(RID p_item);
-
-	void canvas_item_clear(RID p_item);
-	void canvas_item_set_draw_index(RID p_item, int p_index);
-
-	void canvas_item_set_material(RID p_item, RID p_material);
-
-	void canvas_item_set_use_parent_material(RID p_item, bool p_enable);
+	void _canvas_item_skeleton_moved(RID p_item);
 
 	RID canvas_light_create();
 	void canvas_light_attach_to_canvas(RID p_light, RID p_canvas);

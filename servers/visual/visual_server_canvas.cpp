@@ -39,7 +39,12 @@ void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Tra
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 
-	_render_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
+	if (_canvas_cull_mode == CANVAS_CULL_MODE_NODE) {
+		_prepare_tree_bounds(p_canvas_item);
+		_render_canvas_item_cull_by_node(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, false);
+	} else {
+		_render_canvas_item_cull_by_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
+	}
 
 	VSG::canvas_render->canvas_render_items_begin(p_modulate, p_lights, p_transform);
 	for (int i = 0; i < z_range; i++) {
@@ -85,7 +90,201 @@ void _mark_ysort_dirty(VisualServerCanvas::Item *ysort_owner, RID_Owner<VisualSe
 	} while (ysort_owner && ysort_owner->sort_y);
 }
 
-void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
+void VisualServerCanvas::_make_bound_dirty_reparent(Item *p_item) {
+	MutexLock lock(_bound_mutex);
+	DEV_ASSERT(p_item);
+
+	Item *p_orig_item = p_item;
+
+	// propagate up
+	while (p_item) {
+		// Don't worry about invisible objects
+		if (!p_item->visible) {
+			return;
+		}
+
+		if (!p_item->bound_dirty) {
+			p_item->bound_dirty = true;
+
+			if (canvas_item_owner.owns(p_item->parent)) {
+				p_item = canvas_item_owner.get(p_item->parent);
+			} else {
+				break;
+			}
+		} else {
+			break;
+		}
+	}
+
+	// propagate down
+	_make_bound_dirty_down(p_orig_item);
+}
+
+void VisualServerCanvas::_make_bound_dirty(Item *p_item, bool p_changing_visibility) {
+	if (_canvas_cull_mode != CANVAS_CULL_MODE_NODE) {
+		return;
+	}
+
+	MutexLock lock(_bound_mutex);
+	DEV_ASSERT(p_item);
+
+	if (!p_changing_visibility) {
+		_check_bound_integrity(p_item);
+	}
+
+	if (!p_changing_visibility) {
+		// Traverse up the tree, making each item bound dirty until
+		// we reach an item that is already dirty (as by definition, if this happens,
+		// the tree should already be dirty up until the root).
+		while (p_item) {
+			// Don't worry about invisible objects
+			if (!p_item->visible) {
+				return;
+			}
+
+			if (!p_item->bound_dirty) {
+				p_item->bound_dirty = true;
+
+				if (canvas_item_owner.owns(p_item->parent)) {
+					p_item = canvas_item_owner.get(p_item->parent);
+				} else {
+					break;
+				}
+			} else {
+				break;
+			}
+		}
+	} else {
+		// special case for visibility changes.
+		// if hiding, we propagate upwards.
+		while (p_item) {
+			if (!p_item->bound_dirty) {
+				p_item->bound_dirty = true;
+			}
+
+			if (canvas_item_owner.owns(p_item->parent)) {
+				p_item = canvas_item_owner.get(p_item->parent);
+			} else {
+				break;
+			}
+		}
+
+		// if showing we propagate upwards AND downwards
+		if (p_item->visible) {
+			_make_bound_dirty_down(p_item);
+		}
+	}
+}
+
+void VisualServerCanvas::_make_bound_dirty_down(Item *p_item) {
+	// Bounds below an item that is being made visible may be out of date,
+	// so we make them all dirty.
+	if (!p_item->visible) {
+		return;
+	}
+
+	p_item->bound_dirty = true;
+
+	int child_item_count = p_item->child_items.size();
+	Item **child_items = p_item->child_items.ptrw();
+
+	for (int i = 0; i < child_item_count; i++) {
+		_make_bound_dirty_down(child_items[i]);
+	}
+}
+
+void VisualServerCanvas::_prepare_tree_bounds(Item *p_root) {
+	Rect2 root_bound;
+	_calculate_canvas_item_bound(p_root, &root_bound);
+}
+
+// This function provides an alternative means of recursively calculating canvas item
+// bounds through a branch, leading to an identical (hopefully) result to that
+// calculated for the bound in _render_canvas_item().
+// The reason for this function's existence is that there are some conditions which
+// prevent further drawing in the tree (such as alpha nearing 0.0), in which we
+// *still* need to calculate the bounds for lower branches and use them for culling,
+// just in case alpha increases above the threshold in a later frame.
+void VisualServerCanvas::_calculate_canvas_item_bound(Item *p_canvas_item, Rect2 *r_branch_bound) {
+	// TODO - this higher level technique may be able to be optimized better,
+	// to perhaps only recalculate this on "reappearance" of the child branch, in a
+	// similar manner to how visibility is handled.
+
+	Item *ci = p_canvas_item;
+
+	if (!ci->visible) {
+		return;
+	}
+
+	// easy case, not dirty
+	if (!ci->bound_dirty) {
+		_merge_local_bound_to_branch(ci, r_branch_bound);
+		return;
+	}
+
+	// recalculate the local bound only if out of date
+	Rect2 *local_bound = nullptr;
+	if (ci->bound_dirty) {
+		local_bound = &ci->local_bound;
+		*local_bound = Rect2();
+		ci->bound_dirty = false;
+	}
+
+	int child_item_count = ci->child_items.size();
+	Item **child_items = ci->child_items.ptrw();
+
+	for (int i = 0; i < child_item_count; i++) {
+		// if (ci->sort_y)
+		// NYI do we need to apply the child_items[i]->ysort_xform? TEST
+		// See the _render_canvas_item for how to apply.
+		_calculate_canvas_item_bound(child_items[i], local_bound);
+	}
+
+	_finalize_and_merge_local_bound_to_branch(ci, r_branch_bound);
+}
+
+void VisualServerCanvas::_finalize_and_merge_local_bound_to_branch(Item *p_canvas_item, Rect2 *r_branch_bound) {
+	if (r_branch_bound) {
+		Rect2 this_rect = p_canvas_item->get_rect();
+
+		// If this item has a bound...
+		if (!p_canvas_item->local_bound.has_no_area()) {
+			// If the rect has an area...
+			if (!this_rect.has_no_area()) {
+				p_canvas_item->local_bound = p_canvas_item->local_bound.merge(this_rect);
+			} else {
+				// The local bound is set by the children, but is not affected by the canvas item rect.
+				// So pass through and merge the local bound to the parent.
+			}
+		} else {
+			p_canvas_item->local_bound = this_rect;
+			// don't merge zero area, as it may expand the branch bound
+			// unnecessarily.
+			if (p_canvas_item->local_bound.has_no_area()) {
+				return;
+			}
+		}
+
+		// Merge the local bound to the parent.
+		_merge_local_bound_to_branch(p_canvas_item, r_branch_bound);
+	}
+}
+
+void VisualServerCanvas::_merge_local_bound_to_branch(Item *p_canvas_item, Rect2 *r_branch_bound) {
+	if (!r_branch_bound) {
+		return;
+	}
+
+	Rect2 this_item_total_local_bound = p_canvas_item->xform.xform(p_canvas_item->local_bound);
+
+	if (!r_branch_bound->has_no_area()) {
+		*r_branch_bound = r_branch_bound->merge(this_item_total_local_bound);
+	} else {
+		*r_branch_bound = this_item_total_local_bound;
+	}
+}
+
+void VisualServerCanvas::_render_canvas_item_cull_by_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
 	Item *ci = p_canvas_item;
 
 	if (!ci->visible) {
@@ -161,9 +360,9 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 			continue;
 		}
 		if (ci->sort_y) {
-			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
+			_render_canvas_item_cull_by_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
-			_render_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
+			_render_canvas_item_cull_by_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
 		}
 	}
 
@@ -202,9 +401,172 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 			continue;
 		}
 		if (ci->sort_y) {
-			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
+			_render_canvas_item_cull_by_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
-			_render_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
+			_render_canvas_item_cull_by_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
+		}
+	}
+}
+
+void VisualServerCanvas::_render_canvas_item_cull_by_node(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_enclosed) {
+	Item *ci = p_canvas_item;
+
+	if (!ci->visible) {
+		return;
+	}
+
+	// This should have been calculated as a pre-process.
+	DEV_ASSERT(!ci->bound_dirty);
+
+	Rect2 rect = ci->get_rect();
+
+	Transform2D final_xform = ci->xform;
+	final_xform = p_transform * final_xform;
+
+	Rect2 global_rect = final_xform.xform(rect);
+	ci->global_rect_cache = global_rect;
+	ci->final_transform = final_xform;
+
+	global_rect.position += p_clip_rect.position;
+
+	int child_item_count = ci->child_items.size();
+
+	// If there are children, we can maybe cull them all out if the cached bound has not changed.
+	if (!p_enclosed && child_item_count) {
+		// Get the bound in final space.
+		Rect2 bound = final_xform.xform(ci->local_bound);
+
+		bound.position += p_clip_rect.position;
+		if (!ci->vp_render && !ci->copy_back_buffer) {
+			// Cull out ALL children in one step.
+			if (!p_clip_rect.intersects(bound, true)) {
+				return;
+			}
+		}
+
+		// can we combine with earlier check?
+		// if we enclose the bound completely, no need to check further children
+		p_enclosed = p_clip_rect.encloses(bound);
+	}
+
+	// if we are culled, and no children, no more needs doing
+	bool item_is_visible = ((!ci->commands.empty() && (p_enclosed ? true : p_clip_rect.intersects(global_rect, true))) || ci->vp_render || ci->copy_back_buffer);
+
+	if (!item_is_visible && !child_item_count) {
+		return;
+	}
+
+	if (ci->use_parent_material && p_material_owner) {
+		ci->material_owner = p_material_owner;
+	} else {
+		p_material_owner = ci;
+		ci->material_owner = nullptr;
+	}
+
+	Color modulate(ci->modulate.r * p_modulate.r, ci->modulate.g * p_modulate.g, ci->modulate.b * p_modulate.b, ci->modulate.a * p_modulate.a);
+
+	if (modulate.a < 0.007) {
+		return;
+	}
+
+	if (ci->children_order_dirty) {
+		ci->child_items.sort_custom<ItemIndexSort>();
+		ci->children_order_dirty = false;
+	}
+
+	Item **child_items = ci->child_items.ptrw();
+
+	if (ci->clip) {
+		if (p_canvas_clip != nullptr) {
+			ci->final_clip_rect = p_canvas_clip->final_clip_rect.clip(global_rect);
+		} else {
+			ci->final_clip_rect = global_rect;
+		}
+		ci->final_clip_rect.position = ci->final_clip_rect.position.round();
+		ci->final_clip_rect.size = ci->final_clip_rect.size.round();
+		ci->final_clip_owner = ci;
+
+	} else {
+		ci->final_clip_owner = p_canvas_clip;
+	}
+
+	if (ci->sort_y) {
+		if (ci->ysort_children_count == -1) {
+			ci->ysort_children_count = 0;
+			_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), nullptr, ci->ysort_children_count);
+		}
+
+		child_item_count = ci->ysort_children_count;
+
+		// NOTE : Use of alloca here in a recursive function could make it susceptible to stack overflow.
+		// This was present in the original Item code. Consider changing to make safer.
+		child_items = (Item **)alloca(child_item_count * sizeof(Item *));
+
+		int i = 0;
+		_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), child_items, i);
+
+		SortArray<Item *, ItemPtrSort> sorter;
+		sorter.sort(child_items, child_item_count);
+	}
+
+	if (ci->z_relative) {
+		p_z = CLAMP(p_z + ci->z_index, VS::CANVAS_ITEM_Z_MIN, VS::CANVAS_ITEM_Z_MAX);
+	} else {
+		p_z = ci->z_index;
+	}
+
+	for (int i = 0; i < child_item_count; i++) {
+		if (!child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y)) {
+			continue;
+		}
+		if (ci->sort_y) {
+			_render_canvas_item_cull_by_node(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, p_enclosed);
+		} else {
+			_render_canvas_item_cull_by_node(child_items[i], final_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner, p_enclosed);
+		}
+	}
+
+	if (ci->copy_back_buffer) {
+		ci->copy_back_buffer->screen_rect = final_xform.xform(ci->copy_back_buffer->rect).clip(p_clip_rect);
+	}
+
+	// something to draw?
+	if (item_is_visible) {
+		// Note : This has been moved to inside the (item_is_visible) check.
+		// It was OUTSIDE in the item culled code, which I suspect was incorrect.
+		// A redraw should not be issued if an item is not on screen?
+		// Even so, watch for regressions here.
+		if (ci->update_when_visible) {
+			VisualServerRaster::redraw_request(false);
+		}
+
+		// Note we have already stored ci->final_transform
+		// and ci->global_rect_cache, and made sure these are up to date.
+		ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
+		ci->light_masked = false;
+
+		int zidx = p_z - VS::CANVAS_ITEM_Z_MIN;
+
+		if (z_last_list[zidx]) {
+			z_last_list[zidx]->next = ci;
+			z_last_list[zidx] = ci;
+
+		} else {
+			z_list[zidx] = ci;
+			z_last_list[zidx] = ci;
+		}
+
+		ci->next = nullptr;
+	}
+
+	for (int i = 0; i < child_item_count; i++) {
+		if (child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y)) {
+			continue;
+		}
+		if (ci->sort_y) {
+			_render_canvas_item_cull_by_node(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, p_enclosed);
+		} else {
+			_render_canvas_item_cull_by_node(child_items[i], final_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner, p_enclosed);
 		}
 	}
 }
@@ -253,9 +615,47 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 		memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 		memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 
-		for (int i = 0; i < l; i++) {
-			_render_canvas_item(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
-		}
+#ifdef VISUAL_SERVER_CANVAS_TIME_NODE_CULLING
+		bool measure = (Engine::get_singleton()->get_frames_drawn() % 100) == 0;
+		measure &= !Engine::get_singleton()->is_editor_hint();
+
+		if (measure) {
+			uint64_t totalA = 0;
+			uint64_t totalB = 0;
+
+			for (int i = 0; i < l; i++) {
+				uint64_t beforeB = OS::get_singleton()->get_ticks_usec();
+				_render_canvas_item_cull_by_item(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
+				uint64_t afterB = OS::get_singleton()->get_ticks_usec();
+
+				uint64_t beforeA = OS::get_singleton()->get_ticks_usec();
+				_prepare_tree_bounds(ci[i].item);
+				_render_canvas_item_cull_by_node(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, false);
+				uint64_t afterA = OS::get_singleton()->get_ticks_usec();
+
+				totalA += afterA - beforeA;
+				totalB += afterB - beforeB;
+
+			} // for i
+
+			print_line("old : " + itos(totalB) + ", new : " + itos(totalA));
+
+		} // if measure
+		else {
+#else
+		{
+#endif
+			if (_canvas_cull_mode == CANVAS_CULL_MODE_NODE) {
+				for (int i = 0; i < l; i++) {
+					_prepare_tree_bounds(ci[i].item);
+					_render_canvas_item_cull_by_node(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, false);
+				}
+			} else {
+				for (int i = 0; i < l; i++) {
+					_render_canvas_item_cull_by_item(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
+				}
+			}
+		} // if not measure
 
 		VSG::canvas_render->canvas_render_items_begin(p_canvas->modulate, p_lights, p_transform);
 		for (int i = 0; i < z_range; i++) {
@@ -337,9 +737,20 @@ RID VisualServerCanvas::canvas_item_create() {
 	return canvas_item_owner.make_rid(canvas_item);
 }
 
+void VisualServerCanvas::canvas_item_set_name(RID p_item, String p_name) {
+#ifdef VISUAL_SERVER_CANVAS_DEBUG_ITEM_NAMES
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->name = p_name;
+#endif
+}
+
 void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
+
+	// dirty the item and any previous parents
+	_make_bound_dirty(canvas_item);
 
 	if (canvas_item->parent.is_valid()) {
 		if (canvas_owner.owns(canvas_item->parent)) {
@@ -364,6 +775,8 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 			ci.item = canvas_item;
 			canvas->child_items.push_back(ci);
 			canvas->children_order_dirty = true;
+
+			_make_bound_dirty(canvas_item);
 		} else if (canvas_item_owner.owns(p_parent)) {
 			Item *item_owner = canvas_item_owner.get(p_parent);
 			item_owner->child_items.push_back(canvas_item);
@@ -373,19 +786,31 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 				_mark_ysort_dirty(item_owner, canvas_item_owner);
 			}
 
+			// keep the integrity of the bounds when adding to avoid false
+			// warning flags, by forcing the added child to be dirty
+			canvas_item->bound_dirty = false;
+			canvas_item->parent = p_parent;
+			_make_bound_dirty_reparent(canvas_item);
 		} else {
 			ERR_FAIL_MSG("Invalid parent.");
 		}
 	}
 
 	canvas_item->parent = p_parent;
+
+	_check_bound_integrity(canvas_item);
 }
 void VisualServerCanvas::canvas_item_set_visible(RID p_item, bool p_visible) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	canvas_item->visible = p_visible;
+	// check for noop
+	if (p_visible != canvas_item->visible) {
+		canvas_item->visible = p_visible;
+		_make_bound_dirty(canvas_item, true);
+	}
 
+	// could this be enclosed in the noop? not sure
 	_mark_ysort_dirty(canvas_item, canvas_item_owner);
 }
 void VisualServerCanvas::canvas_item_set_light_mask(RID p_item, int p_mask) {
@@ -393,6 +818,7 @@ void VisualServerCanvas::canvas_item_set_light_mask(RID p_item, int p_mask) {
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->light_mask = p_mask;
+	_check_bound_integrity(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_set_transform(RID p_item, const Transform2D &p_transform) {
@@ -400,18 +826,28 @@ void VisualServerCanvas::canvas_item_set_transform(RID p_item, const Transform2D
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->xform = p_transform;
+
+	// Special case!
+	// Modifying the transform DOES NOT affect the local bound.
+	// It only affects the local bound of the PARENT node (if there is one).
+	if (canvas_item_owner.owns(canvas_item->parent)) {
+		Item *canvas_item_parent = canvas_item_owner.get(canvas_item->parent);
+		_make_bound_dirty(canvas_item_parent);
+	}
 }
 void VisualServerCanvas::canvas_item_set_clip(RID p_item, bool p_clip) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->clip = p_clip;
+	_make_bound_dirty(canvas_item);
 }
 void VisualServerCanvas::canvas_item_set_distance_field_mode(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->distance_field = p_enable;
+	_make_bound_dirty(canvas_item);
 }
 void VisualServerCanvas::canvas_item_set_custom_rect(RID p_item, bool p_custom_rect, const Rect2 &p_rect) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
@@ -419,18 +855,21 @@ void VisualServerCanvas::canvas_item_set_custom_rect(RID p_item, bool p_custom_r
 
 	canvas_item->custom_rect = p_custom_rect;
 	canvas_item->rect = p_rect;
+	_make_bound_dirty(canvas_item);
 }
 void VisualServerCanvas::canvas_item_set_modulate(RID p_item, const Color &p_color) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->modulate = p_color;
+	_make_bound_dirty(canvas_item);
 }
 void VisualServerCanvas::canvas_item_set_self_modulate(RID p_item, const Color &p_color) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->self_modulate = p_color;
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) {
@@ -438,6 +877,7 @@ void VisualServerCanvas::canvas_item_set_draw_behind_parent(RID p_item, bool p_e
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->behind = p_enable;
+	_check_bound_integrity(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_set_update_when_visible(RID p_item, bool p_update) {
@@ -445,6 +885,7 @@ void VisualServerCanvas::canvas_item_set_update_when_visible(RID p_item, bool p_
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->update_when_visible = p_update;
+	_check_bound_integrity(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
@@ -504,6 +945,7 @@ void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(line);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
@@ -586,6 +1028,7 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 	}
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(pline);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
@@ -609,6 +1052,7 @@ void VisualServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Poin
 
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(pline);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color) {
@@ -622,6 +1066,7 @@ void VisualServerCanvas::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(rect);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) {
@@ -635,6 +1080,7 @@ void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	circle->radius = p_radius;
 
 	canvas_item->commands.push_back(circle);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose, RID p_normal_map) {
@@ -668,6 +1114,7 @@ void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	rect->normal_map = p_normal_map;
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(rect);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_texture_multirect_region(RID p_item, const Vector<Rect2> &p_rects, RID p_texture, const Vector<Rect2> &p_src_rects, const Color &p_modulate, uint32_t p_canvas_rect_flags, RID p_normal_map) {
@@ -738,6 +1185,7 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(rect);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, VS::NinePatchAxisMode p_x_axis_mode, VS::NinePatchAxisMode p_y_axis_mode, bool p_draw_center, const Color &p_modulate, RID p_normal_map) {
@@ -761,6 +1209,7 @@ void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(style);
+	_make_bound_dirty(canvas_item);
 }
 void VisualServerCanvas::canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width, RID p_normal_map) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
@@ -777,6 +1226,7 @@ void VisualServerCanvas::canvas_item_add_primitive(RID p_item, const Vector<Poin
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(prim);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, RID p_normal_map, bool p_antialiased) {
@@ -807,6 +1257,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map, bool p_antialiased, bool p_antialiasing_use_indices) {
@@ -852,6 +1303,7 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) {
@@ -863,6 +1315,7 @@ void VisualServerCanvas::canvas_item_add_set_transform(RID p_item, const Transfo
 	tr->xform = p_transform;
 
 	canvas_item->commands.push_back(tr);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture, RID p_normal_map) {
@@ -878,6 +1331,7 @@ void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, con
 	m->modulate = p_modulate;
 
 	canvas_item->commands.push_back(m);
+	_make_bound_dirty(canvas_item);
 }
 void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
@@ -894,6 +1348,7 @@ void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, 
 
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(part);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture, RID p_normal_map) {
@@ -908,6 +1363,7 @@ void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p
 
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(mm);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) {
@@ -919,6 +1375,7 @@ void VisualServerCanvas::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) 
 	ci->ignore = p_ignore;
 
 	canvas_item->commands.push_back(ci);
+	_make_bound_dirty(canvas_item);
 }
 void VisualServerCanvas::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
@@ -927,6 +1384,7 @@ void VisualServerCanvas::canvas_item_set_sort_children_by_y(RID p_item, bool p_e
 	canvas_item->sort_y = p_enable;
 
 	_mark_ysort_dirty(canvas_item, canvas_item_owner);
+	_check_bound_integrity(canvas_item);
 }
 void VisualServerCanvas::canvas_item_set_z_index(RID p_item, int p_z) {
 	ERR_FAIL_COND(p_z < VS::CANVAS_ITEM_Z_MIN || p_z > VS::CANVAS_ITEM_Z_MAX);
@@ -935,12 +1393,14 @@ void VisualServerCanvas::canvas_item_set_z_index(RID p_item, int p_z) {
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->z_index = p_z;
+	_check_bound_integrity(canvas_item);
 }
 void VisualServerCanvas::canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->z_relative = p_enable;
+	_check_bound_integrity(canvas_item);
 }
 
 Rect2 VisualServerCanvas::_debug_canvas_item_get_rect(RID p_item) {
@@ -979,7 +1439,34 @@ void VisualServerCanvas::canvas_item_attach_skeleton(RID p_item, RID p_skeleton)
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	canvas_item->skeleton = p_skeleton;
+	if (_canvas_cull_mode == CANVAS_CULL_MODE_NODE) {
+		// No op?
+		if (canvas_item->skeleton == p_skeleton) {
+			return;
+		}
+
+		// Detach from any previous skeleton.
+		if (canvas_item->skeleton.is_valid()) {
+			VSG::storage->skeleton_attach_canvas_item(canvas_item->skeleton, p_item, false);
+		}
+
+		canvas_item->skeleton = p_skeleton;
+
+		// Attach to new skeleton.
+		if (p_skeleton.is_valid()) {
+			VSG::storage->skeleton_attach_canvas_item(p_skeleton, p_item, true);
+		}
+
+		_make_bound_dirty(canvas_item);
+	} else {
+		canvas_item->skeleton = p_skeleton;
+	}
+}
+
+void VisualServerCanvas::_canvas_item_skeleton_moved(RID p_item) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect) {
@@ -998,12 +1485,14 @@ void VisualServerCanvas::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_e
 		canvas_item->copy_back_buffer->rect = p_rect;
 		canvas_item->copy_back_buffer->full = p_rect == Rect2();
 	}
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_clear(RID p_item) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
+	_make_bound_dirty(canvas_item);
 	canvas_item->clear();
 }
 void VisualServerCanvas::canvas_item_set_draw_index(RID p_item, int p_index) {
@@ -1023,6 +1512,7 @@ void VisualServerCanvas::canvas_item_set_draw_index(RID p_item, int p_index) {
 		canvas->children_order_dirty = true;
 		return;
 	}
+	_check_bound_integrity(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_set_material(RID p_item, RID p_material) {
@@ -1030,6 +1520,7 @@ void VisualServerCanvas::canvas_item_set_material(RID p_item, RID p_material) {
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->material = p_material;
+	_make_bound_dirty(canvas_item);
 }
 
 void VisualServerCanvas::canvas_item_set_use_parent_material(RID p_item, bool p_enable) {
@@ -1037,6 +1528,7 @@ void VisualServerCanvas::canvas_item_set_use_parent_material(RID p_item, bool p_
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->use_parent_material = p_enable;
+	_make_bound_dirty(canvas_item);
 }
 
 RID VisualServerCanvas::canvas_light_create() {
@@ -1378,6 +1870,7 @@ bool VisualServerCanvas::free(RID p_rid) {
 	} else if (canvas_item_owner.owns(p_rid)) {
 		Item *canvas_item = canvas_item_owner.get(p_rid);
 		ERR_FAIL_COND_V(!canvas_item, true);
+		_make_bound_dirty(canvas_item);
 
 		if (canvas_item->parent.is_valid()) {
 			if (canvas_owner.owns(canvas_item->parent)) {
@@ -1390,6 +1883,7 @@ bool VisualServerCanvas::free(RID p_rid) {
 				if (item_owner->sort_y) {
 					_mark_ysort_dirty(item_owner, canvas_item_owner);
 				}
+				_check_bound_integrity(item_owner);
 			}
 		}
 
@@ -1465,11 +1959,120 @@ bool VisualServerCanvas::free(RID p_rid) {
 	return true;
 }
 
+#ifdef VISUAL_SERVER_CANVAS_CHECK_BOUNDS
+// Debugging function to check that the bound dirty flags in the tree make sense.
+// Any item that has is dirty, all parents should be dirty up to the root
+// (except in hidden branches, which are not kept track of for performance reasons).
+bool VisualServerCanvas::_check_bound_integrity(const Item *p_item) {
+	while (p_item) {
+		if (canvas_item_owner.owns(p_item->parent)) {
+			p_item = canvas_item_owner.get(p_item->parent);
+		} else {
+			return _check_bound_integrity_down(p_item, p_item->bound_dirty);
+		}
+	}
+
+	return true;
+}
+
+bool VisualServerCanvas::_check_bound_integrity_down(const Item *p_item, bool p_bound_dirty) {
+	// don't care about integrity into invisible branches
+	if (!p_item->visible) {
+		return true;
+	}
+
+	if (p_item->bound_dirty) {
+		if (!p_bound_dirty) {
+			_print_tree(p_item);
+			ERR_PRINT("bound integrity check failed");
+			return false;
+		}
+	}
+
+	// go through children
+	int child_item_count = p_item->child_items.size();
+	Item *const *child_items = p_item->child_items.ptr();
+
+	for (int n = 0; n < child_item_count; n++) {
+		if (!_check_bound_integrity_down(child_items[n], p_bound_dirty)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void VisualServerCanvas::_print_tree(const Item *p_item) {
+	const Item *highlight = p_item;
+
+	while (p_item) {
+		if (canvas_item_owner.owns(p_item->parent)) {
+			p_item = canvas_item_owner.get(p_item->parent);
+		} else {
+			_print_tree_down(0, 0, p_item, highlight);
+			return;
+		}
+	}
+}
+
+void VisualServerCanvas::_print_tree_down(int p_child_id, int p_depth, const Item *p_item, const Item *p_highlight, bool p_hidden) {
+	String sz;
+	for (int n = 0; n < p_depth; n++) {
+		sz += "\t";
+	}
+	if (p_item == p_highlight) {
+		sz += "* ";
+	}
+	sz += itos(p_child_id) + " ";
+#ifdef VISUAL_SERVER_CANVAS_DEBUG_ITEM_NAMES
+	sz += p_item->name + "\t";
+#endif
+	sz += String(Variant(p_item->global_rect_cache)) + " ";
+
+	if (!p_item->visible) {
+		sz += "(H) ";
+		p_hidden = true;
+	} else if (p_hidden) {
+		sz += "(HI) ";
+	}
+
+	if (p_item->bound_dirty) {
+		sz += "(dirty) ";
+	}
+
+	if (p_item->parent == RID()) {
+		sz += "(parent NULL) ";
+	}
+
+	print_line(sz);
+
+	// go through children
+	int child_item_count = p_item->child_items.size();
+	Item *const *child_items = p_item->child_items.ptr();
+
+	for (int n = 0; n < child_item_count; n++) {
+		_print_tree_down(n, p_depth + 1, child_items[n], p_highlight, p_hidden);
+	}
+}
+
+#endif
+
 VisualServerCanvas::VisualServerCanvas() {
 	z_list = (RasterizerCanvas::Item **)memalloc(z_range * sizeof(RasterizerCanvas::Item *));
 	z_last_list = (RasterizerCanvas::Item **)memalloc(z_range * sizeof(RasterizerCanvas::Item *));
 
 	disable_scale = false;
+
+	int mode = GLOBAL_DEF("rendering/2d/options/culling_mode", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/options/culling_mode", PropertyInfo(Variant::INT, "rendering/2d/options/culling_mode", PROPERTY_HINT_ENUM, "Item,Node"));
+
+	switch (mode) {
+		default: {
+			_canvas_cull_mode = CANVAS_CULL_MODE_NODE;
+		} break;
+		case 0: {
+			_canvas_cull_mode = CANVAS_CULL_MODE_ITEM;
+		} break;
+	}
 }
 
 VisualServerCanvas::~VisualServerCanvas() {

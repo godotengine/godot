@@ -1051,7 +1051,15 @@ StringName Node::get_name() const {
 
 void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
+#ifdef DEV_ENABLED
+	_name_changed_notify();
+#endif
 }
+
+#ifdef DEV_ENABLED
+void Node::_name_changed_notify() {
+}
+#endif
 
 void Node::set_name(const String &p_name) {
 	String name = p_name.validate_node_name();
@@ -1078,6 +1086,10 @@ void Node::set_name(const String &p_name) {
 		get_tree()->node_renamed(this);
 		get_tree()->tree_changed();
 	}
+
+#ifdef DEV_ENABLED
+	_name_changed_notify();
+#endif
 }
 
 static bool node_hrcr = false;
@@ -1262,7 +1274,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	//add a child node quickly, without name validation
 
-	p_child->data.name = p_name;
+	p_child->_set_name_nocheck(p_name);
 	p_child->data.pos = data.children.size();
 	data.children.push_back(p_child);
 	p_child->data.parent = this;
