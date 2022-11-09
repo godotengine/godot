@@ -64,6 +64,7 @@ public:
 	virtual void erase_message(const StringName &p_src_text, const StringName &p_context = "");
 	virtual void get_message_list(List<StringName> *r_messages) const;
 	virtual int get_message_count() const;
+	virtual Vector<String> get_translated_message_list() const;
 
 	Translation() {}
 };

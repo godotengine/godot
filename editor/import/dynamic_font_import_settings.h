@@ -118,18 +118,30 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 
 	TabContainer *preload_pages = nullptr;
 
+	Label *label_glyphs = nullptr;
+	void _glyph_clear();
+	void _glyph_update_lbl();
+
+	// Page 2.0 layout: Translations
+	Label *page2_0_description = nullptr;
+	Tree *locale_tree = nullptr;
+	TreeItem *locale_root = nullptr;
+	Button *btn_fill_locales = nullptr;
+
+	void _locale_edited();
+	void _process_locales();
+
 	// Page 2.1 layout: Text to select glyphs
 	Label *page2_1_description = nullptr;
-	Label *label_glyphs = nullptr;
 	TextEdit *text_edit = nullptr;
 	EditorInspector *inspector_text = nullptr;
+	Button *btn_fill = nullptr;
 
 	List<ResourceImporter::ImportOption> options_text;
 	Ref<DynamicFontImportSettingsData> text_settings_data;
 
 	void _change_text_opts();
 	void _glyph_text_selected();
-	void _glyph_clear();
 
 	// Page 2.2 layout: Character map
 	Label *page2_2_description = nullptr;

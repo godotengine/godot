@@ -59,6 +59,18 @@ Vector<String> Translation::_get_message_list() const {
 	return msgs;
 }
 
+Vector<String> Translation::get_translated_message_list() const {
+	Vector<String> msgs;
+	msgs.resize(translation_map.size());
+	int idx = 0;
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		msgs.set(idx, E.value);
+		idx += 1;
+	}
+
+	return msgs;
+}
+
 void Translation::_set_messages(const Dictionary &p_messages) {
 	List<Variant> keys;
 	p_messages.get_key_list(&keys);
@@ -140,6 +152,7 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_message_list"), &Translation::_get_message_list);
+	ClassDB::bind_method(D_METHOD("get_translated_message_list"), &Translation::get_translated_message_list);
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
 	ClassDB::bind_method(D_METHOD("_set_messages", "messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);

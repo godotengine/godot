@@ -103,6 +103,23 @@ void TranslationPO::_set_messages(const Dictionary &p_messages) {
 	}
 }
 
+Vector<String> TranslationPO::get_translated_message_list() const {
+	Vector<String> msgs;
+	for (const KeyValue<StringName, HashMap<StringName, Vector<StringName>>> &E : translation_map) {
+		if (E.key != StringName()) {
+			continue;
+		}
+
+		for (const KeyValue<StringName, Vector<StringName>> &E2 : E.value) {
+			for (const StringName &E3 : E2.value) {
+				msgs.push_back(E3);
+			}
+		}
+	}
+
+	return msgs;
+}
+
 Vector<String> TranslationPO::_get_message_list() const {
 	// Return all keys in translation_map.
 
