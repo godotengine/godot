@@ -40,6 +40,7 @@ class EditorPropertyNameProcessor : public Node {
 
 	mutable Map<String, String> capitalize_string_cache;
 	Map<String, String> capitalize_string_remaps;
+	LocalVector<String> stop_words; // Exceptions that shouldn't be capitalized.
 
 	// Capitalizes property path segments.
 	String _capitalize_name(const String &p_name) const;
