@@ -1460,7 +1460,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 		if (Engine::get_singleton()->has_singleton(p_class)) {
 			c = Engine::get_singleton()->get_singleton_object(p_class);
 			cleanup_c = false;
-		} else if (ClassDB::can_instantiate(p_class)) { // Keep this condition in sync with doc_tools.cpp get_documentation_default_value.
+		} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) { // Keep this condition in sync with doc_tools.cpp get_documentation_default_value.
 			c = ClassDB::instantiate(p_class);
 			cleanup_c = true;
 		}
