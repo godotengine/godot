@@ -26,7 +26,11 @@ layout(push_constant, std430) uniform Params {
 	bool use_section;
 
 	bool force_luminance;
-	uint pad[3];
+	bool alpha_to_zero;
+	bool srgb;
+	bool alpha_to_one;
+
+	vec4 color;
 }
 params;
 
@@ -72,7 +76,9 @@ layout(push_constant, std430) uniform Params {
 	bool force_luminance;
 	bool alpha_to_zero;
 	bool srgb;
-	uint pad;
+	bool alpha_to_one;
+
+	vec4 color;
 }
 params;
 
@@ -105,6 +111,10 @@ vec3 linear_to_srgb(vec3 color) {
 }
 
 void main() {
+#ifdef MODE_SET_COLOR
+	frag_color = params.color;
+#else
+
 #ifdef MULTIVIEW
 	vec3 uv = uv_interp;
 #else
@@ -164,6 +174,10 @@ void main() {
 	if (params.srgb) {
 		color.rgb = linear_to_srgb(color.rgb);
 	}
+	if (params.alpha_to_one) {
+		color.a = 1.0;
+	}
 
 	frag_color = color;
+#endif // MODE_SET_COLOR
 }

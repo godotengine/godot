@@ -3112,9 +3112,11 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 
 	// TODO figure out stereo support here
 
-	//single texture copy for backbuffer
-	//RD::get_singleton()->texture_copy(rt->color, rt->backbuffer_mipmap0, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
-	copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+		copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+	} else {
+		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, true);
+	}
 
 	if (!p_gen_mipmaps) {
 		return;
@@ -3123,6 +3125,8 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	//then mipmap blur
 	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
 
+	Size2i texture_size = rt->size;
+
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
@@ -3130,7 +3134,13 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 		region.size.y = MAX(1, region.size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
-		copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+		} else {
+			texture_size.x = MAX(1, texture_size.x >> 1);
+			texture_size.y = MAX(1, texture_size.y >> 1);
+			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
+		}
 		prev_texture = mipmap;
 	}
 	RD::get_singleton()->draw_command_end_label();
@@ -3158,7 +3168,11 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 	}
 
 	//single texture copy for backbuffer
-	copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+	} else {
+		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+	}
 }
 
 void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
@@ -3184,6 +3198,7 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps2");
 	//then mipmap blur
 	RID prev_texture = rt->backbuffer_mipmap0;
+	Size2i texture_size = rt->size;
 
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
@@ -3192,7 +3207,14 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 		region.size.y = MAX(1, region.size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
-		copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+
+		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+		} else {
+			texture_size.x = MAX(1, texture_size.x >> 1);
+			texture_size.y = MAX(1, texture_size.y >> 1);
+			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
+		}
 		prev_texture = mipmap;
 	}
 	RD::get_singleton()->draw_command_end_label();
