@@ -126,6 +126,29 @@ public class GodotView extends GLSurfaceView {
 		return inputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
 	}
 
+	@Override
+	public boolean onCapturedPointerEvent(MotionEvent event) {
+		return inputHandler.onGenericMotionEvent(event);
+	}
+
+	@Override
+	public void onPointerCaptureChange(boolean hasCapture) {
+		super.onPointerCaptureChange(hasCapture);
+		inputHandler.onPointerCaptureChange(hasCapture);
+	}
+
+	@Override
+	public void requestPointerCapture() {
+		super.requestPointerCapture();
+		inputHandler.onPointerCaptureChange(true);
+	}
+
+	@Override
+	public void releasePointerCapture() {
+		super.releasePointerCapture();
+		inputHandler.onPointerCaptureChange(false);
+	}
+
 	/**
 	 * Called from JNI to change the pointer icon
 	 */

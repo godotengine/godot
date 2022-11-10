@@ -274,10 +274,10 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 }
 
 void OS_Android::set_mouse_mode(MouseMode p_mode) {
-	if (!godot_java->get_godot_view()->can_update_pointer_icon()) {
+	if (!godot_java->get_godot_view()->can_update_pointer_icon() || !godot_java->get_godot_view()->can_capture_pointer()) {
 		return;
 	}
-	if (mouse_mode == p_mode || p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
+	if (mouse_mode == p_mode) {
 		return;
 	}
 
@@ -285,6 +285,12 @@ void OS_Android::set_mouse_mode(MouseMode p_mode) {
 		godot_java->get_godot_view()->set_pointer_icon(CURSOR_TYPE_NULL);
 	} else {
 		set_cursor_shape(cursor_shape);
+	}
+
+	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
+		godot_java->get_godot_view()->request_pointer_capture();
+	} else {
+		godot_java->get_godot_view()->release_pointer_capture();
 	}
 
 	mouse_mode = p_mode;
