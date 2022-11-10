@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 const GodotWebXR = {
-	$GodotWebXR__deps: ['$Browser', '$GL', '$GodotRuntime'],
+	$GodotWebXR__deps: ['$Browser', '$GL', '$GodotRuntime', '$runtimeKeepalivePush', '$runtimeKeepalivePop'],
 	$GodotWebXR: {
 		gl: null,
 
@@ -69,7 +69,9 @@ const GodotWebXR = {
 			// gets picked up automatically, however, in the Oculus Browser
 			// on the Quest, we need to pause and resume the main loop.
 			Browser.mainLoop.pause();
+			runtimeKeepalivePush(); // eslint-disable-line no-undef
 			window.setTimeout(function () {
+				runtimeKeepalivePop(); // eslint-disable-line no-undef
 				Browser.mainLoop.resume();
 			}, 0);
 		},
