@@ -53,30 +53,31 @@ void main() {
 
 #ifdef MODE_GAUSSIAN_BLUR
 
-	// Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect
+	// For Gaussian Blur we use 13 taps in a single pass instead of 12 taps over 2 passes.
+	// This minimizes the number of times we change framebuffers which is very important for mobile.
+	// Source: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+	vec4 A = texture(source_color, uv_interp + blur.pixel_size * vec2(-1.0, -1.0));
+	vec4 B = texture(source_color, uv_interp + blur.pixel_size * vec2(0.0, -1.0));
+	vec4 C = texture(source_color, uv_interp + blur.pixel_size * vec2(1.0, -1.0));
+	vec4 D = texture(source_color, uv_interp + blur.pixel_size * vec2(-0.5, -0.5));
+	vec4 E = texture(source_color, uv_interp + blur.pixel_size * vec2(0.5, -0.5));
+	vec4 F = texture(source_color, uv_interp + blur.pixel_size * vec2(-1.0, 0.0));
+	vec4 G = texture(source_color, uv_interp);
+	vec4 H = texture(source_color, uv_interp + blur.pixel_size * vec2(1.0, 0.0));
+	vec4 I = texture(source_color, uv_interp + blur.pixel_size * vec2(-0.5, 0.5));
+	vec4 J = texture(source_color, uv_interp + blur.pixel_size * vec2(0.5, 0.5));
+	vec4 K = texture(source_color, uv_interp + blur.pixel_size * vec2(-1.0, 1.0));
+	vec4 L = texture(source_color, uv_interp + blur.pixel_size * vec2(0.0, 1.0));
+	vec4 M = texture(source_color, uv_interp + blur.pixel_size * vec2(1.0, 1.0));
 
-	// note, for blur blur.luminance_multiplier is irrelavant, we would be multiplying and then dividing by this amount.
+	float base_weight = 0.5 / 4.0;
+	float lesser_weight = 0.125 / 4.0;
 
-	if (bool(blur.flags & FLAG_HORIZONTAL)) {
-		vec2 pix_size = blur.pixel_size;
-		pix_size *= 0.5; //reading from larger buffer, so use more samples
-		vec4 color = texture(source_color, uv_interp + vec2(0.0, 0.0) * pix_size) * 0.214607;
-		color += texture(source_color, uv_interp + vec2(1.0, 0.0) * pix_size) * 0.189879;
-		color += texture(source_color, uv_interp + vec2(2.0, 0.0) * pix_size) * 0.131514;
-		color += texture(source_color, uv_interp + vec2(3.0, 0.0) * pix_size) * 0.071303;
-		color += texture(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size) * 0.189879;
-		color += texture(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size) * 0.131514;
-		color += texture(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size) * 0.071303;
-		frag_color = color;
-	} else {
-		vec2 pix_size = blur.pixel_size;
-		vec4 color = texture(source_color, uv_interp + vec2(0.0, 0.0) * pix_size) * 0.38774;
-		color += texture(source_color, uv_interp + vec2(0.0, 1.0) * pix_size) * 0.24477;
-		color += texture(source_color, uv_interp + vec2(0.0, 2.0) * pix_size) * 0.06136;
-		color += texture(source_color, uv_interp + vec2(0.0, -1.0) * pix_size) * 0.24477;
-		color += texture(source_color, uv_interp + vec2(0.0, -2.0) * pix_size) * 0.06136;
-		frag_color = color;
-	}
+	frag_color = (D + E + I + J) * base_weight;
+	frag_color += (A + B + G + F) * lesser_weight;
+	frag_color += (B + C + H + G) * lesser_weight;
+	frag_color += (F + G + L + K) * lesser_weight;
+	frag_color += (G + H + M + L) * lesser_weight;
 #endif
 
 #ifdef MODE_GAUSSIAN_GLOW
