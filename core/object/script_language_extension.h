@@ -681,21 +681,15 @@ public:
 		}
 	}
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override {
-		Variant::Type type = Variant::Type::NIL;
-		if (native_info->get_property_list_func) {
-			uint32_t pcount;
-			const GDNativePropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
-			for (uint32_t i = 0; i < pcount; i++) {
-				if (p_name == *reinterpret_cast<StringName *>(pinfo->name)) {
-					type = Variant::Type(pinfo->type);
-					break;
-				}
+		if (native_info->get_property_type_func) {
+			GDNativeBool is_valid = 0;
+			GDNativeVariantType type = native_info->get_property_type_func(instance, (const GDNativeStringNamePtr)&p_name, &is_valid);
+			if (r_is_valid) {
+				*r_is_valid = is_valid != 0;
 			}
-			if (native_info->free_property_list_func) {
-				native_info->free_property_list_func(instance, pinfo);
-			}
+			return Variant::Type(type);
 		}
-		return type;
+		return Variant::NIL;
 	}
 
 	virtual bool property_can_revert(const StringName &p_name) const override {
