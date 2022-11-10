@@ -174,10 +174,17 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 	extension->native_extension.is_abstract = p_extension_funcs->is_abstract;
 	extension->native_extension.set = p_extension_funcs->set_func;
 	extension->native_extension.get = p_extension_funcs->get_func;
-	extension->native_extension.get_property_list = p_extension_funcs->get_property_list_func;
-	extension->native_extension.free_property_list = p_extension_funcs->free_property_list_func;
-	extension->native_extension.property_can_revert = p_extension_funcs->property_can_revert_func;
-	extension->native_extension.property_get_revert = p_extension_funcs->property_get_revert_func;
+
+	for (uint32_t i = 0; i < p_extension_funcs->property_count; i++) {
+		GDNativePropertyInfo *prop = reinterpret_cast<GDNativePropertyInfo *>(&p_extension_funcs->properties_info[i]);
+		extension->native_extension.properties.push_back(PropertyInfo(*prop));
+		Variant *revert_value = reinterpret_cast<Variant *>(p_extension_funcs->properties_revert_value[i]);
+		if (revert_value != NULL) {
+			StringName *prop_name = reinterpret_cast<StringName *>(prop->name);
+			extension->native_extension.properties_revert_value[*prop_name] = revert_value->duplicate(true);
+		}
+	}
+
 	extension->native_extension.notification = p_extension_funcs->notification_func;
 	extension->native_extension.to_string = p_extension_funcs->to_string_func;
 	extension->native_extension.reference = p_extension_funcs->reference_func;

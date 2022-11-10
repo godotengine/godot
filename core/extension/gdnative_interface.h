@@ -238,10 +238,10 @@ typedef struct {
 	GDNativeBool is_abstract;
 	GDNativeExtensionClassSet set_func;
 	GDNativeExtensionClassGet get_func;
-	GDNativeExtensionClassGetPropertyList get_property_list_func;
-	GDNativeExtensionClassFreePropertyList free_property_list_func;
-	GDNativeExtensionClassPropertyCanRevert property_can_revert_func;
-	GDNativeExtensionClassPropertyGetRevert property_get_revert_func;
+	uint32_t property_count;
+	GDNativePropertyInfo *properties_info; // array of `property_count` size
+	// array of `property_count` size, properties that can't be reverted are set to NULL
+	GDNativeVariantPtr *properties_revert_value;
 	GDNativeExtensionClassNotification notification_func;
 	GDNativeExtensionClassToString to_string_func;
 	GDNativeExtensionClassReference reference_func;

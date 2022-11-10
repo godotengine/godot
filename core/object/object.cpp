@@ -485,14 +485,9 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		}
 	}
 
-	if (_extension && _extension->get_property_list) {
-		uint32_t pcount;
-		const GDNativePropertyInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
-		for (uint32_t i = 0; i < pcount; i++) {
-			p_list->push_back(PropertyInfo(pinfo[i]));
-		}
-		if (_extension->free_property_list) {
-			_extension->free_property_list(_extension_instance, pinfo);
+	if (_extension) {
+		for (int i = 0; i < _extension->properties.size(); i++) {
+			p_list->push_back(_extension->properties[i]);
 		}
 	}
 
@@ -527,19 +522,11 @@ bool Object::property_can_revert(const StringName &p_name) const {
 		}
 	}
 
-// C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#endif
-	if (_extension && _extension->property_can_revert) {
-		if (_extension->property_can_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name)) {
+	if (_extension) {
+		if (_extension->properties_revert_value.has(p_name)) {
 			return true;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	return _property_can_revertv(p_name);
 }
@@ -553,19 +540,12 @@ Variant Object::property_get_revert(const StringName &p_name) const {
 		}
 	}
 
-// C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#endif
-	if (_extension && _extension->property_get_revert) {
-		if (_extension->property_get_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&ret)) {
-			return ret;
+	if (_extension) {
+		Variant *revert_value = _extension->properties_revert_value.getptr(p_name);
+		if (revert_value != nullptr) {
+			return revert_value->duplicate(true);
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	if (_property_get_revertv(p_name, ret)) {
 		return ret;

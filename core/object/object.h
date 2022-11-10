@@ -313,10 +313,8 @@ struct ObjectNativeExtension {
 	bool is_abstract = false;
 	GDNativeExtensionClassSet set;
 	GDNativeExtensionClassGet get;
-	GDNativeExtensionClassGetPropertyList get_property_list;
-	GDNativeExtensionClassFreePropertyList free_property_list;
-	GDNativeExtensionClassPropertyCanRevert property_can_revert;
-	GDNativeExtensionClassPropertyGetRevert property_get_revert;
+	List<PropertyInfo> properties;
+	HashMap<StringName, Variant> properties_revert_value;
 	GDNativeExtensionClassNotification notification;
 	GDNativeExtensionClassToString to_string;
 	GDNativeExtensionClassReference reference;
