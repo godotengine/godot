@@ -940,7 +940,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							dst[0] = (int16_t)CLAMP(src[0] / 127.0f * 32767, -32768, 32767);
 							dst[1] = (int16_t)CLAMP(src[1] / 127.0f * 32767, -32768, 32767);
 						}
-						src_offset += sizeof(int16_t) * 2;
+						src_offset += sizeof(int8_t) * 2;
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
@@ -962,7 +962,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
-						src_offset += sizeof(uint16_t) * 2;
+						src_offset += sizeof(uint8_t) * 4; // 1 byte padding
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
@@ -973,7 +973,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
-						src_offset += sizeof(uint16_t) * 2;
+						src_offset += sizeof(float) * 3;
 					}
 				}
 
@@ -988,7 +988,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							dst[0] = (uint16_t)CLAMP((src[0] / 127.0f * .5f + .5f) * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP((src[1] / 127.0f * .5f + .5f) * 65535, 0, 65535);
 						}
-						src_offset += sizeof(uint16_t) * 2;
+						src_offset += sizeof(uint8_t) * 2;
 					} else { // int16 SNORM -> uint16 UNORM
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
@@ -1010,7 +1010,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
-						src_offset += sizeof(uint16_t) * 2;
+						src_offset += sizeof(uint8_t) * 4;
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
@@ -1021,7 +1021,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
-						src_offset += sizeof(uint16_t) * 2;
+						src_offset += sizeof(float) * 4;
 					}
 				}
 			} break;
