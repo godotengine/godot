@@ -295,7 +295,9 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	TriangulatorPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
-		ERR_PRINT("NavigationPolygon: Convex partition failed!");
+		ERR_PRINT("NavigationPolygon: Convex partition failed! Failed to convert outlines to a valid NavigationMesh."
+				  "\nNavigationPolygon outlines can not overlap vertices or edges inside same outline or with other outlines or have any intersections."
+				  "\nAdd the outmost and largest outline first. To add holes inside this outline add the smaller outlines with opposite winding order.");
 		return;
 	}
 
