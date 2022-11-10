@@ -3349,7 +3349,7 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 
 	SceneShaderForwardClustered::MaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
-	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_position && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass && !p_material->shader_data->uses_alpha_clip && p_material->shader_data->cull_mode == SceneShaderForwardClustered::ShaderData::CULL_BACK) {
+	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_position && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass && !p_material->shader_data->uses_alpha_clip && p_material->shader_data->cull_mode == SceneShaderForwardClustered::ShaderData::CULL_BACK && !p_material->shader_data->uses_point_size) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = static_cast<SceneShaderForwardClustered::MaterialData *>(RendererRD::MaterialStorage::get_singleton()->material_get_data(scene_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
 
