@@ -63,7 +63,8 @@ void ResourceImporterImageFont::get_import_options(const String &p_path, List<Im
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "character_ranges"), Vector<String>()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "columns"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rows"), 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "font_size"), 14));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "image_margin"), Rect2i()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "character_margin"), Rect2i()));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Font")), Array()));
 
@@ -93,33 +94,39 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 
 	int columns = p_options["columns"];
 	int rows = p_options["rows"];
-	int base_size = p_options["font_size"];
 	Vector<String> ranges = p_options["character_ranges"];
 	Array fallbacks = p_options["fallbacks"];
+	Rect2i img_margin = p_options["image_margin"];
+	Rect2i char_margin = p_options["character_margin"];
+
+	Ref<Image> img;
+	img.instantiate();
+	Error err = ImageLoader::load_image(p_source_file, img);
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture:") + " \"" + p_source_file + "\".");
+
+	int count = columns * rows;
+	int chr_cell_width = (img->get_width() - img_margin.position.x - img_margin.size.x) / columns;
+	int chr_cell_height = (img->get_height() - img_margin.position.y - img_margin.size.y) / rows;
+	ERR_FAIL_COND_V_MSG(chr_cell_width <= 0 || chr_cell_height <= 0, ERR_FILE_CANT_READ, TTR("Image margin too big."));
+
+	int chr_width = chr_cell_width - char_margin.position.x - char_margin.size.x;
+	int chr_height = chr_cell_height - char_margin.position.y - char_margin.size.y;
+	ERR_FAIL_COND_V_MSG(chr_width <= 0 || chr_height <= 0, ERR_FILE_CANT_READ, TTR("Character margin too bit."));
 
 	Ref<FontFile> font;
 	font.instantiate();
 	font->set_antialiasing(TextServer::FONT_ANTIALIASING_NONE);
 	font->set_generate_mipmaps(false);
 	font->set_multichannel_signed_distance_field(false);
-	font->set_fixed_size(base_size);
+	font->set_fixed_size(chr_height);
 	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
 	font->set_force_autohinter(false);
 	font->set_hinting(TextServer::HINTING_NONE);
 	font->set_oversampling(1.0f);
 	font->set_fallbacks(fallbacks);
+	font->set_texture_image(0, Vector2i(chr_height, 0), 0, img);
 
-	Ref<Image> img;
-	img.instantiate();
-	Error err = ImageLoader::load_image(p_source_file, img);
-	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture:") + " \"" + p_source_file + "\".");
-	font->set_texture_image(0, Vector2i(base_size, 0), 0, img);
-
-	int count = columns * rows;
-	int chr_width = img->get_width() / columns;
-	int chr_height = img->get_height() / rows;
 	int pos = 0;
-
 	for (int i = 0; i < ranges.size(); i++) {
 		int32_t start, end;
 		Vector<String> tokens = ranges[i].split("-");
@@ -141,17 +148,17 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 		for (int32_t idx = start; idx <= end; idx++) {
 			int x = pos % columns;
 			int y = pos / columns;
-			font->set_glyph_advance(0, base_size, idx, Vector2(chr_width, 0));
-			font->set_glyph_offset(0, Vector2i(base_size, 0), idx, Vector2(0, -0.5 * chr_height));
-			font->set_glyph_size(0, Vector2i(base_size, 0), idx, Vector2(chr_width, chr_height));
-			font->set_glyph_uv_rect(0, Vector2i(base_size, 0), idx, Rect2(chr_width * x, chr_height * y, chr_width, chr_height));
-			font->set_glyph_texture_idx(0, Vector2i(base_size, 0), idx, 0);
+			font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width, 0));
+			font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2(0, -0.5 * chr_height));
+			font->set_glyph_size(0, Vector2i(chr_height, 0), idx, Vector2(chr_width, chr_height));
+			font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
+			font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);
 			pos++;
-			ERR_FAIL_COND_V_MSG(pos >= count, ERR_CANT_CREATE, "Too many characters in range.");
+			ERR_FAIL_COND_V_MSG(pos >= count, ERR_CANT_CREATE, "Too many characters in range, should be " + itos(columns * rows));
 		}
 	}
-	font->set_cache_ascent(0, base_size, 0.5 * chr_height);
-	font->set_cache_descent(0, base_size, 0.5 * chr_height);
+	font->set_cache_ascent(0, chr_height, 0.5 * chr_height);
+	font->set_cache_descent(0, chr_height, 0.5 * chr_height);
 
 	int flg = 0;
 	if ((bool)p_options["compress"]) {
