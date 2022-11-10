@@ -1163,6 +1163,8 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			if (p_function->parameters[i]->default_value->is_constant) {
 				p_function->default_arg_values.push_back(p_function->parameters[i]->default_value->reduced_value);
+			} else {
+				p_function->default_arg_values.push_back(Variant()); // Prevent shift.
 			}
 		}
 #endif // TOOLS_ENABLED
