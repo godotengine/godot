@@ -491,6 +491,17 @@ int CanvasItem::get_z_index() const {
 	return z_index;
 }
 
+int CanvasItem::get_effective_z_index() const {
+	int effective_z_index = z_index;
+	if (is_z_relative()) {
+		CanvasItem *p = get_parent_item();
+		if (p) {
+			effective_z_index += p->get_effective_z_index();
+		}
+	}
+	return effective_z_index;
+}
+
 void CanvasItem::set_y_sort_enabled(bool p_enabled) {
 	y_sort_enabled = p_enabled;
 	RS::get_singleton()->canvas_item_set_sort_children_by_y(canvas_item, y_sort_enabled);
