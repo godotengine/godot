@@ -309,6 +309,7 @@ typedef GDNativeBool (*GDNativeExtensionScriptInstanceSet)(GDNativeExtensionScri
 typedef GDNativeBool (*GDNativeExtensionScriptInstanceGet)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
 typedef const GDNativePropertyInfo *(*GDNativeExtensionScriptInstanceGetPropertyList)(GDNativeExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
 typedef void (*GDNativeExtensionScriptInstanceFreePropertyList)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativePropertyInfo *p_list);
+typedef GDNativeVariantType (*GDNativeExtensionScriptInstanceGetPropertyType)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeBool *r_is_valid);
 
 typedef GDNativeBool (*GDNativeExtensionScriptInstancePropertyCanRevert)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name);
 typedef GDNativeBool (*GDNativeExtensionScriptInstancePropertyGetRevert)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
@@ -354,6 +355,7 @@ typedef struct {
 
 	GDNativeExtensionScriptInstanceGetMethodList get_method_list_func;
 	GDNativeExtensionScriptInstanceFreeMethodList free_method_list_func;
+	GDNativeExtensionScriptInstanceGetPropertyType get_property_type_func;
 
 	GDNativeExtensionScriptInstanceHasMethod has_method_func;
 
