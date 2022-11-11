@@ -960,17 +960,30 @@ void LineEdit::_notification(int p_what) {
 				if (ime_text.length() == 0) {
 					// Normal caret.
 					CaretInfo caret = TS->shaped_text_get_carets(text_rid, caret_column);
-
-					if (caret.l_caret == Rect2() && caret.t_caret == Rect2()) {
+					if (using_placeholder || (caret.l_caret == Rect2() && caret.t_caret == Rect2())) {
 						// No carets, add one at the start.
 						int h = theme_cache.font->get_height(theme_cache.font_size);
 						int y = style->get_offset().y + (y_area - h) / 2;
-						if (rtl) {
-							caret.l_dir = TextServer::DIRECTION_RTL;
-							caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
-						} else {
-							caret.l_dir = TextServer::DIRECTION_LTR;
-							caret.l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
+						caret.l_dir = (rtl) ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR;
+						switch (alignment) {
+							case HORIZONTAL_ALIGNMENT_FILL:
+							case HORIZONTAL_ALIGNMENT_LEFT: {
+								if (rtl) {
+									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
+								} else {
+									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+								}
+							} break;
+							case HORIZONTAL_ALIGNMENT_CENTER: {
+								caret.l_caret = Rect2(Vector2(size.x / 2, y), Size2(caret_width, h));
+							} break;
+							case HORIZONTAL_ALIGNMENT_RIGHT: {
+								if (rtl) {
+									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+								} else {
+									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
+								}
+							} break;
 						}
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
 					} else {
