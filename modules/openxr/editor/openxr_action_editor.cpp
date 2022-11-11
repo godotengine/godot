@@ -29,8 +29,13 @@
 /*************************************************************************/
 
 #include "openxr_action_editor.h"
+#include "editor/editor_node.h"
 
 void OpenXRActionEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_do_set_name", "name"), &OpenXRActionEditor::_do_set_name);
+	ClassDB::bind_method(D_METHOD("_do_set_localized_name", "name"), &OpenXRActionEditor::_do_set_localized_name);
+	ClassDB::bind_method(D_METHOD("_do_set_action_type", "type"), &OpenXRActionEditor::_do_set_action_type);
+
 	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(Variant::OBJECT, "action_editor")));
 }
 
@@ -48,24 +53,71 @@ void OpenXRActionEditor::_notification(int p_what) {
 }
 
 void OpenXRActionEditor::_on_action_name_changed(const String p_new_text) {
-	// TODO validate if entry is allowed
+	if (action->get_name() != p_new_text) {
+		undo_redo->create_action(TTR("Rename Action"));
+		undo_redo->add_do_method(this, "_do_set_name", p_new_text);
+		undo_redo->add_undo_method(this, "_do_set_name", action->get_name());
+		undo_redo->commit_action(false);
 
-	// If our localized name matches our action name, set this too
-	if (action->get_name() == action->get_localized_name()) {
-		action->set_localized_name(p_new_text);
-		action_localized_name->set_text(p_new_text);
+		// If our localized name matches our action name, set this too
+		if (action->get_name() == action->get_localized_name()) {
+			undo_redo->create_action(TTR("Rename Actions Localized name"));
+			undo_redo->add_do_method(this, "_do_set_localized_name", p_new_text);
+			undo_redo->add_undo_method(this, "_do_set_localized_name", action->get_localized_name());
+			undo_redo->commit_action(false);
+
+			action->set_localized_name(p_new_text);
+			action_localized_name->set_text(p_new_text);
+		}
+		action->set_name(p_new_text);
+		action->set_edited(true);
 	}
+}
+
+void OpenXRActionEditor::_do_set_name(const String p_new_text) {
 	action->set_name(p_new_text);
+	action->set_edited(true);
+	action_name->set_text(p_new_text);
 }
 
 void OpenXRActionEditor::_on_action_localized_name_changed(const String p_new_text) {
+	if (action->get_localized_name() != p_new_text) {
+		undo_redo->create_action(TTR("Rename Actions Localized name"));
+		undo_redo->add_do_method(this, "_do_set_localized_name", p_new_text);
+		undo_redo->add_undo_method(this, "_do_set_localized_name", action->get_localized_name());
+		undo_redo->commit_action(false);
+
+		action->set_localized_name(p_new_text);
+		action->set_edited(true);
+	}
+}
+
+void OpenXRActionEditor::_do_set_localized_name(const String p_new_text) {
 	action->set_localized_name(p_new_text);
+	action->set_edited(true);
+	action_localized_name->set_text(p_new_text);
 }
 
 void OpenXRActionEditor::_on_item_selected(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, OpenXRAction::OPENXR_ACTION_MAX);
 
-	action->set_action_type(OpenXRAction::ActionType(p_idx));
+	OpenXRAction::ActionType action_type = OpenXRAction::ActionType(p_idx);
+
+	if (action->get_action_type() != action_type) {
+		undo_redo->create_action(TTR("Change Action Type"));
+		undo_redo->add_do_method(this, "_do_set_action_type", action_type);
+		undo_redo->add_undo_method(this, "_do_set_action_type", action->get_action_type());
+		undo_redo->commit_action(false);
+
+		action->set_action_type(action_type);
+		action->set_edited(true);
+	}
+}
+
+void OpenXRActionEditor::_do_set_action_type(OpenXRAction::ActionType p_action_type) {
+	action->set_action_type(p_action_type);
+	action->set_edited(true);
+	action_type_button->select(int(action->get_action_type()));
 }
 
 void OpenXRActionEditor::_on_remove_action() {
@@ -73,6 +125,7 @@ void OpenXRActionEditor::_on_remove_action() {
 }
 
 OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
+	undo_redo = EditorNode::get_undo_redo();
 	action = p_action;
 
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -90,16 +143,16 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 	action_localized_name->connect("text_changed", callable_mp(this, &OpenXRActionEditor::_on_action_localized_name_changed));
 	add_child(action_localized_name);
 
-	action_type = memnew(OptionButton);
-	action_type->add_item("Bool", OpenXRAction::OPENXR_ACTION_BOOL);
-	action_type->add_item("Float", OpenXRAction::OPENXR_ACTION_FLOAT);
-	action_type->add_item("Vector2", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	action_type->add_item("Pose", OpenXRAction::OPENXR_ACTION_POSE);
-	action_type->add_item("Haptic", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	action_type->select(int(action->get_action_type()));
-	action_type->set_custom_minimum_size(Size2(100.0, 0.0));
-	action_type->connect("item_selected", callable_mp(this, &OpenXRActionEditor::_on_item_selected));
-	add_child(action_type);
+	action_type_button = memnew(OptionButton);
+	action_type_button->add_item("Bool", OpenXRAction::OPENXR_ACTION_BOOL);
+	action_type_button->add_item("Float", OpenXRAction::OPENXR_ACTION_FLOAT);
+	action_type_button->add_item("Vector2", OpenXRAction::OPENXR_ACTION_VECTOR2);
+	action_type_button->add_item("Pose", OpenXRAction::OPENXR_ACTION_POSE);
+	action_type_button->add_item("Haptic", OpenXRAction::OPENXR_ACTION_HAPTIC);
+	action_type_button->select(int(action->get_action_type()));
+	action_type_button->set_custom_minimum_size(Size2(100.0, 0.0));
+	action_type_button->connect("item_selected", callable_mp(this, &OpenXRActionEditor::_on_item_selected));
+	add_child(action_type_button);
 
 	// maybe add dropdown to edit our toplevel paths, or do we deduce them from our suggested bindings?
 

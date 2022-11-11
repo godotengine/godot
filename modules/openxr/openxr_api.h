@@ -150,6 +150,7 @@ private:
 	bool load_layer_properties();
 	bool load_supported_extensions();
 	bool is_extension_supported(const String &p_extension) const;
+	bool is_extension_enabled(const String &p_extension) const;
 
 	bool openxr_loader_init();
 	bool resolve_instance_openxr_symbols();
@@ -301,7 +302,9 @@ public:
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 
 	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
-	bool is_path_supported(const String &p_path);
+	bool is_top_level_path_supported(const String &p_toplevel_path);
+	bool is_interaction_profile_supported(const String &p_ip_path);
+	bool interaction_profile_supports_io_path(const String &p_ip_path, const String &p_io_path);
 
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
 	static OpenXRAPI *get_singleton();

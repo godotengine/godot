@@ -32,6 +32,7 @@
 #define OPENXR_ACTION_EDITOR_H
 
 #include "../action_map/openxr_action.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
@@ -42,11 +43,12 @@ class OpenXRActionEditor : public HBoxContainer {
 	GDCLASS(OpenXRActionEditor, HBoxContainer);
 
 private:
+	Ref<EditorUndoRedoManager> undo_redo;
 	Ref<OpenXRAction> action;
 
 	LineEdit *action_name = nullptr;
 	LineEdit *action_localized_name = nullptr;
-	OptionButton *action_type = nullptr;
+	OptionButton *action_type_button = nullptr;
 	Button *rem_action = nullptr;
 
 	void _theme_changed();
@@ -58,6 +60,11 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	// used for undo/redo
+	void _do_set_name(const String p_new_text);
+	void _do_set_localized_name(const String p_new_text);
+	void _do_set_action_type(OpenXRAction::ActionType p_action_type);
 
 public:
 	Ref<OpenXRAction> get_action() { return action; };

@@ -34,7 +34,7 @@
 #include "core/io/resource.h"
 
 #include "openxr_action.h"
-#include "openxr_defs.h"
+#include "openxr_interaction_profile_meta_data.h"
 
 class OpenXRIPBinding : public Resource {
 	GDCLASS(OpenXRIPBinding, Resource);
@@ -94,6 +94,7 @@ public:
 
 	void add_new_binding(const Ref<OpenXRAction> p_action, const char *p_paths); // Create a new binding for this profile
 	void remove_binding_for_action(const Ref<OpenXRAction> p_action); // Remove all bindings for this action
+	bool has_binding_for_action(const Ref<OpenXRAction> p_action); // Returns true if we have a binding for this action
 
 	~OpenXRInteractionProfile();
 };

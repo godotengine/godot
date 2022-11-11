@@ -75,13 +75,13 @@ void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_inclu
 	ip_buttons.clear();
 
 	// in with the new
-	PackedStringArray interaction_profiles = OpenXRDefs::get_interaction_profile_paths();
+	PackedStringArray interaction_profiles = OpenXRInteractionProfileMetaData::get_singleton()->get_interaction_profile_paths();
 	for (int i = 0; i < interaction_profiles.size(); i++) {
 		String path = interaction_profiles[i];
 		if (!p_do_not_include.has(path)) {
 			Button *ip_button = memnew(Button);
 			ip_button->set_flat(true);
-			ip_button->set_text(OpenXRDefs::get_profile(path)->display_name);
+			ip_button->set_text(OpenXRInteractionProfileMetaData::get_singleton()->get_profile(path)->display_name);
 			ip_button->connect("pressed", callable_mp(this, &OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile).bind(path));
 			main_vb->add_child(ip_button);
 

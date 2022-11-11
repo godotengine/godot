@@ -89,11 +89,6 @@ public:
 		return false;
 	}
 
-	// Return false if this extension is responsible for this path but the path is not enabled
-	virtual bool is_path_supported(const String &p_path) {
-		return true;
-	}
-
 	OpenXRExtensionWrapper(OpenXRAPI *p_openxr_api) { openxr_api = p_openxr_api; };
 	virtual ~OpenXRExtensionWrapper() = default;
 };

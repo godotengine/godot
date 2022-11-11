@@ -65,38 +65,3 @@ bool OpenXRHTCViveTrackerExtension::on_event_polled(const XrEventDataBuffer &eve
 		} break;
 	}
 }
-
-bool OpenXRHTCViveTrackerExtension::is_path_supported(const String &p_path) {
-	if (p_path == "/interaction_profiles/htc/vive_tracker_htcx") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/handheld_object") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/left_foot") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/right_foot") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/left_shoulder") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/right_shoulder") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/left_elbow") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/right_elbow") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/left_knee") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/right_knee") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/waist") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/chest") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/camera") {
-		return available;
-	} else if (p_path == "/user/vive_tracker_htcx/role/keyboard") {
-		return available;
-	}
-
-	// Not a path under this extensions control, so we return true;
-	return true;
-}

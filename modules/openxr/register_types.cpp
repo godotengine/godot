@@ -37,8 +37,13 @@
 #include "action_map/openxr_action_map.h"
 #include "action_map/openxr_action_set.h"
 #include "action_map/openxr_interaction_profile.h"
+#include "action_map/openxr_interaction_profile_meta_data.h"
 
 #include "scene/openxr_hand.h"
+
+static OpenXRAPI *openxr_api = nullptr;
+static OpenXRInteractionProfileMetaData *openxr_interaction_profile_meta_data = nullptr;
+static Ref<OpenXRInterface> openxr_interface;
 
 #ifdef TOOLS_ENABLED
 
@@ -49,6 +54,12 @@ static void _editor_init() {
 	if (OpenXRAPI::openxr_is_enabled(false)) {
 		// Only add our OpenXR action map editor if OpenXR is enabled for our project
 
+		if (openxr_interaction_profile_meta_data == nullptr) {
+			// If we didn't initialize our actionmap meta data at startup, we initialise it now.
+			openxr_interaction_profile_meta_data = memnew(OpenXRInteractionProfileMetaData);
+			ERR_FAIL_NULL(openxr_interaction_profile_meta_data);
+		}
+
 		OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
 		EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 	}
@@ -56,14 +67,13 @@ static void _editor_init() {
 
 #endif
 
-static OpenXRAPI *openxr_api = nullptr;
-static Ref<OpenXRInterface> openxr_interface;
-
 void initialize_openxr_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
 
 		if (OpenXRAPI::openxr_is_enabled()) {
+			openxr_interaction_profile_meta_data = memnew(OpenXRInteractionProfileMetaData);
+			ERR_FAIL_NULL(openxr_interaction_profile_meta_data);
 			openxr_api = memnew(OpenXRAPI);
 			ERR_FAIL_NULL(openxr_api);
 
@@ -81,6 +91,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRAction);
 		GDREGISTER_CLASS(OpenXRActionSet);
 		GDREGISTER_CLASS(OpenXRActionMap);
+		GDREGISTER_CLASS(OpenXRInteractionProfileMetaData);
 		GDREGISTER_CLASS(OpenXRIPBinding);
 		GDREGISTER_CLASS(OpenXRInteractionProfile);
 
@@ -130,5 +141,10 @@ void uninitialize_openxr_module(ModuleInitializationLevel p_level) {
 		openxr_api->finish();
 		memdelete(openxr_api);
 		openxr_api = nullptr;
+	}
+
+	if (openxr_interaction_profile_meta_data) {
+		memdelete(openxr_interaction_profile_meta_data);
+		openxr_interaction_profile_meta_data = nullptr;
 	}
 }

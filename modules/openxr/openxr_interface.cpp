@@ -158,7 +158,7 @@ void OpenXRInterface::_load_action_map() {
 
 				for (int k = 0; k < toplevel_paths.size(); k++) {
 					// Only check for our tracker if our path is supported.
-					if (openxr_api->is_path_supported(toplevel_paths[k])) {
+					if (openxr_api->is_top_level_path_supported(toplevel_paths[k])) {
 						Tracker *tracker = find_tracker(toplevel_paths[k], true);
 						if (tracker) {
 							trackers_for_action.push_back(tracker);
@@ -345,7 +345,7 @@ OpenXRInterface::Tracker *OpenXRInterface::find_tracker(const String &p_tracker_
 		return nullptr;
 	}
 
-	ERR_FAIL_COND_V(!openxr_api->is_path_supported(p_tracker_name), nullptr);
+	ERR_FAIL_COND_V(!openxr_api->is_top_level_path_supported(p_tracker_name), nullptr);
 
 	// Create our RID
 	RID tracker_rid = openxr_api->tracker_create(p_tracker_name);

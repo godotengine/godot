@@ -62,6 +62,7 @@ Ref<OpenXRActionSet> OpenXRActionSet::new_action_set(const char *p_name, const c
 
 void OpenXRActionSet::set_localized_name(const String p_localized_name) {
 	localized_name = p_localized_name;
+	emit_changed();
 }
 
 String OpenXRActionSet::get_localized_name() const {
@@ -70,6 +71,7 @@ String OpenXRActionSet::get_localized_name() const {
 
 void OpenXRActionSet::set_priority(const int p_priority) {
 	priority = p_priority;
+	emit_changed();
 }
 
 int OpenXRActionSet::get_priority() const {
@@ -82,11 +84,16 @@ int OpenXRActionSet::get_action_count() const {
 
 void OpenXRActionSet::clear_actions() {
 	// Actions held within our action set should be released and destroyed but just in case they are still used some where else
+	if (actions.size() == 0) {
+		return;
+	}
+
 	for (int i = 0; i < actions.size(); i++) {
 		Ref<OpenXRAction> action = actions[i];
 		action->action_set = nullptr;
 	}
 	actions.clear();
+	emit_changed();
 }
 
 void OpenXRActionSet::set_actions(Array p_actions) {
@@ -125,6 +132,7 @@ void OpenXRActionSet::add_action(Ref<OpenXRAction> p_action) {
 
 		p_action->action_set = this;
 		actions.push_back(p_action);
+		emit_changed();
 	}
 }
 
@@ -135,6 +143,8 @@ void OpenXRActionSet::remove_action(Ref<OpenXRAction> p_action) {
 
 		ERR_FAIL_COND_MSG(p_action->action_set != this, "Removing action that belongs to this action set but had incorrect action set pointer."); // this should never happen!
 		p_action->action_set = nullptr;
+
+		emit_changed();
 	}
 }
 

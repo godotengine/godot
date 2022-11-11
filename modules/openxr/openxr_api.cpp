@@ -208,15 +208,77 @@ bool OpenXRAPI::is_extension_supported(const String &p_extension) const {
 	return false;
 }
 
-bool OpenXRAPI::is_path_supported(const String &p_path) {
-	// This checks with extensions whether a path is *unsupported* and returns false if this is so.
-	// This allows us to filter out paths that are only available if related extensions are supported.
-	// WARNING: This method will return true for unknown/mistyped paths as we have no way to validate those.
+bool OpenXRAPI::is_extension_enabled(const String &p_extension) const {
+	CharString extension = p_extension.ascii();
 
-	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		if (!wrapper->is_path_supported(p_path)) {
-			return false;
+	for (int i = 0; i < enabled_extensions.size(); i++) {
+		if (strcmp(enabled_extensions[i].ptr(), extension.ptr()) == 0) {
+			return true;
 		}
+	}
+
+	return false;
+}
+
+bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
+	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_top_level_extension(p_toplevel_path);
+
+	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
+	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported interaction profile " + p_toplevel_path);
+
+	if (required_extension == "") {
+		// no extension needed, core top level are always "supported", they just won't be used if not really supported
+		return true;
+	}
+
+	if (!is_extension_enabled(required_extension)) {
+		// It is very likely we have top level paths for which the extension is not available so don't flood the logs with unnecessary spam.
+		print_verbose("OpenXR: Top level path " + p_toplevel_path + " requires extension " + required_extension);
+		return false;
+	}
+
+	return true;
+}
+
+bool OpenXRAPI::is_interaction_profile_supported(const String &p_ip_path) {
+	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_interaction_profile_extension(p_ip_path);
+
+	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
+	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported interaction profile " + p_ip_path);
+
+	if (required_extension == "") {
+		// no extension needed, core interaction profiles are always "supported", they just won't be used if not really supported
+		return true;
+	}
+
+	if (!is_extension_enabled(required_extension)) {
+		// It is very likely we have interaction profiles for which the extension is not available so don't flood the logs with unnecessary spam.
+		print_verbose("OpenXR: Interaction profile " + p_ip_path + " requires extension " + required_extension);
+		return false;
+	}
+
+	return true;
+}
+
+bool OpenXRAPI::interaction_profile_supports_io_path(const String &p_ip_path, const String &p_io_path) {
+	if (!is_interaction_profile_supported(p_ip_path)) {
+		return false;
+	}
+
+	const OpenXRInteractionProfileMetaData::IOPath *io_path = OpenXRInteractionProfileMetaData::get_singleton()->get_io_path(p_ip_path, p_io_path);
+
+	// If the io_path is not part of our meta data we've likely got a misspelled name or a bad action map, report
+	ERR_FAIL_NULL_V_MSG(io_path, false, "OpenXR: Unsupported io path " + String(p_ip_path) + String(p_io_path));
+
+	if (io_path->openxr_extension_name == "") {
+		// no extension needed, core io paths are always "supported", they just won't be used if not really supported
+		return true;
+	}
+
+	if (!is_extension_enabled(io_path->openxr_extension_name)) {
+		// It is very likely we have io paths for which the extension is not available so don't flood the logs with unnecessary spam.
+		print_verbose("OpenXR: IO path " + String(p_ip_path) + String(p_io_path) + " requires extension " + io_path->openxr_extension_name);
+		return false;
 	}
 
 	return true;
@@ -283,6 +345,7 @@ bool OpenXRAPI::create_instance() {
 
 	Vector<const char *> extension_ptrs;
 	for (int i = 0; i < enabled_extensions.size(); i++) {
+		print_verbose(String("OpenXR: Enabling extension ") + String(enabled_extensions[i]));
 		extension_ptrs.push_back(enabled_extensions[i].get_data());
 	}
 
@@ -2341,7 +2404,7 @@ XrPath OpenXRAPI::get_interaction_profile_path(RID p_interaction_profile) {
 }
 
 RID OpenXRAPI::interaction_profile_create(const String p_name) {
-	if (!is_path_supported(p_name)) {
+	if (!is_interaction_profile_supported(p_name)) {
 		// The extension enabling this path must not be active, we will silently skip this interaction profile
 		return RID();
 	}
@@ -2382,13 +2445,12 @@ void OpenXRAPI::interaction_profile_clear_bindings(RID p_interaction_profile) {
 }
 
 bool OpenXRAPI::interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path) {
-	if (!is_path_supported(p_path)) {
-		// The extension enabling this path must not be active, we will silently skip this binding
-		return false;
-	}
-
 	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
 	ERR_FAIL_NULL_V(ip, false);
+
+	if (!interaction_profile_supports_io_path(ip->name, p_path)) {
+		return false;
+	}
 
 	XrActionSuggestedBinding binding;
 

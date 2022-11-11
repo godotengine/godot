@@ -42,8 +42,6 @@ public:
 
 	bool is_available();
 
-	virtual bool is_path_supported(const String &p_path) override;
-
 private:
 	static OpenXRPalmPoseExtension *singleton;
 
