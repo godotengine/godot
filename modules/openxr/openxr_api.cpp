@@ -51,7 +51,7 @@
 #define XR_USE_GRAPHICS_API_VULKAN
 #endif
 #ifdef GLES3_ENABLED
-#ifdef ANDROID
+#ifdef ANDROID_ENABLED
 #define XR_USE_GRAPHICS_API_OPENGL_ES
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -59,7 +59,7 @@
 #include <GLES3/gl3ext.h>
 #else
 #define XR_USE_GRAPHICS_API_OPENGL
-#endif // ANDROID
+#endif // ANDROID_ENABLED
 #ifdef X11_ENABLED
 #include OPENGL_INCLUDE_H
 #define GL_GLEXT_PROTOTYPES 1
