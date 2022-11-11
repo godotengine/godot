@@ -44,6 +44,7 @@ class OpenXRActionSetEditor : public HBoxContainer {
 	GDCLASS(OpenXRActionSetEditor, HBoxContainer);
 
 private:
+	Ref<EditorUndoRedoManager> undo_redo;
 	Ref<OpenXRActionMap> action_map;
 	Ref<OpenXRActionSet> action_set;
 
@@ -63,7 +64,6 @@ private:
 	void _set_fold_icon();
 	void _theme_changed();
 	OpenXRActionEditor *_add_action_editor(Ref<OpenXRAction> p_action);
-	void _update_actions();
 
 	void _on_toggle_expand();
 	void _on_action_set_name_changed(const String p_new_text);
@@ -78,9 +78,18 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	// used for undo/redo
+	void _do_set_name(const String p_new_text);
+	void _do_set_localized_name(const String p_new_text);
+	void _do_set_priority(int64_t value);
+	void _do_add_action_editor(OpenXRActionEditor *p_action_editor);
+	void _do_remove_action_editor(OpenXRActionEditor *p_action_editor);
+
 public:
 	Ref<OpenXRActionSet> get_action_set() { return action_set; };
 	void set_focus_on_entry();
+
+	void remove_all_actions();
 
 	OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRActionSet> p_action_set);
 };

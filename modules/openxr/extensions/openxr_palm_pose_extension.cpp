@@ -51,16 +51,3 @@ OpenXRPalmPoseExtension::~OpenXRPalmPoseExtension() {
 bool OpenXRPalmPoseExtension::is_available() {
 	return available;
 }
-
-bool OpenXRPalmPoseExtension::is_path_supported(const String &p_path) {
-	if (p_path == "/user/hand/left/input/palm_ext/pose") {
-		return available;
-	}
-
-	if (p_path == "/user/hand/right/input/palm_ext/pose") {
-		return available;
-	}
-
-	// Not a path under this extensions control, so we return true;
-	return true;
-}

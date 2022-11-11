@@ -32,8 +32,9 @@
 #define OPENXR_INTERACTION_PROFILE_EDITOR_H
 
 #include "../action_map/openxr_action_map.h"
-#include "../action_map/openxr_defs.h"
 #include "../action_map/openxr_interaction_profile.h"
+#include "../action_map/openxr_interaction_profile_meta_data.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/scroll_container.h"
 
 #include "openxr_select_action_dialog.h"
@@ -42,21 +43,28 @@ class OpenXRInteractionProfileEditorBase : public ScrollContainer {
 	GDCLASS(OpenXRInteractionProfileEditorBase, ScrollContainer);
 
 protected:
+	Ref<EditorUndoRedoManager> undo_redo;
 	Ref<OpenXRInteractionProfile> interaction_profile;
 	Ref<OpenXRActionMap> action_map;
+
+	bool is_dirty = false;
 
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	const OpenXRDefs::InteractionProfile *profile_def = nullptr;
+	const OpenXRInteractionProfileMetaData::InteractionProfile *profile_def = nullptr;
 
 public:
 	Ref<OpenXRInteractionProfile> get_interaction_profile() { return interaction_profile; }
 
 	virtual void _update_interaction_profile() {}
 	virtual void _theme_changed() {}
+
+	void _do_update_interaction_profile();
 	void _add_binding(const String p_action, const String p_path);
 	void _remove_binding(const String p_action, const String p_path);
+
+	void remove_all_bindings_for_action(Ref<OpenXRAction> p_action);
 
 	OpenXRInteractionProfileEditorBase(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile);
 };
@@ -69,11 +77,12 @@ private:
 	HBoxContainer *main_hb = nullptr;
 	OpenXRSelectActionDialog *select_action_dialog = nullptr;
 
-	void _add_io_path(VBoxContainer *p_container, const OpenXRDefs::IOPath *p_io_path);
+	void _add_io_path(VBoxContainer *p_container, const OpenXRInteractionProfileMetaData::IOPath *p_io_path);
 
 public:
 	void select_action_for(const String p_io_path);
 	void action_selected(const String p_action);
+	void _on_remove_pressed(const String p_action, const String p_for_io_path);
 
 	virtual void _update_interaction_profile() override;
 	virtual void _theme_changed() override;
