@@ -1022,6 +1022,10 @@ Size2 TextureStorage::texture_size_with_proxy(RID p_texture) {
 	}
 }
 
+RID TextureStorage::texture_get_rd_texture_rid(RID p_texture, bool p_srgb) const {
+	return RID();
+}
+
 void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
