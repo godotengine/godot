@@ -53,4 +53,4 @@ body:
     label: Minimal reproduction project
     description: |
       A small Godot project which reproduces the issue. Highly recommended to speed up troubleshooting.
-      Drag and drop a ZIP archive to upload it.
+      Drag and drop a ZIP archive to upload it. Be sure to not include the ".godot" folder in the archive.
