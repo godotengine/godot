@@ -32,6 +32,7 @@
 #define TEXTURE_REGION_EDITOR_PLUGIN_H
 
 #include "canvas_item_editor_plugin.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
@@ -41,6 +42,7 @@
 
 class ViewPanner;
 class EditorUndoRedoManager;
+class OptionButton;
 
 class TextureRegionEditor : public AcceptDialog {
 	GDCLASS(TextureRegionEditor, AcceptDialog);

@@ -35,6 +35,7 @@
 
 class HSplitContainer;
 class ItemList;
+class MenuButton;
 class ShaderCreateDialog;
 class TabContainer;
 class TextShaderEditor;
