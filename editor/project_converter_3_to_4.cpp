@@ -1528,7 +1528,7 @@ static const char *class_renames[][2] = {
 	{ "Shape", "Shape3D" }, // Be careful, this will be used everywhere
 	{ "ShortCut", "Shortcut" },
 	{ "Skeleton", "Skeleton3D" },
-	{ "SkeletonIK", "SkeletonIK3D" },
+	{ "SkeletonIK", "SkeletonModification3DFABRIK" },
 	{ "SliderJoint", "SliderJoint3D" },
 	{ "SoftBody", "SoftBody3D" },
 	{ "Spatial", "Node3D" },

@@ -5,20 +5,12 @@
 	</brief_description>
 	<description>
 		Skeleton2D parents a hierarchy of [Bone2D] objects. It is a requirement of [Bone2D]. Skeleton2D holds a reference to the rest pose of its children and acts as a single point of access to its bones.
-		To setup different types of inverse kinematics for the given Skeleton2D, a [SkeletonModificationStack2D] should be created. They can be applied by creating the desired number of modifications, which can be done by increasing [member SkeletonModificationStack2D.modification_count].
+		To setup different types of inverse kinematics for the given Skeleton2D, various [SkeletonModification2D] nodes should be added as children. They will update in node order.
 	</description>
 	<tutorials>
 		<link title="2D skeletons">$DOCS_URL/tutorials/animation/2d_skeletons.html</link>
 	</tutorials>
 	<methods>
-		<method name="execute_modifications">
-			<return type="void" />
-			<param index="0" name="delta" type="float" />
-			<param index="1" name="execution_mode" type="int" />
-			<description>
-				Executes all the modifications on the [SkeletonModificationStack2D], if the Skeleton3D has one assigned.
-			</description>
-		</method>
 		<method name="get_bone">
 			<return type="Bone2D" />
 			<param index="0" name="idx" type="int" />
@@ -39,12 +31,6 @@
 				Returns the local pose override transform for [param bone_idx].
 			</description>
 		</method>
-		<method name="get_modification_stack" qualifiers="const">
-			<return type="SkeletonModificationStack2D" />
-			<description>
-				Returns the [SkeletonModificationStack2D] attached to this skeleton, if one exists.
-			</description>
-		</method>
 		<method name="get_skeleton" qualifiers="const">
 			<return type="RID" />
 			<description>
@@ -61,13 +47,6 @@
 				Sets the local pose transform, [param override_pose], for the bone at [param bone_idx].
 				[param strength] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a local transform relative to the [Bone2D] node at [param bone_idx]!
-			</description>
-		</method>
-		<method name="set_modification_stack">
-			<return type="void" />
-			<param index="0" name="modification_stack" type="SkeletonModificationStack2D" />
-			<description>
-				Sets the [SkeletonModificationStack2D] attached to this skeleton.
 			</description>
 		</method>
 	</methods>

@@ -1,0 +1,10 @@
+
+# Created by https://www.toptal.com/developers/gitignore/api/godot
+# Edit at https://www.toptal.com/developers/gitignore?templates=godot
+
+### Godot ###
+
+# Godot-specific ignores
+.godot/
+
+# End of https://www.toptal.com/developers/gitignore/api/godot

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IKKusudama" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Kusudamas are a sequential collection of reach cones, forming a path by their tangents.
+	</brief_description>
+	<description>
+		You can think of a Kusudama (taken from the Japanese word for "ball with a bunch of cones sticking out of it") as a ball with with a bunch of reach-cones sticking out of it. Except that these reach cones are arranged sequentially, and a smooth path is automatically inferred leading from one cone to the next.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_limit_cones" qualifiers="const">
+			<return type="IKLimitCone[]" />
+			<description>
+			</description>
+		</method>
+		<method name="set_limit_cones">
+			<return type="void" />
+			<param index="0" name="limit_cones" type="IKLimitCone[]" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

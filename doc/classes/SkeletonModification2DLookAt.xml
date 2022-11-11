@@ -8,82 +8,30 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="get_additional_rotation" qualifiers="const">
-			<return type="float" />
-			<description>
-				Returns the amount of additional rotation that is applied after the LookAt modification executes.
-			</description>
-		</method>
-		<method name="get_constraint_angle_invert" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns whether the constraints to this modification are inverted or not.
-			</description>
-		</method>
-		<method name="get_constraint_angle_max" qualifiers="const">
-			<return type="float" />
-			<description>
-				Returns the constraint's maximum allowed angle.
-			</description>
-		</method>
-		<method name="get_constraint_angle_min" qualifiers="const">
-			<return type="float" />
-			<description>
-				Returns the constraint's minimum allowed angle.
-			</description>
-		</method>
-		<method name="get_enable_constraint" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the LookAt modification is using constraints.
-			</description>
-		</method>
-		<method name="set_additional_rotation">
-			<return type="void" />
-			<param index="0" name="rotation" type="float" />
-			<description>
-				Sets the amount of additional rotation that is to be applied after executing the modification. This allows for offsetting the results by the inputted rotation amount.
-			</description>
-		</method>
-		<method name="set_constraint_angle_invert">
-			<return type="void" />
-			<param index="0" name="invert" type="bool" />
-			<description>
-				When [code]true[/code], the modification will use an inverted joint constraint.
-				An inverted joint constraint only constraints the [Bone2D] to the angles [i]outside of[/i] the inputted minimum and maximum angles. For this reason, it is referred to as an inverted joint constraint, as it constraints the joint to the outside of the inputted values.
-			</description>
-		</method>
-		<method name="set_constraint_angle_max">
-			<return type="void" />
-			<param index="0" name="angle_max" type="float" />
-			<description>
-				Sets the constraint's maximum allowed angle.
-			</description>
-		</method>
-		<method name="set_constraint_angle_min">
-			<return type="void" />
-			<param index="0" name="angle_min" type="float" />
-			<description>
-				Sets the constraint's minimum allowed angle.
-			</description>
-		</method>
-		<method name="set_enable_constraint">
-			<return type="void" />
-			<param index="0" name="enable_constraint" type="bool" />
-			<description>
-				Sets whether this modification will use constraints or not. When [code]true[/code], constraints will be applied when solving the LookAt modification.
-			</description>
-		</method>
-	</methods>
 	<members>
-		<member name="bone2d_node" type="NodePath" setter="set_bone2d_node" getter="get_bone2d_node" default="NodePath(&quot;&quot;)">
+		<member name="additional_rotation" type="float" setter="set_additional_rotation" getter="get_additional_rotation" default="0.0">
+			The amount of additional rotation that is to be applied after executing the modification. This allows for offsetting the results by the inputted rotation amount.
+		</member>
+		<member name="bone_node" type="NodePath" setter="set_bone_node" getter="get_bone_node" default="NodePath(&quot;&quot;)">
 			The [Bone2D] node that the modification will operate on.
 		</member>
-		<member name="bone_index" type="int" setter="set_bone_index" getter="get_bone_index" default="-1">
-			The index of the [Bone2D] node that the modification will oeprate on.
+		<member name="constraint_angle_invert" type="bool" setter="set_constraint_angle_invert" getter="get_constraint_angle_invert" default="false">
+			When [code]true[/code], the modification will use an inverted joint constraint.
+			An inverted joint constraint only constraints the [Bone2D] to the angles [i]outside of[/i] the inputted minimum and maximum angles. For this reason, it is referred to as an inverted joint constraint, as it constraints the joint to the outside of the inputted values.
 		</member>
-		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+		<member name="constraint_angle_max" type="float" setter="set_constraint_angle_max" getter="get_constraint_angle_max" default="6.28319">
+			The constraint's maximum allowed angle.
+		</member>
+		<member name="constraint_angle_min" type="float" setter="set_constraint_angle_min" getter="get_constraint_angle_min" default="0.0">
+			The constraint's minimum allowed angle.
+		</member>
+		<member name="constraint_in_localspace" type="bool" setter="set_constraint_in_localspace" getter="get_constraint_in_localspace" default="true">
+			Applies the rotation constraint in local coordinates, after converting from global to local angle.
+		</member>
+		<member name="enable_constraint" type="bool" setter="set_enable_constraint" getter="get_enable_constraint" default="false">
+			Sets whether this modification will use constraints or not. When [code]true[/code], constraints will be applied when solving the LookAt modification.
+		</member>
+		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the LookAt modification. This node is what the modification will rotate the [Bone2D] to.
 		</member>
 	</members>

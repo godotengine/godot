@@ -1,0 +1,49 @@
+[gd_scene load_steps=2 format=3 uid="uid://y5u1478qn707"]
+
+[ext_resource type="PackedScene" uid="uid://e75mks7p47hj" path="res://ewbik/art/ewbik_simple_test_rig.glb" id="1_rap5b"]
+
+[node name="ewbik_simple_test_rig" instance=ExtResource("1_rap5b")]
+
+[node name="Skeleton3D" parent="Simple_Test_Rig_Armature" index="0"]
+bones/0/position = Vector3(-0.166667, -5.0677e-16, 0)
+bones/0/rotation = Quaternion(6.3392e-08, 7.5748e-09, 5.9333e-16, 1)
+bones/1/position = Vector3(5.96046e-07, 0.60001, 4.25455e-11)
+bones/1/rotation = Quaternion(-1.32718e-06, 3.5385e-06, 0.383942, 0.923357)
+bones/1/scale = Vector3(1, 1, 1)
+bones/2/position = Vector3(9.0003e-06, 0.60013, 4.5693e-09)
+bones/2/rotation = Quaternion(-6.24537e-05, -0.000165817, -0.364936, 0.931033)
+bones/2/scale = Vector3(1, 1, 1)
+bones/3/position = Vector3(-3.20077e-05, 0.600184, -2.11294e-08)
+bones/3/rotation = Quaternion(-5.86084e-05, 0.000143683, -0.2962, 0.955126)
+bones/3/scale = Vector3(1, 1, 1)
+bones/4/position = Vector3(6.91414e-05, 0.600145, -8.82574e-09)
+bones/4/rotation = Quaternion(9.29528e-06, 2.2071e-05, 0.386235, 0.9224)
+bones/4/scale = Vector3(1, 1, 1)
+
+[node name="Simple_Test_Rig" parent="Simple_Test_Rig_Armature/Skeleton3D" index="0"]
+visible = false
+
+[node name="SkeletonModification3DNBoneIK" type="SkeletonModification3DNBoneIK" parent="Simple_Test_Rig_Armature/Skeleton3D" index="1"]
+root_bone = &"Bone_01"
+pin_count = 3
+pins/0/name = "Bone_05"
+pins/0/target_node = NodePath("../2")
+pins/0/depth_falloff = 0.0
+pins/0/weight = 1.0
+pins/0/direction_priorities = Vector3(0.5, 0, 0.5)
+pins/1/name = "Bone_01"
+pins/1/target_node = NodePath("../1")
+pins/1/depth_falloff = 0.0
+pins/1/weight = 1.0
+pins/1/direction_priorities = Vector3(0.5, 0, 0.5)
+pins/2/name = ""
+pins/2/target_node = NodePath("")
+pins/2/depth_falloff = 57.2958
+pins/2/weight = 1.0
+pins/2/direction_priorities = Vector3(1, 0, 1)
+
+[node name="1" type="Marker3D" parent="Simple_Test_Rig_Armature/Skeleton3D" index="2"]
+transform = Transform3D(1, -5.73772e-17, 1.51496e-08, 1.9781e-15, 1, -1.26784e-07, -1.51496e-08, 1.26784e-07, 1, 0, 0, 0)
+
+[node name="2" type="Marker3D" parent="Simple_Test_Rig_Armature/Skeleton3D" index="3"]
+transform = Transform3D(1, -5.73771e-17, 1.51495e-08, 1.97808e-15, 1, -1.26784e-07, -1.51495e-08, 1.26784e-07, 1, -0.163344, 2.4, 3.04282e-07)

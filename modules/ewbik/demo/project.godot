@@ -1,0 +1,36 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="SkeletonModification3DNBoneIK Game Project"
+run/main_scene="res://ewbik/scenes/male.tscn"
+config/features=PackedStringArray("4.0")
+config/icon="res://icon.png"
+
+[debug]
+
+file_logging/enable_file_logging=true
+
+[editor_plugins]
+
+enabled=PackedStringArray()
+
+[gui]
+
+theme/default_font_multichannel_signed_distance_field=true
+theme/default_font_generate_mipmaps=true
+
+[rendering]
+
+textures/default_filters/anisotropic_filtering_level=4
+anti_aliasing/quality/msaa_2d=1
+occlusion_culling/use_occlusion_culling=true
+environment/default_environment="res://default_env.tres"

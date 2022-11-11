@@ -538,30 +538,15 @@ Bone2D::~Bone2D() {
 
 bool Skeleton2D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
-
-	if (path.begins_with("modification_stack")) {
-		set_modification_stack(p_value);
-		return true;
-	}
 	return true;
 }
 
 bool Skeleton2D::_get(const StringName &p_path, Variant &r_ret) const {
 	String path = p_path;
-
-	if (path.begins_with("modification_stack")) {
-		r_ret = get_modification_stack();
-		return true;
-	}
 	return true;
 }
 
 void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(
-			PropertyInfo(Variant::OBJECT, PNAME("modification_stack"),
-					PROPERTY_HINT_RESOURCE_TYPE,
-					"SkeletonModificationStack2D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 }
 
 void Skeleton2D::_make_bone_setup_dirty() {
@@ -668,24 +653,7 @@ void Skeleton2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
 		RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
-	} else if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (modification_stack.is_valid()) {
-			execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
-		}
-	} else if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		if (modification_stack.is_valid()) {
-			execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
-		}
 	}
-#ifdef TOOLS_ENABLED
-	else if (p_what == NOTIFICATION_DRAW) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			if (modification_stack.is_valid()) {
-				modification_stack->draw_editor_gizmos();
-			}
-		}
-	}
-#endif // TOOLS_ENABLED
 }
 
 RID Skeleton2D::get_skeleton() const {
@@ -704,80 +672,6 @@ Transform2D Skeleton2D::get_bone_local_pose_override(int p_bone_idx) {
 	return bones[p_bone_idx].local_pose_override;
 }
 
-void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack) {
-	if (modification_stack.is_valid()) {
-		modification_stack->is_setup = false;
-		modification_stack->set_skeleton(nullptr);
-
-		set_process_internal(false);
-		set_physics_process_internal(false);
-	}
-	modification_stack = p_stack;
-	if (modification_stack.is_valid()) {
-		modification_stack->set_skeleton(this);
-		modification_stack->setup();
-
-		set_process_internal(true);
-		set_physics_process_internal(true);
-
-#ifdef TOOLS_ENABLED
-		modification_stack->set_editor_gizmos_dirty(true);
-#endif // TOOLS_ENABLED
-	}
-}
-
-Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
-	return modification_stack;
-}
-
-void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
-	if (!modification_stack.is_valid()) {
-		return;
-	}
-
-	// Do not cache the transform changes caused by the modifications!
-	for (int i = 0; i < bones.size(); i++) {
-		bones[i].bone->copy_transform_to_cache = false;
-	}
-
-	if (modification_stack->skeleton != this) {
-		modification_stack->set_skeleton(this);
-	}
-
-	modification_stack->execute(p_delta, p_execution_mode);
-
-	// Only apply the local pose override on _process. Otherwise, just calculate the local_pose_override and reset the transform.
-	if (p_execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process) {
-		for (int i = 0; i < bones.size(); i++) {
-			if (bones[i].local_pose_override_amount > 0) {
-				bones[i].bone->set_meta("_local_pose_override_enabled_", true);
-
-				Transform2D final_trans = bones[i].bone->cache_transform;
-				final_trans = final_trans.interpolate_with(bones[i].local_pose_override, bones[i].local_pose_override_amount);
-				bones[i].bone->set_transform(final_trans);
-				bones[i].bone->propagate_call("force_update_transform");
-
-				if (bones[i].local_pose_override_persistent) {
-					bones.write[i].local_pose_override_amount = 0.0;
-				}
-			} else {
-				// TODO: see if there is a way to undo the override without having to resort to setting every bone's transform.
-				bones[i].bone->remove_meta("_local_pose_override_enabled_");
-				bones[i].bone->set_transform(bones[i].bone->cache_transform);
-			}
-		}
-	}
-
-	// Cache any future transform changes
-	for (int i = 0; i < bones.size(); i++) {
-		bones[i].bone->copy_transform_to_cache = true;
-	}
-
-#ifdef TOOLS_ENABLED
-	modification_stack->set_editor_gizmos_dirty(true);
-#endif // TOOLS_ENABLED
-}
-
 void Skeleton2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_bone_setup"), &Skeleton2D::_update_bone_setup);
 	ClassDB::bind_method(D_METHOD("_update_transform"), &Skeleton2D::_update_transform);
@@ -786,10 +680,6 @@ void Skeleton2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone", "idx"), &Skeleton2D::get_bone);
 
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &Skeleton2D::get_skeleton);
-
-	ClassDB::bind_method(D_METHOD("set_modification_stack", "modification_stack"), &Skeleton2D::set_modification_stack);
-	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton2D::get_modification_stack);
-	ClassDB::bind_method(D_METHOD("execute_modifications", "delta", "execution_mode"), &Skeleton2D::execute_modifications);
 
 	ClassDB::bind_method(D_METHOD("set_bone_local_pose_override", "bone_idx", "override_pose", "strength", "persistent"), &Skeleton2D::set_bone_local_pose_override);
 	ClassDB::bind_method(D_METHOD("get_bone_local_pose_override", "bone_idx"), &Skeleton2D::get_bone_local_pose_override);

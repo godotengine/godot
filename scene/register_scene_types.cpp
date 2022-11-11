@@ -66,6 +66,13 @@
 #include "scene/2d/remote_transform_2d.h"
 #include "scene/2d/shape_cast_2d.h"
 #include "scene/2d/skeleton_2d.h"
+#include "scene/2d/skeleton_modification_2d.h"
+#include "scene/2d/skeleton_modification_2d_ccdik.h"
+#include "scene/2d/skeleton_modification_2d_fabrik.h"
+#include "scene/2d/skeleton_modification_2d_jiggle.h"
+#include "scene/2d/skeleton_modification_2d_lookat.h"
+#include "scene/2d/skeleton_modification_2d_physicalbones.h"
+#include "scene/2d/skeleton_modification_2d_twoboneik.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/tile_map.h"
 #include "scene/2d/touch_screen_button.h"
@@ -174,23 +181,6 @@
 #include "scene/resources/separation_ray_shape_2d.h"
 #include "scene/resources/separation_ray_shape_3d.h"
 #include "scene/resources/shader_include.h"
-#include "scene/resources/skeleton_modification_2d.h"
-#include "scene/resources/skeleton_modification_2d_ccdik.h"
-#include "scene/resources/skeleton_modification_2d_fabrik.h"
-#include "scene/resources/skeleton_modification_2d_jiggle.h"
-#include "scene/resources/skeleton_modification_2d_lookat.h"
-#include "scene/resources/skeleton_modification_2d_physicalbones.h"
-#include "scene/resources/skeleton_modification_2d_stackholder.h"
-#include "scene/resources/skeleton_modification_2d_twoboneik.h"
-#include "scene/resources/skeleton_modification_3d.h"
-#include "scene/resources/skeleton_modification_3d_ccdik.h"
-#include "scene/resources/skeleton_modification_3d_fabrik.h"
-#include "scene/resources/skeleton_modification_3d_jiggle.h"
-#include "scene/resources/skeleton_modification_3d_lookat.h"
-#include "scene/resources/skeleton_modification_3d_stackholder.h"
-#include "scene/resources/skeleton_modification_3d_twoboneik.h"
-#include "scene/resources/skeleton_modification_stack_2d.h"
-#include "scene/resources/skeleton_modification_stack_3d.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/sky_material.h"
@@ -253,7 +243,12 @@
 #include "scene/3d/remote_transform_3d.h"
 #include "scene/3d/shape_cast_3d.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/3d/skeleton_ik_3d.h"
+#include "scene/3d/skeleton_modification_3d.h"
+#include "scene/3d/skeleton_modification_3d_ccdik.h"
+#include "scene/3d/skeleton_modification_3d_fabrik.h"
+#include "scene/3d/skeleton_modification_3d_jiggle.h"
+#include "scene/3d/skeleton_modification_3d_lookat.h"
+#include "scene/3d/skeleton_modification_3d_twoboneik.h"
 #include "scene/3d/soft_body_3d.h"
 #include "scene/3d/spring_arm_3d.h"
 #include "scene/3d/sprite_3d.h"
@@ -547,7 +542,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PhysicalBone3D);
 	GDREGISTER_CLASS(SoftBody3D);
 
-	GDREGISTER_CLASS(SkeletonIK3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
 
 	GDREGISTER_CLASS(VehicleBody3D);
@@ -758,14 +752,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TouchScreenButton);
 	GDREGISTER_CLASS(RemoteTransform2D);
 
-	GDREGISTER_CLASS(SkeletonModificationStack2D);
 	GDREGISTER_CLASS(SkeletonModification2D);
 	GDREGISTER_CLASS(SkeletonModification2DLookAt);
 	GDREGISTER_CLASS(SkeletonModification2DCCDIK);
 	GDREGISTER_CLASS(SkeletonModification2DFABRIK);
 	GDREGISTER_CLASS(SkeletonModification2DJiggle);
 	GDREGISTER_CLASS(SkeletonModification2DTwoBoneIK);
-	GDREGISTER_CLASS(SkeletonModification2DStackHolder);
 
 	GDREGISTER_CLASS(PhysicalBone2D);
 	GDREGISTER_CLASS(SkeletonModification2DPhysicalBones);
@@ -827,14 +819,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
 
-	ClassDB::register_class<SkeletonModificationStack3D>();
 	ClassDB::register_class<SkeletonModification3D>();
 	ClassDB::register_class<SkeletonModification3DLookAt>();
 	ClassDB::register_class<SkeletonModification3DCCDIK>();
 	ClassDB::register_class<SkeletonModification3DFABRIK>();
 	ClassDB::register_class<SkeletonModification3DJiggle>();
 	ClassDB::register_class<SkeletonModification3DTwoBoneIK>();
-	ClassDB::register_class<SkeletonModification3DStackHolder>();
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED

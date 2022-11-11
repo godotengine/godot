@@ -44,9 +44,8 @@ protected:
 	static void _bind_methods();
 
 private:
-	Skeleton2D *parent_skeleton = nullptr;
-	int bone2d_index = -1;
-	NodePath bone2d_nodepath;
+	NodePath bone_nodepath;
+	mutable Variant bone_node_cache;
 	bool follow_bone_when_simulating = false;
 
 	Joint2D *child_joint = nullptr;
@@ -55,7 +54,6 @@ private:
 	bool simulate_physics = false;
 	bool _internal_simulate_physics = false;
 
-	void _find_skeleton_parent();
 	void _find_joint_child();
 	void _auto_configure_joint();
 
@@ -72,10 +70,9 @@ public:
 	bool get_simulate_physics() const;
 	bool is_simulating_physics() const;
 
-	void set_bone2d_nodepath(const NodePath &p_nodepath);
-	NodePath get_bone2d_nodepath() const;
-	void set_bone2d_index(int p_bone_idx);
-	int get_bone2d_index() const;
+	Node2D *get_cached_bone_node();
+	void set_bone_node(const NodePath &p_nodepath);
+	NodePath get_bone_node() const;
 	void set_follow_bone_when_simulating(bool p_follow);
 	bool get_follow_bone_when_simulating() const;
 

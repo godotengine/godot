@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+Import("env")
+
+env_ewbik = env.Clone()
+env_ewbik.Prepend(CPPPATH=["."])
+env_ewbik.Prepend(CPPPATH=["src/math"])
+env_ewbik.Prepend(CPPPATH=["src"])
+env_ewbik.add_source_files(env.modules_sources, "constraints/*.cpp")
+env_ewbik.add_source_files(env.modules_sources, "src/math/*.cpp")
+env_ewbik.add_source_files(env.modules_sources, "src/*.cpp")
+env_ewbik.add_source_files(env.modules_sources, "*.cpp")
+
+if env.editor_build:
+    env_ewbik.add_source_files(env.modules_sources, "editor/*.cpp")

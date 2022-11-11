@@ -32,7 +32,6 @@
 #define SKELETON_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
 
 class Skeleton2D;
 
@@ -101,8 +100,6 @@ public:
 	~Bone2D();
 };
 
-class SkeletonModificationStack2D;
-
 class Skeleton2D : public Node2D {
 	GDCLASS(Skeleton2D, Node2D);
 
@@ -138,8 +135,6 @@ class Skeleton2D : public Node2D {
 
 	RID skeleton;
 
-	Ref<SkeletonModificationStack2D> modification_stack;
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -155,10 +150,6 @@ public:
 
 	void set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, real_t p_amount, bool p_persistent = true);
 	Transform2D get_bone_local_pose_override(int p_bone_idx);
-
-	Ref<SkeletonModificationStack2D> get_modification_stack() const;
-	void set_modification_stack(Ref<SkeletonModificationStack2D> p_stack);
-	void execute_modifications(real_t p_delta, int p_execution_mode);
 
 	Skeleton2D();
 	~Skeleton2D();

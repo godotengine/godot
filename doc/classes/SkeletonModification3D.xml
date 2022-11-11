@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonModification3D" inherits="Resource" is_deprecated="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SkeletonModification3D" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A resource that operates on bones in a [Skeleton3D].
 	</brief_description>
 	<description>
 		This resource provides an interface that can be expanded so code that operates on bones in a [Skeleton3D] can be mixed and matched together to create complex interactions.
 		This is used to provide Godot with a flexible and powerful Inverse Kinematics solution that can be adapted for many different uses.
+		Modifications will update in node order. Set [member Node.process_priority] to control the order relative to other nodes or to ensure updating after [AnimationPlayer].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,53 +15,98 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Executes the given modification. This is where the modification performs whatever function it is designed to do.
+				Allows custom logic to run on this modification during internal process. delta is the frame time since last execute.
 			</description>
 		</method>
-		<method name="_setup_modification" qualifiers="virtual">
-			<return type="void" />
-			<param index="0" name="modification_stack" type="SkeletonModificationStack3D" />
-			<description>
-				Sets up the modification so it can be executed. This function should be called automatically by the [SkeletonModificationStack3D] containing this modification.
-				If you need to initialize a modification before use, this is the place to do it!
-			</description>
-		</method>
-		<method name="clamp_angle">
-			<return type="float" />
-			<param index="0" name="angle" type="float" />
-			<param index="1" name="min" type="float" />
-			<param index="2" name="max" type="float" />
-			<param index="3" name="invert" type="bool" />
-			<description>
-				Takes a angle and clamps it so it is within the passed-in [param min] and [param max] range. [param invert] will inversely clamp the angle, clamping it to the range outside of the given bounds.
-			</description>
-		</method>
-		<method name="get_is_setup" qualifiers="const">
+		<method name="_is_bone_property" qualifiers="virtual">
 			<return type="bool" />
+			<param index="0" name="property_name" type="String" />
 			<description>
-				Returns whether this modification has been successfully setup or not.
+				Return true if this property references a bone in [member skeleton_path] and should show a bone picker.
 			</description>
 		</method>
-		<method name="get_modification_stack">
-			<return type="SkeletonModificationStack3D" />
+		<method name="_is_property_hidden" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="property_name" type="String" />
 			<description>
-				Returns the [SkeletonModificationStack3D] that this modification is bound to. Through the modification stack, you can access the Skeleton3D the modification is operating on.
+				Return true if this property should be hidden from the inspector. Should return true for target bones if the correspnding target nodepath is assigned.
 			</description>
 		</method>
-		<method name="set_is_setup">
+		<method name="_skeleton_changed" qualifiers="virtual">
 			<return type="void" />
-			<param index="0" name="is_setup" type="bool" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
 			<description>
-				Manually allows you to set the setup state of the modification. This function should only rarely be used, as the [SkeletonModificationStack3D] the modification is bound to should handle setting the modification up.
+				Called if the skeleton changed or the bone list was updated. Use this to clear cached nodes and bone indices.
+			</description>
+		</method>
+		<method name="execute">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Manually process the modification. If the modification is enabled, execute runs automatically during internal process.
+			</description>
+		</method>
+		<method name="get_bone_name_list" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_rest_forward_vector">
+			<return type="Vector3" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the forward direction of the bone at [param bone_idx], either taking the average child bone of children if any, or pointing away from the parent bone if [param bone_idx] represents a leaf bone. Intended to be used together with [method global_pose_z_forward_to_bone_forward]
+			</description>
+		</method>
+		<method name="get_target_quaternion" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="resolved_target" type="Variant" />
+			<description>
+				Returns the quaternion of the bone or node, relative to [member skeleton_path]. [param resolved_target] may be an integer bone, a [Node3D] node, or the cached result of [method resolve_bone] or [method resolve_target].
+			</description>
+		</method>
+		<method name="get_target_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="resolved_target" type="Variant" />
+			<description>
+				Returns the [Transform3D] of the bone or node, relative to [member skeleton_path]. [param resolved_target] may be an integer bone, a [Node3D] node, or the cached result of [method resolve_bone] or [method resolve_target].
+			</description>
+		</method>
+		<method name="global_pose_z_forward_to_bone_forward">
+			<return type="Basis" />
+			<param index="0" name="bone_forward_vector" type="Vector3" />
+			<param index="1" name="basis" type="Basis" />
+			<description>
+				Rotates the given [Basis] so that the forward axis of the Basis is facing in the [param bone_forward_vector] of a bone, as returned by [method get_bone_rest_forward_vector].
+				Use this helper function together with [method Transform3D.looking_at] to set bone poses.
+			</description>
+		</method>
+		<method name="resolve_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="target_bone_name" type="String" />
+			<description>
+				Return the bone index for this bone name, for caching purposes.
+			</description>
+		</method>
+		<method name="resolve_target" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="target_node_path" type="NodePath" />
+			<param index="1" name="target_bone_name" type="String" />
+			<description>
+				Return an opaque [Variant] representing this [param target_bone_name] or [param target_node_path] for caching purposes. Use together with [method get_target_transform] or [method get_target_quaternion]. This system allows easily building modifications which can target either bones or nodes, without requiring bone attachments.
+
+				Returns a boolean (false) on failure. Will not return null. Any value not of a boolean type should be treated as a success.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
-			When true, the modification's [method _execute] function will be called by the [SkeletonModificationStack3D].
+			When true, the modification's [method _execute] function will be called every frame during internal process.
 		</member>
-		<member name="execution_mode" type="int" setter="set_execution_mode" getter="get_execution_mode" default="0">
-			The execution mode for the modification. This tells the modification stack when to execute the modification. Some modifications have settings that are only available in certain execution modes.
+		<member name="run_in_editor" type="bool" setter="set_run_in_editor" getter="get_run_in_editor" default="true">
+		</member>
+		<member name="skeleton_path" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;..&quot;)">
+			Node path to the attached [Skeleton3D].
 		</member>
 	</members>
 </class>

@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6rnaabjnxp54"]
+
+[ext_resource type="PackedScene" uid="uid://bjjiy2toj1hdi" path="res://ewbik/art/ewbik_test_rig.glb" id="1_ns5u2"]
+
+[node name="ewbik_test_rig" instance=ExtResource("1_ns5u2")]
+
+[node name="Skeleton3D" parent="Simple_Test_Rig_Armature" index="0"]
+bones/0/position = Vector3(-0.166667, -4.73695e-15, 9.93411e-09)
+bones/0/rotation = Quaternion(1.65144e-07, 2.83707e-08, 4.28691e-15, 1)
+bones/1/position = Vector3(0, 0.6, 2.01273e-10)
+bones/1/rotation = Quaternion(3.00052e-07, 2.18609e-06, -0.136046, 0.990703)
+bones/2/position = Vector3(-1.40071e-06, 0.6, -2.32103e-09)
+bones/2/rotation = Quaternion(-2.99013e-07, -2.17936e-06, 0.146983, 0.989139)
+
+[node name="o1" type="Marker3D" parent="Simple_Test_Rig_Armature/Skeleton3D" index="1"]
+transform = Transform3D(1, 7.96616e-16, 5.67414e-08, 1.79443e-14, 1, -3.30287e-07, -5.67414e-08, 3.30287e-07, 1, 0, 0, 0)
+
+[node name="o2" type="Marker3D" parent="Simple_Test_Rig_Armature/Skeleton3D" index="2"]
+transform = Transform3D(1, 7.96616e-16, 5.67414e-08, 1.79443e-14, 1, -3.30287e-07, -5.67414e-08, 3.30287e-07, 1, 9.5594e-16, 1.2, 3.96345e-07)
+
+[node name="SkeletonModification3DNBoneIK" type="SkeletonModification3DNBoneIK" parent="Simple_Test_Rig_Armature/Skeleton3D" index="3"]
+root_bone = &"Bone_01"
+pin_count = 2
+pins/0/name = "Bone_01"
+pins/0/target_node = NodePath("../o1")
+pins/0/depth_falloff = 0.0
+pins/0/weight = 1.0
+pins/0/direction_priorities = Vector3(0.5, 0, 0.5)
+pins/1/name = "Bone_03"
+pins/1/target_node = NodePath("../o2")
+pins/1/depth_falloff = 0.0
+pins/1/weight = 1.0
+pins/1/direction_priorities = Vector3(0.5, 0, 0.5)
+
+[node name="o3" type="Marker3D" parent="Simple_Test_Rig_Armature" index="1"]
+transform = Transform3D(1, 7.96616e-16, 5.67414e-08, 1.79443e-14, 1, -3.30287e-07, -5.67414e-08, 3.30287e-07, 1, 0, 0, 0)
+
+[node name="o4" type="Marker3D" parent="Simple_Test_Rig_Armature" index="2"]
+transform = Transform3D(1, 7.96616e-16, 5.67414e-08, 1.79443e-14, 1, -3.30287e-07, -5.67414e-08, 3.30287e-07, 1, 9.5594e-16, 1.2, 3.96345e-07)
