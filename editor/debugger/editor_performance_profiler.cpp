@@ -234,6 +234,7 @@ TreeItem *EditorPerformanceProfiler::_get_monitor_base(const StringName &p_base_
 	base->set_editable(0, false);
 	base->set_selectable(0, false);
 	base->set_expand_right(0, true);
+	base->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 	base_map.insert(p_base_name, base);
 	return base;
 }
