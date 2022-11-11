@@ -33,6 +33,7 @@
 #include "core/io/resource.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "scene/main/node.h"

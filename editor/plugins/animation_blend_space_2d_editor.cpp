@@ -42,6 +42,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/main/window.h"

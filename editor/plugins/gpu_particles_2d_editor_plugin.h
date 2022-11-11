@@ -37,8 +37,12 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/spin_box.h"
 
+class CheckBox;
+class ConfirmationDialog;
 class EditorFileDialog;
 class EditorUndoRedoManager;
+class MenuButton;
+class OptionButton;
 
 class GPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);

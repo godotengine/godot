@@ -35,6 +35,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector_dock.h"
+#include "editor/property_selector.h"
 #include "editor/scene_tree_editor.h"
 #include "modules/multiplayer/multiplayer_synchronizer.h"
 #include "scene/gui/dialogs.h"
