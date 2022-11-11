@@ -648,8 +648,9 @@
 			<param index="0" name="vertex_count" type="int" />
 			<param index="1" name="vertex_format" type="int" />
 			<param index="2" name="src_buffers" type="RID[]" />
+			<param index="3" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
 			<description>
-				Creates a vertex array based on the specified buffers.
+				Creates a vertex array based on the specified buffers. Optionally, [param offsets] (in bytes) may be defined for each buffer.
 			</description>
 		</method>
 		<method name="vertex_buffer_create">

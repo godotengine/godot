@@ -4378,7 +4378,7 @@ RenderingDevice::VertexFormatID RenderingDeviceVulkan::vertex_format_create(cons
 	return id;
 }
 
-RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers) {
+RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers, const Vector<uint64_t> &p_offsets) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!vertex_formats.has(p_vertex_format), RID());
@@ -4391,6 +4391,13 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 	}
 
 	VertexArray vertex_array;
+
+	if (p_offsets.is_empty()) {
+		vertex_array.offsets.resize_zeroed(p_src_buffers.size());
+	} else {
+		ERR_FAIL_COND_V(p_offsets.size() != p_src_buffers.size(), RID());
+		vertex_array.offsets = p_offsets;
+	}
 
 	vertex_array.vertex_count = p_vertex_count;
 	vertex_array.description = p_vertex_format;
@@ -4423,7 +4430,6 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 		}
 
 		vertex_array.buffers.push_back(buffer->buffer);
-		vertex_array.offsets.push_back(0); // Offset unused, but passing anyway.
 	}
 
 	RID id = vertex_array_owner.make_rid(vertex_array);

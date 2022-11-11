@@ -170,10 +170,16 @@ RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const Typ
 	return vertex_format_create(descriptions);
 }
 
-RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers) {
+RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers, const Vector<int64_t> &p_offsets) {
 	Vector<RID> buffers = Variant(p_src_buffers);
 
-	return vertex_array_create(p_vertex_count, p_vertex_format, buffers);
+	Vector<uint64_t> offsets;
+	offsets.resize(p_offsets.size());
+	for (int i = 0; i < p_offsets.size(); i++) {
+		offsets.write[i] = p_offsets[i];
+	}
+
+	return vertex_array_create(p_vertex_count, p_vertex_format, buffers, offsets);
 }
 
 Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache) {
@@ -393,7 +399,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "use_as_storage"), &RenderingDevice::vertex_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("vertex_format_create", "vertex_descriptions"), &RenderingDevice::_vertex_format_create);
-	ClassDB::bind_method(D_METHOD("vertex_array_create", "vertex_count", "vertex_format", "src_buffers"), &RenderingDevice::_vertex_array_create);
+	ClassDB::bind_method(D_METHOD("vertex_array_create", "vertex_count", "vertex_format", "src_buffers", "offsets"), &RenderingDevice::_vertex_array_create, DEFVAL(Vector<int64_t>()));
 
 	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
