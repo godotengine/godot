@@ -13,6 +13,7 @@
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<description>
+				Get the value of a shader parameter as set on this instance.
 			</description>
 		</method>
 		<method name="set_custom_aabb">
@@ -27,6 +28,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
+				Set the value of a shader parameter for this instance only.
 			</description>
 		</method>
 	</methods>
@@ -45,8 +47,11 @@
 			[b]Note:[/b] Lights' bake mode will also affect the global illumination rendering. See [member Light3D.light_bake_mode].
 		</member>
 		<member name="ignore_occlusion_culling" type="bool" setter="set_ignore_occlusion_culling" getter="is_ignoring_occlusion_culling" default="false">
+			If [code]true[/code], disables occlusion culling for this instance.  Useful for gizmos that must be rendered even when occlusion culling is in use.
 		</member>
 		<member name="lod_bias" type="float" setter="set_lod_bias" getter="get_lod_bias" default="1.0">
+			Changes how quickly the mesh transitions to a lower level of detail.  A value of 0 will force the mesh to its lowest level of detail, a value of 1 will use the default settings, and larger values will keep the mesh in a higher level of detail at farther distances.
+			Useful for testing level of detail transitions in the editor.
 		</member>
 		<member name="material_overlay" type="Material" setter="set_material_overlay" getter="get_material_overlay">
 			The material overlay for the whole geometry.
