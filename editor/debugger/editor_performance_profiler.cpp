@@ -37,8 +37,9 @@
 
 EditorPerformanceProfiler::Monitor::Monitor() {}
 
-EditorPerformanceProfiler::Monitor::Monitor(String p_name, String p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
+EditorPerformanceProfiler::Monitor::Monitor(String p_name, String p_base, int p_frame_index, Performance::MonitorType p_type, Performance::MonitorDirection p_direction, TreeItem *p_item) {
 	type = p_type;
+	direction = p_direction;
 	item = p_item;
 	frame_index = p_frame_index;
 	name = p_name;
@@ -133,7 +134,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 		rect.size -= graph_style_box->get_minimum_size();
 		Color draw_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		draw_color.set_hsv(Math::fmod(hue_shift * float(current.frame_index), 0.9f), draw_color.get_s() * 0.9f, draw_color.get_v() * value_multiplier, 0.6f);
-		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size, draw_color);
+		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0) + _get_direction_text(current.direction), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size, draw_color);
 
 		draw_color.a = 0.9f;
 		float value_position = rect.size.width - graph_font->get_string_size(current.item->get_text(1), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
@@ -199,6 +200,19 @@ void EditorPerformanceProfiler::_monitor_draw() {
 			from -= spacing;
 			count++;
 		}
+	}
+}
+
+String EditorPerformanceProfiler::_get_direction_text(Performance::MonitorDirection p_direction) const {
+	switch (p_direction) {
+		case Performance::MonitorDirection::MONITOR_DIRECTION_NEUTRAL:
+			return "";
+		case Performance::MonitorDirection::MONITOR_DIRECTION_HIGHER_IS_BETTER:
+			return " - " + TTR("higher is better");
+		case Performance::MonitorDirection::MONITOR_DIRECTION_LOWER_IS_BETTER:
+			return " - " + TTR("lower is better");
+		default:
+			return "";
 	}
 }
 
@@ -341,7 +355,7 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 			base = name.get_slicec('/', 0);
 			name = name.get_slicec('/', 1);
 		}
-		monitors.insert(E.key, Monitor(name, base, E.value, Performance::MONITOR_TYPE_QUANTITY, nullptr));
+		monitors.insert(E.key, Monitor(name, base, E.value, Performance::MONITOR_TYPE_QUANTITY, Performance::MONITOR_DIRECTION_NEUTRAL, nullptr));
 	}
 
 	_build_monitor_tree();
@@ -388,7 +402,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	add_child(monitor_draw);
 
 	info_message = memnew(Label);
-	info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
+	info_message->set_text(TTR("Pick one or more items from the list to display a graph."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	info_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -399,7 +413,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 		String base = EditorPropertyNameProcessor::get_singleton()->process_name(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)).get_slicec('/', 0), EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 		String name = EditorPropertyNameProcessor::get_singleton()->process_name(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)).get_slicec('/', 1), EditorPropertyNameProcessor::STYLE_CAPITALIZED);
-		monitors.insert(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)), Monitor(name, base, i, Performance::get_singleton()->get_monitor_type(Performance::Monitor(i)), nullptr));
+		monitors.insert(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)), Monitor(name, base, i, Performance::get_singleton()->get_monitor_type(Performance::Monitor(i)), Performance::get_singleton()->get_monitor_direction(Performance::Monitor(i)), nullptr));
 	}
 
 	_build_monitor_tree();

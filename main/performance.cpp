@@ -208,6 +208,15 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 	return types[p_monitor];
 }
 
+Performance::MonitorDirection Performance::get_monitor_direction(Monitor p_monitor) const {
+	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, MONITOR_DIRECTION_NEUTRAL);
+	if (p_monitor == TIME_FPS) {
+		return MONITOR_DIRECTION_HIGHER_IS_BETTER;
+	} else {
+		return MONITOR_DIRECTION_LOWER_IS_BETTER;
+	}
+}
+
 void Performance::set_process_time(double p_pt) {
 	_process_time = p_pt;
 }
@@ -217,13 +226,13 @@ void Performance::set_physics_process_time(double p_pt) {
 }
 
 void Performance::add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args) {
-	ERR_FAIL_COND_MSG(has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' already exists.");
+	ERR_FAIL_COND_MSG(has_custom_monitor(p_id), "Custom monitor with ID '" + String(p_id) + "' already exists.");
 	_monitor_map.insert(p_id, MonitorCall(p_callable, p_args));
 	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
 }
 
 void Performance::remove_custom_monitor(const StringName &p_id) {
-	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with ID '" + String(p_id) + "' doesn't exist.");
 	_monitor_map.erase(p_id);
 	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
 }
@@ -233,7 +242,7 @@ bool Performance::has_custom_monitor(const StringName &p_id) {
 }
 
 Variant Performance::get_custom_monitor(const StringName &p_id) {
-	ERR_FAIL_COND_V_MSG(!has_custom_monitor(p_id), Variant(), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	ERR_FAIL_COND_V_MSG(!has_custom_monitor(p_id), Variant(), "Custom monitor with ID '" + String(p_id) + "' doesn't exist.");
 	bool error;
 	String error_message;
 	Variant return_value = _monitor_map[p_id].call(error, error_message);

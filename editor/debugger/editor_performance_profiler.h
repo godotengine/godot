@@ -51,10 +51,11 @@ private:
 		float max = 0.0f;
 		TreeItem *item = nullptr;
 		Performance::MonitorType type = Performance::MONITOR_TYPE_QUANTITY;
+		Performance::MonitorDirection direction = Performance::MONITOR_DIRECTION_NEUTRAL;
 		int frame_index = 0;
 
 		Monitor();
-		Monitor(String p_name, String p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item);
+		Monitor(String p_name, String p_base, int p_frame_index, Performance::MonitorType p_type, Performance::MonitorDirection p_direction, TreeItem *p_item);
 		void update_value(float p_value);
 		void reset();
 	};
@@ -74,6 +75,7 @@ private:
 	static String _create_label(float p_value, Performance::MonitorType p_type);
 	void _monitor_select();
 	void _monitor_draw();
+	String _get_direction_text(Performance::MonitorDirection p_direction) const;
 	void _build_monitor_tree();
 	TreeItem *_get_monitor_base(const StringName &p_base_name);
 	TreeItem *_create_monitor_item(const StringName &p_monitor_name, TreeItem *p_base);

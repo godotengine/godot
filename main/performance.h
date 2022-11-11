@@ -98,10 +98,17 @@ public:
 		MONITOR_TYPE_TIME
 	};
 
+	enum MonitorDirection {
+		MONITOR_DIRECTION_NEUTRAL,
+		MONITOR_DIRECTION_HIGHER_IS_BETTER,
+		MONITOR_DIRECTION_LOWER_IS_BETTER,
+	};
+
 	double get_monitor(Monitor p_monitor) const;
 	String get_monitor_name(Monitor p_monitor) const;
 
 	MonitorType get_monitor_type(Monitor p_monitor) const;
+	MonitorDirection get_monitor_direction(Monitor p_monitor) const;
 
 	void set_process_time(double p_pt);
 	void set_physics_process_time(double p_pt);
