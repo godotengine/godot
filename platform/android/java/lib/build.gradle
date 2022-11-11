@@ -170,11 +170,10 @@ android {
         }
     }
 
-    // TODO: Enable when issues with AGP 7.1+ are resolved (https://github.com/GodotVR/godot_openxr/issues/187).
-//    publishing {
-//        singleVariant("templateRelease") {
-//            withSourcesJar()
-//            withJavadocJar()
-//        }
-//    }
+    publishing {
+        singleVariant("templateRelease") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
 }

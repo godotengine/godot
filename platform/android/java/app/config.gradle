@@ -1,10 +1,10 @@
 ext.versions = [
-    androidGradlePlugin: '7.0.3',
+    androidGradlePlugin: '7.2.1',
     compileSdk         : 32,
-    minSdk             : 19, // Also update 'platform/android/java/lib/AndroidManifest.xml#minSdkVersion' & 'platform/android/export/export_plugin.cpp#DEFAULT_MIN_SDK_VERSION'
-    targetSdk          : 32, // Also update 'platform/android/java/lib/AndroidManifest.xml#targetSdkVersion' & 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
+    minSdk             : 19, // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_MIN_SDK_VERSION'
+    targetSdk          : 32, // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
     buildTools         : '32.0.0',
-    kotlinVersion      : '1.6.21',
+    kotlinVersion      : '1.7.0',
     fragmentVersion    : '1.3.6',
     nexusPublishVersion: '1.1.0',
     javaVersion        : 11,
