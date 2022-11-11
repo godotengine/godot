@@ -478,7 +478,6 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 
 #if defined(GLES3_ENABLED)
 	gl_extensions = nullptr;
-	use_gl2 = false;
 #endif
 
 #if defined(VULKAN_ENABLED)

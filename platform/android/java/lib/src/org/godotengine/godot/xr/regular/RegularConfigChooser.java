@@ -45,20 +45,18 @@ public class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 
 	private int[] mValue = new int[1];
 
-	// FIXME: Add support for Vulkan.
-
-	/* This EGL config specification is used to specify 2.0 rendering.
+	/* This EGL config specification is used to specify 3.0 rendering.
 	 * We use a minimum size of 4 bits for red/green/blue, but will
 	 * perform actual matching in chooseConfig() below.
 	 */
 	private static int EGL_OPENGL_ES2_BIT = 4;
-	private static int[] s_configAttribs2 = {
+	private static int[] s_configAttribs = {
 		EGL10.EGL_RED_SIZE, 4,
 		EGL10.EGL_GREEN_SIZE, 4,
 		EGL10.EGL_BLUE_SIZE, 4,
-		//  EGL10.EGL_DEPTH_SIZE,     16,
+		// EGL10.EGL_DEPTH_SIZE,     16,
 		// EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
-		EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, //apparently there is no EGL_OPENGL_ES3_BIT
 		EGL10.EGL_NONE
 	};
 
@@ -75,7 +73,7 @@ public class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 		/* Get the number of minimally matching EGL configurations
 		 */
 		int[] num_config = new int[1];
-		egl.eglChooseConfig(display, s_configAttribs2, null, 0, num_config);
+		egl.eglChooseConfig(display, s_configAttribs, null, 0, num_config);
 
 		int numConfigs = num_config[0];
 
@@ -86,7 +84,7 @@ public class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 		/* Allocate then read the array of minimally matching EGL configs
 		 */
 		EGLConfig[] configs = new EGLConfig[numConfigs];
-		egl.eglChooseConfig(display, s_configAttribs2, configs, numConfigs, num_config);
+		egl.eglChooseConfig(display, s_configAttribs, configs, numConfigs, num_config);
 
 		if (GLUtils.DEBUG) {
 			GLUtils.printConfigs(egl, display, configs);
