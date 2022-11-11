@@ -4,9 +4,6 @@
     android:versionCode="1"
     android:versionName="1.0">
 
-    <!-- Should match the mindSdk and targetSdk values in platform/android/java/app/config.gradle -->
-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="32" />
-
     <application>
 
         <!-- Records the version of the Godot library -->
