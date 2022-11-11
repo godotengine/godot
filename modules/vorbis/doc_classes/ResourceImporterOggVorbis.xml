@@ -6,6 +6,22 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="load_from_buffer" qualifiers="static">
+			<return type="AudioStreamOggVorbis" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				This method loads audio data from a PackedByteArray buffer into an AudioStreamOggVorbis object.
+			</description>
+		</method>
+		<method name="load_from_file" qualifiers="static">
+			<return type="AudioStreamOggVorbis" />
+			<param index="0" name="path" type="String" />
+			<description>
+				This method loads audio data from a file into an AudioStreamOggVorbis object. The file path is provided as a string.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="bar_beats" type="int" setter="" getter="" default="4">
 		</member>
