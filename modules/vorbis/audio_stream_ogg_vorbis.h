@@ -124,6 +124,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<AudioStreamOggVorbis> from_filesystem(const String &p_path);
+
 	void set_loop(bool p_enable);
 	virtual bool has_loop() const override;
 

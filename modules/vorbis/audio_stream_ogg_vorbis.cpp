@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/variant/typed_array.h"
 #include "thirdparty/libogg/ogg/ogg.h"
+#include "modules/vorbis/resource_importer_ogg_vorbis.cpp"
 
 int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	ERR_FAIL_COND_V(!ready, 0);
@@ -521,6 +522,8 @@ bool AudioStreamOggVorbis::is_monophonic() const {
 }
 
 void AudioStreamOggVorbis::_bind_methods() {
+	ClassDB::bind_static_method("AudioStreamOggVorbis", D_METHOD("from_filesystem", "path"), &AudioStreamOggVorbis::from_filesystem);
+
 	ClassDB::bind_method(D_METHOD("set_packet_sequence", "packet_sequence"), &AudioStreamOggVorbis::set_packet_sequence);
 	ClassDB::bind_method(D_METHOD("get_packet_sequence"), &AudioStreamOggVorbis::get_packet_sequence);
 
@@ -545,6 +548,10 @@ void AudioStreamOggVorbis::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,1,or_greater"), "set_bar_beats", "get_bar_beats");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
+}
+
+Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::from_filesystem(const String &p_path) {
+	return ResourceImporterOggVorbis::import_ogg_vorbis(p_path);
 }
 
 AudioStreamOggVorbis::AudioStreamOggVorbis() {}
