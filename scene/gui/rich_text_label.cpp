@@ -1505,7 +1505,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		}
 
 		if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
-			if ((!rtl && p_click.x >= rect.position.x) || (rtl && p_click.x <= rect.position.x + rect.size.x)) {
+            if ((!rtl && p_click.x >= rect.position.x) || ((rtl || l.text_buf->get_alignment() != HORIZONTAL_ALIGNMENT_LEFT) && p_click.x <= rect.position.x + rect.size.x)) {
 				if (p_meta) {
 					int64_t glyph_idx = TS->shaped_text_hit_test_grapheme(rid, p_click.x - rect.position.x);
 					if (glyph_idx >= 0) {
@@ -5496,10 +5496,10 @@ int RichTextLabel::get_character_line(int p_char) {
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
 		MutexLock lock(main->lines[i].text_buf->get_mutex());
-		if (main->lines[i].char_offset < p_char && p_char <= main->lines[i].char_offset + main->lines[i].char_count) {
+        if (main->lines[i].char_offset <= p_char && p_char <= main->lines[i].char_offset + main->lines[i].char_count) {
 			for (int j = 0; j < main->lines[i].text_buf->get_line_count(); j++) {
 				Vector2i range = main->lines[i].text_buf->get_line_range(j);
-				if (main->lines[i].char_offset + range.x < p_char && p_char <= main->lines[i].char_offset + range.y) {
+                if (main->lines[i].char_offset + range.x <= p_char && p_char <= main->lines[i].char_offset + range.y) {
 					return line_count;
 				}
 				line_count++;

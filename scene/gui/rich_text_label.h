@@ -643,18 +643,19 @@ public:
 
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
-	void scroll_to_paragraph(int p_paragraph);
-	int get_paragraph_count() const;
-	int get_visible_paragraph_count() const;
+    void scroll_to_paragraph(int p_paragraph);
+    int get_paragraph_count() const;
+    int get_visible_paragraph_count() const;
+    float get_paragraph_offset(int p_paragraph); // y offset.
+    int get_character_paragraph(int p_char); // Paragraph (Line type) index, not document total lines index.
 
-	float get_line_offset(int p_line);
-	float get_paragraph_offset(int p_paragraph);
+    void scroll_to_line(int p_line); // Document total lines index.
+    int get_line_count() const; // Document total lines.
+    int get_visible_line_count() const; // From total document lines.
+    float get_line_offset(int p_line); // y offset of a document line index.
+    int get_character_line(int p_char); // Document total lines index from document total chars index.
 
-	void scroll_to_line(int p_line);
-	int get_line_count() const;
-	int get_visible_line_count() const;
-
-	int get_content_height() const;
+    int get_content_height() const;
 	int get_content_width() const;
 
 	VScrollBar *get_v_scroll_bar() { return vscroll; }
@@ -711,13 +712,11 @@ public:
 
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
-	int get_character_line(int p_char);
-	int get_character_paragraph(int p_char);
 	int get_total_character_count() const;
 	int get_total_glyph_count() const;
-
-	void set_visible_ratio(float p_ratio);
-	float get_visible_ratio() const;
+    
+    void set_visible_ratio(float p_ratio);
+    float get_visible_ratio() const;
 
 	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
