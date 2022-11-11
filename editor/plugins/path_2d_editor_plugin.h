@@ -33,10 +33,12 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/2d/path_2d.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/separator.h"
 
 class CanvasItemEditor;
 class EditorUndoRedoManager;
+class MenuButton;
 
 class Path2DEditor : public HBoxContainer {
 	GDCLASS(Path2DEditor, HBoxContainer);

@@ -32,6 +32,7 @@
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_scale.h"
+#include "scene/gui/check_box.h"
 
 AudioStreamImportSettings *AudioStreamImportSettings::singleton = nullptr;
 

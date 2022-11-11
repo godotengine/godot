@@ -31,6 +31,7 @@
 #ifndef CURVE_EDITOR_PLUGIN_H
 #define CURVE_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_resource_preview.h"
 #include "scene/resources/curve.h"

@@ -35,6 +35,10 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/spin_box.h"
 
+class ConfirmationDialog;
+class HBoxContainer;
+class MenuButton;
+class OptionButton;
 class SceneTreeDialog;
 
 class GPUParticles3DEditorBase : public Control {

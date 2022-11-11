@@ -48,6 +48,7 @@
 #include "scene/resources/text_file.h"
 
 class EditorFileDialog;
+class TextureRect;
 
 class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)

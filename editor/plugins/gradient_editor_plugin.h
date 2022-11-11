@@ -31,6 +31,7 @@
 #ifndef GRADIENT_EDITOR_PLUGIN_H
 #define GRADIENT_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "gradient_editor.h"
 

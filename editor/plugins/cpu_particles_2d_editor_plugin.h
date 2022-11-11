@@ -36,10 +36,13 @@
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/box_container.h"
 
-class EditorPlugin;
+class CheckBox;
+class ConfirmationDialog;
 class SpinBox;
 class EditorFileDialog;
 class EditorUndoRedoManager;
+class MenuButton;
+class OptionButton;
 
 class CPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(CPUParticles2DEditorPlugin, EditorPlugin);

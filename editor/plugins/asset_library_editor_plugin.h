@@ -50,6 +50,9 @@
 #include "scene/gui/texture_button.h"
 #include "scene/main/http_request.h"
 
+class EditorFileDialog;
+class MenuButton;
+
 class EditorAssetLibraryItem : public PanelContainer {
 	GDCLASS(EditorAssetLibraryItem, PanelContainer);
 

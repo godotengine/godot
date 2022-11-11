@@ -32,9 +32,8 @@
 #define ROOT_MOTION_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_spin_slider.h"
-#include "editor/property_selector.h"
-#include "scene/animation/animation_tree.h"
+
+class Tree;
 
 class EditorPropertyRootMotion : public EditorProperty {
 	GDCLASS(EditorPropertyRootMotion, EditorProperty);

@@ -39,6 +39,7 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
@@ -47,9 +48,14 @@
 #include "scene/resources/fog_material.h"
 #include "scene/resources/sky_material.h"
 
+class AcceptDialog;
+class CheckBox;
+class ConfirmationDialog;
 class EditorData;
+class MenuButton;
 class Node3DEditor;
 class Node3DEditorViewport;
+class OptionButton;
 class SubViewportContainer;
 class DirectionalLight3D;
 class WorldEnvironment;

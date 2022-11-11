@@ -40,6 +40,10 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
+class CheckBox;
+class OptionButton;
+class PanelContainer;
+
 class EditorUndoRedoManager;
 
 class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {

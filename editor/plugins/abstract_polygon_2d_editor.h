@@ -36,6 +36,7 @@
 #include "scene/gui/box_container.h"
 
 class CanvasItemEditor;
+class ConfirmationDialog;
 
 class AbstractPolygon2DEditor : public HBoxContainer {
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);

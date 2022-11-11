@@ -36,6 +36,8 @@
 #include "editor/editor_plugin.h"
 #include "editor_scene_importer_gltf.h"
 
+class EditorFileDialog;
+
 class SceneExporterGLTFPlugin : public EditorPlugin {
 	GDCLASS(SceneExporterGLTFPlugin, EditorPlugin);
 

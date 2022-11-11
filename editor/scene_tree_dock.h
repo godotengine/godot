@@ -46,6 +46,8 @@
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
 
+class TextureRect;
+
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 class RenameDialog;

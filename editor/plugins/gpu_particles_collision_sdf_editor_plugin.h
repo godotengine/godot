@@ -37,6 +37,7 @@
 
 struct EditorProgress;
 class EditorFileDialog;
+class HBoxContainer;
 
 class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticlesCollisionSDF3DEditorPlugin, EditorPlugin);

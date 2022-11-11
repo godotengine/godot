@@ -37,6 +37,7 @@
 
 class EditorFileDialog;
 struct EditorProgress;
+class HBoxContainer;
 
 class VoxelGIEditorPlugin : public EditorPlugin {
 	GDCLASS(VoxelGIEditorPlugin, EditorPlugin);

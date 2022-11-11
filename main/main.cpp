@@ -85,6 +85,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"

@@ -30,6 +30,8 @@
 
 #include "root_motion_editor_plugin.h"
 #include "editor/editor_node.h"
+#include "scene/animation/animation_player.h"
+#include "scene/animation/animation_tree.h"
 #include "scene/main/window.h"
 
 void EditorPropertyRootMotion::_confirmed() {

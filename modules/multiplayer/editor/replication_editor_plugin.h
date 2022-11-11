@@ -32,17 +32,17 @@
 #define REPLICATION_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-
-#include "editor/editor_spin_slider.h"
-#include "editor/property_selector.h"
-
-#include "../scene_replication_config.h"
+#include "modules/multiplayer/scene_replication_config.h"
+#include "scene/gui/box_container.h"
 
 class ConfirmationDialog;
 class MultiplayerSynchronizer;
-class SceneTreeDialog;
+class AcceptDialog;
+class LineEdit;
 class Tree;
 class TreeItem;
+class PropertySelector;
+class SceneTreeDialog;
 
 class ReplicationEditor : public VBoxContainer {
 	GDCLASS(ReplicationEditor, VBoxContainer);

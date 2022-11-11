@@ -42,8 +42,11 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/main/canvas_item.h"
 
+class AcceptDialog;
+class ConfirmationDialog;
 class EditorData;
 class CanvasItemEditorViewport;
+class MenuButton;
 class ViewPanner;
 
 class CanvasItemEditorSelectedItem : public Object {

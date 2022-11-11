@@ -35,6 +35,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/separator.h"
 
 // Inspector controls.

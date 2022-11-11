@@ -34,10 +34,12 @@
 #include "editor/editor_plugin.h"
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/box_container.h"
 #include "scene/resources/immediate_mesh.h"
 
 class CanvasItemEditor;
 class EditorUndoRedoManager;
+class MenuButton;
 
 class Polygon3DEditor : public HBoxContainer {
 	GDCLASS(Polygon3DEditor, HBoxContainer);
