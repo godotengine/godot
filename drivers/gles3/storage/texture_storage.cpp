@@ -721,6 +721,26 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 }
 
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND(!tex);
+	ERR_FAIL_COND(!tex->is_proxy);
+	Texture *proxy_to = texture_owner.get_or_null(p_proxy_to);
+	ERR_FAIL_COND(!proxy_to);
+	ERR_FAIL_COND(proxy_to->is_proxy);
+
+	if (tex->proxy_to.is_valid()) {
+		Texture *prev_tex = texture_owner.get_or_null(tex->proxy_to);
+		ERR_FAIL_COND(!prev_tex);
+		prev_tex->proxies.erase(p_texture);
+	}
+
+	*tex = *proxy_to;
+
+	tex->proxy_to = p_proxy_to;
+	tex->is_render_target = false;
+	tex->is_proxy = true;
+	tex->proxies.clear();
+	proxy_to->proxies.push_back(p_texture);
 }
 
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
