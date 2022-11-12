@@ -37,9 +37,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define GLX_GLXEXT_PROTOTYPES
-#include <GL/glx.h>
-#include <GL/glxext.h>
+#include "thirdparty/glad/glad/glx.h"
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -324,11 +322,14 @@ void GLManager_X11::swap_buffers() {
 }
 
 Error GLManager_X11::initialize() {
+	if (!gladLoaderLoadGLX(nullptr, 0)) {
+		return ERR_CANT_CREATE;
+	}
+
 	return OK;
 }
 
 void GLManager_X11::set_use_vsync(bool p_use) {
-	static bool setup = false;
 	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = nullptr;
 	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = nullptr;
 	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = nullptr;
@@ -345,25 +346,12 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 	}
 	const GLDisplay &disp = get_current_display();
 
-	if (!setup) {
-		setup = true;
-		String extensions = glXQueryExtensionsString(disp.x11_display, DefaultScreen(disp.x11_display));
-		if (extensions.find("GLX_EXT_swap_control") != -1) {
-			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
-		}
-		if (extensions.find("GLX_MESA_swap_control") != -1) {
-			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
-		}
-		if (extensions.find("GLX_SGI_swap_control") != -1) {
-			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
-		}
-	}
 	int val = p_use ? 1 : 0;
-	if (glXSwapIntervalMESA) {
+	if (GLAD_GLX_MESA_swap_control) {
 		glXSwapIntervalMESA(val);
-	} else if (glXSwapIntervalSGI) {
+	} else if (GLAD_GLX_SGI_swap_control) {
 		glXSwapIntervalSGI(val);
-	} else if (glXSwapIntervalEXT) {
+	} else if (GLAD_GLX_EXT_swap_control) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(disp.x11_display, drawable, val);
 	} else {
