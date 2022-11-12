@@ -1759,11 +1759,11 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 }
 
 void Node::remove_from_group(const StringName &p_identifier) {
-	ERR_FAIL_COND(!data.grouped.has(p_identifier));
-
 	HashMap<StringName, GroupData>::Iterator E = data.grouped.find(p_identifier);
 
-	ERR_FAIL_COND(!E);
+	if (!E) {
+		return;
+	}
 
 	if (data.tree) {
 		data.tree->remove_from_group(E->key, this);
