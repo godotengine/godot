@@ -3191,7 +3191,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_SHADELESS,
 				VIEW_DISPLAY_LIGHTING,
 				VIEW_DISPLAY_NORMAL_BUFFER,
-				VIEW_DISPLAY_WIREFRAME,
 				VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
 				VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
 				VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
@@ -3221,7 +3220,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_UNSHADED,
 				Viewport::DEBUG_DRAW_LIGHTING,
 				Viewport::DEBUG_DRAW_NORMAL_BUFFER,
-				Viewport::DEBUG_DRAW_WIREFRAME,
 				Viewport::DEBUG_DRAW_SHADOW_ATLAS,
 				Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 				Viewport::DEBUG_DRAW_VOXEL_GI_ALBEDO,
@@ -3244,9 +3242,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_MOTION_VECTORS,
 			};
 
-			int idx = 0;
-
-			while (display_options[idx] != VIEW_MAX) {
+			for (int idx = 0; display_options[idx] != VIEW_MAX; idx++) {
 				int id = display_options[idx];
 				int item_idx = view_menu->get_popup()->get_item_index(id);
 				if (item_idx != -1) {
@@ -3260,7 +3256,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				if (id == p_option) {
 					viewport->set_debug_draw(debug_draw_modes[idx]);
 				}
-				idx++;
 			}
 		} break;
 	}
