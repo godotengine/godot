@@ -535,7 +535,7 @@
 				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
-		<method name="print_orphan_nodes">
+		<method name="print_orphan_nodes" qualifiers="static">
 			<return type="void" />
 			<description>
 				Prints all orphan nodes (nodes outside the [SceneTree]). Used for debugging.

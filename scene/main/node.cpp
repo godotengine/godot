@@ -2570,10 +2570,6 @@ static void _Node_debug_sn(Object *p_obj) {
 }
 #endif // DEBUG_ENABLED
 
-void Node::_print_orphan_nodes() {
-	print_orphan_nodes();
-}
-
 void Node::print_orphan_nodes() {
 #ifdef DEBUG_ENABLED
 	ObjectDB::debug_objects(_Node_debug_sn);
@@ -2741,6 +2737,7 @@ void Node::_bind_methods() {
 	GLOBAL_DEF("editor/node_naming/name_casing", NAME_CASING_PASCAL_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_casing", PropertyInfo(Variant::INT, "editor/node_naming/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
+	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
@@ -2798,7 +2795,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Node::set_process_mode);
 	ClassDB::bind_method(D_METHOD("get_process_mode"), &Node::get_process_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
-	ClassDB::bind_method(D_METHOD("print_orphan_nodes"), &Node::_print_orphan_nodes);
 
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);
