@@ -36,11 +36,19 @@
 class FlowContainer : public Container {
 	GDCLASS(FlowContainer, Container);
 
+public:
+	enum AlignMode {
+		ALIGN_BEGIN,
+		ALIGN_CENTER,
+		ALIGN_END
+	};
+
 private:
 	int cached_size;
 	int cached_line_count;
 
 	bool vertical;
+	AlignMode align;
 
 	void _resort();
 
@@ -55,6 +63,9 @@ public:
 	virtual Size2 get_minimum_size() const;
 
 	FlowContainer(bool p_vertical = false);
+
+	void set_alignment(AlignMode p_align);
+	AlignMode get_alignment() const;
 };
 
 class HFlowContainer : public FlowContainer {
@@ -72,5 +83,7 @@ public:
 	VFlowContainer() :
 			FlowContainer(true) {}
 };
+
+VARIANT_ENUM_CAST(FlowContainer::AlignMode);
 
 #endif // FLOW_CONTAINER_H

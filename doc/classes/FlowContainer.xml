@@ -17,6 +17,20 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="FlowContainer.AlignMode" default="0">
+			The alignment of the container's children (must be one of [constant ALIGN_BEGIN], [constant ALIGN_CENTER] or [constant ALIGN_END]).
+		</member>
+	</members>
 	<constants>
+		<constant name="ALIGN_BEGIN" value="0" enum="AlignMode">
+			Aligns children with the beginning of the container.
+		</constant>
+		<constant name="ALIGN_CENTER" value="1" enum="AlignMode">
+			Aligns children with the center of the container.
+		</constant>
+		<constant name="ALIGN_END" value="2" enum="AlignMode">
+			Aligns children with the end of the container.
+		</constant>
 	</constants>
 </class>
