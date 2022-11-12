@@ -4218,7 +4218,9 @@ Tree::SelectMode Tree::get_select_mode() const {
 void Tree::deselect_all() {
 	TreeItem *item = get_next_selected(get_root());
 	while (item) {
-		item->deselect(selected_col);
+		for (int i = 0; i < columns.size(); i++) {
+			item->deselect(i);
+		}
 		TreeItem *prev_item = item;
 		item = get_next_selected(get_root());
 		ERR_FAIL_COND(item == prev_item);
