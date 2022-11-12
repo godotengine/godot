@@ -9,7 +9,7 @@
 		func read_zip_file():
 		    var reader := ZIPReader.new()
 		    var err := reader.open("user://archive.zip")
-		    if err == OK:
+		    if err != OK:
 		        return PackedByteArray()
 		    var res := reader.read_file("hello.txt")
 		    reader.close()
