@@ -186,6 +186,8 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 - `KHR/khrplatform.h`
 - `gl.c`
 - `glad/gl.h`
+- `glx.c`
+- `glad/glx.h`
 
 
 ## glslang
