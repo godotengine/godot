@@ -11,7 +11,7 @@ if env["vulkan"]:
     source_files.append("vulkan_context_x11.cpp")
 
 if env["opengl3"]:
-    source_files.append(["gl_manager_x11.cpp", "detect_prime_x11.cpp"])
+    source_files.append(["gl_manager_x11.cpp", "detect_prime_x11.cpp", "#thirdparty/glad/glx.c"])
 
 objects = []
 
