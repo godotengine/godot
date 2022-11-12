@@ -170,7 +170,13 @@ namespace Godot.SourceGenerators
                     .Select(s => s?.Initializer ?? null)
                     .FirstOrDefault();
 
-                string? value = initializer?.Value.ToString();
+                // Fully qualify the value to avoid issues with namespaces.
+                string? value = null;
+                if (initializer != null)
+                {
+                    var sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                    value = initializer.Value.FullQualifiedSyntax(sm);
+                }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
                     property.Name, marshalType.Value, propertyType, value));
@@ -207,7 +213,13 @@ namespace Godot.SourceGenerators
                     .Select(s => s.Initializer)
                     .FirstOrDefault(i => i != null);
 
-                string? value = initializer?.Value.ToString();
+                // This needs to be fully qualified to avoid issues with namespaces.
+                string? value = null;
+                if (initializer != null)
+                {
+                    var sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                    value = initializer.Value.FullQualifiedSyntax(sm);
+                }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
                     field.Name, marshalType.Value, fieldType, value));

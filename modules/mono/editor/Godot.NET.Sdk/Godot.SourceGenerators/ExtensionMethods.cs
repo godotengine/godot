@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -164,6 +165,50 @@ namespace Godot.SourceGenerators
 
         public static string FullQualifiedName(this INamespaceSymbol namespaceSymbol)
             => namespaceSymbol.ToDisplayString(FullyQualifiedFormatOmitGlobal);
+
+        public static string FullQualifiedName(this ISymbol symbol)
+            => symbol.ToDisplayString(FullyQualifiedFormatOmitGlobal);
+
+        public static string FullQualifiedSyntax(this SyntaxNode node, SemanticModel sm)
+        {
+            StringBuilder sb = new();
+            FullQualifiedSyntax_(node, sm, sb, true);
+            return sb.ToString();
+        }
+
+        private static void FullQualifiedSyntax_(SyntaxNode node, SemanticModel sm, StringBuilder sb, bool isFirstNode)
+        {
+            if (node is NameSyntax ns && isFirstNode)
+            {
+                SymbolInfo nameInfo = sm.GetSymbolInfo(ns);
+                sb.Append(nameInfo.Symbol?.FullQualifiedName() ?? ns.ToString());
+                return;
+            }
+
+            bool innerIsFirstNode = true;
+            foreach (var child in node.ChildNodesAndTokens())
+            {
+                if (child.HasLeadingTrivia)
+                {
+                    sb.Append(child.GetLeadingTrivia());
+                }
+
+                if (child.IsNode)
+                {
+                    FullQualifiedSyntax_(child.AsNode()!, sm, sb, isFirstNode: innerIsFirstNode);
+                    innerIsFirstNode = false;
+                }
+                else
+                {
+                    sb.Append(child);
+                }
+
+                if (child.HasTrailingTrivia)
+                {
+                    sb.Append(child.GetTrailingTrivia());
+                }
+            }
+        }
 
         public static string SanitizeQualifiedNameForUniqueHint(this string qualifiedName)
             => qualifiedName
