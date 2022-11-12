@@ -1319,7 +1319,10 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 		}
 #ifdef GLES3_ENABLED
 		case OPENGL_CONTEXT: {
-			return (int64_t)gl_manager->get_glx_context(p_window);
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_context(p_window);
+			}
+			return 0;
 		}
 #endif
 		default: {
