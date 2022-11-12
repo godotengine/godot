@@ -1872,7 +1872,7 @@ void CodeTextEditor::_apply_settings_change() {
 				}
 				fc->set_opentype_features(ftrs);
 			} break;
-			default: { // Default.
+			default: { // Enabled.
 				Dictionary ftrs;
 				ftrs[TS->name_to_tag("calt")] = 1;
 				fc->set_opentype_features(ftrs);
@@ -2106,7 +2106,7 @@ CodeTextEditor::CodeTextEditor() {
 				}
 				fc->set_opentype_features(ftrs);
 			} break;
-			default: { // Default.
+			default: { // Enabled.
 				Dictionary ftrs;
 				ftrs[TS->name_to_tag("calt")] = 1;
 				fc->set_opentype_features(ftrs);
