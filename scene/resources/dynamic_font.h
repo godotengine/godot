@@ -352,6 +352,8 @@ public:
 	virtual float get_ascent() const;
 	virtual float get_descent() const;
 
+	virtual int get_spacing_char() const;
+
 	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
 	String get_available_chars() const;
 

@@ -361,6 +361,12 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				int ascent = font->get_ascent();
 				int descent = font->get_descent();
 
+				// Each BBCode tag is drawn individually, so we have to add the character spacing manually.
+				int spacing_char = 0;
+				if (visible_characters != 0) {
+					spacing_char = font->get_spacing_char();
+				}
+
 				Color color;
 				Color font_color_shadow;
 				bool underline = false;
@@ -446,7 +452,12 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						end++;
 					}
 					CHECK_HEIGHT(fh);
-					ENSURE_WIDTH(w);
+					ENSURE_WIDTH(w + spacing_char);
+
+					// ENSURE_WIDTH may create a new line. In this case we are at the beginning and don't want to shift the initial text.
+					if (line_is_blank) {
+						spacing_char = 0;
+					}
 
 					line_ascent = MAX(line_ascent, ascent);
 					line_descent = MAX(line_descent, descent);
@@ -600,21 +611,21 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									const Color char_color = selected && override_selected_font_color ? selection_fg : fx_color;
 									const Color shadow_color = p_font_color_shadow * Color(1, 1, 1, char_color.a);
 
+									const Point2 base_pos = p_ofs + Point2(align_ofs + pofs + spacing_char, y + lh - line_descent);
 									if (shadow_color.a > 0) {
-										const Point2 shadow_base_pos = p_ofs + Point2(align_ofs + pofs, y + lh - line_descent);
-										font->draw_char(ci, shadow_base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], shadow_color);
+										font->draw_char(ci, base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], shadow_color);
 
 										if (p_shadow_as_outline) {
-											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
-											font->draw_char(ci, shadow_base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
-											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char(ci, base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char(ci, base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char(ci, base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
 										}
 									}
 
 									if (selected) {
-										drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), fx_char, c[i + 1], char_color);
+										drawer.draw_char(ci, base_pos, fx_char, c[i + 1], char_color);
 									} else {
-										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent) + fx_offset, fx_char, c[i + 1], char_color);
+										cw = drawer.draw_char(ci, base_pos + fx_offset, fx_char, c[i + 1], char_color);
 									}
 								} else if (previously_visible && c[i] != '\t') {
 									backtrack += current_char_width;
