@@ -606,7 +606,7 @@
 			<return type="void" />
 			<param index="0" name="group" type="StringName" />
 			<description>
-				Removes a node from a group. See notes in the description, and the group methods in [SceneTree].
+				Removes a node from the [param group]. Does nothing if the node is not in the [param group]. See notes in the description, and the group methods in [SceneTree].
 			</description>
 		</method>
 		<method name="replace_by">
