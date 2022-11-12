@@ -191,7 +191,8 @@ jobs:
         if: ${{ matrix.godot-cpp-test }}
         uses: actions/checkout@v3
         with:
-          repository: godotengine/godot-cpp
+          repository: touilleMan/godot-cpp
+          ref: gdextension-declarative-property
           submodules: 'recursive'
           path: 'godot-cpp'
 
