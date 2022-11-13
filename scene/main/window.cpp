@@ -2104,6 +2104,19 @@ Transform2D Window::get_screen_transform() const {
 	return embedder_transform * Viewport::get_screen_transform();
 }
 
+Transform2D Window::get_popup_base_transform() const {
+	if (is_embedding_subwindows()) {
+		return Transform2D();
+	}
+	Transform2D window_transform;
+	window_transform.set_origin(get_position());
+	window_transform *= Viewport::get_screen_transform();
+	if (_get_embedder()) {
+		return _get_embedder()->get_popup_base_transform() * window_transform;
+	}
+	return window_transform;
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
