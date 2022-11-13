@@ -46,7 +46,11 @@ Error ZIPPacker::open(String p_path, ZipAppend p_append) {
 Error ZIPPacker::close() {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker cannot be closed because it is not open.");
 
-	return zipClose(zf, NULL) == ZIP_OK ? OK : FAILED;
+	Error err = zipClose(zf, NULL) == ZIP_OK ? OK : FAILED;
+	if (err == OK) {
+		zf = NULL;
+	}
+	return err;
 }
 
 Error ZIPPacker::start_file(String p_path) {
@@ -79,11 +83,7 @@ Error ZIPPacker::write_file(Vector<uint8_t> p_data) {
 Error ZIPPacker::close_file() {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
-	Error err = zipCloseFileInZip(zf) == ZIP_OK ? OK : FAILED;
-	if (err == OK) {
-		zf = NULL;
-	}
-	return err;
+	return zipCloseFileInZip(zf) == ZIP_OK ? OK : FAILED;
 }
 
 void ZIPPacker::_bind_methods() {
