@@ -1832,8 +1832,8 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 	return Variant();
 }
 
-void GDScriptInstance::notification(int p_notification) {
-	//notification is not virtual, it gets called at ALL levels just like in C.
+void GDScriptInstance::notify(int p_notification) {
+	//notify is not virtual, it gets called at ALL levels just like in C.
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
 
@@ -1844,7 +1844,7 @@ void GDScriptInstance::notification(int p_notification) {
 			Callable::CallError err;
 			E->value->call(this, args, 1, err);
 			if (err.error != Callable::CallError::CALL_OK) {
-				//print error about notification call
+				//print error about notify call
 			}
 		}
 		sptr = sptr->_base;

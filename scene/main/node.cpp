@@ -180,11 +180,11 @@ void Node::_propagate_ready() {
 	}
 	data.blocked--;
 
-	notification(NOTIFICATION_POST_ENTER_TREE);
+	notify(NOTIFICATION_POST_ENTER_TREE);
 
 	if (data.ready_first) {
 		data.ready_first = false;
-		notification(NOTIFICATION_READY);
+		notify(NOTIFICATION_READY);
 		emit_signal(SceneStringNames::get_singleton()->ready);
 	}
 }
@@ -210,7 +210,7 @@ void Node::_propagate_enter_tree() {
 		E.value.group = data.tree->add_to_group(E.key, this);
 	}
 
-	notification(NOTIFICATION_ENTER_TREE);
+	notify(NOTIFICATION_ENTER_TREE);
 
 	GDVIRTUAL_CALL(_enter_tree);
 
@@ -292,7 +292,7 @@ void Node::_propagate_exit_tree() {
 
 	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
 
-	notification(NOTIFICATION_EXIT_TREE, true);
+	notify(NOTIFICATION_EXIT_TREE, true);
 	if (data.tree) {
 		data.tree->node_removed(this);
 	}
@@ -391,7 +391,7 @@ void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
 	// notification second
 	move_child_notify(p_child);
 	for (int i = motion_from; i <= motion_to; i++) {
-		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+		data.children[i]->notify(NOTIFICATION_MOVED_IN_PARENT);
 	}
 	p_child->_propagate_groups_dirty();
 
@@ -521,9 +521,9 @@ void Node::_propagate_pause_notification(bool p_enable) {
 	bool next_can_process = _can_process(p_enable);
 
 	if (prev_can_process && !next_can_process) {
-		notification(NOTIFICATION_PAUSED);
+		notify(NOTIFICATION_PAUSED);
 	} else if (!prev_can_process && next_can_process) {
-		notification(NOTIFICATION_UNPAUSED);
+		notify(NOTIFICATION_UNPAUSED);
 	}
 
 	for (int i = 0; i < data.children.size(); i++) {
@@ -539,11 +539,11 @@ void Node::_propagate_process_owner(Node *p_owner, int p_pause_notification, int
 	data.process_owner = p_owner;
 
 	if (p_pause_notification != 0) {
-		notification(p_pause_notification);
+		notify(p_pause_notification);
 	}
 
 	if (p_enabled_notification != 0) {
-		notification(p_enabled_notification);
+		notify(p_enabled_notification);
 	}
 
 	for (int i = 0; i < data.children.size(); i++) {
@@ -1111,7 +1111,7 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	if (data.internal_children_back > 0) {
 		_move_child(p_child, data.children.size() - data.internal_children_back - 1);
 	}
-	p_child->notification(NOTIFICATION_PARENTED);
+	p_child->notify(NOTIFICATION_PARENTED);
 
 	if (data.tree) {
 		p_child->_set_tree(data.tree);
@@ -1200,7 +1200,7 @@ void Node::remove_child(Node *p_child) {
 	//}
 
 	remove_child_notify(p_child);
-	p_child->notification(NOTIFICATION_UNPARENTED);
+	p_child->notify(NOTIFICATION_UNPARENTED);
 
 	data.children.remove_at(idx);
 
@@ -1210,7 +1210,7 @@ void Node::remove_child(Node *p_child) {
 
 	for (int i = idx; i < child_count; i++) {
 		children[i]->data.index = i;
-		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+		children[i]->notify(NOTIFICATION_MOVED_IN_PARENT);
 	}
 
 	p_child->data.parent = nullptr;
@@ -1834,7 +1834,7 @@ void Node::_propagate_reverse_notification(int p_notification) {
 		data.children[i]->_propagate_reverse_notification(p_notification);
 	}
 
-	notification(p_notification, true);
+	notify(p_notification, true);
 	data.blocked--;
 }
 
@@ -1860,7 +1860,7 @@ void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) 
 
 void Node::propagate_notification(int p_notification) {
 	data.blocked++;
-	notification(p_notification);
+	notify(p_notification);
 
 	for (int i = 0; i < data.children.size(); i++) {
 		data.children[i]->propagate_notification(p_notification);

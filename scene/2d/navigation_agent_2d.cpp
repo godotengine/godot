@@ -121,7 +121,7 @@ void NavigationAgent2D::_notification(int p_what) {
 		case NOTIFICATION_PARENTED: {
 			if (is_inside_tree() && (get_parent() != agent_parent)) {
 				// only react to PARENTED notifications when already inside_tree and parent changed, e.g. users switch nodes around
-				// PARENTED notification fires also when Node is added in scripts to a parent
+				// PARENTED notify fires also when Node is added in scripts to a parent
 				// this would spam transforms fails and world fails while Node is outside SceneTree
 				// when node gets reparented when joining the tree POST_ENTER_TREE takes care of this
 				set_agent_parent(get_parent());

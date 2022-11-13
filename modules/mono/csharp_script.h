@@ -274,7 +274,7 @@ public:
 
 	const Variant get_rpc_config() const override;
 
-	void notification(int p_notification) override;
+	void notify(int p_notification) override;
 	void _call_notification(int p_notification);
 
 	String to_string(bool *r_valid) override;

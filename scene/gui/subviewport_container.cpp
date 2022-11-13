@@ -169,7 +169,7 @@ void SubViewportContainer::_notify_viewports(int p_notification) {
 		if (!c) {
 			continue;
 		}
-		c->notification(p_notification);
+		c->notify(p_notification);
 	}
 }
 

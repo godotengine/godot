@@ -1639,7 +1639,7 @@ void Control::_size_changed() {
 
 	if (is_inside_tree()) {
 		if (size_changed) {
-			notification(NOTIFICATION_RESIZED);
+			notify(NOTIFICATION_RESIZED);
 		}
 		if (pos_changed || size_changed) {
 			item_rect_changed(size_changed);
@@ -2296,7 +2296,7 @@ void Control::_theme_changed() {
 
 void Control::_notify_theme_override_changed() {
 	if (!data.bulk_theme_override && is_inside_tree()) {
-		notification(NOTIFICATION_THEME_CHANGED);
+		notify(NOTIFICATION_THEME_CHANGED);
 	}
 }
 
@@ -2365,7 +2365,7 @@ void Control::set_theme_type_variation(const StringName &p_theme_type) {
 	}
 	data.theme_type_variation = p_theme_type;
 	if (is_inside_tree()) {
-		notification(NOTIFICATION_THEME_CHANGED);
+		notify(NOTIFICATION_THEME_CHANGED);
 	}
 }
 
@@ -2780,7 +2780,7 @@ void Control::set_localize_numeral_system(bool p_enable) {
 
 	data.localize_numeral_system = p_enable;
 
-	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	notify(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 }
 
 bool Control::is_localizing_numeral_system() const {
@@ -2794,7 +2794,7 @@ void Control::set_auto_translate(bool p_enable) {
 
 	data.auto_translate = p_enable;
 
-	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	notify(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 }
 
 bool Control::is_auto_translating() const {
@@ -2840,7 +2840,7 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			notification(NOTIFICATION_THEME_CHANGED);
+			notify(NOTIFICATION_THEME_CHANGED);
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {

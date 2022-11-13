@@ -178,7 +178,7 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 	extension->native_extension.free_property_list = p_extension_funcs->free_property_list_func;
 	extension->native_extension.property_can_revert = p_extension_funcs->property_can_revert_func;
 	extension->native_extension.property_get_revert = p_extension_funcs->property_get_revert_func;
-	extension->native_extension.notification = p_extension_funcs->notification_func;
+	extension->native_extension.notify = p_extension_funcs->notification_func;
 	extension->native_extension.to_string = p_extension_funcs->to_string_func;
 	extension->native_extension.reference = p_extension_funcs->reference_func;
 	extension->native_extension.unreference = p_extension_funcs->unreference_func;

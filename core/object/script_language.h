@@ -196,7 +196,7 @@ public:
 	}
 
 	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error); // implement if language supports const functions
-	virtual void notification(int p_notification) = 0;
+	virtual void notify(int p_notification) = 0;
 	virtual String to_string(bool *r_valid) {
 		if (r_valid) {
 			*r_valid = false;
@@ -462,7 +462,7 @@ public:
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
-	virtual void notification(int p_notification) override {}
+	virtual void notify(int p_notification) override {}
 
 	virtual Ref<Script> get_script() const override { return script; }
 

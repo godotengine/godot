@@ -193,7 +193,7 @@ Object::Connection::Connection(const Variant &p_variant) {
 
 bool Object::_predelete() {
 	_predelete_ok = 1;
-	notification(NOTIFICATION_PREDELETE, true);
+	notify(NOTIFICATION_PREDELETE, true);
 	if (_predelete_ok) {
 		_class_ptr = nullptr; //must restore so destructors can access class ptr correctly
 	}
@@ -203,7 +203,7 @@ bool Object::_predelete() {
 void Object::_postinitialize() {
 	_class_ptr = _get_class_namev();
 	_initialize_classv();
-	notification(NOTIFICATION_POSTINITIALIZE);
+	notify(NOTIFICATION_POSTINITIALIZE);
 }
 
 void Object::get_valid_parents_static(List<String> *p_parents) {
@@ -786,15 +786,15 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 	return ret;
 }
 
-void Object::notification(int p_notification, bool p_reversed) {
+void Object::notify(int p_notification, bool p_reversed) {
 	_notificationv(p_notification, p_reversed);
 
 	if (script_instance) {
-		script_instance->notification(p_notification);
+		script_instance->notify(p_notification);
 	}
 
-	if (_extension && _extension->notification) {
-		_extension->notification(_extension_instance, p_notification);
+	if (_extension && _extension->notify) {
+		_extension->notify(_extension_instance, p_notification);
 	}
 }
 
@@ -1473,7 +1473,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_indexed", "property_path"), &Object::_get_indexed_bind);
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
-	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("notify", "what", "reversed"), &Object::notify, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("to_string"), &Object::to_string);
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 

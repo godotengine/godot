@@ -3488,7 +3488,7 @@ void DisplayServerX11::process_events() {
 				//X11 can go between windows and have no focus for a while, when creating them or something else. Use this as safety to avoid unnecessary focus in/outs.
 				if (OS::get_singleton()->get_main_loop()) {
 					DEBUG_LOG_X11("All focus lost, triggering NOTIFICATION_APPLICATION_FOCUS_OUT\n");
-					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+					OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
 				app_focused = false;
 			}
@@ -3804,7 +3804,7 @@ void DisplayServerX11::process_events() {
 
 				if (!app_focused) {
 					if (OS::get_singleton()->get_main_loop()) {
-						OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+						OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 					}
 					app_focused = true;
 				}

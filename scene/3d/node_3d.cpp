@@ -153,12 +153,12 @@ void Node3D::_notification(int p_what) {
 			data.dirty |= DIRTY_GLOBAL_TRANSFORM; // Global is always dirty upon entering a scene.
 			_notify_dirty();
 
-			notification(NOTIFICATION_ENTER_WORLD);
+			notify(NOTIFICATION_ENTER_WORLD);
 			_update_visibility_parent(true);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			notification(NOTIFICATION_EXIT_WORLD, true);
+			notify(NOTIFICATION_EXIT_WORLD, true);
 			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
@@ -233,7 +233,7 @@ void Node3D::set_quaternion(const Quaternion &p_quaternion) {
 
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
-		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		notify(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
 
@@ -263,7 +263,7 @@ void Node3D::set_transform(const Transform3D &p_transform) {
 
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
-		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		notify(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
 
@@ -354,7 +354,7 @@ void Node3D::set_position(const Vector3 &p_position) {
 	data.local_transform.origin = p_position;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
-		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		notify(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
 
@@ -381,7 +381,7 @@ void Node3D::set_rotation_edit_mode(RotationEditMode p_mode) {
 	if (transform_changed) {
 		_propagate_transform_changed(this);
 		if (data.notify_local_transform) {
-			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+			notify(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 		}
 	}
 
@@ -415,7 +415,7 @@ void Node3D::set_rotation_order(EulerOrder p_order) {
 	if (transform_changed) {
 		_propagate_transform_changed(this);
 		if (data.notify_local_transform) {
-			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+			notify(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 		}
 	}
 	notify_property_list_changed(); // Will change the rotation property.
@@ -436,7 +436,7 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 	data.dirty = DIRTY_LOCAL_TRANSFORM;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
-		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		notify(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
 
@@ -451,7 +451,7 @@ void Node3D::set_scale(const Vector3 &p_scale) {
 	data.dirty = DIRTY_LOCAL_TRANSFORM;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
-		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		notify(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
 
@@ -641,7 +641,7 @@ Ref<World3D> Node3D::get_world_3d() const {
 }
 
 void Node3D::_propagate_visibility_changed() {
-	notification(NOTIFICATION_VISIBILITY_CHANGED);
+	notify(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 
 #ifdef TOOLS_ENABLED
@@ -829,7 +829,7 @@ void Node3D::force_update_transform() {
 	}
 	get_tree()->xform_change_list.remove(&xform_change);
 
-	notification(NOTIFICATION_TRANSFORM_CHANGED);
+	notify(NOTIFICATION_TRANSFORM_CHANGED);
 }
 
 void Node3D::_update_visibility_parent(bool p_update_root) {

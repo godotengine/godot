@@ -94,7 +94,7 @@ public:
 	StringName bind;
 	StringName unbind;
 	StringName emit;
-	StringName notification;
+	StringName notify;
 	StringName property_list_changed;
 };
 

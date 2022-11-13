@@ -2369,7 +2369,7 @@ void Node3DEditorPlugin::edited_scene_changed() {
 	for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
 		Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
 		if (viewport->is_visible()) {
-			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
+			viewport->notify(Control::NOTIFICATION_VISIBILITY_CHANGED);
 		}
 	}
 }

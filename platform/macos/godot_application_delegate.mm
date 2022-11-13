@@ -121,13 +121,13 @@
 		ds->mouse_process_popups(true);
 	}
 	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+		OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 	}
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
 	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+		OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 	}
 }
 
@@ -158,7 +158,7 @@
 - (void)showAbout:(id)sender {
 	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
 	if (os && os->get_main_loop()) {
-		os->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
+		os->get_main_loop()->notify(MainLoop::NOTIFICATION_WM_ABOUT);
 	}
 }
 

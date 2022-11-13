@@ -1025,7 +1025,7 @@ Ref<World2D> Viewport::find_world_2d() const {
 }
 
 void Viewport::_propagate_viewport_notification(Node *p_node, int p_what) {
-	p_node->notification(p_what);
+	p_node->notify(p_what);
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
 		if (Object::cast_to<Viewport>(c)) {
@@ -1355,7 +1355,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
 			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
-				control->notification(p_what);
+				control->notify(p_what);
 			}
 
 			if (!control->is_inside_tree()) {
@@ -2226,7 +2226,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
 	gui.key_focus = p_control;
 	emit_signal(SNAME("gui_focus_changed"), p_control);
-	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
+	p_control->notify(Control::NOTIFICATION_FOCUS_ENTER);
 	p_control->queue_redraw();
 }
 
@@ -2904,7 +2904,7 @@ void Viewport::gui_release_focus() {
 	if (gui.key_focus) {
 		Control *f = gui.key_focus;
 		gui.key_focus = nullptr;
-		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
+		f->notify(Control::NOTIFICATION_FOCUS_EXIT, true);
 		f->queue_redraw();
 	}
 }
@@ -3378,7 +3378,7 @@ void Viewport::_camera_3d_set(Camera3D *p_camera) {
 	}
 
 	if (camera_3d) {
-		camera_3d->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
+		camera_3d->notify(Camera3D::NOTIFICATION_LOST_CURRENT);
 	}
 
 	camera_3d = p_camera;
@@ -3392,7 +3392,7 @@ void Viewport::_camera_3d_set(Camera3D *p_camera) {
 	}
 
 	if (camera_3d) {
-		camera_3d->notification(Camera3D::NOTIFICATION_BECAME_CURRENT);
+		camera_3d->notify(Camera3D::NOTIFICATION_BECAME_CURRENT);
 	}
 
 	_update_audio_listener_3d();
@@ -3407,7 +3407,7 @@ bool Viewport::_camera_3d_add(Camera3D *p_camera) {
 void Viewport::_camera_3d_remove(Camera3D *p_camera) {
 	camera_3d_set.erase(p_camera);
 	if (camera_3d == p_camera) {
-		camera_3d->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
+		camera_3d->notify(Camera3D::NOTIFICATION_LOST_CURRENT);
 		camera_3d = nullptr;
 	}
 }
@@ -3626,7 +3626,7 @@ void Viewport::_propagate_enter_world_3d(Node *p_node) {
 		}
 
 		if (Object::cast_to<Node3D>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
-			p_node->notification(Node3D::NOTIFICATION_ENTER_WORLD);
+			p_node->notify(Node3D::NOTIFICATION_ENTER_WORLD);
 		} else {
 			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {
@@ -3649,7 +3649,7 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 		}
 
 		if (Object::cast_to<Node3D>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
-			p_node->notification(Node3D::NOTIFICATION_EXIT_WORLD);
+			p_node->notify(Node3D::NOTIFICATION_EXIT_WORLD);
 		} else {
 			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {

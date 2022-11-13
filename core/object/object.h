@@ -315,7 +315,7 @@ struct ObjectNativeExtension {
 	GDNativeExtensionClassFreePropertyList free_property_list;
 	GDNativeExtensionClassPropertyCanRevert property_can_revert;
 	GDNativeExtensionClassPropertyGetRevert property_get_revert;
-	GDNativeExtensionClassNotification notification;
+	GDNativeExtensionClassNotification notify;
 	GDNativeExtensionClassToString to_string;
 	GDNativeExtensionClassReference reference;
 	GDNativeExtensionClassReference unreference;
@@ -822,7 +822,7 @@ public:
 		return callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
 	}
 
-	void notification(int p_notification, bool p_reversed = false);
+	void notify(int p_notification, bool p_reversed = false);
 	virtual String to_string();
 
 	// Used mainly by script, get and set all INCLUDING string.

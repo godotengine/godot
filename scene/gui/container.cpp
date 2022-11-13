@@ -88,10 +88,10 @@ void Container::_sort_children() {
 		return;
 	}
 
-	notification(NOTIFICATION_PRE_SORT_CHILDREN);
+	notify(NOTIFICATION_PRE_SORT_CHILDREN);
 	emit_signal(SceneStringNames::get_singleton()->pre_sort_children);
 
-	notification(NOTIFICATION_SORT_CHILDREN);
+	notify(NOTIFICATION_SORT_CHILDREN);
 	emit_signal(SceneStringNames::get_singleton()->sort_children);
 	pending_sort = false;
 }

@@ -648,7 +648,7 @@ void DisplayServerMacOS::update_im_text(const Point2i &p_selection, const String
 	im_selection = p_selection;
 	im_text = p_text;
 
-	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+	OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 }
 
 void DisplayServerMacOS::set_last_focused_window(WindowID p_window) {

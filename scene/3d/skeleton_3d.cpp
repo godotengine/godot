@@ -381,7 +381,7 @@ Transform3D Skeleton3D::get_bone_global_pose(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
 	if (dirty) {
-		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+		const_cast<Skeleton3D *>(this)->notify(NOTIFICATION_UPDATE_SKELETON);
 	}
 	return bones[p_bone].pose_global;
 }
@@ -390,7 +390,7 @@ Transform3D Skeleton3D::get_bone_global_pose_no_override(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
 	if (dirty) {
-		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+		const_cast<Skeleton3D *>(this)->notify(NOTIFICATION_UPDATE_SKELETON);
 	}
 	return bones[p_bone].pose_global_no_override;
 }
@@ -640,7 +640,7 @@ Transform3D Skeleton3D::get_bone_global_rest(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
 	if (rest_dirty) {
-		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+		const_cast<Skeleton3D *>(this)->notify(NOTIFICATION_UPDATE_SKELETON);
 	}
 	return bones[p_bone].global_rest;
 }
@@ -1017,7 +1017,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 void Skeleton3D::force_update_all_dirty_bones() {
 	if (dirty) {
-		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+		const_cast<Skeleton3D *>(this)->notify(NOTIFICATION_UPDATE_SKELETON);
 	}
 }
 

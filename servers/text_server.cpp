@@ -128,7 +128,7 @@ void TextServerManager::set_primary_interface(const Ref<TextServer> &p_primary_i
 		print_verbose("TextServer: Primary interface set to: \"" + primary_interface->get_name() + "\".");
 
 		if (OS::get_singleton()->get_main_loop()) {
-			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED);
+			OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED);
 		}
 	}
 }

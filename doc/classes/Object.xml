@@ -18,7 +18,7 @@
 		print("tree_entered" in node) # Prints true
 		print("unknown" in node)      # Prints false
 		[/codeblock]
-		Notifications are [int] constants commonly sent and received by objects. For example, on every rendered frame, the [SceneTree] notifies nodes inside the tree with a [constant Node.NOTIFICATION_PROCESS]. The nodes receive it and may call [method Node._process] to update. To make use of notifications, see [method notification] and [method _notification].
+		Notifications are [int] constants commonly sent and received by objects. For example, on every rendered frame, the [SceneTree] notifies nodes inside the tree with a [constant Node.NOTIFICATION_PROCESS]. The nodes receive it and may call [method Node._process] to update. To make use of notifications, see [method notify] and [method _notification].
 		Lastly, every object can also contain metadata (data about data). [method set_meta] can be useful to store information that the object itself does not depend on. To keep your code clean, making excessive use of metadata is discouraged.
 		[b]Note:[/b] Unlike references to a [RefCounted], references to an object stored in a variable can become invalid without being set to [code]null[/code]. To check if an object has been deleted, do [i]not[/i] compare it against [code]null[/code]. Instead, use [method @GlobalScope.is_instance_valid]. It's also recommended to inherit from [RefCounted] for classes storing data instead of [Object].
 		[b]Note:[/b] The [code]script[/code] is not exposed like most properties. To set or get an object's [Script] in code, use [method set_script] and [method get_script], respectively.
@@ -96,7 +96,7 @@
 			<return type="void" />
 			<param index="0" name="what" type="int" />
 			<description>
-				Called when the object receives a notification, which can be identified in [param what] by comparing it with a constant. See also [method notification].
+				Called when the object receives a notification, which can be identified in [param what] by comparing it with a constant. See also [method notify].
 				[codeblock]
 				func _notification(what):
 				    if what == NOTIFICATION_PREDELETE:
@@ -599,7 +599,7 @@
 				Returns [code]true[/code] if the [method Node.queue_free] method was called for the object.
 			</description>
 		</method>
-		<method name="notification">
+		<method name="notify">
 			<return type="void" />
 			<param index="0" name="what" type="int" />
 			<param index="1" name="reversed" type="bool" default="false" />
@@ -610,10 +610,10 @@
 				var player = Node2D.new()
 				player.set_script(load("res://player.gd"))
 
-				player.notification(NOTIFICATION_ENTER_TREE)
+				player.notify(NOTIFICATION_ENTER_TREE)
 				# The call order is Object -&gt; Node -&gt; Node2D -&gt; player.gd.
 
-				player.notification(NOTIFICATION_ENTER_TREE, true)
+				player.notify(NOTIFICATION_ENTER_TREE, true)
 				# The call order is player.gd -&gt; Node2D -&gt; Node -&gt; Object.
 				[/codeblock]
 			</description>

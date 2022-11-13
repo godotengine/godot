@@ -90,7 +90,7 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 
 	msg->type = TYPE_NOTIFICATION;
-	msg->callable = Callable(p_id, CoreStringNames::get_singleton()->notification); //name is meaningless but callable needs it
+	msg->callable = Callable(p_id, CoreStringNames::get_singleton()->notify); //name is meaningless but callable needs it
 	//msg->target;
 	msg->notification = p_notification;
 
@@ -277,7 +277,7 @@ void MessageQueue::flush() {
 				} break;
 				case TYPE_NOTIFICATION: {
 					// messages don't expect a return value
-					target->notification(message->notification);
+					target->notify(message->notification);
 
 				} break;
 				case TYPE_SET: {

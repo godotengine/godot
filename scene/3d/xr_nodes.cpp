@@ -717,7 +717,7 @@ void XROrigin3D::_notification(int p_what) {
 		for (int i = 0; i < xr_server->get_interface_count(); i++) {
 			Ref<XRInterface> interface = xr_server->get_interface(i);
 			if (interface.is_valid() && interface->is_initialized()) {
-				interface->notification(p_what);
+				interface->notify(p_what);
 			}
 		}
 	}

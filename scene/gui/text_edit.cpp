@@ -1875,7 +1875,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 
 			// Notify to show soft keyboard.
-			notification(NOTIFICATION_FOCUS_ENTER);
+			notify(NOTIFICATION_FOCUS_ENTER);
 		}
 	}
 

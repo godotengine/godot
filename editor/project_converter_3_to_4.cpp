@@ -456,6 +456,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "move_to_top", "move_before" }, // Skeleton3D
 	{ "multimesh_allocate", "multimesh_allocate_data" }, // RenderingServer
 	{ "normalmap_to_xy", "normal_map_to_xy" }, // Image
+	{ "notification", "notify" }, // Object
 	{ "offset_polygon_2d", "offset_polygon" }, // Geometry2D
 	{ "offset_polyline_2d", "offset_polyline" }, // Geometry2D
 	{ "percent_decode", "uri_decode" }, // String
@@ -897,6 +898,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "MoveToTop", "MoveBefore" }, // Skeleton3D
 	{ "MultimeshAllocate", "MultimeshAllocateData" }, // RenderingServer
 	{ "NormalmapToXy", "NormalMapToXy" }, // Image
+	{ "Notification", "Notify" }, // Object
 	{ "OffsetPolygon2d", "OffsetPolygon" }, // Geometry2D
 	{ "OffsetPolyline2d", "OffsetPolyline" }, // Geometry2D
 	{ "PercentDecode", "UriDecode" }, // String

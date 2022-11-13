@@ -1883,7 +1883,7 @@ const Variant CSharpInstance::get_rpc_config() const {
 	return script->get_rpc_config();
 }
 
-void CSharpInstance::notification(int p_notification) {
+void CSharpInstance::notify(int p_notification) {
 	if (p_notification == Object::NOTIFICATION_PREDELETE) {
 		// When NOTIFICATION_PREDELETE is sent, we also take the chance to call Dispose().
 		// It's safe to call Dispose() multiple times and NOTIFICATION_PREDELETE is guaranteed

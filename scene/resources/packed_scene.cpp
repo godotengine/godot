@@ -1759,7 +1759,7 @@ Node *PackedScene::instantiate(GenEditState p_edit_state) const {
 		s->set_scene_file_path(get_path());
 	}
 
-	s->notification(Node::NOTIFICATION_SCENE_INSTANTIATED);
+	s->notify(Node::NOTIFICATION_SCENE_INSTANTIATED);
 
 	return s;
 }

@@ -179,7 +179,7 @@ void SceneTree::flush_transform_notifications() {
 		SelfList<Node> *nx = n->next();
 		xform_change_list.remove(n);
 		n = nx;
-		node->notification(NOTIFICATION_TRANSFORM_CHANGED);
+		node->notify(NOTIFICATION_TRANSFORM_CHANGED);
 	}
 }
 
@@ -322,7 +322,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				gr_nodes[i]->notification(p_notification);
+				gr_nodes[i]->notify(p_notification);
 			} else {
 				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
 			}
@@ -335,7 +335,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				gr_nodes[i]->notification(p_notification);
+				gr_nodes[i]->notify(p_notification);
 			} else {
 				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
 			}
@@ -868,7 +868,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 			continue;
 		}
 
-		n->notification(p_notification);
+		n->notify(p_notification);
 		//ERR_FAIL_COND(gr_node_count != g.nodes.size());
 	}
 

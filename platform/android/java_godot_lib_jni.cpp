@@ -504,7 +504,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNI
 	// We force redraw to ensure we render at least once when resuming the app.
 	Main::force_redraw();
 	if (os_android->get_main_loop()) {
-		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
+		os_android->get_main_loop()->notify(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 	}
 }
 
@@ -514,7 +514,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 	}
 
 	if (os_android->get_main_loop()) {
-		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
+		os_android->get_main_loop()->notify(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
 }
 }

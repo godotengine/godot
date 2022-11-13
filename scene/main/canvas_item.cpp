@@ -76,7 +76,7 @@ void CanvasItem::set_visible(bool p_visible) {
 	visible = p_visible;
 
 	if (!parent_visible_in_tree) {
-		notification(NOTIFICATION_VISIBILITY_CHANGED);
+		notify(NOTIFICATION_VISIBILITY_CHANGED);
 		return;
 	}
 
@@ -85,7 +85,7 @@ void CanvasItem::set_visible(bool p_visible) {
 
 void CanvasItem::_handle_visibility_change(bool p_visible) {
 	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
-	notification(NOTIFICATION_VISIBILITY_CHANGED);
+	notify(NOTIFICATION_VISIBILITY_CHANGED);
 
 	if (p_visible) {
 		queue_redraw();
@@ -132,7 +132,7 @@ void CanvasItem::_redraw_callback() {
 	if (is_visible_in_tree()) {
 		drawing = true;
 		current_item_drawn = this;
-		notification(NOTIFICATION_DRAW);
+		notify(NOTIFICATION_DRAW);
 		emit_signal(SceneStringNames::get_singleton()->draw);
 		GDVIRTUAL_CALL(_draw);
 		current_item_drawn = nullptr;
@@ -243,11 +243,11 @@ void CanvasItem::_enter_canvas() {
 	pending_update = false;
 	queue_redraw();
 
-	notification(NOTIFICATION_ENTER_CANVAS);
+	notify(NOTIFICATION_ENTER_CANVAS);
 }
 
 void CanvasItem::_exit_canvas() {
-	notification(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
+	notify(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
 	RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, RID());
 	canvas_layer = nullptr;
 	if (canvas_group != StringName()) {
@@ -300,7 +300,7 @@ void CanvasItem::_notification(int p_what) {
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
 			if (is_visible_in_tree()) {
-				notification(NOTIFICATION_VISIBILITY_CHANGED); // Considered invisible until entered.
+				notify(NOTIFICATION_VISIBILITY_CHANGED); // Considered invisible until entered.
 			}
 			_enter_canvas();
 
@@ -869,7 +869,7 @@ void CanvasItem::force_update_transform() {
 
 	get_tree()->xform_change_list.remove(&xform_change);
 
-	notification(NOTIFICATION_TRANSFORM_CHANGED);
+	notify(NOTIFICATION_TRANSFORM_CHANGED);
 }
 
 void CanvasItem::_bind_methods() {

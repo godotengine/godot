@@ -129,7 +129,7 @@ void ThemeOwner::propagate_theme_changed(Node *p_to_node, Node *p_owner_node, bo
 		}
 
 		if (p_notify) {
-			c->notification(Control::NOTIFICATION_THEME_CHANGED);
+			c->notify(Control::NOTIFICATION_THEME_CHANGED);
 		}
 	} else if (w) {
 		if (w != p_owner_node && w->get_theme().is_valid()) {
@@ -142,7 +142,7 @@ void ThemeOwner::propagate_theme_changed(Node *p_to_node, Node *p_owner_node, bo
 		}
 
 		if (p_notify) {
-			w->notification(Window::NOTIFICATION_THEME_CHANGED);
+			w->notify(Window::NOTIFICATION_THEME_CHANGED);
 		}
 	}
 

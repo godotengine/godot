@@ -585,7 +585,7 @@
 			<return type="void" />
 			<param index="0" name="what" type="int" />
 			<description>
-				Notifies the current node and all its children recursively by calling [method Object.notification] on all of them.
+				Notifies the current node and all its children recursively by calling [method Object.notify] on all of them.
 			</description>
 		</method>
 		<method name="queue_free">

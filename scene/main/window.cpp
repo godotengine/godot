@@ -333,7 +333,7 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 }
 
 void Window::_propagate_window_notification(Node *p_node, int p_notification) {
-	p_node->notification(p_notification);
+	p_node->notify(p_notification);
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *child = p_node->get_child(i);
 		Window *window = Object::cast_to<Window>(child);
@@ -349,13 +349,13 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
 			emit_signal(SNAME("mouse_entered"));
-			notification(NOTIFICATION_VP_MOUSE_ENTER);
+			notify(NOTIFICATION_VP_MOUSE_ENTER);
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
 				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
 			}
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
-			notification(NOTIFICATION_VP_MOUSE_EXIT);
+			notify(NOTIFICATION_VP_MOUSE_EXIT);
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
 			emit_signal(SNAME("mouse_exited"));
 		} break;
@@ -454,7 +454,7 @@ void Window::set_visible(bool p_visible) {
 	if (!visible) {
 		focused = false;
 	}
-	notification(NOTIFICATION_VISIBILITY_CHANGED);
+	notify(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 
 	RS::get_singleton()->viewport_set_active(get_viewport_rid(), visible);
@@ -774,7 +774,7 @@ void Window::_update_viewport_size() {
 		}
 	}
 
-	notification(NOTIFICATION_WM_SIZE_CHANGED);
+	notify(NOTIFICATION_WM_SIZE_CHANGED);
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
@@ -868,12 +868,12 @@ void Window::_notification(int p_what) {
 				_make_transient();
 			}
 			if (visible) {
-				notification(NOTIFICATION_VISIBILITY_CHANGED);
+				notify(NOTIFICATION_VISIBILITY_CHANGED);
 				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
 
-			notification(NOTIFICATION_THEME_CHANGED);
+			notify(NOTIFICATION_THEME_CHANGED);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1270,7 +1270,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	}
 
 	_post_popup();
-	notification(NOTIFICATION_POST_POPUP);
+	notify(NOTIFICATION_POST_POPUP);
 }
 
 Size2 Window::get_contents_minimum_size() const {
@@ -1384,7 +1384,7 @@ void Window::_update_theme_item_cache() {
 void Window::set_theme_type_variation(const StringName &p_theme_type) {
 	theme_type_variation = p_theme_type;
 	if (is_inside_tree()) {
-		notification(NOTIFICATION_THEME_CHANGED);
+		notify(NOTIFICATION_THEME_CHANGED);
 	}
 }
 
@@ -1597,7 +1597,7 @@ void Window::set_auto_translate(bool p_enable) {
 
 	auto_translate = p_enable;
 
-	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	notify(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 }
 
 bool Window::is_auto_translating() const {

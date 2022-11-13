@@ -752,7 +752,7 @@ public:
 		return ret;
 	}
 
-	virtual void notification(int p_notification) override {
+	virtual void notify(int p_notification) override {
 		if (native_info->notification_func) {
 			native_info->notification_func(instance, p_notification);
 		}

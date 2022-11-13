@@ -83,7 +83,7 @@ void Translation::set_locale(const String &p_locale) {
 	locale = TranslationServer::get_singleton()->standardize_locale(p_locale);
 
 	if (OS::get_singleton()->get_main_loop() && TranslationServer::get_singleton()->get_loaded_locales().has(get_locale())) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+		OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 }
 
@@ -512,7 +512,7 @@ void TranslationServer::set_locale(const String &p_locale) {
 	locale = standardize_locale(p_locale);
 
 	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+		OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 
 	ResourceLoader::reload_translation_remaps();
@@ -776,7 +776,7 @@ void TranslationServer::set_pseudolocalization_enabled(bool p_enabled) {
 	pseudolocalization_enabled = p_enabled;
 
 	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+		OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 	ResourceLoader::reload_translation_remaps();
 }
@@ -796,7 +796,7 @@ void TranslationServer::reload_pseudolocalization() {
 	pseudolocalization_skip_placeholders_enabled = GLOBAL_GET("internationalization/pseudolocalization/skip_placeholders");
 
 	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+		OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 	ResourceLoader::reload_translation_remaps();
 }

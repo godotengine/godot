@@ -2365,7 +2365,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (!app_focused) {
 				if (OS::get_singleton()->get_main_loop()) {
-					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+					OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 				}
 				app_focused = true;
 			}
@@ -2391,7 +2391,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (!self_steal) {
 				if (OS::get_singleton()->get_main_loop()) {
-					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+					OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
 				app_focused = false;
 			}

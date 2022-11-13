@@ -116,7 +116,7 @@ static ViewController *mainViewController = nil;
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
 	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
+		OS::get_singleton()->get_main_loop()->notify(MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
 	}
 }
 
