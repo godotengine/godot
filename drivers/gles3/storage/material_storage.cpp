@@ -3418,6 +3418,8 @@ void SceneShaderData::set_code(const String &p_code) {
 	vertex_input_mask |= uses_bones << 9;
 	vertex_input_mask |= uses_weights << 10;
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
+	uses_vertex_time = gen_code.uses_vertex_time;
+	uses_fragment_time = gen_code.uses_fragment_time;
 
 #if 0
 	print_line("**compiling shader:");
@@ -3538,11 +3540,15 @@ bool SceneShaderData::is_parameter_texture(const StringName &p_param) const {
 }
 
 bool SceneShaderData::is_animated() const {
-	return false;
+	return (uses_fragment_time && uses_discard) || (uses_vertex_time && uses_vertex);
 }
 
 bool SceneShaderData::casts_shadows() const {
-	return false;
+	bool has_read_screen_alpha = uses_screen_texture || uses_depth_texture || uses_normal_texture;
+	bool has_base_alpha = (uses_alpha && !uses_alpha_clip) || has_read_screen_alpha;
+	bool has_alpha = has_base_alpha || uses_blend_alpha;
+
+	return !has_alpha || (uses_depth_pre_pass && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
 }
 
 Variant SceneShaderData::get_default_parameter(const StringName &p_parameter) const {
