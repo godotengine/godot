@@ -2500,6 +2500,8 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		parent->move_child(p_node, index_in_parent);
 	}
 
+	emit_signal(SNAME("replacing_by"), p_node);
+
 	while (get_child_count()) {
 		Node *child = get_child(0);
 		remove_child(child);
@@ -3040,7 +3042,9 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+
 	ADD_SIGNAL(MethodInfo("child_order_changed"));
+	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
