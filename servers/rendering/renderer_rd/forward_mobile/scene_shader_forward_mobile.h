@@ -132,6 +132,8 @@ public:
 		bool uses_depth_texture = false;
 		bool uses_normal_texture = false;
 		bool uses_time = false;
+		bool uses_vertex_time = false;
+		bool uses_fragment_time = false;
 		bool writes_modelview_or_projection = false;
 		bool uses_world_coordinates = false;
 
