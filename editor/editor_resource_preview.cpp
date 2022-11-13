@@ -71,20 +71,14 @@ Ref<Texture2D> EditorResourcePreviewGenerator::generate_from_path(const String &
 
 bool EditorResourcePreviewGenerator::generate_small_preview_automatically() const {
 	bool success = false;
-	if (GDVIRTUAL_CALL(_generate_small_preview_automatically, success)) {
-		return success;
-	}
-
-	return false;
+	GDVIRTUAL_CALL(_generate_small_preview_automatically, success);
+	return success;
 }
 
 bool EditorResourcePreviewGenerator::can_generate_small_preview() const {
 	bool success = false;
-	if (GDVIRTUAL_CALL(_can_generate_small_preview, success)) {
-		return success;
-	}
-
-	return false;
+	GDVIRTUAL_CALL(_can_generate_small_preview, success);
+	return success;
 }
 
 void EditorResourcePreviewGenerator::_bind_methods() {
@@ -148,7 +142,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		return; //could not guess type
 	}
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+	int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 
 	r_texture = Ref<ImageTexture>();
@@ -232,7 +226,7 @@ void EditorResourcePreview::_iterate() {
 			Ref<ImageTexture> texture;
 			Ref<ImageTexture> small_texture;
 
-			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size *= EDSCALE;
 
 			if (item.resource.is_valid()) {

@@ -123,7 +123,7 @@ void EditorLocaleDialog::_filter_lang_option_changed() {
 	Array f_lang_all;
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/language_filter")) {
-		f_lang_all = ProjectSettings::get_singleton()->get("internationalization/locale/language_filter");
+		f_lang_all = GLOBAL_GET("internationalization/locale/language_filter");
 		prev = f_lang_all;
 	}
 
@@ -141,6 +141,7 @@ void EditorLocaleDialog::_filter_lang_option_changed() {
 
 	f_lang_all.sort();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Changed Locale Language Filter"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/language_filter", f_lang_all);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/language_filter", prev);
@@ -156,7 +157,7 @@ void EditorLocaleDialog::_filter_script_option_changed() {
 	Array f_script_all;
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/script_filter")) {
-		f_script_all = ProjectSettings::get_singleton()->get("internationalization/locale/script_filter");
+		f_script_all = GLOBAL_GET("internationalization/locale/script_filter");
 		prev = f_script_all;
 	}
 
@@ -174,6 +175,7 @@ void EditorLocaleDialog::_filter_script_option_changed() {
 
 	f_script_all.sort();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Changed Locale Script Filter"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/script_filter", f_script_all);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/script_filter", prev);
@@ -189,7 +191,7 @@ void EditorLocaleDialog::_filter_cnt_option_changed() {
 	Array f_cnt_all;
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/country_filter")) {
-		f_cnt_all = ProjectSettings::get_singleton()->get("internationalization/locale/country_filter");
+		f_cnt_all = GLOBAL_GET("internationalization/locale/country_filter");
 		prev = f_cnt_all;
 	}
 
@@ -207,6 +209,7 @@ void EditorLocaleDialog::_filter_cnt_option_changed() {
 
 	f_cnt_all.sort();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Changed Locale Country Filter"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/country_filter", f_cnt_all);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/country_filter", prev);
@@ -218,9 +221,10 @@ void EditorLocaleDialog::_filter_mode_changed(int p_mode) {
 	Variant prev;
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/locale_filter_mode")) {
-		prev = ProjectSettings::get_singleton()->get("internationalization/locale/locale_filter_mode");
+		prev = GLOBAL_GET("internationalization/locale/locale_filter_mode");
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Changed Locale Filter Mode"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter_mode", f_mode);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter_mode", prev);
@@ -238,19 +242,19 @@ void EditorLocaleDialog::_update_tree() {
 
 	int filter = SHOW_ALL_LOCALES;
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/locale_filter_mode")) {
-		filter = ProjectSettings::get_singleton()->get("internationalization/locale/locale_filter_mode");
+		filter = GLOBAL_GET("internationalization/locale/locale_filter_mode");
 	}
 	Array f_lang_all;
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/language_filter")) {
-		f_lang_all = ProjectSettings::get_singleton()->get("internationalization/locale/language_filter");
+		f_lang_all = GLOBAL_GET("internationalization/locale/language_filter");
 	}
 	Array f_cnt_all;
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/country_filter")) {
-		f_cnt_all = ProjectSettings::get_singleton()->get("internationalization/locale/country_filter");
+		f_cnt_all = GLOBAL_GET("internationalization/locale/country_filter");
 	}
 	Array f_script_all;
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/script_filter")) {
-		f_script_all = ProjectSettings::get_singleton()->get("internationalization/locale/script_filter");
+		f_script_all = GLOBAL_GET("internationalization/locale/script_filter");
 	}
 	bool is_edit_mode = edit_filters->is_pressed();
 
@@ -385,8 +389,6 @@ void EditorLocaleDialog::popup_locale_dialog() {
 }
 
 EditorLocaleDialog::EditorLocaleDialog() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	set_title(TTR("Select a Locale"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);

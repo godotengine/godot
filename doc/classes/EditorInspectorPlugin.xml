@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorInspectorPlugin" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Plugin for adding custom property editors on inspector.
+		Plugin for adding custom property editors on the inspector.
 	</brief_description>
 	<description>
 		[EditorInspectorPlugin] allows adding custom property editors to [EditorInspector].

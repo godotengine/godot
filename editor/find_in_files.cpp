@@ -422,8 +422,7 @@ void FindInFilesDialog::set_find_in_files_mode(FindInFilesMode p_mode) {
 }
 
 String FindInFilesDialog::get_search_text() const {
-	String text = _search_text_line_edit->get_text();
-	return text.strip_edges();
+	return _search_text_line_edit->get_text();
 }
 
 String FindInFilesDialog::get_replace_text() const {
@@ -464,9 +463,9 @@ void FindInFilesDialog::_notification(int p_what) {
 				_search_text_line_edit->select_all();
 				// Extensions might have changed in the meantime, we clean them and instance them again.
 				for (int i = 0; i < _filters_container->get_child_count(); i++) {
-					_filters_container->get_child(i)->queue_delete();
+					_filters_container->get_child(i)->queue_free();
 				}
-				Array exts = ProjectSettings::get_singleton()->get("editor/script/search_in_file_extensions");
+				Array exts = GLOBAL_GET("editor/script/search_in_file_extensions");
 				for (int i = 0; i < exts.size(); ++i) {
 					CheckBox *cb = memnew(CheckBox);
 					cb->set_text(exts[i]);

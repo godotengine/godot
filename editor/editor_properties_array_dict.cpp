@@ -293,7 +293,7 @@ void EditorPropertyArray::update_property() {
 					continue; // Don't remove the property that the user is moving.
 				}
 
-				child->queue_delete(); // Button still needed after pressed is called.
+				child->queue_free(); // Button still needed after pressed is called.
 				property_vbox->remove_child(child);
 			}
 		}
@@ -466,7 +466,7 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		Variant array = object->get_array();
 
-		// Handle the case where array is not initialised yet.
+		// Handle the case where array is not initialized yet.
 		if (!array.is_array()) {
 			Callable::CallError ce;
 			Variant::construct(array_type, array, nullptr, 0, ce);
@@ -861,7 +861,7 @@ void EditorPropertyDictionary::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 		}
 
@@ -1349,7 +1349,7 @@ void EditorPropertyLocalizableString::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 		}
 

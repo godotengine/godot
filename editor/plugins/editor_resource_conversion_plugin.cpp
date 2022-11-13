@@ -38,27 +38,18 @@ void EditorResourceConversionPlugin::_bind_methods() {
 
 String EditorResourceConversionPlugin::converts_to() const {
 	String ret;
-	if (GDVIRTUAL_CALL(_converts_to, ret)) {
-		return ret;
-	}
-
-	return "";
+	GDVIRTUAL_CALL(_converts_to, ret);
+	return ret;
 }
 
 bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) const {
 	bool ret = false;
-	if (GDVIRTUAL_CALL(_handles, p_resource, ret)) {
-		return ret;
-	}
-
-	return false;
+	GDVIRTUAL_CALL(_handles, p_resource, ret);
+	return ret;
 }
 
 Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<Resource> ret;
-	if (GDVIRTUAL_CALL(_convert, p_resource, ret)) {
-		return ret;
-	}
-
-	return Ref<Resource>();
+	GDVIRTUAL_CALL(_convert, p_resource, ret);
+	return ret;
 }

@@ -45,6 +45,13 @@
 				Returns the currently active 3D camera.
 			</description>
 		</method>
+		<method name="get_canvas_cull_mask_bit" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns an individual bit on the rendering layer mask.
+			</description>
+		</method>
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
@@ -176,6 +183,14 @@
 				If none of the methods handle the event and [member physics_object_picking] is [code]true[/code], the event is used for physics object picking.
 			</description>
 		</method>
+		<method name="set_canvas_cull_mask_bit">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Set/clear individual bits on the rendering layer mask. This simplifies editing this [Viewport]'s layers.
+			</description>
+		</method>
 		<method name="set_input_as_handled">
 			<return type="void" />
 			<description>
@@ -204,6 +219,9 @@
 		</member>
 		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener_3d" getter="is_audio_listener_3d" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
+		</member>
+		<member name="canvas_cull_mask" type="int" setter="set_canvas_cull_mask" getter="get_canvas_cull_mask" default="4294967295">
+			The rendering layers in which this [Viewport] renders [CanvasItem] nodes.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
 			Sets the default filter mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureFilter] for options.

@@ -43,12 +43,9 @@ float StyleBox::get_style_margin(Side p_side) const {
 }
 
 bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_test_mask, p_point, p_rect, ret)) {
-		return ret;
-	}
-
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_test_mask, p_point, p_rect, ret);
+	return ret;
 }
 
 void StyleBox::draw(RID p_canvas_item, const Rect2 &p_rect) const {
@@ -109,11 +106,8 @@ Point2 StyleBox::get_offset() const {
 
 Size2 StyleBox::get_center_size() const {
 	Size2 ret;
-	if (GDVIRTUAL_CALL(_get_center_size, ret)) {
-		return ret;
-	}
-
-	return Size2();
+	GDVIRTUAL_CALL(_get_center_size, ret);
+	return ret;
 }
 
 Rect2 StyleBox::get_draw_rect(const Rect2 &p_rect) const {

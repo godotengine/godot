@@ -102,6 +102,22 @@
 				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
 		</method>
+		<method name="sample_baked_with_rotation" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="offset" type="float" />
+			<param index="1" name="cubic" type="bool" default="false" />
+			<param index="2" name="loop" type="bool" default="true" />
+			<param index="3" name="lookahead" type="float" default="4.0" />
+			<description>
+				Similar to [method sample_baked], but returns [Transform2D] that includes a rotation along the curve. Returns empty transform if length of the curve is [code]0[/code].
+				Use [param loop] to smooth the tangent at the end of the curve. [param lookahead] defines the distance to a nearby point for calculating the tangent vector.
+				[codeblock]
+				var transform = curve.sample_baked_with_rotation(offset)
+				position = transform.get_origin()
+				rotation = transform.get_rotation()
+				[/codeblock]
+			</description>
+		</method>
 		<method name="samplef" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="fofs" type="float" />

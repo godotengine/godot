@@ -2432,9 +2432,8 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				// TODO: Make enums not be just a dictionary?
 				Dictionary new_enum;
 				for (int j = 0; j < enum_n->values.size(); j++) {
-					int value = enum_n->values[j].value;
 					// Needs to be string because Variant::get will convert to String.
-					new_enum[String(enum_n->values[j].identifier->name)] = value;
+					new_enum[String(enum_n->values[j].identifier->name)] = enum_n->values[j].value;
 				}
 
 				p_script->constants.insert(enum_n->identifier->name, new_enum);

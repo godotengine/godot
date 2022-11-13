@@ -141,16 +141,16 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 
 void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 	trail_enabled = p_enabled;
-	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
+	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 	queue_redraw();
 
 	RS::get_singleton()->particles_set_transform_align(particles, p_enabled ? RS::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY : RS::PARTICLES_TRANSFORM_ALIGN_DISABLED);
 }
 
-void GPUParticles2D::set_trail_length(double p_seconds) {
+void GPUParticles2D::set_trail_lifetime(double p_seconds) {
 	ERR_FAIL_COND(p_seconds < 0.001);
-	trail_length = p_seconds;
-	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
+	trail_lifetime = p_seconds;
+	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 	queue_redraw();
 }
 
@@ -181,8 +181,8 @@ bool GPUParticles2D::is_trail_enabled() const {
 	return trail_enabled;
 }
 
-double GPUParticles2D::get_trail_length() const {
-	return trail_length;
+double GPUParticles2D::get_trail_lifetime() const {
+	return trail_lifetime;
 }
 
 void GPUParticles2D::_update_collision_size() {
@@ -614,10 +614,10 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("emit_particle", "xform", "velocity", "color", "custom", "flags"), &GPUParticles2D::emit_particle);
 
 	ClassDB::bind_method(D_METHOD("set_trail_enabled", "enabled"), &GPUParticles2D::set_trail_enabled);
-	ClassDB::bind_method(D_METHOD("set_trail_length", "secs"), &GPUParticles2D::set_trail_length);
+	ClassDB::bind_method(D_METHOD("set_trail_lifetime", "secs"), &GPUParticles2D::set_trail_lifetime);
 
 	ClassDB::bind_method(D_METHOD("is_trail_enabled"), &GPUParticles2D::is_trail_enabled);
-	ClassDB::bind_method(D_METHOD("get_trail_length"), &GPUParticles2D::get_trail_length);
+	ClassDB::bind_method(D_METHOD("get_trail_lifetime"), &GPUParticles2D::get_trail_lifetime);
 
 	ClassDB::bind_method(D_METHOD("set_trail_sections", "sections"), &GPUParticles2D::set_trail_sections);
 	ClassDB::bind_method(D_METHOD("get_trail_sections"), &GPUParticles2D::get_trail_sections);
@@ -647,7 +647,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_GROUP("Trails", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_length_secs", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_trail_length", "get_trail_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_trail_sections", "get_trail_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_section_subdivisions", PROPERTY_HINT_RANGE, "1,1024,1"), "set_trail_section_subdivisions", "get_trail_section_subdivisions");
 	ADD_GROUP("Process Material", "process_");

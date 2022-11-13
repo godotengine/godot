@@ -18,16 +18,16 @@
 		func _ready():
 		    # We assume this node has a button as a child.
 		    # This button is for the user to consent to entering immersive VR mode.
-		    $Button.connect("pressed", self, "_on_Button_pressed")
+		    $Button.pressed.connect(self._on_Button_pressed)
 
 		    webxr_interface = XRServer.find_interface("WebXR")
 		    if webxr_interface:
 		        # WebXR uses a lot of asynchronous callbacks, so we connect to various
 		        # signals in order to receive them.
-		        webxr_interface.connect("session_supported", self, "_webxr_session_supported")
-		        webxr_interface.connect("session_started", self, "_webxr_session_started")
-		        webxr_interface.connect("session_ended", self, "_webxr_session_ended")
-		        webxr_interface.connect("session_failed", self, "_webxr_session_failed")
+		        webxr_interface.session_supported.connect(self._webxr_session_supported)
+		        webxr_interface.session_started.connect(self._webxr_session_started)
+		        webxr_interface.session_ended.connect(self._webxr_session_ended)
+		        webxr_interface.session_failed.connect(self._webxr_session_failed)
 
 		        # This returns immediately - our _webxr_session_supported() method
 		        # (which we connected to the "session_supported" signal above) will

@@ -99,7 +99,7 @@ void GradientEditor::_gradient_changed() {
 
 void GradientEditor::_ramp_changed() {
 	editing = true;
-	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Gradient Edited"), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(gradient.ptr(), "set_offsets", get_offsets());
 	undo_redo->add_do_method(gradient.ptr(), "set_colors", get_colors());

@@ -75,12 +75,10 @@ void WebSocketMultiplayerPeer::_clear() {
 void WebSocketMultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_client", "url", "verify_tls", "tls_certificate"), &WebSocketMultiplayerPeer::create_client, DEFVAL(true), DEFVAL(Ref<X509Certificate>()));
 	ClassDB::bind_method(D_METHOD("create_server", "port", "bind_address", "tls_key", "tls_certificate"), &WebSocketMultiplayerPeer::create_server, DEFVAL("*"), DEFVAL(Ref<CryptoKey>()), DEFVAL(Ref<X509Certificate>()));
-	ClassDB::bind_method(D_METHOD("close"), &WebSocketMultiplayerPeer::close);
 
 	ClassDB::bind_method(D_METHOD("get_peer", "peer_id"), &WebSocketMultiplayerPeer::get_peer);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &WebSocketMultiplayerPeer::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &WebSocketMultiplayerPeer::get_peer_port);
-	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "code", "reason"), &WebSocketMultiplayerPeer::disconnect_peer, DEFVAL(1000), DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("get_supported_protocols"), &WebSocketMultiplayerPeer::get_supported_protocols);
 	ClassDB::bind_method(D_METHOD("set_supported_protocols", "protocols"), &WebSocketMultiplayerPeer::set_supported_protocols);
@@ -266,9 +264,7 @@ void WebSocketMultiplayerPeer::_poll_client() {
 		}
 	} else if (peer->get_ready_state() == WebSocketPeer::STATE_CLOSED) {
 		if (connection_status == CONNECTION_CONNECTED) {
-			emit_signal(SNAME("server_disconnected"));
-		} else {
-			emit_signal(SNAME("connection_failed"));
+			emit_signal(SNAME("peer_disconnected"), 1);
 		}
 		_clear();
 		return;
@@ -278,7 +274,6 @@ void WebSocketMultiplayerPeer::_poll_client() {
 		ERR_FAIL_COND(!pending_peers.has(1)); // Bug.
 		if (OS::get_singleton()->get_ticks_msec() - pending_peers[1].time > handshake_timeout) {
 			print_verbose(vformat("WebSocket handshake timed out after %.3f seconds.", handshake_timeout * 0.001));
-			emit_signal(SNAME("connection_failed"));
 			_clear();
 			return;
 		}
@@ -488,9 +483,15 @@ int WebSocketMultiplayerPeer::get_peer_port(int p_peer_id) const {
 	return peers_map[p_peer_id]->get_connected_port();
 }
 
-void WebSocketMultiplayerPeer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
+void WebSocketMultiplayerPeer::disconnect_peer(int p_peer_id, bool p_force) {
 	ERR_FAIL_COND(!peers_map.has(p_peer_id));
-	peers_map[p_peer_id]->close(p_code, p_reason);
+	peers_map[p_peer_id]->close();
+	if (p_force) {
+		peers_map.erase(p_peer_id);
+		if (!is_server()) {
+			_clear();
+		}
+	}
 }
 
 void WebSocketMultiplayerPeer::close() {

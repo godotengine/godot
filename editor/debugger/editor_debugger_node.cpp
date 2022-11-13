@@ -77,6 +77,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	remote_scene_tree = memnew(EditorDebuggerTree);
 	remote_scene_tree->connect("object_selected", callable_mp(this, &EditorDebuggerNode::_remote_object_requested));
 	remote_scene_tree->connect("save_node", callable_mp(this, &EditorDebuggerNode::_save_node_requested));
+	remote_scene_tree->connect("button_clicked", callable_mp(this, &EditorDebuggerNode::_remote_tree_button_pressed));
 	SceneTreeDock::get_singleton()->add_remote_tree_editor(remote_scene_tree);
 	SceneTreeDock::get_singleton()->connect("remote_tree_selected", callable_mp(this, &EditorDebuggerNode::request_remote_tree));
 
@@ -228,6 +229,12 @@ void EditorDebuggerNode::stop() {
 	if (server.is_valid()) {
 		server->stop();
 		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
+
+		if (EditorNode::get_singleton()->is_movie_maker_enabled()) {
+			// Request attention in case the user was doing something else when movie recording is finished.
+			DisplayServer::get_singleton()->window_request_attention();
+		}
+
 		server.unref();
 	}
 	// Also close all debugging sessions.
@@ -277,7 +284,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 			// Remote scene tree update
 			remote_scene_tree_timeout -= get_process_delta_time();
 			if (remote_scene_tree_timeout < 0) {
-				remote_scene_tree_timeout = EditorSettings::get_singleton()->get("debugger/remote_scene_tree_refresh_interval");
+				remote_scene_tree_timeout = EDITOR_GET("debugger/remote_scene_tree_refresh_interval");
 				if (remote_scene_tree->is_visible_in_tree()) {
 					get_current_debugger()->request_remote_tree();
 				}
@@ -286,7 +293,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 			// Remote inspector update
 			inspect_edited_object_timeout -= get_process_delta_time();
 			if (inspect_edited_object_timeout < 0) {
-				inspect_edited_object_timeout = EditorSettings::get_singleton()->get("debugger/remote_inspect_refresh_interval");
+				inspect_edited_object_timeout = EDITOR_GET("debugger/remote_inspect_refresh_interval");
 				if (EditorDebuggerRemoteObject *obj = get_inspected_remote_object()) {
 					get_current_debugger()->request_remote_object(obj->remote_object_id);
 				}
@@ -313,7 +320,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 
 				EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
 				// Switch to remote tree view if so desired.
-				auto_switch_remote_scene_tree = (bool)EditorSettings::get_singleton()->get("debugger/auto_switch_to_remote_scene_tree");
+				auto_switch_remote_scene_tree = (bool)EDITOR_GET("debugger/auto_switch_to_remote_scene_tree");
 				if (auto_switch_remote_scene_tree) {
 					SceneTreeDock::get_singleton()->show_remote_tree();
 				}
@@ -571,6 +578,24 @@ void EditorDebuggerNode::_remote_tree_updated(int p_debugger) {
 	}
 	remote_scene_tree->clear();
 	remote_scene_tree->update_scene_tree(get_current_debugger()->get_remote_tree(), p_debugger);
+}
+
+void EditorDebuggerNode::_remote_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
+	ERR_FAIL_COND(!item);
+
+	if (p_id == EditorDebuggerTree::BUTTON_SUBSCENE) {
+		remote_scene_tree->emit_signal(SNAME("open"), item->get_meta("scene_file_path"));
+	} else if (p_id == EditorDebuggerTree::BUTTON_VISIBILITY) {
+		ObjectID obj_id = item->get_metadata(0);
+		ERR_FAIL_COND(obj_id.is_null());
+		get_current_debugger()->update_remote_object(obj_id, "visible", !item->get_meta("visible"));
+		get_current_debugger()->request_remote_tree();
+	}
 }
 
 void EditorDebuggerNode::_remote_object_updated(ObjectID p_id, int p_debugger) {

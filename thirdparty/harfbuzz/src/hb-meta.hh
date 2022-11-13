@@ -133,6 +133,18 @@ struct
 
   template <typename T> constexpr auto
   operator () (T *v) const HB_AUTO_RETURN (*v)
+
+  template <typename T> constexpr auto
+  operator () (const hb::shared_ptr<T>& v) const HB_AUTO_RETURN (*v)
+
+  template <typename T> constexpr auto
+  operator () (hb::shared_ptr<T>& v) const HB_AUTO_RETURN (*v)
+  
+  template <typename T> constexpr auto
+  operator () (const hb::unique_ptr<T>& v) const HB_AUTO_RETURN (*v)
+
+  template <typename T> constexpr auto
+  operator () (hb::unique_ptr<T>& v) const HB_AUTO_RETURN (*v)
 }
 HB_FUNCOBJ (hb_deref);
 

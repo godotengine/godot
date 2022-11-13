@@ -130,6 +130,7 @@ void GroupDialog::_add_pressed() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Add to Group"));
 
 	while (selected) {
@@ -159,6 +160,7 @@ void GroupDialog::_removed_pressed() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Remove from Group"));
 
 	while (selected) {
@@ -246,6 +248,7 @@ void GroupDialog::_group_renamed() {
 
 	renamed_group->set_text(0, name); // Spaces trimmed.
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Rename Group"));
 
 	List<Node *> nodes;
@@ -322,6 +325,7 @@ void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id, 
 		case DELETE_GROUP: {
 			String name = ti->get_text(0);
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Delete Group"));
 
 			List<Node *> nodes;
@@ -400,10 +404,6 @@ void GroupDialog::_notification(int p_what) {
 			remove_filter->set_clear_button_enabled(true);
 		} break;
 	}
-}
-
-void GroupDialog::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
 }
 
 void GroupDialog::edit() {
@@ -597,6 +597,7 @@ void GroupsEditor::_add_group(const String &p_group) {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Add to Group"));
 
 	undo_redo->add_do_method(node, "add_to_group", name, true);
@@ -651,6 +652,7 @@ void GroupsEditor::_group_renamed() {
 
 	ti->set_text(0, name); // Spaces trimmed.
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Rename Group"));
 
 	undo_redo->add_do_method(node, "remove_from_group", selected_group);
@@ -686,6 +688,7 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseBu
 	switch (p_id) {
 		case DELETE_GROUP: {
 			const String name = ti->get_text(0);
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Remove from Group"));
 
 			undo_redo->add_do_method(node, "remove_from_group", name);
@@ -764,10 +767,6 @@ void GroupsEditor::update_tree() {
 	}
 }
 
-void GroupsEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
-}
-
 void GroupsEditor::set_current(Node *p_node) {
 	node = p_node;
 	update_tree();
@@ -775,7 +774,6 @@ void GroupsEditor::set_current(Node *p_node) {
 
 void GroupsEditor::_show_group_dialog() {
 	group_dialog->edit();
-	group_dialog->set_undo_redo(undo_redo);
 }
 
 void GroupsEditor::_bind_methods() {

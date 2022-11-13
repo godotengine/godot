@@ -203,11 +203,7 @@ struct TResolverUniformAdaptor {
 
     inline void operator()(std::pair<const TString, TVarEntryInfo>& entKey) {
         TVarEntryInfo& ent = entKey.second;
-        ent.newLocation = -1;
-        ent.newComponent = -1;
-        ent.newBinding = -1;
-        ent.newSet = -1;
-        ent.newIndex = -1;
+        ent.clearNewAssignments();
         const bool isValid = resolver.validateBinding(stage, ent);
         if (isValid) {
             resolver.resolveSet(ent.stage, ent);
@@ -281,11 +277,7 @@ struct TResolverInOutAdaptor {
     inline void operator()(std::pair<const TString, TVarEntryInfo>& entKey)
     {
         TVarEntryInfo& ent = entKey.second;
-        ent.newLocation = -1;
-        ent.newComponent = -1;
-        ent.newBinding = -1;
-        ent.newSet = -1;
-        ent.newIndex = -1;
+        ent.clearNewAssignments();
         const bool isValid = resolver.validateInOut(ent.stage, ent);
         if (isValid) {
             resolver.resolveInOutLocation(stage, ent);
@@ -1670,6 +1662,10 @@ bool TGlslIoMapper::doMap(TIoMapResolver* resolver, TInfoSink& infoSink) {
                     if (size <= int(autoPushConstantMaxSize)) {
                         qualifier.setBlockStorage(EbsPushConstant);
                         qualifier.layoutPacking = autoPushConstantBlockPacking;
+                        // Push constants don't have set/binding etc. decorations, remove those.
+                        qualifier.layoutSet = TQualifier::layoutSetEnd;
+                        at->second.clearNewAssignments();
+
                         upgraded = true;
                     }
                 }
@@ -1677,10 +1673,14 @@ bool TGlslIoMapper::doMap(TIoMapResolver* resolver, TInfoSink& infoSink) {
             // If it's been upgraded to push_constant, then remove it from the uniformVector
             // so it doesn't get a set/binding assigned to it.
             if (upgraded) {
-                auto at = std::find_if(uniformVector.begin(), uniformVector.end(),
-                                       [this](const TVarLivePair& p) { return p.first == autoPushConstantBlockName; });
-                if (at != uniformVector.end())
-                    uniformVector.erase(at);
+                while (1) {
+                    auto at = std::find_if(uniformVector.begin(), uniformVector.end(),
+                                           [this](const TVarLivePair& p) { return p.first == autoPushConstantBlockName; });
+                    if (at != uniformVector.end())
+                        uniformVector.erase(at);
+                    else
+                        break;
+                }
             }
         }
         for (size_t stage = 0; stage < EShLangCount; stage++) {

@@ -321,6 +321,11 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 		case WINDOW_VIEW: {
 			return 0; // Not supported.
 		}
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			return eglGetCurrentContext();
+		}
+#endif
 		default: {
 			return 0;
 		}

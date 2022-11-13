@@ -89,8 +89,8 @@ enum PropertyHint {
 	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_GLOBAL_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_INT_IS_OBJECTID,
-	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_INT_IS_POINTER,
+	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_LOCALE_ID,
 	PROPERTY_HINT_LOCALIZABLE_STRING,
 	PROPERTY_HINT_NODE_TYPE, ///< a node object type
@@ -133,7 +133,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_ARRAY = 1 << 29, // Used in the inspector to group properties as elements of an array.
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
-	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNATIONALIZED,
+	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNATIONALIZED,
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
 };
 
@@ -192,10 +192,10 @@ struct PropertyInfo {
 
 	explicit PropertyInfo(const GDNativePropertyInfo &pinfo) :
 			type((Variant::Type)pinfo.type),
-			name(pinfo.name),
-			class_name(pinfo.class_name), // can be null
+			name(*reinterpret_cast<StringName *>(pinfo.name)),
+			class_name(*reinterpret_cast<StringName *>(pinfo.class_name)),
 			hint((PropertyHint)pinfo.hint),
-			hint_string(pinfo.hint_string), // can be null
+			hint_string(*reinterpret_cast<String *>(pinfo.hint_string)),
 			usage(pinfo.usage) {}
 
 	bool operator==(const PropertyInfo &p_info) const {
@@ -241,6 +241,20 @@ struct MethodInfo {
 	static MethodInfo from_dict(const Dictionary &p_dict);
 
 	MethodInfo() {}
+
+	explicit MethodInfo(const GDNativeMethodInfo &pinfo) :
+			name(*reinterpret_cast<StringName *>(pinfo.name)),
+			return_val(PropertyInfo(pinfo.return_value)),
+			flags(pinfo.flags),
+			id(pinfo.id) {
+		for (uint32_t j = 0; j < pinfo.argument_count; j++) {
+			arguments.push_back(PropertyInfo(pinfo.arguments[j]));
+		}
+		const Variant *def_values = (const Variant *)pinfo.default_arguments;
+		for (uint32_t j = 0; j < pinfo.default_argument_count; j++) {
+			default_arguments.push_back(def_values[j]);
+		}
+	}
 
 	void _push_params(const PropertyInfo &p_param) {
 		arguments.push_back(p_param);

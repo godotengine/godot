@@ -3765,13 +3765,19 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				break;
 			case GDScriptParser::DataType::CLASS:
 				// Can assume type is a global GDScript class.
-				if (!ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
-					push_error(R"(Exported script type must extend Resource.)");
+				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					variable->export_info.hint_string = export_type.class_type->identifier->name;
+				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
+					variable->export_info.hint_string = export_type.class_type->identifier->name;
+				} else {
+					push_error(R"(Export type can only be built-in, a resource, a node or an enum.)", variable);
 					return false;
 				}
-				variable->export_info.type = Variant::OBJECT;
-				variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
-				variable->export_info.hint_string = export_type.class_type->identifier->name;
+
 				break;
 			case GDScriptParser::DataType::SCRIPT: {
 				StringName class_name;
@@ -3796,7 +3802,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 				String enum_hint_string;
 				bool first = true;
-				for (const KeyValue<StringName, int> &E : export_type.enum_values) {
+				for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
 					if (!first) {
 						enum_hint_string += ",";
 					} else {
