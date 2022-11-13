@@ -4183,6 +4183,21 @@ Transform2D SubViewport::get_screen_transform() const {
 	return container_transform * Viewport::get_screen_transform();
 }
 
+Transform2D SubViewport::get_popup_base_transform() const {
+	if (is_embedding_subwindows()) {
+		return Transform2D();
+	}
+	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+	if (!c) {
+		return Viewport::get_screen_transform();
+	}
+	Transform2D container_transform;
+	if (c->is_stretch_enabled()) {
+		container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
+	}
+	return c->get_screen_transform() * container_transform * Viewport::get_screen_transform();
+}
+
 void SubViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

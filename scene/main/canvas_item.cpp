@@ -154,17 +154,7 @@ Transform2D CanvasItem::get_global_transform_with_canvas() const {
 
 Transform2D CanvasItem::get_screen_transform() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
-	Transform2D xform = get_global_transform_with_canvas();
-
-	Window *w = Object::cast_to<Window>(get_viewport());
-	if (w && !w->is_embedding_subwindows()) {
-		Transform2D s;
-		s.set_origin(w->get_position());
-
-		xform = s * xform;
-	}
-
-	return xform;
+	return get_viewport()->get_popup_base_transform() * get_global_transform_with_canvas();
 }
 
 Transform2D CanvasItem::get_global_transform() const {
