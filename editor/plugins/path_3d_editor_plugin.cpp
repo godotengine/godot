@@ -240,38 +240,63 @@ void Path3DGizmo::redraw() {
 		return;
 	}
 
-	Vector<Vector3> v3a = c->tessellate();
-	//Vector<Vector3> v3a=c->get_baked_points();
+	real_t interval = 0.1;
+	const real_t length = c->get_baked_length();
 
-	int v3s = v3a.size();
-	if (v3s == 0) {
-		return;
-	}
-	Vector<Vector3> v3p;
-	const Vector3 *r = v3a.ptr();
+	// 1. Draw curve and bones.
+	if (length > CMP_EPSILON) {
+		const int sample_count = int(length / interval) + 2;
+		interval = length / (sample_count - 1); // Recalculate real interval length.
 
-	// BUG: the following won't work when v3s, avoid drawing as a temporary workaround.
-	for (int i = 0; i < v3s - 1; i++) {
-		v3p.push_back(r[i]);
-		v3p.push_back(r[i + 1]);
-		//v3p.push_back(r[i]);
-		//v3p.push_back(r[i]+Vector3(0,0.2,0));
-	}
+		Vector<Transform3D> frames;
+		frames.resize(sample_count);
 
-	if (v3p.size() > 1) {
+		{
+			Transform3D *w = frames.ptrw();
+
+			for (int i = 0; i < sample_count; i++) {
+				w[i] = c->sample_baked_with_rotation(i * interval, true, true);
+			}
+		}
+
+		const Transform3D *r = frames.ptr();
+		Vector<Vector3> v3p;
+		for (int i = 0; i < sample_count - 1; i++) {
+			const Vector3 p1 = r[i].origin;
+			const Vector3 p2 = r[i + 1].origin;
+			const Vector3 side = r[i].basis.get_column(0);
+			const Vector3 up = r[i].basis.get_column(1);
+			const Vector3 forward = r[i].basis.get_column(2);
+
+			// Curve segment.
+			v3p.push_back(p1);
+			v3p.push_back(p2);
+
+			// Fish Bone.
+			v3p.push_back(p1);
+			v3p.push_back(p1 + (side - forward) * 0.06);
+
+			v3p.push_back(p1);
+			v3p.push_back(p1 + (-side - forward) * 0.06);
+
+			v3p.push_back(p1);
+			v3p.push_back(p1 + up * 0.03);
+		}
+
 		add_lines(v3p, path_material);
 		add_collision_segments(v3p);
 	}
 
+	// 2. Draw handles.
 	if (Path3DEditorPlugin::singleton->get_edited_path() == path) {
-		v3p.clear();
+		Vector<Vector3> v3p;
 		Vector<Vector3> handle_points;
 		Vector<Vector3> sec_handle_points;
 
 		for (int i = 0; i < c->get_point_count(); i++) {
 			Vector3 p = c->get_point_position(i);
 			handle_points.push_back(p);
-			// push Out points first so they get selected if the In and Out points are on top of each other.
+			// Push out points first so they get selected if the In and Out points are on top of each other.
 			if (i < c->get_point_count() - 1) {
 				v3p.push_back(p);
 				v3p.push_back(p + c->get_point_out(i));
