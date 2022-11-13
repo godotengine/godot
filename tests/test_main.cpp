@@ -47,6 +47,7 @@
 #include "tests/core/math/test_expression.h"
 #include "tests/core/math/test_geometry_2d.h"
 #include "tests/core/math/test_geometry_3d.h"
+#include "tests/core/math/test_math_funcs.h"
 #include "tests/core/math/test_plane.h"
 #include "tests/core/math/test_quaternion.h"
 #include "tests/core/math/test_random_number_generator.h"
@@ -84,12 +85,15 @@
 #include "tests/core/variant/test_dictionary.h"
 #include "tests/core/variant/test_variant.h"
 #include "tests/scene/test_animation.h"
+#include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_gradient.h"
+#include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_3d.h"
+#include "tests/scene/test_primitives.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_text_edit.h"
 #include "tests/scene/test_theme.h"
@@ -188,10 +192,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		String name = String(p_in.m_name);
 
 		if (name.find("[SceneTree]") != -1) {
-			GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 			memnew(MessageQueue);
-
-			GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
 
 			memnew(Input);
 

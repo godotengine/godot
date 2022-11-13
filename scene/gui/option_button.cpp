@@ -451,7 +451,7 @@ void OptionButton::_queue_refresh_cache() {
 	}
 	cache_refresh_pending = true;
 
-	callable_mp(this, &OptionButton::_refresh_size_cache).call_deferredp(nullptr, 0);
+	callable_mp(this, &OptionButton::_refresh_size_cache).call_deferred();
 }
 
 void OptionButton::select(int p_idx) {

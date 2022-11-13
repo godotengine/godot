@@ -985,21 +985,26 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 
 					if (getter_function == nullptr) {
 						push_error(vformat(R"(Getter "%s" not found.)", member.variable->getter_pointer->name), member.variable);
-
-					} else if (getter_function->parameters.size() != 0 || getter_function->datatype.has_no_type()) {
-						push_error(vformat(R"(Function "%s" cannot be used as getter because of its signature.)", getter_function->identifier->name), member.variable);
-
-					} else if (!is_type_compatible(member.variable->datatype, getter_function->datatype, true)) {
-						push_error(vformat(R"(Function with return type "%s" cannot be used as getter for a property of type "%s".)", getter_function->datatype.to_string(), member.variable->datatype.to_string()), member.variable);
-
 					} else {
-						has_valid_getter = true;
-
-#ifdef DEBUG_ENABLED
-						if (member.variable->datatype.builtin_type == Variant::INT && getter_function->datatype.builtin_type == Variant::FLOAT) {
-							parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
+						GDScriptParser::DataType return_datatype = getter_function->datatype;
+						if (getter_function->return_type != nullptr) {
+							return_datatype = getter_function->return_type->datatype;
+							return_datatype.is_meta_type = false;
 						}
+
+						if (getter_function->parameters.size() != 0 || return_datatype.has_no_type()) {
+							push_error(vformat(R"(Function "%s" cannot be used as getter because of its signature.)", getter_function->identifier->name), member.variable);
+						} else if (!is_type_compatible(member.variable->datatype, return_datatype, true)) {
+							push_error(vformat(R"(Function with return type "%s" cannot be used as getter for a property of type "%s".)", return_datatype.to_string(), member.variable->datatype.to_string()), member.variable);
+
+						} else {
+							has_valid_getter = true;
+#ifdef DEBUG_ENABLED
+							if (member.variable->datatype.builtin_type == Variant::INT && return_datatype.builtin_type == Variant::FLOAT) {
+								parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
+							}
 #endif
+						}
 					}
 				}
 
@@ -1377,7 +1382,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 					if (all_is_constant) {
 						switch (args.size()) {
 							case 1:
-								reduced = args[0];
+								reduced = (int32_t)args[0];
 								break;
 							case 2:
 								reduced = Vector2i(args[0], args[1]);
@@ -1602,8 +1607,8 @@ void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
 	reduce_expression(p_assert->condition);
 	if (p_assert->message != nullptr) {
 		reduce_expression(p_assert->message);
-		if (!p_assert->message->is_constant || p_assert->message->reduced_value.get_type() != Variant::STRING) {
-			push_error(R"(Expected constant string for assert error message.)", p_assert->message);
+		if (!p_assert->message->get_datatype().has_no_type() && (p_assert->message->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_assert->message->get_datatype().builtin_type != Variant::STRING)) {
+			push_error(R"(Expected string for assert error message.)", p_assert->message);
 		}
 	}
 
@@ -2425,9 +2430,15 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 				switch (err.error) {
 					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
-						PropertyInfo wrong_arg = function_info.arguments[err.argument];
+						String expected_type_name;
+						if (err.argument < function_info.arguments.size()) {
+							expected_type_name = type_from_property(function_info.arguments[err.argument]).to_string();
+						} else {
+							expected_type_name = Variant::get_type_name((Variant::Type)err.expected);
+						}
+
 						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*", function_name, err.argument + 1,
-										   type_from_property(wrong_arg).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
+										   expected_type_name, p_call->arguments[err.argument]->get_datatype().to_string()),
 								p_call->arguments[err.argument]);
 					} break;
 					case Callable::CallError::CALL_ERROR_INVALID_METHOD:

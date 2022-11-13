@@ -70,7 +70,7 @@
 			<param index="0" name="euler" type="Vector3" />
 			<param index="1" name="order" type="int" default="2" />
 			<description>
-				Constructs a pure rotation Basis matrix from Euler angles in the specified Euler rotation order. By default, use YXZ order (most common).
+				Constructs a pure rotation Basis matrix from Euler angles in the specified Euler rotation order. By default, use YXZ order (most common). See the [enum EulerOrder] enum for possible values.
 			</description>
 		</method>
 		<method name="from_scale" qualifiers="static">
@@ -197,24 +197,6 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="EULER_ORDER_XYZ" value="0">
-			Euler angle composing/decomposing order where X component is first, then Y, then Z.
-		</constant>
-		<constant name="EULER_ORDER_XZY" value="1">
-			Euler angle composing/decomposing order where X component is first, then Z, then Y.
-		</constant>
-		<constant name="EULER_ORDER_YXZ" value="2">
-			Euler angle composing/decomposing order where Y component is first, then X, then Z.
-		</constant>
-		<constant name="EULER_ORDER_YZX" value="3">
-			Euler angle composing/decomposing order where Y component is first, then Z, then X.
-		</constant>
-		<constant name="EULER_ORDER_ZXY" value="4">
-			Euler angle composing/decomposing order where Z component is first, then X, then Y.
-		</constant>
-		<constant name="EULER_ORDER_ZYX" value="5">
-			Euler angle composing/decomposing order where Z component is first, then Y, then X.
-		</constant>
 		<constant name="IDENTITY" value="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
 			The identity basis, with no rotation or scaling applied.
 			This is identical to calling [code]Basis()[/code] without any parameters. This constant can be used to make your code clearer, and for consistency with C#.

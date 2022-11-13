@@ -44,6 +44,7 @@
 		<member name="noise" type="Noise" setter="set_noise" getter="get_noise">
 			The instance of the [Noise] object.
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless" default="false">
 			If [code]true[/code], a seamless texture is requested from the [Noise] resource.
 			[b]Note:[/b] Seamless noise textures may take longer to generate and/or can have a lower contrast compared to non-seamless noise depending on the used [Noise] resource. This is because some implementations use higher dimensions for generating seamless noise.

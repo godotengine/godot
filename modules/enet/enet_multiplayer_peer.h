@@ -83,9 +83,7 @@ private:
 
 	void _store_packet(int32_t p_source, ENetConnection::Event &p_event);
 	void _pop_current_packet();
-	bool _parse_server_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event);
-	bool _parse_client_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event);
-	bool _parse_mesh_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event, int p_peer_id);
+	void _disconnect_inactive_peers();
 	void _destroy_unused(ENetPacket *p_packet);
 	_FORCE_INLINE_ bool _is_active() const { return active_mode != MODE_NONE; }
 
@@ -102,6 +100,9 @@ public:
 	virtual int get_packet_channel() const override;
 
 	virtual void poll() override;
+	virtual void close() override;
+	virtual void disconnect_peer(int p_peer, bool p_force = false) override;
+
 	virtual bool is_server() const override;
 	virtual bool is_server_relay_supported() const override;
 
@@ -121,10 +122,6 @@ public:
 	Error create_client(const String &p_address, int p_port, int p_channel_count = 0, int p_in_bandwidth = 0, int p_out_bandwidth = 0, int p_local_port = 0);
 	Error create_mesh(int p_id);
 	Error add_mesh_peer(int p_id, Ref<ENetConnection> p_host);
-
-	void close_connection(uint32_t wait_usec = 100);
-
-	void disconnect_peer(int p_peer, bool now = false);
 
 	void set_bind_ip(const IPAddress &p_ip);
 

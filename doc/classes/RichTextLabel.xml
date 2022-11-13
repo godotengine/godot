@@ -479,9 +479,6 @@
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
 			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code].
 		</member>
-		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
-			If [code]true[/code], the label uses the custom font color.
-		</member>
 		<member name="progress_bar_delay" type="int" setter="set_progress_bar_delay" getter="get_progress_bar_delay" default="1000">
 			The delay after which the loading progress bar is displayed, in milliseconds. Set to [code]-1[/code] to disable progress bar entirely.
 			[b]Note:[/b] Progress bar is displayed only if [member threaded] is enabled.
@@ -629,8 +626,8 @@
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default tint of text outline.
 		</theme_item>
-		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			The color of selected text, used when [member selection_enabled] is [code]true[/code].
+		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The color of selected text, used when [member selection_enabled] is [code]true[/code]. If equal to [code]Color(0, 0, 0, 0)[/code], it will be ignored.
 		</theme_item>
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			The color of the font's shadow.
@@ -667,6 +664,12 @@
 		</theme_item>
 		<theme_item name="table_v_separation" data_type="constant" type="int" default="3">
 			The vertical separation of elements in a table.
+		</theme_item>
+		<theme_item name="text_highlight_h_padding" data_type="constant" type="int" default="3">
+			The horizontal padding around a highlighting and background color box.
+		</theme_item>
+		<theme_item name="text_highlight_v_padding" data_type="constant" type="int" default="3">
+			The vertical padding around a highlighting and background color box.
 		</theme_item>
 		<theme_item name="bold_font" data_type="font" type="Font">
 			The font used for bold text.

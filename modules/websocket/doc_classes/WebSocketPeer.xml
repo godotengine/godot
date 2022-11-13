@@ -133,7 +133,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="message" type="String" />
 			<description>
-				Sends the given [param message] using WebSocket text mode. Perfer this method over [method PacketPeer.put_packet] when interacting with third-party text-based API (e.g. when using [JSON] formatted messages).
+				Sends the given [param message] using WebSocket text mode. Prefer this method over [method PacketPeer.put_packet] when interacting with third-party text-based API (e.g. when using [JSON] formatted messages).
 			</description>
 		</method>
 		<method name="set_no_delay">

@@ -106,7 +106,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	// Create all items for the files in the subdirectory.
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-		String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
+		String main_scene = GLOBAL_GET("application/run/main_scene");
 
 		// Build the list of the files to display.
 		List<FileInfo> file_list;
@@ -383,7 +383,7 @@ void FileSystemDock::_notification(int p_what) {
 
 			current_path->connect("text_submitted", callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false));
 
-			always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
+			always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 
 			set_file_list_display_mode(FileSystemDock::FILE_LIST_DISPLAY_LIST);
 
@@ -464,7 +464,7 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 
 			// Update always show folders.
-			bool new_always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
+			bool new_always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 			if (new_always_show_folders != always_show_folders) {
 				always_show_folders = new_always_show_folders;
 				_update_file_list(true);
@@ -743,7 +743,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	String directory = path;
 	String file = "";
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("docks/filesystem/thumbnail_size");
+	int thumbnail_size = EDITOR_GET("docks/filesystem/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 	Ref<Texture2D> folder_thumbnail;
 	Ref<Texture2D> file_thumbnail;
@@ -893,7 +893,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	_sort_file_info_list(file_list);
 
 	// Fills the ItemList control node from the FileInfos.
-	String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
+	String main_scene = GLOBAL_GET("application/run/main_scene");
 	for (FileInfo &E : file_list) {
 		FileInfo *finfo = &(E);
 		String fname = finfo->name;
@@ -1283,42 +1283,71 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	}
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	print_verbose("Duplicating " + old_path + " -> " + new_path);
-	Error err = p_item.is_file ? da->copy(old_path, new_path) : da->copy_dir(old_path, new_path);
-	if (err == OK) {
-		// Move/Rename any corresponding import settings too.
-		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
-			err = da->copy(old_path + ".import", new_path + ".import");
+
+	if (p_item.is_file) {
+		print_verbose("Duplicating " + old_path + " -> " + new_path);
+
+		// Create the directory structure.
+		da->make_dir_recursive(new_path.get_base_dir());
+
+		if (FileAccess::exists(old_path + ".import")) {
+			Error err = da->copy(old_path, new_path);
 			if (err != OK) {
-				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".import\n");
+				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ": " + error_names[err] + "\n");
+				return;
 			}
 
 			// Remove uid from .import file to avoid conflict.
 			Ref<ConfigFile> cfg;
 			cfg.instantiate();
-			cfg->load(new_path + ".import");
+			cfg->load(old_path + ".import");
 			cfg->erase_section_key("remap", "uid");
-			cfg->save(new_path + ".import");
-		} else if (p_item.is_file && (old_path.get_extension() == "tscn" || old_path.get_extension() == "tres")) {
-			// FIXME: Quick hack to fix text resources. This should be fixed properly.
-			Ref<FileAccess> file = FileAccess::open(old_path, FileAccess::READ, &err);
-			if (err == OK) {
-				PackedStringArray lines = file->get_as_utf8_string().split("\n");
-				String line = lines[0];
-
-				if (line.contains("uid")) {
-					line = line.substr(0, line.find(" uid")) + "]";
-					lines.write[0] = line;
-
-					Ref<FileAccess> file2 = FileAccess::open(new_path, FileAccess::WRITE, &err);
-					if (err == OK) {
-						file2->store_string(String("\n").join(lines));
-					}
+			err = cfg->save(new_path + ".import");
+			if (err != OK) {
+				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".import: " + error_names[err] + "\n");
+				return;
+			}
+		} else {
+			// Files which do not use an uid can just be copied.
+			if (ResourceLoader::get_resource_uid(old_path) == ResourceUID::INVALID_ID) {
+				Error err = da->copy(old_path, new_path);
+				if (err != OK) {
+					EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ": " + error_names[err] + "\n");
 				}
+				return;
+			}
+
+			// Load the resource and save it again in the new location (this generates a new UID).
+			Error err;
+			Ref<Resource> res = ResourceLoader::load(old_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+			if (err == OK && res.is_valid()) {
+				err = ResourceSaver::save(res, new_path, ResourceSaver::FLAG_COMPRESS);
+				if (err != OK) {
+					EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + " " + vformat(TTR("Failed to save resource at %s: %s"), new_path, error_names[err]));
+				}
+			} else if (err != OK) {
+				// When loading files like text files the error is OK but the resource is still null.
+				// We can ignore such files.
+				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + " " + vformat(TTR("Failed to load resource at %s: %s"), new_path, error_names[err]));
 			}
 		}
 	} else {
-		EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + "\n");
+		// Recursively duplicate all files inside the folder.
+		Ref<DirAccess> old_dir = DirAccess::open(old_path);
+		Ref<FileAccess> file_access = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+		old_dir->set_include_navigational(false);
+		old_dir->list_dir_begin();
+		for (String f = old_dir->_get_next(); !f.is_empty(); f = old_dir->_get_next()) {
+			if (f.get_extension() == "import") {
+				continue;
+			}
+			if (file_access->file_exists(old_path + f)) {
+				_try_duplicate_item(FileOrFolder(old_path + f, true), new_path + f);
+			} else if (da->dir_exists(old_path + f)) {
+				_try_duplicate_item(FileOrFolder(old_path + f, false), new_path + f);
+			}
+		}
+		old_dir->list_dir_end();
 	}
 }
 
@@ -2500,7 +2529,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), TTR("New Inherited Scene"), FILE_INHERIT);
-				if (ProjectSettings::get_singleton()->get("application/run/main_scene") != filenames[0]) {
+				if (GLOBAL_GET("application/run/main_scene") != filenames[0]) {
 					p_popup->add_icon_item(get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
 				}
 			} else {

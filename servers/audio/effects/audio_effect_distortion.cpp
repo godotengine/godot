@@ -50,7 +50,7 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	float lofi_mult = powf(2.0, 2.0 + (1.0 - drive_f) * 14); //goes from 16 to 2 bits
 
 	for (int i = 0; i < p_frame_count * 2; i++) {
-		float out = undenormalise(src[i] * lpf_ic + lpf_c * h[i & 1]);
+		float out = undenormalize(src[i] * lpf_ic + lpf_c * h[i & 1]);
 		h[i & 1] = out;
 		float a = out;
 		float ha = src[i] - out; //high freqs

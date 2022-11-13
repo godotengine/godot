@@ -69,9 +69,9 @@ struct shared_ptr
   operator T * () const { return p; }
   T& operator * () const { return *get (); }
   T* operator -> () const { return get (); }
-  operator bool () { return p; }
-  bool operator == (const shared_ptr &o) { return p == o.p; }
-  bool operator != (const shared_ptr &o) { return p != o.p; }
+  operator bool () const { return p; }
+  bool operator == (const shared_ptr &o) const { return p == o.p; }
+  bool operator != (const shared_ptr &o) const { return p != o.p; }
 
   static T* get_empty() { return v::get_empty (); }
   T* reference() { return v::reference (p); }

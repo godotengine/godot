@@ -47,7 +47,6 @@
 #include "scene/gui/tree.h"
 
 class ConnectDialogBinds;
-class EditorUndoRedoManager;
 
 class ConnectDialog : public ConfirmationDialog {
 	GDCLASS(ConnectDialog, ConfirmationDialog);
@@ -197,7 +196,6 @@ class ConnectionsDock : public VBoxContainer {
 	Button *connect_button = nullptr;
 	PopupMenu *signal_menu = nullptr;
 	PopupMenu *slot_menu = nullptr;
-	Ref<EditorUndoRedoManager> undo_redo;
 	LineEdit *search_box = nullptr;
 
 	HashMap<StringName, HashMap<StringName, String>> descr_cache;
@@ -231,7 +229,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_node(Node *p_node);
 	void update_tree();
 

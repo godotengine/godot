@@ -1251,7 +1251,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 	if (is_shader_inc) {
 		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
 			for (const KeyValue<StringName, FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i))) {
-				if ((current_function == E.key || E.key == "global") && E.value.built_ins.has(p_identifier)) {
+				if ((current_function == E.key || E.key == "global" || E.key == "constants") && E.value.built_ins.has(p_identifier)) {
 					if (r_data_type) {
 						*r_data_type = E.value.built_ins[p_identifier].type;
 					}
@@ -8178,6 +8178,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					}
 				}
 #endif // DEBUG_ENABLED
+				if (String(shader_type_identifier) != "spatial") {
+					_set_error(vformat(RTR("Uniform instances are not yet implemented for '%s' shaders."), shader_type_identifier));
+					return ERR_PARSE_ERROR;
+				}
 				if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
 					tk = _get_token();
 					if (tk.type != TK_UNIFORM) {

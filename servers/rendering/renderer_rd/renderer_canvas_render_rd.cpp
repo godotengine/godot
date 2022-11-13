@@ -706,7 +706,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 				//bind textures
 
-				_bind_canvas_texture(p_draw_list, RID(), current_filter, current_repeat, last_texture, push_constant, texpixel_size);
+				_bind_canvas_texture(p_draw_list, primitive->texture, current_filter, current_repeat, last_texture, push_constant, texpixel_size);
 
 				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[MIN(3u, primitive->point_count) - 1]);
 
@@ -1914,11 +1914,12 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 			}
 		}
 
-		//if same buffer len is being set, just use BufferSubData to avoid a pipeline flush
+		//if same buffer len is being set, just use buffer_update to avoid a pipeline flush
 
 		if (oc->vertex_array.is_null()) {
 			//create from scratch
 			//vertices
+			// TODO: geometry is always of length lc * 6 * sizeof(float), so in doubles builds this will receive half the data it needs
 			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(real_t), geometry);
 
 			Vector<RID> buffer;

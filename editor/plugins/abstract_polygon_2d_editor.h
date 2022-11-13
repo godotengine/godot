@@ -36,7 +36,6 @@
 #include "scene/gui/box_container.h"
 
 class CanvasItemEditor;
-class EditorUndoRedoManager;
 
 class AbstractPolygon2DEditor : public HBoxContainer {
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
@@ -99,8 +98,6 @@ protected:
 	};
 
 	int mode = MODE_EDIT;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	virtual void _menu_option(int p_option);
 	void _wip_changed();

@@ -1336,6 +1336,13 @@ Size2 TextureStorage::texture_size_with_proxy(RID p_proxy) {
 	return texture_2d_get_size(p_proxy);
 }
 
+RID TextureStorage::texture_get_rd_texture_rid(RID p_texture, bool p_srgb) const {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!tex, RID());
+
+	return (p_srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
+}
+
 Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
 	Ref<Image> image = p_image->duplicate();
 
@@ -2594,11 +2601,13 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	return rt->texture;
 }
 
-void TextureStorage::render_target_set_override_color(RID p_render_target, RID p_texture) {
+void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	rt->overridden.color = p_texture;
+	rt->overridden.color = p_color_texture;
+	rt->overridden.depth = p_depth_texture;
+	rt->overridden.velocity = p_velocity_texture;
 }
 
 RID TextureStorage::render_target_get_override_color(RID p_render_target) const {
@@ -2606,13 +2615,6 @@ RID TextureStorage::render_target_get_override_color(RID p_render_target) const 
 	ERR_FAIL_COND_V(!rt, RID());
 
 	return rt->overridden.color;
-}
-
-void TextureStorage::render_target_set_override_depth(RID p_render_target, RID p_texture) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-
-	rt->overridden.depth = p_texture;
 }
 
 RID TextureStorage::render_target_get_override_depth(RID p_render_target) const {
@@ -2639,13 +2641,6 @@ RID TextureStorage::render_target_get_override_depth_slice(RID p_render_target, 
 
 		return rt->overridden.cached_slices[key];
 	}
-}
-
-void TextureStorage::render_target_set_override_velocity(RID p_render_target, RID p_texture) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-
-	rt->overridden.velocity = p_texture;
 }
 
 RID TextureStorage::render_target_get_override_velocity(RID p_render_target) const {

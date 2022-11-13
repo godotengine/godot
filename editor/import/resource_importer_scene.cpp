@@ -1276,14 +1276,12 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 							} break;
 						}
 
-						int idx = 0;
 						for (const Ref<Shape3D> &E : shapes) {
 							CollisionShape3D *cshape = memnew(CollisionShape3D);
 							cshape->set_shape(E);
 							base->add_child(cshape, true);
 
 							cshape->set_owner(base->get_owner());
-							idx++;
 						}
 					}
 				}
@@ -1373,7 +1371,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					}
 
 					for (int i = 0; i < post_importer_plugins.size(); i++) {
-						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION, p_root, p_node, anim, node_settings);
+						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION, p_root, p_node, anim, anim_settings);
 					}
 				}
 			}

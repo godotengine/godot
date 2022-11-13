@@ -251,7 +251,7 @@
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] command line argument. See also [member application/run/disable_stderr].
+			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. See also [member application/run/disable_stderr].
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
@@ -297,7 +297,7 @@
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
 			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
@@ -340,6 +340,9 @@
 		</member>
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="" default="27">
 			Largest size limit (in power of 2) allowed when compressing using long-distance matching with Zstandard. Higher values can result in better compression, but will require more memory when compressing and decompressing.
+		</member>
+		<member name="debug/disable_touch" type="bool" setter="" getter="" default="false">
+			Disable touch input. Only has effect on iOS.
 		</member>
 		<member name="debug/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], logs all output to files.
@@ -480,7 +483,7 @@
 			Print GPU profile information to standard output every second. This includes how long each frame takes the GPU to render on average, broken down into different steps of the render pipeline, such as CanvasItems, shadows, glow, etc.
 		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
-			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] command line argument, even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
+			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
 		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
@@ -565,6 +568,9 @@
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
 			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
 		</member>
+		<member name="display/window/ios/allow_high_refresh_rate" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], iOS devices that support high refresh rate/"ProMotion" will be allowed to render at up to 120 frames per second.
+		</member>
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
 		</member>
@@ -630,7 +636,7 @@
 		</member>
 		<member name="editor/movie_writer/fps" type="int" setter="" getter="" default="60">
 			The number of frames per second to record in the video when writing a movie. Simulation speed will adjust to always match the specified framerate, which means the engine will appear to run slower at higher [member editor/movie_writer/fps] values. Certain FPS values will require you to adjust [member editor/movie_writer/mix_rate] to prevent audio from desynchronizing over time.
-			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument.
+			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="editor/movie_writer/mix_rate" type="int" setter="" getter="" default="48000">
 			The audio mix rate to use in the recorded audio when writing a movie (in Hz). This can be different from [member audio/driver/mix_rate], but this value must be divisible by [member editor/movie_writer/fps] to prevent audio from desynchronizing over time.
@@ -694,7 +700,8 @@
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
 		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
-			If [code]true[/code], swaps Cancel and OK buttons in dialogs on Windows and UWP to follow interface conventions.
+			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows and UWP to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
+			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 			Maximum undo/redo history size for [TextEdit] fields.
@@ -722,14 +729,14 @@
 			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
 		</member>
 		<member name="gui/theme/default_font_subpixel_positioning" type="int" setter="" getter="" default="1">
-			Default font glyph sub-pixel positioning mode. See [member FontFile.subpixel_positioning].
+			Default font glyph subpixel positioning mode. See [member FontFile.subpixel_positioning].
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
-			The default scale factor for [Control]s, when not overriden by a [Theme].
+			The default scale factor for [Control]s, when not overridden by a [Theme].
 			[b]Note:[/b] This property is only read when the project starts. To change the default scale at runtime, set [member ThemeDB.fallback_base_scale] instead.
 		</member>
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
-			LCD sub-pixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
+			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).
@@ -855,6 +862,18 @@
 		<member name="input/ui_text_backspace_word.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to delete a word.
 		</member>
+		<member name="input/ui_text_caret_add_above" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to add an additional caret above every caret of a text
+		</member>
+		<member name="input/ui_text_caret_add_above.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to add a caret above every caret
+		</member>
+		<member name="input/ui_text_caret_add_below" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to add an additional caret below every caret of a text
+		</member>
+		<member name="input/ui_text_caret_add_below.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to add a caret below every caret
+		</member>
 		<member name="input/ui_text_caret_document_end" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move the text cursor the the end of the text.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -920,6 +939,11 @@
 		</member>
 		<member name="input/ui_text_caret_word_right.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to move the text cursor forward one word.
+		</member>
+		<member name="input/ui_text_clear_carets_and_selection" type="Dictionary" setter="" getter="">
+			If there's only one caret active and with a selection, clears the selection.
+			In case there's more than one caret active, removes the secondary carets and clears their selections.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to accept an autocompetion hint.
@@ -998,7 +1022,7 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_toggle_insert_mode" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to toggle [i]instert mode[/i] in a text field. While in insert mode, inserting new text overrides the character after the cursor, unless the next character is a new line.
+			Default [InputEventAction] to toggle [i]insert mode[/i] in a text field. While in insert mode, inserting new text overrides the character after the cursor, unless the next character is a new line.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
@@ -1017,7 +1041,7 @@
 		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
@@ -1082,8 +1106,8 @@
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
 			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] command line argument.
-			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
@@ -1870,7 +1894,7 @@
 			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
 		</member>
 		<member name="rendering/environment/ssao/adaptive_target" type="float" setter="" getter="" default="0.5">
-			Quality target to use when [member rendering/environment/ssao/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
+			Quality target to use when [member rendering/environment/ssao/quality] is set to [code]Ultra[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]Medium[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
 		</member>
 		<member name="rendering/environment/ssao/blur_passes" type="int" setter="" getter="" default="2">
 			Number of blur passes to use when computing screen-space ambient occlusion. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
@@ -1885,10 +1909,10 @@
 			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details. If [code]false[/code], screen-space ambient occlusion will be rendered at full size.
 		</member>
 		<member name="rendering/environment/ssao/quality" type="int" setter="" getter="" default="2">
-			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
+			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]Ultra[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
 		</member>
 		<member name="rendering/environment/ssil/adaptive_target" type="float" setter="" getter="" default="0.5">
-			Quality target to use when [member rendering/environment/ssil/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance. When using the adaptive target, the performance cost scales with the complexity of the scene.
+			Quality target to use when [member rendering/environment/ssil/quality] is set to [code]Ultra[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]Medium[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance. When using the adaptive target, the performance cost scales with the complexity of the scene.
 		</member>
 		<member name="rendering/environment/ssil/blur_passes" type="int" setter="" getter="" default="4">
 			Number of blur passes to use when computing screen-space indirect lighting. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
@@ -1903,7 +1927,7 @@
 			If [code]true[/code], screen-space indirect lighting will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details and may result in some objects appearing to glow at their edges.
 		</member>
 		<member name="rendering/environment/ssil/quality" type="int" setter="" getter="" default="2">
-			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
+			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]Ultra[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
 		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
 			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
@@ -2240,7 +2264,7 @@
 			Action map configuration to load by default.
 		</member>
 		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
-			If [code]true[/code] Godot will setup and initialise OpenXR on startup.
+			If [code]true[/code] Godot will setup and initialize OpenXR on startup.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.

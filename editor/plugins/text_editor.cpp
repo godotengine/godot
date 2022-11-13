@@ -108,7 +108,7 @@ void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	code_editor->update_line_and_column();
 }
 
-void TextEditor::enable_editor() {
+void TextEditor::enable_editor(Control *p_shortcut_context) {
 	if (editor_enabled) {
 		return;
 	}
@@ -116,6 +116,15 @@ void TextEditor::enable_editor() {
 	editor_enabled = true;
 
 	_load_theme_settings();
+
+	if (p_shortcut_context) {
+		for (int i = 0; i < edit_hb->get_child_count(); ++i) {
+			Control *c = cast_to<Control>(edit_hb->get_child(i));
+			if (c) {
+				c->set_shortcut_context(p_shortcut_context);
+			}
+		}
+	}
 }
 
 void TextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
@@ -440,7 +449,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			int row = pos.y;
 			int col = pos.x;
 
-			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
+			tx->set_move_caret_on_right_click_enabled(EDITOR_GET("text_editor/behavior/navigation/move_caret_on_right_click"));
 			bool can_fold = tx->can_fold_line(row);
 			bool is_folded = tx->is_line_folded(row);
 

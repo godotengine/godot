@@ -14,15 +14,7 @@ common_linuxbsd = [
 ]
 
 if env["x11"]:
-    common_linuxbsd += [
-        "gl_manager_x11.cpp",
-        "detect_prime_x11.cpp",
-        "display_server_x11.cpp",
-        "key_mapping_x11.cpp",
-    ]
-
-    if env["vulkan"]:
-        common_linuxbsd.append("vulkan_context_x11.cpp")
+    common_linuxbsd += SConscript("x11/SCsub")
 
 if env["speechd"]:
     common_linuxbsd.append(["speechd-so_wrap.c", "tts_linux.cpp"])

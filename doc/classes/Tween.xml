@@ -177,7 +177,8 @@
 		<method name="parallel">
 			<return type="Tween" />
 			<description>
-				Makes the next [Tweener] run parallelly to the previous one. Example:
+				Makes the next [Tweener] run parallelly to the previous one.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
@@ -272,7 +273,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<description>
 				Creates and appends a [CallbackTweener]. This method can be used to call an arbitrary method in any object. Use [method Callable.bind] to bind additional arguments for the call.
-				Example: object that keeps shooting every 1 second.
+				[b]Example:[/b] Object that keeps shooting every 1 second:
 				[codeblocks]
 				[gdscript]
 				var tween = get_tree().create_tween().set_loops()
@@ -283,7 +284,7 @@
 				tween.TweenCallback(new Callable(Shoot)).SetDelay(1.0f);
 				[/csharp]
 				[/codeblocks]
-				Example: turning a sprite red and then blue, with 2 second delay.
+				[b]Example:[/b] Turning a sprite red and then blue, with 2 second delay:
 				[codeblocks]
 				[gdscript]
 				var tween = get_tree().create_tween()
@@ -304,7 +305,7 @@
 			<param index="0" name="time" type="float" />
 			<description>
 				Creates and appends an [IntervalTweener]. This method can be used to create delays in the tween animation, as an alternative to using the delay in other [Tweener]s, or when there's no animation (in which case the [Tween] acts as a timer). [param time] is the length of the interval, in seconds.
-				Example: creating an interval in code execution.
+				[b]Example:[/b] Creating an interval in code execution:
 				[codeblocks]
 				[gdscript]
 				# ... some code
@@ -317,7 +318,7 @@
 				// ... more code
 				[/csharp]
 				[/codeblocks]
-				Example: creating an object that moves back and forth and jumps every few seconds.
+				[b]Example:[/b] Creating an object that moves back and forth and jumps every few seconds:
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween().set_loops()
@@ -348,7 +349,7 @@
 			<param index="3" name="duration" type="float" />
 			<description>
 				Creates and appends a [MethodTweener]. This method is similar to a combination of [method tween_callback] and [method tween_property]. It calls a method over time with a tweened value provided as an argument. The value is tweened between [param from] and [param to] over the time specified by [param duration], in seconds. Use [method Callable.bind] to bind additional arguments for the call. You can use [method MethodTweener.set_ease] and [method MethodTweener.set_trans] to tweak the easing and transition of the value or [method MethodTweener.set_delay] to delay the tweening.
-				Example: making a 3D object look from one point to another point.
+				[b]Example:[/b] Making a 3D object look from one point to another point:
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
@@ -359,7 +360,7 @@
 				tween.TweenMethod(new Callable(() =&gt; LookAt(Vector3.Up)), new Vector3(-1.0f, 0.0f, -1.0f), new Vector3(1.0f, 0.0f, -1.0f), 1.0f); // The LookAt() method takes up vector as second argument.
 				[/csharp]
 				[/codeblocks]
-				Example: setting a text of a [Label], using an intermediate method and after a delay.
+				[b]Example:[/b] Setting the text of a [Label], using an intermediate method and after a delay:
 				[codeblocks]
 				[gdscript]
 				func _ready():
@@ -393,7 +394,8 @@
 			<param index="2" name="final_val" type="Variant" />
 			<param index="3" name="duration" type="float" />
 			<description>
-				Creates and appends a [PropertyTweener]. This method tweens a [param property] of an [param object] between an initial value and [param final_val] in a span of time equal to [param duration], in seconds. The initial value by default is the property's value at the time the tweening of the [PropertyTweener] starts. For example:
+				Creates and appends a [PropertyTweener]. This method tweens a [param property] of an [param object] between an initial value and [param final_val] in a span of time equal to [param duration], in seconds. The initial value by default is the property's value at the time the tweening of the [PropertyTweener] starts.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
@@ -408,7 +410,7 @@
 				[/codeblocks]
 				will move the sprite to position (100, 200) and then to (200, 300). If you use [method PropertyTweener.from] or [method PropertyTweener.from_current], the starting position will be overwritten by the given value instead. See other methods in [PropertyTweener] to see how the tweening can be tweaked further.
 				[b]Note:[/b] You can find the correct property name by hovering over the property in the Inspector. You can also provide the components of a property directly by using [code]"property:component"[/code] (eg. [code]position:x[/code]), where it would only apply to that particular component.
-				Example: moving object twice from the same position, with different transition types.
+				[b]Example:[/b] Moving an object twice from the same position, with different transition types:
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()

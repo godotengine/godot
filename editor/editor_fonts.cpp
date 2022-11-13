@@ -57,6 +57,24 @@ Ref<FontFile> load_external_font(const String &p_path, TextServer::Hinting p_hin
 	return font;
 }
 
+Ref<SystemFont> load_system_font(const PackedStringArray &p_names, TextServer::Hinting p_hinting, TextServer::FontAntialiasing p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_msdf = false, TypedArray<Font> *r_fallbacks = nullptr) {
+	Ref<SystemFont> font;
+	font.instantiate();
+
+	font->set_font_names(p_names);
+	font->set_multichannel_signed_distance_field(p_msdf);
+	font->set_antialiasing(p_aa);
+	font->set_hinting(p_hinting);
+	font->set_force_autohinter(p_autohint);
+	font->set_subpixel_positioning(p_font_subpixel_positioning);
+
+	if (r_fallbacks != nullptr) {
+		r_fallbacks->push_back(font);
+	}
+
+	return font;
+}
+
 Ref<FontFile> load_internal_font(const uint8_t *p_data, size_t p_size, TextServer::Hinting p_hinting, TextServer::FontAntialiasing p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_msdf = false, TypedArray<Font> *r_fallbacks = nullptr) {
 	Ref<FontFile> font;
 	font.instantiate();
@@ -91,9 +109,9 @@ Ref<FontVariation> make_bold_font(const Ref<Font> &p_font, double p_embolden, Ty
 void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
-	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)EditorSettings::get_singleton()->get("interface/editor/font_antialiasing");
-	int font_hinting_setting = (int)EditorSettings::get_singleton()->get("interface/editor/font_hinting");
-	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)EditorSettings::get_singleton()->get("interface/editor/font_subpixel_positioning");
+	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)EDITOR_GET("interface/editor/font_antialiasing");
+	int font_hinting_setting = (int)EDITOR_GET("interface/editor/font_hinting");
+	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)EDITOR_GET("interface/editor/font_subpixel_positioning");
 
 	TextServer::Hinting font_hinting;
 	TextServer::Hinting font_mono_hinting;
@@ -166,6 +184,20 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontFile> thai_font_bold = load_internal_font(_font_NotoSansThaiUI_Bold, _font_NotoSansThaiUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontVariation> fallback_font_bold = make_bold_font(fallback_font, embolden_strength, &fallbacks_bold);
 	Ref<FontVariation> japanese_font_bold = make_bold_font(japanese_font, embolden_strength, &fallbacks_bold);
+
+	if (OS::get_singleton()->has_feature("system_fonts")) {
+		PackedStringArray emoji_font_names;
+		emoji_font_names.push_back("Apple Color Emoji");
+		emoji_font_names.push_back("Segoe UI Emoji");
+		emoji_font_names.push_back("Noto Color Emoji");
+		emoji_font_names.push_back("Twitter Color Emoji");
+		emoji_font_names.push_back("OpenMoji");
+		emoji_font_names.push_back("EmojiOne Color");
+		Ref<SystemFont> emoji_font = load_system_font(emoji_font_names, font_hinting, font_antialiasing, true, font_subpixel_positioning, false);
+		fallbacks.push_back(emoji_font);
+		fallbacks_bold.push_back(emoji_font);
+	}
+
 	default_font_bold->set_fallbacks(fallbacks_bold);
 	default_font_bold_msdf->set_fallbacks(fallbacks_bold);
 
@@ -173,9 +205,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	default_font_mono->set_fallbacks(fallbacks);
 
 	// Init base font configs and load custom fonts.
-	String custom_font_path = EditorSettings::get_singleton()->get("interface/editor/main_font");
-	String custom_font_path_bold = EditorSettings::get_singleton()->get("interface/editor/main_font_bold");
-	String custom_font_path_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
+	String custom_font_path = EDITOR_GET("interface/editor/main_font");
+	String custom_font_path_bold = EDITOR_GET("interface/editor/main_font_bold");
+	String custom_font_path_source = EDITOR_GET("interface/editor/code_font");
 
 	Ref<FontVariation> default_fc;
 	default_fc.instantiate();
@@ -283,7 +315,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontVariation> mono_other_fc = mono_fc->duplicate();
 
 	// Enable contextual alternates (coding ligatures) and custom features for the source editor font.
-	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
+	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
 	switch (ot_mode) {
 		case 1: { // Disable ligatures.
 			Dictionary ftrs;
@@ -291,7 +323,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 			mono_fc->set_opentype_features(ftrs);
 		} break;
 		case 2: { // Custom.
-			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
+			Vector<String> subtag = String(EDITOR_GET("interface/editor/code_font_custom_opentype_features")).split(",");
 			Dictionary ftrs;
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");

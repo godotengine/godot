@@ -94,6 +94,8 @@ void MultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_packet_mode"), &MultiplayerPeer::get_packet_mode);
 
 	ClassDB::bind_method(D_METHOD("poll"), &MultiplayerPeer::poll);
+	ClassDB::bind_method(D_METHOD("close"), &MultiplayerPeer::close);
+	ClassDB::bind_method(D_METHOD("disconnect_peer", "peer", "force"), &MultiplayerPeer::disconnect_peer, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_connection_status"), &MultiplayerPeer::get_connection_status);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &MultiplayerPeer::get_unique_id);
@@ -121,9 +123,6 @@ void MultiplayerPeer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("server_disconnected"));
-	ADD_SIGNAL(MethodInfo("connection_succeeded"));
-	ADD_SIGNAL(MethodInfo("connection_failed"));
 }
 
 /*************/
@@ -213,6 +212,8 @@ void MultiplayerPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_packet_peer);
 	GDVIRTUAL_BIND(_is_server);
 	GDVIRTUAL_BIND(_poll);
+	GDVIRTUAL_BIND(_close);
+	GDVIRTUAL_BIND(_disconnect_peer, "p_peer", "p_force");
 	GDVIRTUAL_BIND(_get_unique_id);
 	GDVIRTUAL_BIND(_set_refuse_new_connections, "p_enable");
 	GDVIRTUAL_BIND(_is_refusing_new_connections);

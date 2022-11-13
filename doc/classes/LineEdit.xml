@@ -224,6 +224,9 @@
 		<member name="secret_character" type="String" setter="set_secret_character" getter="get_secret_character" default="&quot;•&quot;">
 			The character to use to mask secret input (defaults to "•"). Only a single character can be used as the secret character.
 		</member>
+		<member name="select_all_on_focus" type="bool" setter="set_select_all_on_focus" getter="is_select_all_on_focus" default="false">
+			If [code]true[/code], the [LineEdit] will select the whole text when it gains focus.
+		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
 			If [code]false[/code], it's impossible to select the text using mouse nor keyboard.
 		</member>

@@ -36,6 +36,7 @@
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/extension/extension_api_dump.h"
+#include "core/extension/gdnative_interface_dump.gen.h"
 #include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
@@ -199,6 +200,7 @@ static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
 #ifdef TOOLS_ENABLED
+static bool dump_gdnative_interface = false;
 static bool dump_extension_api = false;
 #endif
 bool profile_gpu = false;
@@ -231,7 +233,7 @@ static String get_full_version_string() {
 void initialize_physics() {
 	/// 3D Physics Server
 	physics_server_3d = PhysicsServer3DManager::get_singleton()->new_server(
-			ProjectSettings::get_singleton()->get(PhysicsServer3DManager::setting_property_name));
+			GLOBAL_GET(PhysicsServer3DManager::setting_property_name));
 	if (!physics_server_3d) {
 		// Physics server not found, Use the default physics
 		physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
@@ -241,7 +243,7 @@ void initialize_physics() {
 
 	// 2D Physics server
 	physics_server_2d = PhysicsServer2DManager::get_singleton()->new_server(
-			ProjectSettings::get_singleton()->get(PhysicsServer2DManager::get_singleton()->setting_property_name));
+			GLOBAL_GET(PhysicsServer2DManager::get_singleton()->setting_property_name));
 	if (!physics_server_2d) {
 		// Physics server not found, Use the default physics
 		physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
@@ -405,15 +407,17 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -s, --script <script>                        Run a script.\n");
 	OS::get_singleton()->print("  --check-only                                 Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  --export <preset> <path>                     Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
-	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
-	OS::get_singleton()->print("  --export-debug <preset> <path>               Same as --export, but using the debug template.\n");
-	OS::get_singleton()->print("  --export-pack <preset> <path>                Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
+	OS::get_singleton()->print("  --export-release <preset> <path>             Export the project in release mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.\n");
+	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').\n");
+	OS::get_singleton()->print("                                               The target directory must exist.\n");
+	OS::get_singleton()->print("  --export-debug <preset> <path>               Export the project in debug mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.\n");
+	OS::get_singleton()->print("  --export-pack <preset> <path>                Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n");
 	OS::get_singleton()->print("  --convert-3to4 [<max_file_kb>] [<max_line_size>]              Converts project from Godot 3.x to Godot 4.x.\n");
 	OS::get_singleton()->print("  --validate-conversion-3to4 [<max_file_kb>] [<max_line_size>]  Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.\n");
 	OS::get_singleton()->print("  --doctool [<path>]                           Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                                 Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                            Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
+	OS::get_singleton()->print("  --dump-gdextension-interface                 Generate GDExtension header file 'gdnative_interface.h' in the current folder. This file is the base file required to implement a GDExtension.\n");
 	OS::get_singleton()->print("  --dump-extension-api                         Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
 	OS::get_singleton()->print("  --startup-benchmark                          Benchmark the startup time and print it to console.\n");
 	OS::get_singleton()->print("  --startup-benchmark-file <path>              Benchmark the startup time and save it to a given file in JSON format.\n");
@@ -439,11 +443,7 @@ Error Main::test_setup() {
 
 	globals = memnew(ProjectSettings);
 
-	GLOBAL_DEF("debug/settings/crash_handler/message",
-			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
-	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
-
-	register_core_settings(); //here globals are present
+	register_core_settings(); // Here globals are present.
 
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
@@ -617,7 +617,7 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
  * - setup(execpath, argc, argv, p_second_phase) is the main entry point for all platforms,
  *   responsible for the initialization of all low level singletons and core types, and parsing
  *   command line arguments to configure things accordingly.
- *   If p_second_phase is true, it will chain into setup2() (default behaviour). This is
+ *   If p_second_phase is true, it will chain into setup2() (default behavior). This is
  *   disabled on some platforms (Android, iOS, UWP) which trigger the second step in their
  *   own time.
  *
@@ -660,11 +660,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// decrease performance if this is enabled.
 	GLOBAL_DEF_RST("application/run/flush_stdout_on_print", false);
 	GLOBAL_DEF_RST("application/run/flush_stdout_on_print.debug", true);
-
-	GLOBAL_DEF("debug/settings/crash_handler/message",
-			String("Please include this when reporting the bug to the project developer."));
-	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
-			String("Please include this when reporting the bug on: https://github.com/godotengine/godot/issues"));
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
@@ -1054,6 +1049,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			auto_build_solutions = true;
 			editor = true;
 			cmdline_tool = true;
+		} else if (I->get() == "--dump-gdextension-interface") {
+			// Register as an editor instance to use low-end fallback if relevant.
+			editor = true;
+			cmdline_tool = true;
+			dump_gdnative_interface = true;
+			print_line("Dumping gdnative interface header file");
+			// Hack. Not needed but otherwise we end up detecting that this should
+			// run the project instead of a cmdline tool.
+			// Needs full refactoring to fix properly.
+			main_args.push_back(I->get());
 		} else if (I->get() == "--dump-extension-api") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
@@ -1064,7 +1069,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
 			main_args.push_back(I->get());
-		} else if (I->get() == "--export" || I->get() == "--export-debug" ||
+		} else if (I->get() == "--export-release" || I->get() == "--export-debug" ||
 				I->get() == "--export-pack") { // Export project
 			// Actually handling is done in start().
 			editor = true;
@@ -1344,7 +1349,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	ResourceUID::get_singleton()->load_from_cache(); // load UUIDs from cache.
 
-	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/multithreaded_server/rid_pool_prealloc",
 			PropertyInfo(Variant::INT,
 					"memory/limits/multithreaded_server/rid_pool_prealloc",
@@ -1446,10 +1450,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		input_map->load_from_project_settings(); //keys for game
 	}
 
-	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stdout"))) {
+	if (bool(GLOBAL_GET("application/run/disable_stdout"))) {
 		quiet_stdout = true;
 	}
-	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stderr"))) {
+	if (bool(GLOBAL_GET("application/run/disable_stderr"))) {
 		CoreGlobals::print_error_enabled = false;
 	};
 
@@ -1457,7 +1461,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		CoreGlobals::print_line_enabled = false;
 	}
 
-	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
+	Logger::set_flush_stdout_on_print(GLOBAL_GET("application/run/flush_stdout_on_print"));
 
 	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
@@ -1530,6 +1534,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (default_renderer_mobile.is_empty()) {
 		default_renderer_mobile = "gl_compatibility";
 	}
+	// Default to Compatibility when using the project manager.
+	if (rendering_driver.is_empty() && rendering_method.is_empty() && project_manager) {
+		rendering_driver = "opengl3";
+		rendering_method = "gl_compatibility";
+	}
 #endif
 	if (renderer_hints.is_empty()) {
 		ERR_PRINT("No renderers available.");
@@ -1590,11 +1599,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// Now validate whether the selected driver matches with the renderer.
 		bool valid_combination = false;
 		Vector<String> available_drivers;
+#ifdef VULKAN_ENABLED
 		if (rendering_method == "forward_plus" || rendering_method == "mobile") {
 			available_drivers.push_back("vulkan");
-		} else if (rendering_method == "gl_compatibility") {
+		}
+#endif
+#ifdef GLES3_ENABLED
+		if (rendering_method == "gl_compatibility") {
 			available_drivers.push_back("opengl3");
-		} else {
+		}
+#endif
+		if (available_drivers.is_empty()) {
 			OS::get_singleton()->print("Unknown renderer name '%s', aborting.\n", rendering_method.utf8().get_data());
 			goto error;
 		}
@@ -1690,7 +1705,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
 	}
 
-	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
@@ -1807,6 +1821,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					PROPERTY_HINT_RANGE,
 					"0,33200,1,or_greater")); // No negative numbers
 
+	GLOBAL_DEF("display/window/ios/allow_high_refresh_rate", true);
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("display/window/ios/hide_status_bar", true);
 	GLOBAL_DEF("display/window/ios/suppress_ui_gesture", true);
@@ -2139,12 +2154,12 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
 		}
 
+		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
+
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-		const Color boot_bg_color =
+		boot_bg_color =
 				GLOBAL_DEF_BASIC("application/boot_splash/bg_color",
 						(editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
-#else
-		const Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
 #endif
 		if (boot_logo.is_valid()) {
 			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
@@ -2176,7 +2191,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: DCC");
 	RenderingServer::get_singleton()->set_default_clear_color(
-			GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3)));
+			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon",
@@ -2321,11 +2336,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 					"display/mouse_cursor/custom_image",
 					PROPERTY_HINT_FILE, "*.png,*.webp"));
 
-	if (String(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image")) != String()) {
+	if (String(GLOBAL_GET("display/mouse_cursor/custom_image")) != String()) {
 		Ref<Texture2D> cursor = ResourceLoader::load(
-				ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image"));
+				GLOBAL_GET("display/mouse_cursor/custom_image"));
 		if (cursor.is_valid()) {
-			Vector2 hotspot = ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
+			Vector2 hotspot = GLOBAL_GET("display/mouse_cursor/custom_image_hotspot");
 			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CURSOR_ARROW, hotspot);
 		}
 	}
@@ -2448,7 +2463,7 @@ bool Main::start() {
 					doc_tool_path = ".";
 					parsed_pair = false;
 				}
-			} else if (args[i] == "--export") {
+			} else if (args[i] == "--export-release") {
 				editor = true; //needs editor
 				_export_preset = args[i + 1];
 			} else if (args[i] == "--export-debug") {
@@ -2557,8 +2572,15 @@ bool Main::start() {
 		return false;
 	}
 
+	if (dump_gdnative_interface) {
+		GDNativeInterfaceDump::generate_gdnative_interface_file("gdnative_interface.h");
+	}
+
 	if (dump_extension_api) {
 		NativeExtensionAPIDump::generate_extension_json_file("extension_api.json");
+	}
+
+	if (dump_gdnative_interface || dump_extension_api) {
 		return false;
 	}
 
@@ -2772,15 +2794,48 @@ bool Main::start() {
 			startup_benchmark_file = String();
 		}
 #endif
+		GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
+		ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/mode",
+				PropertyInfo(Variant::STRING,
+						"display/window/stretch/mode",
+						PROPERTY_HINT_ENUM,
+						"disabled,canvas_items,viewport"));
+		GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
+		ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect",
+				PropertyInfo(Variant::STRING,
+						"display/window/stretch/aspect",
+						PROPERTY_HINT_ENUM,
+						"ignore,keep,keep_width,keep_height,expand"));
+		GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
+		ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/scale",
+				PropertyInfo(Variant::FLOAT,
+						"display/window/stretch/scale",
+						PROPERTY_HINT_RANGE,
+						"0.5,8.0,0.01"));
+		sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
+		sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
+		GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
+		GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
+
+		GLOBAL_DEF_BASIC("rendering/textures/canvas_textures/default_texture_filter", 1);
+		ProjectSettings::get_singleton()->set_custom_property_info(
+				"rendering/textures/canvas_textures/default_texture_filter",
+				PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM,
+						"Nearest,Linear,Linear Mipmap,Nearest Mipmap"));
+		GLOBAL_DEF_BASIC("rendering/textures/canvas_textures/default_texture_repeat", 0);
+		ProjectSettings::get_singleton()->set_custom_property_info(
+				"rendering/textures/canvas_textures/default_texture_repeat",
+				PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM,
+						"Disable,Enable,Mirror"));
 
 		if (!editor && !project_manager) {
 			//standard helpers that can be changed from main config
 
-			String stretch_mode = GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
-			String stretch_aspect = GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
-			Size2i stretch_size = Size2i(GLOBAL_DEF_BASIC("display/window/size/viewport_width", 0),
-					GLOBAL_DEF_BASIC("display/window/size/viewport_height", 0));
-			real_t stretch_scale = GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
+			String stretch_mode = GLOBAL_GET("display/window/stretch/mode");
+			String stretch_aspect = GLOBAL_GET("display/window/stretch/aspect");
+			Size2i stretch_size = Size2i(GLOBAL_GET("display/window/size/viewport_width"),
+					GLOBAL_GET("display/window/size/viewport_height"));
+			real_t stretch_scale = GLOBAL_GET("display/window/stretch/scale");
 
 			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;
 			if (stretch_mode == "canvas_items") {
@@ -2805,9 +2860,9 @@ bool Main::start() {
 			sml->get_root()->set_content_scale_size(stretch_size);
 			sml->get_root()->set_content_scale_factor(stretch_scale);
 
-			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
-			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
-			String appname = ProjectSettings::get_singleton()->get("application/config/name");
+			sml->set_auto_accept_quit(GLOBAL_GET("application/config/auto_accept_quit"));
+			sml->set_quit_on_go_back(GLOBAL_GET("application/config/quit_on_go_back"));
+			String appname = GLOBAL_GET("application/config/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
 #ifdef DEBUG_ENABLED
 			// Append a suffix to the window title to denote that the project is running
@@ -2822,53 +2877,18 @@ bool Main::start() {
 			// It can still be overridden by the user in a script.
 			DisplayServer::get_singleton()->window_set_min_size(Size2i(64, 64));
 
-			bool snap_controls = GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
+			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 
-			bool font_oversampling = GLOBAL_DEF("gui/fonts/dynamic_fonts/use_oversampling", true);
+			bool font_oversampling = GLOBAL_GET("gui/fonts/dynamic_fonts/use_oversampling");
 			sml->get_root()->set_use_font_oversampling(font_oversampling);
 
-			int texture_filter = GLOBAL_DEF("rendering/textures/canvas_textures/default_texture_filter", 1);
-			int texture_repeat = GLOBAL_DEF("rendering/textures/canvas_textures/default_texture_repeat", 0);
+			int texture_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
+			int texture_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");
 			sml->get_root()->set_default_canvas_item_texture_filter(
 					Viewport::DefaultCanvasItemTextureFilter(texture_filter));
 			sml->get_root()->set_default_canvas_item_texture_repeat(
 					Viewport::DefaultCanvasItemTextureRepeat(texture_repeat));
-
-		} else {
-			GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
-			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/mode",
-					PropertyInfo(Variant::STRING,
-							"display/window/stretch/mode",
-							PROPERTY_HINT_ENUM,
-							"disabled,canvas_items,viewport"));
-			GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
-			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect",
-					PropertyInfo(Variant::STRING,
-							"display/window/stretch/aspect",
-							PROPERTY_HINT_ENUM,
-							"ignore,keep,keep_width,keep_height,expand"));
-			GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
-			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/scale",
-					PropertyInfo(Variant::FLOAT,
-							"display/window/stretch/scale",
-							PROPERTY_HINT_RANGE,
-							"0.5,8.0,0.01"));
-			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
-			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
-			GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
-			GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
-
-			GLOBAL_DEF_BASIC("rendering/textures/canvas_textures/default_texture_filter", 1);
-			ProjectSettings::get_singleton()->set_custom_property_info(
-					"rendering/textures/canvas_textures/default_texture_filter",
-					PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM,
-							"Nearest,Linear,Linear Mipmap,Nearest Mipmap"));
-			GLOBAL_DEF_BASIC("rendering/textures/canvas_textures/default_texture_repeat", 0);
-			ProjectSettings::get_singleton()->set_custom_property_info(
-					"rendering/textures/canvas_textures/default_texture_repeat",
-					PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM,
-							"Disable,Enable,Mirror"));
 		}
 
 #ifdef TOOLS_ENABLED
@@ -2937,7 +2957,7 @@ bool Main::start() {
 			Engine::get_singleton()->startup_benchmark_begin_measure("game_load");
 
 			// Load SSL Certificates from Project Settings (or builtin).
-			Crypto::load_default_certificates(GLOBAL_DEF("network/tls/certificate_bundle_override", ""));
+			Crypto::load_default_certificates(GLOBAL_GET("network/tls/certificate_bundle_override"));
 
 			if (!game_path.is_empty()) {
 				Node *scene = nullptr;
@@ -2950,7 +2970,7 @@ bool Main::start() {
 				sml->add_current_scene(scene);
 
 #ifdef MACOS_ENABLED
-				String mac_iconpath = GLOBAL_DEF("application/config/macos_native_icon", "Variant()");
+				String mac_iconpath = GLOBAL_GET("application/config/macos_native_icon");
 				if (!mac_iconpath.is_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(mac_iconpath);
 					hasicon = true;
@@ -2958,14 +2978,14 @@ bool Main::start() {
 #endif
 
 #ifdef WINDOWS_ENABLED
-				String win_iconpath = GLOBAL_DEF("application/config/windows_native_icon", "Variant()");
+				String win_iconpath = GLOBAL_GET("application/config/windows_native_icon");
 				if (!win_iconpath.is_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(win_iconpath);
 					hasicon = true;
 				}
 #endif
 
-				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
+				String iconpath = GLOBAL_GET("application/config/icon");
 				if ((!iconpath.is_empty()) && (!hasicon)) {
 					Ref<Image> icon;
 					icon.instantiate();

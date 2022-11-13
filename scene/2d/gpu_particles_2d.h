@@ -74,7 +74,7 @@ private:
 	real_t collision_base_size = 1.0;
 
 	bool trail_enabled = false;
-	double trail_length = 0.3;
+	double trail_lifetime = 0.3;
 	int trail_sections = 8;
 	int trail_section_subdivisions = 4;
 
@@ -104,7 +104,7 @@ public:
 	void set_speed_scale(double p_scale);
 	void set_collision_base_size(real_t p_ratio);
 	void set_trail_enabled(bool p_enabled);
-	void set_trail_length(double p_seconds);
+	void set_trail_lifetime(double p_seconds);
 	void set_trail_sections(int p_sections);
 	void set_trail_section_subdivisions(int p_subdivisions);
 
@@ -126,7 +126,7 @@ public:
 
 	real_t get_collision_base_size() const;
 	bool is_trail_enabled() const;
-	double get_trail_length() const;
+	double get_trail_lifetime() const;
 	int get_trail_sections() const;
 	int get_trail_section_subdivisions() const;
 

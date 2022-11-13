@@ -127,20 +127,86 @@ class TextServerFallback : public TextServerExtension {
 
 	const int rect_range = 1;
 
-	struct FontTexture {
-		Image::Format format;
-		PackedByteArray imgdata;
-		int texture_w = 0;
-		int texture_h = 0;
-		PackedInt32Array offsets;
-		Ref<ImageTexture> texture;
-		bool dirty = true;
+	struct FontTexturePosition {
+		int32_t index = -1;
+		int32_t x = 0;
+		int32_t y = 0;
+
+		FontTexturePosition() {}
+		FontTexturePosition(int32_t p_id, int32_t p_x, int32_t p_y) :
+				index(p_id), x(p_x), y(p_y) {}
 	};
 
-	struct FontTexturePosition {
-		int index = 0;
-		int x = 0;
-		int y = 0;
+	struct Shelf {
+		int32_t x = 0;
+		int32_t y = 0;
+		int32_t w = 0;
+		int32_t h = 0;
+
+		FontTexturePosition alloc_shelf(int32_t p_id, int32_t p_w, int32_t p_h) {
+			if (p_w > w || p_h > h) {
+				return FontTexturePosition(-1, 0, 0);
+			}
+			int32_t xx = x;
+			x += p_w;
+			w -= p_w;
+			return FontTexturePosition(p_id, xx, y);
+		}
+
+		Shelf() {}
+		Shelf(int32_t p_x, int32_t p_y, int32_t p_w, int32_t p_h) :
+				x(p_x), y(p_y), w(p_w), h(p_h) {}
+	};
+
+	struct ShelfPackTexture {
+		int32_t texture_w = 1024;
+		int32_t texture_h = 1024;
+
+		Image::Format format;
+		PackedByteArray imgdata;
+		Ref<ImageTexture> texture;
+		bool dirty = true;
+
+		List<Shelf> shelves;
+
+		FontTexturePosition pack_rect(int32_t p_id, int32_t p_h, int32_t p_w) {
+			int32_t y = 0;
+			int32_t waste = 0;
+			Shelf *best_shelf = nullptr;
+			int32_t best_waste = std::numeric_limits<std::int32_t>::max();
+
+			for (Shelf &E : shelves) {
+				y += E.h;
+				if (p_w > E.w) {
+					continue;
+				}
+				if (p_h == E.h) {
+					return E.alloc_shelf(p_id, p_w, p_h);
+				}
+				if (p_h > E.h) {
+					continue;
+				}
+				if (p_h < E.h) {
+					waste = (E.h - p_h) * p_w;
+					if (waste < best_waste) {
+						best_waste = waste;
+						best_shelf = &E;
+					}
+				}
+			}
+			if (best_shelf) {
+				return best_shelf->alloc_shelf(p_id, p_w, p_h);
+			}
+			if (p_h <= (texture_h - y) && p_w <= texture_w) {
+				List<Shelf>::Element *E = shelves.push_back(Shelf(0, y, texture_w, p_h));
+				return E->get().alloc_shelf(p_id, p_w, p_h);
+			}
+			return FontTexturePosition(-1, 0, 0);
+		}
+
+		ShelfPackTexture() {}
+		ShelfPackTexture(int32_t p_w, int32_t p_h) :
+				texture_w(p_w), texture_h(p_h) {}
 	};
 
 	struct FontGlyph {
@@ -161,7 +227,7 @@ class TextServerFallback : public TextServerExtension {
 
 		Vector2i size;
 
-		Vector<FontTexture> textures;
+		Vector<ShelfPackTexture> textures;
 		HashMap<int32_t, FontGlyph> glyph_map;
 		HashMap<Vector2i, Vector2> kerning_map;
 

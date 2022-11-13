@@ -97,7 +97,7 @@ private:
 			uint32_t type;
 
 			uint32_t texture_index; //texture index for vector field
-			real_t scale;
+			float scale;
 			uint32_t pad[2];
 		};
 
@@ -106,8 +106,8 @@ private:
 		float prev_system_phase;
 		uint32_t cycle;
 
-		real_t explosiveness;
-		real_t randomness;
+		float explosiveness;
+		float randomness;
 		float time;
 		float delta;
 
@@ -232,7 +232,7 @@ private:
 
 		Dependency dependency;
 
-		double trail_length = 1.0;
+		double trail_lifetime = 0.3;
 		bool trails_enabled = false;
 		LocalVector<ParticlesFrameParams> frame_history;
 		LocalVector<ParticlesFrameParams> trail_params;

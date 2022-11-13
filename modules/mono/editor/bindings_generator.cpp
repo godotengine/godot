@@ -1614,7 +1614,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
-			   << "NativeVariantPtrArgs args, int argCount, out godot_variant ret)\n"
+			   << "NativeVariantPtrArgs args, out godot_variant ret)\n"
 			   << INDENT1 "{\n";
 
 		for (const MethodInterface &imethod : itype.methods) {
@@ -1630,7 +1630,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// We check both native names (snake_case) and proxy names (PascalCase)
 			output << INDENT2 "if ((method == " << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
 				   << " || method == MethodName." << imethod.proxy_name
-				   << ") && argCount == " << itos(imethod.arguments.size())
+				   << ") && args.Count == " << itos(imethod.arguments.size())
 				   << " && " << CS_METHOD_HAS_GODOT_CLASS_METHOD << "((godot_string_name)"
 				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ".NativeValue))\n"
 				   << INDENT2 "{\n";
@@ -1682,7 +1682,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		if (is_derived_type) {
-			output << INDENT2 "return base." CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(method, args, argCount, out ret);\n";
+			output << INDENT2 "return base." CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(method, args, out ret);\n";
 		} else {
 			output << INDENT2 "ret = default;\n"
 				   << INDENT2 "return false;\n";
@@ -2200,6 +2200,11 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output) {
 	String arguments_sig;
+	String delegate_type_params;
+
+	if (!p_isignal.arguments.is_empty()) {
+		delegate_type_params += "<";
+	}
 
 	// Retrieve information from the arguments
 	const ArgumentInterface &first = p_isignal.arguments.front()->get();
@@ -2220,11 +2225,18 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 		if (&iarg != &first) {
 			arguments_sig += ", ";
+			delegate_type_params += ", ";
 		}
 
 		arguments_sig += arg_type->cs_type;
 		arguments_sig += " ";
 		arguments_sig += iarg.name;
+
+		delegate_type_params += arg_type->cs_type;
+	}
+
+	if (!p_isignal.arguments.is_empty()) {
+		delegate_type_params += ">";
 	}
 
 	// Generate signal
@@ -2248,15 +2260,46 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			p_output.append("\")]");
 		}
 
-		String delegate_name = p_isignal.proxy_name;
-		delegate_name += "EventHandler"; // Delegate name is [SignalName]EventHandler
+		bool is_parameterless = p_isignal.arguments.size() == 0;
 
-		// Generate delegate
-		p_output.append(MEMBER_BEGIN "public delegate void ");
-		p_output.append(delegate_name);
-		p_output.append("(");
-		p_output.append(arguments_sig);
-		p_output.append(");\n");
+		// Delegate name is [SignalName]EventHandler
+		String delegate_name = is_parameterless ? "Action" : p_isignal.proxy_name + "EventHandler";
+
+		if (!is_parameterless) {
+			// Generate delegate
+			p_output.append(MEMBER_BEGIN "public delegate void ");
+			p_output.append(delegate_name);
+			p_output.append("(");
+			p_output.append(arguments_sig);
+			p_output.append(");\n");
+
+			// Generate Callable trampoline for the delegate
+			p_output << MEMBER_BEGIN "private static unsafe void " << p_isignal.proxy_name << "Trampoline"
+					 << "(object delegateObj, NativeVariantPtrArgs args, out godot_variant ret)\n"
+					 << INDENT1 "{\n"
+					 << INDENT2 "Callable.ThrowIfArgCountMismatch(args, " << itos(p_isignal.arguments.size()) << ");\n"
+					 << INDENT2 "((" << delegate_name << ")delegateObj)(";
+
+			int idx = 0;
+			for (const ArgumentInterface &iarg : p_isignal.arguments) {
+				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+
+				if (idx != 0) {
+					p_output << ",";
+				}
+
+				// TODO: We don't need to use VariantConversionCallbacks. We have the type information so we can use [cs_variant_to_managed] and [cs_managed_to_variant].
+				p_output << "\n" INDENT3 "VariantConversionCallbacks.GetToManagedCallback<"
+						 << arg_type->cs_type << ">()(args[" << itos(idx) << "])";
+
+				idx++;
+			}
+
+			p_output << ");\n"
+					 << INDENT2 "ret = default;\n"
+					 << INDENT1 "}\n";
+		}
 
 		if (p_isignal.method_doc && p_isignal.method_doc->description.size()) {
 			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype);
@@ -2292,6 +2335,11 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			p_output.append("static ");
 		}
 
+		if (!is_parameterless) {
+			// `unsafe` is needed for taking the trampoline's function pointer
+			p_output << "unsafe ";
+		}
+
 		p_output.append("event ");
 		p_output.append(delegate_name);
 		p_output.append(" ");
@@ -2304,8 +2352,13 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			p_output.append("add => Connect(SignalName.");
 		}
 
-		p_output.append(p_isignal.proxy_name);
-		p_output.append(", new Callable(value));\n");
+		if (is_parameterless) {
+			// Delegate type is Action. No need for custom trampoline.
+			p_output << p_isignal.proxy_name << ", Callable.From(value));\n";
+		} else {
+			p_output << p_isignal.proxy_name
+					 << ", Callable.CreateWithUnsafeTrampoline(value, &" << p_isignal.proxy_name << "Trampoline));\n";
+		}
 
 		if (p_itype.is_singleton) {
 			p_output.append(INDENT2 "remove => " CS_PROPERTY_SINGLETON ".Disconnect(SignalName.");
@@ -2313,8 +2366,14 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			p_output.append(INDENT2 "remove => Disconnect(SignalName.");
 		}
 
-		p_output.append(p_isignal.proxy_name);
-		p_output.append(", new Callable(value));\n");
+		if (is_parameterless) {
+			// Delegate type is Action. No need for custom trampoline.
+			p_output << p_isignal.proxy_name << ", Callable.From(value));\n";
+		} else {
+			p_output << p_isignal.proxy_name
+					 << ", Callable.CreateWithUnsafeTrampoline(value, &" << p_isignal.proxy_name << "Trampoline));\n";
+		}
+
 		p_output.append(CLOSE_BLOCK_L1);
 	}
 

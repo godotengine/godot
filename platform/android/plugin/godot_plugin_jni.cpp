@@ -137,7 +137,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	// Retrieve the current list of gdnative libraries.
 	Array singletons = Array();
 	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
-		singletons = ProjectSettings::get_singleton()->get("gdnative/singletons");
+		singletons = GLOBAL_GET("gdnative/singletons");
 	}
 
 	// Insert the libraries provided by the plugin

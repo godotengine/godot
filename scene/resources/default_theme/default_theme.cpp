@@ -433,7 +433,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_color", "TextEdit", control_font_color);
-	theme->set_color("font_selected_color", "TextEdit", control_font_pressed_color);
+	theme->set_color("font_selected_color", "TextEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_readonly_color", "TextEdit", control_font_disabled_color);
 	theme->set_color("font_placeholder_color", "TextEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "TextEdit", Color(1, 1, 1));
@@ -476,7 +476,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("completion_scroll_hovered_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.4));
 	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "CodeEdit", control_font_color);
-	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0));
+	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
 	theme->set_color("font_placeholder_color", "CodeEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "CodeEdit", Color(1, 1, 1));
@@ -887,11 +887,64 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("shape_rect", "ColorPicker", icons["picker_shape_rectangle"]);
 	theme->set_icon("shape_rect_wheel", "ColorPicker", icons["picker_shape_rectangle_wheel"]);
 	theme->set_icon("add_preset", "ColorPicker", icons["add"]);
-	theme->set_icon("color_hue", "ColorPicker", icons["color_picker_hue"]);
 	theme->set_icon("sample_bg", "ColorPicker", icons["mini_checkerboard"]);
 	theme->set_icon("overbright_indicator", "ColorPicker", icons["color_picker_overbright"]);
 	theme->set_icon("bar_arrow", "ColorPicker", icons["color_picker_bar_arrow"]);
 	theme->set_icon("picker_cursor", "ColorPicker", icons["color_picker_cursor"]);
+
+	{
+		const int precision = 7;
+
+		Ref<Gradient> hue_gradient;
+		hue_gradient.instantiate();
+		PackedFloat32Array offsets;
+		offsets.resize(precision);
+		PackedColorArray colors;
+		colors.resize(precision);
+
+		for (int i = 0; i < precision; i++) {
+			float h = i / float(precision - 1);
+			offsets.write[i] = h;
+			colors.write[i] = Color::from_hsv(h, 1, 1);
+		}
+		hue_gradient->set_offsets(offsets);
+		hue_gradient->set_colors(colors);
+
+		Ref<GradientTexture2D> hue_texture;
+		hue_texture.instantiate();
+		hue_texture->set_width(800);
+		hue_texture->set_height(6);
+		hue_texture->set_gradient(hue_gradient);
+
+		theme->set_icon("color_hue", "ColorPicker", hue_texture);
+	}
+
+	{
+		const int precision = 7;
+
+		Ref<Gradient> hue_gradient;
+		hue_gradient.instantiate();
+		PackedFloat32Array offsets;
+		offsets.resize(precision);
+		PackedColorArray colors;
+		colors.resize(precision);
+
+		for (int i = 0; i < precision; i++) {
+			float h = i / float(precision - 1);
+			offsets.write[i] = h;
+			colors.write[i] = Color::from_ok_hsl(h, 1, 0.5);
+		}
+		hue_gradient->set_offsets(offsets);
+		hue_gradient->set_colors(colors);
+
+		Ref<GradientTexture2D> hue_texture;
+		hue_texture.instantiate();
+		hue_texture->set_width(800);
+		hue_texture->set_height(6);
+		hue_texture->set_gradient(hue_gradient);
+
+		theme->set_icon("color_okhsl_hue", "ColorPicker", hue_texture);
+	}
 
 	// ColorPickerButton
 
@@ -959,7 +1012,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("mono_font_size", "RichTextLabel", -1);
 
 	theme->set_color("default_color", "RichTextLabel", Color(1, 1, 1));
-	theme->set_color("font_selected_color", "RichTextLabel", Color(0, 0, 0));
+	theme->set_color("font_selected_color", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
 
 	theme->set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0));
@@ -979,6 +1032,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("table_odd_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_color("table_even_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_color("table_border", "RichTextLabel", Color(0, 0, 0, 0));
+
+	theme->set_constant("text_highlight_h_padding", "RichTextLabel", 3 * scale);
+	theme->set_constant("text_highlight_v_padding", "RichTextLabel", 3 * scale);
 
 	// Containers
 

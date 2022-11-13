@@ -153,7 +153,8 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SNAME("font_color"), SNAME("Label")));
 			name->connect("text_submitted", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
-			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(name, agnode), CONNECT_DEFERRED);
+			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
+			name->connect("text_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
 			node->set_show_close_button(true);
 			node->connect("close_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_request).bind(E), CONNECT_DEFERRED);
@@ -273,9 +274,9 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 		graph->connect_node(from, 0, to, to_idx);
 	}
 
-	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
-	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");
 	graph->set_connection_lines_curvature(graph_lines_curvature);
 }
 
@@ -283,6 +284,8 @@ void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
 	file_loaded = ResourceLoader::load(p_file);
 	if (file_loaded.is_valid()) {
 		_add_node(MENU_LOAD_FILE_CONFIRM);
+	} else {
+		EditorNode::get_singleton()->show_warning(TTR("This type of node can't be used. Only animation nodes are allowed."));
 	}
 }
 
@@ -795,8 +798,8 @@ void AnimationNodeBlendTreeEditor::_removed_from_graph() {
 }
 
 void AnimationNodeBlendTreeEditor::_update_editor_settings() {
-	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-	graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
+	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+	graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
 }
 
 void AnimationNodeBlendTreeEditor::_update_theme() {
@@ -991,13 +994,18 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	}
 
 	update_graph(); // Needed to update the signal connections with the new name.
+	current_node_rename_text = String();
 }
 
-void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Node *le, Ref<AnimationNode> p_node) {
-	if (le == nullptr) {
+void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Ref<AnimationNode> p_node) {
+	if (current_node_rename_text.is_empty()) {
 		return; // The text_submitted signal triggered the graph update and freed the LineEdit.
 	}
-	_node_renamed(le->call("get_text"), p_node);
+	_node_renamed(current_node_rename_text, p_node);
+}
+
+void AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed(const String &p_text) {
+	current_node_rename_text = p_text;
 }
 
 bool AnimationNodeBlendTreeEditor::can_edit(const Ref<AnimationNode> &p_node) {
@@ -1048,9 +1056,9 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->connect("popup_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_popup_request));
 	graph->connect("connection_to_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_to_empty));
 	graph->connect("connection_from_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_from_empty));
-	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
-	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");
 	graph->set_connection_lines_curvature(graph_lines_curvature);
 
 	VSeparator *vs = memnew(VSeparator);

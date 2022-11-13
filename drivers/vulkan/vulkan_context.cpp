@@ -687,21 +687,43 @@ Error VulkanContext::_check_capabilities() {
 
 		vkGetPhysicalDeviceFeatures2_func(gpu, &device_features);
 
-		vrs_capabilities.pipeline_vrs_supported = vrs_features.pipelineFragmentShadingRate;
-		vrs_capabilities.primitive_vrs_supported = vrs_features.primitiveFragmentShadingRate;
-		vrs_capabilities.attachment_vrs_supported = vrs_features.attachmentFragmentShadingRate;
+		// We must check that the relative extension is present before assuming a
+		// feature as enabled. Actually, according to the spec we shouldn't add the
+		// structs in pNext at all, but this works fine.
+		// See also: https://github.com/godotengine/godot/issues/65409
+		for (uint32_t i = 0; i < enabled_extension_count; ++i) {
+			if (!strcmp(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, extension_names[i])) {
+				vrs_capabilities.pipeline_vrs_supported = vrs_features.pipelineFragmentShadingRate;
+				vrs_capabilities.primitive_vrs_supported = vrs_features.primitiveFragmentShadingRate;
+				vrs_capabilities.attachment_vrs_supported = vrs_features.attachmentFragmentShadingRate;
 
-		multiview_capabilities.is_supported = multiview_features.multiview;
-		multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
-		multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
+				continue;
+			}
 
-		shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
-		shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
+			if (!strcmp(VK_KHR_MULTIVIEW_EXTENSION_NAME, extension_names[i])) {
+				multiview_capabilities.is_supported = multiview_features.multiview;
+				multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
+				multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
 
-		storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = storage_feature.storageBuffer16BitAccess;
-		storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported = storage_feature.uniformAndStorageBuffer16BitAccess;
-		storage_buffer_capabilities.storage_push_constant_16_is_supported = storage_feature.storagePushConstant16;
-		storage_buffer_capabilities.storage_input_output_16 = storage_feature.storageInputOutput16;
+				continue;
+			}
+
+			if (!strcmp(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, extension_names[i])) {
+				shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
+				shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
+
+				continue;
+			}
+
+			if (!strcmp(VK_KHR_16BIT_STORAGE_EXTENSION_NAME, extension_names[i])) {
+				storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = storage_feature.storageBuffer16BitAccess;
+				storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported = storage_feature.uniformAndStorageBuffer16BitAccess;
+				storage_buffer_capabilities.storage_push_constant_16_is_supported = storage_feature.storagePushConstant16;
+				storage_buffer_capabilities.storage_input_output_16 = storage_feature.storageInputOutput16;
+
+				continue;
+			}
+		}
 	}
 
 	// Check extended properties.
@@ -810,7 +832,7 @@ Error VulkanContext::_create_instance() {
 		}
 	}
 
-	CharString cs = ProjectSettings::get_singleton()->get("application/config/name").operator String().utf8();
+	CharString cs = GLOBAL_GET("application/config/name").operator String().utf8();
 	const VkApplicationInfo app = {
 		/*sType*/ VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		/*pNext*/ nullptr,
@@ -1314,7 +1336,7 @@ Error VulkanContext::_create_device() {
 		vulkan11features.shaderDrawParameters = 0;
 		nextptr = &vulkan11features;
 	} else {
-		// On Vulkan 1.0 and 1.1 we use our older structs to initialise these features.
+		// On Vulkan 1.0 and 1.1 we use our older structs to initialize these features.
 		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
 		storage_feature.pNext = nextptr;
 		storage_feature.storageBuffer16BitAccess = storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
@@ -1461,7 +1483,7 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 		color_space = surfFormats[0].colorSpace;
 	} else {
 		// These should be ordered with the ones we want to use on top and fallback modes further down
-		// we want a 32bit RGBA unsigned normalised buffer or similar.
+		// we want a 32bit RGBA unsigned normalized buffer or similar.
 		const VkFormat allowed_formats[] = {
 			VK_FORMAT_B8G8R8A8_UNORM,
 			VK_FORMAT_R8G8B8A8_UNORM

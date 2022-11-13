@@ -793,6 +793,7 @@ if selected_platform in platform_list:
 
     methods.generate_version_header(env.module_version_string)
 
+    env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
     env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
     # (SH)LIBSUFFIX will be used for our own built libraries

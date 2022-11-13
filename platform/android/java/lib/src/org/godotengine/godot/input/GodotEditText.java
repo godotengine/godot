@@ -127,7 +127,9 @@ public class GodotEditText extends EditText {
 					edit.setText("");
 					edit.append(text);
 					if (msg.arg2 != -1) {
-						edit.setSelection(msg.arg1, msg.arg2);
+						int selectionStart = Math.min(msg.arg1, edit.length());
+						int selectionEnd = Math.min(msg.arg2, edit.length());
+						edit.setSelection(selectionStart, selectionEnd);
 						edit.mInputWrapper.setSelection(true);
 					} else {
 						edit.mInputWrapper.setSelection(false);

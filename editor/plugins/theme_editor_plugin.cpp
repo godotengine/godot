@@ -2481,7 +2481,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = color_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = color_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			color_items_list->remove_child(node);
 		}
 
@@ -2510,7 +2510,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = constant_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = constant_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			constant_items_list->remove_child(node);
 		}
 
@@ -2543,7 +2543,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = font_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = font_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			font_items_list->remove_child(node);
 		}
 
@@ -2581,7 +2581,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = font_size_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = font_size_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			font_size_items_list->remove_child(node);
 		}
 
@@ -2614,7 +2614,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = icon_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = icon_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			icon_items_list->remove_child(node);
 		}
 
@@ -2652,7 +2652,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = stylebox_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = stylebox_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			stylebox_items_list->remove_child(node);
 		}
 

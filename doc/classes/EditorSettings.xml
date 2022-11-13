@@ -196,10 +196,10 @@
 			The thumbnail size to use in the FileSystem dock (in pixels). See also [member filesystem/file_dialog/thumbnail_size].
 		</member>
 		<member name="docks/property_editor/auto_refresh_interval" type="float" setter="" getter="">
-			The refresh interval to use for the inspector dock's properties. The effect of this setting is mainly noticeable when adjusting gizmos in the 2D/3D editor and looking at the inspector at the same time. Lower values make the inspector more often, but take up more CPU time.
+			The refresh interval to use for the Inspector dock's properties. The effect of this setting is mainly noticeable when adjusting gizmos in the 2D/3D editor and looking at the inspector at the same time. Lower values make the inspector more often, but take up more CPU time.
 		</member>
 		<member name="docks/property_editor/subresource_hue_tint" type="float" setter="" getter="">
-			The tint intensity to use for the subresources background in the inspector dock. The tint is used to distinguish between different subresources in the inspector. Higher values result in a more noticeable background color difference.
+			The tint intensity to use for the subresources background in the Inspector dock. The tint is used to distinguish between different subresources in the inspector. Higher values result in a more noticeable background color difference.
 		</member>
 		<member name="docks/scene_tree/auto_expand_to_selected" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will automatically unfold nodes when a node that has folded parents is selected.
@@ -516,7 +516,7 @@
 			If set to [b]Auto[/b], the font hinting mode will be set to match the current operating system in use. This means the [b]Light[/b] hinting mode will be used on Windows and Linux, and the [b]None[/b] hinting mode will be used on macOS.
 		</member>
 		<member name="interface/editor/font_subpixel_positioning" type="int" setter="" getter="">
-			The subpixel positioning mode to use when rendering editor font glyphs. This affects both the main and code fonts. [b]Disabled[/b] is the fastest to render and uses the least memory. [b]Auto[/b] only uses subpixel positioning for small font sizes (where the benefit is the most noticeable). [b]One half of a pixel[/b] and [b]One quarter of a pixel[/b] force the same subpixel positioning mode for all editor fonts, regardless of their size (with [b]One quarter of a pixel[/b] being the highest-quality option).
+			The subpixel positioning mode to use when rendering editor font glyphs. This affects both the main and code fonts. [b]Disabled[/b] is the fastest to render and uses the least memory. [b]Auto[/b] only uses subpixel positioning for small font sizes (where the benefit is the most noticeable). [b]One Half of a Pixel[/b] and [b]One Quarter of a Pixel[/b] force the same subpixel positioning mode for all editor fonts, regardless of their size (with [b]One Quarter of a Pixel[/b] being the highest-quality option).
 		</member>
 		<member name="interface/editor/low_processor_mode_sleep_usec" type="float" setter="" getter="">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].

@@ -460,7 +460,7 @@ public:
 #endif
 	static String adjust_name_casing(const String &p_name);
 
-	void queue_delete();
+	void queue_free();
 
 	//hacks for speed
 	static void init_node_hrcr();

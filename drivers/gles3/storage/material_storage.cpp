@@ -2214,7 +2214,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 	for (const PropertyInfo &E : settings) {
 		if (E.name.begins_with("shader_globals/")) {
 			StringName name = E.name.get_slice("/", 1);
-			Dictionary d = ProjectSettings::get_singleton()->get(E.name);
+			Dictionary d = GLOBAL_GET(E.name);
 
 			ERR_CONTINUE(!d.has("type"));
 			ERR_CONTINUE(!d.has("value"));

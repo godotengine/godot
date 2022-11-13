@@ -73,7 +73,7 @@ void TilesEditorPlugin::_thread() {
 			pattern_preview_queue.pop_front();
 			pattern_preview_mutex.unlock();
 
-			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size *= EDSCALE;
 			Vector2 thumbnail_size2 = Vector2(thumbnail_size, thumbnail_size);
 
@@ -131,7 +131,7 @@ void TilesEditorPlugin::_thread() {
 				Callable::CallError error;
 				item.callback.callp(args_ptr, 2, r, error);
 
-				viewport->queue_delete();
+				viewport->queue_free();
 			}
 		}
 	}

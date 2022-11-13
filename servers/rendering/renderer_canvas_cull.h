@@ -54,6 +54,7 @@ public:
 		Vector2 ysort_pos;
 		int ysort_index;
 		int ysort_parent_abs_z_index; // Absolute Z index of parent. Only populated and used when y-sorting.
+		uint32_t visibility_layer = 0xffffffff;
 
 		Vector<Item *> child_items;
 
@@ -179,14 +180,14 @@ public:
 	_FORCE_INLINE_ void _attach_canvas_item_for_draw(Item *ci, Item *p_canvas_clip, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, const Transform2D &xform, const Rect2 &p_clip_rect, Rect2 global_rect, const Color &modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool p_use_canvas_group, RendererCanvasRender::Item *canvas_group_from, const Transform2D &p_xform);
 
 private:
-	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
-	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool allow_y_sort);
+	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask);
+	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool allow_y_sort, uint32_t canvas_cull_mask);
 
 	RendererCanvasRender::Item **z_list;
 	RendererCanvasRender::Item **z_last_list;
 
 public:
-	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel);
+	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask);
 
 	bool was_sdf_used();
 
@@ -205,6 +206,9 @@ public:
 
 	void canvas_item_set_visible(RID p_item, bool p_visible);
 	void canvas_item_set_light_mask(RID p_item, int p_mask);
+
+	void canvas_item_set_visibility_layer(RID p_item, uint32_t p_layer);
+	uint32_t canvas_item_get_visibility_layer(RID p_item);
 
 	void canvas_item_set_transform(RID p_item, const Transform2D &p_transform);
 	void canvas_item_set_clip(RID p_item, bool p_clip);

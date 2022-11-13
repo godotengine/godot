@@ -741,9 +741,14 @@ int64_t DisplayServerWindows::window_get_native_handle(HandleType p_handle_type,
 		case WINDOW_HANDLE: {
 			return (int64_t)windows[p_window].hWnd;
 		}
+#if defined(GLES3_ENABLED)
 		case WINDOW_VIEW: {
-			return 0; // Not supported.
+			return (int64_t)gl_manager->get_hdc(p_window);
 		}
+		case OPENGL_CONTEXT: {
+			return (int64_t)gl_manager->get_hglrc(p_window);
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -2449,6 +2454,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				window_mouseover_id = INVALID_WINDOW_ID;
 
 				_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+			} else if (window_mouseover_id != INVALID_WINDOW_ID) {
+				// This is reached during drag and drop, after dropping in a different window.
+				// Once-off notification, must call again.
+				track_mouse_leave_event(windows[window_mouseover_id].hWnd);
 			}
 
 		} break;
@@ -2882,6 +2891,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 
+			if (!windows[receiving_window_id].window_has_focus) {
+				// In case of unfocused Popups, adjust event position.
+				Point2i pos = mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id);
+				mm->set_position(pos);
+				mm->set_global_position(pos);
+			}
 			Input::get_singleton()->parse_input_event(mm);
 
 		} break;

@@ -174,6 +174,9 @@ private:
 	double caret_blink_timer = 0.0;
 	bool caret_blinking = false;
 
+	bool pending_select_all_on_focus = false;
+	bool select_all_on_focus = false;
+
 	struct ThemeCache {
 		Ref<StyleBox> normal;
 		Ref<StyleBox> read_only;
@@ -364,6 +367,10 @@ public:
 
 	void set_flat(bool p_enabled);
 	bool is_flat() const;
+
+	void set_select_all_on_focus(bool p_enabled);
+	bool is_select_all_on_focus() const;
+	void clear_pending_select_all_on_focus(); // For other controls, e.g. SpinBox.
 
 	virtual bool is_text_field() const override;
 

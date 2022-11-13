@@ -42,26 +42,37 @@ String NativeExtension::get_extension_list_config_file() {
 class NativeExtensionMethodBind : public MethodBind {
 	GDNativeExtensionClassMethodCall call_func;
 	GDNativeExtensionClassMethodPtrCall ptrcall_func;
-	GDNativeExtensionClassMethodGetArgumentType get_argument_type_func;
-	GDNativeExtensionClassMethodGetArgumentInfo get_argument_info_func;
-	GDNativeExtensionClassMethodGetArgumentMetadata get_argument_metadata_func;
 	void *method_userdata;
 	bool vararg;
+	PropertyInfo return_value_info;
+	GodotTypeInfo::Metadata return_value_metadata;
+	List<PropertyInfo> arguments_info;
+	List<GodotTypeInfo::Metadata> arguments_metadata;
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
-		return Variant::Type(get_argument_type_func(method_userdata, p_arg));
+		if (p_arg < 0) {
+			return return_value_info.type;
+		} else {
+			return arguments_info[p_arg].type;
+		}
 	}
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
-		GDNativePropertyInfo pinfo;
-		get_argument_info_func(method_userdata, p_arg, &pinfo);
-		return PropertyInfo(pinfo);
+		if (p_arg < 0) {
+			return return_value_info;
+		} else {
+			return arguments_info[p_arg];
+		}
 	}
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
-		return GodotTypeInfo::Metadata(get_argument_metadata_func(method_userdata, p_arg));
+		if (p_arg < 0) {
+			return return_value_metadata;
+		} else {
+			return arguments_metadata[p_arg];
+		}
 	}
 #endif
 
@@ -89,10 +100,17 @@ public:
 		method_userdata = p_method_info->method_userdata;
 		call_func = p_method_info->call_func;
 		ptrcall_func = p_method_info->ptrcall_func;
-		get_argument_type_func = p_method_info->get_argument_type_func;
-		get_argument_info_func = p_method_info->get_argument_info_func;
-		get_argument_metadata_func = p_method_info->get_argument_metadata_func;
-		set_name(p_method_info->name);
+		set_name(*reinterpret_cast<StringName *>(p_method_info->name));
+
+		if (p_method_info->has_return_value) {
+			return_value_info = PropertyInfo(*p_method_info->return_value_info);
+			return_value_metadata = GodotTypeInfo::Metadata(p_method_info->return_value_metadata);
+		}
+
+		for (uint32_t i = 0; i < p_method_info->argument_count; i++) {
+			arguments_info.push_back(PropertyInfo(p_method_info->aguments_info[i]));
+			arguments_metadata.push_back(GodotTypeInfo::Metadata(p_method_info->aguments_metadata[i]));
+		}
 
 		set_hint_flags(p_method_info->method_flags);
 
@@ -117,15 +135,15 @@ public:
 
 static GDNativeInterface gdnative_interface;
 
-void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs) {
+void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringNamePtr p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs) {
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
-	StringName class_name = p_class_name;
+	StringName class_name = *reinterpret_cast<StringName *>(p_class_name);
+	StringName parent_class_name = *reinterpret_cast<StringName *>(p_parent_class_name);
 	ERR_FAIL_COND_MSG(!String(class_name).is_valid_identifier(), "Attempt to register extension class '" + class_name + "', which is not a valid class identifier.");
 	ERR_FAIL_COND_MSG(ClassDB::class_exists(class_name), "Attempt to register extension class '" + class_name + "', which appears to be already registered.");
 
 	Extension *parent_extension = nullptr;
-	StringName parent_class_name = p_parent_class_name;
 
 	if (self->extension_classes.has(parent_class_name)) {
 		parent_extension = &self->extension_classes[parent_class_name];
@@ -172,11 +190,11 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 
 	ClassDB::register_extension_class(&extension->native_extension);
 }
-void NativeExtension::_register_extension_class_method(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info) {
+void NativeExtension::_register_extension_class_method(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info) {
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
-	StringName class_name = p_class_name;
-	StringName method_name = p_method_info->name;
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	StringName method_name = *reinterpret_cast<const StringName *>(p_method_info->name);
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension method '" + String(method_name) + "' for unexisting class '" + class_name + "'.");
 
 	//Extension *extension = &self->extension_classes[class_name];
@@ -186,56 +204,63 @@ void NativeExtension::_register_extension_class_method(const GDNativeExtensionCl
 
 	ClassDB::bind_method_custom(class_name, method);
 }
-void NativeExtension::_register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield) {
+void NativeExtension::_register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringNamePtr p_enum_name, const GDNativeStringNamePtr p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield) {
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
-	StringName class_name = p_class_name;
-	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension constant '" + String(p_constant_name) + "' for unexisting class '" + class_name + "'.");
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	StringName enum_name = *reinterpret_cast<const StringName *>(p_enum_name);
+	StringName constant_name = *reinterpret_cast<const StringName *>(p_constant_name);
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension constant '" + constant_name + "' for unexisting class '" + class_name + "'.");
 
-	//Extension *extension = &self->extension_classes[class_name];
-
-	ClassDB::bind_integer_constant(class_name, p_enum_name, p_constant_name, p_constant_value, p_is_bitfield);
+	ClassDB::bind_integer_constant(class_name, enum_name, constant_name, p_constant_value, p_is_bitfield);
 }
 
-void NativeExtension::_register_extension_class_property(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter) {
+void NativeExtension::_register_extension_class_property(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativePropertyInfo *p_info, const GDNativeStringNamePtr p_setter, const GDNativeStringNamePtr p_getter) {
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
-	StringName class_name = p_class_name;
-	String property_name = p_info->name;
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	StringName setter = *reinterpret_cast<const StringName *>(p_setter);
+	StringName getter = *reinterpret_cast<const StringName *>(p_getter);
+	String property_name = *reinterpret_cast<const StringName *>(p_info->name);
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property '" + property_name + "' for unexisting class '" + class_name + "'.");
 
 	//Extension *extension = &self->extension_classes[class_name];
 	PropertyInfo pinfo(*p_info);
 
-	ClassDB::add_property(class_name, pinfo, p_setter, p_getter);
+	ClassDB::add_property(class_name, pinfo, setter, getter);
 }
 
-void NativeExtension::_register_extension_class_property_group(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_group_name, const char *p_prefix) {
+void NativeExtension::_register_extension_class_property_group(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringPtr p_group_name, const GDNativeStringPtr p_prefix) {
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
-	StringName class_name = p_class_name;
-	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property group '" + String(p_group_name) + "' for unexisting class '" + class_name + "'.");
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	String group_name = *reinterpret_cast<const String *>(p_group_name);
+	String prefix = *reinterpret_cast<const String *>(p_prefix);
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property group '" + group_name + "' for unexisting class '" + class_name + "'.");
 
-	ClassDB::add_property_group(class_name, p_group_name, p_prefix);
+	ClassDB::add_property_group(class_name, group_name, prefix);
 }
 
-void NativeExtension::_register_extension_class_property_subgroup(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix) {
+void NativeExtension::_register_extension_class_property_subgroup(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringPtr p_subgroup_name, const GDNativeStringPtr p_prefix) {
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
-	StringName class_name = p_class_name;
-	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property subgroup '" + String(p_subgroup_name) + "' for unexisting class '" + class_name + "'.");
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	String subgroup_name = *reinterpret_cast<const String *>(p_subgroup_name);
+	String prefix = *reinterpret_cast<const String *>(p_prefix);
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property subgroup '" + subgroup_name + "' for unexisting class '" + class_name + "'.");
 
-	ClassDB::add_property_subgroup(class_name, p_subgroup_name, p_prefix);
+	ClassDB::add_property_subgroup(class_name, subgroup_name, prefix);
 }
 
-void NativeExtension::_register_extension_class_signal(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count) {
+void NativeExtension::_register_extension_class_signal(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringNamePtr p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count) {
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
-	StringName class_name = p_class_name;
-	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class signal '" + String(p_signal_name) + "' for unexisting class '" + class_name + "'.");
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	StringName signal_name = *reinterpret_cast<const StringName *>(p_signal_name);
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class signal '" + signal_name + "' for unexisting class '" + class_name + "'.");
 
 	MethodInfo s;
-	s.name = p_signal_name;
+	s.name = signal_name;
 	for (int i = 0; i < p_argument_count; i++) {
 		PropertyInfo arg(p_argument_info[i]);
 		s.arguments.push_back(arg);
@@ -243,10 +268,10 @@ void NativeExtension::_register_extension_class_signal(const GDNativeExtensionCl
 	ClassDB::add_signal(class_name, s);
 }
 
-void NativeExtension::_unregister_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name) {
+void NativeExtension::_unregister_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name) {
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
-	StringName class_name = p_class_name;
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to unregister unexisting extension class '" + class_name + "'.");
 	Extension *ext = &self->extension_classes[class_name];
 	ERR_FAIL_COND_MSG(ext->native_extension.children.size(), "Attempt to unregister class '" + class_name + "' while other extension classes inherit from it.");

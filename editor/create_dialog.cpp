@@ -284,12 +284,12 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
 			p_type_category == TypeCategory::OTHER_TYPE;
 
-	if (!can_instantiate) {
-		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
-		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
-		r_item->set_selectable(0, false);
-	} else {
+	if (can_instantiate && !ClassDB::is_virtual(p_type)) {
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
+	} else {
+		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
+		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		r_item->set_selectable(0, false);
 	}
 
 	bool is_deprecated = EditorHelp::get_doc_data()->class_list[p_type].is_deprecated;
@@ -307,7 +307,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		// Don't collapse the root node or an abstract node on the first tree level.
 		bool should_collapse = p_type != base_type && (r_item->get_parent()->get_text(0) != base_type || can_instantiate);
 
-		if (should_collapse && bool(EditorSettings::get_singleton()->get("docks/scene_tree/start_create_dialog_fully_expanded"))) {
+		if (should_collapse && bool(EDITOR_GET("docks/scene_tree/start_create_dialog_fully_expanded"))) {
 			should_collapse = false; // Collapse all nodes anyway.
 		}
 		r_item->set_collapsed(should_collapse);

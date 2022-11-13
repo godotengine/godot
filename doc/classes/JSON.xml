@@ -54,7 +54,7 @@
 			<param index="0" name="json_string" type="String" />
 			<description>
 				Attempts to parse the [param json_string] provided.
-				Returns an [enum Error]. If the parse was successful, it returns [code]OK[/code] and the result can be retrieved using [member data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
+				Returns an [enum Error]. If the parse was successful, it returns [constant OK] and the result can be retrieved using [member data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
 				Non-static variant of [method parse_string], if you want custom error handling.
 			</description>
 		</method>
