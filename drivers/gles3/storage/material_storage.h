@@ -318,6 +318,8 @@ struct SceneShaderData : public ShaderData {
 	bool uses_depth_texture;
 	bool uses_normal_texture;
 	bool uses_time;
+	bool uses_vertex_time;
+	bool uses_fragment_time;
 	bool writes_modelview_or_projection;
 	bool uses_world_coordinates;
 	bool uses_tangent;
