@@ -36,6 +36,10 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 
+class AcceptDialog;
+class ConfirmationDialog;
+class MenuButton;
+class OptionButton;
 class SceneTreeDialog;
 
 class MultiMeshEditor : public Control {

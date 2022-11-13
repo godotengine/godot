@@ -33,11 +33,17 @@
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 
+class AcceptDialog;
+class ButtonGroup;
+class HScrollBar;
 class HSlider;
+class MenuButton;
 class Panel;
 class ScrollContainer;
 class SpinBox;
+class TextureRect;
 class ViewPanner;
+class VScrollBar;
 
 class Polygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);

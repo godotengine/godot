@@ -31,8 +31,12 @@
 #ifndef TEXTURE_EDITOR_PLUGIN_H
 #define TEXTURE_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/texture.h"
+
+class TextureRect;
 
 class TexturePreview : public MarginContainer {
 	GDCLASS(TexturePreview, MarginContainer);

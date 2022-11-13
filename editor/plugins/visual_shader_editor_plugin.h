@@ -32,20 +32,13 @@
 #define VISUAL_SHADER_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
+#include "editor/editor_properties.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "scene/resources/visual_shader.h"
 
-class Button;
-class CodeEdit;
-class CodeHighlighter;
 class CurveEditor;
 class GraphEdit;
 class GraphNode;
-class PopupMenu;
-class PopupPanel;
-class RichTextLabel;
-class TextEdit;
-class Tree;
 
 class VisualShaderEditor;
 class EditorUndoRedoManager;

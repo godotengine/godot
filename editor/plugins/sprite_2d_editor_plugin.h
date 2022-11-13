@@ -35,6 +35,10 @@
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/spin_box.h"
 
+class AcceptDialog;
+class ConfirmationDialog;
+class MenuButton;
+
 class Sprite2DEditor : public Control {
 	GDCLASS(Sprite2DEditor, Control);
 

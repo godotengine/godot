@@ -31,6 +31,7 @@
 #include "editor_run.h"
 
 #include "core/config/project_settings.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "main/main.h"

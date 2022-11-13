@@ -117,6 +117,7 @@ public:
 VARIANT_ENUM_CAST(EditorBuildProfile::BuildOption)
 VARIANT_ENUM_CAST(EditorBuildProfile::BuildOptionCategory)
 
+class EditorFileDialog;
 class EditorFileSystemDirectory;
 
 class EditorBuildProfileManager : public AcceptDialog {

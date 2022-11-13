@@ -40,6 +40,8 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
+class EditorFileDialog;
+
 class EditorFeatureProfile : public RefCounted {
 	GDCLASS(EditorFeatureProfile, RefCounted);
 
