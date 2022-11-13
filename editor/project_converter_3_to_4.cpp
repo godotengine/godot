@@ -238,6 +238,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "body_add_force", "body_apply_force" }, // PhysicsServer2D
 	{ "body_add_torque", "body_apply_torque" }, // PhysicsServer2D
 	{ "bumpmap_to_normalmap", "bump_map_to_normal_map" }, // Image
+	{ "call_group", "group_call" }, // SceneTree
+	{ "call_group_flags", "group_call_flags" }, // SceneTree
 	{ "can_be_hidden", "_can_be_hidden" }, // EditorNode3DGizmoPlugin
 	{ "can_drop_data_fw", "_can_drop_data_fw" }, // ScriptEditor
 	{ "can_generate_small_preview", "_can_generate_small_preview" }, // EditorResourcePreviewGenerator
@@ -454,6 +456,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "move_to_bottom", "move_after" }, // Skeleton3D
 	{ "move_to_top", "move_before" }, // Skeleton3D
 	{ "multimesh_allocate", "multimesh_allocate_data" }, // RenderingServer
+	{ "notify_group", "group_notify" }, // SceneTree
+	{ "notify_group_flags", "group_notify_flags" }, // SceneTree
 	{ "normalmap_to_xy", "normal_map_to_xy" }, // Image
 	{ "offset_polygon_2d", "offset_polygon" }, // Geometry2D
 	{ "offset_polyline_2d", "offset_polyline" }, // Geometry2D
@@ -513,6 +517,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_global_rate_scale", "set_playback_speed_scale" }, // AudioServer
 	{ "set_gravity_distance_scale", "set_gravity_point_distance_scale" }, // Area2D
 	{ "set_gravity_vector", "set_gravity_direction" }, // Area2D
+	{ "set_group", "group_set" }, // SceneTree
+	{ "set_group_flags", "group_set_flags" }, // SceneTree
 	{ "set_h_drag_enabled", "set_drag_horizontal_enabled" }, // Camera2D
 	{ "set_icon_align", "set_icon_alignment" }, // Button
 	{ "set_interior_ambient", "set_ambient_color" }, // ReflectionProbe
@@ -690,6 +696,8 @@ static const char *csharp_function_renames[][2] = {
 	{ "AgentSetNeighborDist", "AgentSetNeighborDistance" }, // NavigationServer2D, NavigationServer3D
 	{ "BindChildNodeToBone", "SetBoneChildren" }, // Skeleton3D
 	{ "BumpmapToNormalmap", "BumpMapToNormalMap" }, // Image
+	{ "CallGroup", "GroupCallNotify" }, // SceneTree
+	{ "CallGroupFlags", "GroupCallFlags" }, // SceneTree
 	{ "CanBeHidden", "_CanBeHidden" }, // EditorNode3DGizmoPlugin
 	{ "CanDropDataFw", "_CanDropDataFw" }, // ScriptEditor
 	{ "CanGenerateSmallPreview", "_CanGenerateSmallPreview" }, // EditorResourcePreviewGenerator
@@ -894,6 +902,8 @@ static const char *csharp_function_renames[][2] = {
 	{ "MoveToBottom", "MoveAfter" }, // Skeleton3D
 	{ "MoveToTop", "MoveBefore" }, // Skeleton3D
 	{ "MultimeshAllocate", "MultimeshAllocateData" }, // RenderingServer
+	{ "NotifyGroup", "GroupNotify" }, // SceneTree
+	{ "NotifyGroupFlags", "GroupNotifyFlags" }, // SceneTree
 	{ "NormalmapToXy", "NormalMapToXy" }, // Image
 	{ "OffsetPolygon2d", "OffsetPolygon" }, // Geometry2D
 	{ "OffsetPolyline2d", "OffsetPolyline" }, // Geometry2D
@@ -950,6 +960,8 @@ static const char *csharp_function_renames[][2] = {
 	{ "SetGlobalRateScale", "SetPlaybackSpeedScale" }, // AudioServer
 	{ "SetGravityDistanceScale", "SetGravityPointDistanceScale" }, // Area2D
 	{ "SetGravityVector", "SetGravityDirection" }, // Area2D
+	{ "SetGroup", "GroupSet" }, // SceneTree
+	{ "SetGroupFlags", "GroupSetFlags" }, // SceneTree
 	{ "SetHDragEnabled", "SetDragHorizontalEnabled" }, // Camera2D
 	{ "SetIconAlign", "SetIconAlignment" }, // Button
 	{ "SetInteriorAmbient", "SetAmbientColor" }, // ReflectionProbe

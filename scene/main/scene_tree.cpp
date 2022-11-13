@@ -1258,25 +1258,25 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
 	MethodInfo mi;
-	mi.name = "call_group_flags";
+	mi.name = "group_call_flags";
 	mi.arguments.push_back(PropertyInfo(Variant::INT, "flags"));
 	mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "group"));
 	mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_group_flags", &SceneTree::_call_group_flags, mi);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "group_call_flags", &SceneTree::_call_group_flags, mi);
 
-	ClassDB::bind_method(D_METHOD("notify_group_flags", "call_flags", "group", "notification"), &SceneTree::notify_group_flags);
-	ClassDB::bind_method(D_METHOD("set_group_flags", "call_flags", "group", "property", "value"), &SceneTree::set_group_flags);
+	ClassDB::bind_method(D_METHOD("group_notify_flags", "flags", "group", "notification"), &SceneTree::notify_group_flags);
+	ClassDB::bind_method(D_METHOD("group_set_flags", "flags", "group", "property", "value"), &SceneTree::set_group_flags);
 
 	MethodInfo mi2;
-	mi2.name = "call_group";
+	mi2.name = "group_call";
 	mi2.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "group"));
 	mi2.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_group", &SceneTree::_call_group, mi2);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "group_call", &SceneTree::_call_group, mi2);
 
-	ClassDB::bind_method(D_METHOD("notify_group", "group", "notification"), &SceneTree::notify_group);
-	ClassDB::bind_method(D_METHOD("set_group", "group", "property", "value"), &SceneTree::set_group);
+	ClassDB::bind_method(D_METHOD("group_notify", "group", "notification"), &SceneTree::notify_group);
+	ClassDB::bind_method(D_METHOD("group_set", "group", "property", "value"), &SceneTree::set_group);
 
 	ClassDB::bind_method(D_METHOD("get_nodes_in_group", "group"), &SceneTree::_get_nodes_in_group);
 	ClassDB::bind_method(D_METHOD("get_first_node_in_group", "group"), &SceneTree::get_first_node_in_group);

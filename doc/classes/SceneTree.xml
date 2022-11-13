@@ -13,29 +13,6 @@
 		<link title="Multiple resolutions">$DOCS_URL/tutorials/rendering/multiple_resolutions.html</link>
 	</tutorials>
 	<methods>
-		<method name="call_group" qualifiers="vararg">
-			<return type="void" />
-			<param index="0" name="group" type="StringName" />
-			<param index="1" name="method" type="StringName" />
-			<description>
-				Calls [param method] on each member of the given group. You can pass arguments to [param method] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
-				[b]Note:[/b] [method call_group] will call methods immediately on all members at once, which can cause stuttering if an expensive method is called on lots of members. To wait for one frame after [method call_group] was called, use [method call_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
-			</description>
-		</method>
-		<method name="call_group_flags" qualifiers="vararg">
-			<return type="void" />
-			<param index="0" name="flags" type="int" />
-			<param index="1" name="group" type="StringName" />
-			<param index="2" name="method" type="StringName" />
-			<description>
-				Calls [param method] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [param method] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
-				[codeblock]
-				# Call the method in a deferred manner and in reverse order.
-				get_tree().call_group_flags(SceneTree.GROUP_CALL_DEFERRED | SceneTree.GROUP_CALL_REVERSE)
-				[/codeblock]
-				[b]Note:[/b] Group call flags are used to control the method calling behavior. By default, methods will be called immediately in a way similar to [method call_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param flags] argument, methods will be called with a one-frame delay in a way similar to [method Object.set_deferred].
-			</description>
-		</method>
 		<method name="change_scene_to_file">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
@@ -130,30 +107,74 @@
 				Returns an array of currently existing [Tween]s in the [SceneTree] (both running and paused).
 			</description>
 		</method>
-		<method name="has_group" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="name" type="StringName" />
+		<method name="group_call" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="method" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the given group exists.
+				Calls [param method] on each member of the given group. You can pass arguments to [param method] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
+				[b]Note:[/b] [method group_call] will call methods immediately on all members at once, which can cause stuttering if an expensive method is called on lots of members. To wait for one frame after [method group_call] was called, use [method group_call_flags] with the [constant GROUP_CALL_DEFERRED] flag.
 			</description>
 		</method>
-		<method name="notify_group">
+		<method name="group_call_flags" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="flags" type="int" />
+			<param index="1" name="group" type="StringName" />
+			<param index="2" name="method" type="StringName" />
+			<description>
+				Calls [param method] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [param method] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
+				[codeblock]
+				# Call the method in a deferred manner and in reverse order.
+				get_tree().group_call_flags(SceneTree.GROUP_CALL_DEFERRED | SceneTree.GROUP_CALL_REVERSE)
+				[/codeblock]
+				[b]Note:[/b] Group call flags are used to control the method calling behavior. By default, methods will be called immediately in a way similar to [method group_call]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param flags] argument, methods will be called with a one-frame delay in a way similar to [method Object.set_deferred].
+			</description>
+		</method>
+		<method name="group_notify">
 			<return type="void" />
 			<param index="0" name="group" type="StringName" />
 			<param index="1" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [param group].
-				[b]Note:[/b] [method notify_group] will immediately notify all members at once, which can cause stuttering if an expensive method is called as a result of sending the notification lots of members. To wait for one frame, use [method notify_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
+				[b]Note:[/b] [method group_notify] will immediately notify all members at once, which can cause stuttering if an expensive method is called as a result of sending the notification lots of members. To wait for one frame, use [method group_notify_flags] with the [constant GROUP_CALL_DEFERRED] flag.
 			</description>
 		</method>
-		<method name="notify_group_flags">
+		<method name="group_notify_flags">
 			<return type="void" />
-			<param index="0" name="call_flags" type="int" />
+			<param index="0" name="flags" type="int" />
 			<param index="1" name="group" type="StringName" />
 			<param index="2" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [param group], respecting the given [enum GroupCallFlags].
-				[b]Note:[/b] Group call flags are used to control the notification sending behavior. By default, notifications will be sent immediately in a way similar to [method notify_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param call_flags] argument, notifications will be sent with a one-frame delay in a way similar to using [code]Object.call_deferred("notification", ...)[/code].
+				[b]Note:[/b] Group call flags are used to control the notification sending behavior. By default, notifications will be sent immediately in a way similar to [method group_notify]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param flags] argument, notifications will be sent with a one-frame delay in a way similar to using [code]Object.call_deferred("notification", ...)[/code].
+			</description>
+		</method>
+		<method name="group_set">
+			<return type="void" />
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="property" type="String" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+				Sets the given [param property] to [param value] on all members of the given group.
+				[b]Note:[/b] [method group_set] will set the property immediately on all members at once, which can cause stuttering if a property with an expensive setter is set on lots of members. To wait for one frame, use [method group_set_flags] with the [constant GROUP_CALL_DEFERRED] flag.
+			</description>
+		</method>
+		<method name="group_set_flags">
+			<return type="void" />
+			<param index="0" name="flags" type="int" />
+			<param index="1" name="group" type="StringName" />
+			<param index="2" name="property" type="String" />
+			<param index="3" name="value" type="Variant" />
+			<description>
+				Sets the given [param property] to [param value] on all members of the given group, respecting the given [enum GroupCallFlags].
+				[b]Note:[/b] Group call flags are used to control the property setting behavior. By default, properties will be set immediately in a way similar to [method group_set]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param flags] argument, properties will be set with a one-frame delay in a way similar to [method Object.call_deferred].
+			</description>
+		</method>
+		<method name="has_group" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given group exists.
 			</description>
 		</method>
 		<method name="queue_delete">
@@ -178,27 +199,6 @@
 			<description>
 				Reloads the currently active scene.
 				Returns [constant OK] on success, [constant ERR_UNCONFIGURED] if no [member current_scene] was defined yet, [constant ERR_CANT_OPEN] if [member current_scene] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
-			</description>
-		</method>
-		<method name="set_group">
-			<return type="void" />
-			<param index="0" name="group" type="StringName" />
-			<param index="1" name="property" type="String" />
-			<param index="2" name="value" type="Variant" />
-			<description>
-				Sets the given [param property] to [param value] on all members of the given group.
-				[b]Note:[/b] [method set_group] will set the property immediately on all members at once, which can cause stuttering if a property with an expensive setter is set on lots of members. To wait for one frame, use [method set_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
-			</description>
-		</method>
-		<method name="set_group_flags">
-			<return type="void" />
-			<param index="0" name="call_flags" type="int" />
-			<param index="1" name="group" type="StringName" />
-			<param index="2" name="property" type="String" />
-			<param index="3" name="value" type="Variant" />
-			<description>
-				Sets the given [param property] to [param value] on all members of the given group, respecting the given [enum GroupCallFlags].
-				[b]Note:[/b] Group call flags are used to control the property setting behavior. By default, properties will be set immediately in a way similar to [method set_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param call_flags] argument, properties will be set with a one-frame delay in a way similar to [method Object.call_deferred].
 			</description>
 		</method>
 		<method name="set_multiplayer">
