@@ -2734,7 +2734,7 @@ void Control::set_layout_direction(Control::LayoutDirection p_direction) {
 	data.layout_dir = p_direction;
 	data.is_rtl_dirty = true;
 
-	propagate_notification(NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
+	propagate_notify(NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 }
 
 Control::LayoutDirection Control::get_layout_direction() const {

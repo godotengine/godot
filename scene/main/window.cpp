@@ -1560,7 +1560,7 @@ void Window::set_layout_direction(Window::LayoutDirection p_direction) {
 	ERR_FAIL_INDEX((int)p_direction, 4);
 
 	layout_dir = p_direction;
-	propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
+	propagate_notify(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 }
 
 Window::LayoutDirection Window::get_layout_direction() const {

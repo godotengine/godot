@@ -385,7 +385,7 @@ public:
 
 	/* NOTIFICATIONS */
 
-	void propagate_notification(int p_notification);
+	void propagate_notify(int p_notification);
 
 	void propagate_call(const StringName &p_method, const Array &p_args = Array(), const bool p_parent_first = false);
 

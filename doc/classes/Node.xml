@@ -581,7 +581,7 @@
 				Calls the given method (if present) with the arguments given in [param args] on this node and recursively on all its children. If the [param parent_first] argument is [code]true[/code], the method will be called on the current node first, then on all its children. If [param parent_first] is [code]false[/code], the children will be called first.
 			</description>
 		</method>
-		<method name="propagate_notification">
+		<method name="propagate_notify">
 			<return type="void" />
 			<param index="0" name="what" type="int" />
 			<description>

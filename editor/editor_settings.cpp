@@ -1622,7 +1622,7 @@ void EditorSettings::notify_changes() {
 	if (!root) {
 		return;
 	}
-	root->propagate_notification(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
+	root->propagate_notify(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 }
 
 void EditorSettings::_bind_methods() {

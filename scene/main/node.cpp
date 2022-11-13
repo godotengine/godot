@@ -919,7 +919,7 @@ void Node::set_name(const String &p_name) {
 		_acquire_unique_name_in_owner();
 	}
 
-	propagate_notification(NOTIFICATION_PATH_RENAMED);
+	propagate_notify(NOTIFICATION_PATH_RENAMED);
 
 	if (is_inside_tree()) {
 		emit_signal(SNAME("renamed"));
@@ -1858,12 +1858,12 @@ void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) 
 	data.blocked--;
 }
 
-void Node::propagate_notification(int p_notification) {
+void Node::propagate_notify(int p_notification) {
 	data.blocked++;
 	notification(p_notification);
 
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->propagate_notification(p_notification);
+		data.children[i]->propagate_notify(p_notification);
 	}
 	data.blocked--;
 }
@@ -2777,7 +2777,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
 	ClassDB::bind_method(D_METHOD("set_scene_file_path", "scene_file_path"), &Node::set_scene_file_path);
 	ClassDB::bind_method(D_METHOD("get_scene_file_path"), &Node::get_scene_file_path);
-	ClassDB::bind_method(D_METHOD("propagate_notification", "what"), &Node::propagate_notification);
+	ClassDB::bind_method(D_METHOD("propagate_notify", "what"), &Node::propagate_notify);
 	ClassDB::bind_method(D_METHOD("propagate_call", "method", "args", "parent_first"), &Node::propagate_call, DEFVAL(Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_physics_process", "enable"), &Node::set_physics_process);
 	ClassDB::bind_method(D_METHOD("get_physics_process_delta_time"), &Node::get_physics_process_delta_time);

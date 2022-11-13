@@ -97,7 +97,7 @@ void ScrollContainer::_cancel_drag() {
 
 	if (beyond_deadzone) {
 		emit_signal(SNAME("scroll_ended"));
-		propagate_notification(NOTIFICATION_SCROLL_END);
+		propagate_notify(NOTIFICATION_SCROLL_END);
 		beyond_deadzone = false;
 	}
 }
@@ -210,7 +210,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			if (beyond_deadzone || (h_scroll_enabled && Math::abs(drag_accum.x) > deadzone) || (v_scroll_enabled && Math::abs(drag_accum.y) > deadzone)) {
 				if (!beyond_deadzone) {
-					propagate_notification(NOTIFICATION_SCROLL_BEGIN);
+					propagate_notify(NOTIFICATION_SCROLL_BEGIN);
 					emit_signal(SNAME("scroll_started"));
 
 					beyond_deadzone = true;

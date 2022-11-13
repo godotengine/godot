@@ -624,7 +624,7 @@ void SceneTree::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
-				get_root()->propagate_notification(p_notification);
+				get_root()->propagate_notify(p_notification);
 			}
 		} break;
 
@@ -637,7 +637,7 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_APPLICATION_FOCUS_IN:
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			// Pass these to nodes, since they are mirrored.
-			get_root()->propagate_notification(p_notification);
+			get_root()->propagate_notify(p_notification);
 		} break;
 	}
 }

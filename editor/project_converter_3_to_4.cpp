@@ -463,6 +463,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "popup_centered_minsize", "popup_centered_clamped" }, // Window
 	{ "post_import", "_post_import" }, // EditorScenePostImport
 	{ "print_stray_nodes", "print_orphan_nodes" }, // Node
+	{ "propagate_notification", "propagate_notify" }, // Node
 	{ "property_list_changed_notify", "notify_property_list_changed" }, // Object
 	{ "recognize", "_recognize" }, // ResourceFormatLoader
 	{ "regen_normalmaps", "regen_normal_maps" }, // ArrayMesh
@@ -903,6 +904,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "PopupCenteredMinsize", "PopupCenteredClamped" }, // Window
 	{ "PostImport", "_PostImport" }, // EditorScenePostImport
 	{ "PrintStrayNodes", "PrintOrphanNodes" }, // Node
+	{ "PropagateNotification", "PropagateNotify" }, // Node
 	{ "PropertyListChangedNotify", "NotifyPropertyListChanged" }, // Object
 	{ "Recognize", "_Recognize" }, // ResourceFormatLoader
 	{ "RegenNormalmaps", "RegenNormalMaps" }, // ArrayMesh
