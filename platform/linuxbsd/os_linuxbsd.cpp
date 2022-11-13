@@ -128,6 +128,8 @@ void OS_LinuxBSD::initialize() {
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
+
+	system_dir_desktop_cache = get_system_dir(SYSTEM_DIR_DESKTOP);
 }
 
 void OS_LinuxBSD::initialize_joypads() {
@@ -719,6 +721,10 @@ String OS_LinuxBSD::get_cache_path() const {
 }
 
 String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
+	if (p_dir == SYSTEM_DIR_DESKTOP && !system_dir_desktop_cache.is_empty()) {
+		return system_dir_desktop_cache;
+	}
+
 	String xdgparam;
 
 	switch (p_dir) {
@@ -727,31 +733,24 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const
 		} break;
 		case SYSTEM_DIR_DCIM: {
 			xdgparam = "PICTURES";
-
 		} break;
 		case SYSTEM_DIR_DOCUMENTS: {
 			xdgparam = "DOCUMENTS";
-
 		} break;
 		case SYSTEM_DIR_DOWNLOADS: {
 			xdgparam = "DOWNLOAD";
-
 		} break;
 		case SYSTEM_DIR_MOVIES: {
 			xdgparam = "VIDEOS";
-
 		} break;
 		case SYSTEM_DIR_MUSIC: {
 			xdgparam = "MUSIC";
-
 		} break;
 		case SYSTEM_DIR_PICTURES: {
 			xdgparam = "PICTURES";
-
 		} break;
 		case SYSTEM_DIR_RINGTONES: {
 			xdgparam = "MUSIC";
-
 		} break;
 	}
 
