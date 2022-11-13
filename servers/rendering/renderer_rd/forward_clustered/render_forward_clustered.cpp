@@ -2311,6 +2311,8 @@ void RenderForwardClustered::_render_shadow_append(RID p_framebuffer, const Page
 	scene_data.lod_distance_multiplier = p_lod_distance_multiplier;
 	scene_data.dual_paraboloid_side = p_use_dp_flip ? -1 : 1;
 	scene_data.opaque_prepass_threshold = 0.1f;
+	scene_data.time = time;
+	scene_data.time_step = time_step;
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;
