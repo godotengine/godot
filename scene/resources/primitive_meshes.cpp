@@ -50,6 +50,7 @@ void PrimitiveMesh::_update() const {
 	}
 
 	Vector<Vector3> points = arr[RS::ARRAY_VERTEX];
+	Vector<Color> colors;
 
 	ERR_FAIL_COND_MSG(points.size() == 0, "_create_mesh_array must return at least a vertex array.");
 
@@ -60,6 +61,8 @@ void PrimitiveMesh::_update() const {
 	{
 		const Vector3 *r = points.ptr();
 		for (int i = 0; i < pc; i++) {
+			colors.push_back(vertex_color);
+
 			if (i == 0) {
 				aabb.position = r[i];
 			} else {
@@ -67,6 +70,8 @@ void PrimitiveMesh::_update() const {
 			}
 		}
 	}
+
+	arr[RS::ARRAY_COLOR] = colors;
 
 	Vector<int> indices = arr[RS::ARRAY_INDEX];
 
@@ -219,9 +224,13 @@ void PrimitiveMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &PrimitiveMesh::set_flip_faces);
 	ClassDB::bind_method(D_METHOD("get_flip_faces"), &PrimitiveMesh::get_flip_faces);
 
+	ClassDB::bind_method(D_METHOD("set_vertex_color", "modulate"), &PrimitiveMesh::set_vertex_color);
+	ClassDB::bind_method(D_METHOD("get_vertex_color"), &PrimitiveMesh::get_vertex_color);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "vertex_color"), "set_vertex_color", "get_vertex_color");
 
 	GDVIRTUAL_BIND(_create_mesh_array);
 }
@@ -261,6 +270,15 @@ void PrimitiveMesh::set_flip_faces(bool p_enable) {
 
 bool PrimitiveMesh::get_flip_faces() const {
 	return flip_faces;
+}
+
+void PrimitiveMesh::set_vertex_color(const Color &p_color) {
+	vertex_color = p_color;
+	_request_update();
+}
+
+Color PrimitiveMesh::get_vertex_color() const {
+	return vertex_color;
 }
 
 PrimitiveMesh::PrimitiveMesh() {

@@ -55,6 +55,7 @@ private:
 
 	Ref<Material> material;
 	bool flip_faces = false;
+	Color vertex_color = Color(1, 1, 1);
 
 	// make sure we do an update after we've finished constructing our object
 	mutable bool pending_request = true;
@@ -97,6 +98,9 @@ public:
 
 	void set_flip_faces(bool p_enable);
 	bool get_flip_faces() const;
+
+	void set_vertex_color(const Color &p_color);
+	Color get_vertex_color() const;
 
 	PrimitiveMesh();
 	~PrimitiveMesh();

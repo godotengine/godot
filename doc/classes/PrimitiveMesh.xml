@@ -44,5 +44,11 @@
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The current [Material] of the primitive mesh.
 		</member>
+		<member name="vertex_color" type="Color" setter="set_vertex_color" getter="get_vertex_color">
+			The vertex color to use for all of the primitive's points. This can reduce the need to use multiple materials when using the same mesh several times. You will still need to make the mesh resource unique for the vertex color to be editable individually from other instances, but the material will no longer need to be made unique. This can improve performance thanks to materials being reused more often.
+			[b]Note:[/b] This vertex color is only visible if the mesh's [BaseMaterial3D] has [member BaseMaterial3D.vertex_color_use_as_albedo] set to [code]true[/code]. If the mesh is using a custom [ShaderMaterial], the shader will have to make use of [code]COLOR[/code] in [code]vertex()[/code] for [member vertex_color] to have any effect.
+			[b]Note:[/b] Setting [member vertex_color] will cause the mesh to be regenerated, which can be relatively slow if the mesh has hundreds of triangles or more. Avoid changing [member vertex_color] every frame, except for simple cases such as quads or boxes or low-detail cylinders/spheres.
+			[b]Note:[/b] Vertex colors are clamped between [code]Color(0, 0, 0)[/code] and [code]Color(1, 1, 1)[/code]. This means HDR colors cannot be stored in the mesh itself.
+		</member>
 	</members>
 </class>
