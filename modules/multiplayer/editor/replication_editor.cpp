@@ -202,7 +202,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	add_pick_button = memnew(Button);
 	add_pick_button->connect("pressed", callable_mp(this, &ReplicationEditor::_pick_new_property));
-	add_pick_button->set_text(TTR("Add property to sync.."));
+	add_pick_button->set_text(TTR("Add property to sync..."));
 	hb->add_child(add_pick_button);
 	VSeparator *vs = memnew(VSeparator);
 	vs->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
