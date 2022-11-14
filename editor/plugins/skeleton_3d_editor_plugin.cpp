@@ -1288,7 +1288,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	ERR_FAIL_COND(!skeleton);
 
 	// Prepare for global to local.
-	Transform3D original_to_local = Transform3D();
+	Transform3D original_to_local;
 	int parent_idx = skeleton->get_bone_parent(p_id);
 	if (parent_idx >= 0) {
 		original_to_local = original_to_local * skeleton->get_bone_global_pose(parent_idx);
@@ -1296,7 +1296,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	Basis to_local = original_to_local.get_basis().inverse();
 
 	// Prepare transform.
-	Transform3D t = Transform3D();
+	Transform3D t;
 
 	// Basis.
 	t.basis = to_local * p_transform.get_basis();

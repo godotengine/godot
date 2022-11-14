@@ -3645,7 +3645,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 		switch (p_type) {
 			case ShaderLanguage::TYPE_BOOL:
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].boolean);
 					}
@@ -3658,7 +3658,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				array_size *= 2;
 
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].boolean);
 					}
@@ -3671,7 +3671,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				array_size *= 3;
 
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].boolean);
 					}
@@ -3684,7 +3684,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				array_size *= 4;
 
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].boolean);
 					}
@@ -3695,7 +3695,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				break;
 			case ShaderLanguage::TYPE_INT:
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].sint);
 					}
@@ -3708,7 +3708,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 2;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].sint);
 					}
@@ -3721,7 +3721,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 3;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].sint);
 					}
@@ -3734,7 +3734,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 4;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].sint);
 					}
@@ -3745,7 +3745,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				break;
 			case ShaderLanguage::TYPE_UINT:
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].uint);
 					}
@@ -3758,7 +3758,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 2;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].uint);
 					}
@@ -3771,7 +3771,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 3;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].uint);
 					}
@@ -3784,7 +3784,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 4;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].uint);
 					}
@@ -3795,7 +3795,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				break;
 			case ShaderLanguage::TYPE_FLOAT:
 				if (array_size > 0) {
-					PackedFloat32Array array = PackedFloat32Array();
+					PackedFloat32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].real);
 					}
@@ -3808,7 +3808,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 2;
 
-					PackedVector2Array array = PackedVector2Array();
+					PackedVector2Array array;
 					for (int i = 0; i < array_size; i += 2) {
 						array.push_back(Vector2(p_value[i].real, p_value[i + 1].real));
 					}
@@ -3822,13 +3822,13 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					array_size *= 3;
 
 					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
-						PackedColorArray array = PackedColorArray();
+						PackedColorArray array;
 						for (int i = 0; i < array_size; i += 3) {
 							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
 						}
 						value = Variant(array);
 					} else {
-						PackedVector3Array array = PackedVector3Array();
+						PackedVector3Array array;
 						for (int i = 0; i < array_size; i += 3) {
 							array.push_back(Vector3(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
 						}
@@ -3847,13 +3847,13 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					array_size *= 4;
 
 					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
-						PackedColorArray array = PackedColorArray();
+						PackedColorArray array;
 						for (int i = 0; i < array_size; i += 4) {
 							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real, p_value[i + 3].real));
 						}
 						value = Variant(array);
 					} else {
-						PackedFloat32Array array = PackedFloat32Array();
+						PackedFloat32Array array;
 						for (int i = 0; i < array_size; i += 4) {
 							array.push_back(p_value[i].real);
 							array.push_back(p_value[i + 1].real);
@@ -3874,7 +3874,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 4;
 
-					PackedFloat32Array array = PackedFloat32Array();
+					PackedFloat32Array array;
 					for (int i = 0; i < array_size; i += 4) {
 						array.push_back(p_value[i].real);
 						array.push_back(p_value[i + 1].real);
@@ -3890,7 +3890,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 9;
 
-					PackedFloat32Array array = PackedFloat32Array();
+					PackedFloat32Array array;
 					for (int i = 0; i < array_size; i += 9) {
 						for (int j = 0; j < 9; j++) {
 							array.push_back(p_value[i + j].real);
@@ -3916,7 +3916,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 16;
 
-					PackedFloat32Array array = PackedFloat32Array();
+					PackedFloat32Array array;
 					for (int i = 0; i < array_size; i += 16) {
 						for (int j = 0; j < 16; j++) {
 							array.push_back(p_value[i + j].real);

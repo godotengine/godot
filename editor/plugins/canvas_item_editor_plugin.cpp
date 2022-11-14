@@ -412,7 +412,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 
 	// Other nodes sides
 	if ((is_snap_active && snap_other_nodes && (p_modes & SNAP_OTHER_NODES)) || (p_forced_modes & SNAP_OTHER_NODES)) {
-		Transform2D to_snap_transform = Transform2D();
+		Transform2D to_snap_transform;
 		List<const CanvasItem *> exceptions = List<const CanvasItem *>();
 		for (const CanvasItem *E : p_other_nodes_exceptions) {
 			exceptions.push_back(E);
@@ -813,7 +813,7 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
 
-	Vector2 output = Vector2();
+	Vector2 output;
 	if (p_control->is_layout_rtl()) {
 		output.x = (parent_rect.size.x == 0) ? 0.0 : (parent_rect.size.x - p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
 	} else {
@@ -2268,7 +2268,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 						}
 					}
 
-					String suffix = String();
+					String suffix;
 					if (locked == 1) {
 						suffix = " (" + TTR("Locked") + ")";
 					} else if (locked == 2) {
@@ -2790,7 +2790,7 @@ void CanvasItemEditor::_draw_rulers() {
 	int font_size = get_theme_font_size(SNAME("rulers_size"), SNAME("EditorFonts"));
 
 	// The rule transform
-	Transform2D ruler_transform = Transform2D();
+	Transform2D ruler_transform;
 	if (grid_snap_active || _is_grid_visible()) {
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		if (snap_relative && selection.size() > 0) {
@@ -2816,11 +2816,11 @@ void CanvasItemEditor::_draw_rulers() {
 
 	// Subdivisions
 	int major_subdivision = 2;
-	Transform2D major_subdivide = Transform2D();
+	Transform2D major_subdivide;
 	major_subdivide.scale(Size2(1.0 / major_subdivision, 1.0 / major_subdivision));
 
 	int minor_subdivision = 5;
-	Transform2D minor_subdivide = Transform2D();
+	Transform2D minor_subdivide;
 	minor_subdivide.scale(Size2(1.0 / minor_subdivision, 1.0 / minor_subdivision));
 
 	// First and last graduations to draw (in the ruler space)
@@ -3032,7 +3032,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			viewport->draw_string_outline(font, text_pos2, TS->format_number(vformat("%.1f px", length_vector.y)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 			viewport->draw_string(font, text_pos2, TS->format_number(vformat("%.1f px", length_vector.y)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
 
-			Point2 v_angle_text_pos = Point2();
+			Point2 v_angle_text_pos;
 			v_angle_text_pos.x = CLAMP(begin.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
 			v_angle_text_pos.y = begin.y < end.y ? MIN(text_pos2.y - 2 * text_height, begin.y - text_height * 0.5) : MAX(text_pos2.y + text_height * 3, begin.y + text_height * 1.5);
 			viewport->draw_string_outline(font, v_angle_text_pos, TS->format_number(vformat(String::utf8("%d°"), vertical_angle)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
@@ -3043,7 +3043,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			viewport->draw_string_outline(font, text_pos2, TS->format_number(vformat("%.1f px", length_vector.x)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 			viewport->draw_string(font, text_pos2, TS->format_number(vformat("%.1f px", length_vector.x)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
 
-			Point2 h_angle_text_pos = Point2();
+			Point2 h_angle_text_pos;
 			h_angle_text_pos.x = CLAMP(end.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
 			if (begin.y < end.y) {
 				h_angle_text_pos.y = end.y + text_height * 1.5;
