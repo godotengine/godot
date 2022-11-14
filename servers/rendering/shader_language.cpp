@@ -9717,6 +9717,25 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 	return String();
 }
 
+bool ShaderLanguage::is_builtin_func_out_parameter(const String &p_name, int p_param) {
+	int i = 0;
+	while (builtin_func_out_args[i].name) {
+		if (p_name == builtin_func_out_args[i].name) {
+			for (int j = 0; j < BuiltinFuncOutArgs::MAX_ARGS; j++) {
+				int arg = builtin_func_out_args[i].arguments[j];
+				if (arg == p_param) {
+					return true;
+				}
+				if (arg < 0) {
+					return false;
+				}
+			}
+		}
+		i++;
+	}
+	return false;
+}
+
 #ifdef DEBUG_ENABLED
 void ShaderLanguage::_check_warning_accums() {
 	for (const KeyValue<ShaderWarning::Code, HashMap<StringName, HashMap<StringName, Usage>> *> &E : warnings_check_map2) {

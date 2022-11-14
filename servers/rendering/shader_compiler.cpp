@@ -1141,8 +1141,18 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				case SL::OP_STRUCT:
 				case SL::OP_CONSTRUCT: {
 					ERR_FAIL_COND_V(onode->arguments[0]->type != SL::Node::TYPE_VARIABLE, String());
+					const SL::VariableNode *vnode = static_cast<const SL::VariableNode *>(onode->arguments[0]);
+					const SL::FunctionNode *func = nullptr;
+					const bool is_internal_func = internal_functions.has(vnode->name);
 
-					SL::VariableNode *vnode = (SL::VariableNode *)onode->arguments[0];
+					if (!is_internal_func) {
+						for (int i = 0; i < shader->functions.size(); i++) {
+							if (shader->functions[i].name == vnode->name) {
+								func = shader->functions[i].function;
+								break;
+							}
+						}
+					}
 
 					bool is_texture_func = false;
 					bool is_screen_texture = false;
@@ -1156,7 +1166,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							used_flag_pointers.insert(vnode->name);
 						}
 
-						if (internal_functions.has(vnode->name)) {
+						if (is_internal_func) {
 							code += vnode->name;
 							is_texture_func = texture_functions.has(vnode->name);
 						} else if (p_default_actions.renames.has(vnode->name)) {
@@ -1172,6 +1182,44 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						if (i > 1) {
 							code += ", ";
 						}
+
+						bool is_out_qualifier = false;
+						if (is_internal_func) {
+							is_out_qualifier = SL::is_builtin_func_out_parameter(vnode->name, i - 1);
+						} else if (func != nullptr) {
+							const SL::ArgumentQualifier qualifier = func->arguments[i - 1].qualifier;
+							is_out_qualifier = qualifier == SL::ARGUMENT_QUALIFIER_OUT || qualifier == SL::ARGUMENT_QUALIFIER_INOUT;
+						}
+
+						if (is_out_qualifier) {
+							StringName name;
+							bool found = false;
+							{
+								const SL::Node *node = onode->arguments[i];
+
+								bool done = false;
+								do {
+									switch (node->type) {
+										case SL::Node::TYPE_VARIABLE: {
+											name = static_cast<const SL::VariableNode *>(node)->name;
+											done = true;
+											found = true;
+										} break;
+										case SL::Node::TYPE_MEMBER: {
+											node = static_cast<const SL::MemberNode *>(node)->owner;
+										} break;
+										default: {
+											done = true;
+										} break;
+									}
+								} while (!done);
+							}
+
+							if (found && p_actions.write_flag_pointers.has(name)) {
+								*p_actions.write_flag_pointers[name] = true;
+							}
+						}
+
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 						if (!RS::get_singleton()->is_low_end() && is_texture_func && i == 1) {
 							//need to map from texture to sampler in order to sample when using Vulkan GLSL

@@ -1119,6 +1119,7 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
+	static bool is_builtin_func_out_parameter(const String &p_name, int p_param);
 
 	struct ShaderCompileInfo {
 		HashMap<StringName, FunctionInfo> functions;
