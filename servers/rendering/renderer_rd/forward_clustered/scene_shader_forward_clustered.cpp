@@ -115,6 +115,9 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
 	actions.usage_flag_pointers["ALPHA_SCISSOR_THRESHOLD"] = &uses_alpha_clip;
+	// Use alpha clip pipeline for alpha hash/dither.
+	// This prevents sorting issues inherent to alpha blending and allows such materials to cast shadows.
+	actions.usage_flag_pointers["ALPHA_HASH_SCALE"] = &uses_alpha_clip;
 	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
 
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
