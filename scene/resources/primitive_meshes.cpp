@@ -269,7 +269,7 @@ void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
 		RenderingServer::get_singleton()->mesh_surface_set_material(mesh, 0, material.is_null() ? RID() : material->get_rid());
 		notify_property_list_changed();
 		emit_changed();
-	};
+	}
 }
 
 Ref<Material> PrimitiveMesh::get_material() const {
@@ -437,12 +437,12 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i);
 				indices.push_back(thisrow + i - 1);
-			};
-		};
+			}
+		}
 
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	/* cylinder */
 	thisrow = point;
@@ -479,12 +479,12 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i);
 				indices.push_back(thisrow + i - 1);
-			};
-		};
+			}
+		}
 
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	/* bottom hemisphere */
 	thisrow = point;
@@ -522,12 +522,12 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i);
 				indices.push_back(thisrow + i - 1);
-			};
-		};
+			}
+		}
 
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
@@ -727,15 +727,15 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 				indices.push_back(prevrow + i2 + 1);
 				indices.push_back(thisrow + i2 + 1);
 				indices.push_back(thisrow + i2 - 1);
-			};
+			}
 
 			x += size.x / (subdivide_w + 1.0);
-		};
+		}
 
 		y += size.y / (subdivide_h + 1.0);
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	// left + right
 	y = start_pos.y;
@@ -790,15 +790,15 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 				indices.push_back(prevrow + i2 + 1);
 				indices.push_back(thisrow + i2 + 1);
 				indices.push_back(thisrow + i2 - 1);
-			};
+			}
 
 			z += size.z / (subdivide_d + 1.0);
-		};
+		}
 
 		y += size.y / (subdivide_h + 1.0);
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	// top + bottom
 	z = start_pos.z;
@@ -853,15 +853,15 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 				indices.push_back(prevrow + i2 + 1);
 				indices.push_back(thisrow + i2 + 1);
 				indices.push_back(thisrow + i2 - 1);
-			};
+			}
 
 			x += size.x / (subdivide_w + 1.0);
-		};
+		}
 
 		z += size.z / (subdivide_d + 1.0);
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
@@ -1032,20 +1032,20 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i);
 				indices.push_back(thisrow + i - 1);
-			};
-		};
+			}
+		}
 
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
-	// Adjust for buttom section, only used if we calculate UV2s
+	// Adjust for bottom section, only used if we calculate UV2s.
 	top_h = top_radius / horizonal_length;
 	float top_v = top_radius / vertical_length;
 	bottom_h = bottom_radius / horizonal_length;
 	float bottom_v = bottom_radius / vertical_length;
 
-	// add top
+	// Add top.
 	if (cap_top && top_radius > 0.0) {
 		y = height * 0.5;
 
@@ -1083,11 +1083,11 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 				indices.push_back(thisrow);
 				indices.push_back(point - 1);
 				indices.push_back(point - 2);
-			};
-		};
-	};
+			}
+		}
+	}
 
-	// add bottom
+	// Add bottom.
 	if (cap_bottom && bottom_radius > 0.0) {
 		y = height * -0.5;
 
@@ -1125,9 +1125,9 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 				indices.push_back(thisrow);
 				indices.push_back(point - 2);
 				indices.push_back(point - 1);
-			};
-		};
-	};
+			}
+		}
+	}
 
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
@@ -1312,15 +1312,15 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i);
 				indices.push_back(thisrow + i - 1);
-			};
+			}
 
 			x += size.x / (subdivide_w + 1.0);
-		};
+		}
 
 		z += size.y / (subdivide_d + 1.0);
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
@@ -1541,15 +1541,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 				indices.push_back(prevrow + i2 + 1);
 				indices.push_back(thisrow + i2 + 1);
 				indices.push_back(thisrow + i2 - 1);
-			};
+			}
 
 			x += scale * size.x / (subdivide_w + 1.0);
-		};
+		}
 
 		y += size.y / (subdivide_h + 1.0);
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	/* left + right */
 	Vector3 normal_left, normal_right;
@@ -1617,15 +1617,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 				indices.push_back(prevrow + i2 + 1);
 				indices.push_back(thisrow + i2 + 1);
 				indices.push_back(thisrow + i2 - 1);
-			};
+			}
 
 			z += size.z / (subdivide_d + 1.0);
-		};
+		}
 
 		y += size.y / (subdivide_h + 1.0);
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	/* bottom */
 	z = start_pos.z;
@@ -1660,15 +1660,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i);
 				indices.push_back(thisrow + i - 1);
-			};
+			}
 
 			x += size.x / (subdivide_w + 1.0);
-		};
+		}
 
 		z += size.z / (subdivide_d + 1.0);
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
@@ -1831,7 +1831,7 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 				points.push_back(p);
 				Vector3 normal = Vector3(x * w * scale, radius * (y / scale), z * w * scale);
 				normals.push_back(normal.normalized());
-			};
+			}
 			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v));
 			if (p_add_uv2) {
@@ -1848,12 +1848,12 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i);
 				indices.push_back(thisrow + i - 1);
-			};
-		};
+			}
+		}
 
 		prevrow = thisrow;
 		thisrow = point;
-	};
+	}
 
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
@@ -2343,9 +2343,9 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 				indices.push_back(thisrow);
 				indices.push_back(point - 1);
 				indices.push_back(point - 2);
-			};
-		};
-	};
+			}
+		}
+	}
 
 	float scale_neg = 1.0;
 	if (curve.is_valid() && curve->get_point_count() > 0) {
@@ -2406,9 +2406,9 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 				indices.push_back(thisrow);
 				indices.push_back(point - 2);
 				indices.push_back(point - 1);
-			};
-		};
-	};
+			}
+		}
+	}
 
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
