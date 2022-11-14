@@ -54,10 +54,14 @@ void EditorHelp::_update_theme() {
 	qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
 	type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 
+	class_desc->add_theme_style_override("normal", get_theme_stylebox(SNAME("background"), SNAME("EditorHelp")));
+	class_desc->add_theme_style_override("focus", get_theme_stylebox(SNAME("background"), SNAME("EditorHelp")));
 	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("text_highlight_h_padding", get_theme_constant(SNAME("text_highlight_h_padding"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("text_highlight_v_padding", get_theme_constant(SNAME("text_highlight_v_padding"), SNAME("EditorHelp")));
 
 	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
 	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
@@ -1786,9 +1790,19 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 	Ref<Font> doc_code_font = p_owner_node->get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	Ref<Font> doc_kbd_font = p_owner_node->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
 
-	Color link_color = p_owner_node->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
-	Color code_color = p_owner_node->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
-	Color kbd_color = p_owner_node->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
+	const Color type_color = p_owner_node->get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
+	const Color code_color = p_owner_node->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
+	const Color kbd_color = p_owner_node->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
+	const Color code_dark_color = Color(code_color, 0.8);
+
+	const Color link_color = p_owner_node->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
+	const Color link_method_color = p_owner_node->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	const Color link_property_color = link_color.lerp(p_owner_node->get_theme_color(SNAME("accent_color"), SNAME("Editor")), 0.25);
+	const Color link_annotation_color = link_color.lerp(p_owner_node->get_theme_color(SNAME("accent_color"), SNAME("Editor")), 0.5);
+
+	const Color code_bg_color = p_owner_node->get_theme_color(SNAME("code_bg_color"), SNAME("EditorHelp"));
+	const Color kbd_bg_color = p_owner_node->get_theme_color(SNAME("kbd_bg_color"), SNAME("EditorHelp"));
+	const Color param_bg_color = p_owner_node->get_theme_color(SNAME("param_bg_color"), SNAME("EditorHelp"));
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
@@ -1921,14 +1935,21 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
-			// Use monospace font with translucent colored background color to make clickable references
+			// Use monospace font to make clickable references
 			// easier to distinguish from inline code and other text.
 			p_rt->push_font(doc_code_font);
-			p_rt->push_color(link_color);
-			p_rt->push_bgcolor(code_color * Color(1, 1, 1, 0.15));
+
+			Color target_color = link_color;
+			if (link_tag == "method") {
+				target_color = link_method_color;
+			} else if (link_tag == "member" || link_tag == "signal" || link_tag == "theme property") {
+				target_color = link_property_color;
+			} else if (link_tag == "annotation") {
+				target_color = link_annotation_color;
+			}
+			p_rt->push_color(target_color);
 			p_rt->push_meta("@" + link_tag + " " + link_target);
-			p_rt->add_text(link_target + (tag.begins_with("method ") ? "()" : ""));
-			p_rt->pop();
+			p_rt->add_text(link_target + (link_tag == "method" ? "()" : ""));
 			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
@@ -1940,7 +1961,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			// Use monospace font with translucent background color to make code easier to distinguish from other text.
 			p_rt->push_font(doc_code_font);
-			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
+			p_rt->push_bgcolor(param_bg_color);
 			p_rt->push_color(code_color);
 			p_rt->add_text(param_name);
 			p_rt->pop();
@@ -1951,14 +1972,12 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 		} else if (doc->class_list.has(tag)) {
 			// Class reference tag such as [Node2D] or [SceneTree].
-			// Use monospace font with translucent colored background color to make clickable references
+			// Use monospace font to make clickable references
 			// easier to distinguish from inline code and other text.
 			p_rt->push_font(doc_code_font);
-			p_rt->push_color(link_color);
-			p_rt->push_bgcolor(code_color * Color(1, 1, 1, 0.15));
+			p_rt->push_color(type_color);
 			p_rt->push_meta("#" + tag);
 			p_rt->add_text(tag);
-			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
@@ -1975,30 +1994,30 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code") {
-			// Use monospace font with translucent background color to make code easier to distinguish from other text.
+			// Use monospace font with darkened background color to make code easier to distinguish from other text.
 			p_rt->push_font(doc_code_font);
-			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
-			p_rt->push_color(code_color);
+			p_rt->push_bgcolor(code_bg_color);
+			p_rt->push_color(code_color.lerp(p_owner_node->get_theme_color(SNAME("error_color"), SNAME("Editor")), 0.6));
 			code_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "codeblock") {
-			// Use monospace font with translucent background color to make code easier to distinguish from other text.
+			// Use monospace font with darkened background color to make code easier to distinguish from other text.
 			// Use a single-column table with cell row background color instead of `[bgcolor]`.
 			// This makes the background color highlight cover the entire block, rather than individual lines.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_table(1);
 			p_rt->push_cell();
-			p_rt->set_cell_row_background_color(Color(0.5, 0.5, 0.5, 0.15), Color(0.5, 0.5, 0.5, 0.15));
+			p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
 			p_rt->set_cell_padding(Rect2(10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE));
-			p_rt->push_color(code_color);
+			p_rt->push_color(code_dark_color);
 			codeblock_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "kbd") {
 			// Use keyboard font with custom color and background color.
 			p_rt->push_font(doc_kbd_font);
-			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
+			p_rt->push_bgcolor(kbd_bg_color);
 			p_rt->push_color(kbd_color);
 			code_tag = true; // Though not strictly a code tag, logic is similar.
 			pos = brk_end + 1;
