@@ -85,7 +85,7 @@ void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
 	state.instantiate();
 	int32_t flags = 0;
 	flags |= EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
-	Error err = doc->append_from_scene(root, state, flags, 30.0f);
+	Error err = doc->append_from_scene(root, state, flags);
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
 	}

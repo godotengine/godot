@@ -53,12 +53,12 @@ class EditorSceneFormatImporter : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps);
-	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps);
+	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options);
+	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options);
 
 	GDVIRTUAL0RC(int, _get_import_flags)
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
-	GDVIRTUAL4R(Object *, _import_scene, String, uint32_t, Dictionary, uint32_t)
+	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, Dictionary)
 	GDVIRTUAL1(_get_import_options, String)
 	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
 
@@ -74,7 +74,7 @@ public:
 
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr);
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options);
 
@@ -310,7 +310,7 @@ class EditorSceneFormatImporterESCN : public EditorSceneFormatImporter {
 public:
 	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr) override;
 };
 
 template <class M>
