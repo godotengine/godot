@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -2605,7 +2606,39 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	Ref<Script> scr = ResourceLoader::load(p_file);
 	ERR_FAIL_COND(!scr.is_valid());
-	if (Node *n = get_node(p_to)) {
+	Node *n = get_node(p_to);
+
+	if (!n) {
+		return;
+	}
+
+	if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+		Object *obj = ClassDB::instantiate(scr->get_instance_base_type());
+		ERR_FAIL_NULL(obj);
+
+		Node *new_node = Object::cast_to<Node>(obj);
+		if (!new_node) {
+			if (!obj->is_ref_counted()) {
+				memdelete(obj);
+			}
+			ERR_FAIL_MSG("Script does not extend Node-derived type.");
+		}
+		new_node->set_name(Node::adjust_name_casing(p_file.get_file().get_basename()));
+		new_node->set_script(scr);
+
+		editor_data->get_undo_redo()->create_action(TTR("Instantiate Script"));
+		editor_data->get_undo_redo()->add_do_method(n, "add_child", new_node, true);
+		editor_data->get_undo_redo()->add_do_method(new_node, "set_owner", edited_scene);
+		editor_data->get_undo_redo()->add_do_method(editor_selection, "clear");
+		editor_data->get_undo_redo()->add_do_method(editor_selection, "add_node", new_node);
+		editor_data->get_undo_redo()->add_do_reference(new_node);
+		editor_data->get_undo_redo()->add_undo_method(n, "remove_child", new_node);
+
+		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+		editor_data->get_undo_redo()->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(n), new_node->get_class(), new_node->get_name());
+		editor_data->get_undo_redo()->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(n)).path_join(new_node->get_name())));
+		editor_data->get_undo_redo()->commit_action();
+	} else {
 		editor_data->get_undo_redo()->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, n);
 		editor_data->get_undo_redo()->add_do_method(InspectorDock::get_singleton(), "store_script_properties", n);
 		editor_data->get_undo_redo()->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", n);
