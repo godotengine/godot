@@ -4964,7 +4964,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 
 			if (rollback || best_frame == FRAME_MAX) {
 				// Commit the page if had to rollback or if no track was found
-				print_animc("\tCommiting page..");
+				print_animc("\tCommiting page...");
 
 				// The end frame for the page depends entirely on whether its valid or
 				// no more keys were found.

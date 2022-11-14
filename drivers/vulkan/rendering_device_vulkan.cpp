@@ -9186,7 +9186,7 @@ void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
 		Texture *texture = &frames[p_frame].textures_to_dispose_of.front()->get();
 
 		if (texture->bound) {
-			WARN_PRINT("Deleted a texture while it was bound..");
+			WARN_PRINT("Deleted a texture while it was bound.");
 		}
 		vkDestroyImageView(device, texture->view, nullptr);
 		if (texture->owner.is_null()) {

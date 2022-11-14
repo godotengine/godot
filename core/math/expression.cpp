@@ -1420,7 +1420,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Callable::CallError ce;
 			Variant::call_utility_function(bifunc->func, &r_ret, (const Variant **)argp.ptr(), argp.size(), ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				r_error_str = "Builtin Call Failed. " + Variant::get_call_error_text(bifunc->func, (const Variant **)argp.ptr(), argp.size(), ce);
+				r_error_str = "Builtin call failed: " + Variant::get_call_error_text(bifunc->func, (const Variant **)argp.ptr(), argp.size(), ce);
 				return true;
 			}
 
