@@ -4165,7 +4165,7 @@ DisplayServer::WindowID SubViewport::get_window_id() const {
 }
 
 Transform2D SubViewport::_stretch_transform() {
-	Transform2D transform = Transform2D();
+	Transform2D transform;
 	Size2i view_size_2d_override = _get_size_2d_override();
 	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
 		Size2 scale = Size2(_get_size()) / Size2(view_size_2d_override);
@@ -4176,7 +4176,7 @@ Transform2D SubViewport::_stretch_transform() {
 }
 
 Transform2D SubViewport::get_screen_transform() const {
-	Transform2D container_transform = Transform2D();
+	Transform2D container_transform;
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (c) {
 		if (c->is_stretch_enabled()) {

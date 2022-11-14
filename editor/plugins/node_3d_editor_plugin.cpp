@@ -1329,7 +1329,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 				}
 			}
 
-			String suffix = String();
+			String suffix;
 			if (locked == 1) {
 				suffix = " (" + TTR("Locked") + ")";
 			} else if (locked == 2) {
@@ -3492,7 +3492,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	}
 
 	for (int i = 0; i < 3; i++) {
-		Transform3D axis_angle = Transform3D();
+		Transform3D axis_angle;
 		if (xform.basis.get_column(i).normalized().dot(xform.basis.get_column((i + 1) % 3).normalized()) < 1.0) {
 			axis_angle = axis_angle.looking_at(xform.basis.get_column(i).normalized(), xform.basis.get_column((i + 1) % 3).normalized());
 		}
@@ -6803,8 +6803,8 @@ void Node3DEditor::_init_grid() {
 
 			// Don't draw lines over the origin if it's enabled.
 			if (!(origin_enabled && Math::is_zero_approx(position_a))) {
-				Vector3 line_bgn = Vector3();
-				Vector3 line_end = Vector3();
+				Vector3 line_bgn;
+				Vector3 line_end;
 				line_bgn[a] = position_a;
 				line_end[a] = position_a;
 				line_bgn[b] = bgn_b;
@@ -6819,8 +6819,8 @@ void Node3DEditor::_init_grid() {
 			}
 
 			if (!(origin_enabled && Math::is_zero_approx(position_b))) {
-				Vector3 line_bgn = Vector3();
-				Vector3 line_end = Vector3();
+				Vector3 line_bgn;
+				Vector3 line_end;
 				line_bgn[b] = position_b;
 				line_end[b] = position_b;
 				line_bgn[a] = bgn_a;
@@ -6988,8 +6988,8 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 	for (Node *E : selection) {
 		Node3D *sp = Object::cast_to<Node3D>(E);
 		if (sp) {
-			Vector3 from = Vector3();
-			Vector3 position_offset = Vector3();
+			Vector3 from;
+			Vector3 position_offset;
 
 			// Priorities for snapping to floor are CollisionShapes, VisualInstances and then origin
 			HashSet<VisualInstance3D *> vi = _get_child_nodes<VisualInstance3D>(sp);

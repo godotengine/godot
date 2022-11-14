@@ -47,8 +47,8 @@ class ActionMapEditor : public Control {
 
 public:
 	struct ActionInfo {
-		String name = String();
-		Dictionary action = Dictionary();
+		String name;
+		Dictionary action;
 
 		Ref<Texture2D> icon = Ref<Texture2D>();
 		bool editable = true;
@@ -67,8 +67,8 @@ private:
 
 	// Storing which action/event is currently being edited in the InputEventConfigurationDialog.
 
-	Dictionary current_action = Dictionary();
-	String current_action_name = String();
+	Dictionary current_action;
+	String current_action_name;
 	int current_action_event_index = -1;
 
 	// Popups

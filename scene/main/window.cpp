@@ -1633,7 +1633,7 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 }
 
 Transform2D Window::get_screen_transform() const {
-	Transform2D embedder_transform = Transform2D();
+	Transform2D embedder_transform;
 	if (_get_embedder()) {
 		embedder_transform.translate_local(get_position());
 		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;

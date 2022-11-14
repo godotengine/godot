@@ -336,7 +336,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 			}
 
 			String word = str.substr(j, to - j);
-			Color col = Color();
+			Color col;
 			if (keywords.has(word)) {
 				col = keywords[word];
 			} else if (member_keywords.has(word)) {

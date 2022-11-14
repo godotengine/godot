@@ -231,7 +231,7 @@ void Button::_notification(int p_what) {
 				_icon = icon;
 			}
 
-			Rect2 icon_region = Rect2();
+			Rect2 icon_region;
 			HorizontalAlignment icon_align_rtl_checked = icon_alignment;
 			HorizontalAlignment align_rtl_checked = alignment;
 			// Swap icon and text alignment sides if right-to-left layout is set.

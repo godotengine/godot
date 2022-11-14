@@ -93,7 +93,7 @@ void BoneMap::set_skeleton_bone_name(StringName p_profile_bone_name, const Strin
 }
 
 StringName BoneMap::find_profile_bone_name(StringName p_skeleton_bone_name) const {
-	StringName profile_bone_name = StringName();
+	StringName profile_bone_name;
 	HashMap<StringName, StringName>::ConstIterator E = bone_map.begin();
 	while (E) {
 		if (E->value == p_skeleton_bone_name) {

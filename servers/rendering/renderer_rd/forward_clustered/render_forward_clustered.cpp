@@ -3085,7 +3085,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RD::Uniform u;
 		u.binding = 19;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		RID vfog = RID();
+		RID vfog;
 		if (rb_data.is_valid() && rb->has_custom_data(RB_SCOPE_FOG)) {
 			Ref<RendererRD::Fog::VolumetricFog> fog = rb->get_custom_data(RB_SCOPE_FOG);
 			vfog = fog->fog_map;

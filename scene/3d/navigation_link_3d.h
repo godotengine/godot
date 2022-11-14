@@ -37,11 +37,11 @@ class NavigationLink3D : public Node3D {
 	GDCLASS(NavigationLink3D, Node3D);
 
 	bool enabled = true;
-	RID link = RID();
+	RID link;
 	bool bidirectional = true;
 	uint32_t navigation_layers = 1;
-	Vector3 end_location = Vector3();
-	Vector3 start_location = Vector3();
+	Vector3 end_location;
+	Vector3 start_location;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
 

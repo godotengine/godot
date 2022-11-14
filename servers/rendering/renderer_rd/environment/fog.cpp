@@ -727,9 +727,9 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 			any_uses_time |= shader_data->uses_time;
 
-			Vector3i min = Vector3i();
-			Vector3i max = Vector3i();
-			Vector3i kernel_size = Vector3i();
+			Vector3i min;
+			Vector3i max;
+			Vector3i kernel_size;
 
 			Vector3 position = fog_volume_instance->transform.get_origin();
 			RS::FogVolumeShape volume_type = RendererRD::Fog::get_singleton()->fog_volume_get_shape(fog_volume);

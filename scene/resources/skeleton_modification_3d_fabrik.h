@@ -47,7 +47,7 @@ private:
 
 		bool auto_calculate_length = true;
 		bool use_tip_node = false;
-		NodePath tip_node = NodePath();
+		NodePath tip_node;
 		ObjectID tip_node_cache;
 
 		bool use_target_basis = false;
@@ -68,8 +68,8 @@ private:
 	void update_joint_tip_cache(int p_joint_idx);
 
 	int final_joint_idx = 0;
-	Transform3D target_global_pose = Transform3D();
-	Transform3D origin_global_pose = Transform3D();
+	Transform3D target_global_pose;
+	Transform3D origin_global_pose;
 
 	void chain_backwards();
 	void chain_forwards();

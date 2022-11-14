@@ -129,7 +129,7 @@ struct Texture {
 	bool is_external = false;
 	bool is_render_target = false;
 
-	RID proxy_to = RID();
+	RID proxy_to;
 	Vector<RID> proxies;
 
 	String path;

@@ -402,7 +402,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 		const int fmt_compress_flags = p_mesh->get_surface_format(surf_idx);
 		Array arr = p_mesh->get_surface_arrays(surf_idx);
 		String name = p_mesh->get_surface_name(surf_idx);
-		Dictionary lods = Dictionary();
+		Dictionary lods;
 		Ref<Material> mat = p_mesh->get_surface_material(surf_idx);
 		{
 			Vector<Vector3> vertex_array = arr[ArrayMesh::ARRAY_VERTEX];

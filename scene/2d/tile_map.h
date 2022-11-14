@@ -115,7 +115,7 @@ public:
 	class TerrainConstraint {
 	private:
 		const TileMap *tile_map;
-		Vector2i base_cell_coords = Vector2i();
+		Vector2i base_cell_coords;
 		int bit = -1;
 		int terrain = -1;
 

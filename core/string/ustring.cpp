@@ -2839,7 +2839,7 @@ String String::substr(int p_from, int p_chars) const {
 		return String(*this);
 	}
 
-	String s = String();
+	String s;
 	s.copy_from_unchecked(&get_data()[p_from], p_chars);
 	return s;
 }

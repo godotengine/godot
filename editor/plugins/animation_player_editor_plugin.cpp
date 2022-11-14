@@ -950,7 +950,7 @@ void AnimationPlayerEditor::_update_animation_list_icons() {
 }
 
 void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
-	StringName current_library_name = StringName();
+	StringName current_library_name;
 	if (animation->has_selectable_items()) {
 		String current_animation_name = animation->get_item_text(animation->get_selected());
 		Ref<Animation> current_animation = player->get_animation(current_animation_name);

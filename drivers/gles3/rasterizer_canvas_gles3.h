@@ -254,7 +254,7 @@ public:
 		uint32_t start = 0;
 		uint32_t instance_count = 0;
 
-		RID tex = RID();
+		RID tex;
 		RS::CanvasItemTextureFilter filter = RS::CANVAS_ITEM_TEXTURE_FILTER_MAX;
 		RS::CanvasItemTextureRepeat repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX;
 
@@ -263,7 +263,7 @@ public:
 
 		Item *clip = nullptr;
 
-		RID material = RID();
+		RID material;
 		GLES3::CanvasMaterialData *material_data = nullptr;
 		CanvasShaderGLES3::ShaderVariant shader_variant = CanvasShaderGLES3::MODE_QUAD;
 
@@ -303,7 +303,7 @@ public:
 
 		bool using_directional_lights = false;
 
-		RID current_tex = RID();
+		RID current_tex;
 		RS::CanvasItemTextureFilter current_filter_mode = RS::CANVAS_ITEM_TEXTURE_FILTER_MAX;
 		RS::CanvasItemTextureRepeat current_repeat_mode = RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX;
 

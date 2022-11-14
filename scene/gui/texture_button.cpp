@@ -64,7 +64,7 @@ Size2 TextureButton::get_minimum_size() const {
 bool TextureButton::has_point(const Point2 &p_point) const {
 	if (click_mask.is_valid()) {
 		Point2 point = p_point;
-		Rect2 rect = Rect2();
+		Rect2 rect;
 		Size2 mask_size = click_mask->get_size();
 
 		if (!_position_rect.has_area()) {

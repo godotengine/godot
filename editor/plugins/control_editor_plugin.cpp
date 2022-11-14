@@ -816,7 +816,7 @@ Vector2 ControlEditorToolbar::_position_to_anchor(const Control *p_control, Vect
 
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
 
-	Vector2 output = Vector2();
+	Vector2 output;
 	if (p_control->is_layout_rtl()) {
 		output.x = (parent_rect.size.x == 0) ? 0.0 : (parent_rect.size.x - p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
 	} else {

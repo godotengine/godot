@@ -867,7 +867,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 					real_t ring_random_angle = Math::randf() * Math_TAU;
 					real_t ring_random_radius = Math::randf() * (emission_ring_radius - emission_ring_inner_radius) + emission_ring_inner_radius;
 					Vector3 axis = emission_ring_axis.normalized();
-					Vector3 ortho_axis = Vector3();
+					Vector3 ortho_axis;
 					if (axis == Vector3(1.0, 0.0, 0.0)) {
 						ortho_axis = Vector3(0.0, 1.0, 0.0).cross(axis);
 					} else {

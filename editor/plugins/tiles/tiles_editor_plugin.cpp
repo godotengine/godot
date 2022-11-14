@@ -92,7 +92,7 @@ void TilesEditorPlugin::_thread() {
 
 				TypedArray<Vector2i> used_cells = tile_map->get_used_cells(0);
 
-				Rect2 encompassing_rect = Rect2();
+				Rect2 encompassing_rect;
 				encompassing_rect.set_position(tile_map->map_to_local(used_cells[0]));
 				for (int i = 0; i < used_cells.size(); i++) {
 					Vector2i cell = used_cells[i];

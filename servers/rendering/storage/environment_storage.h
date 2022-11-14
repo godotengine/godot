@@ -98,7 +98,7 @@ private:
 		float glow_hdr_luminance_cap = 12.0;
 		float glow_hdr_bleed_scale = 2.0;
 		float glow_map_strength = 0.0f; // 1.0f in GLES3 ??
-		RID glow_map = RID();
+		RID glow_map;
 
 		// SSR
 		bool ssr_enabled = false;
@@ -143,7 +143,7 @@ private:
 		float adjustments_contrast = 1.0f;
 		float adjustments_saturation = 1.0f;
 		bool use_1d_color_correction = false;
-		RID color_correction = RID();
+		RID color_correction;
 	};
 
 	mutable RID_Owner<Environment, true> environment_owner;

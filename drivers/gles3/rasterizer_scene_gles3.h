@@ -99,9 +99,9 @@ struct RenderDataGLES3 {
 	Ref<RenderSceneBuffersGLES3> render_buffers;
 	bool transparent_bg = false;
 
-	Transform3D cam_transform = Transform3D();
-	Transform3D inv_cam_transform = Transform3D();
-	Projection cam_projection = Projection();
+	Transform3D cam_transform;
+	Transform3D inv_cam_transform;
+	Projection cam_projection;
 	bool cam_orthogonal = false;
 
 	// For stereo rendering
@@ -115,9 +115,9 @@ struct RenderDataGLES3 {
 	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
-	RID environment = RID();
-	RID camera_attributes = RID();
-	RID reflection_probe = RID();
+	RID environment;
+	RID camera_attributes;
+	RID reflection_probe;
 	int reflection_probe_pass = 0;
 
 	float lod_distance_multiplier = 0.0;

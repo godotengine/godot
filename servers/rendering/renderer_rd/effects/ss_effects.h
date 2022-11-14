@@ -100,7 +100,7 @@ public:
 		float sharpness = 0.98;
 		float normal_rejection = 1.0;
 
-		Size2i full_screen_size = Size2i();
+		Size2i full_screen_size;
 	};
 
 	void ssil_allocate_buffers(SSILRenderBuffers &p_ssil_buffers, const SSILSettings &p_settings, RID p_linear_depth);
@@ -137,7 +137,7 @@ public:
 		float horizon = 0.06;
 		float sharpness = 0.98;
 
-		Size2i full_screen_size = Size2i();
+		Size2i full_screen_size;
 	};
 
 	void ssao_allocate_buffers(SSAORenderBuffers &p_ssao_buffers, const SSAOSettings &p_settings, RID p_linear_depth);
