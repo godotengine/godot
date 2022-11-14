@@ -3853,6 +3853,7 @@ bool GDScriptParser::export_group_annotations(const AnnotationNode *p_annotation
 	switch (t_usage) {
 		case PROPERTY_USAGE_CATEGORY: {
 			annotation->export_info.usage = t_usage;
+			annotation->export_info.hint_string = script_path;
 		} break;
 
 		case PROPERTY_USAGE_GROUP: {

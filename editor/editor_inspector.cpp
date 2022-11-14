@@ -2723,6 +2723,16 @@ void EditorInspector::update_tree() {
 			section_depth = 0;
 
 			if (!show_categories) {
+				// Find the class name to retrieve information about the following properties. (The category name does not always work.)
+				if (doc_name == "" && !EditorNode::get_editor_data().is_type_recognized(p.name) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
+					Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
+					if (scr.is_valid()) {
+						Vector<DocData::ClassDoc> docs = scr->get_documentation();
+						if (!docs.is_empty()) {
+							doc_name = docs[0].name;
+						}
+					}
+				}
 				continue;
 			}
 
