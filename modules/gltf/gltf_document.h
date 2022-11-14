@@ -292,17 +292,17 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
-	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30, String p_base_path = String());
-	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
-	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
+	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, String p_base_path = String());
+	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0);
+	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0);
 
 public:
-	Node *generate_scene(Ref<GLTFState> state, int32_t p_bake_fps = 30.0f);
+	Node *generate_scene(Ref<GLTFState> state, float p_bake_fps = 30.0f, bool p_trimming = false);
 	PackedByteArray generate_buffer(Ref<GLTFState> state);
 	Error write_to_filesystem(Ref<GLTFState> state, const String &p_path);
 
 public:
-	Error _parse_gltf_state(Ref<GLTFState> state, const String &p_search_path, float p_bake_fps);
+	Error _parse_gltf_state(Ref<GLTFState> state, const String &p_search_path);
 	Error _parse_gltf_extensions(Ref<GLTFState> state);
 	void _process_mesh_instances(Ref<GLTFState> state, Node *scene_root);
 	void _generate_scene_node(Ref<GLTFState> state, Node *scene_parent,
@@ -310,7 +310,7 @@ public:
 			const GLTFNodeIndex node_index);
 	void _generate_skeleton_bone_node(Ref<GLTFState> state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index);
 	void _import_animation(Ref<GLTFState> state, AnimationPlayer *ap,
-			const GLTFAnimationIndex index, const int bake_fps);
+			const GLTFAnimationIndex index, const float bake_fps, const bool trimming);
 	void _convert_mesh_instances(Ref<GLTFState> state);
 	GLTFCameraIndex _convert_camera(Ref<GLTFState> state, Camera3D *p_camera);
 	void _convert_light_to_gltf(Light3D *light, Ref<GLTFState> state, Ref<GLTFNode> gltf_node);
@@ -368,7 +368,7 @@ public:
 	void _convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			String p_animation_track_name);
 	Error _serialize(Ref<GLTFState> state, const String &p_path);
-	Error _parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f, int p_bake_fps);
+	Error _parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f);
 };
 
 #endif // GLTF_DOCUMENT_H
