@@ -4057,7 +4057,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			Color color = theme_cache.default_color;
 			Color outline_color = theme_cache.font_outline_color;
 			int outline_size = theme_cache.outline_size;
-			Rect2 dropcap_margins = Rect2();
+			Rect2 dropcap_margins;
 
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
@@ -5716,11 +5716,11 @@ Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_id
 }
 
 Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressions) {
-	Dictionary d = Dictionary();
+	Dictionary d;
 	for (int i = 0; i < p_expressions.size(); i++) {
 		String expression = p_expressions[i];
 
-		Array a = Array();
+		Array a;
 		Vector<String> parts = expression.split("=", true);
 		String key = parts[0];
 		if (parts.size() != 2) {
