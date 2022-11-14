@@ -785,7 +785,7 @@ private:
 	bool flip_h = false;
 	bool flip_v = false;
 	bool transpose = false;
-	Vector2i tex_offset = Vector2i();
+	Vector2i tex_offset;
 	Ref<Material> material = Ref<Material>();
 	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 	int z_index = 0;

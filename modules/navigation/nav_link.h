@@ -37,8 +37,8 @@
 class NavLink : public NavBase {
 	NavMap *map = nullptr;
 	bool bidirectional = true;
-	Vector3 start_location = Vector3();
-	Vector3 end_location = Vector3();
+	Vector3 start_location;
+	Vector3 end_location;
 
 	bool link_dirty = true;
 

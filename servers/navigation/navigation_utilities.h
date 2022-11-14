@@ -48,8 +48,8 @@ struct PathQueryParameters {
 	PathfindingAlgorithm pathfinding_algorithm = PATHFINDING_ALGORITHM_ASTAR;
 	PathPostProcessing path_postprocessing = PATH_POSTPROCESSING_CORRIDORFUNNEL;
 	RID map;
-	Vector3 start_position = Vector3();
-	Vector3 target_position = Vector3();
+	Vector3 start_position;
+	Vector3 target_position;
 	uint32_t navigation_layers = 1;
 };
 

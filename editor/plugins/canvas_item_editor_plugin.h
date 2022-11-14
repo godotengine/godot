@@ -339,12 +339,12 @@ private:
 
 	Point2 drag_start_origin;
 	DragType drag_type = DRAG_NONE;
-	Point2 drag_from = Vector2();
-	Point2 drag_to = Vector2();
+	Point2 drag_from;
+	Point2 drag_to;
 	Point2 drag_rotation_center;
 	List<CanvasItem *> drag_selection;
 	int dragged_guide_index = -1;
-	Point2 dragged_guide_pos = Point2();
+	Point2 dragged_guide_pos;
 	bool is_hovering_h_guide = false;
 	bool is_hovering_v_guide = false;
 

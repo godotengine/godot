@@ -68,8 +68,8 @@ private:
 	float chain_tolarance = 0.01;
 	int chain_max_iterations = 10;
 	int chain_iterations = 0;
-	Transform2D target_global_pose = Transform2D();
-	Transform2D origin_global_pose = Transform2D();
+	Transform2D target_global_pose;
+	Transform2D origin_global_pose;
 
 	void fabrik_joint_update_bone2d_cache(int p_joint_idx);
 	void chain_backwards();
