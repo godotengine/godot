@@ -44,6 +44,12 @@ void Body2DSW::update_inertias() {
 
 	switch (mode) {
 		case Physics2DServer::BODY_MODE_RIGID: {
+			if (mass) {
+				_inv_mass = 1.0 / mass;
+			} else {
+				_inv_mass = 0;
+			}
+
 			if (user_inertia) {
 				_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
 				break;
@@ -78,13 +84,6 @@ void Body2DSW::update_inertias() {
 			}
 
 			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
-
-			if (mass) {
-				_inv_mass = 1.0 / mass;
-			} else {
-				_inv_mass = 0;
-			}
-
 		} break;
 		case Physics2DServer::BODY_MODE_KINEMATIC:
 		case Physics2DServer::BODY_MODE_STATIC: {
