@@ -5860,7 +5860,7 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 	ERR_FAIL_V(p_values[0]);
 }
 
-void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, const GLTFAnimationIndex index, const int bake_fps) {
+void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, const GLTFAnimationIndex index, const float bake_fps, const bool trimming) {
 	Ref<GLTFAnimation> anim = state->animations[index];
 
 	String anim_name = anim->get_name();
@@ -5877,7 +5877,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 		animation->set_loop_mode(Animation::LOOP_LINEAR);
 	}
 
-	float length = 0.0;
+	double anim_start = trimming ? INFINITY : 0.0;
+	double anim_end = 0.0;
 
 	for (const KeyValue<int, GLTFAnimation::Track> &track_i : anim->get_tracks()) {
 		const GLTFAnimation::Track &track = track_i.value;
@@ -5907,19 +5908,40 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			transform_node_path = node_path;
 		}
 
-		for (int i = 0; i < track.rotation_track.times.size(); i++) {
-			length = MAX(length, track.rotation_track.times[i]);
-		}
-		for (int i = 0; i < track.position_track.times.size(); i++) {
-			length = MAX(length, track.position_track.times[i]);
-		}
-		for (int i = 0; i < track.scale_track.times.size(); i++) {
-			length = MAX(length, track.scale_track.times[i]);
-		}
-
-		for (int i = 0; i < track.weight_tracks.size(); i++) {
-			for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
-				length = MAX(length, track.weight_tracks[i].times[j]);
+		if (trimming) {
+			for (int i = 0; i < track.rotation_track.times.size(); i++) {
+				anim_start = MIN(anim_start, track.rotation_track.times[i]);
+				anim_end = MAX(anim_end, track.rotation_track.times[i]);
+			}
+			for (int i = 0; i < track.position_track.times.size(); i++) {
+				anim_start = MIN(anim_start, track.position_track.times[i]);
+				anim_end = MAX(anim_end, track.position_track.times[i]);
+			}
+			for (int i = 0; i < track.scale_track.times.size(); i++) {
+				anim_start = MIN(anim_start, track.scale_track.times[i]);
+				anim_end = MAX(anim_end, track.scale_track.times[i]);
+			}
+			for (int i = 0; i < track.weight_tracks.size(); i++) {
+				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+					anim_start = MIN(anim_start, track.weight_tracks[i].times[j]);
+					anim_end = MAX(anim_end, track.weight_tracks[i].times[j]);
+				}
+			}
+		} else {
+			// If you don't use trimming and the first key time is not at 0.0, fake keys will be inserted.
+			for (int i = 0; i < track.rotation_track.times.size(); i++) {
+				anim_end = MAX(anim_end, track.rotation_track.times[i]);
+			}
+			for (int i = 0; i < track.position_track.times.size(); i++) {
+				anim_end = MAX(anim_end, track.position_track.times[i]);
+			}
+			for (int i = 0; i < track.scale_track.times.size(); i++) {
+				anim_end = MAX(anim_end, track.scale_track.times[i]);
+			}
+			for (int i = 0; i < track.weight_tracks.size(); i++) {
+				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+					anim_end = MAX(anim_end, track.weight_tracks[i].times[j]);
+				}
 			}
 		}
 
@@ -5988,10 +6010,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				}
 			}
 
-			//first determine animation length
-
 			const double increment = 1.0 / bake_fps;
-			double time = 0.0;
+			double time = anim_start;
 
 			Vector3 base_pos;
 			Quaternion base_rot;
@@ -6017,26 +6037,26 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 				if (position_idx >= 0) {
 					pos = _interpolate_track<Vector3>(track.position_track.times, track.position_track.values, time, track.position_track.interpolation);
-					animation->position_track_insert_key(position_idx, time, pos);
+					animation->position_track_insert_key(position_idx, time - anim_start, pos);
 				}
 
 				if (rotation_idx >= 0) {
 					rot = _interpolate_track<Quaternion>(track.rotation_track.times, track.rotation_track.values, time, track.rotation_track.interpolation);
-					animation->rotation_track_insert_key(rotation_idx, time, rot);
+					animation->rotation_track_insert_key(rotation_idx, time - anim_start, rot);
 				}
 
 				if (scale_idx >= 0) {
 					scale = _interpolate_track<Vector3>(track.scale_track.times, track.scale_track.values, time, track.scale_track.interpolation);
-					animation->scale_track_insert_key(scale_idx, time, scale);
+					animation->scale_track_insert_key(scale_idx, time - anim_start, scale);
 				}
 
 				if (last) {
 					break;
 				}
 				time += increment;
-				if (time >= length) {
+				if (time >= anim_end) {
 					last = true;
-					time = length;
+					time = anim_end;
 				}
 			}
 		}
@@ -6071,21 +6091,21 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				bool last = false;
 				while (true) {
 					real_t blend = _interpolate_track<real_t>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
-					animation->blend_shape_track_insert_key(track_idx, time, blend);
+					animation->blend_shape_track_insert_key(track_idx, time - anim_start, blend);
 					if (last) {
 						break;
 					}
 					time += increment;
-					if (time >= length) {
+					if (time >= anim_end) {
 						last = true;
-						time = length;
+						time = anim_end;
 					}
 				}
 			}
 		}
 	}
 
-	animation->set_length(length);
+	animation->set_length(anim_end - anim_start);
 
 	Ref<AnimationLibrary> library;
 	if (!ap->has_animation_library("")) {
@@ -6585,7 +6605,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 	}
 }
 
-Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f, int p_bake_fps) {
+Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f) {
 	Error err;
 	if (f.is_null()) {
 		return FAILED;
@@ -6636,7 +6656,7 @@ Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> 
 		}
 	}
 
-	err = _parse_gltf_state(state, p_path, p_bake_fps);
+	err = _parse_gltf_state(state, p_path);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	return OK;
@@ -6754,14 +6774,14 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 }
 
 void GLTFDocument::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "bake_fps", "base_path"),
-			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(30), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("append_from_buffer", "bytes", "base_path", "state", "flags", "bake_fps"),
-			&GLTFDocument::append_from_buffer, DEFVAL(0), DEFVAL(30));
-	ClassDB::bind_method(D_METHOD("append_from_scene", "node", "state", "flags", "bake_fps"),
-			&GLTFDocument::append_from_scene, DEFVAL(0), DEFVAL(30));
-	ClassDB::bind_method(D_METHOD("generate_scene", "state", "bake_fps"),
-			&GLTFDocument::generate_scene, DEFVAL(30));
+	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "base_path"),
+			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("append_from_buffer", "bytes", "base_path", "state", "flags"),
+			&GLTFDocument::append_from_buffer, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("append_from_scene", "node", "state", "flags"),
+			&GLTFDocument::append_from_scene, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("generate_scene", "state", "bake_fps", "trimming"),
+			&GLTFDocument::generate_scene, DEFVAL(30), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("generate_buffer", "state"),
 			&GLTFDocument::generate_buffer);
 	ClassDB::bind_method(D_METHOD("write_to_filesystem", "state", "path"),
@@ -6870,7 +6890,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> state, const String &p_pa
 	return OK;
 }
 
-Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
+Node *GLTFDocument::generate_scene(Ref<GLTFState> state, float p_bake_fps, bool p_trimming) {
 	ERR_FAIL_NULL_V(state, nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
 	Error err = OK;
@@ -6884,7 +6904,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 		root->add_child(ap, true);
 		ap->set_owner(root);
 		for (int i = 0; i < state->animations.size(); i++) {
-			_import_animation(state, ap, i, p_bake_fps);
+			_import_animation(state, ap, i, p_bake_fps, p_trimming);
 		}
 	}
 	for (KeyValue<GLTFNodeIndex, Node *> E : state->scene_nodes) {
@@ -6910,7 +6930,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 	return root;
 }
 
-Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
+Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32_t p_flags) {
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
@@ -6930,7 +6950,7 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32
 	return OK;
 }
 
-Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
+Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> state, uint32_t p_flags) {
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
@@ -6941,7 +6961,7 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
 	state->base_path = p_base_path.get_base_dir();
-	err = _parse(state, state->base_path, file_access, p_bake_fps);
+	err = _parse(state, state->base_path, file_access);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -6951,7 +6971,7 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	return OK;
 }
 
-Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_search_path, float p_bake_fps) {
+Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_search_path) {
 	Error err;
 
 	/* PARSE EXTENSIONS */
@@ -7047,7 +7067,7 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_sear
 	return OK;
 }
 
-Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags, int32_t p_bake_fps, String p_base_path) {
+Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags, String p_base_path) {
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	if (r_state == Ref<GLTFState>()) {
 		r_state.instantiate();
@@ -7064,7 +7084,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 		base_path = p_path.get_base_dir();
 	}
 	r_state->base_path = base_path;
-	err = _parse(r_state, base_path, f, p_bake_fps);
+	err = _parse(r_state, base_path, f);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
