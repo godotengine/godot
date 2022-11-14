@@ -39,6 +39,7 @@ class Node3D;
 class Button;
 class PopupMenu;
 class EditorCommandPalette;
+class EditorDebuggerPlugin;
 class EditorExport;
 class EditorExportPlugin;
 class EditorFileSystem;
@@ -302,8 +303,8 @@ public:
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
 
-	void add_debugger_plugin(const Ref<Script> &p_script);
-	void remove_debugger_plugin(const Ref<Script> &p_script);
+	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 
 	void enable_plugin();
 	void disable_plugin();

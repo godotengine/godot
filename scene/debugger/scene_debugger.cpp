@@ -39,87 +39,10 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
-Array SceneDebugger::RPCProfilerFrame::serialize() {
-	Array arr;
-	arr.push_back(infos.size() * 4);
-	for (int i = 0; i < infos.size(); ++i) {
-		arr.push_back(uint64_t(infos[i].node));
-		arr.push_back(infos[i].node_path);
-		arr.push_back(infos[i].incoming_rpc);
-		arr.push_back(infos[i].outgoing_rpc);
-	}
-	return arr;
-}
-
-bool SceneDebugger::RPCProfilerFrame::deserialize(const Array &p_arr) {
-	ERR_FAIL_COND_V(p_arr.size() < 1, false);
-	uint32_t size = p_arr[0];
-	ERR_FAIL_COND_V(size % 4, false);
-	ERR_FAIL_COND_V((uint32_t)p_arr.size() != size + 1, false);
-	infos.resize(size / 4);
-	int idx = 1;
-	for (uint32_t i = 0; i < size / 4; ++i) {
-		infos.write[i].node = uint64_t(p_arr[idx]);
-		infos.write[i].node_path = p_arr[idx + 1];
-		infos.write[i].incoming_rpc = p_arr[idx + 2];
-		infos.write[i].outgoing_rpc = p_arr[idx + 3];
-	}
-	return true;
-}
-
-class SceneDebugger::RPCProfiler : public EngineProfiler {
-	HashMap<ObjectID, RPCNodeInfo> rpc_node_data;
-	uint64_t last_profile_time = 0;
-
-	void init_node(const ObjectID p_node) {
-		if (rpc_node_data.has(p_node)) {
-			return;
-		}
-		rpc_node_data.insert(p_node, RPCNodeInfo());
-		rpc_node_data[p_node].node = p_node;
-		rpc_node_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
-		rpc_node_data[p_node].incoming_rpc = 0;
-		rpc_node_data[p_node].outgoing_rpc = 0;
-	}
-
-public:
-	void toggle(bool p_enable, const Array &p_opts) {
-		rpc_node_data.clear();
-	}
-
-	void add(const Array &p_data) {
-		ERR_FAIL_COND(p_data.size() < 2);
-		const ObjectID id = p_data[0];
-		const String what = p_data[1];
-		init_node(id);
-		RPCNodeInfo &info = rpc_node_data[id];
-		if (what == "rpc_in") {
-			info.incoming_rpc++;
-		} else if (what == "rpc_out") {
-			info.outgoing_rpc++;
-		}
-	}
-
-	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
-		uint64_t pt = OS::get_singleton()->get_ticks_msec();
-		if (pt - last_profile_time > 100) {
-			last_profile_time = pt;
-			RPCProfilerFrame frame;
-			for (const KeyValue<ObjectID, RPCNodeInfo> &E : rpc_node_data) {
-				frame.infos.push_back(E.value);
-			}
-			rpc_node_data.clear();
-			EngineDebugger::get_singleton()->send_message("multiplayer:rpc", frame.serialize());
-		}
-	}
-};
-
 SceneDebugger *SceneDebugger::singleton = nullptr;
 
 SceneDebugger::SceneDebugger() {
 	singleton = this;
-	rpc_profiler.instantiate();
-	rpc_profiler->bind("rpc");
 #ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
