@@ -50,14 +50,15 @@ _arguments \
   '--text-driver[set the text driver]:text driver name' \
   '--tablet-driver[set the pen tablet input driver]:tablet driver name' \
   '--headless[enable headless mode (--display-driver headless --audio-driver Dummy), useful for servers and with --script]' \
+  '--write-movie[writes a video to the specified path (usually with .avi or .png extension)]:path to output video file' \
   '(-f --fullscreen)'{-f,--fullscreen}'[request fullscreen mode]' \
   '(-m --maximized)'{-m,--maximized}'[request a maximized window]' \
   '(-w --windowed)'{-w,--windowed}'[request windowed mode]' \
   '(-t --always-on-top)'{-t,--always-on-top}'[request an always-on-top window]' \
   '--resolution[request window resolution]:resolution in WxH format' \
   '--position[request window position]:position in X,Y format' \
-  '--headless[enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script]' \
   '--single-window[use a single window (no separate subwindows)]' \
+  '--xr-mode[select Extended Reality (XR) mode]:Extended Reality (XR) mode:(default off on)' \
   '(-d --debug)'{-d,--debug}'[debug (local stdout debugger)]' \
   '(-b --breakpoints)'{-b,--breakpoints}'[specify the breakpoint list as source::line comma-separated pairs, no spaces (use %20 instead)]:breakpoint list' \
   '--profiling[enable profiling in the script debugger]' \
@@ -70,6 +71,7 @@ _arguments \
   '--debug-stringnames[print all StringName allocations to stdout when the engine quits]' \
   '--frame-delay[simulate high CPU load (delay each frame by the given number of milliseconds)]:number of milliseconds' \
   '--time-scale[force time scale (higher values are faster, 1.0 is normal speed)]:time scale' \
+  '--disable-vsync[disable vertical synchronization even if enabled in the project settings]' \
   '--disable-render-loop[disable render loop so rendering only occurs when called explicitly from script]' \
   '--disable-crash-handler[disable crash handler when supported by the platform code]' \
   '--fixed-fps[force a fixed number of frames per second (this setting disables real-time synchronization)]:frames per second' \
@@ -86,4 +88,6 @@ _arguments \
   '--build-solutions[build the scripting solutions (e.g. for C# projects)]' \
   '--dump-gdextension-interface[generate GDExtension header file 'gdnative_interface.h' in the current folder. This file is the base file required to implement a GDExtension.]' \
   '--dump-extension-api[generate JSON dump of the Godot API for GDExtension bindings named "extension_api.json" in the current folder]' \
+  '--startup-benchmark[benchmark the startup time and print it to console]' \
+  '--startup-benchmark-file[benchmark the startup time and save it to a given file in JSON format]:path to output JSON file' \
   '--test[run all unit tests; run with "--test --help" for more information]'

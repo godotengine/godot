@@ -66,6 +66,7 @@ complete -c godot -l gpu-index -d "Use a specific GPU (run with --verbose to get
 complete -c godot -l text-driver -d "Set the text driver" -x
 complete -c godot -l tablet-driver -d "Set the pen tablet input driver" -x
 complete -c godot -l headless -d "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script"
+complete -c godot -l write-movie -d "Writes a video to the specified path (usually with .avi or .png extension). --fixed-fps is forced when enabled" -x
 
 # Display options:
 complete -c godot -s f -l fullscreen -d "Request fullscreen mode"
@@ -74,8 +75,8 @@ complete -c godot -s w -l windowed -d "Request windowed mode"
 complete -c godot -s t -l always-on-top -d "Request an always-on-top window"
 complete -c godot -l resolution -d "Request window resolution" -x
 complete -c godot -l position -d "Request window position" -x
-complete -c godot -l headless -d "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script"
 complete -c godot -l single-window -d "Use a single window (no separate subwindows)"
+complete -c godot -l xr-mode -d "Select Extended Reality (XR) mode" -a "default off on"
 
 # Debug options:
 complete -c godot -s d -l debug -d "Debug (local stdout debugger)"
@@ -108,4 +109,6 @@ complete -c godot -l no-docbase -d "Disallow dumping the base types (used with -
 complete -c godot -l build-solutions -d "Build the scripting solutions (e.g. for C# projects)"
 complete -c godot -l dump-gdextension-interface -d "Generate GDExtension header file 'gdnative_interface.h' in the current folder. This file is the base file required to implement a GDExtension"
 complete -c godot -l dump-extension-api -d "Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder"
+complete -c godot -l startup-benchmark -d "Benchmark the startup time and print it to console"
+complete -c godot -l startup-benchmark-file -d "Benchmark the startup time and save it to a given file in JSON format" -x
 complete -c godot -l test -d "Run all unit tests; run with '--test --help' for more information" -x
