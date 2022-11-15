@@ -112,6 +112,12 @@ void Camera3D::_notification(int p_what) {
 			if (current || first_camera) {
 				viewport->_camera_3d_set(this);
 			}
+
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				viewport->connect(SNAME("size_changed"), callable_mp((Node3D *)this, &Camera3D::update_gizmos));
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -133,6 +139,11 @@ void Camera3D::_notification(int p_what) {
 			}
 
 			if (viewport) {
+#ifdef TOOLS_ENABLED
+				if (Engine::get_singleton()->is_editor_hint()) {
+					viewport->disconnect(SNAME("size_changed"), callable_mp((Node3D *)this, &Camera3D::update_gizmos));
+				}
+#endif
 				viewport->_camera_3d_remove(this);
 				viewport = nullptr;
 			}

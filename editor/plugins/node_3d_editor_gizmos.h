@@ -264,6 +264,9 @@ public:
 class Camera3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Camera3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
+private:
+	static Size2i _get_viewport_size(Camera3D *p_camera);
+
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
 	String get_gizmo_name() const override;
