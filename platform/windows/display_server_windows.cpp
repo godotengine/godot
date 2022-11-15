@@ -2023,6 +2023,12 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
+
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->set_use_vsync(p_window, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+#endif
 }
 
 DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
@@ -2032,6 +2038,13 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 		return context_vulkan->get_vsync_mode(p_window);
 	}
 #endif
+
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		return gl_manager->is_using_vsync(p_window) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	}
+#endif
+
 	return DisplayServer::VSYNC_ENABLED;
 }
 
@@ -3601,6 +3614,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				windows.erase(id);
 				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
 			}
+			window_set_vsync_mode(p_vsync_mode, id);
 		}
 #endif
 
