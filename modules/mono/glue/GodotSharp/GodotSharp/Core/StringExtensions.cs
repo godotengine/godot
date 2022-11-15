@@ -229,7 +229,6 @@ namespace Godot
             sb.Replace("\v", "\\v");
             sb.Replace("\'", "\\'");
             sb.Replace("\"", "\\\"");
-            sb.Replace("?", "\\?");
 
             return sb.ToString();
         }
@@ -253,7 +252,6 @@ namespace Godot
             sb.Replace("\\v", "\v");
             sb.Replace("\\'", "\'");
             sb.Replace("\\\"", "\"");
-            sb.Replace("\\?", "?");
             sb.Replace("\\\\", "\\");
 
             return sb.ToString();
