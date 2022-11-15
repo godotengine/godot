@@ -779,7 +779,8 @@ void main() {
 
 // alpha hash can be used in unison with alpha antialiasing
 #ifdef ALPHA_HASH_USED
-	if (alpha < compute_alpha_hash_threshold(vertex, alpha_hash_scale)) {
+	vec3 object_pos = (inverse(read_model_matrix) * inv_view_matrix * vec4(vertex, 1.0)).xyz;
+	if (alpha < compute_alpha_hash_threshold(object_pos, alpha_hash_scale)) {
 		discard;
 	}
 #endif // ALPHA_HASH_USED
