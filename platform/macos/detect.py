@@ -242,18 +242,24 @@ def configure(env: "Environment"):
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
             mvk_found = False
+
+            mkv_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
             if env["vulkan_sdk_path"] != "":
-                mvk_path = os.path.join(
-                    os.path.expanduser(env["vulkan_sdk_path"]), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
+                mkv_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
+                mkv_list.insert(
+                    0,
+                    os.path.join(
+                        os.path.expanduser(env["vulkan_sdk_path"]), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
+                    ),
                 )
-                if os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
-                    mvk_found = True
-                    env.Append(LINKFLAGS=["-L" + mvk_path])
-            if not mvk_found:
-                mvk_path = get_mvk_sdk_path()
+
+            for mvk_path in mkv_list:
                 if mvk_path and os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
                     mvk_found = True
+                    print("MoltenVK found at: " + mvk_path)
                     env.Append(LINKFLAGS=["-L" + mvk_path])
+                    break
+
             if not mvk_found:
                 print(
                     "MoltenVK SDK installation directory not found, use 'vulkan_sdk_path' SCons parameter to specify SDK path."
