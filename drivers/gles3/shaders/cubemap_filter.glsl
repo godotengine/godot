@@ -31,7 +31,7 @@ uniform samplerCube source_cube; //texunit:0
 uniform int face_id;
 
 #ifndef MODE_DIRECT_WRITE
-uniform int sample_count;
+uniform uint sample_count;
 uniform vec4 sample_directions_mip[MAX_SAMPLE_COUNT];
 uniform float weight;
 #endif
@@ -105,7 +105,7 @@ void main() {
 	T[1] = cross(N, T[0]);
 	T[2] = N;
 
-	for (int sample_num = 0; sample_num < sample_count; sample_num++) {
+	for (uint sample_num = 0u; sample_num < sample_count; sample_num++) {
 		vec4 sample_direction_mip = sample_directions_mip[sample_num];
 		vec3 L = T * sample_direction_mip.xyz;
 		vec3 val = textureLod(source_cube, L, sample_direction_mip.w).rgb;
