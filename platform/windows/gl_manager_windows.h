@@ -54,6 +54,7 @@ private:
 	struct GLWindow {
 		int width = 0;
 		int height = 0;
+		bool use_vsync = false;
 
 		// windows specific
 		HDC hDC;
@@ -72,8 +73,8 @@ private:
 
 	GLWindow *_current_window = nullptr;
 
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
+	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = nullptr;
+	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT = nullptr;
 
 	// funcs
 	void _internal_set_current_window(GLWindow *p_win);
@@ -86,7 +87,6 @@ private:
 
 	bool direct_render;
 	int glx_minor, glx_major;
-	bool use_vsync;
 	ContextType context_type;
 
 private:
@@ -110,8 +110,8 @@ public:
 
 	Error initialize();
 
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
+	void set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use);
+	bool is_using_vsync(DisplayServer::WindowID p_window_id) const;
 
 	HDC get_hdc(DisplayServer::WindowID p_window_id);
 	HGLRC get_hglrc(DisplayServer::WindowID p_window_id);
