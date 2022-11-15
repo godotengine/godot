@@ -11,15 +11,13 @@
  ********************************************************************
 
   function:
-  last mod: $Id: encode.c 16503 2009-08-22 18:14:02Z giles $
+  last mod: $Id$
 
  ********************************************************************/
 #include <stdlib.h>
 #include <string.h>
 #include "encint.h"
-#if defined(OC_X86_ASM)
-# include "x86/x86enc.h"
-#endif
+#include "dequant.h"
 
 
 
@@ -288,12 +286,12 @@ const th_quant_info TH_DEF_QUANT_INFO={
      28, 25, 24, 22, 20, 17, 14, 10
   },
   {
-    30,25,20,20,15,15,14,14,
-    13,13,12,12,11,11,10,10,
-     9, 9, 8, 8, 7, 7, 7, 7,
-     6, 6, 6, 6, 5, 5, 5, 5,
-     4, 4, 4, 4, 3, 3, 3, 3,
+    15,12, 9, 8, 6, 6, 5, 5,
+     5, 5, 5, 5, 5, 5, 5, 5,
+     4, 4, 4, 4, 4, 4, 3, 3,
+     3, 3, 3, 3, 3, 3, 3, 3,
      2, 2, 2, 2, 2, 2, 2, 2,
+     2, 2, 2, 2, 2, 2, 2, 0,
      0, 0, 0, 0, 0, 0, 0, 0,
      0, 0, 0, 0, 0, 0, 0, 0
   },
@@ -623,11 +621,15 @@ static void oc_enc_mb_modes_pack(oc_enc_ctx *_enc){
   }
 }
 
-static void oc_enc_mv_pack(oc_enc_ctx *_enc,int _mv_scheme,int _dx,int _dy){
+static void oc_enc_mv_pack(oc_enc_ctx *_enc,int _mv_scheme,oc_mv _mv){
+  int dx;
+  int dy;
+  dx=OC_MV_X(_mv);
+  dy=OC_MV_Y(_mv);
   oggpackB_write(&_enc->opb,
-   OC_MV_CODES[_mv_scheme][_dx+31],OC_MV_BITS[_mv_scheme][_dx+31]);
+   OC_MV_CODES[_mv_scheme][dx+31],OC_MV_BITS[_mv_scheme][dx+31]);
   oggpackB_write(&_enc->opb,
-   OC_MV_CODES[_mv_scheme][_dy+31],OC_MV_BITS[_mv_scheme][_dy+31]);
+   OC_MV_CODES[_mv_scheme][dy+31],OC_MV_BITS[_mv_scheme][dy+31]);
 }
 
 static void oc_enc_mvs_pack(oc_enc_ctx *_enc){
@@ -650,7 +652,7 @@ static void oc_enc_mvs_pack(oc_enc_ctx *_enc){
   mb_modes=_enc->state.mb_modes;
   mb_maps=(const oc_mb_map *)_enc->state.mb_maps;
   frags=_enc->state.frags;
-  frag_mvs=(const oc_mv *)_enc->state.frag_mvs;
+  frag_mvs=_enc->state.frag_mvs;
   for(mbii=0;mbii<ncoded_mbis;mbii++){
     ptrdiff_t fragi;
     unsigned  mbi;
@@ -662,8 +664,7 @@ static void oc_enc_mvs_pack(oc_enc_ctx *_enc){
         for(bi=0;;bi++){
           fragi=mb_maps[mbi][0][bi];
           if(frags[fragi].coded){
-            oc_enc_mv_pack(_enc,mv_scheme,
-             frag_mvs[fragi][0],frag_mvs[fragi][1]);
+            oc_enc_mv_pack(_enc,mv_scheme,frag_mvs[fragi]);
             /*Only code a single MV for this macro block.*/
             break;
           }
@@ -673,8 +674,7 @@ static void oc_enc_mvs_pack(oc_enc_ctx *_enc){
         for(bi=0;bi<4;bi++){
           fragi=mb_maps[mbi][0][bi];
           if(frags[fragi].coded){
-            oc_enc_mv_pack(_enc,mv_scheme,
-             frag_mvs[fragi][0],frag_mvs[fragi][1]);
+            oc_enc_mv_pack(_enc,mv_scheme,frag_mvs[fragi]);
             /*Keep coding all the MVs for this macro block.*/
           }
         }
@@ -863,11 +863,55 @@ static void oc_enc_residual_tokens_pack(oc_enc_ctx *_enc){
   }
 }
 
+/*Packs an explicit drop frame, instead of using the more efficient 0-byte
+   packet.
+  This is only enabled in VP3-compatibility mode, even though it is not
+   strictly required for VP3 compatibility (VP3 could be encoded in AVI, which
+   also supports dropping frames by inserting 0 byte packets).
+  However, almost every _Theora_ player used to get this wrong (and many still
+   do), and it wasn't until we started shipping a post-VP3 encoder that
+   actually used non-VP3 features that this began to be discovered and fixed,
+   despite being in the standard since 2004.
+  The pack buffer must be reset before calling this function.*/
+static void oc_enc_drop_frame_pack(oc_enc_ctx *_enc){
+  unsigned nsbs;
+  /*Mark this as a data packet.*/
+  oggpackB_write(&_enc->opb,0,1);
+  /*Output the frame type (key frame or delta frame).*/
+  oggpackB_write(&_enc->opb,OC_INTER_FRAME,1);
+  /*Write out the current qi list.
+    We always use just 1 qi, to avoid wasting bits on the others.*/
+  oggpackB_write(&_enc->opb,_enc->state.qis[0],6);
+  oggpackB_write(&_enc->opb,0,1);
+  /*Coded block flags: everything is uncoded.*/
+  nsbs=_enc->state.nsbs;
+  /*No partially coded SBs.*/
+  oggpackB_write(&_enc->opb,0,1);
+  oc_sb_run_pack(&_enc->opb,nsbs,0,1);
+  /*No fully coded SBs.*/
+  oggpackB_write(&_enc->opb,0,1);
+  oc_sb_run_pack(&_enc->opb,nsbs,0,1);
+  /*MB modes: just need write which scheme to use.
+    Since we have no coded MBs, we can pick any of them except 0, which would
+     require writing out an additional mode list.*/
+  oggpackB_write(&_enc->opb,7,3);
+  /*MVs: just need write which scheme to use.
+    We can pick either one, since we have no MVs.*/
+  oggpackB_write(&_enc->opb,1,1);
+  /*Write the chosen DC token tables.*/
+  oggpackB_write(&_enc->opb,_enc->huff_idxs[OC_INTER_FRAME][0][0],4);
+  oggpackB_write(&_enc->opb,_enc->huff_idxs[OC_INTER_FRAME][0][1],4);
+  /*Write the chosen AC token tables.*/
+  oggpackB_write(&_enc->opb,_enc->huff_idxs[OC_INTER_FRAME][1][0],4);
+  oggpackB_write(&_enc->opb,_enc->huff_idxs[OC_INTER_FRAME][1][1],4);
+}
+
 static void oc_enc_frame_pack(oc_enc_ctx *_enc){
+  /*musl libc malloc()/realloc() calls might use floating point, so make sure
+     we've cleared the MMX state for them.*/
+  oc_restore_fpu(&_enc->state);
   oggpackB_reset(&_enc->opb);
-  /*Only proceed if we have some coded blocks.
-    If there are no coded blocks, we can drop this frame simply by emitting a
-     0 byte packet.*/
+  /*Only proceed if we have some coded blocks.*/
   if(_enc->state.ntotal_coded_fragis>0){
     oc_enc_frame_header_pack(_enc);
     if(_enc->state.frame_type==OC_INTER_FRAME){
@@ -880,6 +924,10 @@ static void oc_enc_frame_pack(oc_enc_ctx *_enc){
     oc_enc_tokenize_finish(_enc);
     oc_enc_residual_tokens_pack(_enc);
   }
+  /*If there are no coded blocks, we can drop this frame simply by emitting a
+     0 byte packet.
+    We emit an inter frame with no coded blocks in VP3-compatibility mode.*/
+  else if(_enc->vp3_compatible)oc_enc_drop_frame_pack(_enc);
   /*Success: Mark the packet as ready to be flushed.*/
   _enc->packet_state=OC_PACKET_READY;
 #if defined(OC_COLLECT_METRICS)
@@ -888,21 +936,31 @@ static void oc_enc_frame_pack(oc_enc_ctx *_enc){
 }
 
 
-void oc_enc_vtable_init_c(oc_enc_ctx *_enc){
+void oc_enc_accel_init_c(oc_enc_ctx *_enc){
   /*The implementations prefixed with oc_enc_ are encoder-specific.
     The rest we re-use from the decoder.*/
+# if defined(OC_ENC_USE_VTABLE)
+  _enc->opt_vtable.frag_sub=oc_enc_frag_sub_c;
+  _enc->opt_vtable.frag_sub_128=oc_enc_frag_sub_128_c;
   _enc->opt_vtable.frag_sad=oc_enc_frag_sad_c;
   _enc->opt_vtable.frag_sad_thresh=oc_enc_frag_sad_thresh_c;
   _enc->opt_vtable.frag_sad2_thresh=oc_enc_frag_sad2_thresh_c;
-  _enc->opt_vtable.frag_satd_thresh=oc_enc_frag_satd_thresh_c;
-  _enc->opt_vtable.frag_satd2_thresh=oc_enc_frag_satd2_thresh_c;
+  _enc->opt_vtable.frag_intra_sad=oc_enc_frag_intra_sad_c;
+  _enc->opt_vtable.frag_satd=oc_enc_frag_satd_c;
+  _enc->opt_vtable.frag_satd2=oc_enc_frag_satd2_c;
   _enc->opt_vtable.frag_intra_satd=oc_enc_frag_intra_satd_c;
-  _enc->opt_vtable.frag_sub=oc_enc_frag_sub_c;
-  _enc->opt_vtable.frag_sub_128=oc_enc_frag_sub_128_c;
+  _enc->opt_vtable.frag_ssd=oc_enc_frag_ssd_c;
+  _enc->opt_vtable.frag_border_ssd=oc_enc_frag_border_ssd_c;
   _enc->opt_vtable.frag_copy2=oc_enc_frag_copy2_c;
+  _enc->opt_vtable.enquant_table_init=oc_enc_enquant_table_init_c;
+  _enc->opt_vtable.enquant_table_fixup=oc_enc_enquant_table_fixup_c;
+  _enc->opt_vtable.quantize=oc_enc_quantize_c;
   _enc->opt_vtable.frag_recon_intra=oc_frag_recon_intra_c;
   _enc->opt_vtable.frag_recon_inter=oc_frag_recon_inter_c;
   _enc->opt_vtable.fdct8x8=oc_enc_fdct8x8_c;
+# endif
+  _enc->opt_data.enquant_table_size=64*sizeof(oc_iquant);
+  _enc->opt_data.enquant_table_alignment=16;
 }
 
 /*Initialize the macro block neighbor lists for MC analysis.
@@ -1003,6 +1061,55 @@ static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
   return 0;
 }
 
+static void oc_enc_enquant_tables_init(oc_enc_ctx *_enc,
+ const th_quant_info *_qinfo){
+  unsigned char *etd;
+  size_t         ets;
+  int            align;
+  int            qii;
+  int            qi;
+  int            pli;
+  int            qti;
+  for(qi=0;qi<64;qi++)for(pli=0;pli<3;pli++)for(qti=0;qti<2;qti++){
+    _enc->state.dequant_tables[qi][pli][qti]=
+     _enc->state.dequant_table_data[qi][pli][qti];
+  }
+  /*Initialize the dequantization tables.*/
+  oc_dequant_tables_init(_enc->state.dequant_tables,NULL,_qinfo);
+  /*And save off the DC values.*/
+  for(qi=0;qi<64;qi++)for(pli=0;pli<3;pli++)for(qti=0;qti<2;qti++){
+    _enc->dequant_dc[qi][pli][qti]=_enc->state.dequant_tables[qi][pli][qti][0];
+  }
+  /*Set up storage for the quantization tables.*/
+  etd=_enc->enquant_table_data;
+  ets=_enc->opt_data.enquant_table_size;
+  align=-(etd-(unsigned char *)0)&_enc->opt_data.enquant_table_alignment-1;
+  etd+=align;
+  /*Set up the main tables.*/
+  for(qi=0;qi<64;qi++)for(pli=0;pli<3;pli++)for(qti=0;qti<2;qti++){
+    _enc->enquant_tables[qi][pli][qti]=etd;
+    oc_enc_enquant_table_init(_enc,etd,
+     _enc->state.dequant_tables[qi][pli][qti]);
+    etd+=ets;
+  }
+  /*Set up storage for the local copies we modify for each frame.*/
+  for(pli=0;pli<3;pli++)for(qii=0;qii<3;qii++)for(qti=0;qti<2;qti++){
+    _enc->enquant[pli][qii][qti]=etd;
+    etd+=ets;
+  }
+}
+
+/*Updates the encoder state after the quantization parameters have been
+   changed.*/
+static void oc_enc_quant_params_updated(oc_enc_ctx *_enc,
+ const th_quant_info *_qinfo){
+  oc_enc_enquant_tables_init(_enc,_qinfo);
+  memcpy(_enc->state.loop_filter_limits,_qinfo->loop_filter_limits,
+   sizeof(_enc->state.loop_filter_limits));
+  oc_enquant_qavg_init(_enc->log_qavg,_enc->log_plq,_enc->chroma_rd_scale,
+   _enc->state.dequant_tables,_enc->state.info.pixel_fmt);
+}
+
 /*Sets the quantization parameters to use.
   This may only be called before the setup header is written.
   If it is called multiple times, only the last call has any effect.
@@ -1012,25 +1119,20 @@ static int oc_enc_set_huffman_codes(oc_enc_ctx *_enc,
            will be used.*/
 static int oc_enc_set_quant_params(oc_enc_ctx *_enc,
  const th_quant_info *_qinfo){
-  int qi;
-  int pli;
-  int qti;
+  th_quant_info old_qinfo;
+  int           ret;
   if(_enc==NULL)return TH_EFAULT;
   if(_enc->packet_state>OC_PACKET_SETUP_HDR)return TH_EINVAL;
   if(_qinfo==NULL)_qinfo=&TH_DEF_QUANT_INFO;
-  /*TODO: Analyze for packing purposes instead of just doing a shallow copy.*/
-  memcpy(&_enc->qinfo,_qinfo,sizeof(_enc->qinfo));
-  for(qi=0;qi<64;qi++)for(pli=0;pli<3;pli++)for(qti=0;qti<2;qti++){
-    _enc->state.dequant_tables[qi][pli][qti]=
-     _enc->state.dequant_table_data[qi][pli][qti];
-    _enc->enquant_tables[qi][pli][qti]=_enc->enquant_table_data[qi][pli][qti];
+  memcpy(&old_qinfo,&_enc->qinfo,sizeof(old_qinfo));
+  ret=oc_quant_params_clone(&_enc->qinfo,_qinfo);
+  if(ret<0){
+    oc_quant_params_clear(&_enc->qinfo);
+    memcpy(&_enc->qinfo,&old_qinfo,sizeof(old_qinfo));
+    return ret;
   }
-  oc_enquant_tables_init(_enc->state.dequant_tables,
-   _enc->enquant_tables,_qinfo);
-  memcpy(_enc->state.loop_filter_limits,_qinfo->loop_filter_limits,
-   sizeof(_enc->state.loop_filter_limits));
-  oc_enquant_qavg_init(_enc->log_qavg,_enc->state.dequant_tables,
-   _enc->state.info.pixel_fmt);
+  else oc_quant_params_clear(&old_qinfo);
+  oc_enc_quant_params_updated(_enc,_qinfo);
   return 0;
 }
 
@@ -1039,6 +1141,7 @@ static void oc_enc_clear(oc_enc_ctx *_enc);
 static int oc_enc_init(oc_enc_ctx *_enc,const th_info *_info){
   th_info   info;
   size_t    mcu_nmbs;
+  ptrdiff_t mcu_ncfrags;
   ptrdiff_t mcu_nfrags;
   int       hdec;
   int       vdec;
@@ -1053,8 +1156,9 @@ static int oc_enc_init(oc_enc_ctx *_enc,const th_info *_info){
   if(info.quality<0)info.quality=32;
   if(info.target_bitrate<0)info.target_bitrate=0;
   /*Initialize the shared encoder/decoder state.*/
-  ret=oc_state_init(&_enc->state,&info,4);
+  ret=oc_state_init(&_enc->state,&info,6);
   if(ret<0)return ret;
+  oc_enc_accel_init(_enc);
   _enc->mb_info=_ogg_calloc(_enc->state.nmbs,sizeof(*_enc->mb_info));
   _enc->frag_dc=_ogg_calloc(_enc->state.nfrags,sizeof(*_enc->frag_dc));
   _enc->coded_mbis=
@@ -1065,9 +1169,14 @@ static int oc_enc_init(oc_enc_ctx *_enc,const th_info *_info){
      super block rows of Y' for each super block row of Cb and Cr.*/
   _enc->mcu_nvsbs=1<<vdec;
   mcu_nmbs=_enc->mcu_nvsbs*_enc->state.fplanes[0].nhsbs*(size_t)4;
-  mcu_nfrags=4*mcu_nmbs+(8*mcu_nmbs>>hdec+vdec);
+  mcu_ncfrags=mcu_nmbs<<3-(hdec+vdec);
+  mcu_nfrags=4*mcu_nmbs+mcu_ncfrags;
   _enc->mcu_skip_ssd=(unsigned *)_ogg_malloc(
    mcu_nfrags*sizeof(*_enc->mcu_skip_ssd));
+  _enc->mcu_rd_scale=(ogg_uint16_t *)_ogg_malloc(
+   (mcu_ncfrags>>1)*sizeof(*_enc->mcu_rd_scale));
+  _enc->mcu_rd_iscale=(ogg_uint16_t *)_ogg_malloc(
+   (mcu_ncfrags>>1)*sizeof(*_enc->mcu_rd_iscale));
   for(pli=0;pli<3;pli++){
     _enc->dct_tokens[pli]=(unsigned char **)oc_malloc_2d(64,
      _enc->state.fplanes[pli].nfrags,sizeof(**_enc->dct_tokens));
@@ -1075,34 +1184,22 @@ static int oc_enc_init(oc_enc_ctx *_enc,const th_info *_info){
      _enc->state.fplanes[pli].nfrags,sizeof(**_enc->extra_bits));
   }
 #if defined(OC_COLLECT_METRICS)
+  _enc->frag_sad=_ogg_calloc(_enc->state.nfrags,sizeof(*_enc->frag_sad));
   _enc->frag_satd=_ogg_calloc(_enc->state.nfrags,sizeof(*_enc->frag_satd));
   _enc->frag_ssd=_ogg_calloc(_enc->state.nfrags,sizeof(*_enc->frag_ssd));
 #endif
-#if defined(OC_X86_ASM)
-  oc_enc_vtable_init_x86(_enc);
-#else
-  oc_enc_vtable_init_c(_enc);
-#endif
+  _enc->enquant_table_data=(unsigned char *)_ogg_malloc(
+   (64+3)*3*2*_enc->opt_data.enquant_table_size
+   +_enc->opt_data.enquant_table_alignment-1);
   _enc->keyframe_frequency_force=1<<_enc->state.info.keyframe_granule_shift;
   _enc->state.qis[0]=_enc->state.info.quality;
   _enc->state.nqis=1;
+  _enc->activity_avg=90<<12;
+  _enc->luma_avg=128<<8;
   oc_rc_state_init(&_enc->rc,_enc);
   oggpackB_writeinit(&_enc->opb);
-  if(_enc->mb_info==NULL||_enc->frag_dc==NULL||_enc->coded_mbis==NULL||
-   _enc->mcu_skip_ssd==NULL||_enc->dct_tokens[0]==NULL||
-   _enc->dct_tokens[1]==NULL||_enc->dct_tokens[2]==NULL||
-   _enc->extra_bits[0]==NULL||_enc->extra_bits[1]==NULL||
-   _enc->extra_bits[2]==NULL
-#if defined(OC_COLLECT_METRICS)
-   ||_enc->frag_satd==NULL||_enc->frag_ssd==NULL
-#endif
-   ){
-    oc_enc_clear(_enc);
-    return TH_EFAULT;
-  }
-  oc_mode_scheme_chooser_init(&_enc->chooser);
-  oc_enc_mb_info_init(_enc);
-  memset(_enc->huff_idxs,0,sizeof(_enc->huff_idxs));
+  memcpy(_enc->huff_codes,TH_VP31_HUFF_CODES,sizeof(_enc->huff_codes));
+  memset(_enc->qinfo.qi_ranges,0,sizeof(_enc->qinfo.qi_ranges));
   /*Reset the packet-out state machine.*/
   _enc->packet_state=OC_PACKET_INFO_HDR;
   _enc->dup_count=0;
@@ -1114,26 +1211,45 @@ static int oc_enc_init(oc_enc_ctx *_enc,const th_info *_info){
   _enc->vp3_compatible=0;
   /*No INTER frames coded yet.*/
   _enc->coded_inter_frame=0;
-  memcpy(_enc->huff_codes,TH_VP31_HUFF_CODES,sizeof(_enc->huff_codes));
-  oc_enc_set_quant_params(_enc,NULL);
+  if(_enc->mb_info==NULL||_enc->frag_dc==NULL||_enc->coded_mbis==NULL
+   ||_enc->mcu_skip_ssd==NULL||_enc->dct_tokens[0]==NULL
+   ||_enc->dct_tokens[1]==NULL||_enc->dct_tokens[2]==NULL
+   ||_enc->extra_bits[0]==NULL||_enc->extra_bits[1]==NULL
+   ||_enc->extra_bits[2]==NULL
+#if defined(OC_COLLECT_METRICS)
+   ||_enc->frag_sad==NULL||_enc->frag_satd==NULL||_enc->frag_ssd==NULL
+#endif
+   ||oc_enc_set_quant_params(_enc,NULL)<0){
+    oc_enc_clear(_enc);
+    return TH_EFAULT;
+  }
+  oc_mode_scheme_chooser_init(&_enc->chooser);
+  oc_enc_mb_info_init(_enc);
+  memset(_enc->huff_idxs,0,sizeof(_enc->huff_idxs));
   return 0;
 }
 
 static void oc_enc_clear(oc_enc_ctx *_enc){
   int pli;
   oc_rc_state_clear(&_enc->rc);
-#if defined(OC_COLLECT_METRICS)
-  oc_enc_mode_metrics_dump(_enc);
-#endif
   oggpackB_writeclear(&_enc->opb);
+  oc_quant_params_clear(&_enc->qinfo);
+  _ogg_free(_enc->enquant_table_data);
 #if defined(OC_COLLECT_METRICS)
+  /*Save the collected metrics from this run.
+    Use tools/process_modedec_stats to actually generate modedec.h from the
+     resulting file.*/
+  oc_mode_metrics_dump();
   _ogg_free(_enc->frag_ssd);
   _ogg_free(_enc->frag_satd);
+  _ogg_free(_enc->frag_sad);
 #endif
   for(pli=3;pli-->0;){
     oc_free_2d(_enc->extra_bits[pli]);
     oc_free_2d(_enc->dct_tokens[pli]);
   }
+  _ogg_free(_enc->mcu_rd_iscale);
+  _ogg_free(_enc->mcu_rd_scale);
   _ogg_free(_enc->mcu_skip_ssd);
   _ogg_free(_enc->coded_mbis);
   _ogg_free(_enc->frag_dc);
@@ -1145,10 +1261,14 @@ static void oc_enc_drop_frame(th_enc_ctx *_enc){
   /*Use the previous frame's reconstruction.*/
   _enc->state.ref_frame_idx[OC_FRAME_SELF]=
    _enc->state.ref_frame_idx[OC_FRAME_PREV];
+  _enc->state.ref_frame_data[OC_FRAME_SELF]=
+   _enc->state.ref_frame_data[OC_FRAME_PREV];
   /*Flag motion vector analysis about the frame drop.*/
   _enc->prevframe_dropped=1;
   /*Zero the packet.*/
   oggpackB_reset(&_enc->opb);
+  /*Emit an inter frame with no coded blocks in VP3-compatibility mode.*/
+  if(_enc->vp3_compatible)oc_enc_drop_frame_pack(_enc);
 }
 
 static void oc_enc_compress_keyframe(oc_enc_ctx *_enc,int _recode){
@@ -1222,9 +1342,9 @@ static void oc_enc_set_granpos(oc_enc_ctx *_enc){
 th_enc_ctx *th_encode_alloc(const th_info *_info){
   oc_enc_ctx *enc;
   if(_info==NULL)return NULL;
-  enc=_ogg_malloc(sizeof(*enc));
+  enc=oc_aligned_malloc(sizeof(*enc),16);
   if(enc==NULL||oc_enc_init(enc,_info)<0){
-    _ogg_free(enc);
+    oc_aligned_free(enc);
     return NULL;
   }
   return enc;
@@ -1233,7 +1353,7 @@ th_enc_ctx *th_encode_alloc(const th_info *_info){
 void th_encode_free(th_enc_ctx *_enc){
   if(_enc!=NULL){
     oc_enc_clear(_enc);
-    _ogg_free(_enc);
+    oc_aligned_free(_enc);
   }
 }
 
@@ -1272,12 +1392,17 @@ int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,size_t _buf_sz){
     }break;
     case TH_ENCCTL_SET_VP3_COMPATIBLE:{
       int vp3_compatible;
+      int ret;
       if(_enc==NULL||_buf==NULL)return TH_EFAULT;
       if(_buf_sz!=sizeof(vp3_compatible))return TH_EINVAL;
+      /*Try this before we change anything else, because it can fail.*/
+      ret=oc_enc_set_quant_params(_enc,&TH_VP31_QUANT_INFO);
+      /*If we can't allocate enough memory, don't change any of the state.*/
+      if(ret==TH_EFAULT)return ret;
       vp3_compatible=*(int *)_buf;
       _enc->vp3_compatible=vp3_compatible;
       if(oc_enc_set_huffman_codes(_enc,TH_VP31_HUFF_CODES)<0)vp3_compatible=0;
-      if(oc_enc_set_quant_params(_enc,&TH_VP31_QUANT_INFO)<0)vp3_compatible=0;
+      if(ret<0)vp3_compatible=0;
       if(_enc->state.info.pixel_fmt!=TH_PF_420||
        _enc->state.info.pic_width<_enc->state.info.frame_width||
        _enc->state.info.pic_height<_enc->state.info.frame_height||
@@ -1386,6 +1511,44 @@ int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,size_t _buf_sz){
       }
       return oc_enc_rc_2pass_in(_enc,_buf,_buf_sz);
     }break;
+    case TH_ENCCTL_SET_COMPAT_CONFIG:{
+      unsigned char buf[7];
+      oc_pack_buf   opb;
+      th_quant_info qinfo;
+      th_huff_code  huff_codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS];
+      int           ret;
+      int           i;
+      if(_enc==NULL||_buf==NULL)return TH_EFAULT;
+      if(_enc->packet_state>OC_PACKET_SETUP_HDR)return TH_EINVAL;
+      oc_pack_readinit(&opb,_buf,_buf_sz);
+      /*Validate the setup packet header.*/
+      for(i=0;i<7;i++)buf[i]=(unsigned char)oc_pack_read(&opb,8);
+      if(!(buf[0]&0x80)||memcmp(buf+1,"theora",6)!=0)return TH_ENOTFORMAT;
+      if(buf[0]!=0x82)return TH_EBADHEADER;
+      /*Reads its contents.*/
+      ret=oc_quant_params_unpack(&opb,&qinfo);
+      if(ret<0){
+        oc_quant_params_clear(&qinfo);
+        return ret;
+      }
+      ret=oc_huff_codes_unpack(&opb,huff_codes);
+      if(ret<0){
+        oc_quant_params_clear(&qinfo);
+        return ret;
+      }
+      /*Install the new state.*/
+      oc_quant_params_clear(&_enc->qinfo);
+      memcpy(&_enc->qinfo,&qinfo,sizeof(qinfo));
+      oc_enc_quant_params_updated(_enc,&qinfo);
+      memcpy(_enc->huff_codes,huff_codes,sizeof(_enc->huff_codes));
+      return 0;
+    }
+#if defined(OC_COLLECT_METRICS)
+    case TH_ENCCTL_SET_METRICS_FILE:{
+      OC_MODE_METRICS_FILENAME=(const char *)_buf;
+      return 0;
+    }
+#endif
     default:return TH_EIMPL;
   }
 }
@@ -1477,6 +1640,12 @@ static void oc_img_plane_copy_pad(th_img_plane *_dst,th_img_plane *_src,
 
 int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
   th_ycbcr_buffer img;
+  int             frame_width;
+  int             frame_height;
+  int             pic_width;
+  int             pic_height;
+  int             pic_x;
+  int             pic_y;
   int             cframe_width;
   int             cframe_height;
   int             cpic_width;
@@ -1492,53 +1661,94 @@ int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
   if(_enc==NULL||_img==NULL)return TH_EFAULT;
   if(_enc->packet_state==OC_PACKET_DONE)return TH_EINVAL;
   if(_enc->rc.twopass&&_enc->rc.twopass_buffer_bytes==0)return TH_EINVAL;
-  if((ogg_uint32_t)_img[0].width!=_enc->state.info.frame_width||
-   (ogg_uint32_t)_img[0].height!=_enc->state.info.frame_height){
-    return TH_EINVAL;
-  }
   hdec=!(_enc->state.info.pixel_fmt&1);
   vdec=!(_enc->state.info.pixel_fmt&2);
-  cframe_width=_enc->state.info.frame_width>>hdec;
-  cframe_height=_enc->state.info.frame_height>>vdec;
-  if(_img[1].width!=cframe_width||_img[2].width!=cframe_width||
-   _img[1].height!=cframe_height||_img[2].height!=cframe_height){
-    return TH_EINVAL;
-  }
-  /*Step 2: Copy the input to our internal buffer.
-    This lets us add padding, if necessary, so we don't have to worry about
-     dereferencing possibly invalid addresses, and allows us to use the same
-     strides and fragment offsets for both the input frame and the reference
-     frames.*/
+  frame_width=_enc->state.info.frame_width;
+  frame_height=_enc->state.info.frame_height;
+  pic_x=_enc->state.info.pic_x;
+  pic_y=_enc->state.info.pic_y;
+  pic_width=_enc->state.info.pic_width;
+  pic_height=_enc->state.info.pic_height;
+  cframe_width=frame_width>>hdec;
+  cframe_height=frame_height>>vdec;
+  cpic_x=pic_x>>hdec;
+  cpic_y=pic_y>>vdec;
+  cpic_width=(pic_x+pic_width+hdec>>hdec)-cpic_x;
+  cpic_height=(pic_y+pic_height+vdec>>vdec)-cpic_y;
   /*Flip the input buffer upside down.*/
   oc_ycbcr_buffer_flip(img,_img);
-  oc_img_plane_copy_pad(_enc->state.ref_frame_bufs[OC_FRAME_IO]+0,img+0,
-   _enc->state.info.pic_x,_enc->state.info.pic_y,
-   _enc->state.info.pic_width,_enc->state.info.pic_height);
-  cpic_x=_enc->state.info.pic_x>>hdec;
-  cpic_y=_enc->state.info.pic_y>>vdec;
-  cpic_width=(_enc->state.info.pic_x+_enc->state.info.pic_width+hdec>>hdec)
-   -cpic_x;
-  cpic_height=(_enc->state.info.pic_y+_enc->state.info.pic_height+vdec>>vdec)
-   -cpic_y;
-  for(pli=1;pli<3;pli++){
-    oc_img_plane_copy_pad(_enc->state.ref_frame_bufs[OC_FRAME_IO]+pli,img+pli,
-     cpic_x,cpic_y,cpic_width,cpic_height);
+  if(img[0].width!=frame_width||img[0].height!=frame_height||
+   img[1].width!=cframe_width||img[2].width!=cframe_width||
+   img[1].height!=cframe_height||img[2].height!=cframe_height){
+    /*The buffer does not match the frame size.
+      Check to see if it matches the picture size.*/
+    if(img[0].width!=pic_width||img[0].height!=pic_height||
+     img[1].width!=cpic_width||img[2].width!=cpic_width||
+     img[1].height!=cpic_height||img[2].height!=cpic_height){
+      /*It doesn't; we don't know how to handle it.*/
+      return TH_EINVAL;
+    }
+    /*Adjust the pointers to address a full frame.
+      We still only use the picture region, however.*/
+    img[0].data-=pic_y*(ptrdiff_t)img[0].stride+pic_x;
+    img[1].data-=cpic_y*(ptrdiff_t)img[1].stride+cpic_x;
+    img[2].data-=cpic_y*(ptrdiff_t)img[2].stride+cpic_x;
   }
-  /*Step 3: Update the buffer state.*/
+  /*Step 2: Update the buffer state.*/
   if(_enc->state.ref_frame_idx[OC_FRAME_SELF]>=0){
     _enc->state.ref_frame_idx[OC_FRAME_PREV]=
      _enc->state.ref_frame_idx[OC_FRAME_SELF];
+    _enc->state.ref_frame_data[OC_FRAME_PREV]=
+     _enc->state.ref_frame_data[OC_FRAME_SELF];
     if(_enc->state.frame_type==OC_INTRA_FRAME){
       /*The new frame becomes both the previous and gold reference frames.*/
       _enc->state.keyframe_num=_enc->state.curframe_num;
       _enc->state.ref_frame_idx[OC_FRAME_GOLD]=
        _enc->state.ref_frame_idx[OC_FRAME_SELF];
+      _enc->state.ref_frame_data[OC_FRAME_GOLD]=
+       _enc->state.ref_frame_data[OC_FRAME_SELF];
     }
+  }
+  if(_enc->state.ref_frame_idx[OC_FRAME_IO]>=0&&_enc->prevframe_dropped==0){
+    _enc->state.ref_frame_idx[OC_FRAME_PREV_ORIG]=
+     _enc->state.ref_frame_idx[OC_FRAME_IO];
+    _enc->state.ref_frame_data[OC_FRAME_PREV_ORIG]=
+     _enc->state.ref_frame_data[OC_FRAME_IO];
+    if(_enc->state.frame_type==OC_INTRA_FRAME){
+      /*The new input frame becomes both the previous and gold
+         original-reference frames.*/
+      _enc->state.ref_frame_idx[OC_FRAME_GOLD_ORIG]=
+       _enc->state.ref_frame_idx[OC_FRAME_IO];
+      _enc->state.ref_frame_data[OC_FRAME_GOLD_ORIG]=
+       _enc->state.ref_frame_data[OC_FRAME_IO];
+    }
+  }
+  /*Select a free buffer to use for the incoming frame*/
+  for(refi=3;refi==_enc->state.ref_frame_idx[OC_FRAME_GOLD_ORIG]||
+   refi==_enc->state.ref_frame_idx[OC_FRAME_PREV_ORIG];refi++);
+  _enc->state.ref_frame_idx[OC_FRAME_IO]=refi;
+  _enc->state.ref_frame_data[OC_FRAME_IO]=
+   _enc->state.ref_frame_bufs[refi][0].data;
+  /*Step 3: Copy the input to our internal buffer.
+    This lets us add padding, so we don't have to worry about dereferencing
+     possibly invalid addresses, and allows us to use the same strides and
+     fragment offsets for both the input frame and the reference frames.*/
+  oc_img_plane_copy_pad(_enc->state.ref_frame_bufs[refi]+0,img+0,
+   pic_x,pic_y,pic_width,pic_height);
+  oc_state_borders_fill_rows(&_enc->state,refi,0,0,frame_height);
+  oc_state_borders_fill_caps(&_enc->state,refi,0);
+  for(pli=1;pli<3;pli++){
+    oc_img_plane_copy_pad(_enc->state.ref_frame_bufs[refi]+pli,img+pli,
+     cpic_x,cpic_y,cpic_width,cpic_height);
+    oc_state_borders_fill_rows(&_enc->state,refi,pli,0,cframe_height);
+    oc_state_borders_fill_caps(&_enc->state,refi,pli);
   }
   /*Select a free buffer to use for the reconstructed version of this frame.*/
   for(refi=0;refi==_enc->state.ref_frame_idx[OC_FRAME_GOLD]||
    refi==_enc->state.ref_frame_idx[OC_FRAME_PREV];refi++);
   _enc->state.ref_frame_idx[OC_FRAME_SELF]=refi;
+  _enc->state.ref_frame_data[OC_FRAME_SELF]=
+   _enc->state.ref_frame_bufs[refi][0].data;
   _enc->state.curframe_num+=_enc->prev_dup_count+1;
   /*Step 4: Compress the frame.*/
   /*Start with a keyframe, and don't allow the generation of invalid files that
@@ -1575,11 +1785,11 @@ int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _img){
 }
 
 int th_encode_packetout(th_enc_ctx *_enc,int _last_p,ogg_packet *_op){
+  unsigned char *packet;
   if(_enc==NULL||_op==NULL)return TH_EFAULT;
   if(_enc->packet_state==OC_PACKET_READY){
     _enc->packet_state=OC_PACKET_EMPTY;
     if(_enc->rc.twopass!=1){
-      unsigned char *packet;
       packet=oggpackB_get_buffer(&_enc->opb);
       /*If there's no packet, malloc failed while writing; it's lost forever.*/
       if(packet==NULL)return TH_EFAULT;
@@ -1595,8 +1805,22 @@ int th_encode_packetout(th_enc_ctx *_enc,int _last_p,ogg_packet *_op){
   else if(_enc->packet_state==OC_PACKET_EMPTY){
     if(_enc->nqueued_dups>0){
       _enc->nqueued_dups--;
-      _op->packet=NULL;
-      _op->bytes=0;
+      /*Emit an inter frame with no coded blocks in VP3-compatibility mode.*/
+      if(_enc->vp3_compatible){
+        oggpackB_reset(&_enc->opb);
+        oc_enc_drop_frame_pack(_enc);
+        packet=oggpackB_get_buffer(&_enc->opb);
+        /*If there's no packet, malloc failed while writing; it's lost
+           forever.*/
+        if(packet==NULL)return TH_EFAULT;
+        _op->packet=packet;
+        _op->bytes=oggpackB_bytes(&_enc->opb);
+      }
+      /*Otherwise emit a 0-byte packet.*/
+      else{
+        _op->packet=NULL;
+        _op->bytes=0;
+      }
     }
     else{
       if(_last_p)_enc->packet_state=OC_PACKET_DONE;

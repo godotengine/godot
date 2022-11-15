@@ -14,31 +14,30 @@
   Originally written by Rudolf Marek.
 
  function:
-  last mod: $Id: cpu.c 16503 2009-08-22 18:14:02Z giles $
+  last mod: $Id$
 
  ********************************************************************/
 
-#include "cpu.h"
+#include "x86cpu.h"
 
 #if !defined(OC_X86_ASM)
-static ogg_uint32_t oc_cpu_flags_get(void){
+ogg_uint32_t oc_cpu_flags_get(void){
   return 0;
 }
 #else
-# if !defined(_MSC_VER)
-#  if defined(__amd64__)||defined(__x86_64__)
+# if defined(__amd64__)||defined(__x86_64__)
 /*On x86-64, gcc seems to be able to figure out how to save %rbx for us when
    compiling with -fPIC.*/
-#   define cpuid(_op,_eax,_ebx,_ecx,_edx) \
+#  define cpuid(_op,_eax,_ebx,_ecx,_edx) \
   __asm__ __volatile__( \
    "cpuid\n\t" \
    :[eax]"=a"(_eax),[ebx]"=b"(_ebx),[ecx]"=c"(_ecx),[edx]"=d"(_edx) \
    :"a"(_op) \
    :"cc" \
   )
-#  else
+# else
 /*On x86-32, not so much.*/
-#   define cpuid(_op,_eax,_ebx,_ecx,_edx) \
+#  define cpuid(_op,_eax,_ebx,_ecx,_edx) \
   __asm__ __volatile__( \
    "xchgl %%ebx,%[ebx]\n\t" \
    "cpuid\n\t" \
@@ -47,54 +46,6 @@ static ogg_uint32_t oc_cpu_flags_get(void){
    :"a"(_op) \
    :"cc" \
   )
-#  endif
-# else
-/*Why does MSVC need this complicated rigamarole?
-  At this point I honestly do not care.*/
-
-/*Visual C cpuid helper function.
-  For VS2005 we could as well use the _cpuid builtin, but that wouldn't work
-   for VS2003 users, so we do it in inline assembler.*/
-static void oc_cpuid_helper(ogg_uint32_t _cpu_info[4],ogg_uint32_t _op){
-  _asm{
-    mov eax,[_op]
-    mov esi,_cpu_info
-    cpuid
-    mov [esi+0],eax
-    mov [esi+4],ebx
-    mov [esi+8],ecx
-    mov [esi+12],edx
-  }
-}
-
-#  define cpuid(_op,_eax,_ebx,_ecx,_edx) \
-  do{ \
-    ogg_uint32_t cpu_info[4]; \
-    oc_cpuid_helper(cpu_info,_op); \
-    (_eax)=cpu_info[0]; \
-    (_ebx)=cpu_info[1]; \
-    (_ecx)=cpu_info[2]; \
-    (_edx)=cpu_info[3]; \
-  }while(0)
-
-static void oc_detect_cpuid_helper(ogg_uint32_t *_eax,ogg_uint32_t *_ebx){
-  _asm{
-    pushfd
-    pushfd
-    pop eax
-    mov ebx,eax
-    xor eax,200000h
-    push eax
-    popfd
-    pushfd
-    pop eax
-    popfd
-    mov ecx,_eax
-    mov [ecx],eax
-    mov ecx,_ebx
-    mov [ecx],ebx
-  }
-}
 # endif
 
 static ogg_uint32_t oc_parse_intel_flags(ogg_uint32_t _edx,ogg_uint32_t _ecx){
@@ -124,7 +75,7 @@ static ogg_uint32_t oc_parse_amd_flags(ogg_uint32_t _edx,ogg_uint32_t _ecx){
   return flags;
 }
 
-static ogg_uint32_t oc_cpu_flags_get(void){
+ogg_uint32_t oc_cpu_flags_get(void){
   ogg_uint32_t flags;
   ogg_uint32_t eax;
   ogg_uint32_t ebx;
@@ -132,7 +83,6 @@ static ogg_uint32_t oc_cpu_flags_get(void){
   ogg_uint32_t edx;
 # if !defined(__amd64__)&&!defined(__x86_64__)
   /*Not all x86-32 chips support cpuid, so we have to check.*/
-#  if !defined(_MSC_VER)
   __asm__ __volatile__(
    "pushfl\n\t"
    "pushfl\n\t"
@@ -148,9 +98,6 @@ static ogg_uint32_t oc_cpu_flags_get(void){
    :
    :"cc"
   );
-#  else
-  oc_detect_cpuid_helper(&eax,&ebx);
-#  endif
   /*No cpuid.*/
   if(eax==ebx)return 0;
 # endif
@@ -159,9 +106,18 @@ static ogg_uint32_t oc_cpu_flags_get(void){
   if(ecx==0x6C65746E&&edx==0x49656E69&&ebx==0x756E6547||
    /*      6 8 x M          T e n i          u n e G*/
    ecx==0x3638784D&&edx==0x54656E69&&ebx==0x756E6547){
+    int family;
+    int model;
     /*Intel, Transmeta (tested with Crusoe TM5800):*/
     cpuid(1,eax,ebx,ecx,edx);
     flags=oc_parse_intel_flags(edx,ecx);
+    family=(eax>>8)&0xF;
+    model=(eax>>4)&0xF;
+    /*The SSE unit on the Pentium M and Core Duo is much slower than the MMX
+       unit, so don't use it.*/
+    if(family==6&&(model==9||model==13||model==14)){
+      flags&=~(OC_CPU_X86_SSE2|OC_CPU_X86_PNI);
+    }
   }
   /*              D M A c          i t n e          h t u A*/
   else if(ecx==0x444D4163&&edx==0x69746E65&&ebx==0x68747541||
