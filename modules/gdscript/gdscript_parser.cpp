@@ -1329,13 +1329,19 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type) {
 	if (!check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE) && !is_at_end()) {
 		bool default_used = false;
+		bool has_comma = false;
 		do {
 			if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
-				// Allow for trailing comma.
+				if (has_comma) {
+					push_error("Expected an identifier for an argument.");
+				}
 				break;
 			}
 			ParameterNode *parameter = parse_parameter();
 			if (parameter == nullptr) {
+				if (has_comma) {
+					push_error("Expected an identifier for an argument.");
+				}
 				break;
 			}
 			if (parameter->default_value != nullptr) {
@@ -1343,6 +1349,7 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 			} else {
 				if (default_used) {
 					push_error("Cannot have a mandatory parameters after optional parameters.");
+					has_comma = match(GDScriptTokenizer::Token::COMMA);
 					continue;
 				}
 			}
@@ -1353,7 +1360,8 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 				p_function->parameters.push_back(parameter);
 				p_body->add_local(parameter, current_function);
 			}
-		} while (match(GDScriptTokenizer::Token::COMMA));
+			has_comma = match(GDScriptTokenizer::Token::COMMA);
+		} while (has_comma);
 	}
 
 	pop_multiline();
