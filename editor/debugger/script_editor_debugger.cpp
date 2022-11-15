@@ -1283,13 +1283,13 @@ void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, cons
 	}
 }
 
-void ScriptEditorDebugger::live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
+void ScriptEditorDebugger::live_debug_instantiate_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_parent);
 		msg.push_back(p_path);
 		msg.push_back(p_name);
-		_put_msg("scene:live_instance_node", msg);
+		_put_msg("scene:live_instantiate_node", msg);
 	}
 }
 
@@ -1626,7 +1626,7 @@ void ScriptEditorDebugger::_tab_changed(int p_tab) {
 
 void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("live_debug_create_node"), &ScriptEditorDebugger::live_debug_create_node);
-	ClassDB::bind_method(D_METHOD("live_debug_instance_node"), &ScriptEditorDebugger::live_debug_instance_node);
+	ClassDB::bind_method(D_METHOD("live_debug_instantiate_node"), &ScriptEditorDebugger::live_debug_instantiate_node);
 	ClassDB::bind_method(D_METHOD("live_debug_remove_node"), &ScriptEditorDebugger::live_debug_remove_node);
 	ClassDB::bind_method(D_METHOD("live_debug_remove_and_keep_node"), &ScriptEditorDebugger::live_debug_remove_and_keep_node);
 	ClassDB::bind_method(D_METHOD("live_debug_restore_node"), &ScriptEditorDebugger::live_debug_restore_node);

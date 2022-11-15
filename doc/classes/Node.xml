@@ -991,7 +991,7 @@
 		<constant name="DUPLICATE_SCRIPTS" value="4" enum="DuplicateFlags">
 			Duplicate the node's scripts.
 		</constant>
-		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
+		<constant name="DUPLICATE_USE_INSTANTIATION" value="8" enum="DuplicateFlags">
 			Duplicate using instancing.
 			An instance stays linked to the original so when the original changes, the instance changes too.
 		</constant>

@@ -106,7 +106,7 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 #endif // MODULE_REGEX_ENABLED
 	} else if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {
 		_tool_selected(TOOL_NEW);
-	} else if (ED_IS_SHORTCUT("scene_tree/instance_scene", p_event)) {
+	} else if (ED_IS_SHORTCUT("scene_tree/instantiate_scene", p_event)) {
 		_tool_selected(TOOL_INSTANTIATE);
 	} else if (ED_IS_SHORTCUT("scene_tree/expand_collapse_all", p_event)) {
 		_tool_selected(TOOL_EXPAND_COLLAPSE);
@@ -198,7 +198,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 		Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 		if (!instantiated_scene) {
 			current_option = -1;
-			accept->set_text(vformat(TTR("Error instancing scene from %s"), p_files[i]));
+			accept->set_text(vformat(TTR("Error instantiating scene from %s"), p_files[i]));
 			accept->popup_centered();
 			error = true;
 			break;
@@ -206,7 +206,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 
 		if (!edited_scene->get_scene_file_path().is_empty()) {
 			if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
-				accept->set_text(vformat(TTR("Cannot instance the scene '%s' because the current scene exists within one of its nodes."), p_files[i]));
+				accept->set_text(vformat(TTR("Cannot instantiate the scene '%s' because the current scene exists within one of its nodes."), p_files[i]));
 				accept->popup_centered();
 				error = true;
 				break;
@@ -225,7 +225,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 		return;
 	}
 
-	editor_data->get_undo_redo()->create_action(TTR("Instance Scene(s)"));
+	editor_data->get_undo_redo()->create_action(TTR("Instantiate Scene(s)"));
 
 	for (int i = 0; i < instances.size(); i++) {
 		Node *instantiated_scene = instances[i];
@@ -242,7 +242,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 
 		String new_name = parent->validate_child_name(instantiated_scene);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		editor_data->get_undo_redo()->add_do_method(ed, "live_debug_instance_node", edited_scene->get_path_to(parent), p_files[i], new_name);
+		editor_data->get_undo_redo()->add_do_method(ed, "live_debug_instantiate_node", edited_scene->get_path_to(parent), p_files[i], new_name);
 		editor_data->get_undo_redo()->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).path_join(new_name)));
 	}
 
@@ -263,7 +263,7 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 
 	Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 	if (!instantiated_scene) {
-		accept->set_text(vformat(TTR("Error instancing scene from %s"), p_file));
+		accept->set_text(vformat(TTR("Error instantiating scene from %s"), p_file));
 		accept->popup_centered();
 		return;
 	}
@@ -2177,7 +2177,7 @@ void SceneTreeDock::_selection_changed() {
 }
 
 void SceneTreeDock::_do_create(Node *p_parent) {
-	Variant c = create_dialog->instance_selected();
+	Variant c = create_dialog->instantiate_selected();
 	Node *child = Object::cast_to<Node>(c);
 	ERR_FAIL_COND(!child);
 
@@ -2261,7 +2261,7 @@ void SceneTreeDock::_create() {
 		for (Node *n : selection) {
 			ERR_FAIL_COND(!n);
 
-			Variant c = create_dialog->instance_selected();
+			Variant c = create_dialog->instantiate_selected();
 
 			ERR_FAIL_COND(!c);
 			Node *newnode = Object::cast_to<Node>(c);
@@ -2686,7 +2686,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->clear();
 		if (profile_allow_editing) {
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
-			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
 		}
 
 		menu->reset_size();
@@ -2719,7 +2719,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			}
 
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
-			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
 		}
 		menu->add_icon_shortcut(get_theme_icon(SNAME("Collapse"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
 		menu->add_separator();
@@ -3445,7 +3445,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT_OVERRIDE("scene_tree/batch_rename", "macos", KeyModifierMask::SHIFT | Key::ENTER);
 
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KeyModifierMask::CMD_OR_CTRL | Key::A);
-	ED_SHORTCUT("scene_tree/instance_scene", TTR("Instantiate Child Scene"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
+	ED_SHORTCUT("scene_tree/instantiate_scene", TTR("Instantiate Child Scene"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
 	ED_SHORTCUT("scene_tree/expand_collapse_all", TTR("Expand/Collapse Branch"));
 	ED_SHORTCUT("scene_tree/cut_node", TTR("Cut"), KeyModifierMask::CMD_OR_CTRL | Key::X);
 	ED_SHORTCUT("scene_tree/copy_node", TTR("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
@@ -3477,7 +3477,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_instance->set_flat(true);
 	button_instance->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_INSTANTIATE, false));
 	button_instance->set_tooltip_text(TTR("Instantiate a scene file as a Node. Creates an inherited scene if no root node exists."));
-	button_instance->set_shortcut(ED_GET_SHORTCUT("scene_tree/instance_scene"));
+	button_instance->set_shortcut(ED_GET_SHORTCUT("scene_tree/instantiate_scene"));
 	filter_hbc->add_child(button_instance);
 	vbc->add_child(filter_hbc);
 

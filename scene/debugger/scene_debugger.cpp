@@ -264,7 +264,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 		live_editor->_create_node_func(p_args[0], p_args[1], p_args[2]);
 
-	} else if (p_msg == "live_instance_node") {
+	} else if (p_msg == "live_instantiate_node") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 		live_editor->_instance_node_func(p_args[0], p_args[1], p_args[2]);
 

@@ -1763,7 +1763,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	}
 
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
-		show_accept(TTR("This scene can't be saved because there is a cyclic instancing inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
+		show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
 		return;
 	}
 
@@ -2331,7 +2331,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		if (get_edited_scene() && !get_edited_scene()->get_scene_file_path().is_empty()) {
 			String source_scene = get_edited_scene()->get_scene_file_path();
 			if (FileAccess::exists(source_scene + ".import")) {
-				editable_info = TTR("This scene was imported, so changes to it won't be kept.\nInstancing it or inheriting will allow making changes to it.\nPlease read the documentation relevant to importing scenes to better understand this workflow.");
+				editable_info = TTR("This scene was imported, so changes to it won't be kept.\nInstantiating or inheriting it will allow you to make changes to it.\nPlease read the documentation relevant to importing scenes to better understand this workflow.");
 				info_is_warning = true;
 			}
 		}
@@ -3992,7 +3992,7 @@ bool EditorNode::is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_
 	return false;
 }
 
-void EditorNode::request_instance_scene(const String &p_path) {
+void EditorNode::request_instantiate_scene(const String &p_path) {
 	SceneTreeDock::get_singleton()->instantiate(p_path);
 }
 
@@ -7096,7 +7096,7 @@ EditorNode::EditorNode() {
 
 	FileSystemDock *filesystem_dock = memnew(FileSystemDock);
 	filesystem_dock->connect("inherit", callable_mp(this, &EditorNode::_inherit_request));
-	filesystem_dock->connect("instance", callable_mp(this, &EditorNode::_instantiate_request));
+	filesystem_dock->connect("instantiate", callable_mp(this, &EditorNode::_instantiate_request));
 	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_docks));
 	get_project_settings()->connect_filesystem_dock_signals(filesystem_dock);
 

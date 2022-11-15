@@ -266,7 +266,7 @@ public:
 	void set_live_debugging(bool p_enable);
 
 	void live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name);
-	void live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name);
+	void live_debug_instantiate_node(const NodePath &p_parent, const String &p_path, const String &p_name);
 	void live_debug_remove_node(const NodePath &p_at);
 	void live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id);
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);

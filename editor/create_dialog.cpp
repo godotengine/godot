@@ -501,7 +501,7 @@ String CreateDialog::get_selected_type() {
 	return selected->get_text(0);
 }
 
-Variant CreateDialog::instance_selected() {
+Variant CreateDialog::instantiate_selected() {
 	TreeItem *selected = search_options->get_selected();
 
 	if (!selected) {
@@ -519,7 +519,7 @@ Variant CreateDialog::instance_selected() {
 				n->set_name(custom);
 			}
 		} else {
-			obj = EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
+			obj = EditorNode::get_editor_data().instantiate_custom_type(selected->get_text(0), custom);
 		}
 	} else {
 		obj = ClassDB::instantiate(selected->get_text(0));

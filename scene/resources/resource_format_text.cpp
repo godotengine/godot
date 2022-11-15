@@ -217,7 +217,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			if (next_tag.fields.has("type")) {
 				type = packed_scene->get_state()->add_name(next_tag.fields["type"]);
 			} else {
-				type = SceneState::TYPE_INSTANCED; //no type? assume this was instantiated
+				type = SceneState::TYPE_INSTANTIATED; //no type? assume this was instantiated
 			}
 
 			HashSet<StringName> path_properties;
@@ -256,7 +256,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			if (next_tag.fields.has("owner")) {
 				owner = packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
 			} else {
-				if (parent != -1 && !(type == SceneState::TYPE_INSTANCED && instance == -1)) {
+				if (parent != -1 && !(type == SceneState::TYPE_INSTANTIATED && instance == -1)) {
 					owner = 0; //if no owner, owner is root
 				}
 			}
