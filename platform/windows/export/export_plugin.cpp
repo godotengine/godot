@@ -111,6 +111,7 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/modify_resources"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/console_wrapper_icon", PROPERTY_HINT_FILE, "*.ico"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
@@ -120,7 +121,7 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/trademarks"), ""));
 }
 
-Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_set_icon) {
+Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon) {
 	String rcedit_path = EDITOR_GET("export/windows/rcedit");
 
 	if (rcedit_path != String() && !FileAccess::exists(rcedit_path)) {
@@ -147,6 +148,12 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 #endif
 
 	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
+	if (p_console_icon) {
+		String console_icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/console_wrapper_icon"));
+		if (!console_icon_path.is_empty() && FileAccess::exists(console_icon_path)) {
+			icon_path = console_icon_path;
+		}
+	}
 	String file_verion = p_preset->get("application/file_version");
 	String product_version = p_preset->get("application/product_version");
 	String company_name = p_preset->get("application/company_name");
@@ -158,7 +165,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 
 	List<String> args;
 	args.push_back(p_path);
-	if (!icon_path.is_empty() && p_set_icon) {
+	if (!icon_path.is_empty()) {
 		args.push_back("--set-icon");
 		args.push_back(icon_path);
 	}
