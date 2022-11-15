@@ -46,7 +46,7 @@
 			<description>
 			</description>
 		</signal>
-		<signal name="instance">
+		<signal name="instantiate">
 			<param index="0" name="files" type="PackedStringArray" />
 			<description>
 			</description>

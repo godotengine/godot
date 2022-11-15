@@ -110,7 +110,7 @@ protected:
 	void _save_and_update_favorite_list();
 
 public:
-	Variant instance_selected();
+	Variant instantiate_selected();
 	String get_selected_type();
 
 	void set_base_type(const String &p_base) { base_type = p_base; }

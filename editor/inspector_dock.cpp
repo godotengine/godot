@@ -365,7 +365,7 @@ void InspectorDock::_select_history(int p_idx) {
 }
 
 void InspectorDock::_resource_created() {
-	Variant c = new_resource_dialog->instance_selected();
+	Variant c = new_resource_dialog->instantiate_selected();
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);

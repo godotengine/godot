@@ -5624,13 +5624,13 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 	}
 
 	Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
-	if (!instantiated_scene) { // error on instancing
+	if (!instantiated_scene) { // Error on instantiation.
 		return false;
 	}
 
 	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 
-	if (!edited_scene->get_scene_file_path().is_empty()) { // cyclical instancing
+	if (!edited_scene->get_scene_file_path().is_empty()) { // Cyclic instantiation.
 		if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
@@ -5647,7 +5647,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	undo_redo->add_do_method(ed, "live_debug_instance_node", edited_scene->get_path_to(parent), path, new_name);
+	undo_redo->add_do_method(ed, "live_debug_instantiate_node", edited_scene->get_path_to(parent), path, new_name);
 	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)) + "/" + new_name));
 
 	CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instantiated_scene);
@@ -5720,7 +5720,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			files_str += error_files[i].get_file().get_basename() + ",";
 		}
 		files_str = files_str.substr(0, files_str.length() - 1);
-		accept->set_text(vformat(TTR("Error instancing scene from %s"), files_str.get_data()));
+		accept->set_text(vformat(TTR("Error instantiating scene from %s"), files_str.get_data()));
 		accept->popup_centered();
 	}
 }

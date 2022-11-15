@@ -175,7 +175,7 @@ Node *SceneCreateDialog::create_scene_root() {
 			root = gui_ctl;
 		} break;
 		case ROOT_OTHER:
-			root = Object::cast_to<Node>(select_node_dialog->instance_selected());
+			root = Object::cast_to<Node>(select_node_dialog->instantiate_selected());
 			break;
 	}
 

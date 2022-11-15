@@ -167,7 +167,7 @@ void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_d
 void EditorDebuggerNode::_bind_methods() {
 	// LiveDebug.
 	ClassDB::bind_method("live_debug_create_node", &EditorDebuggerNode::live_debug_create_node);
-	ClassDB::bind_method("live_debug_instance_node", &EditorDebuggerNode::live_debug_instance_node);
+	ClassDB::bind_method("live_debug_instantiate_node", &EditorDebuggerNode::live_debug_instantiate_node);
 	ClassDB::bind_method("live_debug_remove_node", &EditorDebuggerNode::live_debug_remove_node);
 	ClassDB::bind_method("live_debug_remove_and_keep_node", &EditorDebuggerNode::live_debug_remove_and_keep_node);
 	ClassDB::bind_method("live_debug_restore_node", &EditorDebuggerNode::live_debug_restore_node);
@@ -676,9 +676,9 @@ void EditorDebuggerNode::live_debug_create_node(const NodePath &p_parent, const 
 	});
 }
 
-void EditorDebuggerNode::live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
+void EditorDebuggerNode::live_debug_instantiate_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		dbg->live_debug_instance_node(p_parent, p_path, p_name);
+		dbg->live_debug_instantiate_node(p_parent, p_path, p_name);
 	});
 }
 
