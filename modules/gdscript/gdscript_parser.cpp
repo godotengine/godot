@@ -585,10 +585,10 @@ void GDScriptParser::parse_program() {
 					push_error(R"("extends" should be used before annotations (except @tool).)");
 				}
 				advance();
-				if (head->extends_used) {
+				if (head->extends) {
 					push_error(R"("extends" can only be used once.)");
 				} else {
-					parse_extends();
+					head->extends = parse_extends_type();
 					end_statement("superclass");
 				}
 				break;
@@ -638,6 +638,34 @@ void GDScriptParser::parse_program() {
 	clear_unused_annotations();
 }
 
+GDScriptParser::ClassNode *GDScriptParser::find_class(const String &p_qualified_name) {
+	String first = p_qualified_name.get_slice("::", 0);
+	GDScriptParser::ClassNode *result = nullptr;
+	if (first.is_empty() || first == script_path || (head->identifier && first == head->identifier->name)) {
+		result = head;
+	} else if (head->has_member(first)) {
+		GDScriptParser::ClassNode::Member member = head->get_member(first);
+		if (member.type == GDScriptParser::ClassNode::Member::CLASS) {
+			result = member.m_class;
+		}
+	}
+
+	int name_count = p_qualified_name.get_slice_count("::");
+	for (int i = 1; result != nullptr && i < name_count; i++) {
+		String current_name = p_qualified_name.get_slice("::", i);
+		GDScriptParser::ClassNode *next = nullptr;
+		if (result->has_member(current_name)) {
+			GDScriptParser::ClassNode::Member member = result->get_member(current_name);
+			if (member.type == GDScriptParser::ClassNode::Member::CLASS) {
+				next = member.m_class;
+			}
+		}
+		result = next;
+	}
+
+	return result;
+}
+
 GDScriptParser::ClassNode *GDScriptParser::parse_class() {
 	ClassNode *n_class = alloc_node<ClassNode>();
 
@@ -659,7 +687,7 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class() {
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
-		parse_extends();
+		n_class->extends = parse_extends_type();
 	}
 
 	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after class declaration.)");
@@ -673,10 +701,10 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class() {
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
-		if (n_class->extends_used) {
+		if (n_class->extends) {
 			push_error(R"(Cannot use "extends" more than once in the same class.)");
 		}
-		parse_extends();
+		n_class->extends = parse_extends_type();
 		end_statement("superclass");
 	}
 
@@ -699,43 +727,51 @@ void GDScriptParser::parse_class_name() {
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
 		// Allow extends on the same line.
-		parse_extends();
+		current_class->extends = parse_extends_type();
 		end_statement("superclass");
 	} else {
 		end_statement("class_name statement");
 	}
 }
 
-void GDScriptParser::parse_extends() {
-	current_class->extends_used = true;
-
-	int chain_index = 0;
-
-	if (match(GDScriptTokenizer::Token::LITERAL)) {
-		if (previous.literal.get_type() != Variant::STRING) {
-			push_error(vformat(R"(Only strings or identifiers can be used after "extends", found "%s" instead.)", Variant::get_type_name(previous.literal.get_type())));
-		}
-		current_class->extends_path = previous.literal;
-
-		if (!match(GDScriptTokenizer::Token::PERIOD)) {
-			return;
-		}
+GDScriptParser::TypeNode *GDScriptParser::parse_extends_type() {
+	TypeNode *type = alloc_node<TypeNode>();
+	if (check(GDScriptTokenizer::Token::IDENTIFIER)) {
+		make_completion_context(COMPLETION_INHERIT_TYPE, type);
+		advance();
+		type->initial = parse_identifier();
+	} else if (check(GDScriptTokenizer::Token::LITERAL) && current.literal.get_type() == Variant::STRING) {
+		// TODO: This could be improved to list only '*.gd' files.
+		make_completion_context(COMPLETION_RESOURCE_PATH, type);
+		advance();
+		type->initial = parse_literal();
+	} else if (!is_at_end()) {
+		String actual = check(GDScriptTokenizer::Token::LITERAL) ? Variant::get_type_name(current.literal.get_type()) : current.get_name();
+		push_error(vformat(R"(Expected superclass name or path after "extends", found "%s" instead.)", actual), type);
+		advance();
 	}
 
-	make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index++);
-
-	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected superclass name after "extends".)")) {
-		return;
-	}
-	current_class->extends.push_back(previous.literal);
-
+	int subtype_index = 0;
 	while (match(GDScriptTokenizer::Token::PERIOD)) {
-		make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index++);
-		if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected superclass name after ".".)")) {
-			return;
+		make_completion_context(COMPLETION_TYPE_ATTRIBUTE, type, subtype_index++);
+
+		if (!is_at_end()) {
+			advance();
 		}
-		current_class->extends.push_back(previous.literal);
+
+		if (previous.is_identifier()) {
+			type->subtypes.push_back(parse_identifier());
+		} else {
+			push_error(R"(Expected inner type name after ".".)");
+		}
 	}
+
+	if (type->initial == nullptr) {
+		push_error(R"(Expected superclass name or path after "extends".)");
+	}
+
+	complete_extents(type);
+	return type; // Always returns non-null value, to represent being parsed.
 }
 
 template <class T>
@@ -2235,7 +2271,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	if (!previous.is_identifier()) {
-		ERR_FAIL_V_MSG(nullptr, "Parser bug: parsing literal node without literal token.");
+		ERR_FAIL_V_MSG(nullptr, "Parser bug: parsing identifier node without identifier token.");
 	}
 	IdentifierNode *identifier = alloc_node<IdentifierNode>();
 	complete_extents(identifier);
@@ -3192,9 +3228,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		return nullptr;
 	}
 
-	IdentifierNode *type_element = parse_identifier();
-
-	type->type_chain.push_back(type_element);
+	type->initial = parse_identifier();
 
 	if (match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
 		// Typed collection (like Array[int]).
@@ -3213,12 +3247,11 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		return type;
 	}
 
-	int chain_index = 1;
+	int subtype_index = 0;
 	while (match(GDScriptTokenizer::Token::PERIOD)) {
-		make_completion_context(COMPLETION_TYPE_ATTRIBUTE, type, chain_index++);
+		make_completion_context(COMPLETION_TYPE_ATTRIBUTE, type, subtype_index++);
 		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected inner type name after ".".)")) {
-			type_element = parse_identifier();
-			type->type_chain.push_back(type_element);
+			type->subtypes.push_back(parse_identifier());
 		}
 	}
 
@@ -4350,21 +4383,9 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 		print_identifier(p_class->identifier);
 	}
 
-	if (p_class->extends_used) {
-		bool first = true;
+	if (p_class->extends) {
 		push_text(" Extends ");
-		if (!p_class->extends_path.is_empty()) {
-			push_text(vformat(R"("%s")", p_class->extends_path));
-			first = false;
-		}
-		for (int i = 0; i < p_class->extends.size(); i++) {
-			if (!first) {
-				push_text(".");
-			} else {
-				first = false;
-			}
-			push_text(p_class->extends[i]);
-		}
+		print_type(p_class->extends);
 	}
 
 	push_line(" :");
@@ -4838,15 +4859,14 @@ void GDScriptParser::TreePrinter::print_ternary_op(TernaryOpNode *p_ternary_op) 
 }
 
 void GDScriptParser::TreePrinter::print_type(TypeNode *p_type) {
-	if (p_type->type_chain.is_empty()) {
+	if (p_type->initial == nullptr) {
 		push_text("Void");
-	} else {
-		for (int i = 0; i < p_type->type_chain.size(); i++) {
-			if (i > 0) {
-				push_text(".");
-			}
-			print_identifier(p_type->type_chain[i]);
-		}
+		return;
+	}
+	print_expression(p_type->initial);
+	for (IdentifierNode *id : p_type->subtypes) {
+		push_text(".");
+		print_identifier(id);
 	}
 }
 

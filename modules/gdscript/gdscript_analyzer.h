@@ -50,17 +50,16 @@ class GDScriptAnalyzer {
 	Error check_native_member_name_conflict(const StringName &p_member_name, const GDScriptParser::Node *p_member_node, const StringName &p_native_type_string);
 	Error check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node);
 
-	Error resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive = true);
+	Error resolve_class_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive = false);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
+	GDScriptParser::DataType resolve_type_id_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base = nullptr);
 
 	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
 
-	// This traverses the tree to resolve all TypeNodes.
-	Error resolve_program();
-
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
-	void resolve_class_interface(GDScriptParser::ClassNode *p_class);
-	void resolve_class_body(GDScriptParser::ClassNode *p_class);
+	void resolve_class_member(GDScriptParser::ClassNode *p_class, GDScriptParser::ClassNode::Member &p_member);
+	void resolve_class_interface(GDScriptParser::ClassNode *p_class, bool p_recursive = false);
+	void resolve_class_body(GDScriptParser::ClassNode *p_class, bool p_recursive = false);
 	void resolve_function_signature(GDScriptParser::FunctionNode *p_function);
 	void resolve_function_body(GDScriptParser::FunctionNode *p_function);
 	void resolve_node(GDScriptParser::Node *p_node, bool p_is_root = true);
@@ -104,7 +103,7 @@ class GDScriptAnalyzer {
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type) const;
 	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property) const;
-	GDScriptParser::DataType make_global_class_meta_type(const StringName &p_class_name, const GDScriptParser::Node *p_source);
+	GDScriptParser::DataType make_script_class_type(const String &p_path, const GDScriptParser::Node *p_source, bool p_meta = false);
 	bool get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
 	bool function_signature_from_info(const MethodInfo &p_info, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
 	bool validate_call_arg(const List<GDScriptParser::DataType> &p_par_types, int p_default_args_count, bool p_is_vararg, const GDScriptParser::CallNode *p_call);
@@ -117,7 +116,7 @@ class GDScriptAnalyzer {
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	void mark_lambda_use_self();
 	bool class_exists(const StringName &p_class) const;
-	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
+	Ref<GDScriptParserRef> get_parser_for(const String &p_path, GDScriptParserRef::Status p_status, Error &r_error);
 #ifdef DEBUG_ENABLED
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif

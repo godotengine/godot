@@ -463,7 +463,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	// Create script.
 	Ref<GDScript> script;
 	script.instantiate();
-	script->set_path(source_file);
+	script->set_path(source_file, true);
 	err = script->load_source_code(source_file);
 	if (err != OK) {
 		enable_stdout();

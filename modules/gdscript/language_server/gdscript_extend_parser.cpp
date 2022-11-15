@@ -369,7 +369,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		node_stack.pop_front();
 
 		switch (node->type) {
-			case GDScriptParser::TypeNode::IF: {
+			case GDScriptParser::Node::IF: {
 				GDScriptParser::IfNode *if_node = (GDScriptParser::IfNode *)node;
 				node_stack.push_back(if_node->true_block);
 				if (if_node->false_block) {
@@ -377,22 +377,22 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 				}
 			} break;
 
-			case GDScriptParser::TypeNode::FOR: {
+			case GDScriptParser::Node::FOR: {
 				GDScriptParser::ForNode *for_node = (GDScriptParser::ForNode *)node;
 				node_stack.push_back(for_node->loop);
 			} break;
 
-			case GDScriptParser::TypeNode::WHILE: {
+			case GDScriptParser::Node::WHILE: {
 				GDScriptParser::WhileNode *while_node = (GDScriptParser::WhileNode *)node;
 				node_stack.push_back(while_node->loop);
 			} break;
 
-			case GDScriptParser::TypeNode::MATCH_BRANCH: {
+			case GDScriptParser::Node::MATCH_BRANCH: {
 				GDScriptParser::MatchBranchNode *match_node = (GDScriptParser::MatchBranchNode *)node;
 				node_stack.push_back(match_node->block);
 			} break;
 
-			case GDScriptParser::TypeNode::SUITE: {
+			case GDScriptParser::Node::SUITE: {
 				GDScriptParser::SuiteNode *suite_node = (GDScriptParser::SuiteNode *)node;
 				function_nodes.push_back(suite_node);
 				for (int i = 0; i < suite_node->statements.size(); ++i) {
@@ -715,12 +715,24 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 
 	class_api["name"] = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
 	class_api["path"] = path;
+	class_api["extends_file"] = String();
 	Array extends_class;
-	for (int i = 0; i < p_class->extends.size(); i++) {
-		extends_class.append(String(p_class->extends[i]));
+	if (p_class->extends && p_class->extends->initial != nullptr) {
+		GDScriptParser::ExpressionNode *initial = static_cast<GDScriptParser::ExpressionNode *>(p_class->extends->initial);
+		if (initial->type == GDScriptParser::Node::IDENTIFIER) {
+			GDScriptParser::IdentifierNode *extends_identifier = static_cast<GDScriptParser::IdentifierNode *>(p_class->extends->initial);
+			extends_class.append(String(extends_identifier->name));
+		} else if (initial->type == GDScriptParser::Node::LITERAL) {
+			GDScriptParser::LiteralNode *initial_literal = static_cast<GDScriptParser::LiteralNode *>(initial);
+			if (initial_literal->value.get_type() == Variant::STRING) {
+				class_api["extends_file"] = initial_literal->value;
+			}
+		}
+	}
+	for (GDScriptParser::IdentifierNode *subtype_id : p_class->extends->subtypes) {
+		extends_class.append(String(subtype_id->name));
 	}
 	class_api["extends_class"] = extends_class;
-	class_api["extends_file"] = String(p_class->extends_path);
 	class_api["icon"] = String(p_class->icon_path);
 
 	if (const lsp::DocumentSymbol *symbol = get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(p_class->start_line))) {

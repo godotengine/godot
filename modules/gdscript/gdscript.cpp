@@ -2385,21 +2385,11 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 }
 
 String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
-	Vector<uint8_t> sourcef;
-	Error err;
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (err) {
-		return String();
-	}
-
-	String source = f->get_as_utf8_string();
-
-	GDScriptParser parser;
-	err = parser.parse(source, p_path, false);
-
-	// TODO: Simplify this code by using the analyzer to get full inheritance.
+	Error err = OK;
+	Ref<GDScriptParserRef> parser_ref = GDScriptCache::get_parser(p_path, GDScriptParserRef::PARSED, err);
 	if (err == OK) {
-		const GDScriptParser::ClassNode *c = parser.get_tree();
+		GDScriptParser *parser = parser_ref->get_parser();
+		const GDScriptParser::ClassNode *c = parser->get_tree();
 		if (r_icon_path) {
 			if (c->icon_path.is_empty() || c->icon_path.is_absolute_path()) {
 				*r_icon_path = c->icon_path;
@@ -2408,73 +2398,31 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 			}
 		}
 		if (r_base_type) {
-			const GDScriptParser::ClassNode *subclass = c;
-			String path = p_path;
-			GDScriptParser subparser;
-			while (subclass) {
-				if (subclass->extends_used) {
-					if (!subclass->extends_path.is_empty()) {
-						if (subclass->extends.size() == 0) {
-							get_global_class_name(subclass->extends_path, r_base_type);
-							subclass = nullptr;
-							break;
-						} else {
-							Vector<StringName> extend_classes = subclass->extends;
-
-							Ref<FileAccess> subfile = FileAccess::open(subclass->extends_path, FileAccess::READ);
-							if (subfile.is_null()) {
-								break;
-							}
-							String subsource = subfile->get_as_utf8_string();
-
-							if (subsource.is_empty()) {
-								break;
-							}
-							String subpath = subclass->extends_path;
-							if (subpath.is_relative_path()) {
-								subpath = path.get_base_dir().path_join(subpath).simplify_path();
-							}
-
-							if (OK != subparser.parse(subsource, subpath, false)) {
-								break;
-							}
-							path = subpath;
-							subclass = subparser.get_tree();
-
-							while (extend_classes.size() > 0) {
-								bool found = false;
-								for (int i = 0; i < subclass->members.size(); i++) {
-									if (subclass->members[i].type != GDScriptParser::ClassNode::Member::CLASS) {
-										continue;
-									}
-
-									const GDScriptParser::ClassNode *inner_class = subclass->members[i].m_class;
-									if (inner_class->identifier->name == extend_classes[0]) {
-										extend_classes.remove_at(0);
-										found = true;
-										subclass = inner_class;
-										break;
-									}
-								}
-								if (!found) {
-									subclass = nullptr;
-									break;
-								}
-							}
-						}
-					} else if (subclass->extends.size() == 1) {
-						*r_base_type = subclass->extends[0];
-						subclass = nullptr;
-					} else {
-						break;
-					}
-				} else {
-					*r_base_type = "RefCounted";
-					subclass = nullptr;
+			// TODO: Simplify this code by using the analyzer to get full inheritance. That would require global class names to be set before collecting base types. Then native bases should be cached as well, because if a class doesn't extend a global class, 'ScriptServer::get_global_class_native_base()' doesn't work.
+			if (c->extends == nullptr) {
+				*r_base_type = "RefCounted";
+			} else {
+				String base_fqn;
+				GDScriptParser::ExpressionNode *base_initial = c->extends->initial;
+				if (base_initial->type == GDScriptParser::Node::IDENTIFIER) {
+					GDScriptParser::IdentifierNode *base_identifier = static_cast<GDScriptParser::IdentifierNode *>(base_initial);
+					base_fqn = base_identifier->name;
+				} else if (base_initial->type == GDScriptParser::Node::LITERAL) {
+					GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(base_initial);
+					Variant base_initial_literal = literal->value;
+					ERR_FAIL_COND_V(base_initial_literal.get_type() != Variant::STRING, String());
+					base_fqn = String(base_initial_literal);
 				}
+
+				for (GDScriptParser::IdentifierNode *subtype_id : c->extends->subtypes) {
+					base_fqn += String("::") + subtype_id->name;
+				}
+				*r_base_type = base_fqn;
 			}
 		}
-		return c->identifier != nullptr ? String(c->identifier->name) : String();
+		if (c->identifier != nullptr) {
+			return String(c->identifier->name);
+		}
 	}
 
 	return String();

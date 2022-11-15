@@ -129,6 +129,7 @@ public:
 		Ref<Script> script_type;
 		String script_path;
 		ClassNode *class_type = nullptr;
+		Ref<GDScriptParserRef> parser_ref;
 
 		MethodInfo method_info; // For callable/signals.
 		HashMap<StringName, int64_t> enum_values; // For enums.
@@ -211,6 +212,7 @@ public:
 			script_type = p_other.script_type;
 			script_path = p_other.script_path;
 			class_type = p_other.class_type;
+			parser_ref = p_other.parser_ref;
 			method_info = p_other.method_info;
 			enum_values = p_other.enum_values;
 			unset_container_element_type();
@@ -577,20 +579,10 @@ public:
 					case ENUM:
 						return m_enum->get_datatype();
 					case ENUM_VALUE: {
-						// Always integer.
-						DataType out_type;
-						out_type.type_source = DataType::ANNOTATED_EXPLICIT;
-						out_type.kind = DataType::BUILTIN;
-						out_type.builtin_type = Variant::INT;
-						return out_type;
+						return enum_value.identifier->get_datatype();
 					}
 					case SIGNAL: {
-						DataType out_type;
-						out_type.type_source = DataType::ANNOTATED_EXPLICIT;
-						out_type.kind = DataType::BUILTIN;
-						out_type.builtin_type = Variant::SIGNAL;
-						// TODO: Add parameter info.
-						return out_type;
+						return signal->get_datatype();
 					}
 					case GROUP: {
 						return DataType();
@@ -642,10 +634,8 @@ public:
 		Vector<Member> members;
 		HashMap<StringName, int> members_indices;
 		ClassNode *outer = nullptr;
-		bool extends_used = false;
 		bool onready_used = false;
-		String extends_path;
-		Vector<StringName> extends; // List for indexing: extends A.B.C
+		TypeNode *extends = nullptr;
 		DataType base_type;
 		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
 #ifdef TOOLS_ENABLED
@@ -1090,7 +1080,8 @@ public:
 	};
 
 	struct TypeNode : public Node {
-		Vector<IdentifierNode *> type_chain;
+		ExpressionNode *initial = nullptr;
+		Vector<IdentifierNode *> subtypes;
 		TypeNode *container_type = nullptr;
 
 		TypeNode() {
@@ -1347,7 +1338,7 @@ private:
 	void parse_program();
 	ClassNode *parse_class();
 	void parse_class_name();
-	void parse_extends();
+	TypeNode *parse_extends_type();
 	void parse_class_body(bool p_is_multiline);
 	template <class T>
 	void parse_class_member(T *(GDScriptParser::*p_parse_function)(), AnnotationInfo::TargetKind p_target, const String &p_member_kind);
@@ -1428,6 +1419,7 @@ public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
+	ClassNode *find_class(const String &p_qualified_name);
 	static Variant::Type get_builtin_type(const StringName &p_type);
 
 	CompletionContext get_completion_context() const { return completion_context; }

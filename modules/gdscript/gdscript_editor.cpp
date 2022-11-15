@@ -2862,7 +2862,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 			for (int i = 0; i < completion_context.current_argument; i++) {
 				GDScriptCompletionIdentifier ci;
-				if (!_guess_identifier_type_from_base(completion_context, base, type->type_chain[i]->name, ci)) {
+				if (!_guess_identifier_type_from_base(completion_context, base, type->subtypes[i]->name, ci)) {
 					found = false;
 					break;
 				}
@@ -3287,17 +3287,6 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	analyzer.analyze();
 
 	GDScriptParser::CompletionContext context = parser.get_completion_context();
-
-	if (context.current_class && context.current_class->extends.size() > 0) {
-		bool success = false;
-		ClassDB::get_integer_constant(context.current_class->extends[0], p_symbol, &success);
-		if (success) {
-			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
-			r_result.class_name = context.current_class->extends[0];
-			r_result.class_member = p_symbol;
-			return OK;
-		}
-	}
 
 	bool is_function = false;
 

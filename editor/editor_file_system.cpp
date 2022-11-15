@@ -123,7 +123,7 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 
 	for (int i = 0; i < files[p_idx]->deps.size(); i++) {
 		String dep = files[p_idx]->deps[i];
-		int sep_idx = dep.find("::"); //may contain type information, unwanted
+		int sep_idx = dep.find(":|:"); //may contain type information, unwanted
 		if (sep_idx != -1) {
 			dep = dep.substr(0, sep_idx);
 		}
@@ -247,15 +247,15 @@ void EditorFileSystem::_scan_filesystem() {
 					continue;
 				}
 
-				if (l.begins_with("::")) {
-					Vector<String> split = l.split("::");
+				if (l.begins_with(":|:")) {
+					Vector<String> split = l.split(":|:");
 					ERR_CONTINUE(split.size() != 3);
 					String name = split[1];
 
 					cpath = name;
 
 				} else {
-					Vector<String> split = l.split("::");
+					Vector<String> split = l.split(":|:");
 					ERR_CONTINUE(split.size() != 9);
 					String name = split[0];
 					String file;
@@ -1267,14 +1267,14 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 	if (!p_dir) {
 		return; //none
 	}
-	p_file->store_line("::" + p_dir->get_path() + "::" + String::num(p_dir->modified_time));
+	p_file->store_line(":|:" + p_dir->get_path() + ":|:" + String::num(p_dir->modified_time));
 
 	for (int i = 0; i < p_dir->files.size(); i++) {
 		if (!p_dir->files[i]->import_group_file.is_empty()) {
 			group_file_cache.insert(p_dir->files[i]->import_group_file);
 		}
-		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->uid) + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
-		s += "::";
+		String s = p_dir->files[i]->file + ":|:" + p_dir->files[i]->type + ":|:" + itos(p_dir->files[i]->uid) + ":|:" + itos(p_dir->files[i]->modified_time) + ":|:" + itos(p_dir->files[i]->import_modified_time) + ":|:" + itos(p_dir->files[i]->import_valid) + ":|:" + p_dir->files[i]->import_group_file + ":|:" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
+		s += ":|:";
 		for (int j = 0; j < p_dir->files[i]->deps.size(); j++) {
 			if (j > 0) {
 				s += "<>";
