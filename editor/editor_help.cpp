@@ -203,13 +203,20 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 }
 
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
-	String t = p_type;
-	if (t.is_empty()) {
-		t = "void";
+	if (p_type.is_empty() || p_type == "void") {
+		class_desc->push_color(Color(type_color, 0.5));
+		class_desc->push_hint(TTR("No return value."));
+		class_desc->add_text("void");
+		class_desc->pop();
+		class_desc->pop();
+		return;
 	}
-	bool can_ref = (t != "void" && !t.contains("*")) || !p_enum.is_empty();
 
-	if (!p_enum.is_empty()) {
+	bool is_enum_type = !p_enum.is_empty();
+	bool can_ref = !p_type.contains("*") || is_enum_type;
+
+	String t = p_type;
+	if (is_enum_type) {
 		if (p_enum.get_slice_count(".") > 1) {
 			t = p_enum.get_slice(".", 1);
 		} else {
@@ -223,21 +230,24 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 		if (t.ends_with("[]")) {
 			add_array = true;
 			t = t.replace("[]", "");
+
+			class_desc->push_meta("#Array"); //class
+			class_desc->add_text("Array");
+			class_desc->pop();
+			class_desc->add_text("[");
 		}
-		if (p_enum.is_empty()) {
-			class_desc->push_meta("#" + t); //class
-		} else {
+
+		if (is_enum_type) {
 			class_desc->push_meta("$" + p_enum); //class
+		} else {
+			class_desc->push_meta("#" + t); //class
 		}
 	}
 	class_desc->add_text(t);
 	if (can_ref) {
-		class_desc->pop();
+		class_desc->pop(); // Pushed meta above.
 		if (add_array) {
-			class_desc->add_text(" ");
-			class_desc->push_meta("#Array"); //class
-			class_desc->add_text("[]");
-			class_desc->pop();
+			class_desc->add_text("]");
 		}
 	}
 	class_desc->pop();
