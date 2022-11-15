@@ -30,6 +30,7 @@
 
 #include "node_3d_editor_gizmos.h"
 
+#include "core/config/project_settings.h"
 #include "core/math/convex_hull.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
@@ -1732,6 +1733,24 @@ Camera3DGizmoPlugin::Camera3DGizmoPlugin() {
 	create_handle_material("handles");
 }
 
+Size2i Camera3DGizmoPlugin::_get_viewport_size(Camera3D *p_camera) {
+	Viewport *viewport = p_camera->get_viewport();
+
+	Window *window = Object::cast_to<Window>(viewport);
+	if (window) {
+		return window->get_size();
+	}
+
+	SubViewport *sub_viewport = Object::cast_to<SubViewport>(viewport);
+	ERR_FAIL_NULL_V(sub_viewport, Size2i());
+
+	if (sub_viewport == EditorNode::get_singleton()->get_scene_root()) {
+		return Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+	}
+
+	return sub_viewport->get_size();
+}
+
 bool Camera3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<Camera3D>(p_spatial) != nullptr;
 }
@@ -1830,6 +1849,10 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Ref<Material> material = get_material("camera_material", p_gizmo);
 
+	const Size2i viewport_size = _get_viewport_size(camera);
+	const real_t viewport_aspect = viewport_size.x > 0 && viewport_size.y > 0 ? viewport_size.aspect() : 1.0;
+	const Size2 size_factor = viewport_aspect > 1.0 ? Size2(1.0, 1.0 / viewport_aspect) : Size2(viewport_aspect, 1.0);
+
 #define ADD_TRIANGLE(m_a, m_b, m_c) \
 	{                               \
 		lines.push_back(m_a);       \
@@ -1857,10 +1880,11 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			// The real FOV is halved for accurate representation
 			float fov = camera->get_fov() / 2.0;
 
-			Vector3 side = Vector3(Math::sin(Math::deg_to_rad(fov)), 0, -Math::cos(Math::deg_to_rad(fov)));
-			Vector3 nside = side;
-			nside.x = -nside.x;
-			Vector3 up = Vector3(0, side.x, 0);
+			const float hsize = Math::sin(Math::deg_to_rad(fov));
+			const float depth = -Math::cos(Math::deg_to_rad(fov));
+			Vector3 side = Vector3(hsize * size_factor.x, 0, depth);
+			Vector3 nside = Vector3(-side.x, side.y, side.z);
+			Vector3 up = Vector3(0, hsize * size_factor.y, 0);
 
 			ADD_TRIANGLE(Vector3(), side + up, side - up);
 			ADD_TRIANGLE(Vector3(), nside + up, nside - up);
@@ -1868,18 +1892,18 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			ADD_TRIANGLE(Vector3(), side - up, nside - up);
 
 			handles.push_back(side);
-			side.x *= 0.25;
-			nside.x *= 0.25;
-			Vector3 tup(0, up.y * 3 / 2, side.z);
+			side.x = MIN(side.x, hsize * 0.25);
+			nside.x = -side.x;
+			Vector3 tup(0, up.y + hsize / 2, side.z);
 			ADD_TRIANGLE(tup, side + up, nside + up);
-
 		} break;
+
 		case Camera3D::PROJECTION_ORTHOGONAL: {
 			float size = camera->get_size();
 
 			float hsize = size * 0.5;
-			Vector3 right(hsize, 0, 0);
-			Vector3 up(0, hsize, 0);
+			Vector3 right(hsize * size_factor.x, 0, 0);
+			Vector3 up(0, hsize * size_factor.y, 0);
 			Vector3 back(0, 0, -1.0);
 			Vector3 front(0, 0, 0);
 
@@ -1890,18 +1914,19 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 			handles.push_back(right + back);
 
-			right.x *= 0.25;
-			Vector3 tup(0, up.y * 3 / 2, back.z);
+			right.x = MIN(right.x, hsize * 0.25);
+			Vector3 tup(0, up.y + hsize / 2, back.z);
 			ADD_TRIANGLE(tup, right + up + back, -right + up + back);
 
 		} break;
+
 		case Camera3D::PROJECTION_FRUSTUM: {
 			float hsize = camera->get_size() / 2.0;
 
 			Vector3 side = Vector3(hsize, 0, -camera->get_near()).normalized();
-			Vector3 nside = side;
-			nside.x = -nside.x;
-			Vector3 up = Vector3(0, side.x, 0);
+			side.x *= size_factor.x;
+			Vector3 nside = Vector3(-side.x, side.y, side.z);
+			Vector3 up = Vector3(0, hsize * size_factor.y, 0);
 			Vector3 offset = Vector3(camera->get_frustum_offset().x, camera->get_frustum_offset().y, 0.0);
 
 			ADD_TRIANGLE(Vector3(), side + up + offset, side - up + offset);
@@ -1909,11 +1934,11 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			ADD_TRIANGLE(Vector3(), side + up + offset, nside + up + offset);
 			ADD_TRIANGLE(Vector3(), side - up + offset, nside - up + offset);
 
-			side.x *= 0.25;
-			nside.x *= 0.25;
-			Vector3 tup(0, up.y * 3 / 2, side.z);
+			side.x = MIN(side.x, hsize * 0.25);
+			nside.x = -side.x;
+			Vector3 tup(0, up.y + hsize / 2, side.z);
 			ADD_TRIANGLE(tup + offset, side + up + offset, nside + up + offset);
-		}
+		} break;
 	}
 
 #undef ADD_TRIANGLE
@@ -1921,7 +1946,10 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);
-	p_gizmo->add_handles(handles, get_material("handles"));
+
+	if (!handles.is_empty()) {
+		p_gizmo->add_handles(handles, get_material("handles"));
+	}
 }
 
 //////
