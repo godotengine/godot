@@ -41,7 +41,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 
 	LineEdit *search_box = nullptr;
 	Tree *search_options = nullptr;
-	StringName base_type;
+	String base_type;
 	bool allow_multi_select = false;
 	bool _load_resources = false; // Prohibitively slow for now.
 
@@ -77,12 +77,12 @@ protected:
 	static void _bind_methods();
 
 public:
-	StringName get_base_type() const;
+	String get_base_type() const;
 
 	String get_selected() const;
 	Vector<String> get_selected_files() const;
 
-	void popup_dialog(const StringName &p_base, bool p_enable_multi = false, bool p_dontclear = false);
+	void popup_dialog(const String &p_base, bool p_enable_multi = false, bool p_dontclear = false);
 	EditorQuickOpen();
 };
 
