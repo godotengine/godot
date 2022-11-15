@@ -190,7 +190,6 @@ private:
 	struct TrackCache {
 		bool root_motion = false;
 		uint64_t setup_pass = 0;
-		uint64_t process_pass = 0;
 		Animation::TrackType type = Animation::TrackType::TYPE_ANIMATION;
 		Object *object = nullptr;
 		ObjectID object_id;
