@@ -185,6 +185,10 @@ Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
 		return ERR_CANT_CREATE;
 	}
 
+	if (!wglSwapIntervalEXT) {
+		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+	}
+
 	return OK;
 }
 
@@ -293,50 +297,30 @@ void GLManager_Windows::swap_buffers() {
 }
 
 Error GLManager_Windows::initialize() {
-	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-	wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)wglGetProcAddress("wglGetSwapIntervalEXT");
-	//glWrapperInit(wrapper_get_proc_address);
-
 	return OK;
 }
 
-void GLManager_Windows::set_use_vsync(bool p_use) {
-	/*
-	static bool setup = false;
-	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = nullptr;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = nullptr;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = nullptr;
+void GLManager_Windows::set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use) {
+	GLWindow &win = get_window(p_window_id);
+	GLWindow *current = _current_window;
 
-	if (!setup) {
-		setup = true;
-		String extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
-		if (extensions.find("GLX_EXT_swap_control") != -1) {
-			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
-		}
-		if (extensions.find("GLX_MESA_swap_control") != -1) {
-			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
-		}
-		if (extensions.find("GLX_SGI_swap_control") != -1) {
-			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
-		}
+	if (&win != _current_window) {
+		window_make_current(p_window_id);
 	}
-	int val = p_use ? 1 : 0;
-	if (glXSwapIntervalMESA) {
-		glXSwapIntervalMESA(val);
-	} else if (glXSwapIntervalSGI) {
-		glXSwapIntervalSGI(val);
-	} else if (glXSwapIntervalEXT) {
-		GLXDrawable drawable = glXGetCurrentDrawable();
-		glXSwapIntervalEXT(x11_display, drawable, val);
-	} else {
-		return;
+
+	if (wglSwapIntervalEXT) {
+		win.use_vsync = p_use;
+		wglSwapIntervalEXT(p_use ? 1 : 0);
 	}
-	use_vsync = p_use;
-	*/
+
+	if (current != _current_window) {
+		_current_window = current;
+		make_current();
+	}
 }
 
-bool GLManager_Windows::is_using_vsync() const {
-	return use_vsync;
+bool GLManager_Windows::is_using_vsync(DisplayServer::WindowID p_window_id) const {
+	return get_window(p_window_id).use_vsync;
 }
 
 HDC GLManager_Windows::get_hdc(DisplayServer::WindowID p_window_id) {
@@ -354,7 +338,6 @@ GLManager_Windows::GLManager_Windows(ContextType p_context_type) {
 
 	direct_render = false;
 	glx_minor = glx_major = 0;
-	use_vsync = false;
 	_current_window = nullptr;
 }
 
