@@ -56,6 +56,7 @@ class EditorSettings;
 class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
+class CanvasItemEditor;
 class FileSystemDock;
 class ScriptCreateDialog;
 class ScriptEditor;
@@ -129,6 +130,11 @@ public:
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
+
+	// Expose selected functionalities from `CanvasItemEditor` for 2D Plugin writers
+	Transform2D get_canvas_item_editor_transform() const;
+	void update_canvas_item_editor_viewport();
+	void focus_canvas_item_editor_to_selection();
 
 	EditorInterface();
 };

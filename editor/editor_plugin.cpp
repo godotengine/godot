@@ -345,6 +345,18 @@ EditorCommandPalette *EditorInterface::get_command_palette() const {
 	return EditorCommandPalette::get_singleton();
 }
 
+Transform2D EditorInterface::get_canvas_item_editor_transform() const {
+	return CanvasItemEditor::get_singleton()->get_canvas_transform();
+}
+
+void EditorInterface::update_canvas_item_editor_viewport() {
+	CanvasItemEditor::get_singleton()->update_viewport();
+}
+
+void EditorInterface::focus_canvas_item_editor_to_selection() {
+	CanvasItemEditor::get_singleton()->focus_selection();
+}
+
 EditorInterface *EditorInterface::singleton = nullptr;
 
 void EditorInterface::_bind_methods() {
@@ -394,6 +406,10 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
 	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_canvas_item_editor_transform"), &EditorInterface::get_canvas_item_editor_transform);
+	ClassDB::bind_method(D_METHOD("update_canvas_item_editor_viewport"), &EditorInterface::update_canvas_item_editor_viewport);
+	ClassDB::bind_method(D_METHOD("focus_canvas_item_editor_to_selection"), &EditorInterface::focus_canvas_item_editor_to_selection);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 }

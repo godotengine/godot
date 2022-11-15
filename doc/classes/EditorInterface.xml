@@ -34,11 +34,23 @@
 				Edits the given [Script]. The line and column on which to open the script can also be specified. The script will be open with the user-configured editor for the script's language which may be an external editor.
 			</description>
 		</method>
+		<method name="focus_canvas_item_editor_to_selection">
+			<return type="void" />
+			<description>
+				Focus the canvas item editor viewport to the selected object(s).
+			</description>
+		</method>
 		<method name="get_base_control">
 			<return type="Control" />
 			<description>
 				Returns the main container of Godot editor's window. For example, you can use it to retrieve the size of the container and place your controls accordingly.
 				[b]Warning:[/b] Removing and freeing this node will render the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_canvas_item_editor_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Return the transform of the canvas item editor viewport, from global space to viewport space.
 			</description>
 		</method>
 		<method name="get_command_palette" qualifiers="const">
@@ -272,6 +284,12 @@
 			<return type="void" />
 			<description>
 				Stops the scene that is currently playing.
+			</description>
+		</method>
+		<method name="update_canvas_item_editor_viewport">
+			<return type="void" />
+			<description>
+				Update the canvas item editor viewport and the surranding sliders.
 			</description>
 		</method>
 	</methods>

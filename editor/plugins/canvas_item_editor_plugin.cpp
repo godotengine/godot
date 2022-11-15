@@ -4711,12 +4711,17 @@ void CanvasItemEditor::_reset_drag() {
 }
 
 void CanvasItemEditor::_bind_methods() {
-	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
+	//ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
 
-	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
+	ClassDB::bind_method(D_METHOD("set_state", "p_state"), &CanvasItemEditor::set_state);
+	ClassDB::bind_method(D_METHOD("get_state"), &CanvasItemEditor::get_state);
 	ClassDB::bind_method(D_METHOD("update_viewport"), &CanvasItemEditor::update_viewport);
+	ClassDB::bind_method(D_METHOD("get_viewport_control"), &CanvasItemEditor::get_viewport_control);
+	ClassDB::bind_method(D_METHOD("get_editor_transform"), &CanvasItemEditor::get_canvas_transform); // Avoid conflict with CanvasItem::get_canvas_transform
+	ClassDB::bind_method(D_METHOD("focus_selection"), &CanvasItemEditor::focus_selection);
 
-	ClassDB::bind_method("_set_owner_for_node_and_children", &CanvasItemEditor::_set_owner_for_node_and_children);
+	//ClassDB::bind_method("_set_owner_for_node_and_children", &CanvasItemEditor::_set_owner_for_node_and_children);
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "state"), "set_state", "get_state");
 
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
