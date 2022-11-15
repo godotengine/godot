@@ -309,8 +309,8 @@ double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_see
 		if (i == point_lower || i == point_higher) {
 			double remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, weights[i], FILTER_IGNORE, true);
 			max_time_remaining = MAX(max_time_remaining, remaining);
-		} else {
-			blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, sync);
+		} else if (sync) {
+			blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, true);
 		}
 	}
 

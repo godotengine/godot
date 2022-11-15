@@ -512,8 +512,8 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 				}
 			}
 
-			if (!found) {
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, sync);
+			if (sync && !found) {
+				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, true);
 			}
 		}
 	} else {
@@ -550,9 +550,11 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 			mind = blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, true);
 		}
 
-		for (int i = 0; i < blend_points_used; i++) {
-			if (i != cur_closest) {
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, sync);
+		if (sync) {
+			for (int i = 0; i < blend_points_used; i++) {
+				if (i != cur_closest) {
+					blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, true);
+				}
 			}
 		}
 	}

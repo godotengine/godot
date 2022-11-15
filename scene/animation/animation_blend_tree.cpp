@@ -726,9 +726,11 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 
 	double rem = 0.0;
 
-	for (int i = 0; i < enabled_inputs; i++) {
-		if (i != cur_current && i != cur_prev) {
-			blend_input(i, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, sync);
+	if (sync) {
+		for (int i = 0; i < enabled_inputs; i++) {
+			if (i != cur_current && i != cur_prev) {
+				blend_input(i, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, true);
+			}
 		}
 	}
 
