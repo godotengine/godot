@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 
-void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_dontclear) {
+void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dontclear) {
 	base_type = p_base;
 	allow_multi_select = p_enable_multi;
 	search_options->set_select_mode(allow_multi_select ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
@@ -56,7 +56,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		_build_search_cache(p_efsd->get_subdir(i));
 	}
 
-	Vector<String> base_types = String(base_type).split(String(","));
+	Vector<String> base_types = base_type.split(",");
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file = p_efsd->get_file_path(i);
 		String engine_type = p_efsd->get_file_type(i);
@@ -80,7 +80,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 				// Store refs to used icons.
 				String ext = file.get_extension();
 				if (!icons.has(ext)) {
-					icons.insert(ext, get_theme_icon((has_theme_icon(actual_type, SNAME("EditorIcons")) ? actual_type : String("Object")), SNAME("EditorIcons")));
+					icons.insert(ext, get_theme_icon((has_theme_icon(actual_type, SNAME("EditorIcons")) ? actual_type : "Object"), SNAME("EditorIcons")));
 				}
 
 				// Stop testing base types as soon as we got a match.
@@ -231,7 +231,7 @@ Vector<String> EditorQuickOpen::get_selected_files() const {
 	return selected_files;
 }
 
-StringName EditorQuickOpen::get_base_type() const {
+String EditorQuickOpen::get_base_type() const {
 	return base_type;
 }
 
