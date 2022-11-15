@@ -511,6 +511,7 @@ Error ResourceLoaderText::load() {
 
 		if (error) {
 			_printerr();
+			return error;
 		}
 
 		resource_current++;
@@ -884,6 +885,7 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 			error_text = "Unexpected end of file";
 			_printerr();
 			error = ERR_FILE_CORRUPT;
+			return;
 		}
 	}
 }
