@@ -634,6 +634,8 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 		ERR_FAIL_V_MSG(String(), "Unable to load fontconfig, system font support is disabled.");
 	}
 
+	bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
+
 	String ret;
 
 	FcConfig *config = FcInitLoadConfigAndFonts();
@@ -655,6 +657,19 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 		FcResult result;
 		FcPattern *match = FcFontMatch(0, pattern, &result);
 		if (match) {
+			if (!allow_substitutes) {
+				char *family_name = nullptr;
+				if (FcPatternGetString(match, FC_FAMILY, 0, reinterpret_cast<FcChar8 **>(&family_name)) == FcResultMatch) {
+					if (family_name && String::utf8(family_name).to_lower() != p_font_name.to_lower()) {
+						FcPatternDestroy(match);
+						FcPatternDestroy(pattern);
+						FcObjectSetDestroy(object_set);
+						FcConfigDestroy(config);
+
+						return String();
+					}
+				}
+			}
 			char *file_name = nullptr;
 			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
 				if (file_name) {
