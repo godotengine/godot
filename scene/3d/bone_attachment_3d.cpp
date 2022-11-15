@@ -375,7 +375,7 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 	}
 }
 #ifdef TOOLS_ENABLED
-void BoneAttachment3D::_notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Ref<BoneMap> p_bone_map) {
+void BoneAttachment3D::_notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map) {
 	const Skeleton3D *parent = nullptr;
 	if (use_external_skeleton) {
 		if (external_skeleton_node_cache.is_valid()) {
@@ -385,7 +385,7 @@ void BoneAttachment3D::_notify_skeleton_bones_renamed(Node *p_base_scene, Skelet
 		parent = Object::cast_to<Skeleton3D>(get_parent());
 	}
 	if (parent && parent == p_skeleton) {
-		StringName bn = p_bone_map->find_profile_bone_name(bone_name);
+		StringName bn = p_rename_map[bone_name];
 		if (bn) {
 			set_bone_name(bn);
 		}
