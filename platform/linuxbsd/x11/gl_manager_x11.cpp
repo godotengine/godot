@@ -330,10 +330,6 @@ Error GLManager_X11::initialize() {
 }
 
 void GLManager_X11::set_use_vsync(bool p_use) {
-	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = nullptr;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = nullptr;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = nullptr;
-
 	// force vsync in the editor for now, as a safety measure
 	bool is_editor = Engine::get_singleton()->is_editor_hint();
 	if (is_editor) {
