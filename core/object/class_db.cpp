@@ -318,14 +318,14 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 	{
 		OBJTYPE_RLOCK;
 		ti = classes.getptr(p_class);
-		if (!ti || ti->disabled || !ti->creation_func || (ti->native_extension && !ti->native_extension->create_instance)) {
-			if (compat_classes.has(p_class)) {
-				ti = classes.getptr(compat_classes[p_class]);
-			}
+		if ((!ti || !_has_creation_func(ti)) && compat_classes.has(p_class)) {
+			ti = classes.getptr(compat_classes[p_class]);
 		}
 		ERR_FAIL_COND_V_MSG(!ti, nullptr, "Cannot get class '" + String(p_class) + "'.");
 		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, "Class '" + String(p_class) + "' is disabled.");
 		ERR_FAIL_COND_V_MSG(!ti->creation_func, nullptr, "Class '" + String(p_class) + "' or its base class cannot be instantiated.");
+		ERR_FAIL_COND_V_MSG((ti->native_extension && !ti->native_extension->create_instance), nullptr,
+				"GDExtension class '" + String(p_class) + "' has no constructor defined.");
 	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
@@ -346,10 +346,8 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 	{
 		OBJTYPE_RLOCK;
 		ti = classes.getptr(p_class);
-		if (!ti || ti->disabled || !ti->creation_func || (ti->native_extension && !ti->native_extension->create_instance)) {
-			if (compat_classes.has(p_class)) {
-				ti = classes.getptr(compat_classes[p_class]);
-			}
+		if ((!ti || !_has_creation_func(ti)) && compat_classes.has(p_class)) {
+			ti = classes.getptr(compat_classes[p_class]);
 		}
 		ERR_FAIL_COND_MSG(!ti, "Cannot get class '" + String(p_class) + "'.");
 		ERR_FAIL_COND_MSG(ti->disabled, "Class '" + String(p_class) + "' is disabled.");
@@ -370,7 +368,7 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance));
+	return _has_creation_func(ti);
 }
 
 bool ClassDB::is_virtual(const StringName &p_class) {
@@ -388,7 +386,11 @@ bool ClassDB::is_virtual(const StringName &p_class) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance) && ti->is_virtual);
+	return (_has_creation_func(ti) && ti->is_virtual);
+}
+
+bool ClassDB::_has_creation_func(const ClassInfo *ti) {
+	return !(ti->disabled || !ti->creation_func || (ti->native_extension && !ti->native_extension->create_instance));
 }
 
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
