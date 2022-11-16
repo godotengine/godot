@@ -340,7 +340,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_neighbor_dist", "get_neighbor_distance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "get_network_connected_peers", "get_peers" }, // Multiplayer API
 	{ "get_network_master", "get_multiplayer_authority" }, // Node
-	{ "get_network_peer", "get_multiplayer_peer" }, // Multiplayer API
+	//{ "get_network_peer", "get_multiplayer().get_multiplayer_peer" }, // Multiplayer API
 	{ "get_network_unique_id", "get_unique_id" }, // Multiplayer API
 	{ "get_ok", "get_ok_button" }, // AcceptDialog
 	{ "get_oneshot", "get_one_shot" }, // AnimatedTexture
@@ -581,6 +581,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_shader_param", "get_shader_parameter" }, // ShaderMaterial
 	{ "set_uniform_name", "set_parameter_name" }, // ParameterRef
 	{ "get_uniform_name", "get_parameter_name" }, // ParameterRef
+	{ "is_active", "is_alive" }, // Thread.is_active() removed.
+	//{ "plus_file", "path_join" }, //String, Checks state this is not a valid function. But I disagree.
 
 	// Builtin types
 	// Remember to add them to builtin_types_excluded_functions variable, because for now this functions cannot be listed
@@ -1271,6 +1273,7 @@ static const char *gdscript_signals_renames[][2] = {
 	// {"changed","settings_changed"}, // EditorSettings
 	{ "about_to_show", "about_to_popup" }, // Popup
 	{ "button_release", "button_released" }, // XRController3D
+	{ "idle_frame", "process_frame" },
 	{ "network_peer_connected", "peer_connected" }, // MultiplayerAPI
 	{ "network_peer_disconnected", "peer_disconnected" }, // MultiplayerAPI
 	{ "network_peer_packet", "peer_packet" }, // MultiplayerAPI
@@ -1321,6 +1324,8 @@ static const char *project_settings_renames[][2] = {
 	{ "audio/output_latency", "audio/driver/output_latency" },
 	{ "audio/output_latency.web", "audio/driver/output_latency.web" },
 	{ "audio/video_delay_compensation_ms", "audio/video/video_delay_compensation_ms" },
+	{ "display/window/size/width", "display/window/size/viewport_width" },
+	{ "display/window/size/height", "display/window/size/viewport_height" },
 	{ "display/window/vsync/use_vsync", "display/window/vsync/vsync_mode" },
 	{ "editor/main_run_args", "editor/run/main_run_args" },
 	{ "gui/common/swap_ok_cancel", "gui/common/swap_cancel_ok" },
@@ -3586,6 +3591,39 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 			}
 		}
 	}
+	//  OS.get_real_window_size()  ->   DisplayServer.window_get_real_size()
+	if (line.contains("OS.get_real_window_size(")) {
+		int start = line.find("OS.get_real_window_size(");
+		int end = get_end_parenthesis(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 0) {
+				line = line.substr(0, start) + "DisplayServer.window_get_real_size()" + line.substr(end + start);
+			}
+		}
+	}
+	//  OS.get_screen_size()  ->   DisplayServer.screen_get_size()
+	if (line.contains("OS.get_screen_size(")) {
+		int start = line.find("OS.get_screen_size(");
+		int end = get_end_parenthesis(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 0) {
+				line = line.substr(0, start) + "DisplayServer.screen_get_size()" + line.substr(end + start);
+			}
+		}
+	}
+	//  OS.get_window_size()  ->   DisplayServer.window_get_size()
+	if (line.contains("OS.get_window_size(")) {
+		int start = line.find("OS.get_window_size(");
+		int end = get_end_parenthesis(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 0) {
+				line = line.substr(0, start) + "DisplayServer.window_get_size()" + line.substr(end + start);
+			}
+		}
+	}
 	//  draw_rect(a,b,c,d,e)  ->   draw_rect(a,b,c,d)#e) TODOGODOT4 Antialiasing argument is missing
 	if (line.contains("draw_rect(")) {
 		int start = line.find("draw_rect(");
@@ -3657,6 +3695,9 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 	if (line.contains("OS.get_datetime")) {
 		line = line.replace("OS.get_datetime", "Time.get_datetime_dict_from_system");
+	}
+	if (line.contains("OS.get_system_time_secs()")) {
+		line = line.replace("OS.get_system_time_secs()", "Time.get_time_dict_from_system()['second']");
 	}
 }
 
