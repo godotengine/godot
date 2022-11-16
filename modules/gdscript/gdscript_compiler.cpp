@@ -133,6 +133,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 
 			if (script.is_null()) {
 				_set_error(vformat(R"(Could not find class "%s" in "%s".)", p_datatype.class_type->fqcn, p_datatype.script_path), nullptr);
+				return GDScriptDataType();
 			} else {
 				// Only hold a strong reference if the owner of the element qualified with this type is not local, to avoid cyclic references (leaks).
 				// TODO: Might lead to use after free if script_type is a subclass and is used after its parent is freed.
