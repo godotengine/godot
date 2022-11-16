@@ -3826,7 +3826,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			vrs_reference.layout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
 			vrs_reference.aspectMask = VK_IMAGE_ASPECT_NONE;
 
-			Size2i texel_size = context->get_vrs_capabilities().max_texel_size;
+			Size2i texel_size = context->get_vrs_capabilities().texel_size;
 
 			VkFragmentShadingRateAttachmentInfoKHR &vrs_attachment_info = vrs_attachment_info_array[i];
 			vrs_attachment_info.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
@@ -9723,6 +9723,12 @@ uint64_t RenderingDeviceVulkan::limit_get(Limit p_limit) const {
 		case LIMIT_SUBGROUP_OPERATIONS: {
 			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
 			return subgroup_capabilities.supported_operations_flags_rd();
+		}
+		case LIMIT_VRS_TEXEL_WIDTH: {
+			return context->get_vrs_capabilities().texel_size.x;
+		}
+		case LIMIT_VRS_TEXEL_HEIGHT: {
+			return context->get_vrs_capabilities().texel_size.y;
 		}
 		default:
 			ERR_FAIL_V(0);
