@@ -165,8 +165,7 @@ class VisualShaderEditor : public VBoxContainer {
 	Ref<VisualShader> visual_shader;
 	GraphEdit *graph = nullptr;
 	Button *add_node = nullptr;
-	Button *varying_button = nullptr;
-	PopupMenu *varying_options = nullptr;
+	MenuButton *varying_button = nullptr;
 	Button *preview_shader = nullptr;
 
 	OptionButton *edit_type = nullptr;
@@ -283,7 +282,6 @@ class VisualShaderEditor : public VBoxContainer {
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos, VisualShaderNode::PortType p_input_port_type = VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PortType p_output_port_type = VisualShaderNode::PORT_TYPE_MAX);
 
-	void _show_varying_menu();
 	void _varying_menu_id_pressed(int p_idx);
 	void _show_add_varying_dialog();
 	void _show_remove_varying_dialog();

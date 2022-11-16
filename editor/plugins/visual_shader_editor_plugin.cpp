@@ -3623,12 +3623,6 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 	node_filter->select_all();
 }
 
-void VisualShaderEditor::_show_varying_menu() {
-	varying_options->set_item_disabled(int(VaryingMenuOptions::REMOVE), visual_shader->get_varyings_count() == 0);
-	varying_options->set_position(graph->get_screen_position() + varying_button->get_position() + Size2(0, varying_button->get_size().height));
-	varying_options->popup();
-}
-
 void VisualShaderEditor::_varying_menu_id_pressed(int p_idx) {
 	switch (VaryingMenuOptions(p_idx)) {
 		case VaryingMenuOptions::ADD: {
@@ -4334,7 +4328,7 @@ void VisualShaderEditor::_update_varying_tree() {
 		}
 	}
 
-	varying_options->set_item_disabled(int(VaryingMenuOptions::REMOVE), count == 0);
+	varying_button->get_popup()->set_item_disabled(int(VaryingMenuOptions::REMOVE), count == 0);
 }
 
 void VisualShaderEditor::_varying_create() {
@@ -4809,17 +4803,15 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog).bind(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX));
 
-	varying_button = memnew(Button);
-	varying_button->set_flat(true);
+	varying_button = memnew(MenuButton);
 	varying_button->set_text(TTR("Manage Varyings"));
+	varying_button->set_switch_on_hover(true);
 	graph->get_zoom_hbox()->add_child(varying_button);
-	varying_button->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_varying_menu));
 
-	varying_options = memnew(PopupMenu);
-	add_child(varying_options);
-	varying_options->add_item(TTR("Add Varying"), int(VaryingMenuOptions::ADD));
-	varying_options->add_item(TTR("Remove Varying"), int(VaryingMenuOptions::REMOVE));
-	varying_options->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
+	PopupMenu *varying_menu = varying_button->get_popup();
+	varying_menu->add_item(TTR("Add Varying"), int(VaryingMenuOptions::ADD));
+	varying_menu->add_item(TTR("Remove Varying"), int(VaryingMenuOptions::REMOVE));
+	varying_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
 
 	preview_shader = memnew(Button);
 	preview_shader->set_flat(true);
