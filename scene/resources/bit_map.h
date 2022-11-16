@@ -46,7 +46,7 @@ class BitMap : public Resource {
 	int width = 0;
 	int height = 0;
 
-	Vector<Vector2> _march_square(const Rect2i &p_rect, const Point2i &p_start) const;
+	Vector<Vector<Vector2>> _march_square(const Rect2i &p_rect, const Point2i &p_start) const;
 
 	TypedArray<PackedVector2Array> _opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon) const;
 
