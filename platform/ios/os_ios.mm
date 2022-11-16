@@ -130,8 +130,6 @@ void OS_IOS::alert(const String &p_alert, const String &p_title) {
 
 void OS_IOS::initialize_core() {
 	OS_Unix::initialize_core();
-
-	set_user_data_dir(user_data_dir);
 }
 
 void OS_IOS::initialize() {
@@ -273,13 +271,16 @@ Error OS_IOS::shell_open(String p_uri) {
 	return OK;
 }
 
-void OS_IOS::set_user_data_dir(String p_dir) {
-	Ref<DirAccess> da = DirAccess::open(p_dir);
-	user_data_dir = da->get_current_dir();
-	printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), p_dir.utf8().get_data());
-}
-
 String OS_IOS::get_user_data_dir() const {
+	static bool user_data_dir_set = false;
+	if (user_data_dir_set) {
+		String old_dir = user_data_dir;
+		Ref<DirAccess> da = DirAccess::open(old_dir);
+		const_cast<OS_IOS *>(this)->user_data_dir = da->get_current_dir();
+		user_data_dir_set = true;
+
+		printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), old_dir.utf8().get_data());
+	}
 	return user_data_dir;
 }
 

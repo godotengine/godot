@@ -565,7 +565,7 @@ String OS_Unix::get_executable_path() const {
 		WARN_PRINT("MAXPATHLEN is too small");
 	}
 
-	String path(resolved_path);
+	String path = String::utf8(resolved_path);
 	delete[] resolved_path;
 
 	return path;
