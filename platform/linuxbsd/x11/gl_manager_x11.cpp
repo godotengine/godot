@@ -330,6 +330,7 @@ Error GLManager_X11::initialize() {
 }
 
 void GLManager_X11::set_use_vsync(bool p_use) {
+	static bool setup = false;
 	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = nullptr;
 	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = nullptr;
 	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = nullptr;
@@ -344,7 +345,22 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 	if (!_current_window) {
 		return;
 	}
+
 	const GLDisplay &disp = get_current_display();
+
+	if (!setup) {
+		setup = true;
+		String extensions = glXQueryExtensionsString(disp.x11_display, DefaultScreen(disp.x11_display));
+		if (extensions.find("GLX_EXT_swap_control") != -1) {
+			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
+		}
+		if (extensions.find("GLX_MESA_swap_control") != -1) {
+			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
+		}
+		if (extensions.find("GLX_SGI_swap_control") != -1) {
+			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
+		}
+	}
 
 	int val = p_use ? 1 : 0;
 	if (GLAD_GLX_MESA_swap_control) {
