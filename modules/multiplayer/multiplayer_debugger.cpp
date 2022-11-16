@@ -126,12 +126,14 @@ void MultiplayerDebugger::BandwidthProfiler::tick(double p_frame_time, double p_
 
 Array MultiplayerDebugger::RPCFrame::serialize() {
 	Array arr;
-	arr.push_back(infos.size() * 4);
+	arr.push_back(infos.size() * 6);
 	for (int i = 0; i < infos.size(); ++i) {
 		arr.push_back(uint64_t(infos[i].node));
 		arr.push_back(infos[i].node_path);
 		arr.push_back(infos[i].incoming_rpc);
+		arr.push_back(infos[i].incoming_size);
 		arr.push_back(infos[i].outgoing_rpc);
+		arr.push_back(infos[i].outgoing_size);
 	}
 	return arr;
 }
@@ -139,15 +141,18 @@ Array MultiplayerDebugger::RPCFrame::serialize() {
 bool MultiplayerDebugger::RPCFrame::deserialize(const Array &p_arr) {
 	ERR_FAIL_COND_V(p_arr.size() < 1, false);
 	uint32_t size = p_arr[0];
-	ERR_FAIL_COND_V(size % 4, false);
+	ERR_FAIL_COND_V(size % 6, false);
 	ERR_FAIL_COND_V((uint32_t)p_arr.size() != size + 1, false);
-	infos.resize(size / 4);
+	infos.resize(size / 6);
 	int idx = 1;
-	for (uint32_t i = 0; i < size / 4; ++i) {
+	for (uint32_t i = 0; i < size / 6; i++) {
 		infos.write[i].node = uint64_t(p_arr[idx]);
 		infos.write[i].node_path = p_arr[idx + 1];
 		infos.write[i].incoming_rpc = p_arr[idx + 2];
-		infos.write[i].outgoing_rpc = p_arr[idx + 3];
+		infos.write[i].incoming_size = p_arr[idx + 3];
+		infos.write[i].outgoing_rpc = p_arr[idx + 4];
+		infos.write[i].outgoing_size = p_arr[idx + 5];
+		idx += 6;
 	}
 	return true;
 }
@@ -159,8 +164,6 @@ void MultiplayerDebugger::RPCProfiler::init_node(const ObjectID p_node) {
 	rpc_node_data.insert(p_node, RPCNodeInfo());
 	rpc_node_data[p_node].node = p_node;
 	rpc_node_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
-	rpc_node_data[p_node].incoming_rpc = 0;
-	rpc_node_data[p_node].outgoing_rpc = 0;
 }
 
 void MultiplayerDebugger::RPCProfiler::toggle(bool p_enable, const Array &p_opts) {
@@ -168,15 +171,18 @@ void MultiplayerDebugger::RPCProfiler::toggle(bool p_enable, const Array &p_opts
 }
 
 void MultiplayerDebugger::RPCProfiler::add(const Array &p_data) {
-	ERR_FAIL_COND(p_data.size() < 2);
-	const ObjectID id = p_data[0];
-	const String what = p_data[1];
+	ERR_FAIL_COND(p_data.size() != 3);
+	const String what = p_data[0];
+	const ObjectID id = p_data[1];
+	const int size = p_data[2];
 	init_node(id);
 	RPCNodeInfo &info = rpc_node_data[id];
 	if (what == "rpc_in") {
 		info.incoming_rpc++;
+		info.incoming_size += size;
 	} else if (what == "rpc_out") {
 		info.outgoing_rpc++;
+		info.outgoing_size += size;
 	}
 }
 

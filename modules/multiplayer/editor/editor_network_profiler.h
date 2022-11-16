@@ -66,7 +66,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_node_frame_data(const RPCNodeInfo p_frame);
+	void add_node_frame_data(RPCNodeInfo p_frame);
 	void set_bandwidth(int p_incoming, int p_outgoing);
 	bool is_profiling();
 

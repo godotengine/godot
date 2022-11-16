@@ -103,6 +103,15 @@ private:
 	Ref<SceneReplicationInterface> replicator;
 	Ref<SceneRPCInterface> rpc;
 
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ void _profile_bandwidth(const String &p_what, int p_value);
+	_FORCE_INLINE_ Error _send(const uint8_t *p_packet, int p_packet_len); // Also profiles.
+#else
+	_FORCE_INLINE_ Error _send(const uint8_t *p_packet, int p_packet_len) {
+		return multiplayer_peer->put_packet(p_packet, p_packet_len);
+	}
+#endif
+
 protected:
 	static void _bind_methods();
 
@@ -162,10 +171,6 @@ public:
 	bool is_server_relay_enabled() const;
 
 	Ref<SceneCacheInterface> get_path_cache() { return cache; }
-
-#ifdef DEBUG_ENABLED
-	void profile_bandwidth(const String &p_inout, int p_size);
-#endif
 
 	SceneMultiplayer();
 	~SceneMultiplayer();
