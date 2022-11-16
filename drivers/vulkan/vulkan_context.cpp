@@ -625,6 +625,9 @@ Error VulkanContext::_check_capabilities() {
 	vrs_capabilities.pipeline_vrs_supported = false;
 	vrs_capabilities.primitive_vrs_supported = false;
 	vrs_capabilities.attachment_vrs_supported = false;
+	vrs_capabilities.min_texel_size = Size2i();
+	vrs_capabilities.max_texel_size = Size2i();
+	vrs_capabilities.texel_size = Size2i();
 	multiview_capabilities.is_supported = false;
 	multiview_capabilities.geometry_shader_is_supported = false;
 	multiview_capabilities.tessellation_shader_is_supported = false;
@@ -787,6 +790,10 @@ Error VulkanContext::_check_capabilities() {
 				vrs_capabilities.min_texel_size.y = vrsProperties.minFragmentShadingRateAttachmentTexelSize.height;
 				vrs_capabilities.max_texel_size.x = vrsProperties.maxFragmentShadingRateAttachmentTexelSize.width;
 				vrs_capabilities.max_texel_size.y = vrsProperties.maxFragmentShadingRateAttachmentTexelSize.height;
+
+				// We'll attempt to default to a texel size of 16x16
+				vrs_capabilities.texel_size.x = CLAMP(16, vrs_capabilities.min_texel_size.x, vrs_capabilities.max_texel_size.x);
+				vrs_capabilities.texel_size.y = CLAMP(16, vrs_capabilities.min_texel_size.y, vrs_capabilities.max_texel_size.y);
 
 				print_verbose(String("  Attachment fragment shading rate") + String(", min texel size: (") + itos(vrs_capabilities.min_texel_size.x) + String(", ") + itos(vrs_capabilities.min_texel_size.y) + String(")") + String(", max texel size: (") + itos(vrs_capabilities.max_texel_size.x) + String(", ") + itos(vrs_capabilities.max_texel_size.y) + String(")"));
 			}

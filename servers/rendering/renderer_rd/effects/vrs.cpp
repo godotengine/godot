@@ -92,18 +92,15 @@ void VRS::copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multi
 }
 
 Size2i VRS::get_vrs_texture_size(const Size2i p_base_size) const {
-	// TODO we should find some way to store this properly, we're assuming 16x16 as this seems to be the standard but in our vrs_capacities we
-	// obtain a minimum and maximum size, and we should choose something within this range and then make sure that is consistently set when creating
-	// our frame buffer. Also it is important that we make the resulting size we calculate down below available to the end user so they know the size
-	// of the VRS buffer to supply.
-	Size2i texel_size = Size2i(16, 16);
+	int32_t texel_width = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_WIDTH);
+	int32_t texel_height = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_HEIGHT);
 
-	int width = p_base_size.x / texel_size.x;
-	if (p_base_size.x % texel_size.x != 0) {
+	int width = p_base_size.x / texel_width;
+	if (p_base_size.x % texel_width != 0) {
 		width++;
 	}
-	int height = p_base_size.y / texel_size.y;
-	if (p_base_size.y % texel_size.y != 0) {
+	int height = p_base_size.y / texel_height;
+	if (p_base_size.y % texel_height != 0) {
 		height++;
 	}
 	return Size2i(width, height);
