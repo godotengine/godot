@@ -152,6 +152,13 @@ Transform2D CanvasItem::get_global_transform_with_canvas() const {
 	}
 }
 
+Transform2D CanvasItem::get_parent_transform_to_viewport() const {
+	if (!get_parent_item()) {
+		return Transform2D();
+	}
+	return get_parent_item()->get_global_transform_with_canvas();
+}
+
 Transform2D CanvasItem::get_screen_transform() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
 	Transform2D xform = get_global_transform_with_canvas();

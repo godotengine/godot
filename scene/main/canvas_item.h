@@ -284,6 +284,7 @@ public:
 
 	virtual Transform2D get_global_transform() const;
 	virtual Transform2D get_global_transform_with_canvas() const;
+	virtual Transform2D get_parent_transform_to_viewport() const;
 	virtual Transform2D get_screen_transform() const;
 
 	CanvasItem *get_top_level() const;

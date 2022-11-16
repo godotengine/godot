@@ -172,6 +172,10 @@ bool Transform2D::is_finite() const {
 	return columns[0].is_finite() && columns[1].is_finite() && columns[2].is_finite();
 }
 
+bool Transform2D::is_invertible() const {
+	return basis_determinant() != 0;
+}
+
 Transform2D Transform2D::looking_at(const Vector2 &p_target) const {
 	Transform2D return_trans = Transform2D(get_rotation(), get_origin());
 	Vector2 target_position = affine_inverse().xform(p_target);
