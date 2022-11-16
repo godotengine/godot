@@ -219,6 +219,8 @@ void HistoryDock::_notification(int p_notification) {
 }
 
 HistoryDock::HistoryDock() {
+	set_name("History");
+
 	ur_manager = EditorNode::get_undo_redo();
 	ur_manager->connect("history_changed", callable_mp(this, &HistoryDock::on_history_changed));
 	ur_manager->connect("version_changed", callable_mp(this, &HistoryDock::on_version_changed));
