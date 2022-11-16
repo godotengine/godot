@@ -641,7 +641,7 @@ void OS_UWP::set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape 
 	// TODO
 }
 
-Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console, ProcessID *r_child_id) {
 	return FAILED;
 }
 

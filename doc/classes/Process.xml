@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Process" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+		Class to start and control extenal processes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_exitcode" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns process exit code, or [code]255[/code] if it is still running or not started.
+			</description>
+		</method>
+		<method name="get_output" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns current process shell output, if output capture is enabled by [method start].
+			</description>
+		</method>
+		<method name="get_pid" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns process PID, or [code]0[/code] if process is not running.
+			</description>
+		</method>
+		<method name="is_done" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if process is finished (or not started).
+			</description>
+		</method>
+		<method name="kill">
+			<return type="void" />
+			<description>
+				Kill (terminate) the process.
+			</description>
+		</method>
+		<method name="start">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="arguments" type="PackedStringArray" />
+			<param index="2" name="read_stdout" type="bool" default="true" />
+			<param index="3" name="read_stderr" type="bool" default="false" />
+			<param index="4" name="open_console" type="bool" default="false" />
+			<description>
+				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space. If an [param read_stdout] is [code]true[/code], the shell output of the process will be captured. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be captured too.
+				If process is already started, old instance is automatically killed.
+				On Windows, if [param open_console] is [code]true[/code], [param read_stdout] is [code]false[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
+			</description>
+		</method>
+	</methods>
+</class>

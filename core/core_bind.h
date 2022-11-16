@@ -173,7 +173,8 @@ public:
 	String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const;
 	String get_executable_path() const;
 	String read_string_from_stdin(bool p_block = true);
-	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
+	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false);
+	void execute_async(const String &p_path, const Vector<String> &p_arguments, Callable p_callback, bool p_read_stderr = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
@@ -260,6 +261,39 @@ public:
 	static OS *get_singleton() { return singleton; }
 
 	OS() { singleton = this; }
+};
+
+class Process : public Object {
+	GDCLASS(Process, Object);
+
+	String path;
+	List<String> args;
+	bool read_stdout = false;
+	bool read_stderr = false;
+	bool open_console = false;
+
+	String output;
+	int exitcode = 0;
+	::OS::ProcessID pid = 0;
+
+	::Thread execute_output_thread;
+	::Mutex execute_output_mutex;
+	SafeFlag done;
+
+protected:
+	static void _bind_methods();
+	static void _execute_thread(void *p_ud);
+
+public:
+	void start(const String &p_path, const Vector<String> &p_arguments, bool p_read_stdout = true, bool p_read_stderr = false, bool p_open_console = false);
+	void kill();
+
+	String get_output() const;
+	int get_exitcode() const;
+	int get_pid() const;
+	bool is_done() const;
+
+	~Process();
 };
 
 class Geometry2D : public Object {

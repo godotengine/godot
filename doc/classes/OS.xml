@@ -89,10 +89,8 @@
 			<param index="1" name="arguments" type="PackedStringArray" />
 			<param index="2" name="output" type="Array" default="[]" />
 			<param index="3" name="read_stderr" type="bool" default="false" />
-			<param index="4" name="open_console" type="bool" default="false" />
 			<description>
 				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
-				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
 				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
 				For example, to retrieve a list of the working directory's contents:

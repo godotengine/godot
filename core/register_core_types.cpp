@@ -322,6 +322,7 @@ void register_core_singletons() {
 	GDREGISTER_CLASS(core_bind::Engine);
 	GDREGISTER_CLASS(core_bind::special::ClassDB);
 	GDREGISTER_CLASS(core_bind::Marshalls);
+	GDREGISTER_CLASS(core_bind::Process);
 	GDREGISTER_CLASS(TranslationServer);
 	GDREGISTER_ABSTRACT_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);

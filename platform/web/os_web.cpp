@@ -100,7 +100,7 @@ void OS_Web::finalize() {
 
 // Miscellaneous
 
-Error OS_Web::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_Web::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console, ProcessID *r_child_id) {
 	return create_process(p_path, p_arguments);
 }
 

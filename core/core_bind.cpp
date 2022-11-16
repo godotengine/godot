@@ -257,14 +257,14 @@ String OS::read_string_from_stdin(bool p_block) {
 	return ::OS::get_singleton()->get_stdin_string(true);
 }
 
-int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
+int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	String pipe;
 	int exitcode = 0;
-	Error err = ::OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr, nullptr, p_open_console);
+	Error err = ::OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr, nullptr, false);
 	r_output.push_back(pipe);
 	if (err != OK) {
 		return -1;
@@ -535,7 +535,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "bold", "italic"), &OS::get_system_font_path, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "block"), &OS::read_string_from_stdin, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &OS::execute, DEFVAL(Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
@@ -637,6 +637,100 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_MUSIC);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_PICTURES);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_RINGTONES);
+}
+
+////// Process ///////
+
+void Process::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("start", "path", "arguments", "read_stdout", "read_stderr", "open_console"), &Process::start, DEFVAL(true), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("kill"), &Process::kill);
+
+	ClassDB::bind_method(D_METHOD("get_output"), &Process::get_output);
+	ClassDB::bind_method(D_METHOD("get_exitcode"), &Process::get_exitcode);
+	ClassDB::bind_method(D_METHOD("get_pid"), &Process::get_pid);
+	ClassDB::bind_method(D_METHOD("is_done"), &Process::is_done);
+}
+
+void Process::_execute_thread(void *p_ud) {
+	Process *eta = (Process *)p_ud;
+
+	Error err = OK;
+	if (!eta->read_stdout) {
+		err = ::OS::get_singleton()->execute(eta->path, eta->args, nullptr, &eta->exitcode, false, nullptr, eta->open_console, &eta->pid);
+	} else {
+		err = ::OS::get_singleton()->execute(eta->path, eta->args, &eta->output, &eta->exitcode, eta->read_stderr, &eta->execute_output_mutex, false, &eta->pid);
+	}
+	if (err != OK) {
+		eta->exitcode = err;
+	}
+
+	eta->done.set();
+	eta->pid = 0;
+}
+
+void Process::start(const String &p_path, const Vector<String> &p_arguments, bool p_read_stdout, bool p_read_stderr, bool p_open_console) {
+	kill();
+
+	args.clear();
+	for (int i = 0; i < p_arguments.size(); i++) {
+		args.push_back(p_arguments[i]);
+	}
+	pid = 0;
+	path = p_path;
+	exitcode = 255;
+	read_stdout = p_read_stdout;
+	read_stderr = p_read_stderr;
+	open_console = p_open_console;
+	done.clear();
+
+	execute_output_thread.start(_execute_thread, this);
+}
+
+void Process::kill() {
+	if (execute_output_thread.is_started()) {
+		if (pid != 0) {
+			::OS::get_singleton()->kill(pid);
+		}
+		execute_output_thread.wait_to_finish();
+		pid = 0;
+	}
+}
+
+String Process::get_output() const {
+	if (execute_output_thread.is_started()) {
+		MutexLock lock(execute_output_mutex);
+		String str;
+		str.resize(output.size());
+		memcpy(str.ptrw(), output.ptr(), output.size() * sizeof(char32_t));
+		return str;
+	} else {
+		return String();
+	}
+}
+
+int Process::get_exitcode() const {
+	if (execute_output_thread.is_started()) {
+		MutexLock lock(execute_output_mutex);
+		return exitcode;
+	} else {
+		return 255;
+	}
+}
+
+int Process::get_pid() const {
+	return pid;
+}
+
+bool Process::is_done() const {
+	if (execute_output_thread.is_started()) {
+		return done.is_set();
+	} else {
+		return true;
+	}
+}
+
+Process::~Process() {
+	kill();
 }
 
 ////// Geometry2D //////

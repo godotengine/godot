@@ -545,7 +545,7 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 	}
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console, ProcessID *r_child_id) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
@@ -590,6 +590,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		CloseHandle(pipe[1]);
 	}
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
+
+	ProcessID pid = pi.pi.dwProcessId;
+	if (r_child_id) {
+		*r_child_id = pid;
+	}
+	process_map->insert(pid, pi);
 
 	if (r_pipe) {
 		CloseHandle(pipe[1]); // Close pipe write handle (only child process is writing).
@@ -642,6 +648,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		*r_exitcode = ret2;
 	}
 
+	process_map->erase(pid);
 	CloseHandle(pi.pi.hProcess);
 	CloseHandle(pi.pi.hThread);
 

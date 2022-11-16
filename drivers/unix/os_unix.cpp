@@ -280,52 +280,30 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool p_read_stderr, Mutex *p_pipe_mutex, bool p_open_console, ProcessID *r_child_id) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
 #else
+	int fd[2] = {};
 	if (r_pipe) {
-		String command = "\"" + p_path + "\"";
-		for (int i = 0; i < p_arguments.size(); i++) {
-			command += String(" \"") + p_arguments[i] + "\"";
-		}
-		if (read_stderr) {
-			command += " 2>&1"; // Include stderr
-		} else {
-			command += " 2>/dev/null"; // Silence stderr
-		}
-
-		FILE *f = popen(command.utf8().get_data(), "r");
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
-		char buf[65535];
-		while (fgets(buf, 65535, f)) {
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
-			String pipe_out;
-			if (pipe_out.parse_utf8(buf) == OK) {
-				(*r_pipe) += pipe_out;
-			} else {
-				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
-			}
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
-		}
-		int rv = pclose(f);
-
-		if (r_exitcode) {
-			*r_exitcode = WEXITSTATUS(rv);
-		}
-		return OK;
+		ERR_FAIL_COND_V(pipe(fd) != 0, ERR_CANT_OPEN);
 	}
 
 	pid_t pid = fork();
 	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
 
 	if (pid == 0) {
+		if (r_pipe) {
+			close(fd[0]);
+			dup2(fd[1], STDOUT_FILENO);
+			if (p_read_stderr) {
+				dup2(fd[1], STDERR_FILENO);
+			}
+			setpgid(pid, pid);
+		}
+
 		// The child process
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
@@ -343,6 +321,33 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		// The execvp() function only returns if an error occurs.
 		ERR_PRINT("Could not create child process: " + p_path);
 		raise(SIGKILL);
+	}
+
+	if (r_child_id) {
+		*r_child_id = pid;
+	}
+
+	if (r_pipe) {
+		close(fd[1]);
+		FILE *f = fdopen(fd[0], "r");
+
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + p_path);
+		char buf[4096];
+		while (fgets(buf, 4096, f)) {
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
+			String pipe_out;
+			if (pipe_out.parse_utf8(buf) == OK) {
+				(*r_pipe) += pipe_out;
+			} else {
+				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
+			}
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
+		}
+		fclose(f);
 	}
 
 	int status;
