@@ -670,6 +670,32 @@ void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	canvas_item->commands.push_back(rect);
 }
 
+void VisualServerCanvas::canvas_item_add_texture_multirect_region(RID p_item, const Vector<Rect2> &p_rects, RID p_texture, const Vector<Rect2> &p_src_rects, const Color &p_modulate, uint32_t p_canvas_rect_flags, RID p_normal_map) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_COND(p_rects.size() != p_src_rects.size());
+	ERR_FAIL_COND(!p_rects.size());
+
+	Item::CommandMultiRect *rect = memnew(Item::CommandMultiRect);
+	ERR_FAIL_COND(!rect);
+	rect->modulate = p_modulate;
+	rect->texture = p_texture;
+	rect->normal_map = p_normal_map;
+
+	// Rects should have flips and transposes pre-applied, and the relevant
+	// flags added to p_canvas_rect_flags.
+	// A single Multirect should contain rects ALL of the same flag type.
+	// The idea is to simplify the renderer as much as possible, and push the complexity
+	// to the one off creation code.
+	rect->flags = p_canvas_rect_flags | RasterizerCanvas::CANVAS_RECT_REGION;
+
+	rect->rects = p_rects;
+	rect->sources = p_src_rects;
+
+	canvas_item->rect_dirty = true;
+	canvas_item->commands.push_back(rect);
+}
+
 void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, RID p_normal_map, bool p_clip_uv) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);

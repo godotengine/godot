@@ -37,6 +37,7 @@
 #include "rasterizer_asserts.h"
 #include "rasterizer_storage_common.h"
 #include "servers/visual/rasterizer.h"
+#include "servers/visual/visual_server_canvas_helper.h"
 
 // We are using the curiously recurring template pattern
 // https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
@@ -296,7 +297,6 @@ public:
 			settings_use_batching = false;
 			settings_max_join_item_commands = 0;
 			settings_colored_vertex_format_threshold = 0.0f;
-			settings_batch_buffer_num_verts = 0;
 			scissor_threshold_area = 0.0f;
 			joined_item_batch_flags = 0;
 			diagnose_frame = false;
@@ -432,7 +432,6 @@ public:
 		bool settings_diagnose_frame; // print out batches to help optimize / regression test
 		int settings_max_join_item_commands;
 		float settings_colored_vertex_format_threshold;
-		int settings_batch_buffer_num_verts;
 		bool settings_scissor_lights;
 		float settings_scissor_threshold; // 0.0 to 1.0
 		int settings_item_reordering_lookahead;
@@ -609,6 +608,8 @@ private:
 	bool _prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly, FillState &r_fill_state, int &r_command_start, int command_num, int command_count, RasterizerCanvas::Item *p_item, bool multiply_final_modulate);
 	template <bool SEND_LIGHT_ANGLES>
 	bool _prefill_rect(RasterizerCanvas::Item::CommandRect *rect, FillState &r_fill_state, int &r_command_start, int command_num, int command_count, RasterizerCanvas::Item::Command *const *commands, RasterizerCanvas::Item *p_item, bool multiply_final_modulate);
+	template <bool SEND_LIGHT_ANGLES>
+	bool _prefill_multirect(RasterizerCanvas::Item::CommandMultiRect *mrect, FillState &r_fill_state, int &r_command_start, int command_num, bool multiply_final_modulate);
 
 	// dealing with textures
 	int _batch_find_or_create_tex(const RID &p_texture, const RID &p_normal, bool p_tile, int p_previous_match);
@@ -1078,7 +1079,7 @@ PREAMBLE(void)::batch_initialize() {
 	// The sweet spot on my desktop for cache is actually smaller than the max, and this
 	// is the default. This saves memory too so we will use it for now, needs testing to see whether this varies according
 	// to device / platform.
-	bdata.settings_batch_buffer_num_verts = GLOBAL_GET("rendering/batching/parameters/batch_buffer_size");
+	int batch_buffer_num_verts_requested = GLOBAL_GET("rendering/batching/parameters/batch_buffer_size");
 
 	// override the use_batching setting in the editor
 	// (note that if the editor can't start, you can't change the use_batching project setting!)
@@ -1113,7 +1114,6 @@ PREAMBLE(void)::batch_initialize() {
 	// frame diagnosis. print out the batches every nth frame
 	bdata.settings_diagnose_frame = false;
 	if (!Engine::get_singleton()->is_editor_hint() && bdata.settings_use_batching) {
-		//	{
 		bdata.settings_diagnose_frame = GLOBAL_GET("rendering/batching/debug/diagnose_frame");
 	}
 
@@ -1123,10 +1123,15 @@ PREAMBLE(void)::batch_initialize() {
 	// Note this determines the memory use by the vertex buffer vector. max quads (65536/4)-1
 	// but can be reduced to save memory if really required (will result in more batches though)
 	const int max_possible_quads = (65536 / 4) - 1;
-	const int min_possible_quads = 8; // some reasonable small value
+
+	// We must have enough quads to fit in a MultiRect
+	const int min_possible_quads = MAX(8, MultiRect::MAX_RECTS); // some reasonable small value
 
 	// value from project settings
-	int max_quads = bdata.settings_batch_buffer_num_verts / 4;
+	int max_quads = batch_buffer_num_verts_requested / 4;
+
+	bool use_multirect = GLOBAL_GET("rendering/batching/options/use_multirect");
+	VisualServerCanvasHelper::_multirect_enabled = (bdata.settings_use_batching && use_multirect);
 
 	// sanity checks
 	max_quads = CLAMP(max_quads, min_possible_quads, max_possible_quads);
@@ -1135,22 +1140,6 @@ PREAMBLE(void)::batch_initialize() {
 	bdata.settings_scissor_threshold = CLAMP(bdata.settings_scissor_threshold, 0.0f, 1.0f);
 	bdata.settings_light_max_join_items = CLAMP(bdata.settings_light_max_join_items, 0, 65535);
 	bdata.settings_item_reordering_lookahead = CLAMP(bdata.settings_item_reordering_lookahead, 0, 65535);
-
-	// For debug purposes, output a string with the batching options.
-	if (bdata.settings_use_batching) {
-		String batching_options_string = "OpenGL ES 2D Batching: ON\n";
-		batching_options_string += "Batching Options:\n";
-		batching_options_string += "\tmax_join_item_commands " + itos(bdata.settings_max_join_item_commands) + "\n";
-		batching_options_string += "\tcolored_vertex_format_threshold " + String(Variant(bdata.settings_colored_vertex_format_threshold)) + "\n";
-		batching_options_string += "\tbatch_buffer_size " + itos(bdata.settings_batch_buffer_num_verts) + "\n";
-		batching_options_string += "\tlight_scissor_area_threshold " + String(Variant(bdata.settings_scissor_threshold)) + "\n";
-		batching_options_string += "\titem_reordering_lookahead " + itos(bdata.settings_item_reordering_lookahead) + "\n";
-		batching_options_string += "\tlight_max_join_items " + itos(bdata.settings_light_max_join_items) + "\n";
-		batching_options_string += "\tsingle_rect_fallback " + String(Variant(bdata.settings_use_single_rect_fallback)) + "\n";
-		batching_options_string += "\tdebug_flash " + String(Variant(bdata.settings_flash_batching)) + "\n";
-		batching_options_string += "\tdiagnose_frame " + String(Variant(bdata.settings_diagnose_frame));
-		print_verbose(batching_options_string);
-	}
 
 	// special case, for colored vertex format threshold.
 	// as the comparison is >=, we want to be able to totally turn on or off
@@ -1180,6 +1169,22 @@ PREAMBLE(void)::batch_initialize() {
 	// this comes out at approx 64K for non-colored vertex buffer, and 128K for colored vertex buffer
 	bdata.vertex_buffer_size_bytes = max_verts * sizeof_batch_vert;
 	bdata.index_buffer_size_bytes = bdata.index_buffer_size_units * 2; // 16 bit inds
+
+	// For debug purposes, output a string with the batching options.
+	if (bdata.settings_use_batching) {
+		String batching_options_string = "OpenGL ES 2D Batching: ON\n";
+		batching_options_string += "Batching Options:\n";
+		batching_options_string += "\tmax_join_item_commands " + itos(bdata.settings_max_join_item_commands) + "\n";
+		batching_options_string += "\tcolored_vertex_format_threshold " + String(Variant(bdata.settings_colored_vertex_format_threshold)) + "\n";
+		batching_options_string += "\tbatch_buffer_effective_size " + itos(bdata.vertex_buffer_size_units) + "\n";
+		batching_options_string += "\tlight_scissor_area_threshold " + String(Variant(bdata.settings_scissor_threshold)) + "\n";
+		batching_options_string += "\titem_reordering_lookahead " + itos(bdata.settings_item_reordering_lookahead) + "\n";
+		batching_options_string += "\tlight_max_join_items " + itos(bdata.settings_light_max_join_items) + "\n";
+		batching_options_string += "\tsingle_rect_fallback " + String(Variant(bdata.settings_use_single_rect_fallback)) + "\n";
+		batching_options_string += "\tdebug_flash " + String(Variant(bdata.settings_flash_batching)) + "\n";
+		batching_options_string += "\tdiagnose_frame " + String(Variant(bdata.settings_diagnose_frame));
+		print_verbose(batching_options_string);
+	}
 
 	// create equal number of normal and (max) unit sized verts (as the normal may need to be translated to a larger FVF)
 	bdata.vertices.create(max_verts); // 512k
@@ -2247,6 +2252,425 @@ bool C_PREAMBLE::_prefill_rect(RasterizerCanvas::Item::CommandRect *rect, FillSt
 	return false;
 }
 
+T_PREAMBLE
+template <bool SEND_LIGHT_ANGLES>
+bool C_PREAMBLE::_prefill_multirect(RasterizerCanvas::Item::CommandMultiRect *mrect, FillState &r_fill_state, int &r_command_start, int command_num, bool multiply_final_modulate) {
+	bool change_batch = false;
+
+	// conditions for creating a new batch
+	if (r_fill_state.curr_batch->type != RasterizerStorageCommon::BT_RECT) {
+		// don't allow joining to a different sequence type
+		if (r_fill_state.sequence_batch_type_flags & (~RasterizerStorageCommon::BTF_RECT)) {
+			// don't allow joining to a different sequence type
+			r_command_start = command_num;
+			return true;
+		}
+		r_fill_state.sequence_batch_type_flags |= RasterizerStorageCommon::BTF_RECT;
+
+		change_batch = true;
+	}
+
+	// try to create vertices BEFORE creating a batch,
+	// because if the vertex buffer is full, we need to finish this
+	// function, draw what we have so far, and then start a new set of batches
+
+	// request ALL vertices at a time, this is more efficient
+	uint32_t total_verts = 4 * mrect->rects.size();
+
+	BatchVertex *bvs = bdata.vertices.request(total_verts);
+	if (!bvs) {
+		// run out of space in the vertex buffer .. finish this function and draw what we have so far
+		// return where we got to
+		r_command_start = command_num;
+
+		// Check for an error condition - if we have been creating MultiRects that require more than
+		// the maximum number of verts in the buffer, this could cause an infinite loop.
+		ERR_FAIL_COND_V(total_verts > bdata.vertex_buffer_size_units, false);
+		return true;
+	}
+
+	// are we using large FVF?
+	const bool use_large_verts = bdata.use_large_verts;
+	const bool use_modulate = bdata.use_modulate;
+
+	Color col = mrect->modulate;
+
+	// use_modulate and use_large_verts should have been checked in the calling prefill_item function.
+	// we don't want to apply the modulate on the CPU if it is stored in the vertex format, it will
+	// be applied in the shader
+	if (multiply_final_modulate) {
+		col *= r_fill_state.final_modulate;
+	}
+
+	// instead of doing all the texture preparation for EVERY rect,
+	// we build a list of texture combinations and do this once off.
+	// This means we have a potentially rather slow step to identify which texture combo
+	// using the RIDs.
+	int old_batch_tex_id = r_fill_state.batch_tex_id;
+	r_fill_state.batch_tex_id = _batch_find_or_create_tex(mrect->texture, mrect->normal_map, mrect->flags & RasterizerCanvas::CANVAS_RECT_TILE, old_batch_tex_id);
+
+	//r_fill_state.use_light_angles = send_light_angles;
+	if (SEND_LIGHT_ANGLES) {
+		bdata.use_light_angles = true;
+	}
+
+	// conditions for creating a new batch
+	if (old_batch_tex_id != r_fill_state.batch_tex_id) {
+		change_batch = true;
+	}
+
+	// we need to treat color change separately because we need to count these
+	// to decide whether to switch on the fly to colored vertices.
+	if (!change_batch && !r_fill_state.curr_batch->color.equals(col)) {
+		change_batch = true;
+		bdata.total_color_changes++;
+	}
+
+	uint32_t num_rects = mrect->rects.size();
+
+	if (change_batch) {
+		// put the tex pixel size  in a local (less verbose and can be a register)
+		const BatchTex &batchtex = bdata.batch_textures[r_fill_state.batch_tex_id];
+		batchtex.tex_pixel_size.to(r_fill_state.texpixel_size);
+
+		if (bdata.settings_uv_contract) {
+			r_fill_state.contract_uvs = (batchtex.flags & VS::TEXTURE_FLAG_FILTER) == 0;
+		}
+
+		// need to preserve texpixel_size between items
+		//r_fill_state.texpixel_size = r_fill_state.texpixel_size;
+
+		// open new batch (this should never fail, it dynamically grows)
+		r_fill_state.curr_batch = _batch_request_new(false);
+
+		r_fill_state.curr_batch->type = RasterizerStorageCommon::BT_RECT;
+		r_fill_state.curr_batch->color.set(col);
+		r_fill_state.curr_batch->batch_texture_id = r_fill_state.batch_tex_id;
+		r_fill_state.curr_batch->first_command = command_num;
+		r_fill_state.curr_batch->num_commands = num_rects;
+		//r_fill_state.curr_batch->first_quad = bdata.total_quads;
+		r_fill_state.curr_batch->first_vert = bdata.total_verts;
+	} else {
+		// we could alternatively do the count when closing a batch .. perhaps more efficient
+		r_fill_state.curr_batch->num_commands += num_rects;
+	}
+
+	// test for simplified pipeline
+	const uint8_t disallow_flags = RasterizerCanvas::CANVAS_RECT_TRANSPOSE | RasterizerCanvas::CANVAS_RECT_FLIP_H | RasterizerCanvas::CANVAS_RECT_FLIP_V;
+	if ((mrect->flags & RasterizerCanvas::CANVAS_RECT_REGION) && ((mrect->flags & disallow_flags) == 0)) {
+		// simplified pipeline
+		for (uint32_t n = 0; n < num_rects; n++) {
+			const Rect2 &rect = mrect->rects[n];
+			const Rect2 &source = mrect->sources[n];
+
+			// fill the quad geometry
+			Vector2 mins = rect.position;
+
+			// just aliases
+			BatchVertex *bA = &bvs[0];
+			BatchVertex *bB = &bvs[1];
+			BatchVertex *bC = &bvs[2];
+			BatchVertex *bD = &bvs[3];
+
+			// possibility of applying flips here for normal mapping .. but they don't seem to be used
+#ifdef TOOLS_ENABLED
+			if (rect.size.x < 0) {
+				ERR_PRINT_ONCE("MultiRect with negative size detected. Ensure rects are non-negative.");
+			}
+			if (rect.size.y < 0) {
+				ERR_PRINT_ONCE("MultiRect with negative size detected. Ensure rects are non-negative.");
+			}
+#endif
+
+			if (r_fill_state.transform_mode == TM_TRANSLATE) {
+				if (!use_large_verts) {
+					_software_transform_vertex(mins, r_fill_state.transform_combined);
+				}
+			}
+			Vector2 maxs = mins + rect.size;
+
+			bA->pos.x = mins.x;
+			bA->pos.y = mins.y;
+
+			bB->pos.x = maxs.x;
+			bB->pos.y = mins.y;
+
+			bC->pos.x = maxs.x;
+			bC->pos.y = maxs.y;
+
+			bD->pos.x = mins.x;
+			bD->pos.y = maxs.y;
+
+			if (r_fill_state.transform_mode == TM_ALL) {
+				if (!use_large_verts) {
+					_software_transform_vertex(bA->pos, r_fill_state.transform_combined);
+					_software_transform_vertex(bB->pos, r_fill_state.transform_combined);
+					_software_transform_vertex(bC->pos, r_fill_state.transform_combined);
+					_software_transform_vertex(bD->pos, r_fill_state.transform_combined);
+				}
+			}
+
+			// uvs
+			Vector2 src_min;
+			Vector2 src_max;
+			src_min = source.position;
+			src_max = src_min + source.size;
+
+			src_min *= r_fill_state.texpixel_size;
+			src_max *= r_fill_state.texpixel_size;
+
+			const float uv_epsilon = bdata.settings_uv_contract_amount;
+
+			// nudge offset for the maximum to prevent precision error on GPU reading into line outside the source rect
+			// this is very difficult to get right.
+			if (r_fill_state.contract_uvs) {
+				src_min.x += uv_epsilon;
+				src_min.y += uv_epsilon;
+				src_max.x -= uv_epsilon;
+				src_max.y -= uv_epsilon;
+			}
+
+			// 10% faster calculating the max first
+			Vector2 uvs[4] = {
+				src_min,
+				Vector2(src_max.x, src_min.y),
+				src_max,
+				Vector2(src_min.x, src_max.y),
+			};
+
+			bA->uv.set(uvs[0]);
+			bB->uv.set(uvs[1]);
+			bC->uv.set(uvs[2]);
+			bD->uv.set(uvs[3]);
+
+			bvs += 4; // move the destination verts on by 4 each rect
+		} // for n through rects
+
+	} else {
+		// full pipeline
+		for (uint32_t n = 0; n < num_rects; n++) {
+			const Rect2 &rect = mrect->rects[n];
+			const Rect2 &source = mrect->sources[n];
+
+			// fill the quad geometry
+			Vector2 mins = rect.position;
+
+			if (r_fill_state.transform_mode == TM_TRANSLATE) {
+				if (!use_large_verts) {
+					_software_transform_vertex(mins, r_fill_state.transform_combined);
+				}
+			}
+
+			Vector2 maxs = mins + rect.size;
+
+			// just aliases
+			BatchVertex *bA = &bvs[0];
+			BatchVertex *bB = &bvs[1];
+			BatchVertex *bC = &bvs[2];
+			BatchVertex *bD = &bvs[3];
+
+			bA->pos.x = mins.x;
+			bA->pos.y = mins.y;
+
+			bB->pos.x = maxs.x;
+			bB->pos.y = mins.y;
+
+			bC->pos.x = maxs.x;
+			bC->pos.y = maxs.y;
+
+			bD->pos.x = mins.x;
+			bD->pos.y = maxs.y;
+
+			// possibility of applying flips here for normal mapping .. but they don't seem to be used
+#ifdef TOOLS_ENABLED
+			if (rect.size.x < 0) {
+				//SWAP(bA->pos, bB->pos);
+				//SWAP(bC->pos, bD->pos);
+				ERR_PRINT_ONCE("MultiRect with negative size detected. Ensure rects are non-negative.");
+			}
+			if (rect.size.y < 0) {
+				//SWAP(bA->pos, bD->pos);
+				//SWAP(bB->pos, bC->pos);
+				ERR_PRINT_ONCE("MultiRect with negative size detected. Ensure rects are non-negative.");
+			}
+#endif
+
+			if (r_fill_state.transform_mode == TM_ALL) {
+				if (!use_large_verts) {
+					_software_transform_vertex(bA->pos, r_fill_state.transform_combined);
+					_software_transform_vertex(bB->pos, r_fill_state.transform_combined);
+					_software_transform_vertex(bC->pos, r_fill_state.transform_combined);
+					_software_transform_vertex(bD->pos, r_fill_state.transform_combined);
+				}
+			}
+
+			// uvs
+			Vector2 src_min;
+			Vector2 src_max;
+			if (mrect->flags & RasterizerCanvas::CANVAS_RECT_REGION) {
+				src_min = source.position;
+				src_max = src_min + source.size;
+
+				src_min *= r_fill_state.texpixel_size;
+				src_max *= r_fill_state.texpixel_size;
+
+				const float uv_epsilon = bdata.settings_uv_contract_amount;
+
+				// nudge offset for the maximum to prevent precision error on GPU reading into line outside the source rect
+				// this is very difficult to get right.
+				if (r_fill_state.contract_uvs) {
+					src_min.x += uv_epsilon;
+					src_min.y += uv_epsilon;
+					src_max.x -= uv_epsilon;
+					src_max.y -= uv_epsilon;
+				}
+			} else {
+				src_min = Vector2(0, 0);
+				src_max = Vector2(1, 1);
+			}
+
+			// 10% faster calculating the max first
+			Vector2 uvs[4] = {
+				src_min,
+				Vector2(src_max.x, src_min.y),
+				src_max,
+				Vector2(src_min.x, src_max.y),
+			};
+
+			if (mrect->flags & RasterizerCanvas::CANVAS_RECT_TRANSPOSE) {
+				SWAP(uvs[1], uvs[3]);
+			}
+
+			if (mrect->flags & RasterizerCanvas::CANVAS_RECT_FLIP_H) {
+				SWAP(uvs[0], uvs[1]);
+				SWAP(uvs[2], uvs[3]);
+			}
+			if (mrect->flags & RasterizerCanvas::CANVAS_RECT_FLIP_V) {
+				SWAP(uvs[0], uvs[3]);
+				SWAP(uvs[1], uvs[2]);
+			}
+
+			bA->uv.set(uvs[0]);
+			bB->uv.set(uvs[1]);
+			bC->uv.set(uvs[2]);
+			bD->uv.set(uvs[3]);
+
+			bvs += 4; // move the destination verts on by 4 each rect
+		} // for n through rects
+	} // full pipeline
+
+	// modulate
+	if (use_modulate) {
+		// store the final modulate separately from the rect modulate
+		BatchColor *pBC = bdata.vertex_modulates.request(total_verts);
+		RAST_DEBUG_ASSERT(pBC);
+		pBC[0].set(r_fill_state.final_modulate);
+		for (uint32_t n = 1; n < total_verts; n++) {
+			pBC[n] = pBC[0];
+		}
+	}
+
+	// they will all have the same vertex transforms
+	if (use_large_verts) {
+		// store the transform separately
+		BatchTransform *pBT = bdata.vertex_transforms.request(total_verts);
+		RAST_DEBUG_ASSERT(pBT);
+		BatchTransform *pBT_first = pBT;
+
+		const Transform2D &tr = r_fill_state.transform_combined;
+
+		pBT[0].translate.set(tr.elements[2]);
+
+		pBT[0].basis[0].set(tr.elements[0][0], tr.elements[0][1]);
+		pBT[0].basis[1].set(tr.elements[1][0], tr.elements[1][1]);
+
+		for (uint32_t n = 1; n < num_rects * 4; n++) {
+			pBT++;
+			*pBT = *pBT_first;
+		}
+	}
+
+	if (SEND_LIGHT_ANGLES) {
+		// SAME FOR ALL
+		// for encoding in light angle
+		bool flip_h = false;
+		bool flip_v = false;
+
+		if (mrect->flags & RasterizerCanvas::CANVAS_RECT_FLIP_H) {
+			flip_h = !flip_h;
+			flip_v = !flip_v;
+		}
+		if (mrect->flags & RasterizerCanvas::CANVAS_RECT_FLIP_V) {
+			flip_v = !flip_v;
+		}
+
+		// we can either keep the light angles in sync with the verts when writing,
+		// or sync them up during translation. We are syncing in translation.
+		// N.B. There may be batches that don't require light_angles between batches that do.
+		float *angles = bdata.light_angles.request(total_verts);
+		RAST_DEBUG_ASSERT(angles);
+
+		float angle = 0.0f;
+		const float TWO_PI = Math_PI * 2;
+
+		if (r_fill_state.transform_mode != TM_NONE) {
+			const Transform2D &tr = r_fill_state.transform_combined;
+
+			// apply to an x axis
+			// the x axis and y axis can be taken directly from the transform (no need to xform identity vectors)
+			Vector2 x_axis(tr.elements[0][0], tr.elements[0][1]);
+
+			// have to do a y axis to check for scaling flips
+			// this is hassle and extra slowness. We could only allow flips via the flags.
+			Vector2 y_axis(tr.elements[1][0], tr.elements[1][1]);
+
+			// has the x / y axis flipped due to scaling?
+			float cross = x_axis.cross(y_axis);
+			if (cross < 0.0f) {
+				flip_v = !flip_v;
+			}
+
+			// passing an angle is smaller than a vector, it can be reconstructed in the shader
+			angle = x_axis.angle();
+
+			// we don't want negative angles, as negative is used to encode flips.
+			// This moves range from -PI to PI to 0 to TWO_PI
+			if (angle < 0.0f) {
+				angle += TWO_PI;
+			}
+
+		} // if transform needed
+
+		// if horizontal flip, angle is shifted by 180 degrees
+		if (flip_h) {
+			angle += Math_PI;
+
+			// mod to get back to 0 to TWO_PI range
+			angle = fmodf(angle, TWO_PI);
+		}
+
+		// add 1 (to take care of zero floating point error with sign)
+		angle += 1.0f;
+
+		// flip if necessary to indicate a vertical flip in the shader
+		if (flip_v) {
+			angle *= -1.0f;
+		}
+
+		// light angle must be sent for each vert, instead as a single uniform in the uniform draw method
+		// this has the benefit of enabling batching with light angles.
+		for (uint32_t n = 0; n < total_verts; n++) {
+			angles[n] = angle;
+		}
+	}
+
+	// increment quad count
+	bdata.total_quads += num_rects;
+	bdata.total_verts += total_verts;
+
+	return false;
+}
+
 // This function may be called MULTIPLE TIMES for each item, so needs to record how far it has got
 PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_start, RasterizerCanvas::Item *p_item, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material) {
 	// we will prefill batches and vertices ready for sending in one go to the vertex buffer
@@ -2332,6 +2756,29 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 					buffer_full = _prefill_rect<true>(rect, r_fill_state, r_command_start, command_num, command_count, commands, p_item, multiply_final_modulate);
 				} else {
 					buffer_full = _prefill_rect<false>(rect, r_fill_state, r_command_start, command_num, command_count, commands, p_item, multiply_final_modulate);
+				}
+
+				if (buffer_full) {
+					return true;
+				}
+
+			} break;
+			case RasterizerCanvas::Item::Command::TYPE_MULTIRECT: {
+				RasterizerCanvas::Item::CommandMultiRect *mrect = static_cast<RasterizerCanvas::Item::CommandMultiRect *>(command);
+
+				// MultRects with no rects should ideally not be created
+				ERR_CONTINUE(!mrect->rects.size());
+
+				bool send_light_angles = mrect->normal_map != RID();
+
+				bool buffer_full = false;
+
+				// the template params must be explicit for compilation,
+				// this forces building the multiple versions of the function.
+				if (send_light_angles) {
+					buffer_full = _prefill_multirect<true>(mrect, r_fill_state, r_command_start, command_num, multiply_final_modulate);
+				} else {
+					buffer_full = _prefill_multirect<false>(mrect, r_fill_state, r_command_start, command_num, multiply_final_modulate);
 				}
 
 				if (buffer_full) {
@@ -2767,7 +3214,7 @@ PREAMBLE(bool)::_sort_items_match(const BSortItem &p_a, const BSortItem &p_b) co
 	//		return false;
 
 	const RasterizerCanvas::Item::Command &cb = *b->commands[0];
-	if (cb.type != RasterizerCanvas::Item::Command::TYPE_RECT) {
+	if ((cb.type != RasterizerCanvas::Item::Command::TYPE_RECT) && (cb.type != RasterizerCanvas::Item::Command::TYPE_MULTIRECT)) {
 		return false;
 	}
 
@@ -2830,7 +3277,7 @@ PREAMBLE(bool)::sort_items_from(int p_start) {
 		return false;
 	}
 	const RasterizerCanvas::Item::Command &command_start = *start.item->commands[0];
-	if (command_start.type != RasterizerCanvas::Item::Command::TYPE_RECT) {
+	if ((command_start.type != RasterizerCanvas::Item::Command::TYPE_RECT) && (command_start.type != RasterizerCanvas::Item::Command::TYPE_MULTIRECT)) {
 		return false;
 	}
 
@@ -3211,6 +3658,11 @@ PREAMBLE(bool)::_detect_item_batch_break(RenderItemState &r_ris, RasterizerCanva
 					}
 				} break;
 				case RasterizerCanvas::Item::Command::TYPE_RECT: {
+					if (_disallow_item_join_if_batch_types_too_different(r_ris, RasterizerStorageCommon::BTF_RECT)) {
+						return true;
+					}
+				} break;
+				case RasterizerCanvas::Item::Command::TYPE_MULTIRECT: {
 					if (_disallow_item_join_if_batch_types_too_different(r_ris, RasterizerStorageCommon::BTF_RECT)) {
 						return true;
 					}

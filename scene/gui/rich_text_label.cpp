@@ -404,6 +404,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				bool just_breaked_in_middle = false;
 				rchar = 0;
 				FontDrawer drawer(font, Color(1, 1, 1));
+				MultiRect &multirect = drawer.get_multirect();
+
 				while (*c) {
 					int end = 0;
 					float w = 0.0f;
@@ -613,12 +615,12 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 									const Point2 base_pos = p_ofs + Point2(align_ofs + pofs + spacing_char, y + lh - line_descent);
 									if (shadow_color.a > 0) {
-										font->draw_char(ci, base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], shadow_color);
+										font->draw_char_ex(ci, base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], shadow_color, false, &multirect);
 
 										if (p_shadow_as_outline) {
-											font->draw_char(ci, base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
-											font->draw_char(ci, base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
-											font->draw_char(ci, base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char_ex(ci, base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color, false, &multirect);
+											font->draw_char_ex(ci, base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color, false, &multirect);
+											font->draw_char_ex(ci, base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color, false, &multirect);
 										}
 									}
 

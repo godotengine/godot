@@ -37,6 +37,7 @@
 #include "scene/2d/area_2d.h"
 #include "servers/navigation_2d_server.h"
 #include "servers/physics_2d_server.h"
+#include "servers/visual/visual_server_canvas_helper.h"
 
 void TileMap::Quadrant::clear_navpoly() {
 	for (Map<PosKey, Quadrant::NavPoly>::Element *E = navpoly_ids.front(); E; E = E->next()) {
@@ -406,6 +407,8 @@ void TileMap::update_dirty_quadrants() {
 		RID prev_canvas_item;
 		RID prev_debug_canvas_item;
 
+		bool multirect_started = false;
+
 		for (int i = 0; i < q.cells.size(); i++) {
 			Map<PosKey, Cell>::Element *E = tile_map.find(q.cells[i]);
 			Cell &c = E->get();
@@ -568,7 +571,11 @@ void TileMap::update_dirty_quadrants() {
 			if (r == Rect2()) {
 				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose, normal_map);
 			} else {
-				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map, clip_uv);
+				if (!multirect_started) {
+					multirect_started = true;
+					VisualServerCanvasHelper::tilemap_begin();
+				}
+				VisualServerCanvasHelper::tilemap_add_rect(canvas_item, rect, tex->get_rid(), r, modulate, c.transpose, normal_map.is_valid() ? normal_map->get_rid() : RID(), clip_uv);
 			}
 
 			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);
@@ -717,6 +724,10 @@ void TileMap::update_dirty_quadrants() {
 				oc.id = orid;
 				q.occluder_instances[E->key()] = oc;
 			}
+		}
+
+		if (multirect_started) {
+			VisualServerCanvasHelper::tilemap_end();
 		}
 
 		dirty_quadrant_list.remove(dirty_quadrant_list.first());
