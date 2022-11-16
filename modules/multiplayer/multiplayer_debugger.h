@@ -41,7 +41,9 @@ public:
 		ObjectID node;
 		String node_path;
 		int incoming_rpc = 0;
+		int incoming_size = 0;
 		int outgoing_rpc = 0;
+		int outgoing_size = 0;
 	};
 
 	struct RPCFrame {
