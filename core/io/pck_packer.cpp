@@ -86,6 +86,8 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 };
 
 Error PCKPacker::add_file(const String &p_file, const String &p_src) {
+	ERR_FAIL_COND_V_MSG(!file, ERR_INVALID_PARAMETER, "File must be opened before use.");
+
 	FileAccess *f = FileAccess::open(p_src, FileAccess::READ);
 	if (!f) {
 		return ERR_FILE_CANT_OPEN;
@@ -165,6 +167,9 @@ Error PCKPacker::flush(bool p_verbose) {
 	}
 
 	file->close();
+	memdelete(file);
+	file = nullptr;
+
 	memdelete_arr(buf);
 
 	return OK;
