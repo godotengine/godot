@@ -1728,6 +1728,17 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache));
 
+	if (!multimesh->buffer.is_valid()) {
+		uint32_t buffer_size = multimesh->instances * multimesh->stride_cache * sizeof(float);
+		if (multimesh->motion_vectors_enabled) {
+			buffer_size *= 2;
+		}
+		if (buffer_size == 0) {
+			return;
+		}
+		multimesh->buffer = RD::get_singleton()->storage_buffer_create(buffer_size);
+	}
+
 	if (multimesh->motion_vectors_enabled) {
 		uint32_t frame = RSG::rasterizer->get_frame_number();
 
