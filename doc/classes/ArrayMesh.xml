@@ -25,10 +25,12 @@
 		m.mesh = arr_mesh
 		[/gdscript]
 		[csharp]
-		var vertices = new Godot.Collections.Array&lt;Vector3&gt;();
-		vertices.Add(new Vector3(0, 1, 0));
-		vertices.Add(new Vector3(1, 0, 0));
-		vertices.Add(new Vector3(0, 0, 1));
+		var vertices = new Vector3[]
+		{
+		    new Vector3(0, 1, 0),
+		    new Vector3(1, 0, 0),
+		    new Vector3(0, 0, 1),
+		};
 
 		// Initialize the ArrayMesh.
 		var arrMesh = new ArrayMesh();
@@ -38,7 +40,7 @@
 
 		// Create the Mesh.
 		arrMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
-		var m = new MeshInstance();
+		var m = new MeshInstance3D();
 		m.Mesh = arrMesh;
 		[/csharp]
 		[/codeblocks]
