@@ -70,7 +70,7 @@ public:
 	virtual real_t _edit_get_rotation() const override;
 	virtual bool _edit_use_rotation() const override;
 
-	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
+	virtual void _edit_set_scale_with_fixpoint(Size2 p_new_scale, const Point2 p_local_fixpoint) override;
 #endif
 
 	void set_position(const Point2 &p_pos);

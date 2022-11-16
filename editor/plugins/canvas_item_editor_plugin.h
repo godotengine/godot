@@ -343,6 +343,10 @@ private:
 	Point2 drag_to;
 	Point2 drag_rotation_center;
 	List<CanvasItem *> drag_selection;
+	Size2 drag_ci_scale;
+	real_t drag_ci_aspect_ratio = 0;
+	bool drag_uniform;
+	bool drag_symmetric;
 	int dragged_guide_index = -1;
 	Point2 dragged_guide_pos;
 	bool is_hovering_h_guide = false;
@@ -500,6 +504,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 	static void _bind_methods();
 

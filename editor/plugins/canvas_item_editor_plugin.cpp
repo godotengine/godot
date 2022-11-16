@@ -1651,46 +1651,59 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
 			if (selection.size() == 1) {
 				CanvasItem *ci = selection[0];
-				if (ci->_edit_use_rect() && _is_node_movable(ci)) {
+				bool use_resize_handles = true;
+				real_t skew = ci->get_transform().get_skew();
+				if (!Math::is_finite(skew) || Math::is_zero_approx(Math::absf(skew) - Math_PI / 2.0)) {
+					use_resize_handles = false;
+				}
+				if (drag_uniform && (drag_ci_scale.x == 0 || drag_ci_scale.y == 0) && drag_ci_aspect_ratio == 0) {
+					use_resize_handles = false;
+				}
+
+				if (ci->_edit_use_rect() && _is_node_movable(ci) && use_resize_handles && ci->get_parent_transform_to_viewport().is_invertible()) {
 					Rect2 rect = ci->_edit_get_rect();
 					Transform2D xform = transform * ci->get_global_transform_with_canvas();
-
 					const Vector2 endpoints[4] = {
 						xform.xform(rect.position),
 						xform.xform(rect.position + Vector2(rect.size.x, 0)),
-						xform.xform(rect.position + rect.size),
-						xform.xform(rect.position + Vector2(0, rect.size.y))
+						xform.xform(rect.position + Vector2(rect.size.x / 2.0, 0)),
+						xform.xform(rect.position + Vector2(0, rect.size.y / 2.0))
 					};
 
 					const DragType dragger[] = {
 						DRAG_TOP_LEFT,
-						DRAG_TOP,
 						DRAG_TOP_RIGHT,
-						DRAG_RIGHT,
+						DRAG_TOP,
+						DRAG_LEFT,
 						DRAG_BOTTOM_RIGHT,
-						DRAG_BOTTOM,
 						DRAG_BOTTOM_LEFT,
-						DRAG_LEFT
+						DRAG_BOTTOM,
+						DRAG_RIGHT
 					};
 
 					DragType resize_drag = DRAG_NONE;
 					real_t radius = (select_handle->get_size().width / 2) * 1.5;
+					Transform2D rotation = Transform2D((ci->get_parent_transform_to_viewport() * ci->_edit_get_transform()).get_rotation(), Point2());
+					Point2 center = xform.xform(rect.get_center());
 
 					for (int i = 0; i < 4; i++) {
-						int prev = (i + 3) % 4;
-						int next = (i + 1) % 4;
-
-						Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
-						ofs *= (select_handle->get_size().width / 2);
-						ofs += endpoints[i];
-						if (ofs.distance_to(b->get_position()) < radius) {
-							resize_drag = dragger[i * 2];
+						Vector2 ofs;
+						if (i < 3) {
+							ofs -= rotation.xform(Vector2(0, radius));
 						}
-
-						ofs = (endpoints[i] + endpoints[next]) / 2;
-						ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (select_handle->get_size().width / 2);
-						if (ofs.distance_to(b->get_position()) < radius) {
-							resize_drag = dragger[i * 2 + 1];
+						if (i % 3 == 0) {
+							ofs -= rotation.xform(Vector2(radius, 0));
+						}
+						if (i == 1) {
+							ofs += rotation.xform(Vector2(radius, 0));
+						}
+						if (b->get_position().distance_to(endpoints[i] + ofs) < radius) {
+							resize_drag = dragger[i];
+							break;
+						}
+						if (b->get_position().distance_to(2 * center - endpoints[i] - ofs) < radius) {
+							resize_drag = dragger[i + 4];
+							break;
 						}
 					}
 
@@ -1699,6 +1712,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 						drag_from = transform.affine_inverse().xform(b->get_position());
 						drag_selection = List<CanvasItem *>();
 						drag_selection.push_back(ci);
+						drag_ci_scale = ci->_edit_get_scale();
 						_save_canvas_item_state(drag_selection);
 						return true;
 					}
@@ -1716,46 +1730,57 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			//Reset state
 			ci->_edit_set_state(se->undo_state);
 
-			bool uniform = m->is_shift_pressed();
-			bool symmetric = m->is_alt_pressed();
+			drag_uniform = m->is_shift_pressed();
+			if (drag_uniform && (drag_ci_scale.x == 0 || drag_ci_scale.y == 0) && drag_ci_aspect_ratio == 0) {
+				// Disable Uniform when no previous aspect ratio is known and at least one scale axis is zero.
+				drag_uniform = false;
+			}
+			drag_symmetric = m->is_alt_pressed();
+
+			Node2D *ci_node2d = Object::cast_to<Node2D>(ci);
+			bool use_node2d_logic = ci_node2d != nullptr;
 
 			Rect2 local_rect = ci->_edit_get_rect();
-			real_t aspect = local_rect.get_size().y / local_rect.get_size().x;
 			Point2 current_begin = local_rect.get_position();
-			Point2 current_end = local_rect.get_position() + local_rect.get_size();
-			Point2 max_begin = (symmetric) ? (current_begin + current_end - ci->_edit_get_minimum_size()) / 2.0 : current_end - ci->_edit_get_minimum_size();
-			Point2 min_end = (symmetric) ? (current_begin + current_end + ci->_edit_get_minimum_size()) / 2.0 : current_begin + ci->_edit_get_minimum_size();
+			Point2 current_end = local_rect.get_end();
+			Transform2D xform;
+			if (use_node2d_logic) {
+				current_begin = drag_ci_scale * current_begin;
+				current_end = drag_ci_scale * current_end;
+				xform = ci->get_parent_transform_to_viewport() * Transform2D(ci->_edit_get_rotation(), Vector2(1, 1), ci_node2d->get_skew(), ci->_edit_get_position());
+			} else {
+				xform = ci->get_global_transform_with_canvas();
+			}
+			Point2 max_begin = (drag_symmetric) ? (current_begin + current_end - ci->_edit_get_minimum_size()) / 2.0 : current_end - ci->_edit_get_minimum_size();
+			Point2 min_end = (drag_symmetric) ? (current_begin + current_end + ci->_edit_get_minimum_size()) / 2.0 : current_begin + ci->_edit_get_minimum_size();
 			Point2 center = (current_begin + current_end) / 2.0;
 
 			drag_to = transform.affine_inverse().xform(m->get_position());
 
-			Transform2D xform = ci->get_global_transform_with_canvas();
-
-			Point2 drag_to_snapped_begin;
-			Point2 drag_to_snapped_end;
-
-			drag_to_snapped_end = snap_point(xform.xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
-			drag_to_snapped_begin = snap_point(xform.xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
+			Point2 drag_to_snapped_begin = snap_point(xform.xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
+			Point2 drag_to_snapped_end = snap_point(xform.xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
 
 			Point2 drag_begin = xform.affine_inverse().xform(drag_to_snapped_begin);
 			Point2 drag_end = xform.affine_inverse().xform(drag_to_snapped_end);
+			// print_line("DD ", drag_begin, " ", drag_end);
 
 			// Horizontal resize
 			if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_BOTTOM_LEFT) {
-				current_begin.x = MIN(drag_begin.x, max_begin.x);
+				current_begin.x = SIGN(drag_ci_scale.x) >= 0 ? MIN(drag_begin.x, max_begin.x) : MAX(drag_begin.x, max_begin.x);
 			} else if (drag_type == DRAG_RIGHT || drag_type == DRAG_TOP_RIGHT || drag_type == DRAG_BOTTOM_RIGHT) {
-				current_end.x = MAX(drag_end.x, min_end.x);
+				current_end.x = SIGN(drag_ci_scale.x) >= 0 ? MAX(drag_end.x, min_end.x) : MIN(drag_end.x, min_end.x);
 			}
 
 			// Vertical resize
 			if (drag_type == DRAG_TOP || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_TOP_RIGHT) {
-				current_begin.y = MIN(drag_begin.y, max_begin.y);
+				current_begin.y = SIGN(drag_ci_scale.y) >= 0 ? MIN(drag_begin.y, max_begin.y) : MAX(drag_begin.y, max_begin.y);
 			} else if (drag_type == DRAG_BOTTOM || drag_type == DRAG_BOTTOM_LEFT || drag_type == DRAG_BOTTOM_RIGHT) {
-				current_end.y = MAX(drag_end.y, min_end.y);
+				current_end.y = SIGN(drag_ci_scale.y) >= 0 ? MAX(drag_end.y, min_end.y) : MIN(drag_end.y, min_end.y);
 			}
 
 			// Uniform resize
-			if (uniform) {
+			if (drag_uniform) {
+				real_t aspect = drag_ci_aspect_ratio ? drag_ci_aspect_ratio : ci->_edit_get_scale().y / ci->_edit_get_scale().x;
 				if (drag_type == DRAG_LEFT || drag_type == DRAG_RIGHT) {
 					current_end.y = current_begin.y + aspect * (current_end.x - current_begin.x);
 				} else if (drag_type == DRAG_TOP || drag_type == DRAG_BOTTOM) {
@@ -1778,7 +1803,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			}
 
 			// Symmetric resize
-			if (symmetric) {
+			if (drag_symmetric) {
 				if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_BOTTOM_LEFT) {
 					current_end.x = 2.0 * center.x - current_begin.x;
 				} else if (drag_type == DRAG_RIGHT || drag_type == DRAG_TOP_RIGHT || drag_type == DRAG_BOTTOM_RIGHT) {
@@ -1790,13 +1815,47 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 					current_begin.y = 2.0 * center.y - current_end.y;
 				}
 			}
-			ci->_edit_set_rect(Rect2(current_begin, current_end - current_begin));
+
+			if (use_node2d_logic) {
+				Point2 drag_fixpoint;
+				if (drag_symmetric) {
+					drag_fixpoint = local_rect.get_center();
+				} else {
+					if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_BOTTOM_LEFT) {
+						drag_fixpoint.x = local_rect.get_end().x;
+					} else if (drag_type == DRAG_TOP || drag_type == DRAG_BOTTOM) {
+						drag_fixpoint.x = local_rect.get_center().x;
+					} else {
+						drag_fixpoint.x = local_rect.position.x;
+					}
+					if (drag_type == DRAG_TOP_LEFT || drag_type == DRAG_TOP || drag_type == DRAG_TOP_RIGHT) {
+						drag_fixpoint.y = local_rect.get_end().y;
+					} else if (drag_type == DRAG_LEFT || drag_type == DRAG_RIGHT) {
+						drag_fixpoint.y = local_rect.get_center().y;
+					} else {
+						drag_fixpoint.y = local_rect.position.y;
+					}
+				}
+				ci_node2d->_edit_set_scale_with_fixpoint((current_end - current_begin) / local_rect.size, drag_fixpoint);
+			} else {
+				ci->_edit_set_rect(Rect2(current_begin, current_end - current_begin));
+			}
 			return true;
 		}
 
 		// Confirm resize
 		if (drag_selection.size() >= 1 && b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
 			const Node2D *node2d = Object::cast_to<Node2D>(drag_selection[0]);
+			if (drag_selection[0]->_edit_get_scale() == Size2()) {
+				if (drag_ci_aspect_ratio == 0 && drag_ci_scale.is_finite() && drag_ci_scale.x != 0 && drag_ci_scale.y != 0) {
+					// When resizing the CanvasItem to Size2(), set aspect ratio to previous configuration.
+					drag_ci_aspect_ratio = drag_ci_scale.y / drag_ci_scale.x;
+				}
+			} else if (drag_ci_aspect_ratio != 0) {
+				// Reset only needed when CanvasItem-size isn't Size2().
+				drag_ci_aspect_ratio = 0;
+			}
+			drag_ci_scale = drag_selection[0]->_edit_get_scale();
 			if (node2d) {
 				// Extends from Node2D.
 				// Node2D doesn't have an actual stored rect size, unlike Controls.
@@ -2576,6 +2635,53 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	// Grab focus
 	if (!viewport->has_focus() && (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field())) {
 		viewport->call_deferred(SNAME("grab_focus"));
+	}
+}
+
+void CanvasItemEditor::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> ev = p_event;
+	if (ev.is_null()) {
+		return;
+	}
+	if (ev->get_keycode() != Key::SHIFT && ev->get_keycode() != Key::ALT) {
+		return;
+	}
+
+	// Update display for CanvasItem-resizing when pressing Ctrl or Shift.
+	bool dragging = (drag_type == DRAG_LEFT || drag_type == DRAG_RIGHT || drag_type == DRAG_TOP || drag_type == DRAG_BOTTOM ||
+			drag_type == DRAG_TOP_LEFT || drag_type == DRAG_TOP_RIGHT || drag_type == DRAG_BOTTOM_LEFT || drag_type == DRAG_BOTTOM_RIGHT);
+	bool send_event = false;
+	if (ev->get_keycode() == Key::SHIFT) {
+		// Uniform.
+		bool new_uni = ev->is_pressed();
+		if (new_uni && (drag_ci_scale.x == 0 || drag_ci_scale.y == 0) && drag_ci_aspect_ratio == 0) {
+			if (dragging) {
+				// Disallow Uniform when no previous aspect ratio is known and one component of the scale is 0.
+				new_uni = false;
+			}
+		}
+		if (drag_uniform != new_uni) {
+			drag_uniform = new_uni;
+			send_event = true;
+			if (!dragging) {
+				queue_redraw();
+			}
+		}
+	} else if (ev->get_keycode() == Key::ALT) {
+		// Symmetric.
+		if (drag_symmetric != ev->is_pressed()) {
+			drag_symmetric = ev->is_pressed();
+			send_event = true;
+		}
+	}
+
+	if (dragging && send_event) {
+		Ref<InputEventMouseMotion> mm;
+		mm.instantiate();
+		mm->set_position(viewport->get_local_mouse_position());
+		mm->set_alt_pressed(drag_symmetric);
+		mm->set_shift_pressed(drag_uniform);
+		_gui_input_resize(mm);
 	}
 }
 
@@ -3393,27 +3499,42 @@ void CanvasItemEditor::_draw_selection() {
 			}
 
 			// Draw the resize handles
-			if (tool == TOOL_SELECT && ci->_edit_use_rect() && _is_node_movable(ci)) {
+			bool use_resize_handles = true;
+			real_t skew = ci->get_transform().get_skew();
+			if (!Math::is_finite(skew) || Math::is_zero_approx(Math::absf(skew) - Math_PI / 2.0)) {
+				use_resize_handles = false;
+			}
+			if (drag_uniform && (drag_ci_scale.x == 0 || drag_ci_scale.y == 0) && drag_ci_aspect_ratio == 0) {
+				use_resize_handles = false;
+			}
+			if (tool == TOOL_SELECT && ci->_edit_use_rect() && _is_node_movable(ci) && ci->get_parent_transform_to_viewport().is_invertible() && use_resize_handles) {
 				Rect2 rect = ci->_edit_get_rect();
+
+				Transform2D l_rotation = Transform2D((ci->get_parent_transform_to_viewport() * ci->_edit_get_transform()).get_rotation(), Point2());
+
+				Point2 center = xform.xform(rect.get_center());
+				Vector2 texture_radius = Vector2(1, 1) * (select_handle->get_size().width / 2);
+				real_t radius = select_handle->get_size().width / 2 * 1.5;
+
 				const Vector2 endpoints[4] = {
 					xform.xform(rect.position),
 					xform.xform(rect.position + Vector2(rect.size.x, 0)),
-					xform.xform(rect.position + rect.size),
-					xform.xform(rect.position + Vector2(0, rect.size.y))
+					xform.xform(rect.position + Vector2(rect.size.x / 2.0, 0)),
+					xform.xform(rect.position + Vector2(0, rect.size.y / 2.0))
 				};
-				for (int i = 0; i < 4; i++) {
-					int prev = (i + 3) % 4;
-					int next = (i + 1) % 4;
-
-					Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
-					ofs *= Math_SQRT2 * (select_handle->get_size().width / 2);
-
-					select_handle->draw(vp_ci, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor());
-
-					ofs = (endpoints[i] + endpoints[next]) / 2;
-					ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (select_handle->get_size().width / 2);
-
-					select_handle->draw(vp_ci, (ofs - (select_handle->get_size() / 2)).floor());
+				for (int i = 3; i >= 0; i--) {
+					Vector2 ofs;
+					if (i < 3) {
+						ofs -= l_rotation.xform(Vector2(0, radius));
+					}
+					if (i % 3 == 0) {
+						ofs -= l_rotation.xform(Vector2(radius, 0));
+					}
+					if (i == 1) {
+						ofs += l_rotation.xform(Vector2(radius, 0));
+					}
+					select_handle->draw(vp_ci, endpoints[i] + ofs - texture_radius);
+					select_handle->draw(vp_ci, 2 * center - (endpoints[i] + ofs) - texture_radius);
 				}
 			}
 
@@ -3978,6 +4099,7 @@ void CanvasItemEditor::_notification(int p_what) {
 				debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
 				override_camera_button->set_pressed(false);
 			}
+			set_process_unhandled_key_input(is_visible_in_tree());
 		} break;
 	}
 }

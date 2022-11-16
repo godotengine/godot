@@ -79,36 +79,12 @@ bool Node2D::_edit_use_rotation() const {
 	return true;
 }
 
-void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
-	ERR_FAIL_COND(!_edit_use_rect());
-
-	Rect2 r = _edit_get_rect();
-
-	Vector2 zero_offset;
-	Size2 new_scale(1, 1);
-
-	if (r.size.x != 0) {
-		zero_offset.x = -r.position.x / r.size.x;
-		new_scale.x = p_edit_rect.size.x / r.size.x;
-	}
-
-	if (r.size.y != 0) {
-		zero_offset.y = -r.position.y / r.size.y;
-		new_scale.y = p_edit_rect.size.y / r.size.y;
-	}
-
-	Point2 new_pos = p_edit_rect.position + p_edit_rect.size * zero_offset;
-
-	Transform2D postxf;
-	postxf.set_rotation_scale_and_skew(rotation, scale, skew);
-	new_pos = postxf.xform(new_pos);
-
-	position += new_pos;
-	scale *= new_scale;
-
-	_update_transform();
+void Node2D::_edit_set_scale_with_fixpoint(Size2 p_new_scale, const Point2 p_local_fixpoint) {
+	Transform2D new_xform = Transform2D(get_rotation(), p_new_scale, get_skew(), Vector2());
+	position = get_transform().xform(p_local_fixpoint) - new_xform.xform(p_local_fixpoint);
+	set_scale(p_new_scale);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void Node2D::_update_xform_values() {
 	position = transform.columns[2];
