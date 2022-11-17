@@ -36,8 +36,16 @@
 
 #include "editor/editor_node.h"
 
+void MultiplayerEditorDebugger::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(Variant::STRING, "path")));
+}
+
 bool MultiplayerEditorDebugger::has_capture(const String &p_capture) const {
 	return p_capture == "multiplayer";
+}
+
+void MultiplayerEditorDebugger::_open_request(const String &p_path) {
+	emit_signal("open_request", p_path);
 }
 
 bool MultiplayerEditorDebugger::capture(const String &p_message, const Array &p_data, int p_session) {
@@ -47,10 +55,31 @@ bool MultiplayerEditorDebugger::capture(const String &p_message, const Array &p_
 		MultiplayerDebugger::RPCFrame frame;
 		frame.deserialize(p_data);
 		for (int i = 0; i < frame.infos.size(); i++) {
-			profiler->add_node_frame_data(frame.infos[i]);
+			profiler->add_rpc_frame_data(frame.infos[i]);
 		}
 		return true;
-
+	} else if (p_message == "multiplayer:syncs") {
+		MultiplayerDebugger::ReplicationFrame frame;
+		frame.deserialize(p_data);
+		for (const KeyValue<ObjectID, MultiplayerDebugger::SyncInfo> &E : frame.infos) {
+			profiler->add_sync_frame_data(E.value);
+		}
+		Array missing = profiler->pop_missing_node_data();
+		if (missing.size()) {
+			// Asks for the object information.
+			get_session(p_session)->send_message("multiplayer:cache", missing);
+		}
+		return true;
+	} else if (p_message == "multiplayer:cache") {
+		ERR_FAIL_COND_V(p_data.size() % 3, false);
+		for (int i = 0; i < p_data.size(); i += 3) {
+			EditorNetworkProfiler::NodeInfo info;
+			info.id = p_data[i].operator ObjectID();
+			info.type = p_data[i + 1].operator String();
+			info.path = p_data[i + 2].operator String();
+			profiler->add_node_data(info);
+		}
+		return true;
 	} else if (p_message == "multiplayer:bandwidth") {
 		ERR_FAIL_COND_V(p_data.size() < 2, false);
 		profiler->set_bandwidth(p_data[0], p_data[1]);
@@ -62,8 +91,9 @@ bool MultiplayerEditorDebugger::capture(const String &p_message, const Array &p_
 void MultiplayerEditorDebugger::_profiler_activate(bool p_enable, int p_session_id) {
 	Ref<EditorDebuggerSession> session = get_session(p_session_id);
 	ERR_FAIL_COND(session.is_null());
-	session->toggle_profiler("multiplayer", p_enable);
-	session->toggle_profiler("rpc", p_enable);
+	session->toggle_profiler("multiplayer:bandwidth", p_enable);
+	session->toggle_profiler("multiplayer:rpc", p_enable);
+	session->toggle_profiler("multiplayer:replication", p_enable);
 }
 
 void MultiplayerEditorDebugger::setup_session(int p_session_id) {
@@ -71,10 +101,13 @@ void MultiplayerEditorDebugger::setup_session(int p_session_id) {
 	ERR_FAIL_COND(session.is_null());
 	EditorNetworkProfiler *profiler = memnew(EditorNetworkProfiler);
 	profiler->connect("enable_profiling", callable_mp(this, &MultiplayerEditorDebugger::_profiler_activate).bind(p_session_id));
+	profiler->connect("open_request", callable_mp(this, &MultiplayerEditorDebugger::_open_request));
 	profiler->set_name(TTR("Network Profiler"));
 	session->add_session_tab(profiler);
 	profilers[p_session_id] = profiler;
 }
+
+/// MultiplayerEditorPlugin
 
 MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 	repl_editor = memnew(ReplicationEditor);
@@ -82,9 +115,11 @@ MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 	button->hide();
 	repl_editor->get_pin()->connect("pressed", callable_mp(this, &MultiplayerEditorPlugin::_pinned));
 	debugger.instantiate();
+	debugger->connect("open_request", callable_mp(this, &MultiplayerEditorPlugin::_open_request));
 }
 
-MultiplayerEditorPlugin::~MultiplayerEditorPlugin() {
+void MultiplayerEditorPlugin::_open_request(const String &p_path) {
+	get_editor_interface()->open_scene_from_path(p_path);
 }
 
 void MultiplayerEditorPlugin::_notification(int p_what) {
