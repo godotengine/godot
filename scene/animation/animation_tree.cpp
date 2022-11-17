@@ -884,9 +884,10 @@ void AnimationTree::_process_graph(float p_delta) {
 
 								t->loc += (loc[1] - loc[0]) * blend;
 								t->scale += (scale[1] - scale[0]) * blend;
+								
 								Quat q = Quat().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
-								t->rot = (t->rot * q).normalized();
-
+								t->rot = (root_motion_horizontal) ? rot[1].normalized() : (t->rot * q).normalized();
+								
 								prev_time = 0;
 							}
 
@@ -899,8 +900,9 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							t->loc += (loc[1] - loc[0]) * blend;
 							t->scale += (scale[1] - scale[0]) * blend;
+
 							Quat q = Quat().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
-							t->rot = (t->rot * q).normalized();
+							t->rot = (root_motion_horizontal) ? rot[1].normalized() : (t->rot * q).normalized();
 
 							prev_time = 0;
 
@@ -1202,15 +1204,22 @@ void AnimationTree::_process_graph(float p_delta) {
 
 					Transform xform;
 					xform.origin = t->loc;
-
 					xform.basis.set_quat_scale(t->rot, t->scale);
 
 					if (t->root_motion) {
+
 						root_motion_transform = xform;
+						
+						if (root_motion_horizontal){
+							xform.origin.x = xform.origin.z = 0.0f;
+							t->skeleton->set_bone_pose(t->bone_idx, xform);
+							root_motion_transform.basis = Basis();
+						}
 
 						if (t->skeleton && t->bone_idx >= 0) {
-							root_motion_transform = (t->skeleton->get_bone_rest(t->bone_idx) * root_motion_transform) * t->skeleton->get_bone_rest(t->bone_idx).affine_inverse();
+							root_motion_transform = (t->skeleton->get_bone_rest(t->bone_idx) * root_motion_transform) * t->skeleton->get_bone_rest(t->bone_idx).affine_inverse();	
 						}
+
 					} else if (t->skeleton && t->bone_idx >= 0) {
 						t->skeleton->set_bone_pose(t->bone_idx, xform);
 
@@ -1343,6 +1352,14 @@ NodePath AnimationTree::get_root_motion_track() const {
 
 Transform AnimationTree::get_root_motion_transform() const {
 	return root_motion_transform;
+}
+
+void AnimationTree::set_root_motion_horizontal(bool p_horizontal){
+	root_motion_horizontal = p_horizontal;
+}
+
+bool AnimationTree::get_root_motion_horizontal(){
+	return root_motion_horizontal;
 }
 
 void AnimationTree::_tree_changed() {
@@ -1501,6 +1518,9 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_motion_track", "path"), &AnimationTree::set_root_motion_track);
 	ClassDB::bind_method(D_METHOD("get_root_motion_track"), &AnimationTree::get_root_motion_track);
 
+	ClassDB::bind_method(D_METHOD("set_root_motion_horizontal", "horizontal"), &AnimationTree::set_root_motion_horizontal);
+	ClassDB::bind_method(D_METHOD("get_root_motion_horizontal"), &AnimationTree::get_root_motion_horizontal);
+
 	ClassDB::bind_method(D_METHOD("get_root_motion_transform"), &AnimationTree::get_root_motion_transform);
 
 	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationTree::_tree_changed);
@@ -1519,6 +1539,7 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_mode", "get_process_mode");
 	ADD_GROUP("Root Motion", "root_motion_");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_motion_track"), "set_root_motion_track", "get_root_motion_track");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "root_motion_horizontal"), "set_root_motion_horizontal", "get_root_motion_horizontal");
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);

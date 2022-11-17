@@ -264,6 +264,7 @@ private:
 	bool started;
 
 	NodePath root_motion_track;
+	bool root_motion_horizontal;
 	Transform root_motion_transform;
 
 	friend class AnimationNode;
@@ -314,6 +315,9 @@ public:
 
 	void set_root_motion_track(const NodePath &p_track);
 	NodePath get_root_motion_track() const;
+
+	void set_root_motion_horizontal(bool p_horizontal);
+	bool get_root_motion_horizontal();
 
 	Transform get_root_motion_transform() const;
 
