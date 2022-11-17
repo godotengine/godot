@@ -197,6 +197,7 @@ void AnimationPlayerEditor::_play_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->play(current);
 	}
 
@@ -209,11 +210,10 @@ void AnimationPlayerEditor::_play_from_pressed() {
 
 	if (!current.is_empty()) {
 		float time = player->get_current_animation_position();
-
 		if (current == player->get_assigned_animation() && player->is_playing()) {
 			player->stop(); //so it won't blend with itself
 		}
-
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->play(current);
 		player->seek(time);
 	}
@@ -235,6 +235,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->play(current, -1, -1, true);
 	}
 
@@ -250,7 +251,7 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
-
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->play(current, -1, -1, true);
 		player->seek(time);
 	}
@@ -1560,6 +1561,53 @@ void AnimationPlayerEditor::_stop_onion_skinning() {
 
 void AnimationPlayerEditor::_pin_pressed() {
 	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
+}
+
+bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
+	bool is_valid = true;
+	if (!p_anim.is_valid()) {
+		return true; // There is a problem outside of the animation track.
+	}
+	int len = p_anim->get_track_count();
+	for (int i = 0; i < len; i++) {
+		Animation::TrackType ttype = p_anim->track_get_type(i);
+		if (ttype == Animation::TYPE_ROTATION_3D) {
+			int key_len = p_anim->track_get_key_count(i);
+			for (int j = 0; j < key_len; j++) {
+				Quaternion q;
+				p_anim->rotation_track_get_key(i, j, &q);
+				ERR_BREAK_EDMSG(!q.is_normalized(), "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', rotation track:  '" + p_anim->track_get_path(i) + "' contains unnormalized Quaternion key.");
+			}
+		} else if (ttype == Animation::TYPE_VALUE) {
+			int key_len = p_anim->track_get_key_count(i);
+			if (key_len == 0) {
+				continue;
+			}
+			switch (p_anim->track_get_key_value(i, 0).get_type()) {
+				case Variant::QUATERNION: {
+					for (int j = 0; j < key_len; j++) {
+						Quaternion q = Quaternion(p_anim->track_get_key_value(i, j));
+						if (!q.is_normalized()) {
+							is_valid = false;
+							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', value track:  '" + p_anim->track_get_path(i) + "' contains unnormalized Quaternion key.");
+						}
+					}
+				} break;
+				case Variant::TRANSFORM3D: {
+					for (int j = 0; j < key_len; j++) {
+						Transform3D t = Transform3D(p_anim->track_get_key_value(i, j));
+						if (!t.basis.orthonormalized().is_rotation()) {
+							is_valid = false;
+							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', value track:  '" + p_anim->track_get_path(i) + "' contains corrupted basis (some axes are too close other axis or scaled by zero) Transform3D key.");
+						}
+					}
+				} break;
+				default: {
+				} break;
+			}
+		}
+	}
+	return is_valid;
 }
 
 void AnimationPlayerEditor::_bind_methods() {
