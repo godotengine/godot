@@ -560,6 +560,7 @@ void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS:
 void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
 	ERR_FAIL_NULL(ct);
+
 	ct->texture_repeat = p_repeat;
 	ct->clear_sets();
 }
