@@ -105,6 +105,10 @@ private:
 		return p_id.is_valid() ? Object::cast_to<T>(ObjectDB::get_instance(p_id)) : nullptr;
 	}
 
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ void _profile_node_data(const String &p_what, ObjectID p_id, int p_size);
+#endif
+
 public:
 	static void make_default();
 
