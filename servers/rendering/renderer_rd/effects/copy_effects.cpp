@@ -510,15 +510,17 @@ void CopyEffects::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuff
 
 	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
 
-	copy_to_fb.push_constant.use_section = true;
+	copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_USE_SECTION;
 	copy_to_fb.push_constant.section[0] = p_uv_rect.position.x;
 	copy_to_fb.push_constant.section[1] = p_uv_rect.position.y;
 	copy_to_fb.push_constant.section[2] = p_uv_rect.size.x;
 	copy_to_fb.push_constant.section[3] = p_uv_rect.size.y;
 
 	if (p_flip_y) {
-		copy_to_fb.push_constant.flip_y = true;
+		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_FLIP_Y;
 	}
+
+	copy_to_fb.push_constant.luminance_multiplier = 1.0;
 
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -537,28 +539,35 @@ void CopyEffects::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuff
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 }
 
-void CopyEffects::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero, bool p_srgb, RID p_secondary, bool p_multiview, bool p_alpha_to_one) {
+void CopyEffects::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero, bool p_srgb, RID p_secondary, bool p_multiview, bool p_alpha_to_one, bool p_linear) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
 	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
+	copy_to_fb.push_constant.luminance_multiplier = 1.0;
 
 	if (p_flip_y) {
-		copy_to_fb.push_constant.flip_y = true;
+		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_FLIP_Y;
 	}
 	if (p_force_luminance) {
-		copy_to_fb.push_constant.force_luminance = true;
+		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_FORCE_LUMINANCE;
 	}
 	if (p_alpha_to_zero) {
-		copy_to_fb.push_constant.alpha_to_zero = true;
+		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_ALPHA_TO_ZERO;
 	}
 	if (p_srgb) {
-		copy_to_fb.push_constant.srgb = true;
+		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_SRGB;
 	}
 	if (p_alpha_to_one) {
-		copy_to_fb.push_constant.alpha_to_one = true;
+		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_ALPHA_TO_ONE;
+	}
+	if (p_linear) {
+		// Used for copying to a linear buffer. In the mobile renderer we divide the contents of the linear buffer
+		// to allow for a wider effective range.
+		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_LINEAR;
+		copy_to_fb.push_constant.luminance_multiplier = prefer_raster_effects ? 2.0 : 1.0;
 	}
 
 	// setup our uniforms

@@ -181,16 +181,21 @@ private:
 		COPY_TO_FB_MAX,
 	};
 
+	enum CopyToFBFlags {
+		COPY_TO_FB_FLAG_FLIP_Y = (1 << 0),
+		COPY_TO_FB_FLAG_USE_SECTION = (1 << 1),
+		COPY_TO_FB_FLAG_FORCE_LUMINANCE = (1 << 2),
+		COPY_TO_FB_FLAG_ALPHA_TO_ZERO = (1 << 3),
+		COPY_TO_FB_FLAG_SRGB = (1 << 4),
+		COPY_TO_FB_FLAG_ALPHA_TO_ONE = (1 << 5),
+		COPY_TO_FB_FLAG_LINEAR = (1 << 6),
+	};
+
 	struct CopyToFbPushConstant {
 		float section[4];
 		float pixel_size[2];
-		uint32_t flip_y;
-		uint32_t use_section;
-
-		uint32_t force_luminance;
-		uint32_t alpha_to_zero;
-		uint32_t srgb;
-		uint32_t alpha_to_one;
+		float luminance_multiplier;
+		uint32_t flags;
 
 		float set_color[4];
 	};
@@ -322,7 +327,7 @@ public:
 	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
 	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
-	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false, bool alpha_to_one = false);
+	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false, bool alpha_to_one = false, bool p_linear = false);
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
 	void copy_raster(RID p_source_texture, RID p_dest_framebuffer);
 
