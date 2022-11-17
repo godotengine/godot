@@ -251,6 +251,8 @@ void TextureStorage::canvas_texture_free(RID p_rid) {
 
 void TextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
 	switch (p_channel) {
 		case RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
 			ct->diffuse = p_texture;
@@ -266,6 +268,8 @@ void TextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RS::Canvas
 
 void TextureStorage::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
 	ct->specular_color.r = p_specular_color.r;
 	ct->specular_color.g = p_specular_color.g;
 	ct->specular_color.b = p_specular_color.b;
@@ -274,11 +278,15 @@ void TextureStorage::canvas_texture_set_shading_parameters(RID p_canvas_texture,
 
 void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
 	ct->texture_filter = p_filter;
 }
 
 void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
 	ct->texture_repeat = p_repeat;
 }
 
