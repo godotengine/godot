@@ -8,7 +8,7 @@
 		To use [EditorNode3DGizmoPlugin], register it using the [method EditorPlugin.add_node_3d_gizmo_plugin] method first.
 	</description>
 	<tutorials>
-		<link title="Node3D gizmo plugins">$DOCS_URL/tutorials/plugins/editor/spatial_gizmos.html</link>
+		<link title="Node3D gizmo plugins">$DOCS_URL/tutorials/plugins/editor/3d_gizmos.html</link>
 	</tutorials>
 	<methods>
 		<method name="_can_be_hidden" qualifiers="virtual const">

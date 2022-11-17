@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_network_profiler.h                                            */
+/*  multiplayer_debugger.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_NETWORK_PROFILER_H
-#define EDITOR_NETWORK_PROFILER_H
+#ifndef MULTIPLAYER_DEBUGGER_H
+#define MULTIPLAYER_DEBUGGER_H
 
-#include "scene/debugger/scene_debugger.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/label.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tree.h"
+#include "core/debugger/engine_profiler.h"
 
-class EditorNetworkProfiler : public VBoxContainer {
-	GDCLASS(EditorNetworkProfiler, VBoxContainer)
+#include "core/os/os.h"
+
+class MultiplayerDebugger {
+public:
+	struct RPCNodeInfo {
+		ObjectID node;
+		String node_path;
+		int incoming_rpc = 0;
+		int outgoing_rpc = 0;
+	};
+
+	struct RPCFrame {
+		Vector<RPCNodeInfo> infos;
+
+		Array serialize();
+		bool deserialize(const Array &p_arr);
+	};
 
 private:
-	Button *activate = nullptr;
-	Button *clear_button = nullptr;
-	Tree *counters_display = nullptr;
-	LineEdit *incoming_bandwidth_text = nullptr;
-	LineEdit *outgoing_bandwidth_text = nullptr;
+	class BandwidthProfiler : public EngineProfiler {
+	protected:
+		struct BandwidthFrame {
+			uint32_t timestamp;
+			int packet_size;
+		};
 
-	Timer *frame_delay = nullptr;
+		int bandwidth_in_ptr = 0;
+		Vector<BandwidthFrame> bandwidth_in;
+		int bandwidth_out_ptr = 0;
+		Vector<BandwidthFrame> bandwidth_out;
+		uint64_t last_bandwidth_time = 0;
 
-	HashMap<ObjectID, SceneDebugger::RPCNodeInfo> nodes_data;
+		int bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer);
 
-	void _update_frame();
+	public:
+		void toggle(bool p_enable, const Array &p_opts);
+		void add(const Array &p_data);
+		void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time);
+	};
 
-	void _activate_pressed();
-	void _clear_pressed();
+	class RPCProfiler : public EngineProfiler {
+	public:
+	private:
+		HashMap<ObjectID, RPCNodeInfo> rpc_node_data;
+		uint64_t last_profile_time = 0;
 
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
+		void init_node(const ObjectID p_node);
+
+	public:
+		void toggle(bool p_enable, const Array &p_opts);
+		void add(const Array &p_data);
+		void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time);
+	};
 
 public:
-	void add_node_frame_data(const SceneDebugger::RPCNodeInfo p_frame);
-	void set_bandwidth(int p_incoming, int p_outgoing);
-	bool is_profiling();
-
-	EditorNetworkProfiler();
+	static void initialize();
+	static void deinitialize();
 };
 
-#endif // EDITOR_NETWORK_PROFILER_H
+#endif // MULTIPLAYER_DEBUGGER_H

@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	// Enable virtual termial sequences processing.
+	// Enable virtual terminal sequences processing.
 	HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	DWORD out_mode = ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	SetConsoleMode(stdout_handle, out_mode);

@@ -123,15 +123,12 @@ public:
 	virtual bool pre_draw_viewport(RID p_render_target) override;
 	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual void end_frame() override;
-	virtual void notification(int p_what) override;
 
 	GDVIRTUAL0(_process);
 	GDVIRTUAL0(_pre_render);
 	GDVIRTUAL1R(bool, _pre_draw_viewport, RID);
 	GDVIRTUAL2(_post_draw_viewport, RID, const Rect2 &);
 	GDVIRTUAL0(_end_frame);
-
-	GDVIRTUAL1(_notification, int);
 
 	/* access to some internals we need */
 	RID get_render_target_texture(RID p_render_target);

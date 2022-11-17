@@ -1396,6 +1396,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 				case 1: /* info */ {
 					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, RTR("Invalid BMFont info block size."));
 					base_size = f->get_16();
+					if (base_size <= 0) {
+						base_size = 16;
+					}
 					uint8_t flags = f->get_8();
 					if (flags & (1 << 3)) {
 						st_flags.set_flag(TextServer::FONT_BOLD);
@@ -1681,7 +1684,6 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 			if (type == "info") {
 				if (keys.has("size")) {
 					base_size = keys["size"].to_int();
-					set_fixed_size(base_size);
 				}
 				if (keys.has("outline")) {
 					outline = keys["outline"].to_int();
@@ -1730,6 +1732,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						encoding = 2;
 					}
 				}
+				set_fixed_size(base_size);
 			} else if (type == "common") {
 				if (keys.has("lineHeight")) {
 					height = keys["lineHeight"].to_int();
@@ -1788,7 +1791,10 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 								ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
 							}
 						} else {
-							if ((ch[0] == 0) && (ch[1] == 0) && (ch[2] == 0) && (ch[3] == 0)) { // RGBA8 color, no outline
+							if ((ch[3] == 0) && (ch[0] == 4) && (ch[1] == 4) && (ch[2] == 4) && img->get_format() == Image::FORMAT_RGBA8) { // might be RGBA8 color, no outline (color part of the image should be sold white, but some apps designed for Godot 3 generate color fonts with this config)
+								outline = 0;
+								set_texture_image(0, Vector2i(base_size, 0), page, img);
+							} else if ((ch[0] == 0) && (ch[1] == 0) && (ch[2] == 0) && (ch[3] == 0)) { // RGBA8 color, no outline
 								outline = 0;
 								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 								set_texture_image(0, Vector2i(base_size, 0), page, img);

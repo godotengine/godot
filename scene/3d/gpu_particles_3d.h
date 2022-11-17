@@ -82,7 +82,7 @@ private:
 
 	Ref<Material> process_material;
 
-	DrawOrder draw_order;
+	DrawOrder draw_order = DRAW_ORDER_INDEX;
 
 	Vector<Ref<Mesh>> draw_passes;
 	Ref<Skin> skin;

@@ -33,6 +33,7 @@
 #include "core/io/resource.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "scene/main/node.h"
@@ -109,9 +110,14 @@ EditorUndoRedoManager::History &EditorUndoRedoManager::get_history_for_object(Ob
 }
 
 void EditorUndoRedoManager::create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode) {
-	pending_action.action_name = p_name;
-	pending_action.timestamp = OS::get_singleton()->get_unix_time();
-	pending_action.merge_mode = p_mode;
+	if (pending_action.history_id != INVALID_HISTORY) {
+		// Nested action.
+		p_history_id = pending_action.history_id;
+	} else {
+		pending_action.action_name = p_name;
+		pending_action.timestamp = OS::get_singleton()->get_unix_time();
+		pending_action.merge_mode = p_mode;
+	}
 
 	if (p_history_id != INVALID_HISTORY) {
 		pending_action.history_id = p_history_id;
@@ -227,6 +233,12 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 	History &history = get_or_create_history(pending_action.history_id);
 	history.undo_redo->commit_action(p_execute);
 	history.redo_stack.clear();
+
+	if (history.undo_redo->get_action_level() > 0) {
+		// Nested action.
+		is_committing = false;
+		return;
+	}
 
 	if (!history.undo_stack.is_empty()) {
 		const Action &prev_action = history.undo_stack.back()->get();

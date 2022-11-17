@@ -1319,7 +1319,10 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 		}
 #ifdef GLES3_ENABLED
 		case OPENGL_CONTEXT: {
-			return (int64_t)gl_manager->get_glx_context(p_window);
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_context(p_window);
+			}
+			return 0;
 		}
 #endif
 		default: {
@@ -4411,7 +4414,7 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
+		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 }
@@ -4672,6 +4675,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
+			window_set_vsync_mode(p_vsync_mode, id);
 		}
 #endif
 

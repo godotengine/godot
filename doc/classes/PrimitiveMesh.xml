@@ -34,6 +34,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="add_uv2" type="bool" setter="set_add_uv2" getter="get_add_uv2" default="false">
+			If set, generates UV2 UV coordinates applying a padding using the [member uv2_padding] setting. UV2 is needed for lightmapping.
+		</member>
 		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
 			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unexpected culling when using a shader to offset vertices.
 		</member>
@@ -43,6 +46,9 @@
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The current [Material] of the primitive mesh.
+		</member>
+		<member name="uv2_padding" type="float" setter="set_uv2_padding" getter="get_uv2_padding" default="2.0">
+			If [member add_uv2] is set, specifies the padding in pixels applied along seams of the mesh. If at generation the size of the lightmap texture can't be determined, the UVs are calculated assuming a texture size of 1024x1024.
 		</member>
 	</members>
 </class>

@@ -639,7 +639,7 @@ class EditorPropertyQuaternion : public EditorProperty {
 	EditorSpinSlider *euler[3];
 	Button *edit_button = nullptr;
 
-	Vector3 edit_euler = Vector3();
+	Vector3 edit_euler;
 
 	void _value_changed(double p_val, const String &p_name);
 	void _edit_custom_value();

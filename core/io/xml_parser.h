@@ -65,8 +65,9 @@ public:
 	};
 
 private:
-	char *data = nullptr;
-	char *P = nullptr;
+	char *data_copy = nullptr;
+	const char *data = nullptr;
+	const char *P = nullptr;
 	uint64_t length = 0;
 	uint64_t current_line = 0;
 	String node_name;
@@ -81,7 +82,7 @@ private:
 
 	Vector<Attribute> attributes;
 
-	bool _set_text(char *start, char *end);
+	bool _set_text(const char *start, const char *end);
 	void _parse_closing_xml_element();
 	void _ignore_definition();
 	bool _parse_cdata();
@@ -118,6 +119,7 @@ public:
 
 	Error open(const String &p_path);
 	Error open_buffer(const Vector<uint8_t> &p_buffer);
+	Error _open_buffer(const uint8_t *p_buffer, size_t p_size);
 
 	void close();
 

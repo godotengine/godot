@@ -853,7 +853,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	script_template.inherit = p_inherits;
 	String space_indent = "    ";
 	// Get meta delimiter
-	String meta_delimiter = String();
+	String meta_delimiter;
 	List<String> comment_delimiters;
 	p_language->get_comment_delimiters(&comment_delimiters);
 	for (const String &script_delimiter : comment_delimiters) {

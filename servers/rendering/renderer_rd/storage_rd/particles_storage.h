@@ -54,8 +54,7 @@ private:
 		float velocity[3];
 		uint32_t active;
 		float color[4];
-		float custom[3];
-		float lifetime;
+		float custom[4];
 	};
 
 	struct ParticlesFrameParams {
@@ -125,9 +124,6 @@ private:
 
 		Attractor attractors[MAX_ATTRACTORS];
 		Collider colliders[MAX_COLLIDERS];
-	};
-
-	struct ParticleEmissionBufferData {
 	};
 
 	struct ParticleEmissionBuffer {
@@ -412,7 +408,7 @@ public:
 	bool owns_particles(RID p_rid) { return particles_owner.owns(p_rid); }
 
 	virtual RID particles_allocate() override;
-	virtual void particles_initialize(RID p_particles_collision) override;
+	virtual void particles_initialize(RID p_rid) override;
 	virtual void particles_free(RID p_rid) override;
 
 	virtual void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode) override;
@@ -519,7 +515,7 @@ public:
 
 	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance) override;
 	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance) override;
-	virtual void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) override;
+	void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture);
 
 	virtual void update_particles() override;
 
@@ -546,7 +542,7 @@ public:
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const override;
 	Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override;
-	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const override;
+	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
 
 	Dependency *particles_collision_get_dependency(RID p_particles) const;
 
