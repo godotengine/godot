@@ -752,7 +752,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			prefix = _prefix;
 			break;
 		} else if (list_items[i]->list_type == LIST_NUMBERS) {
-			segment = TS->format_number(itos(list_index[i]), _find_language(l.from));
+			segment = itos(list_index[i]);
+			if (is_localizing_numeral_system()) {
+				segment = TS->format_number(segment, _find_language(l.from));
+			}
 		} else if (list_items[i]->list_type == LIST_LETTERS) {
 			segment = _letters(list_index[i], list_items[i]->capitalize);
 		} else if (list_items[i]->list_type == LIST_ROMAN) {
