@@ -487,6 +487,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		TreeItem *section = E.value;
 		if (section->get_first_child() == nullptr) {
 			root->remove_child(section);
+			memdelete(section);
 		}
 	}
 }

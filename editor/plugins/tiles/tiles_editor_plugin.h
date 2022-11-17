@@ -71,7 +71,7 @@ private:
 	// For synchronization.
 	int atlas_sources_lists_current = 0;
 	float atlas_view_zoom = 1.0;
-	Vector2 atlas_view_scroll = Vector2();
+	Vector2 atlas_view_scroll;
 
 	void _tile_map_changed();
 

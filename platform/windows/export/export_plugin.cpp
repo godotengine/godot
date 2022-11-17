@@ -41,24 +41,13 @@ Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPres
 	}
 }
 
-Error EditorExportPlatformWindows::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
-	if (f.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), vformat(TTR("Could not open file \"%s\"."), p_path));
-		return ERR_CANT_CREATE;
-	}
-
-	f->store_line("@echo off");
-	f->store_line("title \"" + p_app_name + "\"");
-	f->store_line("\"%~dp0" + p_pkg_name + "\" \"%*\"");
-	f->store_line("pause > nul");
-
-	return OK;
-}
-
 Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	if (p_preset->get("application/modify_resources")) {
-		_rcedit_add_data(p_preset, p_path);
+		_rcedit_add_data(p_preset, p_path, true);
+		String wrapper_path = p_path.get_basename() + ".console.exe";
+		if (FileAccess::exists(wrapper_path)) {
+			_rcedit_add_data(p_preset, wrapper_path, false);
+		}
 	}
 	return OK;
 }
@@ -71,6 +60,10 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags);
 	if (p_preset->get("codesign/enable") && err == OK) {
 		_code_sign(p_preset, pck_path);
+		String wrapper_path = p_path.get_basename() + ".console.exe";
+		if (FileAccess::exists(wrapper_path)) {
+			_code_sign(p_preset, wrapper_path);
+		}
 	}
 
 	if (p_preset->get("binary_format/embed_pck") && err == OK) {
@@ -78,25 +71,6 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		err = tmp_dir->rename(pck_path, p_path);
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to rename temporary file \"%s\"."), pck_path));
-		}
-	}
-
-	String app_name;
-	if (String(GLOBAL_GET("application/config/name")) != "") {
-		app_name = String(GLOBAL_GET("application/config/name"));
-	} else {
-		app_name = "Unnamed";
-	}
-	app_name = OS::get_singleton()->get_safe_dir_name(app_name);
-
-	// Save console script.
-	if (err == OK) {
-		int con_scr = p_preset->get("debug/export_console_script");
-		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
-			String scr_path = p_path.get_basename() + ".cmd";
-			if (_export_debug_script(p_preset, app_name, p_path.get_file(), scr_path) != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), TTR("Could not create console script."));
-			}
 		}
 	}
 
@@ -137,6 +111,7 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/modify_resources"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/console_wrapper_icon", PROPERTY_HINT_FILE, "*.ico"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
@@ -146,7 +121,7 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/trademarks"), ""));
 }
 
-Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
+Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon) {
 	String rcedit_path = EDITOR_GET("export/windows/rcedit");
 
 	if (rcedit_path != String() && !FileAccess::exists(rcedit_path)) {
@@ -173,6 +148,12 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 #endif
 
 	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
+	if (p_console_icon) {
+		String console_icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/console_wrapper_icon"));
+		if (!console_icon_path.is_empty() && FileAccess::exists(console_icon_path)) {
+			icon_path = console_icon_path;
+		}
+	}
 	String file_verion = p_preset->get("application/file_version");
 	String product_version = p_preset->get("application/product_version");
 	String company_name = p_preset->get("application/company_name");

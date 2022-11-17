@@ -199,7 +199,7 @@ void RasterizerGLES3::finalize() {
 
 RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
-	if (!gladLoadGL()) {
+	if (!gladLoaderLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
 		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
 		// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,

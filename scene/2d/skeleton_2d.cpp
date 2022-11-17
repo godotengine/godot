@@ -213,7 +213,7 @@ void Bone2D::_notification(int p_what) {
 			}
 
 			// Undo scaling
-			Transform2D editor_gizmo_trans = Transform2D();
+			Transform2D editor_gizmo_trans;
 			editor_gizmo_trans.set_scale(Vector2(1, 1) / get_global_scale());
 			RenderingServer::get_singleton()->canvas_item_set_transform(editor_gizmo_rid, editor_gizmo_trans);
 

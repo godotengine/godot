@@ -335,7 +335,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 			}
 			mono_fc->set_opentype_features(ftrs);
 		} break;
-		default: { // Default.
+		default: { // Enabled.
 			Dictionary ftrs;
 			ftrs[TS->name_to_tag("calt")] = 1;
 			mono_fc->set_opentype_features(ftrs);

@@ -31,6 +31,7 @@
 #ifndef CONTROL_EDITOR_PLUGIN_H
 #define CONTROL_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -45,6 +46,7 @@
 #include "scene/gui/texture_rect.h"
 
 class EditorUndoRedoManager;
+class GridContainer;
 
 // Inspector controls.
 class ControlPositioningWarning : public MarginContainer {
@@ -222,7 +224,6 @@ class ControlEditorToolbar : public HBoxContainer {
 	void _anchor_mode_toggled(bool p_status);
 	void _container_flags_selected(int p_flags, bool p_vertical);
 
-	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 	bool _is_node_locked(const Node *p_node);
 	List<Control *> _get_edited_controls();

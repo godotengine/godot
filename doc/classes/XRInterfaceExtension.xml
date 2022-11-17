@@ -141,13 +141,6 @@
 				Returns [code]true[/code] if this interface has been initialized.
 			</description>
 		</method>
-		<method name="_notification" qualifiers="virtual">
-			<return type="void" />
-			<param index="0" name="what" type="int" />
-			<description>
-				Informs the interface of an applicable system notification.
-			</description>
-		</method>
 		<method name="_post_draw_viewport" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="render_target" type="RID" />

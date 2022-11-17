@@ -103,7 +103,12 @@ void ProgressBar::_notification(int p_what) {
 			}
 
 			if (show_percentage) {
-				String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
+				String txt = itos(int(get_as_ratio() * 100));
+				if (is_localizing_numeral_system()) {
+					txt = TS->format_number(txt) + TS->percent_sign();
+				} else {
+					txt += String("%");
+				}
 				TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 				Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
 

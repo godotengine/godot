@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-    last mod: $Id: quant.c 16503 2009-08-22 18:14:02Z giles $
+    last mod: $Id$
 
  ********************************************************************/
 
@@ -21,6 +21,14 @@
 #include "quant.h"
 #include "decint.h"
 
+/*The maximum output of the DCT with +/- 255 inputs is +/- 8157.
+  These minimum quantizers ensure the result after quantization (and after
+   prediction for DC) will be no more than +/- 510.
+  The tokenization system can handle values up to +/- 580, so there is no need
+   to do any coefficient clamping.
+  I would rather have allowed smaller quantizers and had to clamp, but these
+   minimums were required when constructing the original VP3 matrices and have
+   been formalized in the spec.*/
 static const unsigned OC_DC_QUANT_MIN[2]={4<<2,8<<2};
 static const unsigned OC_AC_QUANT_MIN[2]={2<<2,4<<2};
 

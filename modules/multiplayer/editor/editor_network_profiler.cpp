@@ -59,7 +59,7 @@ void EditorNetworkProfiler::_update_frame() {
 
 	TreeItem *root = counters_display->create_item();
 
-	for (const KeyValue<ObjectID, SceneDebugger::RPCNodeInfo> &E : nodes_data) {
+	for (const KeyValue<ObjectID, RPCNodeInfo> &E : nodes_data) {
 		TreeItem *node = counters_display->create_item(root);
 
 		for (int j = 0; j < counters_display->get_columns(); ++j) {
@@ -92,7 +92,7 @@ void EditorNetworkProfiler::_clear_pressed() {
 	}
 }
 
-void EditorNetworkProfiler::add_node_frame_data(const SceneDebugger::RPCNodeInfo p_frame) {
+void EditorNetworkProfiler::add_node_frame_data(const RPCNodeInfo p_frame) {
 	if (!nodes_data.has(p_frame.node)) {
 		nodes_data.insert(p_frame.node, p_frame);
 	} else {

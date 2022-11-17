@@ -275,7 +275,6 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 
 	bool found = false;
 	bool match = false;
-	int index = 0;
 	for (const String &E : extensions) {
 		if (E.nocasecmp_to(extension) == 0) {
 			found = true;
@@ -284,7 +283,6 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 			}
 			break;
 		}
-		index++;
 	}
 
 	if (!found) {
@@ -373,7 +371,7 @@ void ScriptCreateDialog::_create_new() {
 	const ScriptLanguage::ScriptTemplate sinfo = _get_current_template();
 
 	String parent_class = parent_name->get_text();
-	if (!ClassDB::class_exists(parent_class) && !ScriptServer::is_global_class(parent_class)) {
+	if (!parent_name->get_text().is_quoted() && !ClassDB::class_exists(parent_class) && !ScriptServer::is_global_class(parent_class)) {
 		// If base is a custom type, replace with script path instead.
 		const EditorData::CustomType *type = EditorNode::get_editor_data().get_custom_type_by_name(parent_class);
 		ERR_FAIL_NULL(type);
@@ -855,7 +853,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	script_template.inherit = p_inherits;
 	String space_indent = "    ";
 	// Get meta delimiter
-	String meta_delimiter = String();
+	String meta_delimiter;
 	List<String> comment_delimiters;
 	p_language->get_comment_delimiters(&comment_delimiters);
 	for (const String &script_delimiter : comment_delimiters) {

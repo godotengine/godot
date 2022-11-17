@@ -223,7 +223,7 @@ TEST_CASE("[Basis] Set axis angle") {
 	// Testing the singularity when the angle is 180°.
 	Basis singularityPi(-1, 0, 0, 0, 1, 0, 0, 0, -1);
 	singularityPi.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, pi));
+	CHECK(angle == doctest::Approx(pi));
 
 	// Testing reversing the an axis (of an 30° angle).
 	float cos30deg = Math::cos(Math::deg_to_rad((real_t)30.0));
@@ -231,17 +231,17 @@ TEST_CASE("[Basis] Set axis angle") {
 	Basis z_negative(cos30deg, 0.5, 0, -0.5, cos30deg, 0, 0, 0, 1);
 
 	z_positive.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, Math::deg_to_rad((real_t)30.0)));
+	CHECK(angle == doctest::Approx(Math::deg_to_rad((real_t)30.0)));
 	CHECK(axis == Vector3(0, 0, 1));
 
 	z_negative.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, Math::deg_to_rad((real_t)30.0)));
+	CHECK(angle == doctest::Approx(Math::deg_to_rad((real_t)30.0)));
 	CHECK(axis == Vector3(0, 0, -1));
 
 	// Testing a rotation of 90° on x-y-z.
 	Basis x90deg(1, 0, 0, 0, 0, -1, 0, 1, 0);
 	x90deg.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, pi / (real_t)2));
+	CHECK(angle == doctest::Approx(pi / (real_t)2));
 	CHECK(axis == Vector3(1, 0, 0));
 
 	Basis y90deg(0, 0, 1, 0, 1, 0, -1, 0, 0);
@@ -255,7 +255,7 @@ TEST_CASE("[Basis] Set axis angle") {
 	// Regression test: checks that the method returns a small angle (not 0).
 	Basis tiny(1, 0, 0, 0, 0.9999995, -0.001, 0, 001, 0.9999995); // The min angle possible with float is 0.001rad.
 	tiny.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, (real_t)0.001, (real_t)0.0001));
+	CHECK(angle == doctest::Approx(0.001).epsilon(0.0001));
 
 	// Regression test: checks that the method returns an angle which is a number (not NaN)
 	Basis bugNan(1.00000024, 0, 0.000100001693, 0, 1, 0, -0.000100009143, 0, 1.00000024);

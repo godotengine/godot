@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor/action_map_editor.h"
+
 #include "editor/editor_scale.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
@@ -395,14 +396,8 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 	action_tree->clear();
 	TreeItem *root = action_tree->create_item();
 
-	int uneditable_count = 0;
-
 	for (int i = 0; i < actions_cache.size(); i++) {
 		ActionInfo action_info = actions_cache[i];
-
-		if (!action_info.editable) {
-			uneditable_count++;
-		}
 
 		const Array events = action_info.action["events"];
 		if (!_should_display_action(action_info.name, events)) {

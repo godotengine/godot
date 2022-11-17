@@ -485,6 +485,7 @@ TEST_CASE("[String] Splitting") {
 
 	const char *slices_l[3] = { "Mars", "Jupiter", "Saturn,Uranus" };
 	const char *slices_r[3] = { "Mars,Jupiter", "Saturn", "Uranus" };
+	const char *slices_3[4] = { "t", "e", "s", "t" };
 
 	l = s.split(",", true, 2);
 	CHECK(l.size() == 3);
@@ -496,6 +497,13 @@ TEST_CASE("[String] Splitting") {
 	CHECK(l.size() == 3);
 	for (int i = 0; i < l.size(); i++) {
 		CHECK(l[i] == slices_r[i]);
+	}
+
+	s = "test";
+	l = s.split();
+	CHECK(l.size() == 4);
+	for (int i = 0; i < l.size(); i++) {
+		CHECK(l[i] == slices_3[i]);
 	}
 
 	s = "Mars Jupiter Saturn Uranus";

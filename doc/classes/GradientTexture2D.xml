@@ -27,6 +27,7 @@
 		<member name="repeat" type="int" setter="set_repeat" getter="get_repeat" enum="GradientTexture2D.Repeat" default="0">
 			The gradient repeat type, one of the [enum Repeat] values. The texture is filled starting from [member fill_from] to [member fill_to] offsets by default, but the gradient fill can be repeated to cover the entire texture.
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="use_hdr" type="bool" setter="set_use_hdr" getter="is_using_hdr" default="false">
 			If [code]true[/code], the generated texture will support high dynamic range ([constant Image.FORMAT_RGBAF] format). This allows for glow effects to work if [member Environment.glow_enabled] is [code]true[/code]. If [code]false[/code], the generated texture will use low dynamic range; overbright colors will be clamped ([constant Image.FORMAT_RGBA8] format).
 		</member>

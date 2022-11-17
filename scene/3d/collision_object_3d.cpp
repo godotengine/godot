@@ -330,7 +330,7 @@ bool CollisionObject3D::_are_collision_shapes_visible() {
 void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 	if (_are_collision_shapes_visible()) {
 		if (debug_shapes_to_update.is_empty()) {
-			callable_mp(this, &CollisionObject3D::_update_debug_shapes).call_deferredp({}, 0);
+			callable_mp(this, &CollisionObject3D::_update_debug_shapes).call_deferred();
 		}
 		debug_shapes_to_update.insert(p_owner);
 	}

@@ -1638,8 +1638,9 @@
 			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
-			Exclusive full screen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant WINDOW_MODE_FULLSCREEN].
-			Only one window in exclusive full screen mode can be visible on a given screen at a time. If multiple windows are in exclusive full screen mode for the same screen, the last one being set to this mode takes precedence.
+			Exclusive full screen window mode. This mode is implemented on Windows and macOS only. On other platforms, it is equivalent to [constant WINDOW_MODE_FULLSCREEN].
+			[b]On Windows:[/b] Only one window in exclusive full screen mode can be visible on a given screen at a time. If multiple windows are in exclusive full screen mode for the same screen, the last one being set to this mode takes precedence.
+			[b]On macOS:[/b] Exclusive full-screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
@@ -1725,8 +1726,16 @@
 		</constant>
 		<constant name="WINDOW_VIEW" value="2" enum="HandleType">
 			Window view:
+			- Windows: [code]HDC[/code] for the window (only with the GL Compatibility renderer).
 			- macOS: [code]NSView*[/code] for the window main view.
 			- iOS: [code]UIView*[/code] for the window main view.
+		</constant>
+		<constant name="OPENGL_CONTEXT" value="3" enum="HandleType">
+			OpenGL context (only with the GL Compatibility renderer):
+			- Windows: [code]HGLRC[/code] for the window.
+			- Linux: [code]GLXContext*[/code] for the window.
+			- MacOS: [code]NSOpenGLContext*[/code] for the window.
+			- Android: [code]EGLContext[/code] for the window.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
 			Utterance has begun to be spoken.

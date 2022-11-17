@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-  last mod: $Id: fdct.c 16503 2009-08-22 18:14:02Z giles $
+  last mod: $Id$
 
  ********************************************************************/
 #include "encint.h"
@@ -120,11 +120,6 @@ static void oc_fdct8(ogg_int16_t _y[8],const ogg_int16_t *_x){
   _y[7]=v;
 }
 
-void oc_enc_fdct8x8(const oc_enc_ctx *_enc,ogg_int16_t _y[64],
- const ogg_int16_t _x[64]){
-  (*_enc->opt_vtable.fdct8x8)(_y,_x);
-}
-
 /*Performs a forward 8x8 Type-II DCT transform.
   The output is scaled by a factor of 4 relative to the orthonormal version
    of the transform.
@@ -152,7 +147,7 @@ void oc_enc_fdct8x8_c(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
   /*Round the result back to the external working precision (which is still
      scaled by four relative to the orthogonal result).
     TODO: We should just update the external working precision.*/
-  for(i=0;i<64;i++)_y[i]=w[i]+2>>2;
+  for(i=0;i<64;i++)_y[i]=w[OC_FZIG_ZAG[i]]+2>>2;
 }
 
 
