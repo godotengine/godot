@@ -137,6 +137,9 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/launch_screens_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
+
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("plugins"), found_plugins[i].name)), false));
@@ -589,13 +592,13 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 				return ERR_UNCONFIGURED;
 			} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s) must be opaque.", info.preset_key));
-				img->resize(side_size, side_size);
+				img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
 				Ref<Image> new_img = Image::create_empty(side_size, side_size, false, Image::FORMAT_RGBA8);
 				new_img->fill(boot_bg_color);
 				_blend_and_rotate(new_img, img, false);
 				err = new_img->save_png(p_iconset_dir + info.export_name);
 			} else {
-				img->resize(side_size, side_size);
+				img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
 				err = img->save_png(p_iconset_dir + info.export_name);
 			}
 			if (err) {
@@ -611,14 +614,14 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 				return ERR_UNCONFIGURED;
 			} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s) must be opaque.", info.preset_key));
-				img->resize(side_size, side_size);
+				img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
 				Ref<Image> new_img = Image::create_empty(side_size, side_size, false, Image::FORMAT_RGBA8);
 				new_img->fill(boot_bg_color);
 				_blend_and_rotate(new_img, img, false);
 				err = new_img->save_png(p_iconset_dir + info.export_name);
 			} else if (img->get_width() != side_size || img->get_height() != side_size) {
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s): '%s' has incorrect size %s and was automatically resized to %s.", info.preset_key, icon_path, img->get_size(), Vector2i(side_size, side_size)));
-				img->resize(side_size, side_size);
+				img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
 				err = img->save_png(p_iconset_dir + info.export_name);
 			} else {
 				err = da->copy(icon_path, p_iconset_dir + info.export_name);
@@ -748,9 +751,9 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 				float aspect_ratio = (float)img->get_width() / (float)img->get_height();
 				if (boot_logo_scale) {
 					if (info.height * aspect_ratio <= info.width) {
-						img->resize(info.height * aspect_ratio, info.height);
+						img->resize(info.height * aspect_ratio, info.height, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
 					} else {
-						img->resize(info.width, info.width / aspect_ratio);
+						img->resize(info.width, info.width / aspect_ratio, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
 					}
 				}
 				Ref<Image> new_img = Image::create_empty(info.width, info.height, false, Image::FORMAT_RGBA8);
@@ -784,17 +787,17 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 				if (info.rotate) {
 					if (boot_logo_scale) {
 						if (info.width * aspect_ratio <= info.height) {
-							img_bs->resize(info.width * aspect_ratio, info.width);
+							img_bs->resize(info.width * aspect_ratio, info.width, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
 						} else {
-							img_bs->resize(info.height, info.height / aspect_ratio);
+							img_bs->resize(info.height, info.height / aspect_ratio, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
 						}
 					}
 				} else {
 					if (boot_logo_scale) {
 						if (info.height * aspect_ratio <= info.width) {
-							img_bs->resize(info.height * aspect_ratio, info.height);
+							img_bs->resize(info.height * aspect_ratio, info.height, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
 						} else {
-							img_bs->resize(info.width, info.width / aspect_ratio);
+							img_bs->resize(info.width, info.width / aspect_ratio, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
 						}
 					}
 				}
