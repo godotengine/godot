@@ -750,7 +750,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		// If the type of the edited property has been changed, delete the
 		// editor and create a new one.
 		if (tile_data_editors.has(editor_name) && ((TileDataDefaultEditor *)tile_data_editors[editor_name])->get_property_type() != prop_type) {
-			tile_data_editors[vformat("custom_data_%d", i)]->queue_delete();
+			tile_data_editors[vformat("custom_data_%d", i)]->queue_free();
 			tile_data_editors.erase(vformat("custom_data_%d", i));
 		}
 		if (!tile_data_editors.has(editor_name)) {
