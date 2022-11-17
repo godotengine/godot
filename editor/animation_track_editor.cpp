@@ -1678,6 +1678,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			}
 
 			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
+			update_values();
 		} break;
 	}
 }
@@ -1700,7 +1701,6 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 		play_position->hide();
 	}
 	queue_redraw();
-	update_values();
 }
 
 Size2 AnimationTimelineEdit::get_minimum_size() const {
@@ -1749,6 +1749,7 @@ void AnimationTimelineEdit::update_values() {
 		length->set_step(1);
 		length->set_tooltip_text(TTR("Animation length (frames)"));
 		time_icon->set_tooltip_text(TTR("Animation length (frames)"));
+		track_edit->editor->_update_key_edit();
 	} else {
 		length->set_value(animation->get_length());
 		length->set_step(0.001);
@@ -1893,7 +1894,6 @@ void AnimationTimelineEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origi
 
 void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
 	use_fps = p_use_fps;
-	update_values();
 	queue_redraw();
 }
 
@@ -4793,6 +4793,7 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 		if (step_value != 0.0) {
 			step_value = 1.0 / step_value;
 		}
+		timeline->queue_redraw();
 	}
 	undo_redo->add_do_method(animation.ptr(), "set_step", step_value);
 	undo_redo->add_undo_method(animation.ptr(), "set_step", animation->get_step());
