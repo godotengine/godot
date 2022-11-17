@@ -2002,23 +2002,14 @@ void CodeTextEditor::goto_next_bookmark() {
 		return;
 	}
 
-	text_editor->remove_secondary_carets();
-	int line = text_editor->get_caret_line();
-	if (line >= (int)bmarks[bmarks.size() - 1]) {
-		text_editor->unfold_line(bmarks[0]);
-		text_editor->set_caret_line(bmarks[0]);
-		text_editor->center_viewport_to_caret();
-	} else {
-		for (int i = 0; i < bmarks.size(); i++) {
-			int bmark_line = bmarks[i];
-			if (bmark_line > line) {
-				text_editor->unfold_line(bmark_line);
-				text_editor->set_caret_line(bmark_line);
-				text_editor->center_viewport_to_caret();
-				return;
-			}
+	int current_line = text_editor->get_caret_line();
+	int bmark_idx = 0;
+	if (current_line < (int)bmarks[bmarks.size() - 1]) {
+		while (bmark_idx < bmarks.size() && bmarks[bmark_idx] <= current_line) {
+			bmark_idx++;
 		}
 	}
+	goto_line_centered(bmarks[bmark_idx]);
 }
 
 void CodeTextEditor::goto_prev_bookmark() {
@@ -2027,23 +2018,14 @@ void CodeTextEditor::goto_prev_bookmark() {
 		return;
 	}
 
-	text_editor->remove_secondary_carets();
-	int line = text_editor->get_caret_line();
-	if (line <= (int)bmarks[0]) {
-		text_editor->unfold_line(bmarks[bmarks.size() - 1]);
-		text_editor->set_caret_line(bmarks[bmarks.size() - 1]);
-		text_editor->center_viewport_to_caret();
-	} else {
-		for (int i = bmarks.size() - 1; i >= 0; i--) {
-			int bmark_line = bmarks[i];
-			if (bmark_line < line) {
-				text_editor->unfold_line(bmark_line);
-				text_editor->set_caret_line(bmark_line);
-				text_editor->center_viewport_to_caret();
-				return;
-			}
+	int current_line = text_editor->get_caret_line();
+	int bmark_idx = bmarks.size() - 1;
+	if (current_line > (int)bmarks[0]) {
+		while (bmark_idx >= 0 && bmarks[bmark_idx] >= current_line) {
+			bmark_idx--;
 		}
 	}
+	goto_line_centered(bmarks[bmark_idx]);
 }
 
 void CodeTextEditor::remove_all_bookmarks() {
