@@ -1932,6 +1932,9 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
+	// Print engine name and version
+	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+
 	engine->startup_benchmark_begin_measure("servers");
 
 	tsman = memnew(TextServerManager);
@@ -1948,9 +1951,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	register_server_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
-
-	// Print engine name and version
-	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
 	if (p_main_tid_override) {
 		Thread::main_thread_id = p_main_tid_override;
