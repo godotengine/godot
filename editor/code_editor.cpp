@@ -377,10 +377,12 @@ void FindReplaceBar::_update_results_count() {
 
 			if (is_whole_words()) {
 				if (col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
-					break;
+					col_pos += searched.length();
+					continue;
 				}
-				if (col_pos + line_text.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
-					break;
+				if (col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
+					col_pos += searched.length();
+					continue;
 				}
 			}
 
