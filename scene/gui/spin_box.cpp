@@ -40,7 +40,10 @@ Size2 SpinBox::get_minimum_size() const {
 }
 
 void SpinBox::_value_changed(double p_value) {
-	String value = TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
+	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
+	if (is_localizing_numeral_system()) {
+		value = TS->format_number(value);
+	}
 
 	if (!line_edit->has_focus()) {
 		if (!prefix.is_empty()) {

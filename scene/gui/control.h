@@ -249,6 +249,7 @@ private:
 		bool is_rtl = false;
 
 		bool auto_translate = true;
+		bool localize_numeral_system = true;
 
 		// Extra properties.
 
@@ -594,6 +595,9 @@ public:
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	virtual bool is_layout_rtl() const;
+
+	void set_localize_numeral_system(bool p_enable);
+	bool is_localizing_numeral_system() const;
 
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;

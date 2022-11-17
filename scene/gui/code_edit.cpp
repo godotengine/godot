@@ -1425,7 +1425,10 @@ bool CodeEdit::is_line_numbers_zero_padded() const {
 }
 
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
-	String fc = TS->format_number(String::num(p_line + 1).lpad(line_number_digits, line_number_padding));
+	String fc = String::num(p_line + 1).lpad(line_number_digits, line_number_padding);
+	if (is_localizing_numeral_system()) {
+		fc = TS->format_number(fc);
+	}
 	Ref<TextLine> tl;
 	tl.instantiate();
 	tl->add_string(fc, font, font_size);
