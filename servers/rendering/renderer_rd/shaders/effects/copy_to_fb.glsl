@@ -13,6 +13,14 @@
 #endif // has_VK_KHR_multiview
 #endif //MULTIVIEW
 
+#define FLAG_FLIP_Y (1 << 0)
+#define FLAG_USE_SECTION (1 << 1)
+#define FLAG_FORCE_LUMINANCE (1 << 2)
+#define FLAG_ALPHA_TO_ZERO (1 << 3)
+#define FLAG_SRGB (1 << 4)
+#define FLAG_ALPHA_TO_ONE (1 << 5)
+#define FLAG_LINEAR (1 << 6)
+
 #ifdef MULTIVIEW
 layout(location = 0) out vec3 uv_interp;
 #else
@@ -22,13 +30,8 @@ layout(location = 0) out vec2 uv_interp;
 layout(push_constant, std430) uniform Params {
 	vec4 section;
 	vec2 pixel_size;
-	bool flip_y;
-	bool use_section;
-
-	bool force_luminance;
-	bool alpha_to_zero;
-	bool srgb;
-	bool alpha_to_one;
+	float luminance_multiplier;
+	uint flags;
 
 	vec4 color;
 }
@@ -41,13 +44,13 @@ void main() {
 	uv_interp.z = ViewIndex;
 #endif
 	vec2 vpos = uv_interp.xy;
-	if (params.use_section) {
+	if (bool(params.flags & FLAG_USE_SECTION)) {
 		vpos = params.section.xy + vpos * params.section.zw;
 	}
 
 	gl_Position = vec4(vpos * 2.0 - 1.0, 0.0, 1.0);
 
-	if (params.flip_y) {
+	if (bool(params.flags & FLAG_FLIP_Y)) {
 		uv_interp.y = 1.0 - uv_interp.y;
 	}
 }
@@ -67,16 +70,19 @@ void main() {
 #endif // has_VK_KHR_multiview
 #endif //MULTIVIEW
 
+#define FLAG_FLIP_Y (1 << 0)
+#define FLAG_USE_SECTION (1 << 1)
+#define FLAG_FORCE_LUMINANCE (1 << 2)
+#define FLAG_ALPHA_TO_ZERO (1 << 3)
+#define FLAG_SRGB (1 << 4)
+#define FLAG_ALPHA_TO_ONE (1 << 5)
+#define FLAG_LINEAR (1 << 6)
+
 layout(push_constant, std430) uniform Params {
 	vec4 section;
 	vec2 pixel_size;
-	bool flip_y;
-	bool use_section;
-
-	bool force_luminance;
-	bool alpha_to_zero;
-	bool srgb;
-	bool alpha_to_one;
+	float luminance_multiplier;
+	uint flags;
 
 	vec4 color;
 }
@@ -108,6 +114,10 @@ vec3 linear_to_srgb(vec3 color) {
 	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+}
+
+vec3 srgb_to_linear(vec3 color) {
+	return mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), lessThan(color.rgb, vec3(0.04045)));
 }
 
 void main() {
@@ -165,19 +175,22 @@ void main() {
 #endif /* MODE_TWO_SOURCES */
 #endif /* MULTIVIEW */
 
-	if (params.force_luminance) {
+	if (bool(params.flags & FLAG_FORCE_LUMINANCE)) {
 		color.rgb = vec3(max(max(color.r, color.g), color.b));
 	}
-	if (params.alpha_to_zero) {
+	if (bool(params.flags & FLAG_ALPHA_TO_ZERO)) {
 		color.rgb *= color.a;
 	}
-	if (params.srgb) {
+	if (bool(params.flags & FLAG_SRGB)) {
 		color.rgb = linear_to_srgb(color.rgb);
 	}
-	if (params.alpha_to_one) {
+	if (bool(params.flags & FLAG_ALPHA_TO_ONE)) {
 		color.a = 1.0;
 	}
+	if (bool(params.flags & FLAG_LINEAR)) {
+		color.rgb = srgb_to_linear(color.rgb);
+	}
 
-	frag_color = color;
+	frag_color = color / params.luminance_multiplier;
 #endif // MODE_SET_COLOR
 }
