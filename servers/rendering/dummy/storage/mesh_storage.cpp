@@ -56,3 +56,10 @@ void MeshStorage::mesh_free(RID p_rid) {
 
 	mesh_owner.free(p_rid);
 }
+
+void MeshStorage::mesh_clear(RID p_mesh) {
+	DummyMesh *m = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_COND(!m);
+
+	m->surfaces.clear();
+}
