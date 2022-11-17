@@ -2267,6 +2267,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_text(TTR("Drag and drop or paste a TileMap selection here to store a pattern."));
+	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 	patterns_item_list->add_child(patterns_help_label);
 
