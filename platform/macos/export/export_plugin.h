@@ -53,7 +53,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	Ref<ImageTexture> logo;
 
 	void _fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary);
-	void _make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
+	void _make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn = true);
