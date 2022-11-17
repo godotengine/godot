@@ -39,6 +39,56 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
 
+static Vector3 _get_curve_point_up_vector(const Ref<Curve3D> & c, int index, bool tilt) {
+	// TODO: Get offset in a cleaner, more direct way.
+	Vector3 pos = c->get_point_position(index);
+	real_t t = c->get_closest_offset(pos);
+	return c->sample_baked_up_vector(t, tilt);
+}
+
+static Vector3 _get_curve_point_tangent(const Ref<Curve3D> & c, int index) {
+	Vector3 pos = c->get_point_position(index);
+	real_t t = c->get_closest_offset(pos);
+
+	real_t length = c->get_baked_length();
+
+	real_t dt = c->get_bake_interval();
+
+	// Enforce sanity. get_closest_offset() is returning t > length.
+	t = CLAMP(t, 0, length);
+
+	// Accounting for missing points at the beginning and end of the curve, for points
+	// prev, pos, next: average prev->pos and pos->next to estimate the instantaneous tangent at
+	// point pos.
+
+	real_t t_prev = t - dt;
+	real_t t_next = t + dt;
+
+	Vector3 tangent = Vector3(0, 0, 0);
+
+	int n = 0;
+
+	if (t_next <= length) {
+		tangent += c->sample_baked(t_next) - pos;
+		n++;
+	}
+
+	if (t_prev >= 0) {
+		tangent -= c->sample_baked(t_prev) - pos;
+		n++;
+	}
+
+	if (n > 0) {
+		tangent /= n;
+	} else {
+		tangent = Vector3(1, 0, 0);
+	}
+
+	tangent.normalize();
+
+	return tangent;
+}
+
 static bool _is_in_handle(int p_id, int p_num_points) {
 	int t = (p_id + 1) % 2;
 	int idx = (p_id + 1) / 2;
@@ -62,6 +112,13 @@ String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 		return TTR("Curve Point #") + itos(p_id);
 	}
 
+	if (c->is_up_vector_enabled()) {
+		if (p_id < c->get_point_count()) {
+			return TTR("Up Handle #") + itos(p_id);
+		}
+		p_id -= c->get_point_count();
+	}
+
 	// (p_id + 1) Accounts for the first point only having an "out" handle
 	int idx = (p_id + 1) / 2;
 	String n = TTR("Curve Point #") + itos(idx);
@@ -83,6 +140,13 @@ Variant Path3DGizmo::get_handle_value(int p_id, bool p_secondary) const {
 	if (!p_secondary) {
 		original = c->get_point_position(p_id);
 		return original;
+	}
+
+	if (c->is_up_vector_enabled()) {
+		if (p_id < c->get_point_count()) {
+			return c->get_point_tilt(p_id);
+		}
+		p_id -= c->get_point_count();
 	}
 
 	// (p_id + 1) Accounts for the first point only having an "out" handle
@@ -128,6 +192,37 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		}
 
 		return;
+	}
+
+	if (c->is_up_vector_enabled()) {
+		if (p_id < c->get_point_count()) {
+			Vector3 position = c->get_point_position(p_id);
+			Vector3 tangent = _get_curve_point_tangent(c, p_id);
+			Vector3 up = _get_curve_point_up_vector(c, p_id, false);
+			Plane p(tangent, position);
+
+			Vector3 intersection;
+
+			if (p.intersects_ray(ray_from, ray_dir, &intersection)) {
+				Vector3 direction = intersection - position;
+				direction.normalize(); // FIXME: redundant?
+				real_t tilt_angle = up.signed_angle_to(direction, tangent);
+
+				if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+					real_t snap = Node3DEditor::get_singleton()->get_rotate_snap();
+
+					// Stolen from node_3d_editor_plugin.cpp:4578
+					tilt_angle = Math::rad_to_deg(tilt_angle) + snap * 0.5; //else it won't reach +180
+					tilt_angle -= Math::fmod(tilt_angle, snap);
+					tilt_angle = Math::deg_to_rad(tilt_angle);
+				}
+
+				c->set_point_tilt(p_id, tilt_angle);
+			}
+
+			return;
+		}
+		p_id -= c->get_point_count();
 	}
 
 	// (p_id + 1) Accounts for the first point only having an "out" handle
@@ -186,6 +281,17 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 		ur->commit_action();
 
 		return;
+	}
+
+	if (c->is_up_vector_enabled()) {
+		if (p_id < c->get_point_count()) {
+			ur->create_action(TTR("Set Curve Point Tilt"));
+			ur->add_do_method(c.ptr(), "set_point_tilt", p_id, c->get_point_tilt(p_id));
+			ur->add_undo_method(c.ptr(), "set_point_tilt", p_id, p_restore);
+			ur->commit_action();
+			return;
+		}
+		p_id -= c->get_point_count();
 	}
 
 	// (p_id + 1) Accounts for the first point only having an "out" handle
@@ -266,6 +372,21 @@ void Path3DGizmo::redraw() {
 		v3p.clear();
 		Vector<Vector3> handle_points;
 		Vector<Vector3> sec_handle_points;
+
+		// Put the tilt related handles first to massively simplify handle identification in
+		// {get,set,commit}_handle().
+		if (c->is_up_vector_enabled())
+		{
+			for (int i = 0; i < c->get_point_count(); i++) {
+				Vector3 p = c->get_point_position(i);
+				Vector3 up = _get_curve_point_up_vector(c, i, true);
+
+				v3p.push_back(p);
+				v3p.push_back(p + up);
+
+				sec_handle_points.push_back(p + up);
+			}
+		}
 
 		for (int i = 0; i < c->get_point_count(); i++) {
 			Vector3 p = c->get_point_position(i);
@@ -424,6 +545,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 				real_t dist_to_p = p_camera->unproject_position(gt.xform(c->get_point_position(i))).distance_to(mbpos);
 				real_t dist_to_p_out = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);
 				real_t dist_to_p_in = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_in(i))).distance_to(mbpos);
+				real_t dist_to_p_up = p_camera->unproject_position(gt.xform(c->get_point_position(i) + _get_curve_point_up_vector(c, i, true))).distance_to(mbpos);
 
 				// Find the offset and point index of the place to break up.
 				// Also check for the control points.
@@ -446,6 +568,13 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 					ur->create_action(TTR("Remove In-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_in", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_in", i, c->get_point_in(i));
+					ur->commit_action();
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
+				} else if (dist_to_p_up < click_dist && c->is_up_vector_enabled()) {
+					Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+					ur->create_action(TTR("Reset Point Tilt"));
+					ur->add_do_method(c.ptr(), "set_point_tilt", i, 0.0f);
+					ur->add_undo_method(c.ptr(), "set_point_tilt", i, c->get_point_tilt(i));
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
