@@ -392,7 +392,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 				plugin.onRegisterPluginWithGodotNative();
 			}
-			setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
+			setKeepScreenOn(Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
 
 			// The Godot Android plugins are setup on completion of GodotLib.setup
 			mainThreadHandler.post(() -> {
