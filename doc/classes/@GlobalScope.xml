@@ -794,14 +794,13 @@
 		</method>
 		<method name="printraw" qualifiers="vararg">
 			<description>
-				Prints one or more arguments to strings in the best way possible to console. Unlike [method print], no newline is automatically added at the end.
+				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
 				[codeblock]
 				printraw("A")
 				printraw("B")
 				printraw("C")
-				# Prints ABC
+				# Prints ABC to terminal
 				[/codeblock]
-				[b]Note:[/b] Due to limitations with Godot's built-in console, this only prints to the terminal. If you need to print in the editor, use another method, such as [method print].
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
