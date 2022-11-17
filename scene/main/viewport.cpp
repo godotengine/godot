@@ -1669,6 +1669,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			_gui_cancel_tooltip();
 
 			if (over) {
+				if (!gui.mouse_over) {
+					_drop_physics_mouseover();
+				}
 				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
 				gui.mouse_over = over;
 			}
@@ -2660,6 +2663,11 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				} else {
 					gui.subwindow_resize_mode = _sub_window_get_resize_margin(sw.window, mb->get_position());
 					if (gui.subwindow_resize_mode != SUB_WINDOW_RESIZE_DISABLED) {
+						if (gui.subwindow_focused != sw.window) {
+							// Refocus.
+							_sub_window_grab_focus(sw.window);
+						}
+
 						gui.subwindow_resize_from_rect = r;
 						gui.subwindow_drag_from = mb->get_position();
 						gui.subwindow_drag = SUB_WINDOW_DRAG_RESIZE;
@@ -3039,8 +3047,6 @@ bool Viewport::gui_is_drag_successful() const {
 }
 
 void Viewport::set_input_as_handled() {
-	_drop_physics_mouseover();
-
 	if (!handle_input_locally) {
 		ERR_FAIL_COND(!is_inside_tree());
 		Viewport *vp = this;
@@ -4159,7 +4165,7 @@ DisplayServer::WindowID SubViewport::get_window_id() const {
 }
 
 Transform2D SubViewport::_stretch_transform() {
-	Transform2D transform = Transform2D();
+	Transform2D transform;
 	Size2i view_size_2d_override = _get_size_2d_override();
 	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
 		Size2 scale = Size2(_get_size()) / Size2(view_size_2d_override);
@@ -4170,7 +4176,7 @@ Transform2D SubViewport::_stretch_transform() {
 }
 
 Transform2D SubViewport::get_screen_transform() const {
-	Transform2D container_transform = Transform2D();
+	Transform2D container_transform;
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (c) {
 		if (c->is_stretch_enabled()) {

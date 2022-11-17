@@ -108,8 +108,8 @@ public:
 		}
 
 		for (uint32_t i = 0; i < p_method_info->argument_count; i++) {
-			arguments_info.push_back(PropertyInfo(p_method_info->aguments_info[i]));
-			arguments_metadata.push_back(GodotTypeInfo::Metadata(p_method_info->aguments_metadata[i]));
+			arguments_info.push_back(PropertyInfo(p_method_info->arguments_info[i]));
+			arguments_metadata.push_back(GodotTypeInfo::Metadata(p_method_info->arguments_metadata[i]));
 		}
 
 		set_hint_flags(p_method_info->method_flags);

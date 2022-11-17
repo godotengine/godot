@@ -31,6 +31,7 @@
 #ifndef GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H
 #define GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_spin_slider.h"
 

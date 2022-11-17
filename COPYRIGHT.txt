@@ -202,6 +202,12 @@ Comment: The FreeType Project
 Copyright: 1996-2022, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
+Files: ./thirdparty/glad/
+Comment: glad
+Copyright: 2013-2022, David Herberth
+ 2013-2020, The Khronos Group Inc.
+License: CC0-1.0 and Apache-2.0
+
 Files: ./thirdparty/glslang/
 Comment: glslang
 Copyright: 2015-2020, Google, Inc.

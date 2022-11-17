@@ -213,16 +213,6 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 		return OK;
 	}
 
-	if (p_class == parser->head) {
-		if (p_class->identifier) {
-			p_class->fqcn = p_class->identifier->name;
-		} else {
-			p_class->fqcn = parser->script_path;
-		}
-	} else {
-		p_class->fqcn = p_class->outer->fqcn + "::" + String(p_class->identifier->name);
-	}
-
 	if (p_class->identifier) {
 		StringName class_name = p_class->identifier->name;
 		if (class_exists(class_name)) {

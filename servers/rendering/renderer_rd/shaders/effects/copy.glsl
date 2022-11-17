@@ -194,10 +194,10 @@ void main() {
 
 		color = min(color * feedback, vec4(params.glow_luminance_cap));
 	}
-#endif
+#endif // MODE_GLOW
 	imageStore(dest_buffer, pos + params.target, color);
 
-#endif
+#endif // MODE_GAUSSIAN_BLUR
 
 #ifdef MODE_SIMPLE_COPY
 
@@ -227,7 +227,7 @@ void main() {
 
 	imageStore(dest_buffer, pos + params.target, color);
 
-#endif
+#endif // MODE_SIMPLE_COPY
 
 #ifdef MODE_SIMPLE_COPY_DEPTH
 
@@ -239,7 +239,7 @@ void main() {
 
 	imageStore(dest_buffer, pos + params.target, vec4(color.r));
 
-#endif
+#endif // MODE_SIMPLE_COPY_DEPTH
 
 #ifdef MODE_LINEARIZE_DEPTH_COPY
 
@@ -253,7 +253,7 @@ void main() {
 	}
 
 	imageStore(dest_buffer, pos + params.target, color);
-#endif
+#endif // MODE_LINEARIZE_DEPTH_COPY
 
 #if defined(MODE_CUBEMAP_TO_PANORAMA) || defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
 
@@ -276,7 +276,7 @@ void main() {
 	vec4 color = textureLod(source_color, vec4(normal, params.camera_z_far), 0.0); //the biggest the lod the least the acne
 #endif
 	imageStore(dest_buffer, pos + params.target, color);
-#endif
+#endif // defined(MODE_CUBEMAP_TO_PANORAMA) || defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
 
 #ifdef MODE_SET_COLOR
 	imageStore(dest_buffer, pos + params.target, params.set_color);

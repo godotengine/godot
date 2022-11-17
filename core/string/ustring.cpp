@@ -2839,7 +2839,7 @@ String String::substr(int p_from, int p_chars) const {
 		return String(*this);
 	}
 
-	String s = String();
+	String s;
 	s.copy_from_unchecked(&get_data()[p_from], p_chars);
 	return s;
 }
@@ -3922,7 +3922,6 @@ String String::c_unescape() const {
 	escaped = escaped.replace("\\v", "\v");
 	escaped = escaped.replace("\\'", "\'");
 	escaped = escaped.replace("\\\"", "\"");
-	escaped = escaped.replace("\\?", "\?");
 	escaped = escaped.replace("\\\\", "\\");
 
 	return escaped;
@@ -3939,7 +3938,6 @@ String String::c_escape() const {
 	escaped = escaped.replace("\t", "\\t");
 	escaped = escaped.replace("\v", "\\v");
 	escaped = escaped.replace("\'", "\\'");
-	escaped = escaped.replace("\?", "\\?");
 	escaped = escaped.replace("\"", "\\\"");
 
 	return escaped;

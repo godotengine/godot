@@ -47,6 +47,7 @@
 #include "scene/gui/tree.h"
 
 class EditorAudioBuses;
+class EditorFileDialog;
 
 class EditorAudioBus : public PanelContainer {
 	GDCLASS(EditorAudioBus, PanelContainer);

@@ -737,18 +737,29 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	// --- Custom Data ---
 	ADD_TILE_DATA_EDITOR_GROUP("Custom Data");
 	for (int i = 0; i < tile_set->get_custom_data_layers_count(); i++) {
-		if (tile_set->get_custom_data_layer_name(i).is_empty()) {
-			ADD_TILE_DATA_EDITOR(group, vformat("Custom Data %d", i), vformat("custom_data_%d", i));
+		String editor_name = vformat("custom_data_%d", i);
+		String prop_name = tile_set->get_custom_data_layer_name(i);
+		Variant::Type prop_type = tile_set->get_custom_data_layer_type(i);
+
+		if (prop_name.is_empty()) {
+			ADD_TILE_DATA_EDITOR(group, vformat("Custom Data %d", i), editor_name);
 		} else {
-			ADD_TILE_DATA_EDITOR(group, tile_set->get_custom_data_layer_name(i), vformat("custom_data_%d", i));
+			ADD_TILE_DATA_EDITOR(group, prop_name, editor_name);
 		}
-		if (!tile_data_editors.has(vformat("custom_data_%d", i))) {
+
+		// If the type of the edited property has been changed, delete the
+		// editor and create a new one.
+		if (tile_data_editors.has(editor_name) && ((TileDataDefaultEditor *)tile_data_editors[editor_name])->get_property_type() != prop_type) {
+			tile_data_editors[vformat("custom_data_%d", i)]->queue_free();
+			tile_data_editors.erase(vformat("custom_data_%d", i));
+		}
+		if (!tile_data_editors.has(editor_name)) {
 			TileDataDefaultEditor *tile_data_custom_data_editor = memnew(TileDataDefaultEditor());
 			tile_data_custom_data_editor->hide();
-			tile_data_custom_data_editor->setup_property_editor(tile_set->get_custom_data_layer_type(i), vformat("custom_data_%d", i), tile_set->get_custom_data_layer_name(i));
+			tile_data_custom_data_editor->setup_property_editor(prop_type, editor_name, prop_name);
 			tile_data_custom_data_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
 			tile_data_custom_data_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
-			tile_data_editors[vformat("custom_data_%d", i)] = tile_data_custom_data_editor;
+			tile_data_editors[editor_name] = tile_data_custom_data_editor;
 		}
 	}
 	for (int i = tile_set->get_custom_data_layers_count(); tile_data_editors.has(vformat("custom_data_%d", i)); i++) {

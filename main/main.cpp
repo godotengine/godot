@@ -85,6 +85,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
@@ -1788,6 +1789,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_ticks_per_second",
 			PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second",
 					PROPERTY_HINT_RANGE, "1,1000,1"));
+
+	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF("physics/common/max_physics_steps_per_frame", 8));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/max_physics_steps_per_frame",
+			PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame",
+					PROPERTY_HINT_RANGE, "1,100,1"));
+
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_max_fps(GLOBAL_DEF("application/run/max_fps", 0));
 	ProjectSettings::get_singleton()->set_custom_property_info("application/run/max_fps",
@@ -1925,6 +1932,9 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
+	// Print engine name and version
+	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+
 	engine->startup_benchmark_begin_measure("servers");
 
 	tsman = memnew(TextServerManager);
@@ -1941,9 +1951,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	register_server_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
-
-	// Print engine name and version
-	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
 	if (p_main_tid_override) {
 		Thread::main_thread_id = p_main_tid_override;
@@ -3104,7 +3111,7 @@ bool Main::iteration() {
 
 	last_ticks = ticks;
 
-	static const int max_physics_steps = 8;
+	const int max_physics_steps = Engine::get_singleton()->get_max_physics_steps_per_frame();
 	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
 		process_step -= (advance.physics_steps - max_physics_steps) * physics_step;
 		advance.physics_steps = max_physics_steps;

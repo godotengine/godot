@@ -1027,6 +1027,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 				uniforms.push_back(u);
 			}
 			p_particles->collision_textures_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 2);
+			p_particles->collision_heightmap_texture = collision_heightmap_texture;
 		}
 	}
 

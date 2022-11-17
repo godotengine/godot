@@ -89,8 +89,6 @@ public:
 	virtual void particles_add_collision(RID p_particles, RID p_instance) override {}
 	virtual void particles_remove_collision(RID p_particles, RID p_instance) override {}
 
-	virtual void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) override {}
-
 	virtual void update_particles() override {}
 
 	/* PARTICLES COLLISION */
@@ -111,7 +109,6 @@ public:
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) override {}
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const override { return AABB(); }
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override { return false; }
-	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const override { return RID(); }
 
 	virtual RID particles_collision_instance_create(RID p_collision) override { return RID(); }
 	virtual void particles_collision_instance_free(RID p_rid) override {}

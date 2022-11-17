@@ -251,6 +251,8 @@ void TextureStorage::canvas_texture_free(RID p_rid) {
 
 void TextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
 	switch (p_channel) {
 		case RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
 			ct->diffuse = p_texture;
@@ -266,6 +268,8 @@ void TextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RS::Canvas
 
 void TextureStorage::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
 	ct->specular_color.r = p_specular_color.r;
 	ct->specular_color.g = p_specular_color.g;
 	ct->specular_color.b = p_specular_color.b;
@@ -274,11 +278,15 @@ void TextureStorage::canvas_texture_set_shading_parameters(RID p_canvas_texture,
 
 void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
 	ct->texture_filter = p_filter;
 }
 
 void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
 	ct->texture_repeat = p_repeat;
 }
 
@@ -647,7 +655,7 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	texture.height = p_image->get_height();
 	texture.alloc_width = texture.width;
 	texture.alloc_height = texture.height;
-	texture.mipmaps = p_image->get_mipmap_count();
+	texture.mipmaps = p_image->get_mipmap_count() + 1;
 	texture.format = p_image->get_format();
 	texture.type = Texture::TYPE_2D;
 	texture.target = GL_TEXTURE_2D;
@@ -2215,7 +2223,11 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 
 	// Load
 	CanvasSdfShaderGLES3::ShaderVariant variant = shrink ? CanvasSdfShaderGLES3::MODE_LOAD_SHRINK : CanvasSdfShaderGLES3::MODE_LOAD;
-	sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	bool success = sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	if (!success) {
+		return;
+	}
+
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::BASE_SIZE, r.size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::SIZE, size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::STRIDE, 0, sdf_shader.shader_version, variant);
@@ -2236,7 +2248,11 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 	int stride = nearest_power_of_2_templated(MAX(size.width, size.height) / 2);
 
 	variant = CanvasSdfShaderGLES3::MODE_PROCESS;
-	sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	success = sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	if (!success) {
+		return;
+	}
+
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::BASE_SIZE, r.size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::SIZE, size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::STRIDE, stride, sdf_shader.shader_version, variant);
@@ -2260,7 +2276,11 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 
 	// Store
 	variant = shrink ? CanvasSdfShaderGLES3::MODE_STORE_SHRINK : CanvasSdfShaderGLES3::MODE_STORE;
-	sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	success = sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);
+	if (!success) {
+		return;
+	}
+
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::BASE_SIZE, r.size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::SIZE, size, sdf_shader.shader_version, variant);
 	sdf_shader.shader.version_set_uniform(CanvasSdfShaderGLES3::STRIDE, stride, sdf_shader.shader_version, variant);

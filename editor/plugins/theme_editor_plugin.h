@@ -45,6 +45,8 @@
 #include "scene/resources/theme.h"
 
 class EditorFileDialog;
+class PanelContainer;
+class TabContainer;
 
 class ThemeItemImportTree : public VBoxContainer {
 	GDCLASS(ThemeItemImportTree, VBoxContainer);

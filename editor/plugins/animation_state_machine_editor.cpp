@@ -420,7 +420,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	if (mm.is_valid()) {
 		state_machine_draw->grab_focus();
 
-		String new_over_node = StringName();
+		String new_over_node;
 		int new_over_node_what = -1;
 		if (tool_select->is_pressed()) {
 			for (int i = node_rects.size() - 1; i >= 0; i--) { // Inverse to draw order.

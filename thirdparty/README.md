@@ -173,6 +173,23 @@ comments. Apply the patches in the `patches/` folder when syncing on newer upstr
 commits.
 
 
+## glad
+
+- Upstream: https://github.com/Dav1dde/glad
+- Version: 2.0.2 (f237a2bfcec0d9b82b90ec9af4af265c40de7183, 2022)
+- License: CC0 1.0 and Apache 2.0
+
+Files extracted from upstream source:
+- `LICENSE`
+
+Files generated from [upstream web instance](https://gen.glad.sh/):
+- `KHR/khrplatform.h`
+- `gl.c`
+- `glad/gl.h`
+- `glx.c`
+- `glad/glx.h`
+
+
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
@@ -290,17 +307,14 @@ Files extracted from upstream source:
 ## libtheora
 
 - Upstream: https://www.theora.org
-- Version: 1.1.1 (2010)
+- Version: git (7180717276af1ebc7da15c83162d6c5d6203aabf, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- all .c, .h in lib/
+- all .c, .h in lib/, except arm/ and c64x/ folders
 - all .h files in include/theora/ as theora/
 - COPYING and LICENSE
-
-Upstream patches included in the `patches` directory have been applied
-on top of the 1.1.1 source (not included in any stable release yet).
 
 
 ## libvorbis

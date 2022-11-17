@@ -36,6 +36,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
 #include "editor/project_settings_editor.h"
+#include "scene/gui/grid_container.h"
 
 void PluginConfigDialog::_clear_fields() {
 	name_edit->set_text("");

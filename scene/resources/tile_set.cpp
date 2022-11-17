@@ -3789,7 +3789,7 @@ Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
 	Size2i valid_area = txt->get_size() - margins;
 
 	// Compute the number of valid tiles in the tiles atlas
-	Size2i grid_size = Size2i();
+	Size2i grid_size;
 	if (valid_area.x >= texture_region_size.x && valid_area.y >= texture_region_size.y) {
 		valid_area -= texture_region_size;
 		grid_size = Size2i(1, 1) + valid_area / (texture_region_size + separation);

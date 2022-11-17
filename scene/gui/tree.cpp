@@ -4338,6 +4338,12 @@ TreeItem *Tree::get_selected() const {
 	return selected_item;
 }
 
+void Tree::set_selected(TreeItem *p_item, int p_column) {
+	ERR_FAIL_INDEX(p_column, columns.size());
+	ERR_FAIL_COND(!p_item);
+	select_single_item(p_item, get_root(), p_column);
+}
+
 int Tree::get_selected_column() const {
 	return selected_col;
 }
@@ -4547,6 +4553,7 @@ void Tree::ensure_cursor_is_visible() {
 		return; // Nothing under cursor.
 	}
 
+	// Note: Code below similar to Tree::scroll_to_item(), in case of bug fix both.
 	const Size2 area_size = get_size() - theme_cache.panel_style->get_minimum_size();
 
 	int y_offset = get_item_offset(selected_item);
@@ -4555,7 +4562,10 @@ void Tree::ensure_cursor_is_visible() {
 		y_offset -= tbh;
 
 		const int cell_h = compute_item_height(selected_item) + theme_cache.vseparation;
-		const int screen_h = area_size.height - h_scroll->get_combined_minimum_size().height - tbh;
+		int screen_h = area_size.height - tbh;
+		if (h_scroll->is_visible()) {
+			screen_h -= h_scroll->get_combined_minimum_size().height;
+		}
 
 		if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
 			v_scroll->set_value(y_offset);
@@ -4706,26 +4716,32 @@ Point2 Tree::get_scroll() const {
 
 void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 	ERR_FAIL_NULL(p_item);
-	if (!is_visible_in_tree() || !p_item->is_visible()) {
-		return; // Hack to work around crash in get_item_rect() if Tree is not in tree.
-	}
 
 	update_scrollbars();
 
-	const real_t tree_height = get_size().y;
-	const Rect2 item_rect = get_item_rect(p_item);
-	const real_t item_y = item_rect.position.y;
-	const real_t item_height = item_rect.size.y + theme_cache.vseparation;
+	// Note: Code below similar to Tree::ensure_cursor_is_visible(), in case of bug fix both.
+	const Size2 area_size = get_size() - theme_cache.panel_style->get_minimum_size();
 
-	if (p_center_on_item) {
-		v_scroll->set_value(item_y - (tree_height - item_height) / 2.0f);
-	} else {
-		if (item_y < v_scroll->get_value()) {
-			v_scroll->set_value(item_y);
+	int y_offset = get_item_offset(p_item);
+	if (y_offset != -1) {
+		const int tbh = _get_title_button_height();
+		y_offset -= tbh;
+
+		const int cell_h = compute_item_height(p_item) + theme_cache.vseparation;
+		int screen_h = area_size.height - tbh;
+		if (h_scroll->is_visible()) {
+			screen_h -= h_scroll->get_combined_minimum_size().height;
+		}
+
+		if (p_center_on_item) {
+			v_scroll->set_value(y_offset - (screen_h - cell_h) / 2.0f);
 		} else {
-			const real_t new_position = item_y + item_height - tree_height;
-			if (new_position > v_scroll->get_value()) {
-				v_scroll->set_value(new_position);
+			if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
+				v_scroll->set_value(y_offset);
+			} else if (y_offset + cell_h > v_scroll->get_value() + screen_h) {
+				v_scroll->set_value(y_offset - screen_h + cell_h);
+			} else if (y_offset < v_scroll->get_value()) {
+				v_scroll->set_value(y_offset);
 			}
 		}
 	}
@@ -5156,6 +5172,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_root_hidden"), &Tree::is_root_hidden);
 	ClassDB::bind_method(D_METHOD("get_next_selected", "from"), &Tree::get_next_selected);
 	ClassDB::bind_method(D_METHOD("get_selected"), &Tree::get_selected);
+	ClassDB::bind_method(D_METHOD("set_selected", "item", "column"), &Tree::set_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_column"), &Tree::get_selected_column);
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &Tree::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("set_select_mode", "mode"), &Tree::set_select_mode);

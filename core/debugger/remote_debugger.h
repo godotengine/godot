@@ -50,10 +50,8 @@ public:
 private:
 	typedef DebuggerMarshalls::OutputError ErrorMessage;
 
-	class MultiplayerProfiler;
 	class PerformanceProfiler;
 
-	Ref<MultiplayerProfiler> multiplayer_profiler;
 	Ref<PerformanceProfiler> performance_profiler;
 
 	Ref<RemoteDebuggerPeer> peer;

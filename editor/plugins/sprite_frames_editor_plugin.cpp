@@ -1525,7 +1525,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	_zoom_reset();
 
 	// Ensure the anim search box is wide enough by default.
-	// Not by setting its minimum size so it can still be shrinked if desired.
+	// Not by setting its minimum size so it can still be shrunk if desired.
 	set_split_offset(56 * EDSCALE);
 }
 
