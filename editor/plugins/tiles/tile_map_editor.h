@@ -48,6 +48,7 @@
 #include "scene/gui/tree.h"
 
 class EditorUndoRedoManager;
+class LineEdit;
 
 class TileMapEditorPlugin : public Object {
 public:
@@ -156,6 +157,7 @@ private:
 	Label *invalid_source_label = nullptr;
 
 	ItemList *sources_list = nullptr;
+	LineEdit *source_filter = nullptr;
 	MenuButton *source_sort_button = nullptr;
 
 	Ref<Texture2D> missing_atlas_texture_icon;

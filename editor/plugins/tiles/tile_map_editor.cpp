@@ -40,6 +40,7 @@
 
 #include "scene/2d/camera_2d.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/split_container.h"
 
 #include "core/input/input.h"
@@ -146,6 +147,8 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		old_source = -1;
 	}
 
+	String filter = source_filter->get_text();
+
 	List<int> source_ids = TilesEditorPlugin::get_singleton()->get_sorted_sources(tile_set);
 	for (const int &source_id : source_ids) {
 		TileSetSource *source = *tile_set->get_source(source_id);
@@ -186,6 +189,10 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		}
 		if (!texture.is_valid()) {
 			texture = missing_atlas_texture_icon;
+		}
+
+		if (!filter.is_empty() && !filter.is_subsequence_ofn(item_text)) {
+			continue;
 		}
 
 		sources_list->add_item(item_text, texture);
@@ -2173,7 +2180,13 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	atlas_sources_split_container->add_child(split_container_left_side);
 
 	HBoxContainer *sources_bottom_actions = memnew(HBoxContainer);
-	sources_bottom_actions->set_alignment(HBoxContainer::ALIGNMENT_END);
+
+	source_filter = memnew(LineEdit);
+	source_filter->set_placeholder(TTR("Filter Sources"));
+	source_filter->set_clear_button_enabled(true);
+	source_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	source_filter->connect("text_changed", callable_mp(this, &TileMapEditorTilesPlugin::_update_tile_set_sources_list).unbind(1));
+	sources_bottom_actions->add_child(source_filter);
 
 	source_sort_button = memnew(MenuButton);
 	source_sort_button->set_flat(true);
