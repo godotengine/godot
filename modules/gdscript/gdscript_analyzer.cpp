@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
@@ -132,7 +133,7 @@ static GDScriptParser::DataType make_builtin_meta_type(Variant::Type p_type) {
 	return type;
 }
 
-bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class) {
+bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
 	if (p_class->members_indices.has(p_member_name)) {
 		int index = p_class->members_indices[p_member_name];
 		const GDScriptParser::ClassNode::Member *member = &p_class->members[index];
@@ -143,6 +144,9 @@ bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName
 				member->type == GDScriptParser::ClassNode::Member::ENUM_VALUE ||
 				member->type == GDScriptParser::ClassNode::Member::CLASS ||
 				member->type == GDScriptParser::ClassNode::Member::SIGNAL) {
+			return true;
+		}
+		if (p_member->type != GDScriptParser::Node::FUNCTION && member->type == GDScriptParser::ClassNode::Member::FUNCTION) {
 			return true;
 		}
 	}
@@ -158,6 +162,9 @@ bool GDScriptAnalyzer::has_member_name_conflict_in_native_type(const StringName 
 		return true;
 	}
 	if (ClassDB::has_integer_constant(p_native_type_string, p_member_name)) {
+		return true;
+	}
+	if (p_member_name == CoreStringNames::get_singleton()->_script) {
 		return true;
 	}
 
@@ -187,14 +194,15 @@ Error GDScriptAnalyzer::check_class_member_name_conflict(const GDScriptParser::C
 	const GDScriptParser::DataType *current_data_type = &p_class_node->base_type;
 	while (current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::CLASS) {
 		GDScriptParser::ClassNode *current_class_node = current_data_type->class_type;
-		if (has_member_name_conflict_in_script_class(p_member_name, current_class_node)) {
-			push_error(vformat(R"(The member "%s" already exists in a parent class.)", p_member_name),
+		if (has_member_name_conflict_in_script_class(p_member_name, current_class_node, p_member_node)) {
+			push_error(vformat(R"(The member "%s" already exists in parent class %s.)", p_member_name, current_class_node->identifier->name),
 					p_member_node);
 			return ERR_PARSE_ERROR;
 		}
 		current_data_type = &current_class_node->base_type;
 	}
 
+	// No need for native class recursion because Node exposes all Object's properties.
 	if (current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::NATIVE) {
 		if (current_data_type->native_type != StringName()) {
 			return check_native_member_name_conflict(
@@ -2912,7 +2920,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		base_class = base_class->base_type.class_type;
 	}
 
-	// Check native members.
+	// Check native members. No need for native class recursion because Node exposes all Object's properties.
 	const StringName &native = base.native_type;
 
 	if (class_exists(native)) {
