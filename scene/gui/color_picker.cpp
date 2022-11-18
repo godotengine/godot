@@ -1088,7 +1088,9 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 	} else if (p_which == 1) {
 		if (actual_shape == SHAPE_HSV_RECTANGLE) {
 			Ref<Texture2D> hue = get_theme_icon(SNAME("color_hue"), SNAME("ColorPicker"));
-			c->draw_texture_rect(hue, Rect2(Point2(), c->get_size()));
+			c->draw_set_transform(Point2(), -Math_PI / 2, Size2(c->get_size().x, -c->get_size().y));
+			c->draw_texture_rect(hue, Rect2(Point2(), Size2(1, 1)));
+			c->draw_set_transform(Point2(), 0, Size2(1, 1));
 			int y = c->get_size().y - c->get_size().y * (1.0 - h);
 			Color col;
 			col.set_hsv(h, 1, 1);
