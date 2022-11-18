@@ -617,7 +617,7 @@ void Path2DEditorPlugin::make_visible(bool p_visible) {
 
 Path2DEditorPlugin::Path2DEditorPlugin() {
 	path2d_editor = memnew(Path2DEditor);
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(path2d_editor);
+	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, path2d_editor);
 	path2d_editor->hide();
 }
 

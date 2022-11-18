@@ -145,7 +145,7 @@ void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
 
 NavigationMeshEditorPlugin::NavigationMeshEditorPlugin() {
 	navigation_mesh_editor = memnew(NavigationMeshEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(navigation_mesh_editor);
+	get_editor_interface()->get_editor_main_screen()->add_child(navigation_mesh_editor);
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, navigation_mesh_editor->bake_hbox);
 	navigation_mesh_editor->hide();
 	navigation_mesh_editor->bake_hbox->hide();

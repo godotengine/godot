@@ -1124,7 +1124,7 @@ void EditorInspectorPluginSkeleton::parse_begin(Object *p_object) {
 Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
 	skeleton_plugin = memnew(EditorInspectorPluginSkeleton);
 
-	EditorInspector::add_inspector_plugin(skeleton_plugin);
+	add_inspector_plugin(skeleton_plugin);
 
 	Ref<Skeleton3DGizmoPlugin> gizmo_plugin = Ref<Skeleton3DGizmoPlugin>(memnew(Skeleton3DGizmoPlugin));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);

@@ -33,12 +33,10 @@
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/fileserver/editor_file_server.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "scene/gui/menu_button.h"
 
 DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	EditorDebuggerServer::initialize();
@@ -53,7 +51,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	file_server = memnew(EditorFileServer);
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
-	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
+	Button *db = add_control_to_bottom_panel(debugger, TTR("Debugger"));
 	// Add separation for the warning/error icon that is displayed later.
 	db->add_theme_constant_override("h_separation", 6 * EDSCALE);
 	debugger->set_tool_button(db);

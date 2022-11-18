@@ -7228,6 +7228,11 @@ EditorNode::EditorNode() {
 
 	gui_base->add_child(disk_changed);
 
+	// Add interface before adding plugins.
+
+	editor_interface = memnew(EditorInterface);
+	add_child(editor_interface);
+
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin));
 	add_editor_plugin(memnew(CanvasItemEditorPlugin));
 	add_editor_plugin(memnew(Node3DEditorPlugin));
@@ -7243,11 +7248,6 @@ EditorNode::EditorNode() {
 	} else {
 		print_verbose("Asset Library not available (due to using Web editor, or SSL support disabled).");
 	}
-
-	// Add interface before adding plugins.
-
-	editor_interface = memnew(EditorInterface);
-	add_child(editor_interface);
 
 	// More visually meaningful to have this later.
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());

@@ -1479,10 +1479,10 @@ GridMapEditorPlugin::GridMapEditorPlugin() {
 	grid_map_editor = memnew(GridMapEditor);
 	switch ((int)EDITOR_GET("editors/grid_map/editor_side")) {
 		case 0: { // Left.
-			Node3DEditor::get_singleton()->add_control_to_left_panel(grid_map_editor);
+			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, grid_map_editor);
 		} break;
 		case 1: { // Right.
-			Node3DEditor::get_singleton()->add_control_to_right_panel(grid_map_editor);
+			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, grid_map_editor);
 		} break;
 	}
 	grid_map_editor->hide();

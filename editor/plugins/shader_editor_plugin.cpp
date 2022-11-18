@@ -167,7 +167,7 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(main_split);
+		make_bottom_panel_item_visible(main_split);
 	}
 }
 
@@ -464,7 +464,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	empty.instantiate();
 	shader_tabs->add_theme_style_override("panel", empty);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), main_split);
+	button = add_control_to_bottom_panel(main_split, TTR("Shader Editor"));
 
 	// Defer connect because Editor class is not in the binding system yet.
 	EditorNode::get_singleton()->call_deferred("connect", "resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), CONNECT_DEFERRED);

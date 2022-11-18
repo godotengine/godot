@@ -616,7 +616,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 
 	sep = memnew(VSeparator);
 	sep->hide();
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(sep);
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, sep);
 
 	curve_edit = memnew(Button);
 	curve_edit->set_flat(true);
@@ -624,7 +624,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, curve_edit);
 
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);
@@ -632,7 +632,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_create->hide();
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Split Segment (in curve)"));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_create);
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, curve_create);
 
 	curve_del = memnew(Button);
 	curve_del->set_flat(true);
@@ -640,21 +640,21 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_del->hide();
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip_text(TTR("Delete Point"));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_del);
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, curve_del);
 
 	curve_close = memnew(Button);
 	curve_close->set_flat(true);
 	curve_close->hide();
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip_text(TTR("Close Curve"));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_close);
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, curve_close);
 
 	PopupMenu *menu;
 
 	handle_menu = memnew(MenuButton);
 	handle_menu->set_text(TTR("Options"));
 	handle_menu->hide();
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(handle_menu);
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, handle_menu);
 
 	menu = handle_menu->get_popup();
 	menu->add_check_item(TTR("Mirror Handle Angles"));

@@ -418,9 +418,9 @@ TilesEditorPlugin::TilesEditorPlugin() {
 	pattern_preview_thread.start(_thread_func, this);
 
 	// Bottom buttons.
-	tileset_editor_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TileSet"), tileset_editor);
+	tileset_editor_button = add_control_to_bottom_panel(tileset_editor, TTR("TileSet"));
 	tileset_editor_button->hide();
-	tilemap_editor_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TileMap"), tilemap_editor);
+	tilemap_editor_button = add_control_to_bottom_panel(tilemap_editor, TTR("TileMap"));
 	tilemap_editor_button->hide();
 
 	// Initialization.

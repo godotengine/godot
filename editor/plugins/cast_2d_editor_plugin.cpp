@@ -149,5 +149,5 @@ void Cast2DEditorPlugin::make_visible(bool p_visible) {
 
 Cast2DEditorPlugin::Cast2DEditorPlugin() {
 	cast_2d_editor = memnew(Cast2DEditor);
-	EditorNode::get_singleton()->get_gui_base()->add_child(cast_2d_editor);
+	get_editor_interface()->get_base_control()->add_child(cast_2d_editor);
 }

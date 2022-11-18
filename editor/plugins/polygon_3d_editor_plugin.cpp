@@ -602,7 +602,7 @@ void Polygon3DEditorPlugin::make_visible(bool p_visible) {
 
 Polygon3DEditorPlugin::Polygon3DEditorPlugin() {
 	polygon_editor = memnew(Polygon3DEditor);
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, polygon_editor);
 
 	polygon_editor->hide();
 }

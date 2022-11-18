@@ -30,7 +30,6 @@
 
 #include "curve_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"

@@ -8758,7 +8758,7 @@ void Node3DEditor::remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
 Node3DEditorPlugin::Node3DEditorPlugin() {
 	spatial_editor = memnew(Node3DEditor);
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(spatial_editor);
+	get_editor_interface()->get_editor_main_screen()->add_child(spatial_editor);
 
 	spatial_editor->hide();
 }

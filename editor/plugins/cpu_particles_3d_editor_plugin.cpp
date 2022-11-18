@@ -30,7 +30,6 @@
 
 #include "cpu_particles_3d_editor_plugin.h"
 
-#include "editor/editor_node.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/menu_button.h"
@@ -126,7 +125,7 @@ void CPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 
 CPUParticles3DEditorPlugin::CPUParticles3DEditorPlugin() {
 	particles_editor = memnew(CPUParticles3DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(particles_editor);
+	get_editor_interface()->get_editor_main_screen()->add_child(particles_editor);
 
 	particles_editor->hide();
 }
