@@ -161,6 +161,18 @@ bool CharString::operator<(const CharString &p_right) const {
 	return is_str_less(get_data(), p_right.get_data());
 }
 
+bool CharString::operator==(const CharString &p_right) const {
+	if (length() == 0) {
+		// True if both have length 0, false if only p_right has a length
+		return p_right.length() == 0;
+	} else if (p_right.length() == 0) {
+		// False due to unequal length
+		return false;
+	}
+
+	return strcmp(ptr(), p_right.ptr()) == 0;
+}
+
 CharString &CharString::operator+=(char p_char) {
 	const int lhs_len = length();
 	resize(lhs_len + 2);

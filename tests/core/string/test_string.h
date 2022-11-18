@@ -226,6 +226,12 @@ TEST_CASE("[String] Comparisons (equal)") {
 	CHECK(s == U"Test Compare");
 	CHECK(s == L"Test Compare");
 	CHECK(s == String("Test Compare"));
+
+	CharString empty = "";
+	CharString cs = "Test Compare";
+	CHECK(!(empty == cs));
+	CHECK(!(cs == empty));
+	CHECK(cs == CharString("Test Compare"));
 }
 
 TEST_CASE("[String] Comparisons (not equal)") {
