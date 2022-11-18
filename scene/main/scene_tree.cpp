@@ -1450,7 +1450,7 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vrs/texture",
 			PropertyInfo(Variant::STRING,
 					"rendering/vrs/texture",
-					PROPERTY_HINT_FILE, "*.png"));
+					PROPERTY_HINT_FILE, "*.bmp,*.png,*.tga,*.webp"));
 	if (vrs_mode == 1 && !vrs_texture_path.is_empty()) {
 		Ref<Image> vrs_image;
 		vrs_image.instantiate();

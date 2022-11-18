@@ -2265,7 +2265,20 @@
 			Set the default Variable Rate Shading (VRS) mode for the main viewport. See [member Viewport.vrs_mode] to change this at runtime, and [enum Viewport.VRSMode] for possible values.
 		</member>
 		<member name="rendering/vrs/texture" type="String" setter="" getter="" default="&quot;&quot;">
-			If [member rendering/vrs/mode] is set to texture, this is the path to default texture loaded as the VRS image.
+			If [member rendering/vrs/mode] is set to [b]Texture[/b], this is the path to default texture loaded as the VRS image.
+			The texture [i]must[/i] use a lossless compression format so that colors can be matched precisely. The following VRS densities are mapped to various colors, with brighter colors representing a lower level of shading precision:
+			[codeblock]
+			- 1x1 = rgb(0, 0, 0)     - #000000
+			- 1x2 = rgb(0, 85, 0)    - #005500
+			- 2x1 = rgb(85, 0, 0)    - #550000
+			- 2x2 = rgb(85, 85, 0)   - #555500
+			- 2x4 = rgb(85, 170, 0)  - #55aa00
+			- 4x2 = rgb(170, 85, 0)  - #aa5500
+			- 4x4 = rgb(170, 170, 0) - #aaaa00
+			- 4x8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
+			- 8x4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
+			- 8x8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
+			[/codeblock]
 		</member>
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
 		</member>
