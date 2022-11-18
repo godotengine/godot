@@ -384,8 +384,11 @@
 		<method name="get_path_to" qualifiers="const">
 			<return type="NodePath" />
 			<param index="0" name="node" type="Node" />
+			<param index="1" name="use_unique_path" type="bool" default="false" />
 			<description>
 				Returns the relative [NodePath] from this node to the specified [param node]. Both nodes must be in the same scene or the function will fail.
+				If [param use_unique_path] is [code]true[/code], returns the shortest path considering unique node.
+				[b]Note:[/b] If you get a relative path which starts from a unique node, the path may be longer than a normal relative path due to the addition of the unique node's name.
 			</description>
 		</method>
 		<method name="get_physics_process_delta_time" qualifiers="const">

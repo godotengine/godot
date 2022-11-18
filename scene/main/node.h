@@ -331,7 +331,7 @@ public:
 	bool is_greater_than(const Node *p_node) const;
 
 	NodePath get_path() const;
-	NodePath get_path_to(const Node *p_node) const;
+	NodePath get_path_to(const Node *p_node, bool p_use_unique_path = false) const;
 	Node *find_common_parent_with(const Node *p_node) const;
 
 	void add_to_group(const StringName &p_identifier, bool p_persistent = false);

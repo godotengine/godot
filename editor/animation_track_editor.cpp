@@ -3849,7 +3849,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	}
 
 	// Let's build a node path.
-	String path = root->get_path_to(p_node);
+	String path = root->get_path_to(p_node, true);
 	if (!p_sub.is_empty()) {
 		path += ":" + p_sub;
 	}
@@ -3889,7 +3889,7 @@ bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const 
 	}
 
 	// Let's build a node path.
-	String path = root->get_path_to(p_node);
+	String path = root->get_path_to(p_node, true);
 	if (!p_sub.is_empty()) {
 		path += ":" + p_sub;
 	}
@@ -3937,11 +3937,10 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 
 void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists) {
 	ERR_FAIL_COND(!root);
+
 	// Let's build a node path.
-
 	Node *node = p_node;
-
-	String path = root->get_path_to(node);
+	String path = root->get_path_to(node, true);
 
 	if (Object::cast_to<AnimationPlayer>(node) && p_property == "current_animation") {
 		if (node == AnimationPlayerEditor::get_singleton()->get_player()) {
@@ -4035,14 +4034,13 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
 
 	ERR_FAIL_COND(!root);
-	// Let's build a node path.
 	ERR_FAIL_COND(history->get_path_size() == 0);
 	Object *obj = ObjectDB::get_instance(history->get_path_object(0));
 	ERR_FAIL_COND(!Object::cast_to<Node>(obj));
 
+	// Let's build a node path.
 	Node *node = Object::cast_to<Node>(obj);
-
-	String path = root->get_path_to(node);
+	String path = root->get_path_to(node, true);
 
 	if (Object::cast_to<AnimationPlayer>(node) && p_property == "current_animation") {
 		if (node == AnimationPlayerEditor::get_singleton()->get_player()) {
@@ -4826,7 +4824,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	ERR_FAIL_COND(!root);
 	Node *node = get_node(p_path);
 	ERR_FAIL_COND(!node);
-	NodePath path_to = root->get_path_to(node);
+	NodePath path_to = root->get_path_to(node, true);
 
 	if (adding_track_type == Animation::TYPE_BLEND_SHAPE && !node->is_class("MeshInstance3D")) {
 		EditorNode::get_singleton()->show_warning(TTR("Blend Shape tracks only apply to MeshInstance3D nodes."));
