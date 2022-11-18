@@ -1660,7 +1660,7 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 	return const_cast<Node *>(common_parent);
 }
 
-NodePath Node::get_path_to(const Node *p_node) const {
+NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 	ERR_FAIL_NULL_V(p_node, NodePath());
 
 	if (this == p_node) {
@@ -1690,20 +1690,58 @@ NodePath Node::get_path_to(const Node *p_node) const {
 	visited.clear();
 
 	Vector<StringName> path;
-
-	n = p_node;
-
-	while (n != common_parent) {
-		path.push_back(n->get_name());
-		n = n->data.parent;
-	}
-
-	n = this;
 	StringName up = String("..");
 
-	while (n != common_parent) {
-		path.push_back(up);
-		n = n->data.parent;
+	if (p_use_unique_path) {
+		n = p_node;
+
+		bool is_detected = false;
+		while (n != common_parent) {
+			if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
+				path.push_back(UNIQUE_NODE_PREFIX + String(n->get_name()));
+				is_detected = true;
+				break;
+			}
+			path.push_back(n->get_name());
+			n = n->data.parent;
+		}
+
+		if (!is_detected) {
+			n = this;
+
+			String detected_name;
+			int up_count = 0;
+			while (n != common_parent) {
+				if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
+					detected_name = n->get_name();
+					up_count = 0;
+				}
+				up_count++;
+				n = n->data.parent;
+			}
+
+			for (int i = 0; i < up_count; i++) {
+				path.push_back(up);
+			}
+
+			if (!detected_name.is_empty()) {
+				path.push_back(UNIQUE_NODE_PREFIX + detected_name);
+			}
+		}
+	} else {
+		n = p_node;
+
+		while (n != common_parent) {
+			path.push_back(n->get_name());
+			n = n->data.parent;
+		}
+
+		n = this;
+
+		while (n != common_parent) {
+			path.push_back(up);
+			n = n->data.parent;
+		}
 	}
 
 	path.reverse();
@@ -2768,7 +2806,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_ancestor_of", "node"), &Node::is_ancestor_of);
 	ClassDB::bind_method(D_METHOD("is_greater_than", "node"), &Node::is_greater_than);
 	ClassDB::bind_method(D_METHOD("get_path"), &Node::get_path);
-	ClassDB::bind_method(D_METHOD("get_path_to", "node"), &Node::get_path_to);
+	ClassDB::bind_method(D_METHOD("get_path_to", "node", "use_unique_path"), &Node::get_path_to, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_from_group", "group"), &Node::remove_from_group);
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
