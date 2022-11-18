@@ -30,6 +30,72 @@
 
 #include "editor/event_listener_line_edit.h"
 
+#include "core/input/input_map.h"
+
+// Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
+static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
+	TTRC("Left Stick Left, Joystick 0 Left"),
+	TTRC("Left Stick Right, Joystick 0 Right"),
+	TTRC("Left Stick Up, Joystick 0 Up"),
+	TTRC("Left Stick Down, Joystick 0 Down"),
+	TTRC("Right Stick Left, Joystick 1 Left"),
+	TTRC("Right Stick Right, Joystick 1 Right"),
+	TTRC("Right Stick Up, Joystick 1 Up"),
+	TTRC("Right Stick Down, Joystick 1 Down"),
+	TTRC("Joystick 2 Left"),
+	TTRC("Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"),
+	TTRC("Joystick 2 Up"),
+	TTRC("Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"),
+	TTRC("Joystick 3 Left"),
+	TTRC("Joystick 3 Right"),
+	TTRC("Joystick 3 Up"),
+	TTRC("Joystick 3 Down"),
+	TTRC("Joystick 4 Left"),
+	TTRC("Joystick 4 Right"),
+	TTRC("Joystick 4 Up"),
+	TTRC("Joystick 4 Down"),
+};
+
+String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, bool p_include_device) {
+	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Provided event is not a valid instance of InputEvent");
+
+	String text = p_event->as_text();
+
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_command_or_control_autoremap()) {
+#ifdef MACOS_ENABLED
+		text = text.replace("Command", "Command/Ctrl");
+#else
+		text = text.replace("Ctrl", "Command/Ctrl");
+#endif
+	}
+	Ref<InputEventMouse> mouse = p_event;
+	Ref<InputEventJoypadMotion> jp_motion = p_event;
+	Ref<InputEventJoypadButton> jp_button = p_event;
+	if (jp_motion.is_valid()) {
+		// Joypad motion events will display slightly differently than what the event->as_text() provides. See #43660.
+		String desc = TTR("Unknown Joypad Axis");
+		if (jp_motion->get_axis() < JoyAxis::MAX) {
+			desc = RTR(_joy_axis_descriptions[2 * (size_t)jp_motion->get_axis() + (jp_motion->get_axis_value() < 0 ? 0 : 1)]);
+		}
+
+		text = vformat("Joypad Axis %s %s (%s)", itos((int64_t)jp_motion->get_axis()), jp_motion->get_axis_value() < 0 ? "-" : "+", desc);
+	}
+	if (p_include_device && (mouse.is_valid() || jp_button.is_valid() || jp_motion.is_valid())) {
+		String device_string = get_device_string(p_event->get_device());
+		text += vformat(" - %s", device_string);
+	}
+
+	return text;
+}
+
+String EventListenerLineEdit::get_device_string(int p_device) {
+	if (p_device == InputMap::ALL_DEVICES) {
+		return TTR("All Devices");
+	}
+	return TTR("Device") + " " + itos(p_device);
+}
+
 bool EventListenerLineEdit::_is_event_allowed(const Ref<InputEvent> &p_event) const {
 	const Ref<InputEventMouseButton> mb = p_event;
 	const Ref<InputEventKey> k = p_event;
@@ -71,7 +137,7 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	event = p_event;
-	set_text(event->as_text());
+	set_text(get_event_text(event, false));
 	emit_signal("event_changed", event);
 }
 

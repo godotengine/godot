@@ -38,63 +38,6 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
-// Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
-static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
-	TTRC("Left Stick Left, Joystick 0 Left"),
-	TTRC("Left Stick Right, Joystick 0 Right"),
-	TTRC("Left Stick Up, Joystick 0 Up"),
-	TTRC("Left Stick Down, Joystick 0 Down"),
-	TTRC("Right Stick Left, Joystick 1 Left"),
-	TTRC("Right Stick Right, Joystick 1 Right"),
-	TTRC("Right Stick Up, Joystick 1 Up"),
-	TTRC("Right Stick Down, Joystick 1 Down"),
-	TTRC("Joystick 2 Left"),
-	TTRC("Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"),
-	TTRC("Joystick 2 Up"),
-	TTRC("Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"),
-	TTRC("Joystick 3 Left"),
-	TTRC("Joystick 3 Right"),
-	TTRC("Joystick 3 Up"),
-	TTRC("Joystick 3 Down"),
-	TTRC("Joystick 4 Left"),
-	TTRC("Joystick 4 Right"),
-	TTRC("Joystick 4 Up"),
-	TTRC("Joystick 4 Down"),
-};
-
-String InputEventConfigurationDialog::get_event_text(const Ref<InputEvent> &p_event, bool p_include_device) const {
-	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Provided event is not a valid instance of InputEvent");
-
-	String text = p_event->as_text();
-
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_command_or_control_autoremap()) {
-#ifdef MACOS_ENABLED
-		text = text.replace("Command", "Command/Ctrl");
-#else
-		text = text.replace("Ctrl", "Command/Ctrl");
-#endif
-	}
-	Ref<InputEventMouse> mouse = p_event;
-	Ref<InputEventJoypadMotion> jp_motion = p_event;
-	Ref<InputEventJoypadButton> jp_button = p_event;
-	if (jp_motion.is_valid()) {
-		// Joypad motion events will display slightly differently than what the event->as_text() provides. See #43660.
-		String desc = TTR("Unknown Joypad Axis");
-		if (jp_motion->get_axis() < JoyAxis::MAX) {
-			desc = RTR(_joy_axis_descriptions[2 * (size_t)jp_motion->get_axis() + (jp_motion->get_axis_value() < 0 ? 0 : 1)]);
-		}
-
-		text = vformat("Joypad Axis %s %s (%s)", itos((int64_t)jp_motion->get_axis()), jp_motion->get_axis_value() < 0 ? "-" : "+", desc);
-	}
-	if (p_include_device && (mouse.is_valid() || jp_button.is_valid() || jp_motion.is_valid())) {
-		String device_string = _get_device_string(p_event->get_device());
-		text += vformat(" - %s", device_string);
-	}
-
-	return text;
-}
-
 void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, bool p_update_input_list_selection) {
 	if (p_event.is_valid()) {
 		event = p_event;
@@ -107,7 +50,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 		}
 
 		// Update Label
-		event_as_text->set_text(get_event_text(event, true));
+		event_as_text->set_text(EventListenerLineEdit::get_event_text(event, true));
 
 		Ref<InputEventKey> k = p_event;
 		Ref<InputEventMouseButton> mb = p_event;
@@ -222,14 +165,7 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 	}
 
 	if (joym.is_valid()) {
-		float axis_value = joym->get_axis_value();
-		if (ABS(axis_value) < 0.9) {
-			// Ignore motion below 0.9 magnitude to avoid accidental touches
-			return;
-		} else {
-			// Always make the value 1 or -1 for display consistency
-			joym->set_axis_value(SIGN(axis_value));
-		}
+		joym->set_axis_value(SIGN(joym->get_axis_value()));
 	}
 
 	if (k.is_valid()) {
@@ -305,7 +241,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
 			mb->set_button_index(mouse_buttons[i]);
-			String desc = get_event_text(mb, false);
+			String desc = EventListenerLineEdit::get_event_text(mb, false);
 
 			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
 				continue;
@@ -328,7 +264,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			Ref<InputEventJoypadButton> joyb;
 			joyb.instantiate();
 			joyb->set_button_index((JoyButton)i);
-			String desc = get_event_text(joyb, false);
+			String desc = EventListenerLineEdit::get_event_text(joyb, false);
 
 			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
 				continue;
@@ -354,7 +290,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joym.instantiate();
 			joym->set_axis((JoyAxis)axis);
 			joym->set_axis_value(direction);
-			String desc = get_event_text(joym, false);
+			String desc = EventListenerLineEdit::get_event_text(joym, false);
 
 			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
 				continue;
@@ -513,7 +449,7 @@ void InputEventConfigurationDialog::_device_selection_changed(int p_option_butto
 	// Subtract 1 as option index 0 corresponds to "All Devices" (value of -1)
 	// and option index 1 corresponds to device 0, etc...
 	event->set_device(p_option_button_index - 1);
-	event_as_text->set_text(get_event_text(event, true));
+	event_as_text->set_text(EventListenerLineEdit::get_event_text(event, true));
 }
 
 void InputEventConfigurationDialog::_set_current_device(int p_device) {
@@ -522,13 +458,6 @@ void InputEventConfigurationDialog::_set_current_device(int p_device) {
 
 int InputEventConfigurationDialog::_get_current_device() const {
 	return device_id_option->get_selected() - 1;
-}
-
-String InputEventConfigurationDialog::_get_device_string(int p_device) const {
-	if (p_device == InputMap::ALL_DEVICES) {
-		return TTR("All Devices");
-	}
-	return TTR("Device") + " " + itos(p_device);
 }
 
 void InputEventConfigurationDialog::_notification(int p_what) {
@@ -659,7 +588,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	device_id_option = memnew(OptionButton);
 	device_id_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	for (int i = -1; i < 8; i++) {
-		device_id_option->add_item(_get_device_string(i));
+		device_id_option->add_item(EventListenerLineEdit::get_device_string(i));
 	}
 	device_id_option->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
 	_set_current_device(InputMap::ALL_DEVICES);
