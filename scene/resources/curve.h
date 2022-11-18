@@ -218,6 +218,7 @@ public:
 	Vector2 sample_baked(real_t p_offset, bool p_cubic = false) const;
 	Transform2D sample_baked_with_rotation(real_t p_offset, bool p_cubic = false, bool p_loop = true, real_t p_lookahead = 4.0) const;
 	PackedVector2Array get_baked_points() const; //useful for going through
+	Vector2 get_baked_closest_point(const Vector2 &p_to_point) const;
 	Vector2 get_closest_point(const Vector2 &p_to_point) const;
 	real_t get_closest_offset(const Vector2 &p_to_point) const;
 
@@ -301,6 +302,7 @@ public:
 	PackedVector3Array get_baked_points() const; //useful for going through
 	Vector<real_t> get_baked_tilts() const; //useful for going through
 	PackedVector3Array get_baked_up_vectors() const;
+	Vector3 get_baked_closest_point(const Vector3 &p_to_point) const;
 	Vector3 get_closest_point(const Vector3 &p_to_point) const;
 	real_t get_closest_offset(const Vector3 &p_to_point) const;
 
