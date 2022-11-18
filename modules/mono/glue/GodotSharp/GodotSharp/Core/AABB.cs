@@ -20,7 +20,7 @@ namespace Godot
         /// <value>Directly uses a private field.</value>
         public Vector3 Position
         {
-            get { return _position; }
+            readonly get { return _position; }
             set { _position = value; }
         }
 
@@ -31,7 +31,7 @@ namespace Godot
         /// <value>Directly uses a private field.</value>
         public Vector3 Size
         {
-            get { return _size; }
+            readonly get { return _size; }
             set { _size = value; }
         }
 
@@ -45,7 +45,7 @@ namespace Godot
         /// </value>
         public Vector3 End
         {
-            get { return _position + _size; }
+            readonly get { return _position + _size; }
             set { _size = value - _position; }
         }
 
@@ -54,7 +54,7 @@ namespace Godot
         /// the most-negative corner is the origin and the size is positive.
         /// </summary>
         /// <returns>The modified <see cref="AABB"/>.</returns>
-        public AABB Abs()
+        public readonly AABB Abs()
         {
             Vector3 end = End;
             Vector3 topLeft = new Vector3(Mathf.Min(_position.x, end.x), Mathf.Min(_position.y, end.y), Mathf.Min(_position.z, end.z));
@@ -66,7 +66,7 @@ namespace Godot
         /// to <see cref="Position"/> + (<see cref="Size"/> / 2).
         /// </summary>
         /// <returns>The center.</returns>
-        public Vector3 GetCenter()
+        public readonly Vector3 GetCenter()
         {
             return _position + (_size * 0.5f);
         }
@@ -78,7 +78,7 @@ namespace Godot
         /// <returns>
         /// A <see langword="bool"/> for whether or not this <see cref="AABB"/> encloses <paramref name="with"/>.
         /// </returns>
-        public bool Encloses(AABB with)
+        public readonly bool Encloses(AABB with)
         {
             Vector3 srcMin = _position;
             Vector3 srcMax = _position + _size;
@@ -98,7 +98,7 @@ namespace Godot
         /// </summary>
         /// <param name="point">The point to include.</param>
         /// <returns>The expanded <see cref="AABB"/>.</returns>
-        public AABB Expand(Vector3 point)
+        public readonly AABB Expand(Vector3 point)
         {
             Vector3 begin = _position;
             Vector3 end = _position + _size;
@@ -140,7 +140,7 @@ namespace Godot
         /// <paramref name="idx"/> is less than 0 or greater than 7.
         /// </exception>
         /// <returns>An endpoint of the <see cref="AABB"/>.</returns>
-        public Vector3 GetEndpoint(int idx)
+        public readonly Vector3 GetEndpoint(int idx)
         {
             switch (idx)
             {
@@ -172,7 +172,7 @@ namespace Godot
         /// Returns the normalized longest axis of the <see cref="AABB"/>.
         /// </summary>
         /// <returns>A vector representing the normalized longest axis of the <see cref="AABB"/>.</returns>
-        public Vector3 GetLongestAxis()
+        public readonly Vector3 GetLongestAxis()
         {
             var axis = new Vector3(1f, 0f, 0f);
             real_t maxSize = _size.x;
@@ -195,7 +195,7 @@ namespace Godot
         /// Returns the <see cref="Vector3.Axis"/> index of the longest axis of the <see cref="AABB"/>.
         /// </summary>
         /// <returns>A <see cref="Vector3.Axis"/> index for which axis is longest.</returns>
-        public Vector3.Axis GetLongestAxisIndex()
+        public readonly Vector3.Axis GetLongestAxisIndex()
         {
             var axis = Vector3.Axis.X;
             real_t maxSize = _size.x;
@@ -218,7 +218,7 @@ namespace Godot
         /// Returns the scalar length of the longest axis of the <see cref="AABB"/>.
         /// </summary>
         /// <returns>The scalar length of the longest axis of the <see cref="AABB"/>.</returns>
-        public real_t GetLongestAxisSize()
+        public readonly real_t GetLongestAxisSize()
         {
             real_t maxSize = _size.x;
 
@@ -235,7 +235,7 @@ namespace Godot
         /// Returns the normalized shortest axis of the <see cref="AABB"/>.
         /// </summary>
         /// <returns>A vector representing the normalized shortest axis of the <see cref="AABB"/>.</returns>
-        public Vector3 GetShortestAxis()
+        public readonly Vector3 GetShortestAxis()
         {
             var axis = new Vector3(1f, 0f, 0f);
             real_t maxSize = _size.x;
@@ -258,7 +258,7 @@ namespace Godot
         /// Returns the <see cref="Vector3.Axis"/> index of the shortest axis of the <see cref="AABB"/>.
         /// </summary>
         /// <returns>A <see cref="Vector3.Axis"/> index for which axis is shortest.</returns>
-        public Vector3.Axis GetShortestAxisIndex()
+        public readonly Vector3.Axis GetShortestAxisIndex()
         {
             var axis = Vector3.Axis.X;
             real_t maxSize = _size.x;
@@ -281,7 +281,7 @@ namespace Godot
         /// Returns the scalar length of the shortest axis of the <see cref="AABB"/>.
         /// </summary>
         /// <returns>The scalar length of the shortest axis of the <see cref="AABB"/>.</returns>
-        public real_t GetShortestAxisSize()
+        public readonly real_t GetShortestAxisSize()
         {
             real_t maxSize = _size.x;
 
@@ -300,7 +300,7 @@ namespace Godot
         /// </summary>
         /// <param name="dir">The direction to find support for.</param>
         /// <returns>A vector representing the support.</returns>
-        public Vector3 GetSupport(Vector3 dir)
+        public readonly Vector3 GetSupport(Vector3 dir)
         {
             Vector3 halfExtents = _size * 0.5f;
             Vector3 ofs = _position + halfExtents;
@@ -315,7 +315,7 @@ namespace Godot
         /// Returns the volume of the <see cref="AABB"/>.
         /// </summary>
         /// <returns>The volume.</returns>
-        public real_t GetVolume()
+        public readonly real_t GetVolume()
         {
             return _size.x * _size.y * _size.z;
         }
@@ -325,7 +325,7 @@ namespace Godot
         /// </summary>
         /// <param name="by">The amount to grow by.</param>
         /// <returns>The grown <see cref="AABB"/>.</returns>
-        public AABB Grow(real_t by)
+        public readonly AABB Grow(real_t by)
         {
             AABB res = this;
 
@@ -347,7 +347,7 @@ namespace Godot
         /// <returns>
         /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> contains <paramref name="point"/>.
         /// </returns>
-        public bool HasPoint(Vector3 point)
+        public readonly bool HasPoint(Vector3 point)
         {
             if (point.x < _position.x)
                 return false;
@@ -374,7 +374,7 @@ namespace Godot
         /// <returns>
         /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> has surface.
         /// </returns>
-        public bool HasSurface()
+        public readonly bool HasSurface()
         {
             return _size.x > 0.0f || _size.y > 0.0f || _size.z > 0.0f;
         }
@@ -388,7 +388,7 @@ namespace Godot
         /// <returns>
         /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> has volume.
         /// </returns>
-        public bool HasVolume()
+        public readonly bool HasVolume()
         {
             return _size.x > 0.0f && _size.y > 0.0f && _size.z > 0.0f;
         }
@@ -398,7 +398,7 @@ namespace Godot
         /// </summary>
         /// <param name="with">The other <see cref="AABB"/>.</param>
         /// <returns>The clipped <see cref="AABB"/>.</returns>
-        public AABB Intersection(AABB with)
+        public readonly AABB Intersection(AABB with)
         {
             Vector3 srcMin = _position;
             Vector3 srcMax = _position + _size;
@@ -447,7 +447,7 @@ namespace Godot
         /// <returns>
         /// A <see langword="bool"/> for whether or not they are intersecting.
         /// </returns>
-        public bool Intersects(AABB with, bool includeBorders = false)
+        public readonly bool Intersects(AABB with, bool includeBorders = false)
         {
             if (includeBorders)
             {
@@ -490,7 +490,7 @@ namespace Godot
         /// <returns>
         /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> intersects the <see cref="Plane"/>.
         /// </returns>
-        public bool IntersectsPlane(Plane plane)
+        public readonly bool IntersectsPlane(Plane plane)
         {
             Vector3[] points =
             {
@@ -531,7 +531,7 @@ namespace Godot
         /// <returns>
         /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> intersects the line segment.
         /// </returns>
-        public bool IntersectsSegment(Vector3 from, Vector3 to)
+        public readonly bool IntersectsSegment(Vector3 from, Vector3 to)
         {
             real_t min = 0f;
             real_t max = 1f;
@@ -590,7 +590,7 @@ namespace Godot
         /// </summary>
         /// <param name="with">The other <see cref="AABB"/>.</param>
         /// <returns>The merged <see cref="AABB"/>.</returns>
-        public AABB Merge(AABB with)
+        public readonly AABB Merge(AABB with)
         {
             Vector3 beg1 = _position;
             Vector3 beg2 = with._position;
@@ -702,7 +702,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the AABB and the object are equal.</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is AABB other && Equals(other);
         }
@@ -714,7 +714,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other AABB.</param>
         /// <returns>Whether or not the AABBs are exactly equal.</returns>
-        public bool Equals(AABB other)
+        public readonly bool Equals(AABB other)
         {
             return _position == other._position && _size == other._size;
         }
@@ -725,7 +725,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other AABB to compare.</param>
         /// <returns>Whether or not the AABBs structures are approximately equal.</returns>
-        public bool IsEqualApprox(AABB other)
+        public readonly bool IsEqualApprox(AABB other)
         {
             return _position.IsEqualApprox(other._position) && _size.IsEqualApprox(other._size);
         }
@@ -734,7 +734,7 @@ namespace Godot
         /// Serves as the hash function for <see cref="AABB"/>.
         /// </summary>
         /// <returns>A hash code for this AABB.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return _position.GetHashCode() ^ _size.GetHashCode();
         }
@@ -743,7 +743,7 @@ namespace Godot
         /// Converts this <see cref="AABB"/> to a string.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"{_position}, {_size}";
         }
@@ -752,7 +752,7 @@ namespace Godot
         /// Converts this <see cref="AABB"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public string ToString(string format)
+        public readonly string ToString(string format)
         {
             return $"{_position.ToString(format)}, {_size.ToString(format)}";
         }
