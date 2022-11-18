@@ -197,6 +197,60 @@ NodePath MultiNodeEdit::get_node(int p_index) const {
 	return nodes[p_index];
 }
 
+StringName MultiNodeEdit::get_edited_class_name() const {
+	Node *es = EditorNode::get_singleton()->get_edited_scene();
+	if (!es) {
+		return StringName("Node");
+	}
+
+	// Get the class name of the first node.
+	StringName class_name;
+	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
+		Node *node = es->get_node_or_null(E->get());
+		if (!node) {
+			continue;
+		}
+
+		class_name = node->get_class_name();
+		break;
+	}
+
+	if (class_name == StringName()) {
+		return StringName("Node");
+	}
+
+	bool check_again = true;
+	while (check_again) {
+		check_again = false;
+
+		if (class_name == StringName("Node") || class_name == StringName()) {
+			// All nodes inherit from Node, so no need to continue checking.
+			return StringName("Node");
+		}
+
+		// Check that all nodes inherit from class_name.
+		for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
+			Node *node = es->get_node_or_null(E->get());
+			if (!node) {
+				continue;
+			}
+
+			const StringName node_class_name = node->get_class_name();
+			if (class_name == node_class_name || ClassDB::is_parent_class(node_class_name, class_name)) {
+				// class_name is the same or a parent of the node's class.
+				continue;
+			}
+
+			// class_name is not a parent of the node's class, so check again with the parent class.
+			class_name = ClassDB::get_parent_class(class_name);
+			check_again = true;
+			break;
+		}
+	}
+
+	return class_name;
+}
+
 void MultiNodeEdit::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
 	_set_impl(p_property, p_value, p_field);
 }

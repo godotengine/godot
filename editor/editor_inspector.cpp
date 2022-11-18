@@ -1655,7 +1655,10 @@ void EditorInspector::update_tree() {
 			StringName classname = object->get_class_name();
 			if (object_class != String()) {
 				classname = object_class;
+			} else if (Object::cast_to<MultiNodeEdit>(object)) {
+				classname = Object::cast_to<MultiNodeEdit>(object)->get_edited_class_name();
 			}
+
 			StringName propname = property_prefix + p.name;
 			String descr;
 			bool found = false;
