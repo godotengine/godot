@@ -40,12 +40,12 @@
 #endif
 
 #ifdef DEBUG_ENABLED
-void SceneMultiplayer::profile_bandwidth(const String &p_inout, int p_size) {
+_FORCE_INLINE_ void SceneMultiplayer::_profile_bandwidth(const String &p_what, int p_value) {
 	if (EngineDebugger::is_profiling("multiplayer")) {
 		Array values;
-		values.push_back(p_inout);
+		values.push_back(p_what);
 		values.push_back(OS::get_singleton()->get_ticks_msec());
-		values.push_back(p_size);
+		values.push_back(p_value);
 		EngineDebugger::profiler_add_frame_data("multiplayer", values);
 	}
 }
@@ -90,6 +90,10 @@ Error SceneMultiplayer::poll() {
 
 		Error err = multiplayer_peer->get_packet(&packet, len);
 		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error getting packet! %d", err));
+
+#ifdef DEBUG_ENABLED
+		_profile_bandwidth("in", len);
+#endif
 
 		if (pending_peers.has(sender)) {
 			if (pending_peers[sender].local) {
@@ -220,10 +224,6 @@ void SceneMultiplayer::_process_packet(int p_from, const uint8_t *p_packet, int 
 	ERR_FAIL_COND_MSG(root_path.is_empty(), "Multiplayer root was not initialized. If you are using custom multiplayer, remember to set the root path via SceneMultiplayer.set_root_path before using it.");
 	ERR_FAIL_COND_MSG(p_packet_len < 1, "Invalid packet received. Size too small.");
 
-#ifdef DEBUG_ENABLED
-	profile_bandwidth("in", p_packet_len);
-#endif
-
 	// Extract the `packet_type` from the LSB three bits:
 	uint8_t packet_type = p_packet[0] & CMD_MASK;
 
@@ -258,6 +258,13 @@ void SceneMultiplayer::_process_packet(int p_from, const uint8_t *p_packet, int 
 	}
 }
 
+#ifdef DEBUG_ENABLED
+_FORCE_INLINE_ Error SceneMultiplayer::_send(const uint8_t *p_packet, int p_packet_len) {
+	_profile_bandwidth("out", p_packet_len);
+	return multiplayer_peer->put_packet(p_packet, p_packet_len);
+}
+#endif
+
 Error SceneMultiplayer::send_command(int p_to, const uint8_t *p_packet, int p_packet_len) {
 	if (server_relay && get_unique_id() != 1 && p_to != 1 && multiplayer_peer->is_server_relay_supported()) {
 		// Send relay packet.
@@ -268,19 +275,19 @@ Error SceneMultiplayer::send_command(int p_to, const uint8_t *p_packet, int p_pa
 		relay_buffer->put_data(p_packet, p_packet_len);
 		multiplayer_peer->set_target_peer(1);
 		const Vector<uint8_t> data = relay_buffer->get_data_array();
-		return multiplayer_peer->put_packet(data.ptr(), relay_buffer->get_position());
+		return _send(data.ptr(), relay_buffer->get_position());
 	}
 	if (p_to > 0) {
 		ERR_FAIL_COND_V(!connected_peers.has(p_to), ERR_BUG);
 		multiplayer_peer->set_target_peer(p_to);
-		return multiplayer_peer->put_packet(p_packet, p_packet_len);
+		return _send(p_packet, p_packet_len);
 	} else {
 		for (const int &pid : connected_peers) {
 			if (p_to && pid == -p_to) {
 				continue;
 			}
 			multiplayer_peer->set_target_peer(pid);
-			multiplayer_peer->put_packet(p_packet, p_packet_len);
+			_send(p_packet, p_packet_len);
 		}
 		return OK;
 	}
@@ -319,7 +326,7 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 				multiplayer_peer->set_transfer_channel(p_channel);
 				if (peer > 0) {
 					multiplayer_peer->set_target_peer(peer);
-					multiplayer_peer->put_packet(data.ptr(), relay_buffer->get_position());
+					_send(data.ptr(), relay_buffer->get_position());
 				} else {
 					for (const int &P : connected_peers) {
 						// Not to sender, nor excluded.
@@ -327,7 +334,7 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 							continue;
 						}
 						multiplayer_peer->set_target_peer(P);
-						multiplayer_peer->put_packet(data.ptr(), relay_buffer->get_position());
+						_send(data.ptr(), relay_buffer->get_position());
 					}
 				}
 				if (peer == 0 || peer == -1) {
@@ -373,11 +380,11 @@ void SceneMultiplayer::_admit_peer(int p_id) {
 			// Send new peer to already connected.
 			encode_uint32(p_id, &buf[2]);
 			multiplayer_peer->set_target_peer(P);
-			multiplayer_peer->put_packet(buf, sizeof(buf));
+			_send(buf, sizeof(buf));
 			// Send already connected to new peer.
 			encode_uint32(P, &buf[2]);
 			multiplayer_peer->set_target_peer(p_id);
-			multiplayer_peer->put_packet(buf, sizeof(buf));
+			_send(buf, sizeof(buf));
 		}
 	}
 
@@ -412,7 +419,7 @@ void SceneMultiplayer::_del_peer(int p_id) {
 				continue;
 			}
 			multiplayer_peer->set_target_peer(P);
-			multiplayer_peer->put_packet(buf, sizeof(buf));
+			_send(buf, sizeof(buf));
 		}
 	}
 
@@ -468,7 +475,7 @@ Error SceneMultiplayer::send_auth(int p_to, Vector<uint8_t> p_data) {
 	multiplayer_peer->set_target_peer(p_to);
 	multiplayer_peer->set_transfer_channel(0);
 	multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-	return multiplayer_peer->put_packet(packet_cache.ptr(), p_data.size() + 2);
+	return _send(packet_cache.ptr(), p_data.size() + 2);
 }
 
 Error SceneMultiplayer::complete_auth(int p_peer) {
@@ -478,7 +485,7 @@ Error SceneMultiplayer::complete_auth(int p_peer) {
 	pending_peers[p_peer].local = true;
 	// Notify the remote peer that the authentication has completed.
 	uint8_t buf[2] = { NETWORK_COMMAND_SYS, SYS_COMMAND_AUTH };
-	Error err = multiplayer_peer->put_packet(buf, 2);
+	Error err = _send(buf, 2);
 	// The remote peer already reported the authentication as completed, so admit the peer.
 	// May generate new packets, so it must happen after sending confirmation.
 	if (pending_peers[p_peer].remote) {

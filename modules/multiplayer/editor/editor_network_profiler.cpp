@@ -67,8 +67,8 @@ void EditorNetworkProfiler::_update_frame() {
 		}
 
 		node->set_text(0, E.value.node_path);
-		node->set_text(1, E.value.incoming_rpc == 0 ? "-" : itos(E.value.incoming_rpc));
-		node->set_text(2, E.value.outgoing_rpc == 0 ? "-" : itos(E.value.outgoing_rpc));
+		node->set_text(1, E.value.incoming_rpc == 0 ? "-" : vformat(TTR("%d (%s)"), E.value.incoming_rpc, String::humanize_size(E.value.incoming_size)));
+		node->set_text(2, E.value.outgoing_rpc == 0 ? "-" : vformat(TTR("%d (%s)"), E.value.outgoing_rpc, String::humanize_size(E.value.outgoing_size)));
 	}
 }
 
@@ -98,6 +98,12 @@ void EditorNetworkProfiler::add_node_frame_data(const RPCNodeInfo p_frame) {
 	} else {
 		nodes_data[p_frame.node].incoming_rpc += p_frame.incoming_rpc;
 		nodes_data[p_frame.node].outgoing_rpc += p_frame.outgoing_rpc;
+	}
+	if (p_frame.incoming_rpc) {
+		nodes_data[p_frame.node].incoming_size = p_frame.incoming_size / p_frame.incoming_rpc;
+	}
+	if (p_frame.outgoing_rpc) {
+		nodes_data[p_frame.node].outgoing_size = p_frame.outgoing_size / p_frame.outgoing_rpc;
 	}
 
 	if (frame_delay->is_stopped()) {

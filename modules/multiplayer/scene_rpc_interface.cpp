@@ -52,16 +52,15 @@
 #define BYTE_ONLY_OR_NO_ARGS_FLAG (1 << BYTE_ONLY_OR_NO_ARGS_SHIFT)
 
 #ifdef DEBUG_ENABLED
-_FORCE_INLINE_ void SceneRPCInterface::_profile_node_data(const String &p_what, ObjectID p_id) {
+_FORCE_INLINE_ void SceneRPCInterface::_profile_node_data(const String &p_what, ObjectID p_id, int p_size) {
 	if (EngineDebugger::is_profiling("rpc")) {
 		Array values;
-		values.push_back(p_id);
 		values.push_back(p_what);
+		values.push_back(p_id);
+		values.push_back(p_size);
 		EngineDebugger::profiler_add_frame_data("rpc", values);
 	}
 }
-#else
-_FORCE_INLINE_ void SceneRPCInterface::_profile_node_data(const String &p_what, ObjectID p_id) {}
 #endif
 
 // Returns the packet size stripping the node path added when the node is not yet cached.
@@ -277,7 +276,7 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 	argp.resize(argc);
 
 #ifdef DEBUG_ENABLED
-	_profile_node_data("rpc_in", p_node->get_instance_id());
+	_profile_node_data("rpc_in", p_node->get_instance_id(), p_packet_len);
 #endif
 
 	int out;
@@ -399,12 +398,12 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 	ERR_FAIL_COND(node_id_compression > 3);
 	ERR_FAIL_COND(name_id_compression > 1);
 
+#ifdef DEBUG_ENABLED
+	_profile_node_data("rpc_out", p_from->get_instance_id(), ofs);
+#endif
+
 	// We can now set the meta
 	packet_cache.write[0] = command_type + (node_id_compression << NODE_ID_COMPRESSION_SHIFT) + (name_id_compression << NAME_ID_COMPRESSION_SHIFT) + (byte_only_or_no_args ? BYTE_ONLY_OR_NO_ARGS_FLAG : 0);
-
-#ifdef DEBUG_ENABLED
-	multiplayer->profile_bandwidth("out", ofs);
-#endif
 
 	// Take chance and set transfer mode, since all send methods will use it.
 	peer->set_transfer_channel(p_config.channel);
@@ -477,10 +476,6 @@ Error SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_
 	}
 
 	if (p_peer_id != caller_id) {
-#ifdef DEBUG_ENABLED
-		_profile_node_data("rpc_out", node->get_instance_id());
-#endif
-
 		_send_rpc(node, p_peer_id, rpc_id, config, p_method, p_arg, p_argcount);
 	}
 
