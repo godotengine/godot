@@ -322,7 +322,7 @@ typedef EditorPlugin *(*EditorPluginCreateFunc)();
 
 class EditorPlugins {
 	enum {
-		MAX_CREATE_FUNCS = 64
+		MAX_CREATE_FUNCS = 128
 	};
 
 	static EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];
