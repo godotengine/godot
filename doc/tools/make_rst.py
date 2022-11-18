@@ -1068,12 +1068,11 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             for i, m in enumerate(method_list):
                 if index != 0:
                     f.write("----\n\n")
-
-                if i == 0:
-                    f.write(
-                        f".. _class_{class_name}_operator_{sanitize_operator_name(m.name, state)}_{m.return_type.type_name}:\n\n"
-                    )
-
+                out = f".. _class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
+                for parameter in m.parameters:
+                    out += f"_{parameter.type_name.type_name}"
+                out += f":\n\n"
+                f.write(out)
                 ret_type, signature = make_method_signature(class_def, m, "", state)
                 f.write(f"- {ret_type} {signature}\n\n")
 
@@ -1179,7 +1178,10 @@ def make_method_signature(
     if isinstance(definition, MethodDef) and ref_type != "":
         if ref_type == "operator":
             op_name = definition.name.replace("<", "\\<")  # So operator "<" gets correctly displayed.
-            out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}_{definition.return_type.type_name}>` "
+            out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
+            for parameter in definition.parameters:
+                out += f"_{parameter.type_name.type_name}"
+            out += f">` "
         else:
             out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type}_{definition.name}>` "
     else:
