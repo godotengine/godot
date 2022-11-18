@@ -61,6 +61,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	static String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device);
+	static String get_device_string(int p_device);
+
 	Ref<InputEvent> get_event() const;
 	void clear_event();
 
