@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "thirdparty/glad/glad/gl.h"
 #include "thirdparty/glad/glad/glx.h"
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
@@ -323,7 +324,15 @@ void GLManager_X11::swap_buffers() {
 
 Error GLManager_X11::initialize() {
 	if (!gladLoaderLoadGLX(nullptr, 0)) {
-		return ERR_CANT_CREATE;
+		return ERR_UNAVAILABLE;
+	}
+
+	return OK;
+}
+
+Error GLManager_X11::load_gl() {
+	if (!gladLoadGL((GLADloadfunc)glXGetProcAddress)) {
+		return ERR_UNAVAILABLE;
 	}
 
 	return OK;

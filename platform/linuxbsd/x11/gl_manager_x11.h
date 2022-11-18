@@ -112,6 +112,7 @@ public:
 	void window_make_current(DisplayServer::WindowID p_window_id);
 
 	Error initialize();
+	Error load_gl();
 
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;

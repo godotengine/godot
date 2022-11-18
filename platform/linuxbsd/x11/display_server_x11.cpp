@@ -4911,21 +4911,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
 
 		if (gl_manager->initialize() != OK) {
+			ERR_PRINT("Can't load GLX.");
 			memdelete(gl_manager);
 			gl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 		driver_found = true;
-
-		if (true) {
-			RasterizerGLES3::make_current();
-		} else {
-			memdelete(gl_manager);
-			gl_manager = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
-		}
 	}
 #endif
 	if (!driver_found) {
@@ -4954,6 +4946,16 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	show_window(main_window);
 	XSync(x11_display, False);
 	_validate_mode_on_map(main_window);
+
+#ifdef GLES3_ENABLED
+	if (rendering_driver == "opengl3") {
+		if (gl_manager->load_gl() != OK) {
+			ERR_FAIL_MSG("Can't load OpenGL.");
+		}
+
+		RasterizerGLES3::make_current();
+	}
+#endif
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
