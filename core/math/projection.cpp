@@ -181,7 +181,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_FAR: {
 			Plane new_plane = Plane(matrix[3] - matrix[2],
 					matrix[7] - matrix[6],
@@ -191,7 +191,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_LEFT: {
 			Plane new_plane = Plane(matrix[3] + matrix[0],
 					matrix[7] + matrix[4],
@@ -201,7 +201,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_TOP: {
 			Plane new_plane = Plane(matrix[3] - matrix[1],
 					matrix[7] - matrix[5],
@@ -211,7 +211,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_RIGHT: {
 			Plane new_plane = Plane(matrix[3] - matrix[0],
 					matrix[7] - matrix[4],
@@ -221,7 +221,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_BOTTOM: {
 			Plane new_plane = Plane(matrix[3] + matrix[1],
 					matrix[7] + matrix[5],
@@ -231,7 +231,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 	}
 
 	return Plane();
