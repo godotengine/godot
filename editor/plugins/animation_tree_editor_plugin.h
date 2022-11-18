@@ -35,8 +35,6 @@
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/tree.h"
 
 class EditorFileDialog;
 

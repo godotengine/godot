@@ -47,8 +47,6 @@ void EditorPropertyRootMotion::_confirmed() {
 }
 
 void EditorPropertyRootMotion::_node_assign() {
-	NodePath current = get_edited_object()->get(get_edited_property());
-
 	AnimationTree *atree = Object::cast_to<AnimationTree>(get_edited_object());
 	if (!atree->has_node(atree->get_animation_player())) {
 		EditorNode::get_singleton()->show_warning(TTR("AnimationTree has no path set to an AnimationPlayer"));
@@ -75,7 +73,10 @@ void EditorPropertyRootMotion::_node_assign() {
 		for (const StringName &E : animations) {
 			Ref<Animation> anim = player->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
-				paths.insert(anim->track_get_path(i));
+				String pathname = anim->track_get_path(i).get_concatenated_names();
+				if (!paths.has(pathname)) {
+					paths.insert(pathname);
+				}
 			}
 		}
 	}
@@ -124,66 +125,33 @@ void EditorPropertyRootMotion::_node_assign() {
 			continue; //no node, can't edit
 		}
 
-		if (path.get_subname_count()) {
-			String concat = path.get_concatenated_subnames();
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
+		if (skeleton) {
+			HashMap<int, TreeItem *> items;
+			items.insert(-1, ti);
+			Ref<Texture> bone_icon = get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons"));
+			Vector<int> bones_to_process = skeleton->get_parentless_bones();
+			while (bones_to_process.size() > 0) {
+				int current_bone_idx = bones_to_process[0];
+				bones_to_process.erase(current_bone_idx);
 
-			Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
-			if (skeleton && skeleton->find_bone(concat) != -1) {
-				//path in skeleton
-				const String &bone = concat;
-				int idx = skeleton->find_bone(bone);
-				List<String> bone_path;
-				while (idx != -1) {
-					bone_path.push_front(skeleton->get_bone_name(idx));
-					idx = skeleton->get_bone_parent(idx);
+				Vector<int> current_bone_child_bones = skeleton->get_bone_children(current_bone_idx);
+				int child_bone_size = current_bone_child_bones.size();
+				for (int i = 0; i < child_bone_size; i++) {
+					bones_to_process.push_back(current_bone_child_bones[i]);
 				}
 
-				accum += ":";
-				for (List<String>::Element *F = bone_path.front(); F; F = F->next()) {
-					if (F != bone_path.front()) {
-						accum += "/";
-					}
+				const int parent_idx = skeleton->get_bone_parent(current_bone_idx);
+				TreeItem *parent_item = items.find(parent_idx)->value;
 
-					accum += F->get();
-					if (!parenthood.has(accum)) {
-						ti = filters->create_item(ti);
-						parenthood[accum] = ti;
-						ti->set_text(0, F->get());
-						ti->set_selectable(0, true);
-						ti->set_editable(0, false);
-						ti->set_icon(0, get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons")));
-						ti->set_metadata(0, accum);
-					} else {
-						ti = parenthood[accum];
-					}
-				}
+				TreeItem *joint_item = filters->create_item(parent_item);
+				items.insert(current_bone_idx, joint_item);
 
-				ti->set_selectable(0, true);
-				ti->set_text(0, concat);
-				ti->set_icon(0, get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons")));
-				ti->set_metadata(0, path);
-				if (path == current) {
-					ti->select(0);
-				}
-
-			} else {
-				//just a property
-				ti = filters->create_item(ti);
-				ti->set_text(0, concat);
-				ti->set_selectable(0, true);
-				ti->set_metadata(0, path);
-				if (path == current) {
-					ti->select(0);
-				}
-			}
-		} else {
-			if (ti) {
-				//just a node, likely call or animation track
-				ti->set_selectable(0, true);
-				ti->set_metadata(0, path);
-				if (path == current) {
-					ti->select(0);
-				}
+				joint_item->set_text(0, skeleton->get_bone_name(current_bone_idx));
+				joint_item->set_icon(0, bone_icon);
+				joint_item->set_selectable(0, true);
+				joint_item->set_metadata(0, accum + ":" + skeleton->get_bone_name(current_bone_idx));
+				joint_item->set_collapsed(true);
 			}
 		}
 	}
@@ -199,7 +167,6 @@ void EditorPropertyRootMotion::_node_clear() {
 
 void EditorPropertyRootMotion::update_property() {
 	NodePath p = get_edited_object()->get(get_edited_property());
-
 	assign->set_tooltip_text(p);
 	if (p == NodePath()) {
 		assign->set_icon(Ref<Texture2D>());
@@ -208,26 +175,8 @@ void EditorPropertyRootMotion::update_property() {
 		return;
 	}
 
-	Node *base_node = nullptr;
-	if (base_hint != NodePath()) {
-		if (get_tree()->get_root()->has_node(base_hint)) {
-			base_node = get_tree()->get_root()->get_node(base_hint);
-		}
-	} else {
-		base_node = Object::cast_to<Node>(get_edited_object());
-	}
-
-	if (!base_node || !base_node->has_node(p)) {
-		assign->set_icon(Ref<Texture2D>());
-		assign->set_text(p);
-		return;
-	}
-
-	Node *target_node = base_node->get_node(p);
-	ERR_FAIL_COND(!target_node);
-
-	assign->set_text(target_node->get_name());
-	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
+	assign->set_icon(Ref<Texture2D>());
+	assign->set_text(p);
 }
 
 void EditorPropertyRootMotion::setup(const NodePath &p_base_hint) {
@@ -282,9 +231,6 @@ bool EditorInspectorRootMotionPlugin::can_handle(Object *p_object) {
 bool EditorInspectorRootMotionPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if (p_path == "root_motion_track" && p_object->is_class("AnimationTree") && p_type == Variant::NODE_PATH) {
 		EditorPropertyRootMotion *editor = memnew(EditorPropertyRootMotion);
-		if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !p_hint_text.is_empty()) {
-			editor->setup(p_hint_text);
-		}
 		add_property_editor(p_path, editor);
 		return true;
 	}
