@@ -30,6 +30,7 @@
 
 #include "export.h"
 
+#include "core/io/image_loader.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_export.h"
@@ -38,6 +39,7 @@
 #include "platform/windows/logo.gen.h"
 
 class EditorExportPlatformWindows : public EditorExportPlatformPC {
+	Error _process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path);
 	Error _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
@@ -51,6 +53,131 @@ public:
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const;
 };
+
+Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path) {
+	static const uint8_t icon_size[] = { 16, 32, 48, 64, 128, 0 /*256*/ };
+
+	struct IconData {
+		PoolVector<uint8_t> data;
+		uint8_t pal_colors = 0;
+		uint16_t planes = 0;
+		uint16_t bpp = 32;
+	};
+
+	HashMap<uint8_t, IconData> images;
+	Error err;
+
+	if (p_src_path.get_extension() == "ico") {
+		FileAccess *f = FileAccess::open(p_src_path, FileAccess::READ, &err);
+		if (err != OK) {
+			return err;
+		}
+
+		// Read ICONDIR.
+		f->get_16(); // Reserved.
+		uint16_t icon_type = f->get_16(); // Image type: 1 - ICO.
+		uint16_t icon_count = f->get_16(); // Number of images.
+		if (icon_type != 1) {
+			f->close();
+			memdelete(f);
+
+			ERR_FAIL_V(ERR_CANT_OPEN);
+		}
+
+		for (uint16_t i = 0; i < icon_count; i++) {
+			// Read ICONDIRENTRY.
+			uint16_t w = f->get_8(); // Width in pixels.
+			uint16_t h = f->get_8(); // Height in pixels.
+			uint8_t pal_colors = f->get_8(); // Number of colors in the palette (0 - no palette).
+			f->get_8(); // Reserved.
+			uint16_t planes = f->get_16(); // Number of color planes.
+			uint16_t bpp = f->get_16(); // Bits per pixel.
+			uint32_t img_size = f->get_32(); // Image data size in bytes.
+			uint32_t img_offset = f->get_32(); // Image data offset.
+			if (w != h) {
+				continue;
+			}
+
+			// Read image data.
+			uint64_t prev_offset = f->get_position();
+			images[w].pal_colors = pal_colors;
+			images[w].planes = planes;
+			images[w].bpp = bpp;
+			images[w].data.resize(img_size);
+			PoolVector<uint8_t>::Write wr = images[w].data.write();
+			f->seek(img_offset);
+			f->get_buffer(wr.ptr(), img_size);
+			f->seek(prev_offset);
+		}
+		f->close();
+		memdelete(f);
+	} else {
+		Ref<Image> src_image;
+		src_image.instance();
+		err = ImageLoader::load_image(p_src_path, src_image.ptr());
+		ERR_FAIL_COND_V(err != OK || src_image->empty(), ERR_CANT_OPEN);
+		for (size_t i = 0; i < sizeof(icon_size) / sizeof(icon_size[0]); ++i) {
+			int size = (icon_size[i] == 0) ? 256 : icon_size[i];
+
+			Ref<Image> res_image = src_image->duplicate();
+			ERR_FAIL_COND_V(res_image.is_null() || res_image->empty(), ERR_CANT_OPEN);
+			res_image->resize(size, size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+			images[icon_size[i]].data = res_image->save_png_to_buffer();
+		}
+	}
+
+	uint16_t valid_icon_count = 0;
+	for (size_t i = 0; i < sizeof(icon_size) / sizeof(icon_size[0]); ++i) {
+		if (images.has(icon_size[i])) {
+			valid_icon_count++;
+		} else {
+			int size = (icon_size[i] == 0) ? 256 : icon_size[i];
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Icon size \"%d\" is missing."), size));
+		}
+	}
+	ERR_FAIL_COND_V(valid_icon_count == 0, ERR_CANT_OPEN);
+
+	FileAccess *fw = FileAccess::open(p_dst_path, FileAccess::WRITE, &err);
+	if (err != OK) {
+		return err;
+	}
+
+	// Write ICONDIR.
+	fw->store_16(0); // Reserved.
+	fw->store_16(1); // Image type: 1 - ICO.
+	fw->store_16(valid_icon_count); // Number of images.
+
+	// Write ICONDIRENTRY.
+	uint32_t img_offset = 6 + 16 * valid_icon_count;
+	for (size_t i = 0; i < sizeof(icon_size) / sizeof(icon_size[0]); ++i) {
+		if (images.has(icon_size[i])) {
+			const IconData &di = images[icon_size[i]];
+			fw->store_8(icon_size[i]); // Width in pixels.
+			fw->store_8(icon_size[i]); // Height in pixels.
+			fw->store_8(di.pal_colors); // Number of colors in the palette (0 - no palette).
+			fw->store_8(0); // Reserved.
+			fw->store_16(di.planes); // Number of color planes.
+			fw->store_16(di.bpp); // Bits per pixel.
+			fw->store_32(di.data.size()); // Image data size in bytes.
+			fw->store_32(img_offset); // Image data offset.
+
+			img_offset += di.data.size();
+		}
+	}
+
+	// Write image data.
+	for (size_t i = 0; i < sizeof(icon_size) / sizeof(icon_size[0]); ++i) {
+		if (images.has(icon_size[i])) {
+			const IconData &di = images[icon_size[i]];
+			PoolVector<uint8_t>::Read r = di.data.read();
+			fw->store_buffer(r.ptr(), di.data.size());
+		}
+	}
+	fw->close();
+	memdelete(fw);
+
+	return OK;
+}
 
 Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
 	if (p_preset->get("codesign/enable")) {
@@ -111,7 +238,8 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::POOL_STRING_ARRAY, "codesign/custom_options"), PoolStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/modify_resources"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico,*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
@@ -148,6 +276,14 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 #endif
 
 	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
+	String tmp_icon_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("_rcedit.ico");
+	if (!icon_path.empty()) {
+		if (_process_icon(p_preset, icon_path, tmp_icon_path) != OK) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Invalid icon file \"%s\"."), icon_path));
+			icon_path = String();
+		}
+	}
+
 	String file_verion = p_preset->get("application/file_version");
 	String product_version = p_preset->get("application/product_version");
 	String company_name = p_preset->get("application/company_name");
@@ -161,7 +297,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	args.push_back(p_path);
 	if (icon_path != String()) {
 		args.push_back("--set-icon");
-		args.push_back(icon_path);
+		args.push_back(tmp_icon_path);
 	}
 	if (file_verion != String()) {
 		args.push_back("--set-file-version");
@@ -205,6 +341,11 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 
 	String str;
 	Error err = OS::get_singleton()->execute(rcedit_path, args, true, nullptr, &str, nullptr, true);
+
+	if (FileAccess::exists(tmp_icon_path)) {
+		DirAccess::remove_file_or_error(tmp_icon_path);
+	}
+
 	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), TTR("Could not start rcedit executable. Configure rcedit path in the Editor Settings (Export > Windows > rcedit), or disable \"Application > Modify Resources\" in the export preset."));
 		return err;
