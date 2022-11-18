@@ -40,6 +40,7 @@
 #include "core/templates/hash_map.h"
 #include "gdscript.h"
 #include "gdscript_utility_functions.h"
+#include "scene/resources/packed_scene.h"
 
 static MethodInfo info_from_utility_func(const StringName &p_function) {
 	ERR_FAIL_COND_V(!Variant::has_utility_function(p_function), MethodInfo());
@@ -3111,12 +3112,40 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			GDScriptParser::DataType result;
 			result.kind = GDScriptParser::DataType::NATIVE;
 			result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-			if (autoload.path.to_lower().ends_with(GDScriptLanguage::get_singleton()->get_extension())) {
+			if (ResourceLoader::get_resource_type(autoload.path) == "GDScript") {
 				Ref<GDScriptParserRef> singl_parser = get_parser_for(autoload.path);
 				if (singl_parser.is_valid()) {
 					Error err = singl_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 					if (err == OK) {
 						result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
+					}
+				}
+			} else if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
+				Error err = OK;
+				Ref<PackedScene> scene = GDScriptCache::get_packed_scene(autoload.path, err);
+				if (err == OK && scene->get_state().is_valid()) {
+					Ref<SceneState> state = scene->get_state();
+					if (state->get_node_count() > 0) {
+						const int ROOT_NODE = 0;
+						for (int i = 0; i < state->get_node_property_count(ROOT_NODE); i++) {
+							if (state->get_node_property_name(ROOT_NODE, i) != SNAME("script")) {
+								continue;
+							}
+
+							Ref<GDScript> scr = state->get_node_property_value(ROOT_NODE, i);
+							if (scr.is_null()) {
+								continue;
+							}
+
+							Ref<GDScriptParserRef> singl_parser = get_parser_for(scr->get_path());
+							if (singl_parser.is_valid()) {
+								err = singl_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
+								if (err == OK) {
+									result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
+								}
+							}
+							break;
+						}
 					}
 				}
 			}
@@ -3244,9 +3273,28 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 			}
 		} else {
 			// TODO: Don't load if validating: use completion cache.
-			p_preload->resource = ResourceLoader::load(p_preload->resolved_path);
-			if (p_preload->resource.is_null()) {
-				push_error(vformat(R"(Could not preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
+
+			// Must load GDScript and PackedScenes separately to permit cyclic references
+			// as ResourceLoader::load() detect and reject those.
+			if (ResourceLoader::get_resource_type(p_preload->resolved_path) == "GDScript") {
+				Error err = OK;
+				Ref<GDScript> res = GDScriptCache::get_shallow_script(p_preload->resolved_path, err, parser->script_path);
+				p_preload->resource = res;
+				if (err != OK) {
+					push_error(vformat(R"(Could not preload resource script "%s".)", p_preload->resolved_path), p_preload->path);
+				}
+			} else if (ResourceLoader::get_resource_type(p_preload->resolved_path) == "PackedScene") {
+				Error err = OK;
+				Ref<PackedScene> res = GDScriptCache::get_packed_scene(p_preload->resolved_path, err, parser->script_path);
+				p_preload->resource = res;
+				if (err != OK) {
+					push_error(vformat(R"(Could not preload resource scene "%s".)", p_preload->resolved_path), p_preload->path);
+				}
+			} else {
+				p_preload->resource = ResourceLoader::load(p_preload->resolved_path);
+				if (p_preload->resource.is_null()) {
+					push_error(vformat(R"(Could not preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
+				}
 			}
 		}
 	}
@@ -3288,6 +3336,17 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			// Just try to get it.
 			bool valid = false;
 			Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
+
+			// If it's a GDScript instance, try to get the full script. Maybe it's not still completely loaded.
+			Ref<GDScript> gdscr = Ref<GDScript>(p_subscript->base->reduced_value);
+			if (!valid && gdscr.is_valid()) {
+				Error err = OK;
+				GDScriptCache::get_full_script(gdscr->get_path(), err);
+				if (err == OK) {
+					value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
+				}
+			}
+
 			if (!valid) {
 				push_error(vformat(R"(Cannot get member "%s" from "%s".)", p_subscript->attribute->name, p_subscript->base->reduced_value), p_subscript->index);
 				result_type.kind = GDScriptParser::DataType::VARIANT;
@@ -3670,50 +3729,43 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 			scr = obj->get_script();
 		}
 		if (scr.is_valid()) {
-			if (scr->is_valid()) {
-				result.script_type = scr;
-				result.script_path = scr->get_path();
-				Ref<GDScript> gds = scr;
-				if (gds.is_valid()) {
-					result.kind = GDScriptParser::DataType::CLASS;
-					// This might be an inner class, so we want to get the parser for the root.
-					// But still get the inner class from that tree.
-					GDScript *current = gds.ptr();
-					List<StringName> class_chain;
-					while (current->_owner) {
-						// Push to front so it's in reverse.
-						class_chain.push_front(current->name);
-						current = current->_owner;
-					}
-
-					Ref<GDScriptParserRef> ref = get_parser_for(current->get_path());
-					if (ref.is_null()) {
-						push_error("Could not find script in path.", p_source);
-						GDScriptParser::DataType error_type;
-						error_type.kind = GDScriptParser::DataType::VARIANT;
-						return error_type;
-					}
-					ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
-
-					GDScriptParser::ClassNode *found = ref->get_parser()->head;
-
-					// It should be okay to assume this exists, since we have a complete script already.
-					for (const StringName &E : class_chain) {
-						found = found->get_member(E).m_class;
-					}
-
-					result.class_type = found;
-					result.script_path = ref->get_parser()->script_path;
-				} else {
-					result.kind = GDScriptParser::DataType::SCRIPT;
+			result.script_type = scr;
+			result.script_path = scr->get_path();
+			Ref<GDScript> gds = scr;
+			if (gds.is_valid()) {
+				result.kind = GDScriptParser::DataType::CLASS;
+				// This might be an inner class, so we want to get the parser for the root.
+				// But still get the inner class from that tree.
+				GDScript *current = gds.ptr();
+				List<StringName> class_chain;
+				while (current->_owner) {
+					// Push to front so it's in reverse.
+					class_chain.push_front(current->name);
+					current = current->_owner;
 				}
-				result.native_type = scr->get_instance_base_type();
+
+				Ref<GDScriptParserRef> ref = get_parser_for(current->get_path());
+				if (ref.is_null()) {
+					push_error("Could not find script in path.", p_source);
+					GDScriptParser::DataType error_type;
+					error_type.kind = GDScriptParser::DataType::VARIANT;
+					return error_type;
+				}
+				ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
+
+				GDScriptParser::ClassNode *found = ref->get_parser()->head;
+
+				// It should be okay to assume this exists, since we have a complete script already.
+				for (const StringName &E : class_chain) {
+					found = found->get_member(E).m_class;
+				}
+
+				result.class_type = found;
+				result.script_path = ref->get_parser()->script_path;
 			} else {
-				push_error(vformat(R"(Constant value uses script from "%s" which is loaded but not compiled.)", scr->get_path()), p_source);
-				result.kind = GDScriptParser::DataType::VARIANT;
-				result.type_source = GDScriptParser::DataType::UNDETECTED;
-				result.is_meta_type = false;
+				result.kind = GDScriptParser::DataType::SCRIPT;
 			}
+			result.native_type = scr->get_instance_base_type();
 		} else {
 			result.kind = GDScriptParser::DataType::NATIVE;
 			if (result.native_type == GDScriptNativeClass::get_class_static()) {
