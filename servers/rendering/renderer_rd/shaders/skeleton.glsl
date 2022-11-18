@@ -63,7 +63,7 @@ vec3 oct_to_vec3(vec2 oct) {
 	vec3 v = vec3(oct.xy, 1.0 - abs(oct.x) - abs(oct.y));
 	float t = max(-v.z, 0.0);
 	v.xy += t * -sign(v.xy);
-	return v;
+	return normalize(v);
 }
 
 vec3 decode_uint_oct_to_norm(uint base) {
