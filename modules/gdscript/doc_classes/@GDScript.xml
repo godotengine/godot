@@ -146,7 +146,7 @@
 				[/codeblock]
 				[b]Important:[/b] The path must be absolute. A relative path will always return [code]null[/code].
 				This function is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
-				[b]Note:[/b] Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
+				[b]Note:[/b] Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data]. If you want to load a font from the filesystem you can use [method FontFile.load_dynamic_font]
 			</description>
 		</method>
 		<method name="preload">
