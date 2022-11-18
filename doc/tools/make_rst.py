@@ -29,10 +29,12 @@ MARKUP_ALLOWED_SUBSEQUENT = " -.,:;!?\\/'\")]}>"
 # write in this script (check `translate()` uses), and also hardcoded in
 # `doc/translations/extract.py` to include them in the source POT file.
 BASE_STRINGS = [
-    "Objects",
+    "All classes",
+    "Globals",
     "Nodes",
     "Resources",
-    "Globals",
+    "Other objects",
+    "Variant types",
     "Description",
     "Tutorials",
     "Properties",
@@ -71,7 +73,13 @@ CLASS_GROUPS: Dict[str, str] = {
     "global": "Globals",
     "node": "Nodes",
     "resource": "Resources",
-    "class": "Objects",
+    "object": "Other objects",
+    "variant": "Variant types",
+}
+CLASS_GROUPS_BASE: Dict[str, str] = {
+    "node": "Node",
+    "resource": "Resource",
+    "object": "Object",
 }
 
 
@@ -687,7 +695,7 @@ def get_git_branch() -> str:
 
 
 def get_class_group(class_def: ClassDef, state: State) -> str:
-    group_name = "class"
+    group_name = "variant"
     class_name = class_def.name
 
     if class_name.startswith("@"):
@@ -701,6 +709,9 @@ def get_class_group(class_def: ClassDef, state: State) -> str:
                 break
             if inherits == "Resource":
                 group_name = "resource"
+                break
+            if inherits == "Object":
+                group_name = "object"
                 break
 
             inode = state.classes[inherits].inherits
@@ -1281,6 +1292,10 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
 
     f.write(".. _doc_class_reference:\n\n")
 
+    main_title = translate("All classes")
+    f.write(f"{main_title}\n")
+    f.write(f"{'=' * len(main_title)}\n\n")
+
     for group_name in CLASS_GROUPS:
         if group_name in grouped_classes:
             group_title = translate(CLASS_GROUPS[group_name])
@@ -1290,8 +1305,11 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
 
             f.write(".. toctree::\n")
             f.write("    :maxdepth: 1\n")
-            f.write("    :name: toc-class-ref-globals\n")
+            f.write(f"    :name: toc-class-ref-{group_name}s\n")
             f.write("\n")
+
+            if group_name in CLASS_GROUPS_BASE:
+                f.write(f"    class_{CLASS_GROUPS_BASE[group_name].lower()}\n")
 
             for class_name in grouped_classes[group_name]:
                 f.write(f"    class_{class_name.lower()}\n")
