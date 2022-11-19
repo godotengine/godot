@@ -33,6 +33,7 @@
 #include "core/io/config_file.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
@@ -106,7 +107,10 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	makevb->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 
 	layout_names = memnew(ItemList);
+	layout_names->set_auto_height(true);
+	makevb->add_margin_child(TTR("Select existing layout:"), layout_names);
 	makevb->add_child(layout_names);
+	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	layout_names->set_visible(true);
 	layout_names->set_offset(SIDE_TOP, 5);
 	layout_names->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
@@ -116,8 +120,10 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	layout_names->set_allow_rmb_select(true);
 
 	name = memnew(LineEdit);
+	name->set_placeholder("Or enter new layout name");
 	makevb->add_child(name);
 	name->set_offset(SIDE_TOP, 5);
+	name->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	name->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
 	name->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 	name->connect("gui_input", callable_mp(this, &EditorLayoutsDialog::_line_gui_input));
