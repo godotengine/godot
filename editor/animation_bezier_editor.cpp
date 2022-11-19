@@ -903,11 +903,17 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			float zoom_value = timeline->get_zoom()->get_max() - zv;
 
-			timeline->get_zoom()->set_value(zoom_value);
-			timeline->call_deferred("set_value", minimum_time);
+			if (Math::is_finite(minimum_time) && Math::is_finite(maximum_time) && maximum_time - minimum_time > CMP_EPSILON) {
+				timeline->get_zoom()->set_value(zoom_value);
+				timeline->call_deferred("set_value", minimum_time);
+			}
 
-			v_scroll = (maximum_value + minimum_value) / 2.0;
-			v_zoom = (maximum_value - minimum_value) / ((get_size().height - timeline->get_size().height) * 0.9);
+			if (Math::is_finite(minimum_value) && Math::is_finite(maximum_value)) {
+				v_scroll = (maximum_value + minimum_value) / 2.0;
+				if (maximum_value - minimum_value > CMP_EPSILON) {
+					v_zoom = (maximum_value - minimum_value) / ((get_size().height - timeline->get_size().height) * 0.9);
+				}
+			}
 
 			queue_redraw();
 			accept_event();
