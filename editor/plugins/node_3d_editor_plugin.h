@@ -33,31 +33,29 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
-#include "editor/editor_spin_slider.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/visual_instance_3d.h"
-#include "scene/3d/world_environment.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/color_picker.h"
-#include "scene/gui/panel_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
-#include "scene/resources/environment.h"
-#include "scene/resources/fog_material.h"
-#include "scene/resources/sky_material.h"
 
 class AcceptDialog;
 class CheckBox;
+class ColorPickerButton;
 class ConfirmationDialog;
+class DirectionalLight3D;
 class EditorData;
+class EditorSpinSlider;
+class HSplitContainer;
+class LineEdit;
 class MenuButton;
 class Node3DEditor;
 class Node3DEditorViewport;
 class OptionButton;
+class PanelContainer;
+class ProceduralSkyMaterial;
+class SubViewport;
 class SubViewportContainer;
-class DirectionalLight3D;
+class VSplitContainer;
 class WorldEnvironment;
 
 class ViewportRotationControl : public Control {

@@ -31,29 +31,23 @@
 #ifndef SCENE_TREE_DOCK_H
 #define SCENE_TREE_DOCK_H
 
-#include "editor/create_dialog.h"
-#include "editor/editor_data.h"
-#include "editor/editor_quick_open.h"
-#include "editor/groups_editor.h"
-#include "editor/reparent_dialog.h"
-#include "editor/script_create_dialog.h"
-#include "scene/animation/animation_player.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
 
+#include "editor/editor_data.h"
+#include "editor/script_create_dialog.h"
+#include "scene/gui/box_container.h"
+#include "scene/resources/animation.h"
+
+class EditorQuickOpen;
+class MenuButton;
+class ReparentDialog;
+class ShaderCreateDialog;
 class TextureRect;
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 class RenameDialog;
 #endif // MODULE_REGEX_ENABLED
-
-class ShaderCreateDialog;
 
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
