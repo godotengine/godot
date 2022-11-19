@@ -38,6 +38,7 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/tree.h"
 
+class CheckBox;
 class ProjectDialog;
 class ProjectList;
 

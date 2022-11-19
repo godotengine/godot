@@ -30,8 +30,6 @@
 
 #include "register_editor_types.h"
 
-#include "core/extension/native_extension_manager.h"
-
 #include "editor/animation_track_editor.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/editor_command_palette.h"
@@ -43,6 +41,7 @@
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run_script.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"

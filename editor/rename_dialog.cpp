@@ -42,6 +42,7 @@
 #include "modules/regex/regex.h"
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/control.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tab_container.h"

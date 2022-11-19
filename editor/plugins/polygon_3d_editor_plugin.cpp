@@ -41,6 +41,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/gui/separator.h"
 
 void Polygon3DEditor::_notification(int p_what) {
 	switch (p_what) {

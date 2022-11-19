@@ -46,6 +46,7 @@
 #include "editor/editor_internal_calls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/script_templates/templates.gen.h"
 #endif

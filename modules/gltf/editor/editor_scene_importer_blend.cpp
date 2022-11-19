@@ -41,6 +41,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "main/main.h"
+#include "scene/gui/line_edit.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 

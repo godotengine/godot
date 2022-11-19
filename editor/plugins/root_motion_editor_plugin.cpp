@@ -32,6 +32,7 @@
 #include "editor/editor_node.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
+#include "scene/gui/tree.h"
 #include "scene/main/window.h"
 
 void EditorPropertyRootMotion::_confirmed() {

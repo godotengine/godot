@@ -31,10 +31,14 @@
 #ifndef SCRIPT_TEXT_EDITOR_H
 #define SCRIPT_TEXT_EDITOR_H
 
+#include "script_editor_plugin.h"
+
+#include "editor/code_editor.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
-#include "script_editor_plugin.h"
+
+class RichTextLabel;
 
 class ConnectionInfoDialog : public AcceptDialog {
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);

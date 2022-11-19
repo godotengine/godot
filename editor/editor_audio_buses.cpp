@@ -40,6 +40,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "filesystem_dock.h"
+#include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 #include "servers/audio_server.h"
 

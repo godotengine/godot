@@ -38,7 +38,9 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/texture.h"
 

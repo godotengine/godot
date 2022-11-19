@@ -40,6 +40,9 @@
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/material.h"
 
+class SubViewport;
+class TextureButton;
+
 class MeshEditor : public SubViewportContainer {
 	GDCLASS(MeshEditor, SubViewportContainer);
 

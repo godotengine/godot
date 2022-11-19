@@ -31,6 +31,7 @@
 #include "physical_bone_3d_editor_plugin.h"
 
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/gui/separator.h"
 
 void PhysicalBone3DEditor::_bind_methods() {
 }

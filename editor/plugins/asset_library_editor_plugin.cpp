@@ -41,6 +41,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/project_settings_editor.h"
+#include "scene/gui/menu_button.h"
 
 static inline void setup_http_request(HTTPRequest *request) {
 	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));

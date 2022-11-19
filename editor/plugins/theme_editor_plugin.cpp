@@ -38,6 +38,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/progress_dialog.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/split_container.h"
 #include "scene/theme/theme_db.h"
 
 void ThemeItemImportTree::_update_items_tree() {

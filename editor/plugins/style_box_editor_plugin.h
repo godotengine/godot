@@ -37,6 +37,8 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box.h"
 
+class TextureButton;
+
 class StyleBoxPreview : public VBoxContainer {
 	GDCLASS(StyleBoxPreview, VBoxContainer);
 

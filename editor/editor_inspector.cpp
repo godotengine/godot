@@ -30,9 +30,7 @@
 
 #include "editor_inspector.h"
 
-#include "array_property_edit.h"
 #include "core/os/keyboard.h"
-#include "dictionary_property_edit.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
@@ -40,9 +38,11 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "multi_node_edit.h"
-#include "scene/gui/center_container.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
