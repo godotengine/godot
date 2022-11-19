@@ -3120,34 +3120,6 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 						result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
 					}
 				}
-			} else if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
-				Error err = OK;
-				Ref<PackedScene> scene = GDScriptCache::get_packed_scene(autoload.path, err);
-				if (err == OK && scene->get_state().is_valid()) {
-					Ref<SceneState> state = scene->get_state();
-					if (state->get_node_count() > 0) {
-						const int ROOT_NODE = 0;
-						for (int i = 0; i < state->get_node_property_count(ROOT_NODE); i++) {
-							if (state->get_node_property_name(ROOT_NODE, i) != SNAME("script")) {
-								continue;
-							}
-
-							Ref<GDScript> scr = state->get_node_property_value(ROOT_NODE, i);
-							if (scr.is_null()) {
-								continue;
-							}
-
-							Ref<GDScriptParserRef> singl_parser = get_parser_for(scr->get_path());
-							if (singl_parser.is_valid()) {
-								err = singl_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
-								if (err == OK) {
-									result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
-								}
-							}
-							break;
-						}
-					}
-				}
 			}
 			result.is_constant = true;
 			p_identifier->set_datatype(result);
