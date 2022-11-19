@@ -37,14 +37,15 @@ const GodotWebGL2 = {
 	godot_webgl2_glFramebufferTextureMultiviewOVR: function (target, attachment, texture, level, base_view_index, num_views) {
 		const context = GL.currentContext;
 		if (typeof context.multiviewExt === 'undefined') {
-			const ext = context.GLctx.getExtension('OVR_multiview2');
+			const /** OVR_multiview2 */ ext = context.GLctx.getExtension('OVR_multiview2');
 			if (!ext) {
 				console.error('Trying to call glFramebufferTextureMultiviewOVR() without the OVR_multiview2 extension');
 				return;
 			}
 			context.multiviewExt = ext;
 		}
-		context.multiviewExt.framebufferTextureMultiviewOVR(target, attachment, GL.textures[texture], level, base_view_index, num_views);
+		const /** OVR_multiview2 */ ext = context.multiviewExt;
+		ext.framebufferTextureMultiviewOVR(target, attachment, GL.textures[texture], level, base_view_index, num_views);
 	},
 };
 
