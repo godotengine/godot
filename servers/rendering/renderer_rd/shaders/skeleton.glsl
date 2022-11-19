@@ -143,8 +143,8 @@ void main() {
 		uint skin_offset = params.skin_stride * index;
 
 		uvec2 bones = uvec2(src_bone_weights.data[skin_offset + 0], src_bone_weights.data[skin_offset + 1]);
-		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 3; //pre-add xform offset
-		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 3;
+		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 2; //pre-add xform offset
+		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 2;
 
 		skin_offset += params.skin_weight_offset;
 
@@ -161,6 +161,13 @@ void main() {
 		//reverse order because its transposed
 		vertex = (vec4(vertex, 0.0, 1.0) * m).xy;
 	}
+
+	uint dst_offset = index * params.vertex_stride;
+
+	uvec2 uvertex = floatBitsToUint(vertex);
+	dst_vertices.data[dst_offset + 0] = uvertex.x;
+	dst_vertices.data[dst_offset + 1] = uvertex.y;
+
 #else
 	vec3 vertex;
 	vec3 normal;
