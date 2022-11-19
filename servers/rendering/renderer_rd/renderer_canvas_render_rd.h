@@ -144,10 +144,6 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID quad_index_array;
 		PipelineVariants pipeline_variants;
 
-		// default_skeleton uniform set
-		RID default_skeleton_uniform_buffer;
-		RID default_skeleton_texture_buffer;
-
 		ShaderCompiler compiler;
 	} shader;
 
@@ -407,11 +403,6 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		};
 		float color_texture_pixel_size[2];
 		uint32_t lights[4];
-	};
-
-	struct SkeletonUniform {
-		float skeleton_transform[16];
-		float skeleton_inverse[16];
 	};
 
 	Item *items[MAX_RENDER_ITEMS];

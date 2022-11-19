@@ -616,7 +616,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
-	if (!skeleton || skeleton->size == 0) {
+	if (!skeleton || skeleton->size == 0 || mesh->skeleton_aabb_version == skeleton->version) {
 		return mesh->aabb;
 	}
 
@@ -708,6 +708,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 		}
 	}
 
+	mesh->skeleton_aabb_version = skeleton->version;
 	return aabb;
 }
 

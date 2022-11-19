@@ -153,48 +153,6 @@ void main() {
 		uv += 1e-5;
 	}
 
-#ifdef USE_ATTRIBUTES
-#if 0
-	if (bool(draw_data[draw_data_instance].flags & FLAGS_USE_SKELETON) && bone_weights != vec4(0.0)) { //must be a valid bone
-		//skeleton transform
-		ivec4 bone_indicesi = ivec4(bone_indices);
-
-		uvec2 tex_ofs = bone_indicesi.x * 2;
-
-		mat2x4 m;
-		m = mat2x4(
-					texelFetch(skeleton_buffer, tex_ofs + 0),
-					texelFetch(skeleton_buffer, tex_ofs + 1)) *
-			bone_weights.x;
-
-		tex_ofs = bone_indicesi.y * 2;
-
-		m += mat2x4(
-					 texelFetch(skeleton_buffer, tex_ofs + 0),
-					 texelFetch(skeleton_buffer, tex_ofs + 1)) *
-			 bone_weights.y;
-
-		tex_ofs = bone_indicesi.z * 2;
-
-		m += mat2x4(
-					 texelFetch(skeleton_buffer, tex_ofs + 0),
-					 texelFetch(skeleton_buffer, tex_ofs + 1)) *
-			 bone_weights.z;
-
-		tex_ofs = bone_indicesi.w * 2;
-
-		m += mat2x4(
-					 texelFetch(skeleton_buffer, tex_ofs + 0),
-					 texelFetch(skeleton_buffer, tex_ofs + 1)) *
-			 bone_weights.w;
-
-		mat4 bone_matrix = skeleton_data.skeleton_transform * transpose(mat4(m[0], m[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))) * skeleton_data.skeleton_transform_inverse;
-
-		//outvec = bone_matrix * outvec;
-	}
-#endif
-#endif
-
 	vertex = (canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
 
 	vertex_interp = vertex;

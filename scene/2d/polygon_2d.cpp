@@ -114,7 +114,7 @@ void Polygon2D::_notification(int p_what) {
 
 			ObjectID new_skeleton_id;
 
-			if (skeleton_node) {
+			if (skeleton_node && !invert && bone_weights.size()) {
 				RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), skeleton_node->get_skeleton());
 				new_skeleton_id = skeleton_node->get_instance_id();
 			} else {

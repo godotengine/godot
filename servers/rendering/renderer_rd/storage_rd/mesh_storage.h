@@ -144,6 +144,7 @@ private:
 
 		AABB aabb;
 		AABB custom_aabb;
+		uint64_t skeleton_aabb_version = 0;
 
 		Vector<RID> material_cache;
 
