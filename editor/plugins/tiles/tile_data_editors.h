@@ -39,6 +39,9 @@
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 
+class MenuButton;
+class EditorUndoRedoManager;
+
 class TileDataEditor : public VBoxContainer {
 	GDCLASS(TileDataEditor, VBoxContainer);
 

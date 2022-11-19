@@ -37,9 +37,16 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
 void ProjectExportDialog::_theme_changed() {

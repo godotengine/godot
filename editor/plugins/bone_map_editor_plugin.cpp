@@ -31,10 +31,14 @@
 #include "bone_map_editor_plugin.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/import/post_import_plugin_skeleton_renamer.h"
 #include "editor/import/post_import_plugin_skeleton_rest_fixer.h"
 #include "editor/import/post_import_plugin_skeleton_track_organizer.h"
 #include "editor/import/scene_import_settings.h"
+#include "scene/gui/aspect_ratio_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {

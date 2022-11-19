@@ -37,6 +37,8 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/split_container.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_types.h"
 
