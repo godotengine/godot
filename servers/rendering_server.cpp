@@ -1476,7 +1476,11 @@ RenderingDevice *RenderingServer::get_rendering_device() const {
 }
 
 RenderingDevice *RenderingServer::create_local_rendering_device() const {
-	return RenderingDevice::get_singleton()->create_local_device();
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (!device) {
+		return nullptr;
+	}
+	return device->create_local_device();
 }
 
 static Vector<Ref<Image>> _get_imgvec(const TypedArray<Image> &p_layers) {
