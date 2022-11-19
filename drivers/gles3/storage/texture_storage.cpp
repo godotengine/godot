@@ -1694,34 +1694,51 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		return;
 	}
 
+	// Dispose of the cached fbo's and the allocated textures
+	for (KeyValue<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry> &E : rt->overridden.fbo_cache) {
+		glDeleteTextures(E.value.allocated_textures.size(), E.value.allocated_textures.ptr());
+		// Don't delete the current FBO, we'll do that a couple lines down.
+		if (E.value.fbo != rt->fbo) {
+			glDeleteFramebuffers(1, &E.value.fbo);
+		}
+	}
+	rt->overridden.fbo_cache.clear();
+
 	if (rt->fbo) {
 		glDeleteFramebuffers(1, &rt->fbo);
 		rt->fbo = 0;
 	}
 
 	if (rt->overridden.color.is_null()) {
-		glDeleteTextures(1, &rt->color);
-		rt->color = 0;
-	}
-
-	if (rt->overridden.depth.is_null()) {
-		glDeleteTextures(1, &rt->depth);
-		rt->depth = 0;
-	}
-
-	if (rt->texture.is_valid()) {
-		Texture *tex = get_texture(rt->texture);
-		tex->alloc_height = 0;
-		tex->alloc_width = 0;
-		tex->width = 0;
-		tex->height = 0;
-		tex->active = false;
-	}
-
-	if (rt->overridden.color.is_valid()) {
+		if (rt->texture.is_valid()) {
+			Texture *tex = get_texture(rt->texture);
+			tex->alloc_height = 0;
+			tex->alloc_width = 0;
+			tex->width = 0;
+			tex->height = 0;
+			tex->active = false;
+		}
+	} else {
 		Texture *tex = get_texture(rt->overridden.color);
 		tex->is_render_target = false;
 	}
+
+	if (rt->overridden.color.is_valid()) {
+		rt->overridden.color = RID();
+	} else if (rt->color) {
+		glDeleteTextures(1, &rt->color);
+	}
+	rt->color = 0;
+
+	if (rt->overridden.depth.is_valid()) {
+		rt->overridden.depth = RID();
+	} else if (rt->depth) {
+		glDeleteTextures(1, &rt->depth);
+	}
+	rt->depth = 0;
+
+	rt->overridden.velocity = RID();
+	rt->overridden.is_overridden = false;
 
 	if (rt->backbuffer_fbo != 0) {
 		glDeleteFramebuffers(1, &rt->backbuffer_fbo);
@@ -1730,15 +1747,6 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		rt->backbuffer_fbo = 0;
 	}
 	_render_target_clear_sdf(rt);
-}
-
-void TextureStorage::_clear_render_target_overridden_fbo_cache(RenderTarget *rt) {
-	// Dispose of the cached fbo's and the allocated textures
-	for (KeyValue<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry> &E : rt->overridden.fbo_cache) {
-		glDeleteTextures(E.value.allocated_textures.size(), E.value.allocated_textures.ptr());
-		glDeleteFramebuffers(1, &E.value.fbo);
-	}
-	rt->overridden.fbo_cache.clear();
 }
 
 RID TextureStorage::render_target_create() {
@@ -1759,7 +1767,6 @@ RID TextureStorage::render_target_create() {
 void TextureStorage::render_target_free(RID p_rid) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_rid);
 	_clear_render_target(rt);
-	_clear_render_target_overridden_fbo_cache(rt);
 
 	Texture *t = get_texture(rt->texture);
 	if (t) {
@@ -1826,11 +1833,7 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 
 	if (p_color_texture.is_null() && p_depth_texture.is_null()) {
 		_clear_render_target(rt);
-		rt->overridden.is_overridden = false;
-		rt->overridden.color = RID();
-		rt->overridden.depth = RID();
-		rt->size = Size2i();
-		_clear_render_target_overridden_fbo_cache(rt);
+		_update_render_target(rt);
 		return;
 	}
 
@@ -1849,6 +1852,8 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	RBMap<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry>::Element *cache;
 	if ((cache = rt->overridden.fbo_cache.find(hash_key)) != nullptr) {
 		rt->fbo = cache->get().fbo;
+		rt->color = cache->get().color;
+		rt->depth = cache->get().depth;
 		rt->size = cache->get().size;
 		rt->texture = p_color_texture;
 		return;
@@ -1858,6 +1863,8 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 
 	RenderTarget::RTOverridden::FBOCacheEntry new_entry;
 	new_entry.fbo = rt->fbo;
+	new_entry.color = rt->color;
+	new_entry.depth = rt->depth;
 	new_entry.size = rt->size;
 	// Keep track of any textures we had to allocate because they weren't overridden.
 	if (p_color_texture.is_null()) {

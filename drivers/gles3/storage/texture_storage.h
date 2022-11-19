@@ -344,6 +344,8 @@ struct RenderTarget {
 
 		struct FBOCacheEntry {
 			GLuint fbo;
+			GLuint color;
+			GLuint depth;
 			Size2i size;
 			Vector<GLuint> allocated_textures;
 		};
@@ -412,7 +414,6 @@ private:
 	mutable RID_Owner<RenderTarget> render_target_owner;
 
 	void _clear_render_target(RenderTarget *rt);
-	void _clear_render_target_overridden_fbo_cache(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
 	void _create_render_target_backbuffer(RenderTarget *rt);
 	void _render_target_allocate_sdf(RenderTarget *rt);

@@ -2520,7 +2520,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		Projection projections[RendererSceneRender::MAX_RENDER_VIEWS];
 
 		uint32_t view_count = p_xr_interface->get_view_count();
-		ERR_FAIL_COND_MSG(view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
+		ERR_FAIL_COND_MSG(view_count == 0 || view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
 
 		float aspect = p_viewport_size.width / (float)p_viewport_size.height;
 
