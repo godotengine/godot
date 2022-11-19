@@ -39,14 +39,14 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
 
-static Vector3 _get_curve_point_up_vector(const Ref<Curve3D> & c, int index, bool tilt) {
+static Vector3 _get_curve_point_up_vector(const Ref<Curve3D> &c, int index, bool tilt) {
 	// TODO: Get offset in a cleaner, more direct way.
 	Vector3 pos = c->get_point_position(index);
 	real_t t = c->get_closest_offset(pos);
 	return c->sample_baked_up_vector(t, tilt);
 }
 
-static Vector3 _get_curve_point_tangent(const Ref<Curve3D> & c, int index) {
+static Vector3 _get_curve_point_tangent(const Ref<Curve3D> &c, int index) {
 	Vector3 pos = c->get_point_position(index);
 	real_t t = c->get_closest_offset(pos);
 
@@ -375,8 +375,7 @@ void Path3DGizmo::redraw() {
 
 		// Put the tilt related handles first to massively simplify handle identification in
 		// {get,set,commit}_handle().
-		if (c->is_up_vector_enabled())
-		{
+		if (c->is_up_vector_enabled()) {
 			for (int i = 0; i < c->get_point_count(); i++) {
 				Vector3 p = c->get_point_position(i);
 				Vector3 up = _get_curve_point_up_vector(c, i, true);
