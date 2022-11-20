@@ -41,38 +41,82 @@ class RegEx;
 class ProjectConverter3To4 {
 public:
 	class RegExContainer;
+	struct SourceExcluded {
+		enum Type {
+			ONE_LINE_STRING,
+			MULTI_LINE_STRING,
+			COMMENT,
+			RESOURCE_PATH,
+			SIGNAL_NAME,
+			PROJECT_SETTING,
+			NODE_NAME,
+			NODE_PATH,
+		};
+
+		Type type;
+		int line_number;
+		String content;
+		String source;
+	};
+	struct SourceCode {
+		int line_number;
+		String content;
+	};
 
 private:
 	uint64_t maximum_file_size;
 	uint64_t maximum_line_length;
 
-	void rename_colors(Vector<String> &lines, const RegExContainer &reg_container);
-	Vector<String> check_for_rename_colors(Vector<String> &lines, const RegExContainer &reg_container);
+	SourceExcluded::Type find_excluded_type(const String &literal, const String &line, int start);
 
-	void rename_classes(Vector<String> &lines, const RegExContainer &reg_container);
-	Vector<String> check_for_rename_classes(Vector<String> &lines, const RegExContainer &reg_container);
+	void process_gdscript(Vector<SourceCode> &lines, RegExContainer &reg_container);
+	void process_scene(Vector<SourceCode> &lines, RegExContainer &reg_container);
+	void process_resource(Vector<SourceCode> &lines, RegExContainer &reg_container);
+	void process_excluded(Vector<SourceExcluded> &excluded);
 
-	void rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin);
-	Vector<String> check_for_rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin);
+	Vector<SourceCode> parse_scene(const Vector<SourceCode> &lines, Vector<Vector<SourceCode>> &scripts, Vector<SourceExcluded> &excluded);
+	Vector<SourceCode> parse_gdscript(const Vector<SourceCode> &lines, Vector<SourceExcluded> &excluded);
+	String parse_gdscript_node_name(const String &line, int &column);
+
+	Vector<SourceCode> restore_excluded(const Vector<SourceCode> &lines, const Vector<SourceExcluded> &excluded);
+	Vector<SourceCode> restore_embedded_scripts(const Vector<SourceCode> &lines, const Vector<Vector<SourceCode>> &scripts);
+	void restore_source_excluded(String &line, int &current, const Vector<SourceExcluded> &excluded);
+	String exclude_from_scene(const SourceCode &source, Vector<SourceExcluded> &excluded);
+	String exclude_scene_attribute(const int &line_number, const String &line, const String &name, SourceExcluded::Type ex_type, Vector<SourceExcluded> &excluded);
+
+	Vector<String> validate_conversion_gdscript(Vector<SourceCode> &lines, RegExContainer &reg_container);
+	Vector<String> validate_conversion_scene(Vector<SourceCode> &lines, RegExContainer &reg_container);
+	Vector<String> validate_conversion_resource(Vector<SourceCode> &lines, RegExContainer &reg_container);
+	Vector<String> validate_conversion_excluded(const Vector<SourceExcluded> &excluded);
+
+	void rename_colors(Vector<SourceCode> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_colors(Vector<SourceCode> &lines, const RegExContainer &reg_container);
+
+	void rename_classes(Vector<SourceCode> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_classes(Vector<SourceCode> &lines, const RegExContainer &reg_container);
+
+	void rename_gdscript_functions(Vector<SourceCode> &lines, const RegExContainer &reg_container, bool builtin);
+	Vector<String> check_for_rename_gdscript_functions(Vector<SourceCode> &lines, const RegExContainer &reg_container, bool builtin);
 	void process_gdscript_line(String &line, const RegExContainer &reg_container, bool builtin);
 
-	void rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container);
-	Vector<String> check_for_rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container);
+	void rename_csharp_functions(Vector<SourceCode> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_csharp_functions(Vector<SourceCode> &lines, const RegExContainer &reg_container);
 	void process_csharp_line(String &line, const RegExContainer &reg_container);
 
-	void rename_csharp_attributes(Vector<String> &lines, const RegExContainer &reg_container);
-	Vector<String> check_for_rename_csharp_attributes(Vector<String> &lines, const RegExContainer &reg_container);
+	void rename_csharp_attributes(Vector<SourceCode> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_csharp_attributes(Vector<SourceCode> &lines, const RegExContainer &reg_container);
 
-	void rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container);
-	Vector<String> check_for_rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container);
+	void rename_gdscript_keywords(Vector<SourceCode> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_gdscript_keywords(Vector<SourceCode> &lines, const RegExContainer &reg_container);
 
-	void custom_rename(Vector<String> &lines, String from, String to);
-	Vector<String> check_for_custom_rename(Vector<String> &lines, String from, String to);
+	void custom_rename(Vector<SourceCode> &lines, String from, String to);
+	Vector<String> check_for_custom_rename(Vector<SourceCode> &lines, String from, String to);
 
-	void rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines);
-	Vector<String> check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines);
+	void rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<SourceCode> &lines);
+	Vector<String> check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<SourceCode> &lines);
 
 	Vector<String> check_for_files();
+	Vector<SourceCode> split_name(const String &name);
 
 	Vector<String> parse_arguments(const String &line);
 	int get_end_parenthesis(const String &line) const;
@@ -82,11 +126,15 @@ private:
 
 	String line_formatter(int current_line, String from, String to, String line);
 	String simple_line_formatter(int current_line, String old_line, String line);
-	String collect_string_from_vector(Vector<String> &vector);
+	String collect_string_from_vector(Vector<SourceCode> &vector);
 
 	bool test_single_array(const char *array[][2], bool ignore_second_check = false);
-	bool test_conversion_gdscript_builtin(String name, String expected, void (ProjectConverter3To4::*func)(Vector<String> &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin);
-	bool test_conversion_with_regex(String name, String expected, void (ProjectConverter3To4::*func)(Vector<String> &, const RegExContainer &), String what, const RegExContainer &reg_container);
+	bool test_conversion_gdscript_builtin(String name, String expected, String what, const RegExContainer &reg_container, bool builtin);
+	bool test_conversion_csharp_functions(String name, String expected, String what, const RegExContainer &reg_container);
+	bool test_conversion_csharp_attributes(String name, String expected, String what, const RegExContainer &reg_container);
+	bool test_conversion_classes(String name, String expected, String what, const RegExContainer &reg_container);
+	bool test_conversion_gdscript_keywords(String name, String expected, String what, const RegExContainer &reg_container);
+	bool test_conversion_colors(String name, String expected, String what, const RegExContainer &reg_container);
 	bool test_conversion_basic(String name, String expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, String what);
 	bool test_array_names();
 	bool test_conversion(RegExContainer &reg_container);
