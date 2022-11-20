@@ -96,7 +96,7 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case RETURN_VALUE_DISCARDED: {
 			CHECK_SYMBOLS(1);
-			return "The function '" + symbols[0] + "()' returns a value, but this value is never used.";
+			return "The function '" + symbols[0] + "()' returns a value that will be discarded if not used.";
 		} break;
 		case PROPERTY_USED_AS_FUNCTION: {
 			CHECK_SYMBOLS(2);
