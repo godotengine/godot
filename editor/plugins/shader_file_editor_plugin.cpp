@@ -286,6 +286,7 @@ ShaderFileEditor::ShaderFileEditor() {
 
 	error_text = memnew(RichTextLabel);
 	error_text->set_v_size_flags(SIZE_EXPAND_FILL);
+	error_text->set_selection_enabled(true);
 	main_vb->add_child(error_text);
 }
 
