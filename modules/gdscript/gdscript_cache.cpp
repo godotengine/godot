@@ -236,15 +236,16 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 		return singleton->shallow_gdscript_cache[p_path];
 	}
 
-	Ref<GDScriptParserRef> parser_ref = get_parser(p_path, GDScriptParserRef::PARSED, r_error);
-	if (r_error != OK) {
-		return Ref<GDScript>();
-	}
-
 	Ref<GDScript> script;
 	script.instantiate();
 	script->set_path(p_path, true);
 	script->load_source_code(p_path);
+
+	Ref<GDScriptParserRef> parser_ref = get_parser(p_path, GDScriptParserRef::PARSED, r_error);
+	if (r_error != OK) {
+		return script;
+	}
+
 	GDScriptCompiler::make_scripts(script.ptr(), parser_ref->get_parser()->get_tree(), true);
 
 	singleton->shallow_gdscript_cache[p_path] = script;
