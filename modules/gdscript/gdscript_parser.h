@@ -1308,6 +1308,9 @@ private:
 	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
 	void reset_extents(Node *p_node, Node *p_from);
 
+	Node *find_previous(const Node *p_node);
+	void convert_subscript_identifier_to_literal(SubscriptNode *p_sub);
+
 	template <class T>
 	T *alloc_node() {
 		T *node = memnew(T);

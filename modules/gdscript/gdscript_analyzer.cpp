@@ -3362,28 +3362,38 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				result_type.kind = GDScriptParser::DataType::VARIANT;
 				mark_node_unsafe(p_subscript);
 			} else {
-				reduce_identifier_from_base(p_subscript->attribute, &base_type);
-				GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
-				if (attr_type.is_set()) {
-					result_type = attr_type;
-					p_subscript->is_constant = p_subscript->attribute->is_constant;
-					p_subscript->reduced_value = p_subscript->attribute->reduced_value;
+				// This assumes Dictionaries have no properties, only functions
+				// It replaces the IdentiferNode of dict.someIndex into the LiteralNode of dict["someIndex"]
+				if (base_type.kind == GDScriptParser::DataType::BUILTIN && base_type.builtin_type == Variant::DICTIONARY && p_subscript->attribute->type == GDScriptParser::Node::IDENTIFIER) {
+					parser->convert_subscript_identifier_to_literal(p_subscript);
 				} else {
-					if (base_type.kind == GDScriptParser::DataType::BUILTIN) {
-						push_error(vformat(R"(Cannot find member "%s" in base "%s".)", p_subscript->attribute->name, base_type.to_string()), p_subscript->attribute);
-#ifdef DEBUG_ENABLED
+					reduce_identifier_from_base(p_subscript->attribute, &base_type);
+					GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
+					if (attr_type.is_set()) {
+						result_type = attr_type;
+						p_subscript->is_constant = p_subscript->attribute->is_constant;
+						p_subscript->reduced_value = p_subscript->attribute->reduced_value;
 					} else {
-						parser->push_warning(p_subscript, GDScriptWarning::UNSAFE_PROPERTY_ACCESS, p_subscript->attribute->name, base_type.to_string());
+						if (base_type.kind == GDScriptParser::DataType::BUILTIN) {
+							push_error(vformat(R"(Cannot find member "%s" in base "%s".)", p_subscript->attribute->name, base_type.to_string()), p_subscript->attribute);
+#ifdef DEBUG_ENABLED
+						} else {
+							parser->push_warning(p_subscript, GDScriptWarning::UNSAFE_PROPERTY_ACCESS, p_subscript->attribute->name, base_type.to_string());
 #endif
+						}
+						result_type.kind = GDScriptParser::DataType::VARIANT;
 					}
-					result_type.kind = GDScriptParser::DataType::VARIANT;
 				}
 			}
 		}
-	} else {
+	}
+
+	// This isn't an else because p_subscript->is_attribute may have changed above if p_subscript->base is a dictionary
+	if (!p_subscript->is_attribute) {
 		if (p_subscript->index == nullptr) {
 			return;
 		}
+
 		reduce_expression(p_subscript->index);
 
 		if (p_subscript->base->is_constant && p_subscript->index->is_constant) {

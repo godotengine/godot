@@ -4122,6 +4122,42 @@ void GDScriptParser::reset_extents(Node *p_node, Node *p_from) {
 	p_node->rightmost_column = p_from->rightmost_column;
 }
 
+GDScriptParser::Node *GDScriptParser::find_previous(const Node *p_node) {
+	// This is inefficient because it's using a singly-linked list
+	if (list == nullptr) {
+		return nullptr;
+	}
+
+	Node *ret = list;
+	while (list) {
+		if (list->next == p_node) {
+			return ret;
+		}
+		list = list->next;
+	}
+	return nullptr;
+}
+
+void GDScriptParser::convert_subscript_identifier_to_literal(SubscriptNode *p_subscript) {
+	p_subscript->is_attribute = false;
+	GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(p_subscript->index);
+	GDScriptParser::LiteralNode *li = alloc_node<GDScriptParser::LiteralNode>();
+	li->start_line = id->start_line, li->end_line = id->end_line;
+	li->start_column = id->start_column, li->end_column = id->end_column;
+	li->leftmost_column = id->leftmost_column, li->rightmost_column = id->rightmost_column;
+	li->next = id->next;
+	li->annotations = id->annotations;
+	li->ignored_warnings = id->ignored_warnings;
+	String name = id->name;
+	li->value = Variant(name);
+	p_subscript->index = li;
+	GDScriptParser::Node *prev = find_previous(id);
+	if (prev != nullptr) {
+		prev->next = li;
+	}
+	memdelete(id);
+}
+
 /*---------- PRETTY PRINT FOR DEBUG ----------*/
 
 #ifdef DEBUG_ENABLED
