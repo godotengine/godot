@@ -568,13 +568,6 @@
 			The animation step value.
 		</member>
 	</members>
-	<signals>
-		<signal name="tracks_changed">
-			<description>
-				Emitted when there's a change in the list of tracks, e.g. tracks are added, moved or have changed paths.
-			</description>
-		</signal>
-	</signals>
 	<constants>
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be interpolated. For 3D position/rotation/scale, using the dedicated [constant TYPE_POSITION_3D], [constant TYPE_ROTATION_3D] and [constant TYPE_SCALE_3D] track types instead of [constant TYPE_VALUE] is recommended for performance reasons.
