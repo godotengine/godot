@@ -3114,11 +3114,24 @@ void EditorInspector::update_tree() {
 			// Build the doc hint, to use as tooltip.
 
 			// Get the class name.
-			StringName classname = doc_name == "" ? object->get_class_name() : doc_name;
+			StringName classname = doc_name;
 			if (!object_class.is_empty()) {
 				classname = object_class;
 			} else if (Object::cast_to<MultiNodeEdit>(object)) {
 				classname = Object::cast_to<MultiNodeEdit>(object)->get_edited_class_name();
+			} else if (classname == "") {
+				classname = object->get_class_name();
+				Resource *res = Object::cast_to<Resource>(object);
+				if (res && !res->get_script().is_null()) {
+					// Grab the script of this resource to get the evaluated script class.
+					Ref<Script> scr = res->get_script();
+					if (scr.is_valid()) {
+						Vector<DocData::ClassDoc> docs = scr->get_documentation();
+						if (!docs.is_empty()) {
+							classname = docs[0].name;
+						}
+					}
+				}
 			}
 
 			StringName propname = property_prefix + p.name;
