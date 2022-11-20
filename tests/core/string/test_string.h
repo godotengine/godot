@@ -516,21 +516,22 @@ TEST_CASE("[String] Splitting") {
 	s = "1.2;2.3 4.5";
 	const double slices_d[3] = { 1.2, 2.3, 4.5 };
 
-	Vector<float> f;
-	f = s.split_floats(";");
-	CHECK(f.size() == 2);
-	for (int i = 0; i < f.size(); i++) {
-		CHECK(ABS(f[i] - slices_d[i]) <= 0.00001);
+	Vector<double> d_arr;
+	d_arr = s.split_floats(";");
+	CHECK(d_arr.size() == 2);
+	for (int i = 0; i < d_arr.size(); i++) {
+		CHECK(ABS(d_arr[i] - slices_d[i]) <= 0.00001);
 	}
 
 	Vector<String> keys;
 	keys.push_back(";");
 	keys.push_back(" ");
 
-	f = s.split_floats_mk(keys);
-	CHECK(f.size() == 3);
-	for (int i = 0; i < f.size(); i++) {
-		CHECK(ABS(f[i] - slices_d[i]) <= 0.00001);
+	Vector<float> f_arr;
+	f_arr = s.split_floats_mk(keys);
+	CHECK(f_arr.size() == 3);
+	for (int i = 0; i < f_arr.size(); i++) {
+		CHECK(ABS(f_arr[i] - slices_d[i]) <= 0.00001);
 	}
 
 	s = "1;2 4";

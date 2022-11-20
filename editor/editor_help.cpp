@@ -1363,7 +1363,7 @@ void EditorHelp::_update_doc() {
 
 				if (constants[i].value.begins_with("Color(") && constants[i].value.ends_with(")")) {
 					String stripped = constants[i].value.replace(" ", "").replace("Color(", "").replace(")", "");
-					Vector<float> color = stripped.split_floats(",");
+					PackedFloat64Array color = stripped.split_floats(",");
 					if (color.size() >= 3) {
 						class_desc->push_color(Color(color[0], color[1], color[2]));
 						_add_bulletpoint();
