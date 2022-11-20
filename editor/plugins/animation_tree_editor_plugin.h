@@ -74,7 +74,7 @@ protected:
 	static AnimationTreeEditor *singleton;
 
 public:
-	AnimationTree *get_tree() { return tree; }
+	AnimationTree *get_animation_tree() { return tree; }
 	void add_plugin(AnimationTreeNodeEditorPlugin *p_editor);
 	void remove_plugin(AnimationTreeNodeEditorPlugin *p_editor);
 
