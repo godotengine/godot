@@ -947,7 +947,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 		Ref<Image> image;
 		String image_path = p_dest_dir.plus_file("splash@2x.png");
 		image.instance();
-		Error err = image->load(custom_launch_image_2x);
+		Error err = ImageLoader::load_image(custom_launch_image_2x, image);
 
 		if (err) {
 			image.unref();
@@ -961,7 +961,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 		image.unref();
 		image_path = p_dest_dir.plus_file("splash@3x.png");
 		image.instance();
-		err = image->load(custom_launch_image_3x);
+		err = ImageLoader::load_image(custom_launch_image_3x, image);
 
 		if (err) {
 			image.unref();
@@ -978,7 +978,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 
 		if (!splash_path.empty()) {
 			splash.instance();
-			const Error err = splash->load(splash_path);
+			const Error err = ImageLoader::load_image(splash_path, splash);
 			if (err) {
 				splash.unref();
 			}

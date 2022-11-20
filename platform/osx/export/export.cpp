@@ -31,6 +31,7 @@
 #include "export.h"
 #include "codesign.h"
 
+#include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
@@ -1180,8 +1181,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				} else {
 					Ref<Image> icon;
 					icon.instance();
-					icon->load(iconpath);
-					if (!icon->empty()) {
+					err = ImageLoader::load_image(iconpath, icon);
+					if (err == OK && !icon->empty()) {
 						_make_icon(p_preset, icon, data);
 					}
 				}
