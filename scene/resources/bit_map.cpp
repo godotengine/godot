@@ -169,14 +169,6 @@ Dictionary BitMap::_get_data() const {
 	return d;
 }
 
-struct CrossStackEntry {
-	Point2i cross;
-	Vector<int> ranges;
-
-	_FORCE_INLINE_ bool operator==(const CrossStackEntry &p_other) const { return cross == p_other.cross; }
-	_FORCE_INLINE_ bool operator!=(const CrossStackEntry &p_other) const { return cross != p_other.cross; }
-};
-
 Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2i &p_start) const {
 	int stepx = 0;
 	int stepy = 0;
@@ -188,14 +180,11 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 	int cury = starty;
 	unsigned int count = 0;
 
-	Vector<CrossStackEntry> cross_stack;
-	int cross_stack_size = 0;
+	HashMap<Point2i, int> cross_map;
 
-	// Add starting point to stack as the default entry.
-	cross_stack.push_back({ Point2i(-1, -1), Vector<int>({ 0 }) });
-	cross_stack_size++;
+	Vector<Vector2> _points;
+	int points_size = 0;
 
-	Vector<Point2i> _points;
 	Vector<Vector<Vector2>> ret;
 
 	// Add starting entry at start of return.
@@ -326,52 +315,25 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 
 		// Handle crossing points.
 		if (sv == 6 || sv == 9) {
-			const int new_index = _points.size() - 1;
+			const Point2i cur_pos(curx, cury);
 
-			// Add previous point to last stack entry.
-			cross_stack.write[cross_stack_size - 1].ranges.push_back(new_index);
+			// Find if this point has occured before.
+			if (HashMap<Point2i, int>::Iterator found = cross_map.find(cur_pos)) {
+				// Add points after the previous crossing to the result.
+				ret.push_back(_points.slice(found->value + 1, points_size));
 
-			// Create temporary entry to maybe insert, for searching.
-			const CrossStackEntry new_entry = { _points[new_index], Vector<int>({ new_index }) };
+				// Remove points after crossing point.
+				points_size = found->value + 1;
 
-			// Attempt to find matching entry.
-			const int found = cross_stack.rfind(new_entry, cross_stack_size - 1);
-
-			if (found != -1) {
-				Vector<Vector2> tmp;
-
-				// Iterate over entries between end of stack and found, adding ranges to result.
-				for (int i = found; i < cross_stack_size; i++) {
-					const Vector<int> &ranges = cross_stack[i].ranges;
-
-					for (int j = 0; j < ranges.size() / 2; j++) {
-						int first = ranges[2 * j];
-						const int last = ranges[2 * j + 1];
-
-						int new_pos = tmp.size();
-
-						tmp.resize(tmp.size() + (last - first));
-
-						Vector2 *tmp_ptrw = tmp.ptrw();
-
-						for (; first < last; first++, new_pos++) {
-							tmp_ptrw[new_pos].x = (float)(_points[first].x - p_rect.position.x);
-							tmp_ptrw[new_pos].y = (float)(_points[first].y - p_rect.position.y);
-						}
-					}
+				// Erase trailing map elements.
+				while (cross_map.last() != found) {
+					cross_map.remove(cross_map.last());
 				}
 
-				ret.push_back(tmp);
-
-				// Shrink stack.
-				cross_stack_size = found;
-
-				// Add previous point to last stack entry.
-				cross_stack.write[cross_stack_size - 1].ranges.push_back(new_index);
+				cross_map.erase(cur_pos);
 			} else {
-				cross_stack.resize(MAX(cross_stack_size + 1, cross_stack.size()));
-				cross_stack.set(cross_stack_size, new_entry);
-				cross_stack_size++;
+				// Add crossing point to map.
+				cross_map.insert(cur_pos, points_size - 1);
 			}
 		}
 
@@ -381,10 +343,11 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 		curx += stepx;
 		cury += stepy;
 		if (stepx == prevx && stepy == prevy) {
-			_points.write[_points.size() - 1].x = curx;
-			_points.write[_points.size() - 1].y = cury;
+			_points.set(points_size - 1, Vector2(curx, cury) - p_rect.position);
 		} else {
-			_points.push_back(Point2i(curx, cury));
+			_points.resize(MAX(points_size + 1, _points.size()));
+			_points.set(points_size, Vector2(curx, cury) - p_rect.position);
+			points_size++;
 		}
 
 		count++;
@@ -394,28 +357,10 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 		ERR_FAIL_COND_V((int)count > width * height, Vector<Vector<Vector2>>());
 	} while (curx != startx || cury != starty);
 
-	// Add last position to last stack entry.
-	cross_stack.write[cross_stack_size - 1].ranges.push_back(_points.size());
+	// Add remaining points to result.
+	_points.resize(points_size);
 
-	for (int i = 0; i < cross_stack_size; i++) {
-		const Vector<int> &ranges = cross_stack[i].ranges;
-
-		for (int j = 0; j < ranges.size() / 2; j++) {
-			int first = ranges[2 * j];
-			const int last = ranges[2 * j + 1];
-
-			int new_pos = ret[0].size();
-
-			ret.write[0].resize(ret[0].size() + (last - first));
-
-			Vector2 *tmp_ptrw = ret.write[0].ptrw();
-
-			for (; first < last; first++, new_pos++) {
-				tmp_ptrw[new_pos].x = (float)(_points[first].x - p_rect.position.x);
-				tmp_ptrw[new_pos].y = (float)(_points[first].y - p_rect.position.y);
-			}
-		}
-	}
+	ret.set(0, _points);
 
 	return ret;
 }
