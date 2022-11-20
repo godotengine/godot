@@ -257,15 +257,54 @@ void SceneReplicationInterface::_visibility_changed(int p_peer, ObjectID p_sid) 
 	Node *node = sync->get_root_node();
 	ERR_FAIL_COND(!node); // Bug.
 	const ObjectID oid = node->get_instance_id();
-	if (spawned_nodes.has(oid)) {
+	if (spawned_nodes.has(oid) && p_peer != multiplayer->get_unique_id()) {
 		_update_spawn_visibility(p_peer, oid);
 	}
 	_update_sync_visibility(p_peer, sync);
 }
 
+bool SceneReplicationInterface::is_rpc_visible(const ObjectID &p_oid, int p_peer) const {
+	if (!tracked_nodes.has(p_oid)) {
+		return true; // Untracked nodes are always visible to RPCs.
+	}
+	ERR_FAIL_COND_V(p_peer < 0, false);
+	const TrackedNode &tnode = tracked_nodes[p_oid];
+	if (tnode.synchronizers.is_empty()) {
+		return true; // No synchronizers means no visibility restrictions.
+	}
+	if (tnode.remote_peer && uint32_t(p_peer) == tnode.remote_peer) {
+		return true; // RPCs on spawned nodes are always visible to spawner.
+	} else if (spawned_nodes.has(p_oid)) {
+		// It's a spwaned node we control, this can be fast
+		if (p_peer) {
+			return peers_info.has(p_peer) && peers_info[p_peer].spawn_nodes.has(p_oid);
+		} else {
+			for (const KeyValue<int, PeerInfo> &E : peers_info) {
+				if (!E.value.spawn_nodes.has(p_oid)) {
+					return false; // Not public.
+				}
+			}
+			return true; // All peers have this node.
+		}
+	} else {
+		// Cycle object synchronizers to check visibility.
+		for (const ObjectID &sid : tnode.synchronizers) {
+			MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);
+			ERR_CONTINUE(!sync);
+			// RPC visibility is composed using OR when multiple synchronizers are present.
+			// Note that we don't really care about authority here which may lead to unexpected
+			// results when using multiple synchronizers to control the same node.
+			if (sync->is_visible_to(p_peer)) {
+				return true;
+			}
+		}
+		return false; // Not visible.
+	}
+}
+
 Error SceneReplicationInterface::_update_sync_visibility(int p_peer, MultiplayerSynchronizer *p_sync) {
 	ERR_FAIL_COND_V(!p_sync, ERR_BUG);
-	if (!multiplayer->has_multiplayer_peer() || !p_sync->is_multiplayer_authority()) {
+	if (!multiplayer->has_multiplayer_peer() || !p_sync->is_multiplayer_authority() || p_peer == multiplayer->get_unique_id()) {
 		return OK;
 	}
 
