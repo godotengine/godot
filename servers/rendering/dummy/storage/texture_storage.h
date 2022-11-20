@@ -80,6 +80,7 @@ public:
 	virtual void texture_free(RID p_rid) override {
 		// delete the texture
 		DummyTexture *texture = texture_owner.get_or_null(p_rid);
+		ERR_FAIL_COND(!texture);
 		texture_owner.free(p_rid);
 		memdelete(texture);
 	};
