@@ -32,6 +32,7 @@
 
 #include "scene_multiplayer.h"
 
+#include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
 #include "scene/scene_string_names.h"
@@ -39,6 +40,18 @@
 #define MAKE_ROOM(m_amount)             \
 	if (packet_cache.size() < m_amount) \
 		packet_cache.resize(m_amount);
+
+#ifdef DEBUG_ENABLED
+_FORCE_INLINE_ void SceneReplicationInterface::_profile_node_data(const String &p_what, ObjectID p_id, int p_size) {
+	if (EngineDebugger::is_profiling("multiplayer:replication")) {
+		Array values;
+		values.push_back(p_what);
+		values.push_back(p_id);
+		values.push_back(p_size);
+		EngineDebugger::profiler_add_frame_data("multiplayer:replication", values);
+	}
+}
+#endif
 
 SceneReplicationInterface::TrackedNode &SceneReplicationInterface::_track(const ObjectID &p_id) {
 	if (!tracked_nodes.has(p_id)) {
@@ -635,6 +648,9 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> p
 			MultiplayerAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), &ptr[ofs], size);
 			ofs += size;
 		}
+#ifdef DEBUG_ENABLED
+		_profile_node_data("sync_out", oid, size);
+#endif
 	}
 	if (ofs > 3) {
 		// Got some left over to send.
@@ -682,6 +698,9 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		err = MultiplayerSynchronizer::set_state(props, node, vars);
 		ERR_FAIL_COND_V(err, err);
 		ofs += size;
+#ifdef DEBUG_ENABLED
+		_profile_node_data("sync_in", sync->get_instance_id(), size);
+#endif
 	}
 	return OK;
 }
