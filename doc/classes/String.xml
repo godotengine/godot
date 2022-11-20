@@ -738,7 +738,7 @@
 			</description>
 		</method>
 		<method name="split_floats" qualifiers="const">
-			<return type="PackedFloat32Array" />
+			<return type="PackedFloat64Array" />
 			<param index="0" name="delimiter" type="String" />
 			<param index="1" name="allow_empty" type="bool" default="true" />
 			<description>
