@@ -74,6 +74,12 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	edit_path(path);
 }
 
+void AnimationTreeEditor::_node_removed(Node *p_node) {
+	if (p_node == tree) {
+		tree = nullptr;
+	}
+}
+
 void AnimationTreeEditor::_path_button_pressed(int p_path) {
 	edited_path.clear();
 	for (int i = 0; i <= p_path; i++) {
@@ -167,6 +173,9 @@ void AnimationTreeEditor::enter_editor(const String &p_path) {
 
 void AnimationTreeEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", callable_mp(this, &AnimationTreeEditor::_node_removed));
+		} break;
 		case NOTIFICATION_PROCESS: {
 			ObjectID root;
 			if (tree && tree->get_tree_root().is_valid()) {
@@ -180,6 +189,9 @@ void AnimationTreeEditor::_notification(int p_what) {
 			if (button_path.size() != edited_path.size()) {
 				edit_path(edited_path);
 			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &AnimationTreeEditor::_node_removed));
 		} break;
 	}
 }

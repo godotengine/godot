@@ -76,7 +76,7 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 }
 
 void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEvent> &p_event) {
-	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_animation_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 	if (playback.is_null()) {
 		return;
 	}
@@ -739,7 +739,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
 	menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-	AnimationTree *gp = AnimationTreeEditor::get_singleton()->get_tree();
+	AnimationTree *gp = AnimationTreeEditor::get_singleton()->get_animation_tree();
 	ERR_FAIL_COND(!gp);
 	if (gp && gp->has_node(gp->get_animation_player())) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(gp->get_node(gp->get_animation_player()));
@@ -1181,7 +1181,7 @@ void AnimationNodeStateMachineEditor::_clip_dst_line_to_rect(const Vector2 &p_fr
 }
 
 void AnimationNodeStateMachineEditor::_state_machine_draw() {
-	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_animation_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 	Ref<StyleBoxFlat> style = get_theme_stylebox(SNAME("state_machine_frame"), SNAME("GraphNode"));
 	Ref<StyleBoxFlat> style_selected = get_theme_stylebox(SNAME("state_machine_selected_frame"), SNAME("GraphNode"));
@@ -1369,7 +1369,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		}
 
 		StringName fullpath = AnimationTreeEditor::get_singleton()->get_base_path() + String(tl.advance_condition_name);
-		if (tl.advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(fullpath))) {
+		if (tl.advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_animation_tree()->get(fullpath))) {
 			tl.advance_condition_state = true;
 			tl.auto_advance = true;
 		}
@@ -1484,7 +1484,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 }
 
 void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
-	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_animation_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 	if (!playback.is_valid() || !playback->is_playing()) {
 		return;
@@ -1578,15 +1578,15 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 			String error;
 
-			Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+			Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_animation_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 			if (error_time > 0) {
 				error = error_text;
 				error_time -= get_process_delta_time();
-			} else if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
+			} else if (!AnimationTreeEditor::get_singleton()->get_animation_tree()->is_active()) {
 				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
-				error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
+			} else if (AnimationTreeEditor::get_singleton()->get_animation_tree()->is_state_invalid()) {
+				error = AnimationTreeEditor::get_singleton()->get_animation_tree()->get_invalid_state_reason();
 				/*} else if (state_machine->get_parent().is_valid() && state_machine->get_parent()->is_class("AnimationNodeStateMachine")) {
 				if (state_machine->get_start_node() == StringName() || state_machine->get_end_node() == StringName()) {
 					error = TTR("Start and end nodes are needed for a sub-transition.");
@@ -1638,7 +1638,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 					break;
 				}
 
-				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
+				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_animation_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
 
 				if (transition_lines[i].advance_condition_state != acstate) {
 					state_machine_draw->queue_redraw();
@@ -1693,7 +1693,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 					Ref<AnimationNodeStateMachinePlayback> current_node_playback;
 
 					while (anodesm.is_valid()) {
-						current_node_playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
+						current_node_playback = AnimationTreeEditor::get_singleton()->get_animation_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
 						next += "/" + current_node_playback->get_current_node();
 						anodesm = anodesm->get_node(current_node_playback->get_current_node());
 					}
