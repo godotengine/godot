@@ -51,6 +51,12 @@ struct DebuggerMarshalls {
 		bool deserialize(const Array &p_arr);
 	};
 
+	enum ErrorType {
+		ERROR_TYPE_ERROR,
+		ERROR_TYPE_WARNING,
+		ERROR_TYPE_GDSCRIPT_WARNING,
+	};
+
 	struct OutputError {
 		int hr = -1;
 		int min = -1;
@@ -61,11 +67,13 @@ struct DebuggerMarshalls {
 		int source_line = -1;
 		String error;
 		String error_descr;
-		bool warning = false;
+		ErrorType type = ERROR_TYPE_ERROR;
 		Vector<ScriptLanguage::StackInfo> callstack;
 
 		Array serialize();
 		bool deserialize(const Array &p_arr);
+
+		_FORCE_INLINE_ bool is_warning() const { return int(type) > int(ERROR_TYPE_ERROR); }
 	};
 };
 

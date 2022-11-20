@@ -470,6 +470,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	} else if (p_msg == "error") {
 		DebuggerMarshalls::OutputError oe;
 		ERR_FAIL_COND_MSG(oe.deserialize(p_data) == false, "Failed to deserialize error message");
+		if (oe.type == DebuggerMarshalls::ERROR_TYPE_GDSCRIPT_WARNING && !ProjectSettings::get_singleton()->get_setting("debug/gdscript/warnings/enable")) {
+			return;
+		}
+		bool is_warning = oe.is_warning();
 
 		// Format time.
 		Array time_vals;
@@ -496,16 +500,16 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		// Also provide the relevant details as tooltip to quickly check without
 		// uncollapsing the tree.
-		String tooltip = oe.warning ? TTR("Warning:") : TTR("Error:");
+		String tooltip = is_warning ? TTR("Warning:") : TTR("Error:");
 
 		TreeItem *error = error_tree->create_item(r);
 		error->set_collapsed(true);
 
-		error->set_icon(0, get_theme_icon(oe.warning ? SNAME("Warning") : SNAME("Error"), SNAME("EditorIcons")));
+		error->set_icon(0, get_theme_icon(is_warning ? SNAME("Warning") : SNAME("Error"), SNAME("EditorIcons")));
 		error->set_text(0, time);
 		error->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 
-		const Color color = get_theme_color(oe.warning ? SNAME("warning_color") : SNAME("error_color"), SNAME("Editor"));
+		const Color color = get_theme_color(is_warning ? SNAME("warning_color") : SNAME("error_color"), SNAME("Editor"));
 		error->set_custom_color(0, color);
 		error->set_custom_color(1, color);
 
@@ -588,7 +592,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			clear_button->set_disabled(false);
 		}
 
-		if (oe.warning) {
+		if (is_warning) {
 			warning_count++;
 		} else {
 			error_count++;

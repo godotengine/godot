@@ -107,7 +107,7 @@ Array DebuggerMarshalls::OutputError::serialize() {
 	arr.push_back(source_line);
 	arr.push_back(error);
 	arr.push_back(error_descr);
-	arr.push_back(warning);
+	arr.push_back(int(type));
 	unsigned int size = callstack.size();
 	const ScriptLanguage::StackInfo *r = callstack.ptr();
 	arr.push_back(size * 3);
@@ -130,7 +130,7 @@ bool DebuggerMarshalls::OutputError::deserialize(const Array &p_arr) {
 	source_line = p_arr[6];
 	error = p_arr[7];
 	error_descr = p_arr[8];
-	warning = p_arr[9];
+	type = DebuggerMarshalls::ErrorType(int(p_arr[9]));
 	unsigned int stack_size = p_arr[10];
 	CHECK_SIZE(p_arr, stack_size, "OutputError");
 	int idx = 11;

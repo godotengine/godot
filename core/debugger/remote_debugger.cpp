@@ -175,7 +175,7 @@ RemoteDebugger::ErrorMessage RemoteDebugger::_create_overflow_error(const String
 	ErrorMessage oe;
 	oe.error = p_what;
 	oe.error_descr = p_descr;
-	oe.warning = false;
+	oe.type = DebuggerMarshalls::ERROR_TYPE_ERROR;
 	uint64_t time = OS::get_singleton()->get_ticks_msec();
 	oe.hr = time / 3600000;
 	oe.min = (time / 60000) % 60;
@@ -273,7 +273,18 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	oe.source_file = p_file;
 	oe.source_line = p_line;
 	oe.source_func = p_func;
-	oe.warning = p_type == ERR_HANDLER_WARNING;
+	switch (p_type) {
+		case ERR_HANDLER_WARNING: {
+			oe.type = DebuggerMarshalls::ERROR_TYPE_WARNING;
+		} break;
+		case ERR_HANDLER_GDSCRIPT_WARNING: {
+			oe.type = DebuggerMarshalls::ERROR_TYPE_GDSCRIPT_WARNING;
+		} break;
+		default: {
+			oe.type = DebuggerMarshalls::ERROR_TYPE_ERROR;
+		} break;
+	}
+	bool is_warning = oe.is_warning();
 	uint64_t time = OS::get_singleton()->get_ticks_msec();
 	oe.hr = time / 3600000;
 	oe.min = (time / 60000) % 60;
@@ -287,14 +298,14 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 
 	MutexLock lock(mutex);
 
-	if (oe.warning) {
+	if (is_warning) {
 		warn_count++;
 	} else {
 		err_count++;
 	}
 
 	if (is_peer_connected()) {
-		if (oe.warning) {
+		if (is_warning) {
 			if (warn_count > max_warnings_per_second) {
 				n_warnings_dropped++;
 				if (n_warnings_dropped == 1) {
