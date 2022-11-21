@@ -2,7 +2,5 @@
 
 Import("env")
 
-if env["platform"] == "linuxbsd":
-    env.Append(CPPDEFINES=["EGL_ENABLED"])
-
+# Godot source files
 env.add_source_files(env.drivers_sources, "*.cpp")

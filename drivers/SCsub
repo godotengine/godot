@@ -30,6 +30,7 @@ if env["opengl3"]:
     SConscript("gl_context/SCsub")
     SConscript("egl/SCsub")
     SConscript("gles3/SCsub")
+    SConscript("egl/SCsub")
 
 # Core dependencies
 SConscript("png/SCsub")

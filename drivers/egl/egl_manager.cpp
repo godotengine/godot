@@ -100,17 +100,17 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 		EGL_NONE,
 	};
 
-	EGLint config_number = 0;
+	EGLint config_count = 0;
 
 	if (OS::get_singleton()->is_layered_allowed()) {
-		eglChooseConfig(p_gldisplay.egl_display, attribs_layered, &p_gldisplay.egl_config, 1, &config_number);
+		eglChooseConfig(p_gldisplay.egl_display, attribs_layered, &p_gldisplay.egl_config, 1, &config_count);
 	} else {
-		eglChooseConfig(p_gldisplay.egl_display, attribs, &p_gldisplay.egl_config, 1, &config_number);
+		eglChooseConfig(p_gldisplay.egl_display, attribs, &p_gldisplay.egl_config, 1, &config_count);
 	}
 
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
 
-	ERR_FAIL_COND_V(config_number == 0, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(config_count == 0, ERR_UNCONFIGURED);
 
 	EGLint context_attribs[] = {
 		EGL_CONTEXT_MAJOR_VERSION, 3,
