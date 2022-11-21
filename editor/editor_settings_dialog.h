@@ -126,7 +126,42 @@ public:
 	void popup_edit_settings();
 
 	EditorSettingsDialog();
-	~EditorSettingsDialog();
+};
+
+class EditorSettingsPropertyWrapper : public EditorProperty {
+	GDCLASS(EditorSettingsPropertyWrapper, EditorProperty);
+
+	String property;
+
+	BoxContainer *container = nullptr;
+	Button *override_button = nullptr;
+
+	HBoxContainer *override_info = nullptr;
+	Label *override_label = nullptr;
+	Button *goto_button = nullptr;
+	Button *remove_button = nullptr;
+
+	void _update_override();
+	void _create_override();
+	void _remove_override();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void setup(const String &p_property, Control *p_editor_property);
+};
+
+class EditorSettingsInspectorPlugin : public EditorInspectorPlugin {
+	GDCLASS(EditorSettingsInspectorPlugin, EditorInspectorPlugin);
+
+	Object *current_object = nullptr;
+
+public:
+	SectionedInspector *inspector = nullptr;
+
+	virtual bool can_handle(Object *p_object);
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 };
 
 #endif // EDITOR_SETTINGS_DIALOG_H

@@ -31,6 +31,7 @@
 #include "editor_inspector.h"
 #include "editor_inspector.compat.inc"
 
+#include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
@@ -1039,6 +1040,10 @@ void EditorProperty::menu_option(int p_option) {
 			ScriptEditor::get_singleton()->goto_help(doc_path);
 			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 		} break;
+		case MENU_OVERRIDE_FOR_PROJECT: {
+			ProjectSettings::get_singleton()->set_editor_setting_override(property_path, EDITOR_GET(property_path));
+			ProjectSettings::get_singleton()->save();
+		}
 	}
 }
 
@@ -1141,6 +1146,11 @@ void EditorProperty::_update_popup() {
 	if (!doc_path.is_empty()) {
 		menu->add_separator();
 		menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
+	}
+
+	if (true) {
+		menu->add_separator();
+		menu->add_icon_item(get_theme_icon(SNAME("MethodOverride"), SNAME("EditorIcons")), TTR("Override for the Current Project"), MENU_OVERRIDE_FOR_PROJECT);
 	}
 }
 

@@ -30,6 +30,7 @@
 
 #include "editor_settings_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -811,7 +812,97 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
 	set_ok_button_text(TTR("Close"));
+
+	EditorSettingsInspectorPlugin *plugin = memnew(EditorSettingsInspectorPlugin);
+	plugin->inspector = inspector;
+	EditorInspector::add_inspector_plugin(plugin);
 }
 
-EditorSettingsDialog::~EditorSettingsDialog() {
+void EditorSettingsPropertyWrapper::_update_override() {
+	bool has_override = ProjectSettings::get_singleton()->has_editor_setting_override(property);
+	if (has_override) {
+		override_label->set_text(vformat(TTR("Overriden in project: %s"), EDITOR_GET(property)));
+	}
+	override_button->set_visible(!has_override);
+	override_info->set_visible(has_override);
+	container->set_vertical(has_override);
+}
+
+void EditorSettingsPropertyWrapper::_create_override() {
+	ProjectSettings::get_singleton()->set_editor_setting_override(property, EDITOR_GET(property));
+	ProjectSettings::get_singleton()->save();
+	_update_override();
+}
+
+void EditorSettingsPropertyWrapper::_remove_override() {
+	ProjectSettings::get_singleton()->set_editor_setting_override(property, Variant());
+	ProjectSettings::get_singleton()->save();
+	_update_override();
+}
+
+void EditorSettingsPropertyWrapper::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		override_button->set_icon(get_editor_theme_icon(SNAME("Override")));
+		goto_button->set_icon(get_editor_theme_icon(SNAME("MethodOverride")));
+		remove_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
+	}
+}
+
+void EditorSettingsPropertyWrapper::setup(const String &p_property, Control *p_editor_property) {
+	property = p_property;
+	container = memnew(BoxContainer);
+
+	override_button = memnew(Button);
+	override_button->set_tooltip_text(TTR("Override this setting for the current project."));
+	container->add_child(override_button);
+	override_button->connect(SNAME("pressed"), callable_mp(this, &EditorSettingsPropertyWrapper::_create_override));
+
+	p_editor_property->set_h_size_flags(SIZE_EXPAND_FILL);
+	container->add_child(p_editor_property);
+
+	override_info = memnew(HBoxContainer);
+	override_info->hide();
+	container->add_child(override_info);
+
+	override_label = memnew(Label);
+	override_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	override_info->add_child(override_label);
+
+	goto_button = memnew(Button);
+	goto_button->set_tooltip_text(TTR("Go to override in Project Settings."));
+	override_info->add_child(goto_button);
+
+	remove_button = memnew(Button);
+	remove_button->set_tooltip_text(TTR("Remove this override."));
+	override_info->add_child(remove_button);
+	remove_button->connect(SNAME("pressed"), callable_mp(this, &EditorSettingsPropertyWrapper::_remove_override));
+
+	add_child(container);
+	_update_override();
+}
+
+bool EditorSettingsInspectorPlugin::can_handle(Object *p_object) {
+	return Object::cast_to<SectionedInspectorFilter>(p_object) != nullptr && p_object != current_object;
+}
+
+bool EditorSettingsInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+	SectionedInspectorFilter *filter = Object::cast_to<SectionedInspectorFilter>(p_object);
+	if (!filter) {
+		return false;
+	}
+
+	const String property = inspector->get_full_item_path(p_path);
+	if (EditorSettings::get_singleton()->has_setting(property)) {
+		current_object = p_object;
+
+		EditorSettingsPropertyWrapper *editor = memnew(EditorSettingsPropertyWrapper);
+		EditorProperty *real_property = inspector->get_inspector()->instantiate_property_editor(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+		real_property->set_name_split_ratio(0.0);
+		editor->setup(property, real_property);
+
+		add_property_editor(p_path, editor);
+		current_object = nullptr;
+		return true;
+	}
+	return false;
 }

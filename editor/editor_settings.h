@@ -196,7 +196,6 @@ public:
 #endif
 
 	EditorSettings();
-	~EditorSettings();
 };
 
 //not a macro any longer
