@@ -2245,13 +2245,14 @@ void Viewport::_drop_mouse_over() {
 
 void Viewport::_drop_mouse_focus() {
 	Control *c = gui.mouse_focus;
-	MouseButton mask = gui.mouse_focus_mask;
+	int mask = (int)gui.mouse_focus_mask;
 	gui.mouse_focus = nullptr;
 	gui.forced_mouse_focus = false;
 	gui.mouse_focus_mask = MouseButton::NONE;
 
-	for (int i = 0; i < 3; i++) {
-		if ((int)mask & (1 << i)) {
+	int i = 0;
+	while (mask != 0) {
+		if (mask & (1 << i)) {
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
 			mb->set_position(c->get_local_mouse_position());
@@ -2259,7 +2260,9 @@ void Viewport::_drop_mouse_focus() {
 			mb->set_button_index(MouseButton(i + 1));
 			mb->set_pressed(false);
 			c->_call_gui_input(mb);
+			mask = mask & ~(1 << i);
 		}
+		i++;
 	}
 }
 
@@ -2356,11 +2359,12 @@ void Viewport::_post_gui_grab_click_focus() {
 			return;
 		}
 
-		MouseButton mask = gui.mouse_focus_mask;
+		int mask = (int)gui.mouse_focus_mask;
 		Point2 click = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
 
-		for (int i = 0; i < 3; i++) {
-			if ((int)mask & (1 << i)) {
+		int i = 0;
+		while (mask != 0) {
+			if (mask & (1 << i)) {
 				Ref<InputEventMouseButton> mb;
 				mb.instantiate();
 
@@ -2370,15 +2374,19 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(false);
 				gui.mouse_focus->_call_gui_input(mb);
+				mask = mask & ~(1 << i);
 			}
+			i++;
 		}
 
 		gui.mouse_focus = focus_grabber;
 		gui.focus_inv_xform = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse();
 		click = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
 
-		for (int i = 0; i < 3; i++) {
-			if ((int)mask & (1 << i)) {
+		mask = (int)gui.mouse_focus_mask;
+		i = 0;
+		while (mask != 0) {
+			if (mask & (1 << i)) {
 				Ref<InputEventMouseButton> mb;
 				mb.instantiate();
 
@@ -2388,7 +2396,9 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(true);
 				MessageQueue::get_singleton()->push_callable(callable_mp(gui.mouse_focus, &Control::_call_gui_input), mb);
+				mask = mask & ~(1 << i);
 			}
+			i++;
 		}
 	}
 }
