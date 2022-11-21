@@ -28,7 +28,6 @@ if env["vulkan"]:
     SConscript("vulkan/SCsub")
 if env["opengl3"]:
     SConscript("gl_context/SCsub")
-    SConscript("egl/SCsub")
     SConscript("gles3/SCsub")
     SConscript("egl/SCsub")
 
