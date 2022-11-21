@@ -84,6 +84,15 @@
 #include <EGL/eglext.h>
 #endif
 
+#if EGL_ENABLED
+#if GLAD_ENABLED
+#include "thirdparty/glad/glad/egl.h"
+#else
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif // GLAD_ENABLED
+#endif // EGL_ENABLED
+
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define strcpy strcpy_s
 #endif
@@ -199,14 +208,25 @@ void RasterizerGLES3::finalize() {
 
 RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
-	if (!gladLoaderLoadGL()) {
-		ERR_PRINT("Error initializing GLAD");
-		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
-		// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
-		// or we need to actually test for this situation before constructing this.
-		return;
+	bool glad_loaded = false;
+#ifdef EGL_ENABLED
+	// There should be a more flexible system for getting the GL pointer, as
+	// different DisplayServers can have different ways. We can just use the GLAD
+	// version global to see if it loaded for now though, otherwise we fallback to
+	// the generic loader below.
+	if (GLAD_EGL_VERSION_1_5 && !glad_loaded && gladLoadGL((GLADloadfunc)eglGetProcAddress)) {
+		glad_loaded = true;
 	}
-#endif
+#endif // EGL_ENABLED
+	if (!glad_loaded && gladLoaderLoadGL()) {
+		glad_loaded = true;
+	}
+
+	// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
+	// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
+	// or we need to actually test for this situation before constructing this.
+	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
+#endif // GLAD_ENABLED
 
 #ifdef GLAD_ENABLED
 	if (OS::get_singleton()->is_stdout_verbose()) {
