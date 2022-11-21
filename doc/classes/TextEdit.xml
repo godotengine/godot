@@ -651,6 +651,13 @@
 				Returns whether the gutter on the given line is clickable.
 			</description>
 		</method>
+		<method name="is_line_hidden" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
+			<description>
+				Returns whether the line at the specified index is hidden or not.
+			</description>
+		</method>
 		<method name="is_line_wrapped" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="line" type="int" />

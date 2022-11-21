@@ -633,7 +633,6 @@ protected:
 	bool _is_hiding_enabled() const;
 
 	void _set_line_as_hidden(int p_line, bool p_hidden);
-	bool _is_line_hidden(int p_line) const;
 
 	void _unhide_all_lines();
 
@@ -723,6 +722,7 @@ public:
 
 	void set_line(int p_line, const String &p_new_text);
 	String get_line(int p_line) const;
+	bool is_line_hidden(int p_line) const;
 
 	int get_line_width(int p_line, int p_wrap_index = -1) const;
 	int get_line_height() const;

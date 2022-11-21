@@ -748,7 +748,7 @@ void TextEdit::_notification(int p_what) {
 						break;
 					}
 
-					while (_is_line_hidden(minimap_line)) {
+					while (is_line_hidden(minimap_line)) {
 						minimap_line++;
 						if (minimap_line < 0 || minimap_line >= (int)text.size()) {
 							break;
@@ -893,7 +893,7 @@ void TextEdit::_notification(int p_what) {
 					continue;
 				}
 
-				while (_is_line_hidden(line)) {
+				while (is_line_hidden(line)) {
 					line++;
 					if (line < 0 || line >= (int)text.size()) {
 						break;
@@ -1290,7 +1290,7 @@ void TextEdit::_notification(int p_what) {
 					cache_entry.last_visible_chars.push_back(last_visible_char);
 
 					// is_line_folded
-					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
+					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && is_line_hidden(line + 1)) {
 						int xofs = char_ofs + char_margin + ofs_x + (folded_eol_icon->get_width() / 2);
 						if (xofs >= xmargin_beg && xofs < xmargin_end) {
 							int yofs = (text_height - folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
@@ -3426,6 +3426,11 @@ String TextEdit::get_line(int p_line) const {
 	return text[p_line];
 }
 
+bool TextEdit::is_line_hidden(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
+	return text.is_hidden(p_line);
+}
+
 int TextEdit::get_line_width(int p_line, int p_wrap_index) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 	ERR_FAIL_COND_V(p_wrap_index > get_line_wrap_count(p_line), 0);
@@ -3550,7 +3555,7 @@ int TextEdit::get_last_unhidden_line() const {
 
 	int last_line;
 	for (last_line = text.size() - 1; last_line > 0; last_line--) {
-		if (!_is_line_hidden(last_line)) {
+		if (!is_line_hidden(last_line)) {
 			break;
 		}
 	}
@@ -3570,7 +3575,7 @@ int TextEdit::get_next_visible_line_offset_from(int p_line_from, int p_visible_a
 	if (p_visible_amount >= 0) {
 		for (int i = p_line_from; i < text.size(); i++) {
 			num_total++;
-			if (!_is_line_hidden(i)) {
+			if (!is_line_hidden(i)) {
 				num_visible++;
 			}
 			if (num_visible >= p_visible_amount) {
@@ -3581,7 +3586,7 @@ int TextEdit::get_next_visible_line_offset_from(int p_line_from, int p_visible_a
 		p_visible_amount = ABS(p_visible_amount);
 		for (int i = p_line_from; i >= 0; i--) {
 			num_total++;
-			if (!_is_line_hidden(i)) {
+			if (!is_line_hidden(i)) {
 				num_visible++;
 			}
 			if (num_visible >= p_visible_amount) {
@@ -3612,7 +3617,7 @@ Point2i TextEdit::get_next_visible_line_index_offset_from(int p_line_from, int p
 		num_visible -= p_wrap_index_from;
 		for (i = p_line_from; i < text.size(); i++) {
 			num_total++;
-			if (!_is_line_hidden(i)) {
+			if (!is_line_hidden(i)) {
 				num_visible++;
 				num_visible += get_line_wrap_count(i);
 			}
@@ -3626,7 +3631,7 @@ Point2i TextEdit::get_next_visible_line_index_offset_from(int p_line_from, int p
 		// This means we need to backtrack to get last visible line.
 		// Currently, line 0 cannot be hidden so this should always be valid.
 		int line = (p_line_from + num_total) - 1;
-		if (_is_line_hidden(line)) {
+		if (is_line_hidden(line)) {
 			Point2i backtrack = get_next_visible_line_index_offset_from(line, 0, -1);
 			num_total = num_total - (backtrack.x - 1);
 			wrap_index = backtrack.y;
@@ -3637,7 +3642,7 @@ Point2i TextEdit::get_next_visible_line_index_offset_from(int p_line_from, int p
 		num_visible -= get_line_wrap_count(p_line_from) - p_wrap_index_from;
 		for (i = p_line_from; i >= 0; i--) {
 			num_total++;
-			if (!_is_line_hidden(i)) {
+			if (!is_line_hidden(i)) {
 				num_visible++;
 				num_visible += get_line_wrap_count(i);
 			}
@@ -4749,13 +4754,13 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 	}
 
 	if (!p_can_be_hidden) {
-		if (_is_line_hidden(CLAMP(p_line, 0, text.size() - 1))) {
+		if (is_line_hidden(CLAMP(p_line, 0, text.size() - 1))) {
 			int move_down = get_next_visible_line_offset_from(p_line, 1) - 1;
-			if (p_line + move_down <= text.size() - 1 && !_is_line_hidden(p_line + move_down)) {
+			if (p_line + move_down <= text.size() - 1 && !is_line_hidden(p_line + move_down)) {
 				p_line += move_down;
 			} else {
 				int move_up = get_next_visible_line_offset_from(p_line, -1) - 1;
-				if (p_line - move_up > 0 && !_is_line_hidden(p_line - move_up)) {
+				if (p_line - move_up > 0 && !is_line_hidden(p_line - move_up)) {
 					p_line -= move_up;
 				} else {
 					WARN_PRINT(("Caret set to hidden line " + itos(p_line) + " and there are no nonhidden lines."));
@@ -6004,6 +6009,7 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_line", "line", "new_text"), &TextEdit::set_line);
 	ClassDB::bind_method(D_METHOD("get_line", "line"), &TextEdit::get_line);
+	ClassDB::bind_method(D_METHOD("is_line_hidden", "line"), &TextEdit::is_line_hidden);
 
 	ClassDB::bind_method(D_METHOD("get_line_width", "line", "wrap_index"), &TextEdit::get_line_width, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_line_height"), &TextEdit::get_line_height);
@@ -6424,11 +6430,6 @@ bool TextEdit::_is_hiding_enabled() const {
 	return hiding_enabled;
 }
 
-bool TextEdit::_is_line_hidden(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	return text.is_hidden(p_line);
-}
-
 void TextEdit::_unhide_all_lines() {
 	for (int i = 0; i < text.size(); i++) {
 		text.set_hidden(i, false);
@@ -6522,7 +6523,7 @@ void TextEdit::_backspace_internal(int p_caret) {
 
 		merge_gutters(prev_line, cl);
 
-		if (_is_line_hidden(cl)) {
+		if (is_line_hidden(cl)) {
 			_set_line_as_hidden(prev_line, true);
 		}
 		_remove_text(prev_line, prev_column, cl, cc);
@@ -7252,7 +7253,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		int sc = 0;
 		int n_line;
 		for (n_line = 0; n_line < text.size(); n_line++) {
-			if (!_is_line_hidden(n_line)) {
+			if (!is_line_hidden(n_line)) {
 				sc++;
 				sc += draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(n_line);
 				if (sc > v_scroll_i) {
