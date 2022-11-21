@@ -72,6 +72,7 @@
 #include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
+#include "servers/navigation_server_3d_dummy.h"
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
@@ -278,8 +279,21 @@ void finalize_display() {
 void initialize_navigation_server() {
 	ERR_FAIL_COND(navigation_server_3d != nullptr);
 
+	// Init 3D Navigation Server
 	navigation_server_3d = NavigationServer3DManager::new_default_server();
+
+	// Fall back to dummy if no default server has been registered.
+	if (!navigation_server_3d) {
+		WARN_PRINT_ONCE("No NavigationServer3D implementation has been registered! Falling back to a dummy implementation: navigation features will be unavailable.");
+		navigation_server_3d = memnew(NavigationServer3DDummy);
+	}
+
+	// Should be impossible, but make sure it's not null.
+	ERR_FAIL_NULL_MSG(navigation_server_3d, "Failed to initialize NavigationServer3D.");
+
+	// Init 2D Navigation Server
 	navigation_server_2d = memnew(NavigationServer2D);
+	ERR_FAIL_NULL_MSG(navigation_server_2d, "Failed to initialize NavigationServer2D.");
 }
 
 void finalize_navigation_server() {
