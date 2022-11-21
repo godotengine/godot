@@ -152,7 +152,9 @@ void EditorSettingsDialog::_notification(int p_what) {
 				_update_shortcuts();
 			}
 
-			inspector->update_category_list();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+				inspector->update_category_list();
+			}
 		} break;
 	}
 }
