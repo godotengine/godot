@@ -2172,7 +2172,7 @@ int ProjectConverter3To4::validate_conversion() {
 				lines.append(line);
 			}
 		}
-		print_line(vformat("Checking for conversion - %d/%d file - \"%s\" with size - %d KB"), i + 1, collected_files.size(), file_name.trim_prefix("res://"), file_size / 1024);
+		print_line(vformat("Checking for conversion - %d/%d file - \"%s\" with size - %d KB", i + 1, collected_files.size(), file_name.trim_prefix("res://"), file_size / 1024));
 
 		Vector<String> changed_elements;
 		Vector<String> reason;
