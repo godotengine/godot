@@ -47,7 +47,7 @@
 static const uint32_t SMALL_ALLOCATION_MAX_SIZE = 4096;
 
 // Get the Vulkan object information and possible stage access types (bitwise OR'd with incoming values).
-RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &r_stage_mask, VkAccessFlags &r_access_mask, uint32_t p_post_barrier) {
+RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &r_stage_mask, VkAccessFlags &r_access_mask, BitField<BarrierMask> p_post_barrier) {
 	Buffer *buffer = nullptr;
 	if (vertex_buffer_owner.owns(p_buffer)) {
 		buffer = vertex_buffer_owner.get_or_null(p_buffer);
@@ -55,11 +55,11 @@ RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID
 		r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 		r_access_mask |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 		if (buffer->usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) {
-			if (p_post_barrier & BARRIER_MASK_RASTER) {
+			if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 				r_access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 				r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			}
-			if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+			if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 				r_access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 				r_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 			}
@@ -69,20 +69,20 @@ RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID
 		r_access_mask |= VK_ACCESS_INDEX_READ_BIT;
 		buffer = index_buffer_owner.get_or_null(p_buffer);
 	} else if (uniform_buffer_owner.owns(p_buffer)) {
-		if (p_post_barrier & BARRIER_MASK_RASTER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 			r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 			r_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		}
 		r_access_mask |= VK_ACCESS_UNIFORM_READ_BIT;
 		buffer = uniform_buffer_owner.get_or_null(p_buffer);
 	} else if (texture_buffer_owner.owns(p_buffer)) {
-		if (p_post_barrier & BARRIER_MASK_RASTER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 			r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			r_access_mask |= VK_ACCESS_SHADER_READ_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 			r_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 			r_access_mask |= VK_ACCESS_SHADER_READ_BIT;
 		}
@@ -90,11 +90,11 @@ RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID
 		buffer = &texture_buffer_owner.get_or_null(p_buffer)->buffer;
 	} else if (storage_buffer_owner.owns(p_buffer)) {
 		buffer = storage_buffer_owner.get_or_null(p_buffer);
-		if (p_post_barrier & BARRIER_MASK_RASTER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 			r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			r_access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 			r_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 			r_access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
@@ -2009,7 +2009,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	if (p_data.size()) {
 		for (uint32_t i = 0; i < image_create_info.arrayLayers; i++) {
-			_texture_update(id, i, p_data[i], RD::BARRIER_MASK_ALL, true);
+			_texture_update(id, i, p_data[i], RD::BARRIER_MASK_ALL_BARRIERS, true);
 		}
 	}
 	return id;
@@ -2414,7 +2414,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	return id;
 }
 
-Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier) {
+Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier) {
 	return _texture_update(p_texture, p_layer, p_data, p_post_barrier, false);
 }
 
@@ -2434,7 +2434,7 @@ static _ALWAYS_INLINE_ void _copy_region(uint8_t const *__restrict p_src, uint8_
 	}
 }
 
-Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier, bool p_use_setup_queue) {
+Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier, bool p_use_setup_queue) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG((draw_list || compute_list) && !p_use_setup_queue, ERR_INVALID_PARAMETER,
@@ -2608,15 +2608,15 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 	{
 		uint32_t barrier_flags = 0;
 		uint32_t access_flags = 0;
-		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_RASTER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
 			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 			access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
 		}
@@ -2869,7 +2869,7 @@ Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
 	return Size2i(tex->width, tex->height);
 }
 
-Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier) {
+Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_tex = texture_owner.get_or_null(p_from_texture);
@@ -2994,15 +2994,15 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 
 		uint32_t barrier_flags = 0;
 		uint32_t access_flags = 0;
-		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_RASTER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
 			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 			access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
 		}
@@ -3064,7 +3064,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	return OK;
 }
 
-Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID p_to_texture, uint32_t p_post_barrier) {
+Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID p_to_texture, BitField<BarrierMask> p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_tex = texture_owner.get_or_null(p_from_texture);
@@ -3172,15 +3172,15 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 
 		uint32_t barrier_flags = 0;
 		uint32_t access_flags = 0;
-		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_RASTER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
 			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 			access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
 		}
@@ -3235,7 +3235,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	return OK;
 }
 
-Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier) {
+Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_tex = texture_owner.get_or_null(p_texture);
@@ -3308,15 +3308,15 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 
 		uint32_t barrier_flags = 0;
 		uint32_t access_flags = 0;
-		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_RASTER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+		if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
 			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 			access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
 		}
@@ -6315,7 +6315,7 @@ void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_
 	us->invalidated_callback_userdata = p_userdata;
 }
 
-Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier) {
+Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
@@ -6325,7 +6325,7 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 
 	VkPipelineStageFlags dst_stage_mask = 0;
 	VkAccessFlags dst_access = 0;
-	if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+	if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
 		// Protect subsequent updates.
 		dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -6361,7 +6361,7 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	return err;
 }
 
-Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier) {
+Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG((p_size % 4) != 0, ERR_INVALID_PARAMETER,
@@ -6373,7 +6373,7 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 
 	VkPipelineStageFlags dst_stage_mask = 0;
 	VkAccessFlags dst_access = 0;
-	if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+	if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
 		// Protect subsequent updates.
 		dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -6412,7 +6412,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	VkPipelineShaderStageCreateFlags src_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	VkAccessFlags src_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	// Get the vulkan buffer and the potential stage/access possible.
-	Buffer *buffer = _get_buffer_from_owner(p_buffer, src_stage_mask, src_access_mask, BARRIER_MASK_ALL);
+	Buffer *buffer = _get_buffer_from_owner(p_buffer, src_stage_mask, src_access_mask, BARRIER_MASK_ALL_BARRIERS);
 	if (!buffer) {
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
 	}
@@ -8084,7 +8084,7 @@ void RenderingDeviceVulkan::_draw_list_free(Rect2i *r_last_viewport) {
 	_THREAD_SAFE_UNLOCK_
 }
 
-void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
+void RenderingDeviceVulkan::draw_list_end(BitField<BarrierMask> p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_MSG(!draw_list, "Immediate draw list is already inactive.");
@@ -8106,15 +8106,15 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 
 	uint32_t barrier_flags = 0;
 	uint32_t access_flags = 0;
-	if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+	if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 		barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 	}
-	if (p_post_barrier & BARRIER_MASK_RASTER) {
+	if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 		barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT /*| VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT*/;
 		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT /*| VK_ACCESS_INDIRECT_COMMAND_READ_BIT*/;
 	}
-	if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+	if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
 		barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
 	}
@@ -8592,20 +8592,20 @@ void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
 #endif
 }
 
-void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
+void RenderingDeviceVulkan::compute_list_end(BitField<BarrierMask> p_post_barrier) {
 	ERR_FAIL_COND(!compute_list);
 
 	uint32_t barrier_flags = 0;
 	uint32_t access_flags = 0;
-	if (p_post_barrier & BARRIER_MASK_COMPUTE) {
+	if (p_post_barrier.has_flag(BARRIER_MASK_COMPUTE)) {
 		barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 	}
-	if (p_post_barrier & BARRIER_MASK_RASTER) {
+	if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
 		barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
 		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
 	}
-	if (p_post_barrier & BARRIER_MASK_TRANSFER) {
+	if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
 		barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
 	}
@@ -8673,43 +8673,45 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 	_THREAD_SAFE_UNLOCK_
 }
 
-void RenderingDeviceVulkan::barrier(uint32_t p_from, uint32_t p_to) {
+void RenderingDeviceVulkan::barrier(BitField<BarrierMask> p_from, BitField<BarrierMask> p_to) {
 	uint32_t src_barrier_flags = 0;
 	uint32_t src_access_flags = 0;
-	if (p_from & BARRIER_MASK_COMPUTE) {
-		src_barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		src_access_flags |= VK_ACCESS_SHADER_WRITE_BIT;
-	}
-	if (p_from & BARRIER_MASK_RASTER) {
-		src_barrier_flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-		src_access_flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	}
-	if (p_from & BARRIER_MASK_TRANSFER) {
-		src_barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
-		src_access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
-	}
 
 	if (p_from == 0) {
 		src_barrier_flags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	} else {
+		if (p_from.has_flag(BARRIER_MASK_COMPUTE)) {
+			src_barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			src_access_flags |= VK_ACCESS_SHADER_WRITE_BIT;
+		}
+		if (p_from.has_flag(BARRIER_MASK_RASTER)) {
+			src_barrier_flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			src_access_flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		}
+		if (p_from.has_flag(BARRIER_MASK_TRANSFER)) {
+			src_barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+			src_access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+		}
 	}
 
 	uint32_t dst_barrier_flags = 0;
 	uint32_t dst_access_flags = 0;
-	if (p_to & BARRIER_MASK_COMPUTE) {
-		dst_barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		dst_access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-	}
-	if (p_to & BARRIER_MASK_RASTER) {
-		dst_barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
-		dst_access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-	}
-	if (p_to & BARRIER_MASK_TRANSFER) {
-		dst_barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
-		dst_access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
-	}
 
 	if (p_to == 0) {
 		dst_barrier_flags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	} else {
+		if (p_to.has_flag(BARRIER_MASK_COMPUTE)) {
+			dst_barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			dst_access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		}
+		if (p_to.has_flag(BARRIER_MASK_RASTER)) {
+			dst_barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+			dst_access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+		}
+		if (p_to.has_flag(BARRIER_MASK_TRANSFER)) {
+			dst_barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+			dst_access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+		}
 	}
 
 	_memory_barrier(src_barrier_flags, dst_barrier_flags, src_access_flags, dst_access_flags, true);
