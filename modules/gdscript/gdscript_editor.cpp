@@ -2512,7 +2512,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 }
 
 static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::SubscriptNode *p_subscript, GDScriptParser::DataType &r_base_type, Variant *r_base = nullptr) {
-	if (p_subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+	if (p_subscript->base->type == GDScriptParser::Node::IDENTIFIER && p_context.base != nullptr) {
 		const GDScriptParser::GetNodeNode *get_node = nullptr;
 		const GDScriptParser::IdentifierNode *identifier_node = static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base);
 
