@@ -49,6 +49,7 @@
 			Controls whether horizontal scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
 		</member>
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
+			Deadzone for touch scrolling. Lower deadzone makes the scrolling more sensitive.
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			The current horizontal scroll value.

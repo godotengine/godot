@@ -25,12 +25,14 @@
 		<method name="clear_baked_meshes">
 			<return type="void" />
 			<description>
+				Clears all baked meshes. See [method make_baked_meshes].
 			</description>
 		</method>
 		<method name="get_bake_mesh_instance">
 			<return type="RID" />
 			<param index="0" name="idx" type="int" />
 			<description>
+				Returns [RID] of a baked mesh with the given [param idx].
 			</description>
 		</method>
 		<method name="get_bake_meshes">
@@ -133,6 +135,7 @@
 			<param index="0" name="gen_lightmap_uv" type="bool" default="false" />
 			<param index="1" name="lightmap_uv_texel_size" type="float" default="0.1" />
 			<description>
+				Bakes lightmap data for all meshes in the assigned [MeshLibrary].
 			</description>
 		</method>
 		<method name="map_to_local" qualifiers="const">
@@ -146,6 +149,7 @@
 			<return type="void" />
 			<param index="0" name="resource" type="Resource" />
 			<description>
+				Notifies the [GridMap] about changed resource and recreates octant data.
 			</description>
 		</method>
 		<method name="set_cell_item">

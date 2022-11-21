@@ -84,6 +84,7 @@
 			<return type="int" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns the expand ratio assigned to the column.
 			</description>
 		</method>
 		<method name="get_column_title" qualifiers="const">
@@ -223,12 +224,14 @@
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns [code]true[/code] if the column has enabled clipping (see [method set_column_clip_content]).
 			</description>
 		</method>
 		<method name="is_column_expanding" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns [code]true[/code] if the column has enabled expanding (see [method set_column_expand]).
 			</description>
 		</method>
 		<method name="scroll_to_item">
@@ -244,6 +247,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Allows to enable clipping for column's content, making the content size ignored.
 			</description>
 		</method>
 		<method name="set_column_custom_minimum_width">
@@ -259,7 +263,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="expand" type="bool" />
 			<description>
-				If [code]true[/code], the column will have the "Expand" flag of [Control]. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
+				If [code]true[/code], the column will have the "Expand" flag of [Control]. Columns that have the "Expand" flag will use their expand ratio in a similar fashion to [member Control.size_flags_stretch_ratio] (see [method set_column_expand_ratio]).
 			</description>
 		</method>
 		<method name="set_column_expand_ratio">
@@ -267,6 +271,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="ratio" type="int" />
 			<description>
+				Sets the relative expand ratio for a column. See [method set_column_expand].
 			</description>
 		</method>
 		<method name="set_column_title">

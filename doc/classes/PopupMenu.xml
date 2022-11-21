@@ -544,6 +544,7 @@
 		</signal>
 		<signal name="menu_changed">
 			<description>
+				Emitted when any item is added, modified or removed.
 			</description>
 		</signal>
 	</signals>
@@ -576,8 +577,10 @@
 			Width of the single indentation level.
 		</theme_item>
 		<theme_item name="item_end_padding" data_type="constant" type="int" default="2">
+			Horizontal padding to the right of the items (or left, in RTL layout).
 		</theme_item>
 		<theme_item name="item_start_padding" data_type="constant" type="int" default="2">
+			Horizontal padding to the left of the items (or right, in RTL layout).
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.
