@@ -69,6 +69,12 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_style_name, "font_rid", "name_style");
 	GDVIRTUAL_BIND(_font_get_style_name, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_weight, "font_rid", "weight");
+	GDVIRTUAL_BIND(_font_get_weight, "font_rid");
+
+	GDVIRTUAL_BIND(_font_set_stretch, "font_rid", "stretch");
+	GDVIRTUAL_BIND(_font_get_stretch, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_antialiasing, "font_rid", "antialiasing");
 	GDVIRTUAL_BIND(_font_get_antialiasing, "font_rid");
 
@@ -86,6 +92,9 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_set_fixed_size, "font_rid", "fixed_size");
 	GDVIRTUAL_BIND(_font_get_fixed_size, "font_rid");
+
+	GDVIRTUAL_BIND(_font_set_allow_system_fallback, "font_rid", "allow_system_fallback");
+	GDVIRTUAL_BIND(_font_is_allow_system_fallback, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_force_autohinter, "font_rid", "force_autohinter");
 	GDVIRTUAL_BIND(_font_is_force_autohinter, "font_rid");
@@ -308,6 +317,8 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_string_to_lower, "string", "language");
 
 	GDVIRTUAL_BIND(_parse_structured_text, "parser_type", "args", "text");
+
+	GDVIRTUAL_BIND(_cleanup);
 }
 
 bool TextServerExtension::has_feature(Feature p_feature) const {
@@ -434,6 +445,26 @@ String TextServerExtension::font_get_style_name(const RID &p_font_rid) const {
 	return ret;
 }
 
+void TextServerExtension::font_set_weight(const RID &p_font_rid, int64_t p_weight) {
+	GDVIRTUAL_CALL(_font_set_weight, p_font_rid, p_weight);
+}
+
+int64_t TextServerExtension::font_get_weight(const RID &p_font_rid) const {
+	int64_t ret = 400;
+	GDVIRTUAL_CALL(_font_get_weight, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_stretch(const RID &p_font_rid, int64_t p_stretch) {
+	GDVIRTUAL_CALL(_font_set_stretch, p_font_rid, p_stretch);
+}
+
+int64_t TextServerExtension::font_get_stretch(const RID &p_font_rid) const {
+	int64_t ret = 100;
+	GDVIRTUAL_CALL(_font_get_stretch, p_font_rid, ret);
+	return ret;
+}
+
 void TextServerExtension::font_set_name(const RID &p_font_rid, const String &p_name) {
 	GDVIRTUAL_CALL(_font_set_name, p_font_rid, p_name);
 }
@@ -501,6 +532,16 @@ void TextServerExtension::font_set_fixed_size(const RID &p_font_rid, int64_t p_f
 int64_t TextServerExtension::font_get_fixed_size(const RID &p_font_rid) const {
 	int64_t ret = 0;
 	GDVIRTUAL_CALL(_font_get_fixed_size, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) {
+	GDVIRTUAL_CALL(_font_set_allow_system_fallback, p_font_rid, p_allow_system_fallback);
+}
+
+bool TextServerExtension::font_is_allow_system_fallback(const RID &p_font_rid) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_font_is_allow_system_fallback, p_font_rid, ret);
 	return ret;
 }
 
@@ -1358,6 +1399,10 @@ bool TextServerExtension::spoof_check(const String &p_string) const {
 		return ret;
 	}
 	return TextServer::spoof_check(p_string);
+}
+
+void TextServerExtension::cleanup() {
+	GDVIRTUAL_CALL(_cleanup);
 }
 
 TextServerExtension::TextServerExtension() {

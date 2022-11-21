@@ -337,6 +337,229 @@ String OS_Android::get_data_path() const {
 	return get_user_data_dir();
 }
 
+void OS_Android::_load_system_font_config() {
+	font_aliases.clear();
+	fonts.clear();
+	font_names.clear();
+
+	Ref<XMLParser> parser;
+	parser.instantiate();
+
+	Error err = parser->open(String(getenv("ANDROID_ROOT")).path_join("/etc/fonts.xml"));
+	if (err == OK) {
+		bool in_font_node = false;
+		String fb, fn;
+		FontInfo fi;
+
+		while (parser->read() == OK) {
+			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
+				in_font_node = false;
+				if (parser->get_node_name() == "familyset") {
+					int ver = parser->has_attribute("version") ? parser->get_attribute_value("version").to_int() : 0;
+					if (ver < 21) {
+						ERR_PRINT(vformat("Unsupported font config version %s", ver));
+						break;
+					}
+				} else if (parser->get_node_name() == "alias") {
+					String name = parser->has_attribute("name") ? parser->get_attribute_value("name").strip_edges() : String();
+					String to = parser->has_attribute("to") ? parser->get_attribute_value("to").strip_edges() : String();
+					if (!name.is_empty() && !to.is_empty()) {
+						font_aliases[name] = to;
+					}
+				} else if (parser->get_node_name() == "family") {
+					fn = parser->has_attribute("name") ? parser->get_attribute_value("name").strip_edges() : String();
+					String lang_code = parser->has_attribute("lang") ? parser->get_attribute_value("lang").strip_edges() : String();
+					Vector<String> lang_codes = lang_code.split(",");
+					for (int i = 0; i < lang_codes.size(); i++) {
+						Vector<String> lang_code_elements = lang_codes[i].split("-");
+						if (lang_code_elements.size() >= 1 && lang_code_elements[0] != "und") {
+							// Add missing script codes.
+							if (lang_code_elements[0] == "ko") {
+								fi.script.insert("Hani");
+								fi.script.insert("Hang");
+							}
+							if (lang_code_elements[0] == "ja") {
+								fi.script.insert("Hani");
+								fi.script.insert("Kana");
+								fi.script.insert("Hira");
+							}
+							if (!lang_code_elements[0].is_empty()) {
+								fi.lang.insert(lang_code_elements[0]);
+							}
+						}
+						if (lang_code_elements.size() >= 2) {
+							// Add common codes for variants and remove variants not supported by HarfBuzz/ICU.
+							if (lang_code_elements[1] == "Aran") {
+								fi.script.insert("Arab");
+							}
+							if (lang_code_elements[1] == "Cyrs") {
+								fi.script.insert("Cyrl");
+							}
+							if (lang_code_elements[1] == "Hanb") {
+								fi.script.insert("Hani");
+								fi.script.insert("Bopo");
+							}
+							if (lang_code_elements[1] == "Hans" || lang_code_elements[1] == "Hant") {
+								fi.script.insert("Hani");
+							}
+							if (lang_code_elements[1] == "Syrj" || lang_code_elements[1] == "Syre" || lang_code_elements[1] == "Syrn") {
+								fi.script.insert("Syrc");
+							}
+							if (!lang_code_elements[1].is_empty() && lang_code_elements[1] != "Zsym" && lang_code_elements[1] != "Zsye" && lang_code_elements[1] != "Zmth") {
+								fi.script.insert(lang_code_elements[1]);
+							}
+						}
+					}
+				} else if (parser->get_node_name() == "font") {
+					in_font_node = true;
+					fb = parser->has_attribute("fallbackFor") ? parser->get_attribute_value("fallbackFor").strip_edges() : String();
+					fi.weight = parser->has_attribute("weight") ? parser->get_attribute_value("weight").to_int() : 400;
+					fi.italic = parser->has_attribute("style") && parser->get_attribute_value("style").strip_edges() == "italic";
+				}
+			}
+			if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+				if (in_font_node) {
+					fi.filename = parser->get_node_data().strip_edges();
+					fi.font_name = fn;
+					if (!fb.is_empty() && fn.is_empty()) {
+						fi.font_name = fb;
+						fi.priority = 2;
+					}
+					if (fi.font_name.is_empty()) {
+						fi.font_name = "sans-serif";
+						fi.priority = 5;
+					}
+					if (fi.font_name.ends_with("-condensed")) {
+						fi.stretch = 75;
+						fi.font_name = fi.font_name.trim_suffix("-condensed");
+					}
+					fonts.push_back(fi);
+					font_names.insert(fi.font_name);
+				}
+			}
+			if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
+				in_font_node = false;
+				if (parser->get_node_name() == "font") {
+					fb = String();
+					fi.font_name = String();
+					fi.priority = 0;
+					fi.weight = 400;
+					fi.stretch = 100;
+					fi.italic = false;
+				} else if (parser->get_node_name() == "family") {
+					fi = FontInfo();
+					fn = String();
+				}
+			}
+		}
+		parser->close();
+	} else {
+		ERR_PRINT("Unable to load font config");
+	}
+
+	font_config_loaded = true;
+}
+
+Vector<String> OS_Android::get_system_fonts() const {
+	if (!font_config_loaded) {
+		const_cast<OS_Android *>(this)->_load_system_font_config();
+	}
+	Vector<String> ret;
+	for (const String &E : font_names) {
+		ret.push_back(E);
+	}
+	return ret;
+}
+
+Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
+	if (!font_config_loaded) {
+		const_cast<OS_Android *>(this)->_load_system_font_config();
+	}
+	String font_name = p_font_name.to_lower();
+	if (font_aliases.has(font_name)) {
+		font_name = font_aliases[font_name];
+	}
+	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
+	String lang_prefix = p_locale.split("_")[0];
+	Vector<String> ret;
+	int best_score = 0;
+	for (const List<FontInfo>::Element *E = fonts.front(); E; E = E->next()) {
+		int score = 0;
+		if (!E->get().script.is_empty() && !p_script.is_empty() && !E->get().script.has(p_script)) {
+			continue;
+		}
+		float sim = E->get().font_name.similarity(font_name);
+		if (sim > 0.0) {
+			score += (60 * sim + 5 - E->get().priority);
+		}
+		if (E->get().lang.has(p_locale)) {
+			score += 120;
+		} else if (E->get().lang.has(lang_prefix)) {
+			score += 115;
+		}
+		if (E->get().script.has(p_script)) {
+			score += 240;
+		}
+		score += (20 - Math::abs(E->get().weight - p_weight) / 50);
+		score += (20 - Math::abs(E->get().stretch - p_stretch) / 10);
+		if (E->get().italic == p_italic) {
+			score += 30;
+		}
+		if (score > best_score) {
+			best_score = score;
+			if (ret.find(root.path_join(E->get().filename)) < 0) {
+				ret.insert(0, root.path_join(E->get().filename));
+			}
+		} else if (score == best_score || E->get().script.is_empty()) {
+			if (ret.find(root.path_join(E->get().filename)) < 0) {
+				ret.push_back(root.path_join(E->get().filename));
+			}
+		}
+		if (score >= 490) {
+			break; // Perfect match.
+		}
+	}
+
+	return ret;
+}
+
+String OS_Android::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
+	if (!font_config_loaded) {
+		const_cast<OS_Android *>(this)->_load_system_font_config();
+	}
+	String font_name = p_font_name.to_lower();
+	if (font_aliases.has(font_name)) {
+		font_name = font_aliases[font_name];
+	}
+	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
+
+	int best_score = 0;
+	const List<FontInfo>::Element *best_match = nullptr;
+
+	for (const List<FontInfo>::Element *E = fonts.front(); E; E = E->next()) {
+		int score = 0;
+		if (E->get().font_name == font_name) {
+			score += (65 - E->get().priority);
+		}
+		score += (20 - Math::abs(E->get().weight - p_weight) / 50);
+		score += (20 - Math::abs(E->get().stretch - p_stretch) / 10);
+		if (E->get().italic == p_italic) {
+			score += 30;
+		}
+		if (score >= 60 && score > best_score) {
+			best_score = score;
+			best_match = E;
+		}
+		if (score >= 140) {
+			break; // Perfect match.
+		}
+	}
+	if (best_match) {
+		return root.path_join(best_match->get().filename);
+	}
+	return String();
+}
+
 String OS_Android::get_executable_path() const {
 	// Since unix process creation is restricted on Android, we bypass
 	// OS_Unix::get_executable_path() so we can return ANDROID_EXEC_PATH.
@@ -449,6 +672,9 @@ String OS_Android::get_config_path() const {
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
+	if (p_feature == "system_fonts") {
+		return true;
+	}
 	if (p_feature == "mobile") {
 		return true;
 	}

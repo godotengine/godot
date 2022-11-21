@@ -34,6 +34,7 @@
 // Headers for building as GDExtension plug-in.
 
 #include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/translation_server.hpp>
@@ -49,6 +50,7 @@ using namespace godot;
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
+#include "core/string/translation.h"
 #include "core/string/ucaps.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
@@ -852,11 +854,13 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 			if (fd->face->style_name != nullptr) {
 				p_font_data->style_name = String::utf8((const char *)fd->face->style_name);
 			}
+			p_font_data->weight = _font_get_weight_by_name(p_font_data->style_name.to_lower());
+			p_font_data->stretch = _font_get_stretch_by_name(p_font_data->style_name.to_lower());
 			p_font_data->style_flags = 0;
-			if (fd->face->style_flags & FT_STYLE_FLAG_BOLD) {
+			if ((fd->face->style_flags & FT_STYLE_FLAG_BOLD) || p_font_data->weight >= 700) {
 				p_font_data->style_flags.set_flag(FONT_BOLD);
 			}
-			if (fd->face->style_flags & FT_STYLE_FLAG_ITALIC) {
+			if ((fd->face->style_flags & FT_STYLE_FLAG_ITALIC) || _is_ital_style(p_font_data->style_name.to_lower())) {
 				p_font_data->style_flags.set_flag(FONT_ITALIC);
 			}
 			if (fd->face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) {
@@ -1061,6 +1065,46 @@ String TextServerFallback::_font_get_style_name(const RID &p_font_rid) const {
 	return fd->style_name;
 }
 
+void TextServerFallback::_font_set_weight(const RID &p_font_rid, int64_t p_weight) {
+	FontFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->weight = CLAMP(p_weight, 100, 999);
+}
+
+int64_t TextServerFallback::_font_get_weight(const RID &p_font_rid) const {
+	FontFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 400);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 400);
+	return fd->weight;
+}
+
+void TextServerFallback::_font_set_stretch(const RID &p_font_rid, int64_t p_stretch) {
+	FontFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->stretch = CLAMP(p_stretch, 50, 200);
+}
+
+int64_t TextServerFallback::_font_get_stretch(const RID &p_font_rid) const {
+	FontFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 100);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 100);
+	return fd->stretch;
+}
+
 void TextServerFallback::_font_set_name(const RID &p_font_rid, const String &p_name) {
 	FontFallback *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND(!fd);
@@ -1195,6 +1239,25 @@ int64_t TextServerFallback::_font_get_fixed_size(const RID &p_font_rid) const {
 
 	MutexLock lock(fd->mutex);
 	return fd->fixed_size;
+}
+
+void TextServerFallback::_font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) {
+	FontFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->allow_system_fallback != p_allow_system_fallback) {
+		_font_clear_cache(fd);
+		fd->allow_system_fallback = p_allow_system_fallback;
+	}
+}
+
+bool TextServerFallback::_font_is_allow_system_fallback(const RID &p_font_rid) const {
+	FontFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->allow_system_fallback;
 }
 
 void TextServerFallback::_font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) {
@@ -3603,6 +3666,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 			sd->glyphs.push_back(gl);
 		} else {
 			// Text span.
+			RID prev_font;
 			for (int j = span.start; j < span.end; j++) {
 				Glyph gl;
 				gl.start = j;
@@ -3623,6 +3687,170 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 						break;
 					}
 				}
+				if (!gl.font_rid.is_valid() && prev_font.is_valid()) {
+					if (_font_has_char(prev_font, gl.index)) {
+						gl.font_rid = prev_font;
+					}
+				}
+				if (!gl.font_rid.is_valid() && OS::get_singleton()->has_feature("system_fonts") && span.fonts.size() > 0) {
+					// Try system fallback.
+					RID fdef = span.fonts[0];
+					if (_font_is_allow_system_fallback(fdef)) {
+						String text = sd->text.substr(j, 1);
+						String font_name = _font_get_name(fdef);
+						BitField<FontStyle> font_style = _font_get_style(fdef);
+						int font_weight = _font_get_weight(fdef);
+						int font_stretch = _font_get_stretch(fdef);
+						Dictionary dvar = _font_get_variation_coordinates(fdef);
+						static int64_t wgth_tag = _name_to_tag("weight");
+						static int64_t wdth_tag = _name_to_tag("width");
+						static int64_t ital_tag = _name_to_tag("italic");
+						if (dvar.has(wgth_tag)) {
+							font_weight = dvar[wgth_tag].operator int();
+						}
+						if (dvar.has(wdth_tag)) {
+							font_stretch = dvar[wdth_tag].operator int();
+						}
+						if (dvar.has(ital_tag) && dvar[ital_tag].operator int() == 1) {
+							font_style.set_flag(TextServer::FONT_ITALIC);
+						}
+
+						String locale = (span.language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : span.language;
+
+						PackedStringArray fallback_font_name = OS::get_singleton()->get_system_font_path_for_text(font_name, text, locale, String(), font_weight, font_stretch, font_style & TextServer::FONT_ITALIC);
+#ifdef GDEXTENSION
+						for (int fb = 0; fb < fallback_font_name.size(); fb++) {
+							const String &E = fallback_font_name[fb];
+#else
+						for (const String &E : fallback_font_name) {
+#endif
+							SystemFontKey key = SystemFontKey(E, font_style & TextServer::FONT_ITALIC, font_weight, font_stretch, fdef, this);
+							if (system_fonts.has(key)) {
+								const SystemFontCache &sysf_cache = system_fonts[key];
+								int best_score = 0;
+								int best_match = -1;
+								for (int face_idx = 0; face_idx < sysf_cache.var.size(); face_idx++) {
+									const SystemFontCacheRec &F = sysf_cache.var[face_idx];
+									if (unlikely(!_font_has_char(F.rid, text[0]))) {
+										continue;
+									}
+									BitField<FontStyle> style = _font_get_style(F.rid);
+									int weight = _font_get_weight(F.rid);
+									int stretch = _font_get_stretch(F.rid);
+									int score = (20 - Math::abs(weight - font_weight) / 50);
+									score += (20 - Math::abs(stretch - font_stretch) / 10);
+									if (bool(style & TextServer::FONT_ITALIC) == bool(font_style & TextServer::FONT_ITALIC)) {
+										score += 30;
+									}
+									if (score >= best_score) {
+										best_score = score;
+										best_match = face_idx;
+									}
+									if (best_score == 70) {
+										break;
+									}
+								}
+								if (best_match != -1) {
+									gl.font_rid = sysf_cache.var[best_match].rid;
+								}
+							}
+							if (!gl.font_rid.is_valid()) {
+								if (system_fonts.has(key)) {
+									const SystemFontCache &sysf_cache = system_fonts[key];
+									if (sysf_cache.max_var == sysf_cache.var.size()) {
+										// All subfonts already tested, skip.
+										continue;
+									}
+								}
+
+								if (!system_font_data.has(E)) {
+									system_font_data[E] = FileAccess::get_file_as_bytes(E);
+								}
+
+								const PackedByteArray &font_data = system_font_data[E];
+
+								SystemFontCacheRec sysf;
+								sysf.rid = _create_font();
+								_font_set_data_ptr(sysf.rid, font_data.ptr(), font_data.size());
+
+								Dictionary var = dvar;
+								// Select matching style from collection.
+								int best_score = 0;
+								int best_match = -1;
+								for (int face_idx = 0; face_idx < _font_get_face_count(sysf.rid); face_idx++) {
+									_font_set_face_index(sysf.rid, face_idx);
+									if (unlikely(!_font_has_char(sysf.rid, text[0]))) {
+										continue;
+									}
+									BitField<FontStyle> style = _font_get_style(sysf.rid);
+									int weight = _font_get_weight(sysf.rid);
+									int stretch = _font_get_stretch(sysf.rid);
+									int score = (20 - Math::abs(weight - font_weight) / 50);
+									score += (20 - Math::abs(stretch - font_stretch) / 10);
+									if (bool(style & TextServer::FONT_ITALIC) == bool(font_style & TextServer::FONT_ITALIC)) {
+										score += 30;
+									}
+									if (score >= best_score) {
+										best_score = score;
+										best_match = face_idx;
+									}
+									if (best_score == 70) {
+										break;
+									}
+								}
+								if (best_match == -1) {
+									_free_rid(sysf.rid);
+									continue;
+								} else {
+									_font_set_face_index(sysf.rid, best_match);
+								}
+								sysf.index = best_match;
+
+								// If it's a variable font, apply weight, stretch and italic coordinates to match requested style.
+								if (best_score != 70) {
+									Dictionary ftr = _font_supported_variation_list(sysf.rid);
+									if (ftr.has(wdth_tag)) {
+										var[wdth_tag] = font_stretch;
+										_font_set_stretch(sysf.rid, font_stretch);
+									}
+									if (ftr.has(wgth_tag)) {
+										var[wgth_tag] = font_weight;
+										_font_set_weight(sysf.rid, font_weight);
+									}
+									if ((font_style & TextServer::FONT_ITALIC) && ftr.has(ital_tag)) {
+										var[ital_tag] = 1;
+										_font_set_style(sysf.rid, _font_get_style(sysf.rid) | TextServer::FONT_ITALIC);
+									}
+								}
+
+								_font_set_antialiasing(sysf.rid, key.antialiasing);
+								_font_set_generate_mipmaps(sysf.rid, key.mipmaps);
+								_font_set_multichannel_signed_distance_field(sysf.rid, key.msdf);
+								_font_set_msdf_pixel_range(sysf.rid, key.msdf_range);
+								_font_set_msdf_size(sysf.rid, key.msdf_source_size);
+								_font_set_fixed_size(sysf.rid, key.fixed_size);
+								_font_set_force_autohinter(sysf.rid, key.force_autohinter);
+								_font_set_hinting(sysf.rid, key.hinting);
+								_font_set_subpixel_positioning(sysf.rid, key.subpixel_positioning);
+								_font_set_variation_coordinates(sysf.rid, var);
+								_font_set_oversampling(sysf.rid, key.oversampling);
+								_font_set_embolden(sysf.rid, key.embolden);
+								_font_set_transform(sysf.rid, key.transform);
+
+								if (system_fonts.has(key)) {
+									system_fonts[key].var.push_back(sysf);
+								} else {
+									SystemFontCache &sysf_cache = system_fonts[key];
+									sysf_cache.max_var = _font_get_face_count(sysf.rid);
+									sysf_cache.var.push_back(sysf);
+								}
+								gl.font_rid = sysf.rid;
+							}
+							break;
+						}
+					}
+				}
+				prev_font = gl.font_rid;
 
 				double scale = _font_get_scale(gl.font_rid, gl.font_size);
 				if (gl.font_rid.is_valid()) {
@@ -3892,6 +4120,17 @@ PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_str
 TextServerFallback::TextServerFallback() {
 	_insert_feature_sets();
 };
+
+void TextServerFallback::_cleanup() {
+	for (const KeyValue<SystemFontKey, SystemFontCache> &E : system_fonts) {
+		const Vector<SystemFontCacheRec> &sysf_cache = E.value.var;
+		for (const SystemFontCacheRec &F : sysf_cache) {
+			_free_rid(F.rid);
+		}
+	}
+	system_fonts.clear();
+	system_font_data.clear();
+}
 
 TextServerFallback::~TextServerFallback() {
 #ifdef MODULE_FREETYPE_ENABLED

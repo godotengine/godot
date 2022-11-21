@@ -161,6 +161,12 @@
 				Returns font family name.
 			</description>
 		</method>
+		<method name="get_font_stretch" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+			</description>
+		</method>
 		<method name="get_font_style" qualifiers="const">
 			<return type="int" enum="TextServer.FontStyle" />
 			<description>
@@ -171,6 +177,12 @@
 			<return type="String" />
 			<description>
 				Returns font style name.
+			</description>
+		</method>
+		<method name="get_font_weight" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
