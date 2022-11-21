@@ -366,7 +366,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	}
 
 	if (p_surface.index_count) {
-		bool is_index_16 = p_surface.vertex_count <= 65536 && p_surface.vertex_count > 0;
+		bool is_index_16 = p_surface.vertex_count < 65536 && p_surface.vertex_count > 0;
 
 		s->index_buffer = RD::get_singleton()->index_buffer_create(p_surface.index_count, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, p_surface.index_data, false);
 		s->index_count = p_surface.index_count;

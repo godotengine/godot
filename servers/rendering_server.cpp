@@ -1007,7 +1007,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			const int *r = indices.ptr();
 
 			Vector<uint8_t> data;
-			if (array_len <= 65536) {
+			if (array_len < 65536) {
 				// 16 bits indices
 				data.resize(indices.size() * 2);
 				uint8_t *w = data.ptrw();
@@ -1319,7 +1319,7 @@ Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) con
 
 	for (int i = 0; i < sd.lods.size(); i++) {
 		Vector<int> lods;
-		if (sd.vertex_count <= 65536) {
+		if (sd.vertex_count < 65536) {
 			uint32_t lc = sd.lods[i].index_data.size() / 2;
 			lods.resize(lc);
 			const uint8_t *r = sd.lods[i].index_data.ptr();
