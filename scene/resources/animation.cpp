@@ -2464,7 +2464,6 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 
 	ERR_FAIL_COND_V(idx == -2, T());
 
-	bool result = true;
 	int next = 0;
 	real_t c = 0.0;
 	// prepare for all cases of interpolation
@@ -2596,10 +2595,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 	}
 
 	if (p_ok) {
-		*p_ok = result;
-	}
-	if (!result) {
-		return T();
+		*p_ok = true;
 	}
 
 	real_t tr = p_keys[idx].transition;

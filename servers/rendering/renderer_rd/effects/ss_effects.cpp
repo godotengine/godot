@@ -1332,7 +1332,6 @@ void SSEffects::generate_ssao(SSAORenderBuffers &p_ssao_buffers, RID p_normal_bu
 		for (int pass = 0; pass < blur_passes; pass++) {
 			int blur_pipeline = SSAO_BLUR_PASS;
 			if (ssao_quality > RS::ENV_SSAO_QUALITY_VERY_LOW) {
-				blur_pipeline = SSAO_BLUR_PASS_SMART;
 				if (pass < blur_passes - 2) {
 					blur_pipeline = SSAO_BLUR_PASS_WIDE;
 				} else {
