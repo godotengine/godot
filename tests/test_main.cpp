@@ -223,7 +223,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 			physics_server_2d->init();
 
-			navigation_server_3d = NavigationServer3DManager::new_default_server();
+			navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
 			navigation_server_2d = memnew(NavigationServer2D);
 
 			memnew(InputMap);

@@ -600,16 +600,87 @@ void NavigationServer3D::query_path(const Ref<NavigationPathQueryParameters3D> &
 
 ///////////////////////////////////////////////////////
 
-NavigationServer3DCallback NavigationServer3DManager::create_callback = nullptr;
+NavigationServer3DManager *NavigationServer3DManager::singleton = nullptr;
+const String NavigationServer3DManager::setting_property_name(PNAME("navigation/3d/navigation_server"));
 
-void NavigationServer3DManager::set_default_server(NavigationServer3DCallback p_callback) {
-	create_callback = p_callback;
+void NavigationServer3DManager::on_servers_changed() {
+	String nav_server_names("DEFAULT");
+	for (const ClassInfo &server : navigation_servers) {
+		nav_server_names += "," + server.name;
+	}
+
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, nav_server_names));
 }
 
-NavigationServer3D *NavigationServer3DManager::new_default_server() {
-	if (create_callback == nullptr) {
+void NavigationServer3DManager::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("register_server", "name", "create_callback"), &NavigationServer3DManager::register_server);
+	ClassDB::bind_method(D_METHOD("set_default_server", "name", "priority"), &NavigationServer3DManager::set_default_server);
+}
+
+NavigationServer3DManager *NavigationServer3DManager::get_singleton() {
+	return singleton;
+}
+
+void NavigationServer3DManager::register_server(const String &p_name, const Callable &p_create_callback) {
+	// TODO: Enable check when is_valid() is fixed for static functions.
+	//ERR_FAIL_COND(!p_create_callback.is_valid());
+	ERR_FAIL_COND_MSG(find_server_id(p_name) != -1, "Navigation server not found");
+
+	navigation_servers.push_back(ClassInfo{ p_name, p_create_callback });
+	on_servers_changed();
+}
+
+void NavigationServer3DManager::set_default_server(const String &p_name, int p_priority) {
+	const int id = find_server_id(p_name);
+	ERR_FAIL_COND_MSG(id == -1, "Navigation server not found"); // Not found
+
+	// Only change the server if it is registered with a higher priority
+	if (default_server_priority < p_priority) {
+		default_server_id = id;
+		default_server_priority = p_priority;
+	}
+}
+
+int NavigationServer3DManager::find_server_id(const String &p_name) const {
+	for (int i = 0; i < navigation_servers.size(); ++i) {
+		if (p_name == navigation_servers[i].name) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+NavigationServer3D *NavigationServer3DManager::new_default_server() const {
+	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
+
+	Variant ret;
+	Callable::CallError ce;
+	navigation_servers[default_server_id].create_callback.callp(nullptr, 0, ret, ce);
+
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
+	return Object::cast_to<NavigationServer3D>(ret.get_validated_object());
+}
+
+NavigationServer3D *NavigationServer3DManager::new_server(const String &p_name) const {
+	const int id = find_server_id(p_name);
+
+	if (id == -1) {
 		return nullptr;
 	}
 
-	return create_callback();
+	Variant ret;
+	Callable::CallError ce;
+	navigation_servers[id].create_callback.callp(nullptr, 0, ret, ce);
+
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
+	return Object::cast_to<NavigationServer3D>(ret.get_validated_object());
+}
+
+NavigationServer3DManager::NavigationServer3DManager() {
+	singleton = this;
+}
+
+NavigationServer3DManager::~NavigationServer3DManager() {
+	singleton = nullptr;
 }

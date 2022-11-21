@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationServer3DExtension" inherits="NavigationServer3D" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Enables GDExtension libraries to provide their own implementation of [NavigationServer3D].
+	</brief_description>
+	<description>
+		To create your own implementation, derive from [NavigationServer3DExtension] and implement all of the virtual methods listed here.
+		Then, register your implementation with [method NavigationServer3DManager.register_server] and optionally mark it as the default with [method NavigationServer3DManager.set_default_server].
+		Make sure to register your implementation at the [constant GDExtension.INITIALIZATION_LEVEL_SERVERS] initialization level.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_agent_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_create]. Required.
+			</description>
+		</method>
+		<method name="_agent_get_map" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_get_map]. Required.
+			</description>
+		</method>
+		<method name="_agent_is_map_changed" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_is_map_changed]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_callback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_callback]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_ignore_y" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="ignore_y" type="bool" />
+			<description>
+				Invoked to disable movement along the Y axis for agents. Used primarily by [NavigationServer2D] to limit its agents to a 2D plane. Required.
+			</description>
+		</method>
+		<method name="_agent_set_map" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_map]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_max_neighbors" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="count" type="int" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_max_neighbors]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_max_speed" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="max_speed" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_max_speed]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_neighbor_distance" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="distance" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_neighbor_distance]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_position" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="position" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_position]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_radius" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_radius]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_target_velocity" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="target_velocity" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_target_velocity]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_time_horizon" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="time" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_time_horizon]. Required.
+			</description>
+		</method>
+		<method name="_agent_set_velocity" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="velocity" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.agent_set_velocity]. Required.
+			</description>
+		</method>
+		<method name="_free" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.free_rid]. Required.
+			</description>
+		</method>
+		<method name="_get_maps" qualifiers="virtual const">
+			<return type="RID[]" />
+			<description>
+				Override to implement [method NavigationServer3D.get_maps]. Required.
+			</description>
+		</method>
+		<method name="_get_process_info" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="info" type="int" enum="NavigationServer3D.ProcessInfo" />
+			<description>
+				Override to implement [method NavigationServer3D.get_process_info]. Required.
+			</description>
+		</method>
+		<method name="_link_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_create]. Required.
+			</description>
+		</method>
+		<method name="_link_get_end_position" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_get_end_position]. Required.
+			</description>
+		</method>
+		<method name="_link_get_enter_cost" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_get_enter_cost]. Required.
+			</description>
+		</method>
+		<method name="_link_get_map" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_get_map]. Required.
+			</description>
+		</method>
+		<method name="_link_get_navigation_layers" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_get_navigation_layers]. Required.
+			</description>
+		</method>
+		<method name="_link_get_owner_id" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_get_owner_id]. Required.
+			</description>
+		</method>
+		<method name="_link_get_start_position" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_get_start_position]. Required.
+			</description>
+		</method>
+		<method name="_link_get_travel_cost" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_get_travel_cost]. Required.
+			</description>
+		</method>
+		<method name="_link_is_bidirectional" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_is_bidirectional]. Required.
+			</description>
+		</method>
+		<method name="_link_set_bidirectional" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="bidirectional" type="bool" />
+			<description>
+				Override to implement [method NavigationServer3D.link_set_bidirectional]. Required.
+			</description>
+		</method>
+		<method name="_link_set_end_position" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="position" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.link_set_end_position]. Required.
+			</description>
+		</method>
+		<method name="_link_set_enter_cost" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="enter_cost" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.link_set_enter_cost]. Required.
+			</description>
+		</method>
+		<method name="_link_set_map" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.link_set_map]. Required.
+			</description>
+		</method>
+		<method name="_link_set_navigation_layers" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				Override to implement [method NavigationServer3D.link_set_navigation_layers]. Required.
+			</description>
+		</method>
+		<method name="_link_set_owner_id" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="owner_id" type="int" />
+			<description>
+				Override to implement [method NavigationServer3D.link_set_owner_id]. Required.
+			</description>
+		</method>
+		<method name="_link_set_start_position" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="position" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.link_set_start_position]. Required.
+			</description>
+		</method>
+		<method name="_link_set_travel_cost" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="travel_cost" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.link_set_travel_cost]. Required.
+			</description>
+		</method>
+		<method name="_map_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_create]. Required.
+			</description>
+		</method>
+		<method name="_map_force_update" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_force_update]. Required.
+			</description>
+		</method>
+		<method name="_map_get_agents" qualifiers="virtual const">
+			<return type="RID[]" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_agents]. Required.
+			</description>
+		</method>
+		<method name="_map_get_cell_size" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_cell_size]. Required.
+			</description>
+		</method>
+		<method name="_map_get_closest_point" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="to_point" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_closest_point]. Required.
+			</description>
+		</method>
+		<method name="_map_get_closest_point_normal" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="to_point" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_closest_point_normal]. Required.
+			</description>
+		</method>
+		<method name="_map_get_closest_point_owner" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="to_point" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_closest_point_owner]. Required.
+			</description>
+		</method>
+		<method name="_map_get_closest_point_to_segment" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="start" type="Vector3" />
+			<param index="2" name="end" type="Vector3" />
+			<param index="3" name="use_collision" type="bool" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_closest_point_to_segment]. Required.
+			</description>
+		</method>
+		<method name="_map_get_edge_connection_margin" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_edge_connection_margin]. Required.
+			</description>
+		</method>
+		<method name="_map_get_link_connection_radius" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_link_connection_radius]. Required.
+			</description>
+		</method>
+		<method name="_map_get_links" qualifiers="virtual const">
+			<return type="RID[]" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_links]. Required.
+			</description>
+		</method>
+		<method name="_map_get_path" qualifiers="virtual const">
+			<return type="PackedVector3Array" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="origin" type="Vector3" />
+			<param index="2" name="destination" type="Vector3" />
+			<param index="3" name="optimize" type="bool" />
+			<param index="4" name="navigation_layers" type="int" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_path]. Required.
+			</description>
+		</method>
+		<method name="_map_get_regions" qualifiers="virtual const">
+			<return type="RID[]" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_regions]. Required.
+			</description>
+		</method>
+		<method name="_map_get_up" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_get_up]. Required.
+			</description>
+		</method>
+		<method name="_map_is_active" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.map_is_active]. Required.
+			</description>
+		</method>
+		<method name="_map_set_active" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="active" type="bool" />
+			<description>
+				Override to implement [method NavigationServer3D.map_set_active]. Required.
+			</description>
+		</method>
+		<method name="_map_set_cell_size" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="cell_size" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.map_set_cell_size]. Required.
+			</description>
+		</method>
+		<method name="_map_set_edge_connection_margin" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="margin" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.map_set_edge_connection_margin]. Required.
+			</description>
+		</method>
+		<method name="_map_set_link_connection_radius" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.map_set_link_connection_radius]. Required.
+			</description>
+		</method>
+		<method name="_map_set_up" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="up" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.map_set_up]. Required.
+			</description>
+		</method>
+		<method name="_process" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="delta_time" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.process]. Required.
+			</description>
+		</method>
+		<method name="_query_path_extension" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="parameters" type="const NavigationServer3DExtensionPathQueryParameters*" />
+			<param index="1" name="result" type="NavigationServer3DExtensionPathQueryResult*" />
+			<description>
+				Override to implement [method NavigationServer3D.query_path]. Required.
+				You are responsible for filling in the given [param result] with the results of the path finding operation.
+				This class will take care of creating the required structs for you.
+			</description>
+		</method>
+		<method name="_region_bake_navigation_mesh" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="1" name="root_node" type="Node" />
+			<description>
+				Override to implement [method NavigationServer3D.region_bake_navigation_mesh]. Required.
+			</description>
+		</method>
+		<method name="_region_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.region_create]. Required.
+			</description>
+		</method>
+		<method name="_region_get_connection_pathway_end" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="connection" type="int" />
+			<description>
+				Override to implement [method NavigationServer3D.region_get_connection_pathway_end]. Required.
+			</description>
+		</method>
+		<method name="_region_get_connection_pathway_start" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="connection" type="int" />
+			<description>
+				Override to implement [method NavigationServer3D.region_get_connection_pathway_start]. Required.
+			</description>
+		</method>
+		<method name="_region_get_connections_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.region_get_connections_count]. Required.
+			</description>
+		</method>
+		<method name="_region_get_enter_cost" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.region_get_enter_cost]. Required.
+			</description>
+		</method>
+		<method name="_region_get_map" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.region_get_map]. Required.
+			</description>
+		</method>
+		<method name="_region_get_navigation_layers" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.region_get_navigation_layers]. Required.
+			</description>
+		</method>
+		<method name="_region_get_owner_id" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.region_get_owner_id]. Required.
+			</description>
+		</method>
+		<method name="_region_get_travel_cost" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.region_get_travel_cost]. Required.
+			</description>
+		</method>
+		<method name="_region_owns_point" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="point" type="Vector3" />
+			<description>
+				Override to implement [method NavigationServer3D.region_owns_point]. Required.
+			</description>
+		</method>
+		<method name="_region_set_enter_cost" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="enter_cost" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.region_set_enter_cost]. Required.
+			</description>
+		</method>
+		<method name="_region_set_map" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="map" type="RID" />
+			<description>
+				Override to implement [method NavigationServer3D.region_set_map]. Required.
+			</description>
+		</method>
+		<method name="_region_set_navigation_layers" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				Override to implement [method NavigationServer3D.region_set_navigation_layers]. Required.
+			</description>
+		</method>
+		<method name="_region_set_navigation_mesh" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="navigation_mesh" type="NavigationMesh" />
+			<description>
+				Override to implement [method NavigationServer3D.region_set_navigation_mesh]. Required.
+			</description>
+		</method>
+		<method name="_region_set_owner_id" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="owner_id" type="int" />
+			<description>
+				Override to implement [method NavigationServer3D.region_set_owner_id]. Required.
+			</description>
+		</method>
+		<method name="_region_set_transform" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+				Override to implement [method NavigationServer3D.region_set_transform]. Required.
+			</description>
+		</method>
+		<method name="_region_set_travel_cost" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="travel_cost" type="float" />
+			<description>
+				Override to implement [method NavigationServer3D.region_set_travel_cost]. Required.
+			</description>
+		</method>
+		<method name="_set_active" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="active" type="bool" />
+			<description>
+				Override to implement [method NavigationServer3D.set_active]. Required.
+			</description>
+		</method>
+	</methods>
+</class>
