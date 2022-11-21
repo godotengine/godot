@@ -252,9 +252,6 @@ private:
 	template <class T>
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const;
 
-	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, double from_time, double to_time, List<int> *p_indices) const;
-	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const;
-
 	double length = 1.0;
 	real_t step = 0.1;
 	LoopMode loop_mode = LOOP_NONE;
@@ -345,27 +342,6 @@ private:
 
 	// bind helpers
 private:
-	Vector<int> _value_track_get_key_indices(int p_track, double p_time, double p_delta) const {
-		List<int> idxs;
-		value_track_get_key_indices(p_track, p_time, p_delta, &idxs);
-		Vector<int> idxr;
-
-		for (int &E : idxs) {
-			idxr.push_back(E);
-		}
-		return idxr;
-	}
-	Vector<int> _method_track_get_key_indices(int p_track, double p_time, double p_delta) const {
-		List<int> idxs;
-		method_track_get_key_indices(p_track, p_time, p_delta, &idxs);
-		Vector<int> idxr;
-
-		for (int &E : idxs) {
-			idxr.push_back(E);
-		}
-		return idxr;
-	}
-
 	bool _float_track_optimize_key(const TKey<float> t0, const TKey<float> t1, const TKey<float> t2, real_t p_allowed_velocity_err, real_t p_allowed_precision_error);
 	bool _vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<Vector2> t1, const TKey<Vector2> t2, real_t p_alowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
 	bool _vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<Vector3> t1, const TKey<Vector3> t2, real_t p_alowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
@@ -470,11 +446,9 @@ public:
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
 	Variant value_track_interpolate(int p_track, double p_time) const;
-	void value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
-	void method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
 

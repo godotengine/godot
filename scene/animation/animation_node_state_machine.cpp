@@ -332,11 +332,11 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 	return true;
 }
 
-double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking) {
 	if (p_time == -1) {
 		Ref<AnimationNodeStateMachine> anodesm = p_state_machine->states[current].node;
 		if (anodesm.is_valid()) {
-			p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+			p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 		}
 		playing = false;
 		return 0;
@@ -405,7 +405,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			current = p_state_machine->start_node;
 		}
 
-		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 1.0, AnimationNode::FILTER_IGNORE, true);
+		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, 1.0, AnimationNode::FILTER_IGNORE, true);
 		pos_current = 0;
 	}
 
@@ -433,10 +433,10 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	if (current_curve.is_valid()) {
 		fade_blend = current_curve->sample(fade_blend);
 	}
-	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_seek_root, fade_blend, AnimationNode::FILTER_IGNORE, true);
+	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, fade_blend, AnimationNode::FILTER_IGNORE, true);
 
 	if (fading_from != StringName()) {
-		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_seek_root, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, true);
+		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, true);
 	}
 
 	//guess playback position
@@ -593,19 +593,19 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			{ // if the current node is a state machine, update the "playing" variable to false by passing -1 in p_time
 				Ref<AnimationNodeStateMachine> anodesm = p_state_machine->states[current].node;
 				if (anodesm.is_valid()) {
-					p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+					p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 				}
 			}
 
 			current = next;
 
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 				pos_current = MIN(pos_current, len_current);
-				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 
 			} else {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 				pos_current = 0;
 			}
 
@@ -1133,11 +1133,11 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
-double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	Ref<AnimationNodeStateMachinePlayback> playback_new = get_parameter(playback);
 	ERR_FAIL_COND_V(playback_new.is_null(), 0.0);
 
-	return playback_new->process(this, p_time, p_seek, p_seek_root);
+	return playback_new->process(this, p_time, p_seek, p_is_external_seeking);
 }
 
 String AnimationNodeStateMachine::get_caption() const {
