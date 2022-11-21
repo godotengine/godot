@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+Import("env")
+
+# Godot source files
+env.add_source_files(env.drivers_sources, "*.cpp")
