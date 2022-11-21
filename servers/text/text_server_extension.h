@@ -109,6 +109,16 @@ public:
 	GDVIRTUAL2(_font_set_style_name, RID, const String &);
 	GDVIRTUAL1RC(String, _font_get_style_name, RID);
 
+	virtual void font_set_weight(const RID &p_font_rid, int64_t p_weight) override;
+	virtual int64_t font_get_weight(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_weight, RID, int);
+	GDVIRTUAL1RC(int64_t, _font_get_weight, RID);
+
+	virtual void font_set_stretch(const RID &p_font_rid, int64_t p_stretch) override;
+	virtual int64_t font_get_stretch(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_stretch, RID, int);
+	GDVIRTUAL1RC(int64_t, _font_get_stretch, RID);
+
 	virtual void font_set_antialiasing(const RID &p_font_rid, TextServer::FontAntialiasing p_antialiasing) override;
 	virtual TextServer::FontAntialiasing font_get_antialiasing(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_antialiasing, RID, TextServer::FontAntialiasing);
@@ -153,6 +163,11 @@ public:
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_transform, RID, Transform2D);
 	GDVIRTUAL1RC(Transform2D, _font_get_transform, RID);
+
+	virtual void font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) override;
+	virtual bool font_is_allow_system_fallback(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_allow_system_fallback, RID, bool);
+	GDVIRTUAL1RC(bool, _font_is_allow_system_fallback, RID);
 
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) override;
 	virtual bool font_is_force_autohinter(const RID &p_font_rid) const override;
@@ -513,6 +528,9 @@ public:
 	virtual bool spoof_check(const String &p_string) const override;
 	GDVIRTUAL2RC(int64_t, _is_confusable, const String &, const PackedStringArray &);
 	GDVIRTUAL1RC(bool, _spoof_check, const String &);
+
+	virtual void cleanup() override;
+	GDVIRTUAL0(_cleanup);
 
 	TextServerExtension();
 	~TextServerExtension();

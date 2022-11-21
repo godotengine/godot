@@ -394,18 +394,38 @@
 		<method name="get_system_font_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="font_name" type="String" />
-			<param index="1" name="bold" type="bool" default="false" />
-			<param index="2" name="italic" type="bool" default="false" />
+			<param index="1" name="weight" type="int" default="400" />
+			<param index="2" name="stretch" type="int" default="100" />
+			<param index="3" name="italic" type="bool" default="false" />
 			<description>
-				Returns path to the system font file with [param font_name] and style. Return empty string if no matching fonts found.
-				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+				Returns path to the system font file with [param font_name] and style. Returns empty string if no matching fonts found.
+				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
+				[b]Note:[/b] Returned font might have different style if the requested style is not available.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_system_font_path_for_text" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="font_name" type="String" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="locale" type="String" default="&quot;&quot;" />
+			<param index="3" name="script" type="String" default="&quot;&quot;" />
+			<param index="4" name="weight" type="int" default="400" />
+			<param index="5" name="stretch" type="int" default="100" />
+			<param index="6" name="italic" type="bool" default="false" />
+			<description>
+				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
+				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
+				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts is suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
+				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_system_fonts" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 				Returns list of font family names available.
-				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_thread_caller_id" qualifiers="const">

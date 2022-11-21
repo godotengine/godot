@@ -92,6 +92,8 @@ public:
 	virtual String get_font_name() const;
 	virtual String get_font_style_name() const;
 	virtual BitField<TextServer::FontStyle> get_font_style() const;
+	virtual int get_font_weight() const;
+	virtual int get_font_stretch() const;
 
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const { return 0; };
 	virtual Dictionary get_opentype_features() const;
@@ -148,6 +150,7 @@ class FontFile : public Font {
 	int msdf_size = 48;
 	int fixed_size = 0;
 	bool force_autohinter = false;
+	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 	real_t oversampling = 0.f;
@@ -191,6 +194,8 @@ public:
 	virtual void set_font_name(const String &p_name);
 	virtual void set_font_style_name(const String &p_name);
 	virtual void set_font_style(BitField<TextServer::FontStyle> p_style);
+	virtual void set_font_weight(int p_weight);
+	virtual void set_font_stretch(int p_stretch);
 
 	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
 	virtual TextServer::FontAntialiasing get_antialiasing() const;
@@ -209,6 +214,9 @@ public:
 
 	virtual void set_fixed_size(int p_fixed_size);
 	virtual int get_fixed_size() const;
+
+	virtual void set_allow_system_fallback(bool p_allow_system_fallback);
+	virtual bool is_allow_system_fallback() const;
 
 	virtual void set_force_autohinter(bool p_force_autohinter);
 	virtual bool is_force_autohinter() const;
@@ -389,18 +397,22 @@ class SystemFont : public Font {
 	GDCLASS(SystemFont, Font);
 
 	PackedStringArray names;
-	BitField<TextServer::FontStyle> style = 0;
+	bool italic = false;
+	int weight = 400;
+	int stretch = 100;
 
 	mutable Ref<Font> theme_font;
 
 	Ref<FontFile> base_font;
 	Vector<int> face_indeces;
 	int ftr_weight = 0;
+	int ftr_stretch = 0;
 	int ftr_italic = 0;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
 	bool force_autohinter = false;
+	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 	real_t oversampling = 0.f;
@@ -423,6 +435,9 @@ public:
 	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
 	virtual bool get_generate_mipmaps() const;
 
+	virtual void set_allow_system_fallback(bool p_allow_system_fallback);
+	virtual bool is_allow_system_fallback() const;
+
 	virtual void set_force_autohinter(bool p_force_autohinter);
 	virtual bool is_force_autohinter() const;
 
@@ -441,8 +456,14 @@ public:
 	virtual void set_font_names(const PackedStringArray &p_names);
 	virtual PackedStringArray get_font_names() const;
 
-	virtual void set_font_style(BitField<TextServer::FontStyle> p_style);
-	virtual BitField<TextServer::FontStyle> get_font_style() const override;
+	virtual void set_font_italic(bool p_italic);
+	virtual bool get_font_italic() const;
+
+	virtual void set_font_weight(int p_weight);
+	virtual int get_font_weight() const override;
+
+	virtual void set_font_stretch(int p_stretch);
+	virtual int get_font_stretch() const override;
 
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
 

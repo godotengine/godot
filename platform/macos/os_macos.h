@@ -57,6 +57,10 @@ class OS_MacOS : public OS_Unix {
 
 	List<String> launch_service_args;
 
+	CGFloat _weight_to_ct(int p_weight) const;
+	CGFloat _stretch_to_ct(int p_stretch) const;
+	String _get_default_fontname(const String &p_font_name) const;
+
 	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
 	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
 
@@ -98,7 +102,8 @@ public:
 	virtual String get_locale() const override;
 
 	virtual Vector<String> get_system_fonts() const override;
-	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
+	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
+	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;

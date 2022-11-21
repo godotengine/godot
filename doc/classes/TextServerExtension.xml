@@ -9,6 +9,11 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_cleanup" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 		<method name="_create_font" qualifiers="virtual">
 			<return type="RID" />
 			<description>
@@ -306,6 +311,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_font_get_stretch" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_get_style" qualifiers="virtual const">
 			<return type="int" enum="TextServer.FontStyle" />
 			<param index="0" name="font_rid" type="RID" />
@@ -379,10 +390,22 @@
 			<description>
 			</description>
 		</method>
+		<method name="_font_get_weight" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_has_char" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="char" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_is_allow_system_fallback" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -471,6 +494,13 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="start" type="int" />
 			<param index="3" name="end" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_allow_system_fallback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="allow_system_fallback" type="bool" />
 			<description>
 			</description>
 		</method>
@@ -680,6 +710,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_font_set_stretch" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="stretch" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_set_style" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
@@ -746,6 +783,13 @@
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="variation_coordinates" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_weight" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="weight" type="int" />
 			<description>
 			</description>
 		</method>

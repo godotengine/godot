@@ -73,6 +73,10 @@ private:
 
 	bool is_focused = false;
 
+	CGFloat _weight_to_ct(int p_weight) const;
+	CGFloat _stretch_to_ct(int p_stretch) const;
+	String _get_default_fontname(const String &p_font_name) const;
+
 	void deinitialize_modules();
 
 public:
@@ -90,7 +94,8 @@ public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	virtual Vector<String> get_system_fonts() const override;
-	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
+	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
+	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;

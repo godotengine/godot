@@ -63,6 +63,8 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_font_name"), &Font::get_font_name);
 	ClassDB::bind_method(D_METHOD("get_font_style_name"), &Font::get_font_style_name);
 	ClassDB::bind_method(D_METHOD("get_font_style"), &Font::get_font_style);
+	ClassDB::bind_method(D_METHOD("get_font_weight"), &Font::get_font_weight);
+	ClassDB::bind_method(D_METHOD("get_font_stretch"), &Font::get_font_stretch);
 
 	ClassDB::bind_method(D_METHOD("get_spacing", "spacing"), &Font::get_spacing);
 	ClassDB::bind_method(D_METHOD("get_opentype_features"), &Font::get_opentype_features);
@@ -247,6 +249,14 @@ String Font::get_font_style_name() const {
 
 BitField<TextServer::FontStyle> Font::get_font_style() const {
 	return TS->font_get_style(_get_rid());
+}
+
+int Font::get_font_weight() const {
+	return TS->font_get_weight(_get_rid());
+}
+
+int Font::get_font_stretch() const {
+	return TS->font_get_stretch(_get_rid());
 }
 
 Dictionary Font::get_opentype_features() const {
@@ -590,6 +600,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index) const {
 		TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
 		TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
 		TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
+		TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
 		TS->font_set_hinting(cache[p_cache_index], hinting);
 		TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
 		TS->font_set_oversampling(cache[p_cache_index], oversampling);
@@ -881,6 +892,8 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font_name", "name"), &FontFile::set_font_name);
 	ClassDB::bind_method(D_METHOD("set_font_style_name", "name"), &FontFile::set_font_style_name);
 	ClassDB::bind_method(D_METHOD("set_font_style", "style"), &FontFile::set_font_style);
+	ClassDB::bind_method(D_METHOD("set_font_weight", "weight"), &FontFile::set_font_weight);
+	ClassDB::bind_method(D_METHOD("set_font_stretch", "stretch"), &FontFile::set_font_stretch);
 
 	ClassDB::bind_method(D_METHOD("set_antialiasing", "antialiasing"), &FontFile::set_antialiasing);
 	ClassDB::bind_method(D_METHOD("get_antialiasing"), &FontFile::get_antialiasing);
@@ -899,6 +912,9 @@ void FontFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_fixed_size", "fixed_size"), &FontFile::set_fixed_size);
 	ClassDB::bind_method(D_METHOD("get_fixed_size"), &FontFile::get_fixed_size);
+
+	ClassDB::bind_method(D_METHOD("set_allow_system_fallback", "allow_system_fallback"), &FontFile::set_allow_system_fallback);
+	ClassDB::bind_method(D_METHOD("is_allow_system_fallback"), &FontFile::is_allow_system_fallback);
 
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &FontFile::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &FontFile::is_force_autohinter);
@@ -1007,10 +1023,14 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_name", "get_font_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style_name", "get_font_style_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_FLAGS, "Bold,Italic,Fixed Size", PROPERTY_USAGE_STORAGE), "set_font_style", "get_font_style");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_weight", PROPERTY_HINT_RANGE, "100,999,25", PROPERTY_USAGE_STORAGE), "set_font_weight", "get_font_weight");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_stretch", PROPERTY_HINT_RANGE, "50,200,25", PROPERTY_USAGE_STORAGE), "set_font_stretch", "get_font_stretch");
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel", PROPERTY_USAGE_STORAGE), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_size", "get_msdf_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_STORAGE), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
@@ -1329,6 +1349,7 @@ void FontFile::reset_state() {
 	mipmaps = false;
 	msdf = false;
 	force_autohinter = false;
+	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	msdf_pixel_range = 14;
@@ -1361,6 +1382,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 	mipmaps = false;
 	msdf = false;
 	force_autohinter = false;
+	allow_system_fallback = true;
 	hinting = TextServer::HINTING_NONE;
 	oversampling = 1.0f;
 
@@ -1937,6 +1959,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 
 	set_font_name(font_name);
 	set_font_style(st_flags);
+	if (st_flags & TextServer::FONT_BOLD) {
+		set_font_weight(700);
+	}
 	set_cache_ascent(0, base_size, ascent);
 	set_cache_descent(0, base_size, height - ascent);
 
@@ -1946,7 +1971,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 Error FontFile::load_dynamic_font(const String &p_path) {
 	reset_state();
 
-	Vector<uint8_t> font_data = FileAccess::get_file_as_array(p_path);
+	Vector<uint8_t> font_data = FileAccess::get_file_as_bytes(p_path);
 	set_data(font_data);
 
 	return OK;
@@ -1998,6 +2023,16 @@ void FontFile::set_font_style_name(const String &p_name) {
 void FontFile::set_font_style(BitField<TextServer::FontStyle> p_style) {
 	_ensure_rid(0);
 	TS->font_set_style(cache[0], p_style);
+}
+
+void FontFile::set_font_weight(int p_weight) {
+	_ensure_rid(0);
+	TS->font_set_weight(cache[0], p_weight);
+}
+
+void FontFile::set_font_stretch(int p_stretch) {
+	_ensure_rid(0);
+	TS->font_set_stretch(cache[0], p_stretch);
 }
 
 void FontFile::set_antialiasing(TextServer::FontAntialiasing p_antialiasing) {
@@ -2088,6 +2123,21 @@ void FontFile::set_fixed_size(int p_fixed_size) {
 
 int FontFile::get_fixed_size() const {
 	return fixed_size;
+}
+
+void FontFile::set_allow_system_fallback(bool p_allow_system_fallback) {
+	if (allow_system_fallback != p_allow_system_fallback) {
+		allow_system_fallback = p_allow_system_fallback;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_allow_system_fallback(cache[i], allow_system_fallback);
+		}
+		emit_changed();
+	}
+}
+
+bool FontFile::is_allow_system_fallback() const {
+	return allow_system_fallback;
 }
 
 void FontFile::set_force_autohinter(bool p_force_autohinter) {
@@ -2839,6 +2889,9 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "generate_mipmaps"), &SystemFont::set_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("get_generate_mipmaps"), &SystemFont::get_generate_mipmaps);
 
+	ClassDB::bind_method(D_METHOD("set_allow_system_fallback", "allow_system_fallback"), &SystemFont::set_allow_system_fallback);
+	ClassDB::bind_method(D_METHOD("is_allow_system_fallback"), &SystemFont::is_allow_system_fallback);
+
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &SystemFont::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &SystemFont::is_force_autohinter);
 
@@ -2857,12 +2910,18 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_font_names"), &SystemFont::get_font_names);
 	ClassDB::bind_method(D_METHOD("set_font_names", "names"), &SystemFont::set_font_names);
 
-	ClassDB::bind_method(D_METHOD("set_font_style", "style"), &SystemFont::set_font_style);
+	ClassDB::bind_method(D_METHOD("get_font_italic"), &SystemFont::get_font_italic);
+	ClassDB::bind_method(D_METHOD("set_font_italic", "italic"), &SystemFont::set_font_italic);
+	ClassDB::bind_method(D_METHOD("set_font_weight", "weight"), &SystemFont::set_font_weight);
+	ClassDB::bind_method(D_METHOD("set_font_stretch", "stretch"), &SystemFont::set_font_stretch);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "font_names"), "set_font_names", "get_font_names");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_FLAGS, "Bold,Italic"), "set_font_style", "get_font_style");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "font_italic"), "set_font_italic", "get_font_italic");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_weight", PROPERTY_HINT_RANGE, "100,999,25"), "set_font_weight", "get_font_weight");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_stretch", PROPERTY_HINT_RANGE, "50,200,25"), "set_font_stretch", "get_font_stretch");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "get_generate_mipmaps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback"), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
@@ -2899,13 +2958,14 @@ void SystemFont::_update_base_font() {
 
 	face_indeces.clear();
 	ftr_weight = 0;
+	ftr_stretch = 0;
 	ftr_italic = 0;
 	for (const String &E : names) {
 		if (E.is_empty()) {
 			continue;
 		}
 
-		String path = OS::get_singleton()->get_system_font_path(E, style & TextServer::FONT_BOLD, style & TextServer::FONT_ITALIC);
+		String path = OS::get_singleton()->get_system_font_path(E, weight, stretch, italic);
 		if (path.is_empty()) {
 			continue;
 		}
@@ -2917,9 +2977,22 @@ void SystemFont::_update_base_font() {
 		}
 
 		// If it's a font collection check all faces to match requested style.
+		int best_score = 0;
 		for (int i = 0; i < file->get_face_count(); i++) {
 			file->set_face_index(0, i);
-			if (((file->get_font_style() & TextServer::FONT_BOLD) == (style & TextServer::FONT_BOLD)) && ((file->get_font_style() & TextServer::FONT_ITALIC) == (style & TextServer::FONT_ITALIC))) {
+			BitField<TextServer::FontStyle> style = file->get_font_style();
+			int font_weight = file->get_font_weight();
+			int font_stretch = file->get_font_stretch();
+			int score = (20 - Math::abs(font_weight - weight) / 50);
+			score += (20 - Math::abs(font_stretch - stretch) / 10);
+			if (bool(style & TextServer::FONT_ITALIC) == italic) {
+				score += 30;
+			}
+			if (score > best_score) {
+				face_indeces.clear();
+			}
+			if (score >= best_score) {
+				best_score = score;
 				face_indeces.push_back(i);
 			}
 		}
@@ -2928,19 +3001,25 @@ void SystemFont::_update_base_font() {
 		}
 		file->set_face_index(0, face_indeces[0]);
 
-		// If it's a variable font, apply weight and italic coordinates to match requested style.
-		Dictionary ftr = file->get_supported_variation_list();
-		if ((style & TextServer::FONT_BOLD) && ftr.has(TS->name_to_tag("weight"))) {
-			ftr_weight = 700;
-		}
-		if ((style & TextServer::FONT_ITALIC) && ftr.has(TS->name_to_tag("italic"))) {
-			ftr_italic = 1;
+		// If it's a variable font, apply weight, stretch and italic coordinates to match requested style.
+		if (best_score != 50) {
+			Dictionary ftr = file->get_supported_variation_list();
+			if (ftr.has(TS->name_to_tag("width"))) {
+				ftr_stretch = stretch;
+			}
+			if (ftr.has(TS->name_to_tag("weight"))) {
+				ftr_weight = weight;
+			}
+			if (italic && ftr.has(TS->name_to_tag("italic"))) {
+				ftr_italic = 1;
+			}
 		}
 
 		// Apply font rendering settings.
 		file->set_antialiasing(antialiasing);
 		file->set_generate_mipmaps(mipmaps);
 		file->set_force_autohinter(force_autohinter);
+		file->set_allow_system_fallback(allow_system_fallback);
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
 		file->set_multichannel_signed_distance_field(msdf);
@@ -2973,11 +3052,15 @@ void SystemFont::reset_state() {
 	names.clear();
 	face_indeces.clear();
 	ftr_weight = 0;
+	ftr_stretch = 0;
 	ftr_italic = 0;
-	style = 0;
+	italic = false;
+	weight = 400;
+	stretch = 100;
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	mipmaps = false;
 	force_autohinter = false;
+	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	oversampling = 0.f;
@@ -3069,6 +3152,20 @@ bool SystemFont::get_generate_mipmaps() const {
 	return mipmaps;
 }
 
+void SystemFont::set_allow_system_fallback(bool p_allow_system_fallback) {
+	if (allow_system_fallback != p_allow_system_fallback) {
+		allow_system_fallback = p_allow_system_fallback;
+		if (base_font.is_valid()) {
+			base_font->set_allow_system_fallback(allow_system_fallback);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::is_allow_system_fallback() const {
+	return allow_system_fallback;
+}
+
 void SystemFont::set_force_autohinter(bool p_force_autohinter) {
 	if (force_autohinter != p_force_autohinter) {
 		force_autohinter = p_force_autohinter;
@@ -3150,15 +3247,37 @@ PackedStringArray SystemFont::get_font_names() const {
 	return names;
 }
 
-void SystemFont::set_font_style(BitField<TextServer::FontStyle> p_style) {
-	if (style != p_style) {
-		style = p_style;
+void SystemFont::set_font_italic(bool p_italic) {
+	if (italic != p_italic) {
+		italic = p_italic;
 		_update_base_font();
 	}
 }
 
-BitField<TextServer::FontStyle> SystemFont::get_font_style() const {
-	return style;
+bool SystemFont::get_font_italic() const {
+	return italic;
+}
+
+void SystemFont::set_font_weight(int p_weight) {
+	if (weight != p_weight) {
+		weight = CLAMP(p_weight, 100, 999);
+		_update_base_font();
+	}
+}
+
+int SystemFont::get_font_weight() const {
+	return weight;
+}
+
+void SystemFont::set_font_stretch(int p_stretch) {
+	if (stretch != p_stretch) {
+		stretch = CLAMP(p_stretch, 50, 200);
+		_update_base_font();
+	}
+}
+
+int SystemFont::get_font_stretch() const {
+	return stretch;
 }
 
 int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
@@ -3175,6 +3294,9 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 		Dictionary var = p_variation_coordinates;
 		if (ftr_weight > 0 && !var.has(TS->name_to_tag("weight"))) {
 			var[TS->name_to_tag("weight")] = ftr_weight;
+		}
+		if (ftr_stretch > 0 && !var.has(TS->name_to_tag("width"))) {
+			var[TS->name_to_tag("width")] = ftr_stretch;
 		}
 		if (ftr_italic > 0 && !var.has(TS->name_to_tag("italic"))) {
 			var[TS->name_to_tag("italic")] = ftr_italic;
@@ -3197,6 +3319,9 @@ RID SystemFont::_get_rid() const {
 			Dictionary var;
 			if (ftr_weight > 0) {
 				var[TS->name_to_tag("weight")] = ftr_weight;
+			}
+			if (ftr_stretch > 0) {
+				var[TS->name_to_tag("width")] = ftr_stretch;
 			}
 			if (ftr_italic > 0) {
 				var[TS->name_to_tag("italic")] = ftr_italic;

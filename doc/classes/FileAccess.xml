@@ -153,6 +153,20 @@
 				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [enum Error].
 			</description>
 		</method>
+		<method name="get_file_as_bytes" qualifiers="static">
+			<return type="PackedByteArray" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the whole [param path] file contents as a [PackedByteArray] without any decoding.
+			</description>
+		</method>
+		<method name="get_file_as_string" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the whole [param path] file contents as a [String]. Text is interpreted as being UTF-8 encoded.
+			</description>
+		</method>
 		<method name="get_float" qualifiers="const">
 			<return type="float" />
 			<description>

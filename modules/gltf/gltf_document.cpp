@@ -796,7 +796,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> state, const String &p_base_pa
 					ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 					uri = uri.uri_decode();
 					uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
-					buffer_data = FileAccess::get_file_as_array(uri);
+					buffer_data = FileAccess::get_file_as_bytes(uri);
 					ERR_FAIL_COND_V_MSG(buffer.size() == 0, ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
 				}
 
@@ -3139,7 +3139,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 					// Fallback to loading as byte array.
 					// This enables us to support the spec's requirement that we honor mimetype
 					// regardless of file URI.
-					data = FileAccess::get_file_as_array(uri);
+					data = FileAccess::get_file_as_bytes(uri);
 					if (data.size() == 0) {
 						WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded as a buffer of MIME type '%s' from URI: %s. Skipping it.", i, mimetype, uri));
 						state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.

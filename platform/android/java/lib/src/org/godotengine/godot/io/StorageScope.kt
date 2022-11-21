@@ -90,6 +90,11 @@ internal enum class StorageScope {
 				return APP
 			}
 
+			var rootDir: String? = System.getenv("ANDROID_ROOT")
+			if (rootDir != null && canonicalPathFile.startsWith(rootDir)) {
+				return APP
+			}
+
 			if (sharedDir != null && canonicalPathFile.startsWith(sharedDir)) {
 				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 					// Before R, apps had access to shared storage so long as they have the right

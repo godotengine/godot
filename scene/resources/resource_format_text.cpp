@@ -1356,7 +1356,7 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 
 	wf->seek_end();
 
-	Vector<uint8_t> data = FileAccess::get_file_as_array(temp_file);
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(temp_file);
 	wf->store_buffer(data.ptr(), data.size());
 	{
 		Ref<DirAccess> dar = DirAccess::open(temp_file.get_base_dir());

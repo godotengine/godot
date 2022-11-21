@@ -1034,7 +1034,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					return err;
 				}
 				// Now actual remapped file:
-				sarr = FileAccess::get_file_as_array(export_path);
+				sarr = FileAccess::get_file_as_bytes(export_path);
 				err = p_func(p_udata, export_path, sarr, idx, total, enc_in_filters, enc_ex_filters, key);
 				if (err != OK) {
 					return err;
@@ -1053,7 +1053,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 				if (importer_type == "keep") {
 					//just keep file as-is
-					Vector<uint8_t> array = FileAccess::get_file_as_array(path);
+					Vector<uint8_t> array = FileAccess::get_file_as_bytes(path);
 					err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 
 					if (err != OK) {
@@ -1086,14 +1086,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					String remap = F;
 					if (remap == "path") {
 						String remapped_path = config->get_value("remap", remap);
-						Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
+						Vector<uint8_t> array = FileAccess::get_file_as_bytes(remapped_path);
 						err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 					} else if (remap.begins_with("path.")) {
 						String feature = remap.get_slice(".", 1);
 
 						if (remap_features.has(feature)) {
 							String remapped_path = config->get_value("remap", remap);
-							Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
+							Vector<uint8_t> array = FileAccess::get_file_as_bytes(remapped_path);
 							err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 						}
 					}
@@ -1104,7 +1104,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 
 				//also save the .import file
-				Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
+				Vector<uint8_t> array = FileAccess::get_file_as_bytes(path + ".import");
 				err = p_func(p_udata, path + ".import", array, idx, total, enc_in_filters, enc_ex_filters, key);
 
 				if (err != OK) {
@@ -1164,7 +1164,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					path_remaps.push_back(export_path);
 				}
 
-				Vector<uint8_t> array = FileAccess::get_file_as_array(export_path);
+				Vector<uint8_t> array = FileAccess::get_file_as_bytes(export_path);
 				err = p_func(p_udata, export_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 				if (err != OK) {
 					return err;
@@ -1244,14 +1244,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	String icon = GLOBAL_GET("application/config/icon");
 	String splash = GLOBAL_GET("application/boot_splash/image");
 	if (!icon.is_empty() && FileAccess::exists(icon)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(icon);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(icon);
 		err = p_func(p_udata, icon, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}
 	}
 	if (!splash.is_empty() && FileAccess::exists(splash) && icon != splash) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(splash);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(splash);
 		err = p_func(p_udata, splash, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
@@ -1259,7 +1259,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 	String resource_cache_file = ResourceUID::get_cache_file();
 	if (FileAccess::exists(resource_cache_file)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(resource_cache_file);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(resource_cache_file);
 		err = p_func(p_udata, resource_cache_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
@@ -1268,7 +1268,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
 	if (FileAccess::exists(extension_list_config_file)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(extension_list_config_file);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(extension_list_config_file);
 		err = p_func(p_udata, extension_list_config_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
@@ -1282,7 +1282,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			// Try using user provided data file.
 			String ts_data = "res://" + TS->get_support_data_filename();
 			if (FileAccess::exists(ts_data)) {
-				Vector<uint8_t> array = FileAccess::get_file_as_array(ts_data);
+				Vector<uint8_t> array = FileAccess::get_file_as_bytes(ts_data);
 				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
 				if (err != OK) {
 					return err;
@@ -1291,7 +1291,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				// Use default text server data.
 				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_icu_data");
 				TS->save_support_data(icu_data_file);
-				Vector<uint8_t> array = FileAccess::get_file_as_array(icu_data_file);
+				Vector<uint8_t> array = FileAccess::get_file_as_bytes(icu_data_file);
 				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
 				DirAccess::remove_file_or_error(icu_data_file);
 				if (err != OK) {
@@ -1304,7 +1304,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	String config_file = "project.binary";
 	String engine_cfb = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp" + config_file);
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
-	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(engine_cfb);
 	DirAccess::remove_file_or_error(engine_cfb);
 
 	return p_func(p_udata, "res://" + config_file, data, idx, total, enc_in_filters, enc_ex_filters, key);

@@ -43,12 +43,12 @@
 #include "platform/windows/display_server_windows.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/text_server.h"
 #include "windows_terminal_logger.h"
 
 #include <avrt.h>
 #include <bcrypt.h>
 #include <direct.h>
-#include <dwrite.h>
 #include <knownfolders.h>
 #include <process.h>
 #include <regstr.h>
@@ -189,6 +189,27 @@ void OS_Windows::initialize() {
 
 	IPUnix::make_default();
 	main_loop = nullptr;
+
+	CoInitialize(nullptr);
+	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory));
+	if (SUCCEEDED(hr)) {
+		hr = dwrite_factory->GetSystemFontCollection(&font_collection, false);
+		if (SUCCEEDED(hr)) {
+			dwrite_init = true;
+			hr = dwrite_factory->QueryInterface(&dwrite_factory2);
+			if (SUCCEEDED(hr)) {
+				hr = dwrite_factory2->GetSystemFontFallback(&system_font_fallback);
+				if (SUCCEEDED(hr)) {
+					dwrite2_init = true;
+				}
+			}
+		}
+	}
+	if (!dwrite_init) {
+		print_verbose("Unable to load IDWriteFactory, system font support is disabled.");
+	} else if (!dwrite2_init) {
+		print_verbose("Unable to load IDWriteFactory2, automatic system font fallback is disabled.");
+	}
 }
 
 void OS_Windows::delete_main_loop() {
@@ -203,6 +224,22 @@ void OS_Windows::set_main_loop(MainLoop *p_main_loop) {
 }
 
 void OS_Windows::finalize() {
+	if (dwrite_factory2) {
+		dwrite_factory2->Release();
+		dwrite_factory2 = nullptr;
+	}
+	if (font_collection) {
+		font_collection->Release();
+		font_collection = nullptr;
+	}
+	if (system_font_fallback) {
+		system_font_fallback->Release();
+		system_font_fallback = nullptr;
+	}
+	if (dwrite_factory) {
+		dwrite_factory->Release();
+		dwrite_factory = nullptr;
+	}
 #ifdef WINMIDI_ENABLED
 	driver_midi.close();
 #endif
@@ -726,21 +763,17 @@ Error OS_Windows::set_cwd(const String &p_cwd) {
 }
 
 Vector<String> OS_Windows::get_system_fonts() const {
+	if (!dwrite_init) {
+		return Vector<String>();
+	}
+
 	Vector<String> ret;
 	HashSet<String> font_names;
-
-	ComAutoreleaseRef<IDWriteFactory> dwrite_factory;
-	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory.reference));
-	ERR_FAIL_COND_V(FAILED(hr) || dwrite_factory.is_null(), ret);
-
-	ComAutoreleaseRef<IDWriteFontCollection> font_collection;
-	hr = dwrite_factory->GetSystemFontCollection(&font_collection.reference, false);
-	ERR_FAIL_COND_V(FAILED(hr) || font_collection.is_null(), ret);
 
 	UINT32 family_count = font_collection->GetFontFamilyCount();
 	for (UINT32 i = 0; i < family_count; i++) {
 		ComAutoreleaseRef<IDWriteFontFamily> family;
-		hr = font_collection->GetFontFamily(i, &family.reference);
+		HRESULT hr = font_collection->GetFontFamily(i, &family.reference);
 		ERR_CONTINUE(FAILED(hr) || family.is_null());
 
 		ComAutoreleaseRef<IDWriteLocalizedStrings> family_names;
@@ -771,7 +804,98 @@ Vector<String> OS_Windows::get_system_fonts() const {
 	return ret;
 }
 
-String OS_Windows::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+
+class FallbackTextAnalysisSource : public IDWriteTextAnalysisSource {
+	LONG _cRef = 1;
+
+	bool rtl = false;
+	Char16String string;
+	Char16String locale;
+	IDWriteNumberSubstitution *n_sub = nullptr;
+
+public:
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, VOID **ppvInterface) {
+		if (IID_IUnknown == riid) {
+			AddRef();
+			*ppvInterface = (IUnknown *)this;
+		} else if (__uuidof(IMMNotificationClient) == riid) {
+			AddRef();
+			*ppvInterface = (IMMNotificationClient *)this;
+		} else {
+			*ppvInterface = nullptr;
+			return E_NOINTERFACE;
+		}
+		return S_OK;
+	}
+
+	ULONG STDMETHODCALLTYPE AddRef() {
+		return InterlockedIncrement(&_cRef);
+	}
+
+	ULONG STDMETHODCALLTYPE Release() {
+		ULONG ulRef = InterlockedDecrement(&_cRef);
+		if (0 == ulRef) {
+			delete this;
+		}
+		return ulRef;
+	}
+
+	HRESULT STDMETHODCALLTYPE GetTextAtPosition(UINT32 p_text_position, WCHAR const **r_text_string, UINT32 *r_text_length) override {
+		if (p_text_position >= (UINT32)string.length()) {
+			*r_text_string = nullptr;
+			*r_text_length = 0;
+			return S_OK;
+		}
+		*r_text_string = reinterpret_cast<const wchar_t *>(string.get_data()) + p_text_position;
+		*r_text_length = string.length() - p_text_position;
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE GetTextBeforePosition(UINT32 p_text_position, WCHAR const **r_text_string, UINT32 *r_text_length) override {
+		if (p_text_position < 1 || p_text_position >= (UINT32)string.length()) {
+			*r_text_string = nullptr;
+			*r_text_length = 0;
+			return S_OK;
+		}
+		*r_text_string = reinterpret_cast<const wchar_t *>(string.get_data());
+		*r_text_length = p_text_position;
+		return S_OK;
+	}
+
+	DWRITE_READING_DIRECTION STDMETHODCALLTYPE GetParagraphReadingDirection() override {
+		return (rtl) ? DWRITE_READING_DIRECTION_RIGHT_TO_LEFT : DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
+	}
+
+	HRESULT STDMETHODCALLTYPE GetLocaleName(UINT32 p_text_position, UINT32 *r_text_length, WCHAR const **r_locale_name) override {
+		*r_locale_name = reinterpret_cast<const wchar_t *>(locale.get_data());
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE GetNumberSubstitution(UINT32 p_text_position, UINT32 *r_text_length, IDWriteNumberSubstitution **r_number_substitution) override {
+		*r_number_substitution = n_sub;
+		return S_OK;
+	}
+
+	FallbackTextAnalysisSource(const Char16String &p_text, const Char16String &p_locale, bool p_rtl, IDWriteNumberSubstitution *p_nsub) {
+		_cRef = 1;
+		string = p_text;
+		locale = p_locale;
+		n_sub = p_nsub;
+		rtl = p_rtl;
+	};
+
+	virtual ~FallbackTextAnalysisSource() {}
+};
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+String OS_Windows::_get_default_fontname(const String &p_font_name) const {
 	String font_name = p_font_name;
 	if (font_name.to_lower() == "sans-serif") {
 		font_name = "Arial";
@@ -784,18 +908,157 @@ String OS_Windows::get_system_font_path(const String &p_font_name, bool p_bold, 
 	} else if (font_name.to_lower() == "fantasy") {
 		font_name = "Gabriola";
 	}
+	return font_name;
+}
 
-	ComAutoreleaseRef<IDWriteFactory> dwrite_factory;
-	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory.reference));
-	ERR_FAIL_COND_V(FAILED(hr) || dwrite_factory.is_null(), String());
+DWRITE_FONT_WEIGHT OS_Windows::_weight_to_dw(int p_weight) const {
+	if (p_weight < 150) {
+		return DWRITE_FONT_WEIGHT_THIN;
+	} else if (p_weight < 250) {
+		return DWRITE_FONT_WEIGHT_EXTRA_LIGHT;
+	} else if (p_weight < 325) {
+		return DWRITE_FONT_WEIGHT_LIGHT;
+	} else if (p_weight < 375) {
+		return DWRITE_FONT_WEIGHT_SEMI_LIGHT;
+	} else if (p_weight < 450) {
+		return DWRITE_FONT_WEIGHT_NORMAL;
+	} else if (p_weight < 550) {
+		return DWRITE_FONT_WEIGHT_MEDIUM;
+	} else if (p_weight < 650) {
+		return DWRITE_FONT_WEIGHT_DEMI_BOLD;
+	} else if (p_weight < 750) {
+		return DWRITE_FONT_WEIGHT_BOLD;
+	} else if (p_weight < 850) {
+		return DWRITE_FONT_WEIGHT_EXTRA_BOLD;
+	} else if (p_weight < 925) {
+		return DWRITE_FONT_WEIGHT_BLACK;
+	} else {
+		return DWRITE_FONT_WEIGHT_EXTRA_BLACK;
+	}
+}
 
-	ComAutoreleaseRef<IDWriteFontCollection> font_collection;
-	hr = dwrite_factory->GetSystemFontCollection(&font_collection.reference, false);
-	ERR_FAIL_COND_V(FAILED(hr) || font_collection.is_null(), String());
+DWRITE_FONT_STRETCH OS_Windows::_stretch_to_dw(int p_stretch) const {
+	if (p_stretch < 56) {
+		return DWRITE_FONT_STRETCH_ULTRA_CONDENSED;
+	} else if (p_stretch < 69) {
+		return DWRITE_FONT_STRETCH_EXTRA_CONDENSED;
+	} else if (p_stretch < 81) {
+		return DWRITE_FONT_STRETCH_CONDENSED;
+	} else if (p_stretch < 93) {
+		return DWRITE_FONT_STRETCH_SEMI_CONDENSED;
+	} else if (p_stretch < 106) {
+		return DWRITE_FONT_STRETCH_NORMAL;
+	} else if (p_stretch < 137) {
+		return DWRITE_FONT_STRETCH_SEMI_EXPANDED;
+	} else if (p_stretch < 144) {
+		return DWRITE_FONT_STRETCH_EXPANDED;
+	} else if (p_stretch < 162) {
+		return DWRITE_FONT_STRETCH_EXTRA_EXPANDED;
+	} else {
+		return DWRITE_FONT_STRETCH_ULTRA_EXPANDED;
+	}
+}
+
+Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
+	if (!dwrite2_init) {
+		return Vector<String>();
+	}
+
+	String font_name = _get_default_fontname(p_font_name);
+
+	bool rtl = TS->is_locale_right_to_left(p_locale);
+	Char16String text = p_text.utf16();
+	Char16String locale = p_locale.utf16();
+
+	ComAutoreleaseRef<IDWriteNumberSubstitution> number_substitution;
+	HRESULT hr = dwrite_factory->CreateNumberSubstitution(DWRITE_NUMBER_SUBSTITUTION_METHOD_NONE, reinterpret_cast<const wchar_t *>(locale.get_data()), true, &number_substitution.reference);
+	ERR_FAIL_COND_V(FAILED(hr) || number_substitution.is_null(), Vector<String>());
+
+	FallbackTextAnalysisSource fs = FallbackTextAnalysisSource(text, locale, rtl, number_substitution.reference);
+	UINT32 mapped_length = 0;
+	FLOAT scale = 0.0;
+	ComAutoreleaseRef<IDWriteFont> dwrite_font;
+	hr = system_font_fallback->MapCharacters(
+			&fs,
+			0,
+			(UINT32)text.length(),
+			font_collection,
+			reinterpret_cast<const wchar_t *>(font_name.utf16().get_data()),
+			_weight_to_dw(p_weight),
+			p_italic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL,
+			_stretch_to_dw(p_stretch),
+			&mapped_length,
+			&dwrite_font.reference,
+			&scale);
+
+	if (FAILED(hr) || dwrite_font.is_null()) {
+		return Vector<String>();
+	}
+
+	ComAutoreleaseRef<IDWriteFontFace> dwrite_face;
+	hr = dwrite_font->CreateFontFace(&dwrite_face.reference);
+	if (FAILED(hr) || dwrite_face.is_null()) {
+		return Vector<String>();
+	}
+
+	UINT32 number_of_files = 0;
+	hr = dwrite_face->GetFiles(&number_of_files, nullptr);
+	if (FAILED(hr)) {
+		return Vector<String>();
+	}
+	Vector<ComAutoreleaseRef<IDWriteFontFile>> files;
+	files.resize(number_of_files);
+	hr = dwrite_face->GetFiles(&number_of_files, (IDWriteFontFile **)files.ptrw());
+	if (FAILED(hr)) {
+		return Vector<String>();
+	}
+
+	Vector<String> ret;
+	for (UINT32 i = 0; i < number_of_files; i++) {
+		void const *reference_key = nullptr;
+		UINT32 reference_key_size = 0;
+		ComAutoreleaseRef<IDWriteLocalFontFileLoader> loader;
+
+		hr = files.write[i]->GetLoader((IDWriteFontFileLoader **)&loader.reference);
+		if (FAILED(hr) || loader.is_null()) {
+			continue;
+		}
+		hr = files.write[i]->GetReferenceKey(&reference_key, &reference_key_size);
+		if (FAILED(hr)) {
+			continue;
+		}
+
+		WCHAR file_path[MAX_PATH];
+		hr = loader->GetFilePathFromKey(reference_key, reference_key_size, &file_path[0], MAX_PATH);
+		if (FAILED(hr)) {
+			continue;
+		}
+		String fpath = String::utf16((const char16_t *)&file_path[0]);
+
+		WIN32_FIND_DATAW d;
+		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
+		if (fnd != INVALID_HANDLE_VALUE) {
+			String fname = String::utf16((const char16_t *)d.cFileName);
+			if (!fname.is_empty()) {
+				fpath = fpath.get_base_dir().path_join(fname);
+			}
+			FindClose(fnd);
+		}
+		ret.push_back(fpath);
+	}
+	return ret;
+}
+
+String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
+	if (!dwrite_init) {
+		return String();
+	}
+
+	String font_name = _get_default_fontname(p_font_name);
 
 	UINT32 index = 0;
 	BOOL exists = false;
-	font_collection->FindFamilyName((const WCHAR *)font_name.utf16().get_data(), &index, &exists);
+	HRESULT hr = font_collection->FindFamilyName((const WCHAR *)font_name.utf16().get_data(), &index, &exists);
 	if (FAILED(hr)) {
 		return String();
 	}
@@ -807,7 +1070,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, bool p_bold, 
 	}
 
 	ComAutoreleaseRef<IDWriteFont> dwrite_font;
-	hr = family->GetFirstMatchingFont(p_bold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, p_italic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL, &dwrite_font.reference);
+	hr = family->GetFirstMatchingFont(_weight_to_dw(p_weight), _stretch_to_dw(p_stretch), p_italic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL, &dwrite_font.reference);
 	if (FAILED(hr) || dwrite_font.is_null()) {
 		return String();
 	}
@@ -1192,7 +1455,7 @@ String OS_Windows::get_unique_id() const {
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "system_fonts") {
-		return true;
+		return dwrite_init;
 	}
 	if (p_feature == "pc") {
 		return true;

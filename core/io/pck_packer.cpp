@@ -120,7 +120,7 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	pf.ofs = ofs;
 	pf.size = f->get_length();
 
-	Vector<uint8_t> data = FileAccess::get_file_as_array(p_src);
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_src);
 	{
 		unsigned char hash[16];
 		CryptoCore::md5(data.ptr(), data.size(), hash);

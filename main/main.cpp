@@ -533,6 +533,10 @@ Error Main::test_setup() {
 void Main::test_cleanup() {
 	ERR_FAIL_COND(!_start_success);
 
+	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+		TextServerManager::get_singleton()->get_interface(i)->cleanup();
+	}
+
 	EngineDebugger::deinitialize();
 
 	ResourceLoader::remove_custom_loaders();
@@ -3298,6 +3302,10 @@ void Main::force_redraw() {
 void Main::cleanup(bool p_force) {
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
+	}
+
+	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+		TextServerManager::get_singleton()->get_interface(i)->cleanup();
 	}
 
 	if (movie_writer) {

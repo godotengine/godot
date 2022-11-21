@@ -76,6 +76,7 @@ Error ResourceImporterBMFont::import(const String &p_source_file, const String &
 	Error err = font->load_bitmap_font(p_source_file);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot load font to file \"" + p_source_file + "\".");
 
+	font->set_allow_system_fallback(false);
 	font->set_fallbacks(fallbacks);
 
 	int flg = 0;

@@ -114,6 +114,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
 
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), 1));
@@ -150,13 +151,14 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	Dictionary ot_ov = p_options["opentype_features"];
 
 	bool autohinter = p_options["force_autohinter"];
+	bool allow_system_fallback = p_options["allow_system_fallback"];
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
 	real_t oversampling = p_options["oversampling"];
 	Array fallbacks = p_options["fallbacks"];
 
 	// Load base font data.
-	Vector<uint8_t> data = FileAccess::get_file_as_array(p_source_file);
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_source_file);
 
 	// Create font.
 	Ref<FontFile> font;
@@ -170,6 +172,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	font->set_opentype_feature_overrides(ot_ov);
 	font->set_fixed_size(0);
 	font->set_force_autohinter(autohinter);
+	font->set_allow_system_fallback(allow_system_fallback);
 	font->set_subpixel_positioning((TextServer::SubpixelPositioning)subpixel_positioning);
 	font->set_hinting((TextServer::Hinting)hinting);
 	font->set_oversampling(oversampling);

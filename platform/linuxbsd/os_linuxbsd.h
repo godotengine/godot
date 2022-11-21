@@ -40,11 +40,17 @@
 #include "joypad_linux.h"
 #include "servers/audio_server.h"
 
+#ifdef FONTCONFIG_ENABLED
+#include "fontconfig-so_wrap.h"
+#endif
+
 class OS_LinuxBSD : public OS_Unix {
 	virtual void delete_main_loop() override;
 
 #ifdef FONTCONFIG_ENABLED
 	bool font_config_initialized = false;
+	FcConfig *config = nullptr;
+	FcObjectSet *object_set = nullptr;
 #endif
 
 #ifdef JOYDEV_ENABLED
@@ -66,6 +72,9 @@ class OS_LinuxBSD : public OS_Unix {
 	CrashHandler crash_handler;
 
 	MainLoop *main_loop = nullptr;
+
+	int _weight_to_fc(int p_weight) const;
+	int _stretch_to_fc(int p_stretch) const;
 
 	String get_systemd_os_release_info_value(const String &key) const;
 
@@ -94,7 +103,8 @@ public:
 	virtual uint64_t get_embedded_pck_offset() const override;
 
 	virtual Vector<String> get_system_fonts() const override;
-	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
+	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
+	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;
@@ -119,6 +129,7 @@ public:
 	virtual Error move_to_trash(const String &p_path) override;
 
 	OS_LinuxBSD();
+	~OS_LinuxBSD();
 };
 
 #endif // OS_LINUXBSD_H
