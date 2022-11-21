@@ -69,6 +69,7 @@ public:
 	virtual void init();
 	virtual bool iteration(float p_time);
 	virtual void iteration_end() {}
+	virtual void poll_net() {}
 	virtual bool idle(float p_time);
 	virtual void finish();
 
