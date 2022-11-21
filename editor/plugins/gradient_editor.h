@@ -53,10 +53,10 @@ class GradientEditor : public Control {
 
 	// Make sure to use the scaled value below.
 	const int BASE_SPACING = 3;
-	const int BASE_POINT_WIDTH = 8;
+	const int BASE_HANDLE_WIDTH = 8;
 
 	int draw_spacing = BASE_SPACING;
-	int draw_point_width = BASE_POINT_WIDTH;
+	int handle_width = BASE_HANDLE_WIDTH;
 
 	void _gradient_changed();
 	void _ramp_changed();
