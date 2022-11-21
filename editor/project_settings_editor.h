@@ -90,6 +90,10 @@ class ProjectSettingsEditor : public AcceptDialog {
 	EditorData *data = nullptr;
 
 	bool settings_changed = false;
+	bool pending_override_notify = false;
+
+	void _on_category_changed(const String &p_new_category);
+	void _on_editor_override_deleted(const String &p_setting);
 
 	void _advanced_toggled(bool p_button_pressed);
 	void _update_advanced(bool p_is_advanced);
@@ -131,7 +135,10 @@ protected:
 
 public:
 	static ProjectSettingsEditor *get_singleton() { return singleton; }
+
 	void popup_project_settings(bool p_clear_filter = false);
+	void popup_for_override(const String &p_override);
+
 	void set_plugins_page();
 	void set_general_page(const String &p_category);
 	void update_plugins();

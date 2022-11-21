@@ -204,6 +204,11 @@
 				Emit it if you want to key a property with a single value.
 			</description>
 		</signal>
+		<signal name="property_overridden">
+			<description>
+				Emitted when a setting override for the current project is requested.
+			</description>
+		</signal>
 		<signal name="property_pinned">
 			<param index="0" name="property" type="StringName" />
 			<param index="1" name="pinned" type="bool" />
