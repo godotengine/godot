@@ -57,7 +57,7 @@ int GradientEditor::_get_point_from_pos(int x) {
 	for (int i = 0; i < points.size(); i++) {
 		// Check if we clicked at point.
 		float distance = ABS(x - points[i].offset * total_w);
-		float min = (draw_point_width / 2 * 1.7); //make it easier to grab
+		float min = (handle_width / 2 * 1.7); // Make it easier to grab.
 		if (distance <= min && distance < min_distance) {
 			result = i;
 			min_distance = distance;
@@ -397,7 +397,7 @@ void GradientEditor::_notification(int p_what) {
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 			draw_spacing = BASE_SPACING * get_theme_default_base_scale();
-			draw_point_width = BASE_POINT_WIDTH * get_theme_default_base_scale();
+			handle_width = BASE_HANDLE_WIDTH * get_theme_default_base_scale();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -408,32 +408,38 @@ void GradientEditor::_notification(int p_what) {
 				return; // Safety check. We have division by 'h'. And in any case there is nothing to draw with such size.
 			}
 
-			int total_w = get_size().width - get_size().height - draw_spacing;
+			int total_w = get_size().width - get_size().height - draw_spacing - handle_width;
 
 			// Draw checker pattern for ramp.
-			draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(0, 0, total_w, h), true);
+			draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(handle_width / 2, 0, total_w, h), true);
 
 			// Draw color ramp.
 			gradient_cache->set_points(points);
 			gradient_cache->set_interpolation_mode(interpolation_mode);
 			preview_texture->set_gradient(gradient_cache);
-			draw_texture_rect(preview_texture, Rect2(0, 0, total_w, h));
+			draw_texture_rect(preview_texture, Rect2(handle_width / 2, 0, total_w, h));
+
+			// Draw borders around color ramp if in focus.
+			if (has_focus()) {
+				draw_rect(Rect2(handle_width / 2, 0, total_w, h), Color(1, 1, 1, 0.9), false);
+			}
 
 			// Draw point markers.
 			for (int i = 0; i < points.size(); i++) {
-				Color col = points[i].color.inverted();
+				Color col = points[i].color.get_v() > 0.5 ? Color(0, 0, 0) : Color(1, 1, 1);
 				col.a = 0.9;
 
-				draw_line(Vector2(points[i].offset * total_w, 0), Vector2(points[i].offset * total_w, h / 2), col);
-				Rect2 rect = Rect2(points[i].offset * total_w - draw_point_width / 2, h / 2, draw_point_width, h / 2);
+				draw_line(Vector2(points[i].offset * total_w + handle_width / 2, 0), Vector2(points[i].offset * total_w + handle_width / 2, h / 2), col);
+				Rect2 rect = Rect2(points[i].offset * total_w, h / 2, handle_width, h / 2);
 				draw_rect(rect, points[i].color, true);
 				draw_rect(rect, col, false);
 				if (grabbed == i) {
+					const Color focus_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 					rect = rect.grow(-1);
 					if (has_focus()) {
-						draw_rect(rect, Color(1, 0, 0, 0.9), false);
+						draw_rect(rect, focus_color, false);
 					} else {
-						draw_rect(rect, Color(0.6, 0, 0, 0.9), false);
+						draw_rect(rect, focus_color.darkened(0.4), false);
 					}
 
 					rect = rect.grow(-1);
@@ -442,23 +448,16 @@ void GradientEditor::_notification(int p_what) {
 			}
 
 			// Draw "button" for color selector.
-			draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(total_w + draw_spacing, 0, h, h), true);
+			int button_offset = total_w + handle_width + draw_spacing;
+			draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(button_offset, 0, h, h), true);
 			if (grabbed != -1) {
 				// Draw with selection color.
-				draw_rect(Rect2(total_w + draw_spacing, 0, h, h), points[grabbed].color);
+				draw_rect(Rect2(button_offset, 0, h, h), points[grabbed].color);
 			} else {
 				// If no color selected draw grey color with 'X' on top.
-				draw_rect(Rect2(total_w + draw_spacing, 0, h, h), Color(0.5, 0.5, 0.5, 1));
-				draw_line(Vector2(total_w + draw_spacing, 0), Vector2(total_w + draw_spacing + h, h), Color(1, 1, 1, 0.6));
-				draw_line(Vector2(total_w + draw_spacing, h), Vector2(total_w + draw_spacing + h, 0), Color(1, 1, 1, 0.6));
-			}
-
-			// Draw borders around color ramp if in focus.
-			if (has_focus()) {
-				draw_line(Vector2(-1, -1), Vector2(total_w + 1, -1), Color(1, 1, 1, 0.6));
-				draw_line(Vector2(total_w + 1, -1), Vector2(total_w + 1, h + 1), Color(1, 1, 1, 0.6));
-				draw_line(Vector2(total_w + 1, h + 1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
-				draw_line(Vector2(-1, -1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
+				draw_rect(Rect2(button_offset, 0, h, h), Color(0.5, 0.5, 0.5, 1));
+				draw_line(Vector2(button_offset, 0), Vector2(button_offset + h, h), Color(1, 1, 1, 0.6));
+				draw_line(Vector2(button_offset, h), Vector2(button_offset + h, 0), Color(1, 1, 1, 0.6));
 			}
 		} break;
 
