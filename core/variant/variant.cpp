@@ -3609,16 +3609,16 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 	if (ce.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
 		int errorarg = ce.argument;
 		if (p_argptrs) {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
+			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(Variant::Type(ce.expected));
 		} else {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
+			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected));
 		}
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
+		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
+		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
-		err_text = "Method not found.";
+		err_text = "Method not found";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text = "Instance is null";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_METHOD_NOT_CONST) {

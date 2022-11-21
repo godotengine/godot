@@ -34,8 +34,8 @@
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "distance", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "distance", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
@@ -54,8 +54,8 @@ PhysicsBody2D::~PhysicsBody2D() {
 	}
 }
 
-Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_distance, bool p_test_only, real_t p_margin, bool p_recovery_as_collision) {
-	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
+Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_test_only, real_t p_margin, bool p_recovery_as_collision) {
+	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_motion, p_margin);
 	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	PhysicsServer2D::MotionResult result;
@@ -128,7 +128,7 @@ bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_
 	return colliding;
 }
 
-bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_distance, const Ref<KinematicCollision2D> &r_collision, real_t p_margin, bool p_recovery_as_collision) {
+bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision, real_t p_margin, bool p_recovery_as_collision) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer2D::MotionResult *r = nullptr;
@@ -140,7 +140,7 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_distan
 		r = &temp_result;
 	}
 
-	PhysicsServer2D::MotionParameters parameters(p_from, p_distance, p_margin);
+	PhysicsServer2D::MotionParameters parameters(p_from, p_motion, p_margin);
 	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
@@ -162,14 +162,14 @@ TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
 void PhysicsBody2D::add_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody2D type.");
+	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_add_collision_exception(get_rid(), physics_body->get_rid());
 }
 
 void PhysicsBody2D::remove_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody2D type.");
+	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_remove_collision_exception(get_rid(), physics_body->get_rid());
 }
 

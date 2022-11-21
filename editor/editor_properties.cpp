@@ -1045,7 +1045,6 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 			const int vofs = (grid_size.height - h) / 2;
 
 			int layer_index = 0;
-			int block_index = 0;
 
 			Point2 arrow_pos;
 
@@ -1112,8 +1111,6 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 						break;
 					}
 				}
-
-				++block_index;
 			}
 
 			if ((expansion_rows != prev_expansion_rows) && expanded) {
@@ -1172,9 +1169,9 @@ void EditorPropertyLayers::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			button->set_normal_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			button->set_pressed_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			button->set_disabled_texture(get_theme_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
+			button->set_texture_normal(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			button->set_texture_pressed(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			button->set_texture_disabled(get_theme_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
 		} break;
 	}
 }
@@ -1814,8 +1811,8 @@ void EditorPropertyVector2::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 2; i++) {
@@ -2092,8 +2089,8 @@ void EditorPropertyVector3::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 3; i++) {
@@ -2227,8 +2224,8 @@ void EditorPropertyVector2i::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 2; i++) {
@@ -2478,8 +2475,8 @@ void EditorPropertyVector3i::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 3; i++) {
@@ -2725,7 +2722,7 @@ void EditorPropertyQuaternion::update_property() {
 	spin[2]->set_value(val.z);
 	spin[3]->set_value(val.w);
 	if (!is_grabbing_euler()) {
-		Vector3 v = val.normalized().get_euler_yxz();
+		Vector3 v = val.normalized().get_euler();
 		edit_euler.x = Math::rad_to_deg(v.x);
 		edit_euler.y = Math::rad_to_deg(v.y);
 		edit_euler.z = Math::rad_to_deg(v.z);

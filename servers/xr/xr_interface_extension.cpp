@@ -58,8 +58,6 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_post_draw_viewport, "render_target", "screen_rect");
 	GDVIRTUAL_BIND(_end_frame);
 
-	GDVIRTUAL_BIND(_notification, "what");
-
 	/** input and output **/
 
 	GDVIRTUAL_BIND(_get_suggested_tracker_names);
@@ -307,10 +305,6 @@ Vector<BlitToScreen> XRInterfaceExtension::post_draw_viewport(RID p_render_targe
 
 void XRInterfaceExtension::end_frame() {
 	GDVIRTUAL_CALL(_end_frame);
-}
-
-void XRInterfaceExtension::notification(int p_what) {
-	GDVIRTUAL_CALL(_notification, p_what);
 }
 
 RID XRInterfaceExtension::get_render_target_texture(RID p_render_target) {

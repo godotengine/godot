@@ -318,6 +318,7 @@ _ReSharper*/
 
 # Others
 ClientBin/
+enc_temp_folder/
 ~$*
 *.dbmdl
 *.dbproj.schemaview

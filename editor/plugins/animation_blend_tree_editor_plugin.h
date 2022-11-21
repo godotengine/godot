@@ -31,17 +31,22 @@
 #ifndef ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 #define ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
+class AcceptDialog;
+class CheckBox;
 class ProgressBar;
 class EditorFileDialog;
+class EditorProperty;
 class EditorUndoRedoManager;
+class MenuButton;
+class PanelContainer;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);

@@ -169,10 +169,9 @@ TEST_CASE("[Quaternion] Construct Euler YXZ dynamic axes") {
 	Vector3 euler_r(0.0, 0.0, roll);
 	Quaternion q_r = Quaternion::from_euler(euler_r);
 
-	// Roll-Z is followed by Pitch-X.
-	Quaternion check_xz = q_p * q_r;
-	// Then Yaw-Y follows both.
-	Quaternion check_yxz = q_y * check_xz;
+	// Instrinsically, Yaw-Y then Pitch-X then Roll-Z.
+	// Extrinsically, Roll-Z is followed by Pitch-X, then Yaw-Y.
+	Quaternion check_yxz = q_y * q_p * q_r;
 
 	// Test construction from YXZ Euler angles.
 	Vector3 euler_yxz(pitch, yaw, roll);
@@ -182,8 +181,9 @@ TEST_CASE("[Quaternion] Construct Euler YXZ dynamic axes") {
 	CHECK(q[2] == doctest::Approx(check_yxz[2]));
 	CHECK(q[3] == doctest::Approx(check_yxz[3]));
 
-	// Sneak in a test of is_equal_approx.
 	CHECK(q.is_equal_approx(check_yxz));
+	CHECK(q.get_euler().is_equal_approx(euler_yxz));
+	CHECK(check_yxz.get_euler().is_equal_approx(euler_yxz));
 }
 
 TEST_CASE("[Quaternion] Construct Basis Euler") {
@@ -233,6 +233,23 @@ TEST_CASE("[Quaternion] Construct Basis Axes") {
 	CHECK(q[1] == doctest::Approx(-0.4245716));
 	CHECK(q[2] == doctest::Approx(0.206033));
 	CHECK(q[3] == doctest::Approx(0.8582598));
+}
+
+TEST_CASE("[Quaternion] Get Euler Orders") {
+	double x = Math::deg_to_rad(30.0);
+	double y = Math::deg_to_rad(45.0);
+	double z = Math::deg_to_rad(10.0);
+	Vector3 euler(x, y, z);
+	for (int i = 0; i < 6; i++) {
+		EulerOrder order = (EulerOrder)i;
+		Basis basis = Basis::from_euler(euler, order);
+		Quaternion q = Quaternion(basis);
+		Vector3 check = q.get_euler(order);
+		CHECK_MESSAGE(check.is_equal_approx(euler),
+				"Quaternion get_euler method should return the original angles.");
+		CHECK_MESSAGE(check.is_equal_approx(basis.get_euler(order)),
+				"Quaternion get_euler method should behave the same as Basis get_euler.");
+	}
 }
 
 TEST_CASE("[Quaternion] Product (book)") {

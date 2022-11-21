@@ -376,10 +376,18 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	}
 
 	// The only modes that show a cursor are VISIBLE and CONFINED
-	bool showCursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
+
+	if (show_cursor && !previously_shown) {
+		WindowID window_id = get_window_at_screen_position(mouse_get_position());
+		if (window_id != INVALID_WINDOW_ID) {
+			_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+		}
+	}
 
 	for (const KeyValue<WindowID, WindowData> &E : windows) {
-		if (showCursor) {
+		if (show_cursor) {
 			XDefineCursor(x11_display, E.value.x11_window, cursors[current_cursor]); // show cursor
 		} else {
 			XDefineCursor(x11_display, E.value.x11_window, null_cursor); // hide cursor
@@ -1282,8 +1290,8 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 #endif
 #ifdef GLES3_ENABLED
-	if (egl_manager) {
-		egl_manager->window_destroy(p_id);
+	if (gl_manager) {
+		gl_manager->window_destroy(p_id);
 	}
 #endif
 
@@ -1309,6 +1317,14 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 		case WINDOW_VIEW: {
 			return 0; // Not supported.
 		}
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_context(p_window);
+			}
+			return 0;
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -1475,8 +1491,8 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 
 void DisplayServerX11::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	if (egl_manager) {
-		egl_manager->window_make_current(p_window_id);
+	if (gl_manager) {
+		gl_manager->window_make_current(p_window_id);
 	}
 #endif
 }
@@ -1734,6 +1750,11 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 #if defined(VULKAN_ENABLED)
 	if (context_vulkan) {
 		context_vulkan->window_resize(p_window, xwa.width, xwa.height);
+	}
+#endif
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->window_resize(p_window, xwa.width, xwa.height);
 	}
 #endif
 }
@@ -3165,6 +3186,11 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->window_resize(window_id, wd.size.width, wd.size.height);
+	}
+#endif
 
 	if (!wd.rect_changed_callback.is_null()) {
 		Rect2i r = new_rect;
@@ -3404,7 +3430,7 @@ bool DisplayServerX11::mouse_process_popups() {
 			XWindowAttributes root_attrs;
 			XGetWindowAttributes(x11_display, root, &root_attrs);
 			Vector2i pos = Vector2i(root_attrs.x + root_x, root_attrs.y + root_y);
-			if ((pos != last_mouse_monitor_pos) || (mask != last_mouse_monitor_mask)) {
+			if (mask != last_mouse_monitor_mask) {
 				if (((mask & Button1Mask) || (mask & Button2Mask) || (mask & Button3Mask) || (mask & Button4Mask) || (mask & Button5Mask))) {
 					List<WindowID>::Element *C = nullptr;
 					List<WindowID>::Element *E = popup_list.back();
@@ -3430,7 +3456,6 @@ bool DisplayServerX11::mouse_process_popups() {
 				}
 			}
 			last_mouse_monitor_mask = mask;
-			last_mouse_monitor_pos = pos;
 		}
 	}
 	return closed;
@@ -4103,10 +4128,10 @@ void DisplayServerX11::process_events() {
 				if (event.xselection.target == requested) {
 					Property p = _read_property(x11_display, windows[window_id].x11_window, XInternAtom(x11_display, "PRIMARY", 0));
 
-					Vector<String> files = String((char *)p.data).split("\n", false);
+					Vector<String> files = String((char *)p.data).split("\r\n", false);
 					XFree(p.data);
 					for (int i = 0; i < files.size(); i++) {
-						files.write[i] = files[i].replace("file://", "").uri_decode().strip_edges();
+						files.write[i] = files[i].replace("file://", "").uri_decode();
 					}
 
 					if (!windows[window_id].drop_files_callback.is_null()) {
@@ -4221,24 +4246,24 @@ void DisplayServerX11::process_events() {
 
 void DisplayServerX11::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	if (egl_manager) {
-		egl_manager->release_current();
+	if (gl_manager) {
+		gl_manager->release_current();
 	}
 #endif
 }
 
 void DisplayServerX11::make_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	if (egl_manager) {
-		egl_manager->make_current();
+	if (gl_manager) {
+		gl_manager->make_current();
 	}
 #endif
 }
 
 void DisplayServerX11::swap_buffers() {
 #if defined(GLES3_ENABLED)
-	if (egl_manager) {
-		egl_manager->swap_buffers();
+	if (gl_manager) {
+		gl_manager->swap_buffers();
 	}
 #endif
 }
@@ -4388,8 +4413,8 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 #endif
 
 #if defined(GLES3_ENABLED)
-	if (egl_manager) {
-		egl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
+	if (gl_manager) {
+		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 }
@@ -4402,8 +4427,8 @@ DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_wind
 	}
 #endif
 #if defined(GLES3_ENABLED)
-	if (egl_manager) {
-		return egl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	if (gl_manager) {
+		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
@@ -4451,8 +4476,8 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	bool vi_selected = false;
 
 #ifdef GLES3_ENABLED
-	if (egl_manager) {
-		visualInfo = visual_info_gl;
+	if (gl_manager) {
+		visualInfo = gl_manager->get_vi(x11_display);
 		vi_selected = true;
 	}
 #endif
@@ -4647,9 +4672,10 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		}
 #endif
 #ifdef GLES3_ENABLED
-		if (egl_manager) {
-			Error err = egl_manager->window_create(id, x11_display, &wd.x11_window, p_rect.size.width, p_rect.size.height);
+		if (gl_manager) {
+			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
+			window_set_vsync_mode(p_vsync_mode, id);
 		}
 #endif
 
@@ -4880,35 +4906,23 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			}
 		}
 
-		egl_manager = memnew(EGLManagerX11());
+		GLManager_X11::ContextType opengl_api_type = GLManager_X11::GLES_3_0_COMPATIBLE;
 
-		if (egl_manager->initialize() != OK) {
-			memdelete(egl_manager);
-			egl_manager = nullptr;
+		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
+
+		if (gl_manager->initialize() != OK) {
+			memdelete(gl_manager);
+			gl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 		driver_found = true;
 
-		XVisualInfo visual_info_template;
-		int visual_id = egl_manager->display_get_native_visual_id(x11_display);
-		ERR_FAIL_COND_MSG(visual_id < 0, "Unable to get a visual id.");
-
-		visual_info_template.visualid = (VisualID)visual_id;
-
-		int number_of_visuals = 0;
-		XVisualInfo *vi_list = XGetVisualInfo(x11_display, VisualIDMask, &visual_info_template, &number_of_visuals);
-		ERR_FAIL_COND(number_of_visuals <= 0);
-
-		visual_info_gl = vi_list[0];
-
-		XFree(vi_list);
-
 		if (true) {
 			RasterizerGLES3::make_current();
 		} else {
-			memdelete(egl_manager);
-			egl_manager = nullptr;
+			memdelete(gl_manager);
+			gl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
@@ -5124,8 +5138,8 @@ DisplayServerX11::~DisplayServerX11() {
 		}
 #endif
 #ifdef GLES3_ENABLED
-		if (egl_manager) {
-			egl_manager->window_destroy(E.key);
+		if (gl_manager) {
+			gl_manager->window_destroy(E.key);
 		}
 #endif
 
@@ -5153,9 +5167,9 @@ DisplayServerX11::~DisplayServerX11() {
 #endif
 
 #ifdef GLES3_ENABLED
-	if (egl_manager) {
-		memdelete(egl_manager);
-		egl_manager = nullptr;
+	if (gl_manager) {
+		memdelete(gl_manager);
+		gl_manager = nullptr;
 	}
 #endif
 

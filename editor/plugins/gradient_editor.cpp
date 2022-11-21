@@ -203,6 +203,7 @@ void GradientEditor::gui_input(const Ref<InputEvent> &p_event) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		_show_color_picker();
 		accept_event();
+		return;
 	}
 
 	// Delete point on right click.

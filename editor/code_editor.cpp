@@ -91,10 +91,10 @@ void FindReplaceBar::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
 			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
-			hide_button->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			hide_button->set_texture_normal(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_hover(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_pressed(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -377,10 +377,12 @@ void FindReplaceBar::_update_results_count() {
 
 			if (is_whole_words()) {
 				if (col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
-					break;
+					col_pos += searched.length();
+					continue;
 				}
-				if (col_pos + line_text.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
-					break;
+				if (col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
+					col_pos += searched.length();
+					continue;
 				}
 			}
 
@@ -1872,7 +1874,7 @@ void CodeTextEditor::_apply_settings_change() {
 				}
 				fc->set_opentype_features(ftrs);
 			} break;
-			default: { // Default.
+			default: { // Enabled.
 				Dictionary ftrs;
 				ftrs[TS->name_to_tag("calt")] = 1;
 				fc->set_opentype_features(ftrs);
@@ -2106,7 +2108,7 @@ CodeTextEditor::CodeTextEditor() {
 				}
 				fc->set_opentype_features(ftrs);
 			} break;
-			default: { // Default.
+			default: { // Enabled.
 				Dictionary ftrs;
 				ftrs[TS->name_to_tag("calt")] = 1;
 				fc->set_opentype_features(ftrs);

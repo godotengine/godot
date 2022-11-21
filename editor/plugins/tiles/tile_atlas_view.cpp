@@ -192,6 +192,19 @@ void TileAtlasView::_draw_base_tiles() {
 					rect = rect.intersection(Rect2i(Vector2(), texture->get_size()));
 					if (rect.size.x > 0 && rect.size.y > 0) {
 						base_tiles_draw->draw_texture_rect_region(texture, rect, rect);
+					}
+				}
+			}
+		}
+
+		// Draw dark overlay after for performance reasons.
+		for (int x = 0; x < grid_size.x; x++) {
+			for (int y = 0; y < grid_size.y; y++) {
+				Vector2i coords = Vector2i(x, y);
+				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
+					Rect2i rect = Rect2i((texture_region_size + separation) * coords + margins, texture_region_size + separation);
+					rect = rect.intersection(Rect2i(Vector2(), texture->get_size()));
+					if (rect.size.x > 0 && rect.size.y > 0) {
 						base_tiles_draw->draw_rect(rect, Color(0.0, 0.0, 0.0, 0.5));
 					}
 				}
@@ -242,23 +255,34 @@ void TileAtlasView::_draw_base_tiles() {
 
 				// Draw the tile.
 				TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0, frame);
+			}
+		}
 
-				// Draw, the texture in the separation areas
-				if (separation.x > 0) {
-					Rect2i right_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(base_frame_rect.size.x, 0), Vector2i(separation.x, base_frame_rect.size.y));
-					right_sep_rect = right_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
-					if (right_sep_rect.size.x > 0 && right_sep_rect.size.y > 0) {
-						base_tiles_draw->draw_texture_rect_region(texture, right_sep_rect, right_sep_rect);
-						base_tiles_draw->draw_rect(right_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+		// Draw Dark overlay on separation in its own pass.
+		if (separation.x > 0 || separation.y > 0) {
+			for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
+				Vector2i atlas_coords = tile_set_atlas_source->get_tile_id(i);
+
+				for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(atlas_coords); frame++) {
+					// Update the y to max value.
+					Rect2i base_frame_rect = tile_set_atlas_source->get_tile_texture_region(atlas_coords, frame);
+
+					if (separation.x > 0) {
+						Rect2i right_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(base_frame_rect.size.x, 0), Vector2i(separation.x, base_frame_rect.size.y));
+						right_sep_rect = right_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
+						if (right_sep_rect.size.x > 0 && right_sep_rect.size.y > 0) {
+							//base_tiles_draw->draw_texture_rect_region(texture, right_sep_rect, right_sep_rect);
+							base_tiles_draw->draw_rect(right_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+						}
 					}
-				}
 
-				if (separation.y > 0) {
-					Rect2i bottom_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(0, base_frame_rect.size.y), Vector2i(base_frame_rect.size.x + separation.x, separation.y));
-					bottom_sep_rect = bottom_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
-					if (bottom_sep_rect.size.x > 0 && bottom_sep_rect.size.y > 0) {
-						base_tiles_draw->draw_texture_rect_region(texture, bottom_sep_rect, bottom_sep_rect);
-						base_tiles_draw->draw_rect(bottom_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+					if (separation.y > 0) {
+						Rect2i bottom_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(0, base_frame_rect.size.y), Vector2i(base_frame_rect.size.x + separation.x, separation.y));
+						bottom_sep_rect = bottom_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
+						if (bottom_sep_rect.size.x > 0 && bottom_sep_rect.size.y > 0) {
+							//base_tiles_draw->draw_texture_rect_region(texture, bottom_sep_rect, bottom_sep_rect);
+							base_tiles_draw->draw_rect(bottom_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+						}
 					}
 				}
 			}

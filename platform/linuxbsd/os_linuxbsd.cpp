@@ -132,6 +132,8 @@ void OS_LinuxBSD::initialize() {
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
+
+	system_dir_desktop_cache = get_system_dir(SYSTEM_DIR_DESKTOP);
 }
 
 void OS_LinuxBSD::initialize_joypads() {
@@ -636,6 +638,8 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 		ERR_FAIL_V_MSG(String(), "Unable to load fontconfig, system font support is disabled.");
 	}
 
+	bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
+
 	String ret;
 
 	FcConfig *config = FcInitLoadConfigAndFonts();
@@ -657,6 +661,19 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 		FcResult result;
 		FcPattern *match = FcFontMatch(0, pattern, &result);
 		if (match) {
+			if (!allow_substitutes) {
+				char *family_name = nullptr;
+				if (FcPatternGetString(match, FC_FAMILY, 0, reinterpret_cast<FcChar8 **>(&family_name)) == FcResultMatch) {
+					if (family_name && String::utf8(family_name).to_lower() != p_font_name.to_lower()) {
+						FcPatternDestroy(match);
+						FcPatternDestroy(pattern);
+						FcObjectSetDestroy(object_set);
+						FcConfigDestroy(config);
+
+						return String();
+					}
+				}
+			}
 			char *file_name = nullptr;
 			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
 				if (file_name) {
@@ -723,6 +740,10 @@ String OS_LinuxBSD::get_cache_path() const {
 }
 
 String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
+	if (p_dir == SYSTEM_DIR_DESKTOP && !system_dir_desktop_cache.is_empty()) {
+		return system_dir_desktop_cache;
+	}
+
 	String xdgparam;
 
 	switch (p_dir) {
@@ -731,31 +752,24 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const
 		} break;
 		case SYSTEM_DIR_DCIM: {
 			xdgparam = "PICTURES";
-
 		} break;
 		case SYSTEM_DIR_DOCUMENTS: {
 			xdgparam = "DOCUMENTS";
-
 		} break;
 		case SYSTEM_DIR_DOWNLOADS: {
 			xdgparam = "DOWNLOAD";
-
 		} break;
 		case SYSTEM_DIR_MOVIES: {
 			xdgparam = "VIDEOS";
-
 		} break;
 		case SYSTEM_DIR_MUSIC: {
 			xdgparam = "MUSIC";
-
 		} break;
 		case SYSTEM_DIR_PICTURES: {
 			xdgparam = "PICTURES";
-
 		} break;
 		case SYSTEM_DIR_RINGTONES: {
 			xdgparam = "MUSIC";
-
 		} break;
 	}
 

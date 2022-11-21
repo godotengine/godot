@@ -60,6 +60,7 @@ private:
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 	ObjectID window_attached_instance_id = {};
 
+	Callable rect_changed_callback;
 	Callable window_event_callback;
 	Callable input_event_callback;
 	Callable input_text_callback;

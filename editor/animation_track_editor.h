@@ -135,6 +135,7 @@ class AnimationTrackEditor;
 
 class AnimationTrackEdit : public Control {
 	GDCLASS(AnimationTrackEdit, Control);
+	friend class AnimationTimelineEdit;
 
 	enum {
 		MENU_CALL_MODE_CONTINUOUS,
@@ -293,6 +294,7 @@ public:
 
 class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
+	friend class AnimationTimelineEdit;
 
 	Ref<Animation> animation;
 	bool read_only = false;
@@ -326,7 +328,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	bool animation_changing_awaiting_update = false;
 	void _animation_update(); // Updated by AnimationTrackEditor(this)
 	int _get_track_selected();
-	void _sync_animation_change();
 	void _animation_changed();
 	void _update_tracks();
 	void _redraw_tracks();

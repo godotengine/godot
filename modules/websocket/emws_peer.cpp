@@ -95,6 +95,10 @@ Error EMWSPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509C
 		requested_url += ":" + String::num(port);
 	}
 
+	if (!path.is_empty()) {
+		requested_url += path;
+	}
+
 	peer_sock = godot_js_websocket_create(this, requested_url.utf8().get_data(), proto_string.utf8().get_data(), &_esws_on_connect, &_esws_on_message, &_esws_on_error, &_esws_on_close);
 	if (peer_sock == -1) {
 		return FAILED;

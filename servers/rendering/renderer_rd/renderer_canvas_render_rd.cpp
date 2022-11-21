@@ -706,7 +706,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 				//bind textures
 
-				_bind_canvas_texture(p_draw_list, RID(), current_filter, current_repeat, last_texture, push_constant, texpixel_size);
+				_bind_canvas_texture(p_draw_list, primitive->texture, current_filter, current_repeat, last_texture, push_constant, texpixel_size);
 
 				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[MIN(3u, primitive->point_count) - 1]);
 
@@ -2681,16 +2681,6 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		primitive_arrays.index_array[3] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 6);
 	}
 
-	{ //default skeleton buffer
-
-		shader.default_skeleton_uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SkeletonUniform));
-		SkeletonUniform su;
-		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_inverse);
-		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_transform);
-		RD::get_singleton()->buffer_update(shader.default_skeleton_uniform_buffer, 0, sizeof(SkeletonUniform), &su);
-
-		shader.default_skeleton_texture_buffer = RD::get_singleton()->texture_buffer_create(32, RD::DATA_FORMAT_R32G32B32A32_SFLOAT);
-	}
 	{
 		//default shadow texture to keep uniform set happy
 		RD::TextureFormat tf;
@@ -2834,8 +2824,6 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 
 		memdelete_arr(state.light_uniforms);
 		RD::get_singleton()->free(state.lights_uniform_buffer);
-		RD::get_singleton()->free(shader.default_skeleton_uniform_buffer);
-		RD::get_singleton()->free(shader.default_skeleton_texture_buffer);
 	}
 
 	//shadow rendering

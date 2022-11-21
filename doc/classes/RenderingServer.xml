@@ -838,6 +838,8 @@
 		<method name="create_local_rendering_device" qualifiers="const">
 			<return type="RenderingDevice" />
 			<description>
+				Creates a RenderingDevice that can be used to do draw and compute operations on a separate thread. Cannot draw to the screen nor share data with the global RenderingDevice.
+				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
 		<method name="decal_create">
@@ -1273,6 +1275,8 @@
 		<method name="get_rendering_device" qualifiers="const">
 			<return type="RenderingDevice" />
 			<description>
+				Returns the global RenderingDevice.
+				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_rendering_info">
@@ -3022,6 +3026,14 @@
 			<return type="String" />
 			<param index="0" name="texture" type="RID" />
 			<description>
+			</description>
+		</method>
+		<method name="texture_get_rd_texture" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="srgb" type="bool" default="false" />
+			<description>
+				Returns a texture [RID] that can be used with [RenderingDevice].
 			</description>
 		</method>
 		<method name="texture_proxy_create">

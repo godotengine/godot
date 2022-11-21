@@ -1678,6 +1678,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			}
 
 			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
+			update_values();
 		} break;
 	}
 }
@@ -1700,7 +1701,6 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 		play_position->hide();
 	}
 	queue_redraw();
-	update_values();
 }
 
 Size2 AnimationTimelineEdit::get_minimum_size() const {
@@ -1749,6 +1749,7 @@ void AnimationTimelineEdit::update_values() {
 		length->set_step(1);
 		length->set_tooltip_text(TTR("Animation length (frames)"));
 		time_icon->set_tooltip_text(TTR("Animation length (frames)"));
+		track_edit->editor->_update_key_edit();
 	} else {
 		length->set_value(animation->get_length());
 		length->set_step(0.001);
@@ -1893,7 +1894,6 @@ void AnimationTimelineEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origi
 
 void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
 	use_fps = p_use_fps;
-	update_values();
 	queue_redraw();
 }
 
@@ -3446,8 +3446,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		track_edits[_get_track_selected()]->release_focus();
 	}
 	if (animation.is_valid()) {
-		animation->disconnect("tracks_changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
-		animation->disconnect("changed", callable_mp(this, &AnimationTrackEditor::_sync_animation_change));
+		animation->disconnect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
 		_clear_selection();
 	}
 	animation = p_anim;
@@ -3458,8 +3457,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 	_update_tracks();
 
 	if (animation.is_valid()) {
-		animation->connect("tracks_changed", callable_mp(this, &AnimationTrackEditor::_animation_changed), CONNECT_DEFERRED);
-		animation->connect("changed", callable_mp(this, &AnimationTrackEditor::_sync_animation_change), CONNECT_DEFERRED);
+		animation->connect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed), CONNECT_DEFERRED);
 
 		hscroll->show();
 		edit->set_disabled(read_only);
@@ -3613,7 +3611,7 @@ void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Anim
 	}
 	int idx = p_track;
 	if (idx >= 0 && idx < p_from_animation->get_track_count()) {
-		undo_redo->create_action(TTR("Remove Anim Track"));
+		undo_redo->create_action(TTR("Remove Anim Track"), UndoRedo::MERGE_DISABLE, p_from_animation.ptr());
 
 		// Remove corresponding reset tracks if they are no longer needed.
 		AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
@@ -4650,10 +4648,6 @@ void AnimationTrackEditor::_redraw_groups() {
 	}
 }
 
-void AnimationTrackEditor::_sync_animation_change() {
-	bezier_edit->queue_redraw();
-}
-
 void AnimationTrackEditor::_animation_changed() {
 	if (animation_changing_awaiting_update) {
 		return; // All will be updated, don't bother with anything.
@@ -4793,6 +4787,7 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 		if (step_value != 0.0) {
 			step_value = 1.0 / step_value;
 		}
+		timeline->queue_redraw();
 	}
 	undo_redo->add_do_method(animation.ptr(), "set_step", step_value);
 	undo_redo->add_undo_method(animation.ptr(), "set_step", animation->get_step());

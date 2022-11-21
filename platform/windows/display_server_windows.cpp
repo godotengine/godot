@@ -741,9 +741,20 @@ int64_t DisplayServerWindows::window_get_native_handle(HandleType p_handle_type,
 		case WINDOW_HANDLE: {
 			return (int64_t)windows[p_window].hWnd;
 		}
+#if defined(GLES3_ENABLED)
 		case WINDOW_VIEW: {
-			return 0; // Not supported.
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_hdc(p_window);
+			}
+			return 0;
 		}
+		case OPENGL_CONTEXT: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_hglrc(p_window);
+			}
+			return 0;
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -1881,7 +1892,7 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	pos += sizeof(WORD);
 	f->seek(pos);
 
-	icon_dir = (ICONDIR *)memrealloc(icon_dir, 3 * sizeof(WORD) + icon_dir->idCount * sizeof(ICONDIRENTRY));
+	icon_dir = (ICONDIR *)memrealloc(icon_dir, sizeof(ICONDIR) - sizeof(ICONDIRENTRY) + icon_dir->idCount * sizeof(ICONDIRENTRY));
 	f->get_buffer((uint8_t *)&icon_dir->idEntries[0], icon_dir->idCount * sizeof(ICONDIRENTRY));
 
 	int small_icon_index = -1; // Select 16x16 with largest color count.
@@ -2012,6 +2023,12 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
+
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->set_use_vsync(p_window, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+#endif
 }
 
 DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
@@ -2021,6 +2038,13 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 		return context_vulkan->get_vsync_mode(p_window);
 	}
 #endif
+
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		return gl_manager->is_using_vsync(p_window) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	}
+#endif
+
 	return DisplayServer::VSYNC_ENABLED;
 }
 
@@ -2449,6 +2473,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				window_mouseover_id = INVALID_WINDOW_ID;
 
 				_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+			} else if (window_mouseover_id != INVALID_WINDOW_ID) {
+				// This is reached during drag and drop, after dropping in a different window.
+				// Once-off notification, must call again.
+				track_mouse_leave_event(windows[window_mouseover_id].hWnd);
 			}
 
 		} break;
@@ -3586,6 +3614,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				windows.erase(id);
 				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
 			}
+			window_set_vsync_mode(p_vsync_mode, id);
 		}
 #endif
 

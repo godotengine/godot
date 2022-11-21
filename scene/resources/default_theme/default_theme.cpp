@@ -887,11 +887,64 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("shape_rect", "ColorPicker", icons["picker_shape_rectangle"]);
 	theme->set_icon("shape_rect_wheel", "ColorPicker", icons["picker_shape_rectangle_wheel"]);
 	theme->set_icon("add_preset", "ColorPicker", icons["add"]);
-	theme->set_icon("color_hue", "ColorPicker", icons["color_picker_hue"]);
 	theme->set_icon("sample_bg", "ColorPicker", icons["mini_checkerboard"]);
 	theme->set_icon("overbright_indicator", "ColorPicker", icons["color_picker_overbright"]);
 	theme->set_icon("bar_arrow", "ColorPicker", icons["color_picker_bar_arrow"]);
 	theme->set_icon("picker_cursor", "ColorPicker", icons["color_picker_cursor"]);
+
+	{
+		const int precision = 7;
+
+		Ref<Gradient> hue_gradient;
+		hue_gradient.instantiate();
+		PackedFloat32Array offsets;
+		offsets.resize(precision);
+		PackedColorArray colors;
+		colors.resize(precision);
+
+		for (int i = 0; i < precision; i++) {
+			float h = i / float(precision - 1);
+			offsets.write[i] = h;
+			colors.write[i] = Color::from_hsv(h, 1, 1);
+		}
+		hue_gradient->set_offsets(offsets);
+		hue_gradient->set_colors(colors);
+
+		Ref<GradientTexture2D> hue_texture;
+		hue_texture.instantiate();
+		hue_texture->set_width(800);
+		hue_texture->set_height(6);
+		hue_texture->set_gradient(hue_gradient);
+
+		theme->set_icon("color_hue", "ColorPicker", hue_texture);
+	}
+
+	{
+		const int precision = 7;
+
+		Ref<Gradient> hue_gradient;
+		hue_gradient.instantiate();
+		PackedFloat32Array offsets;
+		offsets.resize(precision);
+		PackedColorArray colors;
+		colors.resize(precision);
+
+		for (int i = 0; i < precision; i++) {
+			float h = i / float(precision - 1);
+			offsets.write[i] = h;
+			colors.write[i] = Color::from_ok_hsl(h, 1, 0.5);
+		}
+		hue_gradient->set_offsets(offsets);
+		hue_gradient->set_colors(colors);
+
+		Ref<GradientTexture2D> hue_texture;
+		hue_texture.instantiate();
+		hue_texture->set_width(800);
+		hue_texture->set_height(6);
+		hue_texture->set_gradient(hue_gradient);
+
+		theme->set_icon("color_okhsl_hue", "ColorPicker", hue_texture);
+	}
 
 	// ColorPickerButton
 

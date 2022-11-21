@@ -1860,7 +1860,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			if (valid) {
 				color_args = line.substr(begin, end - begin);
 				String stripped = color_args.replace(" ", "").replace("(", "").replace(")", "");
-				Vector<float> color = stripped.split_floats(",");
+				PackedFloat64Array color = stripped.split_floats(",");
 				if (color.size() > 2) {
 					float alpha = color.size() > 3 ? color[3] : 1.0f;
 					color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));

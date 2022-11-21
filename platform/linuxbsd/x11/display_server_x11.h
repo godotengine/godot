@@ -51,7 +51,7 @@
 #endif
 
 #if defined(GLES3_ENABLED)
-#include "egl_manager_x11.h"
+#include "gl_manager_x11.h"
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -105,8 +105,7 @@ class DisplayServerX11 : public DisplayServer {
 	int xdnd_version = 5;
 
 #if defined(GLES3_ENABLED)
-	EGLManagerX11 *egl_manager = nullptr;
-	XVisualInfo visual_info_gl;
+	GLManager_X11 *gl_manager = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
 	VulkanContextX11 *context_vulkan = nullptr;
@@ -170,7 +169,6 @@ class DisplayServerX11 : public DisplayServer {
 	HashMap<WindowID, WindowData> windows;
 
 	unsigned int last_mouse_monitor_mask = 0;
-	Vector2i last_mouse_monitor_pos;
 	uint64_t time_since_popup = 0;
 
 	List<WindowID> popup_list;

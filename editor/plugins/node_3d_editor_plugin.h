@@ -39,6 +39,7 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
@@ -47,9 +48,14 @@
 #include "scene/resources/fog_material.h"
 #include "scene/resources/sky_material.h"
 
+class AcceptDialog;
+class CheckBox;
+class ConfirmationDialog;
 class EditorData;
+class MenuButton;
 class Node3DEditor;
 class Node3DEditorViewport;
+class OptionButton;
 class SubViewportContainer;
 class DirectionalLight3D;
 class WorldEnvironment;
@@ -569,7 +575,7 @@ private:
 	bool grid_enabled = false;
 	bool grid_init_draw = false;
 	Camera3D::ProjectionType grid_camera_last_update_perspective = Camera3D::PROJECTION_PERSPECTIVE;
-	Vector3 grid_camera_last_update_position = Vector3();
+	Vector3 grid_camera_last_update_position;
 
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3], axis_gizmo[3];
 	Ref<StandardMaterial3D> gizmo_color[3];

@@ -127,11 +127,6 @@ static bool default_capture_device_changed = false;
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif
 
-#if defined(__GNUC__)
-// Workaround GCC warning from -Wcast-function-type.
-#define GetProcAddress (void *)GetProcAddress
-#endif
-
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef = 1;
 	IMMDeviceEnumerator *_pEnumerator = nullptr;
@@ -206,21 +201,7 @@ public:
 
 static CMMNotificationClient notif_client;
 
-typedef const char *(CDECL *PWineGetVersionPtr)(void);
-
-bool AudioDriverWASAPI::is_running_on_wine() {
-	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
-	if (!nt_lib) {
-		return false;
-	}
-
-	PWineGetVersionPtr wine_get_version = (PWineGetVersionPtr)GetProcAddress(nt_lib, "wine_get_version");
-	FreeLibrary(nt_lib);
-
-	return (bool)wine_get_version;
-}
-
-Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool reinit) {
+Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool p_reinit, bool p_no_audio_client_3) {
 	WAVEFORMATEX *pwfex;
 	IMMDeviceEnumerator *enumerator = nullptr;
 	IMMDevice *device = nullptr;
@@ -286,7 +267,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 		}
 	}
 
-	if (reinit) {
+	if (p_reinit) {
 		// In case we're trying to re-initialize the device prevent throwing this error on the console,
 		// otherwise if there is currently no device available this will spam the console.
 		if (hr != S_OK) {
@@ -304,10 +285,11 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	}
 
 	using_audio_client_3 = !p_capture; // IID_IAudioClient3 is only used for adjustable output latency (not input)
-	if (using_audio_client_3 && is_running_on_wine()) {
+
+	if (p_no_audio_client_3) {
 		using_audio_client_3 = false;
-		print_verbose("WASAPI: Wine detected, falling back to IAudioClient interface");
 	}
+
 	if (using_audio_client_3) {
 		hr = device->Activate(IID_IAudioClient3, CLSCTX_ALL, nullptr, (void **)&p_device->audio_client);
 		if (hr != S_OK) {
@@ -325,7 +307,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 
 	SAFE_RELEASE(device)
 
-	if (reinit) {
+	if (p_reinit) {
 		if (hr != S_OK) {
 			return ERR_CANT_OPEN;
 		}
@@ -436,7 +418,12 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 				&fundamental_period_frames,
 				&min_period_frames,
 				&max_period_frames);
-		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: GetSharedModeEnginePeriod failed with error 0x" + String::num_uint64(hr, 16) + ".");
+		if (hr != S_OK) {
+			print_verbose("WASAPI: GetSharedModeEnginePeriod failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
+			CoTaskMemFree(pwfex);
+			SAFE_RELEASE(device)
+			return audio_device_init(p_device, p_capture, p_reinit, true);
+		}
 
 		// Period frames must be an integral multiple of fundamental_period_frames or IAudioClient3 initialization will fail,
 		// so we need to select the closest multiple to the user-specified latency.
@@ -453,12 +440,25 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 		buffer_frames = period_frames;
 
 		hr = device_audio_client_3->InitializeSharedAudioStream(0, period_frames, pwfex, nullptr);
-		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: InitializeSharedAudioStream failed with error 0x" + String::num_uint64(hr, 16) + ".");
-		uint32_t output_latency_in_frames;
-		WAVEFORMATEX *current_pwfex;
-		device_audio_client_3->GetCurrentSharedModeEnginePeriod(&current_pwfex, &output_latency_in_frames);
-		real_latency = (float)output_latency_in_frames / (float)current_pwfex->nSamplesPerSec;
-		CoTaskMemFree(current_pwfex);
+		if (hr != S_OK) {
+			print_verbose("WASAPI: InitializeSharedAudioStream failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
+			CoTaskMemFree(pwfex);
+			SAFE_RELEASE(device);
+			return audio_device_init(p_device, p_capture, p_reinit, true);
+		} else {
+			uint32_t output_latency_in_frames;
+			WAVEFORMATEX *current_pwfex;
+			hr = device_audio_client_3->GetCurrentSharedModeEnginePeriod(&current_pwfex, &output_latency_in_frames);
+			if (hr == OK) {
+				real_latency = (float)output_latency_in_frames / (float)current_pwfex->nSamplesPerSec;
+				CoTaskMemFree(current_pwfex);
+			} else {
+				print_verbose("WASAPI: GetCurrentSharedModeEnginePeriod failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
+				CoTaskMemFree(pwfex);
+				SAFE_RELEASE(device);
+				return audio_device_init(p_device, p_capture, p_reinit, true);
+			}
+		}
 	}
 
 	if (p_capture) {
@@ -475,8 +475,8 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	return OK;
 }
 
-Error AudioDriverWASAPI::init_render_device(bool reinit) {
-	Error err = audio_device_init(&audio_output, false, reinit);
+Error AudioDriverWASAPI::init_render_device(bool p_reinit) {
+	Error err = audio_device_init(&audio_output, false, p_reinit);
 	if (err != OK) {
 		return err;
 	}
@@ -507,8 +507,8 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 	return OK;
 }
 
-Error AudioDriverWASAPI::init_capture_device(bool reinit) {
-	Error err = audio_device_init(&audio_input, true, reinit);
+Error AudioDriverWASAPI::init_capture_device(bool p_reinit) {
+	Error err = audio_device_init(&audio_input, true, p_reinit);
 	if (err != OK) {
 		return err;
 	}

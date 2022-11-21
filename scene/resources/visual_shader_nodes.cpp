@@ -3108,9 +3108,9 @@ void VisualShaderNodeUVFunc::set_function(VisualShaderNodeUVFunc::Function p_fun
 		return;
 	}
 	if (p_func == FUNC_PANNING) {
-		set_input_port_default_value(2, Vector2()); // offset
+		set_input_port_default_value(2, Vector2(), get_input_port_default_value(2)); // offset
 	} else { // FUNC_SCALING
-		set_input_port_default_value(2, Vector2(0.5, 0.5)); // pivot
+		set_input_port_default_value(2, Vector2(0.5, 0.5), get_input_port_default_value(2)); // pivot
 	}
 	func = p_func;
 	emit_changed();

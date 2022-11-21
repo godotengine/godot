@@ -150,8 +150,8 @@ public:
 		String code;
 		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
-		DepthDraw depth_draw;
-		DepthTest depth_test;
+		DepthDraw depth_draw = DEPTH_DRAW_OPAQUE;
+		DepthTest depth_test = DEPTH_TEST_ENABLED;
 
 		bool uses_point_size = false;
 		bool uses_alpha = false;
@@ -172,6 +172,8 @@ public:
 		bool uses_depth_texture = false;
 		bool uses_normal_texture = false;
 		bool uses_time = false;
+		bool uses_vertex_time = false;
+		bool uses_fragment_time = false;
 		bool writes_modelview_or_projection = false;
 		bool uses_world_coordinates = false;
 		bool uses_screen_texture_mipmaps = false;

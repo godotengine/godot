@@ -369,10 +369,9 @@ def configure(env: "Environment"):
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
 
-        env.ParseConfig("pkg-config egl --cflags --libs")
-
         if env["wayland"]:
             env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
+            env.ParseConfig("pkg-config egl --cflags --libs")
             env.ParseConfig("pkg-config wayland-egl --cflags")  # Only cflags, we dlopen the library.
 
     env.Append(LIBS=["pthread"])

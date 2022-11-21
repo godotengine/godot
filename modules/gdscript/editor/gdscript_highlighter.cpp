@@ -322,7 +322,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 
 			String word = str.substr(j, to - j);
-			Color col = Color();
+			Color col;
 			if (global_functions.has(word)) {
 				// "assert" and "preload" are reserved, so highlight even if not followed by a bracket.
 				if (word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::ASSERT) || word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::PRELOAD)) {

@@ -105,6 +105,10 @@ private:
 		return p_id.is_valid() ? Object::cast_to<T>(ObjectDB::get_instance(p_id)) : nullptr;
 	}
 
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ void _profile_node_data(const String &p_what, ObjectID p_id, int p_size);
+#endif
+
 public:
 	static void make_default();
 
@@ -120,6 +124,8 @@ public:
 	Error on_spawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
 	Error on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
 	Error on_sync_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
+
+	bool is_rpc_visible(const ObjectID &p_oid, int p_peer) const;
 
 	SceneReplicationInterface(SceneMultiplayer *p_multiplayer) {
 		multiplayer = p_multiplayer;

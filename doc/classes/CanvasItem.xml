@@ -114,7 +114,7 @@
 			<param index="2" name="src_rect" type="Rect2" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a textured rectangle region of the font texture with LCD sub-pixel anti-aliasing at a given position, optionally modulated by a color.
+				Draws a textured rectangle region of the font texture with LCD subpixel anti-aliasing at a given position, optionally modulated by a color.
 				Texture is drawn using the following blend operation, blend mode of the [CanvasItemMaterial] is ignored:
 				[codeblock]
 				dst.r = texture.r * modulate.r * modulate.a + dst.r * (1.0 - texture.r * modulate.a);

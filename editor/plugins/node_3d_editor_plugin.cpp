@@ -1329,7 +1329,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 				}
 			}
 
-			String suffix = String();
+			String suffix;
 			if (locked == 1) {
 				suffix = " (" + TTR("Locked") + ")";
 			} else if (locked == 2) {
@@ -3492,7 +3492,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	}
 
 	for (int i = 0; i < 3; i++) {
-		Transform3D axis_angle = Transform3D();
+		Transform3D axis_angle;
 		if (xform.basis.get_column(i).normalized().dot(xform.basis.get_column((i + 1) % 3).normalized()) < 1.0) {
 			axis_angle = axis_angle.looking_at(xform.basis.get_column(i).normalized(), xform.basis.get_column((i + 1) % 3).normalized());
 		}
@@ -4039,7 +4039,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		return false;
 	}
 
-	if (!EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path().is_empty()) { // cyclical instancing
+	if (!EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path().is_empty()) { // Cyclic instantiation.
 		if (_cyclical_dependency_exists(EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
@@ -4058,7 +4058,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	undo_redo->add_do_method(ed, "live_debug_instance_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), path, new_name);
+	undo_redo->add_do_method(ed, "live_debug_instantiate_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), path, new_name);
 	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
@@ -4129,7 +4129,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 			files_str += error_files[i].get_file().get_basename() + ",";
 		}
 		files_str = files_str.substr(0, files_str.length() - 1);
-		accept->set_text(vformat(TTR("Error instancing scene from %s"), files_str.get_data()));
+		accept->set_text(vformat(TTR("Error instantiating scene from %s"), files_str.get_data()));
 		accept->popup_centered();
 	}
 }
@@ -6803,8 +6803,8 @@ void Node3DEditor::_init_grid() {
 
 			// Don't draw lines over the origin if it's enabled.
 			if (!(origin_enabled && Math::is_zero_approx(position_a))) {
-				Vector3 line_bgn = Vector3();
-				Vector3 line_end = Vector3();
+				Vector3 line_bgn;
+				Vector3 line_end;
 				line_bgn[a] = position_a;
 				line_end[a] = position_a;
 				line_bgn[b] = bgn_b;
@@ -6819,8 +6819,8 @@ void Node3DEditor::_init_grid() {
 			}
 
 			if (!(origin_enabled && Math::is_zero_approx(position_b))) {
-				Vector3 line_bgn = Vector3();
-				Vector3 line_end = Vector3();
+				Vector3 line_bgn;
+				Vector3 line_end;
 				line_bgn[b] = position_b;
 				line_end[b] = position_b;
 				line_bgn[a] = bgn_a;
@@ -6988,8 +6988,8 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 	for (Node *E : selection) {
 		Node3D *sp = Object::cast_to<Node3D>(E);
 		if (sp) {
-			Vector3 from = Vector3();
-			Vector3 position_offset = Vector3();
+			Vector3 from;
+			Vector3 position_offset;
 
 			// Priorities for snapping to floor are CollisionShapes, VisualInstances and then origin
 			HashSet<VisualInstance3D *> vi = _get_child_nodes<VisualInstance3D>(sp);

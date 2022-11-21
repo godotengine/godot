@@ -251,7 +251,10 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				return false;
 			}
 		} else {
-			if (next.get_extension().to_lower() == "gd") {
+			if (next.ends_with(".notest.gd")) {
+				next = dir->get_next();
+				continue;
+			} else if (next.get_extension().to_lower() == "gd") {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
 				Error open_err = OK;
@@ -461,7 +464,6 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	Ref<GDScript> script;
 	script.instantiate();
 	script->set_path(source_file);
-	script->set_script_path(source_file);
 	err = script->load_source_code(source_file);
 	if (err != OK) {
 		enable_stdout();
@@ -598,6 +600,9 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 
 	enable_stdout();
+
+	GDScriptCache::remove_script(script->get_path());
+
 	return result;
 }
 

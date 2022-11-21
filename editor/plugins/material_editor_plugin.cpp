@@ -72,15 +72,15 @@ void MaterialEditor::_update_theme_item_cache() {
 void MaterialEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			light_1_switch->set_normal_texture(theme_cache.light_1_on);
-			light_1_switch->set_pressed_texture(theme_cache.light_1_off);
-			light_2_switch->set_normal_texture(theme_cache.light_2_on);
-			light_2_switch->set_pressed_texture(theme_cache.light_2_off);
+			light_1_switch->set_texture_normal(theme_cache.light_1_on);
+			light_1_switch->set_texture_pressed(theme_cache.light_1_off);
+			light_2_switch->set_texture_normal(theme_cache.light_2_on);
+			light_2_switch->set_texture_pressed(theme_cache.light_2_off);
 
-			sphere_switch->set_normal_texture(theme_cache.sphere_off);
-			sphere_switch->set_pressed_texture(theme_cache.sphere_on);
-			box_switch->set_normal_texture(theme_cache.box_off);
-			box_switch->set_pressed_texture(theme_cache.box_on);
+			sphere_switch->set_texture_normal(theme_cache.sphere_off);
+			sphere_switch->set_texture_pressed(theme_cache.sphere_on);
+			box_switch->set_texture_normal(theme_cache.box_off);
+			box_switch->set_texture_pressed(theme_cache.box_on);
 		} break;
 
 		case NOTIFICATION_DRAW: {

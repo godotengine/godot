@@ -116,7 +116,7 @@ bool Shape2D::is_collision_outline_enabled() {
 		return true;
 	}
 #endif
-	return GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
+	return GLOBAL_GET("debug/shapes/collision/draw_2d_outlines");
 }
 
 Shape2D::Shape2D(const RID &p_rid) {
@@ -124,5 +124,7 @@ Shape2D::Shape2D(const RID &p_rid) {
 }
 
 Shape2D::~Shape2D() {
-	PhysicsServer2D::get_singleton()->free(shape);
+	if (PhysicsServer2D::get_singleton() != nullptr) {
+		PhysicsServer2D::get_singleton()->free(shape);
+	}
 }

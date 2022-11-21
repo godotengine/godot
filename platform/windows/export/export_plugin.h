@@ -38,9 +38,9 @@
 #include "platform/windows/logo.gen.h"
 
 class EditorExportPlatformWindows : public EditorExportPlatformPC {
-	Error _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error _process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path);
+	Error _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 public:
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;

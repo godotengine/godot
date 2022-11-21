@@ -71,8 +71,6 @@ enum PropertyHint {
 	PROPERTY_HINT_EXPRESSION, ///< used for string properties that can contain multiple lines
 	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
-	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
-	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
 	PROPERTY_HINT_OBJECT_ID,
 	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
 	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, ///< so something else can provide this (used in scripts)
@@ -192,10 +190,10 @@ struct PropertyInfo {
 
 	explicit PropertyInfo(const GDNativePropertyInfo &pinfo) :
 			type((Variant::Type)pinfo.type),
-			name(pinfo.name),
-			class_name(pinfo.class_name), // can be null
+			name(*reinterpret_cast<StringName *>(pinfo.name)),
+			class_name(*reinterpret_cast<StringName *>(pinfo.class_name)),
 			hint((PropertyHint)pinfo.hint),
-			hint_string(pinfo.hint_string), // can be null
+			hint_string(*reinterpret_cast<String *>(pinfo.hint_string)),
 			usage(pinfo.usage) {}
 
 	bool operator==(const PropertyInfo &p_info) const {
@@ -241,6 +239,20 @@ struct MethodInfo {
 	static MethodInfo from_dict(const Dictionary &p_dict);
 
 	MethodInfo() {}
+
+	explicit MethodInfo(const GDNativeMethodInfo &pinfo) :
+			name(*reinterpret_cast<StringName *>(pinfo.name)),
+			return_val(PropertyInfo(pinfo.return_value)),
+			flags(pinfo.flags),
+			id(pinfo.id) {
+		for (uint32_t j = 0; j < pinfo.argument_count; j++) {
+			arguments.push_back(PropertyInfo(pinfo.arguments[j]));
+		}
+		const Variant *def_values = (const Variant *)pinfo.default_arguments;
+		for (uint32_t j = 0; j < pinfo.default_argument_count; j++) {
+			default_arguments.push_back(def_values[j]);
+		}
+	}
 
 	void _push_params(const PropertyInfo &p_param) {
 		arguments.push_back(p_param);

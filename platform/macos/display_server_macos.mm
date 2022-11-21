@@ -166,6 +166,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
 		}
+		window_set_vsync_mode(p_vsync_mode, window_id_counter);
 #endif
 		[wd.window_view updateLayerDelegate];
 		id = window_id_counter++;
@@ -1843,11 +1844,22 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		window_id = MAIN_WINDOW_ID;
 	}
 	WindowData &wd = windows[window_id];
+
+	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
+
+	if (show_cursor && !previously_shown) {
+		WindowID window_id = get_window_at_screen_position(mouse_get_position());
+		if (window_id != INVALID_WINDOW_ID) {
+			send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+		}
+	}
+
 	if (p_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
 		// https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
-		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		CGAssociateMouseAndMouseCursorPosition(false);
@@ -1858,7 +1870,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
-		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:YES];
@@ -1868,7 +1880,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		[wd.window_object setMovable:NO];
 		CGAssociateMouseAndMouseCursorPosition(false);
 	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
-		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:NO];
@@ -1884,7 +1896,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	warp_events.clear();
 	mouse_mode = p_mode;
 
-	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (show_cursor) {
 		cursor_update_shape();
 	}
 }
@@ -2573,7 +2585,13 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 				[wd.window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 			}
 			[wd.window_object toggleFullScreen:nil];
+
+			if (old_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+			}
+
 			wd.fullscreen = false;
+			wd.exclusive_fullscreen = false;
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if ([wd.window_object isZoomed]) {
@@ -2598,7 +2616,15 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
 			[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 			[wd.window_object toggleFullScreen:nil];
+
 			wd.fullscreen = true;
+			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				const NSUInteger presentationOptions = NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar;
+				[NSApp setPresentationOptions:presentationOptions];
+				wd.exclusive_fullscreen = true;
+			} else {
+				wd.exclusive_fullscreen = false;
+			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if (![wd.window_object isZoomed]) {
@@ -2615,7 +2641,11 @@ DisplayServer::WindowMode DisplayServerMacOS::window_get_mode(WindowID p_window)
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) { // If fullscreen, it's not in another mode.
-		return WINDOW_MODE_FULLSCREEN;
+		if (wd.exclusive_fullscreen) {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		} else {
+			return WINDOW_MODE_FULLSCREEN;
+		}
 	}
 	if ([wd.window_object isZoomed] && !wd.resize_disabled) {
 		return WINDOW_MODE_MAXIMIZED;
@@ -2932,6 +2962,14 @@ int64_t DisplayServerMacOS::window_get_native_handle(HandleType p_handle_type, W
 		case WINDOW_VIEW: {
 			return (int64_t)windows[p_window].window_view;
 		}
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_context(p_window);
+			}
+			return 0;
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -2962,7 +3000,7 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		gl_manager->set_use_vsync(p_vsync_mode);
+		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 #if defined(VULKAN_ENABLED)

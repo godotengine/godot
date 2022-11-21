@@ -37,7 +37,7 @@ namespace Godot
         /// <value>Getting is equivalent to calling <see cref="Mathf.Atan2(real_t, real_t)"/> with the values of <see cref="x"/>.</value>
         public real_t Rotation
         {
-            get
+            readonly get
             {
                 return Mathf.Atan2(x.y, x.x);
             }
@@ -57,7 +57,7 @@ namespace Godot
         /// <value>Equivalent to the lengths of each column vector, but Y is negative if the determinant is negative.</value>
         public Vector2 Scale
         {
-            get
+            readonly get
             {
                 real_t detSign = Mathf.Sign(BasisDeterminant());
                 return new Vector2(x.Length(), detSign * y.Length());
@@ -80,7 +80,7 @@ namespace Godot
         /// </exception>
         public Vector2 this[int column]
         {
-            get
+            readonly get
             {
                 switch (column)
                 {
@@ -121,7 +121,7 @@ namespace Godot
         /// <param name="row">Which row, the matrix vertical position.</param>
         public real_t this[int column, int row]
         {
-            get
+            readonly get
             {
                 return this[column][row];
             }
@@ -139,7 +139,7 @@ namespace Godot
         /// </summary>
         /// <seealso cref="Inverse"/>
         /// <returns>The inverse transformation matrix.</returns>
-        public Transform2D AffineInverse()
+        public readonly Transform2D AffineInverse()
         {
             real_t det = BasisDeterminant();
 
@@ -148,9 +148,8 @@ namespace Godot
 
             Transform2D inv = this;
 
-            real_t temp = inv[0, 0];
-            inv[0, 0] = inv[1, 1];
-            inv[1, 1] = temp;
+            inv[0, 0] = this[1, 1];
+            inv[1, 1] = this[0, 0];
 
             real_t detInv = 1.0f / det;
 
@@ -171,7 +170,7 @@ namespace Godot
         /// and is usually considered invalid.
         /// </summary>
         /// <returns>The determinant of the basis matrix.</returns>
-        private real_t BasisDeterminant()
+        private readonly real_t BasisDeterminant()
         {
             return (x.x * y.y) - (x.y * y.x);
         }
@@ -183,7 +182,7 @@ namespace Godot
         /// <seealso cref="BasisXformInv(Vector2)"/>
         /// <param name="v">A vector to transform.</param>
         /// <returns>The transformed vector.</returns>
-        public Vector2 BasisXform(Vector2 v)
+        public readonly Vector2 BasisXform(Vector2 v)
         {
             return new Vector2(Tdotx(v), Tdoty(v));
         }
@@ -198,7 +197,7 @@ namespace Godot
         /// <seealso cref="BasisXform(Vector2)"/>
         /// <param name="v">A vector to inversely transform.</param>
         /// <returns>The inversely transformed vector.</returns>
-        public Vector2 BasisXformInv(Vector2 v)
+        public readonly Vector2 BasisXformInv(Vector2 v)
         {
             return new Vector2(x.Dot(v), y.Dot(v));
         }
@@ -209,7 +208,7 @@ namespace Godot
         /// <param name="transform">The other transform.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated transform.</returns>
-        public Transform2D InterpolateWith(Transform2D transform, real_t weight)
+        public readonly Transform2D InterpolateWith(Transform2D transform, real_t weight)
         {
             real_t r1 = Rotation;
             real_t r2 = transform.Rotation;
@@ -258,14 +257,13 @@ namespace Godot
         /// (no scaling, use <see cref="AffineInverse"/> for transforms with scaling).
         /// </summary>
         /// <returns>The inverse matrix.</returns>
-        public Transform2D Inverse()
+        public readonly Transform2D Inverse()
         {
             Transform2D inv = this;
 
             // Swap
-            real_t temp = inv.x.y;
-            inv.x.y = inv.y.x;
-            inv.y.x = temp;
+            inv.x.y = y.x;
+            inv.y.x = x.y;
 
             inv.origin = inv.BasisXform(-inv.origin);
 
@@ -277,7 +275,7 @@ namespace Godot
         /// and normalized axis vectors (scale of 1 or -1).
         /// </summary>
         /// <returns>The orthonormalized transform.</returns>
-        public Transform2D Orthonormalized()
+        public readonly Transform2D Orthonormalized()
         {
             Transform2D on = this;
 
@@ -301,7 +299,7 @@ namespace Godot
         /// </summary>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform2D Rotated(real_t angle)
+        public readonly Transform2D Rotated(real_t angle)
         {
             return this * new Transform2D(angle, new Vector2());
         }
@@ -313,7 +311,7 @@ namespace Godot
         /// </summary>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform2D RotatedLocal(real_t angle)
+        public readonly Transform2D RotatedLocal(real_t angle)
         {
             return new Transform2D(angle, new Vector2()) * this;
         }
@@ -325,7 +323,7 @@ namespace Godot
         /// </summary>
         /// <param name="scale">The scale to introduce.</param>
         /// <returns>The scaled transformation matrix.</returns>
-        public Transform2D Scaled(Vector2 scale)
+        public readonly Transform2D Scaled(Vector2 scale)
         {
             Transform2D copy = this;
             copy.x *= scale;
@@ -341,7 +339,7 @@ namespace Godot
         /// </summary>
         /// <param name="scale">The scale to introduce.</param>
         /// <returns>The scaled transformation matrix.</returns>
-        public Transform2D ScaledLocal(Vector2 scale)
+        public readonly Transform2D ScaledLocal(Vector2 scale)
         {
             Transform2D copy = this;
             copy.x *= scale;
@@ -349,12 +347,12 @@ namespace Godot
             return copy;
         }
 
-        private real_t Tdotx(Vector2 with)
+        private readonly real_t Tdotx(Vector2 with)
         {
             return (this[0, 0] * with[0]) + (this[1, 0] * with[1]);
         }
 
-        private real_t Tdoty(Vector2 with)
+        private readonly real_t Tdoty(Vector2 with)
         {
             return (this[0, 1] * with[0]) + (this[1, 1] * with[1]);
         }
@@ -366,7 +364,7 @@ namespace Godot
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
-        public Transform2D Translated(Vector2 offset)
+        public readonly Transform2D Translated(Vector2 offset)
         {
             Transform2D copy = this;
             copy.origin += offset;
@@ -380,7 +378,7 @@ namespace Godot
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
-        public Transform2D TranslatedLocal(Vector2 offset)
+        public readonly Transform2D TranslatedLocal(Vector2 offset)
         {
             Transform2D copy = this;
             copy.origin += copy.BasisXform(offset);
@@ -603,7 +601,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the transform and the object are exactly equal.</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Transform2D other && Equals(other);
         }
@@ -615,7 +613,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other transform to compare.</param>
         /// <returns>Whether or not the matrices are exactly equal.</returns>
-        public bool Equals(Transform2D other)
+        public readonly bool Equals(Transform2D other)
         {
             return x.Equals(other.x) && y.Equals(other.y) && origin.Equals(other.origin);
         }
@@ -626,7 +624,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other transform to compare.</param>
         /// <returns>Whether or not the matrices are approximately equal.</returns>
-        public bool IsEqualApprox(Transform2D other)
+        public readonly bool IsEqualApprox(Transform2D other)
         {
             return x.IsEqualApprox(other.x) && y.IsEqualApprox(other.y) && origin.IsEqualApprox(other.origin);
         }
@@ -635,7 +633,7 @@ namespace Godot
         /// Serves as the hash function for <see cref="Transform2D"/>.
         /// </summary>
         /// <returns>A hash code for this transform.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return x.GetHashCode() ^ y.GetHashCode() ^ origin.GetHashCode();
         }
@@ -644,7 +642,7 @@ namespace Godot
         /// Converts this <see cref="Transform2D"/> to a string.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"[X: {x}, Y: {y}, O: {origin}]";
         }
@@ -653,7 +651,7 @@ namespace Godot
         /// Converts this <see cref="Transform2D"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public string ToString(string format)
+        public readonly string ToString(string format)
         {
             return $"[X: {x.ToString(format)}, Y: {y.ToString(format)}, O: {origin.ToString(format)}]";
         }

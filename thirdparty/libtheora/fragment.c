@@ -11,16 +11,11 @@
  ********************************************************************
 
   function:
-    last mod: $Id: fragment.c 16503 2009-08-22 18:14:02Z giles $
+    last mod: $Id$
 
  ********************************************************************/
 #include <string.h>
 #include "internal.h"
-
-void oc_frag_copy(const oc_theora_state *_state,unsigned char *_dst,
- const unsigned char *_src,int _ystride){
-  (*_state->opt_vtable.frag_copy)(_dst,_src,_ystride);
-}
 
 void oc_frag_copy_c(unsigned char *_dst,const unsigned char *_src,int _ystride){
   int i;
@@ -31,9 +26,24 @@ void oc_frag_copy_c(unsigned char *_dst,const unsigned char *_src,int _ystride){
   }
 }
 
-void oc_frag_recon_intra(const oc_theora_state *_state,unsigned char *_dst,
- int _ystride,const ogg_int16_t _residue[64]){
-  _state->opt_vtable.frag_recon_intra(_dst,_ystride,_residue);
+/*Copies the fragments specified by the lists of fragment indices from one
+   frame to another.
+  _dst_frame:     The reference frame to copy to.
+  _src_frame:     The reference frame to copy from.
+  _ystride:       The row stride of the reference frames.
+  _fragis:        A pointer to a list of fragment indices.
+  _nfragis:       The number of fragment indices to copy.
+  _frag_buf_offs: The offsets of fragments in the reference frames.*/
+void oc_frag_copy_list_c(unsigned char *_dst_frame,
+ const unsigned char *_src_frame,int _ystride,
+ const ptrdiff_t *_fragis,ptrdiff_t _nfragis,const ptrdiff_t *_frag_buf_offs){
+  ptrdiff_t fragii;
+  for(fragii=0;fragii<_nfragis;fragii++){
+    ptrdiff_t frag_buf_off;
+    frag_buf_off=_frag_buf_offs[_fragis[fragii]];
+    oc_frag_copy_c(_dst_frame+frag_buf_off,
+     _src_frame+frag_buf_off,_ystride);
+  }
 }
 
 void oc_frag_recon_intra_c(unsigned char *_dst,int _ystride,
@@ -44,11 +54,6 @@ void oc_frag_recon_intra_c(unsigned char *_dst,int _ystride,
     for(j=0;j<8;j++)_dst[j]=OC_CLAMP255(_residue[i*8+j]+128);
     _dst+=_ystride;
   }
-}
-
-void oc_frag_recon_inter(const oc_theora_state *_state,unsigned char *_dst,
- const unsigned char *_src,int _ystride,const ogg_int16_t _residue[64]){
-  _state->opt_vtable.frag_recon_inter(_dst,_src,_ystride,_residue);
 }
 
 void oc_frag_recon_inter_c(unsigned char *_dst,
@@ -62,12 +67,6 @@ void oc_frag_recon_inter_c(unsigned char *_dst,
   }
 }
 
-void oc_frag_recon_inter2(const oc_theora_state *_state,unsigned char *_dst,
- const unsigned char *_src1,const unsigned char *_src2,int _ystride,
- const ogg_int16_t _residue[64]){
-  _state->opt_vtable.frag_recon_inter2(_dst,_src1,_src2,_ystride,_residue);
-}
-
 void oc_frag_recon_inter2_c(unsigned char *_dst,const unsigned char *_src1,
  const unsigned char *_src2,int _ystride,const ogg_int16_t _residue[64]){
   int i;
@@ -78,10 +77,6 @@ void oc_frag_recon_inter2_c(unsigned char *_dst,const unsigned char *_src1,
     _src1+=_ystride;
     _src2+=_ystride;
   }
-}
-
-void oc_restore_fpu(const oc_theora_state *_state){
-  _state->opt_vtable.restore_fpu();
 }
 
 void oc_restore_fpu_c(void){}

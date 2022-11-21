@@ -643,6 +643,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="vertex_array_create">
+			<return type="RID" />
+			<param index="0" name="vertex_count" type="int" />
+			<param index="1" name="vertex_format" type="int" />
+			<param index="2" name="src_buffers" type="RID[]" />
+			<description>
+				Creates a vertex array based on the specified buffers.
+			</description>
+		</method>
 		<method name="vertex_buffer_create">
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />

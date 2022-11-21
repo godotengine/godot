@@ -76,6 +76,8 @@ public:
 
 		Size2i min_texel_size;
 		Size2i max_texel_size;
+
+		Size2i texel_size; // The texel size we'll use
 	};
 
 	struct ShaderCapabilities {
@@ -273,6 +275,7 @@ protected:
 
 public:
 	// Extension calls.
+	bool supports_renderpass2() const { return has_renderpass2_ext; }
 	VkResult vkCreateRenderPass2KHR(VkDevice p_device, const VkRenderPassCreateInfo2 *p_create_info, const VkAllocationCallbacks *p_allocator, VkRenderPass *p_render_pass);
 
 	uint32_t get_vulkan_major() const { return vulkan_major; };

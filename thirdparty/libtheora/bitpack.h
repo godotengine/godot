@@ -16,14 +16,31 @@
  ********************************************************************/
 #if !defined(_bitpack_H)
 # define _bitpack_H (1)
+# include <stddef.h>
 # include <limits.h>
+# include "internal.h"
 
 
 
-typedef unsigned long      oc_pb_window;
+typedef size_t             oc_pb_window;
 typedef struct oc_pack_buf oc_pack_buf;
 
 
+
+/*Custom bitpacker implementations.*/
+# if defined(OC_ARM_ASM)
+#  include "arm/armbits.h"
+# endif
+
+# if !defined(oc_pack_read)
+#  define oc_pack_read oc_pack_read_c
+# endif
+# if !defined(oc_pack_read1)
+#  define oc_pack_read1 oc_pack_read1_c
+# endif
+# if !defined(oc_huff_token_decode)
+#  define oc_huff_token_decode oc_huff_token_decode_c
+# endif
 
 # define OC_PB_WINDOW_SIZE ((int)sizeof(oc_pb_window)*CHAR_BIT)
 /*This is meant to be a large, positive constant that can still be efficiently
@@ -34,9 +51,9 @@ typedef struct oc_pack_buf oc_pack_buf;
 
 
 struct oc_pack_buf{
-  oc_pb_window         window;
-  const unsigned char *ptr;
   const unsigned char *stop;
+  const unsigned char *ptr;
+  oc_pb_window         window;
   int                  bits;
   int                  eof;
 };
@@ -45,8 +62,8 @@ void oc_pack_readinit(oc_pack_buf *_b,unsigned char *_buf,long _bytes);
 int oc_pack_look1(oc_pack_buf *_b);
 void oc_pack_adv1(oc_pack_buf *_b);
 /*Here we assume 0<=_bits&&_bits<=32.*/
-long oc_pack_read(oc_pack_buf *_b,int _bits);
-int oc_pack_read1(oc_pack_buf *_b);
+long oc_pack_read_c(oc_pack_buf *_b,int _bits);
+int oc_pack_read1_c(oc_pack_buf *_b);
 /* returns -1 for read beyond EOF, or the number of whole bytes available */
 long oc_pack_bytes_left(oc_pack_buf *_b);
 
