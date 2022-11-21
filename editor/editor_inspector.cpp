@@ -1296,6 +1296,9 @@ void EditorProperty::menu_option(int p_option) {
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
 		} break;
+		case MENU_OVERRIDE_FOR_PROJECT: {
+			emit_signal(SNAME("property_overridden"));
+		} break;
 		case MENU_FAVORITE_PROPERTY: {
 			emit_signal(SNAME("property_favorited"), property, !favorited);
 			queue_redraw();
@@ -1396,6 +1399,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING_NAME, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed_with_value", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("property_checked", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "checked")));
+	ADD_SIGNAL(MethodInfo("property_overridden"));
 	ADD_SIGNAL(MethodInfo("property_favorited", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "favorited")));
 	ADD_SIGNAL(MethodInfo("property_pinned", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "pinned")));
 	ADD_SIGNAL(MethodInfo("property_can_revert_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "can_revert")));
@@ -1462,10 +1466,13 @@ void EditorProperty::_update_popup() {
 		}
 		menu->set_item_tooltip(menu->get_item_index(MENU_PIN_VALUE), TTR("Pinning a value forces it to be saved even if it's equal to the default."));
 	}
-	if (deletable || can_revert) {
+	if (deletable || can_revert || can_override) {
 		menu->add_separator();
+		if (can_override) {
+			menu->add_icon_item(get_editor_theme_icon(SNAME("Override")), TTRC("Override for Project"), MENU_OVERRIDE_FOR_PROJECT);
+		}
 		if (deletable) {
-			menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Property"), MENU_PIN_VALUE);
+			menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Property"), MENU_DELETE);
 		}
 		if (can_revert) {
 			menu->add_icon_item(get_editor_theme_icon(SNAME("Reload")), TTR("Revert Value"), MENU_REVERT_VALUE);
@@ -4924,6 +4931,9 @@ void EditorInspector::_property_deleted(const String &p_path) {
 		undo_redo->commit_action();
 	}
 
+	if (restart_request_props.has(p_path)) {
+		emit_signal(SNAME("restart_requested"));
+	}
 	emit_signal(SNAME("property_deleted"), p_path);
 }
 
