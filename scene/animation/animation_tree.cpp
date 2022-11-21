@@ -86,7 +86,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	}
 }
 
-void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_seek_root, real_t p_blend, int p_pingponged) {
+void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, int p_pingponged) {
 	ERR_FAIL_COND(!state);
 	ERR_FAIL_COND(!state->player->has_animation(p_animation));
 
@@ -113,18 +113,18 @@ void AnimationNode::blend_animation(const StringName &p_animation, double p_time
 	anim_state.animation = animation;
 	anim_state.seeked = p_seeked;
 	anim_state.pingponged = p_pingponged;
-	anim_state.seek_root = p_seek_root;
+	anim_state.is_external_seeking = p_is_external_seeking;
 
 	state->animation_states.push_back(anim_state);
 }
 
-double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_seek_root, const Vector<StringName> &p_connections) {
+double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections) {
 	base_path = p_base_path;
 	parent = p_parent;
 	connections = p_connections;
 	state = p_state;
 
-	double t = process(p_time, p_seek, p_seek_root);
+	double t = process(p_time, p_seek, p_is_external_seeking);
 
 	state = nullptr;
 	parent = nullptr;
@@ -148,7 +148,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	state->invalid_reasons += String::utf8("•  ") + p_reason;
 }
 
-double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, bool p_sync) {
+double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -167,7 +167,7 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 
 	//inputs.write[p_input].last_pass = state->last_pass;
 	real_t activity = 0.0;
-	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_seek_root, p_blend, p_filter, p_sync, &activity);
+	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, &activity);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
@@ -178,11 +178,11 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 	return ret;
 }
 
-double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, bool p_sync) {
-	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_seek_root, p_blend, p_filter, p_sync);
+double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync) {
+	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync);
 }
 
-double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, bool p_sync, real_t *r_max) {
+double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, real_t *r_max) {
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -292,9 +292,9 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 	// This process, which depends on p_sync is needed to process sync correctly in the case of
 	// that a synced AnimationNodeSync exists under the un-synced AnimationNodeSync.
 	if (!p_seek && !p_sync && !any_valid) {
-		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_seek_root, p_connections);
+		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_is_external_seeking, p_connections);
 	}
-	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_seek_root, p_connections);
+	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_is_external_seeking, p_connections);
 }
 
 int AnimationNode::get_input_count() const {
@@ -335,9 +335,9 @@ void AnimationNode::remove_input(int p_index) {
 	emit_changed();
 }
 
-double AnimationNode::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNode::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	double ret = 0;
-	GDVIRTUAL_CALL(_process, p_time, p_seek, p_seek_root, ret);
+	GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret);
 	return ret;
 }
 
@@ -413,9 +413,9 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
 
-	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "seek_root", "blend", "pingponged"), &AnimationNode::blend_animation, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "seek_root", "blend", "filter", "sync"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "seek_root", "blend", "filter", "sync"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "is_external_seeking", "blend", "pingponged"), &AnimationNode::blend_animation, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
@@ -427,7 +427,7 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_get_parameter_list);
 	GDVIRTUAL_BIND(_get_child_by_name, "name");
 	GDVIRTUAL_BIND(_get_parameter_default_value, "parameter");
-	GDVIRTUAL_BIND(_process, "time", "seek", "seek_root");
+	GDVIRTUAL_BIND(_process, "time", "seek", "is_external_seeking");
 	GDVIRTUAL_BIND(_get_caption);
 	GDVIRTUAL_BIND(_has_filter);
 
@@ -1007,9 +1007,10 @@ void AnimationTree::_process_graph(double p_delta) {
 			real_t weight = as.blend;
 			bool seeked = as.seeked;
 			int pingponged = as.pingponged;
+			bool is_external_seeking = as.is_external_seeking;
 #ifndef _3D_DISABLED
 			bool backward = signbit(delta); // This flag is required only for the root motion since it calculates the difference between the previous and current frames.
-			bool calc_root = !seeked || as.seek_root;
+			bool calc_root = !seeked || is_external_seeking;
 #endif // _3D_DISABLED
 
 			for (int i = 0; i < a->get_track_count(); i++) {
@@ -1368,7 +1369,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						} else {
 							if (seeked) {
-								int idx = a->track_find_key(i, time);
+								int idx = a->track_find_key(i, time, !is_external_seeking);
 								if (idx < 0) {
 									continue;
 								}
@@ -1377,7 +1378,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								t->object->set_indexed(t->subpath, value);
 							} else {
 								List<int> indices;
-								a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
+								a->track_get_key_indices_in_range(i, time, delta, &indices, pingponged);
 								for (int &F : indices) {
 									Variant value = a->track_get_key_value(i, F);
 									value = _post_process_key_value(a, i, value, t->object);
@@ -1391,7 +1392,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
 						if (seeked) {
-							int idx = a->track_find_key(i, time);
+							int idx = a->track_find_key(i, time, !is_external_seeking);
 							if (idx < 0) {
 								continue;
 							}
@@ -1402,7 +1403,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						} else {
 							List<int> indices;
-							a->method_track_get_key_indices(i, time, delta, &indices, pingponged);
+							a->track_get_key_indices_in_range(i, time, delta, &indices, pingponged);
 							for (int &F : indices) {
 								StringName method = a->method_track_get_name(i, F);
 								Vector<Variant> params = a->method_track_get_params(i, F);
@@ -1425,7 +1426,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						if (seeked) {
 							//find whatever should be playing
-							int idx = a->track_find_key(i, time);
+							int idx = a->track_find_key(i, time, !is_external_seeking);
 							if (idx < 0) {
 								continue;
 							}
@@ -1538,7 +1539,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						if (seeked) {
 							//seek
-							int idx = a->track_find_key(i, time);
+							int idx = a->track_find_key(i, time, !is_external_seeking);
 							if (idx < 0) {
 								continue;
 							}

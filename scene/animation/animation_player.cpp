@@ -683,7 +683,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				} else if (p_is_current && p_delta != 0) {
 					List<int> indices;
-					a->value_track_get_key_indices(i, p_time, p_delta, &indices, p_pingponged);
+					a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_pingponged);
 
 					for (int &F : indices) {
 						Variant value = a->track_get_key_value(i, F);
@@ -742,8 +742,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				}
 
 				List<int> indices;
-
-				a->method_track_get_key_indices(i, p_time, p_delta, &indices, p_pingponged);
+				a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_pingponged);
 
 				for (int &E : indices) {
 					StringName method = a->method_track_get_name(i, E);
