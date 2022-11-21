@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Color" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Color in RGBA format using floats on the range of 0 to 1.
+		Color built-in type, in RGBA format.
 	</brief_description>
 	<description>
-		A color represented by red, green, blue, and alpha (RGBA) components. The alpha component is often used for opacity. Values are in floating-point and usually range from 0 to 1. Some properties (such as CanvasItem.modulate) may accept values greater than 1 (overbright or HDR colors).
-		You can also create a color from standardized color names by using the string constructor or directly using the color constants defined here. The standardized color set is based on the [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url].
-		If you want to supply values in a range of 0 to 255, you should use [method @GDScript.Color8].
+		A color represented in RGBA format by red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) components. Each component is a 16-bit floating-point value, usually ranging from 0 to 1. Some properties (such as [member CanvasItem.modulate]) may support values greater than 1, for overbright or High Dynamic Range colors. If you want to supply values in a range of 0 to 255, you should use [method @GDScript.Color8].
+		Colors can also be created by name from a set of standardized colors, through the [String] constructor, [method from_string], or by directly fetching the color constants documented here. The standardized color set is based on the [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url], with the addition of [constant TRANSPARENT].
 		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it's equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png]Color constants cheatsheet[/url]
 	</description>
@@ -19,7 +18,8 @@
 		<constructor name="Color">
 			<return type="Color" />
 			<description>
-				Constructs a default-initialized [Color] with all components set to [code]0[/code].
+				Constructs a default [Color] from opaque black. This is the same as [constant BLACK].
+				[b]Note:[/b] in C#, constructs an empty color with all of its components set to [code]0.0[/code] (transparent black).
 			</description>
 		</constructor>
 		<constructor name="Color">
@@ -27,10 +27,10 @@
 			<param index="0" name="from" type="Color" />
 			<param index="1" name="alpha" type="float" />
 			<description>
-				Constructs a [Color] from an existing color, but with a custom alpha value.
+				Constructs a [Color] from the existing color, with [member a] set to the given [param alpha] value.
 				[codeblocks]
 				[gdscript]
-				var red = Color(Color.red, 0.2) # 20% opaque red.
+				var red = Color(Color.RED, 0.2) # 20% opaque red.
 				[/gdscript]
 				[csharp]
 				var red = new Color(Colors.Red, 0.2f); // 20% opaque red.
@@ -49,7 +49,7 @@
 			<return type="Color" />
 			<param index="0" name="code" type="String" />
 			<description>
-				Constructs a [Color] either from an HTML color code or from a standardized color name. Supported color names are the same as the constants.
+				Constructs a [Color] either from an HTML color code or from a standardized color name. The supported color names are the same as the constants.
 			</description>
 		</constructor>
 		<constructor name="Color">
@@ -57,7 +57,7 @@
 			<param index="0" name="code" type="String" />
 			<param index="1" name="alpha" type="float" />
 			<description>
-				Constructs a [Color] either from an HTML color code or from a standardized color name, with [param alpha] on the range of 0 to 1. Supported color names are the same as the constants.
+				Constructs a [Color] either from an HTML color code or from a standardized color name, with [param alpha] on the range of 0.0 to 1.0. The supported color names are the same as the constants.
 			</description>
 		</constructor>
 		<constructor name="Color">
@@ -66,7 +66,7 @@
 			<param index="1" name="g" type="float" />
 			<param index="2" name="b" type="float" />
 			<description>
-				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
+				Constructs a [Color] from RGB values, typically between 0.0 and 1.0. [member a] is set to 1.0.
 				[codeblocks]
 				[gdscript]
 				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
@@ -84,7 +84,7 @@
 			<param index="2" name="b" type="float" />
 			<param index="3" name="a" type="float" />
 			<description>
-				Constructs a [Color] from RGBA values, typically between 0 and 1.
+				Constructs a [Color] from RGBA values, typically between 0.0 and 1.0.
 				[codeblocks]
 				[gdscript]
 				var color = Color(0.2, 1.0, 0.7, 0.8) # Similar to `Color8(51, 255, 178, 204)`
@@ -101,7 +101,7 @@
 			<return type="Color" />
 			<param index="0" name="over" type="Color" />
 			<description>
-				Returns a new color resulting from blending this color over another. If the color is opaque, the result is also opaque. The second color may have a range of alpha values.
+				Returns a new color resulting from overlaying this color over the given color. In a painting program, you can imagine it as the [param over] color painted over this colour (including alpha).
 				[codeblocks]
 				[gdscript]
 				var bg = Color(0.0, 1.0, 0.0, 0.5) # Green with alpha of 50%
@@ -128,7 +128,7 @@
 			<return type="Color" />
 			<param index="0" name="amount" type="float" />
 			<description>
-				Returns a new color resulting from making this color darker by the specified percentage (ratio from 0 to 1).
+				Returns a new color resulting from making this color darker by the specified [param amount] (ratio from 0.0 to 1.0). See also [method lightened].
 				[codeblocks]
 				[gdscript]
 				var green = Color(0.0, 1.0, 0.0)
@@ -148,7 +148,7 @@
 			<param index="2" name="v" type="float" />
 			<param index="3" name="alpha" type="float" default="1.0" />
 			<description>
-				Constructs a color from an [url=https://en.wikipedia.org/wiki/HSL_and_HSV]HSV profile[/url]. [param h] (hue), [param s] (saturation), and [param v] (value) are typically between 0 and 1.
+				Constructs a color from an [url=https://en.wikipedia.org/wiki/HSL_and_HSV]HSV profile[/url]. The hue ([param h]), saturation ([param s]), and value ([param v]) are typically between 0.0 and 1.0.
 				[codeblocks]
 				[gdscript]
 				var color = Color.from_hsv(0.58, 0.5, 0.79, 0.8)
@@ -166,7 +166,7 @@
 			<param index="2" name="l" type="float" />
 			<param index="3" name="alpha" type="float" default="1.0" />
 			<description>
-				Constructs a color from an [url=https://bottosson.github.io/posts/colorpicker/]OK HSL profile[/url]. [param h] (hue), [param s] (saturation), and [param l] (lightness) are typically between 0 and 1.
+				Constructs a color from an [url=https://bottosson.github.io/posts/colorpicker/]OK HSL profile[/url]. The hue ([param h]), saturation ([param s]), and lightness ([param l]) are typically between 0.0 and 1.0.
 				[codeblocks]
 				[gdscript]
 				var color = Color.from_ok_hsl(0.58, 0.5, 0.79, 0.8)
@@ -189,14 +189,13 @@
 			<param index="0" name="str" type="String" />
 			<param index="1" name="default" type="Color" />
 			<description>
-				Creates a [Color] from string, which can be either a HTML color code or a named color. Fallbacks to [param default] if the string does not denote any valid color.
+				Creates a [Color] from the given string, which can be either an HTML color code or a named color (case-insensitive). Returns [param default] if the color cannot be inferred from the string.
 			</description>
 		</method>
 		<method name="get_luminance" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the luminance of the color in the [code][0.0, 1.0][/code] range.
-				This is useful when determining light or dark color. Colors with a luminance smaller than 0.5 can be generally considered dark.
+				Returns the light intensity of the color, as a value between 0.0 and 1.0 (inclusive). This is useful when determining light or dark color. Colors with a luminance smaller than 0.5 can be generally considered dark.
 				[b]Note:[/b] [method get_luminance] relies on the color being in the linear color space to return an accurate relative luminance value. If the color is in the sRGB color space, use [method srgb_to_linear] to convert it to the linear color space first.
 			</description>
 		</method>
@@ -204,9 +203,12 @@
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
-				Returns the [Color] associated with the provided integer number, with 8 bits per channel in ARGB order. The integer should be 32-bit. Best used with hexadecimal notation.
+				Returns the [Color] associated with the provided [param hex] integer in 32-bit ARGB format (8 bits per channel, alpha channel first).
+				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix).
 				[codeblock]
-				modulate = Color.hex(0xffff0000) # red
+				var red = Color.hex(0xffff0000)
+				var dark_cyan = Color.hex(0xff008b8b)
+				var my_color = Color.hex(0xa4bbefd2)
 				[/codeblock]
 			</description>
 		</method>
@@ -214,25 +216,27 @@
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
-				Same as [method hex], but takes 64-bit integer and the color uses 16 bits per channel.
+				Returns the [Color] associated with the provided [param hex] integer in 64-bit ARGB format (16 bits per channel, alpha channel first).
+				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix).
 			</description>
 		</method>
 		<method name="html" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="rgba" type="String" />
 			<description>
-				Returns a new color from [param rgba], an HTML hexadecimal color string. [param rgba] is not case sensitive, and may be prefixed with a '#' character.
-				[param rgba] must be a valid three-digit or six-digit hexadecimal color string, and may contain an alpha channel value. If [param rgba] does not contain an alpha channel value, an alpha channel value of 1.0 is applied.
-				If [param rgba] is invalid a Color(0.0, 0.0, 0.0, 1.0) is returned.
-				[b]Note:[/b] This method is not implemented in C#, but the same functionality is provided in the class constructor.
+				Returns a new color from [param rgba], an HTML hexadecimal color string. [param rgba] is not case-sensitive, and may be prefixed by a hash sign ([code]#[/code]).
+				[param rgba] must be a valid three-digit or six-digit hexadecimal color string, and may contain an alpha channel value. If [param rgba] does not contain an alpha channel value, an alpha channel value of 1.0 is applied. If [param rgba] is invalid, returns an empty color.
+				[b]Note:[/b] In C#, this method is not implemented. The same functionality is provided by the Color constructor.
 				[codeblocks]
 				[gdscript]
-				var green = Color.html("#00FF00FF") # set green to Color(0.0, 1.0, 0.0, 1.0)
-				var blue = Color.html("#0000FF") # set blue to Color(0.0, 0.0, 1.0, 1.0)
+				var blue = Color.html("#0000ff") # blue is Color(0.0, 0.0, 1.0, 1.0)
+				var green = Color.html("#0F0")   # green is Color(0.0, 1.0, 0.0, 1.0)
+				var col = Color.html("663399cc") # col is Color(0.4, 0.2, 0.6, 0.8)
 				[/gdscript]
 				[csharp]
-				var green = new Color("#00FF00FF"); // set green to Color(0.0, 1.0, 0.0, 1.0)
-				var blue = new Color("#0000FF"); // set blue to Color(0.0, 0.0, 1.0, 1.0)
+				var blue = new Color("#0000ff"); // blue is Color(0.0, 0.0, 1.0, 1.0)
+				var green = new Color("#0F0");   // green is Color(0.0, 1.0, 0.0, 1.0)
+				var col = new Color("663399cc"); // col is Color(0.4, 0.2, 0.6, 0.8)
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -241,24 +245,26 @@
 			<return type="bool" />
 			<param index="0" name="color" type="String" />
 			<description>
-				Returns [code]true[/code] if [param color] is a valid HTML hexadecimal color string. [param color] is not case sensitive, and may be prefixed with a '#' character.
-				For a string to be valid it must be three-digit or six-digit hexadecimal, and may contain an alpha channel value.
+				Returns [code]true[/code] if [param color] is a valid HTML hexadecimal color string. The string must be a hexadecimal value (case-insensitive) of either 3, 4, 6 or 8 digits, and may be prefixed by a hash sign ([code]#[/code]). This method is identical to [method String.is_valid_html_color].
 				[codeblocks]
 				[gdscript]
-				var result = Color.html_is_valid("#55aaFF") # result is true
-				result = Color.html_is_valid("#55AAFF20") # result is true
-				result = Color.html_is_valid("55AAFF") # result is true
-				result = Color.html_is_valid("#F2C") # result is true
-				result = Color.html_is_valid("#AABBC) # result is false
-				result = Color.html_is_valid("#55aaFF5") # result is false
+				Color.html_is_valid("#55aaFF")   # Returns true
+				Color.html_is_valid("#55AAFF20") # Returns true
+				Color.html_is_valid("55AAFF")    # Returns true
+				Color.html_is_valid("#F2C")      # Returns true
+
+				Color.html_is_valid("#AABBC)     # Returns false
+				Color.html_is_valid("#55aaFF5")  # Returns false
 				[/gdscript]
 				[csharp]
-				var result = Color.HtmlIsValid("#55AAFF"); // result is true
-				result = Color.HtmlIsValid("#55AAFF20"); // result is true
-				result = Color.HtmlIsValid("55AAFF); // result is true
-				result = Color.HtmlIsValid("#F2C"); // result is true
-				result = Color.HtmlIsValid("#AABBC"); // result is false
-				result = Color.HtmlIsValid("#55aaFF5"); // result is false
+				// This method is not available in C#. Use `StringExtensions.IsValidHtmlColor()`, instead.
+				"#55AAFF".IsValidHtmlColor();   // Returns true
+				"#55AAFF20".IsValidHtmlColor(); // Returns true
+				"55AAFF".IsValidHtmlColor();    // Returns true
+				"#F2C".IsValidHtmlColor();      // Returns true
+
+				"#AABBC".IsValidHtmlColor();    // Returns false
+				"#55aaFF5".IsValidHtmlColor();  // Returns false
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -266,13 +272,15 @@
 		<method name="inverted" qualifiers="const">
 			<return type="Color" />
 			<description>
-				Returns the inverted color [code](1 - r, 1 - g, 1 - b, a)[/code].
+				Returns the color with its [member r], [member g], and [member b] components inverted ([code](1 - r, 1 - g, 1 - b, a)[/code]).
 				[codeblocks]
 				[gdscript]
+				var black = Color.WHITE.inverted()
 				var color = Color(0.3, 0.4, 0.9)
 				var inverted_color = color.inverted() # Equivalent to `Color(0.7, 0.6, 0.1)`
 				[/gdscript]
 				[csharp]
+				var black = Colors.White.Inverted();
 				var color = new Color(0.3f, 0.4f, 0.9f);
 				Color invertedColor = color.Inverted(); // Equivalent to `new Color(0.7f, 0.6f, 0.1f)`
 				[/csharp]
@@ -291,17 +299,23 @@
 			<param index="0" name="to" type="Color" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Returns the linear interpolation with another color. The interpolation factor [param weight] is between 0 and 1.
+				Returns the linear interpolation between this color's components and [param to]'s components. The interpolation factor [param weight] should be between 0.0 and 1.0 (inclusive). See also [method @GlobalScope.lerp].
 				[codeblocks]
 				[gdscript]
-				var c1 = Color(1.0, 0.0, 0.0)
-				var c2 = Color(0.0, 1.0, 0.0)
-				var lerp_color = c1.lerp(c2, 0.5) # Equivalent to `Color(0.5, 0.5, 0.0)`
+				var red = Color(1.0, 0.0, 0.0)
+				var aqua = Color(0.0, 1.0, 0.8)
+
+				red.lerp(aqua, 0.2) # Returns Color(0.8, 0.2, 0.16)
+				red.lerp(aqua, 0.5) # Returns Color(0.5, 0.5, 0.4)
+				red.lerp(aqua, 1.0) # Returns Color(0.0, 1.0, 0.8)
 				[/gdscript]
 				[csharp]
-				var c1 = new Color(1.0f, 0.0f, 0.0f);
-				var c2 = new Color(0.0f, 1.0f, 0.0f);
-				Color lerpColor = c1.Lerp(c2, 0.5f); // Equivalent to `new Color(0.5f, 0.5f, 0.0f)`
+				var red = new Color(1.0f, 0.0f, 0.0f);
+				var aqua = new Color(0.0f, 1.0f, 0.8f);
+
+				red.Lerp(aqua, 0.2f); // Returns Color(0.8f, 0.2f, 0.16f)
+				red.Lerp(aqua, 0.5f); // Returns Color(0.5f, 0.5f, 0.4f)
+				red.Lerp(aqua, 1.0f); // Returns Color(0.0f, 1.0f, 0.8f)
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -310,15 +324,15 @@
 			<return type="Color" />
 			<param index="0" name="amount" type="float" />
 			<description>
-				Returns a new color resulting from making this color lighter by the specified percentage (ratio from 0 to 1).
+				Returns a new color resulting from making this color lighter by the specified [param amount], which should be a ratio from 0.0 to 1.0. See also [method darkened].
 				[codeblocks]
 				[gdscript]
 				var green = Color(0.0, 1.0, 0.0)
-				var lightgreen = green.lightened(0.2) # 20% lighter than regular green
+				var light_green = green.lightened(0.2) # 20% lighter than regular green
 				[/gdscript]
 				[csharp]
 				var green = new Color(0.0f, 1.0f, 0.0f);
-				Color lightgreen = green.Lightened(0.2f); // 20% lighter than regular green
+				Color lightGreen = green.Lightened(0.2f); // 20% lighter than regular green
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -326,19 +340,19 @@
 		<method name="linear_to_srgb" qualifiers="const">
 			<return type="Color" />
 			<description>
-				Returns the color converted to the [url=https://en.wikipedia.org/wiki/SRGB]sRGB[/url] color space. This assumes the original color is in the linear color space. See also [method srgb_to_linear] which performs the opposite operation.
+				Returns the color converted to the [url=https://en.wikipedia.org/wiki/SRGB]sRGB[/url] color space. This method assumes the original color is in the linear color space. See also [method srgb_to_linear] which performs the opposite operation.
 			</description>
 		</method>
 		<method name="srgb_to_linear" qualifiers="const">
 			<return type="Color" />
 			<description>
-				Returns the color converted to the linear color space. This assumes the original color is in the sRGB color space. See also [method linear_to_srgb] which performs the opposite operation.
+				Returns the color converted to the linear color space. This method assumes the original color already is in the sRGB color space. See also [method linear_to_srgb] which performs the opposite operation.
 			</description>
 		</method>
 		<method name="to_abgr32" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the color converted to a 32-bit integer in ABGR format (each byte represents a color channel). ABGR is the reversed version of the default format.
+				Returns the color converted to a 32-bit integer in ABGR format (each component is 8 bits). ABGR is the reversed version of the default RGBA format.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -354,7 +368,7 @@
 		<method name="to_abgr64" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the color converted to a 64-bit integer in ABGR format (each word represents a color channel). ABGR is the reversed version of the default format.
+				Returns the color converted to a 64-bit integer in ABGR format (each component is 16 bits). ABGR is the reversed version of the default RGBA format.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -370,7 +384,7 @@
 		<method name="to_argb32" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the color converted to a 32-bit integer in ARGB format (each byte represents a color channel). ARGB is more compatible with DirectX.
+				Returns the color converted to a 32-bit integer in ARGB format (each component is 8 bits). ARGB is more compatible with DirectX.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -386,7 +400,7 @@
 		<method name="to_argb64" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the color converted to a 64-bit integer in ARGB format (each word represents a color channel). ARGB is more compatible with DirectX.
+				Returns the color converted to a 64-bit integer in ARGB format (each component is 16 bits). ARGB is more compatible with DirectX.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -403,18 +417,18 @@
 			<return type="String" />
 			<param index="0" name="with_alpha" type="bool" default="true" />
 			<description>
-				Returns the color converted to an HTML hexadecimal color string in RGBA format (ex: [code]ff34f822[/code]).
-				Setting [param with_alpha] to [code]false[/code] excludes alpha from the hexadecimal string (and uses RGB instead of RGBA format).
+				Returns the color converted to an HTML hexadecimal color [String] in RGBA format, without the hash ([code]#[/code]) prefix.
+				Setting [param with_alpha] to [code]false[/code], excludes alpha from the hexadecimal string, using RGB format instead of RGBA format.
 				[codeblocks]
 				[gdscript]
-				var color = Color(1, 1, 1, 0.5)
-				var with_alpha = color.to_html() # Returns "ffffff7f"
-				var without_alpha = color.to_html(false) # Returns "ffffff"
+				var white = Color(1, 1, 1, 0.5)
+				var with_alpha = white.to_html() # Returns "ffffff7f"
+				var without_alpha = white.to_html(false) # Returns "ffffff"
 				[/gdscript]
 				[csharp]
-				var color = new Color(1, 1, 1, 0.5f);
-				String withAlpha = color.ToHtml(); // Returns "ffffff7f"
-				String withoutAlpha = color.ToHtml(false); // Returns "ffffff"
+				var white = new Color(1, 1, 1, 0.5f);
+				string withAlpha = white.ToHtml(); // Returns "ffffff7f"
+				string withoutAlpha = white.ToHtml(false); // Returns "ffffff"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -422,7 +436,7 @@
 		<method name="to_rgba32" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the color converted to a 32-bit integer in RGBA format (each byte represents a color channel). RGBA is Godot's default format.
+				Returns the color converted to a 32-bit integer in RGBA format (each component is 8 bits). RGBA is Godot's default format.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -438,7 +452,7 @@
 		<method name="to_rgba64" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the color converted to a 64-bit integer in RGBA format (each word represents a color channel). RGBA is Godot's default format.
+				Returns the color converted to a 64-bit integer in RGBA format (each component is 16 bits). RGBA is Godot's default format.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -457,19 +471,19 @@
 			The color's alpha component, typically on the range of 0 to 1. A value of 0 means that the color is fully transparent. A value of 1 means that the color is fully opaque.
 		</member>
 		<member name="a8" type="int" setter="" getter="" default="255">
-			Wrapper for [member a] that uses the range 0 to 255 instead of 0 to 1.
+			Wrapper for [member a] that uses the range 0 to 255, instead of 0 to 1.
 		</member>
 		<member name="b" type="float" setter="" getter="" default="0.0">
 			The color's blue component, typically on the range of 0 to 1.
 		</member>
 		<member name="b8" type="int" setter="" getter="" default="0">
-			Wrapper for [member b] that uses the range 0 to 255 instead of 0 to 1.
+			Wrapper for [member b] that uses the range 0 to 255, instead of 0 to 1.
 		</member>
 		<member name="g" type="float" setter="" getter="" default="0.0">
 			The color's green component, typically on the range of 0 to 1.
 		</member>
 		<member name="g8" type="int" setter="" getter="" default="0">
-			Wrapper for [member g] that uses the range 0 to 255 instead of 0 to 1.
+			Wrapper for [member g] that uses the range 0 to 255, instead of 0 to 1.
 		</member>
 		<member name="h" type="float" setter="" getter="" default="0.0">
 			The HSV hue of this color, on the range 0 to 1.
@@ -478,7 +492,7 @@
 			The color's red component, typically on the range of 0 to 1.
 		</member>
 		<member name="r8" type="int" setter="" getter="" default="0">
-			Wrapper for [member r] that uses the range 0 to 255 instead of 0 to 1.
+			Wrapper for [member r] that uses the range 0 to 255, instead of 0 to 1.
 		</member>
 		<member name="s" type="float" setter="" getter="" default="0.0">
 			The HSV saturation of this color, on the range 0 to 1.
@@ -510,7 +524,7 @@
 			Bisque color.
 		</constant>
 		<constant name="BLACK" value="Color(0, 0, 0, 1)">
-			Black color.
+			Black color. In GDScript, this is the default value of any color.
 		</constant>
 		<constant name="BLANCHED_ALMOND" value="Color(1, 0.921569, 0.803922, 1)">
 			Blanched almond color.
@@ -932,7 +946,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Color" />
 			<description>
-				Returns [code]true[/code] if the colors are not equal.
+				Returns [code]true[/code] if the colors are not exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
@@ -1004,7 +1018,7 @@
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Access color components using their index. [code]c[0][/code] is equivalent to [code]c.r[/code], [code]c[1][/code] is equivalent to [code]c.g[/code], [code]c[2][/code] is equivalent to [code]c.b[/code], and [code]c[3][/code] is equivalent to [code]c.a[/code].
+				Access color components using their index. [code][0][/code] is equivalent to [member r], [code][1][/code] is equivalent to [member g], [code][2][/code] is equivalent to [member b], and [code][3][/code] is equivalent to [member a].
 			</description>
 		</operator>
 		<operator name="operator unary+">
@@ -1016,7 +1030,7 @@
 		<operator name="operator unary-">
 			<return type="Color" />
 			<description>
-				Inverts the given color. This is equivalent to [code]Color.WHITE - c[/code] or [code]Color(1 - c.r, 1 - c.g, 1 - c.b, 1 - c.a)[/code].
+				Inverts the given color. This is equivalent to [code]Color.WHITE - c[/code] or [code]Color(1 - c.r, 1 - c.g, 1 - c.b, 1 - c.a)[/code]. Unlike with [method inverted], the [member a] component is inverted, too.
 			</description>
 		</operator>
 	</operators>
