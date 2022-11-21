@@ -274,9 +274,30 @@ bool EGLManager::is_using_vsync() const {
 
 Error EGLManager::initialize() {
 #ifdef GLAD_ENABLED
+	// Passing a null display loads just the bare minimum to create one. We'll have
+	// to create a temporary test display and reload EGL with it to get a good idea
+	// of what version is supported on this machine. Currently we're looking for
+	// 1.5, the latest at the time of writing, which is actually pretty old.
 	if (!gladLoaderLoadEGL(NULL)) {
 		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't load EGL.");
 	}
+
+	// NOTE: EGL_DEFAULT_DISPLAY returns whatever the O.S. deems suitable. I have
+	// no idea if this may cause problems with multiple display servers and if we
+	// should handle different EGL contexts in another way.
+	EGLDisplay tmp_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	ERR_FAIL_COND_V(tmp_display == EGL_NO_DISPLAY, ERR_UNAVAILABLE);
+
+	eglInitialize(tmp_display, NULL, NULL);
+
+	int version = gladLoaderLoadEGL(tmp_display);
+
+	ERR_FAIL_COND_V_MSG(!version, ERR_UNAVAILABLE, "Can't load EGL.");
+	print_verbose(vformat("Loaded EGL %d.%d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version)));
+
+	ERR_FAIL_COND_V_MSG(!GLAD_EGL_VERSION_1_5, ERR_UNAVAILABLE, "EGL version is too old!");
+
+	eglTerminate(tmp_display);
 #endif
 
 	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
