@@ -65,6 +65,7 @@ public:
 		MENU_COPY_VALUE,
 		MENU_PASTE_VALUE,
 		MENU_COPY_PROPERTY_PATH,
+		MENU_OVERRIDE_FOR_PROJECT,
 		MENU_UNFAVORITE_BOTH,
 		MENU_FAVORITE_PROPERTY_GLOBAL,
 		MENU_FAVORITE_PROPERTY_LOCAL,
@@ -149,6 +150,7 @@ private:
 
 protected:
 	bool has_borders = false;
+	bool can_override = false;
 
 	void _notification(int p_what);
 	static void _bind_methods();

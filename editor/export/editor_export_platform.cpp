@@ -2330,7 +2330,7 @@ bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, S
 }
 
 Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, String *r_out, int p_port_fwd) const {
-	String ssh_path = EditorSettings::get_singleton()->get("export/ssh/ssh");
+	String ssh_path = EDITOR_GET("export/ssh/ssh");
 	if (ssh_path.is_empty()) {
 		ssh_path = "ssh";
 	}
@@ -2387,7 +2387,7 @@ Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String
 }
 
 Error EditorExportPlatform::ssh_run_on_remote_no_wait(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, OS::ProcessID *r_pid, int p_port_fwd) const {
-	String ssh_path = EditorSettings::get_singleton()->get("export/ssh/ssh");
+	String ssh_path = EDITOR_GET("export/ssh/ssh");
 	if (ssh_path.is_empty()) {
 		ssh_path = "ssh";
 	}
@@ -2424,7 +2424,7 @@ Error EditorExportPlatform::ssh_run_on_remote_no_wait(const String &p_host, cons
 }
 
 Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const String &p_port, const Vector<String> &p_scp_args, const String &p_src_file, const String &p_dst_file) const {
-	String scp_path = EditorSettings::get_singleton()->get("export/ssh/scp");
+	String scp_path = EDITOR_GET("export/ssh/scp");
 	if (scp_path.is_empty()) {
 		scp_path = "scp";
 	}

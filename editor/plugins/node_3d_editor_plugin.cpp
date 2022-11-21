@@ -236,7 +236,7 @@ void ViewportNavigationControl::_update_navigation() {
 			real_t speed_multiplier = MIN(delta.length() / (get_size().x * 100.0), 3.0);
 			real_t speed = viewport->freelook_speed * speed_multiplier;
 
-			const Node3DEditorViewport::FreelookNavigationScheme navigation_scheme = (Node3DEditorViewport::FreelookNavigationScheme)EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_navigation_scheme").operator int();
+			const Node3DEditorViewport::FreelookNavigationScheme navigation_scheme = (Node3DEditorViewport::FreelookNavigationScheme)EDITOR_GET("editors/3d/freelook/freelook_navigation_scheme").operator int();
 
 			Vector3 forward;
 			if (navigation_scheme == Node3DEditorViewport::FreelookNavigationScheme::FREELOOK_FULLY_AXIS_LOCKED) {

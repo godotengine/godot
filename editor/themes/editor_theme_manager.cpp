@@ -2733,7 +2733,7 @@ void EditorThemeManager::_generate_text_editor_defaults(ThemeConfiguration &p_co
 }
 
 void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
-	String text_editor_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
+	String text_editor_color_theme = EDITOR_GET("text_editor/theme/color_theme");
 	if (text_editor_color_theme == "Default") {
 		_generate_text_editor_defaults(p_config);
 	} else if (text_editor_color_theme == "Godot 2") {
