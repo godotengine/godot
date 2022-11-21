@@ -98,7 +98,7 @@ public:
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
-	double process(double p_time, bool p_seek, bool p_seek_root) override;
+	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 	String get_caption() const override;
 
 	Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;

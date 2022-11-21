@@ -53,7 +53,7 @@
 			<return type="float" />
 			<param index="0" name="time" type="float" />
 			<param index="1" name="seek" type="bool" />
-			<param index="2" name="seek_root" type="bool" />
+			<param index="2" name="is_external_seeking" type="bool" />
 			<description>
 				When inheriting from [AnimationRootNode], implement this virtual method to run some code when this node is processed. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute.
 				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
@@ -73,7 +73,7 @@
 			<param index="1" name="time" type="float" />
 			<param index="2" name="delta" type="float" />
 			<param index="3" name="seeked" type="bool" />
-			<param index="4" name="seek_root" type="bool" />
+			<param index="4" name="is_external_seeking" type="bool" />
 			<param index="5" name="blend" type="float" />
 			<param index="6" name="pingponged" type="int" default="0" />
 			<description>
@@ -85,7 +85,7 @@
 			<param index="0" name="input_index" type="int" />
 			<param index="1" name="time" type="float" />
 			<param index="2" name="seek" type="bool" />
-			<param index="3" name="seek_root" type="bool" />
+			<param index="3" name="is_external_seeking" type="bool" />
 			<param index="4" name="blend" type="float" />
 			<param index="5" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
 			<param index="6" name="sync" type="bool" default="true" />
@@ -99,7 +99,7 @@
 			<param index="1" name="node" type="AnimationNode" />
 			<param index="2" name="time" type="float" />
 			<param index="3" name="seek" type="bool" />
-			<param index="4" name="seek_root" type="bool" />
+			<param index="4" name="is_external_seeking" type="bool" />
 			<param index="5" name="blend" type="float" />
 			<param index="6" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
 			<param index="7" name="sync" type="bool" default="true" />

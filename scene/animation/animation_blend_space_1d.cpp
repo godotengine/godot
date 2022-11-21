@@ -230,14 +230,14 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 	}
 }
 
-double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	if (blend_points_used == 0) {
 		return 0.0;
 	}
 
 	if (blend_points_used == 1) {
 		// only one point available, just play that animation
-		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, true);
+		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 	}
 
 	double blend_pos = get_parameter(blend_position);
@@ -307,10 +307,10 @@ double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_see
 
 	for (int i = 0; i < blend_points_used; i++) {
 		if (i == point_lower || i == point_higher) {
-			double remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, weights[i], FILTER_IGNORE, true);
+			double remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, weights[i], FILTER_IGNORE, true);
 			max_time_remaining = MAX(max_time_remaining, remaining);
 		} else if (sync) {
-			blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, true);
+			blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true);
 		}
 	}
 

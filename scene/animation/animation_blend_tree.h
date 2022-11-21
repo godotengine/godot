@@ -53,7 +53,7 @@ public:
 	static Vector<String> (*get_editable_animation_list)();
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	void set_animation(const StringName &p_name);
 	StringName get_animation() const;
@@ -72,7 +72,7 @@ protected:
 
 private:
 	PlayMode play_mode = PLAY_MODE_FORWARD;
-	bool backward = false;
+	bool backward = false; // Only used by pingpong animation.
 };
 
 VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode)
@@ -148,7 +148,7 @@ public:
 	MixMode get_mix_mode() const;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeOneShot();
 };
@@ -170,7 +170,7 @@ public:
 	virtual String get_caption() const override;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeAdd2();
 };
@@ -190,7 +190,7 @@ public:
 	virtual String get_caption() const override;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeAdd3();
 };
@@ -208,7 +208,7 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	virtual bool has_filter() const override;
 	AnimationNodeBlend2();
@@ -228,7 +228,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek, bool p_seek_root) override;
+	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 	AnimationNodeBlend3();
 };
 
@@ -246,7 +246,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek, bool p_seek_root) override;
+	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeTimeScale();
 };
@@ -265,7 +265,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek, bool p_seek_root) override;
+	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeTimeSeek();
 };
@@ -331,7 +331,7 @@ public:
 	void set_from_start(bool p_from_start);
 	bool is_from_start() const;
 
-	double process(double p_time, bool p_seek, bool p_seek_root) override;
+	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeTransition();
 };
@@ -341,7 +341,7 @@ class AnimationNodeOutput : public AnimationNode {
 
 public:
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 	AnimationNodeOutput();
 };
 
@@ -410,7 +410,7 @@ public:
 	void get_node_connections(List<NodeConnection> *r_connections) const;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	void get_node_list(List<StringName> *r_list);
 
