@@ -128,7 +128,5 @@ Shape3D::Shape3D(RID p_shape) :
 		shape(p_shape) {}
 
 Shape3D::~Shape3D() {
-	if (PhysicsServer3D::get_singleton() != nullptr) {
-		PhysicsServer3D::get_singleton()->free(shape);
-	}
+	PhysicsServer3D::get_singleton()->free(shape);
 }
