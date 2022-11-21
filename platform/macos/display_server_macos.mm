@@ -2337,21 +2337,63 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 	}
 }
 
+void DisplayServerMacOS::reparent_check(WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	NSScreen *screen = [wd.window_object screen];
+
+	if (wd.transient_parent != INVALID_WINDOW_ID) {
+		WindowData &wd_parent = windows[wd.transient_parent];
+		NSScreen *parent_screen = [wd_parent.window_object screen];
+
+		if (parent_screen == screen) {
+			if (![[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
+				if (wd.exclusive) {
+					ERR_FAIL_COND_MSG([[wd_parent.window_object childWindows] count] > 0, "Transient parent has another exclusive child.");
+				}
+				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+				[wd_parent.window_object addChildWindow:wd.window_object ordered:NSWindowAbove];
+			}
+		} else {
+			if ([[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
+				[wd_parent.window_object removeChildWindow:wd.window_object];
+				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+				[wd.window_object orderFront:nil];
+			}
+		}
+	}
+
+	for (const WindowID &child : wd.transient_children) {
+		WindowData &wd_child = windows[child];
+		NSScreen *child_screen = [wd_child.window_object screen];
+
+		if (child_screen == screen) {
+			if (![[wd.window_object childWindows] containsObject:wd_child.window_object]) {
+				if (wd_child.exclusive) {
+					ERR_FAIL_COND_MSG([[wd.window_object childWindows] count] > 0, "Transient parent has another exclusive child.");
+				}
+				if (wd_child.fullscreen) {
+					[wd_child.window_object toggleFullScreen:nil];
+				}
+				[wd_child.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+				[wd.window_object addChildWindow:wd_child.window_object ordered:NSWindowAbove];
+			}
+		} else {
+			if ([[wd.window_object childWindows] containsObject:wd_child.window_object]) {
+				[wd.window_object removeChildWindow:wd_child.window_object];
+				[wd_child.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+			}
+		}
+	}
+}
+
 void DisplayServerMacOS::window_set_exclusive(WindowID p_window, bool p_exclusive) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	if (wd.exclusive != p_exclusive) {
 		wd.exclusive = p_exclusive;
-		if (wd.transient_parent != INVALID_WINDOW_ID) {
-			WindowData &wd_parent = windows[wd.transient_parent];
-			if (wd.exclusive) {
-				ERR_FAIL_COND_MSG([[wd_parent.window_object childWindows] count] > 0, "Transient parent has another exclusive child.");
-				[wd_parent.window_object addChildWindow:wd.window_object ordered:NSWindowAbove];
-			} else {
-				[wd_parent.window_object removeChildWindow:wd.window_object];
-			}
-		}
+		reparent_check(p_window);
 	}
 }
 
@@ -2429,11 +2471,10 @@ void DisplayServerMacOS::window_set_transient(WindowID p_window, WindowID p_pare
 
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
-		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-
-		if (wd_window.exclusive) {
+		if ([[wd_parent.window_object childWindows] containsObject:wd_window.window_object]) {
 			[wd_parent.window_object removeChildWindow:wd_window.window_object];
 		}
+		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -2441,11 +2482,7 @@ void DisplayServerMacOS::window_set_transient(WindowID p_window, WindowID p_pare
 
 		wd_window.transient_parent = p_parent;
 		wd_parent.transient_children.insert(p_window);
-		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-
-		if (wd_window.exclusive) {
-			[wd_parent.window_object addChildWindow:wd_window.window_object ordered:NSWindowAbove];
-		}
+		reparent_check(p_window);
 	}
 }
 

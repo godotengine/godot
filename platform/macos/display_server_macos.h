@@ -233,6 +233,7 @@ public:
 	void popup_close(WindowID p_window);
 	void set_is_resizing(bool p_is_resizing);
 	bool get_is_resizing() const;
+	void reparent_check(WindowID p_window);
 
 	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);
