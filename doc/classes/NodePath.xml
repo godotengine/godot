@@ -187,12 +187,14 @@
 			<return type="bool" />
 			<param index="0" name="right" type="NodePath" />
 			<description>
+				Returns [code]true[/code] if two node paths are not equal.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="NodePath" />
 			<description>
+				Returns [code]true[/code] if two node paths are equal, i.e. all node names in the path are the same and in the same order.
 			</description>
 		</operator>
 	</operators>

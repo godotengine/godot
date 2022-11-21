@@ -4,6 +4,8 @@
 		Class representing a signal defined in an object.
 	</brief_description>
 	<description>
+		Signals can be connected to [Callable]s and emitted. When a signal is emitted, all connected callables are called.
+		Usually signals are accessed as properties of objects, but it's also possible to assign them to variables and pass them around, allowing for more dynamic connections.
 	</description>
 	<tutorials>
 		<link title="Using Signals">$DOCS_URL/getting_started/step_by_step/signals.html</link>
@@ -95,6 +97,7 @@
 		<method name="is_null" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if either object or signal name are not valid.
 			</description>
 		</method>
 	</methods>
@@ -103,12 +106,14 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Signal" />
 			<description>
+				Returns [code]true[/code] if two signals are not equal.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="Signal" />
 			<description>
+				Returns [code]true[/code] if two signals are equal, i.e. their object and name are the same.
 			</description>
 		</operator>
 	</operators>
