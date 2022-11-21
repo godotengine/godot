@@ -225,6 +225,7 @@ public:
 	/// Callback called at the end of the RVO process
 	virtual void agent_set_callback(RID p_agent, Callable p_callback);
 
+	/// Returns a customized navigation path using a query parameters object
 	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const;
 
 	/// Destroy the `RID`
