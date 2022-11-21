@@ -36,7 +36,7 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
@@ -2289,7 +2289,7 @@ Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_windo
 }
 
 void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
 	if (egl_manager) {
 		egl_manager->window_make_current(MAIN_WINDOW_ID);
 	}
@@ -2799,7 +2799,7 @@ void DisplayServerWayland::process_events() {
 }
 
 void DisplayServerWayland::release_rendering_thread() {
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
 	if (egl_manager) {
 		egl_manager->release_current();
 	}
@@ -2807,7 +2807,7 @@ void DisplayServerWayland::release_rendering_thread() {
 }
 
 void DisplayServerWayland::make_rendering_thread() {
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
 	if (egl_manager) {
 		egl_manager->make_current();
 	}
@@ -2815,7 +2815,7 @@ void DisplayServerWayland::make_rendering_thread() {
 }
 
 void DisplayServerWayland::swap_buffers() {
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
 	if (egl_manager) {
 		egl_manager->swap_buffers();
 	}
@@ -2920,7 +2920,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	tts = memnew(TTS_Linux);
 #endif
 
-#if defined(VULKAN_ENABLED)
+#ifdef VULKAN_ENABLED
 	if (p_rendering_driver == "vulkan") {
 		context_vulkan = memnew(VulkanContextWayland);
 
@@ -2933,16 +2933,14 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	}
 #endif
 
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
 	if (p_rendering_driver == "opengl3") {
 		egl_manager = memnew(EGLManagerWayland);
 
-#ifdef GLES3_ENABLED
 		if (initialize_wayland_egl(dylibloader_verbose) != 0) {
 			WARN_PRINT("Can't load the Wayland EGL library.");
 			return;
 		}
-#endif
 
 		if (egl_manager->initialize() != OK) {
 			memdelete(egl_manager);
