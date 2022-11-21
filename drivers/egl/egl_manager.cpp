@@ -273,6 +273,12 @@ bool EGLManager::is_using_vsync() const {
 }
 
 Error EGLManager::initialize() {
+#ifdef GLAD_ENABLED
+	if (!gladLoaderLoadEGL(NULL)) {
+		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't load EGL.");
+	}
+#endif
+
 	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 	// The above method should always work. If it doesn't, something's very wrong.
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
