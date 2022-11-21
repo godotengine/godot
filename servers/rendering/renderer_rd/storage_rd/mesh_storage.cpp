@@ -1842,7 +1842,7 @@ void MeshStorage::_update_dirty_multimeshes() {
 							RD::get_singleton()->buffer_update(multimesh->buffer, buffer_offset * sizeof(float) + offset, MIN(region_size, size - offset), &data[region_start_index], RD::BARRIER_MASK_NO_BARRIER);
 						}
 					}
-					RD::get_singleton()->barrier(RD::BARRIER_MASK_NO_BARRIER, RD::BARRIER_MASK_ALL);
+					RD::get_singleton()->barrier(RD::BARRIER_MASK_NO_BARRIER, RD::BARRIER_MASK_ALL_BARRIERS);
 				}
 
 				memcpy(multimesh->previous_data_cache_dirty_regions, multimesh->data_cache_dirty_regions, data_cache_dirty_region_count * sizeof(bool));
