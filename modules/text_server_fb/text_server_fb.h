@@ -256,6 +256,7 @@ class TextServerFallback : public TextServerExtension {
 		int msdf_source_size = 48;
 		int fixed_size = 0;
 		bool force_autohinter = false;
+		bool allow_system_fallback = true;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		Dictionary variation_coordinates;
@@ -266,6 +267,8 @@ class TextServerFallback : public TextServerExtension {
 		BitField<TextServer::FontStyle> style_flags = 0;
 		String font_name;
 		String style_name;
+		int weight = 400;
+		int stretch = 100;
 
 		HashMap<Vector2i, FontForSizeFallback *, VariantHasher, VariantComparator> cache;
 
@@ -320,6 +323,58 @@ class TextServerFallback : public TextServerExtension {
 		} else {
 			return p_size;
 		}
+	}
+
+	_FORCE_INLINE_ int _font_get_weight_by_name(const String &p_sty_name) const {
+		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		if (sty_name.find("thin") >= 0 || sty_name.find("hairline") >= 0) {
+			return 100;
+		} else if (sty_name.find("extralight") >= 0 || sty_name.find("ultralight") >= 0) {
+			return 200;
+		} else if (sty_name.find("light") >= 0) {
+			return 300;
+		} else if (sty_name.find("semilight") >= 0) {
+			return 350;
+		} else if (sty_name.find("regular") >= 0) {
+			return 400;
+		} else if (sty_name.find("medium") >= 0) {
+			return 500;
+		} else if (sty_name.find("semibold") >= 0 || sty_name.find("demibold") >= 0) {
+			return 600;
+		} else if (sty_name.find("bold") >= 0) {
+			return 700;
+		} else if (sty_name.find("extrabold") >= 0 || sty_name.find("ultrabold") >= 0) {
+			return 800;
+		} else if (sty_name.find("black") >= 0 || sty_name.find("heavy") >= 0) {
+			return 900;
+		} else if (sty_name.find("extrablack") >= 0 || sty_name.find("ultrablack") >= 0) {
+			return 950;
+		}
+		return 400;
+	}
+	_FORCE_INLINE_ int _font_get_stretch_by_name(const String &p_sty_name) const {
+		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		if (sty_name.find("ultracondensed") >= 0) {
+			return 50;
+		} else if (sty_name.find("extracondensed") >= 0) {
+			return 63;
+		} else if (sty_name.find("condensed") >= 0) {
+			return 75;
+		} else if (sty_name.find("semicondensed") >= 0) {
+			return 87;
+		} else if (sty_name.find("semiexpanded") >= 0) {
+			return 113;
+		} else if (sty_name.find("expanded") >= 0) {
+			return 125;
+		} else if (sty_name.find("extraexpanded") >= 0) {
+			return 150;
+		} else if (sty_name.find("ultraexpanded") >= 0) {
+			return 200;
+		}
+		return 100;
+	}
+	_FORCE_INLINE_ bool _is_ital_style(const String &p_sty_name) const {
+		return (p_sty_name.find("italic") >= 0) || (p_sty_name.find("oblique") >= 0);
 	}
 
 	// Shaped text cache data.
@@ -398,6 +453,81 @@ class TextServerFallback : public TextServerExtension {
 	mutable RID_PtrOwner<FontFallback> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataFallback> shaped_owner;
 
+	struct SystemFontKey {
+		String font_name;
+		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+		bool italic = false;
+		bool mipmaps = false;
+		bool msdf = false;
+		bool force_autohinter = false;
+		int weight = 400;
+		int stretch = 100;
+		int msdf_range = 14;
+		int msdf_source_size = 48;
+		int fixed_size = 0;
+		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
+		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+		Dictionary variation_coordinates;
+		double oversampling = 0.0;
+		double embolden = 0.0;
+		Transform2D transform;
+
+		bool operator==(const SystemFontKey &p_b) const {
+			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform);
+		}
+
+		SystemFontKey(const String &p_font_name, bool p_italic, int p_weight, int p_stretch, RID p_font, const TextServerFallback *p_fb) {
+			font_name = p_font_name;
+			italic = p_italic;
+			weight = p_weight;
+			stretch = p_stretch;
+			antialiasing = p_fb->_font_get_antialiasing(p_font);
+			mipmaps = p_fb->_font_get_generate_mipmaps(p_font);
+			msdf = p_fb->_font_is_multichannel_signed_distance_field(p_font);
+			msdf_range = p_fb->_font_get_msdf_pixel_range(p_font);
+			msdf_source_size = p_fb->_font_get_msdf_size(p_font);
+			fixed_size = p_fb->_font_get_fixed_size(p_font);
+			force_autohinter = p_fb->_font_is_force_autohinter(p_font);
+			hinting = p_fb->_font_get_hinting(p_font);
+			subpixel_positioning = p_fb->_font_get_subpixel_positioning(p_font);
+			variation_coordinates = p_fb->_font_get_variation_coordinates(p_font);
+			oversampling = p_fb->_font_get_oversampling(p_font);
+			embolden = p_fb->_font_get_embolden(p_font);
+			transform = p_fb->_font_get_transform(p_font);
+		}
+	};
+
+	struct SystemFontCacheRec {
+		RID rid;
+		int index = 0;
+	};
+
+	struct SystemFontCache {
+		Vector<SystemFontCacheRec> var;
+		int max_var = 0;
+	};
+
+	struct SystemFontKeyHasher {
+		_FORCE_INLINE_ static uint32_t hash(const SystemFontKey &p_a) {
+			uint32_t hash = p_a.font_name.hash();
+			hash = hash_murmur3_one_32(p_a.variation_coordinates.hash(), hash);
+			hash = hash_murmur3_one_32(p_a.weight, hash);
+			hash = hash_murmur3_one_32(p_a.stretch, hash);
+			hash = hash_murmur3_one_32(p_a.msdf_range, hash);
+			hash = hash_murmur3_one_32(p_a.msdf_source_size, hash);
+			hash = hash_murmur3_one_32(p_a.fixed_size, hash);
+			hash = hash_murmur3_one_double(p_a.oversampling, hash);
+			hash = hash_murmur3_one_double(p_a.embolden, hash);
+			hash = hash_murmur3_one_real(p_a.transform[0].x, hash);
+			hash = hash_murmur3_one_real(p_a.transform[0].y, hash);
+			hash = hash_murmur3_one_real(p_a.transform[1].x, hash);
+			hash = hash_murmur3_one_real(p_a.transform[1].y, hash);
+			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12), hash));
+		}
+	};
+	mutable HashMap<SystemFontKey, SystemFontCache, SystemFontKeyHasher> system_fonts;
+	mutable HashMap<String, PackedByteArray> system_font_data;
+
 	void _realign(ShapedTextDataFallback *p_sd) const;
 
 protected:
@@ -442,6 +572,12 @@ public:
 	MODBIND2(font_set_style_name, const RID &, const String &);
 	MODBIND1RC(String, font_get_style_name, const RID &);
 
+	MODBIND2(font_set_weight, const RID &, int64_t);
+	MODBIND1RC(int64_t, font_get_weight, const RID &);
+
+	MODBIND2(font_set_stretch, const RID &, int64_t);
+	MODBIND1RC(int64_t, font_get_stretch, const RID &);
+
 	MODBIND2(font_set_name, const RID &, const String &);
 	MODBIND1RC(String, font_get_name, const RID &);
 
@@ -462,6 +598,9 @@ public:
 
 	MODBIND2(font_set_fixed_size, const RID &, int64_t);
 	MODBIND1RC(int64_t, font_get_fixed_size, const RID &);
+
+	MODBIND2(font_set_allow_system_fallback, const RID &, bool);
+	MODBIND1RC(bool, font_is_allow_system_fallback, const RID &);
 
 	MODBIND2(font_set_force_autohinter, const RID &, bool);
 	MODBIND1RC(bool, font_is_force_autohinter, const RID &);
@@ -650,6 +789,8 @@ public:
 
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
 	MODBIND2RC(String, string_to_lower, const String &, const String &);
+
+	MODBIND0(cleanup);
 
 	TextServerFallback();
 	~TextServerFallback();

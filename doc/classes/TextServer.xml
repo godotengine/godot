@@ -362,6 +362,13 @@
 				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
 			</description>
 		</method>
+		<method name="font_get_stretch" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+			</description>
+		</method>
 		<method name="font_get_style" qualifiers="const">
 			<return type="int" enum="TextServer.FontStyle" />
 			<param index="0" name="font_rid" type="RID" />
@@ -446,12 +453,26 @@
 				Returns variation coordinates for the specified font cache entry. See [method font_supported_variation_list] for more info.
 			</description>
 		</method>
+		<method name="font_get_weight" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
+			</description>
+		</method>
 		<method name="font_has_char" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="char" type="int" />
 			<description>
 				Returns [code]true[/code] if a Unicode [param char] is available in the font.
+			</description>
+		</method>
+		<method name="font_is_allow_system_fallback" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if system fonts can be automatically used as fallbacks.
 			</description>
 		</method>
 		<method name="font_is_force_autohinter" qualifiers="const">
@@ -554,6 +575,14 @@
 			<param index="3" name="end" type="int" />
 			<description>
 				Renders the range of characters to the font cache texture.
+			</description>
+		</method>
+		<method name="font_set_allow_system_fallback">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="allow_system_fallback" type="bool" />
+			<description>
+				If set to [code]true[/code], system fonts can be automatically used as fallbacks.
 			</description>
 		</method>
 		<method name="font_set_antialiasing">
@@ -783,12 +812,22 @@
 				Adds override for [method font_is_script_supported].
 			</description>
 		</method>
+		<method name="font_set_stretch">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="weight" type="int" />
+			<description>
+				Sets font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], or [method font_set_transform] instead.
+			</description>
+		</method>
 		<method name="font_set_style">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="style" type="int" enum="TextServer.FontStyle" />
 			<description>
 				Sets the font style flags, see [enum FontStyle].
+				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], [method font_set_embolden], or [method font_set_transform] instead.
 			</description>
 		</method>
 		<method name="font_set_style_name">
@@ -860,6 +899,15 @@
 			<param index="1" name="variation_coordinates" type="Dictionary" />
 			<description>
 				Sets variation coordinates for the specified font cache entry. See [method font_supported_variation_list] for more info.
+			</description>
+		</method>
+		<method name="font_set_weight">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="weight" type="int" />
+			<description>
+				Sets weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
+				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], or [method font_set_embolden] instead.
 			</description>
 		</method>
 		<method name="font_supported_feature_list" qualifiers="const">

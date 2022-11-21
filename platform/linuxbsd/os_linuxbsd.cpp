@@ -56,10 +56,6 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-#ifdef FONTCONFIG_ENABLED
-#include "fontconfig-so_wrap.h"
-#endif
-
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
 
@@ -585,15 +581,9 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 	if (!font_config_initialized) {
 		ERR_FAIL_V_MSG(Vector<String>(), "Unable to load fontconfig, system font support is disabled.");
 	}
+
 	HashSet<String> font_names;
 	Vector<String> ret;
-
-	FcConfig *config = FcInitLoadConfigAndFonts();
-	ERR_FAIL_COND_V(!config, ret);
-
-	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, nullptr);
-	ERR_FAIL_COND_V(!object_set, ret);
-
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
 	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
 		FcPattern *pattern = FcPatternCreate();
@@ -616,8 +606,6 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 		}
 		FcPatternDestroy(pattern);
 	}
-	FcObjectSetDestroy(object_set);
-	FcConfigDestroy(config);
 
 	for (const String &E : font_names) {
 		ret.push_back(E);
@@ -628,27 +616,120 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 #endif
 }
 
-String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+int OS_LinuxBSD::_weight_to_fc(int p_weight) const {
+	if (p_weight < 150) {
+		return FC_WEIGHT_THIN;
+	} else if (p_weight < 250) {
+		return FC_WEIGHT_EXTRALIGHT;
+	} else if (p_weight < 325) {
+		return FC_WEIGHT_LIGHT;
+	} else if (p_weight < 375) {
+		return FC_WEIGHT_DEMILIGHT;
+	} else if (p_weight < 390) {
+		return FC_WEIGHT_BOOK;
+	} else if (p_weight < 450) {
+		return FC_WEIGHT_REGULAR;
+	} else if (p_weight < 550) {
+		return FC_WEIGHT_MEDIUM;
+	} else if (p_weight < 650) {
+		return FC_WEIGHT_DEMIBOLD;
+	} else if (p_weight < 750) {
+		return FC_WEIGHT_BOLD;
+	} else if (p_weight < 850) {
+		return FC_WEIGHT_EXTRABOLD;
+	} else if (p_weight < 925) {
+		return FC_WEIGHT_BLACK;
+	} else {
+		return FC_WEIGHT_EXTRABLACK;
+	}
+}
+
+int OS_LinuxBSD::_stretch_to_fc(int p_stretch) const {
+	if (p_stretch < 56) {
+		return FC_WIDTH_ULTRACONDENSED;
+	} else if (p_stretch < 69) {
+		return FC_WIDTH_EXTRACONDENSED;
+	} else if (p_stretch < 81) {
+		return FC_WIDTH_CONDENSED;
+	} else if (p_stretch < 93) {
+		return FC_WIDTH_SEMICONDENSED;
+	} else if (p_stretch < 106) {
+		return FC_WIDTH_NORMAL;
+	} else if (p_stretch < 137) {
+		return FC_WIDTH_SEMIEXPANDED;
+	} else if (p_stretch < 144) {
+		return FC_WIDTH_EXPANDED;
+	} else if (p_stretch < 162) {
+		return FC_WIDTH_EXTRAEXPANDED;
+	} else {
+		return FC_WIDTH_ULTRAEXPANDED;
+	}
+}
+
+Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
+#ifdef FONTCONFIG_ENABLED
+	if (!font_config_initialized) {
+		ERR_FAIL_V_MSG(Vector<String>(), "Unable to load fontconfig, system font support is disabled.");
+	}
+
+	Vector<String> ret;
+	FcPattern *pattern = FcPatternCreate();
+	if (pattern) {
+		FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
+		FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
+		FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
+		FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
+
+		FcCharSet *char_set = FcCharSetCreate();
+		for (int i = 0; i < p_text.size(); i++) {
+			FcCharSetAddChar(char_set, p_text[i]);
+		}
+		FcPatternAddCharSet(pattern, FC_CHARSET, char_set);
+
+		FcLangSet *lang_set = FcLangSetCreate();
+		FcLangSetAdd(lang_set, reinterpret_cast<const FcChar8 *>(p_locale.utf8().get_data()));
+		FcPatternAddLangSet(pattern, FC_LANG, lang_set);
+
+		FcConfigSubstitute(0, pattern, FcMatchPattern);
+		FcDefaultSubstitute(pattern);
+
+		FcResult result;
+		FcPattern *match = FcFontMatch(0, pattern, &result);
+		if (match) {
+			char *file_name = nullptr;
+			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
+				if (file_name) {
+					ret.push_back(String::utf8(file_name));
+				}
+			}
+			FcPatternDestroy(match);
+		}
+		FcPatternDestroy(pattern);
+		FcCharSetDestroy(char_set);
+		FcLangSetDestroy(lang_set);
+	}
+
+	return ret;
+#else
+	ERR_FAIL_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.");
+#endif
+}
+
+String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
 #ifdef FONTCONFIG_ENABLED
 	if (!font_config_initialized) {
 		ERR_FAIL_V_MSG(String(), "Unable to load fontconfig, system font support is disabled.");
 	}
 
-	bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
-
 	String ret;
-
-	FcConfig *config = FcInitLoadConfigAndFonts();
-	ERR_FAIL_COND_V(!config, ret);
-
-	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_FILE, nullptr);
-	ERR_FAIL_COND_V(!object_set, ret);
-
 	FcPattern *pattern = FcPatternCreate();
 	if (pattern) {
+		bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
+
 		FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
 		FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
-		FcPatternAddInteger(pattern, FC_WEIGHT, p_bold ? FC_WEIGHT_BOLD : FC_WEIGHT_NORMAL);
+		FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
+		FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
 		FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
 		FcConfigSubstitute(0, pattern, FcMatchPattern);
@@ -663,8 +744,6 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 					if (family_name && String::utf8(family_name).to_lower() != p_font_name.to_lower()) {
 						FcPatternDestroy(match);
 						FcPatternDestroy(pattern);
-						FcObjectSetDestroy(object_set);
-						FcConfigDestroy(config);
 
 						return String();
 					}
@@ -681,8 +760,6 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 		}
 		FcPatternDestroy(pattern);
 	}
-	FcObjectSetDestroy(object_set);
-	FcConfigDestroy(config);
 
 	return ret;
 #else
@@ -1008,5 +1085,26 @@ OS_LinuxBSD::OS_LinuxBSD() {
 	int dylibloader_verbose = 0;
 #endif
 	font_config_initialized = (initialize_fontconfig(dylibloader_verbose) == 0);
+	if (font_config_initialized) {
+		config = FcInitLoadConfigAndFonts();
+		if (!config) {
+			font_config_initialized = false;
+		}
+		object_set = FcObjectSetBuild(FC_FAMILY, FC_FILE, nullptr);
+		if (!object_set) {
+			font_config_initialized = false;
+		}
+	}
+#endif // FONTCONFIG_ENABLED
+}
+
+OS_LinuxBSD::~OS_LinuxBSD() {
+#ifdef FONTCONFIG_ENABLED
+	if (object_set) {
+		FcObjectSetDestroy(object_set);
+	}
+	if (config) {
+		FcConfigDestroy(config);
+	}
 #endif // FONTCONFIG_ENABLED
 }
