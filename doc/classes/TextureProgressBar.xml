@@ -13,6 +13,7 @@
 			<return type="int" />
 			<param index="0" name="margin" type="int" enum="Side" />
 			<description>
+				Returns the stretch margin with the specified index. See [member stretch_margin_bottom] and related properties.
 			</description>
 		</method>
 		<method name="set_stretch_margin">
@@ -20,6 +21,7 @@
 			<param index="0" name="margin" type="int" enum="Side" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Sets the stretch margin with the specified index. See [member stretch_margin_bottom] and related properties.
 			</description>
 		</method>
 	</methods>

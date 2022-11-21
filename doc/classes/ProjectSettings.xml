@@ -839,6 +839,7 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to swap input direction, i.e. change between left-to-right to right-to-left modes. Affects text-editting controls ([LineEdit], [TextEdit]).
 		</member>
 		<member name="input/ui_text_add_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
 			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret and selects the next occurrence.
