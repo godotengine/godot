@@ -107,7 +107,7 @@ void Shortcut::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("matches_event", "event"), &Shortcut::matches_event);
 	ClassDB::bind_method(D_METHOD("get_as_text"), &Shortcut::get_as_text);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "events", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")), "set_events", "get_events");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "events", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("InputEvent")), "set_events", "get_events");
 }
 
 bool Shortcut::is_event_array_equal(const Array &p_event_array1, const Array &p_event_array2) {
