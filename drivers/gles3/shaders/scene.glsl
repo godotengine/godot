@@ -920,6 +920,7 @@ void main() {
 #else
 	vec3 view = -normalize(vertex_interp);
 #endif
+	highp mat4 model_matrix = world_transform;
 	vec3 albedo = vec3(1.0);
 	vec3 backlight = vec3(0.0);
 	vec4 transmittance_color = vec4(0.0, 0.0, 0.0, 1.0);
