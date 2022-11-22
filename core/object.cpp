@@ -2064,8 +2064,16 @@ int ObjectDB::get_object_count() {
 
 RWLock ObjectDB::rw_lock;
 
+
+#ifndef DEBUG_ENABLED
+#define I_DONT_GIVE_A_SHIT_ABOUT_OBJECTDB_INSTANCES_LEAKED_AT_THE_END
+#endif
+
 void ObjectDB::cleanup() {
 	rw_lock.write_lock();
+	#ifdef I_DONT_GIVE_A_SHIT_ABOUT_OBJECTDB_INSTANCES_LEAKED_AT_THE_END
+	WARN_PRINT("ObjectDB don\'t give a shit at exit (don\'t run with --verbose for shit).");
+	#else
 	if (instances.size()) {
 		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
 		if (OS::get_singleton()->is_stdout_verbose()) {
@@ -2090,6 +2098,7 @@ void ObjectDB::cleanup() {
 			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}
 	}
+	#endif
 	instances.clear();
 	instance_checks.clear();
 	rw_lock.write_unlock();

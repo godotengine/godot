@@ -490,11 +490,20 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 	_call_idle_callbacks();
 }
 
+#define POKE_SETTINGS_SERVER
+
+#ifdef POKE_SETTINGS_SERVER
+#include "modules/settings_server/settings_server.h"
+#endif
+
 void SceneTree::init() {
 	ERR_FAIL_COND(!root);
 	initialized = true;
 	root->_set_tree(this);
 	MainLoop::init();
+#ifdef POKE_SETTINGS_SERVER
+	SettingsServer::get_singleton()->set_vp_internal(root);
+#endif
 }
 
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {

@@ -16,7 +16,7 @@ private:
 	bool allow_output = true;
 	bool allow_debug = true;
 
-	void push_stack(Array stack);
+	void push_stack(const Array& stack);
 protected:
 	static Hub* singleton;
 	static void _bind_methods();
@@ -25,11 +25,11 @@ public:
 	~Hub() = default;
 	static Hub* get_singleton() { return singleton; }
 
-	void error_check(int code, Array stack = Array());
-	void print_fatal(String err, Array stack = Array());
-	void print_warning(String err, Array stack = Array());
-	void print_debug(String err, Array stack = Array());
-	void print_custom(String flag, String err, Array stack = Array());
+	void error_check(int code, const Array& stack = Array());
+	void print_fatal(const String& err, const Array& stack = Array());
+	void print_warning(const String& err, const Array& stack = Array());
+	void print_debug(const String& err, const Array& stack = Array());
+	void print_custom(const String& flag, const String& err, const Array& stack = Array());
 };
 
 // #endif

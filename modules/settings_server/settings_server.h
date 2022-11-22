@@ -9,7 +9,7 @@
 #include "core/ordered_hash_map.h"
 
 // enum SettingsServer::ResolutionSettings;
-typedef OrderedHashMap<int, Vector2> ResolutionList;
+typedef Map<int, Vector2> ResolutionList;
 
 
 class SettingsServer : public Object {
@@ -76,6 +76,7 @@ protected:
 	static SettingsServer* singleton;
 	static void _bind_methods();
 
+	void set_vp_internal(Viewport* vp);
 	void reset_screen_info();
 	void set_res_internal();
 	void set_ssaa_internal(const float& val);
@@ -84,6 +85,8 @@ protected:
 public:
 	SettingsServer();
 	~SettingsServer();
+
+	friend class SceneTree;
 
 	static SettingsServer* get_singleton() { return singleton; }
 

@@ -16,10 +16,9 @@ VARIANT_ENUM_CAST(SettingsServer::DisplaySettings);
 VARIANT_ENUM_CAST(SettingsServer::ResolutionSettings);
 
 SettingsServer::SettingsServer(){
+	ERR_FAIL_COND(singleton);
 	singleton = this;
-#ifndef TOOLS_ENABLED
-	OS::get_singleton()->set_window_resizable(false);
-#endif
+
 	// Setup resolutions
 	acceptable_resolution[RES_CUSTOM]		= Vector2(0.0, 0.0);
 	acceptable_resolution[RES_DEFAULT]		= Vector2(0.0, 0.0);
@@ -40,11 +39,18 @@ SettingsServer::SettingsServer(){
 
 	reset_screen_info();
 	last_window_pos = OS::get_singleton()->get_window_position();
+
+	// if (!Engine::get_singleton()->is_editor_hint())
+	// 	OS::get_singleton()->set_window_resizable(false);
+
+	// auto main_loop = OS::get_singleton()->get_main_loop();
+	// ERR_FAIL_COND(!main_loop->is_class("SceneTree"));
+	// set_vp_internal(((SceneTree*)main_loop)->get_root());
 }
 SettingsServer::~SettingsServer(){}
 
 void SettingsServer::_bind_methods(){
-	ClassDB::bind_method(D_METHOD("set_main_viewport", "viewport"), &SettingsServer::set_main_viewport);
+	// ClassDB::bind_method(D_METHOD("set_main_viewport", "viewport"), &SettingsServer::set_main_viewport);
 	ClassDB::bind_method(D_METHOD("get_main_viewport"), &SettingsServer::get_main_viewport);
 	
 	ClassDB::bind_method(D_METHOD("load_graphics_preset", "preset"), &SettingsServer::load_graphics_preset);
@@ -122,13 +128,17 @@ void SettingsServer::_bind_methods(){
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_display", "get_current_display");
 }
 
+void SettingsServer::set_vp_internal(Viewport* vp){
+	main_viewport = vp;
+	// current_resolution = main_viewport->get_size();
+	current_resolution = default_window_size;
+	set_res_internal();
+	load_gpp_internal();
+}
+
 void SettingsServer::set_main_viewport(Node* vp){
 	if (vp && vp->is_class("Viewport")) {
-		main_viewport = (Viewport*)vp;
-		// current_resolution = main_viewport->get_size();
-		current_resolution = default_window_size;
-		set_res_internal();
-		load_gpp_internal();
+		set_vp_internal((Viewport*)vp);
 	}
 }
 
