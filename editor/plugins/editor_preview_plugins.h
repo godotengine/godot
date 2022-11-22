@@ -174,4 +174,15 @@ public:
 	~EditorFontPreviewPlugin();
 };
 
+class EditorGradientPreviewPlugin : public EditorResourcePreviewGenerator {
+	GDCLASS(EditorGradientPreviewPlugin, EditorResourcePreviewGenerator);
+
+public:
+	virtual bool handles(const String &p_type) const;
+	virtual bool generate_small_preview_automatically() const;
+	virtual Ref<Texture> generate(const Ref<Resource> &p_from, const Size2 &p_size) const;
+
+	EditorGradientPreviewPlugin();
+};
+
 #endif // EDITOR_PREVIEW_PLUGINS_H
