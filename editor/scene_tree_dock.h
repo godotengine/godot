@@ -61,6 +61,7 @@ class SceneTreeDock : public VBoxContainer {
 	enum Tool {
 		TOOL_NEW,
 		TOOL_INSTANTIATE,
+		TOOL_INSTANTIATE_SCRIPT,
 		TOOL_EXPAND_COLLAPSE,
 		TOOL_CUT,
 		TOOL_COPY,
