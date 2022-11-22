@@ -362,6 +362,7 @@ void Viewport::_notification(int p_what) {
 
 			current_canvas = find_world_2d()->get_canvas();
 			RenderingServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
+			RenderingServer::get_singleton()->viewport_set_canvas_transform(viewport, current_canvas, canvas_transform);
 			RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
 			_update_audio_listener_2d();
 #ifndef _3D_DISABLED
