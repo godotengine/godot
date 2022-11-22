@@ -67,6 +67,9 @@ static Vector<_CoreConstant> _global_constants;
 #define BIND_CORE_CONSTANT(m_constant) \
 	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant));
 
+#define BIND_CORE_CONSTANT_CUSTOM(m_custom_name, m_constant) \
+	_global_constants.push_back(_CoreConstant(StringName(), m_custom_name, m_constant));
+
 #define BIND_CORE_ENUM_CONSTANT(m_constant) \
 	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant));
 
@@ -96,6 +99,9 @@ static Vector<_CoreConstant> _global_constants;
 
 #define BIND_CORE_CONSTANT(m_constant) \
 	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
+
+#define BIND_CORE_CONSTANT_CUSTOM(m_custom_name, m_constant) \
+	_global_constants.push_back(_CoreConstant(m_custom_name, m_constant));
 
 #define BIND_CORE_ENUM_CONSTANT(m_constant) \
 	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
@@ -738,6 +744,22 @@ void register_global_constants() {
 	//containment
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_IN", Variant::OP_IN);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_MAX", Variant::OP_MAX);
+
+	// Data type limits.
+	BIND_CORE_CONSTANT(UINT8_MAX);
+	BIND_CORE_CONSTANT(UINT16_MAX);
+	BIND_CORE_CONSTANT(UINT32_MAX);
+	BIND_CORE_CONSTANT(UINT64_MAX);
+	BIND_CORE_CONSTANT(INT8_MIN);
+	BIND_CORE_CONSTANT(INT8_MAX);
+	BIND_CORE_CONSTANT(INT16_MIN);
+	BIND_CORE_CONSTANT(INT16_MAX);
+	BIND_CORE_CONSTANT(INT32_MIN);
+	BIND_CORE_CONSTANT(INT32_MAX);
+	BIND_CORE_CONSTANT(INT64_MIN);
+	BIND_CORE_CONSTANT(INT64_MAX);
+	BIND_CORE_CONSTANT_CUSTOM("INT_MIN", INT64_MIN);
+	BIND_CORE_CONSTANT_CUSTOM("INT_MAX", INT64_MAX);
 }
 
 void unregister_global_constants() {

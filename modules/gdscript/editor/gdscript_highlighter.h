@@ -51,6 +51,7 @@ private:
 	HashMap<StringName, Color> reserved_keywords;
 	HashMap<StringName, Color> member_keywords;
 	HashSet<StringName> global_functions;
+	HashSet<StringName> global_constants;
 
 	enum Type {
 		NONE,

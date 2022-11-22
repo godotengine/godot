@@ -32,6 +32,7 @@
 #include "../gdscript.h"
 #include "../gdscript_tokenizer.h"
 #include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "editor/editor_settings.h"
 
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
@@ -338,6 +339,8 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						col = global_function_color;
 					}
 				}
+			} else if (global_constants.has(word)) {
+				col = symbol_color;
 			} else if (class_names.has(word)) {
 				col = class_names[word];
 			} else if (reserved_keywords.has(word)) {
@@ -569,6 +572,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	reserved_keywords.clear();
 	member_keywords.clear();
 	global_functions.clear();
+	global_constants.clear();
 	color_regions.clear();
 	color_region_cache.clear();
 
@@ -634,6 +638,12 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	global_functions.insert(SNAME("preload"));
 	for (const StringName &E : global_function_list) {
 		global_functions.insert(E);
+	}
+
+	/* Global constants. */
+	const int global_constant_count = CoreConstants::get_global_constant_count();
+	for (int i = 0; i < global_constant_count; i++) {
+		global_constants.insert(CoreConstants::get_global_constant_name(i));
 	}
 
 	/* Comments */
