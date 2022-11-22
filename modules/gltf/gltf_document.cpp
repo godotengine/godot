@@ -6761,6 +6761,8 @@ void GLTFDocument::_bind_methods() {
 
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("register_gltf_document_extension", "extension", "first_priority"),
 			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));
+	ClassDB::bind_static_method("GLTFDocument", D_METHOD("unregister_gltf_document_extension", "extension"),
+			&GLTFDocument::unregister_gltf_document_extension);
 }
 
 void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> state) {
@@ -6787,6 +6789,10 @@ void GLTFDocument::register_gltf_document_extension(Ref<GLTFDocumentExtension> p
 			all_document_extensions.push_back(p_extension);
 		}
 	}
+}
+
+void GLTFDocument::unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension) {
+	all_document_extensions.erase(p_extension);
 }
 
 void GLTFDocument::unregister_all_gltf_document_extensions() {

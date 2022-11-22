@@ -77,6 +77,7 @@ protected:
 
 public:
 	static void register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority = false);
+	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
 	static void unregister_all_gltf_document_extensions();
 
 private:
