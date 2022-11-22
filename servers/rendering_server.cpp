@@ -1007,7 +1007,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			const int *r = indices.ptr();
 
 			Vector<uint8_t> data;
-			if (array_len <= 65536) {
+			if (array_len <= UINT16_MAX) {
 				// 16 bits indices
 				data.resize(indices.size() * 2);
 				uint8_t *w = data.ptrw();
@@ -1319,7 +1319,7 @@ Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) con
 
 	for (int i = 0; i < sd.lods.size(); i++) {
 		Vector<int> lods;
-		if (sd.vertex_count <= 65536) {
+		if (sd.vertex_count <= UINT16_MAX) {
 			uint32_t lc = sd.lods[i].index_data.size() / 2;
 			lods.resize(lc);
 			const uint8_t *r = sd.lods[i].index_data.ptr();
@@ -2999,7 +2999,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", 0.01);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
 
-	GLOBAL_DEF("rendering/limits/global_shader_variables/buffer_size", 65536);
+	GLOBAL_DEF("rendering/limits/global_shader_variables/buffer_size", UINT16_MAX);
 
 	GLOBAL_DEF("rendering/lightmapping/probe_capture/update_speed", 15);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lightmapping/probe_capture/update_speed", PropertyInfo(Variant::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"));

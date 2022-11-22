@@ -219,7 +219,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	}
 
 	if (p_surface.index_count) {
-		bool is_index_16 = p_surface.vertex_count <= 65536 && p_surface.vertex_count > 0;
+		bool is_index_16 = p_surface.vertex_count <= UINT16_MAX && p_surface.vertex_count > 0;
 		glGenBuffers(1, &s->index_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_buffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, p_surface.index_data.size(), p_surface.index_data.ptr(), GL_STATIC_DRAW);
