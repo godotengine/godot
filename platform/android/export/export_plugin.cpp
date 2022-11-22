@@ -2577,8 +2577,8 @@ void EditorExportPlatformAndroid::_update_custom_build_project() {
 							append_line = true;
 						} else {
 							String base = l.substr(0, last_tag_pos + last_tag.length());
-							if (manifest_sections.has("application_attribs")) {
-								for (List<String>::Element *E = manifest_sections["application_attribs"].front(); E; E = E->next()) {
+							if (manifest_sections.has("APPLICATION_ATTRIBS")) {
+								for (List<String>::Element *E = manifest_sections["APPLICATION_ATTRIBS"].front(); E; E = E->next()) {
 									String to_add = E->get().strip_edges();
 									base += " " + to_add + " ";
 								}
