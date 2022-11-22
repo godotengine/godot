@@ -1233,7 +1233,7 @@ void AnimationPlayer::_animation_update_transforms() {
 					if (aa->time < pasi.start) {
 						stop = true;
 					}
-				} else if (aa->backward) {
+				} else {
 					if (aa->time > pasi.start) {
 						stop = true;
 					}
