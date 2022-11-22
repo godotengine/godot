@@ -360,6 +360,31 @@ Ref<PackedScene> GDScriptCache::get_packed_scene(const String &p_path, Error &r_
 	return scene;
 }
 
+Ref<GDScript> GDScriptCache::get_packed_scene_script(const String &p_path, Error &r_error) {
+	r_error = OK;
+	Ref<PackedScene> scene = get_packed_scene(p_path, r_error);
+
+	if (r_error != OK) {
+		return Ref<GDScript>();
+	}
+
+	int node_count = scene->get_state()->get_node_count();
+	if (node_count == 0) {
+		return Ref<GDScript>();
+	}
+
+	const int ROOT_NODE = 0;
+	for (int i = 0; i < scene->get_state()->get_node_property_count(ROOT_NODE); i++) {
+		if (scene->get_state()->get_node_property_name(ROOT_NODE, i) != SNAME("script")) {
+			continue;
+		}
+
+		return scene->get_state()->get_node_property_value(ROOT_NODE, i);
+	}
+
+	return Ref<GDScript>();
+}
+
 void GDScriptCache::clear_unreferenced_packed_scenes() {
 	if (singleton == nullptr) {
 		return;
