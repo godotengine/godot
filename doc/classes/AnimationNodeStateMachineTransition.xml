@@ -31,6 +31,12 @@
 		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="1">
 			Lower priority transitions are preferred when travelling through the tree via [method AnimationNodeStateMachinePlayback.travel] or [member auto_advance].
 		</member>
+		<member name="notify_target" type="StringName" setter="set_notify_target" getter="get_notify_target" default="&quot;&quot;">
+			Target node path relative to [AnimationTree] to notify upon transition completion.
+		</member>
+		<member name="notify_target_function" type="StringName" setter="set_notify_target_function" getter="get_notify_target_function" default="&quot;&quot;">
+			Method target to notify upon transition completion.
+		</member>
 		<member name="switch_mode" type="int" setter="set_switch_mode" getter="get_switch_mode" enum="AnimationNodeStateMachineTransition.SwitchMode" default="0">
 			The transition type.
 		</member>

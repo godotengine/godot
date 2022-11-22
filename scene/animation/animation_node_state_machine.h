@@ -58,6 +58,10 @@ private:
 	friend class AnimationNodeStateMachinePlayback;
 	Ref<Expression> expression;
 
+	StringName notify_target;
+	NodePath notify_target_np;
+	StringName notify_target_function;
+
 protected:
 	static void _bind_methods();
 
@@ -87,6 +91,14 @@ public:
 
 	void set_priority(int p_priority);
 	int get_priority() const;
+
+	void set_notify_target(StringName target);
+	StringName get_notify_target() const;
+
+	NodePath get_notify_target_np() const;
+
+	void set_notify_target_function(StringName target_function);
+	StringName get_notify_target_function() const;
 
 	AnimationNodeStateMachineTransition();
 };

@@ -125,6 +125,29 @@ int AnimationNodeStateMachineTransition::get_priority() const {
 	return priority;
 }
 
+void AnimationNodeStateMachineTransition::set_notify_target(StringName target) {
+	notify_target = target;
+	notify_target_np = NodePath(target);
+	emit_changed();
+}
+
+StringName AnimationNodeStateMachineTransition::get_notify_target() const {
+	return notify_target;
+}
+
+NodePath AnimationNodeStateMachineTransition::get_notify_target_np() const {
+	return notify_target_np;
+}
+
+void AnimationNodeStateMachineTransition::set_notify_target_function(StringName target_function) {
+	notify_target_function = target_function;
+	emit_changed();
+}
+
+StringName AnimationNodeStateMachineTransition::get_notify_target_function() const {
+	return notify_target_function;
+}
+
 void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_switch_mode", "mode"), &AnimationNodeStateMachineTransition::set_switch_mode);
 	ClassDB::bind_method(D_METHOD("get_switch_mode"), &AnimationNodeStateMachineTransition::get_switch_mode);
@@ -150,9 +173,17 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_advance_expression", "text"), &AnimationNodeStateMachineTransition::set_advance_expression);
 	ClassDB::bind_method(D_METHOD("get_advance_expression"), &AnimationNodeStateMachineTransition::get_advance_expression);
 
+	ClassDB::bind_method(D_METHOD("set_notify_target", "target"), &AnimationNodeStateMachineTransition::set_notify_target);
+	ClassDB::bind_method(D_METHOD("get_notify_target"), &AnimationNodeStateMachineTransition::get_notify_target);
+
+	ClassDB::bind_method(D_METHOD("set_notify_target_function", "target_function"), &AnimationNodeStateMachineTransition::set_notify_target_function);
+	ClassDB::bind_method(D_METHOD("get_notify_target_function"), &AnimationNodeStateMachineTransition::get_notify_target_function);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,240,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "notify_target", PROPERTY_HINT_NONE), "set_notify_target", "get_notify_target");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "notify_target_function", PROPERTY_HINT_NONE), "set_notify_target_function", "get_notify_target_function");
 	ADD_GROUP("Switch", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_advance"), "set_auto_advance", "has_auto_advance");
@@ -454,6 +485,8 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	StringName next;
 	float next_xfade = 0.0;
 	AnimationNodeStateMachineTransition::SwitchMode switch_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
+	NodePath notify_target;
+	StringName notify_target_function;
 
 	if (path.size()) {
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
@@ -465,6 +498,8 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				next_xfade = p_state_machine->transitions[i].transition->get_xfade_time();
 				current_curve = p_state_machine->transitions[i].transition->get_xfade_curve();
 				switch_mode = p_state_machine->transitions[i].transition->get_switch_mode();
+				notify_target = p_state_machine->transitions[i].transition->get_notify_target_np();
+				notify_target_function = p_state_machine->transitions[i].transition->get_notify_target_function();
 				next = path[0];
 			}
 		}
@@ -521,6 +556,8 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			current_curve = p_state_machine->transitions[auto_advance_to].transition->get_xfade_curve();
 			next_xfade = p_state_machine->transitions[auto_advance_to].transition->get_xfade_time();
 			switch_mode = p_state_machine->transitions[auto_advance_to].transition->get_switch_mode();
+			notify_target = p_state_machine->transitions[auto_advance_to].transition->get_notify_target_np();
+			notify_target_function = p_state_machine->transitions[auto_advance_to].transition->get_notify_target_function();
 		}
 	}
 
@@ -584,6 +621,16 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			} else {
 				fading_from = StringName();
 				fading_pos = 0;
+			}
+
+			if (notify_target.is_empty() == false) {
+				Node *node = p_state_machine->get_animation_tree()->get_node_or_null(notify_target);
+
+				if (node) {
+					if (node->has_method(notify_target_function)) {
+						node->call(notify_target_function);
+					}
+				}
 			}
 
 			if (path.size()) { //if it came from path, remove path
