@@ -171,6 +171,10 @@ int GDScriptWarning::get_default_value(Code p_code) {
 	if (get_name_from_code(p_code).to_lower().begins_with("unsafe_")) {
 		return WarnLevel::IGNORE;
 	}
+	// Too spammy by default on common cases (connect, Tween, etc.).
+	if (p_code == RETURN_VALUE_DISCARDED) {
+		return WarnLevel::IGNORE;
+	}
 	return WarnLevel::WARN;
 }
 
