@@ -14,7 +14,7 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
 			<param index="2" name="collision_mask" type="int" default="4294967295" />
-			<param index="3" name="exclude" type="Array" default="[]" />
+			<param index="3" name="exclude" type="RID[]" default="[]" />
 			<description>
 				Returns a new, pre-configured [PhysicsRayQueryParameters3D] object. Use it to quickly create query parameters using the most common options.
 				[codeblock]
@@ -34,7 +34,7 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="4294967295">
 			The physics layers the query will detect (as a bitmask). By default, all collision layers are detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
-		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[]">
+		<member name="exclude" type="RID[]" setter="set_exclude" getter="get_exclude" default="[]">
 			The list of objects or object [RID]s that will be excluded from collisions.
 		</member>
 		<member name="from" type="Vector3" setter="set_from" getter="get_from" default="Vector3(0, 0, 0)">
