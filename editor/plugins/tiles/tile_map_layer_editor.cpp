@@ -3650,7 +3650,9 @@ void TileMapLayerEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			toggle_grid_button->set_pressed(EDITOR_GET("editors/tiles_editor/display_grid"));
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/tiles_editor")) {
+				toggle_grid_button->set_pressed_no_signal(EDITOR_GET("editors/tiles_editor/display_grid"));
+			}
 		} break;
 	}
 }

@@ -761,36 +761,43 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			_update_vsync_mode();
-			FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-			EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-			EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog")) {
+				FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+				EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+				EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+			}
 
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				_update_theme();
+				_build_icon_type_cache();
+				recent_scenes->reset_size();
 			}
 
-			scene_tabs->update_scene_tabs();
-			recent_scenes->reset_size();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/scene_tabs")) {
+				scene_tabs->update_scene_tabs();
+			}
 
-			_build_icon_type_cache();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
+				HashSet<String> updated_textfile_extensions;
+				bool extensions_match = true;
+				const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
+				for (const String &E : textfile_ext) {
+					updated_textfile_extensions.insert(E);
+					if (extensions_match && !textfile_extensions.has(E)) {
+						extensions_match = false;
+					}
+				}
 
-			HashSet<String> updated_textfile_extensions;
-			bool extensions_match = true;
-			const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
-			for (const String &E : textfile_ext) {
-				updated_textfile_extensions.insert(E);
-				if (extensions_match && !textfile_extensions.has(E)) {
-					extensions_match = false;
+				if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size()) {
+					textfile_extensions = updated_textfile_extensions;
+					EditorFileSystem::get_singleton()->scan();
 				}
 			}
 
-			if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size()) {
-				textfile_extensions = updated_textfile_extensions;
-				EditorFileSystem::get_singleton()->scan();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
+				_update_update_spinner();
+				_update_vsync_mode();
 			}
-
-			_update_update_spinner();
 		} break;
 	}
 }

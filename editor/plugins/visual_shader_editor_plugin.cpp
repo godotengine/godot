@@ -4307,11 +4307,15 @@ void VisualShaderEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
-			graph->set_minimap_opacity(EDITOR_GET("editors/visual_editors/minimap_opacity"));
-			graph->set_connection_lines_curvature(EDITOR_GET("editors/visual_editors/lines_curvature"));
-			_update_graph();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+				graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
+			}
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors")) {
+				graph->set_minimap_opacity(EDITOR_GET("editors/visual_editors/minimap_opacity"));
+				graph->set_connection_lines_curvature(EDITOR_GET("editors/visual_editors/lines_curvature"));
+				_update_graph();
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

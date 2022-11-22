@@ -2293,6 +2293,10 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	/* clang-format on */
 }
 
+void EditorThemeManager::_reset_dirty_flag() {
+	outdated_cache_dirty = true;
+}
+
 // Public interface for theme generation.
 
 Ref<EditorTheme> EditorThemeManager::generate_theme(const Ref<EditorTheme> &p_old_theme) {
@@ -2323,18 +2327,26 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 	// Note that the editor scale is purposefully omitted because it cannot be changed
 	// without a restart, so there is no point regenerating the theme.
 
-	// TODO: We can use this information more intelligently to do partial theme updates and speed things up.
-	return EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/font") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/main_font") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/code_font") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/increase_scrollbar_touch_area") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/scale_gizmo_handles") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("docks/property_editor/subresource_hue_tint") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog/thumbnail_size") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size");
+	if (outdated_cache_dirty) {
+		// TODO: We can use this information more intelligently to do partial theme updates and speed things up.
+		outdated_cache = EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/font") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/main_font") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/code_font") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/increase_scrollbar_touch_area") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/scale_gizmo_handles") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("docks/property_editor/subresource_hue_tint") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog/thumbnail_size") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size");
+
+		// The outdated flag is relevant at the moment of changing editor settings.
+		callable_mp_static(&EditorThemeManager::_reset_dirty_flag).call_deferred();
+		outdated_cache_dirty = false;
+	}
+
+	return outdated_cache;
 }
 
 bool EditorThemeManager::is_dark_theme() {
