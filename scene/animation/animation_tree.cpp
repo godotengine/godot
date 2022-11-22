@@ -289,11 +289,8 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		new_path = String(parent->base_path) + String(p_subpath) + "/";
 	}
 
-	// If tracks for blending don't exist for one of the animations, Rest or RESET animation is blended as init animation instead.
-	// Then blend weight is 0 means that the init animation blend weight is 1.
-	// In that case, processing only the animation with the lacking track will not process the lacking track, and will not properly apply the Reset value.
-	// This means that all tracks which the animations in the branch that may be blended have must be processed.
-	// Therefore, the blending process must be executed even if the blend weight is 0.
+	// This process, which depends on p_sync is needed to process sync correctly in the case of
+	// that a synced AnimationNodeSync exists under the un-synced AnimationNodeSync.
 	if (!p_seek && !p_sync && !any_valid) {
 		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_seek_root, p_connections);
 	}
@@ -596,6 +593,13 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 						track = track_value;
 
+						// If a value track without a key is cached first, the initial value cannot be determined.
+						// It is a corner case, but which may cause problems with blending.
+						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, "AnimationTree: '" + String(E) + "', value track:  '" + String(path) + "' must have at least one key to cache for blending.");
+						track_value->init_value = anim->track_get_key_value(i, 0);
+						track_value->init_value.zero();
+
+						// If there is a Reset Animation, it takes precedence by overwriting.
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_type);
 							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
@@ -955,8 +959,44 @@ void AnimationTree::_process_graph(double p_delta) {
 	if (!state.valid) {
 		return; //state is not valid. do nothing.
 	}
-	//apply value/transform/bezier blends to track caches and execute method/audio/animation tracks
 
+	// Init all value/transform/blend/bezier tracks that track_cache has.
+	{
+		for (const KeyValue<NodePath, TrackCache *> &K : track_cache) {
+			TrackCache *track = K.value;
+
+			switch (track->type) {
+				case Animation::TYPE_POSITION_3D: {
+					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
+					if (track->root_motion) {
+						t->loc = Vector3(0, 0, 0);
+						t->rot = Quaternion(0, 0, 0, 1);
+						t->scale = Vector3(0, 0, 0);
+					} else {
+						t->loc = t->init_loc;
+						t->rot = t->init_rot;
+						t->scale = t->init_scale;
+					}
+				} break;
+				case Animation::TYPE_BLEND_SHAPE: {
+					TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
+					t->value = t->init_value;
+				} break;
+				case Animation::TYPE_VALUE: {
+					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
+					t->value = t->init_value;
+				} break;
+				case Animation::TYPE_BEZIER: {
+					TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
+					t->value = t->init_value;
+				} break;
+				default: {
+				} break;
+			}
+		}
+	}
+
+	// Apply value/transform/blend/bezier blends to track caches and execute method/audio/animation tracks.
 	{
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 
@@ -968,7 +1008,7 @@ void AnimationTree::_process_graph(double p_delta) {
 			bool seeked = as.seeked;
 			int pingponged = as.pingponged;
 #ifndef _3D_DISABLED
-			bool backward = signbit(delta);
+			bool backward = signbit(delta); // This flag is required only for the root motion since it calculates the difference between the previous and current frames.
 			bool calc_root = !seeked || as.seek_root;
 #endif // _3D_DISABLED
 
@@ -978,37 +1018,29 @@ void AnimationTree::_process_graph(double p_delta) {
 				}
 
 				NodePath path = a->track_get_path(i);
-
 				ERR_CONTINUE(!track_cache.has(path));
-
 				TrackCache *track = track_cache[path];
+
+				ERR_CONTINUE(!state.track_map.has(path));
+				int blend_idx = state.track_map[path];
+				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
+				real_t blend = (*as.track_blends)[blend_idx] * weight;
+				if (blend < CMP_EPSILON) {
+					continue; // Nothing to blend.
+				}
 
 				Animation::TrackType ttype = a->track_get_type(i);
 				if (ttype != Animation::TYPE_POSITION_3D && ttype != Animation::TYPE_ROTATION_3D && ttype != Animation::TYPE_SCALE_3D && track->type != ttype) {
 					//broken animation, but avoid error spamming
 					continue;
 				}
-
 				track->root_motion = root_motion_track == path;
-
-				ERR_CONTINUE(!state.track_map.has(path));
-				int blend_idx = state.track_map[path];
-
-				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
-
-				real_t blend = (*as.track_blends)[blend_idx] * weight;
 
 				switch (ttype) {
 					case Animation::TYPE_POSITION_3D: {
 #ifndef _3D_DISABLED
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 						if (track->root_motion && calc_root) {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = Vector3(0, 0, 0);
-								t->rot = Quaternion(0, 0, 0, 1);
-								t->scale = Vector3(0, 0, 0);
-							}
 							double prev_time = time - delta;
 							if (!backward) {
 								if (prev_time < 0) {
@@ -1084,12 +1116,6 @@ void AnimationTree::_process_graph(double p_delta) {
 							prev_time = !backward ? 0 : (double)a->get_length();
 
 						} else {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = t->init_loc;
-								t->rot = t->init_rot;
-								t->scale = t->init_scale;
-							}
 							Vector3 loc;
 
 							Error err = a->position_track_interpolate(i, time, &loc);
@@ -1106,12 +1132,6 @@ void AnimationTree::_process_graph(double p_delta) {
 #ifndef _3D_DISABLED
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 						if (track->root_motion && calc_root) {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = Vector3(0, 0, 0);
-								t->rot = Quaternion(0, 0, 0, 1);
-								t->scale = Vector3(0, 0, 0);
-							}
 							double prev_time = time - delta;
 							if (!backward) {
 								if (prev_time < 0) {
@@ -1186,12 +1206,6 @@ void AnimationTree::_process_graph(double p_delta) {
 							prev_time = !backward ? 0 : (double)a->get_length();
 
 						} else {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = t->init_loc;
-								t->rot = t->init_rot;
-								t->scale = t->init_scale;
-							}
 							Quaternion rot;
 
 							Error err = a->rotation_track_interpolate(i, time, &rot);
@@ -1208,12 +1222,6 @@ void AnimationTree::_process_graph(double p_delta) {
 #ifndef _3D_DISABLED
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 						if (track->root_motion && calc_root) {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = Vector3(0, 0, 0);
-								t->rot = Quaternion(0, 0, 0, 1);
-								t->scale = Vector3(0, 0, 0);
-							}
 							double prev_time = time - delta;
 							if (!backward) {
 								if (prev_time < 0) {
@@ -1289,12 +1297,6 @@ void AnimationTree::_process_graph(double p_delta) {
 							prev_time = !backward ? 0 : (double)a->get_length();
 
 						} else {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = t->init_loc;
-								t->rot = t->init_rot;
-								t->scale = t->init_scale;
-							}
 							Vector3 scale;
 
 							Error err = a->scale_track_interpolate(i, time, &scale);
@@ -1310,11 +1312,6 @@ void AnimationTree::_process_graph(double p_delta) {
 					case Animation::TYPE_BLEND_SHAPE: {
 #ifndef _3D_DISABLED
 						TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
-
-						if (t->process_pass != process_pass) {
-							t->process_pass = process_pass;
-							t->value = t->init_value;
-						}
 
 						float value;
 
@@ -1340,15 +1337,6 @@ void AnimationTree::_process_graph(double p_delta) {
 
 							if (value == Variant()) {
 								continue;
-							}
-
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								if (!t->init_value) {
-									t->init_value = value;
-									t->init_value.zero();
-								}
-								t->value = t->init_value;
 							}
 
 							// Special case for angle interpolation.
@@ -1379,10 +1367,6 @@ void AnimationTree::_process_graph(double p_delta) {
 								}
 							}
 						} else {
-							if (blend < CMP_EPSILON) {
-								continue; //nothing to blend
-							}
-
 							if (seeked) {
 								int idx = a->track_find_key(i, time);
 								if (idx < 0) {
@@ -1404,9 +1388,6 @@ void AnimationTree::_process_graph(double p_delta) {
 
 					} break;
 					case Animation::TYPE_METHOD: {
-						if (blend < CMP_EPSILON) {
-							continue; //nothing to blend
-						}
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
 						if (seeked) {
@@ -1437,17 +1418,9 @@ void AnimationTree::_process_graph(double p_delta) {
 						real_t bezier = a->bezier_track_interpolate(i, time);
 						bezier = _post_process_key_value(a, i, bezier, t->object);
 
-						if (t->process_pass != process_pass) {
-							t->process_pass = process_pass;
-							t->value = t->init_value;
-						}
-
 						t->value += (bezier - t->init_value) * blend;
 					} break;
 					case Animation::TYPE_AUDIO: {
-						if (blend < CMP_EPSILON) {
-							continue; //nothing to blend
-						}
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
 						if (seeked) {
@@ -1555,9 +1528,6 @@ void AnimationTree::_process_graph(double p_delta) {
 						t->object->call(SNAME("set_volume_db"), db);
 					} break;
 					case Animation::TYPE_ANIMATION: {
-						if (blend < CMP_EPSILON) {
-							continue; //nothing to blend
-						}
 						TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
 						AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t->object);
@@ -1639,9 +1609,6 @@ void AnimationTree::_process_graph(double p_delta) {
 		// finally, set the tracks
 		for (const KeyValue<NodePath, TrackCache *> &K : track_cache) {
 			TrackCache *track = K.value;
-			if (track->process_pass != process_pass) {
-				continue; //not processed, ignore
-			}
 
 			switch (track->type) {
 				case Animation::TYPE_POSITION_3D: {
