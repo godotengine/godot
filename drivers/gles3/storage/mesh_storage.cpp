@@ -1352,6 +1352,8 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 		uint32_t old_stride = multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
 		old_stride += multimesh->uses_colors ? 4 : 0;
 		old_stride += multimesh->uses_custom_data ? 4 : 0;
+		ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)old_stride));
+
 		for (int i = 0; i < multimesh->instances; i++) {
 			{
 				float *dataptr = w + i * old_stride;
