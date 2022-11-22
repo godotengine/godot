@@ -102,6 +102,7 @@ public:
 	static Error finish_compiling(const String &p_owner);
 
 	static Ref<PackedScene> get_packed_scene(const String &p_path, Error &r_error, const String &p_owner = "");
+	static Ref<GDScript> get_packed_scene_script(const String &p_path, Error &r_error);
 	static void clear_unreferenced_packed_scenes();
 
 	static bool is_destructing() {
