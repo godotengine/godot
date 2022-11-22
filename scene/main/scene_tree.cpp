@@ -583,6 +583,12 @@ void SceneTree::_update_font_oversampling(float p_ratio) {
 #endif // MODULE_FREETYPE_ENABLED
 }
 
+void SceneTree::poll_net() {
+	if (multiplayer_poll) {
+		multiplayer->poll();
+	}
+}
+
 bool SceneTree::idle(float p_time) {
 	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
 	//print_line("node count: "+itos(get_node_count()));

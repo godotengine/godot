@@ -2198,6 +2198,8 @@ static uint64_t frame_delta_sync_time = 0;
 bool Main::iteration() {
 	ZoneScoped;
 
+	OS::get_singleton()->get_main_loop()->poll_net();
+
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
@@ -2257,6 +2259,8 @@ bool Main::iteration() {
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		ZoneScopedN("Main::iteration::PhysicsProcess");
 
+		OS::get_singleton()->get_main_loop()->poll_net();
+
 		if (InputDefault::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
 			InputDefault::get_singleton()->flush_buffered_events();
 		}
@@ -2270,18 +2274,22 @@ bool Main::iteration() {
 		Physics2DServer::get_singleton()->sync();
 		Physics2DServer::get_singleton()->flush_queries();
 
+		OS::get_singleton()->get_main_loop()->poll_net();
+
 		if (OS::get_singleton()->get_main_loop()->iteration(frame_slice * time_scale)) {
 			exit = true;
 			Engine::get_singleton()->_in_physics = false;
 			break;
 		}
 
+		OS::get_singleton()->get_main_loop()->poll_net();
 		{
 			ZoneScopedN("Main::iteration::PhysicsProcess::Navigation");
 			NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
 			message_queue->flush();
 		}
 
+		OS::get_singleton()->get_main_loop()->poll_net();
 		{
 			ZoneScopedN("Main::iteration::PhysicsProcess::Physics");
 			PhysicsServer::get_singleton()->step(frame_slice * time_scale);
@@ -2318,6 +2326,8 @@ bool Main::iteration() {
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
+	OS::get_singleton()->get_main_loop()->poll_net();
+
 	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			// We can choose whether to redraw as a result of any redraw request, or redraw only for vital requests.
@@ -2332,11 +2342,13 @@ bool Main::iteration() {
 			if (has_changed) {
 				VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 				Engine::get_singleton()->frames_drawn++;
+				OS::get_singleton()->get_main_loop()->poll_net();
 			}
 		} else {
 			VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
+			OS::get_singleton()->get_main_loop()->poll_net();
 		}
 	}
 
@@ -2356,6 +2368,7 @@ bool Main::iteration() {
 		ScriptServer::get_language(i)->frame();
 	}
 
+	OS::get_singleton()->get_main_loop()->poll_net();
 	AudioServer::get_singleton()->update();
 
 	if (script_debugger) {
@@ -2403,6 +2416,7 @@ bool Main::iteration() {
 		return exit;
 	}
 
+	OS::get_singleton()->get_main_loop()->poll_net();
 	OS::get_singleton()->add_frame_delay(OS::get_singleton()->can_draw());
 
 #ifdef TOOLS_ENABLED
