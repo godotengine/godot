@@ -233,6 +233,7 @@ private:
 		Variant init_value;
 		Variant value;
 		Vector<StringName> subpath;
+		bool is_discrete = false;
 		bool is_using_angle = false;
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
 	};
