@@ -719,44 +719,64 @@
 	</signals>
 	<constants>
 		<constant name="CONTAINER_TOOLBAR" value="0" enum="CustomControlContainer">
+			Main editor toolbar, next to play buttons.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_MENU" value="1" enum="CustomControlContainer">
+			The toolbar that appears when 3D editor is active.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE_LEFT" value="2" enum="CustomControlContainer">
+			Left sidebar of the 3D editor.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT" value="3" enum="CustomControlContainer">
+			Right sidebar of the 3D editor.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_BOTTOM" value="4" enum="CustomControlContainer">
+			Bottom panel of the 3D editor.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_MENU" value="5" enum="CustomControlContainer">
+			The toolbar that appears when 2D editor is active.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_SIDE_LEFT" value="6" enum="CustomControlContainer">
+			Left sidebar of the 2D editor.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_SIDE_RIGHT" value="7" enum="CustomControlContainer">
+			Right sidebar of the 2D editor.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_BOTTOM" value="8" enum="CustomControlContainer">
+			Bottom panel of the 2D editor.
 		</constant>
 		<constant name="CONTAINER_INSPECTOR_BOTTOM" value="9" enum="CustomControlContainer">
+			Bottom section of the inspector.
 		</constant>
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_LEFT" value="10" enum="CustomControlContainer">
+			Tab of Project Settings dialog, to the left of other tabs.
 		</constant>
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_RIGHT" value="11" enum="CustomControlContainer">
+			Tab of Project Settings dialog, to the right of other tabs.
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
+			Dock slot, left side, upper-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_BL" value="1" enum="DockSlot">
+			Dock slot, left side, bottom-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_UR" value="2" enum="DockSlot">
+			Dock slot, left side, upper-right (in default layout includes Scene and Import docks).
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_BR" value="3" enum="DockSlot">
+			Dock slot, left side, bottom-right (in default layout includes FileSystem dock).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UL" value="4" enum="DockSlot">
+			Dock slot, right side, upper-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BL" value="5" enum="DockSlot">
+			Dock slot, right side, bottom-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UR" value="6" enum="DockSlot">
+			Dock slot, right side, upper-right (in default layout includes Inspector, Node and History docks).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
+			Dock slot, right side, bottom-right (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_MAX" value="8" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
