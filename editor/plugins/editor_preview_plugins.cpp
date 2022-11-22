@@ -931,3 +931,32 @@ EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
 	VS::get_singleton()->free(canvas);
 	VS::get_singleton()->free(viewport);
 }
+
+///////////////////////////////////////////////////////////////////////////
+
+static const real_t GRADIENT_PREVIEW_TEXTURE_SCALE_FACTOR = 4.0;
+
+bool EditorGradientPreviewPlugin::handles(const String &p_type) const {
+	return ClassDB::is_parent_class(p_type, "Gradient");
+}
+
+bool EditorGradientPreviewPlugin::generate_small_preview_automatically() const {
+	return true;
+}
+
+Ref<Texture> EditorGradientPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
+	Ref<Gradient> gradient = p_from;
+	if (gradient.is_valid()) {
+		Ref<GradientTexture> ptex = Ref<GradientTexture>(memnew(GradientTexture));
+		ptex->set_width(p_size.width * GRADIENT_PREVIEW_TEXTURE_SCALE_FACTOR * EDSCALE);
+		ptex->set_gradient(gradient);
+
+		Ref<ImageTexture> image = Ref<ImageTexture>(memnew(ImageTexture));
+		image->create_from_image(ptex->get_data());
+		return image;
+	}
+	return Ref<Texture>();
+}
+
+EditorGradientPreviewPlugin::EditorGradientPreviewPlugin() {
+}
