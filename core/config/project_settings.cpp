@@ -150,6 +150,14 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 	features.sort();
 	return features;
 }
+
+String ProjectSettings::get_csproj_path() const {
+	String project_dir = get_resource_path();
+	if (has_setting("dotnet/project/c#_project_directory")) {
+		project_dir = project_dir.path_join(get_setting("dotnet/project/c#_project_directory"));
+	}
+	return project_dir.path_join(get_safe_project_name() + ".csproj");
+}
 #endif // TOOLS_ENABLED
 
 String ProjectSettings::localize_path(const String &p_path) const {
@@ -941,7 +949,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		}
 	}
 	// Check for the existence of a csproj file.
-	if (FileAccess::exists(get_resource_path().path_join(get_safe_project_name() + ".csproj"))) {
+	if (FileAccess::exists(get_csproj_path())) {
 		// If there is a csproj file, add the C# feature if it doesn't already exist.
 		if (!project_features.has("C#")) {
 			project_features.append("C#");

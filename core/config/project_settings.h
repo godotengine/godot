@@ -122,6 +122,8 @@ protected:
 #ifdef TOOLS_ENABLED
 	const static PackedStringArray _get_supported_features();
 	const static PackedStringArray _trim_to_supported_features(const PackedStringArray &p_project_features);
+
+	String get_csproj_path() const;
 #endif // TOOLS_ENABLED
 
 	void _convert_to_last_version(int p_from_version);
