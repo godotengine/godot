@@ -400,27 +400,38 @@ void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
-	Ref<Resource> res = ResourceLoader::load(p_path);
-	ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, "Can't autoload: " + p_path + ".");
 	Node *n = nullptr;
-	Ref<PackedScene> scn = res;
-	Ref<Script> scr = res;
-	if (scn.is_valid()) {
-		n = scn->instantiate();
-	} else if (scr.is_valid()) {
-		StringName ibt = scr->get_instance_base_type();
-		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit from Node: " + p_path + ".");
+	if (ResourceLoader::get_resource_type(p_path) == "PackedScene") {
+		// Cache the scene reference before loading it (for cyclic references)
+		Ref<PackedScene> scn;
+		scn.instantiate();
+		scn->set_path(p_path);
+		scn->reload_from_file();
+		ERR_FAIL_COND_V_MSG(!scn.is_valid(), nullptr, vformat("Can't autoload: %s.", p_path));
 
-		Object *obj = ClassDB::instantiate(ibt);
+		if (scn.is_valid()) {
+			n = scn->instantiate();
+		}
+	} else {
+		Ref<Resource> res = ResourceLoader::load(p_path);
+		ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, vformat("Can't autoload: %s.", p_path));
 
-		ERR_FAIL_COND_V_MSG(!obj, nullptr, "Cannot instance script for Autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
+		Ref<Script> scr = res;
+		if (scr.is_valid()) {
+			StringName ibt = scr->get_instance_base_type();
+			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+			ERR_FAIL_COND_V_MSG(!valid_type, nullptr, vformat("Script does not inherit from Node: %s.", p_path));
 
-		n = Object::cast_to<Node>(obj);
-		n->set_script(scr);
+			Object *obj = ClassDB::instantiate(ibt);
+
+			ERR_FAIL_COND_V_MSG(!obj, nullptr, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
+
+			n = Object::cast_to<Node>(obj);
+			n->set_script(scr);
+		}
 	}
 
-	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in Autoload not a node or script: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(!n, nullptr, vformat("Path in Autoload not a node or script: %s.", p_path));
 
 	return n;
 }

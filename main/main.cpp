@@ -2742,27 +2742,38 @@ bool Main::start() {
 				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 					const ProjectSettings::AutoloadInfo &info = E.value;
 
-					Ref<Resource> res = ResourceLoader::load(info.path);
-					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 					Node *n = nullptr;
-					Ref<PackedScene> scn = res;
-					Ref<Script> script_res = res;
-					if (scn.is_valid()) {
-						n = scn->instantiate();
-					} else if (script_res.is_valid()) {
-						StringName ibt = script_res->get_instance_base_type();
-						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + info.path);
+					if (ResourceLoader::get_resource_type(info.path) == "PackedScene") {
+						// Cache the scene reference before loading it (for cyclic references)
+						Ref<PackedScene> scn;
+						scn.instantiate();
+						scn->set_path(info.path);
+						scn->reload_from_file();
+						ERR_CONTINUE_MSG(!scn.is_valid(), vformat("Can't autoload: %s.", info.path));
 
-						Object *obj = ClassDB::instantiate(ibt);
+						if (scn.is_valid()) {
+							n = scn->instantiate();
+						}
+					} else {
+						Ref<Resource> res = ResourceLoader::load(info.path);
+						ERR_CONTINUE_MSG(res.is_null(), vformat("Can't autoload: %s.", info.path));
 
-						ERR_CONTINUE_MSG(!obj, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
+						Ref<Script> script_res = res;
+						if (script_res.is_valid()) {
+							StringName ibt = script_res->get_instance_base_type();
+							bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+							ERR_CONTINUE_MSG(!valid_type, vformat("Script does not inherit from Node: %s.", info.path));
 
-						n = Object::cast_to<Node>(obj);
-						n->set_script(script_res);
+							Object *obj = ClassDB::instantiate(ibt);
+
+							ERR_CONTINUE_MSG(!obj, vformat("Cannot instance script for autoload, expected 'Node' inheritance, got: %s."));
+
+							n = Object::cast_to<Node>(obj);
+							n->set_script(script_res);
+						}
 					}
 
-					ERR_CONTINUE_MSG(!n, "Path in autoload not a node or script: " + info.path);
+					ERR_CONTINUE_MSG(!n, vformat("Path in autoload not a node or script: %s.", info.path));
 					n->set_name(info.name);
 
 					//defer so references are all valid on _ready()
