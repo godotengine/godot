@@ -51,7 +51,7 @@ Files extracted from upstream source:
 ## cvtt
 
 - Upstream: https://github.com/elasota/ConvectionKernels
-- Version: git (dc2dbbe0ae2cf2be06ef56d1021e2222a56c7fe2, 2021)
+- Version: git (350416daa4e98f1c17ffc273b134d0120a2ef230, 2022)
 - License: MIT
 
 Files extracted from upstream source:
