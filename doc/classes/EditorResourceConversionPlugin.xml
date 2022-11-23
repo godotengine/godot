@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorResourceConversionPlugin" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
-	<brief_description>
+	<brief_description>          
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,18 +10,18 @@
 		<method name="_convert" qualifiers="virtual const">
 			<return type="Resource" />
 			<param index="0" name="resource" type="Resource" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_converts_to" qualifiers="virtual const">
 			<return type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_handles" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="resource" type="Resource" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

@@ -174,7 +174,7 @@
 			<param index="0" name="surf_idx" type="int" />
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="surface_update_skin_region">
@@ -182,7 +182,7 @@
 			<param index="0" name="surf_idx" type="int" />
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="surface_update_vertex_region">
@@ -190,7 +190,7 @@
 			<param index="0" name="surf_idx" type="int" />
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

@@ -3,7 +3,7 @@
 	<brief_description>
 		Contains functions to modify texture coordinates ([code]uv[/code]) to be used within the visual shader graph.
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>

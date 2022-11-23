@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectSpectrumAnalyzerInstance" inherits="AudioEffectInstance" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
-	<brief_description>
+	<brief_description>          
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,7 +12,7 @@
 			<param index="0" name="from_hz" type="float" />
 			<param index="1" name="to_hz" type="float" />
 			<param index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="1" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

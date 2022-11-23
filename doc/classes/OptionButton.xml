@@ -93,7 +93,7 @@
 		<method name="get_selectable_item" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="from_last" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_selected_id" qualifiers="const">
@@ -110,7 +110,7 @@
 		</method>
 		<method name="has_selectable_items" qualifiers="const">
 			<return type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -123,7 +123,7 @@
 		<method name="is_item_separator" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="idx" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="remove_item">

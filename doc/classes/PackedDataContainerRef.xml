@@ -3,14 +3,14 @@
 	<brief_description>
 		Reference-counted version of [PackedDataContainer].
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="size" qualifiers="const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

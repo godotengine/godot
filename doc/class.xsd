@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:simpleType name="mandatoryString">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="10"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:element name="class">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element type="xs:string" name="brief_description" />
-				<xs:element type="xs:string" name="description" />
+				<xs:element type="mandatoryString" name="brief_description" />
+				<xs:element type="mandatoryString" name="description" />
 				<xs:element name="tutorials">
 					<xs:complexType>
 						<xs:sequence>
@@ -47,7 +52,7 @@
 												<xs:attribute type="xs:string" name="default" use="optional" />
 											</xs:complexType>
 										</xs:element>
-										<xs:element type="xs:string" name="description" />
+										<xs:element type="mandatoryString" name="description" />
 									</xs:sequence>
 									<xs:attribute type="xs:string" name="name" use="optional" />
 									<xs:attribute type="xs:string" name="qualifiers" use="optional" />
@@ -91,7 +96,7 @@
 												<xs:attribute type="xs:string" name="default" use="optional" />
 											</xs:complexType>
 										</xs:element>
-										<xs:element type="xs:string" name="description" />
+										<xs:element type="mandatoryString" name="description" />
 									</xs:sequence>
 									<xs:attribute type="xs:string" name="name" use="optional" />
 									<xs:attribute type="xs:string" name="qualifiers" use="optional" />
@@ -141,7 +146,7 @@
 												<xs:attribute type="xs:string" name="type" />
 											</xs:complexType>
 										</xs:element>
-										<xs:element type="xs:string" name="description" />
+										<xs:element type="mandatoryString" name="description" />
 									</xs:sequence>
 									<xs:attribute type="xs:string" name="name" use="optional" />
 								</xs:complexType>
@@ -196,7 +201,7 @@
 												<xs:attribute type="xs:string" name="default" use="optional" />
 											</xs:complexType>
 										</xs:element>
-										<xs:element type="xs:string" name="description" />
+										<xs:element type="mandatoryString" name="description" />
 									</xs:sequence>
 									<xs:attribute type="xs:string" name="name" use="optional" />
 									<xs:attribute type="xs:string" name="qualifiers" use="optional" />
@@ -250,7 +255,7 @@
 												<xs:attribute type="xs:string" name="default" use="optional" />
 											</xs:complexType>
 										</xs:element>
-										<xs:element type="xs:string" name="description" />
+										<xs:element type="mandatoryString" name="description" />
 									</xs:sequence>
 									<xs:attribute type="xs:string" name="name" use="optional" />
 									<xs:attribute type="xs:string" name="qualifiers" use="optional" />

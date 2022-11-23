@@ -40,7 +40,7 @@
 		</method>
 		<method name="get_physics_rid" qualifiers="const">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_point_transform">

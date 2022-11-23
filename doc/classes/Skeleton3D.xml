@@ -41,7 +41,7 @@
 		</method>
 		<method name="create_skin_from_rest_transforms">
 			<return type="Skin" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="execute_modifications" is_deprecated="true">
@@ -145,19 +145,19 @@
 		<method name="get_bone_pose_position" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="bone_idx" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_bone_pose_rotation" qualifiers="const">
 			<return type="Quaternion" />
 			<param index="0" name="bone_idx" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_bone_pose_scale" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="bone_idx" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_bone_rest" qualifiers="const">
@@ -315,7 +315,7 @@
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="name" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_bone_parent">
@@ -331,21 +331,21 @@
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="position" type="Vector3" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_bone_pose_rotation">
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="rotation" type="Quaternion" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_bone_pose_scale">
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="scale" type="Vector3" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_bone_rest">
@@ -393,7 +393,7 @@
 	<signals>
 		<signal name="bone_enabled_changed">
 			<param index="0" name="bone_idx" type="int" />
-			<description>
+			<description>          
 			</description>
 		</signal>
 		<signal name="bone_pose_changed">
@@ -403,11 +403,11 @@
 			</description>
 		</signal>
 		<signal name="pose_updated">
-			<description>
+			<description>          
 			</description>
 		</signal>
 		<signal name="show_rest_only_changed">
-			<description>
+			<description>          
 			</description>
 		</signal>
 	</signals>

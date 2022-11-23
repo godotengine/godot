@@ -12,18 +12,18 @@
 	<methods>
 		<method name="_get_extensions" qualifiers="virtual const">
 			<return type="PackedStringArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_import_flags" qualifiers="virtual const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_import_options" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_option_visibility" qualifiers="virtual const">
@@ -31,7 +31,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="for_animation" type="bool" />
 			<param index="2" name="option" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_import_scene" qualifiers="virtual">
@@ -40,7 +40,7 @@
 			<param index="1" name="flags" type="int" />
 			<param index="2" name="options" type="Dictionary" />
 			<param index="3" name="bake_fps" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

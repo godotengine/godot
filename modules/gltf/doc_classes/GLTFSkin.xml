@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFSkin" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
-	<brief_description>
+	<brief_description>          
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_inverse_binds">
 			<return type="Transform3D[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_joint_i_to_bone_i">
 			<return type="Dictionary" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_joint_i_to_name">
 			<return type="Dictionary" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_inverse_binds">
 			<return type="void" />
 			<param index="0" name="inverse_binds" type="Transform3D[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_joint_i_to_bone_i">
 			<return type="void" />
 			<param index="0" name="joint_i_to_bone_i" type="Dictionary" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_joint_i_to_name">
 			<return type="void" />
 			<param index="0" name="joint_i_to_name" type="Dictionary" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

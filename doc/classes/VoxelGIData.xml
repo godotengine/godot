@@ -20,7 +20,7 @@
 			<param index="4" name="data_cells" type="PackedByteArray" />
 			<param index="5" name="distance_field" type="PackedByteArray" />
 			<param index="6" name="level_counts" type="PackedInt32Array" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_bounds" qualifiers="const">
@@ -32,27 +32,27 @@
 		</method>
 		<method name="get_data_cells" qualifiers="const">
 			<return type="PackedByteArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_level_counts" qualifiers="const">
 			<return type="PackedInt32Array" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_octree_cells" qualifiers="const">
 			<return type="PackedByteArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_octree_size" qualifiers="const">
 			<return type="Vector3" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_to_cell_xform" qualifiers="const">
 			<return type="Transform3D" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

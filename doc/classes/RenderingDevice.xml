@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RenderingDevice" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
-	<brief_description>
+	<brief_description>          
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,7 +11,7 @@
 			<return type="void" />
 			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="buffer_clear">
@@ -20,13 +20,13 @@
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="size_bytes" type="int" />
 			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="buffer_get_data">
 			<return type="PackedByteArray" />
 			<param index="0" name="buffer" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="buffer_update">
@@ -36,32 +36,32 @@
 			<param index="2" name="size_bytes" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
 			<param index="4" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="capture_timestamp">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_list_add_barrier">
 			<return type="void" />
 			<param index="0" name="compute_list" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_list_begin">
 			<return type="int" />
 			<param index="0" name="allow_draw_overlap" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_list_bind_compute_pipeline">
 			<return type="void" />
 			<param index="0" name="compute_list" type="int" />
 			<param index="1" name="compute_pipeline" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_list_bind_uniform_set">
@@ -69,7 +69,7 @@
 			<param index="0" name="compute_list" type="int" />
 			<param index="1" name="uniform_set" type="RID" />
 			<param index="2" name="set_index" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_list_dispatch">
@@ -78,13 +78,13 @@
 			<param index="1" name="x_groups" type="int" />
 			<param index="2" name="y_groups" type="int" />
 			<param index="3" name="z_groups" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_list_end">
 			<return type="void" />
 			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_list_set_push_constant">
@@ -92,44 +92,44 @@
 			<param index="0" name="compute_list" type="int" />
 			<param index="1" name="buffer" type="PackedByteArray" />
 			<param index="2" name="size_bytes" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_pipeline_create">
 			<return type="RID" />
 			<param index="0" name="shader" type="RID" />
 			<param index="1" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_pipeline_is_valid">
 			<return type="bool" />
 			<param index="0" name="compute_pieline" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="create_local_device">
 			<return type="RenderingDevice" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_command_begin_label">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="color" type="Color" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_command_end_label">
 			<return type="void" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_command_insert_label">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="color" type="Color" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_begin">
@@ -144,14 +144,14 @@
 			<param index="7" name="clear_stencil" type="int" default="0" />
 			<param index="8" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<param index="9" name="storage_textures" type="Array" default="[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_begin_for_screen">
 			<return type="int" />
 			<param index="0" name="screen" type="int" default="0" />
 			<param index="1" name="clear_color" type="Color" default="Color(0, 0, 0, 1)" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_begin_split">
@@ -167,21 +167,21 @@
 			<param index="8" name="clear_stencil" type="int" default="0" />
 			<param index="9" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<param index="10" name="storage_textures" type="RID[]" default="[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_bind_index_array">
 			<return type="void" />
 			<param index="0" name="draw_list" type="int" />
 			<param index="1" name="index_array" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_bind_render_pipeline">
 			<return type="void" />
 			<param index="0" name="draw_list" type="int" />
 			<param index="1" name="render_pipeline" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_bind_uniform_set">
@@ -189,20 +189,20 @@
 			<param index="0" name="draw_list" type="int" />
 			<param index="1" name="uniform_set" type="RID" />
 			<param index="2" name="set_index" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_bind_vertex_array">
 			<return type="void" />
 			<param index="0" name="draw_list" type="int" />
 			<param index="1" name="vertex_array" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_disable_scissor">
 			<return type="void" />
 			<param index="0" name="draw_list" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_draw">
@@ -211,20 +211,20 @@
 			<param index="1" name="use_indices" type="bool" />
 			<param index="2" name="instances" type="int" />
 			<param index="3" name="procedural_vertex_count" type="int" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_enable_scissor">
 			<return type="void" />
 			<param index="0" name="draw_list" type="int" />
 			<param index="1" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_end">
 			<return type="void" />
 			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_set_blend_constants">
@@ -240,18 +240,18 @@
 			<param index="0" name="draw_list" type="int" />
 			<param index="1" name="buffer" type="PackedByteArray" />
 			<param index="2" name="size_bytes" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_switch_to_next_pass">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw_list_switch_to_next_pass_split">
 			<return type="PackedInt64Array" />
 			<param index="0" name="splits" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="framebuffer_create">
@@ -259,7 +259,7 @@
 			<param index="0" name="textures" type="RID[]" />
 			<param index="1" name="validate_with_format" type="int" default="-1" />
 			<param index="2" name="view_count" type="int" default="1" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="framebuffer_create_empty">
@@ -267,7 +267,7 @@
 			<param index="0" name="size" type="Vector2i" />
 			<param index="1" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
 			<param index="2" name="validate_with_format" type="int" default="-1" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="framebuffer_create_multipass">
@@ -276,20 +276,20 @@
 			<param index="1" name="passes" type="RDFramebufferPass[]" />
 			<param index="2" name="validate_with_format" type="int" default="-1" />
 			<param index="3" name="view_count" type="int" default="1" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="framebuffer_format_create">
 			<return type="int" />
 			<param index="0" name="attachments" type="RDAttachmentFormat[]" />
 			<param index="1" name="view_count" type="int" default="1" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="framebuffer_format_create_empty">
 			<return type="int" />
 			<param index="0" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="framebuffer_format_create_multipass">
@@ -297,80 +297,80 @@
 			<param index="0" name="attachments" type="RDAttachmentFormat[]" />
 			<param index="1" name="passes" type="RDFramebufferPass[]" />
 			<param index="2" name="view_count" type="int" default="1" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="framebuffer_format_get_texture_samples">
 			<return type="int" enum="RenderingDevice.TextureSamples" />
 			<param index="0" name="format" type="int" />
 			<param index="1" name="render_pass" type="int" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="framebuffer_get_format">
 			<return type="int" />
 			<param index="0" name="framebuffer" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="framebuffer_is_valid" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="framebuffer" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="free_rid">
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="full_barrier">
 			<return type="void" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_captured_timestamp_cpu_time" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_captured_timestamp_gpu_time" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_captured_timestamp_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="index" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_captured_timestamps_count" qualifiers="const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_captured_timestamps_frame" qualifiers="const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_device_name" qualifiers="const">
 			<return type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_device_pipeline_cache_uuid" qualifiers="const">
 			<return type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_device_vendor_name" qualifiers="const">
 			<return type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_driver_resource">
@@ -378,18 +378,18 @@
 			<param index="0" name="resource" type="int" enum="RenderingDevice.DriverResource" />
 			<param index="1" name="rid" type="RID" />
 			<param index="2" name="index" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_frame_delay" qualifiers="const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_memory_usage" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="type" type="int" enum="RenderingDevice.MemoryType" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="index_array_create">
@@ -397,7 +397,7 @@
 			<param index="0" name="index_buffer" type="RID" />
 			<param index="1" name="index_offset" type="int" />
 			<param index="2" name="index_count" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="index_buffer_create">
@@ -406,13 +406,13 @@
 			<param index="1" name="format" type="int" enum="RenderingDevice.IndexBufferFormat" />
 			<param index="2" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<param index="3" name="use_restart_indices" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="limit_get" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="limit" type="int" enum="RenderingDevice.Limit" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="render_pipeline_create">
@@ -428,76 +428,76 @@
 			<param index="8" name="dynamic_state_flags" type="int" default="0" />
 			<param index="9" name="for_render_pass" type="int" default="0" />
 			<param index="10" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="render_pipeline_is_valid">
 			<return type="bool" />
 			<param index="0" name="render_pipeline" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="sampler_create">
 			<return type="RID" />
 			<param index="0" name="state" type="RDSamplerState" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="screen_get_framebuffer_format" qualifiers="const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="screen_get_height" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="screen" type="int" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="screen_get_width" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="screen" type="int" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_resource_name">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="name" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="shader_compile_binary_from_spirv">
 			<return type="PackedByteArray" />
 			<param index="0" name="spirv_data" type="RDShaderSPIRV" />
 			<param index="1" name="name" type="String" default="&quot;&quot;" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="shader_compile_spirv_from_source">
 			<return type="RDShaderSPIRV" />
 			<param index="0" name="shader_source" type="RDShaderSource" />
 			<param index="1" name="allow_cache" type="bool" default="true" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="shader_create_from_bytecode">
 			<return type="RID" />
 			<param index="0" name="binary_data" type="PackedByteArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="shader_create_from_spirv">
 			<return type="RID" />
 			<param index="0" name="spirv_data" type="RDShaderSPIRV" />
 			<param index="1" name="name" type="String" default="&quot;&quot;" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="shader_get_vertex_input_attribute_mask">
 			<return type="int" />
 			<param index="0" name="shader" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="storage_buffer_create">
@@ -505,17 +505,17 @@
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<param index="2" name="usage" type="int" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="submit">
 			<return type="void" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="sync">
 			<return type="void" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_buffer_create">
@@ -523,7 +523,7 @@
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="format" type="int" enum="RenderingDevice.DataFormat" />
 			<param index="2" name="data" type="PackedByteArray" default="PackedByteArray()" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_clear">
@@ -535,7 +535,7 @@
 			<param index="4" name="base_layer" type="int" />
 			<param index="5" name="layer_count" type="int" />
 			<param index="6" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_copy">
@@ -550,7 +550,7 @@
 			<param index="7" name="src_layer" type="int" />
 			<param index="8" name="dst_layer" type="int" />
 			<param index="9" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_create">
@@ -558,14 +558,14 @@
 			<param index="0" name="format" type="RDTextureFormat" />
 			<param index="1" name="view" type="RDTextureView" />
 			<param index="2" name="data" type="PackedByteArray[]" default="[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_create_shared">
 			<return type="RID" />
 			<param index="0" name="view" type="RDTextureView" />
 			<param index="1" name="with_texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_create_shared_from_slice">
@@ -576,33 +576,33 @@
 			<param index="3" name="mipmap" type="int" />
 			<param index="4" name="mipmaps" type="int" default="1" />
 			<param index="5" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_get_data">
 			<return type="PackedByteArray" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="layer" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
 			<param index="1" name="usage_flags" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_is_shared">
 			<return type="bool" />
 			<param index="0" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_is_valid">
 			<return type="bool" />
 			<param index="0" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_resolve_multisample">
@@ -610,7 +610,7 @@
 			<param index="0" name="from_texture" type="RID" />
 			<param index="1" name="to_texture" type="RID" />
 			<param index="2" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_update">
@@ -619,14 +619,14 @@
 			<param index="1" name="layer" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
 			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="uniform_buffer_create">
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="uniform_set_create">
@@ -634,13 +634,13 @@
 			<param index="0" name="uniforms" type="RDUniform[]" />
 			<param index="1" name="shader" type="RID" />
 			<param index="2" name="shader_set" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="uniform_set_is_valid">
 			<return type="bool" />
 			<param index="0" name="uniform_set" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="vertex_array_create">
@@ -658,13 +658,13 @@
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<param index="2" name="use_as_storage" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="vertex_format_create">
 			<return type="int" />
 			<param index="0" name="vertex_descriptions" type="RDVertexAttribute[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

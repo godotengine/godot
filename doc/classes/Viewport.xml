@@ -75,7 +75,7 @@
 			<return type="int" />
 			<param index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
 			<param index="1" name="info" type="int" enum="Viewport.RenderInfo" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_screen_transform" qualifiers="const">
@@ -164,7 +164,7 @@
 		<method name="push_text_input">
 			<return type="void" />
 			<param index="0" name="text" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="push_unhandled_input">

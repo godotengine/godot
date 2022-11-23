@@ -23,7 +23,7 @@
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="id" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="area_attach_object_instance_id">
@@ -50,7 +50,7 @@
 		<method name="area_get_canvas_instance_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="area_get_collision_layer" qualifiers="const">
@@ -131,7 +131,7 @@
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="area_set_collision_layer">
@@ -167,7 +167,7 @@
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="monitorable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="area_set_param">
@@ -328,7 +328,7 @@
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="id" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="body_attach_object_instance_id">
@@ -355,7 +355,7 @@
 		<method name="body_get_canvas_instance_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
@@ -676,22 +676,22 @@
 		</method>
 		<method name="capsule_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="circle_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="concave_polygon_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="convex_polygon_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="damped_spring_joint_get_param" qualifiers="const">
@@ -728,12 +728,12 @@
 		<method name="joint_clear">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_get_param" qualifiers="const">
@@ -758,7 +758,7 @@
 			<param index="2" name="anchor_b" type="Vector2" />
 			<param index="3" name="body_a" type="RID" />
 			<param index="4" name="body_b" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_make_groove">
@@ -769,7 +769,7 @@
 			<param index="3" name="anchor_b" type="Vector2" />
 			<param index="4" name="body_a" type="RID" />
 			<param index="5" name="body_b" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_make_pin">
@@ -778,7 +778,7 @@
 			<param index="1" name="anchor" type="Vector2" />
 			<param index="2" name="body_a" type="RID" />
 			<param index="3" name="body_b" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_set_param">
@@ -792,17 +792,17 @@
 		</method>
 		<method name="rectangle_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="segment_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="separation_ray_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_active">
@@ -881,7 +881,7 @@
 		</method>
 		<method name="world_boundary_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

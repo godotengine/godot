@@ -14,31 +14,31 @@
 			<return type="void" />
 			<param index="0" name="to_canvas_item" type="RID" />
 			<param index="1" name="rect" type="Rect2" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_center_size" qualifiers="virtual const">
 			<return type="Vector2" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_draw_rect" qualifiers="virtual const">
 			<return type="Rect2" />
 			<param index="0" name="rect" type="Rect2" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_style_margin" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="side" type="int" enum="Side" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_test_mask" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector2" />
 			<param index="1" name="rect" type="Rect2" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="draw" qualifiers="const">

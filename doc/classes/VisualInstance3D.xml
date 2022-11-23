@@ -11,7 +11,7 @@
 	<methods>
 		<method name="_get_aabb" qualifiers="virtual const">
 			<return type="AABB" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_aabb" qualifiers="const">

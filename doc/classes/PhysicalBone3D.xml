@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicalBone3D" inherits="PhysicsBody3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
-	<brief_description>
+	<brief_description>          
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,29 +17,29 @@
 		<method name="apply_central_impulse">
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector3" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="apply_impulse">
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector3" />
 			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_bone_id" qualifiers="const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_simulate_physics">
 			<return type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="is_simulating_physics">
 			<return type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

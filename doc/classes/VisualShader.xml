@@ -25,7 +25,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="mode" type="int" enum="VisualShader.VaryingMode" />
 			<param index="2" name="type" type="int" enum="VisualShader.VaryingType" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="can_connect_nodes" qualifiers="const">
@@ -105,13 +105,13 @@
 		<method name="get_valid_node_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="type" type="int" enum="VisualShader.Type" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="has_varying" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="is_node_connection" qualifiers="const">
@@ -136,7 +136,7 @@
 		<method name="remove_varying">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="replace_node">

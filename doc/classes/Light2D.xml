@@ -13,13 +13,13 @@
 	<methods>
 		<method name="get_height" qualifiers="const">
 			<return type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_height">
 			<return type="void" />
 			<param index="0" name="height" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

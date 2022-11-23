@@ -37,7 +37,7 @@
 		<method name="set_lock_rotation_plane">
 			<return type="void" />
 			<param index="0" name="plane" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_lock_rotation_to_plane">

@@ -355,7 +355,7 @@
 		</signal>
 		<signal name="node_deselected">
 			<param index="0" name="node" type="Node" />
-			<description>
+			<description>          
 			</description>
 		</signal>
 		<signal name="node_selected">

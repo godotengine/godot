@@ -279,7 +279,7 @@
 		<method name="set_enable_tagging_used_audio_streams">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="swap_bus_effects">

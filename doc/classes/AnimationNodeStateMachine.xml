@@ -142,7 +142,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="node" type="AnimationNode" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_graph_offset">

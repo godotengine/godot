@@ -271,13 +271,13 @@
 		<method name="get_structured_text_bidi_override" qualifiers="const">
 			<return type="int" enum="TextServer.StructuredTextParser" />
 			<param index="0" name="column" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_structured_text_bidi_override_options" qualifiers="const">
 			<return type="Array" />
 			<param index="0" name="column" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_suffix" qualifiers="const">
@@ -347,7 +347,7 @@
 		<method name="is_custom_set_as_button" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="is_editable">
@@ -470,7 +470,7 @@
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_custom_bg_color">
@@ -621,14 +621,14 @@
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="parser" type="int" enum="TextServer.StructuredTextParser" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_structured_text_bidi_override_options">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="args" type="Array" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_suffix">
@@ -673,7 +673,7 @@
 		</method>
 		<method name="uncollapse_tree">
 			<return type="void" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

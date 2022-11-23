@@ -24,7 +24,7 @@
 			<param index="0" name="base" type="RID" />
 			<param index="1" name="material_overrides" type="RID[]" />
 			<param index="2" name="image_size" type="Vector2i" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="camera_attributes_create">
@@ -42,7 +42,7 @@
 			<param index="3" name="max_sensitivity" type="float" />
 			<param index="4" name="speed" type="float" />
 			<param index="5" name="scale" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur">
@@ -55,20 +55,20 @@
 			<param index="5" name="near_distance" type="float" />
 			<param index="6" name="near_transition" type="float" />
 			<param index="7" name="amount" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur_bokeh_shape">
 			<return type="void" />
 			<param index="0" name="shape" type="int" enum="RenderingServer.DOFBokehShape" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.DOFBlurQuality" />
 			<param index="1" name="use_jitter" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="camera_attributes_set_exposure">
@@ -101,7 +101,7 @@
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
 			<param index="1" name="effects" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="camera_set_cull_mask">
@@ -191,14 +191,14 @@
 			<param index="1" name="pos" type="Vector2" />
 			<param index="2" name="radius" type="float" />
 			<param index="3" name="color" type="Color" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_clip_ignore">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="ignore" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_lcd_texture_rect_region">
@@ -208,7 +208,7 @@
 			<param index="2" name="texture" type="RID" />
 			<param index="3" name="src_rect" type="Rect2" />
 			<param index="4" name="modulate" type="Color" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_line">
@@ -219,7 +219,7 @@
 			<param index="3" name="color" type="Color" />
 			<param index="4" name="width" type="float" default="1.0" />
 			<param index="5" name="antialiased" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_mesh">
@@ -229,7 +229,7 @@
 			<param index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_msdf_texture_rect_region">
@@ -241,7 +241,7 @@
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="outline_size" type="int" default="0" />
 			<param index="6" name="px_range" type="float" default="1.0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_multimesh">
@@ -249,7 +249,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="mesh" type="RID" />
 			<param index="2" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_nine_patch">
@@ -264,7 +264,7 @@
 			<param index="7" name="y_axis_mode" type="int" enum="RenderingServer.NinePatchAxisMode" default="0" />
 			<param index="8" name="draw_center" type="bool" default="true" />
 			<param index="9" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_particles">
@@ -272,7 +272,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="particles" type="RID" />
 			<param index="2" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_polygon">
@@ -282,7 +282,7 @@
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="4" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_polyline">
@@ -292,7 +292,7 @@
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="width" type="float" default="1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_primitive">
@@ -303,7 +303,7 @@
 			<param index="3" name="uvs" type="PackedVector2Array" />
 			<param index="4" name="texture" type="RID" />
 			<param index="5" name="width" type="float" default="1.0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_rect">
@@ -311,14 +311,14 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="rect" type="Rect2" />
 			<param index="2" name="color" type="Color" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_set_transform">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_texture_rect">
@@ -329,7 +329,7 @@
 			<param index="3" name="tile" type="bool" default="false" />
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="transpose" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_texture_rect_region">
@@ -341,7 +341,7 @@
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="transpose" type="bool" default="false" />
 			<param index="6" name="clip_uv" type="bool" default="true" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_add_triangle_array">
@@ -355,7 +355,7 @@
 			<param index="6" name="weights" type="PackedFloat32Array" default="PackedFloat32Array()" />
 			<param index="7" name="texture" type="RID" />
 			<param index="8" name="count" type="int" default="-1" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_clear">
@@ -367,7 +367,7 @@
 		</method>
 		<method name="canvas_item_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_canvas_group_mode">
@@ -378,14 +378,14 @@
 			<param index="3" name="fit_empty" type="bool" default="false" />
 			<param index="4" name="fit_margin" type="float" default="0.0" />
 			<param index="5" name="blur_mipmaps" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_clip">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="clip" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_copy_to_backbuffer">
@@ -402,35 +402,35 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="use_custom_rect" type="bool" />
 			<param index="2" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_default_texture_filter">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_default_texture_repeat">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_distance_field_mode">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="enabled" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_draw_behind_parent">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="enabled" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_draw_index">
@@ -445,7 +445,7 @@
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="mask" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_material">
@@ -460,35 +460,35 @@
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="color" type="Color" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_parent">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="parent" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_self_modulate">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="color" type="Color" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_sort_children_by_y">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="enabled" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_transform">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_use_parent_material">
@@ -514,14 +514,14 @@
 			<param index="2" name="area" type="Rect2" />
 			<param index="3" name="enter_callable" type="Callable" />
 			<param index="4" name="exit_callable" type="Callable" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_visible">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="visible" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_item_set_z_as_relative_to_parent">
@@ -574,7 +574,7 @@
 			<return type="void" />
 			<param index="0" name="occluder" type="RID" />
 			<param index="1" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_enabled">
@@ -774,7 +774,7 @@
 		<method name="canvas_set_disable_scale">
 			<return type="void" />
 			<param index="0" name="disable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_set_item_mirroring">
@@ -797,12 +797,12 @@
 		<method name="canvas_set_shadow_texture_size">
 			<return type="void" />
 			<param index="0" name="size" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_texture_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_texture_set_channel">
@@ -810,7 +810,7 @@
 			<param index="0" name="canvas_texture" type="RID" />
 			<param index="1" name="channel" type="int" enum="RenderingServer.CanvasTextureChannel" />
 			<param index="2" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_texture_set_shading_parameters">
@@ -818,21 +818,21 @@
 			<param index="0" name="canvas_texture" type="RID" />
 			<param index="1" name="base_color" type="Color" />
 			<param index="2" name="shininess" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_texture_set_texture_filter">
 			<return type="void" />
 			<param index="0" name="canvas_texture" type="RID" />
 			<param index="1" name="filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="canvas_texture_set_texture_repeat">
 			<return type="void" />
 			<param index="0" name="canvas_texture" type="RID" />
 			<param index="1" name="repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="create_local_rendering_device" qualifiers="const">
@@ -844,21 +844,21 @@
 		</method>
 		<method name="decal_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decal_set_albedo_mix">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="albedo_mix" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decal_set_cull_mask">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="mask" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decal_set_distance_fade">
@@ -867,21 +867,21 @@
 			<param index="1" name="enabled" type="bool" />
 			<param index="2" name="begin" type="float" />
 			<param index="3" name="length" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decal_set_emission_energy">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="energy" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decal_set_extents">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="extents" type="Vector3" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decal_set_fade">
@@ -889,21 +889,21 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="above" type="float" />
 			<param index="2" name="below" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decal_set_modulate">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="color" type="Color" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decal_set_normal_fade">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="fade" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decal_set_texture">
@@ -911,13 +911,13 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="type" type="int" enum="RenderingServer.DecalTexture" />
 			<param index="2" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="decals_set_filter">
 			<return type="void" />
 			<param index="0" name="filter" type="int" enum="RenderingServer.DecalFilter" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="directional_light_create">
@@ -932,13 +932,13 @@
 			<return type="void" />
 			<param index="0" name="size" type="int" />
 			<param index="1" name="is_16bits" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="directional_soft_shadow_filter_set_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_bake_panorama">
@@ -946,7 +946,7 @@
 			<param index="0" name="environment" type="RID" />
 			<param index="1" name="bake_irradiance" type="bool" />
 			<param index="2" name="size" type="Vector2i" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_create">
@@ -959,13 +959,13 @@
 		<method name="environment_glow_set_use_bicubic_upscale">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_glow_set_use_high_quality">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_adjustment">
@@ -989,7 +989,7 @@
 			<param index="3" name="energy" type="float" default="1.0" />
 			<param index="4" name="sky_contibution" type="float" default="0.0" />
 			<param index="5" name="reflection_source" type="int" enum="RenderingServer.EnvironmentReflectionSource" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_background">
@@ -1037,7 +1037,7 @@
 			<param index="7" name="height_density" type="float" />
 			<param index="8" name="aerial_perspective" type="float" />
 			<param index="9" name="sky_affect" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_glow">
@@ -1055,7 +1055,7 @@
 			<param index="10" name="hdr_luminance_cap" type="float" />
 			<param index="11" name="glow_map_strength" type="float" />
 			<param index="12" name="glow_map" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_sdfgi">
@@ -1071,25 +1071,25 @@
 			<param index="8" name="energy" type="float" />
 			<param index="9" name="normal_bias" type="float" />
 			<param index="10" name="probe_bias" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_sdfgi_frames_to_converge">
 			<return type="void" />
 			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentSDFGIFramesToConverge" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_sdfgi_frames_to_update_light">
 			<return type="void" />
 			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentSDFGIFramesToUpdateLight" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_sdfgi_ray_count">
 			<return type="void" />
 			<param index="0" name="ray_count" type="int" enum="RenderingServer.EnvironmentSDFGIRayCount" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_sky">
@@ -1171,7 +1171,7 @@
 		<method name="environment_set_ssr_roughness_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.EnvironmentSSRRoughnessQuality" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_tonemap">
@@ -1200,7 +1200,7 @@
 			<param index="11" name="temporal_reprojection_amount" type="float" />
 			<param index="12" name="ambient_inject" type="float" />
 			<param index="13" name="sky_affect" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="environment_set_volumetric_fog_filter_active">
@@ -1252,12 +1252,12 @@
 			<return type="void" />
 			<param index="0" name="swap_buffers" type="bool" default="true" />
 			<param index="1" name="frame_step" type="float" default="0.0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="force_sync">
 			<return type="void" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="free_rid">
@@ -1269,7 +1269,7 @@
 		</method>
 		<method name="get_frame_setup_time_cpu" qualifiers="const">
 			<return type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_rendering_device" qualifiers="const">
@@ -1282,7 +1282,7 @@
 		<method name="get_rendering_info">
 			<return type="int" />
 			<param index="0" name="info" type="int" enum="RenderingServer.RenderingInfo" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_shader_parameter_list" qualifiers="const">
@@ -1350,44 +1350,44 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="type" type="int" enum="RenderingServer.GlobalShaderParameterType" />
 			<param index="2" name="default_value" type="Variant" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="global_shader_parameter_get" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="global_shader_parameter_get_list" qualifiers="const">
 			<return type="PackedStringArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="global_shader_parameter_get_type" qualifiers="const">
 			<return type="int" enum="RenderingServer.GlobalShaderParameterType" />
 			<param index="0" name="name" type="StringName" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="global_shader_parameter_remove">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="global_shader_parameter_set">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="global_shader_parameter_set_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="has_changed" qualifiers="const">
@@ -1447,20 +1447,20 @@
 			<return type="Variant" />
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="parameter" type="StringName" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="instance_geometry_get_shader_parameter_default_value" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="parameter" type="StringName" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="instance_geometry_get_shader_parameter_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="instance" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="instance_geometry_set_cast_shadows_setting">
@@ -1486,14 +1486,14 @@
 			<param index="1" name="lightmap" type="RID" />
 			<param index="2" name="lightmap_uv_scale" type="Rect2" />
 			<param index="3" name="lightmap_slice" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="instance_geometry_set_lod_bias">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="lod_bias" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="instance_geometry_set_material_overlay">
@@ -1517,7 +1517,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="parameter" type="StringName" />
 			<param index="2" name="value" type="Variant" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="instance_geometry_set_transparency">
@@ -1580,7 +1580,7 @@
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="enabled" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">
@@ -1695,14 +1695,14 @@
 		<method name="light_projectors_set_filter">
 			<return type="void" />
 			<param index="0" name="filter" type="int" enum="RenderingServer.LightProjectorFilter" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="light_set_bake_mode">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="bake_mode" type="int" enum="RenderingServer.LightBakeMode" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="light_set_color">
@@ -1736,7 +1736,7 @@
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="cascade" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="light_set_negative">
@@ -1782,31 +1782,31 @@
 		</method>
 		<method name="lightmap_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_bsp_tree" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="lightmap" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_points" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<param index="0" name="lightmap" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_sh" qualifiers="const">
 			<return type="PackedColorArray" />
 			<param index="0" name="lightmap" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_tetrahedra" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="lightmap" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="lightmap_set_baked_exposure_normalization">
@@ -1821,7 +1821,7 @@
 			<return type="void" />
 			<param index="0" name="lightmap" type="RID" />
 			<param index="1" name="bounds" type="AABB" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="lightmap_set_probe_capture_data">
@@ -1831,20 +1831,20 @@
 			<param index="2" name="point_sh" type="PackedColorArray" />
 			<param index="3" name="tetrahedra" type="PackedInt32Array" />
 			<param index="4" name="bsp_tree" type="PackedInt32Array" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="lightmap_set_probe_capture_update_speed">
 			<return type="void" />
 			<param index="0" name="speed" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="lightmap_set_probe_interior">
 			<return type="void" />
 			<param index="0" name="lightmap" type="RID" />
 			<param index="1" name="interior" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="lightmap_set_textures">
@@ -1852,7 +1852,7 @@
 			<param index="0" name="lightmap" type="RID" />
 			<param index="1" name="light" type="RID" />
 			<param index="2" name="uses_sh" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="make_sphere_mesh">
@@ -1916,7 +1916,7 @@
 			<return type="void" />
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="surface" type="Dictionary" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_add_surface_from_arrays">
@@ -1927,7 +1927,7 @@
 			<param index="3" name="blend_shapes" type="Array" default="[]" />
 			<param index="4" name="lods" type="Dictionary" default="{}" />
 			<param index="5" name="compress_format" type="int" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_clear">
@@ -1949,7 +1949,7 @@
 			<return type="RID" />
 			<param index="0" name="surfaces" type="Dictionary[]" />
 			<param index="1" name="blend_shape_count" type="int" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_get_blend_shape_count" qualifiers="const">
@@ -1977,7 +1977,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="surface" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_get_surface_count" qualifiers="const">
@@ -2007,7 +2007,7 @@
 			<return type="void" />
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="shadow_mesh" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_surface_get_arrays" qualifiers="const">
@@ -2030,7 +2030,7 @@
 			<return type="int" />
 			<param index="0" name="format" type="int" />
 			<param index="1" name="vertex_count" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_offset" qualifiers="const">
@@ -2038,21 +2038,21 @@
 			<param index="0" name="format" type="int" />
 			<param index="1" name="vertex_count" type="int" />
 			<param index="2" name="array_index" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_skin_stride" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="format" type="int" />
 			<param index="1" name="vertex_count" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_vertex_stride" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="format" type="int" />
 			<param index="1" name="vertex_count" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_surface_get_material" qualifiers="const">
@@ -2078,7 +2078,7 @@
 			<param index="1" name="surface" type="int" />
 			<param index="2" name="offset" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_surface_update_skin_region">
@@ -2087,7 +2087,7 @@
 			<param index="1" name="surface" type="int" />
 			<param index="2" name="offset" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="mesh_surface_update_vertex_region">
@@ -2096,7 +2096,7 @@
 			<param index="1" name="surface" type="int" />
 			<param index="2" name="offset" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="multimesh_allocate_data">
@@ -2106,7 +2106,7 @@
 			<param index="2" name="transform_format" type="int" enum="RenderingServer.MultimeshTransformFormat" />
 			<param index="3" name="color_format" type="bool" default="false" />
 			<param index="4" name="custom_data_format" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="multimesh_create">
@@ -2127,7 +2127,7 @@
 		<method name="multimesh_get_buffer" qualifiers="const">
 			<return type="PackedFloat32Array" />
 			<param index="0" name="multimesh" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="multimesh_get_instance_count" qualifiers="const">
@@ -2223,7 +2223,7 @@
 			<return type="void" />
 			<param index="0" name="multimesh" type="RID" />
 			<param index="1" name="buffer" type="PackedFloat32Array" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="multimesh_set_mesh">
@@ -2244,7 +2244,7 @@
 		</method>
 		<method name="occluder_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="occluder_set_mesh">
@@ -2252,7 +2252,7 @@
 			<param index="0" name="occluder" type="RID" />
 			<param index="1" name="vertices" type="PackedVector3Array" />
 			<param index="2" name="indices" type="PackedInt32Array" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="omni_light_create">
@@ -2265,76 +2265,76 @@
 		</method>
 		<method name="particles_collision_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_height_field_update">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_set_attractor_attenuation">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="curve" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_set_attractor_directionality">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="amount" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_set_attractor_strength">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="setrngth" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_set_box_extents">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="extents" type="Vector3" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_set_collision_type">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="type" type="int" enum="RenderingServer.ParticlesCollisionType" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_set_cull_mask">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="mask" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_set_field_texture">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_set_height_field_resolution">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="resolution" type="int" enum="RenderingServer.ParticlesCollisionHeightfieldResolution" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_collision_set_sphere_radius">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="radius" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_create">
@@ -2353,7 +2353,7 @@
 			<param index="3" name="color" type="Color" />
 			<param index="4" name="custom" type="Color" />
 			<param index="5" name="emit_flags" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_get_current_aabb">
@@ -2403,7 +2403,7 @@
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="size" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_set_custom_aabb">
@@ -2483,7 +2483,7 @@
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_set_lifetime">
@@ -2498,7 +2498,7 @@
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.ParticlesMode" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_set_one_shot">
@@ -2546,14 +2546,14 @@
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="subemitter_particles" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_set_trail_bind_poses">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="bind_poses" type="Transform3D[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_set_trails">
@@ -2561,14 +2561,14 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<param index="2" name="length_sec" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_set_transform_align">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="align" type="int" enum="RenderingServer.ParticlesTransformAlign" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="particles_set_use_local_coordinates">
@@ -2582,7 +2582,7 @@
 		<method name="positional_soft_shadow_filter_set_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="reflection_probe_create">
@@ -2597,21 +2597,21 @@
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="color" type="Color" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="reflection_probe_set_ambient_energy">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="energy" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="reflection_probe_set_ambient_mode">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.ReflectionProbeAmbientMode" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="reflection_probe_set_as_interior">
@@ -2674,7 +2674,7 @@
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="pixels" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="reflection_probe_set_origin_offset">
@@ -2689,7 +2689,7 @@
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="resolution" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="reflection_probe_set_update_mode">
@@ -2719,7 +2719,7 @@
 			<return type="void" />
 			<param index="0" name="scenario" type="RID" />
 			<param index="1" name="effects" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="scenario_set_environment">
@@ -2743,7 +2743,7 @@
 			<param index="0" name="enable" type="bool" />
 			<param index="1" name="amount" type="float" />
 			<param index="2" name="limit" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_boot_image">
@@ -2798,14 +2798,14 @@
 			<return type="Variant" />
 			<param index="0" name="shader" type="RID" />
 			<param index="1" name="name" type="StringName" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="shader_set_code">
 			<return type="void" />
 			<param index="0" name="shader" type="RID" />
 			<param index="1" name="code" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="shader_set_default_texture_parameter">
@@ -2823,7 +2823,7 @@
 			<return type="void" />
 			<param index="0" name="shader" type="RID" />
 			<param index="1" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="skeleton_allocate_data">
@@ -2831,7 +2831,7 @@
 			<param index="0" name="skeleton" type="RID" />
 			<param index="1" name="bones" type="int" />
 			<param index="2" name="is_2d_skeleton" type="bool" default="false" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform" qualifiers="const">
@@ -2886,7 +2886,7 @@
 			<return type="void" />
 			<param index="0" name="skeleton" type="RID" />
 			<param index="1" name="base_transform" type="Transform2D" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="sky_bake_panorama">
@@ -2895,7 +2895,7 @@
 			<param index="1" name="energy" type="float" />
 			<param index="2" name="bake_irradiance" type="bool" />
 			<param index="3" name="size" type="Vector2i" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="sky_create">
@@ -2917,14 +2917,14 @@
 			<return type="void" />
 			<param index="0" name="sky" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.SkyMode" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="sky_set_radiance_size">
 			<return type="void" />
 			<param index="0" name="sky" type="RID" />
 			<param index="1" name="radiance_size" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="spot_light_create">
@@ -2938,51 +2938,51 @@
 		<method name="sub_surface_scattering_set_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.SubSurfaceScatteringQuality" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="sub_surface_scattering_set_scale">
 			<return type="void" />
 			<param index="0" name="scale" type="float" />
 			<param index="1" name="depth_scale" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_2d_create">
 			<return type="RID" />
 			<param index="0" name="image" type="Image" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_2d_get" qualifiers="const">
 			<return type="Image" />
 			<param index="0" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_2d_layer_get" qualifiers="const">
 			<return type="Image" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="layer" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_2d_layered_create">
 			<return type="RID" />
 			<param index="0" name="layers" type="Image[]" />
 			<param index="1" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_2d_layered_placeholder_create">
 			<return type="RID" />
 			<param index="0" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_2d_placeholder_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_2d_update">
@@ -2990,7 +2990,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="image" type="Image" />
 			<param index="2" name="layer" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_3d_create">
@@ -3001,31 +3001,31 @@
 			<param index="3" name="depth" type="int" />
 			<param index="4" name="mipmaps" type="bool" />
 			<param index="5" name="data" type="Image[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_3d_get" qualifiers="const">
 			<return type="Image[]" />
 			<param index="0" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_3d_placeholder_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_3d_update">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="data" type="Image[]" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_get_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_get_rd_texture" qualifiers="const">
@@ -3039,35 +3039,35 @@
 		<method name="texture_proxy_create">
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_proxy_update">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="proxy_to" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_replace">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="by_texture" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_set_force_redraw_if_visible">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_set_path">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="texture_set_size_override">
@@ -3075,7 +3075,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="width" type="int" />
 			<param index="2" name="height" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_attach_camera">
@@ -3123,13 +3123,13 @@
 		<method name="viewport_get_measured_render_time_cpu" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="viewport" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_get_measured_render_time_gpu" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="viewport" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_get_render_info">
@@ -3137,7 +3137,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="type" type="int" enum="RenderingServer.ViewportRenderInfoType" />
 			<param index="2" name="info" type="int" enum="RenderingServer.ViewportRenderInfo" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_get_texture" qualifiers="const">
@@ -3211,14 +3211,14 @@
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_default_canvas_item_texture_repeat">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_disable_2d">
@@ -3233,7 +3233,7 @@
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="disable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_disable_environment">
@@ -3264,7 +3264,7 @@
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_msaa_2d">
@@ -3286,13 +3286,13 @@
 		<method name="viewport_set_occlusion_culling_build_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.ViewportOcclusionCullingBuildQuality" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_occlusion_rays_per_thread">
 			<return type="void" />
 			<param index="0" name="rays_per_thread" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_parent_viewport">
@@ -3360,7 +3360,7 @@
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportScreenSpaceAA" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_sdf_oversize_and_scale">
@@ -3368,7 +3368,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="oversize" type="int" enum="RenderingServer.ViewportSDFOversize" />
 			<param index="2" name="scale" type="int" enum="RenderingServer.ViewportSDFScale" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_size">
@@ -3384,14 +3384,14 @@
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_snap_2d_vertices_to_pixel">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_texture_mipmap_bias">
@@ -3423,14 +3423,14 @@
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_use_occlusion_culling">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="viewport_set_use_taa">
@@ -3467,14 +3467,14 @@
 		</method>
 		<method name="visibility_notifier_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="visibility_notifier_set_aabb">
 			<return type="void" />
 			<param index="0" name="notifier" type="RID" />
 			<param index="1" name="aabb" type="AABB" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="visibility_notifier_set_callbacks">
@@ -3482,7 +3482,7 @@
 			<param index="0" name="notifier" type="RID" />
 			<param index="1" name="enter_callable" type="Callable" />
 			<param index="2" name="exit_callable" type="Callable" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_allocate_data">
@@ -3495,48 +3495,48 @@
 			<param index="5" name="data_cells" type="PackedByteArray" />
 			<param index="6" name="distance_field" type="PackedByteArray" />
 			<param index="7" name="level_counts" type="PackedInt32Array" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_get_data_cells" qualifiers="const">
 			<return type="PackedByteArray" />
 			<param index="0" name="voxel_gi" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_get_distance_field" qualifiers="const">
 			<return type="PackedByteArray" />
 			<param index="0" name="voxel_gi" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_get_level_counts" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="voxel_gi" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_get_octree_cells" qualifiers="const">
 			<return type="PackedByteArray" />
 			<param index="0" name="voxel_gi" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_get_octree_size" qualifiers="const">
 			<return type="Vector3i" />
 			<param index="0" name="voxel_gi" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_get_to_cell_xform" qualifiers="const">
 			<return type="Transform3D" />
 			<param index="0" name="voxel_gi" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_set_baked_exposure_normalization">
@@ -3551,55 +3551,55 @@
 			<return type="void" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="bias" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_set_dynamic_range">
 			<return type="void" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="range" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_set_energy">
 			<return type="void" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="energy" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_set_interior">
 			<return type="void" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_set_normal_bias">
 			<return type="void" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="bias" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_set_propagation">
 			<return type="void" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="amount" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_set_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.VoxelGIQuality" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="voxel_gi_set_use_two_bounces">
 			<return type="void" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="enable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

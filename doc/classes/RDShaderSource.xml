@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RDShaderSource" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
-	<brief_description>
+	<brief_description>          
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,14 +10,14 @@
 		<method name="get_stage_source" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_stage_source">
 			<return type="void" />
 			<param index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
 			<param index="1" name="source" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

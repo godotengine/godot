@@ -17,7 +17,7 @@
 			<param index="0" name="brightness" type="float" />
 			<param index="1" name="contrast" type="float" />
 			<param index="2" name="saturation" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="blend_rect">
@@ -85,7 +85,7 @@
 			<param index="0" name="mode" type="int" enum="Image.CompressMode" />
 			<param index="1" name="channels" type="int" enum="Image.UsedChannels" />
 			<param index="2" name="lossy_quality" type="float" default="0.7" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="compute_image_metrics">
@@ -156,7 +156,7 @@
 		<method name="detect_used_channels" qualifiers="const">
 			<return type="int" enum="Image.UsedChannels" />
 			<param index="0" name="source" type="int" enum="Image.CompressSource" default="0" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="fill">

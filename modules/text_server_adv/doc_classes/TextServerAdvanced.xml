@@ -3,7 +3,7 @@
 	<brief_description>
 		Text Server using HarfBuzz, ICU and SIL Graphite to support BiDi, complex text layouts and contextual OpenType features.
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>

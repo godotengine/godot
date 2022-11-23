@@ -41,37 +41,37 @@
 		<operator name="operator !=">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 	</operators>

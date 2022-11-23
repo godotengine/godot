@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NativeExtensionManager" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
-	<brief_description>
+	<brief_description>          
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,36 +10,36 @@
 		<method name="get_extension">
 			<return type="NativeExtension" />
 			<param index="0" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_loaded_extensions" qualifiers="const">
 			<return type="PackedStringArray" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="is_extension_loaded" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="load_extension">
 			<return type="int" enum="NativeExtensionManager.LoadStatus" />
 			<param index="0" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="reload_extension">
 			<return type="int" enum="NativeExtensionManager.LoadStatus" />
 			<param index="0" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="unload_extension">
 			<return type="int" enum="NativeExtensionManager.LoadStatus" />
 			<param index="0" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

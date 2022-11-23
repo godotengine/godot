@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StreamPeerExtension" inherits="StreamPeer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
-	<brief_description>
+	<brief_description>          
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="_get_available_bytes" qualifiers="virtual const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_data" qualifiers="virtual">
@@ -17,7 +17,7 @@
 			<param index="0" name="r_buffer" type="uint8_t*" />
 			<param index="1" name="r_bytes" type="int" />
 			<param index="2" name="r_received" type="int32_t*" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_partial_data" qualifiers="virtual">
@@ -25,7 +25,7 @@
 			<param index="0" name="r_buffer" type="uint8_t*" />
 			<param index="1" name="r_bytes" type="int" />
 			<param index="2" name="r_received" type="int32_t*" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_put_data" qualifiers="virtual">
@@ -33,7 +33,7 @@
 			<param index="0" name="p_data" type="const uint8_t*" />
 			<param index="1" name="p_bytes" type="int" />
 			<param index="2" name="r_sent" type="int32_t*" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_put_partial_data" qualifiers="virtual">
@@ -41,7 +41,7 @@
 			<param index="0" name="p_data" type="const uint8_t*" />
 			<param index="1" name="p_bytes" type="int" />
 			<param index="2" name="r_sent" type="int32_t*" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

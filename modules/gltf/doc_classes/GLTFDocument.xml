@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFDocument" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
-	<brief_description>
+	<brief_description>          
 	</brief_description>
 	<description>
 		Append a glTF2 3d format from a file, buffer or scene and then write to the filesystem, buffer or scene.

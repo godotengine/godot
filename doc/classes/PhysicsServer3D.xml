@@ -118,7 +118,7 @@
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="area_set_collision_layer">
@@ -154,7 +154,7 @@
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="monitorable" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="area_set_param">
@@ -188,7 +188,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="disabled" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="area_set_shape_transform">
@@ -335,7 +335,7 @@
 		</method>
 		<method name="body_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
@@ -453,7 +453,7 @@
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="body_is_continuous_collision_detection_enabled" qualifiers="const">
@@ -499,7 +499,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
 			<param index="2" name="lock" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="body_set_axis_velocity">
@@ -628,7 +628,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="disabled" type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="body_set_shape_transform">
@@ -668,17 +668,17 @@
 		</method>
 		<method name="box_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="capsule_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="concave_polygon_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
@@ -700,17 +700,17 @@
 		</method>
 		<method name="convex_polygon_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="custom_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="cylinder_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="free_rid">
@@ -767,7 +767,7 @@
 		</method>
 		<method name="heightmap_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
@@ -807,12 +807,12 @@
 		<method name="joint_clear">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_get_solver_priority" qualifiers="const">
@@ -836,7 +836,7 @@
 			<param index="2" name="local_ref_A" type="Transform3D" />
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="local_ref_B" type="Transform3D" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_make_generic_6dof">
@@ -846,7 +846,7 @@
 			<param index="2" name="local_ref_A" type="Transform3D" />
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="local_ref_B" type="Transform3D" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_make_hinge">
@@ -856,7 +856,7 @@
 			<param index="2" name="hinge_A" type="Transform3D" />
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="hinge_B" type="Transform3D" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_make_pin">
@@ -866,7 +866,7 @@
 			<param index="2" name="local_A" type="Vector3" />
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="local_B" type="Vector3" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_make_slider">
@@ -876,7 +876,7 @@
 			<param index="2" name="local_ref_A" type="Transform3D" />
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="local_ref_B" type="Transform3D" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="joint_set_solver_priority">
@@ -936,7 +936,7 @@
 		</method>
 		<method name="separation_ray_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_active">
@@ -988,7 +988,7 @@
 		<method name="soft_body_get_bounds" qualifiers="const">
 			<return type="AABB" />
 			<param index="0" name="body" type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="space_create">
@@ -1038,12 +1038,12 @@
 		</method>
 		<method name="sphere_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="world_boundary_shape_create">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

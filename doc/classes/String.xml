@@ -540,7 +540,7 @@
 		<method name="num_scientific" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="number" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="num_uint64" qualifiers="static">
@@ -919,67 +919,67 @@
 		<operator name="operator !=">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator %">
 			<return type="String" />
 			<param index="0" name="right" type="Variant" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="String" />
 			<param index="0" name="right" type="String" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="String" />
 			<param index="0" name="index" type="int" />
-			<description>
+			<description>          
 			</description>
 		</operator>
 	</operators>

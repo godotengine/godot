@@ -126,7 +126,7 @@
 		</method>
 		<method name="_get_vrs_texture" qualifiers="virtual">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_initialize" qualifiers="virtual">
@@ -226,12 +226,12 @@
 		</method>
 		<method name="get_color_texture">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_depth_texture">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_render_target_texture">
@@ -243,7 +243,7 @@
 		</method>
 		<method name="get_velocity_texture">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

@@ -44,7 +44,7 @@
 		<method name="find_blend_shape_by_name">
 			<return type="int" />
 			<param index="0" name="name" type="StringName" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_active_material" qualifiers="const">
@@ -56,13 +56,13 @@
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_blend_shape_value" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="blend_shape_idx" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_surface_override_material" qualifiers="const">
@@ -82,7 +82,7 @@
 			<return type="void" />
 			<param index="0" name="blend_shape_idx" type="int" />
 			<param index="1" name="value" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_surface_override_material">

@@ -23,7 +23,7 @@
 	<methods>
 		<method name="get_current_length" qualifiers="const">
 			<return type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_current_node" qualifiers="const">

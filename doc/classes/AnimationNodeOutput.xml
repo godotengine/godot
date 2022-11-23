@@ -3,7 +3,7 @@
 	<brief_description>
 		Generic output node to be added to [AnimationNodeBlendTree].
 	</brief_description>
-	<description>
+	<description>          
 	</description>
 	<tutorials>
 		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>

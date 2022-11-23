@@ -616,7 +616,7 @@
 	</methods>
 	<signals>
 		<signal name="property_list_changed">
-			<description>
+			<description>          
 			</description>
 		</signal>
 		<signal name="script_changed">

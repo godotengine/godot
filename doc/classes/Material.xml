@@ -13,27 +13,27 @@
 	<methods>
 		<method name="_can_do_next_pass" qualifiers="virtual const">
 			<return type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_can_use_render_priority" qualifiers="virtual const">
 			<return type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_shader_mode" qualifiers="virtual const">
 			<return type="int" enum="Shader.Mode" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_shader_rid" qualifiers="virtual const">
 			<return type="RID" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="inspect_native_shader_code">
 			<return type="void" />
-			<description>
+			<description>          
 			</description>
 		</method>
 	</methods>

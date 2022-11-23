@@ -87,28 +87,28 @@
 			<return type="float" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_cache_scale" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_cache_underline_position" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_cache_underline_thickness" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_embolden" qualifiers="const">
@@ -376,7 +376,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<param index="2" name="ascent" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_cache_descent">
@@ -384,7 +384,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<param index="2" name="descent" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_cache_scale">
@@ -392,7 +392,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<param index="2" name="scale" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_cache_underline_position">
@@ -400,7 +400,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<param index="2" name="underline_position" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_cache_underline_thickness">
@@ -408,7 +408,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<param index="2" name="underline_thickness" type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="set_embolden">

@@ -14,13 +14,13 @@
 		<method name="_exists" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_classes_used" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<param index="0" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_dependencies" qualifiers="virtual const">
@@ -49,7 +49,7 @@
 		<method name="_get_resource_uid" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="path" type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_handles_type" qualifiers="virtual const">

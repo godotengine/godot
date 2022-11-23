@@ -15,32 +15,32 @@
 	<methods>
 		<method name="_get_beat_count" qualifiers="virtual const">
 			<return type="int" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_bpm" qualifiers="virtual const">
 			<return type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_length" qualifiers="virtual const">
 			<return type="float" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_get_stream_name" qualifiers="virtual const">
 			<return type="String" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_instantiate_playback" qualifiers="virtual const">
 			<return type="AudioStreamPlayback" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="_is_monophonic" qualifiers="virtual const">
 			<return type="bool" />
-			<description>
+			<description>          
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
