@@ -209,11 +209,11 @@ void GLTFState::set_meshes(TypedArray<GLTFMesh> p_meshes) {
 	GLTFTemplateConvert::set_from_array(meshes, p_meshes);
 }
 
-TypedArray<BaseMaterial3D> GLTFState::get_materials() {
+TypedArray<Material> GLTFState::get_materials() {
 	return GLTFTemplateConvert::to_array(materials);
 }
 
-void GLTFState::set_materials(TypedArray<BaseMaterial3D> p_materials) {
+void GLTFState::set_materials(TypedArray<Material> p_materials) {
 	GLTFTemplateConvert::set_from_array(materials, p_materials);
 }
 

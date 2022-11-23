@@ -66,7 +66,7 @@
 			</description>
 		</method>
 		<method name="get_materials">
-			<return type="BaseMaterial3D[]" />
+			<return type="Material[]" />
 			<description>
 			</description>
 		</method>
@@ -169,7 +169,7 @@
 		</method>
 		<method name="set_materials">
 			<return type="void" />
-			<param index="0" name="materials" type="BaseMaterial3D[]" />
+			<param index="0" name="materials" type="Material[]" />
 			<description>
 			</description>
 		</method>

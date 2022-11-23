@@ -2484,12 +2484,12 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 			if (surface_i < instance_materials.size()) {
 				v = instance_materials.get(surface_i);
 			}
-			Ref<BaseMaterial3D> mat = v;
+			Ref<Material> mat = v;
 			if (!mat.is_valid()) {
 				mat = import_mesh->get_surface_material(surface_i);
 			}
 			if (mat.is_valid()) {
-				HashMap<Ref<BaseMaterial3D>, GLTFMaterialIndex>::Iterator material_cache_i = state->material_cache.find(mat);
+				HashMap<Ref<Material>, GLTFMaterialIndex>::Iterator material_cache_i = state->material_cache.find(mat);
 				if (material_cache_i && material_cache_i->value != -1) {
 					primitive["material"] = material_cache_i->value;
 				} else {
@@ -2937,16 +2937,18 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				}
 			}
 
-			Ref<BaseMaterial3D> mat;
+			Ref<Material> mat;
 			String mat_name;
 			if (!state->discard_meshes_and_materials) {
 				if (p.has("material")) {
 					const int material = p["material"];
 					ERR_FAIL_INDEX_V(material, state->materials.size(), ERR_FILE_CORRUPT);
-					Ref<BaseMaterial3D> mat3d = state->materials[material];
+					Ref<Material> mat3d = state->materials[material];
 					ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
-					if (has_vertex_color) {
-						mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+					Ref<BaseMaterial3D> base_material = mat3d;
+					if (has_vertex_color && base_material.is_valid()) {
+						base_material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 					}
 					mat = mat3d;
 
@@ -2954,7 +2956,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					Ref<StandardMaterial3D> mat3d;
 					mat3d.instantiate();
 					if (has_vertex_color) {
-						mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+						mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 					}
 					mat = mat3d;
 				}
@@ -3382,8 +3384,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 	Array materials;
 	for (int32_t i = 0; i < state->materials.size(); i++) {
 		Dictionary d;
-
-		Ref<BaseMaterial3D> material = state->materials[i];
+		Ref<Material> material = state->materials[i];
 		if (material.is_null()) {
 			materials.push_back(d);
 			continue;
@@ -3391,11 +3392,12 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 		if (!material->get_name().is_empty()) {
 			d["name"] = _gen_unique_name(state, material->get_name());
 		}
-		{
+		Ref<BaseMaterial3D> base_material = material;
+		if (base_material.is_valid()) {
 			Dictionary mr;
 			{
 				Array arr;
-				const Color c = material->get_albedo().srgb_to_linear();
+				const Color c = base_material->get_albedo().srgb_to_linear();
 				arr.push_back(c.r);
 				arr.push_back(c.g);
 				arr.push_back(c.b);
@@ -3404,167 +3406,169 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			}
 			{
 				Dictionary bct;
-				Ref<Texture2D> albedo_texture = material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
-				GLTFTextureIndex gltf_texture_index = -1;
+				if (base_material.is_valid()) {
+					Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+					GLTFTextureIndex gltf_texture_index = -1;
 
-				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
-					albedo_texture->set_name(material->get_name() + "_albedo");
-					gltf_texture_index = _set_texture(state, albedo_texture, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
-				}
-				if (gltf_texture_index != -1) {
-					bct["index"] = gltf_texture_index;
-					Dictionary extensions = _serialize_texture_transform_uv1(material);
-					if (!extensions.is_empty()) {
-						bct["extensions"] = extensions;
-						state->use_khr_texture_transform = true;
+					if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
+						albedo_texture->set_name(material->get_name() + "_albedo");
+						gltf_texture_index = _set_texture(state, albedo_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 					}
-					mr["baseColorTexture"] = bct;
+					if (gltf_texture_index != -1) {
+						bct["index"] = gltf_texture_index;
+						Dictionary extensions = _serialize_texture_transform_uv1(material);
+						if (!extensions.is_empty()) {
+							bct["extensions"] = extensions;
+							state->use_khr_texture_transform = true;
+						}
+						mr["baseColorTexture"] = bct;
+					}
 				}
 			}
-
-			mr["metallicFactor"] = material->get_metallic();
-			mr["roughnessFactor"] = material->get_roughness();
-			bool has_roughness = material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
-			bool has_ao = material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
-			bool has_metalness = material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_image().is_valid();
-			if (has_ao || has_roughness || has_metalness) {
-				Dictionary mrt;
-				Ref<Texture2D> roughness_texture = material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
-				BaseMaterial3D::TextureChannel roughness_channel = material->get_roughness_texture_channel();
-				Ref<Texture2D> metallic_texture = material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
-				BaseMaterial3D::TextureChannel metalness_channel = material->get_metallic_texture_channel();
-				Ref<Texture2D> ao_texture = material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION);
-				BaseMaterial3D::TextureChannel ao_channel = material->get_ao_texture_channel();
-				Ref<ImageTexture> orm_texture;
-				orm_texture.instantiate();
-				Ref<Image> orm_image;
-				orm_image.instantiate();
-				int32_t height = 0;
-				int32_t width = 0;
-				Ref<Image> ao_image;
-				if (has_ao) {
-					height = ao_texture->get_height();
-					width = ao_texture->get_width();
-					ao_image = ao_texture->get_image();
-					Ref<ImageTexture> img_tex = ao_image;
-					if (img_tex.is_valid()) {
-						ao_image = img_tex->get_image();
-					}
-					if (ao_image->is_compressed()) {
-						ao_image->decompress();
-					}
-				}
-				Ref<Image> roughness_image;
-				if (has_roughness) {
-					height = roughness_texture->get_height();
-					width = roughness_texture->get_width();
-					roughness_image = roughness_texture->get_image();
-					Ref<ImageTexture> img_tex = roughness_image;
-					if (img_tex.is_valid()) {
-						roughness_image = img_tex->get_image();
-					}
-					if (roughness_image->is_compressed()) {
-						roughness_image->decompress();
-					}
-				}
-				Ref<Image> metallness_image;
-				if (has_metalness) {
-					height = metallic_texture->get_height();
-					width = metallic_texture->get_width();
-					metallness_image = metallic_texture->get_image();
-					Ref<ImageTexture> img_tex = metallness_image;
-					if (img_tex.is_valid()) {
-						metallness_image = img_tex->get_image();
-					}
-					if (metallness_image->is_compressed()) {
-						metallness_image->decompress();
-					}
-				}
-				Ref<Texture2D> albedo_texture = material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
-				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
-					height = albedo_texture->get_height();
-					width = albedo_texture->get_width();
-				}
-				orm_image->initialize_data(width, height, false, Image::FORMAT_RGBA8);
-				if (ao_image.is_valid() && ao_image->get_size() != Vector2(width, height)) {
-					ao_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
-				}
-				if (roughness_image.is_valid() && roughness_image->get_size() != Vector2(width, height)) {
-					roughness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
-				}
-				if (metallness_image.is_valid() && metallness_image->get_size() != Vector2(width, height)) {
-					metallness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
-				}
-				for (int32_t h = 0; h < height; h++) {
-					for (int32_t w = 0; w < width; w++) {
-						Color c = Color(1.0f, 1.0f, 1.0f);
-						if (has_ao) {
-							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
-								c.r = ao_image->get_pixel(w, h).r;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
-								c.r = ao_image->get_pixel(w, h).g;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
-								c.r = ao_image->get_pixel(w, h).b;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
-								c.r = ao_image->get_pixel(w, h).a;
-							}
-						}
-						if (has_roughness) {
-							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
-								c.g = roughness_image->get_pixel(w, h).r;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
-								c.g = roughness_image->get_pixel(w, h).g;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
-								c.g = roughness_image->get_pixel(w, h).b;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
-								c.g = roughness_image->get_pixel(w, h).a;
-							}
-						}
-						if (has_metalness) {
-							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
-								c.b = metallness_image->get_pixel(w, h).r;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
-								c.b = metallness_image->get_pixel(w, h).g;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
-								c.b = metallness_image->get_pixel(w, h).b;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
-								c.b = metallness_image->get_pixel(w, h).a;
-							}
-						}
-						orm_image->set_pixel(w, h, c);
-					}
-				}
-				orm_image->generate_mipmaps();
-				orm_texture->set_image(orm_image);
-				GLTFTextureIndex orm_texture_index = -1;
+			if (base_material.is_valid()) {
+				mr["metallicFactor"] = base_material->get_metallic();
+				mr["roughnessFactor"] = base_material->get_roughness();
+				bool has_roughness = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
+				bool has_ao = base_material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
+				bool has_metalness = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_image().is_valid();
 				if (has_ao || has_roughness || has_metalness) {
-					orm_texture->set_name(material->get_name() + "_orm");
-					orm_texture_index = _set_texture(state, orm_texture, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
-				}
-				if (has_ao) {
-					Dictionary occt;
-					occt["index"] = orm_texture_index;
-					d["occlusionTexture"] = occt;
-				}
-				if (has_roughness || has_metalness) {
-					mrt["index"] = orm_texture_index;
-					Dictionary extensions = _serialize_texture_transform_uv1(material);
-					if (!extensions.is_empty()) {
-						mrt["extensions"] = extensions;
-						state->use_khr_texture_transform = true;
+					Dictionary mrt;
+					Ref<Texture2D> roughness_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
+					BaseMaterial3D::TextureChannel roughness_channel = base_material->get_roughness_texture_channel();
+					Ref<Texture2D> metallic_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
+					BaseMaterial3D::TextureChannel metalness_channel = base_material->get_metallic_texture_channel();
+					Ref<Texture2D> ao_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION);
+					BaseMaterial3D::TextureChannel ao_channel = base_material->get_ao_texture_channel();
+					Ref<ImageTexture> orm_texture;
+					orm_texture.instantiate();
+					Ref<Image> orm_image;
+					orm_image.instantiate();
+					int32_t height = 0;
+					int32_t width = 0;
+					Ref<Image> ao_image;
+					if (has_ao) {
+						height = ao_texture->get_height();
+						width = ao_texture->get_width();
+						ao_image = ao_texture->get_image();
+						Ref<ImageTexture> img_tex = ao_image;
+						if (img_tex.is_valid()) {
+							ao_image = img_tex->get_image();
+						}
+						if (ao_image->is_compressed()) {
+							ao_image->decompress();
+						}
 					}
-					mr["metallicRoughnessTexture"] = mrt;
+					Ref<Image> roughness_image;
+					if (has_roughness) {
+						height = roughness_texture->get_height();
+						width = roughness_texture->get_width();
+						roughness_image = roughness_texture->get_image();
+						Ref<ImageTexture> img_tex = roughness_image;
+						if (img_tex.is_valid()) {
+							roughness_image = img_tex->get_image();
+						}
+						if (roughness_image->is_compressed()) {
+							roughness_image->decompress();
+						}
+					}
+					Ref<Image> metallness_image;
+					if (has_metalness) {
+						height = metallic_texture->get_height();
+						width = metallic_texture->get_width();
+						metallness_image = metallic_texture->get_image();
+						Ref<ImageTexture> img_tex = metallness_image;
+						if (img_tex.is_valid()) {
+							metallness_image = img_tex->get_image();
+						}
+						if (metallness_image->is_compressed()) {
+							metallness_image->decompress();
+						}
+					}
+					Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+					if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
+						height = albedo_texture->get_height();
+						width = albedo_texture->get_width();
+					}
+					orm_image->initialize_data(width, height, false, Image::FORMAT_RGBA8);
+					if (ao_image.is_valid() && ao_image->get_size() != Vector2(width, height)) {
+						ao_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
+					}
+					if (roughness_image.is_valid() && roughness_image->get_size() != Vector2(width, height)) {
+						roughness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
+					}
+					if (metallness_image.is_valid() && metallness_image->get_size() != Vector2(width, height)) {
+						metallness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
+					}
+					for (int32_t h = 0; h < height; h++) {
+						for (int32_t w = 0; w < width; w++) {
+							Color c = Color(1.0f, 1.0f, 1.0f);
+							if (has_ao) {
+								if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
+									c.r = ao_image->get_pixel(w, h).r;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
+									c.r = ao_image->get_pixel(w, h).g;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
+									c.r = ao_image->get_pixel(w, h).b;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
+									c.r = ao_image->get_pixel(w, h).a;
+								}
+							}
+							if (has_roughness) {
+								if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
+									c.g = roughness_image->get_pixel(w, h).r;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
+									c.g = roughness_image->get_pixel(w, h).g;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
+									c.g = roughness_image->get_pixel(w, h).b;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
+									c.g = roughness_image->get_pixel(w, h).a;
+								}
+							}
+							if (has_metalness) {
+								if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
+									c.b = metallness_image->get_pixel(w, h).r;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
+									c.b = metallness_image->get_pixel(w, h).g;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
+									c.b = metallness_image->get_pixel(w, h).b;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
+									c.b = metallness_image->get_pixel(w, h).a;
+								}
+							}
+							orm_image->set_pixel(w, h, c);
+						}
+					}
+					orm_image->generate_mipmaps();
+					orm_texture->set_image(orm_image);
+					GLTFTextureIndex orm_texture_index = -1;
+					if (has_ao || has_roughness || has_metalness) {
+						orm_texture->set_name(material->get_name() + "_orm");
+						orm_texture_index = _set_texture(state, orm_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+					}
+					if (has_ao) {
+						Dictionary occt;
+						occt["index"] = orm_texture_index;
+						d["occlusionTexture"] = occt;
+					}
+					if (has_roughness || has_metalness) {
+						mrt["index"] = orm_texture_index;
+						Dictionary extensions = _serialize_texture_transform_uv1(material);
+						if (!extensions.is_empty()) {
+							mrt["extensions"] = extensions;
+							state->use_khr_texture_transform = true;
+						}
+						mr["metallicRoughnessTexture"] = mrt;
+					}
 				}
 			}
 			d["pbrMetallicRoughness"] = mr;
 		}
-
-		if (material->get_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING)) {
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING)) {
 			Dictionary nt;
 			Ref<ImageTexture> tex;
 			tex.instantiate();
 			{
-				Ref<Texture2D> normal_texture = material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
+				Ref<Texture2D> normal_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
 				if (normal_texture.is_valid()) {
 					// Code for uncompressing RG normal maps
 					Ref<Image> img = normal_texture->get_image();
@@ -3594,30 +3598,30 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (tex.is_valid() && tex->get_image().is_valid()) {
 				tex->set_name(material->get_name() + "_normal");
-				gltf_texture_index = _set_texture(state, tex, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+				gltf_texture_index = _set_texture(state, tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
-			nt["scale"] = material->get_normal_scale();
+			nt["scale"] = base_material->get_normal_scale();
 			if (gltf_texture_index != -1) {
 				nt["index"] = gltf_texture_index;
 				d["normalTexture"] = nt;
 			}
 		}
 
-		if (material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
-			const Color c = material->get_emission().linear_to_srgb();
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
+			const Color c = base_material->get_emission().linear_to_srgb();
 			Array arr;
 			arr.push_back(c.r);
 			arr.push_back(c.g);
 			arr.push_back(c.b);
 			d["emissiveFactor"] = arr;
 		}
-		if (material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			Dictionary et;
-			Ref<Texture2D> emission_texture = material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
+			Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (emission_texture.is_valid() && emission_texture->get_image().is_valid()) {
 				emission_texture->set_name(material->get_name() + "_emission");
-				gltf_texture_index = _set_texture(state, emission_texture, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+				gltf_texture_index = _set_texture(state, emission_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 
 			if (gltf_texture_index != -1) {
@@ -3625,14 +3629,14 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				d["emissiveTexture"] = et;
 			}
 		}
-		const bool ds = material->get_cull_mode() == BaseMaterial3D::CULL_DISABLED;
+		const bool ds = base_material->get_cull_mode() == BaseMaterial3D::CULL_DISABLED;
 		if (ds) {
 			d["doubleSided"] = ds;
 		}
-		if (material->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR) {
+		if (base_material->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR) {
 			d["alphaMode"] = "MASK";
-			d["alphaCutoff"] = material->get_alpha_scissor_threshold();
-		} else if (material->get_transparency() != BaseMaterial3D::TRANSPARENCY_DISABLED) {
+			d["alphaCutoff"] = base_material->get_alpha_scissor_threshold();
+		} else if (base_material->get_transparency() != BaseMaterial3D::TRANSPARENCY_DISABLED) {
 			d["alphaMode"] = "BLEND";
 		}
 		materials.push_back(d);
@@ -3838,27 +3842,35 @@ void GLTFDocument::_set_texture_transform_uv1(const Dictionary &d, Ref<BaseMater
 	if (d.has("extensions")) {
 		const Dictionary &extensions = d["extensions"];
 		if (extensions.has("KHR_texture_transform")) {
-			const Dictionary &texture_transform = extensions["KHR_texture_transform"];
-			const Array &offset_arr = texture_transform["offset"];
-			if (offset_arr.size() == 2) {
-				const Vector3 offset_vector3 = Vector3(offset_arr[0], offset_arr[1], 0.0f);
-				material->set_uv1_offset(offset_vector3);
-			}
+			if (material.is_valid()) {
+				const Dictionary &texture_transform = extensions["KHR_texture_transform"];
+				const Array &offset_arr = texture_transform["offset"];
+				if (offset_arr.size() == 2) {
+					const Vector3 offset_vector3 = Vector3(offset_arr[0], offset_arr[1], 0.0f);
+					material->set_uv1_offset(offset_vector3);
+				}
 
-			const Array &scale_arr = texture_transform["scale"];
-			if (scale_arr.size() == 2) {
-				const Vector3 scale_vector3 = Vector3(scale_arr[0], scale_arr[1], 1.0f);
-				material->set_uv1_scale(scale_vector3);
+				const Array &scale_arr = texture_transform["scale"];
+				if (scale_arr.size() == 2) {
+					const Vector3 scale_vector3 = Vector3(scale_arr[0], scale_arr[1], 1.0f);
+					material->set_uv1_scale(scale_vector3);
+				}
 			}
 		}
 	}
 }
 
 void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Ref<BaseMaterial3D> p_material) {
+	if (r_spec_gloss.is_null()) {
+		return;
+	}
 	if (r_spec_gloss->spec_gloss_img.is_null()) {
 		return;
 	}
 	if (r_spec_gloss->diffuse_img.is_null()) {
+		return;
+	}
+	if (p_material.is_null()) {
 		return;
 	}
 	bool has_roughness = false;
@@ -6657,21 +6669,17 @@ Dictionary _serialize_texture_transform_uv(Vector2 p_offset, Vector2 p_scale) {
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material) {
-	if (p_material.is_valid()) {
-		Vector3 offset = p_material->get_uv1_offset();
-		Vector3 scale = p_material->get_uv1_scale();
-		return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
-	}
-	return Dictionary();
+	ERR_FAIL_NULL_V(p_material, Dictionary());
+	Vector3 offset = p_material->get_uv1_offset();
+	Vector3 scale = p_material->get_uv1_scale();
+	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material) {
-	if (p_material.is_valid()) {
-		Vector3 offset = p_material->get_uv2_offset();
-		Vector3 scale = p_material->get_uv2_scale();
-		return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
-	}
-	return Dictionary();
+	ERR_FAIL_NULL_V(p_material, Dictionary());
+	Vector3 offset = p_material->get_uv2_offset();
+	Vector3 scale = p_material->get_uv2_scale();
+	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 }
 
 Error GLTFDocument::_serialize_version(Ref<GLTFState> state) {
