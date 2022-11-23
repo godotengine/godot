@@ -1239,7 +1239,7 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 
-	if (!se->is_edit_mode()) {
+	if (!se || !se->is_edit_mode()) {
 		return -1;
 	}
 
