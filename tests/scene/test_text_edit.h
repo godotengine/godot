@@ -3261,8 +3261,8 @@ TEST_CASE("[SceneTree][TextEdit] mouse") {
 	CHECK(text_edit->get_line_column_at_pos(Point2i(end_pos.x - 100, end_pos.y - 100), false) == Point2i(90, 0));
 
 	CHECK(text_edit->get_line_column_at_pos(Point2i(end_pos.x - 100, end_pos.y)) == Point2i(90, 0));
-	CHECK(text_edit->get_line_column_at_pos(Point2i(end_pos.x, end_pos.y + 100)) == Point2i(141, 0));
-	CHECK(text_edit->get_line_column_at_pos(Point2i(end_pos.x - 100, end_pos.y + 100)) == Point2i(141, 0));
+	CHECK(text_edit->get_line_column_at_pos(Point2i(end_pos.x, end_pos.y + 100)) == Point2i(140, 0));
+	CHECK(text_edit->get_line_column_at_pos(Point2i(end_pos.x - 100, end_pos.y + 100)) == Point2i(140, 0));
 	CHECK(text_edit->get_line_column_at_pos(Point2i(end_pos.x, end_pos.y - 100)) == Point2i(104, 0));
 	CHECK(text_edit->get_line_column_at_pos(Point2i(end_pos.x - 100, end_pos.y - 100)) == Point2i(90, 0));
 
