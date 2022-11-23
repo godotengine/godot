@@ -213,6 +213,8 @@ private:
 		int sv_width = 0;
 		int h_width = 0;
 
+		bool center_slider_grabbers = true;
+
 		Ref<Texture2D> screen_picker;
 		Ref<Texture2D> expanded_arrow;
 		Ref<Texture2D> folded_arrow;

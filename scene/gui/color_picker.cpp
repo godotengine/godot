@@ -67,9 +67,11 @@ void ColorPicker::_notification(int p_what) {
 
 			for (int i = 0; i < SLIDER_COUNT; i++) {
 				labels[i]->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
+				sliders[i]->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 				set_offset((Side)i, get_offset((Side)i) + theme_cache.content_margin);
 			}
 			alpha_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
+			alpha_label->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 			set_offset((Side)0, get_offset((Side)0) + theme_cache.content_margin);
 
 			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
@@ -121,6 +123,8 @@ void ColorPicker::_update_theme_item_cache() {
 	theme_cache.sv_width = get_theme_constant(SNAME("sv_width"));
 	theme_cache.sv_height = get_theme_constant(SNAME("sv_height"));
 	theme_cache.h_width = get_theme_constant(SNAME("h_width"));
+
+	theme_cache.center_slider_grabbers = get_theme_constant(SNAME("center_slider_grabbers"));
 
 	theme_cache.screen_picker = get_theme_icon(SNAME("screen_picker"));
 	theme_cache.expanded_arrow = get_theme_icon(SNAME("expanded_arrow"));
