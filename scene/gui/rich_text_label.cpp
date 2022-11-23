@@ -3860,6 +3860,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							Color color2 = Color::from_string(subtag_b[1], fallback_color);
 							set_cell_row_background_color(color1, color2);
 						}
+						if (subtag_b.size() == 1) {
+							Color color1 = Color::from_string(subtag_a[1], fallback_color);
+							set_cell_row_background_color(color1, color1);
+						}
 					}
 				}
 			}
