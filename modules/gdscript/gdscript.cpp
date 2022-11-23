@@ -1351,13 +1351,11 @@ void GDScript::_get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScri
 
 GDScript::GDScript() :
 		script_list(this) {
-#ifdef DEBUG_ENABLED
 	{
 		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 		GDScriptLanguage::get_singleton()->script_list.add(&script_list);
 	}
-#endif
 }
 
 void GDScript::_save_orphaned_subclasses() {
@@ -1491,13 +1489,11 @@ GDScript::~GDScript() {
 		}
 	}
 
-#ifdef DEBUG_ENABLED
 	{
 		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 		GDScriptLanguage::get_singleton()->script_list.remove(&script_list);
 	}
-#endif
 
 	if (GDScriptCache::singleton) { // Cache may have been already destroyed at engine shutdown.
 		GDScriptCache::remove_script(get_path());
