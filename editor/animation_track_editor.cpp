@@ -3446,8 +3446,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		track_edits[_get_track_selected()]->release_focus();
 	}
 	if (animation.is_valid()) {
-		animation->disconnect("tracks_changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
-		animation->disconnect("changed", callable_mp(this, &AnimationTrackEditor::_sync_animation_change));
+		animation->disconnect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
 		_clear_selection();
 	}
 	animation = p_anim;
@@ -3458,8 +3457,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 	_update_tracks();
 
 	if (animation.is_valid()) {
-		animation->connect("tracks_changed", callable_mp(this, &AnimationTrackEditor::_animation_changed), CONNECT_DEFERRED);
-		animation->connect("changed", callable_mp(this, &AnimationTrackEditor::_sync_animation_change), CONNECT_DEFERRED);
+		animation->connect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed), CONNECT_DEFERRED);
 
 		hscroll->show();
 		edit->set_disabled(read_only);
@@ -4648,10 +4646,6 @@ void AnimationTrackEditor::_redraw_groups() {
 	for (int i = 0; i < groups.size(); i++) {
 		groups[i]->queue_redraw();
 	}
-}
-
-void AnimationTrackEditor::_sync_animation_change() {
-	bezier_edit->queue_redraw();
 }
 
 void AnimationTrackEditor::_animation_changed() {

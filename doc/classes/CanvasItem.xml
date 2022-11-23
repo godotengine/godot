@@ -672,12 +672,16 @@
 			Represents the size of the [enum TextureRepeat] enum.
 		</constant>
 		<constant name="CLIP_CHILDREN_DISABLED" value="0" enum="ClipChildrenMode">
+			Child draws over parent and is not clipped.
 		</constant>
 		<constant name="CLIP_CHILDREN_ONLY" value="1" enum="ClipChildrenMode">
+			Parent is used for the purposes of clipping only. Child is clipped to the parent's visible area, parent is not drawn.
 		</constant>
 		<constant name="CLIP_CHILDREN_AND_DRAW" value="2" enum="ClipChildrenMode">
+			Parent is used for clipping child, but parent is also drawn underneath child as normal before clipping child to its visible area.
 		</constant>
 		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
+			Represents the size of the [enum ClipChildrenMode] enum.
 		</constant>
 	</constants>
 </class>

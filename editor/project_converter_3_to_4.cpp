@@ -465,6 +465,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "post_import", "_post_import" }, // EditorScenePostImport
 	{ "print_stray_nodes", "print_orphan_nodes" }, // Node
 	{ "property_list_changed_notify", "notify_property_list_changed" }, // Object
+	{ "raise", "move_to_front" }, // CanvasItem
 	{ "recognize", "_recognize" }, // ResourceFormatLoader
 	{ "regen_normalmaps", "regen_normal_maps" }, // ArrayMesh
 	{ "remove", "remove_at" }, // Array, broke Directory
@@ -2171,7 +2172,7 @@ int ProjectConverter3To4::validate_conversion() {
 				lines.append(line);
 			}
 		}
-		print_line(vformat("Checking for conversion - %d/%d file - \"%s\" with size - %d KB"), i + 1, collected_files.size(), file_name.trim_prefix("res://"), file_size / 1024);
+		print_line(vformat("Checking for conversion - %d/%d file - \"%s\" with size - %d KB", i + 1, collected_files.size(), file_name.trim_prefix("res://"), file_size / 1024));
 
 		Vector<String> changed_elements;
 		Vector<String> reason;
@@ -2443,10 +2444,10 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_with_regex("\n\nmaster func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex("\n\nmastersync func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc(call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
 
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function\n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , ", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget  , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function \n	set(mod_value):\n		mod_value  # TODOConverter40  Non existent set function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , get_function", "var size : Vector2 = Vector2() : get = get_function, set = set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , ", "var size : Vector2 = Vector2() : set = set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function", "var size : Vector2 = Vector2() : set = set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget  , get_function", "var size : Vector2 = Vector2() : get = get_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid && test_conversion_gdscript_builtin("get_node(@", "get_node(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
@@ -3142,17 +3143,17 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 
 	// Setget Setget
 	if (line.contains("setget")) {
-		line = reg_container.reg_setget_setget.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $4\n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
+		line = reg_container.reg_setget_setget.sub(line, "var $1$2: get = $4, set = $3", true);
 	}
 
 	// Setget set
 	if (line.contains("setget")) {
-		line = reg_container.reg_setget_set.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Non existent get function \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
+		line = reg_container.reg_setget_set.sub(line, "var $1$2: set = $3", true);
 	}
 
 	// Setget get
 	if (line.contains("setget")) {
-		line = reg_container.reg_setget_get.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $3 \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40  Non existent set function", true);
+		line = reg_container.reg_setget_get.sub(line, "var $1$2: get = $3", true);
 	}
 
 	// OS.window_fullscreen = a -> if a: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN) else: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)

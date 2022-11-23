@@ -4110,43 +4110,41 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_USAMPLER2D: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 			} else {
 				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "Texture2D";
 			}
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "Texture2D";
 		} break;
 		case ShaderLanguage::TYPE_SAMPLER2DARRAY:
 		case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
-		case ShaderLanguage::TYPE_USAMPLER2DARRAY: {
+		case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+		case ShaderLanguage::TYPE_SAMPLERCUBE:
+		case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered");
 			} else {
 				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "TextureLayered";
 			}
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "TextureLayered";
 		} break;
 		case ShaderLanguage::TYPE_SAMPLER3D:
 		case ShaderLanguage::TYPE_ISAMPLER3D:
 		case ShaderLanguage::TYPE_USAMPLER3D: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Texture3D");
 			} else {
 				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "Texture3D";
 			}
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "Texture3D";
-		} break;
-		case ShaderLanguage::TYPE_SAMPLERCUBE:
-		case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
-			if (p_uniform.array_size > 0) {
-				pi.type = Variant::ARRAY;
-			} else {
-				pi.type = Variant::OBJECT;
-			}
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "TextureLayered";
 		} break;
 		case ShaderLanguage::TYPE_STRUCT: {
 			// FIXME: Implement this.
@@ -7590,7 +7588,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				return ERR_BUG;
 			}
 
-			if (b && b->parent_function && p_function_info.main_function) {
+			if (b->parent_function && p_function_info.main_function) {
 				_set_error(vformat(RTR("Using '%s' in the '%s' processor function is incorrect."), "return", b->parent_function->name));
 				return ERR_PARSE_ERROR;
 			}
@@ -8190,25 +8188,27 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 			};
 				[[fallthrough]];
 			case TK_INSTANCE: {
+				if (tk.type == TK_INSTANCE) {
 #ifdef DEBUG_ENABLED
-				keyword_completion_context = CF_UNIFORM_KEYWORD;
-				if (_lookup_next(next)) {
-					if (next.type == TK_UNIFORM) {
-						keyword_completion_context ^= CF_UNIFORM_KEYWORD;
+					keyword_completion_context = CF_UNIFORM_KEYWORD;
+					if (_lookup_next(next)) {
+						if (next.type == TK_UNIFORM) {
+							keyword_completion_context ^= CF_UNIFORM_KEYWORD;
+						}
 					}
-				}
 #endif // DEBUG_ENABLED
-				if (String(shader_type_identifier) != "spatial") {
-					_set_error(vformat(RTR("Uniform instances are not yet implemented for '%s' shaders."), shader_type_identifier));
-					return ERR_PARSE_ERROR;
-				}
-				if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
-					tk = _get_token();
-					if (tk.type != TK_UNIFORM) {
-						_set_expected_after_error("uniform", "instance");
+					if (String(shader_type_identifier) != "spatial") {
+						_set_error(vformat(RTR("Uniform instances are not yet implemented for '%s' shaders."), shader_type_identifier));
 						return ERR_PARSE_ERROR;
 					}
-					uniform_scope = ShaderNode::Uniform::SCOPE_INSTANCE;
+					if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
+						tk = _get_token();
+						if (tk.type != TK_UNIFORM) {
+							_set_expected_after_error("uniform", "instance");
+							return ERR_PARSE_ERROR;
+						}
+						uniform_scope = ShaderNode::Uniform::SCOPE_INSTANCE;
+					}
 				}
 			};
 				[[fallthrough]];
@@ -8878,7 +8878,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							_set_error(RTR("Expected an uniform group identifier or `;`."));
 						}
 						return ERR_PARSE_ERROR;
-					} else if (tk.type == TK_SEMICOLON && current_uniform_group_name.is_empty()) {
+					} else if (current_uniform_group_name.is_empty()) {
 						_set_error(RTR("Group needs to be opened before."));
 						return ERR_PARSE_ERROR;
 					} else {

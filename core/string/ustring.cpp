@@ -1256,8 +1256,8 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 	return ret;
 }
 
-Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
-	Vector<float> ret;
+Vector<double> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
+	Vector<double> ret;
 	int from = 0;
 	int len = length();
 

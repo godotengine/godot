@@ -147,6 +147,8 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
 	// Networking.
 	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("", "", "", 0), true);
+
+	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
 }
 
 GDScriptParser::~GDScriptParser() {
@@ -648,7 +650,13 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class() {
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the class name after "class".)")) {
 		n_class->identifier = parse_identifier();
 		if (n_class->outer) {
-			n_class->fqcn = n_class->outer->fqcn + "::" + n_class->identifier->name;
+			String fqcn = n_class->outer->fqcn;
+			if (fqcn.is_empty()) {
+				fqcn = script_path;
+			}
+			n_class->fqcn = fqcn + "::" + n_class->identifier->name;
+		} else {
+			n_class->fqcn = n_class->identifier->name;
 		}
 	}
 
@@ -1535,7 +1543,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 				VariableNode *variable = static_cast<VariableNode *>(statement);
 				const SuiteNode::Local &local = current_suite->get_local(variable->identifier->name);
 				if (local.type != SuiteNode::Local::UNDEFINED) {
-					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), variable->identifier->name));
+					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), variable->identifier->name), variable->identifier);
 				}
 				current_suite->add_local(variable, current_function);
 				break;
@@ -1550,7 +1558,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 					} else {
 						name = "variable";
 					}
-					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", name, constant->identifier->name));
+					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", name, constant->identifier->name), constant->identifier);
 				}
 				current_suite->add_local(constant, current_function);
 				break;

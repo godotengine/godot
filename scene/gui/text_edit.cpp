@@ -4234,7 +4234,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 		if (!p_allow_out_of_bounds) {
 			return Point2i(-1, -1);
 		}
-		return Point2i(text[row].size(), row);
+		return Point2i(text[row].length(), row);
 	}
 
 	int col = 0;

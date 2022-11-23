@@ -401,7 +401,7 @@
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
 		</member>
-		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="1">
+		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
@@ -839,6 +839,7 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to swap input direction, i.e. change between left-to-right to right-to-left modes. Affects text-editting controls ([LineEdit], [TextEdit]).
 		</member>
 		<member name="input/ui_text_add_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
 			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret and selects the next occurrence.

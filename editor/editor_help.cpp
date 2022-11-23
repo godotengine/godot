@@ -1363,7 +1363,7 @@ void EditorHelp::_update_doc() {
 
 				if (constants[i].value.begins_with("Color(") && constants[i].value.ends_with(")")) {
 					String stripped = constants[i].value.replace(" ", "").replace("Color(", "").replace(")", "");
-					Vector<float> color = stripped.split_floats(",");
+					PackedFloat64Array color = stripped.split_floats(",");
 					if (color.size() >= 3) {
 						class_desc->push_color(Color(color[0], color[1], color[2]));
 						_add_bulletpoint();
@@ -2435,10 +2435,10 @@ void FindBar::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
 			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
-			hide_button->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			hide_button->set_texture_normal(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_hover(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_pressed(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
 			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
 

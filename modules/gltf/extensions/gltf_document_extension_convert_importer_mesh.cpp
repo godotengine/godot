@@ -30,7 +30,7 @@
 
 #include "gltf_document_extension_convert_importer_mesh.h"
 
-#include "gltf_state.h"
+#include "../gltf_state.h"
 
 #include "core/error/error_macros.h"
 #include "scene/3d/mesh_instance_3d.h"

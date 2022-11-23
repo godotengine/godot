@@ -625,7 +625,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				const int *src = indices.ptr();
 
 				for (int i = 0; i < p_index_array_len; i++) {
-					if (p_vertex_array_len < (1 << 16) && p_vertex_array_len > 0) {
+					if (p_vertex_array_len <= (1 << 16) && p_vertex_array_len > 0) {
 						uint16_t v = src[i];
 
 						memcpy(&iw[i * 2], &v, 2);
@@ -835,10 +835,10 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 					break;
 				}
 				/* determine whether using 16 or 32 bits indices */
-				if (p_vertex_len >= (1 << 16) || p_vertex_len == 0) {
-					elem_size = 4;
-				} else {
+				if (p_vertex_len <= (1 << 16) && p_vertex_len > 0) {
 					elem_size = 2;
+				} else {
+					elem_size = 4;
 				}
 				r_offsets[i] = elem_size;
 				continue;
@@ -1280,7 +1280,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 				Vector<int> arr;
 				arr.resize(p_index_len);
-				if (p_vertex_len < (1 << 16)) {
+				if (p_vertex_len <= (1 << 16)) {
 					int *w = arr.ptrw();
 
 					for (int j = 0; j < p_index_len; j++) {
@@ -1476,7 +1476,11 @@ RenderingDevice *RenderingServer::get_rendering_device() const {
 }
 
 RenderingDevice *RenderingServer::create_local_rendering_device() const {
-	return RenderingDevice::get_singleton()->create_local_device();
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (!device) {
+		return nullptr;
+	}
+	return device->create_local_device();
 }
 
 static Vector<Ref<Image>> _get_imgvec(const TypedArray<Image> &p_layers) {

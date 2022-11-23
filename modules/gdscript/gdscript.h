@@ -61,6 +61,8 @@ class GDScript : public Script {
 	GDCLASS(GDScript, Script);
 	bool tool = false;
 	bool valid = false;
+	bool reloading = false;
+	bool skip_dependencies = false;
 
 	struct MemberInfo {
 		int index = 0;
@@ -124,6 +126,8 @@ class GDScript : public Script {
 
 	int subclass_count = 0;
 	RBSet<Object *> instances;
+	bool destructing = false;
+	bool clearing = false;
 	//exported members
 	String source;
 	String path;
@@ -163,6 +167,9 @@ class GDScript : public Script {
 	// This method will map the class name from "RefCounted" to "MyClass.InnerClass".
 	static String _get_gdscript_reference_class_name(const GDScript *p_gdscript);
 
+	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
+	void _get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
+
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -173,6 +180,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void clear();
+
 	virtual bool is_valid() const override { return valid; }
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
@@ -192,6 +201,10 @@ public:
 	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 	const String &get_script_class_name() const { return name; }
+
+	RBSet<GDScript *> get_dependencies();
+	RBSet<GDScript *> get_inverted_dependencies();
+	RBSet<GDScript *> get_must_clear_dependencies();
 
 	virtual bool has_script_signal(const StringName &p_signal) const override;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
@@ -270,6 +283,7 @@ class GDScriptInstance : public ScriptInstance {
 	friend class GDScriptLambdaCallable;
 	friend class GDScriptLambdaSelfCallable;
 	friend class GDScriptCompiler;
+	friend class GDScriptCache;
 	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	ObjectID owner_id;
@@ -517,6 +531,8 @@ public:
 
 	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
 	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
+
+	Ref<GDScript> get_script_by_fully_qualified_name(const String &p_name);
 
 	GDScriptLanguage();
 	~GDScriptLanguage();

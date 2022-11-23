@@ -9,8 +9,8 @@
 	<methods>
 		<method name="barrier">
 			<return type="void" />
-			<param index="0" name="from" type="int" default="7" />
-			<param index="1" name="to" type="int" default="7" />
+			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -19,7 +19,7 @@
 			<param index="0" name="buffer" type="RID" />
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="size_bytes" type="int" />
-			<param index="3" name="post_barrier" type="int" default="7" />
+			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -35,7 +35,7 @@
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="size_bytes" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
-			<param index="4" name="post_barrier" type="int" default="7" />
+			<param index="4" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -83,7 +83,7 @@
 		</method>
 		<method name="compute_list_end">
 			<return type="void" />
-			<param index="0" name="post_barrier" type="int" default="7" />
+			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -223,7 +223,7 @@
 		</method>
 		<method name="draw_list_end">
 			<return type="void" />
-			<param index="0" name="post_barrier" type="int" default="7" />
+			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -534,7 +534,7 @@
 			<param index="3" name="mipmap_count" type="int" />
 			<param index="4" name="base_layer" type="int" />
 			<param index="5" name="layer_count" type="int" />
-			<param index="6" name="post_barrier" type="int" default="7" />
+			<param index="6" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -549,7 +549,7 @@
 			<param index="6" name="dst_mipmap" type="int" />
 			<param index="7" name="src_layer" type="int" />
 			<param index="8" name="dst_layer" type="int" />
-			<param index="9" name="post_barrier" type="int" default="7" />
+			<param index="9" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -609,7 +609,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="from_texture" type="RID" />
 			<param index="1" name="to_texture" type="RID" />
-			<param index="2" name="post_barrier" type="int" default="7" />
+			<param index="2" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -618,7 +618,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
-			<param index="3" name="post_barrier" type="int" default="7" />
+			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -648,8 +648,9 @@
 			<param index="0" name="vertex_count" type="int" />
 			<param index="1" name="vertex_format" type="int" />
 			<param index="2" name="src_buffers" type="RID[]" />
+			<param index="3" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
 			<description>
-				Creates a vertex array based on the specified buffers.
+				Creates a vertex array based on the specified buffers. Optionally, [param offsets] (in bytes) may be defined for each buffer.
 			</description>
 		</method>
 		<method name="vertex_buffer_create">
@@ -668,16 +669,6 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="BARRIER_MASK_RASTER" value="1">
-		</constant>
-		<constant name="BARRIER_MASK_COMPUTE" value="2">
-		</constant>
-		<constant name="BARRIER_MASK_TRANSFER" value="4">
-		</constant>
-		<constant name="BARRIER_MASK_ALL" value="7">
-		</constant>
-		<constant name="BARRIER_MASK_NO_BARRIER" value="8">
-		</constant>
 		<constant name="DEVICE_TYPE_OTHER" value="0" enum="DeviceType">
 			Rendering device type does not match any of the other enum values or is unknown.
 		</constant>
@@ -1159,6 +1150,16 @@
 		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM" value="217" enum="DataFormat">
 		</constant>
 		<constant name="DATA_FORMAT_MAX" value="218" enum="DataFormat">
+		</constant>
+		<constant name="BARRIER_MASK_RASTER" value="1" enum="BarrierMask" is_bitfield="true">
+		</constant>
+		<constant name="BARRIER_MASK_COMPUTE" value="2" enum="BarrierMask" is_bitfield="true">
+		</constant>
+		<constant name="BARRIER_MASK_TRANSFER" value="4" enum="BarrierMask" is_bitfield="true">
+		</constant>
+		<constant name="BARRIER_MASK_ALL_BARRIERS" value="7" enum="BarrierMask" is_bitfield="true">
+		</constant>
+		<constant name="BARRIER_MASK_NO_BARRIER" value="8" enum="BarrierMask" is_bitfield="true">
 		</constant>
 		<constant name="TEXTURE_TYPE_1D" value="0" enum="TextureType">
 		</constant>

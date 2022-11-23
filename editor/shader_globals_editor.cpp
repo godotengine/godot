@@ -111,7 +111,7 @@ protected:
 		undo_redo->add_do_method(this, "_var_changed");
 		undo_redo->add_undo_method(this, "_var_changed");
 		block_update = true;
-		undo_redo->commit_action();
+		undo_redo->commit_action(false);
 		block_update = false;
 
 		return true;

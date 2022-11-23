@@ -162,7 +162,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint32_t texture_upload_region_size_px = 0;
 
 	Vector<uint8_t> _texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer, bool p_2d = false);
-	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier, bool p_use_setup_queue);
+	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier, bool p_use_setup_queue);
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -909,7 +909,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass, uint32_t *r_subpass_count);
 	Error _draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents, const Vector<RID> &p_storage_textures);
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
-	Buffer *_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &dst_stage_mask, VkAccessFlags &dst_access, uint32_t p_post_barrier);
+	Buffer *_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &dst_stage_mask, VkAccessFlags &dst_access, BitField<BarrierMask> p_post_barrier);
 	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_splits, uint32_t p_subpass);
 	void _draw_list_free(Rect2i *r_last_viewport = nullptr);
 
@@ -1052,7 +1052,7 @@ public:
 	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
-	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
+	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
@@ -1060,9 +1060,9 @@ public:
 	virtual bool texture_is_valid(RID p_texture);
 	virtual Size2i texture_size(RID p_texture);
 
-	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier = BARRIER_MASK_ALL);
-	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier = BARRIER_MASK_ALL);
-	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, uint32_t p_post_barrier = BARRIER_MASK_ALL);
+	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -1095,7 +1095,7 @@ public:
 
 	// Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated.
 	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats);
-	virtual RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers);
+	virtual RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers, const Vector<uint64_t> &p_offsets = Vector<uint64_t>());
 
 	virtual RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_restart_indices = false);
 
@@ -1124,8 +1124,8 @@ public:
 	virtual bool uniform_set_is_valid(RID p_uniform_set);
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL); // Works for any buffer.
-	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier = BARRIER_MASK_ALL);
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS); // Works for any buffer.
+	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer);
 
 	/*************************/
@@ -1176,7 +1176,7 @@ public:
 	virtual DrawListID draw_list_switch_to_next_pass();
 	virtual Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids);
 
-	virtual void draw_list_end(uint32_t p_post_barrier = BARRIER_MASK_ALL);
+	virtual void draw_list_end(BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 
 	/***********************/
 	/**** COMPUTE LISTS ****/
@@ -1191,9 +1191,9 @@ public:
 	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
 	virtual void compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads);
 	virtual void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset);
-	virtual void compute_list_end(uint32_t p_post_barrier = BARRIER_MASK_ALL);
+	virtual void compute_list_end(BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 
-	virtual void barrier(uint32_t p_from = BARRIER_MASK_ALL, uint32_t p_to = BARRIER_MASK_ALL);
+	virtual void barrier(BitField<BarrierMask> p_from = BARRIER_MASK_ALL_BARRIERS, BitField<BarrierMask> p_to = BARRIER_MASK_ALL_BARRIERS);
 	virtual void full_barrier();
 
 	/**************/

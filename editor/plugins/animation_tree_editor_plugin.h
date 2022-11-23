@@ -35,8 +35,6 @@
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/tree.h"
 
 class EditorFileDialog;
 
@@ -71,12 +69,13 @@ class AnimationTreeEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
 	static AnimationTreeEditor *singleton;
 
 public:
-	AnimationTree *get_tree() { return tree; }
+	AnimationTree *get_animation_tree() { return tree; }
 	void add_plugin(AnimationTreeNodeEditorPlugin *p_editor);
 	void remove_plugin(AnimationTreeNodeEditorPlugin *p_editor);
 
