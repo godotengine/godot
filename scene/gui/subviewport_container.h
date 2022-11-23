@@ -44,6 +44,9 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
+
 public:
 	void set_stretch(bool p_enable);
 	bool is_stretch_enabled() const;
