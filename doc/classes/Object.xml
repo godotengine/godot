@@ -34,7 +34,8 @@
 			<description>
 				Override this method to customize the behavior of [method get]. Should return the given [param property]'s value, or [code]null[/code] if the [param property] should be handled normally.
 				Combined with [method _set] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins. Note that a property must be present in [method get_property_list], otherwise this method will not be called.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _get(property):
 				    if (property == "fake_property"):
 				        print("Getting my property!")
@@ -44,7 +45,31 @@
 				    return [
 				        { "name": "fake_property", "type": TYPE_INT }
 				    ]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override Variant _Get(StringName property)
+				{
+				    if (property == "FakeProperty")
+				    {
+				        GD.Print("Getting my property!");
+				        return 4;
+				    }
+				    return default;
+				}
+
+				public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
+				{
+				    return new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;()
+				    {
+				        new Godot.Collections.Dictionary()
+				        {
+				            { "name", "FakeProperty" },
+				            { "type", (int)Variant.Type.Int }
+				        }
+				    };
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
@@ -53,7 +78,8 @@
 				Override this method to customize how script properties should be handled by the engine.
 				Should return a property list, as an [Array] of dictionaries. The result is added to the array of [method get_property_list], and should be formatted in the same way. Each [Dictionary] must at least contain the [code]name[/code] and [code]type[/code] entries.
 				The example below displays [code]hammer_type[/code] in the Inspector dock, only if [code]holding_hammer[/code] is [code]true[/code]:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				@tool
 				extends Node2D
 
@@ -80,7 +106,51 @@
 				    })
 
 				    return properties
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				[Tool]
+				public class MyNode2D : Node2D
+				{
+				    private bool _holdingHammer;
+
+				    [Export]
+				    public bool HoldingHammer
+				    {
+				        get =&gt; _holdingHammer;
+				        set
+				        {
+				            _holdingHammer = value;
+				            NotifyPropertyListChanged();
+				        }
+				    }
+
+				    public int HammerType { get; set; }
+
+				    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
+				    {
+				        // By default, `HammerType` is not visible in the editor.
+				        var propertyUsage = PropertyUsageFlags.NoEditor;
+
+				        if (HoldingHammer)
+				        {
+				            propertyUsage = PropertyUsageFlags.Default;
+				        }
+
+				        var properties = new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;();
+				        properties.Add(new Godot.Collections.Dictionary()
+				        {
+				            { "name", "HammerType" },
+				            { "type", (int)Variant.Type.Int },
+				            { "usage", (int)propertyUsage }, // See above assignment.
+				            { "hint", (int)PropertyHint.Enum },
+				            { "hint_string", "Wooden,Iron,Golden,Enchanted" }
+				        });
+
+				        return properties;
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc.
 				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
 			</description>
@@ -97,11 +167,22 @@
 			<param index="0" name="what" type="int" />
 			<description>
 				Called when the object receives a notification, which can be identified in [param what] by comparing it with a constant. See also [method notification].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _notification(what):
 				    if what == NOTIFICATION_PREDELETE:
 				        print("Goodbye!")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Notification(long what)
+				{
+				    if (what == NotificationPredelete)
+				    {
+				        GD.Print("Goodbye!");
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] The base [Object] defines a few notifications ([constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE]). Inheriting classes such as [Node] define a lot more notifications, which are also received by this method.
 			</description>
 		</method>
@@ -128,7 +209,8 @@
 			<description>
 				Override this method to customize the behavior of [method set]. Should set the [param property] to [param value] and return [code]true[/code], or [code]false[/code] if the [param property] should be handled normally. The [i]exact[/i] way to set the [param property] is up to this method's implementation.
 				Combined with [method _get] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins. Note that a property [i]must[/i] be present in [method get_property_list], otherwise this method will not be called.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _set(property, value):
 				    if (property == "fake_property"):
 				        print("Setting my property to ", value)
@@ -137,7 +219,32 @@
 				    return [
 				        { "name": "fake_property", "type": TYPE_INT }
 				    ]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Set(StringName property, Variant value)
+				{
+				    if (property == "FakeProperty")
+				    {
+				        GD.Print($"Setting my property to {value}");
+				        return true;
+				    }
+
+				    return false;
+				}
+
+				public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
+				{
+				    return new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;()
+				    {
+				        new Godot.Collections.Dictionary()
+				        {
+				            { "name", "FakeProperty" },
+				            { "type", (int)Variant.Type.Int }
+				        }
+				    };
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="_to_string" qualifiers="virtual">
@@ -160,12 +267,29 @@
 			<param index="1" name="arguments" type="Array" default="[]" />
 			<description>
 				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				add_user_signal("hurt", [
 				    { "name": "damage", "type": TYPE_INT },
 				    { "name": "source", "type": TYPE_OBJECT }
 				])
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				AddUserSignal("Hurt", new Godot.Collections.Array()
+				{
+				    new Godot.Collections.Dictionary()
+				    {
+				        { "name", "damage" },
+				        { "type", (int)Variant.Type.Int }
+				    },
+				    new Godot.Collections.Dictionary()
+				    {
+				        { "name", "source" },
+				        { "type", (int)Variant.Type.Object }
+				    }
+				});
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg">
@@ -183,7 +307,7 @@
 				node.Call("rotate", new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods.
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
@@ -201,7 +325,7 @@
 				node.CallDeferred("rotate", new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods.
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="callv">
@@ -220,7 +344,7 @@
 				node.Callv("rotate", new Godot.Collections.Array { new Vector3(1f, 0f, 0f), 1.571f });
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods.
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call
 			</description>
 		</method>
 		<method name="can_translate_messages" qualifiers="const">
@@ -387,10 +511,11 @@
 				emit_signal("game_over")
 				[/gdscript]
 				[csharp]
-				EmitSignal("hit", "sword", 100);
-				EmitSignal("game_over");
+				EmitSignal("Hit", "sword", 100);
+				EmitSignal("GameOver");
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="free">
@@ -416,7 +541,7 @@
 				var a = node.Get("rotation"); // a is 1.5
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties.
+				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="get_class" qualifiers="const">
@@ -451,8 +576,8 @@
 				[csharp]
 				var node = new Node2D();
 				node.Position = new Vector2(5, -10);
-				var a = node.GetIndexed("position");   # a is Vector2(5, -10)
-				var b = node.GetIndexed("position:y"); # b is -10
+				var a = node.GetIndexed("position");   // a is Vector2(5, -10)
+				var b = node.GetIndexed("position:y"); // b is -10
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties.
@@ -541,6 +666,7 @@
 			<param index="0" name="method" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the the given [param method] name exists in the object.
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="has_signal" qualifiers="const">
@@ -548,6 +674,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given [param signal] name exists in the object.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
@@ -577,9 +704,9 @@
 				[/gdscript]
 				[csharp]
 				var sprite2d = new Sprite2D();
-				sprite2d.IsClass("Sprite2D") // Returns true
-				sprite2d.IsClass("Node")     // Returns true
-				sprite2d.IsClass("Node3D")   // Returns false
+				sprite2d.IsClass("Sprite2D"); // Returns true
+				sprite2d.IsClass("Node");     // Returns true
+				sprite2d.IsClass("Node3D");   // Returns false
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method ignores [code]class_name[/code] declarations in the object's script.
@@ -591,6 +718,7 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Returns [code]true[/code] if a connection exists between the given [param signal] name and [param callable].
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="is_queued_for_deletion" qualifiers="const">
@@ -606,7 +734,8 @@
 			<description>
 				Sends the given [param what] notification to all classes inherited by the object, triggering calls to [method _notification], starting from the highest ancestor (the [Object] class) and going down to the object's script.
 				If [param reversed] is [code]true[/code], the call order is reversed.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var player = Node2D.new()
 				player.set_script(load("res://player.gd"))
 
@@ -615,7 +744,18 @@
 
 				player.notification(NOTIFICATION_ENTER_TREE, true)
 				# The call order is player.gd -&gt; Node2D -&gt; Node -&gt; Object.
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var player = new Node2D();
+				player.SetScript(GD.Load("res://player.gd"));
+
+				player.Notification(NotificationEnterTree);
+				// The call order is Object -&gt; Node -&gt; Node2D -&gt; player.gd.
+
+				player.notification(NotificationEnterTree, true);
+				// The call order is player.gd -&gt; Node2D -&gt; Node -&gt; Object.
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="notify_property_list_changed">
@@ -647,10 +787,10 @@
 				[csharp]
 				var node = new Node2D();
 				node.Set("global_scale", new Vector2(8, 2.5));
-				GD.Print(node.GlobalScale); # Prints Vector2(8, 2.5)
+				GD.Print(node.GlobalScale); // Prints Vector2(8, 2.5)
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties.
+				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="set_block_signals">
@@ -682,10 +822,13 @@
 				var node = new Node2D();
 				node.Rotation = 45f;
 				node.SetDeferred("rotation", 90f);
-				GD.Print(node.Rotation); # Prints 45f;
+				GD.Print(node.Rotation); // Prints 45.0
+
+				await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+				GD.Print(node.Rotation); // Prints 90.0
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties.
+				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="set_indexed">
