@@ -86,6 +86,16 @@
 				Returns the aspect ratio of this vector, the ratio of [member x] to [member y].
 			</description>
 		</method>
+		<method name="bezier_derivative" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="control_1" type="Vector2" />
+			<param index="1" name="control_2" type="Vector2" />
+			<param index="2" name="end" type="Vector2" />
+			<param index="3" name="t" type="float" />
+			<description>
+				Returns the derivative at the given [param t] on the [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by this vector and the given [param control_1], [param control_2], and [param end] points.
+			</description>
+		</method>
 		<method name="bezier_interpolate" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="control_1" type="Vector2" />

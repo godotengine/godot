@@ -1403,6 +1403,22 @@ void Curve3D::_bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, re
 	}
 }
 
+void Curve3D::_bake_segment3d_even_length(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_length) const {
+	Vector3 beg = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_begin);
+	Vector3 end = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_end);
+
+	size_t length = beg.distance_to(end);
+
+	if (length > p_length && p_depth < p_max_depth) {
+		real_t mp = (p_begin + p_end) * 0.5;
+		Vector3 mid = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, mp);
+		r_bake[mp] = mid;
+
+		_bake_segment3d(r_bake, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_max_depth, p_length);
+		_bake_segment3d(r_bake, mp, p_end, p_a, p_out, p_b, p_in, p_depth + 1, p_max_depth, p_length);
+	}
+}
+
 void Curve3D::_bake() const {
 	if (!baked_cache_dirty) {
 		return;
@@ -1416,6 +1432,7 @@ void Curve3D::_bake() const {
 		baked_tilt_cache.clear();
 		baked_dist_cache.clear();
 
+		baked_forward_vector_cache.clear();
 		baked_up_vector_cache.clear();
 		return;
 	}
@@ -1427,10 +1444,12 @@ void Curve3D::_bake() const {
 		baked_tilt_cache.set(0, points[0].tilt);
 		baked_dist_cache.resize(1);
 		baked_dist_cache.set(0, 0.0);
+		baked_forward_vector_cache.resize(1);
+		baked_forward_vector_cache.set(0, Vector3(0.0, 0.0, 1.0));
 
 		if (up_vector_enabled) {
 			baked_up_vector_cache.resize(1);
-			baked_up_vector_cache.set(0, Vector3(0, 1, 0));
+			baked_up_vector_cache.set(0, Vector3(0.0, 1.0, 0.0));
 		} else {
 			baked_up_vector_cache.clear();
 		}
@@ -1438,101 +1457,52 @@ void Curve3D::_bake() const {
 		return;
 	}
 
-	Vector3 position = points[0].position;
-	real_t dist = 0.0;
-	List<Plane> pointlist; // Abuse Plane for (position, dist)
-	List<real_t> distlist;
-
-	// Start always from origin.
-	pointlist.push_back(Plane(position, points[0].tilt));
-	distlist.push_back(0.0);
-
-	// Step 1: Sample points
-	const real_t step = 0.1; // At least 10 substeps ought to be enough?
-	for (int i = 0; i < points.size() - 1; i++) {
-		real_t p = 0.0;
-
-		while (p < 1.0) {
-			real_t np = p + step;
-			if (np > 1.0) {
-				np = 1.0;
-			}
-
-			Vector3 npp = points[i].position.bezier_interpolate(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, np);
-			real_t d = position.distance_to(npp);
-
-			if (d > bake_interval) {
-				// OK! between P and NP there _has_ to be Something, let's go searching!
-
-				const int iterations = 10; // Lots of detail!
-
-				real_t low = p;
-				real_t hi = np;
-				real_t mid = low + (hi - low) * 0.5;
-
-				for (int j = 0; j < iterations; j++) {
-					npp = points[i].position.bezier_interpolate(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, mid);
-					d = position.distance_to(npp);
-
-					if (bake_interval < d) {
-						hi = mid;
-					} else {
-						low = mid;
-					}
-					mid = low + (hi - low) * 0.5;
-				}
-
-				position = npp;
-				p = mid;
-				Plane post;
-				post.normal = position;
-				post.d = Math::lerp(points[i].tilt, points[i + 1].tilt, mid);
-				dist += d;
-
-				pointlist.push_back(post);
-				distlist.push_back(dist);
-			} else {
-				p = np;
-			}
-		}
-
-		Vector3 npp = points[i + 1].position;
-		real_t d = position.distance_to(npp);
-
-		if (d > CMP_EPSILON) { // Avoid the degenerate case of two very close points.
-			position = npp;
-			Plane post;
-			post.normal = position;
-			post.d = points[i + 1].tilt;
-
-			dist += d;
-
-			pointlist.push_back(post);
-			distlist.push_back(dist);
-		}
-	}
-
-	baked_max_ofs = dist;
-
-	const int point_count = pointlist.size();
+	// Step 1: Tesselate curve to (almost) even length segments
 	{
-		baked_point_cache.resize(point_count);
-		Vector3 *w = baked_point_cache.ptrw();
+		Vector<RBMap<real_t, Vector3>> midpoints = _tessellate_even_length(10, bake_interval);
 
-		baked_tilt_cache.resize(point_count);
-		real_t *wt = baked_tilt_cache.ptrw();
-
-		baked_dist_cache.resize(point_count);
-		real_t *wd = baked_dist_cache.ptrw();
-
-		int idx = 0;
-		for (const Plane &E : pointlist) {
-			w[idx] = E.normal;
-			wt[idx] = E.d;
-			wd[idx] = distlist[idx];
-
-			idx++;
+		int pc = 1;
+		for (int i = 0; i < points.size() - 1; i++) {
+			pc++;
+			pc += midpoints[i].size();
 		}
+
+		baked_point_cache.resize(pc);
+		baked_tilt_cache.resize(pc);
+		baked_dist_cache.resize(pc);
+		baked_forward_vector_cache.resize(pc);
+
+		Vector3 *bpw = baked_point_cache.ptrw();
+		real_t *btw = baked_tilt_cache.ptrw();
+		Vector3 *bfw = baked_forward_vector_cache.ptrw();
+
+		// Collect positions and sample tilts and tangents for each baked points.
+		bpw[0] = points[0].position;
+		bfw[0] = points[0].position.bezier_derivative(points[0].position + points[0].out, points[1].position + points[1].in, points[1].position, 0.0).normalized();
+		btw[0] = points[0].tilt;
+		int pidx = 0;
+
+		for (int i = 0; i < points.size() - 1; i++) {
+			for (const KeyValue<real_t, Vector3> &E : midpoints[i]) {
+				pidx++;
+				bpw[pidx] = E.value;
+				bfw[pidx] = points[i].position.bezier_derivative(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, E.key).normalized();
+				btw[pidx] = Math::lerp(points[i].tilt, points[i + 1].tilt, E.key);
+			}
+
+			pidx++;
+			bpw[pidx] = points[i + 1].position;
+			bfw[pidx] = points[i].position.bezier_derivative(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, 1.0).normalized();
+			btw[pidx] = points[i + 1].tilt;
+		}
+
+		// Recalculate the baked distances.
+		real_t *bdw = baked_dist_cache.ptrw();
+		bdw[0] = 0.0;
+		for (int i = 0; i < pc - 1; i++) {
+			bdw[i + 1] = bdw[i] + bpw[i].distance_to(bpw[i + 1]);
+		}
+		baked_max_ofs = bdw[pc - 1];
 	}
 
 	if (!up_vector_enabled) {
@@ -1545,14 +1515,12 @@ void Curve3D::_bake() const {
 	// See Dougan, Carl. "The parallel transport frame." Game Programming Gems 2 (2001): 215-219.
 	// for an example discussing about why not the Frenet frame.
 	{
-		PackedVector3Array forward_vectors;
+		int point_count = baked_point_cache.size();
 
 		baked_up_vector_cache.resize(point_count);
-		forward_vectors.resize(point_count);
-
 		Vector3 *up_write = baked_up_vector_cache.ptrw();
-		Vector3 *forward_write = forward_vectors.ptrw();
 
+		const Vector3 *forward_ptr = baked_forward_vector_cache.ptr();
 		const Vector3 *points_ptr = baked_point_cache.ptr();
 
 		Basis frame; // X-right, Y-up, Z-forward.
@@ -1560,28 +1528,20 @@ void Curve3D::_bake() const {
 
 		// Set the initial frame based on Y-up rule.
 		{
-			Vector3 up(0, 1, 0);
-			Vector3 forward = (points_ptr[1] - points_ptr[0]).normalized();
-			if (forward.is_equal_approx(Vector3())) {
-				forward = Vector3(1, 0, 0);
-			}
+			Vector3 forward = forward_ptr[0];
 
-			if (abs(forward.dot(up)) > 1.0 - UNIT_EPSILON) {
-				frame_prev = Basis::looking_at(-forward, up);
-			} else {
+			if (abs(forward.dot(Vector3(0, 1, 0))) > 1.0 - UNIT_EPSILON) {
 				frame_prev = Basis::looking_at(-forward, Vector3(1, 0, 0));
+			} else {
+				frame_prev = Basis::looking_at(-forward, Vector3(0, 1, 0));
 			}
 
 			up_write[0] = frame_prev.get_column(1);
-			forward_write[0] = frame_prev.get_column(2);
 		}
 
 		// Calculate the Parallel Transport Frame.
 		for (int idx = 1; idx < point_count; idx++) {
-			Vector3 forward = (points_ptr[idx] - points_ptr[idx - 1]).normalized();
-			if (forward.is_equal_approx(Vector3())) {
-				forward = frame_prev.get_column(2);
-			}
+			Vector3 forward = forward_ptr[idx];
 
 			Basis rotate;
 			rotate.rotate_to_align(frame_prev.get_column(2), forward);
@@ -1589,8 +1549,6 @@ void Curve3D::_bake() const {
 			frame.orthonormalize(); // guard against float error accumulation
 
 			up_write[idx] = frame.get_column(1);
-			forward_write[idx] = frame.get_column(2);
-
 			frame_prev = frame;
 		}
 
@@ -1601,8 +1559,8 @@ void Curve3D::_bake() const {
 				is_loop = false;
 			}
 
-			real_t dot = forward_write[0].dot(forward_write[point_count - 1]);
-			if (dot < 1.0 - 0.01) { // Alignment should not be too tight, or it dosen't work for coarse bake interval
+			real_t dot = forward_ptr[0].dot(forward_ptr[point_count - 1]);
+			if (dot < 1.0 - UNIT_EPSILON) { // Alignment should not be too tight, or it dosen't work for coarse bake interval.
 				is_loop = false;
 			}
 		}
@@ -1612,17 +1570,17 @@ void Curve3D::_bake() const {
 			const Vector3 up_start = up_write[0];
 			const Vector3 up_end = up_write[point_count - 1];
 
-			real_t sign = SIGN(up_end.cross(up_start).dot(forward_write[0]));
+			real_t sign = SIGN(up_end.cross(up_start).dot(forward_ptr[0]));
 			real_t full_angle = Quaternion(up_end, up_start).get_angle();
 
-			if (abs(full_angle) < UNIT_EPSILON) {
+			if (abs(full_angle) < CMP_EPSILON) {
 				return;
 			} else {
 				const real_t *dists = baked_dist_cache.ptr();
 				for (int idx = 1; idx < point_count; idx++) {
 					const real_t frac = dists[idx] / baked_max_ofs;
 					const real_t angle = Math::lerp((real_t)0.0, full_angle, frac);
-					Basis twist(forward_write[idx] * sign, angle);
+					Basis twist(forward_ptr[idx] * sign, angle);
 
 					up_write[idx] = twist.xform(up_write[idx]);
 				}
@@ -1720,22 +1678,14 @@ Basis Curve3D::_sample_posture(Interval p_interval, bool p_apply_tilt) const {
 	int idx = p_interval.idx;
 	real_t frac = p_interval.frac;
 
-	Vector3 forward_begin;
-	Vector3 forward_end;
-	if (idx == 0) {
-		forward_begin = (baked_point_cache[1] - baked_point_cache[0]).normalized();
-		forward_end = (baked_point_cache[1] - baked_point_cache[0]).normalized();
-	} else {
-		forward_begin = (baked_point_cache[idx] - baked_point_cache[idx - 1]).normalized();
-		forward_end = (baked_point_cache[idx + 1] - baked_point_cache[idx]).normalized();
-	}
+	Vector3 forward_begin = baked_forward_vector_cache[idx];
+	Vector3 forward_end = baked_forward_vector_cache[idx + 1];
 
 	Vector3 up_begin;
 	Vector3 up_end;
 	if (up_vector_enabled) {
-		const Vector3 *up_ptr = baked_up_vector_cache.ptr();
-		up_begin = up_ptr[idx];
-		up_end = up_ptr[idx + 1];
+		up_begin = baked_up_vector_cache[idx];
+		up_end = baked_up_vector_cache[idx + 1];
 	} else {
 		up_begin = Vector3(0.0, 1.0, 0.0);
 		up_end = Vector3(0.0, 1.0, 0.0);
@@ -2046,6 +1996,50 @@ PackedVector3Array Curve3D::tessellate(int p_max_stages, real_t p_tolerance) con
 	return tess;
 }
 
+Vector<RBMap<real_t, Vector3>> Curve3D::_tessellate_even_length(int p_max_stages, real_t p_length) const {
+	Vector<RBMap<real_t, Vector3>> midpoints;
+	ERR_FAIL_COND_V_MSG(points.size() < 2, midpoints, "Curve must have at least 2 control point");
+
+	midpoints.resize(points.size() - 1);
+
+	for (int i = 0; i < points.size() - 1; i++) {
+		_bake_segment3d_even_length(midpoints.write[i], 0, 1, points[i].position, points[i].out, points[i + 1].position, points[i + 1].in, 0, p_max_stages, p_length);
+	}
+	return midpoints;
+}
+
+PackedVector3Array Curve3D::tessellate_even_length(int p_max_stages, real_t p_length) const {
+	PackedVector3Array tess;
+
+	Vector<RBMap<real_t, Vector3>> midpoints = _tessellate_even_length(p_max_stages, p_length);
+	if (midpoints.size() == 0) {
+		return tess;
+	}
+
+	int pc = 1;
+	for (int i = 0; i < points.size() - 1; i++) {
+		pc++;
+		pc += midpoints[i].size();
+	}
+
+	tess.resize(pc);
+	Vector3 *bpw = tess.ptrw();
+	bpw[0] = points[0].position;
+	int pidx = 0;
+
+	for (int i = 0; i < points.size() - 1; i++) {
+		for (const KeyValue<real_t, Vector3> &E : midpoints[i]) {
+			pidx++;
+			bpw[pidx] = E.value;
+		}
+
+		pidx++;
+		bpw[pidx] = points[i + 1].position;
+	}
+
+	return tess;
+}
+
 bool Curve3D::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
@@ -2146,6 +2140,7 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_point"), &Curve3D::get_closest_point);
 	ClassDB::bind_method(D_METHOD("get_closest_offset", "to_point"), &Curve3D::get_closest_offset);
 	ClassDB::bind_method(D_METHOD("tessellate", "max_stages", "tolerance_degrees"), &Curve3D::tessellate, DEFVAL(5), DEFVAL(4));
+	ClassDB::bind_method(D_METHOD("tessellate_even_length", "max_stages", "tolerance_length"), &Curve3D::tessellate_even_length, DEFVAL(5), DEFVAL(0.2));
 
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve3D::_get_data);
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve3D::_set_data);
