@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Signal" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Class representing a signal defined in an object.
+		Built-in type representing a signal defined in an object.
 	</brief_description>
 	<description>
-		Signals can be connected to [Callable]s and emitted. When a signal is emitted, all connected callables are called.
-		Usually signals are accessed as properties of objects, but it's also possible to assign them to variables and pass them around, allowing for more dynamic connections.
+		[Signal] is a built-in [Variant] type that represents a signal of an [Object] instance. Like all [Variant] types, it can be stored in variables and passed to functions. Signals allow all connected [Callable]s (and by extension their respective objects) to listen and react to events, without directly referencing one another. This keeps the code flexible and easier to manage.
+		In GDScript, signals can be declared with the [code]signal[/code] keyword. In C#, you may use the [code][Signal][/code] attribute on a delegate.
+		[codeblock]
+		[gdscript]
+		signal attacked
+
+		# Additional arguments may be declared.
+		# These arguments must be passed when the signal is emitted.
+		signal item_dropped(item_name, amount)
+		[/gdscript]
+		[csharp]
+		[Signal]
+		delegate void Attacked();
+
+		// Additional arguments may be declared.
+		// These arguments must be passed when the signal is emitted.
+		[Signal]
+		delegate void ItemDropped(itemName: string, amount: int);
+		[/csharp]
+		[/codeblock]
 	</description>
 	<tutorials>
 		<link title="Using Signals">$DOCS_URL/getting_started/step_by_step/signals.html</link>
@@ -15,7 +33,7 @@
 		<constructor name="Signal">
 			<return type="Signal" />
 			<description>
-				Constructs a null [Signal] with no object nor signal name bound.
+				Constructs an empty [Signal] with no object nor signal name bound.
 			</description>
 		</constructor>
 		<constructor name="Signal">
@@ -30,7 +48,7 @@
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="signal" type="StringName" />
 			<description>
-				Creates a new [Signal] with the name [param signal] in the specified [param object].
+				Creates a new [Signal] named [param signal] in the specified [param object].
 			</description>
 		</constructor>
 	</constructors>
@@ -40,12 +58,13 @@
 			<param index="0" name="callable" type="Callable" />
 			<param index="1" name="flags" type="int" default="0" />
 			<description>
-				Connects this signal to the specified [Callable], optionally providing connection flags. You can provide additional arguments to the connected method call by using [method Callable.bind].
+				Connects this signal to the specified [param callable]. Optional [param flags] can be also added to configure the connection's behavior (see [enum Object.ConnectFlags] constants). You can provide additional arguments to the connected [param callable] by using [method Callable.bind].
+				A signal can only be connected once to the same [Callable]. If the signal is already connected, returns [constant ERR_INVALID_PARAMETER] and pushes an error message, unless the signal is connected with [constant Object.CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
 				[codeblock]
 				for button in $Buttons.get_children():
-				    button.pressed.connect(on_pressed.bind(button))
+				    button.pressed.connect(_on_pressed.bind(button))
 
-				func on_pressed(button):
+				func _on_pressed(button):
 				    print(button.name, " was pressed")
 				[/codeblock]
 			</description>
@@ -54,13 +73,13 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Disconnects this signal from the specified [Callable].
+				Disconnects this signal from the specified [Callable]. If the connection does not exist, generates an error. Use [method is_connected] to make sure that the connection exists.
 			</description>
 		</method>
 		<method name="emit" qualifiers="vararg const">
 			<return type="void" />
 			<description>
-				Emits this signal to all connected objects.
+				Emits this signal. All [Callable]s connected to this signal will be triggered. This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 			</description>
 		</method>
 		<method name="get_connections" qualifiers="const">
@@ -97,7 +116,7 @@
 		<method name="is_null" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if either object or signal name are not valid.
+				Returns [code]true[/code] if the signal's name does not exist in its object, or the object is not valid.
 			</description>
 		</method>
 	</methods>
@@ -106,14 +125,14 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Signal" />
 			<description>
-				Returns [code]true[/code] if two signals are not equal.
+				Returns [code]true[/code] if the signals do not share the same object and name.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="Signal" />
 			<description>
-				Returns [code]true[/code] if two signals are equal, i.e. their object and name are the same.
+				Returns [code]true[/code] if both signals share the same object and name.
 			</description>
 		</operator>
 	</operators>
