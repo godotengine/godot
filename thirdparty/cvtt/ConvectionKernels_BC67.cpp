@@ -726,10 +726,10 @@ namespace cvtt
                 if (carry)
                 {
                     uint32_t bitMask = (1 << carry) - 1;
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < entriesRemaining; i++)
                     {
                         m_vector[i] >>= carry;
-                        if (i != 3)
+                        if (i != entriesRemaining - 1)
                             m_vector[i] |= (m_vector[i + 1] & bitMask) << (32 - carry);
                     }
                 }
@@ -3058,14 +3058,11 @@ void cvtt::Internal::BC6HComputer::SignExtendSingle(int &v, int bits)
 
 void cvtt::Internal::BC6HComputer::UnpackOne(PixelBlockF16 &output, const uint8_t *pBC, bool isSigned)
 {
-    UnpackingVector pv;
-    pv.Init(pBC);
-
     int numModeBits = 2;
-    int modeBits = pv.Unpack(2);
+    int modeBits = pBC[0] & 0x3;
     if (modeBits != 0 && modeBits != 1)
     {
-        modeBits |= pv.Unpack(3) << 2;
+        modeBits = pBC[0] & 0x1f;
         numModeBits += 3;
     }
 
@@ -3101,6 +3098,9 @@ void cvtt::Internal::BC6HComputer::UnpackOne(PixelBlockF16 &output, const uint8_
         for (int epi = 0; epi < 2; epi++)
             for (int ch = 0; ch < 3; ch++)
                 eps[subset][epi][ch] = 0;
+
+    UnpackingVector pv;
+    pv.Init(pBC);
 
     {
         uint32_t header[3];
