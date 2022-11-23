@@ -586,6 +586,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 							track_value->object = child;
 						}
 
+						track_value->is_discrete = anim->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE || anim->value_track_get_update_mode(i) == Animation::UPDATE_TRIGGER;
 						track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 						track_value->subpath = leftover_path;
@@ -800,6 +801,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 			} else if (track_cache_type == Animation::TYPE_VALUE) {
 				// If it has at least one angle interpolation, it also uses angle interpolation for blending.
 				TrackCacheValue *track_value = memnew(TrackCacheValue);
+				track_value->is_discrete |= anim->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE || anim->value_track_get_update_mode(i) == Animation::UPDATE_TRIGGER;
 				track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 			}
 
@@ -1657,6 +1659,10 @@ void AnimationTree::_process_graph(double p_delta) {
 				} break;
 				case Animation::TYPE_VALUE: {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
+
+					if (t->is_discrete) {
+						break; // Don't overwrite the value set by UPDATE_DISCRETE or UPDATE_TRIGGER.
+					}
 
 					if (t->init_value.get_type() == Variant::BOOL) {
 						t->object->set_indexed(t->subpath, t->value.operator real_t() >= 0.5);
