@@ -1725,7 +1725,6 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 		} else {
 			result.type_source = GDScriptParser::DataType::INFERRED;
 		}
-		result.is_constant = false;
 	}
 
 	if (p_parameter->datatype_specifier != nullptr) {
@@ -1745,6 +1744,7 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 		push_error(vformat(R"(Could not infer the type of the variable "%s" because the initial value is "null".)", p_parameter->identifier->name), p_parameter->default_value);
 	}
 
+	result.is_constant = false;
 	p_parameter->set_datatype(result);
 }
 
