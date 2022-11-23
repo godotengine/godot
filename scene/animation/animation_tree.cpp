@@ -221,7 +221,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (blendw[i] > CMP_EPSILON) {
+					if (!Math::is_zero_approx(blendw[i])) {
 						any_valid = true;
 					}
 				}
@@ -236,7 +236,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (blendw[i] > CMP_EPSILON) {
+					if (!Math::is_zero_approx(blendw[i])) {
 						any_valid = true;
 					}
 				}
@@ -252,7 +252,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 						blendw[i] = blendr[i]; //not filtered, do not blend
 					}
 
-					if (blendw[i] > CMP_EPSILON) {
+					if (!Math::is_zero_approx(blendw[i])) {
 						any_valid = true;
 					}
 				}
@@ -263,7 +263,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		for (int i = 0; i < blend_count; i++) {
 			//regular blend
 			blendw[i] = blendr[i] * p_blend;
-			if (blendw[i] > CMP_EPSILON) {
+			if (!Math::is_zero_approx(blendw[i])) {
 				any_valid = true;
 			}
 		}
@@ -1025,7 +1025,7 @@ void AnimationTree::_process_graph(double p_delta) {
 				int blend_idx = state.track_map[path];
 				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
 				real_t blend = (*as.track_blends)[blend_idx] * weight;
-				if (blend < CMP_EPSILON) {
+				if (Math::is_zero_approx(blend)) {
 					continue; // Nothing to blend.
 				}
 
