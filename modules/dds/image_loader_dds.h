@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  texture_loader_dds.cpp                                                */
+/*  image_loader_dds.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,56 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "texture_loader_dds.h"
-#include "image_loader_dds.h"
+#ifndef IMAGE_LOADER_DDS_H
+#define IMAGE_LOADER_DDS_H
 
-#include "core/io/file_access.h"
-#include "scene/resources/image_texture.h"
+#include "core/io/image_loader.h"
 
-Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	if (r_error) {
-		*r_error = ERR_CANT_OPEN;
-	}
+class ImageLoaderDDS : public ImageFormatLoader {
+public:
+	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	ImageLoaderDDS();
+};
 
-	Error err;
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (f.is_null()) {
-		return Ref<Resource>();
-	}
-
-	Ref<FileAccess> fref(f);
-	if (r_error) {
-		*r_error = ERR_FILE_CORRUPT;
-	}
-
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Unable to open DDS texture file '" + p_path + "'.");
-
-	Ref<Image> img = memnew(Image);
-	Error i_error = ImageLoaderDDS().load_image(img, f, false, 1.0);
-	if (r_error) {
-		*r_error = i_error;
-	}
-
-	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
-
-	if (r_error) {
-		*r_error = OK;
-	}
-
-	return texture;
-}
-
-void ResourceFormatDDS::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("dds");
-}
-
-bool ResourceFormatDDS::handles_type(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Texture2D");
-}
-
-String ResourceFormatDDS::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "dds") {
-		return "ImageTexture";
-	}
-	return "";
-}
+#endif // IMAGE_LOADER_DDS_H
