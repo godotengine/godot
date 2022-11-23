@@ -4144,6 +4144,9 @@ Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) cons
 		Ref<Image> img = memnew(Image);
 		Error err = ImageLoader::load_image(p_path, img);
 		if (err == OK) {
+			if (img->get_size() > Size2(32, 32)) {
+				WARN_PRINT_ONCE("The class icon '" + p_path + "' is larger than the recommended size of 32x32. This can cause performance issues.");
+			}
 			img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
 			return ImageTexture::create_from_image(img);
 		}

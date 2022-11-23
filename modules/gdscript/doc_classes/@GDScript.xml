@@ -551,7 +551,7 @@
 				[codeblock]
 				@icon("res://path/to/class/icon.svg")
 				[/codeblock]
-				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
+				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported. The recommended icon size is 32x32, as this resolution looks good on hiDPI displays (but higher resolutions can cause performance issues).
 			</description>
 		</annotation>
 		<annotation name="@onready">
