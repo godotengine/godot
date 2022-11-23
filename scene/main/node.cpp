@@ -349,7 +349,7 @@ void Node::move_child(Node *p_child, int p_index) {
 }
 
 void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `move_child()` failed. Consider using `move_child.call_deferred(child, index)` instead (or `popup.call_deferred()` if this is from a popup).");
 
 	// Specifying one place beyond the end
 	// means the same as moving to the last index
@@ -1130,7 +1130,7 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(p_child->is_ancestor_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", p_child->get_name(), get_name(), p_child->get_name(), get_name()));
 #endif
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_child()` failed. Consider using `add_child.call_deferred(child)` instead.");
 
 	_validate_child_name(p_child, p_force_readable_name);
 	_add_child_nocheck(p_child, p_child->data.name);
@@ -1150,7 +1150,7 @@ void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_NULL(p_sibling);
 	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_sibling() failed. Consider using call_deferred(\"add_sibling\", sibling) instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
 
 	InternalMode internal = INTERNAL_MODE_DISABLED;
 	if (_is_internal_front()) { // The sibling will have the same internal status.
@@ -1165,7 +1165,7 @@ void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 
 void Node::remove_child(Node *p_child) {
 	ERR_FAIL_NULL(p_child);
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\", child) instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `remove_child()` failed. Consider using `remove_child.call_deferred(child)` instead.");
 
 	int child_count = data.children.size();
 	Node **children = data.children.ptrw();
