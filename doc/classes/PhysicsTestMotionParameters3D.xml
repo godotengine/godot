@@ -13,10 +13,10 @@
 			If set to [code]true[/code], shapes of type [constant PhysicsServer3D.SHAPE_SEPARATION_RAY] are used to detect collisions and can stop the motion. Can be useful when snapping to the ground.
 			If set to [code]false[/code], shapes of type [constant PhysicsServer3D.SHAPE_SEPARATION_RAY] are only used for separation when overlapping with other bodies. That's the main use for separation ray shapes.
 		</member>
-		<member name="exclude_bodies" type="Array" setter="set_exclude_bodies" getter="get_exclude_bodies" default="[]">
-			Optional array of body [RID] to exclude from collision.
+		<member name="exclude_bodies" type="RID[]" setter="set_exclude_bodies" getter="get_exclude_bodies" default="[]">
+			Optional array of body [RID] to exclude from collision. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
 		</member>
-		<member name="exclude_objects" type="Array" setter="set_exclude_objects" getter="get_exclude_objects" default="[]">
+		<member name="exclude_objects" type="int[]" setter="set_exclude_objects" getter="get_exclude_objects" default="[]">
 			Optional array of object unique instance ID to exclude from collision. See [method Object.get_instance_id].
 		</member>
 		<member name="from" type="Transform3D" setter="set_from" getter="get_from" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">

@@ -479,8 +479,8 @@ void PhysicsTestMotionParameters2D::set_exclude_bodies(const TypedArray<RID> &p_
 	}
 }
 
-Array PhysicsTestMotionParameters2D::get_exclude_objects() const {
-	Array exclude;
+TypedArray<uint64_t> PhysicsTestMotionParameters2D::get_exclude_objects() const {
+	TypedArray<uint64_t> exclude;
 	exclude.resize(parameters.exclude_objects.size());
 
 	int object_index = 0;
@@ -491,7 +491,7 @@ Array PhysicsTestMotionParameters2D::get_exclude_objects() const {
 	return exclude;
 }
 
-void PhysicsTestMotionParameters2D::set_exclude_objects(const Array &p_exclude) {
+void PhysicsTestMotionParameters2D::set_exclude_objects(const TypedArray<uint64_t> &p_exclude) {
 	for (int i = 0; i < p_exclude.size(); ++i) {
 		ObjectID object_id = p_exclude[i];
 		ERR_CONTINUE(object_id.is_null());

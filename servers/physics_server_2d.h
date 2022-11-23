@@ -732,8 +732,8 @@ public:
 	TypedArray<RID> get_exclude_bodies() const;
 	void set_exclude_bodies(const TypedArray<RID> &p_exclude);
 
-	Array get_exclude_objects() const;
-	void set_exclude_objects(const Array &p_exclude);
+	TypedArray<uint64_t> get_exclude_objects() const;
+	void set_exclude_objects(const TypedArray<uint64_t> &p_exclude);
 
 	bool is_recovery_as_collision_enabled() const { return parameters.recovery_as_collision; }
 	void set_recovery_as_collision_enabled(bool p_enabled) { parameters.recovery_as_collision = p_enabled; }
