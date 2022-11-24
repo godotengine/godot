@@ -1113,6 +1113,8 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		}
 		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
 		_set_mode(visual_shader->get_mode());
+
+		_update_nodes();
 	} else {
 		if (visual_shader.is_valid()) {
 			Callable ce = callable_mp(this, &VisualShaderEditor::_update_preview);
