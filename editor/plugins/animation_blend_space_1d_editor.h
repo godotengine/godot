@@ -80,8 +80,6 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 
 	bool updating = false;
 
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	static AnimationNodeBlendSpace1DEditor *singleton;
 
 	void _blend_space_gui_input(const Ref<InputEvent> &p_event);

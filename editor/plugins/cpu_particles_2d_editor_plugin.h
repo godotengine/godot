@@ -40,7 +40,6 @@ class CheckBox;
 class ConfirmationDialog;
 class SpinBox;
 class EditorFileDialog;
-class EditorUndoRedoManager;
 class MenuButton;
 class OptionButton;
 
@@ -74,7 +73,6 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 
 	String source_emission_file;
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	void _file_selected(const String &p_file);
 	void _menu_callback(int p_idx);
 	void _generate_emission_mask();

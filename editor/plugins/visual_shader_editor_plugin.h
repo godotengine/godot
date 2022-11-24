@@ -41,7 +41,6 @@ class GraphEdit;
 class GraphNode;
 
 class VisualShaderEditor;
-class EditorUndoRedoManager;
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);
@@ -185,7 +184,6 @@ class VisualShaderEditor : public VBoxContainer {
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	Point2 saved_node_pos;
 	bool saved_node_pos_dirty = false;
 

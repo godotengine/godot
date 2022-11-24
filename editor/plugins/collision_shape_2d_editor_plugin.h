@@ -35,7 +35,6 @@
 #include "scene/2d/collision_shape_2d.h"
 
 class CanvasItemEditor;
-class EditorUndoRedoManager;
 
 class CollisionShape2DEditor : public Control {
 	GDCLASS(CollisionShape2DEditor, Control);
@@ -62,7 +61,6 @@ class CollisionShape2DEditor : public Control {
 		Point2(1, -1),
 	};
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	CollisionShape2D *node = nullptr;
 

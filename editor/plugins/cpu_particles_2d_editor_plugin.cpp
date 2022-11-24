@@ -34,7 +34,6 @@
 #include "core/io/image_loader.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
-#include "editor/editor_undo_redo_manager.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/particle_process_material.h"
@@ -239,7 +238,6 @@ void CPUParticles2DEditorPlugin::_bind_methods() {
 
 CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);

@@ -71,6 +71,7 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths)
 			name = basename + " " + itos(counter);
 		}
 
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Add Resource"));
 		undo_redo->add_do_method(preloader, "add_resource", name, resource);
 		undo_redo->add_undo_method(preloader, "remove_resource", name);
@@ -115,6 +116,7 @@ void ResourcePreloaderEditor::_item_edited() {
 		}
 
 		Ref<Resource> samp = preloader->get_resource(old_name);
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Rename Resource"));
 		undo_redo->add_do_method(preloader, "remove_resource", old_name);
 		undo_redo->add_do_method(preloader, "add_resource", new_name, samp);
@@ -127,6 +129,7 @@ void ResourcePreloaderEditor::_item_edited() {
 }
 
 void ResourcePreloaderEditor::_remove_resource(const String &p_to_remove) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(preloader, "remove_resource", p_to_remove);
 	undo_redo->add_undo_method(preloader, "add_resource", p_to_remove, preloader->get_resource(p_to_remove));
@@ -160,6 +163,7 @@ void ResourcePreloaderEditor::_paste_pressed() {
 		name = basename + " " + itos(counter);
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Paste Resource"));
 	undo_redo->add_do_method(preloader, "add_resource", name, r);
 	undo_redo->add_undo_method(preloader, "remove_resource", name);
@@ -233,10 +237,6 @@ void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column,
 	} else if (p_id == BUTTON_REMOVE) {
 		_remove_resource(item->get_text(0));
 	}
-}
-
-void ResourcePreloaderEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
 }
 
 void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
@@ -322,6 +322,7 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 				name = basename + "_" + itos(counter);
 			}
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add Resource"));
 			undo_redo->add_do_method(preloader, "add_resource", name, r);
 			undo_redo->add_undo_method(preloader, "remove_resource", name);
@@ -392,7 +393,6 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 }
 
 void ResourcePreloaderEditorPlugin::edit(Object *p_object) {
-	preloader_editor->set_undo_redo(EditorNode::get_undo_redo());
 	ResourcePreloader *s = Object::cast_to<ResourcePreloader>(p_object);
 	if (!s) {
 		return;

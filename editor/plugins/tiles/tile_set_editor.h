@@ -39,8 +39,6 @@
 #include "tile_set_atlas_source_editor.h"
 #include "tile_set_scenes_collection_source_editor.h"
 
-class EditorUndoRedoManager;
-
 class TileSetEditor : public VBoxContainer {
 	GDCLASS(TileSetEditor, VBoxContainer);
 
@@ -59,8 +57,6 @@ private:
 	Label *no_source_selected_label = nullptr;
 	TileSetAtlasSourceEditor *tile_set_atlas_source_editor = nullptr;
 	TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor = nullptr;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

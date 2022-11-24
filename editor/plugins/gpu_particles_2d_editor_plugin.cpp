@@ -160,6 +160,7 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 		particles->set_emitting(false);
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Generate Visibility Rect"));
 	undo_redo->add_do_method(particles, "set_visibility_rect", rect);
 	undo_redo->add_undo_method(particles, "set_visibility_rect", particles->get_visibility_rect());
@@ -359,7 +360,6 @@ void GPUParticles2DEditorPlugin::_bind_methods() {
 
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);

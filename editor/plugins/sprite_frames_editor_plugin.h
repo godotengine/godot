@@ -45,7 +45,6 @@
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
-class EditorUndoRedoManager;
 
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
@@ -154,8 +153,6 @@ class SpriteFramesEditor : public HSplitContainer {
 	bool updating;
 	bool updating_split_settings = false; // Skip SpinBox/Range callback when setting value by code.
 
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
@@ -179,8 +176,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
-
 	void edit(SpriteFrames *p_frames);
 	SpriteFramesEditor();
 };

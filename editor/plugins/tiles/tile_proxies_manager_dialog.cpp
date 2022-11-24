@@ -53,6 +53,7 @@ void TileProxiesManagerDialog::_menu_id_pressed(int p_id) {
 }
 
 void TileProxiesManagerDialog::_delete_selected_bindings() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Remove Tile Proxies"));
 
 	Vector<int> source_level_selected = source_level_list->get_selected_items();
@@ -152,6 +153,7 @@ void TileProxiesManagerDialog::_property_changed(const String &p_path, const Var
 }
 
 void TileProxiesManagerDialog::_add_button_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (from.source_id != TileSet::INVALID_SOURCE && to.source_id != TileSet::INVALID_SOURCE) {
 		Vector2i from_coords = from.get_atlas_coords();
 		Vector2i to_coords = to.get_atlas_coords();
@@ -192,6 +194,7 @@ void TileProxiesManagerDialog::_add_button_pressed() {
 }
 
 void TileProxiesManagerDialog::_clear_invalid_button_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Delete All Invalid Tile Proxies"));
 
 	undo_redo->add_do_method(*tile_set, "cleanup_invalid_tile_proxies");
@@ -219,6 +222,7 @@ void TileProxiesManagerDialog::_clear_invalid_button_pressed() {
 }
 
 void TileProxiesManagerDialog::_clear_all_button_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Delete All Tile Proxies"));
 
 	undo_redo->add_do_method(*tile_set, "clear_tile_proxies");
@@ -299,6 +303,7 @@ void TileProxiesManagerDialog::_unhandled_key_input(Ref<InputEvent> p_event) {
 }
 
 void TileProxiesManagerDialog::cancel_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (int i = 0; i < commited_actions_count; i++) {
 		undo_redo->undo();
 	}
@@ -318,8 +323,6 @@ void TileProxiesManagerDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 }
 
 TileProxiesManagerDialog::TileProxiesManagerDialog() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
 	// Tile proxy management window.
 	set_title(TTR("Tile Proxies Management"));
 	set_process_unhandled_key_input(true);
