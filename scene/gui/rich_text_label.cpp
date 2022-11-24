@@ -5517,7 +5517,7 @@ int RichTextLabel::get_character_paragraph(int p_char) {
 	int para_count = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
-		if (main->lines[i].char_offset < p_char && p_char <= main->lines[i].char_offset + main->lines[i].char_count) {
+		if (main->lines[i].char_offset <= p_char && p_char < main->lines[i].char_offset + main->lines[i].char_count) {
 			return para_count;
 		} else {
 			para_count++;
