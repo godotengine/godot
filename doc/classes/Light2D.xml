@@ -4,8 +4,7 @@
 		Casts light in a 2D environment.
 	</brief_description>
 	<description>
-		Casts light in a 2D environment. Light is defined by a (usually grayscale) texture, a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related).
-		[b]Note:[/b] Light2D can also be used as a mask.
+		Casts light in a 2D environment. A light is defined as a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related).
 	</description>
 	<tutorials>
 		<link title="2D lights and shadows">$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html</link>
@@ -14,12 +13,14 @@
 		<method name="get_height" qualifiers="const">
 			<return type="float" />
 			<description>
+				Returns the light's height, which is used in 2D normal mapping. See [member PointLight2D.height] and [member DirectionalLight2D.height].
 			</description>
 		</method>
 		<method name="set_height">
 			<return type="void" />
 			<param index="0" name="height" type="float" />
 			<description>
+				Sets the light's height, which is used in 2D normal mapping. See [member PointLight2D.height] and [member DirectionalLight2D.height].
 			</description>
 		</method>
 	</methods>
@@ -64,7 +65,7 @@
 			Shadow filter type. See [enum ShadowFilter] for possible values.
 		</member>
 		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth" default="0.0">
-			Smoothing value for shadows.
+			Smoothing value for shadows. Higher values will result in softer shadows, at the cost of visible streaks that can appear in shadow rendering. [member shadow_filter_smooth] only has an effect if [member shadow_filter] is [constant SHADOW_FILTER_PCF5] or [constant SHADOW_FILTER_PCF13].
 		</member>
 		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask" default="1">
 			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching light mask will cast shadows.
@@ -72,13 +73,13 @@
 	</members>
 	<constants>
 		<constant name="SHADOW_FILTER_NONE" value="0" enum="ShadowFilter">
-			No filter applies to the shadow map. See [member shadow_filter].
+			No filter applies to the shadow map. This provides hard shadow edges and is the fastest to render. See [member shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF5" value="1" enum="ShadowFilter">
-			Percentage closer filtering (5 samples) applies to the shadow map. See [member shadow_filter].
+			Percentage closer filtering (5 samples) applies to the shadow map. This is slower compared to hard shadow rendering. See [member shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF13" value="2" enum="ShadowFilter">
-			Percentage closer filtering (13 samples) applies to the shadow map. See [member shadow_filter].
+			Percentage closer filtering (13 samples) applies to the shadow map. This is the slowest shadow filtereing mode, and should be used sparingly. See [member shadow_filter].
 		</constant>
 		<constant name="BLEND_MODE_ADD" value="0" enum="BlendMode">
 			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behavior of a light.
