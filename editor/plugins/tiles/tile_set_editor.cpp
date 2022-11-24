@@ -66,6 +66,7 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				// Actually create the new source.
 				Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 				atlas_source->set_texture(resource);
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Add a new atlas source"));
 				undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
 				undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
@@ -256,6 +257,7 @@ void TileSetEditor::_source_delete_pressed() {
 	Ref<TileSetSource> source = tile_set->get_source(to_delete);
 
 	// Remove the source.
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Remove source"));
 	undo_redo->add_do_method(*tile_set, "remove_source", to_delete);
 	undo_redo->add_undo_method(*tile_set, "add_source", source, to_delete);
@@ -274,6 +276,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 
 			// Add a new source.
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add atlas source"));
 			undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
 			undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
@@ -288,6 +291,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			Ref<TileSetScenesCollectionSource> scene_collection_source = memnew(TileSetScenesCollectionSource);
 
 			// Add a new source.
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add atlas source"));
 			undo_redo->add_do_method(*tile_set, "add_source", scene_collection_source, source_id);
 			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
@@ -361,6 +365,7 @@ void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event
 
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
 		Vector<int> selected = patterns_item_list->get_selected_items();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Remove TileSet patterns"));
 		for (int i = 0; i < selected.size(); i++) {
 			int pattern_index = selected[i];
@@ -665,8 +670,6 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 
 TileSetEditor::TileSetEditor() {
 	singleton = this;
-
-	undo_redo = EditorNode::get_undo_redo();
 
 	set_process_internal(true);
 
