@@ -29,13 +29,6 @@
 				Adds an [AudioEffect] effect to the bus [param bus_idx] at [param at_position].
 			</description>
 		</method>
-		<method name="capture_get_device_list">
-			<return type="PackedStringArray" />
-			<description>
-				Returns the names of all audio input devices detected on the system.
-				[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
-			</description>
-		</method>
 		<method name="generate_bus_layout" qualifiers="const">
 			<return type="AudioBusLayout" />
 			<description>
@@ -117,16 +110,23 @@
 				Returns the volume of the bus at index [param bus_idx] in dB.
 			</description>
 		</method>
-		<method name="get_device_list">
+		<method name="get_input_device_list">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the names of all audio devices detected on the system.
+				Returns the names of all audio input devices detected on the system.
+				[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the sample rate at the output of the [AudioServer].
+			</description>
+		</method>
+		<method name="get_output_device_list">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the names of all audio output devices detected on the system.
 			</description>
 		</method>
 		<method name="get_output_latency" qualifiers="const">
@@ -302,12 +302,12 @@
 		<member name="bus_count" type="int" setter="set_bus_count" getter="get_bus_count" default="1">
 			Number of available audio buses.
 		</member>
-		<member name="capture_device" type="String" setter="capture_set_device" getter="capture_get_device" default="&quot;Default&quot;">
-			Name of the current device for audio input (see [method capture_get_device_list]). On systems with multiple audio inputs (such as analog, USB and HDMI audio), this can be used to select the audio input device. The value [code]"Default"[/code] will record audio on the system-wide default audio input. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
+		<member name="input_device" type="String" setter="set_input_device" getter="get_input_device" default="&quot;Default&quot;">
+			Name of the current device for audio input (see [method get_input_device_list]). On systems with multiple audio inputs (such as analog, USB and HDMI audio), this can be used to select the audio input device. The value [code]"Default"[/code] will record audio on the system-wide default audio input. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
 			[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
 		</member>
-		<member name="device" type="String" setter="set_device" getter="get_device" default="&quot;Default&quot;">
-			Name of the current device for audio output (see [method get_device_list]). On systems with multiple audio outputs (such as analog, USB and HDMI audio), this can be used to select the audio output device. The value [code]"Default"[/code] will play audio on the system-wide default audio output. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
+		<member name="output_device" type="String" setter="set_output_device" getter="get_output_device" default="&quot;Default&quot;">
+			Name of the current device for audio output (see [method get_output_device_list]). On systems with multiple audio outputs (such as analog, USB and HDMI audio), this can be used to select the audio output device. The value [code]"Default"[/code] will play audio on the system-wide default audio output. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
 		</member>
 		<member name="playback_speed_scale" type="float" setter="set_playback_speed_scale" getter="get_playback_speed_scale" default="1.0">
 			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played at half its speed).

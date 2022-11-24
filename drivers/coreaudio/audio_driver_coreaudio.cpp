@@ -44,10 +44,10 @@ OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 		void *inClientData) {
 	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
 
-	// If our selected device is the Default call set_device to update the
+	// If our selected input device is the Default, call set_input_device to update the
 	// kAudioOutputUnitProperty_CurrentDevice property
-	if (driver->capture_device_name == "Default") {
-		driver->capture_set_device("Default");
+	if (driver->input_device_name == "Default") {
+		driver->set_input_device("Default");
 	}
 
 	return noErr;
@@ -58,10 +58,10 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 		void *inClientData) {
 	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
 
-	// If our selected device is the Default call set_device to update the
+	// If our selected output device is the Default call set_output_device to update the
 	// kAudioOutputUnitProperty_CurrentDevice property
-	if (driver->device_name == "Default") {
-		driver->set_device("Default");
+	if (driver->output_device_name == "Default") {
+		driver->set_output_device("Default");
 	}
 
 	return noErr;
@@ -495,7 +495,7 @@ Error AudioDriverCoreAudio::capture_stop() {
 
 #ifdef MACOS_ENABLED
 
-PackedStringArray AudioDriverCoreAudio::_get_device_list(bool capture) {
+PackedStringArray AudioDriverCoreAudio::_get_device_list(bool input) {
 	PackedStringArray list;
 
 	list.push_back("Default");
@@ -514,7 +514,7 @@ PackedStringArray AudioDriverCoreAudio::_get_device_list(bool capture) {
 
 	UInt32 deviceCount = size / sizeof(AudioDeviceID);
 	for (UInt32 i = 0; i < deviceCount; i++) {
-		prop.mScope = capture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput;
+		prop.mScope = input ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput;
 		prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
 		AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, nullptr, &size);
@@ -555,10 +555,10 @@ PackedStringArray AudioDriverCoreAudio::_get_device_list(bool capture) {
 	return list;
 }
 
-void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
+void AudioDriverCoreAudio::_set_device(const String &output_device, bool input) {
 	AudioDeviceID deviceId;
 	bool found = false;
-	if (device != "Default") {
+	if (output_device != "Default") {
 		AudioObjectPropertyAddress prop;
 
 		prop.mSelector = kAudioHardwarePropertyDevices;
@@ -573,7 +573,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 
 		UInt32 deviceCount = size / sizeof(AudioDeviceID);
 		for (UInt32 i = 0; i < deviceCount && !found; i++) {
-			prop.mScope = capture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput;
+			prop.mScope = input ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput;
 			prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
 			AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, nullptr, &size);
@@ -602,7 +602,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 				ERR_FAIL_NULL_MSG(buffer, "Out of memory.");
 				if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
 					String name = String::utf8(buffer) + " (" + itos(audioDevices[i]) + ")";
-					if (name == device) {
+					if (name == output_device) {
 						deviceId = audioDevices[i];
 						found = true;
 					}
@@ -618,7 +618,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 	if (!found) {
 		// If we haven't found the desired device get the system default one
 		UInt32 size = sizeof(AudioDeviceID);
-		UInt32 elem = capture ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice;
+		UInt32 elem = input ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice;
 		AudioObjectPropertyAddress property = { elem, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
 
 		OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, nullptr, &size, &deviceId);
@@ -628,10 +628,10 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 	}
 
 	if (found) {
-		OSStatus result = AudioUnitSetProperty(capture ? input_unit : audio_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &deviceId, sizeof(AudioDeviceID));
+		OSStatus result = AudioUnitSetProperty(input ? input_unit : audio_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &deviceId, sizeof(AudioDeviceID));
 		ERR_FAIL_COND(result != noErr);
 
-		if (capture) {
+		if (input) {
 			// Reset audio input to keep synchronization.
 			input_position = 0;
 			input_size = 0;
@@ -639,34 +639,34 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 	}
 }
 
-PackedStringArray AudioDriverCoreAudio::get_device_list() {
+PackedStringArray AudioDriverCoreAudio::get_output_device_list() {
 	return _get_device_list();
 }
 
-String AudioDriverCoreAudio::get_device() {
-	return device_name;
+String AudioDriverCoreAudio::get_output_device() {
+	return output_device_name;
 }
 
-void AudioDriverCoreAudio::set_device(String device) {
-	device_name = device;
+void AudioDriverCoreAudio::set_output_device(String output_device) {
+	output_device_name = output_device;
 	if (active) {
-		_set_device(device_name);
+		_set_device(output_device_name);
 	}
 }
 
-void AudioDriverCoreAudio::capture_set_device(const String &p_name) {
-	capture_device_name = p_name;
+void AudioDriverCoreAudio::set_input_device(const String &p_name) {
+	input_device_name = p_name;
 	if (active) {
-		_set_device(capture_device_name, true);
+		_set_device(input_device_name, true);
 	}
 }
 
-PackedStringArray AudioDriverCoreAudio::capture_get_device_list() {
+PackedStringArray AudioDriverCoreAudio::get_input_device_list() {
 	return _get_device_list(true);
 }
 
-String AudioDriverCoreAudio::capture_get_device() {
-	return capture_device_name;
+String AudioDriverCoreAudio::get_input_device() {
+	return input_device_name;
 }
 
 #endif
