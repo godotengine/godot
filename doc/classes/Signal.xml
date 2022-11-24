@@ -6,7 +6,7 @@
 	<description>
 		[Signal] is a built-in [Variant] type that represents a signal of an [Object] instance. Like all [Variant] types, it can be stored in variables and passed to functions. Signals allow all connected [Callable]s (and by extension their respective objects) to listen and react to events, without directly referencing one another. This keeps the code flexible and easier to manage.
 		In GDScript, signals can be declared with the [code]signal[/code] keyword. In C#, you may use the [code][Signal][/code] attribute on a delegate.
-		[codeblock]
+		[codeblocks]
 		[gdscript]
 		signal attacked
 
@@ -23,7 +23,7 @@
 		[Signal]
 		delegate void ItemDropped(itemName: string, amount: int);
 		[/csharp]
-		[/codeblock]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="Using Signals">$DOCS_URL/getting_started/step_by_step/signals.html</link>
