@@ -3182,7 +3182,8 @@ void RichTextLabel::push_normal() {
 void RichTextLabel::push_bold() {
 	ERR_FAIL_COND(theme_cache.bold_font.is_null());
 
-	_push_def_font(BOLD_FONT);
+	ItemFont *item_font = _find_font(current);
+	_push_def_font((item_font && item_font->def_font == ITALICS_FONT) ? BOLD_ITALICS_FONT : BOLD_FONT);
 }
 
 void RichTextLabel::push_bold_italics() {
@@ -3194,7 +3195,8 @@ void RichTextLabel::push_bold_italics() {
 void RichTextLabel::push_italics() {
 	ERR_FAIL_COND(theme_cache.italics_font.is_null());
 
-	_push_def_font(ITALICS_FONT);
+	ItemFont *item_font = _find_font(current);
+	_push_def_font((item_font && item_font->def_font == BOLD_FONT) ? BOLD_ITALICS_FONT : ITALICS_FONT);
 }
 
 void RichTextLabel::push_mono() {
