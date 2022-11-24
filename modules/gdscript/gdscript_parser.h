@@ -1217,13 +1217,14 @@ private:
 	bool can_break = false;
 	bool can_continue = false;
 	bool is_continue_match = false; // Whether a `continue` will act on a `match`.
-	bool is_ignoring_warnings = false;
 	List<bool> multiline_stack;
 
 	ClassNode *head = nullptr;
 	Node *list = nullptr;
 	List<ParserError> errors;
+
 #ifdef DEBUG_ENABLED
+	bool is_ignoring_warnings = false;
 	List<GDScriptWarning> warnings;
 	HashSet<String> ignored_warnings;
 	HashSet<uint32_t> ignored_warning_codes;
