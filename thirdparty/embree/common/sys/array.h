@@ -59,8 +59,8 @@ namespace embree
 
       /********************** Iterators  ****************************/
 
-      __forceinline T* begin() const { return items; };
-      __forceinline T* end  () const { return items+M; };
+      __forceinline T* begin() const { return (T*)items; };
+      __forceinline T* end  () const { return (T*)items+M; };
 
 
       /********************** Capacity ****************************/
@@ -101,8 +101,8 @@ namespace embree
       __forceinline       T& at(size_t i)       { assert(i < M); return items[i]; }
       __forceinline const T& at(size_t i) const { assert(i < M); return items[i]; }
 
-      __forceinline T& front() const { assert(M > 0); return items[0]; };
-      __forceinline T& back () const { assert(M > 0); return items[M-1]; };
+      __forceinline T& front() { assert(M > 0); return items[0]; };
+      __forceinline T& back () { assert(M > 0); return items[M-1]; };
 
       __forceinline       T* data()       { return items; };
       __forceinline const T* data() const { return items; };
@@ -139,7 +139,7 @@ namespace embree
     __forceinline       Ty& operator[](const unsigned i)       { assert(i<N); return data[i]; }
     __forceinline const Ty& operator[](const unsigned i) const { assert(i<N); return data[i]; }
 
-#if defined(__64BIT__)
+#if defined(__64BIT__) || defined(__EMSCRIPTEN__)
     __forceinline       Ty& operator[](const size_t i)       { assert(i<N); return data[i]; }
     __forceinline const Ty& operator[](const size_t i) const { assert(i<N); return data[i]; }
 #endif
@@ -196,7 +196,7 @@ namespace embree
     __forceinline       Ty& operator[](const int i)      { assert(i>=0 && i<max_total_elements); resize(i+1); return data[i]; }
     __forceinline       Ty& operator[](const unsigned i) { assert(i<max_total_elements); resize(i+1); return data[i]; }
 
-#if defined(__64BIT__)
+#if defined(__64BIT__) || defined(__EMSCRIPTEN__)
     __forceinline       Ty& operator[](const size_t i) { assert(i<max_total_elements); resize(i+1); return data[i]; }
 #endif
 
