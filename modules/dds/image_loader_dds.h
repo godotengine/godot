@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  image_loader_dds.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef IMAGE_LOADER_DDS_H
+#define IMAGE_LOADER_DDS_H
 
-#include "image_loader_dds.h"
-#include "texture_loader_dds.h"
+#include "core/io/image_loader.h"
 
-static Ref<ResourceFormatDDS> resource_loader_dds;
-static ImageLoaderDDS *image_loader_dds = nullptr;
+class ImageLoaderDDS : public ImageFormatLoader {
+public:
+	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	ImageLoaderDDS();
+};
 
-void register_dds_types() {
-	image_loader_dds = memnew(ImageLoaderDDS);
-	resource_loader_dds.instance();
-	ResourceLoader::add_resource_format_loader(resource_loader_dds);
-	ImageLoader::add_image_format_loader(image_loader_dds);
-}
-
-void unregister_dds_types() {
-	memdelete(image_loader_dds);
-	ResourceLoader::remove_resource_format_loader(resource_loader_dds);
-	resource_loader_dds.unref();
-}
+#endif // IMAGE_LOADER_DDS_H

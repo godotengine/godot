@@ -2531,6 +2531,7 @@ ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_dds_mem_loader_func = nullptr;
 
 void (*Image::_image_compress_bc_func)(Image *, float, Image::CompressSource) = nullptr;
 void (*Image::_image_compress_bptc_func)(Image *, float, Image::CompressSource) = nullptr;
@@ -2971,6 +2972,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_bmp_from_buffer", "buffer"), &Image::load_bmp_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_dds_from_buffer", "buffer"), &Image::load_dds_from_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
@@ -3299,6 +3301,14 @@ Error Image::load_bmp_from_buffer(const PoolVector<uint8_t> &p_array) {
 			ERR_UNAVAILABLE,
 			"The BMP module isn't enabled. Recompile the Godot editor or export template binary with the `module_bmp_enabled=yes` SCons option.");
 	return _load_from_buffer(p_array, _bmp_mem_loader_func);
+}
+
+Error Image::load_dds_from_buffer(const PoolVector<uint8_t> &p_array) {
+	ERR_FAIL_NULL_V_MSG(
+			_dds_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The DDS module isn't enabled. Recompile the Godot editor or export template binary with the `module_dds_enabled=yes` SCons option.");
+	return _load_from_buffer(p_array, _dds_mem_loader_func);
 }
 
 Error Image::_load_from_buffer(const PoolVector<uint8_t> &p_array, ImageMemLoadFunc p_loader) {
