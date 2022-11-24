@@ -4,7 +4,7 @@
 #define _MKSTR(m_x) _STR(m_x)
 #endif
 
-GODOT_ICON ICON platform/windows/godot.ico
+GODOT_ICON ICON platform/windows/godot_console.ico
 
 1 VERSIONINFO
 FILEVERSION    	VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
