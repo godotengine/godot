@@ -3428,33 +3428,63 @@ bool String::is_valid_identifier() const {
 	return true;
 }
 
-//kind of poor should be rewritten properly
-
 String String::word_wrap(int p_chars_per_line) const {
-	int from = 0;
-	int last_space = 0;
 	String ret;
+
+	int line_start = 0;
+	int line_end = 0; // End of last word on current line.
+	int word_start = 0; // -1 if no word encountered. Leading spaces are part of a word.
+	int word_length = 0;
+
 	for (int i = 0; i < length(); i++) {
-		if (i - from >= p_chars_per_line) {
-			if (last_space == -1) {
-				ret += substr(from, i - from + 1) + "\n";
-			} else {
-				ret += substr(from, last_space - from) + "\n";
-				i = last_space; //rewind
-			}
-			from = i + 1;
-			last_space = -1;
-		} else if (operator[](i) == ' ' || operator[](i) == '\t') {
-			last_space = i;
-		} else if (operator[](i) == '\n') {
-			ret += substr(from, i - from) + "\n";
-			from = i + 1;
-			last_space = -1;
+		const CharType c = operator[](i);
+
+		switch (c) {
+			case '\n': {
+				// Force newline.
+				ret += substr(line_start, i - line_start + 1);
+				line_start = i + 1;
+				line_end = line_start;
+				word_start = line_start;
+				word_length = 0;
+			} break;
+
+			case ' ':
+			case '\t': {
+				// A whitespace ends current word.
+				if (word_length > 0) {
+					line_end = i - 1;
+					word_start = -1;
+					word_length = 0;
+				}
+			} break;
+
+			default: {
+				if (word_start == -1) {
+					word_start = i;
+				}
+				word_length += 1;
+
+				if (word_length > p_chars_per_line) {
+					// Word too long: wrap before current character.
+					ret += substr(line_start, i - line_start) + "\n";
+					line_start = i;
+					line_end = i;
+					word_start = i;
+					word_length = 1;
+				} else if (i - line_start + 1 > p_chars_per_line) {
+					// Line too long: wrap after the last word.
+					ret += substr(line_start, line_end - line_start + 1) + "\n";
+					line_start = word_start;
+					line_end = line_start;
+				}
+			} break;
 		}
 	}
 
-	if (from < length()) {
-		ret += substr(from, length());
+	const int remaining = length() - line_start;
+	if (remaining) {
+		ret += substr(line_start, remaining);
 	}
 
 	return ret;
