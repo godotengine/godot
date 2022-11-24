@@ -38,34 +38,50 @@
 class VariantParser {
 public:
 	struct Stream {
-		virtual char32_t get_char() = 0;
-		virtual bool is_utf8() const = 0;
-		virtual bool is_eof() const = 0;
+	private:
+		enum { READAHEAD_SIZE = 2048 };
+		char32_t readahead_buffer[READAHEAD_SIZE];
+		uint32_t readahead_pointer = 0;
+		uint32_t readahead_filled = 0;
+		bool eof = false;
 
+	protected:
+		virtual uint32_t _read_buffer(char32_t *p_buffer, uint32_t p_num_chars) = 0;
+
+	public:
 		char32_t saved = 0;
+
+		char32_t get_char();
+		virtual bool is_utf8() const = 0;
+		bool is_eof() const { return eof; }
 
 		Stream() {}
 		virtual ~Stream() {}
 	};
 
 	struct StreamFile : public Stream {
+	protected:
+		virtual uint32_t _read_buffer(char32_t *p_buffer, uint32_t p_num_chars) override;
+
+	public:
 		Ref<FileAccess> f;
 
-		virtual char32_t get_char() override;
 		virtual bool is_utf8() const override;
-		virtual bool is_eof() const override;
 
 		StreamFile() {}
 	};
 
 	struct StreamString : public Stream {
 		String s;
+
+	private:
 		int pos = 0;
 
-		virtual char32_t get_char() override;
-		virtual bool is_utf8() const override;
-		virtual bool is_eof() const override;
+	protected:
+		virtual uint32_t _read_buffer(char32_t *p_buffer, uint32_t p_num_chars) override;
 
+	public:
+		virtual bool is_utf8() const override;
 		StreamString() {}
 	};
 
