@@ -113,6 +113,7 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 		return;
 	}
 	if (skeleton) {
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_undo_property(skeleton, p_property, skeleton->get(p_property));
 		undo_redo->add_do_property(skeleton, p_property, p_value);
@@ -122,7 +123,6 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 
 BoneTransformEditor::BoneTransformEditor(Skeleton3D *p_skeleton) :
 		skeleton(p_skeleton) {
-	undo_redo = EditorNode::get_undo_redo();
 }
 
 void BoneTransformEditor::set_keyable(const bool p_keyable) {

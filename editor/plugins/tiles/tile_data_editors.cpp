@@ -255,7 +255,7 @@ void GenericTilePolygonEditor::_zoom_changed() {
 void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 	Ref<EditorUndoRedoManager> undo_redo;
 	if (use_undo_redo) {
-		undo_redo = editor_undo_redo;
+		undo_redo = EditorNode::get_undo_redo();
 	} else {
 		// This nice hack allows for discarding undo actions without making code too complex.
 		undo_redo.instantiate();
@@ -420,7 +420,7 @@ void GenericTilePolygonEditor::_snap_to_half_pixel(Point2 &r_point) {
 void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) {
 	Ref<EditorUndoRedoManager> undo_redo;
 	if (use_undo_redo) {
-		undo_redo = editor_undo_redo;
+		undo_redo = EditorNode::get_undo_redo();
 	} else {
 		// This nice hack allows for discarding undo actions without making code too complex.
 		undo_redo.instantiate();
@@ -756,8 +756,6 @@ void GenericTilePolygonEditor::_bind_methods() {
 }
 
 GenericTilePolygonEditor::GenericTilePolygonEditor() {
-	editor_undo_redo = EditorNode::get_undo_redo();
-
 	toolbar = memnew(HBoxContainer);
 	add_child(toolbar);
 
@@ -876,6 +874,7 @@ Variant TileDataDefaultEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_s
 }
 
 void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/%s", coords.x, coords.y, E.key.alternative_tile, property), E.value);
@@ -944,6 +943,7 @@ void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_ti
 		}
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
@@ -1067,6 +1067,7 @@ void TileDataDefaultEditor::forward_painting_alternatives_gui_input(TileAtlasVie
 					drag_last_pos = mb->get_position();
 				}
 			} else {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Painting Tiles Property"));
 				_setup_undo_redo_action(p_tile_set_atlas_source, drag_modified, drag_painted_value);
 				undo_redo->commit_action(false);
@@ -1188,8 +1189,6 @@ Variant::Type TileDataDefaultEditor::get_property_type() {
 }
 
 TileDataDefaultEditor::TileDataDefaultEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	label = memnew(Label);
 	label->set_text(TTR("Painting:"));
 	label->set_theme_type_variation("HeaderSmall");
@@ -1320,6 +1319,7 @@ Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_
 }
 
 void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/occlusion_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, occlusion_layer), E.value);
@@ -1340,8 +1340,6 @@ void TileDataOcclusionShapeEditor::_notification(int p_what) {
 }
 
 TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	add_child(polygon_editor);
 }
@@ -1501,6 +1499,7 @@ Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas
 
 void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
 	Array new_array = p_new_value;
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Array old_array = E.value;
 
@@ -1537,8 +1536,6 @@ void TileDataCollisionEditor::_notification(int p_what) {
 }
 
 TileDataCollisionEditor::TileDataCollisionEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	polygon_editor->set_multiple_polygon_mode(true);
 	polygon_editor->connect("polygons_changed", callable_mp(this, &TileDataCollisionEditor::_polygons_changed));
@@ -2185,6 +2182,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					}
 				}
 			} else {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET_RECT) {
 					Rect2i rect;
 					rect.set_position(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_start_pos));
@@ -2557,6 +2555,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 					}
 				}
 			} else {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET) {
 					undo_redo->create_action(TTR("Painting Tiles Property"));
 					for (KeyValue<TileMapCell, Variant> &E : drag_modified) {
@@ -2622,8 +2621,6 @@ void TileDataTerrainsEditor::_notification(int p_what) {
 }
 
 TileDataTerrainsEditor::TileDataTerrainsEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	label = memnew(Label);
 	label->set_text(TTR("Painting:"));
 	label->set_theme_type_variation("HeaderSmall");
@@ -2707,6 +2704,7 @@ Variant TileDataNavigationEditor::_get_value(TileSetAtlasSource *p_tile_set_atla
 }
 
 void TileDataNavigationEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/navigation_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, navigation_layer), E.value);
@@ -2729,8 +2727,6 @@ void TileDataNavigationEditor::_notification(int p_what) {
 }
 
 TileDataNavigationEditor::TileDataNavigationEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	polygon_editor->set_multiple_polygon_mode(true);
 	add_child(polygon_editor);

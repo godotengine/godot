@@ -459,6 +459,7 @@ void GridMapEditor::_delete_selection() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("GridMap Delete Selection"));
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
@@ -479,6 +480,7 @@ void GridMapEditor::_fill_selection() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("GridMap Fill Selection"));
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
@@ -572,6 +574,7 @@ void GridMapEditor::_do_paste() {
 	rot = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 
 	Vector3 ofs = paste_indicator.current - paste_indicator.click;
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("GridMap Paste Selection"));
 
 	for (const ClipboardItem &item : clipboard_items) {
@@ -659,6 +662,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 		} else {
 			if ((mb->get_button_index() == MouseButton::RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MouseButton::LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
+					Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 					undo_redo->create_action(TTR("GridMap Paint"));
 					for (const SetItem &si : set_items) {
 						undo_redo->add_do_method(node, "set_cell_item", si.position, si.new_value, si.new_orientation);
@@ -680,6 +684,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			}
 
 			if (mb->get_button_index() == MouseButton::LEFT && input_action == INPUT_SELECT) {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("GridMap Selection"));
 				undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 				undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
@@ -1142,8 +1147,6 @@ void GridMapEditor::_bind_methods() {
 }
 
 GridMapEditor::GridMapEditor() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
 	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(mw, 0) * EDSCALE);

@@ -41,7 +41,6 @@
 #include "scene/resources/texture.h"
 
 class ViewPanner;
-class EditorUndoRedoManager;
 class OptionButton;
 
 class TextureRegionEditor : public AcceptDialog {
@@ -70,8 +69,6 @@ class TextureRegionEditor : public AcceptDialog {
 
 	VScrollBar *vscroll = nullptr;
 	HScrollBar *hscroll = nullptr;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	Vector2 draw_ofs;
 	float draw_zoom = 0.0;
