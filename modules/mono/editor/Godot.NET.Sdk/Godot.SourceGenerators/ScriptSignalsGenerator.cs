@@ -219,31 +219,10 @@ namespace Godot.SourceGenerators
             }
 
             // Generate the SignalEmit class
-
-            var @base = symbol.BaseType;
-            bool hasBase = @base != null;
-
-            if (hasBase)
-                hasBase = SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, @base!.ContainingAssembly);
-
-            source.AppendLine($"    public new class SignalEmit{(hasBase ? ($" : {@base!.FullQualifiedName()}.SignalEmit") : "")}")
+            source.AppendLine($"    public new class SignalEmit : {symbol.BaseType.FullQualifiedName()}.SignalEmit")
                     .AppendLine("    {");
 
-            if (!hasBase)
-            {
-                // Create bound field and ctor
-                source.AppendLine($"        protected {GodotClasses.Object} bound;");
-
-                source.AppendLine($"        public SignalEmit({GodotClasses.Object} bound)")
-                        .AppendLine("        {")
-                        .AppendLine("            this.bound = bound;")
-                        .AppendLine("        }");
-
-            }
-            else
-            {
-                source.AppendLine($"        public SignalEmit({GodotClasses.Object} bound) : base(bound) {{ }}");
-            }
+            source.AppendLine($"        public SignalEmit({GodotClasses.Object} bound) : base(bound) {{ }}");
 
             foreach (var signalDelegate in godotSignalDelegates)
             {
@@ -261,18 +240,17 @@ namespace Godot.SourceGenerators
                     if (i != parameters.Length - 1)
                         paramsSb.Append(", ");
                 }
+                source.AppendLine($"        /// <inheritdoc cref=\"{signalDelegate.DelegateSymbol.FullQualifiedName()}\"/>");
 
-                source.AppendLine($"        public void {signalName}({paramsSb.ToString()})")
-                        .AppendLine("        {")
-                        .AppendLine($"            bound.EmitSignal({symbol.NameWithTypeParameters()}.SignalName.{signalName});")
-                        .AppendLine("        }");
+                source.Append($"        public void {signalName}({paramsSb.ToString()})")
+                        .AppendLine($" => bound.EmitSignal({symbol.NameWithTypeParameters()}.SignalName.{signalName});");
             }
 
             source.AppendLine("    }");
 
             // Generate the Emit property
             source.AppendLine("    private new SignalEmit _emit;")
-                .AppendLine("/// <summary>A helper to quickly and safely emit signals.</summary>")
+                .AppendLine("    /// <summary>A helper to quickly and safely emit signals.</summary>")
                 .AppendLine("    public new SignalEmit Emit => _emit ??= new(this);");
 
             source.Append("#pragma warning restore CS0109\n");
