@@ -115,7 +115,7 @@
 			<param index="3" name="end" type="float" />
 			<param index="4" name="t" type="float" />
 			<description>
-				Returns the derivative at the given [param t] on a one-dimensional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
+				Returns the derivative at the given [param t] on a one-dimensional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bézier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
 			</description>
 		</method>
 		<method name="bezier_interpolate">
@@ -126,7 +126,7 @@
 			<param index="3" name="end" type="float" />
 			<param index="4" name="t" type="float" />
 			<description>
-				Returns the point at the given [param t] on a one-dimensional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
+				Returns the point at the given [param t] on a one-dimensional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bézier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
 			</description>
 		</method>
 		<method name="bytes_to_var">
