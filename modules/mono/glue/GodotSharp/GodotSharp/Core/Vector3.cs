@@ -234,7 +234,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the point at the given <paramref name="t"/> on a one-dimensional Bezier curve defined by this vector
-        /// and the given <paramref name="control1"/>, <paramref name="control2"/> and <paramref name="end"/> points.
+        /// and the given <paramref name="control1"/>, <paramref name="control2"/>, and <paramref name="end"/> points.
         /// </summary>
         /// <param name="control1">Control point that defines the bezier curve.</param>
         /// <param name="control2">Control point that defines the bezier curve.</param>
@@ -251,6 +251,24 @@ namespace Godot
             real_t t3 = t2 * t;
 
             return this * omt3 + control1 * omt2 * t * 3 + control2 * omt * t2 * 3 + end * t3;
+        }
+
+        /// <summary>
+        /// Returns the derivative at the given <paramref name="t"/> on the Bezier curve defined by this vector
+        /// and the given <paramref name="control1"/>, <paramref name="control2"/>, and <paramref name="end"/> points.
+        /// </summary>
+        /// <param name="control1">Control point that defines the bezier curve.</param>
+        /// <param name="control2">Control point that defines the bezier curve.</param>
+        /// <param name="end">The destination value for the interpolation.</param>
+        /// <param name="t">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <returns>The resulting value of the interpolation.</returns>
+        public readonly Vector3 BezierDerivative(Vector3 control1, Vector3 control2, Vector3 end, real_t t)
+        {
+            return new Vector3(
+                Mathf.BezierDerivative(x, control1.x, control2.x, end.x, t),
+                Mathf.BezierDerivative(y, control1.y, control2.y, end.y, t),
+                Mathf.BezierDerivative(z, control1.z, control2.z, end.y, t)
+            );
         }
 
         /// <summary>
