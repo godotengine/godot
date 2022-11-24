@@ -34,6 +34,7 @@
 #include "core/error/error_list.h"
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
@@ -184,19 +185,15 @@ private:
 	int command_buffer_count = 1;
 
 	// Extensions.
+	static bool instance_extensions_initialized;
+	static HashMap<CharString, bool> requested_instance_extensions;
+	HashSet<CharString> enabled_instance_extension_names;
 
+	static bool device_extensions_initialized;
+	static HashMap<CharString, bool> requested_device_extensions;
+	HashSet<CharString> enabled_device_extension_names;
 	bool VK_KHR_incremental_present_enabled = true;
 	bool VK_GOOGLE_display_timing_enabled = true;
-	uint32_t enabled_extension_count = 0;
-	const char *extension_names[MAX_EXTENSIONS];
-	bool enabled_debug_utils = false;
-	bool has_renderpass2_ext = false;
-
-	/**
-	 * True if VK_EXT_debug_report extension is used. VK_EXT_debug_report is deprecated but it is
-	 * still used if VK_EXT_debug_utils is not available.
-	 */
-	bool enabled_debug_report = false;
 
 	PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT = nullptr;
 	PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT = nullptr;
@@ -225,7 +222,8 @@ private:
 	VkDebugReportCallbackEXT dbg_debug_report = VK_NULL_HANDLE;
 
 	Error _obtain_vulkan_version();
-	Error _initialize_extensions();
+	Error _initialize_instance_extensions();
+	Error _initialize_device_extensions();
 	Error _check_capabilities();
 
 	VkBool32 _check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, VkLayerProperties *layers);
@@ -275,7 +273,7 @@ protected:
 
 public:
 	// Extension calls.
-	bool supports_renderpass2() const { return has_renderpass2_ext; }
+	bool supports_renderpass2() const { return is_device_extension_enabled(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME); }
 	VkResult vkCreateRenderPass2KHR(VkDevice p_device, const VkRenderPassCreateInfo2 *p_create_info, const VkAllocationCallbacks *p_allocator, VkRenderPass *p_render_pass);
 
 	uint32_t get_vulkan_major() const { return vulkan_major; };
@@ -294,6 +292,16 @@ public:
 	uint32_t get_graphics_queue_family_index() const;
 
 	static void set_vulkan_hooks(VulkanHooks *p_vulkan_hooks) { vulkan_hooks = p_vulkan_hooks; };
+
+	static void register_requested_instance_extension(const CharString &extension_name, bool p_required);
+	bool is_instance_extension_enabled(const CharString &extension_name) const {
+		return enabled_instance_extension_names.has(extension_name);
+	}
+
+	static void register_requested_device_extension(const CharString &extension_name, bool p_required);
+	bool is_device_extension_enabled(const CharString &extension_name) const {
+		return enabled_device_extension_names.has(extension_name);
+	}
 
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);
