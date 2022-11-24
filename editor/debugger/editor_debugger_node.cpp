@@ -207,9 +207,32 @@ String EditorDebuggerNode::get_server_uri() const {
 	return server->get_uri();
 }
 
+void EditorDebuggerNode::set_keep_open(bool p_keep_open) {
+	keep_open = p_keep_open;
+	if (keep_open) {
+		if (server.is_null() || !server->is_active()) {
+			start();
+		}
+	} else {
+		bool found = false;
+		_for_all(tabs, [&](ScriptEditorDebugger *p_debugger) {
+			if (p_debugger->is_session_active()) {
+				found = true;
+			}
+		});
+		if (!found) {
+			stop();
+		}
+	}
+}
+
 Error EditorDebuggerNode::start(const String &p_uri) {
-	stop();
 	ERR_FAIL_COND_V(p_uri.find("://") < 0, ERR_INVALID_PARAMETER);
+	if (keep_open && current_uri == p_uri && server.is_valid()) {
+		return OK;
+	}
+	stop(true);
+	current_uri = p_uri;
 	if (EDITOR_GET("run/output/always_open_output_on_play")) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
 	} else {
@@ -225,7 +248,11 @@ Error EditorDebuggerNode::start(const String &p_uri) {
 	return OK;
 }
 
-void EditorDebuggerNode::stop() {
+void EditorDebuggerNode::stop(bool p_force) {
+	if (keep_open && !p_force) {
+		return;
+	}
+	current_uri.clear();
 	if (server.is_valid()) {
 		server->stop();
 		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
@@ -244,11 +271,6 @@ void EditorDebuggerNode::stop() {
 		}
 	});
 	_break_state_changed();
-	if (hide_on_stop) {
-		if (is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
-		}
-	}
 	breakpoints.clear();
 	set_process(false);
 }
@@ -428,7 +450,6 @@ void EditorDebuggerNode::set_script_debug_button(MenuButton *p_button) {
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/break"), DEBUG_BREAK);
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/continue"), DEBUG_CONTINUE);
 	p->add_separator();
-	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/keep_debugger_open"), DEBUG_KEEP_DEBUGGER_OPEN);
 	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/debug_with_external_editor"), DEBUG_WITH_EXTERNAL_EDITOR);
 	p->connect("id_pressed", callable_mp(this, &EditorDebuggerNode::_menu_option));
 
@@ -468,12 +489,6 @@ void EditorDebuggerNode::_menu_option(int p_id) {
 		case DEBUG_CONTINUE: {
 			debug_continue();
 		} break;
-		case DEBUG_KEEP_DEBUGGER_OPEN: {
-			bool ischecked = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_KEEP_DEBUGGER_OPEN));
-			hide_on_stop = ischecked;
-			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_KEEP_DEBUGGER_OPEN), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "keep_debugger_open", !ischecked);
-		} break;
 		case DEBUG_WITH_EXTERNAL_EDITOR: {
 			bool ischecked = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
 			debug_with_external_editor = !ischecked;
@@ -484,9 +499,6 @@ void EditorDebuggerNode::_menu_option(int p_id) {
 }
 
 void EditorDebuggerNode::_update_debug_options() {
-	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "keep_debugger_open", false).operator bool()) {
-		_menu_option(DEBUG_KEEP_DEBUGGER_OPEN);
-	}
 	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "debug_with_external_editor", false).operator bool()) {
 		_menu_option(DEBUG_WITH_EXTERNAL_EDITOR);
 	}

@@ -53,6 +53,7 @@ private:
 		RUN_DEBUG_NAVIGATION,
 		RUN_DEPLOY_REMOTE_DEBUG,
 		RUN_RELOAD_SCRIPTS,
+		SERVER_KEEP_OPEN,
 	};
 
 	void _update_debug_options();
