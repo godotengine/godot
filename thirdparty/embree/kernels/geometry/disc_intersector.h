@@ -68,15 +68,15 @@ namespace embree
         const Vec3vf<M> center = v0.xyz();
         const vfloat<M> radius = v0.w;
 
+        /* compute ray distance projC0 to hit point with ray oriented plane */
         const Vec3vf<M> c0     = center - ray_org;
         const vfloat<M> projC0 = dot(c0, ray_dir) * rd2;
 
         valid &= (vfloat<M>(ray.tnear()) <= projC0) & (projC0 <= vfloat<M>(ray.tfar));
-        if (EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR != 0.0f)
-          valid &= projC0 > float(EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR) * radius * pre.depth_scale;  // ignore self intersections
         if (unlikely(none(valid)))
           return false;
-        
+
+        /* check if hit point lies inside disc */
         const Vec3vf<M> perp   = c0 - projC0 * ray_dir;
         const vfloat<M> l2     = dot(perp, perp);
         const vfloat<M> r2     = radius * radius;
@@ -84,6 +84,15 @@ namespace embree
         if (unlikely(none(valid)))
           return false;
 
+        /* We reject hits where the ray origin lies inside the ray
+         * oriented disc to avoid self intersections. */
+#if defined(EMBREE_DISC_POINT_SELF_INTERSECTION_AVOIDANCE)
+        const vfloat<M> m2 = dot(c0, c0);
+        valid &= (m2 > r2);
+        if (unlikely(none(valid)))
+          return false;
+#endif
+        
         DiscIntersectorHitM<M> hit(zero, zero, projC0, -ray_dir);
         return epilog(valid, hit);
       }
@@ -152,21 +161,30 @@ namespace embree
         const Vec3vf<M> center = v0.xyz();
         const vfloat<M> radius = v0.w;
 
+        /* compute ray distance projC0 to hit point with ray oriented plane */
         const Vec3vf<M> c0     = center - ray_org;
         const vfloat<M> projC0 = dot(c0, ray_dir) * rd2;
 
         valid &= (vfloat<M>(ray.tnear()[k]) <= projC0) & (projC0 <= vfloat<M>(ray.tfar[k]));
-        if (EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR != 0.0f)
-          valid &= projC0 > float(EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR) * radius * pre.depth_scale[k];  // ignore self intersections
         if (unlikely(none(valid)))
           return false;
 
+        /* check if hit point lies inside disc */
         const Vec3vf<M> perp   = c0 - projC0 * ray_dir;
         const vfloat<M> l2     = dot(perp, perp);
         const vfloat<M> r2     = radius * radius;
         valid &= (l2 <= r2);
         if (unlikely(none(valid)))
           return false;
+
+        /* We reject hits where the ray origin lies inside the ray
+         * oriented disc to avoid self intersections. */
+#if defined(EMBREE_DISC_POINT_SELF_INTERSECTION_AVOIDANCE)
+        const vfloat<M> m2 = dot(c0, c0);
+        valid &= (m2 > r2);
+        if (unlikely(none(valid)))
+          return false;
+#endif
 
         DiscIntersectorHitM<M> hit(zero, zero, projC0, -ray_dir);
         return epilog(valid, hit);
