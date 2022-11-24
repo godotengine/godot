@@ -1306,10 +1306,6 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				instance_uses_custom_data = true;
 			}
 
-			if (instance_buffer == 0) {
-				break;
-			}
-
 			ERR_FAIL_COND(mesh.is_null());
 
 			uint32_t surf_count = mesh_storage->mesh_get_surface_count(mesh);
@@ -1339,6 +1335,9 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				}
 
 				if (instance_count > 1) {
+					if (instance_buffer == 0) {
+						break;
+					}
 					// Bind instance buffers.
 					glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
 					glEnableVertexAttribArray(1);
