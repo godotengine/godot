@@ -128,28 +128,30 @@ namespace embree
         const unsigned int mask = 0xFFFFFFFF >> RESERVED_NUM_SPATIAL_SPLITS_GEOMID_BITS;
         const QuadMesh* mesh = (const QuadMesh*) scene->get(prim.geomID() & mask );  
         QuadMesh::Quad quad = mesh->quad(prim.primID());
-        v[0] = mesh->vertex(quad.v[0]);
-        v[1] = mesh->vertex(quad.v[1]);
-        v[2] = mesh->vertex(quad.v[2]);
-        v[3] = mesh->vertex(quad.v[3]);
-        v[4] = mesh->vertex(quad.v[0]);
-        inv_length[0] = Vec3fa(1.0f) / (v[1]-v[0]);
-        inv_length[1] = Vec3fa(1.0f) / (v[2]-v[1]);
-        inv_length[2] = Vec3fa(1.0f) / (v[3]-v[2]);
-        inv_length[3] = Vec3fa(1.0f) / (v[0]-v[3]);
+        v[0] = mesh->vertex(quad.v[1]);
+        v[1] = mesh->vertex(quad.v[2]);
+        v[2] = mesh->vertex(quad.v[3]);
+        v[3] = mesh->vertex(quad.v[0]);
+        v[4] = mesh->vertex(quad.v[1]);
+        v[5] = mesh->vertex(quad.v[3]);
+        inv_length[0] = Vec3fa(1.0f) / (v[1] - v[0]);
+        inv_length[1] = Vec3fa(1.0f) / (v[2] - v[1]);
+        inv_length[2] = Vec3fa(1.0f) / (v[3] - v[2]);
+        inv_length[3] = Vec3fa(1.0f) / (v[4] - v[3]);
+        inv_length[4] = Vec3fa(1.0f) / (v[5] - v[4]);
       }
       
       __forceinline void operator() (const PrimRef& prim, const size_t dim, const float pos, PrimRef& left_o, PrimRef& right_o) const {
-        splitPolygon<4>(prim,dim,pos,v,left_o,right_o);
+        splitPolygon<5>(prim,dim,pos,v,left_o,right_o);
       }
       
       __forceinline void operator() (const BBox3fa& prim, const size_t dim, const float pos, BBox3fa& left_o, BBox3fa& right_o) const {
-        splitPolygon<4>(prim,dim,pos,v,inv_length,left_o,right_o);
+        splitPolygon<5>(prim,dim,pos,v,inv_length,left_o,right_o);
       }
       
     private:
-      Vec3fa v[5];
-      Vec3fa inv_length[4];
+      Vec3fa v[6];
+      Vec3fa inv_length[5];
     };
     
     struct QuadSplitterFactory

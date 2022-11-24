@@ -8,7 +8,7 @@
 RTC_NAMESPACE_BEGIN
 
 /*
- * Structure for transformation respresentation as a matrix decomposition using
+ * Structure for transformation representation as a matrix decomposition using
  * a quaternion
  */
 struct RTC_ALIGN(16) RTCQuaternionDecomposition

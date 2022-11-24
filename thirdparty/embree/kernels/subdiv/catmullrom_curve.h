@@ -8,7 +8,7 @@
 
 /*
 
-  Implements Catmul Rom curves with control points p0, p1, p2, p3. At
+  Implements Catmull-Rom curves with control points p0, p1, p2, p3. At
   t=0 the curve goes through p1, with tangent (p2-p0)/3, and for t=1
   the curve goes through p2 with tangent (p3-p2)/2.
 
@@ -91,11 +91,11 @@ namespace embree
         : v0(v0), v1(v1), v2(v2), v3(v3) {}
 
       __forceinline Vertex begin() const {
-        return madd(1.0f/6.0f,v0,madd(2.0f/3.0f,v1,1.0f/6.0f*v2));
+        return v1;
       }
 
       __forceinline Vertex end() const {
-        return madd(1.0f/6.0f,v1,madd(2.0f/3.0f,v2,1.0f/6.0f*v3));
+        return v2;
       }
 
       __forceinline Vertex center() const {

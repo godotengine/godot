@@ -1,5 +1,7 @@
 import glob, os, shutil, subprocess, re
 
+git_tag = "v3.13.5"
+
 include_dirs = [
     "common/tasking",
     "kernels/bvh",
@@ -12,6 +14,7 @@ include_dirs = [
     "common/lexers",
     "common/simd",
     "common/simd/arm",
+    "common/simd/wasm",
     "include/embree3",
     "kernels/subdiv",
     "kernels/geometry",
@@ -76,6 +79,7 @@ if os.path.exists(dir_name):
 
 subprocess.run(["git", "clone", "https://github.com/embree/embree.git", "embree-tmp"])
 os.chdir("embree-tmp")
+subprocess.run(["git", "checkout", git_tag])
 
 commit_hash = str(subprocess.check_output(["git", "rev-parse", "HEAD"], universal_newlines=True)).strip()
 
@@ -94,8 +98,7 @@ for f in all_files:
 
 with open(os.path.join(dest_dir, "kernels/hash.h"), "w") as hash_file:
     hash_file.write(
-        f"""
-// Copyright 2009-2020 Intel Corporation
+        f"""// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #define RTC_HASH "{commit_hash}"
@@ -104,8 +107,7 @@ with open(os.path.join(dest_dir, "kernels/hash.h"), "w") as hash_file:
 
 with open(os.path.join(dest_dir, "kernels/config.h"), "w") as config_file:
     config_file.write(
-        """
-// Copyright 2009-2020 Intel Corporation
+        """// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 /* #undef EMBREE_RAY_MASK */
@@ -126,6 +128,7 @@ with open(os.path.join(dest_dir, "kernels/config.h"), "w") as config_file:
 /* #undef EMBREE_COMPACT_POLYS */
 
 #define EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR 2.0
+#define EMBREE_DISC_POINT_SELF_INTERSECTION_AVOIDANCE
 
 #if defined(EMBREE_GEOMETRY_TRIANGLE)
   #define IF_ENABLED_TRIS(x) x
@@ -192,8 +195,7 @@ with open("CMakeLists.txt", "r") as cmake_file:
 
 with open(os.path.join(dest_dir, "include/embree3/rtcore_config.h"), "w") as config_file:
     config_file.write(
-        f"""
-// Copyright 2009-2021 Intel Corporation
+        f"""// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -209,14 +211,16 @@ with open(os.path.join(dest_dir, "include/embree3/rtcore_config.h"), "w") as con
 #define EMBREE_MIN_WIDTH 0
 #define RTC_MIN_WIDTH EMBREE_MIN_WIDTH
 
-#define EMBREE_STATIC_LIB
-/* #undef EMBREE_API_NAMESPACE */
+#if !defined(EMBREE_STATIC_LIB)
+#   define EMBREE_STATIC_LIB
+#endif
+/* #undef EMBREE_API_NAMESPACE*/
 
 #if defined(EMBREE_API_NAMESPACE)
 #  define RTC_NAMESPACE
-#  define RTC_NAMESPACE_BEGIN namespace  {{
+#  define RTC_NAMESPACE_BEGIN namespace {{
 #  define RTC_NAMESPACE_END }}
-#  define RTC_NAMESPACE_USE using namespace ;
+#  define RTC_NAMESPACE_USE using namespace;
 #  define RTC_API_EXTERN_C
 #  undef EMBREE_API_NAMESPACE
 #else

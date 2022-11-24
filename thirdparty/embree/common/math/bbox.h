@@ -77,7 +77,7 @@ namespace embree
     return lower > upper;
   }
 
-#if defined(__SSE__)
+#if defined(__SSE__) || defined(__ARM_NEON)
   template<> __forceinline bool BBox<Vec3fa>::empty() const {
     return !all(le_mask(lower,upper));
   }
@@ -196,11 +196,11 @@ namespace embree
   }
 
   template<> __inline bool subset( const BBox<Vec3fa>& a, const BBox<Vec3fa>& b ) {
-    return all(ge_mask(a.lower,b.lower)) & all(le_mask(a.upper,b.upper));
+    return all(ge_mask(a.lower,b.lower)) && all(le_mask(a.upper,b.upper));
   }
 
   template<> __inline bool subset( const BBox<Vec3fx>& a, const BBox<Vec3fx>& b ) {
-    return all(ge_mask(a.lower,b.lower)) & all(le_mask(a.upper,b.upper));
+    return all(ge_mask(a.lower,b.lower)) && all(le_mask(a.upper,b.upper));
   }
   
   /*! blending */
@@ -228,11 +228,11 @@ namespace embree
 /// SSE / AVX / MIC specializations
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined __SSE__
+#if defined (__SSE__) || defined(__ARM_NEON)
 #include "../simd/sse.h"
 #endif
 
-#if defined __AVX__
+#if defined (__AVX__)
 #include "../simd/avx.h"
 #endif
 

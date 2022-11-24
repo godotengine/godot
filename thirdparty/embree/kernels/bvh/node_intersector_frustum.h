@@ -75,9 +75,13 @@ namespace embree
         min_rdir = select(pos_rdir, reduced_min_rdir, reduced_max_rdir);
         max_rdir = select(pos_rdir, reduced_max_rdir, reduced_min_rdir);
 
+#if defined (__aarch64__)
+        neg_min_org_rdir = -(min_rdir * select(pos_rdir, reduced_max_org, reduced_min_org));
+        neg_max_org_rdir = -(max_rdir * select(pos_rdir, reduced_min_org, reduced_max_org));
+#else
         min_org_rdir = min_rdir * select(pos_rdir, reduced_max_org, reduced_min_org);
         max_org_rdir = max_rdir * select(pos_rdir, reduced_min_org, reduced_max_org);
-
+#endif
         min_dist = reduced_min_dist;
         max_dist = reduced_max_dist;
 
@@ -95,9 +99,13 @@ namespace embree
       Vec3fa min_rdir;
       Vec3fa max_rdir;
 
+#if defined (__aarch64__)
+      Vec3fa neg_min_org_rdir;
+      Vec3fa neg_max_org_rdir;
+#else
       Vec3fa min_org_rdir;
       Vec3fa max_org_rdir;
-
+#endif
       float min_dist;
       float max_dist;
     };
@@ -191,13 +199,21 @@ namespace embree
       const vfloat<N> bmaxY = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farY);
       const vfloat<N> bmaxZ = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farZ);
 
+#if defined (__aarch64__)
+      const vfloat<N> fminX = madd(bminX, vfloat<N>(frustum.min_rdir.x), vfloat<N>(frustum.neg_min_org_rdir.x));
+      const vfloat<N> fminY = madd(bminY, vfloat<N>(frustum.min_rdir.y), vfloat<N>(frustum.neg_min_org_rdir.y));
+      const vfloat<N> fminZ = madd(bminZ, vfloat<N>(frustum.min_rdir.z), vfloat<N>(frustum.neg_min_org_rdir.z));
+      const vfloat<N> fmaxX = madd(bmaxX, vfloat<N>(frustum.max_rdir.x), vfloat<N>(frustum.neg_max_org_rdir.x));
+      const vfloat<N> fmaxY = madd(bmaxY, vfloat<N>(frustum.max_rdir.y), vfloat<N>(frustum.neg_max_org_rdir.y));
+      const vfloat<N> fmaxZ = madd(bmaxZ, vfloat<N>(frustum.max_rdir.z), vfloat<N>(frustum.neg_max_org_rdir.z));
+#else
       const vfloat<N> fminX = msub(bminX, vfloat<N>(frustum.min_rdir.x), vfloat<N>(frustum.min_org_rdir.x));
       const vfloat<N> fminY = msub(bminY, vfloat<N>(frustum.min_rdir.y), vfloat<N>(frustum.min_org_rdir.y));
       const vfloat<N> fminZ = msub(bminZ, vfloat<N>(frustum.min_rdir.z), vfloat<N>(frustum.min_org_rdir.z));
       const vfloat<N> fmaxX = msub(bmaxX, vfloat<N>(frustum.max_rdir.x), vfloat<N>(frustum.max_org_rdir.x));
       const vfloat<N> fmaxY = msub(bmaxY, vfloat<N>(frustum.max_rdir.y), vfloat<N>(frustum.max_org_rdir.y));
       const vfloat<N> fmaxZ = msub(bmaxZ, vfloat<N>(frustum.max_rdir.z), vfloat<N>(frustum.max_org_rdir.z));
-
+#endif
       const vfloat<N> fmin  = maxi(fminX, fminY, fminZ, vfloat<N>(frustum.min_dist));
       dist = fmin;
       const vfloat<N> fmax  = mini(fmaxX, fmaxY, fmaxZ, vfloat<N>(frustum.max_dist));

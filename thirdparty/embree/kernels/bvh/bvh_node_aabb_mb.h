@@ -31,6 +31,14 @@ namespace embree
       template<typename BuildRecord>
       __forceinline NodeRecordMB operator() (const BuildRecord& precord, const BuildRecord* crecords, NodeRef ref, NodeRecordMB* children, const size_t num) const
       {
+#if defined(DEBUG)
+        // check that empty children are only at the end of the child list
+        bool emptyChild = false;
+        for (size_t i=0; i<num; i++) {
+          emptyChild |= (children[i].ref == NodeRef::emptyNode);
+          assert(emptyChild == (children[i].ref == NodeRef::emptyNode));
+        }
+#endif
         AABBNodeMB_t* node = ref.getAABBNodeMB();
         
         LBBox3fa bounds = empty;

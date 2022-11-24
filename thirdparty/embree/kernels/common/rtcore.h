@@ -26,56 +26,59 @@ namespace embree
 
 /*! Macros used in the rtcore API implementation */
 // -- GODOT start --
-// #define RTC_CATCH_BEGIN try {
 #define RTC_CATCH_BEGIN
-  
-// #define RTC_CATCH_END(device)                                                \
-//   } catch (std::bad_alloc&) {                                                   \
-//     Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
-//   } catch (rtcore_error& e) {                                                   \
-//     Device::process_error(device,e.error,e.what());                             \
-//   } catch (std::exception& e) {                                                 \
-//     Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
-//   } catch (...) {                                                               \
-//     Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
-//   }
 #define RTC_CATCH_END(device)
-  
-// #define RTC_CATCH_END2(scene)                                                \
-//   } catch (std::bad_alloc&) {                                                   \
-//     Device* device = scene ? scene->device : nullptr;                           \
-//     Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
-//   } catch (rtcore_error& e) {                                                   \
-//     Device* device = scene ? scene->device : nullptr;                           \
-//     Device::process_error(device,e.error,e.what());                             \
-//   } catch (std::exception& e) {                                                 \
-//     Device* device = scene ? scene->device : nullptr;                           \
-//     Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
-//   } catch (...) {                                                               \
-//     Device* device = scene ? scene->device : nullptr;                           \
-//     Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
-//   }
 #define RTC_CATCH_END2(scene)
-
-// #define RTC_CATCH_END2_FALSE(scene)                                             \
-//   } catch (std::bad_alloc&) {                                                   \
-//     Device* device = scene ? scene->device : nullptr;                           \
-//     Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
-//     return false;                                                               \
-//   } catch (rtcore_error& e) {                                                   \
-//     Device* device = scene ? scene->device : nullptr;                           \
-//     Device::process_error(device,e.error,e.what());                             \
-//     return false;                                                               \
-//   } catch (std::exception& e) {                                                 \
-//     Device* device = scene ? scene->device : nullptr;                           \
-//     Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
-//     return false;                                                               \
-//   } catch (...) {                                                               \
-//     Device* device = scene ? scene->device : nullptr;                           \
-//     Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
-//     return false;                                                               \
-//   }
 #define RTC_CATCH_END2_FALSE(scene) return false;
+
+#if 0
+#define RTC_CATCH_BEGIN try {
+  
+#define RTC_CATCH_END(device)                                                \
+  } catch (std::bad_alloc&) {                                                   \
+    Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
+  } catch (rtcore_error& e) {                                                   \
+    Device::process_error(device,e.error,e.what());                             \
+  } catch (std::exception& e) {                                                 \
+    Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
+  } catch (...) {                                                               \
+    Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
+  }
+  
+#define RTC_CATCH_END2(scene)                                                \
+  } catch (std::bad_alloc&) {                                                   \
+    Device* device = scene ? scene->device : nullptr;                           \
+    Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
+  } catch (rtcore_error& e) {                                                   \
+    Device* device = scene ? scene->device : nullptr;                           \
+    Device::process_error(device,e.error,e.what());                             \
+  } catch (std::exception& e) {                                                 \
+    Device* device = scene ? scene->device : nullptr;                           \
+    Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
+  } catch (...) {                                                               \
+    Device* device = scene ? scene->device : nullptr;                           \
+    Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
+  }
+
+#define RTC_CATCH_END2_FALSE(scene)                                             \
+  } catch (std::bad_alloc&) {                                                   \
+    Device* device = scene ? scene->device : nullptr;                           \
+    Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
+    return false;                                                               \
+  } catch (rtcore_error& e) {                                                   \
+    Device* device = scene ? scene->device : nullptr;                           \
+    Device::process_error(device,e.error,e.what());                             \
+    return false;                                                               \
+  } catch (std::exception& e) {                                                 \
+    Device* device = scene ? scene->device : nullptr;                           \
+    Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
+    return false;                                                               \
+  } catch (...) {                                                               \
+    Device* device = scene ? scene->device : nullptr;                           \
+    Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
+    return false;                                                               \
+  }
+#endif
 // -- GODOT end --
 
 #define RTC_VERIFY_HANDLE(handle)                               \
@@ -103,39 +106,35 @@ namespace embree
 #define RTC_TRACE(x) 
 #endif
 
-// -- GODOT begin --
-//   /*! used to throw embree API errors */
-//   struct rtcore_error : public std::exception
-//   {
-//     __forceinline rtcore_error(RTCError error, const std::string& str)
-//       : error(error), str(str) {}
-//     
-//     ~rtcore_error() throw() {}
-//     
-//     const char* what () const throw () {
-//       return str.c_str();
-//     }
-//     
-//     RTCError error;
-//     std::string str;
-//   };
-// -- GODOT end --
+// -- GODOT start --
+#if 0
+  /*! used to throw embree API errors */
+  struct rtcore_error : public std::exception
+  {
+    __forceinline rtcore_error(RTCError error, const std::string& str)
+      : error(error), str(str) {}
+    
+    ~rtcore_error() throw() {}
+    
+    const char* what () const throw () {
+      return str.c_str();
+    }
+    
+    RTCError error;
+    std::string str;
+  };
+#endif
 
 #if defined(DEBUG) // only report file and line in debug mode
-  // -- GODOT begin --
-  // #define throw_RTCError(error,str) \
-  //   throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
   #define throw_RTCError(error,str) \
     printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
-  // -- GODOT end --
+    // throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
 #else
-  // -- GODOT begin --
-  // #define throw_RTCError(error,str) \
-  //   throw rtcore_error(error,str);
   #define throw_RTCError(error,str) \
     abort();
-  // -- GODOT end --
+    // throw rtcore_error(error,str);
 #endif
+// -- GODOT end --
 
 #define RTC_BUILD_ARGUMENTS_HAS(settings,member) \
   (settings.byteSize > (offsetof(RTCBuildArguments,member)+sizeof(settings.member))) 
