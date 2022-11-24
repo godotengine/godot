@@ -66,13 +66,13 @@ namespace Godot.SourceGenerators
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedName() :
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
 
-            string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                                 + "_ScriptPropertyDefVal.generated";
 
             var source = new StringBuilder();
@@ -249,7 +249,7 @@ namespace Godot.SourceGenerators
                     string defaultValueLocalName = string.Concat("__", exportedMember.Name, "_default_value");
 
                     source.Append("        ");
-                    source.Append(exportedMember.TypeSymbol.FullQualifiedName());
+                    source.Append(exportedMember.TypeSymbol.FullQualifiedNameIncludeGlobal());
                     source.Append(" ");
                     source.Append(defaultValueLocalName);
                     source.Append(" = ");

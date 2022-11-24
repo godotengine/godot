@@ -14,7 +14,7 @@ namespace Godot.SourceGenerators
         {
             string message =
                 "Missing partial modifier on declaration of type '" +
-                $"{symbol.FullQualifiedName()}' which is a subclass of '{GodotClasses.Object}'";
+                $"{symbol.FullQualifiedNameOmitGlobal()}' which is a subclass of '{GodotClasses.Object}'";
 
             string description = $"{message}. Subclasses of '{GodotClasses.Object}' " +
                                  "must be declared with the partial modifier.";
@@ -41,7 +41,7 @@ namespace Godot.SourceGenerators
                 .GetDeclaredSymbol(outerTypeDeclSyntax);
 
             string fullQualifiedName = outerSymbol is INamedTypeSymbol namedTypeSymbol ?
-                namedTypeSymbol.FullQualifiedName() :
+                namedTypeSymbol.FullQualifiedNameOmitGlobal() :
                 "type not found";
 
             string message =

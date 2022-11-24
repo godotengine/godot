@@ -94,13 +94,6 @@ internal static class ExtensionMethods
         };
     }
 
-    private static SymbolDisplayFormat FullyQualifiedFormatOmitGlobal { get; } =
-        SymbolDisplayFormat.FullyQualifiedFormat
-            .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
-
-    public static string FullQualifiedName(this ITypeSymbol symbol)
-        => symbol.ToDisplayString(NullableFlowState.NotNull, FullyQualifiedFormatOmitGlobal);
-
     public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
     {
         return symbol.IsGenericType ?
@@ -108,8 +101,25 @@ internal static class ExtensionMethods
             symbol.Name;
     }
 
-    public static string FullQualifiedName(this INamespaceSymbol symbol)
-        => symbol.ToDisplayString(FullyQualifiedFormatOmitGlobal);
+    private static SymbolDisplayFormat FullyQualifiedFormatOmitGlobal { get; } =
+        SymbolDisplayFormat.FullyQualifiedFormat
+            .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
+
+    private static SymbolDisplayFormat FullyQualifiedFormatIncludeGlobal { get; } =
+        SymbolDisplayFormat.FullyQualifiedFormat
+            .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included);
+
+    public static string FullQualifiedNameOmitGlobal(this ITypeSymbol symbol)
+        => symbol.ToDisplayString(NullableFlowState.NotNull, FullyQualifiedFormatOmitGlobal);
+
+    public static string FullQualifiedNameOmitGlobal(this INamespaceSymbol namespaceSymbol)
+        => namespaceSymbol.ToDisplayString(FullyQualifiedFormatOmitGlobal);
+
+    public static string FullQualifiedNameIncludeGlobal(this ITypeSymbol symbol)
+        => symbol.ToDisplayString(NullableFlowState.NotNull, FullyQualifiedFormatIncludeGlobal);
+
+    public static string FullQualifiedNameIncludeGlobal(this INamespaceSymbol namespaceSymbol)
+        => namespaceSymbol.ToDisplayString(FullyQualifiedFormatIncludeGlobal);
 
     public static string SanitizeQualifiedNameForUniqueHint(this string qualifiedName)
         => qualifiedName
