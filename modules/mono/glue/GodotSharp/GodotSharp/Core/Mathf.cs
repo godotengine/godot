@@ -104,6 +104,32 @@ namespace Godot
         }
 
         /// <summary>
+        /// Gets the difference between two angles (in radians) by a normalized value,
+        /// but wraps around <see cref="Tau"/>, also creating a shortest path.
+        /// </summary>
+        /// <param name ="from">The start angle.</param>
+        /// <param name ="to">the destination angle.</param>
+        /// <returns>The difference between the two angles.</returns>
+        public static float AngleDifference(float from, float to)
+        {
+            float diff = (to - from) % Mathf.Tau;
+            return ((2 * diff) % Mathf.Tau) - diff;
+        }
+
+        /// <summary>
+        /// Gets the difference between two angles (in radians) by a normalized value,
+        /// but wraps around <see cref="Tau"/>, also creating a shortest path.
+        /// </summary>
+        /// <param name ="from">The start angle.</param>
+        /// <param name ="to">the destination angle.</param>
+        /// <returns>The difference between the two angles.</returns>
+        public static double AngleDifference(double from, double to)
+        {
+            double diff = (to - from) % Mathf.Tau;
+            return ((2 * diff) % Mathf.Tau) - diff;
+        }
+
+        /// <summary>
         /// Returns the arc sine of <paramref name="s"/> in radians.
         /// Use to get the angle of sine <paramref name="s"/>.
         /// </summary>
@@ -1003,9 +1029,7 @@ namespace Godot
         /// <returns>The resulting angle of the interpolation.</returns>
         public static float LerpAngle(float from, float to, float weight)
         {
-            float difference = (to - from) % MathF.Tau;
-            float distance = ((2 * difference) % MathF.Tau) - difference;
-            return from + (distance * weight);
+            return from + AngleDifference(from, to) * weight;
         }
 
         /// <summary>
@@ -1020,9 +1044,7 @@ namespace Godot
         /// <returns>The resulting angle of the interpolation.</returns>
         public static double LerpAngle(double from, double to, double weight)
         {
-            double difference = (to - from) % Math.Tau;
-            double distance = ((2 * difference) % Math.Tau) - difference;
-            return from + (distance * weight);
+            return from + AngleDifference(from, to) * weight;
         }
 
         /// <summary>
@@ -1195,6 +1217,38 @@ namespace Godot
                 return to;
 
             return from + (Math.Sign(to - from) * delta);
+        }
+
+        /// <summary>
+        /// Moves <paramref name="from"/> toward <paramref name="to"/>
+        /// by the <paramref name="delta"/> angle (in radians).
+        /// Use a negative <paramref name="delta"/> angle to move away.
+        /// Similar to <see cref="MoveToward"/> but wraps around <see cref="Tau"/> and creates a shortest path.
+        /// </summary>
+        /// <param name="from">The start Angle.</param>
+        /// <param name="to">The Angle to move towards.</param>
+        /// <param name="delta">The amount to move by.</param>
+        /// <returns>The Angle after moving.</returns>
+        public static float MoveTowardAngle(float from, float to, float delta)
+        {
+            float diff = AngleDifference(from, to);
+            return from + Min(Abs(diff), delta) * Sign(diff);
+        }
+
+        /// <summary>
+        /// Moves <paramref name="from"/> toward <paramref name="to"/>
+        /// by the <paramref name="delta"/> angle (in radians).
+        /// Use a negative <paramref name="delta"/> angle to move away.
+        /// Similar to <see cref="MoveToward"/> but wraps around <see cref="Tau"/> and creates a shortest path.
+        /// </summary>
+        /// <param name="from">The start Angle.</param>
+        /// <param name="to">The Angle to move towards.</param>
+        /// <param name="delta">The amount to move by.</param>
+        /// <returns>The Angle after moving.</returns>
+        public static double MoveTowardAngle(double from, double to, double delta)
+        {
+            double diff = AngleDifference(from, to);
+            return from + Min(Abs(diff), delta) * Sign(diff);
         }
 
         /// <summary>

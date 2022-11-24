@@ -388,15 +388,20 @@ public:
 		return d;
 	}
 
+	static _ALWAYS_INLINE_ double angle_difference(double p_from, double p_to) {
+		double diff = fmod(p_to - p_from, Math_TAU);
+		return fmod(2.0 * diff, Math_TAU) - diff;
+	}
+	static _ALWAYS_INLINE_ float angle_difference(float p_from, float p_to) {
+		float diff = fmod(p_to - p_from, (float)Math_TAU);
+		return fmod(2.0f * diff, (float)Math_TAU) - diff;
+	}
+
 	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
-		double difference = fmod(p_to - p_from, Math_TAU);
-		double distance = fmod(2.0 * difference, Math_TAU) - difference;
-		return p_from + distance * p_weight;
+		return p_from + angle_difference(p_from, p_to) * p_weight;
 	}
 	static _ALWAYS_INLINE_ float lerp_angle(float p_from, float p_to, float p_weight) {
-		float difference = fmod(p_to - p_from, (float)Math_TAU);
-		float distance = fmod(2.0f * difference, (float)Math_TAU) - difference;
-		return p_from + distance * p_weight;
+		return p_from + angle_difference(p_from, p_to) * p_weight;
 	}
 
 	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) {
@@ -427,11 +432,21 @@ public:
 		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return s * s * (3.0f - 2.0f * s);
 	}
+
 	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) {
 		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
 	}
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
 		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+	}
+
+	static _ALWAYS_INLINE_ double move_toward_angle(double p_from, double p_to, double p_delta) {
+		double diff = angle_difference(p_from, p_to);
+		return p_from + fmin(abs(diff), p_delta) * SIGN(diff);
+	}
+	static _ALWAYS_INLINE_ float move_toward_angle(float p_from, float p_to, float p_delta) {
+		float diff = angle_difference(p_from, p_to);
+		return p_from + fmin(abs(diff), p_delta) * SIGN(diff);
 	}
 
 	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) {

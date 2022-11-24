@@ -72,6 +72,14 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="angle_difference">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<description>
+				Finds the difference between the two provided angles, wrapping around [constant @GDScript.TAU] and finding the shortest path.
+			</description>
+		</method>
 		<method name="asin">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
@@ -733,6 +741,16 @@
 				move_toward(5, 10, 9)    # Returns 10
 				move_toward(10, 5, -1.5) # Returns 11.5
 				[/codeblock]
+			</description>
+		</method>
+		<method name="move_toward_angle">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="delta" type="float" />
+			<description>
+				Moves [param from] toward [param to] by the [param delta] value, wrapping around [constant @GDScript.TAU] and finding the shortest path.
+				Use a negative [param delta] value to move away.
 			</description>
 		</method>
 		<method name="nearest_po2">
