@@ -114,7 +114,7 @@
 		</method>
 		<method name="sample_baked" qualifiers="const">
 			<return type="Vector3" />
-			<param index="0" name="offset" type="float" />
+			<param index="0" name="offset" type="float" default="0.0" />
 			<param index="1" name="cubic" type="bool" default="false" />
 			<description>
 				Returns a point within the curve at position [param offset], where [param offset] is measured as a distance in 3D units along the curve.
@@ -134,7 +134,7 @@
 		</method>
 		<method name="sample_baked_with_rotation" qualifiers="const">
 			<return type="Transform3D" />
-			<param index="0" name="offset" type="float" />
+			<param index="0" name="offset" type="float" default="0.0" />
 			<param index="1" name="cubic" type="bool" default="false" />
 			<param index="2" name="apply_tilt" type="bool" default="false" />
 			<description>

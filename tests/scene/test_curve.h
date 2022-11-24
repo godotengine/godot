@@ -31,6 +31,7 @@
 #ifndef TEST_CURVE_H
 #define TEST_CURVE_H
 
+#include "core/math/math_funcs.h"
 #include "scene/resources/curve.h"
 
 #include "tests/test_macros.h"
@@ -229,7 +230,7 @@ TEST_CASE("[Curve2D] Linear sampling should return exact value") {
 
 	for (int i = 0; i < len; i++) {
 		Vector2 pos = curve->sample_baked(i);
-		CHECK_MESSAGE(pos.x == i, "sample_baked should return exact value");
+		CHECK_MESSAGE(Math::is_equal_approx(pos.x, i), "sample_baked should return exact value");
 	}
 }
 
@@ -245,7 +246,7 @@ TEST_CASE("[Curve3D] Linear sampling should return exact value") {
 
 	for (int i = 0; i < len; i++) {
 		Vector3 pos = curve->sample_baked(i);
-		CHECK_MESSAGE(pos.x == i, "sample_baked should return exact value");
+		CHECK_MESSAGE(Math::is_equal_approx(pos.x, i), "sample_baked should return exact value");
 	}
 }
 
