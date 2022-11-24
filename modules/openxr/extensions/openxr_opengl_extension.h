@@ -59,9 +59,8 @@
 #include OPENGL_INCLUDE_H
 #define GL_GLEXT_PROTOTYPES 1
 #define GL3_PROTOTYPES 1
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/glx.h>
+#include "thirdparty/glad/glad/gl.h"
+#include "thirdparty/glad/glad/glx.h"
 #include <X11/Xlib.h>
 #endif
 
