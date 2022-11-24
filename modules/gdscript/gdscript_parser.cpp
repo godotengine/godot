@@ -3740,6 +3740,12 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	// This is called after the analyzer is done finding the type, so this should be set here.
 	DataType export_type = variable->get_datatype();
 
+	if (p_annotation->name == SNAME("@export_range")) {
+		if (export_type.builtin_type == Variant::INT) {
+			variable->export_info.type = Variant::INT;
+		}
+	}
+
 	if (p_annotation->name == SNAME("@export")) {
 		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
 			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
