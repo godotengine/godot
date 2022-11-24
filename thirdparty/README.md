@@ -74,7 +74,7 @@ Files extracted from upstream source:
 ## embree
 
 - Upstream: https://github.com/embree/embree
-- Version: 3.13.1 (12b99393438a4cc9e478e33459eed78bec6233fd, 2021)
+- Version: 3.13.5 (698442324ccddd11725fb8875275dc1384f7fb40, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream:

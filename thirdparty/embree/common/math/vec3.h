@@ -197,7 +197,7 @@ namespace embree
   template<typename T> __forceinline Vec3<bool> ge_mask( const Vec3<T>& a, const Vec3<T>& b ) { return Vec3<bool>(a.x>=b.x,a.y>=b.y,a.z>=b.z); }
 
   ////////////////////////////////////////////////////////////////////////////////
-  /// Euclidian Space Operators
+  /// Euclidean Space Operators
   ////////////////////////////////////////////////////////////////////////////////
 
   template<typename T> __forceinline T       sqr      ( const Vec3<T>& a )                   { return dot(a,a); }
@@ -207,7 +207,6 @@ namespace embree
   template<typename T> __forceinline Vec3<T> normalize( const Vec3<T>& a )                   { return a*rsqrt(sqr(a)); }
   template<typename T> __forceinline T       distance ( const Vec3<T>& a, const Vec3<T>& b ) { return length(a-b); }
   template<typename T> __forceinline Vec3<T> cross    ( const Vec3<T>& a, const Vec3<T>& b ) { return Vec3<T>(msub(a.y,b.z,a.z*b.y), msub(a.z,b.x,a.x*b.z), msub(a.x,b.y,a.y*b.x)); }
-
   template<typename T> __forceinline Vec3<T> stable_triangle_normal( const Vec3<T>& a, const Vec3<T>& b, const Vec3<T>& c )
   {
     const T ab_x = a.z*b.y, ab_y = a.x*b.z, ab_z = a.y*b.x;
@@ -266,11 +265,11 @@ namespace embree
 /// SSE / AVX / MIC specializations
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined __SSE__
+#if defined(__SSE__) || defined(__ARM_NEON)
 #include "../simd/sse.h"
 #endif
 
-#if defined __AVX__
+#if defined(__AVX__)
 #include "../simd/avx.h"
 #endif
 
@@ -291,14 +290,14 @@ namespace embree
   template<> __forceinline Vec3<vfloat4>::Vec3(const Vec3fa& a) {
     x = a.x; y = a.y; z = a.z;
   }
-#elif defined(__SSE__)
+#elif defined(__SSE__) || defined(__ARM_NEON)
   template<>
   __forceinline Vec3<vfloat4>::Vec3(const Vec3fa& a) {
     const vfloat4 v = vfloat4(a.m128); x = shuffle<0,0,0,0>(v); y = shuffle<1,1,1,1>(v); z = shuffle<2,2,2,2>(v);
   }
 #endif
 
-#if defined(__SSE__)
+#if defined(__SSE__) || defined(__ARM_NEON)
   template<>
   __forceinline Vec3<vfloat4> broadcast<vfloat4,vfloat4>(const Vec3<vfloat4>& a, const size_t k) {
     return Vec3<vfloat4>(vfloat4::broadcast(&a.x[k]), vfloat4::broadcast(&a.y[k]), vfloat4::broadcast(&a.z[k]));

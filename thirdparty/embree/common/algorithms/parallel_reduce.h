@@ -26,7 +26,7 @@ namespace embree
     const Index threadCount = (Index) TaskScheduler::threadCount();
     taskCount = min(taskCount,threadCount,maxTasks);
 
-    /* parallel invokation of all tasks */
+    /* parallel invocation of all tasks */
     dynamic_large_stack_array(Value,values,taskCount,8192); // consumes at most 8192 bytes on the stack
     parallel_for(taskCount, [&](const Index taskIndex) {
         const Index k0 = first+(taskIndex+0)*(last-first)/taskCount;

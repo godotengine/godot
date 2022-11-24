@@ -10,6 +10,9 @@
 #include "../simd/arm/emulation.h"
 #else
 #include <xmmintrin.h>
+#if defined(__EMSCRIPTEN__)
+#include "../simd/wasm/emulation.h"
+#endif
 #endif
 
 #if defined(PTHREADS_WIN32)
@@ -158,9 +161,7 @@ namespace embree
 /// Linux Platform
 ////////////////////////////////////////////////////////////////////////////////
 
-// -- GODOT start --
 #if defined(__LINUX__) && !defined(__ANDROID__)
-// -- GODOT end --
 
 #include <fstream>
 #include <sstream>
@@ -219,6 +220,8 @@ namespace embree
 
     /* find correct thread to affinitize to */
     cpu_set_t set;
+    CPU_ZERO(&set);
+    
     if (pthread_getaffinity_np(pthread_self(), sizeof(set), &set) == 0)
     {
       for (int i=0, j=0; i<CPU_SETSIZE; i++)
@@ -241,7 +244,8 @@ namespace embree
   {
     cpu_set_t cset;
     CPU_ZERO(&cset);
-    size_t threadID = mapThreadID(affinity);
+    //size_t threadID = mapThreadID(affinity); // this is not working properly in LXC containers when some processors are disabled
+    size_t threadID = affinity;
     CPU_SET(threadID, &cset);
 
     pthread_setaffinity_np(pthread_self(), sizeof(cset), &cset);
@@ -249,7 +253,6 @@ namespace embree
 }
 #endif
 
-// -- GODOT start --
 ////////////////////////////////////////////////////////////////////////////////
 /// Android Platform
 ////////////////////////////////////////////////////////////////////////////////
@@ -269,7 +272,6 @@ namespace embree
   }
 }
 #endif
-// -- GODOT end --
 
 ////////////////////////////////////////////////////////////////////////////////
 /// FreeBSD Platform
@@ -289,6 +291,21 @@ namespace embree
     CPU_SET(affinity, &cset);
 
     pthread_setaffinity_np(pthread_self(), sizeof(cset), &cset);
+  }
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+/// WebAssembly Platform
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined(__EMSCRIPTEN__)
+namespace embree
+{
+  /*! set affinity of the calling thread */
+  void setAffinity(ssize_t affinity)
+  {
+      // Setting thread affinity is not supported in WASM.
   }
 }
 #endif
@@ -379,9 +396,7 @@ namespace embree
     pthread_attr_destroy(&attr);
 
     /* set affinity */
-// -- GODOT start --
 #if defined(__LINUX__) && !defined(__ANDROID__)
-// -- GODOT end --
     if (threadID >= 0) {
       cpu_set_t cset;
       CPU_ZERO(&cset);
@@ -396,7 +411,6 @@ namespace embree
       CPU_SET(threadID, &cset);
       pthread_setaffinity_np(*tid, sizeof(cset), &cset);
     }
-// -- GODOT start --
 #elif defined(__ANDROID__)
     if (threadID >= 0) {
       cpu_set_t cset;
@@ -405,7 +419,6 @@ namespace embree
       sched_setaffinity(pthread_gettid_np(*tid), sizeof(cset), &cset);
     }
 #endif
-// -- GODOT end --
 
     return thread_t(tid);
   }
@@ -424,14 +437,12 @@ namespace embree
 
   /*! destroy a hardware thread by its handle */
   void destroyThread(thread_t tid) {
-// -- GODOT start --
 #if defined(__ANDROID__)
-    FATAL("Can't destroy threads on Android.");
+    FATAL("Can't destroy threads on Android."); // pthread_cancel not implemented.
 #else
     pthread_cancel(*(pthread_t*)tid);
     delete (pthread_t*)tid;
 #endif
-// -- GODOT end --
   }
 
   /*! creates thread local storage */
