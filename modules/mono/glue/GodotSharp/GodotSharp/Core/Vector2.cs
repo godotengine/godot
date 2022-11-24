@@ -249,14 +249,11 @@ namespace Godot
         /// <returns>The interpolated vector.</returns>
         public readonly Vector2 BezierInterpolate(Vector2 control1, Vector2 control2, Vector2 end, real_t t)
         {
-            // Formula from Wikipedia article on Bezier curves
-            real_t omt = 1 - t;
-            real_t omt2 = omt * omt;
-            real_t omt3 = omt2 * omt;
-            real_t t2 = t * t;
-            real_t t3 = t2 * t;
-
-            return this * omt3 + control1 * omt2 * t * 3 + control2 * omt * t2 * 3 + end * t3;
+            return new Vector2
+            (
+                Mathf.BezierInterpolate(x, control1.x, control2.x, end.x, t),
+                Mathf.BezierInterpolate(y, control1.y, control2.y, end.y, t)
+            );
         }
 
         /// <summary>
