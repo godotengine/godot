@@ -43,8 +43,6 @@ private:
 	int commited_actions_count = 0;
 	Ref<TileSet> tile_set;
 
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	TileMapCell from;
 	TileMapCell to;
 
