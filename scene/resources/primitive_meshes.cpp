@@ -2779,13 +2779,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				real_t step = CLAMP(curve_step / (p0 - p3).length(), 0.01, 0.5);
 				real_t t = step;
 				while (t < 1.0) {
-					real_t omt = (1.0 - t);
-					real_t omt2 = omt * omt;
-					real_t omt3 = omt2 * omt;
-					real_t t2 = t * t;
-					real_t t3 = t2 * t;
-
-					Vector2 point = p0 * omt3 + p1 * omt2 * t * 3.0 + p2 * omt * t2 * 3.0 + p3 * t3;
+					Vector2 point = p0.bezier_interpolate(p1, p2, p3, t);
 					Vector2 p = point * pixel_size + origin;
 					polygon.push_back(ContourPoint(p, false));
 					t += step;
