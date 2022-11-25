@@ -1809,7 +1809,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			output << MEMBER_BEGIN INDENT1 "/// <summary>\n"
 				   << INDENT2 "/// "
-				   << "Fires the"
+				   << "Raises the"
 				   << "<see cref=\"" BINDINGS_NAMESPACE "." + itype.proxy_name + "." + isignal.proxy_name + "\"/>"
 				   << " signal.\n"
 				   << INDENT2 "/// </summary>\n";
