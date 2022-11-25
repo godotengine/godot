@@ -427,7 +427,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	AnimationTrackKeyEdit *key_edit = nullptr;
 	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
 	void _update_key_edit();
-
 	void _clear_key_edit();
 
 	Control *box_selection = nullptr;
