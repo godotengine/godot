@@ -663,5 +663,7 @@ Polygon2D::Polygon2D() {
 }
 
 Polygon2D::~Polygon2D() {
+	// This will free the internally-allocated mesh instance, if allocated.
+	RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
 	RS::get_singleton()->free(mesh);
 }
