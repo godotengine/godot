@@ -334,11 +334,6 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	return -1;
 }
 
-int Array::find_last(const Variant &p_value) const {
-	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "find_last"), -1);
-	return rfind(p_value);
-}
-
 int Array::count(const Variant &p_value) const {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "count"), 0);
 	if (_p->array.size() == 0) {
