@@ -19,9 +19,6 @@ layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
-layout(location = 10) in uvec4 bone_attrib;
-layout(location = 11) in vec4 weight_attrib;
-
 #ifdef USE_INSTANCING
 
 layout(location = 1) in highp vec4 instance_xform0;
@@ -81,8 +78,6 @@ void main() {
 		uv = draw_data[draw_data_instance].uv_c;
 		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_c_rg), unpackHalf2x16(draw_data[draw_data_instance].color_c_ba));
 	}
-	uvec4 bones = uvec4(0, 0, 0, 0);
-	vec4 bone_weights = vec4(0.0);
 
 #elif defined(USE_ATTRIBUTES)
 	draw_data_instance = gl_InstanceID;
@@ -92,9 +87,6 @@ void main() {
 	vec2 vertex = vertex_attrib;
 	vec4 color = color_attrib * draw_data[draw_data_instance].modulation;
 	vec2 uv = uv_attrib;
-
-	uvec4 bones = bone_attrib;
-	vec4 bone_weights = weight_attrib;
 
 #ifdef USE_INSTANCING
 	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
@@ -110,7 +102,6 @@ void main() {
 	vec2 uv = draw_data[draw_data_instance].src_rect.xy + abs(draw_data[draw_data_instance].src_rect.zw) * ((draw_data[draw_data_instance].flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
 	vec4 color = draw_data[draw_data_instance].modulation;
 	vec2 vertex = draw_data[draw_data_instance].dst_rect.xy + abs(draw_data[draw_data_instance].dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data[draw_data_instance].src_rect.zw, vec2(0.0, 0.0)));
-	uvec4 bones = uvec4(0, 0, 0, 0);
 
 #endif
 

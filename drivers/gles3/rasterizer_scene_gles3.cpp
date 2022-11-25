@@ -420,6 +420,11 @@ void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_g
 		}
 
 	} else if (ginstance->data->base_type == RS::INSTANCE_MESH) {
+		if (mesh_storage->skeleton_is_valid(ginstance->data->skeleton)) {
+			if (ginstance->data->dirty_dependencies) {
+				mesh_storage->skeleton_update_dependency(ginstance->data->skeleton, &ginstance->data->dependency_tracker);
+			}
+		}
 	}
 
 	ginstance->store_transform_cache = store_transform;
