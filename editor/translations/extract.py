@@ -62,11 +62,17 @@ matches.sort()
 
 remaps = {}
 remap_re = re.compile(r'^\t*capitalize_string_remaps\["(?P<from>.+)"\] = (String::utf8\()?"(?P<to>.+)"')
+stop_words = set()
+stop_words_re = re.compile(r'^\t*stop_words\.push_back\("(?P<word>.+)"\)')
 with open("editor/editor_property_name_processor.cpp") as f:
     for line in f:
         m = remap_re.search(line)
         if m:
             remaps[m.group("from")] = m.group("to")
+        else:
+            m = stop_words_re.search(line)
+            if m:
+                stop_words.add(m.group("word"))
 
 
 main_po = """
@@ -126,9 +132,12 @@ capitalize_re = re.compile(r"(?<=\D)(?=\d)|(?<=\d)(?=\D([a-z]|\d))")
 def _process_editor_string(name):
     # See EditorPropertyNameProcessor::process_string().
     capitalized_parts = []
-    for segment in name.split("_"):
-        if not segment:
+    parts = list(filter(bool, name.split("_")))  # Non-empty only.
+    for i, segment in enumerate(parts):
+        if i > 0 and i + 1 < len(parts) and segment in stop_words:
+            capitalized_parts.append(segment)
             continue
+
         remapped = remaps.get(segment)
         if remapped:
             capitalized_parts.append(remapped)
