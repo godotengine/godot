@@ -4111,7 +4111,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
-				pi.hint_string = vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("Texture2D");
 			} else {
 				pi.type = Variant::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
@@ -4126,7 +4126,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
-				pi.hint_string = vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered");
+				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("TextureLayered");
 			} else {
 				pi.type = Variant::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
@@ -4139,7 +4139,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
-				pi.hint_string = vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Texture3D");
+				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("Texture3D");
 			} else {
 				pi.type = Variant::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
