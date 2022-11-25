@@ -64,8 +64,8 @@ String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const
 
 	Vector<String> parts = p_name.split("_", false);
 	for (int i = 0; i < parts.size(); i++) {
-		// Articles/conjunctions/prepositions which should only be capitalized if first word.
-		if (i != 0 && stop_words.find(parts[i]) != -1) {
+		// Articles/conjunctions/prepositions which should only be capitalized when not at beginning and end.
+		if (i > 0 && i + 1 < parts.size() && stop_words.find(parts[i]) != -1) {
 			continue;
 		}
 		const Map<String, String>::Element *remap = capitalize_string_remaps.find(parts[i]);
@@ -261,6 +261,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["yz"] = "YZ";
 
 	// Articles, conjunctions, prepositions.
+	// The following initialization is parsed in `editor/translations/extract.py` with a regex.
+	// The word definition format should be kept synced with the regex.
 	stop_words.push_back("a");
 	stop_words.push_back("an");
 	stop_words.push_back("and");
