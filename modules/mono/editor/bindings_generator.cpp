@@ -1544,7 +1544,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		// Add Emit property
 		output << MEMBER_BEGIN "private new SignalEmit _emit;\n"
 			   << MEMBER_BEGIN "/// <summary>A helper to quickly and safely emit signals.</summary>\n"
-			   << MEMBER_BEGIN "public new SignalEmit Emit => _emit ??= new(this);\n";
+			   << MEMBER_BEGIN "public new SignalEmit Emit => _emit \?\?= new(this);\n";
 
 		if (itype.is_instantiable) {
 			// Add native constructor static field
