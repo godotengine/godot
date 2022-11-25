@@ -3131,14 +3131,19 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 					}
 				}
 			} else if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
-				Error err = OK;
-				Ref<GDScript> scr = GDScriptCache::get_packed_scene_script(autoload.path, err);
-				if (err == OK && scr.is_valid()) {
-					Ref<GDScriptParserRef> singl_parser = get_parser_for(scr->get_path());
-					if (singl_parser.is_valid()) {
-						err = singl_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
-						if (err == OK) {
-							result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
+				if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(name)) {
+					Variant constant = GDScriptLanguage::get_singleton()->get_named_globals_map()[name];
+					Node *node = Object::cast_to<Node>(constant);
+					if (node != nullptr) {
+						Ref<Script> scr = node->get_script();
+						if (scr.is_valid()) {
+							Ref<GDScriptParserRef> singl_parser = get_parser_for(scr->get_path());
+							if (singl_parser.is_valid()) {
+								Error err = singl_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
+								if (err == OK) {
+									result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
+								}
+							}
 						}
 					}
 				}
