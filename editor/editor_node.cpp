@@ -4883,7 +4883,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 
 		Vector<String> names = String(p_layout->get_value(p_section, "dock_" + itos(i + 1))).split(",");
 
-		for (int j = 0; j < names.size(); j++) {
+		for (int j = names.size() - 1; j >= 0; j--) {
 			String name = names[j];
 			// FIXME: Find it, in a horribly inefficient way.
 			int atidx = -1;
@@ -4904,7 +4904,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			}
 
 			if (atidx == i) {
-				node->move_to_front();
+				dock_slot[i]->move_child(node, 0);
 				continue;
 			}
 
@@ -4914,6 +4914,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 				dock_slot[atidx]->hide();
 			}
 			dock_slot[i]->add_child(node);
+			dock_slot[i]->move_child(node, 0);
 			dock_slot[i]->show();
 		}
 	}
