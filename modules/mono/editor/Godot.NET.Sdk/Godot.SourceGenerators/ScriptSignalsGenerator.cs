@@ -244,8 +244,10 @@ namespace Godot.SourceGenerators
                         paramsCall += parameters[i].Name.ToString();
 
                         if (i != parameters.Length - 1)
+                        {
                             @params += ", ";
-                        paramsCall += ", ";
+                            paramsCall += ", ";
+                        }
                     }
                 }
 
