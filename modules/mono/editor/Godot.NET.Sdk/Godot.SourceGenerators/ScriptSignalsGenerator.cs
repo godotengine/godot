@@ -260,7 +260,7 @@ namespace Godot.SourceGenerators
             source.AppendLine("    }");
 
             // Generate the Emit property
-            source.AppendLine("    private new SignalEmit _emit;")
+            source.AppendLine("    private SignalEmit _emit;")
                 .AppendLine("    /// <summary>A helper to quickly and safely emit signals.</summary>")
                 .AppendLine("    public new SignalEmit Emit => _emit ??= new(this);");
 
