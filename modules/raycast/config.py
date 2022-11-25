@@ -1,9 +1,13 @@
 def can_build(env, platform):
-    # Depends on Embree library, which only supports x86_64 and arm64.
-    if platform == "windows":
-        return env["arch"] == "x86_64"  # TODO build for Windows on ARM
-
-    return env["arch"] in ["x86_64", "arm64"]
+    # Supported architectures depend on the Embree library.
+    # No ARM32 support planned.
+    if env["arch"] == "arm32":
+        return False
+    # x86_32 only seems supported on Windows for now.
+    if env["arch"] == "x86_32" and platform != "windows":
+        return False
+    # The rest works, even wasm32!
+    return True
 
 
 def configure(env):
