@@ -153,7 +153,14 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw the background.
 	if (background_texture.is_valid()) {
-		base_control->draw_texture_rect_region(background_texture, Rect2(-background_region.size / 2 - background_offset, background_region.size), background_region, background_modulate, background_transpose);
+		Size2 region_size = background_region.size;
+		if (background_h_flip) {
+			region_size.x = -region_size.x;
+		}
+		if (background_v_flip) {
+			region_size.y = -region_size.y;
+		}
+		base_control->draw_texture_rect_region(background_texture, Rect2(-background_region.size / 2 - background_offset, region_size), background_region, background_modulate, background_transpose);
 	}
 
 	// Draw the polygons.
