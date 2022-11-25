@@ -37,183 +37,95 @@
 
 #include <errno.h>
 
-MIDIDriverALSAMidi::MessageCategory MIDIDriverALSAMidi::msg_category(uint8_t msg_part) {
-	if (msg_part >= 0xf8) {
-		return MessageCategory::RealTime;
-	} else if (msg_part >= 0xf0) {
-		// System Exclusive begin/end are specified as System Common Category messages,
-		// but we separate them here and give them their own categories as their
-		// behavior is significantly different.
-		if (msg_part == 0xf0) {
-			return MessageCategory::SysExBegin;
-		} else if (msg_part == 0xf7) {
-			return MessageCategory::SysExEnd;
-		}
-		return MessageCategory::SystemCommon;
-	} else if (msg_part >= 0x80) {
-		return MessageCategory::Voice;
-	}
-	return MessageCategory::Data;
-}
-
-size_t MIDIDriverALSAMidi::msg_expected_data(uint8_t status_byte) {
-	if (msg_category(status_byte) == MessageCategory::Voice) {
-		// Voice messages have a channel number in the status byte, mask it out.
-		status_byte &= 0xf0;
-	}
-
-	switch (status_byte) {
-		case 0x80: // Note Off
-		case 0x90: // Note On
-		case 0xA0: // Polyphonic Key Pressure (Aftertouch)
-		case 0xB0: // Control Change (CC)
-		case 0xE0: // Pitch Bend Change
-		case 0xF2: // Song Position Pointer
-			return 2;
-
-		case 0xC0: // Program Change
-		case 0xD0: // Channel Pressure (Aftertouch)
-		case 0xF1: // MIDI Time Code Quarter Frame
-		case 0xF3: // Song Select
-			return 1;
-	}
-
-	return 0;
-}
-
-void MIDIDriverALSAMidi::InputConnection::parse_byte(uint8_t byte, MIDIDriverALSAMidi &driver,
-		uint64_t timestamp) {
-	switch (msg_category(byte)) {
-		case MessageCategory::RealTime:
-			// Real-Time messages are single byte messages that can
-			// occur at any point.
-			// We pass them straight through.
-			driver.receive_input_packet(timestamp, &byte, 1);
-			break;
-
-		case MessageCategory::Data:
-			// We don't currently forward System Exclusive messages so skip their data.
-			// Collect any expected data for other message types.
-			if (!skipping_sys_ex && expected_data > received_data) {
-				buffer[received_data + 1] = byte;
-				received_data++;
-
-				// Forward a complete message and reset relevant state.
-				if (received_data == expected_data) {
-					driver.receive_input_packet(timestamp, buffer, received_data + 1);
-					received_data = 0;
-
-					if (msg_category(buffer[0]) != MessageCategory::Voice) {
-						// Voice Category messages can be sent with "running status".
-						// This means they don't resend the status byte until it changes.
-						// For other categories, we reset expected data, to require a new status byte.
-						expected_data = 0;
-					}
-				}
-			}
-			break;
-
-		case MessageCategory::SysExBegin:
-			buffer[0] = byte;
-			skipping_sys_ex = true;
-			break;
-
-		case MessageCategory::SysExEnd:
-			expected_data = 0;
-			skipping_sys_ex = false;
-			break;
-
-		case MessageCategory::Voice:
-		case MessageCategory::SystemCommon:
-			buffer[0] = byte;
-			received_data = 0;
-			expected_data = msg_expected_data(byte);
-			skipping_sys_ex = false;
-			if (expected_data == 0) {
-				driver.receive_input_packet(timestamp, &byte, 1);
-			}
-			break;
-	}
-}
-
-int MIDIDriverALSAMidi::InputConnection::read_in(MIDIDriverALSAMidi &driver, uint64_t timestamp) {
-	int ret;
+void MIDIDriverALSAMidi::read(MIDIDriverALSAMidi &driver) {
+	snd_seq_event_t *ev;
+	unsigned char buf[ALSA_MAX_MIDI_EVENT_SIZE];
 	do {
-		uint8_t byte = 0;
-		ret = snd_rawmidi_read(rawmidi_ptr, &byte, 1);
-
-		if (ret < 0) {
-			if (ret != -EAGAIN) {
-				ERR_PRINT("snd_rawmidi_read error: " + String(snd_strerror(ret)));
+		if (snd_seq_event_input(driver.seq_handle, &ev) >= 0) {
+			const int numBytes = snd_midi_event_decode(driver.decoder.get(), buf, sizeof(buf), ev);
+			driver.decoder.reset();
+			if (numBytes > 0) {
+				driver.receive_input_packet(0, buf, snd_seq_event_length(ev));
 			}
-		} else {
-			parse_byte(byte, driver, timestamp);
+			snd_seq_free_event(ev);
 		}
-	} while (ret > 0);
-
-	return ret;
+	} while (snd_seq_event_input_pending(driver.seq_handle, 0) > 0);
 }
 
 void MIDIDriverALSAMidi::thread_func(void *p_udata) {
 	MIDIDriverALSAMidi *md = static_cast<MIDIDriverALSAMidi *>(p_udata);
-	uint64_t timestamp = 0;
 
 	while (!md->exit_thread.is_set()) {
-		md->lock();
-
-		InputConnection *connections = md->connected_inputs.ptrw();
-		size_t connection_count = md->connected_inputs.size();
-
-		for (size_t i = 0; i < connection_count; i++) {
-			connections[i].read_in(*md, timestamp);
+		if (poll(md->pfd, md->numPfds, 100) > 0) {
+			md->read(*md);
 		}
-
-		md->unlock();
-
-		OS::get_singleton()->delay_usec(1000);
 	}
 }
 
 Error MIDIDriverALSAMidi::open() {
-	void **hints;
+	lock();
+	if (!seq_handle) {
+		if (int ret = snd_seq_open(&seq_handle, "default", SND_SEQ_OPEN_INPUT, SND_SEQ_NONBLOCK) < 0) {
+			ERR_PRINT("snd_seq_open failed: " + String(snd_strerror(ret)));
+			unlock();
+			return ERR_CANT_OPEN;
+		}
+		snd_seq_set_client_name(seq_handle, "Godot");
 
-	if (snd_device_name_hint(-1, "rawmidi", &hints) < 0) {
-		return ERR_CANT_OPEN;
+		// setting port type as SND_SEQ_PORT_TYPE_MIDI_GENERIC allows other sofware to directly connect to Godot without routing app
+		if (int ret = snd_seq_create_simple_port(seq_handle, "Godot Input", SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE, SND_SEQ_PORT_TYPE_MIDI_GENERIC) < 0) {
+			ERR_PRINT("snd_seq_create_simple_port failed: " + String(snd_strerror(ret)));
+			unlock();
+			return ERR_CANT_OPEN;
+		}
+		// we need to init the decoder after ALSA has openned
+		decoder.init();
+		// set up poll descriptors
+		numPfds = snd_seq_poll_descriptors_count(seq_handle, POLLIN);
+		pfd = (struct pollfd *)malloc((numPfds) * sizeof(struct pollfd));
+		snd_seq_poll_descriptors(seq_handle, pfd, numPfds, POLLIN);
 	}
 
-	int i = 0;
-	for (void **n = hints; *n != nullptr; n++) {
-		char *name = snd_device_name_get_hint(*n, "NAME");
-
-		if (name != nullptr) {
-			snd_rawmidi_t *midi_in;
-			int ret = snd_rawmidi_open(&midi_in, nullptr, name, SND_RAWMIDI_NONBLOCK);
-			if (ret >= 0) {
-				connected_inputs.insert(i++, InputConnection(midi_in));
-			}
-		}
-
-		if (name != nullptr) {
-			free(name);
+	if (get_devices() > 0) {
+		for (int i = 0; i < connected_devices.size(); i++) {
+			// connect all the found input clients to our ALSA sequencer handle
+			//printf("connect to: %s, %d, %d\n", connected_devices[i].name.utf8().ptr(), connected_devices[i].client, connected_devices[i].port);
+			snd_seq_connect_from(seq_handle, 0, connected_devices[i].client, connected_devices[i].port);
 		}
 	}
-	snd_device_name_free_hint(hints);
-
-	exit_thread.clear();
-	thread.start(MIDIDriverALSAMidi::thread_func, this);
-
+	if (!thread.is_started()) {
+		thread.start(MIDIDriverALSAMidi::thread_func, this);
+	}
+	unlock();
 	return OK;
 }
 
-void MIDIDriverALSAMidi::close() {
-	exit_thread.set();
-	thread.wait_to_finish();
-
-	for (int i = 0; i < connected_inputs.size(); i++) {
-		snd_rawmidi_t *midi_in = connected_inputs[i].rawmidi_ptr;
-		snd_rawmidi_close(midi_in);
+int MIDIDriverALSAMidi::get_devices() {
+	if (!seq_handle) {
+		ERR_PRINT("ALSA not initialized");
+		return -1;
 	}
-	connected_inputs.clear();
+	// find MIDI clients (devices)
+	connected_devices.clear();
+	snd_seq_client_info_t *cinfo;
+	snd_seq_client_info_alloca(&cinfo);
+	snd_seq_port_info_t *pinfo;
+	snd_seq_port_info_alloca(&pinfo);
+	snd_seq_client_info_set_client(cinfo, -1);
+	while (snd_seq_query_next_client(seq_handle, cinfo) >= 0) {
+		bool found_valid_port = false;
+		snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
+		snd_seq_port_info_set_port(pinfo, -1);
+		// loop over all found devices, connect if they are only hardware at this point
+		while (!found_valid_port && snd_seq_query_next_port(seq_handle, pinfo) >= 0 && snd_seq_client_info_get_card(cinfo) >= 0) {
+			found_valid_port = true;
+			const char *name = snd_seq_client_info_get_name(cinfo);
+			int client = snd_seq_client_info_get_client(cinfo);
+			int port = snd_seq_port_info_get_port(pinfo);
+			connected_devices.push_back(ConnectedDevices(name, client, port));
+		}
+	}
+	return connected_devices.size();
 }
 
 void MIDIDriverALSAMidi::lock() const {
@@ -224,22 +136,81 @@ void MIDIDriverALSAMidi::unlock() const {
 	mutex.unlock();
 }
 
+int MIDIDriverALSAMidi::get_connected_devices() {
+	if (seq_handle) {
+		connected_devices.clear();
+		snd_seq_client_info_t *cinfo;
+		snd_seq_port_info_t *pinfo;
+
+		snd_seq_client_info_alloca(&cinfo);
+		snd_seq_port_info_alloca(&pinfo);
+		/*
+		 * set the client id of Godot from the seq_handle,
+		 * this stays the same for each seq_handle init
+		 * but we check again, incase it has changed
+		 */
+		snd_seq_client_info_set_client(cinfo, snd_seq_client_id(seq_handle));
+		snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
+		//we only have one input port
+		snd_seq_port_info_set_port(pinfo, 0);
+
+		snd_seq_query_subscribe_t *subs;
+		snd_seq_query_subscribe_alloca(&subs);
+		snd_seq_query_subscribe_set_root(subs, snd_seq_port_info_get_addr(pinfo));
+
+		snd_seq_query_subscribe_set_type(subs, SND_SEQ_QUERY_SUBS_WRITE);
+		snd_seq_query_subscribe_set_index(subs, 0);
+
+		while (snd_seq_query_port_subscribers(seq_handle, subs) >= 0) {
+			const snd_seq_addr_t *addr;
+			addr = snd_seq_query_subscribe_get_addr(subs);
+			/*
+			 * apparently we can't just use this:
+			 * snd_seq_client_info_set_client();
+			 * as that will only populate the client id & port number if
+			 * we don't move to next client via snd_seq_query_next_client()
+			 */
+			snd_seq_get_any_client_info(seq_handle, addr->client, cinfo);
+			const char *name = snd_seq_client_info_get_name(cinfo);
+			connected_devices.push_back(ConnectedDevices(name, addr->client, addr->port));
+			snd_seq_query_subscribe_set_index(subs, snd_seq_query_subscribe_get_index(subs) + 1);
+		}
+		return connected_devices.size();
+	}
+	return 0;
+}
+
 PackedStringArray MIDIDriverALSAMidi::get_connected_inputs() {
 	PackedStringArray list;
 
 	lock();
-	for (int i = 0; i < connected_inputs.size(); i++) {
-		snd_rawmidi_t *midi_in = connected_inputs[i].rawmidi_ptr;
-		snd_rawmidi_info_t *info;
+	get_connected_devices();
 
-		snd_rawmidi_info_malloc(&info);
-		snd_rawmidi_info(midi_in, info);
-		list.push_back(snd_rawmidi_info_get_name(info));
-		snd_rawmidi_info_free(info);
+	for (int i = 0; i < connected_devices.size(); i++) {
+		list.push_back(connected_devices[i].name);
 	}
-	unlock();
 
+	unlock();
 	return list;
+}
+
+void MIDIDriverALSAMidi::close() {
+	lock();
+	exit_thread.set();
+	thread.wait_to_finish();
+
+	decoder.free();
+	if (pfd) {
+		free(pfd);
+		pfd = nullptr;
+	}
+	if (seq_handle) {
+		snd_seq_close(seq_handle);
+		seq_handle = nullptr;
+	}
+	connected_devices.clear();
+	exit_thread.clear();
+	unlock();
 }
 
 MIDIDriverALSAMidi::MIDIDriverALSAMidi() {

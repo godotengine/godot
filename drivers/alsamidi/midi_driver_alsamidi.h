@@ -36,57 +36,62 @@
 #include "core/os/midi_driver.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/string/ustring.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/vector.h"
 
 #include "../alsa/asound-so_wrap.h"
 #include <stdio.h>
 
+#define ALSA_MAX_MIDI_EVENT_SIZE 16 * 1024
+
 class MIDIDriverALSAMidi : public MIDIDriver {
 	Thread thread;
 	Mutex mutex;
 
-	class InputConnection {
+	snd_seq_t *seq_handle = nullptr;
+	void read(MIDIDriverALSAMidi &driver);
+
+	class ConnectedDevices {
 	public:
-		InputConnection() = default;
-		InputConnection(snd_rawmidi_t *midi_in) :
-				rawmidi_ptr{ midi_in } {}
+		ConnectedDevices() = default;
+		ConnectedDevices(const char *p_name, int p_client, int p_port) :
+				name(p_name), client(p_client), port(p_port) {}
 
-		// Read in and parse available data, forwarding any complete messages through the driver.
-		int read_in(MIDIDriverALSAMidi &driver, uint64_t timestamp);
-
-		snd_rawmidi_t *rawmidi_ptr = nullptr;
-
-	private:
-		static const size_t MSG_BUFFER_SIZE = 3;
-		uint8_t buffer[MSG_BUFFER_SIZE] = { 0 };
-		size_t expected_data = 0;
-		size_t received_data = 0;
-		bool skipping_sys_ex = false;
-		void parse_byte(uint8_t byte, MIDIDriverALSAMidi &driver, uint64_t timestamp);
+		String name;
+		int client;
+		int port;
 	};
 
-	Vector<InputConnection> connected_inputs;
+	Vector<ConnectedDevices> connected_devices;
+	int get_devices();
+	int get_connected_devices();
 
 	SafeFlag exit_thread;
 
 	static void thread_func(void *p_udata);
 
-	enum class MessageCategory {
-		Data,
-		Voice,
-		SysExBegin,
-		SystemCommon, // excluding System Exclusive Begin/End
-		SysExEnd,
-		RealTime,
+	int numPfds;
+	struct pollfd *pfd = nullptr;
+
+	class Decoder {
+	public:
+		Decoder() = default;
+		void init() { snd_midi_event_new(ALSA_MAX_MIDI_EVENT_SIZE, &midiev); };
+		void reset() { snd_midi_event_init(midiev); };
+		void free() {
+			if (midiev) {
+				snd_midi_event_free(midiev);
+				midiev = nullptr;
+			}
+		};
+		snd_midi_event_t *get() { return midiev; };
+
+	private:
+		snd_midi_event_t *midiev = nullptr;
 	};
 
-	// If the passed byte is a status byte, return the associated message category,
-	// else return MessageCategory::Data.
-	static MessageCategory msg_category(uint8_t msg_part);
-
-	// Return the number of data bytes expected for the provided status byte.
-	static size_t msg_expected_data(uint8_t status_byte);
+	Decoder decoder;
 
 	void lock() const;
 	void unlock() const;
