@@ -2542,14 +2542,12 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 					 << INDENT2 "int total_length = " << real_argc_str << " + vararg_length;\n";
 
 			r_output << INDENT2 "Span<godot_variant.movable> varargs_span = vararg_length <= VarArgsSpanThreshold ?\n"
-					 << INDENT3 "stackalloc godot_variant.movable[VarArgsSpanThreshold].Cleared() :\n"
+					 << INDENT3 "stackalloc godot_variant.movable[VarArgsSpanThreshold] :\n"
 					 << INDENT3 "new godot_variant.movable[vararg_length];\n";
 
 			r_output << INDENT2 "Span<IntPtr> " C_LOCAL_PTRCALL_ARGS "_span = total_length <= VarArgsSpanThreshold ?\n"
 					 << INDENT3 "stackalloc IntPtr[VarArgsSpanThreshold] :\n"
 					 << INDENT3 "new IntPtr[total_length];\n";
-
-			r_output << INDENT2 "using var variantSpanDisposer = new VariantSpanDisposer(varargs_span);\n";
 
 			r_output << INDENT2 "fixed (godot_variant.movable* varargs = &MemoryMarshal.GetReference(varargs_span))\n"
 					 << INDENT2 "fixed (IntPtr* " C_LOCAL_PTRCALL_ARGS " = "
