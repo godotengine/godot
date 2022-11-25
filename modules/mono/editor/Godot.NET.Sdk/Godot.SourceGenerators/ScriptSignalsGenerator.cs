@@ -228,7 +228,7 @@ namespace Godot.SourceGenerators
             {
                 string signalName = signalDelegate.Name;
 
-                var paramsSb = new StringBuilder("");
+                var paramsSb = new StringBuilder();
                 var parameters = signalDelegate.InvokeMethodData.Method.Parameters;
 
                 for (int i = 0; i < parameters.Length; i++)
