@@ -827,7 +827,7 @@ namespace Godot.Bridge
                 {
                     // Weird limitation, hence the need for aux:
                     // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
-                    var aux = stackalloc godotsharp_property_info[length];
+                    var aux = stackalloc godotsharp_property_info[stackMaxLength];
                     interopProperties = aux;
                 }
                 else
@@ -947,7 +947,7 @@ namespace Godot.Bridge
                 {
                     // Weird limitation, hence the need for aux:
                     // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
-                    var aux = stackalloc godotsharp_property_def_val_pair[length];
+                    var aux = stackalloc godotsharp_property_def_val_pair[stackMaxLength];
                     interopDefaultValues = aux;
                 }
                 else
