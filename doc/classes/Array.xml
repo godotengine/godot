@@ -300,13 +300,6 @@
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
-		<method name="find_last" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="value" type="Variant" />
-			<description>
-				Searches the array in reverse order for a value and returns its index or [code]-1[/code] if not found.
-			</description>
-		</method>
 		<method name="front" qualifiers="const">
 			<return type="Variant" />
 			<description>
