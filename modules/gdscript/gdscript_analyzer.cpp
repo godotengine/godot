@@ -1912,7 +1912,7 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 #ifdef DEBUG_ENABLED
 			} else if (expected_type.builtin_type == Variant::INT && result.builtin_type == Variant::FLOAT) {
 				parser->push_warning(p_return, GDScriptWarning::NARROWING_CONVERSION);
-			} else if (result.is_variant()) {
+			} else if (result.is_variant() && !expected_type.is_variant()) {
 				mark_node_unsafe(p_return);
 #endif
 			}
@@ -2286,43 +2286,41 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 
 	GDScriptParser::DataType result;
 
-	if (left_type.is_variant() || right_type.is_variant()) {
+	if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST) {
+		GDScriptParser::DataType test_type = right_type;
+		test_type.is_meta_type = false;
+
+		if (!is_type_compatible(test_type, left_type, false) && !is_type_compatible(left_type, test_type, false)) {
+			if (left_type.is_hard_type()) {
+				push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", left_type.to_string(), test_type.to_string()), p_binary_op->left_operand);
+			} else {
+				// TODO: Warning.
+				mark_node_unsafe(p_binary_op);
+			}
+		}
+
+		// "is" operator is always a boolean anyway.
+		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+		result.kind = GDScriptParser::DataType::BUILTIN;
+		result.builtin_type = Variant::BOOL;
+	} else if ((p_binary_op->variant_op == Variant::OP_EQUAL || p_binary_op->variant_op == Variant::OP_NOT_EQUAL) &&
+			((left_type.kind == GDScriptParser::DataType::BUILTIN && left_type.builtin_type == Variant::NIL) || (right_type.kind == GDScriptParser::DataType::BUILTIN && right_type.builtin_type == Variant::NIL))) {
+		// "==" and "!=" operators always return a boolean when comparing to null.
+		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+		result.kind = GDScriptParser::DataType::BUILTIN;
+		result.builtin_type = Variant::BOOL;
+	} else if (left_type.is_variant() || right_type.is_variant()) {
 		// Cannot infer type because one operand can be anything.
 		result.kind = GDScriptParser::DataType::VARIANT;
 		mark_node_unsafe(p_binary_op);
-	} else {
-		if (p_binary_op->variant_op < Variant::OP_MAX) {
-			bool valid = false;
-			result = get_operation_type(p_binary_op->variant_op, left_type, right_type, valid, p_binary_op);
-
-			if (!valid) {
-				push_error(vformat(R"(Invalid operands "%s" and "%s" for "%s" operator.)", left_type.to_string(), right_type.to_string(), Variant::get_operator_name(p_binary_op->variant_op)), p_binary_op);
-			}
-		} else {
-			if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST) {
-				GDScriptParser::DataType test_type = right_type;
-				test_type.is_meta_type = false;
-
-				if (!is_type_compatible(test_type, left_type, false)) {
-					// Test reverse as well to consider for subtypes.
-					if (!is_type_compatible(left_type, test_type, false)) {
-						if (left_type.is_hard_type()) {
-							push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", left_type.to_string(), test_type.to_string()), p_binary_op->left_operand);
-						} else {
-							// TODO: Warning.
-							mark_node_unsafe(p_binary_op);
-						}
-					}
-				}
-
-				// "is" operator is always a boolean anyway.
-				result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-				result.kind = GDScriptParser::DataType::BUILTIN;
-				result.builtin_type = Variant::BOOL;
-			} else {
-				ERR_PRINT("Parser bug: unknown binary operation.");
-			}
+	} else if (p_binary_op->variant_op < Variant::OP_MAX) {
+		bool valid = false;
+		result = get_operation_type(p_binary_op->variant_op, left_type, right_type, valid, p_binary_op);
+		if (!valid) {
+			push_error(vformat(R"(Invalid operands "%s" and "%s" for "%s" operator.)", left_type.to_string(), right_type.to_string(), Variant::get_operator_name(p_binary_op->variant_op)), p_binary_op);
 		}
+	} else {
+		ERR_PRINT("Parser bug: unknown binary operation.");
 	}
 
 	p_binary_op->set_datatype(result);
@@ -4143,7 +4141,7 @@ bool GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 		GDScriptParser::DataType par_type = p_par_types[i];
 		GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
 
-		if (arg_type.is_variant()) {
+		if (arg_type.is_variant() && !(par_type.is_hard_type() && par_type.is_variant())) {
 			// Argument can be anything, so this is unsafe.
 			mark_node_unsafe(p_call->arguments[i]);
 		} else if (par_type.is_hard_type() && !is_type_compatible(par_type, arg_type, true)) {
