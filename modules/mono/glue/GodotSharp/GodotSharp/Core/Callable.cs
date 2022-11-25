@@ -77,7 +77,7 @@ namespace Godot
             _trampoline = trampoline;
         }
 
-        private const int VarArgsSpanThreshold = 5;
+        private const int VarArgsSpanThreshold = 10;
 
         /// <summary>
         /// Calls the method represented by this <see cref="Callable"/>.
@@ -92,14 +92,12 @@ namespace Godot
             int argc = args.Length;
 
             Span<godot_variant.movable> argsStoreSpan = argc <= VarArgsSpanThreshold ?
-                stackalloc godot_variant.movable[VarArgsSpanThreshold].Cleared() :
+                stackalloc godot_variant.movable[VarArgsSpanThreshold] :
                 new godot_variant.movable[argc];
 
-            Span<IntPtr> argsSpan = argc <= 10 ?
-                stackalloc IntPtr[argc] :
+            Span<IntPtr> argsSpan = argc <= VarArgsSpanThreshold ?
+                stackalloc IntPtr[VarArgsSpanThreshold] :
                 new IntPtr[argc];
-
-            using var variantSpanDisposer = new VariantSpanDisposer(argsStoreSpan);
 
             fixed (godot_variant* varargs = &MemoryMarshal.GetReference(argsStoreSpan).DangerousSelfRef)
             fixed (IntPtr* argsPtr = &MemoryMarshal.GetReference(argsSpan))
@@ -128,14 +126,12 @@ namespace Godot
             int argc = args.Length;
 
             Span<godot_variant.movable> argsStoreSpan = argc <= VarArgsSpanThreshold ?
-                stackalloc godot_variant.movable[VarArgsSpanThreshold].Cleared() :
+                stackalloc godot_variant.movable[VarArgsSpanThreshold] :
                 new godot_variant.movable[argc];
 
-            Span<IntPtr> argsSpan = argc <= 10 ?
-                stackalloc IntPtr[argc] :
+            Span<IntPtr> argsSpan = argc <= VarArgsSpanThreshold ?
+                stackalloc IntPtr[VarArgsSpanThreshold] :
                 new IntPtr[argc];
-
-            using var variantSpanDisposer = new VariantSpanDisposer(argsStoreSpan);
 
             fixed (godot_variant* varargs = &MemoryMarshal.GetReference(argsStoreSpan).DangerousSelfRef)
             fixed (IntPtr* argsPtr = &MemoryMarshal.GetReference(argsSpan))
