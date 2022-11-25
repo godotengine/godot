@@ -38,6 +38,8 @@
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_polygon_shape_3d.h"
 
 void MeshInstance3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -66,7 +68,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			if (selection.is_empty()) {
-				Ref<Shape3D> shape = mesh->create_trimesh_shape();
+				Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 				if (shape.is_null()) {
 					err_dialog->set_text(TTR("Couldn't create a Trimesh collision shape."));
 					err_dialog->popup_centered();
@@ -105,7 +107,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 					continue;
 				}
 
-				Ref<Shape3D> shape = m->create_trimesh_shape();
+				Ref<ConcavePolygonShape3D> shape = m->create_trimesh_shape();
 				if (shape.is_null()) {
 					continue;
 				}
@@ -137,7 +139,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Ref<Shape3D> shape = mesh->create_trimesh_shape();
+			Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 			if (shape.is_null()) {
 				return;
 			}
@@ -171,7 +173,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			bool simplify = (p_option == MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
 
-			Ref<Shape3D> shape = mesh->create_convex_shape(true, simplify);
+			Ref<ConvexPolygonShape3D> shape = mesh->create_convex_shape(true, simplify);
 
 			if (shape.is_null()) {
 				err_dialog->set_text(TTR("Couldn't create a single convex collision shape."));

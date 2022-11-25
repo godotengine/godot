@@ -388,7 +388,7 @@ Vector<Face3> Mesh::get_surface_faces(int p_surface) const {
 	return Vector<Face3>();
 }
 
-Ref<Shape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
+Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 	if (p_simplify) {
 		ConvexDecompositionSettings settings;
 		settings.max_convex_hulls = 1;
@@ -425,10 +425,10 @@ Ref<Shape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 	return shape;
 }
 
-Ref<Shape3D> Mesh::create_trimesh_shape() const {
+Ref<ConcavePolygonShape3D> Mesh::create_trimesh_shape() const {
 	Vector<Face3> faces = get_faces();
 	if (faces.size() == 0) {
-		return Ref<Shape3D>();
+		return Ref<ConcavePolygonShape3D>();
 	}
 
 	Vector<Vector3> face_points;

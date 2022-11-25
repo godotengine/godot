@@ -33,6 +33,8 @@
 #include "collision_shape_3d.h"
 #include "core/core_string_names.h"
 #include "physics_body_3d.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_polygon_shape_3d.h"
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -224,7 +226,7 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 		return nullptr;
 	}
 
-	Ref<Shape3D> shape = mesh->create_trimesh_shape();
+	Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 	if (shape.is_null()) {
 		return nullptr;
 	}
@@ -254,7 +256,7 @@ Node *MeshInstance3D::create_convex_collision_node(bool p_clean, bool p_simplify
 		return nullptr;
 	}
 
-	Ref<Shape3D> shape = mesh->create_convex_shape(p_clean, p_simplify);
+	Ref<ConvexPolygonShape3D> shape = mesh->create_convex_shape(p_clean, p_simplify);
 	if (shape.is_null()) {
 		return nullptr;
 	}

@@ -97,7 +97,7 @@
 			</description>
 		</method>
 		<method name="create_convex_shape" qualifiers="const">
-			<return type="Shape3D" />
+			<return type="ConvexPolygonShape3D" />
 			<param index="0" name="clean" type="bool" default="true" />
 			<param index="1" name="simplify" type="bool" default="false" />
 			<description>
@@ -115,7 +115,7 @@
 			</description>
 		</method>
 		<method name="create_trimesh_shape" qualifiers="const">
-			<return type="Shape3D" />
+			<return type="ConcavePolygonShape3D" />
 			<description>
 				Calculate a [ConcavePolygonShape3D] from the mesh.
 			</description>

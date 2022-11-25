@@ -971,10 +971,10 @@ Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Mesh::ConvexDecomposit
 	return ret;
 }
 
-Ref<Shape3D> ImporterMesh::create_trimesh_shape() const {
+Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
 	Vector<Face3> faces = get_faces();
 	if (faces.size() == 0) {
-		return Ref<Shape3D>();
+		return Ref<ConcavePolygonShape3D>();
 	}
 
 	Vector<Vector3> face_points;

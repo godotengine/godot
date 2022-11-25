@@ -119,7 +119,7 @@ public:
 
 	Vector<Face3> get_faces() const;
 	Vector<Ref<Shape3D>> convex_decompose(const Mesh::ConvexDecompositionSettings &p_settings) const;
-	Ref<Shape3D> create_trimesh_shape() const;
+	Ref<ConcavePolygonShape3D> create_trimesh_shape() const;
 	Ref<NavigationMesh> create_navigation_mesh();
 	Error lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache);
 

@@ -355,7 +355,7 @@ static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
 	ERR_FAIL_NULL_MSG(mesh->get_mesh(), "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
-		Ref<Shape3D> shape = mesh->create_trimesh_shape();
+		Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
 	} else {
 		Vector<Ref<Shape3D>> cd;
