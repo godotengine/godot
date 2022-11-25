@@ -945,11 +945,11 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 
 Variant EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Variant obj = ClassDB::instantiate(ScriptServer::get_global_class_native_base(p_class));
-		if (obj) {
-			Ref<Script> script = script_class_load_script(p_class);
-			if (script.is_valid()) {
-				((Object *)obj)->set_script(script);
+		Ref<Script> script = script_class_load_script(p_class);
+		if (script.is_valid()) {
+			Object *obj = ClassDB::instantiate(script->get_instance_base_type());
+			if (obj) {
+				obj->set_script(script);
 			}
 			return obj;
 		}

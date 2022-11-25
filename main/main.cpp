@@ -2660,7 +2660,11 @@ bool Main::start() {
 		if (!editor && !ClassDB::class_exists(main_loop_type) && ScriptServer::is_global_class(main_loop_type)) {
 			String script_path = ScriptServer::get_global_class_path(main_loop_type);
 			Ref<Script> script_res = ResourceLoader::load(script_path);
-			StringName script_base = ScriptServer::get_global_class_native_base(main_loop_type);
+			if (script_res.is_null()) {
+				OS::get_singleton()->alert("Error: Could not load MainLoop script type: " + main_loop_type);
+				ERR_FAIL_V_MSG(false, vformat("Could not load global class %s.", main_loop_type));
+			}
+			StringName script_base = script_res->get_instance_base_type();
 			Object *obj = ClassDB::instantiate(script_base);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {

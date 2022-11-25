@@ -3802,16 +3802,19 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				break;
 			case GDScriptParser::DataType::SCRIPT: {
 				StringName class_name;
-				if (export_type.script_type != nullptr && export_type.script_type.is_valid()) {
+				StringName native_base;
+				if (export_type.script_type.is_valid()) {
 					class_name = export_type.script_type->get_language()->get_global_class_name(export_type.script_type->get_path());
+					native_base = export_type.script_type->get_instance_base_type();
 				}
 				if (class_name == StringName()) {
 					Ref<Script> script = ResourceLoader::load(export_type.script_path, SNAME("Script"));
 					if (script.is_valid()) {
 						class_name = script->get_language()->get_global_class_name(export_type.script_path);
+						native_base = script->get_instance_base_type();
 					}
 				}
-				if (class_name != StringName() && ClassDB::is_parent_class(ScriptServer::get_global_class_native_base(class_name), SNAME("Resource"))) {
+				if (class_name != StringName() && native_base != StringName() && ClassDB::is_parent_class(native_base, SNAME("Resource"))) {
 					variable->export_info.type = Variant::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = class_name;
