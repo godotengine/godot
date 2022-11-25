@@ -1656,6 +1656,8 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 	add_child(tabs);
 
+	InspectorDock::get_inspector_singleton()->connect("object_id_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
+
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		vbc->set_name(TTR("Debugger"));
