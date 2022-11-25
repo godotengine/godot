@@ -56,7 +56,7 @@ FileSystemDock *FileSystemDock::singleton = nullptr;
 
 Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_file_type) {
 	Ref<Texture2D> file_icon;
-	if (!p_is_valid) {
+	if (!p_is_valid || p_file_type.is_empty()) {
 		file_icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 	} else {
 		file_icon = (has_theme_icon(p_file_type, SNAME("EditorIcons"))) ? get_theme_icon(p_file_type, SNAME("EditorIcons")) : get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
