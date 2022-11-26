@@ -95,6 +95,9 @@ Basis Basis::orthonormalized() const {
 }
 
 void Basis::orthogonalize() {
+	if (is_orthogonal()) {
+		return;
+	}
 	Vector3 scl = get_scale();
 	orthonormalize();
 	scale_local(scl);

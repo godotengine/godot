@@ -96,6 +96,18 @@
 				Returns the scale.
 			</description>
 		</method>
+		<method name="get_scale_abs" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the absolute scale.
+			</description>
+		</method>
+		<method name="get_scale_local" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the scale with respect to the basis.
+			</description>
+		</method>
 		<method name="get_skew" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -135,6 +147,12 @@
 			<description>
 				Returns a copy of the transform rotated such that it's rotation on the X-axis points towards the [param target] position.
 				Operations take place in global space.
+			</description>
+		</method>
+		<method name="orthogonalized" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the transform with the basis orthogonal (90 degrees), and axis vectors.
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">
@@ -181,6 +199,13 @@
 				This method is an optimized version of multiplying the given transform [code]X[/code]
 				with a corresponding scaling transform [code]S[/code] from the right, i.e., [code]X * S[/code].
 				This can be seen as transforming with respect to the local frame.
+			</description>
+		</method>
+		<method name="scaled_orthogonal" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="scale" type="Vector2" />
+			<description>
+				Introduce an additional scaling specified by the given 2D scaling factor with respect to the global/parent frame. To keep orthogonality, vectors for scale are decomposed and applied with respect to the local axis.
 			</description>
 		</method>
 		<method name="set_rotation">

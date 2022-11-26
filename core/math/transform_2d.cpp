@@ -112,9 +112,21 @@ Transform2D::Transform2D(const real_t p_rot, const Size2 &p_scale, const real_t 
 	columns[2] = p_pos;
 }
 
+Size2 Transform2D::get_scale_abs() const {
+	return Size2(columns[0].length(), columns[1].length());
+}
+
+Size2 Transform2D::get_scale_local() const {
+	real_t det_sign = SIGN(basis_determinant());
+	return Size2(
+			Size2(columns[0][0], columns[1][0]).length(),
+			det_sign * Size2(columns[0][1], columns[1][1]).length());
+}
+
 Size2 Transform2D::get_scale() const {
 	real_t det_sign = SIGN(basis_determinant());
-	return Size2(columns[0].length(), det_sign * columns[1].length());
+	Size2 s = get_scale_abs();
+	return Size2(s.x, det_sign * s.y);
 }
 
 void Transform2D::set_scale(const Size2 &p_scale) {
@@ -142,6 +154,23 @@ void Transform2D::translate_local(const real_t p_tx, const real_t p_ty) {
 
 void Transform2D::translate_local(const Vector2 &p_translation) {
 	columns[2] += basis_xform(p_translation);
+}
+
+void Transform2D::orthogonalize() {
+	if (Math::is_zero_approx(get_skew())) {
+		return;
+	}
+	Vector2 y = Vector2(-(columns[0].y), columns[0].x).normalized(); // Make a vector orthogonal to x.
+	if (y.dot(columns[1].normalized()) < 0) {
+		y = -y; // Flip to be closer to current y.
+	}
+	columns[1] = y * columns[1].length();
+}
+
+Transform2D Transform2D::orthogonalized() const {
+	Transform2D on = *this;
+	on.orthogonalize();
+	return on;
 }
 
 void Transform2D::orthonormalize() {
@@ -237,6 +266,19 @@ Transform2D Transform2D::scaled(const Size2 &p_scale) const {
 Transform2D Transform2D::scaled_local(const Size2 &p_scale) const {
 	// Equivalent to right multiplication
 	return Transform2D(columns[0] * p_scale.x, columns[1] * p_scale.y, columns[2]);
+}
+
+Transform2D Transform2D::scaled_orthogonal(const Size2 &p_scale) const {
+	Transform2D m = *this;
+	Size2 s = Size2(-1, -1) + p_scale;
+	Size2 dots;
+	Transform2D b;
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < 2; j++) {
+			dots[j] += s[i] * abs(m.columns[i].normalized().dot(b.columns[j]));
+		}
+	}
+	return m.scaled_local(Size2(1, 1) + dots);
 }
 
 Transform2D Transform2D::untranslated() const {

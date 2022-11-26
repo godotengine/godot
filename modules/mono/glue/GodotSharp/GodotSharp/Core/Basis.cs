@@ -709,7 +709,15 @@ namespace Godot
             );
         }
 
-        internal readonly Basis Lerp(Basis to, real_t weight)
+        /// <summary>
+        /// Returns the result of the linear interpolation between
+        /// this basis and <paramref name="to"/> by amount <paramref name="weight"/>.
+        /// The result may have shearing.
+        /// </summary>
+        /// <param name="to">The destination basis for interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <returns>The resulting basis of the interpolation.</returns>
+        public readonly Basis Lerp(Basis to, real_t weight)
         {
             Basis b = this;
             b.Row0 = Row0.Lerp(to.Row0, weight);

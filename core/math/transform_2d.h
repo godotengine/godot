@@ -81,6 +81,8 @@ struct _NO_DISCARD_ Transform2D {
 
 	Size2 get_scale() const;
 	void set_scale(const Size2 &p_scale);
+	Size2 get_scale_abs() const;
+	Size2 get_scale_local() const;
 
 	_FORCE_INLINE_ const Vector2 &get_origin() const { return columns[2]; }
 	_FORCE_INLINE_ void set_origin(const Vector2 &p_origin) { columns[2] = p_origin; }
@@ -88,6 +90,7 @@ struct _NO_DISCARD_ Transform2D {
 	Transform2D basis_scaled(const Size2 &p_scale) const;
 	Transform2D scaled(const Size2 &p_scale) const;
 	Transform2D scaled_local(const Size2 &p_scale) const;
+	Transform2D scaled_orthogonal(const Size2 &p_scale) const;
 	Transform2D translated(const Vector2 &p_offset) const;
 	Transform2D translated_local(const Vector2 &p_offset) const;
 	Transform2D rotated(const real_t p_angle) const;
@@ -95,6 +98,8 @@ struct _NO_DISCARD_ Transform2D {
 
 	Transform2D untranslated() const;
 
+	void orthogonalize();
+	Transform2D orthogonalized() const;
 	void orthonormalize();
 	Transform2D orthonormalized() const;
 	bool is_equal_approx(const Transform2D &p_transform) const;
