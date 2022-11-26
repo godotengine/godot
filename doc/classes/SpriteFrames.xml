@@ -20,8 +20,9 @@
 		<method name="add_frame">
 			<return type="void" />
 			<param index="0" name="anim" type="StringName" />
-			<param index="1" name="frame" type="Texture2D" />
-			<param index="2" name="at_position" type="int" default="-1" />
+			<param index="1" name="texture" type="Texture2D" />
+			<param index="2" name="duration" type="float" default="1.0" />
+			<param index="3" name="at_position" type="int" default="-1" />
 			<description>
 				Adds a frame to the given animation.
 			</description>
@@ -56,22 +57,34 @@
 			<return type="float" />
 			<param index="0" name="anim" type="StringName" />
 			<description>
-				The animation's speed in frames per second.
-			</description>
-		</method>
-		<method name="get_frame" qualifiers="const">
-			<return type="Texture2D" />
-			<param index="0" name="anim" type="StringName" />
-			<param index="1" name="idx" type="int" />
-			<description>
-				Returns the animation's selected frame.
+				Returns the speed in frames per second for the [param anim] animation.
 			</description>
 		</method>
 		<method name="get_frame_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="anim" type="StringName" />
 			<description>
-				Returns the number of frames in the animation.
+				Returns the number of frames for the [param anim] animation.
+			</description>
+		</method>
+		<method name="get_frame_duration" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns a relative duration of the frame [param idx] in the [param anim] animation (defaults to [code]1.0[/code]). For example, a frame with a duration of [code]2.0[/code] is displayed twice as long as a frame with a duration of [code]1.0[/code]. You can calculate the absolute duration (in seconds) of a frame using the following formula:
+				[codeblock]
+				absolute_duration = relative_duration / (animation_fps * abs(speed_scale))
+				[/codeblock]
+				In this example, [code]speed_scale[/code] refers to either [member AnimatedSprite2D.speed_scale] or [member AnimatedSprite3D.speed_scale].
+			</description>
+		</method>
+		<method name="get_frame_texture" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the texture of the frame [param idx] in the [param anim] animation.
 			</description>
 		</method>
 		<method name="has_animation" qualifiers="const">
@@ -115,18 +128,19 @@
 		<method name="set_animation_speed">
 			<return type="void" />
 			<param index="0" name="anim" type="StringName" />
-			<param index="1" name="speed" type="float" />
+			<param index="1" name="fps" type="float" />
 			<description>
-				The animation's speed in frames per second.
+				Sets the speed for the [param anim] animation in frames per second.
 			</description>
 		</method>
 		<method name="set_frame">
 			<return type="void" />
 			<param index="0" name="anim" type="StringName" />
 			<param index="1" name="idx" type="int" />
-			<param index="2" name="txt" type="Texture2D" />
+			<param index="2" name="texture" type="Texture2D" />
+			<param index="3" name="duration" type="float" default="1.0" />
 			<description>
-				Sets the texture of the given frame.
+				Sets the texture and the duration of the frame [param idx] in the [param anim] animation.
 			</description>
 		</method>
 	</methods>

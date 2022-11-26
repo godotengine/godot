@@ -46,6 +46,14 @@
 
 class EditorFileDialog;
 
+class EditorSpriteFramesFrame : public Resource {
+	GDCLASS(EditorSpriteFramesFrame, Resource);
+
+public:
+	Ref<Texture2D> texture;
+	float duration;
+};
+
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
@@ -70,7 +78,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *zoom_out = nullptr;
 	Button *zoom_reset = nullptr;
 	Button *zoom_in = nullptr;
-	ItemList *tree = nullptr;
+	SpinBox *frame_duration = nullptr;
+	ItemList *frame_list = nullptr;
 	bool loading_scene;
 	int sel;
 
@@ -134,6 +143,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _delete_pressed();
 	void _up_pressed();
 	void _down_pressed();
+	void _frame_duration_changed(double p_value);
 	void _update_library(bool p_skip_selector = false);
 
 	void _animation_select();
@@ -143,9 +153,11 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
 	void _animation_loop_changed();
-	void _animation_fps_changed(double p_value);
+	void _animation_speed_changed(double p_value);
 
-	void _tree_input(const Ref<InputEvent> &p_event);
+	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
+	void _frame_list_item_selected(int p_index);
+
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_reset();

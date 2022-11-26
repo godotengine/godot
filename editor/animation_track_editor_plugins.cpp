@@ -426,7 +426,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 			animation_name = get_animation()->track_get_key_value(animation_track, animaiton_index);
 		}
 
-		Ref<Texture2D> texture = sf->get_frame(animation_name, frame);
+		Ref<Texture2D> texture = sf->get_frame_texture(animation_name, frame);
 		if (!texture.is_valid()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
 		}
@@ -518,7 +518,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 			animation_name = get_animation()->track_get_key_value(animation_track, animaiton_index);
 		}
 
-		texture = sf->get_frame(animation_name, frame);
+		texture = sf->get_frame_texture(animation_name, frame);
 		if (!texture.is_valid()) {
 			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
 			return;

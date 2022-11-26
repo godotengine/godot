@@ -837,7 +837,7 @@ void AnimatedSprite3D::_draw() {
 		return;
 	}
 
-	Ref<Texture2D> texture = frames->get_frame(animation, frame);
+	Ref<Texture2D> texture = frames->get_frame_texture(animation, frame);
 	if (texture.is_null()) {
 		set_base(RID());
 		return;
@@ -921,17 +921,21 @@ void AnimatedSprite3D::_notification(int p_what) {
 				return;
 			}
 
-			double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
-			if (speed == 0) {
-				return; // Do nothing.
-			}
-			int last_frame = frames->get_frame_count(animation) - 1;
-
 			double remaining = get_process_delta_time();
+			int i = 0;
 			while (remaining) {
-				if (timeout <= 0) {
-					timeout = _get_frame_duration();
+				// Animation speed may be changed by animation_finished or frame_changed signals.
+				double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
 
+				if (speed == 0) {
+					return; // Do nothing.
+				}
+
+				// Frame count may be changed by animation_finished or frame_changed signals.
+				int fc = frames->get_frame_count(animation);
+
+				if (timeout <= 0) {
+					int last_frame = fc - 1;
 					if (!playing_backwards) {
 						// Forward.
 						if (frame >= last_frame) {
@@ -966,14 +970,21 @@ void AnimatedSprite3D::_notification(int p_what) {
 						}
 					}
 
+					timeout = _get_frame_duration();
+
 					_queue_redraw();
 
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
-				double to_process = MIN(timeout, remaining);
+				double to_process = MIN(timeout / speed, remaining);
+				timeout -= to_process * speed;
 				remaining -= to_process;
-				timeout -= to_process;
+
+				i++;
+				if (i > fc) {
+					return; // Prevents freezing if to_process is each time much less than remaining.
+				}
 			}
 		} break;
 	}
@@ -1028,7 +1039,6 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 	frame = p_frame;
 	_reset_timeout();
 	_queue_redraw();
-
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -1036,22 +1046,12 @@ int AnimatedSprite3D::get_frame() const {
 	return frame;
 }
 
-void AnimatedSprite3D::set_speed_scale(double p_speed_scale) {
-	if (speed_scale == p_speed_scale) {
-		return;
-	}
-
-	double elapsed = _get_frame_duration() - timeout;
-
+void AnimatedSprite3D::set_speed_scale(float p_speed_scale) {
 	speed_scale = p_speed_scale;
 	playing_backwards = signbit(speed_scale) != backwards;
-
-	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed.
-	_reset_timeout();
-	timeout -= elapsed;
 }
 
-double AnimatedSprite3D::get_speed_scale() const {
+float AnimatedSprite3D::get_speed_scale() const {
 	return speed_scale;
 }
 
@@ -1065,7 +1065,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 
 	Ref<Texture2D> t;
 	if (animation) {
-		t = frames->get_frame(animation, frame);
+		t = frames->get_frame_texture(animation, frame);
 	}
 	if (t.is_null()) {
 		return Rect2(0, 0, 1, 1);
@@ -1086,8 +1086,8 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 
 void AnimatedSprite3D::_res_changed() {
 	set_frame(frame);
-
 	_queue_redraw();
+	notify_property_list_changed();
 }
 
 void AnimatedSprite3D::set_playing(bool p_playing) {
@@ -1095,7 +1095,7 @@ void AnimatedSprite3D::set_playing(bool p_playing) {
 		return;
 	}
 	playing = p_playing;
-	_reset_timeout();
+	playing_backwards = signbit(speed_scale) != backwards;
 	set_process_internal(playing);
 	notify_property_list_changed();
 }
@@ -1121,23 +1121,18 @@ void AnimatedSprite3D::play(const StringName &p_animation, bool p_backwards) {
 
 void AnimatedSprite3D::stop() {
 	set_playing(false);
+	backwards = false;
+	_reset_timeout();
 }
 
 double AnimatedSprite3D::_get_frame_duration() {
 	if (frames.is_valid() && frames->has_animation(animation)) {
-		double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
-		if (speed > 0) {
-			return 1.0 / speed;
-		}
+		return frames->get_frame_duration(animation, frame);
 	}
 	return 0.0;
 }
 
 void AnimatedSprite3D::_reset_timeout() {
-	if (!playing) {
-		return;
-	}
-
 	timeout = _get_frame_duration();
 	is_over = false;
 }
@@ -1145,13 +1140,14 @@ void AnimatedSprite3D::_reset_timeout() {
 void AnimatedSprite3D::set_animation(const StringName &p_animation) {
 	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", p_animation));
 	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(p_animation), vformat("There is no animation with name '%s'.", p_animation));
+
 	if (animation == p_animation) {
 		return;
 	}
 
 	animation = p_animation;
-	_reset_timeout();
 	set_frame(0);
+	_reset_timeout();
 	notify_property_list_changed();
 	_queue_redraw();
 }
@@ -1165,7 +1161,6 @@ PackedStringArray AnimatedSprite3D::get_configuration_warnings() const {
 	if (frames.is_null()) {
 		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames."));
 	}
-
 	return warnings;
 }
 

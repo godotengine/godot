@@ -43,7 +43,7 @@ class AnimatedSprite2D : public Node2D {
 	bool backwards = false;
 	StringName animation = "default";
 	int frame = 0;
-	float speed_scale = 1.0f;
+	float speed_scale = 1.0;
 
 	bool centered = true;
 	Point2 offset;
@@ -94,8 +94,8 @@ public:
 	void set_frame(int p_frame);
 	int get_frame() const;
 
-	void set_speed_scale(double p_speed_scale);
-	double get_speed_scale() const;
+	void set_speed_scale(float p_speed_scale);
+	float get_speed_scale() const;
 
 	void set_centered(bool p_center);
 	bool is_centered() const;
