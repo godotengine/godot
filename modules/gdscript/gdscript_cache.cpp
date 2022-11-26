@@ -360,7 +360,6 @@ Ref<PackedScene> GDScriptCache::get_packed_scene(const String &p_path, Error &r_
 	singleton->packed_scene_cache[p_path] = scene;
 	singleton->packed_scene_dependencies[p_path].insert(p_owner);
 
-	scene->recreate_state();
 	scene->reload_from_file();
 	return scene;
 }
