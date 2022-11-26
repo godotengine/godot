@@ -2825,7 +2825,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 								Math::remap(gpu_time, 0, 30, 0, 1)));
 
 				const double fps = 1000.0 / gpu_time;
-				fps_label->set_text(vformat(TTR("FPS: %d"), fps));
+				fps_label->set_text(vformat(TTR("FPS: ~%d"), fps));
 				// Middle point is at 60 FPS.
 				fps_label->add_theme_color_override(
 						"font_color",
