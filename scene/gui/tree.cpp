@@ -3846,14 +3846,14 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-bool Tree::edit_selected() {
+bool Tree::edit_selected(bool p_force_edit) {
 	TreeItem *s = get_selected();
 	ERR_FAIL_COND_V_MSG(!s, false, "No item selected.");
 	ensure_cursor_is_visible();
 	int col = get_selected_column();
 	ERR_FAIL_INDEX_V_MSG(col, columns.size(), false, "No item column selected.");
 
-	if (!s->cells[col].editable) {
+	if (!s->cells[col].editable && !p_force_edit) {
 		return false;
 	}
 
@@ -3957,6 +3957,14 @@ bool Tree::edit_selected() {
 
 bool Tree::is_editing() {
 	return popup_editor->is_visible();
+}
+
+void Tree::set_editor_selection(int p_from_line, int p_to_line, int p_from_column, int p_to_column, int p_caret) {
+	if (p_from_column == -1 || p_to_column == -1) {
+		line_editor->select(p_from_line, p_to_line);
+	} else {
+		text_editor->select(p_from_line, p_from_column, p_to_line, p_to_column, p_caret);
+	}
 }
 
 Size2 Tree::get_internal_min_size() const {
@@ -5355,7 +5363,7 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_edited"), &Tree::get_edited);
 	ClassDB::bind_method(D_METHOD("get_edited_column"), &Tree::get_edited_column);
-	ClassDB::bind_method(D_METHOD("edit_selected"), &Tree::edit_selected);
+	ClassDB::bind_method(D_METHOD("edit_selected", "force_edit"), &Tree::edit_selected, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
 	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column", "button_index"), &Tree::get_item_rect, DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
