@@ -133,9 +133,18 @@ private:
 		bool operator<(const UGCall &p_with) const { return group == p_with.group ? call < p_with.call : group < p_with.group; }
 	};
 
-	// Safety for when a node is deleted while a group is being called.
-	int call_lock = 0;
-	HashSet<Node *> call_skip; // Skip erased nodes.
+	// Safety for when a node is deleted during a group call.
+	// For each nested group call the removed nodes are tracked separately (in a stack) because in different group calls the same
+	// pointer can be used for skipping different nodes (in case a node is freed and a new node is allocated at the same address).
+	// Checks for skipping are meant to be done by pointer (hence it's HashMap's key) as that's what groups store (cheaper than IDs?).
+	// To ensure such by pointer checks are correct, IDs of the removed nodes are stored as well (as values) so they can be used to
+	// update `call_skip` properly when a node is being added/removed to/from the tree.
+	Vector<HashMap<Node *, ObjectID>> call_skips_stack;
+	int call_skips_stack_size = 0; // Instead of shrinking the stack, we just `clear()` the popped HashMaps and keep track of the actual stack size.
+	HashMap<Node *, ObjectID> *call_skip = nullptr; // Points to the HashMap from the top of the stack, the one tracking the ongoing group call. Should be used for checks within the group calls. Updated properly when entering/exiting group call lock.
+
+	void _enter_group_call_lock();
+	void _exit_group_call_lock();
 
 	List<ObjectID> delete_queue;
 

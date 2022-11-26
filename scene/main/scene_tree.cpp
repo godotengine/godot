@@ -122,17 +122,37 @@ void SceneTree::tree_changed() {
 }
 
 void SceneTree::node_added(Node *p_node) {
+	ERR_FAIL_NULL(p_node);
+	// Update `call_skip` before emitting the signal so it will be up to date for anything trigerred by the signal.
+	if (call_skip) {
+		// Remove the pointer from `call_skip` only if it still points to the same node that was removed. It allows
+		// such node to still be iterated over during the ongoing group call.
+		// In case it's a new node that was allocated at the address of a previously freed node which were meant to
+		// be skipped, we still want to skip such pointer because during the ongoing group call this pointer refers
+		// to that already freed node.
+		ObjectID *removed_node_id = call_skip->getptr(p_node);
+		if (removed_node_id && (*removed_node_id) == p_node->get_instance_id()) {
+			call_skip->erase(p_node);
+		}
+	}
 	emit_signal(node_added_name, p_node);
 }
 
 void SceneTree::node_removed(Node *p_node) {
+	ERR_FAIL_NULL(p_node);
 	if (current_scene == p_node) {
 		current_scene = nullptr;
 	}
-	emit_signal(node_removed_name, p_node);
-	if (call_lock > 0) {
-		call_skip.insert(p_node);
+	// Update `call_skip` before emitting the signal so it will be up to date for anything trigerred by the signal.
+	if (call_skip) {
+		// Store the pointer to be skipped (and the node's ID) only if it's not yet meant to be skipped. Otherwise
+		// it's pointing to a new node allocated at the pointed address and thus we don't want to overwrite the ID
+		// of the node which was originally meant to be skipped (and which must have been freed by now).
+		if (!call_skip->has(p_node)) {
+			call_skip->insert(p_node, p_node->get_instance_id());
+		}
 	}
+	emit_signal(node_removed_name, p_node);
 }
 
 void SceneTree::node_renamed(Node *p_node) {
@@ -140,6 +160,7 @@ void SceneTree::node_renamed(Node *p_node) {
 }
 
 SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
+	ERR_FAIL_NULL_V(p_node, nullptr);
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		E = group_map.insert(p_group, Group());
@@ -153,6 +174,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 }
 
 void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
+	ERR_FAIL_NULL(p_node);
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	ERR_FAIL_COND(!E);
 
@@ -178,6 +200,24 @@ void SceneTree::flush_transform_notifications() {
 		n = nx;
 		node->notification(NOTIFICATION_TRANSFORM_CHANGED);
 	}
+}
+
+void SceneTree::_enter_group_call_lock() {
+	ERR_FAIL_COND(call_skips_stack_size < 0 || call_skips_stack_size > call_skips_stack.size());
+	if (call_skips_stack_size + 1 > call_skips_stack.size()) {
+		call_skips_stack.push_back(HashMap<Node *, ObjectID>());
+	}
+	call_skip = &call_skips_stack.write[call_skips_stack_size];
+	call_skips_stack_size++;
+}
+
+void SceneTree::_exit_group_call_lock() {
+	ERR_FAIL_NULL(call_skip);
+	ERR_FAIL_COND(call_skips_stack_size < 1 || call_skips_stack_size > call_skips_stack.size());
+	ERR_FAIL_COND(call_skip != &call_skips_stack[call_skips_stack_size - 1]);
+	call_skip->clear();
+	call_skips_stack_size--;
+	call_skip = (call_skips_stack_size == 0) ? nullptr : &call_skips_stack.write[call_skips_stack_size - 1];
 }
 
 void SceneTree::_flush_ugc() {
@@ -257,11 +297,11 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 	Node **gr_nodes = nodes_copy.ptrw();
 	int gr_node_count = nodes_copy.size();
 
-	call_lock++;
+	_enter_group_call_lock();
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_skip && call_skip->has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -275,7 +315,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 
 	} else {
 		for (int i = 0; i < gr_node_count; i++) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_skip && call_skip->has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -288,10 +328,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 		}
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
-	}
+	_exit_group_call_lock();
 }
 
 void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification) {
@@ -310,11 +347,11 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 	Node **gr_nodes = nodes_copy.ptrw();
 	int gr_node_count = nodes_copy.size();
 
-	call_lock++;
+	_enter_group_call_lock();
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_skip && call_skip->has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -327,7 +364,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 
 	} else {
 		for (int i = 0; i < gr_node_count; i++) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_skip && call_skip->has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -339,10 +376,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 		}
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
-	}
+	_exit_group_call_lock();
 }
 
 void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value) {
@@ -361,11 +395,11 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 	Node **gr_nodes = nodes_copy.ptrw();
 	int gr_node_count = nodes_copy.size();
 
-	call_lock++;
+	_enter_group_call_lock();
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_skip && call_skip->has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -378,7 +412,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 
 	} else {
 		for (int i = 0; i < gr_node_count; i++) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (call_skip && call_skip->has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -390,10 +424,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 		}
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
-	}
+	_exit_group_call_lock();
 }
 
 void SceneTree::notify_group(const StringName &p_group, int p_notification) {
@@ -850,11 +881,11 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 	int gr_node_count = nodes_copy.size();
 	Node **gr_nodes = nodes_copy.ptrw();
 
-	call_lock++;
+	_enter_group_call_lock();
 
 	for (int i = 0; i < gr_node_count; i++) {
 		Node *n = gr_nodes[i];
-		if (call_lock && call_skip.has(n)) {
+		if (call_skip && call_skip->has(n)) {
 			continue;
 		}
 
@@ -869,10 +900,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 		//ERR_FAIL_COND(gr_node_count != g.nodes.size());
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
-	}
+	_exit_group_call_lock();
 }
 
 void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
@@ -894,7 +922,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	int gr_node_count = nodes_copy.size();
 	Node **gr_nodes = nodes_copy.ptrw();
 
-	call_lock++;
+	_enter_group_call_lock();
 
 	Vector<ObjectID> no_context_node_ids; // Nodes may be deleted due to this shortcut input.
 
@@ -904,7 +932,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 		}
 
 		Node *n = gr_nodes[i];
-		if (call_lock && call_skip.has(n)) {
+		if (call_skip && call_skip->has(n)) {
 			continue;
 		}
 
@@ -948,10 +976,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 		}
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
-	}
+	_exit_group_call_lock();
 }
 
 void SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
