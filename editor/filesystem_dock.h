@@ -143,8 +143,6 @@ private:
 	DependencyRemoveDialog *remove_dialog = nullptr;
 
 	EditorDirDialog *move_dialog = nullptr;
-	ConfirmationDialog *rename_dialog = nullptr;
-	LineEdit *rename_dialog_text = nullptr;
 	ConfirmationDialog *duplicate_dialog = nullptr;
 	LineEdit *duplicate_dialog_text = nullptr;
 	ConfirmationDialog *make_dir_dialog = nullptr;

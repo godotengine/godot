@@ -386,6 +386,11 @@ public:
 		DROP_MODE_INBETWEEN = 2
 	};
 
+	enum ActivateMode {
+		INLINE_EDIT, ///< Item activations will result in the inline editor activation.
+		EMIT_SIGNAL, ///< Item activations will emit signals.
+	};
+
 private:
 	friend class TreeItem;
 
@@ -424,6 +429,7 @@ private:
 	int popup_edited_item_col = -1;
 	bool hide_root = false;
 	SelectMode select_mode = SELECT_SINGLE;
+	ActivateMode activate_mode = INLINE_EDIT;
 
 	int blocked = 0;
 
@@ -673,6 +679,8 @@ public:
 	SelectMode get_select_mode() const;
 	void deselect_all();
 	bool is_anything_selected();
+	void set_activate_mode(ActivateMode p_mode);
+	ActivateMode get_activate_mode() const;
 
 	void set_columns(int p_columns);
 	int get_columns() const;
@@ -700,6 +708,7 @@ public:
 	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1, int p_button = -1) const;
 	bool edit_selected();
 	bool is_editing();
+	void set_editor_selection(int start, int end);
 
 	// First item that starts with the text, from the current focused item down and wraps around.
 	TreeItem *search_item_text(const String &p_find, int *r_col = nullptr, bool p_selectable = false);

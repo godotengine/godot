@@ -2743,7 +2743,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		if (p_button == MouseButton::LEFT || (p_button == MouseButton::RIGHT && allow_rmb_select)) {
 			/* process selection */
 
-			if (p_double_click && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it's confusing for check
+			if (p_double_click && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON || activate_mode == EMIT_SIGNAL /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it's confusing for check
 				// Emits the "item_activated" signal.
 				propagate_mouse_activated = true;
 
@@ -3322,10 +3322,18 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		ensure_cursor_is_visible();
 	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
 		if (selected_item) {
-			//bring up editor if possible
-			if (!edit_selected()) {
-				emit_signal(SNAME("item_activated"));
-				incr_search.clear();
+			// Bring up editor if mode is selected.
+			switch (activate_mode) {
+				case EMIT_SIGNAL:
+					emit_signal(SNAME("item_activated"));
+					incr_search.clear();
+					break;
+				case INLINE_EDIT:
+					if (!edit_selected()) {
+						emit_signal(SNAME("item_activated"));
+						incr_search.clear();
+					}
+					break;
 			}
 		}
 		accept_event();
@@ -3561,8 +3569,13 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 							mpos.x -= icon_size_x;
 						}
 						if (rect.has_point(mpos)) {
-							if (!edit_selected()) {
-								emit_signal(SNAME("item_double_clicked"));
+							switch (activate_mode) {
+								case EMIT_SIGNAL:
+									emit_signal(SNAME("item_double_clicked"));
+									break;
+								case INLINE_EDIT:
+									edit_selected();
+									break;
 							}
 						} else {
 							emit_signal(SNAME("item_double_clicked"));
@@ -3832,6 +3845,10 @@ bool Tree::edit_selected() {
 
 bool Tree::is_editing() {
 	return popup_editor->is_visible();
+}
+
+void Tree::set_editor_selection(int start, int end) {
+	text_editor->select(start, end);
 }
 
 Size2 Tree::get_internal_min_size() const {
@@ -4236,6 +4253,14 @@ void Tree::deselect_all() {
 
 bool Tree::is_anything_selected() {
 	return (selected_item != nullptr);
+}
+
+void Tree::set_activate_mode(ActivateMode p_mode) {
+	activate_mode = p_mode;
+}
+
+Tree::ActivateMode Tree::get_activate_mode() const {
+	return activate_mode;
 }
 
 void Tree::clear() {

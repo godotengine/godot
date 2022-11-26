@@ -69,9 +69,11 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	// Create a tree item for the subdirectory.
 	TreeItem *subdirectory_item = tree->create_item(p_parent);
+	subdirectory_item->set_editable(0, true);
 	String dname = p_dir->get_name();
 	if (dname.is_empty()) {
 		dname = "res://";
+		subdirectory_item->set_editable(0, false);
 	}
 
 	subdirectory_item->set_text(0, dname);
@@ -147,6 +149,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			file_item->set_text(0, fi.name);
 			file_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type));
+			file_item->set_editable(0, true);
 			String file_metadata = lpath.path_join(fi.name);
 			file_item->set_metadata(0, file_metadata);
 			if (!p_select_in_favorites && path == file_metadata) {
@@ -280,6 +283,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			ti->set_tooltip_text(0, fave);
 			ti->set_selectable(0, true);
 			ti->set_metadata(0, fave);
+			ti->set_editable(0, true);
 			if (p_select_in_favorites && fave == path) {
 				ti->select(0);
 				ti->set_as_cursor(0);
@@ -1562,21 +1566,38 @@ void FileSystemDock::_folder_removed(String p_folder) {
 }
 
 void FileSystemDock::_rename_operation_confirm() {
-	String new_name = rename_dialog_text->get_text().strip_edges();
+	if (!tree->is_anything_selected()) {
+		return;
+	}
+	TreeItem *s = tree->get_selected();
+	int col_index = tree->get_selected_column();
+	String new_name = s->get_text(col_index);
+	String old_name = to_rename.is_file ? to_rename.path.get_file() : to_rename.path.left(-1).get_file();
+
+	bool rename_error = false;
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
+		rename_error = true;
 	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
-		return;
+		rename_error = true;
+	} else if (new_name.begins_with(".")) {
+		EditorNode::get_singleton()->show_warning(TTR("This filename begins with a dot rendering the file invisible to the editor.\nIf you want to rename it anyway, use your operating system's file manager."));
+		rename_error = true;
 	} else if (to_rename.is_file && to_rename.path.get_extension() != new_name.get_extension()) {
 		if (!EditorFileSystem::get_singleton()->get_valid_extensions().find(new_name.get_extension())) {
 			EditorNode::get_singleton()->show_warning(TTR("This file extension is not recognized by the editor.\nIf you want to rename it anyway, use your operating system's file manager.\nAfter renaming to an unknown extension, the file won't be shown in the editor anymore."));
-			return;
+			rename_error = true;
 		}
 	}
 
-	String old_path = to_rename.path.ends_with("/") ? to_rename.path.substr(0, to_rename.path.length() - 1) : to_rename.path;
+	// Restores Tree to restore original names.
+	if (rename_error) {
+		s->set_text(col_index, old_name);
+		return;
+	}
+
+	String old_path = to_rename.path.ends_with("/") ? to_rename.path.left(-1) : to_rename.path;
 	String new_path = old_path.get_base_dir().path_join(new_name);
 	if (old_path == new_path) {
 		return;
@@ -1923,24 +1944,21 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_RENAME: {
-			// Rename the active file.
-			if (!p_selected.is_empty()) {
+			if (tree->is_anything_selected() && !p_selected.is_empty()) {
+				// Set to_rename variable for callback execution.
 				to_rename.path = p_selected[0];
-				if (to_rename.path != "res://") {
-					to_rename.is_file = !to_rename.path.ends_with("/");
-					if (to_rename.is_file) {
-						String name = to_rename.path.get_file();
-						rename_dialog->set_title(TTR("Renaming file:") + " " + name);
-						rename_dialog_text->set_text(name);
-						rename_dialog_text->select(0, name.rfind("."));
-					} else {
-						String name = to_rename.path.substr(0, to_rename.path.length() - 1).get_file();
-						rename_dialog->set_title(TTR("Renaming folder:") + " " + name);
-						rename_dialog_text->set_text(name);
-						rename_dialog_text->select(0, name.length());
-					}
-					rename_dialog->popup_centered(Size2(250, 80) * EDSCALE);
-					rename_dialog_text->grab_focus();
+				to_rename.is_file = !to_rename.path.ends_with("/");
+
+				// Edit node in Tree.
+				tree->grab_focus();
+				tree->edit_selected();
+
+				if (to_rename.is_file) {
+					String name = to_rename.path.get_file();
+					tree->set_editor_selection(0, name.rfind("."));
+				} else {
+					String name = to_rename.path.left(-1).get_file(); // Removes the "/" suffix for folders.
+					tree->set_editor_selection(0, name.length());
 				}
 			}
 		} break;
@@ -3119,6 +3137,7 @@ FileSystemDock::FileSystemDock() {
 	tree->set_drag_forwarding(this);
 	tree->set_allow_rmb_select(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
+	tree->set_activate_mode(Tree::EMIT_SIGNAL);
 	tree->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	split_box->add_child(tree);
 
@@ -3129,6 +3148,7 @@ FileSystemDock::FileSystemDock() {
 	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
 	tree->connect("gui_input", callable_mp(this, &FileSystemDock::_tree_gui_input));
 	tree->connect("mouse_exited", callable_mp(this, &FileSystemDock::_tree_mouse_exited));
+	tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	file_list_vb = memnew(VBoxContainer);
 	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -3189,17 +3209,6 @@ FileSystemDock::FileSystemDock() {
 	move_dialog->set_ok_button_text(TTR("Move"));
 	add_child(move_dialog);
 	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_operation_confirm).bind(false));
-
-	rename_dialog = memnew(ConfirmationDialog);
-	VBoxContainer *rename_dialog_vb = memnew(VBoxContainer);
-	rename_dialog->add_child(rename_dialog_vb);
-
-	rename_dialog_text = memnew(LineEdit);
-	rename_dialog_vb->add_margin_child(TTR("Name:"), rename_dialog_text);
-	rename_dialog->set_ok_button_text(TTR("Rename"));
-	add_child(rename_dialog);
-	rename_dialog->register_text_enter(rename_dialog_text);
-	rename_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	overwrite_dialog = memnew(ConfirmationDialog);
 	overwrite_dialog->set_ok_button_text(TTR("Overwrite"));
