@@ -1419,10 +1419,13 @@ void RendererSceneRenderRD::init() {
 	cull_argument.set_page_pool(&cull_argument_pool);
 
 	bool can_use_storage = _render_buffers_can_be_storage();
+	bool can_use_vrs = is_vrs_supported();
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
 	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
 	tone_mapper = memnew(RendererRD::ToneMapper);
-	vrs = memnew(RendererRD::VRS);
+	if (can_use_vrs) {
+		vrs = memnew(RendererRD::VRS);
+	}
 	if (can_use_storage) {
 		fsr = memnew(RendererRD::FSR);
 	}
