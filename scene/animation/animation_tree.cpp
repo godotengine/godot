@@ -874,7 +874,9 @@ void AnimationTree::_process_graph(double p_delta) {
 	_update_properties(); //if properties need updating, update them
 
 	//check all tracks, see if they need modification
-	root_motion_transform = Transform3D();
+	root_motion_position = Vector3(0, 0, 0);
+	root_motion_rotation = Quaternion(0, 0, 0, 1);
+	root_motion_scale = Vector3(0, 0, 0);
 
 	if (!root.is_valid()) {
 		ERR_PRINT("AnimationTree: root AnimationNode is not set, disabling playback.");
@@ -973,7 +975,7 @@ void AnimationTree::_process_graph(double p_delta) {
 					if (track->root_motion) {
 						t->loc = Vector3(0, 0, 0);
 						t->rot = Quaternion(0, 0, 0, 1);
-						t->scale = Vector3(0, 0, 0);
+						t->scale = Vector3(1, 1, 1);
 					} else {
 						t->loc = t->init_loc;
 						t->rot = t->init_rot;
@@ -1618,11 +1620,9 @@ void AnimationTree::_process_graph(double p_delta) {
 					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
 					if (t->root_motion) {
-						Transform3D xform;
-						xform.origin = t->loc;
-						xform.basis.set_quaternion_scale(t->rot, Vector3(1, 1, 1) + t->scale);
-
-						root_motion_transform = xform;
+						root_motion_position = root_motion_rotation.xform_inv(t->loc);
+						root_motion_rotation = t->rot;
+						root_motion_scale = t->scale - Vector3(1, 1, 1);
 
 					} else if (t->skeleton && t->bone_idx >= 0) {
 						if (t->loc_used) {
@@ -1835,8 +1835,16 @@ NodePath AnimationTree::get_root_motion_track() const {
 	return root_motion_track;
 }
 
-Transform3D AnimationTree::get_root_motion_transform() const {
-	return root_motion_transform;
+Vector3 AnimationTree::get_root_motion_position() const {
+	return root_motion_position;
+}
+
+Quaternion AnimationTree::get_root_motion_rotation() const {
+	return root_motion_rotation;
+}
+
+Vector3 AnimationTree::get_root_motion_scale() const {
+	return root_motion_scale;
 }
 
 void AnimationTree::_tree_changed() {
@@ -1994,7 +2002,9 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_motion_track", "path"), &AnimationTree::set_root_motion_track);
 	ClassDB::bind_method(D_METHOD("get_root_motion_track"), &AnimationTree::get_root_motion_track);
 
-	ClassDB::bind_method(D_METHOD("get_root_motion_transform"), &AnimationTree::get_root_motion_transform);
+	ClassDB::bind_method(D_METHOD("get_root_motion_position"), &AnimationTree::get_root_motion_position);
+	ClassDB::bind_method(D_METHOD("get_root_motion_rotation"), &AnimationTree::get_root_motion_rotation);
+	ClassDB::bind_method(D_METHOD("get_root_motion_scale"), &AnimationTree::get_root_motion_scale);
 
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
 
