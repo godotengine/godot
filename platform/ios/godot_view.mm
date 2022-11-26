@@ -35,7 +35,6 @@
 #include "core/string/ustring.h"
 #import "display_layer.h"
 #include "display_server_ios.h"
-#import "godot_view_gesture_recognizer.h"
 #import "godot_view_renderer.h"
 
 #import <CoreMotion/CoreMotion.h>
@@ -59,8 +58,6 @@ static const float earth_gravity = 9.80665;
 @property(strong, nonatomic) CALayer<DisplayLayer> *renderingLayer;
 
 @property(strong, nonatomic) CMMotionManager *motionManager;
-
-@property(strong, nonatomic) GodotViewGestureRecognizer *delayGestureRecognizer;
 
 @end
 
@@ -148,10 +145,6 @@ static const float earth_gravity = 9.80665;
 		[self.animationTimer invalidate];
 		self.animationTimer = nil;
 	}
-
-	if (self.delayGestureRecognizer) {
-		self.delayGestureRecognizer = nil;
-	}
 }
 
 - (void)godot_commonInit {
@@ -171,11 +164,6 @@ static const float earth_gravity = 9.80665;
 			self.motionManager = nil;
 		}
 	}
-
-	// Initialize delay gesture recognizer
-	GodotViewGestureRecognizer *gestureRecognizer = [[GodotViewGestureRecognizer alloc] init];
-	self.delayGestureRecognizer = gestureRecognizer;
-	[self addGestureRecognizer:self.delayGestureRecognizer];
 }
 
 - (void)stopRendering {
@@ -347,58 +335,42 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)godotTouchesBegan:(NSSet *)touchesSet withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touchesSet containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			CGPoint touchPoint = [touch locationInView:self];
-			DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, true, touch.tapCount > 1);
-		}
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		CGPoint touchPoint = [touch locationInView:self];
+		DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, true, touch.tapCount > 1);
 	}
 }
 
-- (void)godotTouchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			CGPoint touchPoint = [touch locationInView:self];
-			CGPoint prev_point = [touch previousLocationInView:self];
-			CGFloat alt = [touch altitudeAngle];
-			CGVector azim = [touch azimuthUnitVectorInView:self];
-			DisplayServerIOS::get_singleton()->touch_drag(tid, prev_point.x * self.contentScaleFactor, prev_point.y * self.contentScaleFactor, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, [touch force] / [touch maximumPossibleForce], Vector2(azim.dx, azim.dy) * Math::cos(alt));
-		}
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		CGPoint touchPoint = [touch locationInView:self];
+		CGPoint prev_point = [touch previousLocationInView:self];
+		CGFloat alt = [touch altitudeAngle];
+		CGVector azim = [touch azimuthUnitVectorInView:self];
+		DisplayServerIOS::get_singleton()->touch_drag(tid, prev_point.x * self.contentScaleFactor, prev_point.y * self.contentScaleFactor, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, [touch force] / [touch maximumPossibleForce], Vector2(azim.dx, azim.dy) * Math::cos(alt));
 	}
 }
 
-- (void)godotTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			[self removeTouch:touch];
-			CGPoint touchPoint = [touch locationInView:self];
-			DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, false, false);
-		}
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		[self removeTouch:touch];
+		CGPoint touchPoint = [touch locationInView:self];
+		DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, false, false);
 	}
 }
 
-- (void)godotTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			DisplayServerIOS::get_singleton()->touches_canceled(tid);
-		}
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		DisplayServerIOS::get_singleton()->touches_canceled(tid);
 	}
 	[self clearTouches];
 }
