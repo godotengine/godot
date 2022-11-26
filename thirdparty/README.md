@@ -591,7 +591,7 @@ in 10.40, it can be found in the `patches` folder.
 ## recastnavigation
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
-- Version: git (5a870d427e47abd4a8e4ce58a95582ec049434d5, 2022)
+- Version: git (4fef0446609b23d6ac180ed822817571525528a1, 2022)
 - License: zlib
 
 Files extracted from upstream source:

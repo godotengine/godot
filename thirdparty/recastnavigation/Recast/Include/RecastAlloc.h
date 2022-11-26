@@ -112,7 +112,7 @@ class rcVectorBase {
 	typedef rcSizeType size_type;
 	typedef T value_type;
 
-	rcVectorBase() : m_size(0), m_cap(0), m_data(0) {};
+	rcVectorBase() : m_size(0), m_cap(0), m_data(0) {}
 	rcVectorBase(const rcVectorBase<T, H>& other) : m_size(0), m_cap(0), m_data(0) { assign(other.begin(), other.end()); }
 	explicit rcVectorBase(rcSizeType count) : m_size(0), m_cap(0), m_data(0) { resize(count); }
 	rcVectorBase(rcSizeType count, const T& value) : m_size(0), m_cap(0), m_data(0) { resize(count, value); }
@@ -142,8 +142,8 @@ class rcVectorBase {
 
 	const T& front() const { rcAssert(m_size); return m_data[0]; }
 	T& front() { rcAssert(m_size); return m_data[0]; }
-	const T& back() const { rcAssert(m_size); return m_data[m_size - 1]; };
-	T& back() { rcAssert(m_size); return m_data[m_size - 1]; };
+	const T& back() const { rcAssert(m_size); return m_data[m_size - 1]; }
+	T& back() { rcAssert(m_size); return m_data[m_size - 1]; }
 	const T* data() const { return m_data; }
 	T* data() { return m_data; }
 

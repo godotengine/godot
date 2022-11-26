@@ -566,7 +566,6 @@ static bool canRemoveVertex(rcContext* ctx, rcPolyMesh& mesh, const unsigned sho
 	const int nvp = mesh.nvp;
 	
 	// Count number of polygons to remove.
-	int numRemovedVerts = 0;
 	int numTouchedVerts = 0;
 	int numRemainingEdges = 0;
 	for (int i = 0; i < mesh.npolys; ++i)
@@ -586,7 +585,6 @@ static bool canRemoveVertex(rcContext* ctx, rcPolyMesh& mesh, const unsigned sho
 		}
 		if (numRemoved)
 		{
-			numRemovedVerts += numRemoved;
 			numRemainingEdges += numVerts-(numRemoved+1);
 		}
 	}
