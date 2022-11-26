@@ -7,6 +7,7 @@
 #include "core/os/os.h"
 #include "core/math/vector2.h"
 #include "core/ordered_hash_map.h"
+#include "servers/visual_server.h"
 
 // enum SettingsServer::ResolutionSettings;
 typedef Map<int, Vector2> ResolutionList;
@@ -56,10 +57,13 @@ public:
 		RES_2560_1440,
 		RES_3840_2160,
 		RES_4096_2160,
+		RES_69420_69420,
 		RES_HIGHEST,
 
 	};
 private:
+	String rendering_device;
+	
 	Viewport *main_viewport;
 	GraphicsPreset current_gp = GraphicsPreset::GRAPHICS_CUSTOM;
 	DisplaySettings curr_ds = DisplaySettings::WINDOWED;
@@ -110,6 +114,8 @@ public:
 
 	void set_current_display(const uint16_t& display_no);
 	inline int get_current_display() { return current_screen; }
+
+	_FORCE_INLINE_ String get_rendering_device() const { return rendering_device; }
 };
 
 #endif

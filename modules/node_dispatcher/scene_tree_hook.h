@@ -3,6 +3,7 @@
 
 #include "node_dispatcher.h"
 #include "modules/instance_pool/instance_pool.h"
+#include "modules/rts_com/combat_server.h"
 
 class SceneTreeHook {
 public:

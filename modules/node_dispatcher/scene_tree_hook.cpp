@@ -8,6 +8,8 @@ void SceneTreeHook::dispatch_idle(const float& delta){
 }
 
 void SceneTreeHook::dispatch_physics(const float& delta){
-	auto singleton = NodeDispatcher::get_singleton();
-	if (singleton) singleton->dispatch_physics();
+	auto singleton1 = NodeDispatcher::get_singleton();
+	if (singleton1) singleton1->dispatch_physics();
+	auto singleton2 = Sentrience::get_singleton();
+	if (singleton2) singleton2->poll(delta);
 }

@@ -1,7 +1,7 @@
 #ifndef COMBAT_SERVER_H
 #define COMBAT_SERVER_H
 
-#include <stdexcept>
+#include <string>
 
 #include "core/object.h"
 #include "core/rid.h"
@@ -13,9 +13,10 @@ class Sentrience : public Object {
 
 	bool active;
 
-	Vector<RCSSimulation*> active_spaces;
-	Vector<RCSRecording*> active_rec;
-	List<RID> all_rids;
+	VECTOR<RCSSimulation*> active_simulations;
+	VECTOR<RCSRecording*> active_rec;
+	// VECTOR<Ref<RCSUnilateralTeamsBind>> active_team_links;
+	VECTOR<RID> all_rids;
 
 	mutable RID_Owner<RCSRecording> recording_owner;
 	mutable RID_Owner<RCSSimulation> simulation_owner;
@@ -26,7 +27,12 @@ class Sentrience : public Object {
 protected:
 	static void _bind_methods();
 
+	static void log(const String& msg);
+	static void log(const std::string& msg);
+	static void log(const char *msg);
 	static Sentrience* singleton;
+
+	String rid_sort(const RID& target);
 public:
 	Sentrience();
 	~Sentrience();
@@ -38,24 +44,31 @@ public:
 
 	/* Core */
 	_FORCE_INLINE_ void set_active(const bool& is_active) { active = is_active;}
-	virtual void free(const RID& target);
+	_FORCE_INLINE_ bool get_state() const { return active; }
+	virtual void free_rid(const RID& target);
 	void free_all_instances();
 	void flush_instances_pool();
 
 	/* Recording API */
 	virtual RID recording_create();
 	virtual bool recording_assert(const RID& r_rec);
-	virtual bool recording_add_simulation(const RID& r_rec, const RID& r_simul);
-	virtual Array recording_get_simulations(const RID& r_rec);
 	virtual bool recording_start(const RID& r_rec);
 	virtual bool recording_end(const RID& r_rec);
 	virtual bool recording_running(const RID& r_rec);
+	virtual void recording_purge(const RID& r_rec);
 
 	/* Simulation API */
 	virtual RID simulation_create();
 	virtual bool simulation_assert(const RID& r_simul);
 	virtual void simulation_set_active(const RID& r_simul, const bool& p_active);
 	virtual bool simulation_is_active(const RID& r_simul);
+	virtual void simulation_bind_recording(const RID& r_simul, const RID& r_rec);
+	virtual void simulation_unbind_recording(const RID& r_simul);
+	virtual uint32_t simulation_count_combatant(const RID& r_simul);
+	virtual uint32_t simulation_count_squad(const RID& r_simul);
+	virtual uint32_t simulation_count_team(const RID& r_simul);
+	virtual uint32_t simulation_count_radar(const RID& r_simul);
+	virtual uint32_t simulation_count_all_instances(const RID& r_simul);
 
 	/* Combatant API */
 	virtual RID combatant_create();
@@ -72,6 +85,11 @@ public:
 	virtual void combatant_set_stand(const RID& r_com, const uint32_t& stand);
 	virtual uint32_t combatant_get_stand(const RID& r_com);
 	virtual uint32_t combatant_get_status(const RID& r_com);
+	virtual void combatant_set_iid(const RID& r_com, const uint64_t& iid);
+	virtual uint64_t combatant_get_iid(const RID& r_com);
+	virtual void combatant_set_detection_meter(const RID& r_com, const double& dmeter);
+	virtual double combatant_get_detection_meter(const RID& r_com);
+	virtual bool combatant_engagable(const RID& from, const RID& to);
 	virtual void combatant_bind_chip(const RID& r_com, const Ref<RCSChip>& chip, const bool& auto_unbind);
 	virtual void combatant_unbind_chip(const RID& r_com);
 	virtual void combatant_set_profile(const RID& r_com, const Ref<RCSCombatantProfile>& profile);
@@ -86,6 +104,8 @@ public:
 	virtual void squad_add_combatant(const RID& r_squad, const RID& r_com);
 	virtual void squad_remove_combatant(const RID& r_squad, const RID& r_com);
 	virtual bool squad_has_combatant(const RID& r_squad, const RID& r_com);
+	virtual bool squad_engagable(const RID& from, const RID& to);
+	virtual uint32_t squad_count_combatant(const RID& r_squad);
 	virtual void squad_bind_chip(const RID& r_com, const Ref<RCSChip>& chip, const bool& auto_unbind);
 	virtual void squad_unbind_chip(const RID& r_com);
 
@@ -97,6 +117,15 @@ public:
 	virtual void team_add_squad(const RID& r_team, const RID& r_squad);
 	virtual void team_remove_squad(const RID& r_team, const RID& r_squad);
 	virtual bool team_has_squad(const RID& r_team, const RID& r_squad);
+	virtual bool team_engagable(const RID& from, const RID& to);
+	virtual Ref<RCSUnilateralTeamsBind> team_create_link(const RID& from, const RID& to);
+	virtual void team_create_link_bilateral(const RID& from, const RID& to);
+	virtual Ref<RCSUnilateralTeamsBind> team_get_link(const RID& from, const RID& to);
+	virtual bool team_has_link(const RID& from, const RID& to);
+	virtual bool team_unlink(const RID& from, const RID& to);
+	virtual bool team_unlink_bilateral(const RID& from, const RID& to);
+	virtual void team_purge_links_multilateral(const RID& from);
+	virtual uint32_t team_count_squad(const RID& r_team);
 	virtual void team_bind_chip(const RID& r_team, const Ref<RCSChip>& chip, const bool& auto_unbind);
 	virtual void team_unbind_chip(const RID& r_team);
 

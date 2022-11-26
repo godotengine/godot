@@ -122,13 +122,24 @@ public:
 		return _ptr;
 	}
 
+// #define COWDATA_FIX
+#ifdef COWDATA_FIX
+#define caster static_cast
+#endif
+
 	_FORCE_INLINE_ int size() const {
+#ifdef COWDATA_FIX
+		uint32_t *size = caster<uint32_t *>(_get_size());
+		if (size) return caster<uint32_t>(*size);
+		else return 0;
+#else
 		uint32_t *size = (uint32_t *)_get_size();
 		if (size) {
 			return *size;
 		} else {
 			return 0;
 		}
+#endif
 	}
 
 	_FORCE_INLINE_ void clear() { resize(0); }

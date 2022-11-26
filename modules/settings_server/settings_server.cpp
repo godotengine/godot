@@ -18,6 +18,7 @@ VARIANT_ENUM_CAST(SettingsServer::ResolutionSettings);
 SettingsServer::SettingsServer(){
 	ERR_FAIL_COND(singleton);
 	singleton = this;
+	rendering_device = VisualServer::get_singleton()->get_video_adapter_name();
 
 	// Setup resolutions
 	acceptable_resolution[RES_CUSTOM]		= Vector2(0.0, 0.0);
@@ -35,6 +36,7 @@ SettingsServer::SettingsServer(){
 	acceptable_resolution[RES_2560_1440]	= Vector2(2560, 1440);
 	acceptable_resolution[RES_3840_2160]	= Vector2(3840, 2160);
 	acceptable_resolution[RES_4096_2160]	= Vector2(4096, 2160);
+	acceptable_resolution[RES_69420_69420]  = Vector2(69420, 69420);
 	acceptable_resolution[RES_HIGHEST]		= acceptable_resolution[RES_4096_2160];
 
 	reset_screen_info();
@@ -50,6 +52,8 @@ SettingsServer::SettingsServer(){
 SettingsServer::~SettingsServer(){}
 
 void SettingsServer::_bind_methods(){
+	ClassDB::bind_method(D_METHOD("get_rendering_device"), &SettingsServer::get_rendering_device);
+
 	// ClassDB::bind_method(D_METHOD("set_main_viewport", "viewport"), &SettingsServer::set_main_viewport);
 	ClassDB::bind_method(D_METHOD("get_main_viewport"), &SettingsServer::get_main_viewport);
 	
@@ -119,6 +123,7 @@ void SettingsServer::_bind_methods(){
 	BIND_ENUM_CONSTANT(RES_2560_1440);
 	BIND_ENUM_CONSTANT(RES_3840_2160);
 	BIND_ENUM_CONSTANT(RES_4096_2160);
+	BIND_ENUM_CONSTANT(RES_69420_69420);
 	BIND_ENUM_CONSTANT(RES_HIGHEST);
 
 	// ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_viewport", PROPERTY_HINT_NONE), "set_main_viewport", "get_main_viewport");
