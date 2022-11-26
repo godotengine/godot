@@ -582,6 +582,7 @@ void EditorSpinSlider::_value_focus_exited() {
 		//tab was pressed
 	} else {
 		//enter, click, esc
+		grab_focus();
 	}
 }
 
