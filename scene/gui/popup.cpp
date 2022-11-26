@@ -227,7 +227,7 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 		ms.y = MAX(cms.y, ms.y);
 	}
 
-	return ms + theme_cache.panel_style->get_minimum_size();
+	return get_canvas_transform().get_scale() * (ms + theme_cache.panel_style->get_minimum_size());
 }
 
 void PopupPanel::_update_child_rects() {

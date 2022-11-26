@@ -1021,7 +1021,7 @@ Size2 Window::_get_contents_minimum_size() const {
 		}
 	}
 
-	return max;
+	return get_canvas_transform().get_scale() * max;
 }
 
 void Window::_update_child_controls() {

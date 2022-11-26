@@ -95,6 +95,8 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		minsize.width += check_w;
 	}
 
+	minsize = get_canvas_transform().get_scale() * minsize;
+
 	if (is_inside_tree()) {
 		int height_limit = get_usable_parent_rect().size.height;
 		if (minsize.height > height_limit) {

@@ -276,6 +276,9 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	// Plus there is a separation size added on top.
 	content_minsize.y += theme_cache.buttons_separation;
 
+	// Now adjust according to the viewport scale.
+	content_minsize = get_canvas_transform().get_scale() * content_minsize;
+
 	// Last, we make sure that we aren't below the minimum window size.
 	Size2 window_minsize = get_min_size();
 	content_minsize.x = MAX(window_minsize.x, content_minsize.x);
