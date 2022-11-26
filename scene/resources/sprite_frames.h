@@ -36,10 +36,15 @@
 class SpriteFrames : public Resource {
 	GDCLASS(SpriteFrames, Resource);
 
+	struct Frame {
+		Ref<Texture2D> texture;
+		float duration = 1.0;
+	};
+
 	struct Anim {
 		double speed = 5.0;
 		bool loop = true;
-		Vector<Ref<Texture2D>> frames;
+		Vector<Frame> frames;
 	};
 
 	HashMap<StringName, Anim> animations;
@@ -65,9 +70,13 @@ public:
 	void set_animation_loop(const StringName &p_anim, bool p_loop);
 	bool get_animation_loop(const StringName &p_anim) const;
 
-	void add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos = -1);
+	void add_frame(const StringName &p_anim, const Ref<Texture2D> &p_texture, float p_duration = 1.0, int p_at_pos = -1);
+	void set_frame(const StringName &p_anim, int p_idx, const Ref<Texture2D> &p_texture, float p_duration = 1.0);
+	void remove_frame(const StringName &p_anim, int p_idx);
+
 	int get_frame_count(const StringName &p_anim) const;
-	_FORCE_INLINE_ Ref<Texture2D> get_frame(const StringName &p_anim, int p_idx) const {
+
+	_FORCE_INLINE_ Ref<Texture2D> get_frame_texture(const StringName &p_anim, int p_idx) const {
 		HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 		ERR_FAIL_COND_V_MSG(!E, Ref<Texture2D>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture2D>());
@@ -75,19 +84,20 @@ public:
 			return Ref<Texture2D>();
 		}
 
-		return E->value.frames[p_idx];
+		return E->value.frames[p_idx].texture;
 	}
 
-	void set_frame(const StringName &p_anim, int p_idx, const Ref<Texture2D> &p_frame) {
-		HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
-		ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
-		ERR_FAIL_COND(p_idx < 0);
+	_FORCE_INLINE_ float get_frame_duration(const StringName &p_anim, int p_idx) const {
+		HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
+		ERR_FAIL_COND_V_MSG(!E, 0.0, "Animation '" + String(p_anim) + "' doesn't exist.");
+		ERR_FAIL_COND_V(p_idx < 0, 0.0);
 		if (p_idx >= E->value.frames.size()) {
-			return;
+			return 0.0;
 		}
-		E->value.frames.write[p_idx] = p_frame;
+
+		return E->value.frames[p_idx].duration;
 	}
-	void remove_frame(const StringName &p_anim, int p_idx);
+
 	void clear(const StringName &p_anim);
 	void clear_all();
 
