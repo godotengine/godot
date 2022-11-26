@@ -589,7 +589,7 @@
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
-			<param index="1" name="usage_flags" type="int" />
+			<param index="1" name="usage_flags" type="int" enum="RenderingDevice.TextureUsageBits" />
 			<description>
 			</description>
 		</method>
@@ -1193,25 +1193,25 @@
 		</constant>
 		<constant name="TEXTURE_SAMPLES_MAX" value="7" enum="TextureSamples">
 		</constant>
-		<constant name="TEXTURE_USAGE_SAMPLING_BIT" value="1" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_SAMPLING_BIT" value="1" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_COLOR_ATTACHMENT_BIT" value="2" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_COLOR_ATTACHMENT_BIT" value="2" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_STORAGE_ATOMIC_BIT" value="16" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_STORAGE_ATOMIC_BIT" value="16" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_CPU_READ_BIT" value="32" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CPU_READ_BIT" value="32" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_CAN_UPDATE_BIT" value="64" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CAN_UPDATE_BIT" value="64" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_CAN_COPY_FROM_BIT" value="128" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CAN_COPY_FROM_BIT" value="128" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_INPUT_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_INPUT_ATTACHMENT_BIT" value="512" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_IDENTITY" value="0" enum="TextureSwizzle">
 		</constant>
