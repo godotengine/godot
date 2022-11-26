@@ -666,9 +666,6 @@
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
 		</member>
-		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.15">
-			Default delay for touch events. This only affects iOS devices.
-		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
 		</member>

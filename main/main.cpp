@@ -1284,11 +1284,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("display/window/ios/hide_status_bar", true);
 	GLOBAL_DEF("display/window/ios/suppress_ui_gesture", true);
-	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.15);
-	ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pointing/ios/touch_delay",
-			PropertyInfo(Variant::REAL,
-					"input_devices/pointing/ios/touch_delay",
-					PROPERTY_HINT_RANGE, "0,1,0.001"));
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
