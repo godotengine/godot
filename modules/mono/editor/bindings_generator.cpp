@@ -2274,7 +2274,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			p_output.append(");\n");
 
 			// Generate Callable trampoline for the delegate
-			p_output << MEMBER_BEGIN "private static unsafe void " << p_isignal.proxy_name << "Trampoline"
+			p_output << MEMBER_BEGIN "private static void " << p_isignal.proxy_name << "Trampoline"
 					 << "(object delegateObj, NativeVariantPtrArgs args, out godot_variant ret)\n"
 					 << INDENT1 "{\n"
 					 << INDENT2 "Callable.ThrowIfArgCountMismatch(args, " << itos(p_isignal.arguments.size()) << ");\n"
@@ -2289,9 +2289,8 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 					p_output << ",";
 				}
 
-				// TODO: We don't need to use VariantConversionCallbacks. We have the type information so we can use [cs_variant_to_managed] and [cs_managed_to_variant].
-				p_output << "\n" INDENT3 "VariantConversionCallbacks.GetToManagedCallback<"
-						 << arg_type->cs_type << ">()(args[" << itos(idx) << "])";
+				p_output << sformat(arg_type->cs_variant_to_managed,
+						"args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name);
 
 				idx++;
 			}

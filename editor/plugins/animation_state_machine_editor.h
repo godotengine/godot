@@ -39,7 +39,6 @@
 
 class ConfirmationDialog;
 class EditorFileDialog;
-class EditorUndoRedoManager;
 class OptionButton;
 class PanelContainer;
 
@@ -79,8 +78,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Label *error_label = nullptr;
 
 	bool updating = false;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	static AnimationNodeStateMachineEditor *singleton;
 

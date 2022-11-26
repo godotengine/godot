@@ -242,6 +242,7 @@ class Curve3D : public Resource {
 	mutable PackedVector3Array baked_point_cache;
 	mutable Vector<real_t> baked_tilt_cache;
 	mutable PackedVector3Array baked_up_vector_cache;
+	mutable PackedVector3Array baked_forward_vector_cache;
 	mutable Vector<real_t> baked_dist_cache;
 	mutable real_t baked_max_ofs = 0.0;
 
@@ -262,6 +263,7 @@ class Curve3D : public Resource {
 	bool up_vector_enabled = true;
 
 	void _bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
+	void _bake_segment3d_even_length(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_length) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
@@ -271,6 +273,8 @@ class Curve3D : public Resource {
 
 	void _add_point(const Vector3 &p_position, const Vector3 &p_in = Vector3(), const Vector3 &p_out = Vector3(), int p_atpos = -1);
 	void _remove_point(int p_index);
+
+	Vector<RBMap<real_t, Vector3>> _tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const;
 
 protected:
 	static void _bind_methods();
@@ -309,7 +313,8 @@ public:
 	Vector3 get_closest_point(const Vector3 &p_to_point) const;
 	real_t get_closest_offset(const Vector3 &p_to_point) const;
 
-	PackedVector3Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; //useful for display
+	PackedVector3Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; // Useful for display.
+	PackedVector3Array tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const; // Useful for baking.
 
 	Curve3D();
 };

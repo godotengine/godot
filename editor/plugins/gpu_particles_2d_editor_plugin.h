@@ -40,7 +40,6 @@
 class CheckBox;
 class ConfirmationDialog;
 class EditorFileDialog;
-class EditorUndoRedoManager;
 class MenuButton;
 class OptionButton;
 
@@ -80,7 +79,6 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 
 	String source_emission_file;
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	void _file_selected(const String &p_file);
 	void _menu_callback(int p_idx);
 	void _generate_visibility_rect();

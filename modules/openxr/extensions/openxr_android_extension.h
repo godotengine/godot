@@ -41,11 +41,14 @@ public:
 	OpenXRAndroidExtension(OpenXRAPI *p_openxr_api);
 
 	virtual void on_before_instance_created() override;
+	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) override;
 
 	virtual ~OpenXRAndroidExtension() override;
 
 private:
 	static OpenXRAndroidExtension *singleton;
+
+	bool create_instance_extension_available = false;
 
 	// Initialize the loader
 	EXT_PROTO_XRRESULT_FUNC1(xrInitializeLoaderKHR, (const XrLoaderInitInfoBaseHeaderKHR *), loaderInitInfo)

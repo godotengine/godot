@@ -322,8 +322,52 @@ struct VariantUtilityFunctions {
 		return Math::step_decimals(step);
 	}
 
-	static inline double snapped(double value, double step) {
-		return Math::snapped(value, step);
+	static inline Variant snapped(const Variant &x, const Variant &step, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_OK;
+		if (x.get_type() != step.get_type() && !((x.get_type() == Variant::INT && step.get_type() == Variant::FLOAT) || (x.get_type() == Variant::FLOAT && step.get_type() == Variant::INT))) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			return Variant();
+		}
+
+		switch (step.get_type()) {
+			case Variant::INT: {
+				return snappedi(x, VariantInternalAccessor<int64_t>::get(&step));
+			} break;
+			case Variant::FLOAT: {
+				return snappedf(x, VariantInternalAccessor<double>::get(&step));
+			} break;
+			case Variant::VECTOR2: {
+				return VariantInternalAccessor<Vector2>::get(&x).snapped(VariantInternalAccessor<Vector2>::get(&step));
+			} break;
+			case Variant::VECTOR2I: {
+				return VariantInternalAccessor<Vector2i>::get(&x).snapped(VariantInternalAccessor<Vector2i>::get(&step));
+			} break;
+			case Variant::VECTOR3: {
+				return VariantInternalAccessor<Vector3>::get(&x).snapped(VariantInternalAccessor<Vector3>::get(&step));
+			} break;
+			case Variant::VECTOR3I: {
+				return VariantInternalAccessor<Vector3i>::get(&x).snapped(VariantInternalAccessor<Vector3i>::get(&step));
+			} break;
+			case Variant::VECTOR4: {
+				return VariantInternalAccessor<Vector4>::get(&x).snapped(VariantInternalAccessor<Vector4>::get(&step));
+			} break;
+			case Variant::VECTOR4I: {
+				return VariantInternalAccessor<Vector4i>::get(&x).snapped(VariantInternalAccessor<Vector4i>::get(&step));
+			} break;
+			default: {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+				return Variant();
+			}
+		}
+	}
+
+	static inline double snappedf(double x, double step) {
+		return Math::snapped(x, step);
+	}
+
+	static inline int64_t snappedi(double x, int64_t step) {
+		return Math::snapped(x, step);
 	}
 
 	static inline Variant lerp(const Variant &from, const Variant &to, double weight, Callable::CallError &r_error) {
@@ -390,6 +434,10 @@ struct VariantUtilityFunctions {
 
 	static inline double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
 		return Math::bezier_interpolate(p_start, p_control_1, p_control_2, p_end, p_t);
+	}
+
+	static inline double bezier_derivative(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
+		return Math::bezier_derivative(p_start, p_control_1, p_control_2, p_end, p_t);
 	}
 
 	static inline double lerp_angle(double from, double to, double weight) {
@@ -1135,6 +1183,40 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 	};                                                                                                                  \
 	register_utility_function<Func_##m_func>(#m_func, m_args)
 
+#define FUNCBINDVR2(m_func, m_args, m_category)                                                                                    \
+	class Func_##m_func {                                                                                                          \
+	public:                                                                                                                        \
+		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {                   \
+			r_error.error = Callable::CallError::CALL_OK;                                                                          \
+			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], *p_args[1], r_error);                                             \
+		}                                                                                                                          \
+		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                                       \
+			Callable::CallError ce;                                                                                                \
+			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], *p_args[1], ce);                                                  \
+		}                                                                                                                          \
+		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                                      \
+			Callable::CallError ce;                                                                                                \
+			Variant r;                                                                                                             \
+			r = VariantUtilityFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), PtrToArg<Variant>::convert(p_args[1]), ce); \
+			PtrToArg<Variant>::encode(r, ret);                                                                                     \
+		}                                                                                                                          \
+		static int get_argument_count() {                                                                                          \
+			return 2;                                                                                                              \
+		}                                                                                                                          \
+		static Variant::Type get_argument_type(int p_arg) {                                                                        \
+			return Variant::NIL;                                                                                                   \
+		}                                                                                                                          \
+		static Variant::Type get_return_type() {                                                                                   \
+			return Variant::NIL;                                                                                                   \
+		}                                                                                                                          \
+		static bool has_return_type() {                                                                                            \
+			return true;                                                                                                           \
+		}                                                                                                                          \
+		static bool is_vararg() { return false; }                                                                                  \
+		static Variant::UtilityFunctionType get_type() { return m_category; }                                                      \
+	};                                                                                                                             \
+	register_utility_function<Func_##m_func>(#m_func, m_args)
+
 #define FUNCBINDVR3(m_func, m_args, m_category)                                                                                                                           \
 	class Func_##m_func {                                                                                                                                                 \
 	public:                                                                                                                                                               \
@@ -1418,6 +1500,10 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(signf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(signi, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
+	FUNCBINDVR2(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(snappedf, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(snappedi, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
+
 	FUNCBINDR(pow, sarray("base", "exp"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(log, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(exp, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1431,7 +1517,6 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVR3(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerpf, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1440,6 +1525,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(cubic_interpolate_in_time, sarray("from", "to", "pre", "post", "weight", "to_t", "pre_t", "post_t"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(cubic_interpolate_angle_in_time, sarray("from", "to", "pre", "post", "weight", "to_t", "pre_t", "post_t"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(bezier_interpolate, sarray("start", "control_1", "control_2", "end", "t"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(bezier_derivative, sarray("start", "control_1", "control_2", "end", "t"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(inverse_lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(remap, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);

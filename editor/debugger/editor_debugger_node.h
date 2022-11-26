@@ -63,7 +63,6 @@ private:
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
-		DEBUG_KEEP_DEBUGGER_OPEN,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 	};
 
@@ -110,7 +109,9 @@ private:
 	float remote_scene_tree_timeout = 0.0;
 	bool auto_switch_remote_scene_tree = false;
 	bool debug_with_external_editor = false;
-	bool hide_on_stop = true;
+	bool keep_open = false;
+	String current_uri;
+
 	CameraOverride camera_override = OVERRIDE_NONE;
 	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
 
@@ -203,8 +204,9 @@ public:
 
 	String get_server_uri() const;
 
+	void set_keep_open(bool p_keep_open);
 	Error start(const String &p_uri = "tcp://");
-	void stop();
+	void stop(bool p_force = false);
 
 	bool plugins_capture(ScriptEditorDebugger *p_debugger, const String &p_message, const Array &p_data);
 	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
