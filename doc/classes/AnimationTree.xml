@@ -19,10 +19,66 @@
 				Manually advance the animations by the specified time (in seconds).
 			</description>
 		</method>
-		<method name="get_root_motion_transform" qualifiers="const">
-			<return type="Transform3D" />
+		<method name="get_root_motion_position" qualifiers="const">
+			<return type="Vector3" />
 			<description>
-				Retrieve the motion of the [member root_motion_track] as a [Transform3D] that can be used elsewhere. If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_SCALE_3D] or [constant Animation.TYPE_ROTATION_3D], returns an identity transformation. See also [member root_motion_track] and [RootMotionView].
+				Retrieve the motion of position with the [member root_motion_track] as a [Vector3] that can be used elsewhere.
+				If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_POSITION_3D], returns [code]Vector3(0, 0, 0)[/code].
+				See also [member root_motion_track] and [RootMotionView].
+				The most basic example is applying position to [CharacterBody3D]:
+				[codeblocks]
+				[gdscript]
+				var current_rotation: Quaternion
+
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        current_rotation = get_quaternion()
+				        state_machine.travel("Animate")
+				    var velocity: Vector3 = current_rotation * animation_tree.get_root_motion_position() / delta
+				    set_velocity(velocity)
+				    move_and_slide()
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_root_motion_rotation" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
+				Retrieve the motion of rotation with the [member root_motion_track] as a [Quaternion] that can be used elsewhere.
+				If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_ROTATION_3D], returns [code]Quaternion(0, 0, 0, 1)[/code].
+				See also [member root_motion_track] and [RootMotionView].
+				The most basic example is applying rotation to [CharacterBody3D]:
+				[codeblocks]
+				[gdscript]
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        state_machine.travel("Animate")
+				    set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_root_motion_scale" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Retrieve the motion of scale with the [member root_motion_track] as a [Vector3] that can be used elsewhere.
+				If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_SCALE_3D], returns [code]Vector3(0, 0, 0)[/code].
+				See also [member root_motion_track] and [RootMotionView].
+				The most basic example is applying scale to [CharacterBody3D]:
+				[codeblocks]
+				[gdscript]
+				var current_scale: Vector3 = Vector3(1, 1, 1)
+				var scale_accum: Vector3 = Vector3(1, 1, 1)
+
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        current_scale = get_scale()
+				        scale_accum = Vector3(1, 1, 1)
+				        state_machine.travel("Animate")
+				    scale_accum += animation_tree.get_root_motion_scale()
+				    set_scale(current_scale * scale_accum)
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="rename_parameter">
@@ -48,7 +104,7 @@
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
 			The path to the Animation track used for root motion. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. To specify a track that controls properties or bones, append its name after the path, separated by [code]":"[/code]. For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
-			If the track has type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_ROTATION_3D] or [constant Animation.TYPE_SCALE_3D] the transformation will be cancelled visually, and the animation will appear to stay in place. See also [method get_root_motion_transform] and [RootMotionView].
+			If the track has type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_ROTATION_3D] or [constant Animation.TYPE_SCALE_3D] the transformation will be cancelled visually, and the animation will appear to stay in place. See also [method get_root_motion_position], [method get_root_motion_rotation], [method get_root_motion_scale] and [RootMotionView].
 		</member>
 		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root">
 			The root animation node of this [AnimationTree]. See [AnimationNode].
