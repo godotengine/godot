@@ -538,20 +538,19 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	if (Object::cast_to<ConvexPolygonShape3D>(*s)) {
 		Vector<Vector3> points = Object::cast_to<ConvexPolygonShape3D>(*s)->get_points();
 
-		if (points.size() > 3) {
+		if (points.size() > 1) { // Need at least 2 points for a line.
 			Vector<Vector3> varr = Variant(points);
 			Geometry3D::MeshData md;
 			Error err = ConvexHullComputer::convex_hull(varr, md);
 			if (err == OK) {
-				Vector<Vector3> points2;
-				points2.resize(md.edges.size() * 2);
+				Vector<Vector3> lines;
+				lines.resize(md.edges.size() * 2);
 				for (uint32_t i = 0; i < md.edges.size(); i++) {
-					points2.write[i * 2 + 0] = md.vertices[md.edges[i].vertex_a];
-					points2.write[i * 2 + 1] = md.vertices[md.edges[i].vertex_b];
+					lines.write[i * 2 + 0] = md.vertices[md.edges[i].vertex_a];
+					lines.write[i * 2 + 1] = md.vertices[md.edges[i].vertex_b];
 				}
-
-				p_gizmo->add_lines(points2, material);
-				p_gizmo->add_collision_segments(points2);
+				p_gizmo->add_lines(lines, material);
+				p_gizmo->add_collision_segments(lines);
 			}
 		}
 	}
