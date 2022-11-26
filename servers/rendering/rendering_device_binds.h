@@ -66,7 +66,7 @@ public:
 	RD_SETGET(uint32_t, mipmaps)
 	RD_SETGET(RD::TextureType, texture_type)
 	RD_SETGET(RD::TextureSamples, samples)
-	RD_SETGET(uint32_t, usage_bits)
+	RD_SETGET(BitField<RenderingDevice::TextureUsageBits>, usage_bits)
 
 	void add_shareable_format(RD::DataFormat p_format) { base.shareable_formats.push_back(p_format); }
 	void remove_shareable_format(RD::DataFormat p_format) { base.shareable_formats.erase(p_format); }

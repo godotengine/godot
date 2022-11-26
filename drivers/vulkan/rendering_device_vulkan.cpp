@@ -3355,7 +3355,7 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 	return OK;
 }
 
-bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const {
+bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_format, BitField<RenderingDevice::TextureUsageBits> p_usage) const {
 	ERR_FAIL_INDEX_V(p_format, DATA_FORMAT_MAX, false);
 
 	_THREAD_SAFE_METHOD_
@@ -3365,34 +3365,34 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 	vkGetPhysicalDeviceFormatProperties(context->get_physical_device(), vulkan_formats[p_format], &properties);
 	VkFormatFeatureFlags flags;
 
-	if (p_usage & TEXTURE_USAGE_CPU_READ_BIT) {
+	if (p_usage.has_flag(TEXTURE_USAGE_CPU_READ_BIT)) {
 		flags = properties.linearTilingFeatures;
 	} else {
 		flags = properties.optimalTilingFeatures;
 	}
 
-	if (p_usage & TEXTURE_USAGE_SAMPLING_BIT && !(flags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)) {
+	if (p_usage.has_flag(TEXTURE_USAGE_SAMPLING_BIT) && !(flags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)) {
 		return false;
 	}
 
-	if (p_usage & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT)) {
+	if (p_usage.has_flag(TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) && !(flags & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT)) {
 		return false;
 	}
 
-	if (p_usage & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+	if (p_usage.has_flag(TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) && !(flags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
 		return false;
 	}
 
-	if (p_usage & TEXTURE_USAGE_STORAGE_BIT && !(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
+	if (p_usage.has_flag(TEXTURE_USAGE_STORAGE_BIT) && !(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
 		return false;
 	}
 
-	if (p_usage & TEXTURE_USAGE_STORAGE_ATOMIC_BIT && !(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)) {
+	if (p_usage.has_flag(TEXTURE_USAGE_STORAGE_ATOMIC_BIT) && !(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)) {
 		return false;
 	}
 
 	// Validation via VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR fails if VRS attachment is not supported.
-	if (p_usage & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && p_format != DATA_FORMAT_R8_UINT) {
+	if (p_usage.has_flag(TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && p_format != DATA_FORMAT_R8_UINT) {
 		return false;
 	}
 

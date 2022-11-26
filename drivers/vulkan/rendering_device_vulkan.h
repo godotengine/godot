@@ -1055,7 +1055,7 @@ public:
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
-	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
+	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<RenderingDevice::TextureUsageBits> p_usage) const;
 	virtual bool texture_is_shared(RID p_texture);
 	virtual bool texture_is_valid(RID p_texture);
 	virtual Size2i texture_size(RID p_texture);

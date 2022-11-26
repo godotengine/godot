@@ -535,7 +535,7 @@ public:
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) = 0; // CPU textures will return immediately, while GPU textures will most likely force a flush
 
-	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const = 0;
+	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<RenderingDevice::TextureUsageBits> p_usage) const = 0;
 	virtual bool texture_is_shared(RID p_texture) = 0;
 	virtual bool texture_is_valid(RID p_texture) = 0;
 	virtual Size2i texture_size(RID p_texture) = 0;
@@ -1340,7 +1340,7 @@ VARIANT_ENUM_CAST(RenderingDevice::DataFormat)
 VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);
 VARIANT_ENUM_CAST(RenderingDevice::TextureType)
 VARIANT_ENUM_CAST(RenderingDevice::TextureSamples)
-VARIANT_ENUM_CAST(RenderingDevice::TextureUsageBits)
+VARIANT_BITFIELD_CAST(RenderingDevice::TextureUsageBits)
 VARIANT_ENUM_CAST(RenderingDevice::TextureSwizzle)
 VARIANT_ENUM_CAST(RenderingDevice::TextureSliceType)
 VARIANT_ENUM_CAST(RenderingDevice::SamplerFilter)
