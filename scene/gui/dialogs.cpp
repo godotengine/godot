@@ -106,6 +106,8 @@ bool WindowDialog::has_point(const Point2 &p_point) const {
 }
 
 void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {

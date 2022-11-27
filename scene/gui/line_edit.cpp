@@ -49,6 +49,8 @@ static bool _is_text_char(CharType c) {
 }
 
 void LineEdit::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {

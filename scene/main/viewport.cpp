@@ -1414,6 +1414,8 @@ void Viewport::_vp_input_text(const String &p_text) {
 }
 
 void Viewport::_vp_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
+
 	if (disable_input) {
 		return;
 	}
@@ -1436,6 +1438,8 @@ void Viewport::_vp_input(const Ref<InputEvent> &p_ev) {
 }
 
 void Viewport::_vp_unhandled_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
+
 	if (disable_input) {
 		return;
 	}

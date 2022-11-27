@@ -88,6 +88,8 @@ void ScrollContainer::_cancel_drag() {
 }
 
 void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
+	ERR_FAIL_COND(p_gui_input.is_null());
+
 	double prev_v_scroll = v_scroll->get_value();
 	double prev_h_scroll = h_scroll->get_value();
 
