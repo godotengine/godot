@@ -2665,8 +2665,7 @@ void fragment() {
 shader_type canvas_item;
 
 void fragment() {
-	vec4 c = textureLod(SCREEN_TEXTURE, SCREEN_UV, 0.0);
-	COLOR.rgb = c.rgb;
+	COLOR = textureLod(SCREEN_TEXTURE, SCREEN_UV, 0.0);
 }
 )");
 		default_clip_children_material = material_storage->material_allocate();
