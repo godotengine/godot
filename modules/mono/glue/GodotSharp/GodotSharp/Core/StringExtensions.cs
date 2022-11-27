@@ -75,6 +75,7 @@ namespace Godot
         /// <param name="instance">The string to check.</param>
         /// <param name="text">The beginning string.</param>
         /// <returns>If the string begins with the given string.</returns>
+        [Obsolete("Use string.StartsWith instead.")]
         public static bool BeginsWith(this string instance, string text)
         {
             return instance.StartsWith(text);
@@ -500,18 +501,6 @@ namespace Godot
                     toIndex++;
                 }
             }
-        }
-
-        /// <summary>
-        /// Returns <see langword="true"/> if the strings ends
-        /// with the given string <paramref name="text"/>.
-        /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="text">The ending string.</param>
-        /// <returns>If the string ends with the given string.</returns>
-        public static bool EndsWith(this string instance, string text)
-        {
-            return instance.EndsWith(text);
         }
 
         /// <summary>
@@ -1210,19 +1199,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Formats a string to be at least <paramref name="minLength"/> long by
-        /// adding <paramref name="character"/>s to the left of the string.
-        /// </summary>
-        /// <param name="instance">String that will be padded.</param>
-        /// <param name="minLength">Minimum length that the resulting string must have.</param>
-        /// <param name="character">Character to add to the left of the string.</param>
-        /// <returns>String padded with the specified character.</returns>
-        public static string LPad(this string instance, int minLength, char character = ' ')
-        {
-            return instance.PadLeft(minLength, character);
-        }
-
-        /// <summary>
         /// Returns a copy of the string with characters removed from the left.
         /// The <paramref name="chars"/> argument is a string specifying the set of characters
         /// to be removed.
@@ -1233,6 +1209,7 @@ namespace Godot
         /// <param name="instance">The string to remove characters from.</param>
         /// <param name="chars">The characters to be removed.</param>
         /// <returns>A copy of the string with characters removed from the left.</returns>
+        [Obsolete("Use string.TrimStart instead.")]
         public static string LStrip(this string instance, string chars)
         {
             return instance.TrimStart(chars.ToCharArray());
@@ -1527,19 +1504,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Formats a string to be at least <paramref name="minLength"/> long by
-        /// adding <paramref name="character"/>s to the right of the string.
-        /// </summary>
-        /// <param name="instance">String that will be padded.</param>
-        /// <param name="minLength">Minimum length that the resulting string must have.</param>
-        /// <param name="character">Character to add to the right of the string.</param>
-        /// <returns>String padded with the specified character.</returns>
-        public static string RPad(this string instance, int minLength, char character = ' ')
-        {
-            return instance.PadRight(minLength, character);
-        }
-
-        /// <summary>
         /// Returns a copy of the string with characters removed from the right.
         /// The <paramref name="chars"/> argument is a string specifying the set of characters
         /// to be removed.
@@ -1550,6 +1514,7 @@ namespace Godot
         /// <param name="instance">The string to remove characters from.</param>
         /// <param name="chars">The characters to be removed.</param>
         /// <returns>A copy of the string with characters removed from the right.</returns>
+        [Obsolete("Use string.TrimEnd instead.")]
         public static string RStrip(this string instance, string chars)
         {
             return instance.TrimEnd(chars.ToCharArray());
@@ -1883,17 +1848,6 @@ namespace Godot
                 return instance.Substring(0, instance.Length - suffix.Length);
 
             return instance;
-        }
-
-        /// <summary>
-        /// Returns the character code at position <paramref name="at"/>.
-        /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="at">The position int the string for the character to check.</param>
-        /// <returns>The character code.</returns>
-        public static int UnicodeAt(this string instance, int at)
-        {
-            return instance[at];
         }
 
         /// <summary>
