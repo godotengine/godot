@@ -212,6 +212,11 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 			ci->next = nullptr;
 		}
 
+		// The canvas group owner has not set canvas_group_owner.
+		if (ci->canvas_group != nullptr && ci->canvas_group_owner == nullptr) {
+			ci->canvas_group_owner = ci;
+		}
+
 		if (ci->visibility_notifier) {
 			if (!ci->visibility_notifier->visible_element.in_list()) {
 				visibility_notifier_list.add(&ci->visibility_notifier->visible_element);
