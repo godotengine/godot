@@ -53,30 +53,7 @@ int VisualScriptFunctionCall::get_output_sequence_port_count() const {
 bool VisualScriptFunctionCall::has_input_sequence_port() const {
 	return !((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_method_const(basic_type, function)));
 }
-#ifdef TOOLS_ENABLED
 
-static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
-	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene) {
-		return nullptr;
-	}
-
-	Ref<Script> scr = p_current_node->get_script();
-
-	if (scr.is_valid() && scr == script) {
-		return p_current_node;
-	}
-
-	for (int i = 0; i < p_current_node->get_child_count(); i++) {
-		Node *n = _find_script_node(p_edited_scene, p_current_node->get_child(i), script);
-		if (n) {
-			return n;
-		}
-	}
-
-	return nullptr;
-}
-
-#endif
 Node *VisualScriptFunctionCall::_get_base_node() const {
 #ifdef TOOLS_ENABLED
 	Ref<Script> script = get_visual_script();
@@ -97,7 +74,7 @@ Node *VisualScriptFunctionCall::_get_base_node() const {
 		return nullptr;
 	}
 
-	Node *script_node = _find_script_node(edited_scene, edited_scene, script);
+	Node *script_node = NSVisualScript::_find_script_node(edited_scene, edited_scene, script);
 
 	if (!script_node) {
 		return nullptr;
@@ -933,7 +910,7 @@ Node *VisualScriptPropertySet::_get_base_node() const {
 		return nullptr;
 	}
 
-	Node *script_node = _find_script_node(edited_scene, edited_scene, script);
+	Node *script_node = NSVisualScript::_find_script_node(edited_scene, edited_scene, script);
 
 	if (!script_node) {
 		return nullptr;
@@ -1682,7 +1659,7 @@ Node *VisualScriptPropertyGet::_get_base_node() const {
 		return nullptr;
 	}
 
-	Node *script_node = _find_script_node(edited_scene, edited_scene, script);
+	Node *script_node = NSVisualScript::_find_script_node(edited_scene, edited_scene, script);
 
 	if (!script_node) {
 		return nullptr;

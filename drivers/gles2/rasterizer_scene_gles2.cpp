@@ -53,7 +53,7 @@
 #endif
 #endif
 
-static const GLenum _cube_side_enum[6] = {
+const GLenum RasterizerSceneGLES2::_cube_side_enum[6] = {
 
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -1332,7 +1332,7 @@ void RasterizerSceneGLES2::_fill_render_list(InstanceBase **p_cull_result, int p
 	}
 }
 
-static const GLenum gl_primitive[] = {
+const GLenum RasterizerSceneGLES2::gl_primitive[] = {
 	GL_POINTS,
 	GL_LINES,
 	GL_LINE_STRIP,

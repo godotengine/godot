@@ -49,7 +49,7 @@ subject to the following restrictions:
 
 #include "hinge_joint_sw.h"
 
-static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
+void HingeJointSW::plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 	if (Math::abs(n.z) > Math_SQRT12) {
 		// choose p in y-z plane
 		real_t a = n[1] * n[1] + n[2] * n[2];
@@ -382,7 +382,7 @@ void	HingeJointSW::updateRHS(real_t	timeStep)
 }
 */
 
-static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
+real_t HingeJointSW::atan2fast(real_t y, real_t x) {
 	real_t coeff_1 = Math_PI / 4.0f;
 	real_t coeff_2 = 3.0f * coeff_1;
 	real_t abs_y = Math::abs(y);

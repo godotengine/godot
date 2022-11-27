@@ -319,6 +319,7 @@ class EditorInspector : public ScrollContainer {
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
 	void _property_checked(const String &p_path, bool p_checked);
 	void _property_pinned(const String &p_path, bool p_pinned);
+	bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style);
 
 	void _resource_selected(const String &p_path, RES p_resource);
 	void _property_selected(const String &p_path, int p_focusable);

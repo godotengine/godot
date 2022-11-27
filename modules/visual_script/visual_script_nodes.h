@@ -1060,4 +1060,10 @@ public:
 void register_visual_script_nodes();
 void unregister_visual_script_nodes();
 
+#ifdef TOOLS_ENABLED
+namespace NSVisualScript {
+Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script);
+}
+#endif
+
 #endif // VISUAL_SCRIPT_NODES_H

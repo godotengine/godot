@@ -301,3 +301,5 @@ MainLoop *test() {
 	return nullptr;
 }
 } // namespace TestTheme
+
+#undef CHECK

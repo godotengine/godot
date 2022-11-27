@@ -150,6 +150,9 @@ protected:
 	//------------------------
 	void initParams();
 
+private:
+	_FORCE_INLINE_ real_t atan2fast(real_t y, real_t x);
+
 public:
 	// constructors
 	SliderJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameInA, const Transform &frameInB);

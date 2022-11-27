@@ -41,7 +41,7 @@
 #define glClearDepth glClearDepthf
 #endif
 
-static const GLenum _cube_side_enum[6] = {
+const GLenum RasterizerSceneGLES3::_cube_side_enum[6] = {
 
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -52,7 +52,7 @@ static const GLenum _cube_side_enum[6] = {
 
 };
 
-static _FORCE_INLINE_ void store_transform(const Transform &p_mtx, float *p_array) {
+void RasterizerSceneGLES3::store_transform(const Transform &p_mtx, float *p_array) {
 	p_array[0] = p_mtx.basis.elements[0][0];
 	p_array[1] = p_mtx.basis.elements[1][0];
 	p_array[2] = p_mtx.basis.elements[2][0];
@@ -71,7 +71,7 @@ static _FORCE_INLINE_ void store_transform(const Transform &p_mtx, float *p_arra
 	p_array[15] = 1;
 }
 
-static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+void RasterizerSceneGLES3::store_camera(const CameraMatrix &p_mtx, float *p_array) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			p_array[i * 4 + j] = p_mtx.matrix[i][j];
@@ -1482,7 +1482,7 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 	}
 }
 
-static const GLenum gl_primitive[] = {
+const GLenum RasterizerSceneGLES3::gl_primitive[] = {
 	GL_POINTS,
 	GL_LINES,
 	GL_LINE_STRIP,

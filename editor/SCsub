@@ -32,12 +32,17 @@ if env["tools"]:
     reg_exporters = "void register_exporters() {\n"
     for e in env.platform_exporters:
         # Glob all .cpp files in export folder
-        files = Glob("#platform/" + e + "/export/" + "*.cpp")
-        env.add_source_files(env.editor_sources, files)
+        if not env["scu_build"]:
+            files = Glob("#platform/" + e + "/export/" + "*.cpp")
+            env.add_source_files(env.editor_sources, files)
 
         reg_exporters += "\tregister_" + e + "_exporter();\n"
         reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
     reg_exporters += "}\n"
+
+    # If we are in a SCU build, we add all the platform exporters in one SCU file.
+    if env["scu_build"]:
+        env.add_source_files(env.editor_sources, "../platform/*.cpp")
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
     with open_utf8("register_exporters.gen.cpp", "w") as f:

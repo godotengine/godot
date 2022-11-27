@@ -36,6 +36,12 @@
 class BoxContainer : public Container {
 	GDCLASS(BoxContainer, Container);
 
+	struct _MinSizeCache {
+		int min_size;
+		bool will_stretch;
+		int final_size;
+	};
+
 public:
 	enum AlignMode {
 		ALIGN_BEGIN,

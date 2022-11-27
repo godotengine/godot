@@ -14,6 +14,7 @@ from collections import OrderedDict
 # Local
 import methods
 import gles_builders
+import scu_builders
 from platform_methods import run_in_subprocess
 
 # scan possible build platforms
@@ -155,6 +156,7 @@ opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and be
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
+opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add(
     EnumVariable(
         "rids",
@@ -441,6 +443,10 @@ if selected_platform in platform_list:
                 "this will give you a full debug template (use `target=release_debug` "
                 "for an optimized template with debug features)."
             )
+
+    # Run SCU file generation script if in a SCU build.
+    if env["scu_build"]:
+        methods.set_scu_folders(scu_builders.generate_scu_files(env["verbose"], env_base["target"] != "debug"))
 
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.

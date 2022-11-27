@@ -1,4 +1,6 @@
 // Names from https://en.wikipedia.org/wiki/X11_color_names
+#pragma once
+
 #include "core/map.h"
 
 static Map<String, Color> _named_colors;

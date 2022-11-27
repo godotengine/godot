@@ -44,7 +44,7 @@
 #include "editor/editor_settings.h"
 #endif
 
-static bool _is_text_char(CharType c) {
+bool LineEdit::_is_text_char(CharType c) {
 	return !is_symbol(c);
 }
 
