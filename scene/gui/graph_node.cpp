@@ -746,6 +746,8 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 }
 
 void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
+
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
 		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphNode must be the child of a GraphEdit node.");
