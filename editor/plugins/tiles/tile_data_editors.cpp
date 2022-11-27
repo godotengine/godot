@@ -851,6 +851,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 void TileDataDefaultEditor::_property_value_changed(StringName p_property, Variant p_value, StringName p_field) {
 	ERR_FAIL_COND(!dummy_object);
 	dummy_object->set(p_property, p_value);
+	emit_signal(SNAME("needs_redraw"));
 }
 
 Variant TileDataDefaultEditor::_get_painted_value() {
