@@ -58,7 +58,13 @@ public:
 				init_basis(v);
 				break;
 			case Variant::TRANSFORM3D:
-				init_transform(v);
+				init_transform3d(v);
+				break;
+			case Variant::PROJECTION:
+				init_projection(v);
+				break;
+			case Variant::COLOR:
+				init_color(v);
 				break;
 			case Variant::STRING_NAME:
 				init_string_name(v);
@@ -209,13 +215,12 @@ public:
 
 	// Should be in the same order as Variant::Type for consistency.
 	// Those primitive and vector types don't need an `init_` method:
-	// Nil, bool, float, Vector2/i, Rect2/i, Vector3/i, Plane, Quat, Color, RID.
+	// Nil, bool, float, Vector2/i, Rect2/i, Vector3/i, Plane, Quat, RID.
 	// Object is a special case, handled via `object_assign_null`.
 	_FORCE_INLINE_ static void init_string(Variant *v) {
 		memnew_placement(v->_data._mem, String);
 		v->type = Variant::STRING;
 	}
-
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
 		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
 		memnew_placement(v->_data._transform2d, Transform2D);
@@ -231,7 +236,7 @@ public:
 		memnew_placement(v->_data._basis, Basis);
 		v->type = Variant::BASIS;
 	}
-	_FORCE_INLINE_ static void init_transform(Variant *v) {
+	_FORCE_INLINE_ static void init_transform3d(Variant *v) {
 		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
 		memnew_placement(v->_data._transform3d, Transform3D);
 		v->type = Variant::TRANSFORM3D;
@@ -240,6 +245,10 @@ public:
 		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
 		memnew_placement(v->_data._projection, Projection);
 		v->type = Variant::PROJECTION;
+	}
+	_FORCE_INLINE_ static void init_color(Variant *v) {
+		memnew_placement(v->_data._mem, Color);
+		v->type = Variant::COLOR;
 	}
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {
 		memnew_placement(v->_data._mem, StringName);
@@ -1191,7 +1200,7 @@ struct VariantInitializer<Basis> {
 
 template <>
 struct VariantInitializer<Transform3D> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform(v); }
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform3d(v); }
 };
 template <>
 struct VariantInitializer<Projection> {

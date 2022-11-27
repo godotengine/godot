@@ -717,7 +717,7 @@ TypedArray<PackedVector2Array> Geometry2D::decompose_polygon_in_convex(const Vec
 TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::merge_polygons(p_polygon_a, p_polygon_b);
 
-	Array ret;
+	TypedArray<PackedVector2Array> ret;
 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
@@ -739,7 +739,7 @@ TypedArray<PackedVector2Array> Geometry2D::clip_polygons(const Vector<Vector2> &
 TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polygons(p_polygon_a, p_polygon_b);
 
-	Array ret;
+	TypedArray<PackedVector2Array> ret;
 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
@@ -750,7 +750,7 @@ TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vecto
 TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::exclude_polygons(p_polygon_a, p_polygon_b);
 
-	Array ret;
+	TypedArray<PackedVector2Array> ret;
 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
@@ -761,7 +761,7 @@ TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2
 TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon);
 
-	Array ret;
+	TypedArray<PackedVector2Array> ret;
 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
@@ -772,7 +772,7 @@ TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vect
 TypedArray<PackedVector2Array> Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polyline_with_polygon(p_polyline, p_polygon);
 
-	Array ret;
+	TypedArray<PackedVector2Array> ret;
 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
@@ -783,7 +783,7 @@ TypedArray<PackedVector2Array> Geometry2D::intersect_polyline_with_polygon(const
 TypedArray<PackedVector2Array> Geometry2D::offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polygon(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type));
 
-	Array ret;
+	TypedArray<PackedVector2Array> ret;
 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
@@ -794,7 +794,7 @@ TypedArray<PackedVector2Array> Geometry2D::offset_polygon(const Vector<Vector2> 
 TypedArray<PackedVector2Array> Geometry2D::offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polyline(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type), ::Geometry2D::PolyEndType(p_end_type));
 
-	Array ret;
+	TypedArray<PackedVector2Array> ret;
 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);

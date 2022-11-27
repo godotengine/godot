@@ -30,6 +30,14 @@
 
 #include "doc_data.h"
 
+String DocData::get_default_value_string(const Variant &p_value) {
+	if (p_value.get_type() == Variant::ARRAY) {
+		return Variant(Array(p_value, 0, StringName(), Variant())).get_construct_string().replace("\n", " ");
+	} else {
+		return p_value.get_construct_string().replace("\n", " ");
+	}
+}
+
 void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo) {
 	if (p_retinfo.type == Variant::INT && p_retinfo.hint == PROPERTY_HINT_INT_IS_POINTER) {
 		p_method.return_type = p_retinfo.hint_string;
@@ -105,7 +113,7 @@ void DocData::property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_propert
 	p_property.getter = p_memberinfo.getter;
 
 	if (p_memberinfo.has_default_value && p_memberinfo.default_value.get_type() != Variant::OBJECT) {
-		p_property.default_value = p_memberinfo.default_value.get_construct_string().replace("\n", "");
+		p_property.default_value = get_default_value_string(p_memberinfo.default_value);
 	}
 
 	p_property.overridden = false;
@@ -148,7 +156,7 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 		int default_arg_index = i - (p_methodinfo.arguments.size() - p_methodinfo.default_arguments.size());
 		if (default_arg_index >= 0) {
 			Variant default_arg = p_methodinfo.default_arguments[default_arg_index];
-			argument.default_value = default_arg.get_construct_string().replace("\n", "");
+			argument.default_value = get_default_value_string(default_arg);
 		}
 		p_method.arguments.push_back(argument);
 	}

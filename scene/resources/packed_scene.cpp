@@ -314,7 +314,19 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 									//must make a copy, because this res is local to scene
 								}
 							}
-						} else if (p_edit_state == GEN_EDIT_STATE_INSTANCE) {
+						}
+						if (value.get_type() == Variant::ARRAY) {
+							Array set_array = value;
+							bool is_get_valid = false;
+							Variant get_value = node->get(snames[nprops[j].name], &is_get_valid);
+							if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
+								Array get_array = get_value;
+								if (!set_array.is_same_typed(get_array)) {
+									value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+								}
+							}
+						}
+						if (p_edit_state == GEN_EDIT_STATE_INSTANCE && value.get_type() != Variant::OBJECT) {
 							value = value.duplicate(true); // Duplicate arrays and dictionaries for the editor
 						}
 

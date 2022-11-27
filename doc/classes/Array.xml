@@ -59,14 +59,14 @@
 			<param index="2" name="class_name" type="StringName" />
 			<param index="3" name="script" type="Variant" />
 			<description>
-				Creates a typed array from the [param base] array. The base array can't be already typed.
+				Creates a typed array from the [param base] array.
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
 			<param index="0" name="from" type="Array" />
 			<description>
-				Constructs an [Array] as a copy of the given [Array].
+				Returns the same array as [param from]. If you need a copy of the array, use [method duplicate].
 			</description>
 		</constructor>
 		<constructor name="Array">
@@ -198,6 +198,13 @@
 				array1.append_array(array2)
 				print(array1) # Prints [1, 2, 3, 4, 5, 6].
 				[/codeblock]
+			</description>
+		</method>
+		<method name="assign">
+			<return type="void" />
+			<param index="0" name="array" type="Array" />
+			<description>
+				Assigns elements of another [param array] into the array. Resizes the array to match [param array]. Performs type conversions if the array is typed.
 			</description>
 		</method>
 		<method name="back" qualifiers="const">
@@ -393,6 +400,13 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is read-only. See [method make_read_only]. Arrays are automatically read-only if declared with [code]const[/code] keyword.
+			</description>
+		</method>
+		<method name="is_same_typed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="array" type="Array" />
+			<description>
+				Returns [code]true[/code] if the array is typed the same as [param array].
 			</description>
 		</method>
 		<method name="is_typed" qualifiers="const">
@@ -607,13 +621,6 @@
 				// There is no custom sort support for Godot.Collections.Array
 				[/csharp]
 				[/codeblocks]
-			</description>
-		</method>
-		<method name="typed_assign">
-			<return type="bool" />
-			<param index="0" name="array" type="Array" />
-			<description>
-				Assigns a different [Array] to this array reference. It the array is typed, the new array's type must be compatible and its elements will be automatically converted.
 			</description>
 		</method>
 	</methods>

@@ -153,7 +153,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="from" type="Dictionary" />
 			<description>
-				Returns the same array as [param from]. If you need a copy of the array, use [method duplicate].
+				Returns the same dictionary as [param from]. If you need a copy of the dictionary, use [method duplicate].
 			</description>
 		</constructor>
 	</constructors>

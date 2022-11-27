@@ -74,8 +74,15 @@ struct ContainerTypeValidate {
 		return true;
 	}
 
+	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
+		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
+	}
+	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
+		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
+	}
+
 	// Coerces String and StringName into each other when needed.
-	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") {
+	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
 		if (type == Variant::NIL) {
 			return true;
 		}
@@ -102,7 +109,7 @@ struct ContainerTypeValidate {
 		return validate_object(inout_variant, p_operation);
 	}
 
-	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") {
+	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
 		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
 
 #ifdef DEBUG_ENABLED
