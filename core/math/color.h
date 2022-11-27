@@ -105,12 +105,10 @@ struct _NO_DISCARD_ Color {
 
 	_FORCE_INLINE_ Color lerp(const Color &p_to, float p_weight) const {
 		Color res = *this;
-
-		res.r += (p_weight * (p_to.r - r));
-		res.g += (p_weight * (p_to.g - g));
-		res.b += (p_weight * (p_to.b - b));
-		res.a += (p_weight * (p_to.a - a));
-
+		res.r = Math::lerp(res.r, p_to.r, p_weight);
+		res.g = Math::lerp(res.g, p_to.g, p_weight);
+		res.b = Math::lerp(res.b, p_to.b, p_weight);
+		res.a = Math::lerp(res.a, p_to.a, p_weight);
 		return res;
 	}
 

@@ -1,6 +1,6 @@
 namespace Godot.SourceGenerators
 {
-    internal struct PropertyInfo
+    internal readonly struct PropertyInfo
     {
         public PropertyInfo(VariantType type, string name, PropertyHint hint,
             string? hintString, PropertyUsageFlags usage, bool exported)

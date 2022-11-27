@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TileData" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Settings for a single tile in a [TileSet].
 	</brief_description>
 	<description>
+		[TileData] object represents a single tile in a [TileSet]. It is usually edited using the tileset editor, but it can be modified at runtime using [method TileMap._tile_data_runtime_update].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -196,32 +198,43 @@
 	</methods>
 	<members>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="get_flip_h" default="false">
+			If [code]true[/code], the tile will have its texture flipped horizontally.
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="get_flip_v" default="false">
+			If [code]true[/code], the tile will have its texture flipped vertically.
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The [Material] to use for this [TileData]. This can be a [CanvasItemMaterial] to use the default shader, or a [ShaderMaterial] to use a custom shader.
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+			Color modulation of the tile.
 		</member>
 		<member name="probability" type="float" setter="set_probability" getter="get_probability" default="1.0">
+			Relative probability of this tile being selected when drawing a pattern of random tiles.
 		</member>
 		<member name="terrain" type="int" setter="set_terrain" getter="get_terrain" default="-1">
+			ID of the terrain from the terrain set that the tile uses.
 		</member>
 		<member name="terrain_set" type="int" setter="set_terrain_set" getter="get_terrain_set" default="-1">
+			ID of the terrain set that the tile uses.
 		</member>
 		<member name="texture_offset" type="Vector2i" setter="set_texture_offset" getter="get_texture_offset" default="Vector2i(0, 0)">
+			Offsets the position of where the tile is drawn.
 		</member>
 		<member name="transpose" type="bool" setter="set_transpose" getter="get_transpose" default="false">
+			If [code]true[/code], the tile will display transposed, i.e. with horizontal and vertical texture UVs swapped.
 		</member>
 		<member name="y_sort_origin" type="int" setter="set_y_sort_origin" getter="get_y_sort_origin" default="0">
+			Vertical point of the tile used for determining y-sorted order.
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
+			Ordering index of this tile, relative to [TileMap].
 		</member>
 	</members>
 	<signals>
 		<signal name="changed">
 			<description>
+				Emitted when any of the properties are changed.
 			</description>
 		</signal>
 	</signals>

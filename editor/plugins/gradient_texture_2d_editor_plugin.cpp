@@ -55,6 +55,7 @@ void GradientTexture2DEditorRect::_update_fill_position() {
 
 	String property_name = handle == HANDLE_FILL_FROM ? "fill_from" : "fill_to";
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(vformat(TTR("Set %s"), property_name), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_property(texture.ptr(), property_name, percent);
 	undo_redo->add_undo_property(texture.ptr(), property_name, handle == HANDLE_FILL_FROM ? texture->get_fill_from() : texture->get_fill_to());
@@ -175,8 +176,6 @@ void GradientTexture2DEditorRect::_notification(int p_what) {
 }
 
 GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	checkerboard = memnew(TextureRect);
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
 	checkerboard->set_ignore_texture_size(true);
@@ -189,6 +188,7 @@ GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
 ///////////////////////
 
 void GradientTexture2DEditor::_reverse_button_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Swap GradientTexture2D Fill Points"));
 	undo_redo->add_do_property(texture.ptr(), "fill_from", texture->get_fill_to());
 	undo_redo->add_do_property(texture.ptr(), "fill_to", texture->get_fill_from());
@@ -223,8 +223,6 @@ void GradientTexture2DEditor::_notification(int p_what) {
 }
 
 GradientTexture2DEditor::GradientTexture2DEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	HFlowContainer *toolbar = memnew(HFlowContainer);
 	add_child(toolbar);
 

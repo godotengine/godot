@@ -32,12 +32,20 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 
 void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dontclear) {
 	base_type = p_base;
 	allow_multi_select = p_enable_multi;
 	search_options->set_select_mode(allow_multi_select ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
-	popup_centered_clamped(Size2i(600, 440), 0.8f);
+
+	static bool was_showed = false;
+	if (!was_showed) {
+		was_showed = true;
+		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
+	} else {
+		show();
+	}
 
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem();
 	_build_search_cache(efsd);

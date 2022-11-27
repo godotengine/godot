@@ -41,7 +41,6 @@
 #include "scene/gui/spin_box.h"
 
 class ConfirmationDialog;
-class EditorUndoRedoManager;
 class MenuButton;
 class Node3DEditorPlugin;
 
@@ -66,7 +65,6 @@ class GridMapEditor : public VBoxContainer {
 		DISPLAY_LIST
 	};
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	InputAction input_action = INPUT_NONE;
 	Panel *panel = nullptr;
 	MenuButton *options = nullptr;

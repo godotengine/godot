@@ -47,7 +47,6 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	ED_SHORTCUT("debugger/step_over", TTR("Step Over"), Key::F10);
 	ED_SHORTCUT("debugger/break", TTR("Break"));
 	ED_SHORTCUT("debugger/continue", TTR("Continue"), Key::F12);
-	ED_SHORTCUT("debugger/keep_debugger_open", TTR("Keep Debugger Open"));
 	ED_SHORTCUT("debugger/debug_with_external_editor", TTR("Debug with External Editor"));
 
 	// File Server for deploy with remote filesystem.
@@ -85,6 +84,9 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Synchronize Script Changes")), RUN_RELOAD_SCRIPTS);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, any script that is saved will be reloaded in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/keep_server_open", TTR("Keep Debug Server Open")), SERVER_KEEP_OPEN);
+	debug_menu->set_item_tooltip(-1,
+			TTR("When this option is enabled, the editor debug server will stay open and listen for new sessions started outside of the editor itself."));
 
 	// Multi-instance, start/stop
 	instances_menu = memnew(PopupMenu);
@@ -176,6 +178,14 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
 
 		} break;
+		case SERVER_KEEP_OPEN: {
+			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(SERVER_KEEP_OPEN));
+			debug_menu->set_item_checked(debug_menu->get_item_index(SERVER_KEEP_OPEN), !ischecked);
+
+			EditorDebuggerNode::get_singleton()->set_keep_open(!ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "server_keep_open", !ischecked);
+
+		} break;
 	}
 }
 
@@ -195,6 +205,7 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
+	bool check_server_keep_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "server_keep_open", false);
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 
 	if (check_deploy_remote) {
@@ -217,6 +228,9 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_reload_scripts) {
 		_menu_option(RUN_RELOAD_SCRIPTS);
+	}
+	if (check_server_keep_open) {
+		_menu_option(SERVER_KEEP_OPEN);
 	}
 
 	int len = instances_menu->get_item_count();

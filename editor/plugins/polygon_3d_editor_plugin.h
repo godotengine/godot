@@ -38,13 +38,11 @@
 #include "scene/resources/immediate_mesh.h"
 
 class CanvasItemEditor;
-class EditorUndoRedoManager;
 class MenuButton;
 
 class Polygon3DEditor : public HBoxContainer {
 	GDCLASS(Polygon3DEditor, HBoxContainer);
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	enum Mode {
 		MODE_CREATE,
 		MODE_EDIT,

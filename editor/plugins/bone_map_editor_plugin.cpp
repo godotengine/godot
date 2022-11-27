@@ -38,9 +38,9 @@
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {
-		set_normal_texture(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
+		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
 	} else {
-		set_normal_texture(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
+		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
 	}
 	set_offset(SIDE_LEFT, 0);
 	set_offset(SIDE_RIGHT, 0);
@@ -742,7 +742,6 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		} else {
 			p_bone_map->_set_skeleton_bone_name("LeftEye", skeleton->get_bone_name(bone_idx));
 		}
-		bone_idx = -1;
 
 		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, neck_or_head);
 		if (bone_idx == -1) {
@@ -750,7 +749,6 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		} else {
 			p_bone_map->_set_skeleton_bone_name("RightEye", skeleton->get_bone_name(bone_idx));
 		}
-		bone_idx = -1;
 		picklist.clear();
 
 		// 4-2. Guess Jaw

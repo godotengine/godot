@@ -112,6 +112,7 @@ struct _NO_DISCARD_ Vector2 {
 	_FORCE_INLINE_ Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector2 cubic_interpolate_in_time(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const;
 	_FORCE_INLINE_ Vector2 bezier_interpolate(const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) const;
+	_FORCE_INLINE_ Vector2 bezier_derivative(const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) const;
 
 	Vector2 move_toward(const Vector2 &p_to, const real_t p_delta) const;
 
@@ -242,10 +243,8 @@ _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 
 Vector2 Vector2::lerp(const Vector2 &p_to, const real_t p_weight) const {
 	Vector2 res = *this;
-
-	res.x += (p_weight * (p_to.x - x));
-	res.y += (p_weight * (p_to.y - y));
-
+	res.x = Math::lerp(res.x, p_to.x, p_weight);
+	res.y = Math::lerp(res.y, p_to.y, p_weight);
 	return res;
 }
 
@@ -278,15 +277,16 @@ Vector2 Vector2::cubic_interpolate_in_time(const Vector2 &p_b, const Vector2 &p_
 
 Vector2 Vector2::bezier_interpolate(const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) const {
 	Vector2 res = *this;
+	res.x = Math::bezier_interpolate(res.x, p_control_1.x, p_control_2.x, p_end.x, p_t);
+	res.y = Math::bezier_interpolate(res.y, p_control_1.y, p_control_2.y, p_end.y, p_t);
+	return res;
+}
 
-	/* Formula from Wikipedia article on Bezier curves. */
-	real_t omt = (1.0 - p_t);
-	real_t omt2 = omt * omt;
-	real_t omt3 = omt2 * omt;
-	real_t t2 = p_t * p_t;
-	real_t t3 = t2 * p_t;
-
-	return res * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
+Vector2 Vector2::bezier_derivative(const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) const {
+	Vector2 res = *this;
+	res.x = Math::bezier_derivative(res.x, p_control_1.x, p_control_2.x, p_end.x, p_t);
+	res.y = Math::bezier_derivative(res.y, p_control_1.y, p_control_2.y, p_end.y, p_t);
+	return res;
 }
 
 Vector2 Vector2::direction_to(const Vector2 &p_to) const {

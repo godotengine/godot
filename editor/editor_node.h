@@ -713,9 +713,6 @@ public:
 
 	bool call_build();
 
-	static void register_editor_types();
-	static void unregister_editor_types();
-
 	static EditorNode *get_singleton() { return singleton; }
 
 	static EditorLog *get_log() { return singleton->log; }
@@ -748,6 +745,8 @@ public:
 	static void add_build_callback(EditorBuildCallback p_callback);
 
 	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"));
+
+	static void cleanup();
 
 	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }

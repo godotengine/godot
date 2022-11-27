@@ -141,6 +141,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 					result.script_type_ref = script;
 				}
 				result.script_type = script.ptr();
+				result.native_type = p_datatype.native_type;
 			}
 		} break;
 		case GDScriptParser::DataType::ENUM:
@@ -354,11 +355,22 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				if (class_node->identifier && class_node->identifier->name == identifier) {
 					res = Ref<GDScript>(main_script);
 				} else {
-					res = ResourceLoader::load(ScriptServer::get_global_class_path(identifier));
-					if (res.is_null()) {
-						_set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
-						r_error = ERR_COMPILATION_FAILED;
-						return GDScriptCodeGenerator::Address();
+					String global_class_path = ScriptServer::get_global_class_path(identifier);
+					if (ResourceLoader::get_resource_type(global_class_path) == "GDScript") {
+						Error err = OK;
+						res = GDScriptCache::get_full_script(global_class_path, err);
+						if (err != OK) {
+							_set_error("Can't load global class " + String(identifier), p_expression);
+							r_error = ERR_COMPILATION_FAILED;
+							return GDScriptCodeGenerator::Address();
+						}
+					} else {
+						res = ResourceLoader::load(global_class_path);
+						if (res.is_null()) {
+							_set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
+							r_error = ERR_COMPILATION_FAILED;
+							return GDScriptCodeGenerator::Address();
+						}
 					}
 				}
 
@@ -2172,6 +2184,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 
 	parsing_classes.insert(p_script);
 
+	p_script->clearing = true;
 #ifdef TOOLS_ENABLED
 	p_script->doc_functions.clear();
 	p_script->doc_variables.clear();
@@ -2194,10 +2207,24 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 	p_script->base = Ref<GDScript>();
 	p_script->_base = nullptr;
 	p_script->members.clear();
+
+	// This makes possible to clear script constants and member_functions without heap-use-after-free errors.
+	HashMap<StringName, Variant> constants;
+	for (const KeyValue<StringName, Variant> &E : p_script->constants) {
+		constants.insert(E.key, E.value);
+	}
 	p_script->constants.clear();
+	constants.clear();
+	HashMap<StringName, GDScriptFunction *> member_functions;
 	for (const KeyValue<StringName, GDScriptFunction *> &E : p_script->member_functions) {
+		member_functions.insert(E.key, E.value);
+	}
+	p_script->member_functions.clear();
+	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
 		memdelete(E.value);
 	}
+	member_functions.clear();
+
 	if (p_script->implicit_initializer) {
 		memdelete(p_script->implicit_initializer);
 	}
@@ -2211,6 +2238,8 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 	p_script->initializer = nullptr;
 	p_script->implicit_initializer = nullptr;
 	p_script->implicit_ready = nullptr;
+
+	p_script->clearing = false;
 
 	p_script->tool = parser->is_tool();
 
@@ -2454,10 +2483,8 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 		}
 
 #ifdef TOOLS_ENABLED
-
 		p_script->member_lines[name] = inner_class->start_line;
 #endif
-
 		p_script->constants.insert(name, subclass); //once parsed, goes to the list of constants
 	}
 

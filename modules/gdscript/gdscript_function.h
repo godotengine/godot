@@ -430,6 +430,7 @@ public:
 	};
 
 private:
+	friend class GDScript;
 	friend class GDScriptCompiler;
 	friend class GDScriptByteCodeGenerator;
 

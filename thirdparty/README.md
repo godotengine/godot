@@ -51,7 +51,7 @@ Files extracted from upstream source:
 ## cvtt
 
 - Upstream: https://github.com/elasota/ConvectionKernels
-- Version: git (dc2dbbe0ae2cf2be06ef56d1021e2222a56c7fe2, 2021)
+- Version: git (350416daa4e98f1c17ffc273b134d0120a2ef230, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -74,7 +74,7 @@ Files extracted from upstream source:
 ## embree
 
 - Upstream: https://github.com/embree/embree
-- Version: 3.13.1 (12b99393438a4cc9e478e33459eed78bec6233fd, 2021)
+- Version: 3.13.5 (698442324ccddd11725fb8875275dc1384f7fb40, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream:

@@ -271,7 +271,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			outline_dialog->popup_centered(Vector2(200, 90));
 		} break;
 		case MENU_OPTION_CREATE_DEBUG_TANGENTS: {
-			Ref<EditorUndoRedoManager> ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Create Debug Tangents"));
 
 			MeshInstance3D *tangents = node->create_debug_tangents_node();

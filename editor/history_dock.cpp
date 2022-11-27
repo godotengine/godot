@@ -206,7 +206,7 @@ void HistoryDock::seek_history(int p_index) {
 
 void HistoryDock::_notification(int p_notification) {
 	switch (p_notification) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			EditorNode::get_singleton()->connect("scene_changed", callable_mp(this, &HistoryDock::on_history_changed));
 		} break;
 

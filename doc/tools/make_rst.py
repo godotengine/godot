@@ -29,6 +29,12 @@ MARKUP_ALLOWED_SUBSEQUENT = " -.,:;!?\\/'\")]}>"
 # write in this script (check `translate()` uses), and also hardcoded in
 # `doc/translations/extract.py` to include them in the source POT file.
 BASE_STRINGS = [
+    "All classes",
+    "Globals",
+    "Nodes",
+    "Resources",
+    "Other objects",
+    "Variant types",
     "Description",
     "Tutorials",
     "Properties",
@@ -62,6 +68,19 @@ BASE_STRINGS = [
 strings_l10n: Dict[str, str] = {}
 
 STYLES: Dict[str, str] = {}
+
+CLASS_GROUPS: Dict[str, str] = {
+    "global": "Globals",
+    "node": "Nodes",
+    "resource": "Resources",
+    "object": "Other objects",
+    "variant": "Variant types",
+}
+CLASS_GROUPS_BASE: Dict[str, str] = {
+    "node": "Node",
+    "resource": "Resource",
+    "object": "Object",
+}
 
 
 class State:
@@ -329,7 +348,7 @@ class State:
         return cast
 
     def sort_classes(self) -> None:
-        self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0]))
+        self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0].lower()))
 
 
 class TypeName:
@@ -601,11 +620,24 @@ def main() -> None:
 
     print("Generating the RST class reference...")
 
+    grouped_classes: Dict[str, List[str]] = {}
+
     for class_name, class_def in state.classes.items():
         if args.filter and not pattern.search(class_def.filepath):
             continue
         state.current_class = class_name
         make_rst_class(class_def, state, args.dry_run, args.output)
+
+        group_name = get_class_group(class_def, state)
+
+        if group_name not in grouped_classes:
+            grouped_classes[group_name] = []
+        grouped_classes[group_name].append(class_name)
+
+    print("")
+    print("Generating the index file...")
+
+    make_rst_index(grouped_classes, args.dry_run, args.output)
 
     print("")
 
@@ -655,6 +687,42 @@ def translate(string: str) -> str:
     return strings_l10n.get(string, string)
 
 
+def get_git_branch() -> str:
+    if hasattr(version, "docs") and version.docs != "latest":
+        return version.docs
+
+    return "master"
+
+
+def get_class_group(class_def: ClassDef, state: State) -> str:
+    group_name = "variant"
+    class_name = class_def.name
+
+    if class_name.startswith("@"):
+        group_name = "global"
+    elif class_def.inherits:
+        inherits = class_def.inherits.strip()
+
+        while inherits in state.classes:
+            if inherits == "Node":
+                group_name = "node"
+                break
+            if inherits == "Resource":
+                group_name = "resource"
+                break
+            if inherits == "Object":
+                group_name = "object"
+                break
+
+            inode = state.classes[inherits].inherits
+            if inode:
+                inherits = inode.strip()
+            else:
+                break
+
+    return group_name
+
+
 # Generator methods.
 
 
@@ -672,10 +740,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
     # Warn contributors not to edit this file directly.
     # Also provide links to the source files for reference.
 
-    git_branch = "master"
-    if hasattr(version, "docs") and version.docs != "latest":
-        git_branch = version.docs
-
+    git_branch = get_git_branch()
     source_xml_path = os.path.relpath(class_def.filepath, root_directory).replace("\\", "/")
     source_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/{source_xml_path}"
     generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
@@ -723,14 +788,29 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write(make_type(child, state))
         f.write("\n\n")
 
+    has_description = False
+
     # Brief description
-    if class_def.brief_description is not None:
+    if class_def.brief_description is not None and class_def.brief_description.strip() != "":
+        has_description = True
+
         f.write(f"{format_text_block(class_def.brief_description.strip(), class_def, state)}\n\n")
 
     # Class description
     if class_def.description is not None and class_def.description.strip() != "":
+        has_description = True
+
         f.write(make_heading("Description", "-"))
         f.write(f"{format_text_block(class_def.description.strip(), class_def, state)}\n\n")
+
+    if not has_description:
+        f.write(".. container:: contribute\n\n\t")
+        f.write(
+            translate(
+                "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+            )
+            + "\n\n"
+        )
 
     # Online tutorials
     if len(class_def.tutorials) > 0:
@@ -872,6 +952,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                else:
+                    f.write(".. container:: contribute\n\n\t")
+                    f.write(
+                        translate(
+                            "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                        )
+                        + "\n\n"
+                    )
 
                 index += 1
 
@@ -904,6 +992,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             if property_def.text is not None and property_def.text.strip() != "":
                 f.write(f"{format_text_block(property_def.text.strip(), property_def, state)}\n\n")
+            else:
+                f.write(".. container:: contribute\n\n\t")
+                f.write(
+                    translate(
+                        "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                    )
+                    + "\n\n"
+                )
 
             index += 1
 
@@ -925,6 +1021,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                else:
+                    f.write(".. container:: contribute\n\n\t")
+                    f.write(
+                        translate(
+                            "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                        )
+                        + "\n\n"
+                    )
 
                 index += 1
 
@@ -945,6 +1049,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                else:
+                    f.write(".. container:: contribute\n\n\t")
+                    f.write(
+                        translate(
+                            "There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                        )
+                        + "\n\n"
+                    )
 
                 index += 1
 
@@ -956,17 +1068,24 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             for i, m in enumerate(method_list):
                 if index != 0:
                     f.write("----\n\n")
-
-                if i == 0:
-                    f.write(
-                        f".. _class_{class_name}_operator_{sanitize_operator_name(m.name, state)}_{m.return_type.type_name}:\n\n"
-                    )
-
+                out = f".. _class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
+                for parameter in m.parameters:
+                    out += f"_{parameter.type_name.type_name}"
+                out += f":\n\n"
+                f.write(out)
                 ret_type, signature = make_method_signature(class_def, m, "", state)
                 f.write(f"- {ret_type} {signature}\n\n")
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                else:
+                    f.write(".. container:: contribute\n\n\t")
+                    f.write(
+                        translate(
+                            "There is currently no description for this operator. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                        )
+                        + "\n\n"
+                    )
 
                 index += 1
 
@@ -992,6 +1111,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             if theme_item_def.text is not None and theme_item_def.text.strip() != "":
                 f.write(f"{format_text_block(theme_item_def.text.strip(), theme_item_def, state)}\n\n")
+            else:
+                f.write(".. container:: contribute\n\n\t")
+                f.write(
+                    translate(
+                        "There is currently no description for this theme property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                    )
+                    + "\n\n"
+                )
 
             index += 1
 
@@ -1051,7 +1178,10 @@ def make_method_signature(
     if isinstance(definition, MethodDef) and ref_type != "":
         if ref_type == "operator":
             op_name = definition.name.replace("<", "\\<")  # So operator "<" gets correctly displayed.
-            out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}_{definition.return_type.type_name}>` "
+            out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
+            for parameter in definition.parameters:
+                out += f"_{parameter.type_name.type_name}"
+            out += f">` "
         else:
             out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type}_{definition.name}>` "
     else:
@@ -1140,6 +1270,53 @@ def make_link(url: str, title: str) -> str:
     if title != "":
         return f"`{title} <{url}>`__"
     return f"`{url} <{url}>`__"
+
+
+def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
+
+    if dry_run:
+        f = open(os.devnull, "w", encoding="utf-8")
+    else:
+        f = open(os.path.join(output_dir, "index.rst"), "w", encoding="utf-8")
+
+    # Remove the "Edit on Github" button from the online docs page.
+    f.write(":github_url: hide\n\n")
+
+    # Warn contributors not to edit this file directly.
+    # Also provide links to the source files for reference.
+
+    git_branch = get_git_branch()
+    generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
+
+    f.write(".. DO NOT EDIT THIS FILE!!!\n")
+    f.write(".. Generated automatically from Godot engine sources.\n")
+    f.write(f".. Generator: {generator_github_url}.\n\n")
+
+    f.write(".. _doc_class_reference:\n\n")
+
+    main_title = translate("All classes")
+    f.write(f"{main_title}\n")
+    f.write(f"{'=' * len(main_title)}\n\n")
+
+    for group_name in CLASS_GROUPS:
+        if group_name in grouped_classes:
+            group_title = translate(CLASS_GROUPS[group_name])
+
+            f.write(f"{group_title}\n")
+            f.write(f"{'=' * len(group_title)}\n\n")
+
+            f.write(".. toctree::\n")
+            f.write("    :maxdepth: 1\n")
+            f.write(f"    :name: toc-class-ref-{group_name}s\n")
+            f.write("\n")
+
+            if group_name in CLASS_GROUPS_BASE:
+                f.write(f"    class_{CLASS_GROUPS_BASE[group_name].lower()}\n")
+
+            for class_name in grouped_classes[group_name]:
+                f.write(f"    class_{class_name.lower()}\n")
+
+            f.write("\n")
 
 
 # Formatting helpers.

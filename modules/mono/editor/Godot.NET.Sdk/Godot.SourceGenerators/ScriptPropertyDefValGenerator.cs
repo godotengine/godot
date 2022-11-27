@@ -66,13 +66,13 @@ namespace Godot.SourceGenerators
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedName() :
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
 
-            string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                                 + "_ScriptPropertyDefVal.generated";
 
             var source = new StringBuilder();
@@ -170,7 +170,13 @@ namespace Godot.SourceGenerators
                     .Select(s => s?.Initializer ?? null)
                     .FirstOrDefault();
 
-                string? value = initializer?.Value.ToString();
+                // Fully qualify the value to avoid issues with namespaces.
+                string? value = null;
+                if (initializer != null)
+                {
+                    var sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                    value = initializer.Value.FullQualifiedSyntax(sm);
+                }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
                     property.Name, marshalType.Value, propertyType, value));
@@ -207,7 +213,13 @@ namespace Godot.SourceGenerators
                     .Select(s => s.Initializer)
                     .FirstOrDefault(i => i != null);
 
-                string? value = initializer?.Value.ToString();
+                // This needs to be fully qualified to avoid issues with namespaces.
+                string? value = null;
+                if (initializer != null)
+                {
+                    var sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                    value = initializer.Value.FullQualifiedSyntax(sm);
+                }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
                     field.Name, marshalType.Value, fieldType, value));
@@ -237,7 +249,7 @@ namespace Godot.SourceGenerators
                     string defaultValueLocalName = string.Concat("__", exportedMember.Name, "_default_value");
 
                     source.Append("        ");
-                    source.Append(exportedMember.TypeSymbol.FullQualifiedName());
+                    source.Append(exportedMember.TypeSymbol.FullQualifiedNameIncludeGlobal());
                     source.Append(" ");
                     source.Append(defaultValueLocalName);
                     source.Append(" = ");

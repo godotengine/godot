@@ -65,7 +65,9 @@ namespace embree
 
   __forceinline Vec3ia operator +( const Vec3ia& a ) { return a; }
   __forceinline Vec3ia operator -( const Vec3ia& a ) { return _mm_sub_epi32(_mm_setzero_si128(), a.m128); }
-#if defined(__SSSE3__)
+#if (defined(__aarch64__))
+  __forceinline Vec3ia abs       ( const Vec3ia& a ) { return vabsq_s32(a.m128); }
+#elif defined(__SSSE3__)
   __forceinline Vec3ia abs       ( const Vec3ia& a ) { return _mm_abs_epi32(a.m128); }
 #endif
 
@@ -81,7 +83,7 @@ namespace embree
   __forceinline Vec3ia operator -( const Vec3ia& a, const int     b ) { return a-Vec3ia(b); }
   __forceinline Vec3ia operator -( const int     a, const Vec3ia& b ) { return Vec3ia(a)-b; }
 
-#if defined(__SSE4_1__)
+#if defined(__aarch64__) || defined(__SSE4_1__)
   __forceinline Vec3ia operator *( const Vec3ia& a, const Vec3ia& b ) { return _mm_mullo_epi32(a.m128, b.m128); }
   __forceinline Vec3ia operator *( const Vec3ia& a, const int     b ) { return a * Vec3ia(b); }
   __forceinline Vec3ia operator *( const int     a, const Vec3ia& b ) { return Vec3ia(a) * b; }
@@ -116,7 +118,7 @@ namespace embree
   __forceinline Vec3ia& operator -=( Vec3ia& a, const Vec3ia& b ) { return a = a - b; }
   __forceinline Vec3ia& operator -=( Vec3ia& a, const int&   b ) { return a = a - b; }
   
-#if defined(__SSE4_1__)
+#if defined(__aarch64__) || defined(__SSE4_1__)
   __forceinline Vec3ia& operator *=( Vec3ia& a, const Vec3ia& b ) { return a = a * b; }
   __forceinline Vec3ia& operator *=( Vec3ia& a, const int&    b ) { return a = a * b; }
 #endif
@@ -127,18 +129,38 @@ namespace embree
   __forceinline Vec3ia& operator |=( Vec3ia& a, const Vec3ia& b ) { return a = a | b; }
   __forceinline Vec3ia& operator |=( Vec3ia& a, const int&    b ) { return a = a | b; }
   
+#if !defined(__ARM_NEON)
   __forceinline Vec3ia& operator <<=( Vec3ia& a, const int& b ) { return a = a << b; }
   __forceinline Vec3ia& operator >>=( Vec3ia& a, const int& b ) { return a = a >> b; }
+#endif
+
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Select
+  ////////////////////////////////////////////////////////////////////////////////
+
+  __forceinline Vec3ia select( const Vec3ba& m, const Vec3ia& t, const Vec3ia& f ) {
+#if defined(__aarch64__) || defined(__SSE4_1__)
+    return _mm_castps_si128(_mm_blendv_ps(_mm_castsi128_ps(f), _mm_castsi128_ps(t), m));
+#else
+    return _mm_or_si128(_mm_and_si128(_mm_castps_si128(m), t), _mm_andnot_si128(_mm_castps_si128(m), f)); 
+#endif
+  }
 
   ////////////////////////////////////////////////////////////////////////////////
   /// Reductions
   ////////////////////////////////////////////////////////////////////////////////
-
+#if defined(__aarch64__)
+  __forceinline int reduce_add(const Vec3ia& v) { return vaddvq_s32(select(Vec3ba(1,1,1),v,Vec3ia(0))); }
+  __forceinline int reduce_mul(const Vec3ia& v) { return v.x*v.y*v.z; }
+  __forceinline int reduce_min(const Vec3ia& v) { return vminvq_s32(select(Vec3ba(1,1,1),v,Vec3ia(0x7FFFFFFF))); }
+  __forceinline int reduce_max(const Vec3ia& v) { return vmaxvq_s32(select(Vec3ba(1,1,1),v,Vec3ia(0x80000000))); }
+#else
   __forceinline int reduce_add(const Vec3ia& v) { return v.x+v.y+v.z; }
   __forceinline int reduce_mul(const Vec3ia& v) { return v.x*v.y*v.z; }
   __forceinline int reduce_min(const Vec3ia& v) { return min(v.x,v.y,v.z); }
   __forceinline int reduce_max(const Vec3ia& v) { return max(v.x,v.y,v.z); }
-
+#endif
+  
   ////////////////////////////////////////////////////////////////////////////////
   /// Comparison Operators
   ////////////////////////////////////////////////////////////////////////////////
@@ -156,19 +178,7 @@ namespace embree
   __forceinline Vec3ba lt_mask( const Vec3ia& a, const Vec3ia& b ) { return _mm_castsi128_ps(_mm_cmplt_epi32 (a.m128, b.m128)); }
   __forceinline Vec3ba gt_mask( const Vec3ia& a, const Vec3ia& b ) { return _mm_castsi128_ps(_mm_cmpgt_epi32 (a.m128, b.m128)); }
 
-  ////////////////////////////////////////////////////////////////////////////////
-  /// Select
-  ////////////////////////////////////////////////////////////////////////////////
-
-  __forceinline Vec3ia select( const Vec3ba& m, const Vec3ia& t, const Vec3ia& f ) {
-#if defined(__SSE4_1__)
-    return _mm_castps_si128(_mm_blendv_ps(_mm_castsi128_ps(f), _mm_castsi128_ps(t), m));
-#else
-    return _mm_or_si128(_mm_and_si128(_mm_castps_si128(m), t), _mm_andnot_si128(_mm_castps_si128(m), f)); 
-#endif
-  }
-
-#if defined(__SSE4_1__)
+#if defined(__aarch64__) || defined(__SSE4_1__)
   __forceinline Vec3ia min( const Vec3ia& a, const Vec3ia& b ) { return _mm_min_epi32(a.m128,b.m128); }
   __forceinline Vec3ia max( const Vec3ia& a, const Vec3ia& b ) { return _mm_max_epi32(a.m128,b.m128); }
 #else
