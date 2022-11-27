@@ -101,7 +101,6 @@
     <Compile Include="Core\NativeInterop\InteropUtils.cs" />
     <Compile Include="Core\NativeInterop\NativeFuncs.extended.cs" />
     <Compile Include="Core\NativeInterop\NativeVariantPtrArgs.cs" />
-    <Compile Include="Core\NativeInterop\VariantSpanHelpers.cs" />
     <Compile Include="Core\NativeInterop\VariantUtils.cs" />
     <Compile Include="Core\NativeInterop\VariantUtils.generic.cs" />
     <Compile Include="Core\NodePath.cs" />
