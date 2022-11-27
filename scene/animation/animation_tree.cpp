@@ -800,9 +800,18 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				}
 			} else if (track_cache_type == Animation::TYPE_VALUE) {
 				// If it has at least one angle interpolation, it also uses angle interpolation for blending.
-				TrackCacheValue *track_value = memnew(TrackCacheValue);
+				TrackCacheValue *track_value = static_cast<TrackCacheValue *>(track);
+				bool was_discrete = track_value->is_discrete;
+				bool was_using_angle = track_value->is_using_angle;
 				track_value->is_discrete |= anim->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE || anim->value_track_get_update_mode(i) == Animation::UPDATE_TRIGGER;
 				track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
+
+				if (was_discrete != track_value->is_discrete) {
+					WARN_PRINT_ONCE("Tracks with different update modes are blended. Blending prioritizes Discrete/Trigger mode, so other update mode tracks will not be blended.");
+				}
+				if (was_using_angle != track_value->is_using_angle) {
+					WARN_PRINT_ONCE("Tracks for rotation with different interpolation types are blended. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
+				}
 			}
 
 			track->setup_pass = setup_pass;
