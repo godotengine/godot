@@ -96,6 +96,7 @@ private:
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
 	};
+	static ScriptEditorBase *create_editor(const RES &p_resource);
 
 protected:
 	static void _bind_methods();

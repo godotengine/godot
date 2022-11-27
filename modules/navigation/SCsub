@@ -55,7 +55,7 @@ if env["builtin_rvo2"]:
 
 module_obj = []
 
-env_navigation.add_source_files(module_obj, "*.cpp")
+env_navigation.add_source_files_scu(module_obj, "*.cpp")
 
 env.modules_sources += module_obj
 

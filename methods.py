@@ -14,7 +14,7 @@ from SCons.Script import Glob
 from SCons.Variables.BoolVariable import _text2bool
 
 
-def add_source_files(self, sources, files):
+def add_source_files(self, sources, files, allow_gen=False):
     # Convert string to list of absolute paths (including expanding wildcard)
     if isbasestring(files):
         # Keep SCons project-absolute path as they are (no wildcard support)
@@ -30,7 +30,10 @@ def add_source_files(self, sources, files):
             dir_path = self.Dir(".").abspath
             files = sorted(glob.glob(dir_path + "/" + files))
             if skip_gen_cpp:
-                files = [f for f in files if not f.endswith(".gen.cpp")]
+                if allow_gen:
+                    files = [f for f in files]
+                else:
+                    files = [f for f in files if not f.endswith(".gen.cpp")]
 
     # Add each path as compiled Object following environment (self) configuration
     for path in files:
@@ -39,6 +42,53 @@ def add_source_files(self, sources, files):
             print('WARNING: Object "{}" already included in environment sources.'.format(obj))
             continue
         sources.append(obj)
+
+
+def _find_scu_section_name(subdir):
+    # Construct a useful name for the section from the path for debug logging
+    section_path = os.path.abspath(subdir) + "/"
+
+    folders = []
+    folder = ""
+
+    for i in range(8):
+        folder = os.path.dirname(section_path)
+        folder = os.path.basename(folder)
+        if folder == "godot":
+            break
+        folders += [folder]
+        section_path += "../"
+        section_path = os.path.abspath(section_path) + "/"
+
+    section_name = ""
+    for n in range(len(folders)):
+        section_name += folders[len(folders) - n - 1] + " "
+
+    return section_name
+
+
+# Same as add_source_files() but automatically handles single compilation unit build,
+# and also take a section_name string for logging output (the format of the string is not critical).
+def add_source_files_scu(self, sources, files):
+    if self["use_scu"]:
+
+        # If the files are in a subdirectory, we want to create the scu gen
+        # files inside this subdirectory.
+        subdir = os.path.dirname(files)
+        if subdir != "":
+            subdir += "/"
+
+        if self["verbose"]:
+            section_name = _find_scu_section_name(subdir)
+            print("SCU building " + section_name)
+
+        # Add all the gen.cpp files in the directory
+        self.add_source_files(sources, subdir + "scu/scu_*.gen.cpp", True)
+        return True
+    else:
+        # Wraps the original function when scu build is not active.
+        self.add_source_files(sources, files)
+        return False
 
 
 def disable_warnings(self):

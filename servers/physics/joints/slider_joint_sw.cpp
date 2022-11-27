@@ -57,7 +57,7 @@ April 04, 2008
 
 //-----------------------------------------------------------------------------
 
-static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
+real_t SliderJointSW::atan2fast(real_t y, real_t x) {
 	real_t coeff_1 = Math_PI / 4.0f;
 	real_t coeff_2 = 3.0f * coeff_1;
 	real_t abs_y = Math::abs(y);

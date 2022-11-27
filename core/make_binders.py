@@ -86,7 +86,8 @@ MethodBind* create_method_bind($ifret R$ $ifnoret void$ (T::*p_method)($arg, P@$
 #endif
 """
 
-template = """
+template = """#pragma once
+
 #ifndef TYPED_METHOD_BIND
 $iftempl template<$ $ifret class R$ $ifretargs ,$ $arg, class P@$ $iftempl >$
 class MethodBind$argc$$ifret R$$ifconst C$ : public MethodBind {

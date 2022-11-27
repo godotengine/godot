@@ -3,7 +3,7 @@
 Import("env")
 
 env.servers_sources = []
-env.add_source_files(env.servers_sources, "*.cpp")
+env.add_source_files_scu(env.servers_sources, "*.cpp")
 
 SConscript("arvr/SCsub")
 SConscript("camera/SCsub")

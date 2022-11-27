@@ -64,7 +64,7 @@ if env["builtin_libpng"]:
 
 driver_obj = []
 
-env_png.add_source_files(driver_obj, "*.cpp")
+env_png.add_source_files_scu(driver_obj, "*.cpp")
 env.drivers_sources += driver_obj
 
 # Needed to force rebuilding the driver files when the thirdparty library is updated.

@@ -494,7 +494,7 @@ void TextEditor::_bind_methods() {
 	ClassDB::bind_method("_prepare_edit_menu", &TextEditor::_prepare_edit_menu);
 }
 
-static ScriptEditorBase *create_editor(const RES &p_resource) {
+ScriptEditorBase *TextEditor::create_editor(const RES &p_resource) {
 	if (Object::cast_to<TextFile>(*p_resource)) {
 		return memnew(TextEditor);
 	}

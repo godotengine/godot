@@ -55,6 +55,7 @@ class SectionedInspector : public HSplitContainer {
 	void _section_selected();
 
 	void _search_changed(const String &p_what);
+	bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style);
 
 protected:
 	void _notification(int p_what);

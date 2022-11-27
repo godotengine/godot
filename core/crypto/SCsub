@@ -45,7 +45,7 @@ if not has_module:
 
 core_obj = []
 
-env_crypto.add_source_files(core_obj, "*.cpp")
+env_crypto.add_source_files_scu(core_obj, "*.cpp")
 env.core_sources += core_obj
 
 # Needed to force rebuilding the core files when the thirdparty library is updated.

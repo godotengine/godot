@@ -863,6 +863,13 @@ public:
 	virtual void set_scene_pass(uint64_t p_pass);
 	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw);
 
+private:
+	_FORCE_INLINE_ void store_transform(const Transform &p_mtx, float *p_array);
+	_FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array);
+	static const GLenum gl_primitive[];
+	static const GLenum _cube_side_enum[6];
+
+public:
 	void iteration();
 	void initialize();
 	void finalize();

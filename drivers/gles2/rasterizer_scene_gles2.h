@@ -89,6 +89,8 @@ public:
 
 private:
 	uint32_t _light_counter;
+	static const GLenum gl_primitive[];
+	static const GLenum _cube_side_enum[6];
 
 public:
 	RasterizerStorageGLES2 *storage;

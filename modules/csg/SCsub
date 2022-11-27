@@ -6,4 +6,4 @@ Import("env_modules")
 env_csg = env_modules.Clone()
 
 # Godot source files
-env_csg.add_source_files(env.modules_sources, "*.cpp")
+env_csg.add_source_files_scu(env.modules_sources, "*.cpp")

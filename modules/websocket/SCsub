@@ -40,7 +40,7 @@ elif env["builtin_wslay"]:
 
 module_obj = []
 
-env_ws.add_source_files(module_obj, "*.cpp")
+env_ws.add_source_files_scu(module_obj, "*.cpp")
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

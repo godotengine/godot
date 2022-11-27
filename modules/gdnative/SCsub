@@ -4,13 +4,15 @@ Import("env")
 Import("env_modules")
 
 env_gdnative = env_modules.Clone()
-env_gdnative.add_source_files(env.modules_sources, "gdnative.cpp")
-env_gdnative.add_source_files(env.modules_sources, "register_types.cpp")
-env_gdnative.add_source_files(env.modules_sources, "android/*.cpp")
-env_gdnative.add_source_files(env.modules_sources, "gdnative/*.cpp")
-env_gdnative.add_source_files(env.modules_sources, "nativescript/*.cpp")
-env_gdnative.add_source_files(env.modules_sources, "gdnative_library_singleton_editor.cpp")
-env_gdnative.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cpp")
+
+
+# Either add all the folders in one go if a SCU build...
+if env_gdnative.add_source_files_scu(env.modules_sources, "*.cpp") == False:
+    # or if not a scu build, the above line only adds the main folder,
+    # and the subfolders are added separately:
+    env_gdnative.add_source_files(env.modules_sources, "android/*.cpp")
+    env_gdnative.add_source_files(env.modules_sources, "gdnative/*.cpp")
+    env_gdnative.add_source_files(env.modules_sources, "nativescript/*.cpp")
 
 env_gdnative.Prepend(CPPPATH=["#modules/gdnative/include/"])
 

@@ -95,6 +95,9 @@ class HingeJointSW : public JointSW {
 
 	real_t m_appliedImpulse;
 
+	void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q);
+	_FORCE_INLINE_ real_t atan2fast(real_t y, real_t x);
+
 public:
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_HINGE; }
 

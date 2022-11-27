@@ -2,4 +2,4 @@
 
 Import("env")
 
-env.add_source_files(env.scene_sources, "*.cpp")
+env.add_source_files_scu(env.scene_sources, "*.cpp")

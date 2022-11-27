@@ -3,7 +3,7 @@
 Import("env")
 
 env.tests_sources = []
-env.add_source_files(env.tests_sources, "*.cpp")
+env.add_source_files_scu(env.tests_sources, "*.cpp")
 
 lib = env.add_library("tests", env.tests_sources)
 env.Prepend(LIBS=[lib])

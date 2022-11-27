@@ -14,6 +14,7 @@ from collections import OrderedDict
 # Local
 import methods
 import gles_builders
+import scu_builders
 from platform_methods import run_in_subprocess
 
 # scan possible build platforms
@@ -86,6 +87,7 @@ env_base.__class__.disable_module = methods.disable_module
 env_base.__class__.add_module_version_string = methods.add_module_version_string
 
 env_base.__class__.add_source_files = methods.add_source_files
+env_base.__class__.add_source_files_scu = methods.add_source_files_scu
 env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 env_base.__class__.split_lib = methods.split_lib
 
@@ -155,6 +157,7 @@ opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and be
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
+opts.Add(BoolVariable("use_scu", "Use single compilation unit build", False))
 opts.Add(
     EnumVariable(
         "rids",
@@ -335,6 +338,12 @@ else:
     # Disable assert() for production targets (only used in thirdparty code).
     env_base.Append(CPPDEFINES=["NDEBUG"])
 
+    # SCU builds currently use too much compiler memory
+    # in release builds, so disallow except in DEV builds.
+    if env_base["use_scu"]:
+        print("WARNING: SCU build flag ignored in non-DEV builds.")
+        env_base["use_scu"] = False
+
 # SCons speed optimization controlled by the `fast_unsafe` option, which provide
 # more than 10 s speed up for incremental rebuilds.
 # Unsafe as they reduce the certainty of rebuilding all changed files, so it's
@@ -441,6 +450,10 @@ if selected_platform in platform_list:
                 "this will give you a full debug template (use `target=release_debug` "
                 "for an optimized template with debug features)."
             )
+
+    # Run SCU file generation script if in a SCU build.
+    if env["use_scu"]:
+        scu_builders.generate_scu_files(env["verbose"])
 
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.

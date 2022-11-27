@@ -4,4 +4,4 @@ Import("env")
 
 env_math = env.Clone()
 
-env_math.add_source_files(env.core_sources, "*.cpp")
+env_math.add_source_files_scu(env.core_sources, "*.cpp")

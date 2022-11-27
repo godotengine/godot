@@ -51,6 +51,8 @@
 class RasterizerStorageGLES2;
 
 class ShaderGLES2 {
+	static String _mkid(const String &p_id);
+
 protected:
 	struct Enum {
 		uint64_t mask;

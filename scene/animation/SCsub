@@ -6,5 +6,5 @@ Import("env")
 
 scene_obj = []
 
-env.add_source_files(scene_obj, "*.cpp")
+env.add_source_files_scu(scene_obj, "*.cpp")
 env.scene_sources += scene_obj

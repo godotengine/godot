@@ -7,7 +7,7 @@ import main_builders
 
 env.main_sources = []
 
-env.add_source_files(env.main_sources, "*.cpp")
+env.add_source_files_scu(env.main_sources, "*.cpp")
 
 # Order matters here. Higher index controller database files write on top of lower index database files.
 controller_databases = ["gamecontrollerdb.txt", "godotcontrollerdb.txt"]

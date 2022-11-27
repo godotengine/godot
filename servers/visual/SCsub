@@ -2,6 +2,6 @@
 
 Import("env")
 
-env.add_source_files(env.servers_sources, "*.cpp")
+env.add_source_files_scu(env.servers_sources, "*.cpp")
 
 SConscript("portals/SCsub")

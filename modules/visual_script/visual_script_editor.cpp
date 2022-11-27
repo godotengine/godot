@@ -2227,27 +2227,6 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 	return false;
 }
 
-static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
-	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene) {
-		return nullptr;
-	}
-
-	Ref<Script> scr = p_current_node->get_script();
-
-	if (scr.is_valid() && scr == script) {
-		return p_current_node;
-	}
-
-	for (int i = 0; i < p_current_node->get_child_count(); i++) {
-		Node *n = _find_script_node(p_edited_scene, p_current_node->get_child(i), script);
-		if (n) {
-			return n;
-		}
-	}
-
-	return nullptr;
-}
-
 void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	if (p_from != graph) {
 		return;
@@ -2441,7 +2420,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "nodes") {
-		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
+		Node *sn = NSVisualScript::_find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
 
 		if (!sn) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop nodes because script '%s' is not used in this scene."), get_name()));
@@ -2495,7 +2474,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "obj_property") {
-		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
+		Node *sn = NSVisualScript::_find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
 
 		if (!sn && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop properties because script '%s' is not used in this scene.\nDrop holding 'Shift' to just copy the signature."), get_name()));
@@ -4145,7 +4124,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 	if (pinfo.type == Variant::NODE_PATH) {
 		Node *edited_scene = get_tree()->get_edited_scene_root();
 		if (edited_scene) { // Fixing an old crash bug ( Visual Script Crashes on editing NodePath with an empty scene open)
-			Node *script_node = _find_script_node(edited_scene, edited_scene, script);
+			Node *script_node = NSVisualScript::_find_script_node(edited_scene, edited_scene, script);
 
 			if (script_node) {
 				//pick a node relative to the script, IF the script exists
