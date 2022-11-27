@@ -17,14 +17,13 @@
 	while (!vec.empty()){                             \
 		auto ref = vec[0];                            \
 		ref->opposite = nullptr;                      \
-		vec.erase(vec.begin());                       \
+		VEC_ERASE(vec, 0)                             \
 	}
-#define OneManyCleanup(from, from_vec, to, to_vec){   \
-	while (!from->from_vec.empty()){                  \
-		auto ref = from->from_vec[0];                 \
-
-	}
-}
+#define SimulationRecord(recorder, event)             \
+	event->simulation = this;                         \
+	if (recorder){                                    \
+		recorder->push_event(event);                  \
+	} else ((void)0)
 
 #if defined(DEBUG_ENABLED) && defined(RCS_MAINCOMP_DEBUG_LOG)
 #define CleanerLog(classptr, i) \
@@ -41,6 +40,28 @@ VARIANT_ENUM_CAST(RCSRadarProfile::RadarScanBase);
 VARIANT_ENUM_CAST(RCSRadarProfile::RadarScanttributes);
 VARIANT_ENUM_CAST(RCSUnilateralTeamsBind::TeamRelationship);
 VARIANT_ENUM_CAST(RCSUnilateralTeamsBind::InterTeamAttribute);
+
+static RCSMemoryAllocation RCSMemoryAllocationPtr;
+RCSMemoryAllocation* RCSMemoryAllocation::tracker_ptr = nullptr;
+
+RCSMemoryAllocation::RCSMemoryAllocation(){
+	ERR_FAIL_COND(tracker_ptr);
+	tracker_ptr = this;
+}
+RCSMemoryAllocation::~RCSMemoryAllocation(){
+	tracker_ptr = nullptr;
+}
+
+void *operator new(size_t size){
+	RCSMemoryAllocation::tracker_ptr->allocated += size;
+	return malloc(size);
+}
+
+void operator delete(void* memory, size_t size){
+	RCSMemoryAllocation::tracker_ptr->deallocated += size;
+	free(memory);
+}
+
 #pragma endregion
 
 #pragma region EventReport
@@ -107,38 +128,70 @@ RCSSimulation::~RCSSimulation(){
 	// if (recorder) recorder->remove_simulation(this);
 }
 
+#define ThiccCheck(vec) \
+	if (vec.size() > 1000) { print_verbose(String("[" FUNCTION_STR "] She\'s a thicc one...: " + itos(vec.size()))); ERR_FAIL(); }
+
+#define FattCheck(vec) \
+	if (vec.size() > 1000) { print_verbose(String("[" FUNCTION_STR "] She\'s a fatt one...: " + itos(vec.size()))); ERR_FAIL(); }
+
 void RCSSimulation::add_combatant(RCSCombatant* com){
+	FattCheck(combatants);
 	combatants.push_back(com);
 }
 void RCSSimulation::add_squad(RCSSquad* squad){
+	FattCheck(squads);
 	squads.push_back(squad);
 }
 
 void RCSSimulation::add_team(RCSTeam* team){
+	FattCheck(teams);
 	teams.push_back(team);
 }
 
 void RCSSimulation::add_radar(RCSRadar* rad){
+	FattCheck(combatants);
 	radars.push_back(rad);
 }
+
+
 
 void RCSSimulation::remove_combatant(RCSCombatant* com)
 {
 	print_verbose(String("Removing Combatant..."));
+	ThiccCheck(combatants);
 	VEC_ERASE(combatants, com)
 }
 
 void RCSSimulation::remove_squad(RCSSquad* squad)
+{
+	ThiccCheck(squads);
 	VEC_ERASE(squads, squad)
+}
 
 void RCSSimulation::remove_team(RCSTeam* team)
+{
+	ThiccCheck(teams);
 	VEC_ERASE(teams, team)
+}
 
 void RCSSimulation::remove_radar(RCSRadar* rad)
 	VEC_ERASE(radars, rad)
 
 void RCSSimulation::set_recorder(RCSRecording* rec){
 	recorder = rec;
+}
+
+void RCSSimulation::combatant_event(Ref<CombatantEventReport> event){
+	SimulationRecord(recorder, event);
+}
+void RCSSimulation::squad_event(Ref<SquadEventReport> event){
+	SimulationRecord(recorder, event);
+}
+void RCSSimulation::team_event(Ref<TeamEventReport> event){
+	SimulationRecord(recorder, event);
+}
+void RCSSimulation::radar_event(Ref<RadarEventReport> event){
+	SimulationRecord(recorder, event);
 }
 
 RCSCombatant* RCSSimulation::get_combatant_from_iid(const uint64_t& iid) const{
@@ -181,14 +234,14 @@ void RCSSimulation::poll(const float& delta){
 #pragma region Engagement
 
 RCSEngagementInternal::RCSEngagementInternal(){
-	offending_team = nullptr;
+	// offending_team = nullptr;
 	engaging = false;
 	scale = RCSEngagement::NA;
 }
 
 RCSEngagementInternal::~RCSEngagementInternal(){
 	flush_all_references();
-	cut_ties_to_all();
+	// cut_ties_to_all();
 }
 
 Ref<RCSEngagement> RCSEngagementInternal::spawn_reference(){
@@ -198,23 +251,23 @@ Ref<RCSEngagement> RCSEngagementInternal::spawn_reference(){
 	return ref;
 }
 
-void RCSEngagementInternal::cut_ties_team(RCSTeam* team){
-	if (offending_team == team) offending_team = nullptr;
-	VEC_ERASE(deffending_teams, team);
-	VEC_ERASE(participating, team);
-}
-void RCSEngagementInternal::cut_ties_squad(RCSSquad* squad){
-	VEC_ERASE(offending_squads, squad);
-	VEC_ERASE(deffending_squads, squad);
-}
+// void RCSEngagementInternal::cut_ties_team(RCSTeam* team){
+// 	if (offending_team == team) offending_team = nullptr;
+// 	VEC_ERASE(deffending_teams, team);
+// 	VEC_ERASE(participating, team);
+// }
+// void RCSEngagementInternal::cut_ties_squad(RCSSquad* squad){
+// 	VEC_ERASE(offending_squads, squad);
+// 	VEC_ERASE(deffending_squads, squad);
+// }
 
-void RCSEngagementInternal::cut_ties_to_all(){
-	offending_team = nullptr;
-	BilateralCleanup(participating,     engagement_loggers);
-	BilateralCleanup(deffending_teams,  engagement_loggers);
-	BilateralCleanup(offending_squads,  engagement_loggers);
-	BilateralCleanup(deffending_squads, engagement_loggers);
-}
+// void RCSEngagementInternal::cut_ties_to_all(){
+// 	offending_team = nullptr;
+// 	BilateralCleanup(participating,     engagement_loggers);
+// 	BilateralCleanup(deffending_teams,  engagement_loggers);
+// 	BilateralCleanup(offending_squads,  engagement_loggers);
+// 	BilateralCleanup(deffending_squads, engagement_loggers);
+// }
 
 void RCSEngagementInternal::erase_reference(RCSEngagement* to){
 	to->logger = nullptr;
@@ -229,7 +282,7 @@ bool RCSEngagementInternal::is_engagement_happening() const {
 	return engaging;
 }
 bool RCSEngagementInternal::is_engagement_over() const {
-	return !engaging
+	return !engaging;
 }
 uint32_t RCSEngagementInternal::get_scale() const {
 	return scale;
@@ -246,8 +299,9 @@ Array RCSEngagementInternal::get_involving_squads() const {
 	return re;
 }
 RID RCSEngagementInternal::get_offending_team() const {
-	if (!offending_team) return RID();
-	return offending_team->get_self();
+	// if (!offending_team) return RID();
+	// return offending_team->get_self();
+	return offending_team;
 }
 Array RCSEngagementInternal::get_deffending_teams() const {
 	Array re;
@@ -571,6 +625,14 @@ bool RCSTeam::is_engagable(RCSTeam *bogey) const{
 	auto relation = get_link_to(bogey);
 	if (relation.is_null()) return false;
 	return (relation->get_attributes() & RCSUnilateralTeamsBind::ITA_Engagable);
+}
+
+Array RCSTeam::get_engagements_ref() const {
+	Array re;
+	for (uint32_t i = 0, size = engagement_loggers.size(); i < size; i++){
+		re.push_back(Variant(engagement_loggers[i]->spawn_reference()));
+	}
+	return re;
 }
 
 Ref<RCSUnilateralTeamsBind> RCSTeam::add_link(RCSTeam *toward){

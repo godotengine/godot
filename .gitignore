@@ -365,3 +365,4 @@ $RECYCLE.BIN/
 *.lnk
 
 build.cmd
+build_template.cmd

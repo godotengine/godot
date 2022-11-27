@@ -67,6 +67,19 @@ private:
 
 //--------------------------------------------------------------------------
 
+
+struct RCSMemoryAllocation{
+	uint64_t allocated = 0;
+	uint64_t deallocated = 0;
+	static RCSMemoryAllocation *tracker_ptr;
+	RCSMemoryAllocation();
+	~RCSMemoryAllocation();
+	uint64_t currently_allocated() const {
+		if (allocated < deallocated) return 0;
+		return allocated - deallocated;
+	}
+};
+
 class EventReport : public Reference {
 protected:
 	_FORCE_INLINE_ Dictionary primitive_describe() { return Dictionary(); }
@@ -90,6 +103,18 @@ public:
 };
 class RadarEventReport : public EventReport {
 	REPORTER_CLASS(RadarEventReport, EventReport);
+public:
+	enum RDR_EventType {
+		NA = 0,
+		BogeyDetected = 1,
+		BogeyLocked = 2,
+	};
+
+private:
+	uint32_t event_type;
+
+	friend class RCSSimulation;
+	friend class RCSRadar;
 public:
 	RadarEventReport();
 };
@@ -132,11 +157,11 @@ private:
 	bool engaging;
 	uint32_t scale;
 private:
-	VECTOR<RCSTeam*> participating;
-	RCSTeam* offending_team;
-	VECTOR<RCSTeam*> deffending_teams;
-	VECTOR<RCSSquad*> offending_squads;
-	VECTOR<RCSSquad*> deffending_squads;
+	VECTOR<RID> participating;
+	RID offending_team;
+	VECTOR<RID> deffending_teams;
+	VECTOR<RID> offending_squads;
+	VECTOR<RID> deffending_squads;
 
 	friend class RCSSimulation;
 	friend class RCSTeam;
@@ -144,9 +169,9 @@ private:
 private:
 	VECTOR<RCSEngagement*> referencing;
 
-	void cut_ties_team(RCSTeam* team);
-	void cut_ties_squad(RCSSquad* squad);
-	void cut_ties_to_all();
+	// void cut_ties_team(RCSTeam* team);
+	// void cut_ties_squad(RCSSquad* squad);
+	// void cut_ties_to_all();
 
 	void erase_reference(RCSEngagement* to);
 	void flush_all_references();
@@ -158,12 +183,12 @@ public:
 	// bool __is_engagement_happening() const;
 	// bool __is_engagement_over() const;
 	// uint32_t __get_scale() const;
-	VECTOR<RCSTeam*>    *__get_involving_teams() const { return &participating; }
-	VECTOR<RCSSquad*>   *__get_involving_squads() const  { ERR_FAIL_V_MSG(new VECTOR<RCSSquad*>(), "This method is yet to be implemented"); }
-	RCSTeam             *__get_offending_team() const { return offending_team; }
-	VECTOR<RCSTeam*>    *__get_deffending_teams() const { return &deffending_teams; }
-	VECTOR<RCSSquad*>   *__get_offending_squads() const { return  &offending_squads; }
-	VECTOR<RCSSquad*>   *__get_deffending_squads() const { return &deffending_squads; }
+	// VECTOR<RCSTeam*>    *__get_involving_teams() const { return &participating; }
+	// VECTOR<RCSSquad*>   *__get_involving_squads() const  { ERR_FAIL_V_MSG(new VECTOR<RCSSquad*>(), "This method is yet to be implemented"); }
+	// RCSTeam             *__get_offending_team() const { return offending_team; }
+	// VECTOR<RCSTeam*>    *__get_deffending_teams() const { return &deffending_teams; }
+	// VECTOR<RCSSquad*>   *__get_offending_squads() const { return  &offending_squads; }
+	// VECTOR<RCSSquad*>   *__get_deffending_squads() const { return &deffending_squads; }
 // ---------------------------------------------
 	bool is_engagement_happening() const;
 	bool is_engagement_over() const;
@@ -252,10 +277,10 @@ public:
 	void set_recorder(RCSRecording* rec);
 	_FORCE_INLINE_ bool has_recorder() const { return recorder != nullptr; }
 	_FORCE_INLINE_ bool is_recording() const { return (has_recorder() ? (recorder->running) : false); }
-	void combatant_event(Ref<CombatantEventReport> event) {}
-	void squad_event(Ref<SquadEventReport> event) {}
-	void team_event(Ref<TeamEventReport> event) {}
-	void radar_event(Ref<RadarEventReport> event) {}
+	void combatant_event(Ref<CombatantEventReport> event);
+	void squad_event(Ref<SquadEventReport> event);
+	void team_event(Ref<TeamEventReport> event);
+	void radar_event(Ref<RadarEventReport> event);
 
 	RCSCombatant* get_combatant_from_iid(const uint64_t& iid) const;
 
@@ -394,7 +419,10 @@ private:
 
 	VECTOR<RCSCombatant*> combatants;
 
-	VECTOR<RCSEngagementInternal*> engagement_loggers;
+	// VECTOR<RCSEngagementInternal*> engagement_loggers;
+	
+	// void add_engagement(RCSEngagementInternal* engagement) { engagement_loggers.push_back(engagement); }
+	// void remove_engagement(RCSEngagementInternal* engagement) VEC_ERASE(engagement_loggers, engagement)
 	friend class RCSEngagementInternal;
 public:
 	RCSSquad();
@@ -478,6 +506,8 @@ private:
 	VECTOR<Ref<RCSUnilateralTeamsBind>> team_binds;
 
 	VECTOR<RCSEngagementInternal*> engagement_loggers;
+	_FORCE_INLINE_ void add_engagement(RCSEngagementInternal* engagement) { engagement_loggers.push_back(engagement); }
+	_FORCE_INLINE_ void remove_engagement(RCSEngagementInternal* engagement) VEC_ERASE(engagement_loggers, engagement)
 	friend class RCSEngagementInternal;
 public:
 	RCSTeam();
@@ -498,6 +528,8 @@ public:
 	_FORCE_INLINE_ void add_squad(RCSSquad* squad) { squads.push_back(squad); squad_id_allocator += 1; squad->set_squad_id(squad_id_allocator);  }
 	_FORCE_INLINE_ void remove_squad(RCSSquad* squad) VEC_ERASE(squads, squad);
 	bool is_engagable(RCSTeam *bogey) const;
+
+	Array get_engagements_ref() const;
 
 	Ref<RCSUnilateralTeamsBind> add_link(RCSTeam *toward);
 	bool remove_link(RCSTeam *to);

@@ -2,34 +2,38 @@
 
 Sentrience* Sentrience::singleton = nullptr;
 
-#define RCSMakeRID(rid_owner, rdata)                             \
-	RID rid = rid_owner.make_rid(rdata);                         \
-	rdata->set_self(rid);                                        \
-	rdata->_set_combat_server(this);                             \
-	all_rids.push_back(rid);                                     \
+#define RCSMakeRID(rid_owner, rdata)                                    \
+	RID rid = rid_owner.make_rid(rdata);                                \
+	rdata->set_self(rid);                                               \
+	rdata->_set_combat_server(this);                                    \
+	all_rids.push_back(rid);                                            \
 	return rid
-#define GetSimulation(rid_owner, rid)                            \
-	auto target = rid_owner.get(rid);                            \
-	if (target == nullptr) return RID();                         \
-	auto sim = target->simulation;                               \
-	if (sim == nullptr) return RID();                            \
+#define GetSimulation(rid_owner, rid)                                   \
+	auto target = rid_owner.get(rid);                                   \
+	if (target == nullptr) return RID();                                \
+	auto sim = target->simulation;                                      \
+	if (sim == nullptr) return RID();                                   \
 	return sim->get_self()
-#define FreeLog(component_name, rid)                             \
-	log(std::string("Freeing ") + std::string(#component_name)   \
+#define FreeLog(component_name, rid)                                    \
+	log(std::string("Freeing ") + std::string(#component_name)          \
 	 + std::string(" with RID ") + std::to_string(rid.get_id()))
-#define RIDSort(owner, type, rid)                                \
+#define RIDSort(owner, type, rid)                                       \
 	if (owner.owns(rid)) return String(#type);
+#define OverweightAssert(container)                                     \
+	ERR_FAIL_COND(container.size() >= MAX_OBJECT_PER_CONTAINER)
+#define OverweightAssertReturn(container, re)                           \
+	ERR_FAIL_COND_V(container.size() >= MAX_OBJECT_PER_CONTAINER, re)
 
 #define RCS_DEBUG
 
 Sentrience::Sentrience(){
 	ERR_FAIL_COND(singleton);
 	singleton = this;
+	// RCSMemoryAllocationPtr = rcsnew(RCSMemoryAllocation);
 	active = false;
 }
 
 Sentrience::~Sentrience(){
-	singleton = nullptr;
 	// flush_instances_pool();
 	if (!all_rids.empty()) {
 		auto size = all_rids.size();
@@ -39,6 +43,12 @@ Sentrience::~Sentrience(){
 			log(String("In use: ") + rid_sort(rid) + ":" + itos(rid.get_id()));
 		}
 	}
+	auto rcs_alloc = RCSMemoryAllocation::tracker_ptr->currently_allocated();
+	if (rcs_alloc > 0){
+		log(String("There is currently ") + String::humanize_size(rcs_alloc) + String(" of memory spawned by Sentrience that hasn\'t been freed."));
+	}
+	singleton = nullptr;
+	// rcsdel(RCSMemoryAllocationPtr);
 }
 
 String Sentrience::rid_sort(const RID& target){
@@ -65,6 +75,9 @@ void Sentrience::log(const char* msg){
 void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("free_rid", "target"), &Sentrience::free_rid);
 	ClassDB::bind_method(D_METHOD("free_all_instances"), &Sentrience::free_all_instances);
+	ClassDB::bind_method(D_METHOD("get_memory_usage"), &Sentrience::get_memory_usage);
+	ClassDB::bind_method(D_METHOD("get_memory_usage_humanized"), &Sentrience::get_memory_usage_humanized);
+	ClassDB::bind_method(D_METHOD("get_instances_count"), &Sentrience::get_instances_count);
 	ClassDB::bind_method(D_METHOD("flush_instances_pool"), &Sentrience::flush_instances_pool);
 	ClassDB::bind_method(D_METHOD("set_active", "is_active"), &Sentrience::set_active);
 	ClassDB::bind_method(D_METHOD("get_activation_state"), &Sentrience::get_state);
@@ -79,12 +92,14 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("simulation_assert", "r_simul"), &Sentrience::simulation_assert);
 	ClassDB::bind_method(D_METHOD("simulation_set_active", "r_simul", "p_active"), &Sentrience::simulation_set_active);
 	ClassDB::bind_method(D_METHOD("simulation_is_active", "r_simul"), &Sentrience::simulation_is_active);
+	ClassDB::bind_method(D_METHOD("simulation_get_all_engagements", "r_simul"), &Sentrience::simulation_get_all_engagements);
 	ClassDB::bind_method(D_METHOD("simulation_bind_recording", "r_simul", "r_rec"), &Sentrience::simulation_bind_recording);
 	ClassDB::bind_method(D_METHOD("simulation_unbind_recording", "r_simul"), &Sentrience::simulation_unbind_recording);
 	ClassDB::bind_method(D_METHOD("simulation_count_combatant", "r_simul"), &Sentrience::simulation_count_combatant);
 	ClassDB::bind_method(D_METHOD("simulation_count_squad", "r_simul"), &Sentrience::simulation_count_squad);
 	ClassDB::bind_method(D_METHOD("simulation_count_team", "r_simul"), &Sentrience::simulation_count_team);
 	ClassDB::bind_method(D_METHOD("simulation_count_radar", "r_simul"), &Sentrience::simulation_count_radar);
+	ClassDB::bind_method(D_METHOD("simulation_count_engagement", "r_simul"), &Sentrience::simulation_count_engagement);
 	ClassDB::bind_method(D_METHOD("simulation_count_all_instances", "r_simul"), &Sentrience::simulation_count_all_instances);
 
 	ClassDB::bind_method(D_METHOD("combatant_create"), &Sentrience::combatant_create);
@@ -93,6 +108,7 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("combatant_set_simulation", "r_com", "r_simul"), &Sentrience::combatant_set_simulation);
 	ClassDB::bind_method(D_METHOD("combatant_is_squad", "r_com", "r_squad"), &Sentrience::combatant_is_squad);
 	ClassDB::bind_method(D_METHOD("combatant_is_team", "r_com", "r_team"), &Sentrience::combatant_is_team);
+	ClassDB::bind_method(D_METHOD("combatant_get_involving_engagements", "r_com"), &Sentrience::combatant_get_involving_engagements);
 	ClassDB::bind_method(D_METHOD("combatant_set_local_transform", "r_com", "trans"), &Sentrience::combatant_set_local_transform);
 	ClassDB::bind_method(D_METHOD("combatant_set_space_transform", "r_com", "trans"), &Sentrience::combatant_set_space_transform);
 	ClassDB::bind_method(D_METHOD("combatant_get_local_transform", "r_com"), &Sentrience::combatant_get_local_transform);
@@ -116,6 +132,7 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("squad_get_simulation", "r_squad"), &Sentrience::squad_get_simulation);
 	ClassDB::bind_method(D_METHOD("squad_set_simulation", "r_squad", "r_simul"), &Sentrience::squad_set_simulation);
 	ClassDB::bind_method(D_METHOD("squad_is_team", "r_squad", "r_team"), &Sentrience::squad_is_team);
+	ClassDB::bind_method(D_METHOD("squad_get_involving_engagements", "r_squad"), &Sentrience::squad_get_involving_engagements);
 	ClassDB::bind_method(D_METHOD("squad_add_combatant", "r_squad", "r_com"), &Sentrience::squad_add_combatant);
 	ClassDB::bind_method(D_METHOD("squad_remove_combatant", "r_squad", "r_com"), &Sentrience::squad_remove_combatant);
 	ClassDB::bind_method(D_METHOD("squad_has_combatant", "r_squad", "r_com"), &Sentrience::squad_has_combatant);
@@ -130,6 +147,7 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("team_set_simulation", "r_team", "r_simul"), &Sentrience::team_set_simulation);
 	ClassDB::bind_method(D_METHOD("team_add_squad", "r_team", "r_squad"), &Sentrience::team_add_squad);
 	ClassDB::bind_method(D_METHOD("team_remove_squad", "r_team", "r_squad"), &Sentrience::team_remove_squad);
+	ClassDB::bind_method(D_METHOD("team_get_involving_engagements", "r_team"), &Sentrience::team_get_involving_engagements);
 	ClassDB::bind_method(D_METHOD("team_has_squad", "r_team", "r_squad"), &Sentrience::team_has_squad);
 	ClassDB::bind_method(D_METHOD("team_engagable", "from", "to"), &Sentrience::team_engagable);
 	ClassDB::bind_method(D_METHOD("team_create_link", "from", "to"), &Sentrience::team_create_link);
@@ -237,6 +255,7 @@ bool Sentrience::recording_start(const RID& r_rec){
 	int search_res = 0;
 	VEC_FIND(active_rec, recording, search_res);
 	if (search_res != -1) return false;
+	OverweightAssertReturn(active_rec, false);
 	active_rec.push_back(recording);
 	recording->running = true;
 	return true;
@@ -284,7 +303,11 @@ void Sentrience::simulation_set_active(const RID& r_simul, const bool& p_active)
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND(!simulation);
 	if (simulation_is_active(r_simul) == p_active) return;
-	if (p_active) active_simulations.push_back(simulation);
+
+	if (p_active) {
+		OverweightAssert(active_simulations);
+		active_simulations.push_back(simulation);
+	}
 	// else active_simulations.erase(simulation);
 	else VEC_ERASE(active_simulations, simulation)
 }
@@ -293,6 +316,11 @@ bool Sentrience::simulation_is_active(const RID& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, false);
 	VEC_HAS(active_simulations, simulation)
+}
+Array Sentrience::simulation_get_all_engagements(const RID& r_simul){
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, Array());
+	return Array();
 }
 void Sentrience::simulation_bind_recording(const RID& r_simul, const RID& r_rec){
 	auto simulation = simulation_owner.get(r_simul);
@@ -307,27 +335,32 @@ void Sentrience::simulation_unbind_recording(const RID& r_simul){
 }
 uint32_t Sentrience::simulation_count_combatant(const RID& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, -1);
+	ERR_FAIL_COND_V(!simulation, 0);
 	return simulation->get_combatants()->size();
 }
 uint32_t Sentrience::simulation_count_squad(const RID& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, -1);
+	ERR_FAIL_COND_V(!simulation, 0);
 	return simulation->get_squads()->size();
 }
 uint32_t Sentrience::simulation_count_team(const RID& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, -1);
+	ERR_FAIL_COND_V(!simulation, 0);
 	return simulation->get_teams()->size();
 }
 uint32_t Sentrience::simulation_count_radar(const RID& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, -1);
+	ERR_FAIL_COND_V(!simulation, 0);
 	return simulation->get_radars()->size();
+}
+uint32_t Sentrience::simulation_count_engagement(const RID& r_simul){
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, 0);
+	return 0;
 }
 uint32_t Sentrience::simulation_count_all_instances(const RID& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, -1);
+	ERR_FAIL_COND_V(!simulation, 0);
 	return (simulation->get_combatants()->size()	+
 			simulation->get_squads()->size()		+
 			simulation->get_teams()->size()			+
@@ -359,7 +392,17 @@ bool Sentrience::combatant_is_team(const RID& r_com, const RID& r_team){
 	if (!team) return false;
 	return (team->get_self() == r_team);
 }
-
+Array Sentrience::combatant_get_involving_engagements(const RID& r_com){
+	auto combatant = combatant_owner.get(r_com);
+	Array re;
+	ERR_FAIL_COND_V(!combatant, re);
+	// Manually doing this to avoid prompting errors
+	auto squad = combatant->get_squad();
+	if (!squad) return re;
+	auto team = squad->get_team();
+	if (!team) return re;
+	return team->get_engagements_ref();
+}
 void Sentrience::combatant_set_simulation(const RID& r_com, const RID& r_simul){
 	auto combatant = combatant_owner.get(r_com);
 	auto simulation = simulation_owner.get(r_simul);
@@ -484,11 +527,21 @@ bool Sentrience::squad_is_team(const RID& r_squad, const RID& r_team){
 	return (team->get_self() == r_team);
 }
 
+Array Sentrience::squad_get_involving_engagements(const RID& r_squad){
+	auto squad = squad_owner.get(r_squad);
+	Array re;
+	ERR_FAIL_COND_V(!squad, re);
+	auto team = squad->get_team();
+	if (!team) return re;
+	return team->get_engagements_ref();
+}
+
 void Sentrience::squad_add_combatant(const RID& r_squad, const RID& r_com){
 	auto squad = squad_owner.get(r_squad);
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND((!squad || !combatant));
 	if (squad->has_combatant(combatant)) return;
+	OverweightAssert(squad->combatants);
 	combatant->set_squad(squad);
 }
 void Sentrience::squad_remove_combatant(const RID& r_squad, const RID& r_com){
@@ -512,7 +565,7 @@ bool Sentrience::squad_engagable(const RID& from, const RID& to){
 }
 uint32_t Sentrience::squad_count_combatant(const RID& r_squad){
 	auto squad = squad_owner.get(r_squad);
-	ERR_FAIL_COND_V(!squad, -1);
+	ERR_FAIL_COND_V(!squad, 0);
 	return squad->get_combatants()->size();
 }
 void Sentrience::squad_bind_chip(const RID& r_com, const Ref<RCSChip>& chip, const bool& auto_unbind){
@@ -556,6 +609,7 @@ void Sentrience::team_add_squad(const RID& r_team, const RID& r_squad){
 	auto team = team_owner.get(r_team);
 	auto squad = squad_owner.get(r_squad);
 	ERR_FAIL_COND(!team || !squad);
+	OverweightAssert(team->squads);
 	if (!team->has_squad(squad))
 		squad->set_team(team);
 }
@@ -565,6 +619,11 @@ void Sentrience::team_remove_squad(const RID& r_team, const RID& r_squad){
 	ERR_FAIL_COND(!team || !squad);
 	if (team->has_squad(squad))
 		squad->set_team(nullptr);
+}
+Array Sentrience::team_get_involving_engagements(const RID& r_team){
+	auto team = team_owner.get(r_team);
+	ERR_FAIL_COND_V(!team, Array());
+	return team->get_engagements_ref();
 }
 bool Sentrience::team_has_squad(const RID& r_team, const RID& r_squad){
 	auto team = team_owner.get(r_team);
@@ -584,6 +643,7 @@ Ref<RCSUnilateralTeamsBind> Sentrience::team_create_link(const RID& from, const 
 	ERR_FAIL_COND_V(!team_from || !team_to, Ref<RCSUnilateralTeamsBind>());
 	auto preallocated_link = team_from->get_link_to(team_to);
 	if (preallocated_link.is_valid()) return preallocated_link;
+	OverweightAssertReturn(team_from->team_binds, preallocated_link);
 	return team_from->add_link(team_to);
 }
 void Sentrience::team_create_link_bilateral(const RID& from, const RID& to){
@@ -617,7 +677,7 @@ void Sentrience::team_purge_links_multilateral(const RID& from){
 
 uint32_t Sentrience::team_count_squad(const RID& r_team){
 	auto team = team_owner.get(r_team);
-	ERR_FAIL_COND_V(!team, -1);
+	ERR_FAIL_COND_V(!team, 0);
 	return team->get_squads()->size();
 }
 

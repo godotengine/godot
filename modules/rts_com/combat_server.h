@@ -8,6 +8,8 @@
 #include "core/vector.h"
 #include "rcs_maincomp.h"
 
+#define MAX_OBJECT_PER_CONTAINER 1024
+
 class Sentrience : public Object {
 	GDCLASS(Sentrience, Object);
 
@@ -45,6 +47,9 @@ public:
 	/* Core */
 	_FORCE_INLINE_ void set_active(const bool& is_active) { active = is_active;}
 	_FORCE_INLINE_ bool get_state() const { return active; }
+	_FORCE_INLINE_ uint32_t get_instances_count() const { return all_rids.size(); }
+	_FORCE_INLINE_ uint64_t get_memory_usage() const { return RCSMemoryAllocation::tracker_ptr->currently_allocated(); }
+	_FORCE_INLINE_ String get_memory_usage_humanized() const { return String::humanize_size(get_memory_usage()); }
 	virtual void free_rid(const RID& target);
 	void free_all_instances();
 	void flush_instances_pool();
@@ -62,12 +67,14 @@ public:
 	virtual bool simulation_assert(const RID& r_simul);
 	virtual void simulation_set_active(const RID& r_simul, const bool& p_active);
 	virtual bool simulation_is_active(const RID& r_simul);
+	virtual Array simulation_get_all_engagements(const RID& r_simul);
 	virtual void simulation_bind_recording(const RID& r_simul, const RID& r_rec);
 	virtual void simulation_unbind_recording(const RID& r_simul);
 	virtual uint32_t simulation_count_combatant(const RID& r_simul);
 	virtual uint32_t simulation_count_squad(const RID& r_simul);
 	virtual uint32_t simulation_count_team(const RID& r_simul);
 	virtual uint32_t simulation_count_radar(const RID& r_simul);
+	virtual uint32_t simulation_count_engagement(const RID& r_simul);
 	virtual uint32_t simulation_count_all_instances(const RID& r_simul);
 
 	/* Combatant API */
@@ -77,6 +84,7 @@ public:
 	virtual RID combatant_get_simulation(const RID& r_com);
 	virtual bool combatant_is_squad(const RID& r_com, const RID& r_squad);
 	virtual bool combatant_is_team(const RID& r_com, const RID& r_team);
+	virtual Array combatant_get_involving_engagements(const RID& r_com);
 	virtual void combatant_set_local_transform(const RID& r_com, const Transform& trans);
 	virtual Transform combatant_get_space_transform(const RID& r_com);
 	virtual Transform combatant_get_local_transform(const RID& r_com);
@@ -101,6 +109,7 @@ public:
 	virtual void squad_set_simulation(const RID& r_squad, const RID& r_simul);
 	virtual RID squad_get_simulation(const RID& r_squad);
 	virtual bool squad_is_team(const RID& r_squad, const RID& r_team);
+	virtual Array squad_get_involving_engagements(const RID& r_squad);
 	virtual void squad_add_combatant(const RID& r_squad, const RID& r_com);
 	virtual void squad_remove_combatant(const RID& r_squad, const RID& r_com);
 	virtual bool squad_has_combatant(const RID& r_squad, const RID& r_com);
@@ -116,6 +125,7 @@ public:
 	virtual RID team_get_simulation(const RID& r_team);
 	virtual void team_add_squad(const RID& r_team, const RID& r_squad);
 	virtual void team_remove_squad(const RID& r_team, const RID& r_squad);
+	virtual Array team_get_involving_engagements(const RID& r_team);
 	virtual bool team_has_squad(const RID& r_team, const RID& r_squad);
 	virtual bool team_engagable(const RID& from, const RID& to);
 	virtual Ref<RCSUnilateralTeamsBind> team_create_link(const RID& from, const RID& to);
