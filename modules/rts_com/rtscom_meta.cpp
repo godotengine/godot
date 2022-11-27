@@ -18,7 +18,7 @@ void RCSChip::callback(const float& delta){
 	if (script) script->call(RCSC_VMETHOD, Variant(delta));
 }
 
-void RCSChip::set_host(const RID& r_host){
+void RCSChip::set_host(const RID_TYPE& r_host){
 	host = r_host;
 	auto script = get_script_instance();
 	if (script) script->call(RCSC_BOOT_VMETHOD);

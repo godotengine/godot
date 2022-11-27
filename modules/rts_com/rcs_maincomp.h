@@ -157,11 +157,11 @@ private:
 	bool engaging;
 	uint32_t scale;
 private:
-	VECTOR<RID> participating;
-	RID offending_team;
-	VECTOR<RID> deffending_teams;
-	VECTOR<RID> offending_squads;
-	VECTOR<RID> deffending_squads;
+	VECTOR<RID_TYPE> participating;
+	RID_TYPE offending_team;
+	VECTOR<RID_TYPE> deffending_teams;
+	VECTOR<RID_TYPE> offending_squads;
+	VECTOR<RID_TYPE> deffending_squads;
 
 	friend class RCSSimulation;
 	friend class RCSTeam;
@@ -195,7 +195,7 @@ public:
 	uint32_t get_scale() const;
 	Array get_involving_teams() const;
 	Array get_involving_squads() const;
-	RID get_offending_team() const;
+	RID_TYPE get_offending_team() const;
 	Array get_deffending_teams() const;
 	Array get_offending_squads() const;
 	Array get_deffending_squads() const;
@@ -238,7 +238,7 @@ public:
 	_FORCE_INLINE_ EngagementScale get_scale() const		{ ERR_FAIL_COND_V(!logger, NA)     ; return (EngagementScale)logger->get_scale(); }
 	_FORCE_INLINE_ Array get_involving_teams() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_involving_teams(); }
 	_FORCE_INLINE_ Array get_involving_squads() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_involving_squads(); }
-	_FORCE_INLINE_ RID get_offending_team() const			{ ERR_FAIL_COND_V(!logger, RID())  ; return logger->get_offending_team(); }
+	_FORCE_INLINE_ RID_TYPE get_offending_team() const			{ ERR_FAIL_COND_V(!logger, RID_TYPE())  ; return logger->get_offending_team(); }
 	_FORCE_INLINE_ Array get_deffending_teams() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_deffending_teams(); }
 	_FORCE_INLINE_ Array get_offending_squads() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_offending_squads(); }
 	_FORCE_INLINE_ Array get_deffending_squads() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_deffending_squads(); }
@@ -344,7 +344,7 @@ public:
 
 class RCSCombatant : public RID_RCS {
 private:
-	// RID squad_ref;
+	// RID_TYPE squad_ref;
 	RCSSimulation* simulation;
 	RCSSquad* my_squad;
 	Ref<RCSCombatantProfile> combatant_profile;
@@ -487,11 +487,11 @@ public:
 	_FORCE_INLINE_ void set_attributes(const uint32_t& attr) { attributes = attr; emit_changed(); }
 	_FORCE_INLINE_ uint32_t get_attributes() const { return attributes; }
 
-	// _FORCE_INLINE_ void set_from_rid(const RID& rid) { from = rid; emit_changed(); }
-	// _FORCE_INLINE_ RID get_from_rid() const { return (!from ? RID() : from->get_self()); }
+	// _FORCE_INLINE_ void set_from_rid(const RID_TYPE& rid) { from = rid; emit_changed(); }
+	// _FORCE_INLINE_ RID_TYPE get_from_rid() const { return (!from ? RID_TYPE() : from->get_self()); }
 
 	_FORCE_INLINE_ void set_to_rid(RCSTeam *to) { toward = to; emit_changed(); }
-	RID get_to_rid() const;
+	RID_TYPE get_to_rid() const;
 };
 
 class RCSTeam : public RID_RCS {

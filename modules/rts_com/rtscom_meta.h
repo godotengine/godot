@@ -7,14 +7,21 @@
 #include "core/string_name.h"
 #include "core/script_language.h"
 #include "core/print_string.h"
-
-// #define USE_STL_WRAPPER
-// #ifdef USE_STL_WRAPPER
+#include "core/hash_map.h"
 
 #include <vector>
 #include <stdexcept>
 #include <memory>
 #include <iterator>
+
+
+// #define USE_SAFE_RID_COUNT
+#ifdef  USE_SAFE_RID_COUNT
+#define RID_TYPE RIR
+#else
+#define RID_TYPE RID
+#endif
+
 template <class T> class WrappedVector {
 private:
 	std::shared_ptr<std::vector<T>> vec_ref;
@@ -278,10 +285,13 @@ public:
 	}                                                                      \
 }
 
+#ifdef USE_SAFE_RID_COUNT
+#define rcsnew(classptr) std::shared<classptr>()
+#define rcsdel(ptr) { ptr.reset(); }
+#else
 #define rcsnew(classptr) new classptr
 #define rcsdel(ptr) { delete ptr; ptr = nullptr; }
-// #define rcsnew(ptr) memnew(ptr)
-// #define rcsdel(ptr) memdelete(ptr);
+#endif
 
 enum CombatantStatus {
 	UNINITIALIZED,
@@ -291,11 +301,51 @@ enum CombatantStatus {
 };
 
 class RID_RCS;
+// class RCSCompatPassthrough;
+
+#define RIR uint32_t
+// typedef uint32_t RIR;
+
+template <class T> class RCS_Owner {
+public:
+	using rcs_reference = std::shared_ptr<T>;
+private:
+	SafeRefCount ref_counter;
+	HashMap<RIR, std::shared_ptr<T>> ownership_record;
+public:
+	_FORCE_INLINE_ RCS_Owner() {
+
+	}
+	_FORCE_INLINE_ RIR make_rid(std::shared_ptr<T>& ref){
+		RIR rir = ref_counter.refval();
+		ref->_owner = this;
+		ref->_id = rir;
+		ownership_record.operator[](rir) = ref;
+	}
+	_FORCE_INLINE_ bool owns(const RIR& rir){
+		return ownership_record.has(rir);
+	}
+	_FORCE_INLINE_ std::weak_ptr<T> get(const RIR& rir) const {
+		if (!owns(rir)) return std::weak_ptr<T>(std::shared_ptr<T>(nullptr));
+		return std::weak_ptr<T>(ownership_record.operator[](rir));
+	}
+	_FORCE_INLINE_ std::shared_ptr<T> get_locked(const RIR& rir) const {
+		if (!owns(rir)) return std::shared_ptr<T>(nullptr);
+		return std::shared_ptr<T>(ownership_record.operator[](rir));
+	}
+	_FORCE_INLINE_ void free(const RIR& rir){
+		ownership_record.erase(rir);
+	}
+	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned){
+		ownership_record.get_key_list(p_owned);
+	}
+};
+
 
 class RCSChip : public Reference{
 	GDCLASS(RCSChip, Reference);
 private:
-	RID host;
+	RID_TYPE host;
 
 	void callback(const float& delta);
 protected:
@@ -308,8 +358,8 @@ public:
 
 	friend class RID_RCS;
 
-	void set_host(const RID& r_host);
-	_FORCE_INLINE_ RID get_host() const { return host; }
+	void set_host(const RID_TYPE& r_host);
+	_FORCE_INLINE_ RID_TYPE get_host() const { return host; }
 };
 
 #endif

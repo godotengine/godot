@@ -81,7 +81,7 @@ RCSRecording::~RCSRecording(){
 void RCSRecording::purge(){
 	while (!reports_holder.empty()){
 		auto report = reports_holder.operator[](0);
-		rcsdel(report);
+		memdelete(report);
 		VEC_REMOVE(reports_holder, 0);
 	}
 }
@@ -153,8 +153,6 @@ void RCSSimulation::add_radar(RCSRadar* rad){
 	radars.push_back(rad);
 }
 
-
-
 void RCSSimulation::remove_combatant(RCSCombatant* com)
 {
 	print_verbose(String("Removing Combatant..."));
@@ -219,7 +217,7 @@ void RCSSimulation::poll(const float& delta){
 		auto ticket = rrecheck_requests[u];
 		if (!ticket->request_sender) continue;
 		ticket->request_sender->late_check(delta, ticket);
-		rcsdel(ticket);
+		memdelete(ticket);
 	}
 	rrecheck_requests.clear();
 	for (uint32_t j = 0; j < combatants.size(); j++){
@@ -298,8 +296,8 @@ Array RCSEngagementInternal::get_involving_squads() const {
 	VEC2GDARRAY(deffending_squads, re);
 	return re;
 }
-RID RCSEngagementInternal::get_offending_team() const {
-	// if (!offending_team) return RID();
+RID_TYPE RCSEngagementInternal::get_offending_team() const {
+	// if (!offending_team) return RID_TYPE();
 	// return offending_team->get_self();
 	return offending_team;
 }
@@ -590,8 +588,8 @@ void RCSUnilateralTeamsBind::_bind_methods(){
 	// ADD_PROPERTY(PropertyInfo(Variant::_RID, "toward"), "set_to_rid", "get_to_rid");
 }
 
-RID RCSUnilateralTeamsBind::get_to_rid() const{
-	return (!toward ? RID() : toward->get_self());
+RID_TYPE RCSUnilateralTeamsBind::get_to_rid() const{
+	return (!toward ? RID_TYPE() : toward->get_self());
 }
 
 RCSTeam::RCSTeam(){
@@ -754,7 +752,7 @@ void RCSRadarProfile::ping_target(RadarPingRequest* ping_request){
 			ping_request->from->get_self(), ping_request->to->get_self(), ping_request->self_transform);
 		if (script_re.get_type() == Variant::BOOL) ping_request->lock_result = (bool)script_re;
 	} else internal_acquire(ping_request, cache);
-	rcsdel(cache)	
+	memdelete(cache);
 }
 void RCSRadarProfile::swarm_detect(RadarPingRequest* ping_request){
 	auto script = get_script_instance();
@@ -912,7 +910,7 @@ void RCSRadar::ping_base_direct_space_state(const float& delta){
 	uint32_t radar_cmask = rprofile->get_cmask();
 	bool collide_with_bodies = radar_attr & RCSRadarProfile::ScanCollideWithBodies;
 	bool collide_with_areas  = radar_attr & RCSRadarProfile::ScanCollideWithAreas;
-	Set<RID> exclude;
+	Set<RID_TYPE> exclude;
 	for (double angle_offset = -ray_spread; angle_offset < ray_spread; ray_spread += radians_per_ray){
 		Vector3 current_ray = vessel_forward.rotated(VEC3_UP, angle_offset);
 		Vector3 scan_origin = vessel_origin + (current_ray * max_distance);
@@ -927,7 +925,7 @@ void RCSRadar::ping_base_direct_space_state(const float& delta){
 		// This method might skip over some combatant,
 		// but with enough ray density, it wouldn't be a problem
 		if (!combatant) continue;
-		// FIX: exclude the RID regardless of the assertion result
+		// FIX: exclude the RID_TYPE regardless of the assertion result
 		// if it make it all the way to this point ||
 		//                                        \./
 		if (!assigned_vessel->is_engagable(combatant)){

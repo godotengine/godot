@@ -3,20 +3,20 @@
 Sentrience* Sentrience::singleton = nullptr;
 
 #define RCSMakeRID(rid_owner, rdata)                                    \
-	RID rid = rid_owner.make_rid(rdata);                                \
+	RID_TYPE rid = rid_owner.make_rid(rdata);                                \
 	rdata->set_self(rid);                                               \
 	rdata->_set_combat_server(this);                                    \
 	all_rids.push_back(rid);                                            \
 	return rid
 #define GetSimulation(rid_owner, rid)                                   \
 	auto target = rid_owner.get(rid);                                   \
-	if (target == nullptr) return RID();                                \
+	if (target == nullptr) return RID_TYPE();                                \
 	auto sim = target->simulation;                                      \
-	if (sim == nullptr) return RID();                                   \
+	if (sim == nullptr) return RID_TYPE();                                   \
 	return sim->get_self()
 #define FreeLog(component_name, rid)                                    \
 	log(std::string("Freeing ") + std::string(#component_name)          \
-	 + std::string(" with RID ") + std::to_string(rid.get_id()))
+	 + std::string(" with RID_TYPE ") + std::to_string(rid.get_id()))
 #define RIDSort(owner, type, rid)                                       \
 	if (owner.owns(rid)) return String(#type);
 #define OverweightAssert(container)                                     \
@@ -51,7 +51,7 @@ Sentrience::~Sentrience(){
 	// rcsdel(RCSMemoryAllocationPtr);
 }
 
-String Sentrience::rid_sort(const RID& target){
+String Sentrience::rid_sort(const RID_TYPE& target){
 	RIDSort(recording_owner, RCSRecording, target)
 	else RIDSort(simulation_owner, RCSSimulation, target)
 	else RIDSort(combatant_owner, RCSCombatant, target)
@@ -199,13 +199,13 @@ void Sentrience::flush_instances_pool(){
 	uint32_t count = 0;
 	while (!all_rids.empty()) {
 		auto rid = all_rids[0];
-		// log(String("Freeing RID No.") + String(std::to_string(count).c_str()) + String(" with id.") + String(std::to_string(rid.get_id()).c_str()));
+		// log(String("Freeing RID_TYPE No.") + String(std::to_string(count).c_str()) + String(" with id.") + String(std::to_string(rid.get_id()).c_str()));
 		free_rid(rid);
 		VEC_REMOVE(all_rids, 0);
 	}
 }
 
-void Sentrience::free_rid(const RID& target){
+void Sentrience::free_rid(const RID_TYPE& target){
 	if (simulation_owner.owns(target)){
 		FreeLog(RCSSimulation, target);
 		auto stuff = simulation_owner.get(target);
@@ -242,14 +242,14 @@ void Sentrience::free_rid(const RID& target){
 	} 
 }
 
-RID Sentrience::recording_create(){
+RID_TYPE Sentrience::recording_create(){
 	auto subject = rcsnew(RCSRecording);
 	RCSMakeRID(recording_owner, subject);
 }
-bool Sentrience::recording_assert(const RID& r_rec){
+bool Sentrience::recording_assert(const RID_TYPE& r_rec){
 	return recording_owner.owns(r_rec);
 }
-bool Sentrience::recording_start(const RID& r_rec){
+bool Sentrience::recording_start(const RID_TYPE& r_rec){
 	auto recording = recording_owner.get(r_rec);
 	ERR_FAIL_COND_V(!recording, false);
 	int search_res = 0;
@@ -260,7 +260,7 @@ bool Sentrience::recording_start(const RID& r_rec){
 	recording->running = true;
 	return true;
 }
-bool Sentrience::recording_end(const RID& r_rec){
+bool Sentrience::recording_end(const RID_TYPE& r_rec){
 	auto recording = recording_owner.get(r_rec);
 	ERR_FAIL_COND_V(!recording, false);
 	int search_res = 0;
@@ -272,34 +272,34 @@ bool Sentrience::recording_end(const RID& r_rec){
 	return false;
 }
 
-bool Sentrience::recording_running(const RID& r_rec){
+bool Sentrience::recording_running(const RID_TYPE& r_rec){
 	auto recording = recording_owner.get(r_rec);
 	ERR_FAIL_COND_V(!recording, false);
 	return recording->running;
 }
 
-void Sentrience::recording_purge(const RID& r_rec){
+void Sentrience::recording_purge(const RID_TYPE& r_rec){
 	auto recording = recording_owner.get(r_rec);
 	ERR_FAIL_COND(!recording);
 	recording->purge();
 }
 
-RID Sentrience::combatant_create(){
+RID_TYPE Sentrience::combatant_create(){
 	auto subject = rcsnew(RCSCombatant);
 	
 	RCSMakeRID(combatant_owner, subject);
 }
 
-RID Sentrience::simulation_create(){
+RID_TYPE Sentrience::simulation_create(){
 	auto subject = rcsnew(RCSSimulation);
 	RCSMakeRID(simulation_owner, subject);
 }
 
-bool Sentrience::simulation_assert(const RID& r_simul){
+bool Sentrience::simulation_assert(const RID_TYPE& r_simul){
 	return simulation_owner.owns(r_simul);
 }
 
-void Sentrience::simulation_set_active(const RID& r_simul, const bool& p_active){
+void Sentrience::simulation_set_active(const RID_TYPE& r_simul, const bool& p_active){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND(!simulation);
 	if (simulation_is_active(r_simul) == p_active) return;
@@ -312,53 +312,53 @@ void Sentrience::simulation_set_active(const RID& r_simul, const bool& p_active)
 	else VEC_ERASE(active_simulations, simulation)
 }
 
-bool Sentrience::simulation_is_active(const RID& r_simul){
+bool Sentrience::simulation_is_active(const RID_TYPE& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, false);
 	VEC_HAS(active_simulations, simulation)
 }
-Array Sentrience::simulation_get_all_engagements(const RID& r_simul){
+Array Sentrience::simulation_get_all_engagements(const RID_TYPE& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, Array());
 	return Array();
 }
-void Sentrience::simulation_bind_recording(const RID& r_simul, const RID& r_rec){
+void Sentrience::simulation_bind_recording(const RID_TYPE& r_simul, const RID_TYPE& r_rec){
 	auto simulation = simulation_owner.get(r_simul);
 	auto recording = recording_owner.get(r_rec);
 	ERR_FAIL_COND(!simulation);
 	simulation->set_recorder(recording);
 }
-void Sentrience::simulation_unbind_recording(const RID& r_simul){
+void Sentrience::simulation_unbind_recording(const RID_TYPE& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND(!simulation);
 	simulation->set_recorder(nullptr);
 }
-uint32_t Sentrience::simulation_count_combatant(const RID& r_simul){
+uint32_t Sentrience::simulation_count_combatant(const RID_TYPE& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
 	return simulation->get_combatants()->size();
 }
-uint32_t Sentrience::simulation_count_squad(const RID& r_simul){
+uint32_t Sentrience::simulation_count_squad(const RID_TYPE& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
 	return simulation->get_squads()->size();
 }
-uint32_t Sentrience::simulation_count_team(const RID& r_simul){
+uint32_t Sentrience::simulation_count_team(const RID_TYPE& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
 	return simulation->get_teams()->size();
 }
-uint32_t Sentrience::simulation_count_radar(const RID& r_simul){
+uint32_t Sentrience::simulation_count_radar(const RID_TYPE& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
 	return simulation->get_radars()->size();
 }
-uint32_t Sentrience::simulation_count_engagement(const RID& r_simul){
+uint32_t Sentrience::simulation_count_engagement(const RID_TYPE& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
 	return 0;
 }
-uint32_t Sentrience::simulation_count_all_instances(const RID& r_simul){
+uint32_t Sentrience::simulation_count_all_instances(const RID_TYPE& r_simul){
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
 	return (simulation->get_combatants()->size()	+
@@ -367,15 +367,15 @@ uint32_t Sentrience::simulation_count_all_instances(const RID& r_simul){
 			simulation->get_radars()->size()		 );
 }
 
-bool Sentrience::combatant_assert(const RID& r_com){
+bool Sentrience::combatant_assert(const RID_TYPE& r_com){
 	return combatant_owner.owns(r_com);
 }
 
-RID Sentrience::combatant_get_simulation(const RID& r_com){
+RID_TYPE Sentrience::combatant_get_simulation(const RID_TYPE& r_com){
 	GetSimulation(combatant_owner, r_com);
 }
 
-bool Sentrience::combatant_is_squad(const RID& r_com, const RID& r_squad){
+bool Sentrience::combatant_is_squad(const RID_TYPE& r_com, const RID_TYPE& r_squad){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, false);
 	auto squad = combatant->get_squad();
@@ -383,7 +383,7 @@ bool Sentrience::combatant_is_squad(const RID& r_com, const RID& r_squad){
 	return (squad->get_self() == r_squad);
 }
 
-bool Sentrience::combatant_is_team(const RID& r_com, const RID& r_team){
+bool Sentrience::combatant_is_team(const RID_TYPE& r_com, const RID_TYPE& r_team){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, false);
 	auto squad = combatant->get_squad();
@@ -392,7 +392,7 @@ bool Sentrience::combatant_is_team(const RID& r_com, const RID& r_team){
 	if (!team) return false;
 	return (team->get_self() == r_team);
 }
-Array Sentrience::combatant_get_involving_engagements(const RID& r_com){
+Array Sentrience::combatant_get_involving_engagements(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	Array re;
 	ERR_FAIL_COND_V(!combatant, re);
@@ -403,85 +403,85 @@ Array Sentrience::combatant_get_involving_engagements(const RID& r_com){
 	if (!team) return re;
 	return team->get_engagements_ref();
 }
-void Sentrience::combatant_set_simulation(const RID& r_com, const RID& r_simul){
+void Sentrience::combatant_set_simulation(const RID_TYPE& r_com, const RID_TYPE& r_simul){
 	auto combatant = combatant_owner.get(r_com);
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND((!combatant || !simulation));
 	combatant->set_simulation(simulation);
 }
 
-void Sentrience::combatant_set_local_transform(const RID& r_com, const Transform& trans){
+void Sentrience::combatant_set_local_transform(const RID_TYPE& r_com, const Transform& trans){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!combatant);
 	combatant->set_lt(trans);
 }
-void Sentrience::combatant_set_space_transform(const RID& r_com, const Transform& trans){
+void Sentrience::combatant_set_space_transform(const RID_TYPE& r_com, const Transform& trans){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!combatant);
 	combatant->set_st(trans);
 }
 
-Transform Sentrience::combatant_get_space_transform(const RID& r_com){
+Transform Sentrience::combatant_get_space_transform(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, Transform());
 	return combatant->get_st();
 }
-Transform Sentrience::combatant_get_local_transform(const RID& r_com){
+Transform Sentrience::combatant_get_local_transform(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, Transform());
 	return combatant->get_lt();
 }
 
-Transform Sentrience::combatant_get_combined_transform(const RID& r_com){
+Transform Sentrience::combatant_get_combined_transform(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, Transform());
 	return combatant->get_combined_transform();
 }
 
-void Sentrience::combatant_set_stand(const RID& r_com, const uint32_t& stand){
+void Sentrience::combatant_set_stand(const RID_TYPE& r_com, const uint32_t& stand){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!combatant);
 	combatant->set_stand(stand);
 }
-uint32_t Sentrience::combatant_get_stand(const RID& r_com){
+uint32_t Sentrience::combatant_get_stand(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, 0);
 	return combatant->get_stand();
 }
-uint32_t Sentrience::combatant_get_status(const RID& r_com){
+uint32_t Sentrience::combatant_get_status(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, 0);
 	return combatant->get_status();
 }
 
-void Sentrience::combatant_set_iid(const RID& r_com, const uint64_t& iid){
+void Sentrience::combatant_set_iid(const RID_TYPE& r_com, const uint64_t& iid){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!combatant);
 	combatant->set_iid(iid);
 }
-uint64_t Sentrience::combatant_get_iid(const RID& r_com){
+uint64_t Sentrience::combatant_get_iid(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, 0);
 	return combatant->get_iid();
 }
-void Sentrience::combatant_set_detection_meter(const RID& r_com, const double& dmeter){
+void Sentrience::combatant_set_detection_meter(const RID_TYPE& r_com, const double& dmeter){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!combatant);
 	combatant->_set_detection_meter(dmeter);
 }
-double Sentrience::combatant_get_detection_meter(const RID& r_com){
+double Sentrience::combatant_get_detection_meter(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, 0.0);
 	return combatant->_get_detection_meter();
 }
 
-bool Sentrience::combatant_engagable(const RID& from, const RID& to){
+bool Sentrience::combatant_engagable(const RID_TYPE& from, const RID_TYPE& to){
 	auto combatant_1 = combatant_owner.get(from);
 	auto combatant_2 = combatant_owner.get(to);
 	ERR_FAIL_COND_V(!combatant_1 || !combatant_2, false);
 	return combatant_1->is_engagable(combatant_2);
 }
-void Sentrience::combatant_bind_chip(const RID& r_com, const Ref<RCSChip>& chip, const bool& auto_unbind){
+void Sentrience::combatant_bind_chip(const RID_TYPE& r_com, const Ref<RCSChip>& chip, const bool& auto_unbind){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!combatant);
 	if (auto_unbind) combatant->set_chip(Ref<RCSChip>());
@@ -489,36 +489,36 @@ void Sentrience::combatant_bind_chip(const RID& r_com, const Ref<RCSChip>& chip,
 	combatant->set_chip(chip);
 }
 
-void Sentrience::combatant_unbind_chip(const RID& r_com){
+void Sentrience::combatant_unbind_chip(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!combatant);
 	combatant->set_chip(Ref<RCSChip>());
 }
 
-void Sentrience::combatant_set_profile(const RID& r_com, const Ref<RCSCombatantProfile>& profile){
+void Sentrience::combatant_set_profile(const RID_TYPE& r_com, const Ref<RCSCombatantProfile>& profile){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!combatant);
 	combatant->set_profile(profile);
 }
-Ref<RCSCombatantProfile> Sentrience::combatant_get_profile(const RID& r_com){
+Ref<RCSCombatantProfile> Sentrience::combatant_get_profile(const RID_TYPE& r_com){
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, Ref<RCSCombatantProfile>());
 	return combatant->get_profile();
 }
 
-RID Sentrience::squad_create(){
+RID_TYPE Sentrience::squad_create(){
 	auto subject = rcsnew(RCSSquad);
 	RCSMakeRID(squad_owner, subject);
 }
 
-void Sentrience::squad_set_simulation(const RID& r_squad, const RID& r_simul){
+void Sentrience::squad_set_simulation(const RID_TYPE& r_squad, const RID_TYPE& r_simul){
 	auto squad = squad_owner.get(r_squad);
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND(!squad || !simulation);
 	squad->set_simulation(simulation);
 }
 
-bool Sentrience::squad_is_team(const RID& r_squad, const RID& r_team){
+bool Sentrience::squad_is_team(const RID_TYPE& r_squad, const RID_TYPE& r_team){
 	auto squad = squad_owner.get(r_squad);
 	// auto team = team_owner.get(r_team);
 	ERR_FAIL_COND_V(!squad, false);
@@ -527,7 +527,7 @@ bool Sentrience::squad_is_team(const RID& r_squad, const RID& r_team){
 	return (team->get_self() == r_team);
 }
 
-Array Sentrience::squad_get_involving_engagements(const RID& r_squad){
+Array Sentrience::squad_get_involving_engagements(const RID_TYPE& r_squad){
 	auto squad = squad_owner.get(r_squad);
 	Array re;
 	ERR_FAIL_COND_V(!squad, re);
@@ -536,7 +536,7 @@ Array Sentrience::squad_get_involving_engagements(const RID& r_squad){
 	return team->get_engagements_ref();
 }
 
-void Sentrience::squad_add_combatant(const RID& r_squad, const RID& r_com){
+void Sentrience::squad_add_combatant(const RID_TYPE& r_squad, const RID_TYPE& r_com){
 	auto squad = squad_owner.get(r_squad);
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND((!squad || !combatant));
@@ -544,68 +544,68 @@ void Sentrience::squad_add_combatant(const RID& r_squad, const RID& r_com){
 	OverweightAssert(squad->combatants);
 	combatant->set_squad(squad);
 }
-void Sentrience::squad_remove_combatant(const RID& r_squad, const RID& r_com){
+void Sentrience::squad_remove_combatant(const RID_TYPE& r_squad, const RID_TYPE& r_com){
 	auto squad = squad_owner.get(r_squad);
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND((!squad || !combatant));
 	if (!squad->has_combatant(combatant)) return;
 	combatant->set_squad(nullptr);
 }
-bool Sentrience::squad_has_combatant(const RID& r_squad, const RID& r_com){
+bool Sentrience::squad_has_combatant(const RID_TYPE& r_squad, const RID_TYPE& r_com){
 	auto squad = squad_owner.get(r_squad);
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V((!squad || !combatant), false);
 	return squad->has_combatant(combatant);
 }
-bool Sentrience::squad_engagable(const RID& from, const RID& to){
+bool Sentrience::squad_engagable(const RID_TYPE& from, const RID_TYPE& to){
 	auto squad_1 = squad_owner.get(from);
 	auto squad_2 = squad_owner.get(to);
 	ERR_FAIL_COND_V((!squad_1 || !squad_2), false);
 	return squad_1->is_engagable(squad_2);
 }
-uint32_t Sentrience::squad_count_combatant(const RID& r_squad){
+uint32_t Sentrience::squad_count_combatant(const RID_TYPE& r_squad){
 	auto squad = squad_owner.get(r_squad);
 	ERR_FAIL_COND_V(!squad, 0);
 	return squad->get_combatants()->size();
 }
-void Sentrience::squad_bind_chip(const RID& r_com, const Ref<RCSChip>& chip, const bool& auto_unbind){
+void Sentrience::squad_bind_chip(const RID_TYPE& r_com, const Ref<RCSChip>& chip, const bool& auto_unbind){
 	auto squad = squad_owner.get(r_com);
 	ERR_FAIL_COND(!squad);
 	if (auto_unbind) squad->set_chip(Ref<RCSChip>());
 	ERR_FAIL_COND(squad->get_chip().is_valid());
 	squad->set_chip(chip);
 }
-void Sentrience::squad_unbind_chip(const RID& r_com){
+void Sentrience::squad_unbind_chip(const RID_TYPE& r_com){
 	auto squad = squad_owner.get(r_com);
 	ERR_FAIL_COND(!squad);
 	squad->set_chip(Ref<RCSChip>());
 }
 
-RID Sentrience::squad_get_simulation(const RID& r_com){
+RID_TYPE Sentrience::squad_get_simulation(const RID_TYPE& r_com){
 	GetSimulation(squad_owner, r_com);
 }
 
-bool Sentrience::squad_assert(const RID& r_squad){
+bool Sentrience::squad_assert(const RID_TYPE& r_squad){
 	return squad_owner.owns(r_squad);
 }
 
-RID Sentrience::team_create(){
+RID_TYPE Sentrience::team_create(){
 	auto subject = rcsnew(RCSTeam);
 	RCSMakeRID(team_owner, subject);
 }
-bool Sentrience::team_assert(const RID& r_team){
+bool Sentrience::team_assert(const RID_TYPE& r_team){
 	return team_owner.owns(r_team);
 }
-void Sentrience::team_set_simulation(const RID& r_team, const RID& r_simul){
+void Sentrience::team_set_simulation(const RID_TYPE& r_team, const RID_TYPE& r_simul){
 	auto team = team_owner.get(r_team);
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND(!team || !simulation);
 	team->set_simulation(simulation);
 }
-RID Sentrience::team_get_simulation(const RID& r_team){
+RID_TYPE Sentrience::team_get_simulation(const RID_TYPE& r_team){
 	GetSimulation(team_owner, r_team);
 }
-void Sentrience::team_add_squad(const RID& r_team, const RID& r_squad){
+void Sentrience::team_add_squad(const RID_TYPE& r_team, const RID_TYPE& r_squad){
 	auto team = team_owner.get(r_team);
 	auto squad = squad_owner.get(r_squad);
 	ERR_FAIL_COND(!team || !squad);
@@ -613,31 +613,31 @@ void Sentrience::team_add_squad(const RID& r_team, const RID& r_squad){
 	if (!team->has_squad(squad))
 		squad->set_team(team);
 }
-void Sentrience::team_remove_squad(const RID& r_team, const RID& r_squad){
+void Sentrience::team_remove_squad(const RID_TYPE& r_team, const RID_TYPE& r_squad){
 	auto team = team_owner.get(r_team);
 	auto squad = squad_owner.get(r_squad);
 	ERR_FAIL_COND(!team || !squad);
 	if (team->has_squad(squad))
 		squad->set_team(nullptr);
 }
-Array Sentrience::team_get_involving_engagements(const RID& r_team){
+Array Sentrience::team_get_involving_engagements(const RID_TYPE& r_team){
 	auto team = team_owner.get(r_team);
 	ERR_FAIL_COND_V(!team, Array());
 	return team->get_engagements_ref();
 }
-bool Sentrience::team_has_squad(const RID& r_team, const RID& r_squad){
+bool Sentrience::team_has_squad(const RID_TYPE& r_team, const RID_TYPE& r_squad){
 	auto team = team_owner.get(r_team);
 	auto squad = squad_owner.get(r_squad);
 	ERR_FAIL_COND_V(!team || !squad, false);
 	return team->has_squad(squad);
 }
-bool Sentrience::team_engagable(const RID& from, const RID& to){
+bool Sentrience::team_engagable(const RID_TYPE& from, const RID_TYPE& to){
 	auto team_from	= team_owner.get(from);
 	auto team_to	= team_owner.get(to);
 	ERR_FAIL_COND_V(!team_from || !team_to, false);
 	return team_from->is_engagable(team_to);
 }
-Ref<RCSUnilateralTeamsBind> Sentrience::team_create_link(const RID& from, const RID& to){
+Ref<RCSUnilateralTeamsBind> Sentrience::team_create_link(const RID_TYPE& from, const RID_TYPE& to){
 	auto team_from	= team_owner.get(from);
 	auto team_to	= team_owner.get(to);
 	ERR_FAIL_COND_V(!team_from || !team_to, Ref<RCSUnilateralTeamsBind>());
@@ -646,81 +646,81 @@ Ref<RCSUnilateralTeamsBind> Sentrience::team_create_link(const RID& from, const 
 	OverweightAssertReturn(team_from->team_binds, preallocated_link);
 	return team_from->add_link(team_to);
 }
-void Sentrience::team_create_link_bilateral(const RID& from, const RID& to){
+void Sentrience::team_create_link_bilateral(const RID_TYPE& from, const RID_TYPE& to){
 	team_create_link(from, to);
 	team_create_link(to, from);
 }
-Ref<RCSUnilateralTeamsBind> Sentrience::team_get_link(const RID& from, const RID& to){
+Ref<RCSUnilateralTeamsBind> Sentrience::team_get_link(const RID_TYPE& from, const RID_TYPE& to){
 	auto team_from	= team_owner.get(from);
 	auto team_to	= team_owner.get(to);
 	ERR_FAIL_COND_V(!team_from || !team_to, Ref<RCSUnilateralTeamsBind>());
 	return team_from->get_link_to(team_to);
 }
-bool Sentrience::team_has_link(const RID& from, const RID& to){
+bool Sentrience::team_has_link(const RID_TYPE& from, const RID_TYPE& to){
 	return team_get_link(from, to).is_valid();
 }
-bool Sentrience::team_unlink(const RID& from, const RID& to){
+bool Sentrience::team_unlink(const RID_TYPE& from, const RID_TYPE& to){
 	auto team_from	= team_owner.get(from);
 	auto team_to	= team_owner.get(to);
 	ERR_FAIL_COND_V(!team_from || !team_to, false);
 	return team_from->remove_link(team_to);
 }
-bool Sentrience::team_unlink_bilateral(const RID& from, const RID& to){
+bool Sentrience::team_unlink_bilateral(const RID_TYPE& from, const RID_TYPE& to){
 	return (team_unlink(from, to) && team_unlink(to, from));
 }
 
-void Sentrience::team_purge_links_multilateral(const RID& from){
+void Sentrience::team_purge_links_multilateral(const RID_TYPE& from){
 	auto team_from	= team_owner.get(from);
 	ERR_FAIL_COND(!team_from);
 	team_from->purge_all_links();
 }
 
-uint32_t Sentrience::team_count_squad(const RID& r_team){
+uint32_t Sentrience::team_count_squad(const RID_TYPE& r_team){
 	auto team = team_owner.get(r_team);
 	ERR_FAIL_COND_V(!team, 0);
 	return team->get_squads()->size();
 }
 
-void Sentrience::team_bind_chip(const RID& r_team, const Ref<RCSChip>& chip, const bool& auto_unbind){
+void Sentrience::team_bind_chip(const RID_TYPE& r_team, const Ref<RCSChip>& chip, const bool& auto_unbind){
 	auto team = team_owner.get(r_team);
 	ERR_FAIL_COND(!team);
 	if (auto_unbind) team->set_chip(Ref<RCSChip>());
 	ERR_FAIL_COND(team->get_chip().is_valid());
 	team->set_chip(chip);
 }
-void Sentrience::team_unbind_chip(const RID& r_team){
+void Sentrience::team_unbind_chip(const RID_TYPE& r_team){
 	auto team = team_owner.get(r_team);
 	ERR_FAIL_COND(!team);
 	team->set_chip(Ref<RCSChip>());
 }
 
-RID Sentrience::radar_create(){
+RID_TYPE Sentrience::radar_create(){
 	auto subject = rcsnew(RCSRadar);
 	RCSMakeRID(radar_owner, subject);
 }
-bool Sentrience::radar_assert(const RID& r_rad){
+bool Sentrience::radar_assert(const RID_TYPE& r_rad){
 	return radar_owner.owns(r_rad);
 }
-void Sentrience::radar_set_simulation(const RID& r_rad, const RID& r_simul){
+void Sentrience::radar_set_simulation(const RID_TYPE& r_rad, const RID_TYPE& r_simul){
 	auto radar = radar_owner.get(r_rad);
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND(!radar || !simulation);
 	radar->set_simulation(simulation);
 }
-RID Sentrience::radar_get_simulation(const RID& r_rad){
+RID_TYPE Sentrience::radar_get_simulation(const RID_TYPE& r_rad){
 	GetSimulation(radar_owner, r_rad);
 }
-void Sentrience::radar_set_profile(const RID& r_rad, const Ref<RCSRadarProfile>& profile){
+void Sentrience::radar_set_profile(const RID_TYPE& r_rad, const Ref<RCSRadarProfile>& profile){
 	auto radar = radar_owner.get(r_rad);
 	ERR_FAIL_COND(!radar);
 	radar->set_profile(profile);
 }
-Ref<RCSRadarProfile> Sentrience::radar_get_profile(const RID& r_rad){
+Ref<RCSRadarProfile> Sentrience::radar_get_profile(const RID_TYPE& r_rad){
 	auto radar = radar_owner.get(r_rad);
 	ERR_FAIL_COND_V(!radar, Ref<RCSRadarProfile>());
 	return radar->get_profile();
 }
-void Sentrience::radar_request_recheck_on(const RID& r_rad, const RID& r_com){
+void Sentrience::radar_request_recheck_on(const RID_TYPE& r_rad, const RID_TYPE& r_com){
 	auto radar = radar_owner.get(r_rad);
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!radar || !combatant);
@@ -728,12 +728,12 @@ void Sentrience::radar_request_recheck_on(const RID& r_rad, const RID& r_com){
 	ERR_FAIL_COND(!simulation);
 	simulation->radar_request_recheck(new RadarRecheckTicket(radar, combatant));
 }
-Array Sentrience::radar_get_detected(const RID& r_rad){
+Array Sentrience::radar_get_detected(const RID_TYPE& r_rad){
 	auto radar = radar_owner.get(r_rad);
 	ERR_FAIL_COND_V(!radar, Array());
 	return radar->get_detected();
 }
-Array Sentrience::radar_get_locked(const RID& r_rad){
+Array Sentrience::radar_get_locked(const RID_TYPE& r_rad){
 	auto radar = radar_owner.get(r_rad);
 	ERR_FAIL_COND_V(!radar, Array());
 	return radar->get_locked();
