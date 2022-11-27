@@ -102,10 +102,13 @@ class GDScriptAnalyzer {
 	void reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op, bool p_is_root = false);
 	void reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op);
 
-	void const_fold_array(GDScriptParser::ArrayNode *p_array, bool p_is_const);
-	void const_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary, bool p_is_const);
+	Variant make_expression_reduced_value(GDScriptParser::ExpressionNode *p_expression, bool &is_reduced);
+	Variant make_array_reduced_value(GDScriptParser::ArrayNode *p_array, bool &is_reduced);
+	Variant make_dictionary_reduced_value(GDScriptParser::DictionaryNode *p_dictionary, bool &is_reduced);
+	Variant make_subscript_reduced_value(GDScriptParser::SubscriptNode *p_subscript, bool &is_reduced);
 
 	// Helpers.
+	Array make_array_from_element_datatype(const GDScriptParser::DataType &p_element_datatype, const GDScriptParser::Node *p_source_node = nullptr);
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
 	static GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type);
 	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property, bool p_is_arg = false) const;
@@ -117,7 +120,7 @@ class GDScriptAnalyzer {
 	GDScriptParser::DataType get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, const GDScriptParser::DataType &p_b, bool &r_valid, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, bool &r_valid, const GDScriptParser::Node *p_source);
 	void update_const_expression_builtin_type(GDScriptParser::ExpressionNode *p_expression, const GDScriptParser::DataType &p_type, const char *p_usage, bool p_is_cast = false);
-	void update_array_literal_element_type(const GDScriptParser::DataType &p_base_type, GDScriptParser::ArrayNode *p_array_literal);
+	void update_array_literal_element_type(GDScriptParser::ArrayNode *p_array, const GDScriptParser::DataType &p_element_type);
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin = nullptr);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
@@ -125,7 +128,7 @@ class GDScriptAnalyzer {
 	void mark_lambda_use_self();
 	bool class_exists(const StringName &p_class) const;
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
-	static void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
+	void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
 #ifdef DEBUG_ENABLED
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif
@@ -136,6 +139,8 @@ public:
 	Error resolve_body();
 	Error resolve_dependencies();
 	Error analyze();
+
+	Variant make_variable_default_value(GDScriptParser::VariableNode *p_variable);
 
 	GDScriptAnalyzer(GDScriptParser *p_parser);
 };

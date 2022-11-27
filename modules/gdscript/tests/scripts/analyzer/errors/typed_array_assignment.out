@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot include a value of type "String" as "int".

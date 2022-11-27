@@ -1904,14 +1904,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				bool initialized = false;
 				if (lv->initializer != nullptr) {
-					// For typed arrays we need to make sure this is already initialized correctly so typed assignment work.
-					if (local_type.has_type && local_type.builtin_type == Variant::ARRAY) {
-						if (local_type.has_container_element_type()) {
-							codegen.generator->write_construct_typed_array(local, local_type.get_container_element_type(), Vector<GDScriptCodeGenerator::Address>());
-						} else {
-							codegen.generator->write_construct_array(local, Vector<GDScriptCodeGenerator::Address>());
-						}
-					}
 					GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, err, lv->initializer);
 					if (err) {
 						return err;
@@ -2052,14 +2044,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 				// Emit proper line change.
 				codegen.generator->write_newline(field->initializer->start_line);
 
-				// For typed arrays we need to make sure this is already initialized correctly so typed assignment work.
-				if (field_type.has_type && field_type.builtin_type == Variant::ARRAY) {
-					if (field_type.has_container_element_type()) {
-						codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(), Vector<GDScriptCodeGenerator::Address>());
-					} else {
-						codegen.generator->write_construct_array(dst_address, Vector<GDScriptCodeGenerator::Address>());
-					}
-				}
 				GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, r_error, field->initializer, false, true);
 				if (r_error) {
 					memdelete(codegen.generator);
@@ -2100,17 +2084,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 					return nullptr;
 				}
 				GDScriptCodeGenerator::Address dst_addr = codegen.parameters[parameter->identifier->name];
-
-				// For typed arrays we need to make sure this is already initialized correctly so typed assignment work.
-				GDScriptDataType par_type = dst_addr.type;
-				if (par_type.has_type && par_type.builtin_type == Variant::ARRAY) {
-					if (par_type.has_container_element_type()) {
-						codegen.generator->write_construct_typed_array(dst_addr, par_type.get_container_element_type(), Vector<GDScriptCodeGenerator::Address>());
-					} else {
-						codegen.generator->write_construct_array(dst_addr, Vector<GDScriptCodeGenerator::Address>());
-					}
-				}
-
 				codegen.generator->write_assign_default_parameter(dst_addr, src_addr, parameter->use_conversion_assign);
 				if (src_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();

@@ -706,11 +706,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						}
 
 						members_cache.push_back(member.variable->export_info);
-						Variant default_value;
-						if (member.variable->initializer && member.variable->initializer->is_constant) {
-							default_value = member.variable->initializer->reduced_value;
-							GDScriptCompiler::convert_to_initializer_type(default_value, member.variable);
-						}
+						Variant default_value = analyzer.make_variable_default_value(member.variable);
 						member_default_values_cache[member.variable->identifier->name] = default_value;
 					} break;
 					case GDScriptParser::ClassNode::Member::SIGNAL: {
@@ -1525,41 +1521,24 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 		HashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
 		if (E) {
 			const GDScript::MemberInfo *member = &E->value;
-			if (member->setter) {
-				const Variant *val = &p_value;
+			Variant value = p_value;
+			if (member->data_type.has_type && !member->data_type.is_type(value)) {
+				const Variant *args = &p_value;
 				Callable::CallError err;
-				callp(member->setter, &val, 1, err);
-				if (err.error == Callable::CallError::CALL_OK) {
-					return true; //function exists, call was successful
-				} else {
+				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
+				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
 					return false;
 				}
-			} else {
-				if (member->data_type.has_type) {
-					if (member->data_type.builtin_type == Variant::ARRAY && member->data_type.has_container_element_type()) {
-						// Typed array.
-						if (p_value.get_type() == Variant::ARRAY) {
-							return VariantInternal::get_array(&members.write[member->index])->typed_assign(p_value);
-						} else {
-							return false;
-						}
-					} else if (!member->data_type.is_type(p_value)) {
-						// Try conversion
-						Callable::CallError ce;
-						const Variant *value = &p_value;
-						Variant converted;
-						Variant::construct(member->data_type.builtin_type, converted, &value, 1, ce);
-						if (ce.error == Callable::CallError::CALL_OK) {
-							members.write[member->index] = converted;
-							return true;
-						} else {
-							return false;
-						}
-					}
-				}
-				members.write[member->index] = p_value;
 			}
-			return true;
+			if (member->setter) {
+				const Variant *args = &value;
+				Callable::CallError err;
+				callp(member->setter, &args, 1, err);
+				return err.error == Callable::CallError::CALL_OK;
+			} else {
+				members.write[member->index] = value;
+				return true;
+			}
 		}
 	}
 
