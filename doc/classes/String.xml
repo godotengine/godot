@@ -27,14 +27,14 @@
 			<return type="String" />
 			<param index="0" name="from" type="NodePath" />
 			<description>
-				Constructs a new String from the given [NodePath].
+				Constructs a new [String] from the given [NodePath].
 			</description>
 		</constructor>
 		<constructor name="String">
 			<return type="String" />
 			<param index="0" name="from" type="StringName" />
 			<description>
-				Constructs a new String from the given [StringName].
+				Constructs a new [String] from the given [StringName].
 			</description>
 		</constructor>
 	</constructors>
@@ -51,7 +51,7 @@
 			<description>
 				Returns an array containing the bigrams (pairs of consecutive letters) of this string.
 				[codeblock]
-				print("Bigrams".bigrams()) # Prints "[Bi, ig, gr, ra, am, ms]"
+				print("Bigrams".bigrams()) # Prints ["Bi", "ig", "gr", "ra", "am", "ms"]
 				[/codeblock]
 			</description>
 		</method>
@@ -738,7 +738,7 @@
 			</description>
 		</method>
 		<method name="split_floats" qualifiers="const">
-			<return type="PackedFloat32Array" />
+			<return type="PackedFloat64Array" />
 			<param index="0" name="delimiter" type="String" />
 			<param index="1" name="allow_empty" type="bool" default="true" />
 			<description>
@@ -920,66 +920,88 @@
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if both strings do not contain the same sequence of characters.
 			</description>
 		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if this [String] is not equivalent to the given [StringName].
 			</description>
 		</operator>
 		<operator name="operator %">
 			<return type="String" />
 			<param index="0" name="right" type="Variant" />
 			<description>
+				Formats the [String], replacing the placeholders with one or more parameters.
+				To pass multiple parameters, [param right] needs to be an [Array].
+				[codeblock]
+				print("I caught %d fishes!" % 2) # Prints "I caught 2 fishes!"
+
+				var my_message = "Travelling to %s, at %2.2f per second."
+				var location = "Deep Valley"
+				var speed = 40.3485
+				print(my_message % [location, speed]) # Prints "Travelling to Deep Valley, at 40.35 km/h."
+				[/codeblock]
+				In C#, there is no direct equivalent to this operator. Use the [method format] method, instead.
+				For more information, see the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url] tutorial.
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="String" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Appends [param right] at the end of this [String], also known as a string concatenation.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes before [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order. Useful for sorting.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes before [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order, or if both are equal.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if both strings contain the same sequence of characters.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if this [String] is equivalent to the given [StringName].
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes after [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order. Useful for sorting.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes after [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order, or if both are equal.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns a new [String] that only contains the character at [param index]. Indices start from [code]0[/code]. If [param index] is greater or equal to [code]0[/code], the character is fetched starting from the beginning of the string. If [param index] is a negative value, it is fetched starting from the end. Accessing a string out-of-bounds will cause a run-time error, pausing the project execution if run from the editor.
 			</description>
 		</operator>
 	</operators>

@@ -31,6 +31,7 @@
 #include "editor_properties.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
@@ -1169,9 +1170,9 @@ void EditorPropertyLayers::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			button->set_normal_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			button->set_pressed_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			button->set_disabled_texture(get_theme_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
+			button->set_texture_normal(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			button->set_texture_pressed(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			button->set_texture_disabled(get_theme_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
 		} break;
 	}
 }
@@ -1811,8 +1812,8 @@ void EditorPropertyVector2::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 2; i++) {
@@ -2089,8 +2090,8 @@ void EditorPropertyVector3::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 3; i++) {
@@ -2224,8 +2225,8 @@ void EditorPropertyVector2i::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 2; i++) {
@@ -2475,8 +2476,8 @@ void EditorPropertyVector3i::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 3; i++) {
@@ -3844,8 +3845,11 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
 	// Make visual script the correct type.
 	Ref<Script> s = p_resource;
+
+	// The bool is_script applies only to an object's main script.
+	// Changing the value of Script-type exported variables of the main script should not trigger saving/reloading properties.
 	bool is_script = false;
-	if (get_edited_object() && s.is_valid()) {
+	if (get_edited_object() && s.is_valid() && get_edited_property() == CoreStringNames::get_singleton()->_script) {
 		is_script = true;
 		InspectorDock::get_singleton()->store_script_properties(get_edited_object());
 		s->call("set_instance_base_type", get_edited_object()->get_class());

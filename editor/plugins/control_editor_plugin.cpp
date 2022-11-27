@@ -721,6 +721,7 @@ void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 	LayoutPreset preset = (LayoutPreset)p_preset;
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
 
 	for (Node *E : selection) {
@@ -740,6 +741,7 @@ void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 void ControlEditorToolbar::_anchors_to_current_ratio() {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Change Anchors, Offsets (Keep Ratio)"));
 
 	for (Node *E : selection) {
@@ -790,6 +792,7 @@ void ControlEditorToolbar::_anchor_mode_toggled(bool p_status) {
 void ControlEditorToolbar::_container_flags_selected(int p_flags, bool p_vertical) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (p_vertical) {
 		undo_redo->create_action(TTR("Change Vertical Size Flags"));
 	} else {
@@ -1025,7 +1028,6 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	container_v_picker->connect("size_flags_selected", callable_mp(this, &ControlEditorToolbar::_container_flags_selected).bind(true));
 
 	// Editor connections.
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
 	editor_selection->connect("selection_changed", callable_mp(this, &ControlEditorToolbar::_selection_changed));

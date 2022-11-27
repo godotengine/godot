@@ -66,13 +66,13 @@ namespace Godot.SourceGenerators
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedName() :
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
 
-            string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                                 + "_ScriptSerialization.generated";
 
             var source = new StringBuilder();
@@ -241,7 +241,7 @@ namespace Godot.SourceGenerators
             foreach (var signalDelegate in godotSignalDelegates)
             {
                 string signalName = signalDelegate.Name;
-                string signalDelegateQualifiedName = signalDelegate.DelegateSymbol.FullQualifiedName();
+                string signalDelegateQualifiedName = signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal();
 
                 source.Append("        if (info.TryGetSignalEventDelegate<")
                     .Append(signalDelegateQualifiedName)

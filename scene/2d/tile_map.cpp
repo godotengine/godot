@@ -1859,11 +1859,13 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 	while (q_list_element) {
 		TileMapQuadrant &q = *q_list_element->self();
 
-		// Clear the scenes.
-		for (const KeyValue<Vector2i, String> &E : q.scenes) {
-			Node *node = get_node_or_null(E.value);
-			if (node) {
-				node->queue_free();
+		// Clear the scenes if instance cache was cleared.
+		if (instantiated_scenes.is_empty()) {
+			for (const KeyValue<Vector2i, String> &E : q.scenes) {
+				Node *node = get_node_or_null(E.value);
+				if (node) {
+					node->queue_free();
+				}
 			}
 		}
 
@@ -1871,6 +1873,15 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 
 		// Recreate the scenes.
 		for (const Vector2i &E_cell : q.cells) {
+			Vector3i cell_coords = Vector3i(q.layer, E_cell.x, E_cell.y);
+			if (instantiated_scenes.has(cell_coords)) {
+				// Skip scene if the instance was cached (to avoid recreating scenes unnecessarily).
+				continue;
+			}
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				instantiated_scenes.insert(cell_coords);
+			}
+
 			const TileMapCell &c = get_cell(q.layer, E_cell, true);
 
 			TileSetSource *source;
@@ -1907,15 +1918,16 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 }
 
 void TileMap::_scenes_cleanup_quadrant(TileMapQuadrant *p_quadrant) {
-	// Clear the scenes.
-	for (const KeyValue<Vector2i, String> &E : p_quadrant->scenes) {
-		Node *node = get_node_or_null(E.value);
-		if (node) {
-			node->queue_free();
+	// Clear the scenes if instance cache was cleared.
+	if (instantiated_scenes.is_empty()) {
+		for (const KeyValue<Vector2i, String> &E : p_quadrant->scenes) {
+			Node *node = get_node_or_null(E.value);
+			if (node) {
+				node->queue_free();
+			}
 		}
+		p_quadrant->scenes.clear();
 	}
-
-	p_quadrant->scenes.clear();
 }
 
 void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
@@ -4037,6 +4049,7 @@ void TileMap::_bind_methods() {
 void TileMap::_tile_set_changed() {
 	emit_signal(SNAME("changed"));
 	_tile_set_changed_deferred_update_needed = true;
+	instantiated_scenes.clear();
 	call_deferred(SNAME("_tile_set_changed_deferred_update"));
 }
 

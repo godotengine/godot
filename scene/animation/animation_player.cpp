@@ -1442,11 +1442,11 @@ void AnimationPlayer::remove_animation_library(const StringName &p_name) {
 }
 
 void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed), CONNECT_REFERENCE_COUNTED);
+	Ref<Animation>(p_anim)->connect("changed", callable_mp(this, &AnimationPlayer::_animation_changed), CONNECT_REFERENCE_COUNTED);
 }
 
 void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->disconnect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed));
+	Ref<Animation>(p_anim)->disconnect("changed", callable_mp(this, &AnimationPlayer::_animation_changed));
 }
 
 void AnimationPlayer::rename_animation_library(const StringName &p_name, const StringName &p_new_name) {

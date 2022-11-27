@@ -102,7 +102,7 @@ vec3 oct_to_vec3(vec2 e) {
 	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
 	float t = max(-v.z, 0.0);
 	v.xy += t * -sign(v.xy);
-	return v;
+	return normalize(v);
 }
 
 #ifdef USE_INSTANCING
@@ -920,6 +920,7 @@ void main() {
 #else
 	vec3 view = -normalize(vertex_interp);
 #endif
+	highp mat4 model_matrix = world_transform;
 	vec3 albedo = vec3(1.0);
 	vec3 backlight = vec3(0.0);
 	vec4 transmittance_color = vec4(0.0, 0.0, 0.0, 1.0);

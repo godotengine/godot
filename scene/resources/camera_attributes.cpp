@@ -120,7 +120,7 @@ void CameraAttributes::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_exposure_scale", "exposure_grey"), &CameraAttributes::set_auto_exposure_scale);
 	ClassDB::bind_method(D_METHOD("get_auto_exposure_scale"), &CameraAttributes::get_auto_exposure_scale);
 
-	ADD_GROUP("Exposure", "exposure");
+	ADD_GROUP("Exposure", "exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_sensitivity", PROPERTY_HINT_RANGE, "0.1,32000.0,0.1,suffix:ISO"), "set_exposure_sensitivity", "get_exposure_sensitivity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_multiplier", PROPERTY_HINT_RANGE, "0.0,2048.0,0.001"), "set_exposure_multiplier", "get_exposure_multiplier");
 
@@ -472,7 +472,7 @@ void CameraAttributesPhysical::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frustum_near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp,suffix:m"), "set_near", "get_near");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frustum_far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp,suffix:m"), "set_far", "get_far");
 
-	ADD_GROUP("Exposure", "exposure");
+	ADD_GROUP("Exposure", "exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_aperture", PROPERTY_HINT_RANGE, "0.5,64.0,0.01,exp,suffix:f-stop"), "set_aperture", "get_aperture");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_shutter_speed", PROPERTY_HINT_RANGE, "0.1,8000.0,0.001,suffix:1/s"), "set_shutter_speed", "get_shutter_speed");
 

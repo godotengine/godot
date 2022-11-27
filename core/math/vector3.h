@@ -100,6 +100,7 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const;
 	_FORCE_INLINE_ Vector3 bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const;
+	_FORCE_INLINE_ Vector3 bezier_derivative(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const;
 
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
@@ -208,10 +209,11 @@ Vector3 Vector3::round() const {
 }
 
 Vector3 Vector3::lerp(const Vector3 &p_to, const real_t p_weight) const {
-	return Vector3(
-			x + (p_weight * (p_to.x - x)),
-			y + (p_weight * (p_to.y - y)),
-			z + (p_weight * (p_to.z - z)));
+	Vector3 res = *this;
+	res.x = Math::lerp(res.x, p_to.x, p_weight);
+	res.y = Math::lerp(res.y, p_to.y, p_weight);
+	res.z = Math::lerp(res.z, p_to.z, p_weight);
+	return res;
 }
 
 Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
@@ -254,15 +256,18 @@ Vector3 Vector3::cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_
 
 Vector3 Vector3::bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const {
 	Vector3 res = *this;
+	res.x = Math::bezier_interpolate(res.x, p_control_1.x, p_control_2.x, p_end.x, p_t);
+	res.y = Math::bezier_interpolate(res.y, p_control_1.y, p_control_2.y, p_end.y, p_t);
+	res.z = Math::bezier_interpolate(res.z, p_control_1.z, p_control_2.z, p_end.z, p_t);
+	return res;
+}
 
-	/* Formula from Wikipedia article on Bezier curves. */
-	real_t omt = (1.0 - p_t);
-	real_t omt2 = omt * omt;
-	real_t omt3 = omt2 * omt;
-	real_t t2 = p_t * p_t;
-	real_t t3 = t2 * p_t;
-
-	return res * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
+Vector3 Vector3::bezier_derivative(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const {
+	Vector3 res = *this;
+	res.x = Math::bezier_derivative(res.x, p_control_1.x, p_control_2.x, p_end.x, p_t);
+	res.y = Math::bezier_derivative(res.y, p_control_1.y, p_control_2.y, p_end.y, p_t);
+	res.z = Math::bezier_derivative(res.z, p_control_1.z, p_control_2.z, p_end.z, p_t);
+	return res;
 }
 
 real_t Vector3::distance_to(const Vector3 &p_to) const {

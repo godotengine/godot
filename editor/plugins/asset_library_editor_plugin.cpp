@@ -65,13 +65,13 @@ void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Textur
 	ERR_FAIL_COND(p_type != EditorAssetLibrary::IMAGE_QUEUE_ICON);
 	ERR_FAIL_COND(p_index != 0);
 
-	icon->set_normal_texture(p_image);
+	icon->set_texture_normal(p_image);
 }
 
 void EditorAssetLibraryItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			icon->set_normal_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
+			icon->set_texture_normal(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
 			category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 			author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 			price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
@@ -402,7 +402,7 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("AssetLib")));
 			status->add_theme_color_override("font_color", get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
-			dismiss_button->set_normal_texture(get_theme_icon(SNAME("dismiss"), SNAME("AssetLib")));
+			dismiss_button->set_texture_normal(get_theme_icon(SNAME("dismiss"), SNAME("AssetLib")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {

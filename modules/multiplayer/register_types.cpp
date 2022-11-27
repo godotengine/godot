@@ -47,6 +47,7 @@ void initialize_multiplayer_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(SceneReplicationConfig);
 		GDREGISTER_CLASS(MultiplayerSpawner);
 		GDREGISTER_CLASS(MultiplayerSynchronizer);
+		GDREGISTER_CLASS(OfflineMultiplayerPeer);
 		GDREGISTER_CLASS(SceneMultiplayer);
 		MultiplayerAPI::set_default_interface("SceneMultiplayer");
 		MultiplayerDebugger::initialize();

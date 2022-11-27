@@ -116,7 +116,7 @@ namespace embree
   __forceinline size_t popcnt  (const vboolf16& a) { return popcnt(a.v); }
   
   ////////////////////////////////////////////////////////////////////////////////
-  /// Convertion Operations
+  /// Conversion Operations
   ////////////////////////////////////////////////////////////////////////////////
 
   __forceinline unsigned int toInt (const vboolf16& a) { return mm512_mask2int(a); }

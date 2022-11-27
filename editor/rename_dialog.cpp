@@ -46,9 +46,8 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tab_container.h"
 
-RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoRedoManager> p_undo_redo) {
+RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	scene_tree_editor = p_scene_tree_editor;
-	undo_redo = p_undo_redo;
 	preview_node = nullptr;
 
 	set_title(TTR("Batch Rename"));
@@ -582,7 +581,8 @@ void RenameDialog::rename() {
 	// Forward recursive as opposed to the actual renaming.
 	_iterate_scene(root_node, selected_node_list, &global_count);
 
-	if (undo_redo.is_valid() && !to_rename.is_empty()) {
+	if (!to_rename.is_empty()) {
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Batch Rename"));
 
 		// Make sure to iterate reversed so that child nodes will find parents.

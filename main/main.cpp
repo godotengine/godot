@@ -95,6 +95,7 @@
 #include "editor/progress_dialog.h"
 #include "editor/project_converter_3_to_4.h"
 #include "editor/project_manager.h"
+#include "editor/register_editor_types.h"
 #ifndef NO_EDITOR_SPLASH
 #include "main/splash_editor.gen.h"
 #endif
@@ -487,7 +488,7 @@ Error Main::test_setup() {
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	EditorNode::register_editor_types();
+	register_editor_types();
 
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
@@ -540,7 +541,7 @@ void Main::test_cleanup() {
 #ifdef TOOLS_ENABLED
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
-	EditorNode::unregister_editor_types();
+	unregister_editor_types();
 #endif
 
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
@@ -2319,7 +2320,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	EditorNode::register_editor_types();
+	register_editor_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
 
@@ -2741,27 +2742,38 @@ bool Main::start() {
 				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 					const ProjectSettings::AutoloadInfo &info = E.value;
 
-					Ref<Resource> res = ResourceLoader::load(info.path);
-					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 					Node *n = nullptr;
-					Ref<PackedScene> scn = res;
-					Ref<Script> script_res = res;
-					if (scn.is_valid()) {
-						n = scn->instantiate();
-					} else if (script_res.is_valid()) {
-						StringName ibt = script_res->get_instance_base_type();
-						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + info.path);
+					if (ResourceLoader::get_resource_type(info.path) == "PackedScene") {
+						// Cache the scene reference before loading it (for cyclic references)
+						Ref<PackedScene> scn;
+						scn.instantiate();
+						scn->set_path(info.path);
+						scn->reload_from_file();
+						ERR_CONTINUE_MSG(!scn.is_valid(), vformat("Can't autoload: %s.", info.path));
 
-						Object *obj = ClassDB::instantiate(ibt);
+						if (scn.is_valid()) {
+							n = scn->instantiate();
+						}
+					} else {
+						Ref<Resource> res = ResourceLoader::load(info.path);
+						ERR_CONTINUE_MSG(res.is_null(), vformat("Can't autoload: %s.", info.path));
 
-						ERR_CONTINUE_MSG(!obj, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
+						Ref<Script> script_res = res;
+						if (script_res.is_valid()) {
+							StringName ibt = script_res->get_instance_base_type();
+							bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+							ERR_CONTINUE_MSG(!valid_type, vformat("Script does not inherit from Node: %s.", info.path));
 
-						n = Object::cast_to<Node>(obj);
-						n->set_script(script_res);
+							Object *obj = ClassDB::instantiate(ibt);
+
+							ERR_CONTINUE_MSG(!obj, vformat("Cannot instance script for autoload, expected 'Node' inheritance, got: %s."));
+
+							n = Object::cast_to<Node>(obj);
+							n->set_script(script_res);
+						}
 					}
 
-					ERR_CONTINUE_MSG(!n, "Path in autoload not a node or script: " + info.path);
+					ERR_CONTINUE_MSG(!n, vformat("Path in autoload not a node or script: %s.", info.path));
 					n->set_name(info.name);
 
 					//defer so references are all valid on _ready()
@@ -2951,6 +2963,7 @@ bool Main::start() {
 				DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_EDITOR);
 				if (!debug_server_uri.is_empty()) {
 					EditorDebuggerNode::get_singleton()->start(debug_server_uri);
+					EditorDebuggerNode::get_singleton()->set_keep_open(true);
 				}
 			}
 #endif
@@ -3319,7 +3332,7 @@ void Main::cleanup(bool p_force) {
 #ifdef TOOLS_ENABLED
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
-	EditorNode::unregister_editor_types();
+	unregister_editor_types();
 
 #endif
 

@@ -63,6 +63,8 @@ understand that:
 - What happens to you may not happen to other users.
 - We can't take the time to look at your project, understand how it is set up
   and then figure out why it's failing.
+- On the contributors' end, recreating a test project from scratch takes valuable
+  time that can be saved by uploading a *minimal* project.
 
 To speed up our work, **please upload a minimal project** that isolates
 and reproduces the issue. This is always the **best way for us to fix it**.
@@ -74,7 +76,7 @@ if your ZIP file isn't accepted by GitHub because it's too large.
 We recommend always attaching a minimal reproduction project, even if the issue
 may seem simple to reproduce manually.
 
-**Note for C# users:** If your issue is not .NET-specific, please upload a
+**Note for C# users:** If your issue is *not* .NET-specific, please upload a
 minimal reproduction project written in GDScript.
 This will make it easier for contributors to reproduce the issue
 locally as not everyone has a .NET setup available.

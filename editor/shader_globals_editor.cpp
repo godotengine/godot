@@ -111,7 +111,7 @@ protected:
 		undo_redo->add_do_method(this, "_var_changed");
 		undo_redo->add_undo_method(this, "_var_changed");
 		block_update = true;
-		undo_redo->commit_action();
+		undo_redo->commit_action(false);
 		block_update = false;
 
 		return true;
@@ -394,7 +394,7 @@ void ShaderGlobalsEditor::_variable_added() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	Variant value = create_var(RS::GlobalShaderParameterType(variable_type->get_selected()));
 
@@ -413,7 +413,7 @@ void ShaderGlobalsEditor::_variable_added() {
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
-	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	undo_redo->create_action(TTR("Add Shader Global Parameter"));
 	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_remove", p_variable);

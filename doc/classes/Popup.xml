@@ -4,7 +4,7 @@
 		Popup is a base window container for popup-like subwindows.
 	</brief_description>
 	<description>
-		Popup is a base window container for popup-like subwindows. It's a modal by default (see [member popup_window]) and has helpers for custom popup behavior.
+		Popup is a base window container for popup-like subwindows. It's a modal by default (see [member Window.popup_window]) and has helpers for custom popup behavior.
 	</description>
 	<tutorials>
 	</tutorials>

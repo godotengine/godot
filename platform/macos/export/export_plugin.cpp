@@ -34,6 +34,7 @@
 #include "lipo.h"
 #include "macho.h"
 
+#include "core/io/image_loader.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -116,7 +117,8 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.icns"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_category", PROPERTY_HINT_ENUM, "Business,Developer-tools,Education,Entertainment,Finance,Games,Action-games,Adventure-games,Arcade-games,Board-games,Card-games,Casino-games,Dice-games,Educational-games,Family-games,Kids-games,Music-games,Puzzle-games,Racing-games,Role-playing-games,Simulation-games,Sports-games,Strategy-games,Trivia-games,Word-games,Graphics-design,Healthcare-fitness,Lifestyle,Medical,Music,News,Photography,Productivity,Reference,Social-networking,Sports,Travel,Utilities,Video,Weather"), "Games"));
@@ -268,7 +270,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, 
 	memcpy(&p_dest.write[ofs], result.ptr(), res_size);
 }
 
-void EditorExportPlatformMacOS::_make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
+void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
 	Ref<ImageTexture> it = memnew(ImageTexture);
 
 	Vector<uint8_t> data;
@@ -302,7 +304,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<Image> &p_icon, Vector<uint
 	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
 		Ref<Image> copy = p_icon; // does this make sense? doesn't this just increase the reference count instead of making a copy? Do we even need a copy?
 		copy->convert(Image::FORMAT_RGBA8);
-		copy->resize(icon_infos[i].size, icon_infos[i].size);
+		copy->resize(icon_infos[i].size, icon_infos[i].size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
 
 		if (icon_infos[i].is_png) {
 			// Encode PNG icon.
@@ -726,7 +728,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 			String str;
 			int exitcode = 0;
 
-			Error err = OS::get_singleton()->execute("codesign", args, &str, nullptr, true);
+			Error err = OS::get_singleton()->execute("codesign", args, &str, &exitcode, true);
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start codesign executable, make sure Xcode command line tools are installed."));
 				return err;
@@ -1270,9 +1272,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				} else {
 					Ref<Image> icon;
 					icon.instantiate();
-					icon->load(iconpath);
-					if (!icon->is_empty()) {
-						_make_icon(icon, data);
+					err = ImageLoader::load_image(iconpath, icon);
+					if (err == OK && !icon->is_empty()) {
+						_make_icon(p_preset, icon, data);
 					}
 				}
 			}

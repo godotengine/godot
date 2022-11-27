@@ -37,6 +37,31 @@
 #include "scene_replication_interface.h"
 #include "scene_rpc_interface.h"
 
+class OfflineMultiplayerPeer : public MultiplayerPeer {
+	GDCLASS(OfflineMultiplayerPeer, MultiplayerPeer);
+
+public:
+	virtual int get_available_packet_count() const override { return 0; }
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override {
+		*r_buffer = nullptr;
+		r_buffer_size = 0;
+		return OK;
+	}
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override { return OK; }
+	virtual int get_max_packet_size() const override { return 0; }
+
+	virtual void set_target_peer(int p_peer_id) override {}
+	virtual int get_packet_peer() const override { return 0; }
+	virtual TransferMode get_packet_mode() const override { return TRANSFER_MODE_RELIABLE; };
+	virtual int get_packet_channel() const override { return 0; }
+	virtual void disconnect_peer(int p_peer, bool p_force = false) override {}
+	virtual bool is_server() const override { return true; }
+	virtual void poll() override {}
+	virtual void close() override {}
+	virtual int get_unique_id() const override { return TARGET_PEER_SERVER; }
+	virtual ConnectionStatus get_connection_status() const override { return CONNECTION_CONNECTED; };
+};
+
 class SceneMultiplayer : public MultiplayerAPI {
 	GDCLASS(SceneMultiplayer, MultiplayerAPI);
 
@@ -103,6 +128,15 @@ private:
 	Ref<SceneReplicationInterface> replicator;
 	Ref<SceneRPCInterface> rpc;
 
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ void _profile_bandwidth(const String &p_what, int p_value);
+	_FORCE_INLINE_ Error _send(const uint8_t *p_packet, int p_packet_len); // Also profiles.
+#else
+	_FORCE_INLINE_ Error _send(const uint8_t *p_packet, int p_packet_len) {
+		return multiplayer_peer->put_packet(p_packet, p_packet_len);
+	}
+#endif
+
 protected:
 	static void _bind_methods();
 
@@ -162,10 +196,7 @@ public:
 	bool is_server_relay_enabled() const;
 
 	Ref<SceneCacheInterface> get_path_cache() { return cache; }
-
-#ifdef DEBUG_ENABLED
-	void profile_bandwidth(const String &p_inout, int p_size);
-#endif
+	Ref<SceneReplicationInterface> get_replicator() { return replicator; }
 
 	SceneMultiplayer();
 	~SceneMultiplayer();

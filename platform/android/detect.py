@@ -101,16 +101,12 @@ def configure(env: "Environment"):
 
     if env["arch"] == "arm32":
         target_triple = "armv7a-linux-androideabi"
-        env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["arch"] == "arm64":
         target_triple = "aarch64-linux-android"
-        env.extra_suffix = ".armv8" + env.extra_suffix
     elif env["arch"] == "x86_32":
         target_triple = "i686-linux-android"
-        env.extra_suffix = ".x86" + env.extra_suffix
     elif env["arch"] == "x86_64":
         target_triple = "x86_64-linux-android"
-        env.extra_suffix = ".x86_64" + env.extra_suffix
 
     target_option = ["-target", target_triple + str(get_min_sdk_version(env["ndk_platform"]))]
     env.Append(ASFLAGS=[target_option, "-c"])

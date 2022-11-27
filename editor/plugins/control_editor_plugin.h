@@ -45,7 +45,6 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
-class EditorUndoRedoManager;
 class GridContainer;
 
 // Inspector controls.
@@ -207,7 +206,6 @@ public:
 class ControlEditorToolbar : public HBoxContainer {
 	GDCLASS(ControlEditorToolbar, HBoxContainer);
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	EditorSelection *editor_selection = nullptr;
 
 	ControlEditorPopupButton *anchors_button = nullptr;

@@ -42,8 +42,6 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
 
-class EditorUndoRedoManager;
-
 class RenameDialog : public ConfirmationDialog {
 	GDCLASS(RenameDialog, ConfirmationDialog);
 
@@ -64,7 +62,6 @@ class RenameDialog : public ConfirmationDialog {
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 
 	SceneTreeEditor *scene_tree_editor = nullptr;
-	Ref<EditorUndoRedoManager> undo_redo;
 	int global_count = 0;
 
 	LineEdit *lne_search = nullptr;
@@ -110,8 +107,7 @@ public:
 	void reset();
 	void rename();
 
-	RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoRedoManager> p_undo_redo = Ref<EditorUndoRedoManager>());
-	~RenameDialog() {}
+	RenameDialog(SceneTreeEditor *p_scene_tree_editor);
 };
 
 #endif // MODULE_REGEX_ENABLED
