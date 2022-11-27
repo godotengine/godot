@@ -265,8 +265,9 @@
 			<return type="void" />
 			<param index="0" name="signal" type="String" />
 			<param index="1" name="arguments" type="Array" default="[]" />
+			<param index="2" name="persistent" type="bool" default="false" />
 			<description>
-				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal].
+				Adds a new user-defined [param signal] or overrides existing. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and [code]type[/code] [int] (see [enum Variant.Type]), and optionally [code]hint[/code] [int] (see [enum PropertyHint]) and [code]hint_string[/code] [String].
 				[codeblocks]
 				[gdscript]
 				add_user_signal("hurt", [
@@ -290,6 +291,7 @@
 				});
 				[/csharp]
 				[/codeblocks]
+				To store the signal persistently and automatically declare it when instantiating the scene, set the third argument [code]persistent[/code] to [code]true[/code]. If not set or [code]false[/code] makes an existing signal non-persistent. See also [method has_user_signal] and [method remove_user_signal].
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg">
@@ -770,6 +772,13 @@
 			<description>
 				Removes the given entry [param name] from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
 				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited.
+			</description>
+		</method>
+		<method name="remove_user_signal">
+			<return type="void" />
+			<param index="0" name="signal" type="String" />
+			<description>
+				Removes the previously added user-defined [param signal], if it exists. Only removes signals added with [method add_user_signal].
 			</description>
 		</method>
 		<method name="set">

@@ -45,6 +45,7 @@
 
 #define PACKED_SCENE_VERSION 2
 #define META_POINTER_PROPERTY_BASE "metadata/_editor_prop_ptr_"
+
 bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
 }
@@ -337,14 +338,34 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				}
 			}
 
-			//name
-
 			//groups
 			for (int j = 0; j < n.groups.size(); j++) {
 				ERR_FAIL_INDEX_V(n.groups[j], sname_count, nullptr);
 				node->add_to_group(snames[n.groups[j]], true);
 			}
 
+			//signals
+			if (node->has_meta(META_USER_SIGNALS)) {
+				Array user_signals = node->get_meta(META_USER_SIGNALS);
+				for (int j = 0; j < user_signals.size(); j++) {
+					// Make sure has name.
+					Dictionary d_mi = user_signals[j];
+					if (!d_mi.has("name")) {
+						continue;
+					}
+					// Create method info.
+					MethodInfo mi;
+					mi.name = d_mi["name"];
+					Array stored_args = d_mi.get("args", Array());
+					for (int k = 0; k < stored_args.size(); k++) {
+						mi.arguments.push_back(PropertyInfo::from_dict((Dictionary)stored_args[k]));
+					}
+					// Add as user signal.
+					node->add_user_signal(mi);
+				}
+			}
+
+			//name
 			if (n.instance >= 0 || n.type != TYPE_INSTANTIATED || i == 0) {
 				//if node was not part of instance, must set its name, parenthood and ownership
 				if (i > 0) {

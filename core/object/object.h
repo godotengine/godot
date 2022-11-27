@@ -149,6 +149,8 @@ enum PropertyUsageFlags {
 #define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix, m_property_usage_flags)
 #define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
 
+#define META_USER_SIGNALS "_user_signals"
+
 // Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
 // PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
@@ -617,7 +619,8 @@ private:
 	mutable StringName _class_name;
 	mutable const StringName *_class_ptr = nullptr;
 
-	void _add_user_signal(const String &p_name, const Array &p_args = Array());
+	void _add_user_signal(const String &p_name, const Array &p_args = Array(), const bool &p_persistent = false);
+	void _remove_user_signal(const String &p_name);
 	bool _has_user_signal(const StringName &p_name) const;
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	TypedArray<Dictionary> _get_signal_list() const;

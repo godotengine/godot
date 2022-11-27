@@ -953,12 +953,33 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 void Object::add_user_signal(const MethodInfo &p_signal) {
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
 	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), "User signal's name conflicts with a built-in signal of '" + get_class_name() + "'.");
-	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), "Trying to add already existing signal '" + p_signal.name + "'.");
 	SignalData s;
 	s.user = p_signal;
 	signal_map[p_signal.name] = s;
+	// Note. The meta part is only handled in _add_user_signal (which calls here).
 }
 
+void Object::_remove_user_signal(const String &p_name) {
+	ERR_FAIL_COND_MSG(p_name.is_empty(), "Signal name cannot be empty.");
+	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_name), "User signal's name conflicts with a built-in signal of '" + get_class_name() + "'.");
+	ERR_FAIL_COND_MSG(!signal_map.has(p_name), "Cannot find user signal '" + p_name + "'.");
+	signal_map.erase(p_name);
+	// Remove from meta storage.
+	if (has_meta(META_USER_SIGNALS)) {
+		Array user_signals = get_meta(META_USER_SIGNALS);
+		for (int i = 0; i < user_signals.size(); i++) {
+			if (((MethodInfo)user_signals[i]).name == p_name) {
+				user_signals.remove_at(i);
+				if (user_signals.is_empty()) {
+					remove_meta(META_USER_SIGNALS);
+				} else {
+					set_meta(META_USER_SIGNALS, user_signals);
+				}
+				break;
+			}
+		}
+	}
+}
 bool Object::_has_user_signal(const StringName &p_name) const {
 	if (!signal_map.has(p_name)) {
 		return false;
@@ -1086,29 +1107,59 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	return err;
 }
 
-void Object::_add_user_signal(const String &p_name, const Array &p_args) {
+void Object::_add_user_signal(const String &p_name, const Array &p_args, const bool &p_persistent) {
 	// this version of add_user_signal is meant to be used from scripts or external apis
 	// without access to ADD_SIGNAL in bind_methods
 	// added events are per instance, as opposed to the other ones, which are global
+	// also handles persistent storage for the signal
 
+	// Create method info.
 	MethodInfo mi;
 	mi.name = p_name;
-
 	for (int i = 0; i < p_args.size(); i++) {
-		Dictionary d = p_args[i];
-		PropertyInfo param;
-
-		if (d.has("name")) {
-			param.name = d["name"];
-		}
-		if (d.has("type")) {
-			param.type = (Variant::Type)(int)d["type"];
-		}
-
-		mi.arguments.push_back(param);
+		mi.arguments.push_back(PropertyInfo::from_dict((Dictionary)p_args[i]));
 	}
 
+	// Add signal.
+	bool did_exist = signal_map.has(p_name);
 	add_user_signal(mi);
+
+	// Handle meta storage.
+	if (p_persistent || did_exist) {
+		// Find index.
+		int i_signal = -1;
+		Array user_signals;
+		if (has_meta(META_USER_SIGNALS)) {
+			user_signals = get_meta(META_USER_SIGNALS);
+			for (int i = 0; i < user_signals.size(); i++) {
+				if (((Dictionary)user_signals[i])["name"] == p_name) {
+					i_signal = i;
+					break;
+				}
+			}
+		}
+		// Add.
+		if (p_persistent) {
+			Dictionary d_mi;
+			d_mi["name"] = p_name;
+			d_mi["args"] = p_args;
+			if (i_signal == -1) {
+				user_signals.append(d_mi);
+			} else {
+				user_signals[i_signal] = d_mi;
+			}
+			set_meta(META_USER_SIGNALS, user_signals);
+		}
+		// Remove.
+		else if (i_signal != -1) {
+			user_signals.remove_at(i_signal);
+			if (user_signals.is_empty()) {
+				remove_meta(META_USER_SIGNALS);
+			} else {
+				set_meta(META_USER_SIGNALS, user_signals);
+			}
+		}
+	}
 }
 
 TypedArray<Dictionary> Object::_get_signal_list() const {
@@ -1486,7 +1537,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_meta", "name"), &Object::has_meta);
 	ClassDB::bind_method(D_METHOD("get_meta_list"), &Object::_get_meta_list_bind);
 
-	ClassDB::bind_method(D_METHOD("add_user_signal", "signal", "arguments"), &Object::_add_user_signal, DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("add_user_signal", "signal", "arguments", "persistent"), &Object::_add_user_signal, DEFVAL(Array()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_user_signal", "signal"), &Object::_remove_user_signal);
 	ClassDB::bind_method(D_METHOD("has_user_signal", "signal"), &Object::_has_user_signal);
 
 	{
