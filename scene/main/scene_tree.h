@@ -135,7 +135,7 @@ private:
 
 	// Safety for when a node is deleted while a group is being called.
 	int call_lock = 0;
-	HashSet<ObjectID> call_skip; // Skip erased nodes. Store ID instead of pointer to avoid false positives when node is freed and a new node is allocated at the pointed address.
+	HashSet<Node *> call_skip; // Skip erased nodes.
 
 	List<ObjectID> delete_queue;
 
