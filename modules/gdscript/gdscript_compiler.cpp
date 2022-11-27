@@ -2284,7 +2284,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 					_set_error(vformat(R"(Could not find class "%s" in "%s".)", base->fully_qualified_name, base->path), nullptr);
 					return ERR_COMPILATION_FAILED;
 				}
-				ERR_FAIL_COND_V(!base->is_valid(), ERR_BUG);
+				ERR_FAIL_COND_V(!base->is_valid() && !base->reloading, ERR_BUG);
 			}
 
 			p_script->base = base;
