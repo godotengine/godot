@@ -64,7 +64,7 @@
 			<return type="Vector3" />
 			<param index="0" name="to_point" type="Vector3" />
 			<description>
-				Returns the closest baked point (in curve's local space) to [param to_point].
+				Returns the closest point on baked segments (in curve's local space) to [param to_point].
 				[param to_point] must be in this curve's local space.
 			</description>
 		</method>

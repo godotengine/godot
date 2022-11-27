@@ -1407,15 +1407,15 @@ void Curve3D::_bake_segment3d_even_length(RBMap<real_t, Vector3> &r_bake, real_t
 	Vector3 beg = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_begin);
 	Vector3 end = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_end);
 
-	size_t length = beg.distance_to(end);
+	real_t length = beg.distance_to(end);
 
 	if (length > p_length && p_depth < p_max_depth) {
 		real_t mp = (p_begin + p_end) * 0.5;
 		Vector3 mid = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, mp);
 		r_bake[mp] = mid;
 
-		_bake_segment3d(r_bake, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_max_depth, p_length);
-		_bake_segment3d(r_bake, mp, p_end, p_a, p_out, p_b, p_in, p_depth + 1, p_max_depth, p_length);
+		_bake_segment3d_even_length(r_bake, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_max_depth, p_length);
+		_bake_segment3d_even_length(r_bake, mp, p_end, p_a, p_out, p_b, p_in, p_depth + 1, p_max_depth, p_length);
 	}
 }
 
@@ -1839,10 +1839,11 @@ Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 	real_t nearest_dist = -1.0f;
 
 	for (int i = 0; i < pc - 1; i++) {
+		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
 		Vector3 origin = r[i];
-		Vector3 direction = (r[i + 1] - origin) / bake_interval;
+		Vector3 direction = (r[i + 1] - origin) / interval;
 
-		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, bake_interval);
+		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, interval);
 		Vector3 proj = origin + direction * d;
 
 		real_t dist = proj.distance_squared_to(p_to_point);
@@ -1875,13 +1876,16 @@ real_t Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 
 	real_t nearest = 0.0f;
 	real_t nearest_dist = -1.0f;
-	real_t offset = 0.0f;
+	real_t offset;
 
 	for (int i = 0; i < pc - 1; i++) {
-		Vector3 origin = r[i];
-		Vector3 direction = (r[i + 1] - origin) / bake_interval;
+		offset = baked_dist_cache[i];
 
-		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, bake_interval);
+		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		Vector3 origin = r[i];
+		Vector3 direction = (r[i + 1] - origin) / interval;
+
+		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, interval);
 		Vector3 proj = origin + direction * d;
 
 		real_t dist = proj.distance_squared_to(p_to_point);
@@ -1890,8 +1894,6 @@ real_t Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 			nearest = offset + d;
 			nearest_dist = dist;
 		}
-
-		offset += bake_interval;
 	}
 
 	return nearest;
