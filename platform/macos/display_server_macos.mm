@@ -2348,9 +2348,6 @@ void DisplayServerMacOS::reparent_check(WindowID p_window) {
 
 		if (parent_screen == screen) {
 			if (![[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
-				if (wd.exclusive) {
-					ERR_FAIL_COND_MSG([[wd_parent.window_object childWindows] count] > 0, "Transient parent has another exclusive child.");
-				}
 				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
 				[wd_parent.window_object addChildWindow:wd.window_object ordered:NSWindowAbove];
 			}
@@ -2369,9 +2366,6 @@ void DisplayServerMacOS::reparent_check(WindowID p_window) {
 
 		if (child_screen == screen) {
 			if (![[wd.window_object childWindows] containsObject:wd_child.window_object]) {
-				if (wd_child.exclusive) {
-					ERR_FAIL_COND_MSG([[wd.window_object childWindows] count] > 0, "Transient parent has another exclusive child.");
-				}
 				if (wd_child.fullscreen) {
 					[wd_child.window_object toggleFullScreen:nil];
 				}
