@@ -109,16 +109,54 @@ public partial struct Variant : IDisposable
 
     public override string ToString() => AsString();
 
-    public object? Obj
-    {
-        get
+    public object? Obj =>
+        _obj ??= NativeVar.DangerousSelfRef.Type switch
         {
-            if (_obj == null)
-                _obj = Marshaling.ConvertVariantToManagedObject((godot_variant)NativeVar);
-
-            return _obj;
-        }
-    }
+            Type.Bool => AsBool(),
+            Type.Int => AsInt64(),
+#if REAL_T_IS_DOUBLE
+            Type.Float => AsDouble(),
+#else
+            Type.Float => AsSingle(),
+#endif
+            Type.String => AsString(),
+            Type.Vector2 => AsVector2(),
+            Type.Vector2i => AsVector2i(),
+            Type.Rect2 => AsRect2(),
+            Type.Rect2i => AsRect2i(),
+            Type.Vector3 => AsVector3(),
+            Type.Vector3i => AsVector3i(),
+            Type.Transform2d => AsTransform2D(),
+            Type.Vector4 => AsVector4(),
+            Type.Vector4i => AsVector4i(),
+            Type.Plane => AsPlane(),
+            Type.Quaternion => AsQuaternion(),
+            Type.Aabb => AsAABB(),
+            Type.Basis => AsBasis(),
+            Type.Transform3d => AsTransform3D(),
+            Type.Projection => AsProjection(),
+            Type.Color => AsColor(),
+            Type.StringName => AsStringName(),
+            Type.NodePath => AsNodePath(),
+            Type.Rid => AsRID(),
+            Type.Object => AsGodotObject(),
+            Type.Callable => AsCallable(),
+            Type.Signal => AsSignalInfo(),
+            Type.Dictionary => AsGodotDictionary(),
+            Type.Array => AsGodotArray(),
+            Type.PackedByteArray => AsByteArray(),
+            Type.PackedInt32Array => AsInt32Array(),
+            Type.PackedInt64Array => AsInt64Array(),
+            Type.PackedFloat32Array => AsFloat32Array(),
+            Type.PackedFloat64Array => AsFloat64Array(),
+            Type.PackedStringArray => AsStringArray(),
+            Type.PackedVector2Array => AsVector2Array(),
+            Type.PackedVector3Array => AsVector3Array(),
+            Type.PackedColorArray => AsColorArray(),
+            Type.Nil => null,
+            Type.Max or _ =>
+                throw new InvalidOperationException($"Invalid Variant type: {NativeVar.DangerousSelfRef.Type}"),
+        };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant From<[MustBeVariant] T>(in T from) =>
