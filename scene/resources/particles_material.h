@@ -73,16 +73,25 @@ public:
 		EMISSION_SHAPE_MAX
 	};
 
+	enum PointsOrder {
+		EMISSION_POINTS_ORDER_RANDOM,
+		EMISSION_POINTS_ORDER_NORMAL,
+		EMISSION_POINTS_ORDER_REVERSE,
+		EMISSION_POINTS_ORDER_MAX,
+
+	};
+
 private:
 	union MaterialKey {
 		// The bit size of the struct must be kept below or equal to 32 bits.
-		// Consider this when extending Flags, or EmissionShape.
+		// Consider this when extending Flags, EmissionShape or PointsOrder.
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
 			uint32_t texture_initial_color : 1;
 			uint32_t flags : 4;
 			uint32_t emission_shape : 3;
+			uint32_t points_order : 2;
 			uint32_t trail_size_texture : 1;
 			uint32_t trail_color_texture : 1;
 			uint32_t invalid_key : 1;
@@ -122,6 +131,7 @@ private:
 		mk.texture_color = color_ramp.is_valid() ? 1 : 0;
 		mk.texture_initial_color = color_initial_ramp.is_valid() ? 1 : 0;
 		mk.emission_shape = emission_shape;
+		mk.points_order = emission_points_order;
 		mk.trail_color_texture = trail_color_modifier.is_valid() ? 1 : 0;
 		mk.trail_size_texture = trail_size_modifier.is_valid() ? 1 : 0;
 		mk.has_emission_color = emission_shape >= EMISSION_SHAPE_POINTS && emission_color_texture.is_valid();
@@ -227,6 +237,7 @@ private:
 	Ref<Texture> emission_point_texture;
 	Ref<Texture> emission_normal_texture;
 	Ref<Texture> emission_color_texture;
+	PointsOrder emission_points_order;
 	int emission_point_count;
 	float emission_ring_height;
 	float emission_ring_radius;
@@ -288,6 +299,7 @@ public:
 	void set_emission_normal_texture(const Ref<Texture> &p_normals);
 	void set_emission_color_texture(const Ref<Texture> &p_colors);
 	void set_emission_point_count(int p_count);
+	void set_emission_points_order(PointsOrder p_order);
 	void set_emission_ring_radius(float p_radius);
 	void set_emission_ring_inner_radius(float p_offset);
 	void set_emission_ring_height(float p_height);
@@ -300,6 +312,7 @@ public:
 	Ref<Texture> get_emission_normal_texture() const;
 	Ref<Texture> get_emission_color_texture() const;
 	int get_emission_point_count() const;
+	PointsOrder get_emission_points_order() const;
 	float get_emission_ring_radius() const;
 	float get_emission_ring_inner_radius() const;
 	float get_emission_ring_height() const;
@@ -335,5 +348,6 @@ public:
 VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
 VARIANT_ENUM_CAST(ParticlesMaterial::Flags)
 VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
+VARIANT_ENUM_CAST(ParticlesMaterial::PointsOrder)
 
 #endif // PARTICLES_MATERIAL_H

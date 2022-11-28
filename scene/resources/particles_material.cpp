@@ -312,7 +312,17 @@ void ParticlesMaterial::_update_shader() {
 	code += "\n";
 
 	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
-		code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+		switch (emission_points_order) {
+			case EMISSION_POINTS_ORDER_RANDOM:
+				code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+				break;
+			case EMISSION_POINTS_ORDER_NORMAL:
+				code += "   int point = min(emission_texture_point_count -1, int(base_number) % emission_texture_point_count);\n";
+				break;
+			case EMISSION_POINTS_ORDER_REVERSE:
+				code += " int point = max(0, emission_texture_point_count - 1 - (int(base_number) % emission_texture_point_count));\n";
+				break;
+		}
 		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
 	}
@@ -1009,6 +1019,13 @@ void ParticlesMaterial::set_emission_point_count(int p_count) {
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_point_count, p_count);
 }
 
+void ParticlesMaterial::set_emission_points_order(PointsOrder p_order) {
+	ERR_FAIL_INDEX(p_order, EMISSION_POINTS_ORDER_MAX);
+	emission_points_order = p_order;
+	_change_notify();
+	_queue_shader_change();
+}
+
 void ParticlesMaterial::set_emission_ring_height(float p_height) {
 	emission_ring_height = p_height;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_height, p_height);
@@ -1052,6 +1069,10 @@ Ref<Texture> ParticlesMaterial::get_emission_color_texture() const {
 
 int ParticlesMaterial::get_emission_point_count() const {
 	return emission_point_count;
+}
+
+ParticlesMaterial::PointsOrder ParticlesMaterial::get_emission_points_order() const {
+	return emission_points_order;
 }
 
 float ParticlesMaterial::get_emission_ring_height() const {
@@ -1141,7 +1162,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture") && (emission_shape != EMISSION_SHAPE_POINTS) && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture" || property.name == "emission_points_order") && (emission_shape != EMISSION_SHAPE_POINTS) && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
 		property.usage = 0;
 	}
 
@@ -1218,6 +1239,9 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_point_count", "point_count"), &ParticlesMaterial::set_emission_point_count);
 	ClassDB::bind_method(D_METHOD("get_emission_point_count"), &ParticlesMaterial::get_emission_point_count);
 
+	ClassDB::bind_method(D_METHOD("set_emission_point_order", "emission_order"), &ParticlesMaterial::set_emission_points_order);
+	ClassDB::bind_method(D_METHOD("get_emission_point_order"), &ParticlesMaterial::get_emission_points_order);
+
 	ClassDB::bind_method(D_METHOD("set_emission_ring_radius", "radius"), &ParticlesMaterial::set_emission_ring_radius);
 	ClassDB::bind_method(D_METHOD("get_emission_ring_radius"), &ParticlesMaterial::get_emission_ring_radius);
 
@@ -1259,6 +1283,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_normal_texture", "get_emission_normal_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_color_texture", "get_emission_color_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_point_count", PROPERTY_HINT_RANGE, "0,1000000,1"), "set_emission_point_count", "get_emission_point_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_points_order", PROPERTY_HINT_ENUM, "Random,Normal,Reverse"), "set_emission_point_order", "get_emission_point_order");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_ring_radius", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater"), "set_emission_ring_radius", "get_emission_ring_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_ring_inner_radius", PROPERTY_HINT_RANGE, "0.0,1000,0.01,or_greater"), "set_emission_ring_inner_radius", "get_emission_ring_inner_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_ring_height", PROPERTY_HINT_RANGE, "0.0,100,0.01,or_greater"), "set_emission_ring_height", "get_emission_ring_height");
@@ -1352,6 +1377,11 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RING);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
+
+	BIND_ENUM_CONSTANT(EMISSION_POINTS_ORDER_RANDOM);
+	BIND_ENUM_CONSTANT(EMISSION_POINTS_ORDER_NORMAL);
+	BIND_ENUM_CONSTANT(EMISSION_POINTS_ORDER_REVERSE);
+	BIND_ENUM_CONSTANT(EMISSION_POINTS_ORDER_MAX);
 }
 
 ParticlesMaterial::ParticlesMaterial() :

@@ -147,6 +147,9 @@
 		<member name="emission_point_texture" type="Texture" setter="set_emission_point_texture" getter="get_emission_point_texture">
 			Particles will be emitted at positions determined by sampling this texture at a random position. Used with [constant EMISSION_SHAPE_POINTS] and [constant EMISSION_SHAPE_DIRECTED_POINTS]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
 		</member>
+		<member name="emission_points_order" type="int" setter="set_emission_point_order" getter="get_emission_point_order" enum="ParticlesMaterial.PointsOrder">
+			The order in which points are read from the texture. Can be random, normal and reverse.
+		</member>
 		<member name="emission_ring_axis" type="Vector3" setter="set_emission_ring_axis" getter="get_emission_ring_axis">
 			The axis of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
@@ -329,6 +332,18 @@
 		</constant>
 		<constant name="EMISSION_SHAPE_MAX" value="6" enum="EmissionShape">
 			Represents the size of the [enum EmissionShape] enum.
+		</constant>
+		<constant name="EMISSION_POINTS_ORDER_RANDOM" value="0" enum="PointsOrder">
+			Particles from point textures will be emitted with a random order.
+		</constant>
+		<constant name="EMISSION_POINTS_ORDER_NORMAL" value="1" enum="PointsOrder">
+			Particles from points texture will emit in the order in which they are stored in the  [member emission_point_texture].
+		</constant>
+		<constant name="EMISSION_POINTS_ORDER_REVERSE" value="2" enum="PointsOrder">
+			Particles from points texture will emit in the reverse order in which they are stored in the [member emission_point_texture].
+		</constant>
+		<constant name="EMISSION_POINTS_ORDER_MAX" value="3" enum="PointsOrder">
+			Represents the size of the [enum PointsOrder] enum.
 		</constant>
 	</constants>
 </class>
