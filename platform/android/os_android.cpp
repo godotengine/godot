@@ -355,20 +355,20 @@ void OS_Android::_load_system_font_config() {
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
 				in_font_node = false;
 				if (parser->get_node_name() == "familyset") {
-					int ver = parser->has_attribute("version") ? parser->get_attribute_value("version").to_int() : 0;
+					int ver = parser->has_attribute("version") ? parser->get_named_attribute_value("version").to_int() : 0;
 					if (ver < 21) {
 						ERR_PRINT(vformat("Unsupported font config version %s", ver));
 						break;
 					}
 				} else if (parser->get_node_name() == "alias") {
-					String name = parser->has_attribute("name") ? parser->get_attribute_value("name").strip_edges() : String();
-					String to = parser->has_attribute("to") ? parser->get_attribute_value("to").strip_edges() : String();
+					String name = parser->has_attribute("name") ? parser->get_named_attribute_value("name").strip_edges() : String();
+					String to = parser->has_attribute("to") ? parser->get_named_attribute_value("to").strip_edges() : String();
 					if (!name.is_empty() && !to.is_empty()) {
 						font_aliases[name] = to;
 					}
 				} else if (parser->get_node_name() == "family") {
-					fn = parser->has_attribute("name") ? parser->get_attribute_value("name").strip_edges() : String();
-					String lang_code = parser->has_attribute("lang") ? parser->get_attribute_value("lang").strip_edges() : String();
+					fn = parser->has_attribute("name") ? parser->get_named_attribute_value("name").strip_edges() : String();
+					String lang_code = parser->has_attribute("lang") ? parser->get_named_attribute_value("lang").strip_edges() : String();
 					Vector<String> lang_codes = lang_code.split(",");
 					for (int i = 0; i < lang_codes.size(); i++) {
 						Vector<String> lang_code_elements = lang_codes[i].split("-");
@@ -412,9 +412,9 @@ void OS_Android::_load_system_font_config() {
 					}
 				} else if (parser->get_node_name() == "font") {
 					in_font_node = true;
-					fb = parser->has_attribute("fallbackFor") ? parser->get_attribute_value("fallbackFor").strip_edges() : String();
-					fi.weight = parser->has_attribute("weight") ? parser->get_attribute_value("weight").to_int() : 400;
-					fi.italic = parser->has_attribute("style") && parser->get_attribute_value("style").strip_edges() == "italic";
+					fb = parser->has_attribute("fallbackFor") ? parser->get_named_attribute_value("fallbackFor").strip_edges() : String();
+					fi.weight = parser->has_attribute("weight") ? parser->get_named_attribute_value("weight").to_int() : 400;
+					fi.italic = parser->has_attribute("style") && parser->get_named_attribute_value("style").strip_edges() == "italic";
 				}
 			}
 			if (parser->get_node_type() == XMLParser::NODE_TEXT) {
