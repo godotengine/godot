@@ -78,10 +78,6 @@ namespace Godot.SourceGenerators
 
             var source = new StringBuilder();
 
-            source.Append("using Godot;\n");
-            source.Append("using Godot.NativeInterop;\n");
-            source.Append("\n");
-
             if (hasNamespace)
             {
                 source.Append("namespace ");
@@ -281,7 +277,7 @@ namespace Godot.SourceGenerators
             {
                 source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-                string dictionaryType = "System.Collections.Generic.Dictionary<StringName, object>";
+                string dictionaryType = "System.Collections.Generic.Dictionary<Godot.StringName, object>";
 
                 source.Append("#if TOOLS\n");
                 source.Append("    internal new static ");
