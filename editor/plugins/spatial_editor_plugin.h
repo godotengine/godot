@@ -44,6 +44,7 @@ class SpatialEditor;
 class EditorSpatialGizmoPlugin;
 class ViewportContainer;
 class SpatialEditorViewport;
+class ViewportNavigationControl;
 
 class EditorSpatialGizmo : public SpatialGizmo {
 	GDCLASS(EditorSpatialGizmo, SpatialGizmo);
@@ -157,7 +158,7 @@ class ViewportRotationControl : public Control {
 	Vector<Color> axis_colors;
 	Vector<int> axis_menu_options;
 	Vector2i orbiting_mouse_start;
-	bool orbiting = false;
+	int orbiting_index = -1;
 	int focused_axis = -2;
 
 	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
@@ -171,6 +172,8 @@ protected:
 	void _get_sorted_axis(Vector<Axis2D> &r_axis);
 	void _update_focus();
 	void _on_mouse_exited();
+	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
+	void _process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position);
 
 public:
 	void set_viewport(SpatialEditorViewport *p_viewport);
@@ -179,6 +182,7 @@ public:
 class SpatialEditorViewport : public Control {
 	GDCLASS(SpatialEditorViewport, Control);
 	friend class SpatialEditor;
+	friend class ViewportNavigationControl;
 	friend class ViewportRotationControl;
 	enum {
 
@@ -284,6 +288,9 @@ private:
 	Label *zoom_limit_label;
 
 	VBoxContainer *top_right_vbox;
+	VBoxContainer *bottom_center_vbox;
+	ViewportNavigationControl *position_control;
+	ViewportNavigationControl *look_control;
 	ViewportRotationControl *rotation_control;
 	Gradient *frame_time_gradient;
 	Label *fps_label;
@@ -342,7 +349,8 @@ private:
 		NAVIGATION_PAN,
 		NAVIGATION_ZOOM,
 		NAVIGATION_ORBIT,
-		NAVIGATION_LOOK
+		NAVIGATION_LOOK,
+		NAVIGATION_MOVE
 	};
 	enum TransformMode {
 		TRANSFORM_NONE,
@@ -915,6 +923,32 @@ public:
 
 	EditorSpatialGizmoPlugin();
 	virtual ~EditorSpatialGizmoPlugin();
+};
+
+class ViewportNavigationControl : public Control {
+	GDCLASS(ViewportNavigationControl, Control);
+
+	SpatialEditorViewport *viewport = nullptr;
+	Vector2i focused_mouse_start;
+	Vector2 focused_pos;
+	int focused_index = -1;
+	SpatialEditorViewport::NavigationMode nav_mode = SpatialEditorViewport::NavigationMode::NAVIGATION_NONE;
+
+	const float AXIS_CIRCLE_RADIUS = 30.0f * EDSCALE;
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+	void _gui_input(Ref<InputEvent> p_event);
+	void _draw();
+	void _on_mouse_exited();
+	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
+	void _process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position);
+	void _update_navigation();
+
+public:
+	void set_navigation_mode(SpatialEditorViewport::NavigationMode p_nav_mode);
+	void set_viewport(SpatialEditorViewport *p_viewport);
 };
 
 #endif // SPATIAL_EDITOR_PLUGIN_H
