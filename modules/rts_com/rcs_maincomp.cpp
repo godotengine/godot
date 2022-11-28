@@ -1,9 +1,18 @@
 #include "rcs_maincomp.h"
 
 #pragma region Macros
+
+#ifdef USE_SAFE_RID_COUNT
+#define MainPoll(what, iter, delta)                   \
+	auto weak_ref = what[iter];                       \
+	auto target = weak_ref.lock();                    \
+	if (target) target->poll(delta)
+#else
 #define MainPoll(what, iter, delta)                   \
 	auto target = what[iter];                         \
 	if (target) target->poll(delta)
+#endif
+
 
 #define RemoveReference(iter, inc, func, pool)        \
 	if (iter < pool.size()){                          \
@@ -19,11 +28,20 @@
 		ref->opposite = nullptr;                      \
 		VEC_ERASE(vec, 0)                             \
 	}
+#ifdef USE_SAFE_RID_COUNT
+#define SimulationRecord(recorder, event)             \
+	event->simulation = this;                         \
+	auto locked_rec = recorder.lock();                \
+	if (locked_rec) {                                 \
+		locked_rec->push_event(event);                \
+	} else ((void)0)
+#else
 #define SimulationRecord(recorder, event)             \
 	event->simulation = this;                         \
 	if (recorder){                                    \
 		recorder->push_event(event);                  \
 	} else ((void)0)
+#endif
 
 #if defined(DEBUG_ENABLED) && defined(RCS_MAINCOMP_DEBUG_LOG)
 #define CleanerLog(classptr, i) \
@@ -88,7 +106,7 @@ void RCSRecording::purge(){
 
 void RCSRecording::push_event(const Ref<EventReport>& event){
 	auto timestamp = OS::get_singleton()->get_ticks_usec();
-	auto ticket = rcsnew(EventReportTicket(timestamp, event));
+	auto ticket = memnew(EventReportTicket(timestamp, event));
 	reports_holder.push_back(ticket);
 }
 
@@ -110,70 +128,214 @@ void RCSRecording::poll(const float& delta){
 #pragma endregion
 
 #pragma region Simulation
-RCSSimulation::RCSSimulation(){
+
+#ifdef USE_SAFE_RID_COUNT
+
+#define WrappedWeakPtrErase(vec, ptr)                        \
+{                                                            \
+	for (uint32_t i = 0, size = vec.size(); i < size; i++) { \
+		if (ptr.lock() == vec[i].lock()) {                   \
+			vec.remove(i);                                   \
+			break;                                           \
+		}                                                    \
+	}                                                        \
+}
+#define WrappedWeakPtrHas(vec, ptr)                          \
+{                                                            \
+	for (uint32_t i = 0, size = vec.size(); i < size; i++) { \
+		if (ptr.lock() == vec[i].lock()) {                   \
+			return true;                                     \
+		}                                                    \
+	}                                                        \
+	return false;                                            \
+}             
+
+RCSSimulation::RCSSimulation() {
+
+}
+RCSSimulation::~RCSSimulation() {
+
+}
+void RCSSimulation::add_combatant(const std::weak_ptr<RCSCombatant>& com) {
+	combatants.push_back(com);
+}
+void RCSSimulation::add_squad(const std::weak_ptr<RCSSquad>& squad) {
+	squads.push_back(squad);
+}
+
+void RCSSimulation::add_team(const std::weak_ptr<RCSTeam>& team) {
+	teams.push_back(team);
+}
+
+void RCSSimulation::add_radar(const std::weak_ptr<RCSRadar>& rad) {
+	radars.push_back(rad);
+}
+void RCSSimulation::remove_combatant(const std::weak_ptr<RCSCombatant>& com) {
+	WrappedWeakPtrErase(combatants, com);
+}
+void RCSSimulation::remove_squad(const std::weak_ptr<RCSSquad> &squad) {
+	WrappedWeakPtrErase(squads, squad);
+}
+
+void RCSSimulation::remove_team(const std::weak_ptr<RCSTeam> &team) {
+	WrappedWeakPtrErase(teams, team);
+}
+
+void RCSSimulation::remove_radar(const std::weak_ptr<RCSRadar> &rad) {
+	WrappedWeakPtrErase(radars, rad);
+}
+
+void RCSSimulation::poll(const float &delta) {
+	RID_RCS::poll(delta);
+	// Radars run first for rechecks
+	auto radars_count = radars.size();
+	for (uint32_t k = 0; k < radars_count; k++) {
+		MainPoll(radars, k, delta);
+	}
+	while (!rrecheck_requests.empty()) {
+		auto ticket = rrecheck_requests[0];
+		rrecheck_requests.remove(0);
+		if (!ticket)
+			continue;
+		auto radar = ticket->request_sender;
+		std::shared_ptr<RCSRadar> locked_radar = radar.lock();
+		if (!locked_radar)
+			continue;
+		locked_radar->late_check(delta, ticket);
+	}
+	rrecheck_requests.clear();
+	for (uint32_t j = 0; j < combatants.size(); j++) {
+		MainPoll(combatants, j, delta);
+	}
+	for (uint32_t i = 0; i < squads.size(); i++) {
+		MainPoll(squads, i, delta);
+	}
+}
+std::weak_ptr<RCSCombatant> RCSSimulation::get_combatant_from_iid(const uint64_t &iid) const {
+	for (uint32_t i = 0, size = combatants.size(); i < size; i++) {
+		auto weak_ptr = combatants[i];
+		if (weak_ptr.lock()->get_iid() == iid)
+			return weak_ptr;
+	}
+	return std::weak_ptr<RCSCombatant>(std::shared_ptr<RCSCombatant>(nullptr));
+}
+void RCSSimulation::radar_request_recheck(const std::shared_ptr<RadarRecheckTicket> &ticket) {
+	rrecheck_requests.push_back(ticket);
+}
+void RCSSimulation::combatant_event(Ref<CombatantEventReport> event) {
+	SimulationRecord(recorder, event);
+}
+void RCSSimulation::squad_event(Ref<SquadEventReport> event) {
+	SimulationRecord(recorder, event);
+}
+void RCSSimulation::team_event(Ref<TeamEventReport> event) {
+	SimulationRecord(recorder, event);
+}
+void RCSSimulation::radar_event(Ref<RadarEventReport> event) {
+	SimulationRecord(recorder, event);
+}
+#else
+RCSSimulation::RCSSimulation() {
 	recorder = nullptr;
 }
+
 RCSSimulation::~RCSSimulation(){
-	uint32_t i = 0;
-	while (true){
-		uint16_t cond = 0;
-		CleanerLog(RCSSimulation, i);
-		RemoveReference(i, cond, set_simulation, combatants);
-		RemoveReference(i, cond, set_simulation, squads);
-		RemoveReference(i, cond, set_simulation, teams);
-		RemoveReference(i, cond, set_simulation, radars);
-		if (cond == 0) break;
-		i++;
+	// Brute force cleaning;
+	while (!combatants.empty()){
+		// combatants[0]->set_simulation(nullptr);
+		combatants[0]->simulation = nullptr;
+		VEC_REMOVE(combatants, 0);
 	}
+	while (!squads.empty()){
+		// squads[0]->set_simulation(nullptr);
+		squads[0]->simulation = nullptr;
+		VEC_REMOVE(squads, 0);
+	}
+	while (!teams.empty()){
+		// teams[0]->set_simulation(nullptr);
+		teams[0]->simulation = nullptr;
+		VEC_REMOVE(teams, 0);
+	}
+	while (!radars.empty()){
+		// radars[0]->set_simulation(nullptr);
+		radars[0]->simulation = nullptr;
+		VEC_REMOVE(radars, 0);
+	}
+	// uint32_t i = 0;
+	// while (true){
+	// 	uint16_t cond = 0;
+	// 	CleanerLog(RCSSimulation, i);
+	// 	RemoveReference(i, cond, set_simulation, combatants);
+	// 	RemoveReference(i, cond, set_simulation, squads);
+	// 	RemoveReference(i, cond, set_simulation, teams);
+	// 	RemoveReference(i, cond, set_simulation, radars);
+	// 	if (cond == 0) break;
+	// 	i++;
+	// }
 	// if (recorder) recorder->remove_simulation(this);
 }
 
 #define ThiccCheck(vec) \
-	if (vec.size() > 1000) { print_verbose(String("[" FUNCTION_STR "] She\'s a thicc one...: " + itos(vec.size()))); ERR_FAIL(); }
+	if (true) ((void)0); else if (vec.size() > 1000) { print_verbose(String("[" FUNCTION_STR "] She\'s a thicc one...: " + itos(vec.size()))); ERR_FAIL(); }
 
 #define FattCheck(vec) \
-	if (vec.size() > 1000) { print_verbose(String("[" FUNCTION_STR "] She\'s a fatt one...: " + itos(vec.size()))); ERR_FAIL(); }
+	if (true) ((void)0); else if (vec.size() > 1000) { print_verbose(String("[" FUNCTION_STR "] She\'s a fatt one...: " + itos(vec.size()))); ERR_FAIL(); }
+
+#define SimAdditionLog(data, what) \
+	print_verbose(String("[RCSSimulation:") + itos(get_self().get_id()) + String("] Adding " #what " with id ") + itos(data->get_self().get_id()))
+
+#define SimErasureLog(data, what) \
+	print_verbose(String("[RCSSimulation:") + itos(get_self().get_id()) + String("] Removing " #what " with id ") + itos(data->get_self().get_id()))
 
 void RCSSimulation::add_combatant(RCSCombatant* com){
 	FattCheck(combatants);
+	SimAdditionLog(com, RCSCombatant);
 	combatants.push_back(com);
 }
 void RCSSimulation::add_squad(RCSSquad* squad){
 	FattCheck(squads);
+	SimAdditionLog(squad, RCSSquad);
 	squads.push_back(squad);
 }
 
 void RCSSimulation::add_team(RCSTeam* team){
 	FattCheck(teams);
+	SimAdditionLog(team, RCSTeam);
 	teams.push_back(team);
 }
 
 void RCSSimulation::add_radar(RCSRadar* rad){
-	FattCheck(combatants);
+	FattCheck(radars);
+	SimAdditionLog(rad, RCSRadar);
 	radars.push_back(rad);
 }
 
 void RCSSimulation::remove_combatant(RCSCombatant* com)
 {
-	print_verbose(String("Removing Combatant..."));
+	// print_verbose(String("Removing Combatant..."));
 	ThiccCheck(combatants);
+	SimErasureLog(com, RCSCombatant);
 	VEC_ERASE(combatants, com)
 }
 
 void RCSSimulation::remove_squad(RCSSquad* squad)
 {
 	ThiccCheck(squads);
+	SimErasureLog(squad, RCSSquad);
 	VEC_ERASE(squads, squad)
 }
 
 void RCSSimulation::remove_team(RCSTeam* team)
 {
 	ThiccCheck(teams);
+	SimErasureLog(team, RCSTeam);
 	VEC_ERASE(teams, team)
 }
 
-void RCSSimulation::remove_radar(RCSRadar* rad)
+void RCSSimulation::remove_radar(RCSRadar* rad){
+	SimErasureLog(rad, RCSRadar);
 	VEC_ERASE(radars, rad)
+}
 
 void RCSSimulation::set_recorder(RCSRecording* rec){
 	recorder = rec;
@@ -201,32 +363,33 @@ RCSCombatant* RCSSimulation::get_combatant_from_iid(const uint64_t& iid) const{
 	}
 	return nullptr;
 }
-
-void RCSSimulation::radar_request_recheck(RadarRecheckTicket* ticket){
-	rrecheck_requests.push_back(ticket);
-}
-
-void RCSSimulation::poll(const float& delta){
+void RCSSimulation::poll(const float &delta) {
 	RID_RCS::poll(delta);
 	// Radars run first for rechecks
 	auto radars_count = radars.size();
-	for (uint32_t k = 0; k < radars_count; k++){
+	for (uint32_t k = 0; k < radars_count; k++) {
 		MainPoll(radars, k, delta);
 	}
-	for (uint32_t u = 0; u < rrecheck_requests.size(); u++){
+	for (uint32_t u = 0; u < rrecheck_requests.size(); u++) {
 		auto ticket = rrecheck_requests[u];
-		if (!ticket->request_sender) continue;
+		if (!ticket->request_sender)
+			continue;
 		ticket->request_sender->late_check(delta, ticket);
 		memdelete(ticket);
 	}
 	rrecheck_requests.clear();
-	for (uint32_t j = 0; j < combatants.size(); j++){
+	for (uint32_t j = 0; j < combatants.size(); j++) {
 		MainPoll(combatants, j, delta);
 	}
-	for (uint32_t i = 0; i < squads.size(); i++){
+	for (uint32_t i = 0; i < squads.size(); i++) {
 		MainPoll(squads, i, delta);
 	}
 }
+void RCSSimulation::radar_request_recheck(RadarRecheckTicket* ticket){
+	rrecheck_requests.push_back(ticket);
+}
+#endif
+
 #pragma endregion
 
 #pragma region Engagement
@@ -243,7 +406,7 @@ RCSEngagementInternal::~RCSEngagementInternal(){
 }
 
 Ref<RCSEngagement> RCSEngagementInternal::spawn_reference(){
-	Ref<RCSEngagement> ref = rcsnew(RCSEngagement);
+	Ref<RCSEngagement> ref = memnew(RCSEngagement);
 	referencing.push_back(ref.ptr());
 	ref->logger = this;
 	return ref;
@@ -399,6 +562,83 @@ void RCSCombatantProfile::_bind_methods(){
 	// ADD_PROPERTY(PropertyInfo(Variant::REAL, "_detection_meter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_detection_meter", "_get_detection_meter");
 }
 
+void RCSCombatant::set_cname(const StringName &cname) {
+	ERR_FAIL_COND(combatant_profile.is_null());
+	combatant_profile->set_pname(cname);
+}
+StringName RCSCombatant::get_cname() const {
+	ERR_FAIL_COND_V(combatant_profile.is_null(), StringName());
+	return combatant_profile->get_pname();
+}
+void RCSCombatant::set_stand(const uint32_t &new_stand) {
+	ERR_FAIL_COND(combatant_profile.is_null());
+	combatant_profile->set_stand(new_stand);
+}
+uint32_t RCSCombatant::get_stand() const {
+	ERR_FAIL_COND_V(combatant_profile.is_null(), 0);
+	return combatant_profile->get_stand();
+}
+Ref<RawRecord> RCSCombatant::serialize() const {
+	Ref<RawRecord> rrec = memnew(RawRecord);
+	// Ref<RawRecordData> rdata = memnew(RawRecordData);
+	// rdata->name = StringName("__main");
+
+	// PUSH_RECORD_PRIMITIVE(rdata, space_transform);
+	// PUSH_RECORD_PRIMITIVE(rdata, local_transform);
+	// // PUSH_RECORD_PRIMITIVE(rdata, stand);
+
+	// rdata->external_refs.resize(rdata->table.size());
+	// rdata->external_refs.fill(0);
+	return rrec;
+}
+bool RCSCombatant::serialize(const Ref<RawRecord> &from) {
+	return false;
+}
+
+#ifdef USE_SAFE_RID_COUNT
+void RCSCombatant::set_squad(const std::weak_ptr<RCSSquad>& new_squad) {
+	auto old_squad_locked = my_squad.lock();
+	auto self_ptr = self_cast_weakptr();
+	if (old_squad_locked){
+		old_squad_locked->remove_combatant(self_ptr);
+	}
+	my_squad = new_squad;
+	auto new_lock = my_squad.lock();
+	if (new_lock)
+		new_lock->add_combatant(self_ptr);
+}
+
+bool RCSCombatant::is_same_team(const std::weak_ptr<RCSCombatant> &com){
+	auto locked_bogey_com = com.lock();
+	auto locked_squad = my_squad.lock();
+	if (!locked_bogey_com || !locked_squad)
+		return false;
+	auto locked_bogey_squad = locked_bogey_com->get_squad().lock();
+	return locked_squad->is_same_team(locked_bogey_squad);
+
+}
+bool RCSCombatant::is_hostile(const std::weak_ptr<RCSCombatant> &com){
+	return !is_same_team(com);
+}
+bool RCSCombatant::is_ally(const std::weak_ptr<RCSCombatant> &com){
+	return is_same_team(com);
+}
+bool RCSCombatant::is_engagable(const std::weak_ptr<RCSCombatant> &bogey) {
+	auto bogey_locked = bogey.lock();
+	if (!bogey_locked)
+		return false;
+	auto bogey_squad_locked = bogey_locked->get_squad().lock();
+	auto my_squad_locked = my_squad.lock();
+	if (!bogey_squad_locked || !my_squad_locked)
+		return false;
+	return my_squad_locked->is_engagable(bogey_squad_locked);
+}
+
+void RCSCombatant::set_simulation(const std::weak_ptr<RCSSimulation>& sim) {
+	simulation = sim;
+}
+#else
+
 RCSCombatant::RCSCombatant(){
 	simulation = nullptr;
 	my_squad = nullptr;
@@ -454,48 +694,6 @@ void RCSCombatant::poll(const float& delta){
 	detection_meter = CLAMP(new_meter, 0.0, COMBATANT_DETECTION_LIMIT);
 }
 
-void RCSCombatant::set_cname(const StringName& cname){
-	ERR_FAIL_COND(combatant_profile.is_null());
-	combatant_profile->set_pname(cname);
-}
-StringName RCSCombatant::get_cname() const{
-	ERR_FAIL_COND_V(combatant_profile.is_null(), StringName());
-	return combatant_profile->get_pname();
-}
-// void RCSCombatant::set_id(const uint32_t& new_id){
-// 	ERR_FAIL_COND(combatant_profile.is_null());
-// 	combatant_profile->set_id(new_id);
-// }
-// uint32_t RCSCombatant::get_id() const{
-// 	ERR_FAIL_COND_V(combatant_profile.is_null(), 0);
-// 	return combatant_profile->get_id();
-// }
-void RCSCombatant::set_stand(const uint32_t& new_stand){
-	ERR_FAIL_COND(combatant_profile.is_null());
-	combatant_profile->set_stand(new_stand);
-}
-uint32_t RCSCombatant::get_stand() const{
-	ERR_FAIL_COND_V(combatant_profile.is_null(), 0);
-	return combatant_profile->get_stand();
-}
-
-Ref<RawRecord> RCSCombatant::serialize() const{
-	Ref<RawRecord> rrec = memnew(RawRecord);
-	// Ref<RawRecordData> rdata = memnew(RawRecordData);
-	// rdata->name = StringName("__main");
-
-	// PUSH_RECORD_PRIMITIVE(rdata, space_transform);
-	// PUSH_RECORD_PRIMITIVE(rdata, local_transform);
-	// // PUSH_RECORD_PRIMITIVE(rdata, stand);
-
-	// rdata->external_refs.resize(rdata->table.size());
-	// rdata->external_refs.fill(0);
-	return rrec;
-}
-bool RCSCombatant::serialize(const Ref<RawRecord>& from){
-	return false;
-}
-
 void RCSCombatant::set_simulation(RCSSimulation* sim){
 	if (simulation){
 		simulation->remove_combatant(this);
@@ -504,9 +702,59 @@ void RCSCombatant::set_simulation(RCSSimulation* sim){
 	simulation = sim;
 	if (simulation) simulation->add_combatant(this);
 }
+#endif
 #pragma endregion
 
 #pragma region Squad
+#ifdef USE_SAFE_RID_COUNT
+RCSSquad::RCSSquad() {
+
+}
+RCSSquad::~RCSSquad() {
+
+}
+void RCSSquad::set_team(const std::weak_ptr<RCSTeam> &new_team){
+	auto locked_old_team = my_team.lock();
+	auto self_ptr = self_cast_weakptr();
+	if (locked_old_team) {
+		locked_old_team->remove_squad(self_ptr);
+	}
+	my_team = new_team;
+	auto locked_new_team = my_team.lock();
+	if (locked_new_team)
+		locked_new_team->add_squad(self_ptr);
+}
+void RCSSquad::set_simulation(const std::weak_ptr<RCSSimulation> &sim){
+	auto locked_old_simul = simulation.lock();
+	auto self_ptr = self_cast_weakptr();
+	if (locked_old_simul) {
+		locked_old_simul->remove_squad(self_ptr);
+	}
+	simulation = sim;
+	auto locked_new_simulation = simulation.lock();
+	if (locked_old_simul)
+		locked_new_simulation->add_squad(self_ptr);
+}
+bool RCSSquad::has_combatant(const std::weak_ptr<RCSCombatant> &com) WrappedWeakPtrHas(combatants, com)
+
+void RCSSquad::remove_combatant(const std::weak_ptr<RCSCombatant> &com) WrappedWeakPtrErase(combatants, com)
+
+
+bool RCSSquad::is_same_team(const std::weak_ptr<RCSSquad> &bogey) {
+	auto locked_bogey = bogey.lock();
+	auto locked_my_team = my_team.lock();
+	if (!locked_bogey || !locked_my_team)
+		return false;
+	return locked_my_team == locked_bogey->get_team().lock();
+}
+bool RCSSquad::is_engagable(const std::weak_ptr<RCSSquad> &bogey) {
+	auto locked_bogey = bogey.lock();
+	auto locked_my_team = my_team.lock();
+	if (!locked_bogey || !locked_my_team)
+		return false;
+	return locked_my_team->is_engagable(locked_bogey->get_team());
+}
+#else
 RCSSquad::RCSSquad(){
 	simulation = nullptr;
 	my_team = nullptr;
@@ -552,6 +800,7 @@ bool RCSSquad::is_engagable(RCSSquad *bogey){
 	// if (bogey_team == my_team) return false;
 	return my_team->is_engagable(bogey_team);
 }
+#endif
 #pragma endregion
 
 #pragma region Team
@@ -588,10 +837,103 @@ void RCSUnilateralTeamsBind::_bind_methods(){
 	// ADD_PROPERTY(PropertyInfo(Variant::_RID, "toward"), "set_to_rid", "get_to_rid");
 }
 
+#ifdef USE_SAFE_RID_COUNT
+RID_TYPE RCSUnilateralTeamsBind::get_to_rid() const {
+	auto locked = toward.lock();
+	return (!locked ? RID_TYPE() : locked->get_self());
+}
+#else
 RID_TYPE RCSUnilateralTeamsBind::get_to_rid() const{
 	return (!toward ? RID_TYPE() : toward->get_self());
 }
+#endif
 
+Array RCSTeam::get_engagements_ref() const {
+	Array re;
+	//for (uint32_t i = 0, size = engagement_loggers.size(); i < size; i++) {
+	//	re.push_back(Variant(engagement_loggers[i]->spawn_reference()));
+	//}
+	return re;
+}
+#ifdef USE_SAFE_RID_COUNT
+RCSTeam::RCSTeam() {
+
+}
+RCSTeam::~RCSTeam() {
+
+}
+void RCSTeam::set_simulation(const std::weak_ptr<RCSSimulation> &sim){
+	auto locked_old_simul = simulation.lock();
+	auto self_ptr = self_cast_weakptr();
+	if (locked_old_simul) {
+		locked_old_simul->remove_team(self_ptr);
+	}
+	simulation = sim;
+	auto locked_new_simulation = simulation.lock();
+	if (locked_old_simul)
+		locked_new_simulation->add_team(self_ptr);
+}
+bool RCSTeam::has_squad(const std::weak_ptr<RCSSquad> &squad) WrappedWeakPtrHas(squads, squad)
+
+bool RCSTeam::remove_squad(const std::weak_ptr<RCSSquad> &squad) WrappedWeakPtrErase(squads, squad)
+
+bool RCSTeam::is_engagable(const std::weak_ptr<RCSTeam> &bogey) {
+	auto locked_bogey = bogey.lock();
+	if (!locked_bogey || locked_bogey == self_cast_weakptr().lock())
+		return false;
+	auto relation = get_link_to(locked_bogey);
+	if (relation.is_null())
+		return false;
+	return (relation->get_attributes() & RCSUnilateralTeamsBind::ITA_Engagable);
+}
+Ref<RCSUnilateralTeamsBind> RCSTeam::add_link(const std::weak_ptr<RCSTeam> &toward) {
+	Ref<RCSUnilateralTeamsBind> new_binding = memnew(RCSUnilateralTeamsBind);
+	new_binding->toward = toward;
+	team_binds.push_back(new_binding);
+	return new_binding;
+}
+bool RCSTeam::remove_link(const std::weak_ptr<RCSTeam>& to) {
+	auto size = team_binds.size();
+	auto locked = to.lock();
+	for (uint32_t i = 0; i < size; i++) {
+		auto binding = team_binds[i];
+		if (binding.is_null()) continue;
+		auto toward = binding->toward;
+		if (toward.lock() == locked) {
+			team_binds.remove(i);
+			return true;
+		}
+	}
+	return false;
+}
+
+Ref<RCSUnilateralTeamsBind> RCSTeam::get_link_to(const std::weak_ptr<RCSTeam> &to) const {
+	return get_link_to(to.lock());
+}
+Ref<RCSUnilateralTeamsBind> RCSTeam::get_link_to(const std::shared_ptr<RCSTeam> &to) const {
+	auto size = team_binds.size();
+	for (uint32_t i = 0; i < size; i++) {
+		auto binding = team_binds[i];
+		auto toward = binding->toward;
+		if (toward.lock() == to)
+			return binding;
+	}
+	return Ref<RCSUnilateralTeamsBind>();
+}
+void RCSTeam::purge_all_links() {
+	while (!team_binds.empty()) {
+		auto link = team_binds[0];
+		team_binds.remove(0);
+		if (!link.is_valid()) continue;
+		auto toward = link->toward;
+		auto locked = toward.lock();
+		if (!locked)
+			continue;
+		locked->remove_link(self_cast_weakptr());
+	}
+}
+
+#else
 RCSTeam::RCSTeam(){
 	simulation = nullptr;
 }
@@ -625,14 +967,6 @@ bool RCSTeam::is_engagable(RCSTeam *bogey) const{
 	return (relation->get_attributes() & RCSUnilateralTeamsBind::ITA_Engagable);
 }
 
-Array RCSTeam::get_engagements_ref() const {
-	Array re;
-	for (uint32_t i = 0, size = engagement_loggers.size(); i < size; i++){
-		re.push_back(Variant(engagement_loggers[i]->spawn_reference()));
-	}
-	return re;
-}
-
 Ref<RCSUnilateralTeamsBind> RCSTeam::add_link(RCSTeam *toward){
 	Ref<RCSUnilateralTeamsBind> link = memnew(RCSUnilateralTeamsBind);
 	link->toward = toward;
@@ -653,14 +987,6 @@ bool RCSTeam::remove_link(RCSTeam *to){
 	return false;
 }
 
-void RCSTeam::purge_all_links(){
-	while (!team_binds.empty()){
-		auto link = team_binds[0];
-		link->toward->remove_link(this);
-		VEC_REMOVE(team_binds, 0);
-	}
-}
-
 Ref<RCSUnilateralTeamsBind> RCSTeam::get_link_to(RCSTeam *to) const {
 	auto size = team_binds.size();
 	for (uint32_t i = 0; i < size; i++){
@@ -670,6 +996,16 @@ Ref<RCSUnilateralTeamsBind> RCSTeam::get_link_to(RCSTeam *to) const {
 	}
 	return Ref<RCSUnilateralTeamsBind>();
 }
+void RCSTeam::purge_all_links() {
+	while (!team_binds.empty()) {
+		auto link = team_binds[0];
+		VEC_REMOVE(team_binds, 0);
+		if (!link.is_valid()) continue;
+		if (!link->toward) continue;
+		link->toward->remove_link(this);
+	}
+}
+#endif
 #pragma endregion
 
 #pragma region Radar
@@ -840,13 +1176,176 @@ void RCSRadarProfile::internal_swarm_detect(RadarPingRequest* ping_request){
 		ping_request->detect_result = true;
 }
 
+void RCSRadar::fetch_space_state() {
+	auto scene_tree = SceneTree::get_singleton();
+	ERR_FAIL_COND(!scene_tree);
+	auto root = scene_tree->get_root();
+	if (!root)
+		return;
+	auto world = root->find_world();
+	if (world.is_null())
+		return;
+	space_state = world->get_direct_space_state();
+}
+
+#ifdef USE_SAFE_RID_COUNT
+RCSRadar::RCSRadar() {
+	space_state = nullptr;
+}
+RCSRadar::~RCSRadar() {}
+void RCSRadar::late_check(const float &delta, const std::weak_ptr<RadarRecheckTicket> &recheck){
+}
+void RCSRadar::set_vessel(const std::weak_ptr<RCSCombatant> &new_vessel) {
+	assigned_vessel = new_vessel;
+}
+void RCSRadar::ping_base_transform(const float &delta) {
+	auto locked_simul = simulation.lock();
+	auto locked_vessel = assigned_vessel.lock();
+	auto combatants = locked_simul->get_combatants();
+	auto c_size = combatants.size();
+	for (uint32_t i = 0; i < c_size; i++) {
+		auto com_ptr = combatants.operator[](i);
+		auto com = com_ptr.lock();
+		if (!com || !locked_vessel->is_engagable(com_ptr))
+			continue;
+		// ---------------------------------------------------
+		RadarPingRequest req(locked_vessel.get(), com.get());
+		req.self_transform = locked_vessel->get_combined_transform();
+		rprofile->ping_target(&req);
+
+		if (req.late_recheck) {
+			locked_simul->radar_request_recheck(std::make_shared<RadarRecheckTicket>(self_cast_weakptr(), com_ptr));
+		} else if (req.detect_result) {
+			detected_combatants.push_back(com_ptr);
+			detected_rids.push_back(com->get_self());
+		}
+		if (req.lock_result) {
+			locked_combatants.push_back(com_ptr);
+			locked_rids.push_back(com->get_self());
+		}
+	}
+}
+void RCSRadar::ping_base_direct_space_state(const float &delta) {
+	if (space_state == nullptr) {
+		fetch_space_state();
+		ERR_FAIL_COND(space_state == nullptr);
+	}
+	auto locked_simul = simulation.lock();
+	auto locked_vessel = assigned_vessel.lock();
+	// Rays per degree = ray count / degree count
+	// Degrees * PI / 180 = Radians
+	// Rays per radian = ray count / (degrees * PI / 180) = (180 * ray count) / (PI * degrees count)
+	double rays_per_degree = rprofile->get_rpd();
+	double rays_per_radian = (rays_per_degree * 180.0) / PI;
+	double radians_per_ray = 1.0 / rays_per_radian;
+	double ray_spread = rprofile->get_spread();
+	double max_distance = rprofile->get_dcurve()->get_range();
+	Transform vessel_transform = locked_vessel->get_combined_transform();
+	Vector3 VEC3_UP = Vector3(0.0, 1.0, 0.0);
+	Vector3 vessel_origin = vessel_transform.get_origin();
+	Vector3 vessel_forward = vessel_transform.get_basis()[2];
+	uint32_t radar_attr = rprofile->get_attr();
+	uint32_t radar_cmask = rprofile->get_cmask();
+	bool collide_with_bodies = radar_attr & RCSRadarProfile::ScanCollideWithBodies;
+	bool collide_with_areas = radar_attr & RCSRadarProfile::ScanCollideWithAreas;
+	Set<RID> exclude;
+	for (double angle_offset = -ray_spread; angle_offset < ray_spread; ray_spread += radians_per_ray) {
+		Vector3 current_ray = vessel_forward.rotated(VEC3_UP, angle_offset);
+		Vector3 scan_origin = vessel_origin + (current_ray * max_distance);
+		PhysicsDirectSpaceState::RayResult ray_res;
+		auto intersect_result = space_state->intersect_ray(vessel_origin, scan_origin, ray_res,
+				exclude, radar_cmask, collide_with_bodies, collide_with_areas);
+		if (!intersect_result)
+			continue;
+		auto obj_id = ray_res.collider_id;
+		auto combatant = locked_simul->get_combatant_from_iid(obj_id);
+		auto locked_combatant = combatant.lock();
+		// If found object is not combatant,
+		// it might be an obstacle, therefore, don't exclude it
+		// This method might skip over some combatant,
+		// but with enough ray density, it wouldn't be a problem
+		if (!locked_combatant)
+			continue;
+		// FIX: exclude the RID_TYPE regardless of the assertion result
+		// if it make it all the way to this point ||
+		//                                        \./
+		if (!locked_vessel->is_engagable(combatant)) {
+		} else {
+			RadarPingRequest req(locked_vessel.get(), locked_combatant.get());
+			req.self_transform = locked_vessel->get_combined_transform();
+			rprofile->ping_target(&req);
+
+			if (req.late_recheck) {
+				locked_simul->radar_request_recheck(std::make_shared<RadarRecheckTicket>(self_cast_weakptr(), combatant));
+			} else if (req.detect_result) {
+				detected_combatants.push_back(combatant);
+				detected_rids.push_back(locked_combatant->get_self());
+			}
+			if (req.lock_result) {
+				locked_combatants.push_back(combatant);
+				locked_rids.push_back(locked_combatant->get_self());
+			}
+		}
+		exclude.insert(ray_res.rid);
+	}
+}
+
+void RCSRadar::poll(const float &delta) {
+	RID_RCS::poll(delta);
+	auto locked_simul = simulation.lock();
+	auto locked_vessel = assigned_vessel.lock();
+	if (rprofile.is_null() || !locked_simul || !locked_vessel)
+		return;
+	if (rprofile->get_acurve().is_null() || rprofile->get_dcurve().is_null())
+		return;
+	timer += delta;
+	if (timer < (1.0 / rprofile->get_freq()))
+		return;
+
+	//-------------------------------------------------
+	timer = 0.0;
+	detected_combatants.clear();
+	detected_rids.clear();
+	locked_combatants.clear();
+	locked_rids.clear();
+	//--------------------------------------------------
+	// Combatants pool size should stay the same during radars' iteration
+	switch (rprofile->get_base()) {
+		case RCSRadarProfile::ScanTransform:
+			ping_base_transform(delta);
+			break;
+		case RCSRadarProfile::ScanDirectSpaceState:
+			ping_base_direct_space_state(delta);
+			break;
+		default:
+			break;
+	}
+}
+
+void RCSRadar::late_check(const float &delta, const std::weak_ptr<RadarRecheckTicket> &recheck) {
+	auto locked_simul = simulation.lock();
+	auto locked_vessel = assigned_vessel.lock();
+	auto locked_request = recheck.lock();
+	if (rprofile.is_null() || !locked_simul || !locked_vessel || !locked_request)
+		return;
+	auto locked_bogey = locked_request->bogey.lock();
+	if (!locked_bogey)
+		return;
+	RadarPingRequest req(locked_bogey.get(), locked_bogey.get());
+	req.self_transform = locked_vessel->get_combined_transform();
+	rprofile->swarm_detect(&req);
+	if (req.detect_result) {
+		detected_combatants.push_back(locked_bogey);
+		detected_rids.push_back(locked_bogey->get_self());
+	}
+}
+#else
 RCSRadar::RCSRadar(){
 	simulation = nullptr;
 	assigned_vessel = nullptr;
 	space_state = nullptr;
 }
 RCSRadar::~RCSRadar(){}
-
 void RCSRadar::set_simulation(RCSSimulation* sim){
 	if (simulation){
 		simulation->remove_radar(this);
@@ -855,42 +1354,35 @@ void RCSRadar::set_simulation(RCSSimulation* sim){
 	simulation = sim;
 	if (simulation) simulation->add_radar(this);
 }
-
-void RCSRadar::fetch_space_state(){
-	auto scene_tree = SceneTree::get_singleton();
-	ERR_FAIL_COND(!scene_tree);
-	auto root = scene_tree->get_root();
-	if (!root) return;
-	auto world = root->find_world();
-	if (world.is_null()) return;
-	space_state = world->get_direct_space_state();
+void RCSRadar::set_vessel(RCSCombatant *new_vessel) {
+	assigned_vessel = new_vessel;
 }
-
-void RCSRadar::ping_base_transform(const float& delta){
+void RCSRadar::ping_base_transform(const float &delta) {
 	auto combatants = simulation->get_combatants();
 	auto c_size = combatants->size();
-	for (uint32_t i = 0; i < c_size; i++){
+	for (uint32_t i = 0; i < c_size; i++) {
 		auto com = combatants->operator[](i);
-		if (!com || !assigned_vessel->is_engagable(com)) continue;
+		if (!com || !assigned_vessel->is_engagable(com))
+			continue;
 		// ---------------------------------------------------
 		RadarPingRequest req(assigned_vessel, com);
 		req.self_transform = assigned_vessel->get_combined_transform();
 		rprofile->ping_target(&req);
 
-		if (req.late_recheck){
+		if (req.late_recheck) {
 			simulation->radar_request_recheck(new RadarRecheckTicket(this, com));
 		} else if (req.detect_result) {
 			detected_combatants.push_back(com);
 			detected_rids.push_back(com->get_self());
 		}
-		if (req.lock_result){
+		if (req.lock_result) {
 			locked_combatants.push_back(com);
 			locked_rids.push_back(com->get_self());
 		}
 	}
 }
-void RCSRadar::ping_base_direct_space_state(const float& delta){
-	if (space_state == nullptr){
+void RCSRadar::ping_base_direct_space_state(const float &delta) {
+	if (space_state == nullptr) {
 		fetch_space_state();
 		ERR_FAIL_COND(space_state == nullptr);
 	}
@@ -909,39 +1401,40 @@ void RCSRadar::ping_base_direct_space_state(const float& delta){
 	uint32_t radar_attr = rprofile->get_attr();
 	uint32_t radar_cmask = rprofile->get_cmask();
 	bool collide_with_bodies = radar_attr & RCSRadarProfile::ScanCollideWithBodies;
-	bool collide_with_areas  = radar_attr & RCSRadarProfile::ScanCollideWithAreas;
+	bool collide_with_areas = radar_attr & RCSRadarProfile::ScanCollideWithAreas;
 	Set<RID_TYPE> exclude;
-	for (double angle_offset = -ray_spread; angle_offset < ray_spread; ray_spread += radians_per_ray){
+	for (double angle_offset = -ray_spread; angle_offset < ray_spread; ray_spread += radians_per_ray) {
 		Vector3 current_ray = vessel_forward.rotated(VEC3_UP, angle_offset);
 		Vector3 scan_origin = vessel_origin + (current_ray * max_distance);
 		PhysicsDirectSpaceState::RayResult ray_res;
 		auto intersect_result = space_state->intersect_ray(vessel_origin, scan_origin, ray_res,
-			exclude, radar_cmask, collide_with_bodies, collide_with_areas);
-		if (!intersect_result) continue;
+				exclude, radar_cmask, collide_with_bodies, collide_with_areas);
+		if (!intersect_result)
+			continue;
 		auto obj_id = ray_res.collider_id;
 		auto combatant = simulation->get_combatant_from_iid(obj_id);
 		// If found object is not combatant,
 		// it might be an obstacle, therefore, don't exclude it
 		// This method might skip over some combatant,
 		// but with enough ray density, it wouldn't be a problem
-		if (!combatant) continue;
+		if (!combatant)
+			continue;
 		// FIX: exclude the RID_TYPE regardless of the assertion result
 		// if it make it all the way to this point ||
 		//                                        \./
-		if (!assigned_vessel->is_engagable(combatant)){
-
+		if (!assigned_vessel->is_engagable(combatant)) {
 		} else {
 			RadarPingRequest req(assigned_vessel, combatant);
 			req.self_transform = assigned_vessel->get_combined_transform();
 			rprofile->ping_target(&req);
 
-			if (req.late_recheck){
+			if (req.late_recheck) {
 				simulation->radar_request_recheck(new RadarRecheckTicket(this, combatant));
 			} else if (req.detect_result) {
 				detected_combatants.push_back(combatant);
 				detected_rids.push_back(combatant->get_self());
 			}
-			if (req.lock_result){
+			if (req.lock_result) {
 				locked_combatants.push_back(combatant);
 				locked_rids.push_back(combatant->get_self());
 			}
@@ -950,12 +1443,15 @@ void RCSRadar::ping_base_direct_space_state(const float& delta){
 	}
 }
 
-void RCSRadar::poll(const float& delta){
+void RCSRadar::poll(const float &delta) {
 	RID_RCS::poll(delta);
-	if (rprofile.is_null() || !simulation || !assigned_vessel) return;
-	if (rprofile->get_acurve().is_null()  || rprofile->get_dcurve().is_null()) return;
+	if (rprofile.is_null() || !simulation || !assigned_vessel)
+		return;
+	if (rprofile->get_acurve().is_null() || rprofile->get_dcurve().is_null())
+		return;
 	timer += delta;
-	if (timer < ( 1.0 / rprofile->get_freq())) return;
+	if (timer < (1.0 / rprofile->get_freq()))
+		return;
 
 	//-------------------------------------------------
 	timer = 0.0;
@@ -965,25 +1461,30 @@ void RCSRadar::poll(const float& delta){
 	locked_rids.clear();
 	//--------------------------------------------------
 	// Combatants pool size should stay the same during radars' iteration
-	switch (rprofile->get_base()){
+	switch (rprofile->get_base()) {
 		case RCSRadarProfile::ScanTransform:
-			ping_base_transform(delta); break;
+			ping_base_transform(delta);
+			break;
 		case RCSRadarProfile::ScanDirectSpaceState:
-			ping_base_direct_space_state(delta); break;
+			ping_base_direct_space_state(delta);
+			break;
 		default:
 			break;
 	}
 }
 
-void RCSRadar::late_check(const float& delta, RadarRecheckTicket* recheck){
-	if (rprofile.is_null() || !simulation || !assigned_vessel) return;
-	if (!recheck->bogey) return;
+void RCSRadar::late_check(const float &delta, RadarRecheckTicket *recheck) {
+	if (rprofile.is_null() || !simulation || !assigned_vessel)
+		return;
+	if (!recheck->bogey)
+		return;
 	RadarPingRequest req(assigned_vessel, recheck->bogey);
 	req.self_transform = assigned_vessel->get_combined_transform();
 	rprofile->swarm_detect(&req);
-	if (req.detect_result){
+	if (req.detect_result) {
 		detected_combatants.push_back(recheck->bogey);
 		detected_rids.push_back(recheck->bogey->get_self());
 	}
 }
+#endif
 #pragma endregion

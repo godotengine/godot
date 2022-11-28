@@ -15,7 +15,7 @@
 #include <iterator>
 
 
-// #define USE_SAFE_RID_COUNT
+//#define USE_SAFE_RID_COUNT
 #ifdef  USE_SAFE_RID_COUNT
 #define RID_TYPE RIR
 #else
@@ -213,6 +213,7 @@ public:
 // #endif
 
 
+// #define USE_STL_WRAPPER
 #define USE_STL_VECTOR
 // #define STL_WRAPPER_SAME_API
 
@@ -286,7 +287,7 @@ public:
 }
 
 #ifdef USE_SAFE_RID_COUNT
-#define rcsnew(classptr) std::shared<classptr>()
+#define rcsnew(classptr) std::shared_ptr<classptr>()
 #define rcsdel(ptr) { ptr.reset(); }
 #else
 #define rcsnew(classptr) new classptr
@@ -301,46 +302,61 @@ enum CombatantStatus {
 };
 
 class RID_RCS;
+class RCS_OwnerBase;
 // class RCSCompatPassthrough;
 
 #define RIR uint32_t
 // typedef uint32_t RIR;
 
-template <class T> class RCS_Owner {
-public:
-	using rcs_reference = std::shared_ptr<T>;
-private:
-	SafeRefCount ref_counter;
-	HashMap<RIR, std::shared_ptr<T>> ownership_record;
-public:
-	_FORCE_INLINE_ RCS_Owner() {
+#define PUSH_RECORD_PRIMITIVE(m_record, m_val) \
+	m_record->table.push_back(Pair<StringName, Variant>(StringName(#m_val), m_val))
 
+
+#include "modules/record/record.h"
+#ifdef USE_SAFE_RID_COUNT
+class RID_RCS {
+protected:
+	RCS_OwnerBase *_owner;
+	RIR _id;
+	Ref<RCSChip> chip;
+	RID_TYPE self;
+	Sentrience *combat_server;
+	std::weak_ptr<RID_RCS> self_ref;
+	friend class RCS_OwnerBase;
+
+public:
+	virtual Ref<RawRecord> serialize() const { return Ref<RawRecord>(); }
+	virtual bool serialize(const Ref<RawRecord> &from) { return false; }
+	virtual void deserialize(const RawRecord &rec) {}
+
+	friend class Sentrience;
+
+	_FORCE_INLINE_ void set_self(const RID_TYPE &p_self) { self = p_self; }
+	_FORCE_INLINE_ RID_TYPE get_self() const { return self; }
+
+	_FORCE_INLINE_ void set_self_ref(const std::weak_ptr<RID_RCS> &p_self) { self_ref = p_self; }
+	_FORCE_INLINE_ std::weak_ptr<RID_RCS> get_self_ref() const { return self_ref; }
+
+	_FORCE_INLINE_ void _set_combat_server(Sentrience *p_combatServer) { combat_server = p_combatServer; }
+	_FORCE_INLINE_ Sentrience *_get_combat_server() const { return combat_server; }
+
+	virtual void capture_event(RID_RCS *from, void *event = nullptr) {}
+
+	virtual void poll(const float &delta) {
+		if (chip.is_valid())
+			chip->callback(delta);
 	}
-	_FORCE_INLINE_ RIR make_rid(std::shared_ptr<T>& ref){
-		RIR rir = ref_counter.refval();
-		ref->_owner = this;
-		ref->_id = rir;
-		ownership_record.operator[](rir) = ref;
+
+	virtual void set_chip(const Ref<RCSChip> &new_chip) {
+		chip = new_chip;
+		if (chip.is_valid())
+			chip->set_host(self);
 	}
-	_FORCE_INLINE_ bool owns(const RIR& rir){
-		return ownership_record.has(rir);
-	}
-	_FORCE_INLINE_ std::weak_ptr<T> get(const RIR& rir) const {
-		if (!owns(rir)) return std::weak_ptr<T>(std::shared_ptr<T>(nullptr));
-		return std::weak_ptr<T>(ownership_record.operator[](rir));
-	}
-	_FORCE_INLINE_ std::shared_ptr<T> get_locked(const RIR& rir) const {
-		if (!owns(rir)) return std::shared_ptr<T>(nullptr);
-		return std::shared_ptr<T>(ownership_record.operator[](rir));
-	}
-	_FORCE_INLINE_ void free(const RIR& rir){
-		ownership_record.erase(rir);
-	}
-	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned){
-		ownership_record.get_key_list(p_owned);
-	}
+	virtual Ref<RCSChip> get_chip() const { return chip; }
 };
+#else
 
+class Sentrience;
 
 class RCSChip : public Reference{
 	GDCLASS(RCSChip, Reference);
@@ -362,4 +378,100 @@ public:
 	_FORCE_INLINE_ RID_TYPE get_host() const { return host; }
 };
 
+
+class RID_RCS : public RID_Data {
+protected:
+	Ref<RCSChip> chip;
+	RID_TYPE self;
+	Sentrience *combat_server;
+
+public:
+	virtual Ref<RawRecord> serialize() const { return Ref<RawRecord>(); }
+	virtual bool serialize(const Ref<RawRecord> &from) { return false; }
+	virtual void deserialize(const RawRecord &rec) {}
+
+	friend class Sentrience;
+
+	_FORCE_INLINE_ void set_self(const RID_TYPE &p_self) { self = p_self; }
+	_FORCE_INLINE_ RID_TYPE get_self() const { return self; }
+
+	_FORCE_INLINE_ void _set_combat_server(Sentrience *p_combatServer) { combat_server = p_combatServer; }
+	_FORCE_INLINE_ Sentrience *_get_combat_server() const { return combat_server; }
+
+	virtual void capture_event(RID_RCS *from, void *event = nullptr) {}
+
+	virtual void poll(const float &delta) {
+		if (chip.is_valid())
+			chip->callback(delta);
+	}
+
+	virtual void set_chip(const Ref<RCSChip> &new_chip) {
+		chip = new_chip;
+		if (chip.is_valid())
+			chip->set_host(self);
+	}
+	virtual Ref<RCSChip> get_chip() const { return chip; }
+};
+#endif
+
+
+#ifdef USE_SAFE_RID_COUNT
+class RCS_OwnerBase {
+	SafeRefCount ref_counter;
+
+public:
+	RCS_OwnerBase() = default;
+	_FORCE_INLINE_ void _set_data(RID_TYPE& rid, RID_RCS* ref) {
+		rid = ref_counter.refval();
+		ref->_id = rid;
+		ref->_owner = this;
+	}
+	_FORCE_INLINE_ bool _is_owner(const RID_RCS* ref) const {
+		return ref->_owner == this;
+	}
+};
+template <class T>
+class RCS_Owner : public RCS_OwnerBase {
+public:
+	using rcs_reference = std::shared_ptr<T>;
+private:
+	HashMap<RIR, std::shared_ptr<T>> ownership_record;
+public:
+	_FORCE_INLINE_ RCS_Owner() {
+
+	}
+	_FORCE_INLINE_ RIR make_rid(std::shared_ptr<T>& ref){
+		RIR rir;
+		_set_data(rir, ref.get());
+		ownership_record.operator[](rir) = ref;
+	}
+	_FORCE_INLINE_ bool owns(const RIR& rir){
+		auto first_check = ownership_record.has(rir);
+		if (!first_check)
+			return false;
+		auto obj = ownership_record.operator[](rir);
+		return _is_owner(obj.get());
+	}
+	_FORCE_INLINE_ std::weak_ptr<T> get(const RIR& rir) const {
+		if (!owns(rir))
+			return std::weak_ptr<T>(std::shared_ptr<T>(nullptr));
+		return std::weak_ptr<T>(ownership_record.operator[](rir));
+	}
+	_FORCE_INLINE_ std::shared_ptr<T> get_locked(const RIR& rir) const {
+		if (!owns(rir)) return std::shared_ptr<T>(nullptr);
+		return std::shared_ptr<T>(ownership_record.operator[](rir));
+	}
+	_FORCE_INLINE_ void free(const RIR& rir){
+		if (!has(rir))
+			return;
+		auto stuff = ownership_record.operator[](rir);
+		stuff->_owner = nullptr;
+		ref->_id = 0;
+		ownership_record.erase(rir);
+	}
+	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned){
+		ownership_record.get_key_list(p_owned);
+	}
+};
+#endif
 #endif

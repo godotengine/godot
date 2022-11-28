@@ -3,6 +3,9 @@
 
 #include <memory>
 #include <string>
+#include <thread>
+#include <chrono>
+#include <mutex>
 
 #include "core/hash_map.h"
 #include "core/object.h"
@@ -11,18 +14,71 @@
 #include "rcs_maincomp.h"
 
 #define MAX_OBJECT_PER_CONTAINER 1024
+// #define USE_THREAD_SAFE_API
 
 class Sentrience;
+class SentrienceInstancesWatcher;
+
+class SentrienceInstancesWatcher : public Reference {
+	GDCLASS(SentrienceInstancesWatcher, Reference);
+private:
+	List<RID_TYPE> rid_pool;
+	std::recursive_mutex lock;
+private:
+	_FORCE_INLINE_ void add_rid(const RID_TYPE& rid){
+		std::lock_guard<std::recursive_mutex> guard(lock);
+		rid_pool.push_back(rid);
+	}
+	_FORCE_INLINE_ void remove_rid(const RID_TYPE& rid){
+		std::lock_guard<std::recursive_mutex> guard(lock);
+		rid_pool.erase(rid);
+	}
+	_FORCE_INLINE_ List<RID_TYPE> *get_rid_pool() { return &rid_pool; } 
+	friend class Sentrience;
+protected:
+	static void _bind_methods();
+public:
+	SentrienceInstancesWatcher(){}
+	~SentrienceInstancesWatcher(){}
+
+	void flush_all();
+	_FORCE_INLINE_ uint32_t size() const {
+		return rid_pool.size();
+	}
+	_FORCE_INLINE_ Array get_rids() const {
+		Array re;
+		for (auto E = rid_pool.front(); E; E = E->next()){
+			re.push_back(E->get());
+		}
+		return re;
+	}
+};
 
 class Sentrience : public Object {
 	GDCLASS(Sentrience, Object);
 
 	bool active;
+#ifdef USE_THREAD_SAFE_API
+	uint64_t gc_interval_msec = 5;
+	bool gc_close = false;
+	std::thread *gc_thread;
+	std::mutex gc_queue_mutex;
+	std::recursive_mutex mutex_simulations;
+	std::recursive_mutex mutex_recordings;
+	std::recursive_mutex mutex_combatants;
+	std::recursive_mutex mutex_squads;
+	std::recursive_mutex mutex_teams;
+	std::recursive_mutex mutex_radars;
+	List<RID_TYPE> rid_deletion_queue;
+	List<RID_TYPE> all_rids;
+#else
+	Ref<SentrienceInstancesWatcher> active_watcher;
+	std::recursive_mutex watcher_mutex;
+#endif
 
 	VECTOR<RCSSimulation*> active_simulations;
 	VECTOR<RCSRecording*> active_rec;
 	// VECTOR<Ref<RCSUnilateralTeamsBind>> active_team_links;
-	VECTOR<RID_TYPE> all_rids;
 // #define USE_SAFE_RID_COUNT
 
 #ifdef USE_SAFE_RID_COUNT
@@ -42,18 +98,24 @@ class Sentrience : public Object {
 #endif
 protected:
 	static void _bind_methods();
+	static Sentrience* singleton;
 
 	static void log(const String& msg);
 	static void log(const std::string& msg);
 	static void log(const char *msg);
-	static Sentrience* singleton;
-
+	
 	String rid_sort(const RID_TYPE& target);
+
+	void free_single_rid_internal(const RID_TYPE& target);
+	void free_rid_internal();
+	void gc_worker();
 public:
 	Sentrience();
 	~Sentrience();
 
 	// _FORCE_INLINE_ RID_Owner<RCSCombatant> *get_combatant_owner() { return &combatant_owner; }
+
+	// friend class std::thread;
 
 	static Sentrience* get_singleton() { return singleton; }
 	virtual void poll(const float& delta);
@@ -61,12 +123,28 @@ public:
 	/* Core */
 	_FORCE_INLINE_ void set_active(const bool& is_active) { active = is_active;}
 	_FORCE_INLINE_ bool get_state() const { return active; }
+#ifdef USE_THREAD_SAFE_API
 	_FORCE_INLINE_ uint32_t get_instances_count() const { return all_rids.size(); }
+#else
+	_FORCE_INLINE_ uint32_t get_instances_count() const {
+		if (active_watcher.is_null()) return 0;
+		return active_watcher->size();
+	}
+#endif
 	_FORCE_INLINE_ uint64_t get_memory_usage() const { return RCSMemoryAllocation::tracker_ptr->currently_allocated(); }
 	_FORCE_INLINE_ String get_memory_usage_humanized() const { return String::humanize_size(get_memory_usage()); }
 	virtual void free_rid(const RID_TYPE& target);
 	void free_all_instances();
 	void flush_instances_pool();
+#ifndef USE_THREAD_SAFE_API
+	Ref<SentrienceInstancesWatcher> watcher_create();
+	void watcher_remove();
+	void watcher_flush(Ref<SentrienceInstancesWatcher> watcher);
+#else
+	_FORCE_INLINE_ uint8_t watcher_create() { return 0; }
+	_FORCE_INLINE_ void watcher_remove() {}
+	void watcher_flush(uint32_t& watcher) {}
+#endif
 
 	/* Recording API */
 	virtual RID_TYPE recording_create();

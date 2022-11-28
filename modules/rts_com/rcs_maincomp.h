@@ -145,11 +145,25 @@ public:
 	VECTOR<EventReportTicket*> *events_by_simulation(RCSSimulation* simulation);
 };
 
+#ifdef USE_SAFE_RID_COUNT
 struct RadarRecheckTicket{
-	RCSRadar* request_sender = nullptr;
-	RCSCombatant* bogey = nullptr;
-	RadarRecheckTicket(RCSRadar* sender, RCSCombatant* reciever) { request_sender = sender; bogey = reciever; }
+	std::weak_ptr<RCSRadar> request_sender;
+	std::weak_ptr<RCSCombatant> bogey;
+	RadarRecheckTicket(const std::weak_ptr<RCSRadar> &sender, const std::weak_ptr<RCSCombatant> &reciever) {
+		request_sender = sender;
+		bogey = reciever;
+	}
 };
+#else
+struct RadarRecheckTicket {
+	RCSRadar *request_sender;
+	RCSCombatant *bogey;
+	RadarRecheckTicket(RCSRadar *sender, RCSCombatant *reciever) {
+		request_sender = sender;
+		bogey = reciever;
+	}
+};
+#endif
 
 /* Opaque class */
 class RCSEngagementInternal : public RID_RCS {
@@ -238,7 +252,7 @@ public:
 	_FORCE_INLINE_ EngagementScale get_scale() const		{ ERR_FAIL_COND_V(!logger, NA)     ; return (EngagementScale)logger->get_scale(); }
 	_FORCE_INLINE_ Array get_involving_teams() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_involving_teams(); }
 	_FORCE_INLINE_ Array get_involving_squads() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_involving_squads(); }
-	_FORCE_INLINE_ RID_TYPE get_offending_team() const			{ ERR_FAIL_COND_V(!logger, RID_TYPE())  ; return logger->get_offending_team(); }
+	_FORCE_INLINE_ RID_TYPE get_offending_team() const		{ ERR_FAIL_COND_V(!logger, RID_TYPE())  ; return logger->get_offending_team(); }
 	_FORCE_INLINE_ Array get_deffending_teams() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_deffending_teams(); }
 	_FORCE_INLINE_ Array get_offending_squads() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_offending_squads(); }
 	_FORCE_INLINE_ Array get_deffending_squads() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_deffending_squads(); }
@@ -246,35 +260,71 @@ public:
 
 class RCSSimulation : public RID_RCS{
 private:
-	VECTOR<RCSCombatant*> combatants;
-	VECTOR<RCSSquad*> squads;
-	VECTOR<RCSTeam*> teams;
-	VECTOR<RCSRadar*> radars;
-	VECTOR<RadarRecheckTicket*> rrecheck_requests;
-
+#ifdef USE_SAFE_RID_COUNT
+	WrappedVector<std::weak_ptr<RCSCombatant>> combatants;
+	WrappedVector<std::weak_ptr<RCSSquad>> squads;
+	WrappedVector<std::weak_ptr<RCSTeam>> teams;
+	WrappedVector<std::weak_ptr<RCSRadar>> radars;
+	WrappedVector<std::shared_ptr<RadarRecheckTicket>> rrecheck_requests;
+	std::weak_ptr<RCSRecording> recorder;
+#else
+	VECTOR<RCSCombatant *> combatants;
+	VECTOR<RCSSquad *> squads;
+	VECTOR<RCSTeam *> teams;
+	VECTOR<RCSRadar *> radars;
+	VECTOR<RadarRecheckTicket *> rrecheck_requests;
 	RCSRecording* recorder;
+#endif
 public:
 	RCSSimulation();
 	~RCSSimulation();
+#ifdef USE_SAFE_RID_COUNT
+	void add_combatant(const std::weak_ptr<RCSCombatant>& com);
+	void add_squad(const std::weak_ptr<RCSSquad> &squad);
+	void add_team(const std::weak_ptr<RCSTeam> &team);
+	void add_radar(const std::weak_ptr<RCSRadar> &rad);
 
-	void add_combatant(RCSCombatant* com);
-	void add_squad(RCSSquad* squad);
-	void add_team(RCSTeam* team);
-	void add_radar(RCSRadar* rad);
+	void remove_combatant(const std::weak_ptr<RCSCombatant> &com);
+	void remove_squad(const std::weak_ptr<RCSSquad> &squad);
+	void remove_team(const std::weak_ptr<RCSTeam> &team);
+	void remove_radar(const std::weak_ptr<RCSRadar> &rad);
 
-	void remove_combatant(RCSCombatant* com);
-	void remove_squad(RCSSquad* squad);
-	void remove_team(RCSTeam* team);
-	void remove_radar(RCSRadar* rad);
+	VECTOR<std::weak_ptr<RCSCombatant>> get_combatants() const { return combatants; }
+	VECTOR<std::weak_ptr<RCSSquad>> get_squads() const { return squads; }
+	VECTOR<std::weak_ptr<RCSTeam>> get_teams() const { return teams; }
+	VECTOR<std::weak_ptr<RCSRadar>> get_radars() const { return radars; }
 
-	VECTOR<RCSCombatant*> *get_combatants() { return &combatants; }
-	VECTOR<RCSSquad*> *get_squads() { return &squads; }
-	VECTOR<RCSTeam*> *get_teams() { return &teams; }
-	VECTOR<RCSRadar*> *get_radars() { return &radars; }
-	
-	void poll(const float& delta) override;
+	void poll(const float &delta) override;
 
-	void set_recorder(RCSRecording* rec);
+	void set_recorder(RCSRecording *rec);
+	_FORCE_INLINE_ bool has_recorder() const { return !recorder.expired(); }
+	_FORCE_INLINE_ bool is_recording() const { return (has_recorder() ? (recorder.lock()->running) : false); }
+	void combatant_event(Ref<CombatantEventReport> event);
+	void squad_event(Ref<SquadEventReport> event);
+	void team_event(Ref<TeamEventReport> event);
+	void radar_event(Ref<RadarEventReport> event);
+
+	std::weak_ptr<RCSCombatant> get_combatant_from_iid(const uint64_t &iid) const;
+	void radar_request_recheck(const std::shared_ptr<RadarRecheckTicket> &ticket);
+#else
+	void add_combatant(RCSCombatant *com);
+	void add_squad(RCSSquad *squad);
+	void add_team(RCSTeam *team);
+	void add_radar(RCSRadar *rad);
+
+	void remove_combatant(RCSCombatant *com);
+	void remove_squad(RCSSquad *squad);
+	void remove_team(RCSTeam *team);
+	void remove_radar(RCSRadar *rad);
+
+	VECTOR<RCSCombatant *> *get_combatants() { return &combatants; }
+	VECTOR<RCSSquad *> *get_squads() { return &squads; }
+	VECTOR<RCSTeam *> *get_teams() { return &teams; }
+	VECTOR<RCSRadar *> *get_radars() { return &radars; }
+
+	void poll(const float &delta) override;
+
+	void set_recorder(RCSRecording *rec);
 	_FORCE_INLINE_ bool has_recorder() const { return recorder != nullptr; }
 	_FORCE_INLINE_ bool is_recording() const { return (has_recorder() ? (recorder->running) : false); }
 	void combatant_event(Ref<CombatantEventReport> event);
@@ -282,9 +332,9 @@ public:
 	void team_event(Ref<TeamEventReport> event);
 	void radar_event(Ref<RadarEventReport> event);
 
-	RCSCombatant* get_combatant_from_iid(const uint64_t& iid) const;
-
+	RCSCombatant *get_combatant_from_iid(const uint64_t &iid) const;
 	void radar_request_recheck(RadarRecheckTicket* ticket);
+#endif
 };
 
 class RCSCombatantProfile : public Resource{
@@ -344,9 +394,14 @@ public:
 
 class RCSCombatant : public RID_RCS {
 private:
+#ifdef USE_SAFE_RID_COUNT
 	// RID_TYPE squad_ref;
-	RCSSimulation* simulation;
-	RCSSquad* my_squad;
+	std::weak_ptr<RCSSimulation> simulation;
+	std::weak_ptr<RCSSquad> my_squad;
+#else
+	RCSSimulation *simulation;
+	RCSSquad *my_squad;
+#endif
 	Ref<RCSCombatantProfile> combatant_profile;
 private:
 	Transform space_transform;
@@ -361,17 +416,9 @@ public:
 	~RCSCombatant() override;
 
 	friend class Sentrience;
-
-	void set_squad(RCSSquad* new_squad);
-	RCSSquad* get_squad() { return my_squad; }
-
-	bool is_same_team(RCSCombatant* com);
-	bool is_hostile(RCSCombatant* com);
-	bool is_ally(RCSCombatant* com);
-	bool is_engagable(RCSCombatant* bogey);
+	friend class RCSSimulation;
 
 	void poll(const float& delta) override;
-
 	_FORCE_INLINE_ Transform get_combined_transform() const { return space_transform * local_transform;  }
 
 	void set_profile(const Ref<RCSCombatantProfile>& prof) { combatant_profile = prof; }
@@ -379,8 +426,6 @@ public:
 
 	virtual Ref<RawRecord> serialize() const;
 	virtual bool serialize(const Ref<RawRecord>& from);
-
-	virtual void set_simulation(RCSSimulation* sim);
 
 	_FORCE_INLINE_ void set_combatant_id(const uint32_t& new_id) { combatant_id = new_id; }
 	_FORCE_INLINE_ uint32_t get_combatant_id() const { return combatant_id; }
@@ -405,15 +450,45 @@ public:
 
 	virtual void set_status(const uint32_t& new_status) { status = new_status;  }
 	virtual uint32_t get_status() const { return status; }
+#ifdef USE_SAFE_RID_COUNT
+	_FORCE_INLINE_ std::weak_ptr<RCSCombatant> self_cast_weakptr() const {
+		return *((std::weak_ptr<RCSCombatant> *)&self_ref);
+	}
 
+	void set_squad(const std::weak_ptr<RCSSquad>& new_squad);
+	std::weak_ptr<RCSSquad> get_squad() const { return my_squad; }
+
+	bool is_same_team(const std::weak_ptr<RCSCombatant> &com);
+	bool is_hostile(const std::weak_ptr<RCSCombatant> &com);
+	bool is_ally(const std::weak_ptr<RCSCombatant> &com);
+	bool is_engagable(const std::weak_ptr<RCSCombatant> &bogey);
+
+	virtual void set_simulation(const std::weak_ptr<RCSSimulation>& sim);
+#else
+	void set_squad(RCSSquad *new_squad);
+	RCSSquad *get_squad() { return my_squad; }
+
+	bool is_same_team(RCSCombatant *com);
+	bool is_hostile(RCSCombatant *com);
+	bool is_ally(RCSCombatant *com);
+	bool is_engagable(RCSCombatant *bogey);
+
+	virtual void set_simulation(RCSSimulation *sim);
+#endif
 };
 
 class RCSSquad : public RID_RCS {
 private:
 	StringName squad_name;
 	uint32_t squad_id = 0;
-	uint32_t combatant_id_allocator = 0;
+	SafeRefCount refcount;
 
+private:
+#ifdef USE_SAFE_RID_COUNT
+	std::weak_ptr<RCSSimulation> simulation;
+	std::weak_ptr<RCSTeam> my_team;
+	WrappedVector<std::weak_ptr<RCSCombatant>> combatants;
+#else
 	RCSSimulation* simulation;
 	RCSTeam *my_team;
 
@@ -423,29 +498,57 @@ private:
 	
 	// void add_engagement(RCSEngagementInternal* engagement) { engagement_loggers.push_back(engagement); }
 	// void remove_engagement(RCSEngagementInternal* engagement) VEC_ERASE(engagement_loggers, engagement)
+#endif
 	friend class RCSEngagementInternal;
+	friend class RCSSimulation;
+	friend class Sentrience;
 public:
 	RCSSquad();
 	~RCSSquad();
 
-	friend class Sentrience;
-
-	_FORCE_INLINE_ VECTOR<RCSCombatant*>* get_combatants() { return &combatants; }
-
-	void set_team(RCSTeam* new_team);
-	RCSTeam* get_team() { return my_team; }
-
 	_FORCE_INLINE_ void set_squad_name(const StringName& new_name) { squad_name = new_name; }
 	_FORCE_INLINE_ StringName get_squad_name() const { return squad_name; }
-
 	_FORCE_INLINE_ void set_squad_id(const uint32_t& new_id) { squad_id = new_id;}
 	_FORCE_INLINE_ uint32_t get_squad_id() const { return squad_id; }
 
-	virtual void set_simulation(RCSSimulation* sim);
-	_FORCE_INLINE_ bool has_combatant(RCSCombatant* com) const VEC_HAS(combatants, com)
-	_FORCE_INLINE_ void add_combatant(RCSCombatant* com) { combatants.push_back(com); combatant_id_allocator += 1; com->set_combatant_id(combatant_id_allocator); }
-	_FORCE_INLINE_ void remove_combatant(RCSCombatant* com) VEC_ERASE(combatants, com)
+#ifdef USE_SAFE_RID_COUNT
+	_FORCE_INLINE_ std::weak_ptr<RCSSquad> self_cast_weakptr() const {
+		return *((std::weak_ptr<RCSSquad> *)&self_ref);
+	}
+	_FORCE_INLINE_ WrappedVector<std::weak_ptr<RCSCombatant>> get_combatants() { return combatants; }
+
+	void set_team(const std::weak_ptr<RCSTeam>& new_team);
+	std::weak_ptr<RCSTeam> get_team() const { return my_team; }
+
+	void set_simulation(const std::weak_ptr<RCSSimulation>& sim);
+	bool has_combatant(const std::weak_ptr<RCSCombatant> &com);
+	_FORCE_INLINE_ void add_combatant(std::weak_ptr<RCSCombatant> com) {
+		combatants.push_back(com);
+		com.lock()->set_combatant_id(refcount.refval());
+	}
+	void remove_combatant(const std::weak_ptr<RCSCombatant>& com);
+	bool is_same_team(const std::weak_ptr<RCSSquad> &bogey);
+	bool is_engagable(const std::weak_ptr<RCSSquad> &bogey);
+#else
+	_FORCE_INLINE_ VECTOR<RCSCombatant *> *get_combatants() { return &combatants; }
+
+	void set_team(RCSTeam *new_team);
+	RCSTeam *get_team() { return my_team; }
+
+	virtual void set_simulation(RCSSimulation *sim);
+	_FORCE_INLINE_ bool has_combatant(RCSCombatant *com) const VEC_HAS(combatants, com)
+			_FORCE_INLINE_ void add_combatant(RCSCombatant *com) {
+		combatants.push_back(com);
+		com->set_combatant_id(refcount.refval());
+	}
+	_FORCE_INLINE_ void remove_combatant(RCSCombatant *com) VEC_ERASE(combatants, com)
 	bool is_engagable(RCSSquad *bogey);
+	bool is_same_team(RCSSquad *bogey) {
+		if (!bogey)
+			return false;
+		return bogey->get_team() == my_team;
+	}
+#endif
 };
 
 // Unilateral Interteam Profile
@@ -471,7 +574,11 @@ private:
 	uint32_t relationship = TeamNeutral;
 	uint32_t attributes = ITA_None;
 
+#ifdef USE_SAFE_RID_COUNT
+	std::weak_ptr<RCSTeam> toward;
+#else
 	RCSTeam *toward = nullptr;
+#endif
 protected:
 	static void _bind_methods();
 public:
@@ -490,7 +597,12 @@ public:
 	// _FORCE_INLINE_ void set_from_rid(const RID_TYPE& rid) { from = rid; emit_changed(); }
 	// _FORCE_INLINE_ RID_TYPE get_from_rid() const { return (!from ? RID_TYPE() : from->get_self()); }
 
+#ifdef USE_SAFE_RID_COUNT
+	_FORCE_INLINE_ void set_to_rid(const std::weak_ptr<RCSTeam> & to) { toward = to; emit_changed(); }
+#else
 	_FORCE_INLINE_ void set_to_rid(RCSTeam *to) { toward = to; emit_changed(); }
+#endif
+
 	RID_TYPE get_to_rid() const;
 };
 
@@ -498,24 +610,33 @@ class RCSTeam : public RID_RCS {
 private:
 	StringName team_name;
 	uint32_t team_id = 0;
-	uint32_t squad_id_allocator = 0;
+	SafeRefCount refcount;
 
+private:
+#ifdef USE_SAFE_RID_COUNT
+	std::weak_ptr<RCSSimulation> simulation;
+	WrappedVector<std::weak_ptr<RCSSquad>> squads;
+	WrappedVector<Ref<RCSUnilateralTeamsBind>> team_binds;
+	// VECTOR<RCSEngagementInternal*> engagement_loggers;
+
+	_FORCE_INLINE_ void add_engagement(RCSEngagementInternal *engagement) { }
+	_FORCE_INLINE_ void remove_engagement(RCSEngagementInternal *engagement) { }
+#else
 	RCSSimulation* simulation;
-
 	VECTOR<RCSSquad*> squads;
 	VECTOR<Ref<RCSUnilateralTeamsBind>> team_binds;
-
 	VECTOR<RCSEngagementInternal*> engagement_loggers;
+
 	_FORCE_INLINE_ void add_engagement(RCSEngagementInternal* engagement) { engagement_loggers.push_back(engagement); }
 	_FORCE_INLINE_ void remove_engagement(RCSEngagementInternal* engagement) VEC_ERASE(engagement_loggers, engagement)
+#endif
+
+	friend class Sentrience;
 	friend class RCSEngagementInternal;
+	friend class RCSSimulation;
 public:
 	RCSTeam();
 	~RCSTeam();
-
-	friend class Sentrience;
-
-	_FORCE_INLINE_ VECTOR<RCSSquad*>* get_squads() { return &squads; }
 
 	_FORCE_INLINE_ void set_team_name(const StringName& new_name) { team_name = new_name; }
 	_FORCE_INLINE_ StringName get_team_name() const { return team_name; }
@@ -523,19 +644,45 @@ public:
 	_FORCE_INLINE_ void set_team_id(const uint32_t& new_id) { team_id = new_id;}
 	_FORCE_INLINE_ uint32_t get_team_id() const { return team_id; }
 
+	Array get_engagements_ref() const;
+	void purge_all_links();
+
+#ifdef USE_SAFE_RID_COUNT
+	_FORCE_INLINE_ std::weak_ptr<RCSTeam> self_cast_weakptr() const {
+		return *((std::weak_ptr<RCSTeam> *)&self_ref);
+	}
+	_FORCE_INLINE_ WrappedVector<std::weak_ptr<RCSSquad>> get_squads() const { return squads; }
+
+	void set_simulation(const std::weak_ptr<RCSSimulation> &sim);
+	bool has_squad(const std::weak_ptr<RCSSquad> &squad);
+	_FORCE_INLINE_ void add_squad(const std::weak_ptr<RCSSquad>& squad) {
+		squads.push_back(squad);
+		auto locked = squad.lock();
+		locked->set_squad_id(refcount.refval());
+	}
+	bool remove_squad(const std::weak_ptr<RCSSquad> &squad);
+
+	bool is_engagable(const std::weak_ptr<RCSTeam> &bogey);
+
+	Ref<RCSUnilateralTeamsBind> add_link(const std::weak_ptr<RCSTeam> &toward);
+	bool remove_link(const std::weak_ptr<RCSTeam> &to);
+	Ref<RCSUnilateralTeamsBind> get_link_to(const std::weak_ptr<RCSTeam> &to) const;
+	Ref<RCSUnilateralTeamsBind> get_link_to(const std::shared_ptr<RCSTeam> &to) const;
+	_FORCE_INLINE_ bool has_link_to(const std::weak_ptr<RCSTeam> &to) const { return get_link_to(to).is_valid(); }
+#else
+	_FORCE_INLINE_ VECTOR<RCSSquad*>* get_squads() { return &squads; }
+
 	virtual void set_simulation(RCSSimulation* sim);
 	_FORCE_INLINE_ bool has_squad(RCSSquad* squad) const VEC_HAS(squads, squad)
-	_FORCE_INLINE_ void add_squad(RCSSquad* squad) { squads.push_back(squad); squad_id_allocator += 1; squad->set_squad_id(squad_id_allocator);  }
+	_FORCE_INLINE_ void add_squad(RCSSquad* squad) { squads.push_back(squad); squad->set_squad_id(refcount.refval());  }
 	_FORCE_INLINE_ void remove_squad(RCSSquad* squad) VEC_ERASE(squads, squad);
 	bool is_engagable(RCSTeam *bogey) const;
-
-	Array get_engagements_ref() const;
 
 	Ref<RCSUnilateralTeamsBind> add_link(RCSTeam *toward);
 	bool remove_link(RCSTeam *to);
 	Ref<RCSUnilateralTeamsBind> get_link_to(RCSTeam *to) const;
 	_FORCE_INLINE_ bool has_link_to(RCSTeam *to) const { return get_link_to(to).is_valid(); }
-	void purge_all_links();
+#endif
 };
 
 struct RadarPingCache {
@@ -549,14 +696,29 @@ struct RadarPingCache {
 
 struct RadarPingRequest{
 public:
-	RCSCombatant* from;
-	RCSCombatant* to;
+#ifdef UngaBunga
+	std::weak_ptr<RCSCombatant> from;
+	std::weak_ptr<RCSCombatant> to;
+#else
+	RCSCombatant *from;
+	RCSCombatant *to;
+#endif
 	Transform self_transform;
 	bool detect_result = false;
 	bool lock_result = false;
 	bool late_recheck = false;
 
-	RadarPingRequest(RCSCombatant* from, RCSCombatant* to){ this->from = from; this->to = to;}
+#ifdef UngaBunga
+	RadarPingRequest(const std::weak_ptr<RCSCombatant>& from, const std::weak_ptr<RCSCombatant>& to) {
+		this->from = from;
+		this->to = to;
+	}
+#else
+	RadarPingRequest(RCSCombatant *from, RCSCombatant *to) {
+		this->from = from;
+		this->to = to;
+	}
+#endif
 };
 
 class RCSRadarProfile : public Resource{
@@ -635,23 +797,34 @@ public:
 };
 class RCSRadar: public RID_RCS{
 private:
-	RCSSimulation* simulation;
-	RCSCombatant* assigned_vessel;
+	PhysicsDirectSpaceState *space_state;
 	Ref<RCSRadarProfile> rprofile;
-	PhysicsDirectSpaceState* space_state;
-	double timer = 0.0;
-	// Transform fallback_transform;
-	VECTOR<RCSCombatant*> detected_combatants;
-	VECTOR<RCSCombatant*> locked_combatants;
 	Array detected_rids;
 	Array locked_rids;
 	bool is_init = false;
+	double timer = 0.0;
 
 	void fetch_space_state();
 
 	void ping_base_transform(const float& delta);
-	void ping_base_direct_space_state(const float& delta);
-	// bool detect(const float& delta, RCSCombatant* combatant) const;
+	void ping_base_direct_space_state(const float &delta);
+	// bool detect(const float& delta, RCSCombatant* combatant) const
+
+	friend class Sentrience;
+	friend class RCSSimulation;
+private:
+#ifdef USE_SAFE_RID_COUNT
+	std::weak_ptr<RCSSimulation> simulation;
+	std::weak_ptr<RCSCombatant> assigned_vessel;
+	WrappedVector<std::weak_ptr<RCSCombatant>> detected_combatants;
+	WrappedVector<std::weak_ptr<RCSCombatant>> locked_combatants;
+#else
+	RCSSimulation* simulation;
+	RCSCombatant* assigned_vessel;
+	VECTOR<RCSCombatant*> detected_combatants;
+	VECTOR<RCSCombatant*> locked_combatants;
+#endif
+
 public:
 	RCSRadar();
 	~RCSRadar();
@@ -662,14 +835,24 @@ public:
 	// _FORCE_INLINE_ void set_ft(const Transform& trans) { fallback_transform = trans; }
 	// _FORCE_INLINE_ Transform get_ft() const { return fallback_transform; }
 
-	friend class Sentrience;
+	void poll(const float& delta) override;
 
-	virtual void set_simulation(RCSSimulation* sim);
 	_FORCE_INLINE_ Array get_detected() const { return detected_rids; }
 	_FORCE_INLINE_ Array get_locked() const { return locked_rids; }
+#ifdef USE_SAFE_RID_COUNT
+	_FORCE_INLINE_ std::weak_ptr<RCSRadar> self_cast_weakptr() const {
+		return *((std::weak_ptr<RCSRadar> *)&self_ref);
+	}
 
-	void poll(const float& delta) override;
+	void set_simulation(const std::weak_ptr<RCSSimulation> &sim);
+	void late_check(const float &delta, const std::weak_ptr<RadarRecheckTicket> &recheck);
+	void set_vessel(const std::weak_ptr<RCSCombatant> &new_vessel);
+#else
+	virtual void set_simulation(RCSSimulation* sim);
 	virtual void late_check(const float& delta, RadarRecheckTicket* recheck);
+	void set_vessel(RCSCombatant *new_vessel);
+#endif
 };
 
 #endif
+
