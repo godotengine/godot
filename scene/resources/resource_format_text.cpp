@@ -144,6 +144,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 	}
 
 	String id = token.value;
+	Error err = OK;
 
 	if (!ignore_resource_parsing) {
 		if (!ext_resources.has(id)) {
@@ -163,7 +164,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 					error = ERR_FILE_MISSING_DEPENDENCIES;
 					error_text = "[ext_resource] referenced nonexistent resource at: " + path;
 					_printerr();
-					return error;
+					err = error;
 				} else {
 					ResourceLoader::notify_dependency_error(local_path, path, type);
 				}
@@ -175,7 +176,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			error = ERR_FILE_MISSING_DEPENDENCIES;
 			error_text = "[ext_resource] referenced non-loaded resource at: " + path;
 			_printerr();
-			return error;
+			err = error;
 		}
 	} else {
 		r_res = Ref<Resource>();
@@ -187,7 +188,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 		return ERR_PARSE_ERROR;
 	}
 
-	return OK;
+	return err;
 }
 
 Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourceParser &parser) {
