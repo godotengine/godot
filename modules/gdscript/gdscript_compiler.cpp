@@ -1875,6 +1875,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				GDScriptCodeGenerator::Address local = codegen.locals[lv->identifier->name];
 				GDScriptDataType local_type = _gdtype_from_datatype(lv->get_datatype(), codegen.script);
 
+				bool initialized = false;
 				if (lv->initializer != nullptr) {
 					// For typed arrays we need to make sure this is already initialized correctly so typed assignment work.
 					if (local_type.has_type && local_type.builtin_type == Variant::ARRAY) {
@@ -1896,14 +1897,22 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						codegen.generator->pop_temporary();
 					}
+					initialized = true;
 				} else if (local_type.has_type) {
 					// Initialize with default for type.
 					if (local_type.has_container_element_type()) {
 						codegen.generator->write_construct_typed_array(local, local_type.get_container_element_type(), Vector<GDScriptCodeGenerator::Address>());
+						initialized = true;
 					} else if (local_type.kind == GDScriptDataType::BUILTIN) {
 						codegen.generator->write_construct(local, local_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
+						initialized = true;
 					}
 					// The `else` branch is for objects, in such case we leave it as `null`.
+				}
+
+				// Assigns a null for the unassigned variables in loops.
+				if (!initialized && p_block->is_loop) {
+					codegen.generator->write_construct(local, Variant::NIL, Vector<GDScriptCodeGenerator::Address>());
 				}
 			} break;
 			case GDScriptParser::Node::CONSTANT: {

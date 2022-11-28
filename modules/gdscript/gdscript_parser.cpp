@@ -1835,9 +1835,9 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		}
 		suite->add_local(SuiteNode::Local(n_for->variable, current_function));
 	}
-	suite->parent_for = n_for;
 
 	n_for->loop = parse_suite(R"("for" block)", suite);
+	n_for->loop->is_loop = true;
 	complete_extents(n_for);
 
 	// Reset break/continue state.
@@ -2169,6 +2169,7 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	is_continue_match = false;
 
 	n_while->loop = parse_suite(R"("while" block)");
+	n_while->loop->is_loop = true;
 	complete_extents(n_while);
 
 	// Reset break/continue state.
