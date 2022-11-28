@@ -442,10 +442,17 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			// Each surface may affect different numbers of bones.
 			mesh->bone_aabbs.resize(p_surface.bone_aabbs.size());
 		}
+
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			const AABB &bone = p_surface.bone_aabbs[i];
-			if (bone.has_volume()) {
+			if (!bone.has_volume()) {
+				continue;
+			}
+
+			if (mesh->bone_aabbs[i].has_volume()) {
 				mesh->bone_aabbs.write[i].merge_with(bone);
+			} else {
+				mesh->bone_aabbs.write[i] = bone;
 			}
 		}
 		mesh->aabb.merge_with(p_surface.aabb);
