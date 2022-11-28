@@ -428,7 +428,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
 			add_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
-			duplicate_anim->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+			duplicate_anim->set_icon(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
 			delete_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			anim_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
