@@ -31,26 +31,18 @@
 #ifndef GLTF_STATE_H
 #define GLTF_STATE_H
 
-#include "core/map.h"
-#include "core/resource.h"
-#include "core/vector.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/texture.h"
-
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_buffer_view.h"
 #include "gltf_camera.h"
-#include "gltf_document.h"
 #include "gltf_light.h"
 #include "gltf_mesh.h"
 #include "gltf_node.h"
 #include "gltf_skeleton.h"
 #include "gltf_skin.h"
+#include "gltf_template_convert.h"
 #include "gltf_texture.h"
 #include "gltf_texture_sampler.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/texture.h"
 
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);

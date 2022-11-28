@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_skeleton.h                                                      */
+/*  gltf_defines.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_SKELETON_H
-#define GLTF_SKELETON_H
+#ifndef GLTF_DEFINES_H
+#define GLTF_DEFINES_H
 
-#include "core/resource.h"
-#include "gltf_defines.h"
+// This file should only be included by other headers.
 
-class GLTFSkeleton : public Resource {
-	GDCLASS(GLTFSkeleton, Resource);
-	friend class GLTFDocument;
+// Godot classes used by GLTF headers.
+class AnimationPlayer;
+class BoneAttachment;
+class CSGShape;
+class DirectionalLight;
+class GridMap;
+class Light;
+class MultiMeshInstance;
+class Skeleton;
+class Skin;
 
-private:
-	// The *synthesized* skeletons joints
-	PoolVector<GLTFNodeIndex> joints;
+// GLTF classes.
+struct GLTFAccessor;
+class GLTFAnimation;
+class GLTFBufferView;
+class GLTFCamera;
+class GLTFDocument;
+class GLTFLight;
+class GLTFMesh;
+class GLTFNode;
+class GLTFSkeleton;
+class GLTFSkin;
+class GLTFSpecGloss;
+class GLTFState;
+class GLTFTexture;
+class GLTFTextureSampler;
+class PackedSceneGLTF;
 
-	// The roots of the skeleton. If there are multiple, each root must have the
-	// same parent (ie roots are siblings)
-	PoolVector<GLTFNodeIndex> roots;
+// GLTF index aliases.
+using GLTFAccessorIndex = int;
+using GLTFAnimationIndex = int;
+using GLTFBufferIndex = int;
+using GLTFBufferViewIndex = int;
+using GLTFCameraIndex = int;
+using GLTFImageIndex = int;
+using GLTFLightIndex = int;
+using GLTFMaterialIndex = int;
+using GLTFMeshIndex = int;
+using GLTFNodeIndex = int;
+using GLTFSkeletonIndex = int;
+using GLTFSkinIndex = int;
+using GLTFTextureIndex = int;
+using GLTFTextureSamplerIndex = int;
 
-	// The created Skeleton for the scene
-	Skeleton *godot_skeleton = nullptr;
-
-	// Set of unique bone names for the skeleton
-	Set<String> unique_names;
-
-	Map<int32_t, GLTFNodeIndex> godot_bone_node;
-
-	PoolVector<BoneAttachment *> bone_attachments;
-
-protected:
-	static void _bind_methods();
-
-public:
-	PoolVector<GLTFNodeIndex> get_joints();
-	void set_joints(PoolVector<GLTFNodeIndex> p_joints);
-
-	PoolVector<GLTFNodeIndex> get_roots();
-	void set_roots(PoolVector<GLTFNodeIndex> p_roots);
-
-	Skeleton *get_godot_skeleton();
-
-	Array get_unique_names();
-	void set_unique_names(Array p_unique_names);
-
-	Dictionary get_godot_bone_node();
-	void set_godot_bone_node(Dictionary p_indict);
-
-	BoneAttachment *get_bone_attachment(int idx);
-
-	int32_t get_bone_attachment_count();
+enum GLTFType {
+	TYPE_SCALAR,
+	TYPE_VEC2,
+	TYPE_VEC3,
+	TYPE_VEC4,
+	TYPE_MAT2,
+	TYPE_MAT3,
+	TYPE_MAT4,
 };
 
-#endif // GLTF_SKELETON_H
+#endif // GLTF_DEFINES_H
