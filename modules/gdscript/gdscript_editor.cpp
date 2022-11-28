@@ -3265,15 +3265,6 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		}
 	}
 
-	// Need special checks for assert and preload as they are technically
-	// keywords, so are not registered in GDScriptUtilityFunctions.
-	if (GDScriptUtilityFunctions::function_exists(p_symbol) || "assert" == p_symbol || "preload" == p_symbol) {
-		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
-		r_result.class_name = "@GDScript";
-		r_result.class_member = p_symbol;
-		return OK;
-	}
-
 	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol) {
 		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
 		r_result.class_name = "@GDScript";
@@ -3283,10 +3274,23 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 	GDScriptParser parser;
 	parser.parse(p_code, p_path, true);
-	GDScriptAnalyzer analyzer(&parser);
-	analyzer.analyze();
 
 	GDScriptParser::CompletionContext context = parser.get_completion_context();
+
+	// Allows class functions with the names like built-ins to be handled properly.
+	if (context.type != GDScriptParser::COMPLETION_ATTRIBUTE) {
+		// Need special checks for assert and preload as they are technically
+		// keywords, so are not registered in GDScriptUtilityFunctions.
+		if (GDScriptUtilityFunctions::function_exists(p_symbol) || "assert" == p_symbol || "preload" == p_symbol) {
+			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
+			r_result.class_name = "@GDScript";
+			r_result.class_member = p_symbol;
+			return OK;
+		}
+	}
+
+	GDScriptAnalyzer analyzer(&parser);
+	analyzer.analyze();
 
 	if (context.current_class && context.current_class->extends.size() > 0) {
 		bool success = false;
