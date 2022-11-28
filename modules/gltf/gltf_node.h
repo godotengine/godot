@@ -32,8 +32,7 @@
 #define GLTF_NODE_H
 
 #include "core/resource.h"
-
-#include "gltf_document.h"
+#include "gltf_defines.h"
 
 class GLTFNode : public Resource {
 	GDCLASS(GLTFNode, Resource);
