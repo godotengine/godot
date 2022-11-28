@@ -209,15 +209,21 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 }
 
 Error GLTFDocument::_serialize_extensions(Ref<GLTFState> state) const {
-	const String texture_transform = "KHR_texture_transform";
-	const String punctual_lights = "KHR_lights_punctual";
 	Array extensions_used;
-	extensions_used.push_back(punctual_lights);
-	extensions_used.push_back(texture_transform);
-	state->json["extensionsUsed"] = extensions_used;
 	Array extensions_required;
-	extensions_required.push_back(texture_transform);
-	state->json["extensionsRequired"] = extensions_required;
+	if (!state->lights.empty()) {
+		extensions_used.push_back("KHR_lights_punctual");
+	}
+	if (state->use_khr_texture_transform) {
+		extensions_used.push_back("KHR_texture_transform");
+		extensions_required.push_back("KHR_texture_transform");
+	}
+	if (!extensions_used.empty()) {
+		state->json["extensionsUsed"] = extensions_used;
+	}
+	if (!extensions_required.empty()) {
+		state->json["extensionsRequired"] = extensions_required;
+	}
 	return OK;
 }
 
@@ -3380,7 +3386,11 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				}
 				if (gltf_texture_index != -1) {
 					bct["index"] = gltf_texture_index;
-					bct["extensions"] = _serialize_texture_transform_uv1(material);
+					Dictionary extensions = _serialize_texture_transform_uv1(material);
+					if (!extensions.empty()) {
+						bct["extensions"] = extensions;
+						state->use_khr_texture_transform = true;
+					}
 					mr["baseColorTexture"] = bct;
 				}
 			}
@@ -3519,7 +3529,11 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				}
 				if (has_roughness || has_metalness) {
 					mrt["index"] = orm_texture_index;
-					mrt["extensions"] = _serialize_texture_transform_uv1(material);
+					Dictionary extensions = _serialize_texture_transform_uv1(material);
+					if (!extensions.empty()) {
+						mrt["extensions"] = extensions;
+						state->use_khr_texture_transform = true;
+					}
 					mr["metallicRoughnessTexture"] = mrt;
 				}
 			}
@@ -4626,6 +4640,9 @@ void GLTFDocument::_remove_duplicate_skins(Ref<GLTFState> state) {
 }
 
 Error GLTFDocument::_serialize_lights(Ref<GLTFState> state) {
+	if (state->lights.empty()) {
+		return OK;
+	}
 	Array lights;
 	for (GLTFLightIndex i = 0; i < state->lights.size(); i++) {
 		Dictionary d;
@@ -4650,10 +4667,6 @@ Error GLTFDocument::_serialize_lights(Ref<GLTFState> state) {
 		float range = light->range;
 		d["range"] = range;
 		lights.push_back(d);
-	}
-
-	if (!state->lights.size()) {
-		return OK;
 	}
 
 	Dictionary extensions;
@@ -6839,45 +6852,48 @@ Error GLTFDocument::parse(Ref<GLTFState> state, String p_path, bool p_read_binar
 	return OK;
 }
 
-Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<SpatialMaterial> p_material) {
-	Dictionary extension;
-	Ref<SpatialMaterial> mat = p_material;
-	if (mat.is_valid()) {
-		Dictionary texture_transform;
+Dictionary _serialize_texture_transform_uv(Vector2 p_offset, Vector2 p_scale) {
+	Dictionary texture_transform;
+	bool is_offset = p_offset != Vector2(0.0, 0.0);
+	if (is_offset) {
 		Array offset;
 		offset.resize(2);
-		offset[0] = mat->get_uv2_offset().x;
-		offset[1] = mat->get_uv2_offset().y;
+		offset[0] = p_offset.x;
+		offset[1] = p_offset.y;
 		texture_transform["offset"] = offset;
+	}
+	bool is_scaled = p_scale != Vector2(1.0, 1.0);
+	if (is_scaled) {
 		Array scale;
 		scale.resize(2);
-		scale[0] = mat->get_uv2_scale().x;
-		scale[1] = mat->get_uv2_scale().y;
+		scale[0] = p_scale.x;
+		scale[1] = p_scale.y;
 		texture_transform["scale"] = scale;
-		// Godot doesn't support texture rotation
+	}
+	Dictionary extension;
+	// Note: Godot doesn't support texture rotation.
+	if (is_offset || is_scaled) {
 		extension["KHR_texture_transform"] = texture_transform;
 	}
 	return extension;
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<SpatialMaterial> p_material) {
-	Dictionary extension;
 	if (p_material.is_valid()) {
-		Dictionary texture_transform;
-		Array offset;
-		offset.resize(2);
-		offset[0] = p_material->get_uv1_offset().x;
-		offset[1] = p_material->get_uv1_offset().y;
-		texture_transform["offset"] = offset;
-		Array scale;
-		scale.resize(2);
-		scale[0] = p_material->get_uv1_scale().x;
-		scale[1] = p_material->get_uv1_scale().y;
-		texture_transform["scale"] = scale;
-		// Godot doesn't support texture rotation
-		extension["KHR_texture_transform"] = texture_transform;
+		Vector3 offset = p_material->get_uv1_offset();
+		Vector3 scale = p_material->get_uv1_scale();
+		return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 	}
-	return extension;
+	return Dictionary();
+}
+
+Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<SpatialMaterial> p_material) {
+	if (p_material.is_valid()) {
+		Vector3 offset = p_material->get_uv2_offset();
+		Vector3 scale = p_material->get_uv2_scale();
+		return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
+	}
+	return Dictionary();
 }
 
 Error GLTFDocument::_serialize_version(Ref<GLTFState> state) {
