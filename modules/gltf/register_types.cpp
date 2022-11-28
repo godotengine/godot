@@ -36,6 +36,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
+#include "editor/editor_import_blend_runner.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
@@ -52,6 +53,14 @@ static void _editor_init() {
 
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
 	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
+	EDITOR_DEF_RST("filesystem/import/blender/rpc_port", 6011);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,
+			"filesystem/import/blender/rpc_port", PROPERTY_HINT_RANGE, "0,65535,1"));
+
+	EDITOR_DEF_RST("filesystem/import/blender/rpc_server_uptime", 5);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT,
+			"filesystem/import/blender/rpc_server_uptime", PROPERTY_HINT_RANGE, "0,300,1,or_greater,suffix:s"));
+
 	String blender3_path = EDITOR_DEF_RST("filesystem/import/blender/blender3_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
 			"filesystem/import/blender/blender3_path", PROPERTY_HINT_GLOBAL_DIR));
@@ -71,6 +80,8 @@ static void _editor_init() {
 			EditorFileSystem::get_singleton()->add_import_format_support_query(blend_import_query);
 		}
 	}
+	memnew(EditorImportBlendRunner);
+	EditorNode::get_singleton()->add_child(EditorImportBlendRunner::get_singleton());
 
 	// FBX to glTF importer.
 
