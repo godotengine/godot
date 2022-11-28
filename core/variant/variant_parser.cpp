@@ -1283,7 +1283,7 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 
 			Variant v;
 			err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
-			if (err) {
+			if (err && err != ERR_FILE_MISSING_DEPENDENCIES) {
 				return err;
 			}
 			object[key] = v;
