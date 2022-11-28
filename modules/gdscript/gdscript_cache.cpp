@@ -260,7 +260,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	Ref<GDScript> script;
 	r_error = OK;
 	if (singleton->full_gdscript_cache.has(p_path)) {
-		script = Ref<GDScript>(singleton->full_gdscript_cache[p_path]);
+		script = singleton->full_gdscript_cache[p_path];
 		if (!p_update_from_disk) {
 			return script;
 		}
