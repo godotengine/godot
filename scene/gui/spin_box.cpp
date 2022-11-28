@@ -101,6 +101,8 @@ void SpinBox::_release_mouse() {
 }
 
 void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!is_editable()) {
 		return;
 	}

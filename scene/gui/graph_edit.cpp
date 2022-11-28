@@ -1098,6 +1098,8 @@ void GraphEdit::set_selected(Node *p_child) {
 }
 
 void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
+
 	Ref<InputEventMouseMotion> mm = p_ev;
 	if (mm.is_valid() && (mm->get_button_mask() & BUTTON_MASK_MIDDLE || (mm->get_button_mask() & BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
 		Vector2i relative = Input::get_singleton()->warp_mouse_motion(mm, get_global_rect());

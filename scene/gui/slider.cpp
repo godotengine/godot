@@ -46,6 +46,8 @@ Size2 Slider::get_minimum_size() const {
 }
 
 void Slider::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!editable) {
 		return;
 	}

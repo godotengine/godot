@@ -69,6 +69,8 @@ int TabContainer::_get_top_margin() const {
 }
 
 void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	Popup *popup = get_popup();
