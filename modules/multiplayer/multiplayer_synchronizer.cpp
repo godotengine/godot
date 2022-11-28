@@ -118,6 +118,10 @@ void MultiplayerSynchronizer::set_net_id(uint32_t p_net_id) {
 }
 
 bool MultiplayerSynchronizer::update_outbound_sync_time(uint64_t p_msec) {
+	if (last_sync_msec == p_msec) {
+		// last_sync_msec has been updated on this frame.
+		return true;
+	}
 	if (p_msec >= last_sync_msec + interval_msec) {
 		last_sync_msec = p_msec;
 		return true;

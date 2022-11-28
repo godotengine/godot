@@ -87,6 +87,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations);
 	ClassDB::bind_method(D_METHOD("get_scene_node", "idx"), &GLTFState::get_scene_node);
+	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFState::get_additional_data);
+	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFState::set_additional_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "json"), "set_json", "get_json"); // Dictionary
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "major_version"), "set_major_version", "get_major_version"); // int
@@ -207,11 +209,11 @@ void GLTFState::set_meshes(TypedArray<GLTFMesh> p_meshes) {
 	GLTFTemplateConvert::set_from_array(meshes, p_meshes);
 }
 
-TypedArray<BaseMaterial3D> GLTFState::get_materials() {
+TypedArray<Material> GLTFState::get_materials() {
 	return GLTFTemplateConvert::to_array(materials);
 }
 
-void GLTFState::set_materials(TypedArray<BaseMaterial3D> p_materials) {
+void GLTFState::set_materials(TypedArray<Material> p_materials) {
 	GLTFTemplateConvert::set_from_array(materials, p_materials);
 }
 
@@ -357,4 +359,12 @@ String GLTFState::get_base_path() {
 
 void GLTFState::set_base_path(String p_base_path) {
 	base_path = p_base_path;
+}
+
+Variant GLTFState::get_additional_data(const StringName &p_extension_name) {
+	return additional_data[p_extension_name];
+}
+
+void GLTFState::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
+	additional_data[p_extension_name] = p_additional_data;
 }

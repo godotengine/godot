@@ -188,6 +188,7 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="dir" type="Vector3" />
 			<description>
+				Returns [code]true[/code] if the given ray intersects with this [AABB]. Ray length is infinite.
 			</description>
 		</method>
 		<method name="intersects_segment" qualifiers="const">

@@ -39,6 +39,9 @@ thirdparty_obj = []
 freetype_enabled = "freetype" in env.module_list
 msdfgen_enabled = "msdfgen" in env.module_list
 
+if "svg" in env.module_list:
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/thorvg/inc", "#thirdparty/thorvg/src/lib"])
+
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
     env_harfbuzz.disable_warnings()
@@ -131,9 +134,14 @@ if env["builtin_harfbuzz"]:
         env_harfbuzz.Append(
             CCFLAGS=[
                 "-DHAVE_FREETYPE",
-                "-DHAVE_GRAPHITE2",
             ]
         )
+        if env["graphite"]:
+            env_harfbuzz.Append(
+                CCFLAGS=[
+                    "-DHAVE_GRAPHITE2",
+                ]
+            )
         if env["builtin_freetype"]:
             env_harfbuzz.Prepend(CPPPATH=["#thirdparty/freetype/include"])
         if env["builtin_graphite"] and env["graphite"]:
@@ -446,7 +454,7 @@ if env["builtin_icu"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    icu_data_name = "icudt71l.dat"
+    icu_data_name = "icudt72l.dat"
 
     if env.editor_build:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)

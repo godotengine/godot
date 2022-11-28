@@ -242,7 +242,7 @@ void StreamPeerMbedTLS::poll() {
 		return;
 	}
 
-	// We could pass nullptr as second parameter, but some behaviour sanitizers don't seem to like that.
+	// We could pass nullptr as second parameter, but some behavior sanitizers don't seem to like that.
 	// Passing a 1 byte buffer to workaround it.
 	uint8_t byte;
 	int ret = mbedtls_ssl_read(tls_ctx->get_context(), &byte, 0);

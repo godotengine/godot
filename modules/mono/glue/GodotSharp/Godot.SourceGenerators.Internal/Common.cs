@@ -12,7 +12,7 @@ internal static class Common
     {
         string message =
             "Missing partial modifier on declaration of type '" +
-            $"{symbol.FullQualifiedName()}' which has attribute '{GeneratorClasses.GenerateUnmanagedCallbacksAttr}'";
+            $"{symbol.FullQualifiedNameOmitGlobal()}' which has attribute '{GeneratorClasses.GenerateUnmanagedCallbacksAttr}'";
 
         string description = $"{message}. Classes with attribute '{GeneratorClasses.GenerateUnmanagedCallbacksAttr}' " +
                              "must be declared with the partial modifier.";
@@ -39,7 +39,7 @@ internal static class Common
             .GetDeclaredSymbol(outerTypeDeclSyntax);
 
         string fullQualifiedName = outerSymbol is INamedTypeSymbol namedTypeSymbol ?
-            namedTypeSymbol.FullQualifiedName() :
+            namedTypeSymbol.FullQualifiedNameOmitGlobal() :
             "type not found";
 
         string message =

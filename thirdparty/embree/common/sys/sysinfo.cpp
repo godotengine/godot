@@ -21,7 +21,11 @@ namespace embree
   
   std::string getPlatformName() 
   {
-#if defined(__LINUX__) && !defined(__64BIT__)
+#if defined(__ANDROID__) && !defined(__64BIT__)
+    return "Android (32bit)";
+#elif defined(__ANDROID__) && defined(__64BIT__)
+    return "Android (64bit)";
+#elif defined(__LINUX__) && !defined(__64BIT__)
     return "Linux (32bit)";
 #elif defined(__LINUX__) && defined(__64BIT__)
     return "Linux (64bit)";
@@ -248,9 +252,7 @@ namespace embree
 #if defined(__X86_ASM__)
   __noinline int64_t get_xcr0() 
   {
-// -- GODOT start --
-#if defined (__WIN32__) && !defined (__MINGW32__)
-// -- GODOT end --
+#if defined (__WIN32__) && !defined (__MINGW32__) && defined(_XCR_XFEATURE_ENABLED_MASK)
     int64_t xcr0 = 0; // int64_t is workaround for compiler bug under VS2013, Win32
     xcr0 = _xgetbv(0);
     return xcr0;
@@ -337,9 +339,24 @@ namespace embree
     if (cpuid_leaf_7[ECX] & CPU_FEATURE_BIT_AVX512VBMI) cpu_features |= CPU_FEATURE_AVX512VBMI;
 
     return cpu_features;
-#elif defined(__ARM_NEON)
-    /* emulated features with sse2neon */
-    return CPU_FEATURE_SSE|CPU_FEATURE_SSE2|CPU_FEATURE_XMM_ENABLED;
+
+#elif defined(__ARM_NEON) || defined(__EMSCRIPTEN__)
+
+    int cpu_features = CPU_FEATURE_NEON|CPU_FEATURE_SSE|CPU_FEATURE_SSE2;
+    cpu_features |= CPU_FEATURE_SSE3|CPU_FEATURE_SSSE3|CPU_FEATURE_SSE42;
+    cpu_features |= CPU_FEATURE_XMM_ENABLED;
+    cpu_features |= CPU_FEATURE_YMM_ENABLED;
+    cpu_features |= CPU_FEATURE_SSE41 | CPU_FEATURE_RDRAND | CPU_FEATURE_F16C;
+    cpu_features |= CPU_FEATURE_POPCNT;
+    cpu_features |= CPU_FEATURE_AVX;
+    cpu_features |= CPU_FEATURE_AVX2;
+    cpu_features |= CPU_FEATURE_FMA3;
+    cpu_features |= CPU_FEATURE_LZCNT;
+    cpu_features |= CPU_FEATURE_BMI1;
+    cpu_features |= CPU_FEATURE_BMI2;
+    cpu_features |= CPU_FEATURE_NEON_2X;
+    return cpu_features;
+
 #else
     /* Unknown CPU. */
     return 0;
@@ -376,6 +393,8 @@ namespace embree
     if (features & CPU_FEATURE_AVX512VL) str += "AVX512VL ";
     if (features & CPU_FEATURE_AVX512IFMA) str += "AVX512IFMA ";
     if (features & CPU_FEATURE_AVX512VBMI) str += "AVX512VBMI ";
+    if (features & CPU_FEATURE_NEON) str += "NEON ";
+    if (features & CPU_FEATURE_NEON_2X) str += "2xNEON ";
     return str;
   }
   
@@ -390,6 +409,9 @@ namespace embree
     if (isa == AVX) return "AVX";
     if (isa == AVX2) return "AVX2";
     if (isa == AVX512) return "AVX512";
+
+    if (isa == NEON) return "NEON";
+    if (isa == NEON_2X) return "2xNEON";
     return "UNKNOWN";
   }
 
@@ -410,6 +432,9 @@ namespace embree
     if (hasISA(features,AVXI)) v += "AVXI ";
     if (hasISA(features,AVX2)) v += "AVX2 ";
     if (hasISA(features,AVX512)) v += "AVX512 ";
+
+    if (hasISA(features,NEON)) v += "NEON ";
+    if (hasISA(features,NEON_2X)) v += "2xNEON ";
     return v;
   }
 }
@@ -613,6 +638,10 @@ namespace embree
 #include <sys/time.h>
 #include <pthread.h>
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#endif
+
 namespace embree
 {
   unsigned int getNumberOfLogicalThreads() 
@@ -620,12 +649,25 @@ namespace embree
     static int nThreads = -1;
     if (nThreads != -1) return nThreads;
 
-// -- GODOT start --
-// #if defined(__MACOSX__)
 #if defined(__MACOSX__) || defined(__ANDROID__)
-// -- GODOT end --
     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
     assert(nThreads);
+#elif defined(__EMSCRIPTEN__)
+    // WebAssembly supports pthreads, but not pthread_getaffinity_np. Get the number of logical
+    // threads from the browser or Node.js using JavaScript.
+    nThreads = MAIN_THREAD_EM_ASM_INT({
+        const isBrowser = typeof window !== 'undefined';
+        const isNode = typeof process !== 'undefined' && process.versions != null &&
+            process.versions.node != null;
+        if (isBrowser) {
+            // Return 1 if the browser does not expose hardwareConcurrency.
+            return window.navigator.hardwareConcurrency || 1;
+        } else if (isNode) {
+            return require('os').cpus().length;
+        } else {
+            return 1;
+        }
+    });
 #else
     cpu_set_t set;
     if (pthread_getaffinity_np(pthread_self(), sizeof(set), &set) == 0)

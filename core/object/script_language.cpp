@@ -184,10 +184,10 @@ void ScriptServer::unregister_language(const ScriptLanguage *p_language) {
 }
 
 void ScriptServer::init_languages() {
-	{ //load global classes
+	{ // Load global classes.
 		global_classes_clear();
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
-			Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");
+			Array script_classes = GLOBAL_GET("_global_script_classes");
 
 			for (int i = 0; i < script_classes.size(); i++) {
 				Dictionary c = script_classes[i];
@@ -305,7 +305,7 @@ void ScriptServer::save_global_classes() {
 
 	Array old;
 	if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
-		old = ProjectSettings::get_singleton()->get("_global_script_classes");
+		old = GLOBAL_GET("_global_script_classes");
 	}
 	if ((!old.is_empty() || gcarr.is_empty()) && gcarr.hash() == old.hash()) {
 		return;
@@ -409,7 +409,9 @@ bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_v
 	if (values.has(p_name)) {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
-			if (defval == p_value) {
+			// The evaluate function ensures that a NIL variant is equal to e.g. an empty Resource.
+			// Simply doing defval == p_value does not do this.
+			if (Variant::evaluate(Variant::OP_EQUAL, defval, p_value)) {
 				values.erase(p_name);
 				return true;
 			}
@@ -419,7 +421,7 @@ bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_v
 	} else {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
-			if (defval != p_value) {
+			if (Variant::evaluate(Variant::OP_NOT_EQUAL, defval, p_value)) {
 				values[p_name] = p_value;
 			}
 			return true;

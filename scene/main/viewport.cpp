@@ -362,6 +362,8 @@ void Viewport::_notification(int p_what) {
 
 			current_canvas = find_world_2d()->get_canvas();
 			RenderingServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
+			RenderingServer::get_singleton()->viewport_set_canvas_transform(viewport, current_canvas, canvas_transform);
+			RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
 			_update_audio_listener_2d();
 #ifndef _3D_DISABLED
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
@@ -490,6 +492,7 @@ void Viewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			_gui_cancel_tooltip();
 			_drop_physics_mouseover();
 			if (gui.mouse_focus && !gui.forced_mouse_focus) {
 				_drop_mouse_focus();
@@ -993,11 +996,6 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		return;
 	}
 
-	if (parent && parent->find_world_2d() == p_world_2d) {
-		WARN_PRINT("Unable to use parent world_2d as world_2d");
-		return;
-	}
-
 	if (is_inside_tree()) {
 		RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
 	}
@@ -1161,7 +1159,7 @@ void Viewport::_gui_cancel_tooltip() {
 		gui.tooltip_timer = Ref<SceneTreeTimer>();
 	}
 	if (gui.tooltip_popup) {
-		gui.tooltip_popup->queue_delete();
+		gui.tooltip_popup->queue_free();
 	}
 }
 
@@ -1261,11 +1259,17 @@ void Viewport::_gui_show_tooltip() {
 
 	tooltip_owner->add_child(gui.tooltip_popup);
 
-	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
+	Point2 tooltip_offset = GLOBAL_GET("display/mouse_cursor/tooltip_position_offset");
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
+	r.size = r.size.min(panel->get_max_size());
 
 	Window *window = gui.tooltip_popup->get_parent_visible_window();
-	Rect2i vr = window->get_usable_parent_rect();
+	Rect2i vr;
+	if (gui.tooltip_popup->is_embedded()) {
+		vr = gui.tooltip_popup->_get_embedder()->get_visible_rect();
+	} else {
+		vr = window->get_usable_parent_rect();
+	}
 
 	if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 		// Place it in the opposite direction. If it fails, just hug the border.
@@ -1403,10 +1407,6 @@ Control *Viewport::gui_find_control(const Point2 &p_global) {
 }
 
 Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform) {
-	if (Object::cast_to<Viewport>(p_node)) {
-		return nullptr;
-	}
-
 	if (!p_node->is_visible()) {
 		return nullptr; // Canvas item hidden, discard.
 	}
@@ -1563,44 +1563,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				set_input_as_handled();
 			}
 
-			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == MouseButton::LEFT) {
+			if (gui.dragging && mb->get_button_index() == MouseButton::LEFT) {
 				// Alternate drop use (when using force_drag(), as proposed by #5342).
-				gui.drag_successful = false;
-				if (gui.mouse_focus) {
-					gui.drag_successful = _gui_drop(gui.mouse_focus, pos, false);
-				}
-
-				gui.drag_data = Variant();
-				gui.dragging = false;
-
-				Control *drag_preview = _gui_get_drag_preview();
-				if (drag_preview) {
-					memdelete(drag_preview);
-					gui.drag_preview_id = ObjectID();
-				}
-				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
-				get_base_window()->update_mouse_cursor_shape();
+				_perform_drop(gui.mouse_focus, pos);
 			}
 
 			_gui_cancel_tooltip();
 		} else {
-			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == MouseButton::LEFT) {
-				gui.drag_successful = false;
-				if (gui.drag_mouse_over) {
-					gui.drag_successful = _gui_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos, false);
-				}
-
-				Control *drag_preview = _gui_get_drag_preview();
-				if (drag_preview) {
-					memdelete(drag_preview);
-					gui.drag_preview_id = ObjectID();
-				}
-
-				gui.drag_data = Variant();
-				gui.dragging = false;
-				gui.drag_mouse_over = nullptr;
-				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
-				get_base_window()->update_mouse_cursor_shape();
+			if (gui.dragging && mb->get_button_index() == MouseButton::LEFT) {
+				_perform_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos);
 			}
 
 			gui.mouse_focus_mask &= ~mouse_button_to_mask(mb->get_button_index()); // Remove from mask.
@@ -1654,7 +1625,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						Control *control = Object::cast_to<Control>(ci);
 						if (control) {
 							gui.dragging = true;
-							gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos) - gui.drag_accum);
+							gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos - gui.drag_accum));
 							if (gui.drag_data.get_type() != Variant::NIL) {
 								gui.mouse_focus = nullptr;
 								gui.forced_mouse_focus = false;
@@ -1684,7 +1655,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 
 				gui.drag_attempted = true;
-				if (gui.drag_data.get_type() != Variant::NIL) {
+				if (gui.dragging) {
 					_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
 				}
 			}
@@ -1700,6 +1671,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			_gui_cancel_tooltip();
 
 			if (over) {
+				if (!gui.mouse_over) {
+					_drop_physics_mouseover();
+				}
 				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
 				gui.mouse_over = over;
 			}
@@ -1797,7 +1771,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		if (gui.drag_data.get_type() != Variant::NIL) {
+		if (gui.dragging) {
 			// Handle drag & drop.
 
 			Control *drag_preview = _gui_get_drag_preview();
@@ -1999,6 +1973,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 
 	if (mm.is_null() && mb.is_null() && p_event->is_action_type()) {
+		if (gui.dragging && p_event->is_action_pressed("ui_cancel") && Input::get_singleton()->is_action_just_pressed("ui_cancel")) {
+			_perform_drop();
+			set_input_as_handled();
+			return;
+		}
+
 		if (gui.key_focus && !gui.key_focus->is_visible_in_tree()) {
 			gui.key_focus->release_focus();
 		}
@@ -2080,6 +2060,27 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 }
 
+void Viewport::_perform_drop(Control *p_control, Point2 p_pos) {
+	// Without any arguments, simply cancel Drag and Drop.
+	if (p_control) {
+		gui.drag_successful = _gui_drop(p_control, p_pos, false);
+	} else {
+		gui.drag_successful = false;
+	}
+
+	Control *drag_preview = _gui_get_drag_preview();
+	if (drag_preview) {
+		memdelete(drag_preview);
+		gui.drag_preview_id = ObjectID();
+	}
+
+	gui.drag_data = Variant();
+	gui.dragging = false;
+	gui.drag_mouse_over = nullptr;
+	_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
+	get_base_window()->update_mouse_cursor_shape();
+}
+
 void Viewport::_gui_cleanup_internal_state(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -2096,7 +2097,7 @@ List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 	return gui.roots.push_back(p_control);
 }
 
-void Viewport::_gui_set_root_order_dirty() {
+void Viewport::gui_set_root_order_dirty() {
 	gui.roots_order_dirty = true;
 }
 
@@ -2664,6 +2665,11 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				} else {
 					gui.subwindow_resize_mode = _sub_window_get_resize_margin(sw.window, mb->get_position());
 					if (gui.subwindow_resize_mode != SUB_WINDOW_RESIZE_DISABLED) {
+						if (gui.subwindow_focused != sw.window) {
+							// Refocus.
+							_sub_window_grab_focus(sw.window);
+						}
+
 						gui.subwindow_resize_from_rect = r;
 						gui.subwindow_drag_from = mb->get_position();
 						gui.subwindow_drag = SUB_WINDOW_DRAG_RESIZE;
@@ -3043,8 +3049,6 @@ bool Viewport::gui_is_drag_successful() const {
 }
 
 void Viewport::set_input_as_handled() {
-	_drop_physics_mouseover();
-
 	if (!handle_input_locally) {
 		ERR_FAIL_COND(!is_inside_tree());
 		Viewport *vp = this;
@@ -3245,6 +3249,29 @@ Viewport::SDFScale Viewport::get_sdf_scale() const {
 
 Transform2D Viewport::get_screen_transform() const {
 	return _get_input_pre_xform().affine_inverse() * get_final_transform();
+}
+
+void Viewport::set_canvas_cull_mask(uint32_t p_canvas_cull_mask) {
+	canvas_cull_mask = p_canvas_cull_mask;
+	RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
+}
+
+uint32_t Viewport::get_canvas_cull_mask() const {
+	return canvas_cull_mask;
+}
+
+void Viewport::set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable) {
+	ERR_FAIL_UNSIGNED_INDEX(p_layer, 32);
+	if (p_enable) {
+		set_canvas_cull_mask(canvas_cull_mask | (1 << p_layer));
+	} else {
+		set_canvas_cull_mask(canvas_cull_mask & (~(1 << p_layer)));
+	}
+}
+
+bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, 32, false);
+	return (canvas_cull_mask & (1 << p_layer));
 }
 
 #ifndef _3D_DISABLED
@@ -3729,6 +3756,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_canvas_transform", "xform"), &Viewport::set_global_canvas_transform);
 	ClassDB::bind_method(D_METHOD("get_global_canvas_transform"), &Viewport::get_global_canvas_transform);
 	ClassDB::bind_method(D_METHOD("get_final_transform"), &Viewport::get_final_transform);
+	ClassDB::bind_method(D_METHOD("get_screen_transform"), &Viewport::get_screen_transform);
 
 	ClassDB::bind_method(D_METHOD("get_visible_rect"), &Viewport::get_visible_rect);
 	ClassDB::bind_method(D_METHOD("set_transparent_background", "enable"), &Viewport::set_transparent_background);
@@ -3816,6 +3844,12 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_embedding_subwindows", "enable"), &Viewport::set_embedding_subwindows);
 	ClassDB::bind_method(D_METHOD("is_embedding_subwindows"), &Viewport::is_embedding_subwindows);
+
+	ClassDB::bind_method(D_METHOD("set_canvas_cull_mask", "mask"), &Viewport::set_canvas_cull_mask);
+	ClassDB::bind_method(D_METHOD("get_canvas_cull_mask"), &Viewport::get_canvas_cull_mask);
+
+	ClassDB::bind_method(D_METHOD("set_canvas_cull_mask_bit", "layer", "enable"), &Viewport::set_canvas_cull_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_canvas_cull_mask_bit", "layer"), &Viewport::get_canvas_cull_mask_bit);
 
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_repeat", "mode"), &Viewport::set_default_canvas_item_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_repeat"), &Viewport::get_default_canvas_item_texture_repeat);
@@ -3922,6 +3956,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "positional_shadow_atlas_quad_3", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_positional_shadow_atlas_quadrant_subdiv", "get_positional_shadow_atlas_quadrant_subdiv", 3);
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "canvas_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_canvas_transform", "get_canvas_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_canvas_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_canvas_transform", "get_global_canvas_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_canvas_cull_mask", "get_canvas_cull_mask");
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
@@ -4132,7 +4167,7 @@ DisplayServer::WindowID SubViewport::get_window_id() const {
 }
 
 Transform2D SubViewport::_stretch_transform() {
-	Transform2D transform = Transform2D();
+	Transform2D transform;
 	Size2i view_size_2d_override = _get_size_2d_override();
 	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
 		Size2 scale = Size2(_get_size()) / Size2(view_size_2d_override);
@@ -4143,7 +4178,7 @@ Transform2D SubViewport::_stretch_transform() {
 }
 
 Transform2D SubViewport::get_screen_transform() const {
-	Transform2D container_transform = Transform2D();
+	Transform2D container_transform;
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (c) {
 		if (c->is_stretch_enabled()) {
@@ -4202,6 +4237,8 @@ void SubViewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
 }
 
-SubViewport::SubViewport() {}
+SubViewport::SubViewport() {
+	RS::get_singleton()->viewport_set_size(get_viewport_rid(), get_size().width, get_size().height);
+}
 
 SubViewport::~SubViewport() {}

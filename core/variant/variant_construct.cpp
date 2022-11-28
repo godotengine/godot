@@ -68,11 +68,13 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<int64_t, int64_t>>(sarray("from"));
 	add_constructor<VariantConstructor<int64_t, double>>(sarray("from"));
 	add_constructor<VariantConstructor<int64_t, bool>>(sarray("from"));
+	add_constructor<VariantConstructorFromString<int64_t>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<double>>(sarray());
 	add_constructor<VariantConstructor<double, double>>(sarray("from"));
 	add_constructor<VariantConstructor<double, int64_t>>(sarray("from"));
 	add_constructor<VariantConstructor<double, bool>>(sarray("from"));
+	add_constructor<VariantConstructorFromString<double>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<String>>(sarray());
 	add_constructor<VariantConstructor<String, String>>(sarray("from"));
@@ -141,7 +143,6 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<Quaternion, Vector3, double>>(sarray("axis", "angle"));
 	add_constructor<VariantConstructor<Quaternion, Vector3, Vector3>>(sarray("arc_from", "arc_to"));
 	add_constructor<VariantConstructor<Quaternion, double, double, double, double>>(sarray("x", "y", "z", "w"));
-	add_constructor<VariantConstructor<Quaternion, Vector3>>(sarray("euler_yxz"));
 
 	add_constructor<VariantConstructNoArgs<::AABB>>(sarray());
 	add_constructor<VariantConstructor<::AABB, ::AABB>>(sarray("from"));

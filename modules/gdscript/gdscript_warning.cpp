@@ -96,7 +96,7 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case RETURN_VALUE_DISCARDED: {
 			CHECK_SYMBOLS(1);
-			return "The function '" + symbols[0] + "()' returns a value, but this value is never used.";
+			return "The function '" + symbols[0] + "()' returns a value that will be discarded if not used.";
 		} break;
 		case PROPERTY_USED_AS_FUNCTION: {
 			CHECK_SYMBOLS(2);
@@ -169,6 +169,10 @@ String GDScriptWarning::get_message() const {
 
 int GDScriptWarning::get_default_value(Code p_code) {
 	if (get_name_from_code(p_code).to_lower().begins_with("unsafe_")) {
+		return WarnLevel::IGNORE;
+	}
+	// Too spammy by default on common cases (connect, Tween, etc.).
+	if (p_code == RETURN_VALUE_DISCARDED) {
 		return WarnLevel::IGNORE;
 	}
 	return WarnLevel::WARN;

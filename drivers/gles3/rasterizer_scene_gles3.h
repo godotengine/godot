@@ -74,6 +74,7 @@ enum SceneUniformLocation {
 	SCENE_OMNILIGHT_UNIFORM_LOCATION,
 	SCENE_SPOTLIGHT_UNIFORM_LOCATION,
 	SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
+	SCENE_MULTIVIEW_UNIFORM_LOCATION,
 };
 
 enum SkyUniformLocation {
@@ -84,21 +85,13 @@ enum SkyUniformLocation {
 	SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
 };
 
-enum {
-	SPEC_CONSTANT_DISABLE_LIGHTMAP = 0,
-	SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS = 1,
-	SPEC_CONSTANT_DISABLE_OMNI_LIGHTS = 2,
-	SPEC_CONSTANT_DISABLE_SPOT_LIGHTS = 3,
-	SPEC_CONSTANT_DISABLE_FOG = 4,
-};
-
 struct RenderDataGLES3 {
 	Ref<RenderSceneBuffersGLES3> render_buffers;
 	bool transparent_bg = false;
 
-	Transform3D cam_transform = Transform3D();
-	Transform3D inv_cam_transform = Transform3D();
-	Projection cam_projection = Projection();
+	Transform3D cam_transform;
+	Transform3D inv_cam_transform;
+	Projection cam_projection;
 	bool cam_orthogonal = false;
 
 	// For stereo rendering
@@ -112,9 +105,9 @@ struct RenderDataGLES3 {
 	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
-	RID environment = RID();
-	RID camera_attributes = RID();
-	RID reflection_probe = RID();
+	RID environment;
+	RID camera_attributes;
+	RID reflection_probe;
 	int reflection_probe_pass = 0;
 
 	float lod_distance_multiplier = 0.0;
@@ -343,6 +336,13 @@ private:
 		};
 		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");
 
+		struct MultiviewUBO {
+			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
+		};
+		static_assert(sizeof(MultiviewUBO) % 16 == 0, "Multiview UBO size must be a multiple of 16 bytes");
+
 		struct TonemapUBO {
 			float exposure = 1.0;
 			float white = 1.0;
@@ -353,6 +353,8 @@ private:
 
 		UBO ubo;
 		GLuint ubo_buffer = 0;
+		MultiviewUBO multiview_ubo;
+		GLuint multiview_buffer = 0;
 		GLuint tonemap_buffer = 0;
 
 		bool used_depth_prepass = false;

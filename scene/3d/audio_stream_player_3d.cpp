@@ -606,6 +606,9 @@ bool AudioStreamPlayer3D::is_playing() const {
 			return true;
 		}
 	}
+	if (setplay.get() >= 0) {
+		return true; // play() has been called this frame, but no playback exists just yet.
+	}
 	return false;
 }
 
@@ -916,7 +919,7 @@ AudioStreamPlayer3D::AudioStreamPlayer3D() {
 	velocity_tracker.instantiate();
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer3D::_bus_layout_changed));
 	set_disable_scale(true);
-	cached_global_panning_strength = ProjectSettings::get_singleton()->get("audio/general/3d_panning_strength");
+	cached_global_panning_strength = GLOBAL_GET("audio/general/3d_panning_strength");
 }
 
 AudioStreamPlayer3D::~AudioStreamPlayer3D() {

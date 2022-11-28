@@ -66,6 +66,12 @@
 				Draws a solid shape onto a [CanvasItem] with the [RenderingServer] API filled with the specified [param color]. The exact drawing method is specific for each shape and cannot be configured.
 			</description>
 		</method>
+		<method name="get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns a [Rect2] representing the shapes boundary.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias" default="0.0">

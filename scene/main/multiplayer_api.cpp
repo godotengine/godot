@@ -39,7 +39,7 @@
 #include "core/os/os.h"
 #endif
 
-StringName MultiplayerAPI::default_interface = StringName();
+StringName MultiplayerAPI::default_interface;
 
 void MultiplayerAPI::set_default_interface(const StringName &p_interface) {
 	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_interface, MultiplayerAPI::get_class_static()), vformat("Can't make %s the default multiplayer interface since it does not extend MultiplayerAPI.", p_interface));
@@ -329,11 +329,9 @@ void MultiplayerAPI::_bind_methods() {
 /// MultiplayerAPIExtension
 
 Error MultiplayerAPIExtension::poll() {
-	int err;
-	if (GDVIRTUAL_CALL(_poll, err)) {
-		return (Error)err;
-	}
-	return OK;
+	int err = OK;
+	GDVIRTUAL_CALL(_poll, err);
+	return (Error)err;
 }
 
 void MultiplayerAPIExtension::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) {
@@ -342,26 +340,20 @@ void MultiplayerAPIExtension::set_multiplayer_peer(const Ref<MultiplayerPeer> &p
 
 Ref<MultiplayerPeer> MultiplayerAPIExtension::get_multiplayer_peer() {
 	Ref<MultiplayerPeer> peer;
-	if (GDVIRTUAL_CALL(_get_multiplayer_peer, peer)) {
-		return peer;
-	}
-	return nullptr;
+	GDVIRTUAL_CALL(_get_multiplayer_peer, peer);
+	return peer;
 }
 
 int MultiplayerAPIExtension::get_unique_id() {
-	int id;
-	if (GDVIRTUAL_CALL(_get_unique_id, id)) {
-		return id;
-	}
-	return 1;
+	int id = 1;
+	GDVIRTUAL_CALL(_get_unique_id, id);
+	return id;
 }
 
 Vector<int> MultiplayerAPIExtension::get_peer_ids() {
 	Vector<int> ids;
-	if (GDVIRTUAL_CALL(_get_peer_ids, ids)) {
-		return ids;
-	}
-	return Vector<int>();
+	GDVIRTUAL_CALL(_get_peer_ids, ids);
+	return ids;
 }
 
 Error MultiplayerAPIExtension::rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
@@ -373,34 +365,26 @@ Error MultiplayerAPIExtension::rpcp(Object *p_obj, int p_peer_id, const StringNa
 		args.push_back(*p_arg[i]);
 	}
 	int ret = FAILED;
-	if (GDVIRTUAL_CALL(_rpc, p_peer_id, p_obj, p_method, args, ret)) {
-		return (Error)ret;
-	}
-	return FAILED;
+	GDVIRTUAL_CALL(_rpc, p_peer_id, p_obj, p_method, args, ret);
+	return (Error)ret;
 }
 
 int MultiplayerAPIExtension::get_remote_sender_id() {
 	int id = 0;
-	if (GDVIRTUAL_CALL(_get_remote_sender_id, id)) {
-		return id;
-	}
-	return 0;
+	GDVIRTUAL_CALL(_get_remote_sender_id, id);
+	return id;
 }
 
 Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, Variant p_config) {
 	int err = ERR_UNAVAILABLE;
-	if (GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err)) {
-		return (Error)err;
-	}
-	return ERR_UNAVAILABLE;
+	GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err);
+	return (Error)err;
 }
 
 Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, Variant p_config) {
 	int err = ERR_UNAVAILABLE;
-	if (GDVIRTUAL_CALL(_object_configuration_remove, p_object, p_config, err)) {
-		return (Error)err;
-	}
-	return ERR_UNAVAILABLE;
+	GDVIRTUAL_CALL(_object_configuration_remove, p_object, p_config, err);
+	return (Error)err;
 }
 
 void MultiplayerAPIExtension::_bind_methods() {

@@ -50,54 +50,16 @@ void RenderSceneBuffersGLES3::configure(RID p_render_target, const Size2i p_inte
 	//msaa = p_msaa;
 	//screen_space_aa = p_screen_space_aa;
 	//use_debanding = p_use_debanding;
-	//view_count = p_view_count;
+	view_count = p_view_count;
 
 	free_render_buffer_data();
 
 	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
 
 	is_transparent = rt->is_transparent;
-
-	// framebuffer
-	glGenFramebuffers(1, &framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-	glBindTexture(GL_TEXTURE_2D, rt->color);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
-
-	glGenTextures(1, &depth_texture);
-	glBindTexture(GL_TEXTURE_2D, depth_texture);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_texture, 0);
-
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, texture_storage->system_fbo);
-
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		free_render_buffer_data();
-		WARN_PRINT("Could not create 3D renderbuffer, status: " + texture_storage->get_framebuffer_error(status));
-		return;
-	}
 }
 
 void RenderSceneBuffersGLES3::free_render_buffer_data() {
-	if (depth_texture) {
-		glDeleteTextures(1, &depth_texture);
-		depth_texture = 0;
-	}
-	if (framebuffer) {
-		glDeleteFramebuffers(1, &framebuffer);
-		framebuffer = 0;
-	}
 }
 
 #endif // GLES3_ENABLED

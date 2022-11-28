@@ -5,7 +5,8 @@
 	</brief_description>
 	<description>
 		3-element structure that can be used to represent positions in 3D space or any other triplet of numeric values.
-		It uses floating-point coordinates. See [Vector3i] for its integer counterpart.
+		It uses floating-point coordinates. By default, these floating-point values use 32-bit precision, unlike [float] which is always 64-bit. If double precision is needed, compile the engine with the option [code]float=64[/code].
+		See [Vector3i] for its integer counterpart.
 		[b]Note:[/b] In a boolean context, a Vector3 will evaluate to [code]false[/code] if it's equal to [code]Vector3(0, 0, 0)[/code]. Otherwise, a Vector3 will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
@@ -59,6 +60,16 @@
 			<param index="0" name="to" type="Vector3" />
 			<description>
 				Returns the unsigned minimum angle to the given vector, in radians.
+			</description>
+		</method>
+		<method name="bezier_derivative" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="control_1" type="Vector3" />
+			<param index="1" name="control_2" type="Vector3" />
+			<param index="2" name="end" type="Vector3" />
+			<param index="3" name="t" type="float" />
+			<description>
+				Returns the derivative at the given [param t] on the [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by this vector and the given [param control_1], [param control_2], and [param end] points.
 			</description>
 		</method>
 		<method name="bezier_interpolate" qualifiers="const">
@@ -183,7 +194,7 @@
 		<method name="is_normalized" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the vector is normalized, [code]false[/code] otherwise.
+				Returns [code]true[/code] if the vector is [method normalized], [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_zero_approx" qualifiers="const">
@@ -244,18 +255,22 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
+				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
 			</description>
 		</method>
 		<method name="octahedron_decode" qualifiers="static">
 			<return type="Vector3" />
 			<param index="0" name="uv" type="Vector2" />
 			<description>
+				Returns the [Vector3] from an octahedral-compressed form created using [method octahedron_encode] (stored as a [Vector2]).
 			</description>
 		</method>
 		<method name="octahedron_encode" qualifiers="const">
 			<return type="Vector2" />
 			<description>
+				Returns the octahedral-encoded (oct32) form of this [Vector3] as a [Vector2]. Since a [Vector2] occupies 1/3 less memory compared to [Vector3], this form of compression can be used to pass greater amounts of [method normalized] [Vector3]s without increasing storage or memory requirements. See also [method octahedron_decode].
+				[b]Note:[/b] [method octahedron_encode] can only be used for [method normalized] vectors. [method octahedron_encode] does [i]not[/i] check whether this [Vector3] is normalized, and will return a value that does not decompress to the original value if the [Vector3] is not normalized.
+				[b]Note:[/b] Octahedral compression is [i]lossy[/i], although visual differences are rarely perceptible in real world scenarios.
 			</description>
 		</method>
 		<method name="outer" qualifiers="const">
@@ -283,14 +298,14 @@
 			<return type="Vector3" />
 			<param index="0" name="b" type="Vector3" />
 			<description>
-				Returns this vector projected onto the vector [param b].
+				Returns the result of projecting the vector onto the given vector [param b].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns this vector reflected from a plane defined by the given normal.
+				Returns the result of reflecting the vector from a plane defined by the given normal [param n].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -298,7 +313,7 @@
 			<param index="0" name="axis" type="Vector3" />
 			<param index="1" name="angle" type="float" />
 			<description>
-				Rotates this vector around a given axis by [param angle] (in radians). The axis must be a normalized vector.
+				Returns the result of rotating this vector around a given axis by [param angle] (in radians). The axis must be a normalized vector. See also [method @GlobalScope.deg_to_rad].
 			</description>
 		</method>
 		<method name="round" qualifiers="const">
@@ -310,7 +325,7 @@
 		<method name="sign" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+				Returns a new vector with each component set to [code]1.0[/code] if it's positive, [code]-1.0[/code] if it's negative, and [code]0.0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 		<method name="signed_angle_to" qualifiers="const">
@@ -334,14 +349,14 @@
 			<return type="Vector3" />
 			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns this vector slid along a plane defined by the given normal.
+				Returns a new vector slid along a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="snapped" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="step" type="Vector3" />
 			<description>
-				Returns this vector with each component snapped to the nearest multiple of [param step]. This can also be used to round to an arbitrary number of decimals.
+				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>

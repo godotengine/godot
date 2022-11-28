@@ -45,11 +45,41 @@
 #include "extensions/openxr_android_extension.h"
 #endif
 
+// We need to have all the graphics API defines before the Vulkan or OpenGL
+// extensions are included, otherwise we'll only get one graphics API.
+#ifdef VULKAN_ENABLED
+#define XR_USE_GRAPHICS_API_VULKAN
+#endif
+#ifdef GLES3_ENABLED
+#ifdef ANDROID
+#define XR_USE_GRAPHICS_API_OPENGL_ES
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
+#else
+#define XR_USE_GRAPHICS_API_OPENGL
+#endif // ANDROID
+#ifdef X11_ENABLED
+#include OPENGL_INCLUDE_H
+#define GL_GLEXT_PROTOTYPES 1
+#define GL3_PROTOTYPES 1
+#include "thirdparty/glad/glad/gl.h"
+#include "thirdparty/glad/glad/glx.h"
+#include <X11/Xlib.h>
+#endif // X11_ENABLED
+#endif // GLES_ENABLED
+
 #ifdef VULKAN_ENABLED
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
+#ifdef GLES3_ENABLED
+#include "extensions/openxr_opengl_extension.h"
+#endif
+
 #include "extensions/openxr_composition_layer_depth_extension.h"
+#include "extensions/openxr_fb_display_refresh_rate_extension.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
@@ -268,9 +298,17 @@ bool OpenXRAPI::create_instance() {
 		XR_CURRENT_API_VERSION // apiVersion
 	};
 
+	void *next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		void *np = wrapper->set_instance_create_info_and_get_next_pointer(next_pointer);
+		if (np != nullptr) {
+			next_pointer = np;
+		}
+	}
+
 	XrInstanceCreateInfo instance_create_info = {
 		XR_TYPE_INSTANCE_CREATE_INFO, // type
-		nullptr, // next
+		next_pointer, // next
 		0, // createFlags
 		application_info, // applicationInfo
 		0, // enabledApiLayerCount, need to find out if we need support for this?
@@ -443,12 +481,12 @@ bool OpenXRAPI::load_supported_view_configuration_views(XrViewConfigurationType 
 
 	for (uint32_t i = 0; i < view_count; i++) {
 		print_verbose("OpenXR: Found supported view configuration view");
-		print_verbose(String(" - width: ") + view_configuration_views[i].maxImageRectWidth);
-		print_verbose(String(" - height: ") + view_configuration_views[i].maxImageRectHeight);
-		print_verbose(String(" - sample count: ") + view_configuration_views[i].maxSwapchainSampleCount);
-		print_verbose(String(" - recommended render width: ") + view_configuration_views[i].recommendedImageRectWidth);
-		print_verbose(String(" - recommended render height: ") + view_configuration_views[i].recommendedImageRectHeight);
-		print_verbose(String(" - recommended render sample count: ") + view_configuration_views[i].recommendedSwapchainSampleCount);
+		print_verbose(String(" - width: ") + itos(view_configuration_views[i].maxImageRectWidth));
+		print_verbose(String(" - height: ") + itos(view_configuration_views[i].maxImageRectHeight));
+		print_verbose(String(" - sample count: ") + itos(view_configuration_views[i].maxSwapchainSampleCount));
+		print_verbose(String(" - recommended render width: ") + itos(view_configuration_views[i].recommendedImageRectWidth));
+		print_verbose(String(" - recommended render height: ") + itos(view_configuration_views[i].recommendedImageRectHeight));
+		print_verbose(String(" - recommended render sample count: ") + itos(view_configuration_views[i].recommendedSwapchainSampleCount));
 	}
 
 	return true;
@@ -690,7 +728,7 @@ bool OpenXRAPI::create_swapchains() {
 			print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(swapchain_format_to_use));
 		}
 
-		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
+		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
 			return false;
 		}
 	}
@@ -1141,9 +1179,8 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 #endif
 	} else if (p_rendering_driver == "opengl3") {
 #ifdef GLES3_ENABLED
-		// graphics_extension = memnew(OpenXROpenGLExtension(this));
-		// register_extension_wrapper(graphics_extension);
-		ERR_FAIL_V_MSG(false, "OpenXR: OpenGL is not supported at this time.");
+		graphics_extension = memnew(OpenXROpenGLExtension(this));
+		register_extension_wrapper(graphics_extension);
 #else
 		// shouldn't be possible...
 		ERR_FAIL_V(false);
@@ -1748,6 +1785,31 @@ void OpenXRAPI::end_frame() {
 	}
 }
 
+float OpenXRAPI::get_display_refresh_rate() const {
+	OpenXRDisplayRefreshRateExtension *drrext = OpenXRDisplayRefreshRateExtension::get_singleton();
+	if (drrext) {
+		return drrext->get_refresh_rate();
+	}
+
+	return 0.0;
+}
+
+void OpenXRAPI::set_display_refresh_rate(float p_refresh_rate) {
+	OpenXRDisplayRefreshRateExtension *drrext = OpenXRDisplayRefreshRateExtension::get_singleton();
+	if (drrext != nullptr) {
+		drrext->set_refresh_rate(p_refresh_rate);
+	}
+}
+
+Array OpenXRAPI::get_available_display_refresh_rates() const {
+	OpenXRDisplayRefreshRateExtension *drrext = OpenXRDisplayRefreshRateExtension::get_singleton();
+	if (drrext != nullptr) {
+		return drrext->get_available_refresh_rates();
+	}
+
+	return Array();
+}
+
 OpenXRAPI::OpenXRAPI() {
 	// OpenXRAPI is only constructed if OpenXR is enabled.
 	singleton = this;
@@ -1817,6 +1879,7 @@ OpenXRAPI::OpenXRAPI() {
 	register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension(this)));
 	register_extension_wrapper(memnew(OpenXRHandTrackingExtension(this)));
 	register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper(this)));
+	register_extension_wrapper(memnew(OpenXRDisplayRefreshRateExtension(this)));
 }
 
 OpenXRAPI::~OpenXRAPI() {

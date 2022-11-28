@@ -66,7 +66,7 @@ std::string to_string(const T& val) {
 }
 #endif
 
-#if (defined(_MSC_VER) && _MSC_VER < 1900 /*vs2015*/) || MINGW_HAS_SECURE_API
+#if (defined(_MSC_VER) && _MSC_VER < 1900 /*vs2015*/) || (defined(MINGW_HAS_SECURE_API) && MINGW_HAS_SECURE_API)
     #include <basetsd.h>
     #ifndef snprintf
     #define snprintf sprintf_s
@@ -218,7 +218,7 @@ template <class T> T Max(const T a, const T b) { return a > b ? a : b; }
 //
 // Create a TString object from an integer.
 //
-#if defined _MSC_VER || MINGW_HAS_SECURE_API
+#if defined(_MSC_VER) || (defined(MINGW_HAS_SECURE_API) && MINGW_HAS_SECURE_API)
 inline const TString String(const int i, const int base = 10)
 {
     char text[16];     // 32 bit ints are at most 10 digits in base 10

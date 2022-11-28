@@ -39,87 +39,10 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
-Array SceneDebugger::RPCProfilerFrame::serialize() {
-	Array arr;
-	arr.push_back(infos.size() * 4);
-	for (int i = 0; i < infos.size(); ++i) {
-		arr.push_back(uint64_t(infos[i].node));
-		arr.push_back(infos[i].node_path);
-		arr.push_back(infos[i].incoming_rpc);
-		arr.push_back(infos[i].outgoing_rpc);
-	}
-	return arr;
-}
-
-bool SceneDebugger::RPCProfilerFrame::deserialize(const Array &p_arr) {
-	ERR_FAIL_COND_V(p_arr.size() < 1, false);
-	uint32_t size = p_arr[0];
-	ERR_FAIL_COND_V(size % 4, false);
-	ERR_FAIL_COND_V((uint32_t)p_arr.size() != size + 1, false);
-	infos.resize(size / 4);
-	int idx = 1;
-	for (uint32_t i = 0; i < size / 4; ++i) {
-		infos.write[i].node = uint64_t(p_arr[idx]);
-		infos.write[i].node_path = p_arr[idx + 1];
-		infos.write[i].incoming_rpc = p_arr[idx + 2];
-		infos.write[i].outgoing_rpc = p_arr[idx + 3];
-	}
-	return true;
-}
-
-class SceneDebugger::RPCProfiler : public EngineProfiler {
-	HashMap<ObjectID, RPCNodeInfo> rpc_node_data;
-	uint64_t last_profile_time = 0;
-
-	void init_node(const ObjectID p_node) {
-		if (rpc_node_data.has(p_node)) {
-			return;
-		}
-		rpc_node_data.insert(p_node, RPCNodeInfo());
-		rpc_node_data[p_node].node = p_node;
-		rpc_node_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
-		rpc_node_data[p_node].incoming_rpc = 0;
-		rpc_node_data[p_node].outgoing_rpc = 0;
-	}
-
-public:
-	void toggle(bool p_enable, const Array &p_opts) {
-		rpc_node_data.clear();
-	}
-
-	void add(const Array &p_data) {
-		ERR_FAIL_COND(p_data.size() < 2);
-		const ObjectID id = p_data[0];
-		const String what = p_data[1];
-		init_node(id);
-		RPCNodeInfo &info = rpc_node_data[id];
-		if (what == "rpc_in") {
-			info.incoming_rpc++;
-		} else if (what == "rpc_out") {
-			info.outgoing_rpc++;
-		}
-	}
-
-	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
-		uint64_t pt = OS::get_singleton()->get_ticks_msec();
-		if (pt - last_profile_time > 100) {
-			last_profile_time = pt;
-			RPCProfilerFrame frame;
-			for (const KeyValue<ObjectID, RPCNodeInfo> &E : rpc_node_data) {
-				frame.infos.push_back(E.value);
-			}
-			rpc_node_data.clear();
-			EngineDebugger::get_singleton()->send_message("multiplayer:rpc", frame.serialize());
-		}
-	}
-};
-
 SceneDebugger *SceneDebugger::singleton = nullptr;
 
 SceneDebugger::SceneDebugger() {
 	singleton = this;
-	rpc_profiler.instantiate();
-	rpc_profiler->bind("rpc");
 #ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
@@ -264,7 +187,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 		live_editor->_create_node_func(p_args[0], p_args[1], p_args[2]);
 
-	} else if (p_msg == "live_instance_node") {
+	} else if (p_msg == "live_instantiate_node") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 		live_editor->_instance_node_func(p_args[0], p_args[1], p_args[2]);
 
@@ -548,14 +471,36 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 	// Flatten tree into list, depth first, use stack to avoid recursion.
 	List<Node *> stack;
 	stack.push_back(p_root);
+	bool is_root = true;
+	const StringName &is_visible_sn = SNAME("is_visible");
+	const StringName &is_visible_in_tree_sn = SNAME("is_visible_in_tree");
 	while (stack.size()) {
 		Node *n = stack[0];
 		stack.pop_front();
+
 		int count = n->get_child_count();
-		nodes.push_back(RemoteNode(count, n->get_name(), n->get_class(), n->get_instance_id()));
 		for (int i = 0; i < count; i++) {
 			stack.push_front(n->get_child(count - i - 1));
 		}
+
+		int view_flags = 0;
+		if (is_root) {
+			// Prevent root window visibility from being changed.
+			is_root = false;
+		} else if (n->has_method(is_visible_sn)) {
+			const Variant visible = n->call(is_visible_sn);
+			if (visible.get_type() == Variant::BOOL) {
+				view_flags = RemoteNode::VIEW_HAS_VISIBLE_METHOD;
+				view_flags |= uint8_t(visible) * RemoteNode::VIEW_VISIBLE;
+			}
+			if (n->has_method(is_visible_in_tree_sn)) {
+				const Variant visible_in_tree = n->call(is_visible_in_tree_sn);
+				if (visible_in_tree.get_type() == Variant::BOOL) {
+					view_flags |= uint8_t(visible_in_tree) * RemoteNode::VIEW_VISIBLE_IN_TREE;
+				}
+			}
+		}
+		nodes.push_back(RemoteNode(count, n->get_name(), n->get_class(), n->get_instance_id(), n->get_scene_file_path(), view_flags));
 	}
 }
 
@@ -565,19 +510,23 @@ void SceneDebuggerTree::serialize(Array &p_arr) {
 		p_arr.push_back(n.name);
 		p_arr.push_back(n.type_name);
 		p_arr.push_back(n.id);
+		p_arr.push_back(n.scene_file_path);
+		p_arr.push_back(n.view_flags);
 	}
 }
 
 void SceneDebuggerTree::deserialize(const Array &p_arr) {
 	int idx = 0;
 	while (p_arr.size() > idx) {
-		ERR_FAIL_COND(p_arr.size() < 4);
-		CHECK_TYPE(p_arr[idx], INT);
-		CHECK_TYPE(p_arr[idx + 1], STRING);
-		CHECK_TYPE(p_arr[idx + 2], STRING);
-		CHECK_TYPE(p_arr[idx + 3], INT);
-		nodes.push_back(RemoteNode(p_arr[idx], p_arr[idx + 1], p_arr[idx + 2], p_arr[idx + 3]));
-		idx += 4;
+		ERR_FAIL_COND(p_arr.size() < 6);
+		CHECK_TYPE(p_arr[idx], INT); // child_count.
+		CHECK_TYPE(p_arr[idx + 1], STRING); // name.
+		CHECK_TYPE(p_arr[idx + 2], STRING); // type_name.
+		CHECK_TYPE(p_arr[idx + 3], INT); // id.
+		CHECK_TYPE(p_arr[idx + 4], STRING); // scene_file_path.
+		CHECK_TYPE(p_arr[idx + 5], INT); // view_flags.
+		nodes.push_back(RemoteNode(p_arr[idx], p_arr[idx + 1], p_arr[idx + 2], p_arr[idx + 3], p_arr[idx + 4], p_arr[idx + 5]));
+		idx += 6;
 	}
 }
 

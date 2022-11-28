@@ -8,6 +8,7 @@
 		By assigning the actual [Skeleton3D] bone name as the key value, it maps the [Skeleton3D] to the [SkeletonProfile].
 	</description>
 	<tutorials>
+		<link title="Retargeting 3D Skeletons">$DOCS_URL/tutorials/assets_pipeline/retargeting_3d_skeletons.html</link>
 	</tutorials>
 	<methods>
 		<method name="find_profile_bone_name" qualifiers="const">

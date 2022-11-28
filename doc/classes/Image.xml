@@ -26,7 +26,7 @@
 			<param index="1" name="src_rect" type="Rect2i" />
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
-				Alpha-blends [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with not positive size is treated as empty.
+				Alpha-blends [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blend_rect_mask">
@@ -36,7 +36,7 @@
 			<param index="2" name="src_rect" type="Rect2i" />
 			<param index="3" name="dst" type="Vector2i" />
 			<description>
-				Alpha-blends [param src_rect] from [param src] image to this image using [param mask] image at coordinates [param dst], clipped accordingly to both image bounds. Alpha channels are required for both [param src] and [param mask]. [param dst] pixels and [param src] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with not positive size is treated as empty.
+				Alpha-blends [param src_rect] from [param src] image to this image using [param mask] image at coordinates [param dst], clipped accordingly to both image bounds. Alpha channels are required for both [param src] and [param mask]. [param dst] pixels and [param src] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with non-positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect">
@@ -45,7 +45,7 @@
 			<param index="1" name="src_rect" type="Rect2i" />
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
-				Copies [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with not positive size is treated as empty.
+				Copies [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect_mask">
@@ -55,7 +55,7 @@
 			<param index="2" name="src_rect" type="Rect2i" />
 			<param index="3" name="dst" type="Vector2i" />
 			<description>
-				Blits [param src_rect] area from [param src] image to this image at the coordinates given by [param dst], clipped accordingly to both image bounds. [param src] pixel is copied onto [param dst] if the corresponding [param mask] pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with not positive size is treated as empty.
+				Blits [param src_rect] area from [param src] image to this image at the coordinates given by [param dst], clipped accordingly to both image bounds. [param src] pixel is copied onto [param dst] if the corresponding [param mask] pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with non-positive size is treated as empty.
 			</description>
 		</method>
 		<method name="bump_map_to_normal_map">
@@ -118,7 +118,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data" qualifiers="static">
@@ -241,11 +241,11 @@
 				This is the same as [method get_pixel], but with a [Vector2i] argument instead of two integer arguments.
 			</description>
 		</method>
-		<method name="get_rect" qualifiers="const">
+		<method name="get_region" qualifiers="const">
 			<return type="Image" />
-			<param index="0" name="rect" type="Rect2i" />
+			<param index="0" name="region" type="Rect2i" />
 			<description>
-				Returns a new image that is a copy of the image's area specified with [param rect].
+				Returns a new [Image] that is a copy of this [Image]'s area specified with [param region].
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
@@ -471,7 +471,8 @@
 			<param index="1" name="y" type="int" />
 			<param index="2" name="color" type="Color" />
 			<description>
-				Sets the [Color] of the pixel at [code](x, y)[/code] to [param color]. Example:
+				Sets the [Color] of the pixel at [code](x, y)[/code] to [param color].
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10
@@ -498,7 +499,8 @@
 			<param index="0" name="point" type="Vector2i" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Sets the [Color] of the pixel at [param point] to [param color]. Example:
+				Sets the [Color] of the pixel at [param point] to [param color].
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10

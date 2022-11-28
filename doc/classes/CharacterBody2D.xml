@@ -10,7 +10,7 @@
 	</description>
 	<tutorials>
 		<link title="Kinematic character (2D)">$DOCS_URL/tutorials/physics/kinematic_character_2d.html</link>
-		<link title="Using KinematicBody2D">$DOCS_URL/tutorials/physics/using_kinematic_body_2d.html</link>
+		<link title="Using CharacterBody2D">$DOCS_URL/tutorials/physics/using_character_body_2d.html</link>
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
 	</tutorials>
@@ -152,7 +152,7 @@
 		</member>
 		<member name="floor_snap_length" type="float" setter="set_floor_snap_length" getter="get_floor_snap_length" default="1.0">
 			Sets a snapping distance. When set to a value different from [code]0.0[/code], the body is kept attached to slopes when calling [method move_and_slide]. The snapping vector is determined by the given distance along the opposite direction of the [member up_direction].
-			As long as the snapping vector is in contact with the ground and the body moves against `up_direction`, the body will remain attached to the surface. Snapping is not applied if the body moves along `up_direction`, so it will be able to detach from the ground when jumping.
+			As long as the snapping vector is in contact with the ground and the body moves against [member up_direction], the body will remain attached to the surface. Snapping is not applied if the body moves along [member up_direction], so it will be able to detach from the ground when jumping.
 		</member>
 		<member name="floor_stop_on_slope" type="bool" setter="set_floor_stop_on_slope_enabled" getter="is_floor_stop_on_slope_enabled" default="true">
 			If [code]true[/code], the body will not slide on slopes when calling [method move_and_slide] when the body is standing still.

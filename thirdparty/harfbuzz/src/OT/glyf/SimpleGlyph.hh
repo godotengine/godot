@@ -271,31 +271,29 @@ struct SimpleGlyph
     }
     //convert absolute values to relative values
     unsigned num_points = all_points.length - 4;
-    hb_vector_t<hb_pair_t<int, int>> deltas;
-    deltas.resize (num_points);
-
-    for (unsigned i = 0; i < num_points; i++)
-    {
-      deltas[i].first = i == 0 ? roundf (all_points[i].x) : roundf (all_points[i].x) - roundf (all_points[i-1].x);
-      deltas[i].second = i == 0 ? roundf (all_points[i].y) : roundf (all_points[i].y) - roundf (all_points[i-1].y);
-    }
 
     hb_vector_t<uint8_t> flags, x_coords, y_coords;
-    flags.alloc (num_points);
-    x_coords.alloc (2*num_points);
-    y_coords.alloc (2*num_points);
+    if (unlikely (!flags.alloc (num_points))) return false;
+    if (unlikely (!x_coords.alloc (2*num_points))) return false;
+    if (unlikely (!y_coords.alloc (2*num_points))) return false;
 
     uint8_t lastflag = 0, repeat = 0;
-
+    int prev_x = 0.f, prev_y = 0.f;
+    
     for (unsigned i = 0; i < num_points; i++)
     {
       uint8_t flag = all_points[i].flag;
       flag &= FLAG_ON_CURVE + FLAG_OVERLAP_SIMPLE;
 
-      encode_coord (deltas[i].first, flag, FLAG_X_SHORT, FLAG_X_SAME, x_coords);
-      encode_coord (deltas[i].second, flag, FLAG_Y_SHORT, FLAG_Y_SAME, y_coords);
+      float cur_x = roundf (all_points[i].x);
+      float cur_y = roundf (all_points[i].y);
+      encode_coord (cur_x - prev_x, flag, FLAG_X_SHORT, FLAG_X_SAME, x_coords);
+      encode_coord (cur_y - prev_y, flag, FLAG_Y_SHORT, FLAG_Y_SAME, y_coords);
       if (i == 0) lastflag = flag + 1; //make lastflag != flag for the first point
       encode_flag (flag, repeat, lastflag, flags);
+
+      prev_x = cur_x;
+      prev_y = cur_y;
     }
 
     unsigned len_before_instrs = 2 * header.numberOfContours + 2;

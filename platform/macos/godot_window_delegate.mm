@@ -147,7 +147,12 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	if (wd.exclusive_fullscreen) {
+		[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+	}
+
 	wd.fullscreen = false;
+	wd.exclusive_fullscreen = false;
 
 	[(GodotWindow *)wd.window_object setAnimDuration:-1.0f];
 
@@ -249,6 +254,15 @@
 		Callable::CallError ce;
 		wd.rect_changed_callback.callp((const Variant **)&sizep, 1, ret, ce);
 	}
+}
+
+- (void)windowDidChangeScreen:(NSNotification *)notification {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return;
+	}
+
+	ds->reparent_check(window_id);
 }
 
 - (void)windowDidMove:(NSNotification *)notification {

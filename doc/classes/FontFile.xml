@@ -14,7 +14,6 @@
 		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
 		[b]Note:[/b] A glyph is a bitmap or shape used to draw a one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
 		[b]Note:[/b] If a none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
-
 		[codeblocks]
 		[gdscript]
 		var f = load("res://BarlowCondensed-Bold.ttf")
@@ -262,7 +261,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="texture_index" type="int" />
 			<description>
-				Returns a copy of the array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
+				Returns a copy of the array containing glyph packing data.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
@@ -522,7 +521,7 @@
 			<param index="2" name="texture_index" type="int" />
 			<param index="3" name="offset" type="PackedInt32Array" />
 			<description>
-				Sets array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty (for the fonts without dynamic glyph generation support).
+				Sets array containing glyph packing data.
 			</description>
 		</method>
 		<method name="set_transform">
@@ -589,7 +588,7 @@
 			Font style name.
 		</member>
 		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
-			Font glyph sub-pixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
+			Font glyph subpixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
 		</member>
 	</members>
 </class>

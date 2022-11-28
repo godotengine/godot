@@ -71,8 +71,6 @@ enum PropertyHint {
 	PROPERTY_HINT_EXPRESSION, ///< used for string properties that can contain multiple lines
 	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
-	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
-	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
 	PROPERTY_HINT_OBJECT_ID,
 	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
 	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, ///< so something else can provide this (used in scripts)
@@ -89,8 +87,8 @@ enum PropertyHint {
 	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_GLOBAL_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_INT_IS_OBJECTID,
-	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_INT_IS_POINTER,
+	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_LOCALE_ID,
 	PROPERTY_HINT_LOCALIZABLE_STRING,
 	PROPERTY_HINT_NODE_TYPE, ///< a node object type
@@ -133,7 +131,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_ARRAY = 1 << 29, // Used in the inspector to group properties as elements of an array.
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
-	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNATIONALIZED,
+	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNATIONALIZED,
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
 };
 
@@ -150,6 +148,10 @@ enum PropertyUsageFlags {
 #define ADD_ARRAY_COUNT(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix)
 #define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix, m_property_usage_flags)
 #define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
+
+// Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
+// PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
+#define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
@@ -192,10 +194,10 @@ struct PropertyInfo {
 
 	explicit PropertyInfo(const GDNativePropertyInfo &pinfo) :
 			type((Variant::Type)pinfo.type),
-			name(pinfo.name),
-			class_name(pinfo.class_name), // can be null
+			name(*reinterpret_cast<StringName *>(pinfo.name)),
+			class_name(*reinterpret_cast<StringName *>(pinfo.class_name)),
 			hint((PropertyHint)pinfo.hint),
-			hint_string(pinfo.hint_string), // can be null
+			hint_string(*reinterpret_cast<String *>(pinfo.hint_string)),
 			usage(pinfo.usage) {}
 
 	bool operator==(const PropertyInfo &p_info) const {
@@ -241,6 +243,20 @@ struct MethodInfo {
 	static MethodInfo from_dict(const Dictionary &p_dict);
 
 	MethodInfo() {}
+
+	explicit MethodInfo(const GDNativeMethodInfo &pinfo) :
+			name(*reinterpret_cast<StringName *>(pinfo.name)),
+			return_val(PropertyInfo(pinfo.return_value)),
+			flags(pinfo.flags),
+			id(pinfo.id) {
+		for (uint32_t j = 0; j < pinfo.argument_count; j++) {
+			arguments.push_back(PropertyInfo(pinfo.arguments[j]));
+		}
+		const Variant *def_values = (const Variant *)pinfo.default_arguments;
+		for (uint32_t j = 0; j < pinfo.default_argument_count; j++) {
+			default_arguments.push_back(def_values[j]);
+		}
+	}
 
 	void _push_params(const PropertyInfo &p_param) {
 		arguments.push_back(p_param);
@@ -295,6 +311,8 @@ struct ObjectNativeExtension {
 	StringName parent_class_name;
 	StringName class_name;
 	bool editor_class = false;
+	bool is_virtual = false;
+	bool is_abstract = false;
 	GDNativeExtensionClassSet set;
 	GDNativeExtensionClassGet get;
 	GDNativeExtensionClassGetPropertyList get_property_list;

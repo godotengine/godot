@@ -31,6 +31,7 @@
 #include "editor_run.h"
 
 #include "core/config/project_settings.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "main/main.h"
@@ -57,8 +58,11 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		args.push_back(resource_path.replace(" ", "%20"));
 	}
 
-	args.push_back("--remote-debug");
-	args.push_back(EditorDebuggerNode::get_singleton()->get_server_uri());
+	const String debug_uri = EditorDebuggerNode::get_singleton()->get_server_uri();
+	if (debug_uri.size()) {
+		args.push_back("--remote-debug");
+		args.push_back(debug_uri);
+	}
 
 	args.push_back("--editor-pid");
 	args.push_back(itos(OS::get_singleton()->get_process_id()));
@@ -88,7 +92,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		}
 	}
 
-	int screen = EditorSettings::get_singleton()->get("run/window_placement/screen");
+	int screen = EDITOR_GET("run/window_placement/screen");
 	if (screen == 0) {
 		// Same as editor
 		screen = DisplayServer::get_singleton()->window_get_current_screen();
@@ -114,21 +118,21 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	screen_rect.position = DisplayServer::get_singleton()->screen_get_position(screen);
 	screen_rect.size = DisplayServer::get_singleton()->screen_get_size(screen);
 
-	int window_placement = EditorSettings::get_singleton()->get("run/window_placement/rect");
+	int window_placement = EDITOR_GET("run/window_placement/rect");
 	if (screen_rect != Rect2()) {
 		Size2 window_size;
-		window_size.x = ProjectSettings::get_singleton()->get("display/window/size/viewport_width");
-		window_size.y = ProjectSettings::get_singleton()->get("display/window/size/viewport_height");
+		window_size.x = GLOBAL_GET("display/window/size/viewport_width");
+		window_size.y = GLOBAL_GET("display/window/size/viewport_height");
 
 		Size2 desired_size;
-		desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/window_width_override");
-		desired_size.y = ProjectSettings::get_singleton()->get("display/window/size/window_height_override");
+		desired_size.x = GLOBAL_GET("display/window/size/window_width_override");
+		desired_size.y = GLOBAL_GET("display/window/size/window_height_override");
 		if (desired_size.x > 0 && desired_size.y > 0) {
 			window_size = desired_size;
 		}
 
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
-			bool hidpi_proj = ProjectSettings::get_singleton()->get("display/window/dpi/allow_hidpi");
+			bool hidpi_proj = GLOBAL_GET("display/window/dpi/allow_hidpi");
 			int display_scale = 1;
 
 			if (OS::get_singleton()->is_hidpi_allowed()) {
@@ -159,7 +163,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 				args.push_back(itos(pos.x) + "," + itos(pos.y));
 			} break;
 			case 2: { // custom pos
-				Vector2 pos = EditorSettings::get_singleton()->get("run/window_placement/rect_custom_position");
+				Vector2 pos = EDITOR_GET("run/window_placement/rect_custom_position");
 				pos += screen_rect.position;
 				args.push_back("--position");
 				args.push_back(itos(pos.x) + "," + itos(pos.y));
@@ -215,7 +219,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 	String exec = OS::get_singleton()->get_executable_path();
 
-	const String raw_custom_args = ProjectSettings::get_singleton()->get("editor/run/main_run_args");
+	const String raw_custom_args = GLOBAL_GET("editor/run/main_run_args");
 	if (!raw_custom_args.is_empty()) {
 		// Allow the user to specify a command to run, similar to Steam's launch options.
 		// In this case, Godot will no longer be run directly; it's up to the underlying command

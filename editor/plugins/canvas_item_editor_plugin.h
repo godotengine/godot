@@ -42,10 +42,12 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/main/canvas_item.h"
 
+class AcceptDialog;
+class ConfirmationDialog;
 class EditorData;
 class CanvasItemEditorViewport;
+class MenuButton;
 class ViewPanner;
-class EditorUndoRedoManager;
 
 class CanvasItemEditorSelectedItem : public Object {
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
@@ -337,12 +339,12 @@ private:
 
 	Point2 drag_start_origin;
 	DragType drag_type = DRAG_NONE;
-	Point2 drag_from = Vector2();
-	Point2 drag_to = Vector2();
+	Point2 drag_from;
+	Point2 drag_to;
 	Point2 drag_rotation_center;
 	List<CanvasItem *> drag_selection;
 	int dragged_guide_index = -1;
-	Point2 dragged_guide_pos = Point2();
+	Point2 dragged_guide_pos;
 	bool is_hovering_h_guide = false;
 	bool is_hovering_v_guide = false;
 
@@ -400,8 +402,6 @@ private:
 	bool _is_grid_visible() const;
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
@@ -548,7 +548,6 @@ public:
 	Tool get_current_tool() { return tool; }
 	void set_current_tool(Tool p_tool);
 
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
@@ -593,7 +592,6 @@ class CanvasItemEditorViewport : public Control {
 	Node *target_node = nullptr;
 	Point2 drop_pos;
 
-	EditorData *editor_data = nullptr;
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	Control *preview_node = nullptr;
 	AcceptDialog *accept = nullptr;

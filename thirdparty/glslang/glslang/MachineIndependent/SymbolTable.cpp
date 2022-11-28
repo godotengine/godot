@@ -383,7 +383,7 @@ TFunction::TFunction(const TFunction& copyOf) : TSymbol(copyOf)
     for (unsigned int i = 0; i < copyOf.parameters.size(); ++i) {
         TParameter param;
         parameters.push_back(param);
-        parameters.back().copyParam(copyOf.parameters[i]);
+        (void)parameters.back().copyParam(copyOf.parameters[i]);
     }
 
     extensions = nullptr;

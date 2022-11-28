@@ -166,6 +166,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
 		}
+		window_set_vsync_mode(p_vsync_mode, window_id_counter);
 #endif
 		[wd.window_view updateLayerDelegate];
 		id = window_id_counter++;
@@ -1843,11 +1844,22 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		window_id = MAIN_WINDOW_ID;
 	}
 	WindowData &wd = windows[window_id];
+
+	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
+
+	if (show_cursor && !previously_shown) {
+		WindowID window_id = get_window_at_screen_position(mouse_get_position());
+		if (window_id != INVALID_WINDOW_ID) {
+			send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+		}
+	}
+
 	if (p_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
 		// https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
-		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		CGAssociateMouseAndMouseCursorPosition(false);
@@ -1858,7 +1870,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
-		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:YES];
@@ -1868,7 +1880,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		[wd.window_object setMovable:NO];
 		CGAssociateMouseAndMouseCursorPosition(false);
 	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
-		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:NO];
@@ -1884,7 +1896,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	warp_events.clear();
 	mouse_mode = p_mode;
 
-	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (show_cursor) {
 		cursor_update_shape();
 	}
 }
@@ -2179,7 +2191,7 @@ void DisplayServerMacOS::screen_set_keep_on(bool p_enable) {
 	}
 
 	if (p_enable) {
-		String app_name_string = ProjectSettings::get_singleton()->get("application/config/name");
+		String app_name_string = GLOBAL_GET("application/config/name");
 		NSString *name = [NSString stringWithUTF8String:(app_name_string.is_empty() ? "Godot Engine" : app_name_string.utf8().get_data())];
 		NSString *reason = @"Godot Engine running with display/window/energy_saving/keep_screen_on = true";
 		IOPMAssertionCreateWithDescription(kIOPMAssertPreventUserIdleDisplaySleep, (__bridge CFStringRef)name, (__bridge CFStringRef)reason, (__bridge CFStringRef)reason, nullptr, 0, nullptr, &screen_keep_on_assertion);
@@ -2325,21 +2337,57 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 	}
 }
 
+void DisplayServerMacOS::reparent_check(WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	NSScreen *screen = [wd.window_object screen];
+
+	if (wd.transient_parent != INVALID_WINDOW_ID) {
+		WindowData &wd_parent = windows[wd.transient_parent];
+		NSScreen *parent_screen = [wd_parent.window_object screen];
+
+		if (parent_screen == screen) {
+			if (![[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
+				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+				[wd_parent.window_object addChildWindow:wd.window_object ordered:NSWindowAbove];
+			}
+		} else {
+			if ([[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
+				[wd_parent.window_object removeChildWindow:wd.window_object];
+				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+				[wd.window_object orderFront:nil];
+			}
+		}
+	}
+
+	for (const WindowID &child : wd.transient_children) {
+		WindowData &wd_child = windows[child];
+		NSScreen *child_screen = [wd_child.window_object screen];
+
+		if (child_screen == screen) {
+			if (![[wd.window_object childWindows] containsObject:wd_child.window_object]) {
+				if (wd_child.fullscreen) {
+					[wd_child.window_object toggleFullScreen:nil];
+				}
+				[wd_child.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+				[wd.window_object addChildWindow:wd_child.window_object ordered:NSWindowAbove];
+			}
+		} else {
+			if ([[wd.window_object childWindows] containsObject:wd_child.window_object]) {
+				[wd.window_object removeChildWindow:wd_child.window_object];
+				[wd_child.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+			}
+		}
+	}
+}
+
 void DisplayServerMacOS::window_set_exclusive(WindowID p_window, bool p_exclusive) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	if (wd.exclusive != p_exclusive) {
 		wd.exclusive = p_exclusive;
-		if (wd.transient_parent != INVALID_WINDOW_ID) {
-			WindowData &wd_parent = windows[wd.transient_parent];
-			if (wd.exclusive) {
-				ERR_FAIL_COND_MSG([[wd_parent.window_object childWindows] count] > 0, "Transient parent has another exclusive child.");
-				[wd_parent.window_object addChildWindow:wd.window_object ordered:NSWindowAbove];
-			} else {
-				[wd_parent.window_object removeChildWindow:wd.window_object];
-			}
-		}
+		reparent_check(p_window);
 	}
 }
 
@@ -2417,11 +2465,10 @@ void DisplayServerMacOS::window_set_transient(WindowID p_window, WindowID p_pare
 
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
-		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-
-		if (wd_window.exclusive) {
+		if ([[wd_parent.window_object childWindows] containsObject:wd_window.window_object]) {
 			[wd_parent.window_object removeChildWindow:wd_window.window_object];
 		}
+		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -2429,11 +2476,7 @@ void DisplayServerMacOS::window_set_transient(WindowID p_window, WindowID p_pare
 
 		wd_window.transient_parent = p_parent;
 		wd_parent.transient_children.insert(p_window);
-		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-
-		if (wd_window.exclusive) {
-			[wd_parent.window_object addChildWindow:wd_window.window_object ordered:NSWindowAbove];
-		}
+		reparent_check(p_window);
 	}
 }
 
@@ -2573,7 +2616,13 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 				[wd.window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 			}
 			[wd.window_object toggleFullScreen:nil];
+
+			if (old_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+			}
+
 			wd.fullscreen = false;
+			wd.exclusive_fullscreen = false;
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if ([wd.window_object isZoomed]) {
@@ -2598,7 +2647,15 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
 			[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 			[wd.window_object toggleFullScreen:nil];
+
 			wd.fullscreen = true;
+			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				const NSUInteger presentationOptions = NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar;
+				[NSApp setPresentationOptions:presentationOptions];
+				wd.exclusive_fullscreen = true;
+			} else {
+				wd.exclusive_fullscreen = false;
+			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if (![wd.window_object isZoomed]) {
@@ -2615,7 +2672,11 @@ DisplayServer::WindowMode DisplayServerMacOS::window_get_mode(WindowID p_window)
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) { // If fullscreen, it's not in another mode.
-		return WINDOW_MODE_FULLSCREEN;
+		if (wd.exclusive_fullscreen) {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		} else {
+			return WINDOW_MODE_FULLSCREEN;
+		}
 	}
 	if ([wd.window_object isZoomed] && !wd.resize_disabled) {
 		return WINDOW_MODE_MAXIMIZED;
@@ -2932,6 +2993,14 @@ int64_t DisplayServerMacOS::window_get_native_handle(HandleType p_handle_type, W
 		case WINDOW_VIEW: {
 			return (int64_t)windows[p_window].window_view;
 		}
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_context(p_window);
+			}
+			return 0;
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -2962,7 +3031,7 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		gl_manager->set_use_vsync(p_vsync_mode);
+		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3405,10 +3474,29 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 	[NSApp setApplicationIconImage:nsimg];
 }
 
-DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.", "Unable to initialize Video driver");
+		if (p_rendering_driver == "vulkan") {
+			String executable_command;
+			if (OS::get_singleton()->get_bundle_resource_dir() == OS::get_singleton()->get_executable_path().get_base_dir()) {
+				executable_command = vformat("%s --rendering-driver opengl3", OS::get_singleton()->get_executable_path());
+			} else {
+				executable_command = vformat("open %s --args --rendering-driver opengl3", OS::get_singleton()->get_bundle_resource_dir().path_join("../..").simplify_path());
+			}
+			OS::get_singleton()->alert("Your video card driver does not support the selected Vulkan version.\n"
+									   "Please try updating your GPU driver or try using the OpenGL 3 driver.\n"
+									   "You can enable the OpenGL 3 driver by starting the engine from the\n"
+									   "command line with the command: '" +
+							executable_command + "'.\n"
+												 "If you have updated your graphics drivers recently, try rebooting.",
+					"Unable to initialize Video driver");
+		} else {
+			OS::get_singleton()->alert("Your video card driver does not support the selected OpenGL version.\n"
+									   "Please try updating your GPU driver.\n"
+									   "If you have updated your graphics drivers recently, try rebooting.",
+					"Unable to initialize Video driver");
+		}
 	}
 	return ds;
 }
@@ -3556,7 +3644,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 	return closed;
 }
 
-DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -3665,6 +3753,11 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	Point2i window_position(
 			screen_get_position(0).x + (screen_get_size(0).width - p_resolution.width) / 2,
 			screen_get_position(0).y + (screen_get_size(0).height - p_resolution.height) / 2);
+
+	if (p_position != nullptr) {
+		window_position = *p_position;
+	}
+
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
 	ERR_FAIL_COND(main_window == INVALID_WINDOW_ID);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {

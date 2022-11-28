@@ -99,14 +99,9 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
 	ERR_FAIL_COND(multiplayer_peer.is_null());
 
-#ifdef DEBUG_ENABLED
-	multiplayer->profile_bandwidth("out", packet.size());
-#endif
-
 	multiplayer_peer->set_transfer_channel(0);
 	multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-	multiplayer_peer->set_target_peer(p_from);
-	multiplayer_peer->put_packet(packet.ptr(), packet.size());
+	multiplayer->send_command(p_from, packet.ptr(), packet.size());
 }
 
 void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
@@ -156,16 +151,11 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, Pat
 	Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
 	ERR_FAIL_COND_V(multiplayer_peer.is_null(), ERR_BUG);
 
-#ifdef DEBUG_ENABLED
-	multiplayer->profile_bandwidth("out", packet.size() * p_peers.size());
-#endif
-
 	Error err = OK;
 	for (int peer_id : p_peers) {
-		multiplayer_peer->set_target_peer(peer_id);
 		multiplayer_peer->set_transfer_channel(0);
 		multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-		err = multiplayer_peer->put_packet(packet.ptr(), packet.size());
+		err = multiplayer->send_command(peer_id, packet.ptr(), packet.size());
 		ERR_FAIL_COND_V(err != OK, err);
 		// Insert into confirmed, but as false since it was not confirmed.
 		psc->confirmed_peers.insert(peer_id, false);

@@ -72,6 +72,8 @@ class OS_LinuxBSD : public OS_Unix {
 	Vector<String> lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const;
 	Vector<String> lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const;
 
+	String system_dir_desktop_cache;
+
 protected:
 	virtual void initialize() override;
 	virtual void finalize() override;

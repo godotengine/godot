@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Godot.SourceGenerators
 {
-    public struct GodotMethodData
+    public readonly struct GodotMethodData
     {
         public GodotMethodData(IMethodSymbol method, ImmutableArray<MarshalType> paramTypes,
             ImmutableArray<ITypeSymbol> paramTypeSymbols, MarshalType? retType, ITypeSymbol? retSymbol)
@@ -22,7 +22,7 @@ namespace Godot.SourceGenerators
         public ITypeSymbol? RetSymbol { get; }
     }
 
-    public struct GodotSignalDelegateData
+    public readonly struct GodotSignalDelegateData
     {
         public GodotSignalDelegateData(string name, INamedTypeSymbol delegateSymbol, GodotMethodData invokeMethodData)
         {
@@ -36,7 +36,7 @@ namespace Godot.SourceGenerators
         public GodotMethodData InvokeMethodData { get; }
     }
 
-    public struct GodotPropertyData
+    public readonly struct GodotPropertyData
     {
         public GodotPropertyData(IPropertySymbol propertySymbol, MarshalType type)
         {
@@ -48,7 +48,7 @@ namespace Godot.SourceGenerators
         public MarshalType Type { get; }
     }
 
-    public struct GodotFieldData
+    public readonly struct GodotFieldData
     {
         public GodotFieldData(IFieldSymbol fieldSymbol, MarshalType type)
         {

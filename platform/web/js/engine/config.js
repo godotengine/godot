@@ -275,7 +275,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'print': this.onPrint,
 			'printErr': this.onPrintError,
 			'thisProgram': this.executable,
-			'noExitRuntime': true,
+			'noExitRuntime': false,
 			'dynamicLibraries': [`${loadPath}.side.wasm`],
 			'instantiateWasm': function (imports, onSuccess) {
 				function done(result) {

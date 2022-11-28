@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		4-element structure that can be used to represent 4D grid coordinates or sets of integers.
-		It uses integer coordinates. See [Vector4] for its floating-point counterpart.
+		It uses integer coordinates and is therefore preferable to [Vector4] when exact precision is required. Note that the values are limited to 32 bits, and unlike [Vector4] this cannot be configured with an engine build option. Use [int] or [PackedInt64Array] if 64-bit values are needed.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -83,7 +83,14 @@
 		<method name="sign" qualifiers="const">
 			<return type="Vector4i" />
 			<description>
-				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+				Returns a new vector with each component set to [code]1[/code] if it's positive, [code]-1[/code] if it's negative, and [code]0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
+			</description>
+		</method>
+		<method name="snapped" qualifiers="const">
+			<return type="Vector4i" />
+			<param index="0" name="step" type="Vector4i" />
+			<description>
+				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step].
 			</description>
 		</method>
 	</methods>
@@ -133,12 +140,20 @@
 			<return type="Vector4i" />
 			<param index="0" name="right" type="Vector4i" />
 			<description>
+				Gets the remainder of each component of the [Vector4i] with the components of the given [Vector4i]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
+				[codeblock]
+				print(Vector4i(10, -20, 30, -40) % Vector4i(7, 8, 9, 10))  # Prints "(3, -4, 3, 0)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator %">
 			<return type="Vector4i" />
 			<param index="0" name="right" type="int" />
 			<description>
+				Gets the remainder of each component of the [Vector4i] with the the given [int]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
+				[codeblock]
+				print(Vector4i(10, -20, 30, -40) % 7)  # Prints "(3, -6, 2, -5)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator *">

@@ -31,6 +31,7 @@
 #include "class_db.h"
 
 #include "core/config/engine.h"
+#include "core/object/script_language.h"
 #include "core/os/mutex.h"
 #include "core/version.h"
 
@@ -376,7 +377,12 @@ bool ClassDB::is_virtual(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+	if (!ti) {
+		if (!ScriptServer::is_global_class(p_class)) {
+			ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+		}
+		return false;
+	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
 		return false;
@@ -1454,7 +1460,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 		if (Engine::get_singleton()->has_singleton(p_class)) {
 			c = Engine::get_singleton()->get_singleton_object(p_class);
 			cleanup_c = false;
-		} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) {
+		} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) { // Keep this condition in sync with doc_tools.cpp get_documentation_default_value.
 			c = ClassDB::instantiate(p_class);
 			cleanup_c = true;
 		}
@@ -1528,7 +1534,10 @@ void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
 	c.api = p_extension->editor_class ? API_EDITOR_EXTENSION : API_EXTENSION;
 	c.native_extension = p_extension;
 	c.name = p_extension->class_name;
-	c.creation_func = parent->creation_func;
+	c.is_virtual = p_extension->is_virtual;
+	if (!p_extension->is_abstract) {
+		c.creation_func = parent->creation_func;
+	}
 	c.inherits = parent->name;
 	c.class_ptr = parent->class_ptr;
 	c.inherits_ptr = parent;

@@ -113,6 +113,7 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 		return;
 	}
 	if (skeleton) {
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_undo_property(skeleton, p_property, skeleton->get(p_property));
 		undo_redo->add_do_property(skeleton, p_property, p_value);
@@ -122,7 +123,6 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 
 BoneTransformEditor::BoneTransformEditor(Skeleton3D *p_skeleton) :
 		skeleton(p_skeleton) {
-	undo_redo = EditorNode::get_undo_redo();
 }
 
 void BoneTransformEditor::set_keyable(const bool p_keyable) {
@@ -714,12 +714,12 @@ void Skeleton3DEditor::create_editors() {
 
 	// Skeleton options.
 	PopupMenu *p = skeleton_options->get_popup();
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_all_poses", TTR("Reset all bone Poses")), SKELETON_OPTION_RESET_ALL_POSES);
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_poses", TTR("Reset selected Poses")), SKELETON_OPTION_RESET_SELECTED_POSES);
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTR("Apply all poses to rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTR("Apply selected poses to rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
-	p->add_item(TTR("Create physical skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
-	p->add_item(TTR("Export skeleton profile"), SKELETON_OPTION_EXPORT_SKELETON_PROFILE);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_all_poses", TTR("Reset All Bone Poses")), SKELETON_OPTION_RESET_ALL_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_poses", TTR("Reset Selected Poses")), SKELETON_OPTION_RESET_SELECTED_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTR("Apply All Poses to Rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTR("Apply Selected Poses to Rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
+	p->add_item(TTR("Create Physical Skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
+	p->add_item(TTR("Export Skeleton Profile"), SKELETON_OPTION_EXPORT_SKELETON_PROFILE);
 
 	p->connect("id_pressed", callable_mp(this, &Skeleton3DEditor::_on_click_skeleton_option));
 	set_bone_options_enabled(false);
@@ -1082,7 +1082,7 @@ void Skeleton3DEditor::select_bone(int p_idx) {
 Skeleton3DEditor::~Skeleton3DEditor() {
 	singleton = nullptr;
 
-	handles_mesh_instance->queue_delete();
+	handles_mesh_instance->queue_free();
 
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 
@@ -1239,7 +1239,7 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 
-	if (!se->is_edit_mode()) {
+	if (!se || !se->is_edit_mode()) {
 		return -1;
 	}
 
@@ -1288,7 +1288,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	ERR_FAIL_COND(!skeleton);
 
 	// Prepare for global to local.
-	Transform3D original_to_local = Transform3D();
+	Transform3D original_to_local;
 	int parent_idx = skeleton->get_bone_parent(p_id);
 	if (parent_idx >= 0) {
 		original_to_local = original_to_local * skeleton->get_bone_global_pose(parent_idx);
@@ -1296,7 +1296,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	Basis to_local = original_to_local.get_basis().inverse();
 
 	// Prepare transform.
-	Transform3D t = Transform3D();
+	Transform3D t;
 
 	// Basis.
 	t.basis = to_local * p_transform.get_basis();
@@ -1355,10 +1355,10 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		selected = se->get_selected_bone();
 	}
 
-	Color bone_color = EditorSettings::get_singleton()->get("editors/3d_gizmos/gizmo_colors/skeleton");
-	Color selected_bone_color = EditorSettings::get_singleton()->get("editors/3d_gizmos/gizmo_colors/selected_bone");
-	real_t bone_axis_length = EditorSettings::get_singleton()->get("editors/3d_gizmos/gizmo_settings/bone_axis_length");
-	int bone_shape = EditorSettings::get_singleton()->get("editors/3d_gizmos/gizmo_settings/bone_shape");
+	Color bone_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/skeleton");
+	Color selected_bone_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/selected_bone");
+	real_t bone_axis_length = EDITOR_GET("editors/3d_gizmos/gizmo_settings/bone_axis_length");
+	int bone_shape = EDITOR_GET("editors/3d_gizmos/gizmo_settings/bone_shape");
 
 	LocalVector<Color> axis_colors;
 	axis_colors.push_back(Node3DEditor::get_singleton()->get_theme_color(SNAME("axis_x_color"), SNAME("Editor")));

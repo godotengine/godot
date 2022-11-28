@@ -322,7 +322,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 
 			String word = str.substr(j, to - j);
-			Color col = Color();
+			Color col;
 			if (global_functions.has(word)) {
 				// "assert" and "preload" are reserved, so highlight even if not followed by a bracket.
 				if (word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::ASSERT) || word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::PRELOAD)) {
@@ -683,7 +683,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		}
 	}
 
-	const String text_edit_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
+	const String text_edit_color_theme = EDITOR_GET("text_editor/theme/color_theme");
 	const bool godot_2_theme = text_edit_color_theme == "Godot 2";
 
 	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {

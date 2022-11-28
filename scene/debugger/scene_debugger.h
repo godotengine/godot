@@ -42,27 +42,8 @@ class Node;
 
 class SceneDebugger {
 public:
-	// RPC profiler
-	struct RPCNodeInfo {
-		ObjectID node;
-		String node_path;
-		int incoming_rpc = 0;
-		int outgoing_rpc = 0;
-	};
-
-	struct RPCProfilerFrame {
-		Vector<RPCNodeInfo> infos;
-
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-
 private:
-	class RPCProfiler;
-
 	static SceneDebugger *singleton;
-
-	Ref<RPCProfiler> rpc_profiler;
 
 	SceneDebugger();
 
@@ -110,12 +91,23 @@ public:
 		String name;
 		String type_name;
 		ObjectID id;
+		String scene_file_path;
+		uint8_t view_flags = 0;
 
-		RemoteNode(int p_child, const String &p_name, const String &p_type, ObjectID p_id) {
+		enum ViewFlags {
+			VIEW_HAS_VISIBLE_METHOD = 1 << 1,
+			VIEW_VISIBLE = 1 << 2,
+			VIEW_VISIBLE_IN_TREE = 1 << 3,
+		};
+
+		RemoteNode(int p_child, const String &p_name, const String &p_type, ObjectID p_id, const String p_scene_file_path, int p_view_flags) {
 			child_count = p_child;
 			name = p_name;
 			type_name = p_type;
 			id = p_id;
+
+			scene_file_path = p_scene_file_path;
+			view_flags = p_view_flags;
 		}
 
 		RemoteNode() {}

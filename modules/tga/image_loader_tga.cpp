@@ -284,14 +284,21 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 		err = FAILED;
 	}
 
+	uint64_t color_map_size;
 	if (has_color_map) {
 		if (tga_header.color_map_length > 256 || (tga_header.color_map_depth != 24) || tga_header.color_map_type != 1) {
 			err = FAILED;
 		}
+		color_map_size = tga_header.color_map_length * (tga_header.color_map_depth >> 3);
 	} else {
 		if (tga_header.color_map_type) {
 			err = FAILED;
 		}
+		color_map_size = 0;
+	}
+
+	if ((src_image_len - f->get_position()) < (tga_header.id_length + color_map_size)) {
+		err = FAILED; // TGA data appears to be truncated (fewer bytes than expected).
 	}
 
 	if (tga_header.image_width <= 0 || tga_header.image_height <= 0) {
@@ -308,7 +315,6 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 		Vector<uint8_t> palette;
 
 		if (has_color_map) {
-			size_t color_map_size = tga_header.color_map_length * (tga_header.color_map_depth >> 3);
 			err = palette.resize(color_map_size);
 			if (err == OK) {
 				uint8_t *palette_w = palette.ptrw();

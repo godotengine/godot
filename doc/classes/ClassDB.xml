@@ -13,7 +13,7 @@
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />
 			<description>
-				Returns [code]true[/code] if you can instance objects from the specified [param class], [code]false[/code] in other case.
+				Returns [code]true[/code] if objects can be instantiated from the specified [param class], otherwise returns [code]false[/code].
 			</description>
 		</method>
 		<method name="class_exists" qualifiers="const">

@@ -70,6 +70,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	Vector<String> get_translated_message_list() const override;
 	void get_message_list(List<StringName> *r_messages) const override;
 	int get_message_count() const override;
 	void add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context = "") override;

@@ -103,8 +103,6 @@ void RedirectIOToConsole() {
 		RedirectStream("CONIN$", "r", stdin, STD_INPUT_HANDLE);
 		RedirectStream("CONOUT$", "w", stdout, STD_OUTPUT_HANDLE);
 		RedirectStream("CONOUT$", "w", stderr, STD_ERROR_HANDLE);
-
-		printf("\n"); // Make sure our output is starting from the new line.
 	}
 }
 
@@ -311,6 +309,10 @@ String OS_Windows::get_version() const {
 }
 
 Vector<String> OS_Windows::get_video_adapter_driver_info() const {
+	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+		return Vector<String>();
+	}
+
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
 	REFIID uuid = IID_IWbemLocator; // Interface UUID
 	IWbemLocator *wbemLocator = NULL; // to get the services
@@ -847,7 +849,19 @@ String OS_Windows::get_system_font_path(const String &p_font_name, bool p_bold, 
 		if (FAILED(hr)) {
 			continue;
 		}
-		return String::utf16((const char16_t *)&file_path[0]);
+		String fpath = String::utf16((const char16_t *)&file_path[0]);
+
+		WIN32_FIND_DATAW d;
+		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
+		if (fnd != INVALID_HANDLE_VALUE) {
+			String fname = String::utf16((const char16_t *)d.cFileName);
+			if (!fname.is_empty()) {
+				fpath = fpath.get_base_dir().path_join(fname);
+			}
+			FindClose(fnd);
+		}
+
+		return fpath;
 	}
 	return String();
 }
@@ -1153,11 +1167,11 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 }
 
 String OS_Windows::get_user_data_dir() const {
-	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
+	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
 	if (!appname.is_empty()) {
-		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
+		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
-			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
+			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
 			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
@@ -1177,7 +1191,14 @@ String OS_Windows::get_unique_id() const {
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc";
+	if (p_feature == "system_fonts") {
+		return true;
+	}
+	if (p_feature == "pc") {
+		return true;
+	}
+
+	return false;
 }
 
 void OS_Windows::disable_crash_handler() {

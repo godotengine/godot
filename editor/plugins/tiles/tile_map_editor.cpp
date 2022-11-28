@@ -272,6 +272,7 @@ void TileMapEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<InputEven
 	if (ED_IS_SHORTCUT("tiles_editor/paste", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
 		select_last_pattern = true;
 		int new_pattern_index = tile_set->get_patterns_count();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Add TileSet pattern"));
 		undo_redo->add_do_method(*tile_set, "add_pattern", tile_map_clipboard, new_pattern_index);
 		undo_redo->add_undo_method(*tile_set, "remove_pattern", new_pattern_index);
@@ -281,6 +282,7 @@ void TileMapEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<InputEven
 
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
 		Vector<int> selected = patterns_item_list->get_selected_items();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Remove TileSet patterns"));
 		for (int i = 0; i < selected.size(); i++) {
 			int pattern_index = selected[i];
@@ -396,7 +398,7 @@ void TileMapEditorTilesPlugin::_update_scenes_collection_view() {
 	}
 
 	// Icon size update.
-	int int_size = int(EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size")) * EDSCALE;
+	int int_size = int(EDITOR_GET("filesystem/file_dialog/thumbnail_size")) * EDSCALE;
 	scene_tiles_list->set_fixed_icon_size(Vector2(int_size, int_size));
 }
 
@@ -511,6 +513,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 		if (ED_IS_SHORTCUT("tiles_editor/cut", p_event)) {
 			// Delete selected tiles.
 			if (!tile_map_selection.is_empty()) {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Delete tiles"));
 				for (const Vector2i &E : tile_map_selection) {
 					undo_redo->add_do_method(tile_map, "set_cell", tile_map_layer, E, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
@@ -542,6 +545,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event)) {
 		// Delete selected tiles.
 		if (!tile_map_selection.is_empty()) {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Delete tiles"));
 			for (const Vector2i &E : tile_map_selection) {
 				undo_redo->add_do_method(tile_map, "set_cell", tile_map_layer, E, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
@@ -739,7 +743,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 		if (drag_type == DRAG_TYPE_MOVE || (drag_type == DRAG_TYPE_SELECT && !Input::get_singleton()->is_key_pressed(Key::CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			// Do nothing
 		} else {
-			Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 			tile_map->draw_cells_outline(p_overlay, tile_map_selection, selection_color, xform);
 		}
@@ -844,9 +848,9 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 			const int fading = 5;
 
 			// Draw the lines of the grid behind the preview.
-			bool display_grid = EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid");
+			bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
 			if (display_grid) {
-				Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+				Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 				if (drawn_grid_rect.size.x > 0 && drawn_grid_rect.size.y > 0) {
 					drawn_grid_rect = drawn_grid_rect.grow(fading);
 					for (int x = drawn_grid_rect.position.x; x < (drawn_grid_rect.position.x + drawn_grid_rect.size.x); x++) {
@@ -1233,6 +1237,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
 	Vector2 mpos = xform.affine_inverse().xform(CanvasItemEditor::get_singleton()->get_viewport_control()->get_local_mouse_position());
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (drag_type) {
 		case DRAG_TYPE_SELECT: {
 			undo_redo->create_action(TTR("Change selection"));
@@ -1682,7 +1687,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 	}
 
 	// Draw the selection.
-	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	for (const TileMapCell &E : tile_set_selection) {
 		if (E.source_id == source_id && E.alternative_tile == 0) {
@@ -2012,8 +2017,6 @@ void TileMapEditorTilesPlugin::_bind_methods() {
 }
 
 TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	CanvasItemEditor::get_singleton()
 			->get_viewport_control()
 			->connect("mouse_exited", callable_mp(this, &TileMapEditorTilesPlugin::_mouse_exited_viewport));
@@ -2267,6 +2270,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_text(TTR("Drag and drop or paste a TileMap selection here to store a pattern."));
+	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 	patterns_item_list->add_child(patterns_help_label);
 
@@ -2348,27 +2352,27 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrain_path_o
 	}
 
 	HashMap<Vector2i, TileMapCell> output;
-	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E : terrain_fill_output) {
-		if (painted_set.has(E.key)) {
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : terrain_fill_output) {
+		if (painted_set.has(kv.key)) {
 			// Paint a random tile with the correct terrain for the painted path.
-			output[E.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, E.value);
+			output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
-			bool keep_old = false;
-			TileMapCell cell = tile_map->get_cell(tile_map_layer, E.key);
+			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
+			TileMapCell cell = tile_map->get_cell(tile_map_layer, kv.key);
 			if (cell.source_id != TileSet::INVALID_SOURCE) {
 				TileSetSource *source = *tile_set->get_source(cell.source_id);
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
 					// Get tile data.
 					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-					if (tile_data && tile_data->get_terrains_pattern() == E.value) {
-						keep_old = true;
+					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
+						in_map_terrain_pattern = tile_data->get_terrains_pattern();
 					}
 				}
 			}
-			if (!keep_old) {
-				output[E.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, E.value);
+			if (in_map_terrain_pattern != kv.value) {
+				output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 			}
 		}
 	}
@@ -2395,23 +2399,27 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrain_patter
 	}
 
 	HashMap<Vector2i, TileMapCell> output;
-	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E : terrain_fill_output) {
-		if (painted_set.has(E.key)) {
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : terrain_fill_output) {
+		if (painted_set.has(kv.key)) {
 			// Paint a random tile with the correct terrain for the painted path.
-			output[E.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, E.value);
+			output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
-			TileMapCell cell = tile_map->get_cell(tile_map_layer, E.key);
+			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
+			TileMapCell cell = tile_map->get_cell(tile_map_layer, kv.key);
 			if (cell.source_id != TileSet::INVALID_SOURCE) {
 				TileSetSource *source = *tile_set->get_source(cell.source_id);
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
 					// Get tile data.
 					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-					if (tile_data && !(tile_data->get_terrains_pattern() == E.value)) {
-						output[E.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, E.value);
+					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
+						in_map_terrain_pattern = tile_data->get_terrains_pattern();
 					}
 				}
+			}
+			if (in_map_terrain_pattern != kv.value) {
+				output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 			}
 		}
 	}
@@ -2629,6 +2637,7 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
 	Vector2 mpos = xform.affine_inverse().xform(CanvasItemEditor::get_singleton()->get_viewport_control()->get_local_mouse_position());
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (drag_type) {
 		case DRAG_TYPE_PICK: {
 			Vector2i coords = tile_map->local_to_map(mpos);
@@ -3019,9 +3028,9 @@ void TileMapEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_o
 			const int fading = 5;
 
 			// Draw the lines of the grid behind the preview.
-			bool display_grid = EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid");
+			bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
 			if (display_grid) {
-				Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+				Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 				if (drawn_grid_rect.size.x > 0 && drawn_grid_rect.size.y > 0) {
 					drawn_grid_rect = drawn_grid_rect.grow(fading);
 					for (int x = drawn_grid_rect.position.x; x < (drawn_grid_rect.position.x + drawn_grid_rect.size.x); x++) {
@@ -3299,8 +3308,6 @@ void TileMapEditorTerrainsPlugin::edit(ObjectID p_tile_map_id, int p_tile_map_la
 }
 
 TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	main_vbox_container = memnew(VBoxContainer);
 	main_vbox_container->connect("tree_entered", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
 	main_vbox_container->connect("theme_changed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
@@ -3416,7 +3423,7 @@ void TileMapEditor::_notification(int p_what) {
 			warning_pattern_texture = get_theme_icon(SNAME("WarningPattern"), SNAME("EditorIcons"));
 			advanced_menu_button->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 			toggle_grid_button->set_icon(get_theme_icon(SNAME("Grid"), SNAME("EditorIcons")));
-			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
+			toggle_grid_button->set_pressed(EDITOR_GET("editors/tiles_editor/display_grid"));
 			toggle_highlight_selected_layer_button->set_icon(get_theme_icon(SNAME("TileMapHighlightSelected"), SNAME("EditorIcons")));
 		} break;
 
@@ -3431,7 +3438,7 @@ void TileMapEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
+			toggle_grid_button->set_pressed(EDITOR_GET("editors/tiles_editor/display_grid"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3474,6 +3481,7 @@ void TileMapEditor::_advanced_menu_button_id_pressed(int p_id) {
 	}
 
 	if (p_id == 0) { // Replace Tile Proxies
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Replace Tiles with Proxies"));
 		for (int layer_index = 0; layer_index < tile_map->get_layers_count(); layer_index++) {
 			TypedArray<Vector2i> used_cells = tile_map->get_used_cells(layer_index);
@@ -3874,9 +3882,9 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	// Draw the grid.
-	bool display_grid = EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid");
+	bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
 	if (display_grid) {
-		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 		for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
 			for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
 				Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
@@ -3947,8 +3955,6 @@ void TileMapEditor::edit(TileMap *p_tile_map) {
 }
 
 TileMapEditor::TileMapEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	set_process_internal(true);
 
 	// Shortcuts.

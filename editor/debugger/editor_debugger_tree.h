@@ -65,6 +65,11 @@ protected:
 	void _notification(int p_what);
 
 public:
+	enum Button {
+		BUTTON_SUBSCENE = 0,
+		BUTTON_VISIBILITY = 1,
+	};
+
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 
 	String get_selected_path();

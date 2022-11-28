@@ -363,7 +363,7 @@ void XRNode3D::_unbind_tracker() {
 }
 
 void XRNode3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_type) {
-	if (p_tracker_name == p_tracker_name) {
+	if (tracker_name == p_tracker_name) {
 		// just in case unref our current tracker
 		_unbind_tracker();
 
@@ -373,7 +373,7 @@ void XRNode3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_t
 }
 
 void XRNode3D::_removed_tracker(const StringName p_tracker_name, int p_tracker_type) {
-	if (p_tracker_name == p_tracker_name) {
+	if (tracker_name == p_tracker_name) {
 		// unref our tracker, it's no longer available
 		_unbind_tracker();
 	}
@@ -644,6 +644,12 @@ void XROrigin3D::set_current(bool p_enabled) {
 				origin_nodes[i]->set_current(false);
 			}
 		}
+
+		// update XRServer with our current position
+		XRServer *xr_server = XRServer::get_singleton();
+		ERR_FAIL_NULL(xr_server);
+
+		xr_server->set_world_origin(get_global_transform());
 	} else {
 		bool found = false;
 		// We no longer have a current origin so find the first one we can make current

@@ -31,6 +31,7 @@
 #include "array.h"
 
 #include "container_type_validate.h"
+#include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
@@ -299,6 +300,11 @@ Variant Array::back() const {
 	return operator[](_p->array.size() - 1);
 }
 
+Variant Array::pick_random() const {
+	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	return operator[](Math::rand() % _p->array.size());
+}
+
 int Array::find(const Variant &p_value, int p_from) const {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "find"), -1);
 	return _p->array.find(p_value, p_from);
@@ -326,11 +332,6 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	}
 
 	return -1;
-}
-
-int Array::find_last(const Variant &p_value) const {
-	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "find_last"), -1);
-	return rfind(p_value);
 }
 
 int Array::count(const Variant &p_value) const {

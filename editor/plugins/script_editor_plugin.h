@@ -48,6 +48,7 @@
 #include "scene/resources/text_file.h"
 
 class EditorFileDialog;
+class TextureRect;
 
 class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
@@ -139,7 +140,7 @@ public:
 	virtual Ref<Resource> get_edited_resource() const = 0;
 	virtual Vector<String> get_functions() = 0;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) = 0;
-	virtual void enable_editor() = 0;
+	virtual void enable_editor(Control *p_shortcut_context = nullptr) = 0;
 	virtual void reload_text() = 0;
 	virtual String get_name() = 0;
 	virtual Ref<Texture2D> get_theme_icon() = 0;

@@ -91,10 +91,10 @@ void FindReplaceBar::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
 			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
-			hide_button->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			hide_button->set_texture_normal(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_hover(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_pressed(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -377,10 +377,12 @@ void FindReplaceBar::_update_results_count() {
 
 			if (is_whole_words()) {
 				if (col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
-					break;
+					col_pos += searched.length();
+					continue;
 				}
-				if (col_pos + line_text.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
-					break;
+				if (col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
+					col_pos += searched.length();
+					continue;
 				}
 			}
 
@@ -1009,50 +1011,50 @@ void CodeTextEditor::update_editor_settings() {
 	completion_comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 
 	// Appearance: Caret
-	text_editor->set_caret_type((TextEdit::CaretType)EditorSettings::get_singleton()->get("text_editor/appearance/caret/type").operator int());
-	text_editor->set_caret_blink_enabled(EditorSettings::get_singleton()->get("text_editor/appearance/caret/caret_blink"));
-	text_editor->set_caret_blink_interval(EditorSettings::get_singleton()->get("text_editor/appearance/caret/caret_blink_interval"));
-	text_editor->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/appearance/caret/highlight_current_line"));
-	text_editor->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/appearance/caret/highlight_all_occurrences"));
+	text_editor->set_caret_type((TextEdit::CaretType)EDITOR_GET("text_editor/appearance/caret/type").operator int());
+	text_editor->set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
+	text_editor->set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
+	text_editor->set_highlight_current_line(EDITOR_GET("text_editor/appearance/caret/highlight_current_line"));
+	text_editor->set_highlight_all_occurrences(EDITOR_GET("text_editor/appearance/caret/highlight_all_occurrences"));
 
 	// Appearance: Gutters
-	text_editor->set_draw_line_numbers(EditorSettings::get_singleton()->get("text_editor/appearance/gutters/show_line_numbers"));
-	text_editor->set_line_numbers_zero_padded(EditorSettings::get_singleton()->get("text_editor/appearance/gutters/line_numbers_zero_padded"));
-	text_editor->set_draw_bookmarks_gutter(EditorSettings::get_singleton()->get("text_editor/appearance/gutters/show_bookmark_gutter"));
+	text_editor->set_draw_line_numbers(EDITOR_GET("text_editor/appearance/gutters/show_line_numbers"));
+	text_editor->set_line_numbers_zero_padded(EDITOR_GET("text_editor/appearance/gutters/line_numbers_zero_padded"));
+	text_editor->set_draw_bookmarks_gutter(EDITOR_GET("text_editor/appearance/gutters/show_bookmark_gutter"));
 
 	// Appearance: Minimap
-	text_editor->set_draw_minimap(EditorSettings::get_singleton()->get("text_editor/appearance/minimap/show_minimap"));
-	text_editor->set_minimap_width((int)EditorSettings::get_singleton()->get("text_editor/appearance/minimap/minimap_width") * EDSCALE);
+	text_editor->set_draw_minimap(EDITOR_GET("text_editor/appearance/minimap/show_minimap"));
+	text_editor->set_minimap_width((int)EDITOR_GET("text_editor/appearance/minimap/minimap_width") * EDSCALE);
 
 	// Appearance: Lines
-	text_editor->set_line_folding_enabled(EditorSettings::get_singleton()->get("text_editor/appearance/lines/code_folding"));
-	text_editor->set_draw_fold_gutter(EditorSettings::get_singleton()->get("text_editor/appearance/lines/code_folding"));
-	text_editor->set_line_wrapping_mode((TextEdit::LineWrappingMode)EditorSettings::get_singleton()->get("text_editor/appearance/lines/word_wrap").operator int());
+	text_editor->set_line_folding_enabled(EDITOR_GET("text_editor/appearance/lines/code_folding"));
+	text_editor->set_draw_fold_gutter(EDITOR_GET("text_editor/appearance/lines/code_folding"));
+	text_editor->set_line_wrapping_mode((TextEdit::LineWrappingMode)EDITOR_GET("text_editor/appearance/lines/word_wrap").operator int());
 
 	// Appearance: Whitespace
-	text_editor->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/appearance/whitespace/draw_tabs"));
-	text_editor->set_draw_spaces(EditorSettings::get_singleton()->get("text_editor/appearance/whitespace/draw_spaces"));
+	text_editor->set_draw_tabs(EDITOR_GET("text_editor/appearance/whitespace/draw_tabs"));
+	text_editor->set_draw_spaces(EDITOR_GET("text_editor/appearance/whitespace/draw_spaces"));
 
 	// Behavior: Navigation
-	text_editor->set_scroll_past_end_of_file_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/scroll_past_end_of_file"));
-	text_editor->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/smooth_scrolling"));
-	text_editor->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/v_scroll_speed"));
-	text_editor->set_drag_and_drop_selection_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/drag_and_drop_selection"));
+	text_editor->set_scroll_past_end_of_file_enabled(EDITOR_GET("text_editor/behavior/navigation/scroll_past_end_of_file"));
+	text_editor->set_smooth_scroll_enabled(EDITOR_GET("text_editor/behavior/navigation/smooth_scrolling"));
+	text_editor->set_v_scroll_speed(EDITOR_GET("text_editor/behavior/navigation/v_scroll_speed"));
+	text_editor->set_drag_and_drop_selection_enabled(EDITOR_GET("text_editor/behavior/navigation/drag_and_drop_selection"));
 
 	// Behavior: indent
-	text_editor->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/behavior/indent/type"));
-	text_editor->set_indent_size(EditorSettings::get_singleton()->get("text_editor/behavior/indent/size"));
-	text_editor->set_auto_indent_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/indent/auto_indent"));
+	text_editor->set_indent_using_spaces(EDITOR_GET("text_editor/behavior/indent/type"));
+	text_editor->set_indent_size(EDITOR_GET("text_editor/behavior/indent/size"));
+	text_editor->set_auto_indent_enabled(EDITOR_GET("text_editor/behavior/indent/auto_indent"));
 
 	// Completion
-	text_editor->set_auto_brace_completion_enabled(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
+	text_editor->set_auto_brace_completion_enabled(EDITOR_GET("text_editor/completion/auto_brace_complete"));
 
 	// Appearance: Guidelines
-	if (EditorSettings::get_singleton()->get("text_editor/appearance/guidelines/show_line_length_guidelines")) {
+	if (EDITOR_GET("text_editor/appearance/guidelines/show_line_length_guidelines")) {
 		TypedArray<int> guideline_cols;
-		guideline_cols.append(EditorSettings::get_singleton()->get("text_editor/appearance/guidelines/line_length_guideline_hard_column"));
-		if (EditorSettings::get_singleton()->get("text_editor/appearance/guidelines/line_length_guideline_soft_column") != guideline_cols[0]) {
-			guideline_cols.append(EditorSettings::get_singleton()->get("text_editor/appearance/guidelines/line_length_guideline_soft_column"));
+		guideline_cols.append(EDITOR_GET("text_editor/appearance/guidelines/line_length_guideline_hard_column"));
+		if (EDITOR_GET("text_editor/appearance/guidelines/line_length_guideline_soft_column") != guideline_cols[0]) {
+			guideline_cols.append(EDITOR_GET("text_editor/appearance/guidelines/line_length_guideline_soft_column"));
 		}
 		text_editor->set_line_length_guidelines(guideline_cols);
 	} else {
@@ -1126,7 +1128,7 @@ void CodeTextEditor::insert_final_newline() {
 }
 
 void CodeTextEditor::convert_indent_to_spaces() {
-	int indent_size = EditorSettings::get_singleton()->get("text_editor/behavior/indent/size");
+	int indent_size = EDITOR_GET("text_editor/behavior/indent/size");
 	String indent = "";
 
 	for (int i = 0; i < indent_size; i++) {
@@ -1178,7 +1180,7 @@ void CodeTextEditor::convert_indent_to_spaces() {
 }
 
 void CodeTextEditor::convert_indent_to_tabs() {
-	int indent_size = EditorSettings::get_singleton()->get("text_editor/behavior/indent/size");
+	int indent_size = EDITOR_GET("text_editor/behavior/indent/size");
 	indent_size -= 1;
 
 	Vector<int> cursor_columns;
@@ -1848,8 +1850,8 @@ void CodeTextEditor::_on_settings_change() {
 void CodeTextEditor::_apply_settings_change() {
 	_update_text_editor_theme();
 
-	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
-	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
+	font_size = EDITOR_GET("interface/editor/code_font_size");
+	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
 
 	Ref<FontVariation> fc = text_editor->get_theme_font(SNAME("font"));
 	if (fc.is_valid()) {
@@ -1860,7 +1862,7 @@ void CodeTextEditor::_apply_settings_change() {
 				fc->set_opentype_features(ftrs);
 			} break;
 			case 2: { // Custom.
-				Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
+				Vector<String> subtag = String(EDITOR_GET("interface/editor/code_font_custom_opentype_features")).split(",");
 				Dictionary ftrs;
 				for (int i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
@@ -1872,7 +1874,7 @@ void CodeTextEditor::_apply_settings_change() {
 				}
 				fc->set_opentype_features(ftrs);
 			} break;
-			default: { // Default.
+			default: { // Enabled.
 				Dictionary ftrs;
 				ftrs[TS->name_to_tag("calt")] = 1;
 				fc->set_opentype_features(ftrs);
@@ -2000,23 +2002,14 @@ void CodeTextEditor::goto_next_bookmark() {
 		return;
 	}
 
-	text_editor->remove_secondary_carets();
-	int line = text_editor->get_caret_line();
-	if (line >= (int)bmarks[bmarks.size() - 1]) {
-		text_editor->unfold_line(bmarks[0]);
-		text_editor->set_caret_line(bmarks[0]);
-		text_editor->center_viewport_to_caret();
-	} else {
-		for (int i = 0; i < bmarks.size(); i++) {
-			int bmark_line = bmarks[i];
-			if (bmark_line > line) {
-				text_editor->unfold_line(bmark_line);
-				text_editor->set_caret_line(bmark_line);
-				text_editor->center_viewport_to_caret();
-				return;
-			}
+	int current_line = text_editor->get_caret_line();
+	int bmark_idx = 0;
+	if (current_line < (int)bmarks[bmarks.size() - 1]) {
+		while (bmark_idx < bmarks.size() && bmarks[bmark_idx] <= current_line) {
+			bmark_idx++;
 		}
 	}
+	goto_line_centered(bmarks[bmark_idx]);
 }
 
 void CodeTextEditor::goto_prev_bookmark() {
@@ -2025,23 +2018,14 @@ void CodeTextEditor::goto_prev_bookmark() {
 		return;
 	}
 
-	text_editor->remove_secondary_carets();
-	int line = text_editor->get_caret_line();
-	if (line <= (int)bmarks[0]) {
-		text_editor->unfold_line(bmarks[bmarks.size() - 1]);
-		text_editor->set_caret_line(bmarks[bmarks.size() - 1]);
-		text_editor->center_viewport_to_caret();
-	} else {
-		for (int i = bmarks.size() - 1; i >= 0; i--) {
-			int bmark_line = bmarks[i];
-			if (bmark_line < line) {
-				text_editor->unfold_line(bmark_line);
-				text_editor->set_caret_line(bmark_line);
-				text_editor->center_viewport_to_caret();
-				return;
-			}
+	int current_line = text_editor->get_caret_line();
+	int bmark_idx = bmarks.size() - 1;
+	if (current_line > (int)bmarks[0]) {
+		while (bmark_idx >= 0 && bmarks[bmark_idx] >= current_line) {
+			bmark_idx--;
 		}
 	}
+	goto_line_centered(bmarks[bmark_idx]);
 }
 
 void CodeTextEditor::remove_all_bookmarks() {
@@ -2084,7 +2068,7 @@ CodeTextEditor::CodeTextEditor() {
 	add_child(text_editor);
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
+	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
 	Ref<FontVariation> fc = text_editor->get_theme_font(SNAME("font"));
 	if (fc.is_valid()) {
 		switch (ot_mode) {
@@ -2094,7 +2078,7 @@ CodeTextEditor::CodeTextEditor() {
 				fc->set_opentype_features(ftrs);
 			} break;
 			case 2: { // Custom.
-				Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
+				Vector<String> subtag = String(EDITOR_GET("interface/editor/code_font_custom_opentype_features")).split(",");
 				Dictionary ftrs;
 				for (int i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
@@ -2106,7 +2090,7 @@ CodeTextEditor::CodeTextEditor() {
 				}
 				fc->set_opentype_features(ftrs);
 			} break;
-			default: { // Default.
+			default: { // Enabled.
 				Dictionary ftrs;
 				ftrs[TS->name_to_tag("calt")] = 1;
 				fc->set_opentype_features(ftrs);
@@ -2202,7 +2186,7 @@ CodeTextEditor::CodeTextEditor() {
 	code_complete_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));
 
 	font_resize_val = 0;
-	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
+	font_size = EDITOR_GET("interface/editor/code_font_size");
 	font_resize_timer = memnew(Timer);
 	add_child(font_resize_timer);
 	font_resize_timer->set_one_shot(true);

@@ -11,14 +11,8 @@
 #include "../sys/condition.h"
 #include "../sys/ref.h"
 
-#if defined(__WIN32__)
-// -- GODOT start --
-#if !defined(NOMINMAX)
-// -- GODOT end --
+#if defined(__WIN32__) && !defined(NOMINMAX)
 #  define NOMINMAX
-// -- GODOT start --
-#endif
-// -- GODOT end --
 #endif
 
 // We need to define these to avoid implicit linkage against

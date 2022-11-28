@@ -10,13 +10,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="close">
-			<return type="void" />
-			<description>
-				Closes this [MultiplayerPeer], resetting the state to [constant MultiplayerPeer.CONNECTION_CONNECTED].
-				[b]Note:[/b] To make sure remote peers receive a clean close prefer disconnecting clients via [method disconnect_peer].
-			</description>
-		</method>
 		<method name="create_client">
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />
@@ -35,15 +28,6 @@
 			<param index="3" name="tls_certificate" type="X509Certificate" default="null" />
 			<description>
 				Starts a new multiplayer server listening on the given [param port]. You can optionally specify a [param bind_address], and provide a [param tls_key] and [param tls_certificate] to use TLS.
-			</description>
-		</method>
-		<method name="disconnect_peer">
-			<return type="void" />
-			<param index="0" name="id" type="int" />
-			<param index="1" name="code" type="int" default="1000" />
-			<param index="2" name="reason" type="String" default="&quot;&quot;" />
-			<description>
-				Disconnects the peer identified by [code]id[/code] from the server. See [method WebSocketPeer.close] for more information.
 			</description>
 		</method>
 		<method name="get_peer" qualifiers="const">

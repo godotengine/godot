@@ -338,7 +338,6 @@ class Marker3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Marker3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
-	Vector<Vector3> cursor_points;
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;

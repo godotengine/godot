@@ -321,6 +321,11 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 		case WINDOW_VIEW: {
 			return 0; // Not supported.
 		}
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			return eglGetCurrentContext();
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -440,8 +445,8 @@ Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
 	if (r_error != OK) {
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.", "Unable to initialize Video driver");
 	}
@@ -485,7 +490,7 @@ void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
 	rect_changed_callback.callp(reinterpret_cast<const Variant **>(&sizep), 1, ret, ce);
 }
 
-DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
 	// TODO: rendering_driver is broken, change when different drivers are supported again
@@ -614,11 +619,11 @@ MouseButton DisplayServerAndroid::mouse_get_button_state() const {
 	return (MouseButton)Input::get_singleton()->get_mouse_button_mask();
 }
 
-void DisplayServerAndroid::cursor_set_shape(DisplayServer::CursorShape p_shape) {
+void DisplayServerAndroid::_cursor_set_shape_helper(CursorShape p_shape, bool force) {
 	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon()) {
 		return;
 	}
-	if (cursor_shape == p_shape) {
+	if (cursor_shape == p_shape && !force) {
 		return;
 	}
 
@@ -629,8 +634,21 @@ void DisplayServerAndroid::cursor_set_shape(DisplayServer::CursorShape p_shape) 
 	}
 }
 
+void DisplayServerAndroid::cursor_set_shape(DisplayServer::CursorShape p_shape) {
+	_cursor_set_shape_helper(p_shape);
+}
+
 DisplayServer::CursorShape DisplayServerAndroid::cursor_get_shape() const {
 	return cursor_shape;
+}
+
+void DisplayServerAndroid::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	String cursor_path = p_cursor.is_valid() ? p_cursor->get_path() : "";
+	if (!cursor_path.is_empty()) {
+		cursor_path = ProjectSettings::get_singleton()->globalize_path(cursor_path);
+	}
+	OS_Android::get_singleton()->get_godot_java()->get_godot_view()->configure_pointer_icon(android_cursors[cursor_shape], cursor_path, p_hotspot);
+	_cursor_set_shape_helper(p_shape, true);
 }
 
 void DisplayServerAndroid::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
@@ -645,4 +663,24 @@ DisplayServer::VSyncMode DisplayServerAndroid::window_get_vsync_mode(WindowID p_
 #else
 	return DisplayServer::VSYNC_ENABLED;
 #endif
+}
+
+void DisplayServerAndroid::reset_swap_buffers_flag() {
+	swap_buffers_flag = false;
+}
+
+bool DisplayServerAndroid::should_swap_buffers() const {
+	return swap_buffers_flag;
+}
+
+void DisplayServerAndroid::swap_buffers() {
+	swap_buffers_flag = true;
+}
+
+void DisplayServerAndroid::set_native_icon(const String &p_filename) {
+	// NOT SUPPORTED
+}
+
+void DisplayServerAndroid::set_icon(const Ref<Image> &p_icon) {
+	// NOT SUPPORTED
 }

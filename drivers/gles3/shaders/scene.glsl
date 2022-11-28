@@ -16,6 +16,7 @@ DISABLE_LIGHT_OMNI = false
 DISABLE_LIGHT_SPOT = false
 DISABLE_FOG = false
 USE_RADIANCE_MAP = true
+USE_MULTIVIEW = false
 
 
 #[vertex]
@@ -101,7 +102,7 @@ vec3 oct_to_vec3(vec2 e) {
 	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
 	float t = max(-v.z, 0.0);
 	v.xy += t * -sign(v.xy);
-	return v;
+	return normalize(v);
 }
 
 #ifdef USE_INSTANCING
@@ -153,6 +154,15 @@ layout(std140) uniform SceneData { // ubo:2
 }
 scene_data;
 
+#ifdef USE_MULTIVIEW
+layout(std140) uniform MultiviewData { // ubo:8
+	highp mat4 projection_matrix_view[MAX_VIEWS];
+	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
+	highp vec4 eye_offset[MAX_VIEWS];
+}
+multiview_data;
+#endif
+
 uniform highp mat4 world_transform;
 
 #ifdef USE_LIGHTMAP
@@ -187,7 +197,7 @@ out vec3 tangent_interp;
 out vec3 binormal_interp;
 #endif
 
-#if defined(MATERIAL_UNIFORMS_USED)
+#ifdef MATERIAL_UNIFORMS_USED
 
 /* clang-format off */
 layout(std140) uniform MaterialUniforms { // ubo:3
@@ -250,8 +260,14 @@ void main() {
 #if defined(OVERRIDE_POSITION)
 	highp vec4 position;
 #endif
-	highp mat4 projection_matrix = scene_data.projection_matrix;
-	highp mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
+
+#ifdef USE_MULTIVIEW
+	mat4 projection_matrix = multiview_data.projection_matrix_view[ViewIndex];
+	mat4 inv_projection_matrix = multiview_data.inv_projection_matrix_view[ViewIndex];
+#else
+	mat4 projection_matrix = scene_data.projection_matrix;
+	mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
+#endif //USE_MULTIVIEW
 
 #ifdef USE_INSTANCING
 	vec4 instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
@@ -339,7 +355,6 @@ void main() {
 /* clang-format off */
 #[fragment]
 
-
 // Default to SPECULAR_SCHLICK_GGX.
 #if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_TOON)
 #define SPECULAR_SCHLICK_GGX
@@ -351,7 +366,9 @@ void main() {
 #endif
 #endif
 
+#ifndef MODE_RENDER_DEPTH
 #include "tonemap_inc.glsl"
+#endif
 #include "stdlib_inc.glsl"
 
 /* texture unit usage, N is max_texture_unity-N
@@ -413,7 +430,7 @@ layout(std140) uniform GlobalShaderUniformData { //ubo:1
 
 	/* Material Uniforms */
 
-#if defined(MATERIAL_UNIFORMS_USED)
+#ifdef MATERIAL_UNIFORMS_USED
 
 /* clang-format off */
 layout(std140) uniform MaterialUniforms { // ubo:3
@@ -463,6 +480,15 @@ layout(std140) uniform SceneData { // ubo:2
 }
 scene_data;
 
+#ifdef USE_MULTIVIEW
+layout(std140) uniform MultiviewData { // ubo:8
+	highp mat4 projection_matrix_view[MAX_VIEWS];
+	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
+	highp vec4 eye_offset[MAX_VIEWS];
+}
+multiview_data;
+#endif
+
 /* clang-format off */
 
 #GLOBALS
@@ -511,7 +537,7 @@ layout(std140) uniform OmniLightData { // ubo:5
 	LightData omni_lights[MAX_LIGHT_DATA_STRUCTS];
 };
 uniform uint omni_light_indices[MAX_FORWARD_LIGHTS];
-uniform int omni_light_count;
+uniform uint omni_light_count;
 #endif
 
 #ifndef DISABLE_LIGHT_SPOT
@@ -521,7 +547,7 @@ layout(std140) uniform SpotLightData { // ubo:6
 	LightData spot_lights[MAX_LIGHT_DATA_STRUCTS];
 };
 uniform uint spot_light_indices[MAX_FORWARD_LIGHTS];
-uniform int spot_light_count;
+uniform uint spot_light_count;
 #endif
 
 #ifdef USE_ADDITIVE_LIGHTING
@@ -530,8 +556,13 @@ uniform highp samplerCubeShadow positional_shadow; // texunit:-4
 
 #endif // !defined(DISABLE_LIGHT_OMNI) && !defined(DISABLE_LIGHT_SPOT)
 
-uniform highp sampler2D screen_texture; // texunit:-5
+#ifdef USE_MULTIVIEW
+uniform highp sampler2DArray depth_buffer; // texunit:-6
+uniform highp sampler2DArray screen_texture; // texunit:-5
+#else
 uniform highp sampler2D depth_buffer; // texunit:-6
+uniform highp sampler2D screen_texture; // texunit:-5
+#endif
 
 uniform highp mat4 world_transform;
 uniform mediump float opaque_prepass_threshold;
@@ -884,7 +915,12 @@ vec4 fog_process(vec3 vertex) {
 void main() {
 	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
+#ifdef USE_MULTIVIEW
+	vec3 view = -normalize(vertex_interp - multiview_data.eye_offset[ViewIndex].xyz);
+#else
 	vec3 view = -normalize(vertex_interp);
+#endif
+	highp mat4 model_matrix = world_transform;
 	vec3 albedo = vec3(1.0);
 	vec3 backlight = vec3(0.0);
 	vec4 transmittance_color = vec4(0.0, 0.0, 0.0, 1.0);
@@ -1096,9 +1132,15 @@ void main() {
 #if defined(CUSTOM_IRRADIANCE_USED)
 	ambient_light = mix(ambient_light, custom_irradiance.rgb, custom_irradiance.a);
 #endif // CUSTOM_IRRADIANCE_USED
-	ambient_light *= albedo.rgb;
 
-	ambient_light *= ao;
+	{
+#if defined(AMBIENT_LIGHT_DISABLED)
+		ambient_light = vec3(0.0, 0.0, 0.0);
+#else
+		ambient_light *= albedo.rgb;
+		ambient_light *= ao;
+#endif // AMBIENT_LIGHT_DISABLED
+	}
 
 	// convert ao to direct light ao
 	ao = mix(1.0, ao, ao_light_affect);
@@ -1149,7 +1191,7 @@ void main() {
 #endif //!DISABLE_LIGHT_DIRECTIONAL
 
 #ifndef DISABLE_LIGHT_OMNI
-	for (int i = 0; i < MAX_FORWARD_LIGHTS; i++) {
+	for (uint i = 0u; i < MAX_FORWARD_LIGHTS; i++) {
 		if (i >= omni_light_count) {
 			break;
 		}
@@ -1172,7 +1214,7 @@ void main() {
 #endif // !DISABLE_LIGHT_OMNI
 
 #ifndef DISABLE_LIGHT_SPOT
-	for (int i = 0; i < MAX_FORWARD_LIGHTS; i++) {
+	for (uint i = 0u; i < MAX_FORWARD_LIGHTS; i++) {
 		if (i >= spot_light_count) {
 			break;
 		}

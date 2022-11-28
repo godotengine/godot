@@ -34,6 +34,7 @@
 #include "lipo.h"
 #include "macho.h"
 
+#include "core/io/image_loader.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -116,7 +117,8 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.icns"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_category", PROPERTY_HINT_ENUM, "Business,Developer-tools,Education,Entertainment,Finance,Games,Action-games,Adventure-games,Arcade-games,Board-games,Card-games,Casino-games,Dice-games,Educational-games,Family-games,Kids-games,Music-games,Puzzle-games,Racing-games,Role-playing-games,Simulation-games,Sports-games,Strategy-games,Trivia-games,Word-games,Graphics-design,Healthcare-fitness,Lifestyle,Medical,Music,News,Photography,Productivity,Reference,Social-networking,Sports,Travel,Utilities,Video,Weather"), "Games"));
@@ -268,7 +270,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, 
 	memcpy(&p_dest.write[ofs], result.ptr(), res_size);
 }
 
-void EditorExportPlatformMacOS::_make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
+void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
 	Ref<ImageTexture> it = memnew(ImageTexture);
 
 	Vector<uint8_t> data;
@@ -302,7 +304,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<Image> &p_icon, Vector<uint
 	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
 		Ref<Image> copy = p_icon; // does this make sense? doesn't this just increase the reference count instead of making a copy? Do we even need a copy?
 		copy->convert(Image::FORMAT_RGBA8);
-		copy->resize(icon_infos[i].size, icon_infos[i].size);
+		copy->resize(icon_infos[i].size, icon_infos[i].size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
 
 		if (icon_infos[i].is_png) {
 			// Encode PNG icon.
@@ -383,7 +385,7 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 		if (lines[i].find("$binary") != -1) {
 			strnew += lines[i].replace("$binary", p_binary) + "\n";
 		} else if (lines[i].find("$name") != -1) {
-			strnew += lines[i].replace("$name", ProjectSettings::get_singleton()->get("application/config/name")) + "\n";
+			strnew += lines[i].replace("$name", GLOBAL_GET("application/config/name")) + "\n";
 		} else if (lines[i].find("$bundle_identifier") != -1) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 		} else if (lines[i].find("$short_version") != -1) {
@@ -473,7 +475,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 		case 1: { // "rcodesign"
 			print_verbose("using rcodesign notarization...");
 
-			String rcodesign = EditorSettings::get_singleton()->get("export/macos/rcodesign").operator String();
+			String rcodesign = EDITOR_GET("export/macos/rcodesign").operator String();
 			if (rcodesign.is_empty()) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("rcodesign path is not set. Configure rcodesign path in the Editor Settings (Export > macOS > rcodesign)."));
 				return Error::FAILED;
@@ -636,7 +638,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 		case 2: { // "rcodesign"
 			print_verbose("using rcodesign codesign...");
 
-			String rcodesign = EditorSettings::get_singleton()->get("export/macos/rcodesign").operator String();
+			String rcodesign = EDITOR_GET("export/macos/rcodesign").operator String();
 			if (rcodesign.is_empty()) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Xrcodesign path is not set. Configure rcodesign path in the Editor Settings (Export > macOS > rcodesign)."));
 				return Error::FAILED;
@@ -726,7 +728,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 			String str;
 			int exitcode = 0;
 
-			Error err = OS::get_singleton()->execute("codesign", args, &str, nullptr, true);
+			Error err = OS::get_singleton()->execute("codesign", args, &str, &exitcode, true);
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start codesign executable, make sure Xcode command line tools are installed."));
 				return err;
@@ -982,8 +984,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	String binary_to_use = "godot_macos_" + String(p_debug ? "debug" : "release") + "." + architecture;
 
 	String pkg_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
-		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	if (String(GLOBAL_GET("application/config/name")) != "") {
+		pkg_name = String(GLOBAL_GET("application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
 	}
@@ -1073,7 +1075,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 	}
 
-	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
+	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
 	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
 	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
 	Dictionary location_usage_descriptions = p_preset->get("privacy/location_usage_description_localized");
@@ -1087,7 +1089,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	Dictionary removable_volumes_usage_descriptions = p_preset->get("privacy/removable_volumes_usage_description_localized");
 	Dictionary copyrights = p_preset->get("application/copyright_localized");
 
-	Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+	Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
 	if (translations.size() > 0) {
 		{
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
@@ -1095,7 +1097,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + GLOBAL_GET("application/config/name").operator String() + "\";");
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
 				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
 			}
@@ -1257,7 +1259,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			if (p_preset->get("application/icon") != "") {
 				iconpath = p_preset->get("application/icon");
 			} else {
-				iconpath = ProjectSettings::get_singleton()->get("application/config/icon");
+				iconpath = GLOBAL_GET("application/config/icon");
 			}
 
 			if (!iconpath.is_empty()) {
@@ -1270,9 +1272,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				} else {
 					Ref<Image> icon;
 					icon.instantiate();
-					icon->load(iconpath);
-					if (!icon->is_empty()) {
-						_make_icon(icon, data);
+					err = ImageLoader::load_image(iconpath, icon);
+					if (err == OK && !icon->is_empty()) {
+						_make_icon(p_preset, icon, data);
 					}
 				}
 			}
@@ -1852,7 +1854,7 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 				valid = false;
 			}
 
-			String rcodesign = EditorSettings::get_singleton()->get("export/macos/rcodesign").operator String();
+			String rcodesign = EDITOR_GET("export/macos/rcodesign").operator String();
 			if (rcodesign.is_empty()) {
 				err += TTR("Notarization: rcodesign path is not set. Configure rcodesign path in the Editor Settings (Export > macOS > rcodesign).") + "\n";
 				valid = false;
@@ -1875,7 +1877,7 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 				valid = false;
 			}
 		} else if (codesign_tool == 2) {
-			String rcodesign = EditorSettings::get_singleton()->get("export/macos/rcodesign").operator String();
+			String rcodesign = EDITOR_GET("export/macos/rcodesign").operator String();
 			if (rcodesign.is_empty()) {
 				err += TTR("Code signing: rcodesign path is not set. Configure rcodesign path in the Editor Settings (Export > macOS > rcodesign).") + "\n";
 				valid = false;

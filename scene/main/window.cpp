@@ -587,6 +587,18 @@ bool Window::is_visible() const {
 }
 
 void Window::_update_window_size() {
+	// Force window to respect size limitations of rendering server
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	if (rendering_server) {
+		Size2i max_window_size = rendering_server->get_maximum_viewport_size();
+
+		if (max_window_size != Size2i()) {
+			size = size.min(max_window_size);
+			min_size = min_size.min(max_window_size);
+			max_size = max_size.min(max_window_size);
+		}
+	}
+
 	Size2i size_limit;
 	if (wrap_controls) {
 		size_limit = get_contents_minimum_size();
@@ -1621,7 +1633,7 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 }
 
 Transform2D Window::get_screen_transform() const {
-	Transform2D embedder_transform = Transform2D();
+	Transform2D embedder_transform;
 	if (_get_embedder()) {
 		embedder_transform.translate_local(get_position());
 		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;
@@ -1828,6 +1840,11 @@ void Window::_bind_methods() {
 }
 
 Window::Window() {
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	if (rendering_server) {
+		max_size = rendering_server->get_maximum_viewport_size();
+	}
+
 	theme_owner = memnew(ThemeOwner);
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }

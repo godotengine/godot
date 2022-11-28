@@ -92,7 +92,7 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 	}
 }
 
-void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants) {
+void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_feedback_count, const Feedback *p_feedback, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants) {
 	name = p_name;
 
 	if (p_vertex_code) {
@@ -118,6 +118,8 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	}
 	variant_defines = p_variants;
 	variant_count = p_variant_count;
+	feedbacks = p_feedback;
+	feedback_count = p_feedback_count;
 
 	StringBuilder tohash;
 	/*
@@ -142,7 +144,7 @@ RID ShaderGLES3::version_create() {
 	return version_owner.make_rid(version);
 }
 
-void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template, uint64_t p_specialization) {
+void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization) {
 #ifdef GLES_OVER_GL
 	builder.append("#version 330\n");
 	builder.append("#define USE_GLES_OVER_GL\n");
@@ -171,6 +173,24 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	}
 	builder.append("\n"); //make sure defines begin at newline
 
+	// Insert multiview extension loading, because it needs to appear before
+	// any non-preprocessor code (like the "precision highp..." lines below).
+	builder.append("#ifdef USE_MULTIVIEW\n");
+	builder.append("#if defined(GL_OVR_multiview2)\n");
+	builder.append("#extension GL_OVR_multiview2 : require\n");
+	builder.append("#elif defined(GL_OVR_multiview)\n");
+	builder.append("#extension GL_OVR_multiview : require\n");
+	builder.append("#endif\n");
+	if (p_stage_type == StageType::STAGE_TYPE_VERTEX) {
+		builder.append("layout(num_views=2) in;\n");
+	}
+	builder.append("#define ViewIndex gl_ViewID_OVR\n");
+	builder.append("#define MAX_VIEWS 2\n");
+	builder.append("#else\n");
+	builder.append("#define ViewIndex 0\n");
+	builder.append("#define MAX_VIEWS 1\n");
+	builder.append("#endif\n");
+
 	// Default to highp precision unless specified otherwise.
 	builder.append("precision highp float;\n");
 	builder.append("precision highp int;\n");
@@ -180,8 +200,9 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	builder.append("precision highp sampler2DArray;\n");
 #endif
 
-	for (uint32_t i = 0; i < p_template.chunks.size(); i++) {
-		const StageTemplate::Chunk &chunk = p_template.chunks[i];
+	const StageTemplate &stage_template = stage_templates[p_stage_type];
+	for (uint32_t i = 0; i < stage_template.chunks.size(); i++) {
+		const StageTemplate::Chunk &chunk = stage_template.chunks[i];
 		switch (chunk.type) {
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
 				builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
@@ -224,7 +245,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	//vertex stage
 	{
 		StringBuilder builder;
-		_build_variant_code(builder, p_variant, p_version, stage_templates[STAGE_TYPE_VERTEX], p_specialization);
+		_build_variant_code(builder, p_variant, p_version, STAGE_TYPE_VERTEX, p_specialization);
 
 		spec.vert_id = glCreateShader(GL_VERTEX_SHADER);
 		String builder_string = builder.as_string();
@@ -272,7 +293,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	//fragment stage
 	{
 		StringBuilder builder;
-		_build_variant_code(builder, p_variant, p_version, stage_templates[STAGE_TYPE_FRAGMENT], p_specialization);
+		_build_variant_code(builder, p_variant, p_version, STAGE_TYPE_FRAGMENT, p_specialization);
 
 		spec.frag_id = glCreateShader(GL_FRAGMENT_SHADER);
 		String builder_string = builder.as_string();
@@ -320,9 +341,21 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	glAttachShader(spec.id, spec.frag_id);
 	glAttachShader(spec.id, spec.vert_id);
 
-	//for (int i = 0; i < attribute_pair_count; i++) {
-	//	glBindAttribLocation(v.id, attribute_pairs[i].index, attribute_pairs[i].name);
-	//}
+	// If feedback exists, set it up.
+
+	if (feedback_count) {
+		Vector<const char *> feedback;
+		for (int i = 0; i < feedback_count; i++) {
+			if (feedbacks[i].specialization == 0 || (feedbacks[i].specialization & p_specialization)) {
+				// Specialization for this feedback is enabled
+				feedback.push_back(feedbacks[i].name);
+			}
+		}
+
+		if (feedback.size()) {
+			glTransformFeedbackVaryings(spec.id, feedback.size(), feedback.ptr(), GL_INTERLEAVED_ATTRIBS);
+		}
+	}
 
 	glLinkProgram(spec.id);
 
@@ -413,7 +446,7 @@ RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_ver
 
 		{
 			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_VERTEX], specialization_default_mask);
+			_build_variant_code(builder, i, version, STAGE_TYPE_VERTEX, specialization_default_mask);
 
 			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "vertex";
@@ -425,7 +458,7 @@ RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_ver
 		//fragment stage
 		{
 			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_FRAGMENT], specialization_default_mask);
+			_build_variant_code(builder, i, version, STAGE_TYPE_FRAGMENT, specialization_default_mask);
 
 			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "fragment";

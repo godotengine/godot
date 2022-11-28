@@ -55,18 +55,15 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 	 */
 	var panningAndScalingEnabled = false
 
-	private var doubleTapInProgress = false
+	private var nextDownIsDoubleTap = false
 	private var dragInProgress = false
 	private var scaleInProgress = false
 	private var contextClickInProgress = false
 	private var pointerCaptureInProgress = false
 
 	override fun onDown(event: MotionEvent): Boolean {
-		// Don't send / register a down event while we're in the middle of a double-tap
-		if (!doubleTapInProgress) {
-			// Send the down event
-			GodotInputHandler.handleMotionEvent(event)
-		}
+		GodotInputHandler.handleMotionEvent(event.source, MotionEvent.ACTION_DOWN, event.buttonState, event.x, event.y, nextDownIsDoubleTap)
+		nextDownIsDoubleTap = false
 		return true
 	}
 
@@ -80,7 +77,7 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 	}
 
 	private fun contextClickRouter(event: MotionEvent) {
-		if (scaleInProgress) {
+		if (scaleInProgress || nextDownIsDoubleTap) {
 			return
 		}
 
@@ -137,40 +134,24 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 	}
 
 	private fun onActionUp(event: MotionEvent): Boolean {
+		if (event.actionMasked == MotionEvent.ACTION_CANCEL && pointerCaptureInProgress) {
+			// Don't dispatch the ACTION_CANCEL while a capture is in progress
+			return true
+		}
+
 		val sourceMouseRelative = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			event.isFromSource(InputDevice.SOURCE_MOUSE_RELATIVE)
 		} else {
 			false
 		}
-		when {
-			pointerCaptureInProgress -> {
-				return if (event.actionMasked == MotionEvent.ACTION_CANCEL) {
-					// Don't dispatch the ACTION_CANCEL while a capture is in progress
-					true
-				} else {
-					GodotInputHandler.handleMouseEvent(
-						MotionEvent.ACTION_UP,
-						event.buttonState,
-						event.x,
-						event.y,
-						0f,
-						0f,
-						false,
-						sourceMouseRelative
-					)
-					pointerCaptureInProgress = false
-					true
-				}
-			}
-			dragInProgress -> {
-				GodotInputHandler.handleMotionEvent(event)
-				dragInProgress = false
-				return true
-			}
-			contextClickInProgress -> {
+
+		if (pointerCaptureInProgress || dragInProgress || contextClickInProgress) {
+			if (contextClickInProgress || GodotInputHandler.isMouseEvent(event)) {
+				// This may be an ACTION_BUTTON_RELEASE event which we don't handle,
+				// so we convert it to an ACTION_UP event.
 				GodotInputHandler.handleMouseEvent(
-					event.actionMasked,
-					0,
+					MotionEvent.ACTION_UP,
+					event.buttonState,
 					event.x,
 					event.y,
 					0f,
@@ -178,11 +159,16 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 					false,
 					sourceMouseRelative
 				)
-				contextClickInProgress = false
-				return true
+			} else {
+				GodotInputHandler.handleTouchEvent(event)
 			}
-			else -> return false
+			pointerCaptureInProgress = false
+			dragInProgress = false
+			contextClickInProgress = false
+			return true
 		}
+
+		return false
 	}
 
 	private fun onActionMove(event: MotionEvent): Boolean {
@@ -209,24 +195,14 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 
 	override fun onDoubleTapEvent(event: MotionEvent): Boolean {
 		if (event.actionMasked == MotionEvent.ACTION_UP) {
-			doubleTapInProgress = false
+			nextDownIsDoubleTap = false
+			GodotInputHandler.handleMotionEvent(event)
 		}
 		return true
 	}
 
 	override fun onDoubleTap(event: MotionEvent): Boolean {
-		doubleTapInProgress = true
-		val x = event.x
-		val y = event.y
-		val buttonMask =
-			if (GodotInputHandler.isMouseEvent(event)) {
-				event.buttonState
-			} else {
-				MotionEvent.BUTTON_PRIMARY
-			}
-		GodotInputHandler.handleMouseEvent(MotionEvent.ACTION_DOWN, buttonMask, x, y, true)
-		GodotInputHandler.handleMouseEvent(MotionEvent.ACTION_UP, 0, x, y, false)
-
+		nextDownIsDoubleTap = true
 		return true
 	}
 
@@ -255,7 +231,7 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 
 		val x = terminusEvent.x
 		val y = terminusEvent.y
-		if (terminusEvent.pointerCount >= 2 && panningAndScalingEnabled) {
+		if (terminusEvent.pointerCount >= 2 && panningAndScalingEnabled && !pointerCaptureInProgress) {
 			GodotLib.pan(x, y, distanceX / 5f, distanceY / 5f)
 		} else {
 			GodotInputHandler.handleMotionEvent(terminusEvent)
@@ -264,7 +240,7 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 	}
 
 	override fun onScale(detector: ScaleGestureDetector?): Boolean {
-		if (detector == null || !panningAndScalingEnabled) {
+		if (detector == null || !panningAndScalingEnabled || pointerCaptureInProgress) {
 			return false
 		}
 		GodotLib.magnify(
@@ -276,7 +252,7 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 	}
 
 	override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
-		if (detector == null || !panningAndScalingEnabled) {
+		if (detector == null || !panningAndScalingEnabled || pointerCaptureInProgress) {
 			return false
 		}
 		scaleInProgress = true

@@ -208,7 +208,7 @@
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high-resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
 		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
-			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
+			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If a custom directory name is defined, this name will be appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
@@ -235,7 +235,8 @@
 			[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/code] will still be read to override the project settings.
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
+			If [code]true[/code], the project will save user data to its own user directory. If [member application/config/custom_user_dir_name] is empty, [code]&lt;OS user data directory&gt;/&lt;project name&gt;[/code] directory will be used. If [code]false[/code], the project will save user data to [code]&lt;OS user data directory&gt;/Godot/app_userdata/&lt;project name&gt;[/code].
+			See also [url=$DOCS_URL/tutorials/io/data_paths.html#accessing-persistent-user-data-user]File paths in Godot projects[/url]. This setting is only effective on desktop platforms.
 		</member>
 		<member name="application/config/use_hidden_project_data_directory" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the project will use a hidden directory ([code].godot[/code]) for storing project-specific data (metadata, shader cache, etc.).
@@ -251,7 +252,7 @@
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] command line argument. See also [member application/run/disable_stderr].
+			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. See also [member application/run/disable_stderr].
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
@@ -297,7 +298,7 @@
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
 			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
@@ -317,11 +318,13 @@
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
 		</member>
-		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="1.0">
-			The base strength of the panning effect for all AudioStreamPlayer2D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength].
+		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="0.5">
+			The base strength of the panning effect for all [AudioStreamPlayer2D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
+			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
 		</member>
-		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="1.0">
-			The base strength of the panning effect for all AudioStreamPlayer3D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength].
+		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="0.5">
+			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
+			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
 		</member>
 		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
@@ -340,6 +343,9 @@
 		</member>
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="" default="27">
 			Largest size limit (in power of 2) allowed when compressing using long-distance matching with Zstandard. Higher values can result in better compression, but will require more memory when compressing and decompressing.
+		</member>
+		<member name="debug/disable_touch" type="bool" setter="" getter="" default="false">
+			Disable touch input. Only has effect on iOS.
 		</member>
 		<member name="debug/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], logs all output to files.
@@ -395,7 +401,7 @@
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
 		</member>
-		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="1">
+		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
@@ -480,7 +486,7 @@
 			Print GPU profile information to standard output every second. This includes how long each frame takes the GPU to render on average, broken down into different steps of the render pipeline, such as CanvasItems, shadows, glow, etc.
 		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
-			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] command line argument, even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
+			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
 		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
@@ -552,7 +558,7 @@
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], allows HiDPI display on Windows, macOS, Android, iOS and Web. If [code]false[/code], the platform's low-DPI fallback will be used on HiDPI displays, which causes the window to be displayed in a blurry or pixelated manner (and can cause various window management bugs). Therefore, it is recommended to make your project scale to [url=$DOCS_URL/tutorials/viewports/multiple_resolutions.html]multiple resolutions[/url] instead of disabling this setting.
+			If [code]true[/code], allows HiDPI display on Windows, macOS, Android, iOS and Web. If [code]false[/code], the platform's low-DPI fallback will be used on HiDPI displays, which causes the window to be displayed in a blurry or pixelated manner (and can cause various window management bugs). Therefore, it is recommended to make your project scale to [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] instead of disabling this setting.
 			[b]Note:[/b] This setting has no effect on Linux as DPI-awareness fallbacks are not supported there.
 		</member>
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
@@ -565,8 +571,18 @@
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
 			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
 		</member>
+		<member name="display/window/ios/allow_high_refresh_rate" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], iOS devices that support high refresh rate/"ProMotion" will be allowed to render at up to 120 frames per second.
+		</member>
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
+		</member>
+		<member name="display/window/ios/hide_status_bar" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the status bar is hidden while the app is running.
+		</member>
+		<member name="display/window/ios/suppress_ui_gesture" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], it will require two swipes to access iOS UI that uses gestures.
+			[b]Note:[/b] This setting has no effect on the home indicator if [code]hide_home_indicator[/code] is [code]true[/code].
 		</member>
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it. See also [member display/window/size/transparent] and [member rendering/transparent_background].
@@ -623,7 +639,7 @@
 		</member>
 		<member name="editor/movie_writer/fps" type="int" setter="" getter="" default="60">
 			The number of frames per second to record in the video when writing a movie. Simulation speed will adjust to always match the specified framerate, which means the engine will appear to run slower at higher [member editor/movie_writer/fps] values. Certain FPS values will require you to adjust [member editor/movie_writer/mix_rate] to prevent audio from desynchronizing over time.
-			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument.
+			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="editor/movie_writer/mix_rate" type="int" setter="" getter="" default="48000">
 			The audio mix rate to use in the recorded audio when writing a movie (in Hz). This can be different from [member audio/driver/mix_rate], but this value must be divisible by [member editor/movie_writer/fps] to prevent audio from desynchronizing over time.
@@ -687,7 +703,8 @@
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
 		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
-			If [code]true[/code], swaps Cancel and OK buttons in dialogs on Windows and UWP to follow interface conventions.
+			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows and UWP to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
+			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 			Maximum undo/redo history size for [TextEdit] fields.
@@ -715,14 +732,14 @@
 			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
 		</member>
 		<member name="gui/theme/default_font_subpixel_positioning" type="int" setter="" getter="" default="1">
-			Default font glyph sub-pixel positioning mode. See [member FontFile.subpixel_positioning].
+			Default font glyph subpixel positioning mode. See [member FontFile.subpixel_positioning].
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
-			The default scale factor for [Control]s, when not overriden by a [Theme].
+			The default scale factor for [Control]s, when not overridden by a [Theme].
 			[b]Note:[/b] This property is only read when the project starts. To change the default scale at runtime, set [member ThemeDB.fallback_base_scale] instead.
 		</member>
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
-			LCD sub-pixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
+			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).
@@ -822,6 +839,14 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to swap input direction, i.e. change between left-to-right to right-to-left modes. Affects text-editting controls ([LineEdit], [TextEdit]).
+		</member>
+		<member name="input/ui_text_add_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
+			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret and selects the next occurrence.
+			If no selection is currently active with the last caret in text fields, selects the word currently under the caret.
+			The action can be performed sequentially for all occurrences of the selection of the last caret and for all existing carets.
+			The viewport is adjusted to the latest newly added caret.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_backspace" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to delete the character before the text cursor.
@@ -840,6 +865,18 @@
 		</member>
 		<member name="input/ui_text_backspace_word.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to delete a word.
+		</member>
+		<member name="input/ui_text_caret_add_above" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to add an additional caret above every caret of a text
+		</member>
+		<member name="input/ui_text_caret_add_above.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to add a caret above every caret
+		</member>
+		<member name="input/ui_text_caret_add_below" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to add an additional caret below every caret of a text
+		</member>
+		<member name="input/ui_text_caret_add_below.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to add a caret below every caret
 		</member>
 		<member name="input/ui_text_caret_document_end" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move the text cursor the the end of the text.
@@ -906,6 +943,11 @@
 		</member>
 		<member name="input/ui_text_caret_word_right.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to move the text cursor forward one word.
+		</member>
+		<member name="input/ui_text_clear_carets_and_selection" type="Dictionary" setter="" getter="">
+			If there's only one caret active and with a selection, clears the selection.
+			In case there's more than one caret active, removes the secondary carets and clears their selections.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to accept an autocompetion hint.
@@ -977,14 +1019,14 @@
 		</member>
 		<member name="input/ui_text_select_word_under_caret" type="Dictionary" setter="" getter="">
 			If no selection is currently active, selects the word currently under the caret in text fields. If a selection is currently active, deselects the current selection.
-			[b]Note:[/b] Currently, this is only implemented in [TextEdit], not [LineEdit].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_submit" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to submit a text field.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_toggle_insert_mode" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to toggle [i]instert mode[/i] in a text field. While in insert mode, inserting new text overrides the character after the cursor, unless the next character is a new line.
+			Default [InputEventAction] to toggle [i]insert mode[/i] in a text field. While in insert mode, inserting new text overrides the character after the cursor, unless the next character is a new line.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
@@ -1003,7 +1045,7 @@
 		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
@@ -1068,8 +1110,8 @@
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
 			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] command line argument.
-			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
@@ -1773,6 +1815,10 @@
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.
 		</member>
+		<member name="physics/common/max_physics_steps_per_frame" type="int" setter="" getter="" default="8">
+			Controls the maximum number of physics steps that can be simulated each rendered frame. The default value is tuned to avoid "spiral of death" situations where expensive physics simulations trigger more expensive simulations indefinitely. However, the game will appear to slow down if the rendering FPS is less than [code]1 / max_physics_steps_per_frame[/code] of [member physics/common/physics_ticks_per_second]. This occurs even if [code]delta[/code] is consistently used in physics calculations. To avoid this, increase [member physics/common/max_physics_steps_per_frame] if you have increased [member physics/common/physics_ticks_per_second] significantly above its default value.
+			[b]Note:[/b] This property is only read when the project starts. To change the maximum number of simulated physics steps per frame at runtime, set [member Engine.max_physics_steps_per_frame] instead.
+		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
@@ -1781,7 +1827,7 @@
 		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member application/run/max_fps].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
-			[b]Note:[/b] Only 8 physics ticks may be simulated per rendered frame at most. If more than 8 physics ticks have to be simulated per rendered frame to keep up with rendering, the game will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended not to increase [member physics/common/physics_ticks_per_second] above 240. Otherwise, the game will slow down when the rendering framerate goes below 30 FPS.
+			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 		</member>
@@ -1804,7 +1850,9 @@
 			Another way to combat specular aliasing is to enable [member rendering/anti_aliasing/screen_space_roughness_limiter/enabled].
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses a fast post-processing dithering filter on the default screen [Viewport] to make banding significantly less visible. In some cases, the dithering pattern may be slightly noticable. Note that this will make losslessly compressed (PNG etc.) screenshots larger.
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS].
+			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
+			[b]Note:[/b] This property is only read when the project starts. To set debanding at run-time, set [member Viewport.use_debanding] on the root [Viewport] instead.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
 			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
@@ -1854,7 +1902,7 @@
 			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
 		</member>
 		<member name="rendering/environment/ssao/adaptive_target" type="float" setter="" getter="" default="0.5">
-			Quality target to use when [member rendering/environment/ssao/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
+			Quality target to use when [member rendering/environment/ssao/quality] is set to [code]Ultra[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]Medium[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
 		</member>
 		<member name="rendering/environment/ssao/blur_passes" type="int" setter="" getter="" default="2">
 			Number of blur passes to use when computing screen-space ambient occlusion. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
@@ -1869,10 +1917,10 @@
 			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details. If [code]false[/code], screen-space ambient occlusion will be rendered at full size.
 		</member>
 		<member name="rendering/environment/ssao/quality" type="int" setter="" getter="" default="2">
-			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
+			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]Ultra[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
 		</member>
 		<member name="rendering/environment/ssil/adaptive_target" type="float" setter="" getter="" default="0.5">
-			Quality target to use when [member rendering/environment/ssil/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance. When using the adaptive target, the performance cost scales with the complexity of the scene.
+			Quality target to use when [member rendering/environment/ssil/quality] is set to [code]Ultra[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]Medium[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance. When using the adaptive target, the performance cost scales with the complexity of the scene.
 		</member>
 		<member name="rendering/environment/ssil/blur_passes" type="int" setter="" getter="" default="4">
 			Number of blur passes to use when computing screen-space indirect lighting. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
@@ -1887,7 +1935,7 @@
 			If [code]true[/code], screen-space indirect lighting will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details and may result in some objects appearing to glow at their edges.
 		</member>
 		<member name="rendering/environment/ssil/quality" type="int" setter="" getter="" default="2">
-			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
+			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]Ultra[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
 		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
 			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
@@ -1975,6 +2023,9 @@
 		</member>
 		<member name="rendering/lightmapping/bake_quality/ultra_quality_ray_count" type="int" setter="" getter="" default="1024">
 			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_ULTRA].
+		</member>
+		<member name="rendering/lightmapping/primitive_meshes/texel_size" type="float" setter="" getter="" default="0.2">
+			The texel_size that is used to calculate the [member Mesh.lightmap_size_hint] on [PrimitiveMesh] resources if [member PrimitiveMesh.add_uv2] is enabled.
 		</member>
 		<member name="rendering/lightmapping/probe_capture/update_speed" type="float" setter="" getter="" default="15">
 			The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area.
@@ -2186,9 +2237,6 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
-		<member name="rendering/textures/lossless_compression/webp_compression_level" type="int" setter="" getter="" default="2">
-			The default compression level for lossless WebP. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. Supported values are 0 to 9. Note that compression levels above 6 are very slow and offer very little savings.
-		</member>
 		<member name="rendering/textures/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the Vulkan renderer.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
@@ -2205,6 +2253,12 @@
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
+		<member name="rendering/textures/webp_compression/compression_method" type="int" setter="" getter="" default="2">
+			The default compression method for WebP. Affects both lossy and lossless WebP. A higher value results in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression method. Supported values are 0 to 6. Note that compression methods above 4 are very slow and offer very little savings.
+		</member>
+		<member name="rendering/textures/webp_compression/lossless_compression_factor" type="float" setter="" getter="" default="25">
+			The default compression factor for lossless WebP. Decompression speed is mostly unaffected by the compression factor. Supported values are 0 to 100.
+		</member>
 		<member name="rendering/transparent_background" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables [member Viewport.transparent_bg] on the root viewport. This allows per-pixel transparency to be effective after also enabling [member display/window/size/transparent] and [member display/window/per_pixel_transparency/allowed].
 		</member>
@@ -2212,7 +2266,20 @@
 			Set the default Variable Rate Shading (VRS) mode for the main viewport. See [member Viewport.vrs_mode] to change this at runtime, and [enum Viewport.VRSMode] for possible values.
 		</member>
 		<member name="rendering/vrs/texture" type="String" setter="" getter="" default="&quot;&quot;">
-			If [member rendering/vrs/mode] is set to texture, this is the path to default texture loaded as the VRS image.
+			If [member rendering/vrs/mode] is set to [b]Texture[/b], this is the path to default texture loaded as the VRS image.
+			The texture [i]must[/i] use a lossless compression format so that colors can be matched precisely. The following VRS densities are mapped to various colors, with brighter colors representing a lower level of shading precision:
+			[codeblock]
+			- 1x1 = rgb(0, 0, 0)     - #000000
+			- 1x2 = rgb(0, 85, 0)    - #005500
+			- 2x1 = rgb(85, 0, 0)    - #550000
+			- 2x2 = rgb(85, 85, 0)   - #555500
+			- 2x4 = rgb(85, 170, 0)  - #55aa00
+			- 4x2 = rgb(170, 85, 0)  - #aa5500
+			- 4x4 = rgb(170, 170, 0) - #aaaa00
+			- 4x8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
+			- 8x4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
+			- 8x8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
+			[/codeblock]
 		</member>
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
 		</member>
@@ -2224,7 +2291,7 @@
 			Action map configuration to load by default.
 		</member>
 		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
-			If [code]true[/code] Godot will setup and initialise OpenXR on startup.
+			If [code]true[/code] Godot will setup and initialize OpenXR on startup.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.

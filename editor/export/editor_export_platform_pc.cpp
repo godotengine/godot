@@ -146,9 +146,16 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	String wrapper_template_path = template_path.get_basename() + "_console.exe";
+	int con_wrapper_mode = p_preset->get("debug/export_console_script");
+	bool copy_wrapper = (con_wrapper_mode == 1 && p_debug) || (con_wrapper_mode == 2);
+
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->make_dir_recursive(p_path.get_base_dir());
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
+	if (err == OK && copy_wrapper && FileAccess::exists(wrapper_template_path)) {
+		err = da->copy(wrapper_template_path, p_path.get_basename() + ".console.exe", get_chmod_flags());
+	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
 	}

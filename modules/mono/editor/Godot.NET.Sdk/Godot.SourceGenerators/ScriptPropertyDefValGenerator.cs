@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -66,14 +67,14 @@ namespace Godot.SourceGenerators
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedName() :
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
 
-            string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
-                                + "_ScriptPropertyDefVal_Generated";
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
+                                + "_ScriptPropertyDefVal.generated";
 
             var source = new StringBuilder();
 
@@ -163,14 +164,69 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                // TODO: Detect default value from simple property getters (currently we only detect from initializers)
+                var propertyDeclarationSyntax = property.DeclaringSyntaxReferences
+                    .Select(r => r.GetSyntax() as PropertyDeclarationSyntax).FirstOrDefault();
 
-                EqualsValueClauseSyntax? initializer = property.DeclaringSyntaxReferences
-                    .Select(r => r.GetSyntax() as PropertyDeclarationSyntax)
-                    .Select(s => s?.Initializer ?? null)
-                    .FirstOrDefault();
+                // Fully qualify the value to avoid issues with namespaces.
+                string? value = null;
+                if (propertyDeclarationSyntax != null)
+                {
+                    if (propertyDeclarationSyntax.Initializer != null)
+                    {
+                        var sm = context.Compilation.GetSemanticModel(propertyDeclarationSyntax.Initializer.SyntaxTree);
+                        value = propertyDeclarationSyntax.Initializer.Value.FullQualifiedSyntax(sm);
+                    }
+                    else
+                    {
+                        var propertyGet = propertyDeclarationSyntax.AccessorList?.Accessors.Where(a => a.Keyword.IsKind(SyntaxKind.GetKeyword)).FirstOrDefault();
+                        if (propertyGet != null)
+                        {
+                            if (propertyGet.ExpressionBody != null)
+                            {
+                                if (propertyGet.ExpressionBody.Expression is IdentifierNameSyntax identifierNameSyntax)
+                                {
+                                    var sm = context.Compilation.GetSemanticModel(identifierNameSyntax.SyntaxTree);
+                                    var fieldSymbol = sm.GetSymbolInfo(identifierNameSyntax).Symbol as IFieldSymbol;
+                                    EqualsValueClauseSyntax? initializer = fieldSymbol?.DeclaringSyntaxReferences
+                                        .Select(r => r.GetSyntax())
+                                        .OfType<VariableDeclaratorSyntax>()
+                                        .Select(s => s.Initializer)
+                                        .FirstOrDefault(i => i != null);
 
-                string? value = initializer?.Value.ToString();
+                                    if (initializer != null)
+                                    {
+                                        sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                                        value = initializer.Value.FullQualifiedSyntax(sm);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var returns = propertyGet.DescendantNodes().OfType<ReturnStatementSyntax>();
+                                if (returns.Count() == 1)
+                                {// Generate only single return
+                                    var returnStatementSyntax = returns.Single();
+                                    if (returnStatementSyntax.Expression is IdentifierNameSyntax identifierNameSyntax)
+                                    {
+                                        var sm = context.Compilation.GetSemanticModel(identifierNameSyntax.SyntaxTree);
+                                        var fieldSymbol = sm.GetSymbolInfo(identifierNameSyntax).Symbol as IFieldSymbol;
+                                        EqualsValueClauseSyntax? initializer = fieldSymbol?.DeclaringSyntaxReferences
+                                            .Select(r => r.GetSyntax())
+                                            .OfType<VariableDeclaratorSyntax>()
+                                            .Select(s => s.Initializer)
+                                            .FirstOrDefault(i => i != null);
+
+                                        if (initializer != null)
+                                        {
+                                            sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                                            value = initializer.Value.FullQualifiedSyntax(sm);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
                     property.Name, marshalType.Value, propertyType, value));
@@ -207,7 +263,13 @@ namespace Godot.SourceGenerators
                     .Select(s => s.Initializer)
                     .FirstOrDefault(i => i != null);
 
-                string? value = initializer?.Value.ToString();
+                // This needs to be fully qualified to avoid issues with namespaces.
+                string? value = null;
+                if (initializer != null)
+                {
+                    var sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                    value = initializer.Value.FullQualifiedSyntax(sm);
+                }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
                     field.Name, marshalType.Value, fieldType, value));
@@ -237,7 +299,7 @@ namespace Godot.SourceGenerators
                     string defaultValueLocalName = string.Concat("__", exportedMember.Name, "_default_value");
 
                     source.Append("        ");
-                    source.Append(exportedMember.TypeSymbol.FullQualifiedName());
+                    source.Append(exportedMember.TypeSymbol.FullQualifiedNameIncludeGlobal());
                     source.Append(" ");
                     source.Append(defaultValueLocalName);
                     source.Append(" = ");

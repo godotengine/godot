@@ -47,7 +47,8 @@ OpenXRAndroidExtension *OpenXRAndroidExtension::get_singleton() {
 OpenXRAndroidExtension::OpenXRAndroidExtension(OpenXRAPI *p_openxr_api) :
 		OpenXRExtensionWrapper(p_openxr_api) {
 	singleton = this;
-	request_extensions[XR_KHR_ANDROID_THREAD_SETTINGS_EXTENSION_NAME] = nullptr; // must be available
+	request_extensions[XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME] = nullptr; // must be available
+	request_extensions[XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME] = &create_instance_extension_available;
 }
 
 void OpenXRAndroidExtension::on_before_instance_created() {
@@ -66,6 +67,29 @@ void OpenXRAndroidExtension::on_before_instance_created() {
 	};
 	XrResult result = xrInitializeLoaderKHR((const XrLoaderInitInfoBaseHeaderKHR *)&loader_init_info_android);
 	ERR_FAIL_COND_MSG(XR_FAILED(result), "Failed to call xrInitializeLoaderKHR");
+}
+
+// We're keeping the Android create info struct here to avoid including openxr_platform.h in a header, which would break other extensions.
+// This is reasonably safe as the struct is only used during intialization and the extension is a singleton.
+static XrInstanceCreateInfoAndroidKHR instance_create_info;
+
+void *OpenXRAndroidExtension::set_instance_create_info_and_get_next_pointer(void *p_next_pointer) {
+	if (!create_instance_extension_available) {
+		return nullptr;
+	}
+
+	JNIEnv *env = get_jni_env();
+	JavaVM *vm;
+	env->GetJavaVM(&vm);
+	jobject activity_object = env->NewGlobalRef(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
+
+	instance_create_info = {
+		.type = XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR,
+		.next = p_next_pointer,
+		.applicationVM = vm,
+		.applicationActivity = activity_object
+	};
+	return &instance_create_info;
 }
 
 OpenXRAndroidExtension::~OpenXRAndroidExtension() {

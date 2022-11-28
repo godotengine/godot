@@ -47,10 +47,9 @@ private:
 	};
 
 	enum {
-		SYSCH_CONFIG = 0,
-		SYSCH_RELIABLE = 1,
-		SYSCH_UNRELIABLE = 2,
-		SYSCH_MAX = 3
+		SYSCH_RELIABLE = 0,
+		SYSCH_UNRELIABLE = 1,
+		SYSCH_MAX = 2
 	};
 
 	enum Mode {
@@ -66,8 +65,6 @@ private:
 
 	int target_peer = 0;
 
-	bool server_relay = true;
-
 	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
 
 	HashMap<int, Ref<ENetConnection>> hosts;
@@ -77,18 +74,16 @@ private:
 		ENetPacket *packet = nullptr;
 		int from = 0;
 		int channel = 0;
+		TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
 	};
 
 	List<Packet> incoming_packets;
 
 	Packet current_packet;
 
+	void _store_packet(int32_t p_source, ENetConnection::Event &p_event);
 	void _pop_current_packet();
-	bool _parse_server_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event);
-	bool _parse_client_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event);
-	bool _parse_mesh_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event, int p_peer_id);
-	void _relay(int p_from, int p_to, enet_uint8 p_channel, ENetPacket *p_packet);
-	void _notify_peers(int p_id, bool p_connected);
+	void _disconnect_inactive_peers();
 	void _destroy_unused(ENetPacket *p_packet);
 	_FORCE_INLINE_ bool _is_active() const { return active_mode != MODE_NONE; }
 
@@ -99,10 +94,18 @@ protected:
 
 public:
 	virtual void set_target_peer(int p_peer) override;
+
 	virtual int get_packet_peer() const override;
+	virtual TransferMode get_packet_mode() const override;
+	virtual int get_packet_channel() const override;
 
 	virtual void poll() override;
+	virtual void close() override;
+	virtual void disconnect_peer(int p_peer, bool p_force = false) override;
+
 	virtual bool is_server() const override;
+	virtual bool is_server_relay_supported() const override;
+
 	// Overridden so we can instrument the DTLSServer when needed.
 	virtual void set_refuse_new_connections(bool p_enabled) override;
 
@@ -120,13 +123,7 @@ public:
 	Error create_mesh(int p_id);
 	Error add_mesh_peer(int p_id, Ref<ENetConnection> p_host);
 
-	void close_connection(uint32_t wait_usec = 100);
-
-	void disconnect_peer(int p_peer, bool now = false);
-
 	void set_bind_ip(const IPAddress &p_ip);
-	void set_server_relay_enabled(bool p_enabled);
-	bool is_server_relay_enabled() const;
 
 	Ref<ENetConnection> get_host() const;
 	Ref<ENetPacketPeer> get_peer(int p_id) const;
