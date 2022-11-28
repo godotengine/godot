@@ -294,7 +294,9 @@ private:
 	bool started = true;
 
 	NodePath root_motion_track;
-	Transform3D root_motion_transform;
+	Vector3 root_motion_position = Vector3(0, 0, 0);
+	Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
+	Vector3 root_motion_scale = Vector3(0, 0, 0);
 
 	friend class AnimationNode;
 	bool properties_dirty = true;
@@ -350,7 +352,9 @@ public:
 	void set_root_motion_track(const NodePath &p_track);
 	NodePath get_root_motion_track() const;
 
-	Transform3D get_root_motion_transform() const;
+	Vector3 get_root_motion_position() const;
+	Quaternion get_root_motion_rotation() const;
+	Vector3 get_root_motion_scale() const;
 
 	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(double p_time);
