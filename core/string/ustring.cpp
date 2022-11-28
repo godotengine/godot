@@ -3861,8 +3861,12 @@ bool String::is_valid_identifier() const {
 
 	const char32_t *str = &operator[](0);
 
-	for (int i = 0; i < len; i++) {
-		if (!_is_valid_identifier_bit(i, str[i])) {
+	if (!is_unicode_identifier_start(str[0])) {
+		return false;
+	}
+
+	for (int i = 1; i < len; i++) {
+		if (!is_unicode_identifier_continue(str[i])) {
 			return false;
 		}
 	}
