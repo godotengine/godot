@@ -292,7 +292,7 @@ real_t FileAccess::get_real() const {
 
 Variant FileAccess::get_var(bool p_allow_objects) const {
 	uint32_t len = get_32();
-	Vector<uint8_t> buff = _get_buffer(len);
+	Vector<uint8_t> buff = get_buffer(len);
 	ERR_FAIL_COND_V((uint32_t)buff.size() != len, Variant());
 
 	const uint8_t *r = buff.ptr();
@@ -469,7 +469,7 @@ uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	return i;
 }
 
-Vector<uint8_t> FileAccess::_get_buffer(int64_t p_length) const {
+Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	Vector<uint8_t> data;
 
 	ERR_FAIL_COND_V_MSG(p_length < 0, data, "Length of buffer cannot be smaller than 0.");
@@ -663,7 +663,7 @@ void FileAccess::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	}
 }
 
-void FileAccess::_store_buffer(const Vector<uint8_t> &p_buffer) {
+void FileAccess::store_buffer(const Vector<uint8_t> &p_buffer) {
 	uint64_t len = p_buffer.size();
 	if (len == 0) {
 		return;
@@ -687,7 +687,7 @@ void FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
 	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
 
 	store_32(len);
-	_store_buffer(buff);
+	store_buffer(buff);
 }
 
 Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_error) {
@@ -829,7 +829,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_float"), &FileAccess::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &FileAccess::get_double);
 	ClassDB::bind_method(D_METHOD("get_real"), &FileAccess::get_real);
-	ClassDB::bind_method(D_METHOD("get_buffer", "length"), &FileAccess::_get_buffer);
+	ClassDB::bind_method(D_METHOD("get_buffer", "length"), (Vector<uint8_t>(FileAccess::*)(int64_t) const) & FileAccess::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &FileAccess::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &FileAccess::get_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &FileAccess::get_as_text, DEFVAL(false));
@@ -847,7 +847,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
 	ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
-	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), &FileAccess::_store_buffer);
+	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (void(FileAccess::*)(const Vector<uint8_t> &)) & FileAccess::store_buffer);
 	ClassDB::bind_method(D_METHOD("store_line", "line"), &FileAccess::store_line);
 	ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &FileAccess::store_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("store_string", "string"), &FileAccess::store_string);

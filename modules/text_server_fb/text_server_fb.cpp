@@ -248,11 +248,7 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 		// Could not find texture to fit, create one.
 		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256);
 
-#ifdef GDEXTENSION
-		texsize = Math::next_power_of_2(texsize);
-#else
 		texsize = next_power_of_2(texsize);
-#endif
 
 		if (p_msdf) {
 			texsize = MIN(texsize, 2048);
@@ -260,18 +256,10 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 			texsize = MIN(texsize, 1024);
 		}
 		if (mw > texsize) { // Special case, adapt to it?
-#ifdef GDEXTENSION
-			texsize = Math::next_power_of_2(mw);
-#else
 			texsize = next_power_of_2(mw);
-#endif
 		}
 		if (mh > texsize) { // Special case, adapt to it?
-#ifdef GDEXTENSION
-			texsize = Math::next_power_of_2(mh);
-#else
 			texsize = next_power_of_2(mh);
-#endif
 		}
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);
@@ -374,14 +362,14 @@ static int ft_cubic_to(const FT_Vector *control1, const FT_Vector *control2, con
 	return 0;
 }
 
-void TextServerFallback::_generateMTSDF_threaded(uint32_t y, void *p_td) const {
+void TextServerFallback::_generateMTSDF_threaded(void *p_td, uint32_t p_y) {
 	MSDFThreadData *td = static_cast<MSDFThreadData *>(p_td);
 
 	msdfgen::ShapeDistanceFinder<msdfgen::OverlappingContourCombiner<msdfgen::MultiAndTrueDistanceSelector>> distanceFinder(*td->shape);
-	int row = td->shape->inverseYAxis ? td->output->height() - y - 1 : y;
+	int row = td->shape->inverseYAxis ? td->output->height() - p_y - 1 : p_y;
 	for (int col = 0; col < td->output->width(); ++col) {
-		int x = (y % 2) ? td->output->width() - col - 1 : col;
-		msdfgen::Point2 p = td->projection->unproject(msdfgen::Point2(x + .5, y + .5));
+		int x = (p_y % 2) ? td->output->width() - col - 1 : col;
+		msdfgen::Point2 p = td->projection->unproject(msdfgen::Point2(x + .5, p_y + .5));
 		msdfgen::MultiAndTrueDistance distance = distanceFinder.distance(p);
 		td->distancePixelConversion->operator()(td->output->operator()(x, row), distance);
 	}
@@ -451,14 +439,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 		td.projection = &projection;
 		td.distancePixelConversion = &distancePixelConversion;
 
-#ifdef GDEXTENSION
-		for (int i = 0; i < h; i++) {
-			_generateMTSDF_threaded(i, &td);
-		}
-#else
-		WorkerThreadPool::GroupID group_id = WorkerThreadPool::get_singleton()->add_template_group_task(this, &TextServerFallback::_generateMTSDF_threaded, &td, h, -1, true, SNAME("TextServerFBRenderMSDF"));
-		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_id);
-#endif
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&TextServerFallback::_generateMTSDF_threaded, &td, h, -1, true, String("TextServerFBRenderMSDF"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
 

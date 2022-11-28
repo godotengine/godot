@@ -54,7 +54,7 @@ TEST_CASE("[XMLParser] End-to-end") {
 	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_ELEMENT);
 	CHECK(parser.get_node_name() == "top");
 	CHECK(parser.has_attribute("attr"));
-	CHECK(parser.get_attribute_value("attr") == "attr value");
+	CHECK(parser.get_named_attribute_value("attr") == "attr value");
 
 	CHECK(parser.read() == OK);
 	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_TEXT);
