@@ -339,10 +339,14 @@ def configure_msvc(env, vcvars_msvc_config):
 
     ## Compile/link flags
 
-    if env["use_static_cpp"]:
-        env.AppendUnique(CCFLAGS=["/MT"])
+    if env["optimize"] in ["debug", "none"]:
+        # Always use dynamic runtime, static debug CRT breaks thread_local.
+        env.AppendUnique(CCFLAGS=["/MDd"])
     else:
-        env.AppendUnique(CCFLAGS=["/MD"])
+        if env["use_static_cpp"]:
+            env.AppendUnique(CCFLAGS=["/MT"])
+        else:
+            env.AppendUnique(CCFLAGS=["/MD"])
 
     if env["arch"] == "x86_32":
         env["x86_libtheora_opt_vc"] = True
