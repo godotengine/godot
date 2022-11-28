@@ -1328,11 +1328,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_line_edit->set_default_margin(SIDE_TOP, style_line_edit->get_default_margin(SIDE_TOP) - 1 * EDSCALE);
 	// Add a bottom line to make LineEdits more visible, especially in sectioned inspectors
 	// such as the Project Settings.
-	style_line_edit->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
+	style_line_edit->set_border_width(SIDE_BOTTOM, Math::round(EDSCALE));
 	style_line_edit->set_border_color(dark_color_2);
-	// Don't round the bottom corner to make the line look sharper.
-	style_tab_selected->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-	style_tab_selected->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	// Don't round the bottom corners to make the line look sharper.
+	style_line_edit->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	style_line_edit->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
 	Ref<StyleBoxFlat> style_line_edit_disabled = style_line_edit->duplicate();
 	style_line_edit_disabled->set_border_color(disabled_color);
