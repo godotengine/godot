@@ -7038,8 +7038,8 @@ void TextEdit::_update_selection_mode_word() {
 		if ((col <= carets[caret_idx].selection.selected_word_origin && line == get_selection_line(caret_idx)) || line < get_selection_line(caret_idx)) {
 			carets.write[caret_idx].selection.selecting_column = carets[caret_idx].selection.selected_word_end;
 			select(line, beg, get_selection_line(caret_idx), carets[caret_idx].selection.selected_word_end, caret_idx);
-			set_caret_line(get_selection_from_line(caret_idx), false, true, 0, caret_idx);
-			set_caret_column(get_selection_from_column(caret_idx), true, caret_idx);
+			set_caret_line(line, false, true, 0, caret_idx);
+			set_caret_column(beg, true, caret_idx);
 		} else {
 			carets.write[caret_idx].selection.selecting_column = carets[caret_idx].selection.selected_word_beg;
 			select(get_selection_line(caret_idx), carets[caret_idx].selection.selected_word_beg, line, end, caret_idx);
