@@ -42,6 +42,7 @@ GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 
 	int android_device_api_level = android_get_device_api_level();
 	if (android_device_api_level >= __ANDROID_API_N__) {
+		_configure_pointer_icon = env->GetMethodID(_cls, "configurePointerIcon", "(ILjava/lang/String;FF)V");
 		_set_pointer_icon = env->GetMethodID(_cls, "setPointerIcon", "(I)V");
 	}
 	if (android_device_api_level >= __ANDROID_API_O__) {
@@ -51,7 +52,7 @@ GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 }
 
 bool GodotJavaViewWrapper::can_update_pointer_icon() const {
-	return _set_pointer_icon != nullptr;
+	return _configure_pointer_icon != nullptr && _set_pointer_icon != nullptr;
 }
 
 bool GodotJavaViewWrapper::can_capture_pointer() const {
@@ -73,6 +74,16 @@ void GodotJavaViewWrapper::release_pointer_capture() {
 		ERR_FAIL_NULL(env);
 
 		env->CallVoidMethod(_godot_view, _release_pointer_capture);
+	}
+}
+
+void GodotJavaViewWrapper::configure_pointer_icon(int pointer_type, const String &image_path, const Vector2 &p_hotspot) {
+	if (_configure_pointer_icon != nullptr) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		jstring jImagePath = env->NewStringUTF(image_path.utf8().get_data());
+		env->CallVoidMethod(_godot_view, _configure_pointer_icon, pointer_type, jImagePath, p_hotspot.x, p_hotspot.y);
 	}
 }
 

@@ -79,6 +79,9 @@ class DirectoryAccessHandler(context: Context) {
 	private val assetsDirAccess = AssetsDirectoryAccess(context)
 	private val fileSystemDirAccess = FilesystemDirectoryAccess(context)
 
+	fun assetsFileExists(assetsPath: String) = assetsDirAccess.fileExists(assetsPath)
+	fun filesystemFileExists(path: String) = fileSystemDirAccess.fileExists(path)
+
 	private fun hasDirId(accessType: AccessType, dirId: Int): Boolean {
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.hasDirId(dirId)
