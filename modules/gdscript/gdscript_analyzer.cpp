@@ -494,8 +494,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				result = ref->get_parser()->head->get_datatype();
 			} else {
 				result.kind = GDScriptParser::DataType::SCRIPT;
-				result.native_type = ScriptServer::get_global_class_native_base(first);
 				result.script_type = ResourceLoader::load(path, "Script");
+				result.native_type = result.script_type->get_instance_base_type();
 				result.script_path = path;
 				result.is_constant = true;
 				result.is_meta_type = false;
@@ -2733,21 +2733,13 @@ GDScriptParser::DataType GDScriptAnalyzer::make_global_class_meta_type(const Str
 			return type;
 		}
 
-		type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-		type.kind = GDScriptParser::DataType::CLASS;
-		type.builtin_type = Variant::OBJECT;
-		type.native_type = ScriptServer::get_global_class_native_base(p_class_name);
-		type.class_type = ref->get_parser()->head;
-		type.script_path = ref->get_parser()->script_path;
-		type.is_constant = true;
-		type.is_meta_type = true;
-		return type;
+		return ref->get_parser()->head->get_datatype();
 	} else {
 		type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 		type.kind = GDScriptParser::DataType::SCRIPT;
 		type.builtin_type = Variant::OBJECT;
-		type.native_type = ScriptServer::get_global_class_native_base(p_class_name);
 		type.script_type = ResourceLoader::load(path, "Script");
+		type.native_type = type.script_type->get_instance_base_type();
 		type.script_path = path;
 		type.is_constant = true;
 		type.is_meta_type = true;
