@@ -143,13 +143,13 @@ private:
 	};
 
 	Label *zoom_label = nullptr;
-	Button *zoom_minus = nullptr;
-	Button *zoom_reset = nullptr;
-	Button *zoom_plus = nullptr;
+	Button *zoom_minus_button = nullptr;
+	Button *zoom_reset_button = nullptr;
+	Button *zoom_plus_button = nullptr;
 
 	Button *snap_button = nullptr;
-	SpinBox *snap_amount = nullptr;
-
+	SpinBox *snap_distance_spinbox = nullptr;
+	Button *show_grid_button = nullptr;
 	Button *minimap_button = nullptr;
 
 	Button *layout_button = nullptr;
@@ -164,6 +164,10 @@ private:
 	bool warped_panning = true;
 
 	bool arrange_nodes_button_hidden = false;
+
+	bool use_grid_snap = false;
+	int grid_snap_distance = 20;
+	bool show_grid = true;
 
 	bool connecting = false;
 	String connecting_from;
@@ -267,6 +271,7 @@ private:
 	bool _filter_input(const Point2 &p_point);
 	void _snap_toggled();
 	void _snap_value_changed(double);
+	void _show_grid_toggled();
 
 	friend class GraphEditMinimap;
 	void _minimap_toggled();
@@ -363,11 +368,14 @@ public:
 
 	void set_selected(Node *p_child);
 
-	void set_use_snap(bool p_enable);
-	bool is_using_snap() const;
+	void set_use_grid_snap(bool p_enable);
+	bool is_using_grid_snap() const;
 
-	int get_snap() const;
-	void set_snap(int p_snap);
+	void set_grid_snap_distance(int p_snap_distance);
+	int get_grid_snap_distance() const;
+
+	void set_show_grid(bool p_enable);
+	bool is_showing_grid() const;
 
 	void set_connection_lines_curvature(float p_curvature);
 	float get_connection_lines_curvature() const;

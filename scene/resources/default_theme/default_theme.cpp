@@ -1138,6 +1138,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("reset", "GraphEdit", icons["zoom_reset"]);
 	theme->set_icon("more", "GraphEdit", icons["zoom_more"]);
 	theme->set_icon("snap", "GraphEdit", icons["grid_snap"]);
+	theme->set_icon("toggle_grid", "GraphEdit", icons["grid_toggle"]);
 	theme->set_icon("minimap", "GraphEdit", icons["grid_minimap"]);
 	theme->set_icon("layout", "GraphEdit", icons["grid_layout"]);
 	theme->set_stylebox("bg", "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));

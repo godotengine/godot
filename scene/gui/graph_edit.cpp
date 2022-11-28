@@ -534,10 +534,11 @@ void GraphEdit::_notification(int p_what) {
 			port_hotzone_inner_extent = get_theme_constant("port_hotzone_inner_extent");
 			port_hotzone_outer_extent = get_theme_constant("port_hotzone_outer_extent");
 
-			zoom_minus->set_icon(get_theme_icon(SNAME("minus")));
-			zoom_reset->set_icon(get_theme_icon(SNAME("reset")));
-			zoom_plus->set_icon(get_theme_icon(SNAME("more")));
+			zoom_minus_button->set_icon(get_theme_icon(SNAME("minus")));
+			zoom_reset_button->set_icon(get_theme_icon(SNAME("reset")));
+			zoom_plus_button->set_icon(get_theme_icon(SNAME("more")));
 			snap_button->set_icon(get_theme_icon(SNAME("snap")));
+			show_grid_button->set_icon(get_theme_icon(SNAME("toggle_grid")));
 			minimap_button->set_icon(get_theme_icon(SNAME("minimap")));
 			layout_button->set_icon(get_theme_icon(SNAME("layout")));
 
@@ -562,15 +563,13 @@ void GraphEdit::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			draw_style_box(get_theme_stylebox(SNAME("bg")), Rect2(Point2(), get_size()));
 
-			if (is_using_snap()) {
+			if (show_grid) {
 				// Draw background pattern.
-				int snap = get_snap();
-
 				Vector2 offset = get_scroll_ofs() / zoom;
 				Size2 size = get_size() / zoom;
 
-				Point2i from = (offset / float(snap)).floor();
-				Point2i len = (size / float(snap)).floor() + Vector2(1, 1);
+				Point2i from = (offset / float(grid_snap_distance)).floor();
+				Point2i len = (size / float(grid_snap_distance)).floor() + Vector2(1, 1);
 
 				Color grid_minor = get_theme_color(SNAME("grid_minor"));
 				Color grid_major = get_theme_color(SNAME("grid_major"));
@@ -584,7 +583,7 @@ void GraphEdit::_notification(int p_what) {
 						color = grid_minor;
 					}
 
-					float base_ofs = i * snap * zoom - offset.x * zoom;
+					float base_ofs = i * grid_snap_distance * zoom - offset.x * zoom;
 					draw_line(Vector2(base_ofs, 0), Vector2(base_ofs, get_size().height), color);
 				}
 
@@ -597,7 +596,7 @@ void GraphEdit::_notification(int p_what) {
 						color = grid_minor;
 					}
 
-					float base_ofs = i * snap * zoom - offset.y * zoom;
+					float base_ofs = i * grid_snap_distance * zoom - offset.y * zoom;
 					draw_line(Vector2(0, base_ofs), Vector2(get_size().width, base_ofs), color);
 				}
 			}
@@ -643,9 +642,8 @@ void GraphEdit::_set_drag_frame_enclosed_nodes(GraphFrame *p_node, HashMap<Strin
 void GraphEdit::_set_position_of_frame_enclosed_nodes(GraphFrame *p_node, HashMap<StringName, Vector<GraphControl *>> &p_frame_enclosed_nodes, Vector2 p_drag_accum) {
 	for (int i = 0; i < p_frame_enclosed_nodes[p_node->get_name()].size(); i++) {
 		Vector2 pos = (p_frame_enclosed_nodes[p_node->get_name()][i]->get_drag_from() * zoom + drag_accum) / zoom;
-		if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-			const int snap = get_snap();
-			pos = pos.snapped(Vector2(snap, snap));
+		if (use_grid_snap ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+			pos = pos.snapped(Vector2(grid_snap_distance, grid_snap_distance));
 		}
 		p_frame_enclosed_nodes[p_node->get_name()][i]->set_position_offset(pos);
 	}
@@ -1255,9 +1253,8 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
-				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-					const int snap = get_snap();
-					pos = pos.snapped(Vector2(snap, snap));
+				if (use_grid_snap ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+					pos = pos.snapped(Vector2(grid_snap_distance, grid_snap_distance));
 				}
 
 				graph_node->set_position_offset(pos);
@@ -1580,8 +1577,8 @@ void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 	zoom = p_zoom;
 	top_layer->queue_redraw();
 
-	zoom_minus->set_disabled(zoom == zoom_min);
-	zoom_plus->set_disabled(zoom == zoom_max);
+	zoom_minus_button->set_disabled(zoom == zoom_min);
+	zoom_plus_button->set_disabled(zoom == zoom_max);
 
 	_update_scroll();
 	minimap->queue_redraw();
@@ -1730,33 +1727,48 @@ bool GraphEdit::is_valid_connection_type(int p_type, int p_with_type) const {
 	return valid_connection_types.has(ct);
 }
 
-void GraphEdit::set_use_snap(bool p_enable) {
-	if (snap_button->is_pressed() == p_enable) {
-		return;
-	}
+void GraphEdit::set_use_grid_snap(bool p_enable) {
+	use_grid_snap = p_enable;
 	snap_button->set_pressed(p_enable);
 	queue_redraw();
 }
 
-bool GraphEdit::is_using_snap() const {
-	return snap_button->is_pressed();
+bool GraphEdit::is_using_grid_snap() const {
+	return use_grid_snap;
 }
 
-int GraphEdit::get_snap() const {
-	return snap_amount->get_value();
-}
-
-void GraphEdit::set_snap(int p_snap) {
-	ERR_FAIL_COND(p_snap < 5);
-	snap_amount->set_value(p_snap);
+void GraphEdit::set_grid_snap_distance(int p_snap_distance) {
+	ERR_FAIL_COND(p_snap_distance < 2);
+	grid_snap_distance = p_snap_distance;
+	snap_distance_spinbox->set_value(p_snap_distance);
 	queue_redraw();
+}
+
+int GraphEdit::get_grid_snap_distance() const {
+	return grid_snap_distance;
+}
+
+void GraphEdit::set_show_grid(bool p_show) {
+	show_grid = p_show;
+	show_grid_button->set_pressed(p_show);
+	queue_redraw();
+}
+
+bool GraphEdit::is_showing_grid() const {
+	return show_grid;
 }
 
 void GraphEdit::_snap_toggled() {
-	queue_redraw();
+	use_grid_snap = snap_button->is_pressed();
 }
 
 void GraphEdit::_snap_value_changed(double) {
+	grid_snap_distance = snap_distance_spinbox->get_value();
+	queue_redraw();
+}
+
+void GraphEdit::_show_grid_toggled() {
+	show_grid = show_grid_button->is_pressed();
 	queue_redraw();
 }
 
@@ -2382,9 +2394,8 @@ void GraphEdit::arrange_nodes() {
 		graph_node->set_drag(true);
 		Vector2 pos = (new_positions[E]);
 
-		if (is_using_snap()) {
-			const int snap = get_snap();
-			pos = pos.snapped(Vector2(snap, snap));
+		if (use_grid_snap) {
+			pos = pos.snapped(Vector2(grid_snap_distance, grid_snap_distance));
 		}
 		graph_node->set_position_offset(pos);
 		graph_node->set_drag(false);
@@ -2431,11 +2442,14 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_show_zoom_label", "enable"), &GraphEdit::set_show_zoom_label);
 	ClassDB::bind_method(D_METHOD("is_showing_zoom_label"), &GraphEdit::is_showing_zoom_label);
 
-	ClassDB::bind_method(D_METHOD("set_snap", "pixels"), &GraphEdit::set_snap);
-	ClassDB::bind_method(D_METHOD("get_snap"), &GraphEdit::get_snap);
+	ClassDB::bind_method(D_METHOD("set_show_grid", "enable"), &GraphEdit::set_show_grid);
+	ClassDB::bind_method(D_METHOD("is_showing_grid"), &GraphEdit::is_showing_grid);
 
-	ClassDB::bind_method(D_METHOD("set_use_snap", "enable"), &GraphEdit::set_use_snap);
-	ClassDB::bind_method(D_METHOD("is_using_snap"), &GraphEdit::is_using_snap);
+	ClassDB::bind_method(D_METHOD("set_use_grid_snap", "enable"), &GraphEdit::set_use_grid_snap);
+	ClassDB::bind_method(D_METHOD("is_using_grid_snap"), &GraphEdit::is_using_grid_snap);
+
+	ClassDB::bind_method(D_METHOD("set_grid_snap_distance", "pixels"), &GraphEdit::set_grid_snap_distance);
+	ClassDB::bind_method(D_METHOD("get_grid_snap_distance"), &GraphEdit::get_grid_snap_distance);
 
 	ClassDB::bind_method(D_METHOD("set_connection_lines_curvature", "curvature"), &GraphEdit::set_connection_lines_curvature);
 	ClassDB::bind_method(D_METHOD("get_connection_lines_curvature"), &GraphEdit::get_connection_lines_curvature);
@@ -2475,8 +2489,9 @@ void GraphEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_scroll_ofs", "get_scroll_ofs");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_distance", PROPERTY_HINT_NONE, "suffix:px"), "set_snap", "get_snap");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_snap"), "set_use_snap", "is_using_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_grid"), "set_show_grid", "is_showing_grid");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_snap"), "set_use_grid_snap", "is_using_grid_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_distance", PROPERTY_HINT_NONE, "suffix:px"), "set_grid_snap_distance", "get_grid_snap_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
 
 	ADD_GROUP("Connection Lines", "connection_lines");
@@ -2578,43 +2593,52 @@ GraphEdit::GraphEdit() {
 	zoom_label->set_custom_minimum_size(Size2(48, 0));
 	_update_zoom_label();
 
-	zoom_minus = memnew(Button);
-	zoom_minus->set_flat(true);
-	zoom_hb->add_child(zoom_minus);
-	zoom_minus->set_tooltip_text(RTR("Zoom Out"));
-	zoom_minus->connect("pressed", callable_mp(this, &GraphEdit::_zoom_minus));
-	zoom_minus->set_focus_mode(FOCUS_NONE);
+	zoom_minus_button = memnew(Button);
+	zoom_minus_button->set_flat(true);
+	zoom_hb->add_child(zoom_minus_button);
+	zoom_minus_button->set_tooltip_text(RTR("Zoom Out"));
+	zoom_minus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_minus));
+	zoom_minus_button->set_focus_mode(FOCUS_NONE);
 
-	zoom_reset = memnew(Button);
-	zoom_reset->set_flat(true);
-	zoom_hb->add_child(zoom_reset);
-	zoom_reset->set_tooltip_text(RTR("Zoom Reset"));
-	zoom_reset->connect("pressed", callable_mp(this, &GraphEdit::_zoom_reset));
-	zoom_reset->set_focus_mode(FOCUS_NONE);
+	zoom_reset_button = memnew(Button);
+	zoom_reset_button->set_flat(true);
+	zoom_hb->add_child(zoom_reset_button);
+	zoom_reset_button->set_tooltip_text(RTR("Zoom Reset"));
+	zoom_reset_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_reset));
+	zoom_reset_button->set_focus_mode(FOCUS_NONE);
 
-	zoom_plus = memnew(Button);
-	zoom_plus->set_flat(true);
-	zoom_hb->add_child(zoom_plus);
-	zoom_plus->set_tooltip_text(RTR("Zoom In"));
-	zoom_plus->connect("pressed", callable_mp(this, &GraphEdit::_zoom_plus));
-	zoom_plus->set_focus_mode(FOCUS_NONE);
+	zoom_plus_button = memnew(Button);
+	zoom_plus_button->set_flat(true);
+	zoom_hb->add_child(zoom_plus_button);
+	zoom_plus_button->set_tooltip_text(RTR("Zoom In"));
+	zoom_plus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_plus));
+	zoom_plus_button->set_focus_mode(FOCUS_NONE);
+
+	show_grid_button = memnew(Button);
+	show_grid_button->set_flat(true);
+	show_grid_button->set_toggle_mode(true);
+	show_grid_button->set_tooltip_text(RTR("Show grid."));
+	show_grid_button->connect("pressed", callable_mp(this, &GraphEdit::_show_grid_toggled));
+	show_grid_button->set_pressed(true);
+	show_grid_button->set_focus_mode(FOCUS_NONE);
+	zoom_hb->add_child(show_grid_button);
 
 	snap_button = memnew(Button);
 	snap_button->set_flat(true);
 	snap_button->set_toggle_mode(true);
-	snap_button->set_tooltip_text(RTR("Enable snap and show grid."));
+	snap_button->set_tooltip_text(RTR("Enable snap."));
 	snap_button->connect("pressed", callable_mp(this, &GraphEdit::_snap_toggled));
 	snap_button->set_pressed(true);
 	snap_button->set_focus_mode(FOCUS_NONE);
 	zoom_hb->add_child(snap_button);
 
-	snap_amount = memnew(SpinBox);
-	snap_amount->set_min(5);
-	snap_amount->set_max(100);
-	snap_amount->set_step(1);
-	snap_amount->set_value(20);
-	snap_amount->connect("value_changed", callable_mp(this, &GraphEdit::_snap_value_changed));
-	zoom_hb->add_child(snap_amount);
+	snap_distance_spinbox = memnew(SpinBox);
+	snap_distance_spinbox->set_min(5);
+	snap_distance_spinbox->set_max(100);
+	snap_distance_spinbox->set_step(1);
+	snap_distance_spinbox->set_value(20);
+	snap_distance_spinbox->connect("value_changed", callable_mp(this, &GraphEdit::_snap_value_changed));
+	zoom_hb->add_child(snap_distance_spinbox);
 
 	minimap_button = memnew(Button);
 	minimap_button->set_flat(true);
