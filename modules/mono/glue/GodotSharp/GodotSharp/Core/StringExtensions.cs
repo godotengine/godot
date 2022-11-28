@@ -89,6 +89,7 @@ namespace Godot
         /// <param name="instance">The string to check.</param>
         /// <param name="text">The beginning string.</param>
         /// <returns>If the string begins with the given string.</returns>
+        [Obsolete("Use string.StartsWith instead.")]
         public static bool BeginsWith(this string instance, string text)
         {
             return instance.StartsWith(text);
@@ -405,6 +406,7 @@ namespace Godot
         /// <summary>
         /// Returns <see langword="true"/> if the string is empty.
         /// </summary>
+        [Obsolete("Use string.IsNullOrEmpty instead.")]
         public static bool Empty(this string instance)
         {
             return string.IsNullOrEmpty(instance);
@@ -417,6 +419,7 @@ namespace Godot
         /// <param name="instance">The string to check.</param>
         /// <param name="text">The ending string.</param>
         /// <returns>If the string ends with the given string.</returns>
+        [Obsolete("Use string.EndsWith instead.")]
         public static bool EndsWith(this string instance, string text)
         {
             return instance.EndsWith(text);
@@ -428,6 +431,7 @@ namespace Godot
         /// <param name="instance">The string to modify.</param>
         /// <param name="pos">Starting position from which to erase.</param>
         /// <param name="chars">Amount of characters to erase.</param>
+        [Obsolete("Use StringBuilder.Remove instead.")]
         public static void Erase(this StringBuilder instance, int pos, int chars)
         {
             instance.Remove(pos, chars);
@@ -740,6 +744,7 @@ namespace Godot
         /// The string with <paramref name="what"/> inserted at the given
         /// position <paramref name="pos"/>.
         /// </returns>
+        [Obsolete("Use string.Insert instead.")]
         public static string Insert(this string instance, int pos, string what)
         {
             return instance.Insert(pos, what);
@@ -974,6 +979,7 @@ namespace Godot
         /// </summary>
         /// <param name="instance">The string to check.</param>
         /// <returns>The length of the string.</returns>
+        [Obsolete("Use string.Length property instead.")]
         public static int Length(this string instance)
         {
             return instance.Length;
@@ -986,6 +992,7 @@ namespace Godot
         /// <param name="instance">The string to remove characters from.</param>
         /// <param name="chars">The characters to be removed.</param>
         /// <returns>A copy of the string with characters removed from the left.</returns>
+        [Obsolete("Use string.TrimStart property instead.")]
         public static string LStrip(this string instance, string chars)
         {
             int len = instance.Length;
@@ -1120,6 +1127,7 @@ namespace Godot
         /// <param name="instance">The string to check.</param>
         /// <param name="at">The position int the string for the character to check.</param>
         /// <returns>The character code.</returns>
+        [Obsolete("Use string[int] indexer instead.")]
         public static int OrdAt(this string instance, int at)
         {
             return instance[at];
@@ -1321,6 +1329,7 @@ namespace Godot
         /// <param name="instance">The string to remove characters from.</param>
         /// <param name="chars">The characters to be removed.</param>
         /// <returns>A copy of the string with characters removed from the right.</returns>
+        [Obsolete("Use string.TrimEnd property instead.")]
         public static string RStrip(this string instance, string chars)
         {
             int len = instance.Length;
@@ -1560,6 +1569,7 @@ namespace Godot
         /// <seealso cref="ToUpper(string)"/>
         /// <param name="instance">The string to convert.</param>
         /// <returns>The string converted to lowercase.</returns>
+        [Obsolete("Use string.ToLower instead.")]
         public static string ToLower(this string instance)
         {
             return instance.ToLower();
@@ -1571,6 +1581,7 @@ namespace Godot
         /// <seealso cref="ToLower(string)"/>
         /// <param name="instance">The string to convert.</param>
         /// <returns>The string converted to uppercase.</returns>
+        [Obsolete("Use string.ToUpper instead.")]
         public static string ToUpper(this string instance)
         {
             return instance.ToUpper();
