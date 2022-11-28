@@ -347,7 +347,9 @@ void GPUParticlesCollisionSDF3D::_compute_sdf(ComputeSDFParams *params) {
 	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GPUParticlesCollisionSDF3D::_compute_sdf_z, params, params->size.z);
 	while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task)) {
 		OS::get_singleton()->delay_usec(10000);
-		bake_step_function(WorkerThreadPool::get_singleton()->get_group_processed_element_count(group_task) * 100 / params->size.z, "Baking SDF");
+		if (bake_step_function) {
+			bake_step_function(WorkerThreadPool::get_singleton()->get_group_processed_element_count(group_task) * 100 / params->size.z, "Baking SDF");
+		}
 	}
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 }
