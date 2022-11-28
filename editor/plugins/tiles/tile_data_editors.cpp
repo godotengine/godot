@@ -1207,8 +1207,6 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	label->set_theme_type_variation("HeaderSmall");
 	add_child(label);
 
-	toolbar->add_child(memnew(VSeparator));
-
 	picker_button = memnew(Button);
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
@@ -2659,8 +2657,6 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	add_child(label);
 
 	// Toolbar
-	toolbar->add_child(memnew(VSeparator));
-
 	picker_button = memnew(Button);
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
