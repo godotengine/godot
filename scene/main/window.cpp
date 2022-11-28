@@ -1360,7 +1360,9 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
+	if (p_ev->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
+	}
 
 	push_input(p_ev);
 	if (!is_input_handled()) {

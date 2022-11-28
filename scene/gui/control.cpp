@@ -1735,13 +1735,18 @@ real_t Control::get_stretch_ratio() const {
 // Input events.
 
 void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
-	emit_signal(SceneStringNames::get_singleton()->gui_input, p_event); //signal should be first, so it's possible to override an event (and then accept it)
-	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
-		return; //input was handled, abort
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		emit_signal(SceneStringNames::get_singleton()->gui_input, p_event); // Signal should be first, so it's possible to override an event (and then accept it).
 	}
-	GDVIRTUAL_CALL(_gui_input, p_event);
 	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
-		return; //input was handled, abort
+		return; // Input was handled, abort.
+	}
+
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		GDVIRTUAL_CALL(_gui_input, p_event);
+	}
+	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
+		return; // Input was handled, abort.
 	}
 	gui_input(p_event);
 }
