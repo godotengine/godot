@@ -2134,10 +2134,9 @@ void AnimationTrackEdit::_notification(int p_what) {
 					get_theme_icon(SNAME("InterpLinearAngle"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpCubicAngle"), SNAME("EditorIcons")),
 				};
-				Ref<Texture2D> cont_icon[4] = {
+				Ref<Texture2D> cont_icon[3] = {
 					get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")),
-					get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons"))
 				};
 
@@ -2829,7 +2828,6 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->clear();
 				menu->add_icon_item(get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")), TTR("Continuous"), MENU_CALL_MODE_CONTINUOUS);
 				menu->add_icon_item(get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")), TTR("Discrete"), MENU_CALL_MODE_DISCRETE);
-				menu->add_icon_item(get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")), TTR("Trigger"), MENU_CALL_MODE_TRIGGER);
 				menu->add_icon_item(get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons")), TTR("Capture"), MENU_CALL_MODE_CAPTURE);
 				menu->reset_size();
 
@@ -3194,7 +3192,6 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 	switch (p_index) {
 		case MENU_CALL_MODE_CONTINUOUS:
 		case MENU_CALL_MODE_DISCRETE:
-		case MENU_CALL_MODE_TRIGGER:
 		case MENU_CALL_MODE_CAPTURE: {
 			Animation::UpdateMode update_mode = Animation::UpdateMode(p_index);
 			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
@@ -4322,10 +4319,6 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 					h.type == Variant::TRANSFORM3D) {
 				update_mode = Animation::UPDATE_CONTINUOUS;
 			}
-
-			if (h.usage & PROPERTY_USAGE_ANIMATE_AS_TRIGGER) {
-				update_mode = Animation::UPDATE_TRIGGER;
-			}
 		}
 	}
 
@@ -4952,10 +4945,6 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 					h.type == Variant::TRANSFORM2D ||
 					h.type == Variant::TRANSFORM3D) {
 				update_mode = Animation::UPDATE_CONTINUOUS;
-			}
-
-			if (h.usage & PROPERTY_USAGE_ANIMATE_AS_TRIGGER) {
-				update_mode = Animation::UPDATE_TRIGGER;
 			}
 		}
 
