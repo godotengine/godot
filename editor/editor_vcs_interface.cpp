@@ -31,6 +31,7 @@
 #include "editor_vcs_interface.h"
 
 #include "editor_node.h"
+#include "editor_paths.h"
 
 #define UNIMPLEMENTED() ERR_PRINT(vformat("Unimplemented virtual function in EditorVCSInterface based plugin: %s", __func__))
 
@@ -421,5 +422,10 @@ void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_ty
 			f->store_line("# Normalize EOL for all files that Git considers text files.");
 			f->store_line("* text=auto eol=lf");
 		}
+
+		// Copy any setup files to project root.
+		String setup_files_directory = EditorPaths::get_singleton()->get_setup_project_files_dir();
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		da->copy_dir(setup_files_directory, p_dir);
 	}
 }

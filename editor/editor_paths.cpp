@@ -90,6 +90,10 @@ String EditorPaths::get_feature_profiles_dir() const {
 	return get_config_dir().path_join(feature_profiles_folder);
 }
 
+String EditorPaths::get_setup_project_files_dir() const {
+	return get_config_dir().path_join(setup_project_files_folder);
+}
+
 void EditorPaths::create() {
 	ERR_FAIL_COND(singleton != nullptr);
 	memnew(EditorPaths());
@@ -202,6 +206,9 @@ EditorPaths::EditorPaths() {
 		}
 		if (!dir->dir_exists(feature_profiles_folder)) {
 			dir->make_dir(feature_profiles_folder);
+		}
+		if (!dir->dir_exists(setup_project_files_folder)) {
+			dir->make_dir(setup_project_files_folder);
 		}
 	}
 
