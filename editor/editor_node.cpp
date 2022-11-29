@@ -3356,7 +3356,9 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 
 void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 	if (p_editor->has_main_screen()) {
-		for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
+		// Remove the main editor button and update the bindings of
+		// all buttons behind it to point to the correct main window.
+		for (int i = singleton->main_editor_buttons.size() - 1; i >= 0; i--) {
 			if (p_editor->get_name() == singleton->main_editor_buttons[i]->get_text()) {
 				if (singleton->main_editor_buttons[i]->is_pressed()) {
 					singleton->editor_select(EDITOR_SCRIPT);
@@ -3366,6 +3368,9 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 				singleton->main_editor_buttons.remove_at(i);
 
 				break;
+			} else {
+				singleton->main_editor_buttons[i]->disconnect("pressed", callable_mp(singleton, &EditorNode::editor_select));
+				singleton->main_editor_buttons[i]->connect("pressed", callable_mp(singleton, &EditorNode::editor_select).bind(i - 1));
 			}
 		}
 
