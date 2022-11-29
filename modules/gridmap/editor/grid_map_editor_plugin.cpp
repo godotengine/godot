@@ -40,6 +40,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/separator.h"
 #include "scene/main/window.h"
 
 void GridMapEditor::_node_removed(Node *p_node) {

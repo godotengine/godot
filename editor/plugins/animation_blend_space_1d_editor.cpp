@@ -37,6 +37,8 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/animation/animation_blend_tree.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/panel_container.h"
 
 StringName AnimationNodeBlendSpace1DEditor::get_blend_position_path() const {
 	StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + "blend_position";

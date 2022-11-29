@@ -41,7 +41,9 @@
 #include "scene/resources/material.h"
 #include "scene/resources/primitive_meshes.h"
 
+class SubViewport;
 class SubViewportContainer;
+class TextureButton;
 
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
