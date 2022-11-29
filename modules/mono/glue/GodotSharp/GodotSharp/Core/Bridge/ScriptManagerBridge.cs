@@ -159,7 +159,7 @@ namespace Godot.Bridge
 
                 for (int i = 0; i < paramCount; i++)
                 {
-                    invokeParams[i] = Marshaling.ConvertVariantToManagedObjectOfType(
+                    invokeParams[i] = DelegateUtils.RuntimeTypeConversionHelper.ConvertToObjectOfType(
                         *args[i], parameters[i].ParameterType);
                 }
 
@@ -832,7 +832,8 @@ namespace Godot.Bridge
                 }
                 else
                 {
-                    interopProperties = ((godotsharp_property_info*)NativeMemory.Alloc((nuint)length, (nuint)sizeof(godotsharp_property_info)))!;
+                    interopProperties = ((godotsharp_property_info*)NativeMemory.Alloc(
+                        (nuint)length, (nuint)sizeof(godotsharp_property_info)))!;
                 }
 
                 try
@@ -858,8 +859,8 @@ namespace Godot.Bridge
 
                     addPropInfoFunc(scriptPtr, &currentClassName, interopProperties, length);
 
-                    // We're borrowing the StringName's without making an owning copy, so the
-                    // managed collection needs to be kept alive until `addPropInfoFunc` returns.
+                    // We're borrowing the native value of the StringName entries.
+                    // The dictionary needs to be kept alive until `addPropInfoFunc` returns.
                     GC.KeepAlive(properties);
                 }
                 finally
@@ -884,12 +885,7 @@ namespace Godot.Bridge
         {
             // Careful with padding...
             public godot_string_name Name; // Not owned
-            public godot_variant Value;
-
-            public void Dispose()
-            {
-                Value.Dispose();
-            }
+            public godot_variant Value; // Not owned
         }
 
         [UnmanagedCallersOnly]
@@ -928,10 +924,35 @@ namespace Godot.Bridge
                 if (getGodotPropertyDefaultValuesMethod == null)
                     return;
 
-                var defaultValues = (Dictionary<StringName, object>?)
-                    getGodotPropertyDefaultValuesMethod.Invoke(null, null);
+                var defaultValuesObj = getGodotPropertyDefaultValuesMethod.Invoke(null, null);
 
-                if (defaultValues == null || defaultValues.Count <= 0)
+                if (defaultValuesObj == null)
+                    return;
+
+                Dictionary<StringName, Variant> defaultValues;
+
+                if (defaultValuesObj is Dictionary<StringName, object> defaultValuesLegacy)
+                {
+                    // We have to support this for some time, otherwise this could cause data loss for projects
+                    // built with previous releases. Ideally, we should remove this before Godot 4.0 stable.
+
+                    if (defaultValuesLegacy.Count <= 0)
+                        return;
+
+                    defaultValues = new();
+
+                    foreach (var pair in defaultValuesLegacy)
+                    {
+                        defaultValues[pair.Key] = Variant.CreateTakingOwnershipOfDisposableValue(
+                            DelegateUtils.RuntimeTypeConversionHelper.ConvertToVariant(pair.Value));
+                    }
+                }
+                else
+                {
+                    defaultValues = (Dictionary<StringName, Variant>)defaultValuesObj;
+                }
+
+                if (defaultValues.Count <= 0)
                     return;
 
                 int length = defaultValues.Count;
@@ -952,7 +973,8 @@ namespace Godot.Bridge
                 }
                 else
                 {
-                    interopDefaultValues = ((godotsharp_property_def_val_pair*)NativeMemory.Alloc((nuint)length, (nuint)sizeof(godotsharp_property_def_val_pair)))!;
+                    interopDefaultValues = ((godotsharp_property_def_val_pair*)NativeMemory.Alloc(
+                        (nuint)length, (nuint)sizeof(godotsharp_property_def_val_pair)))!;
                 }
 
                 try
@@ -963,7 +985,7 @@ namespace Godot.Bridge
                         godotsharp_property_def_val_pair interopProperty = new()
                         {
                             Name = (godot_string_name)defaultValuePair.Key.NativeValue, // Not owned
-                            Value = Marshaling.ConvertManagedObjectToVariant(defaultValuePair.Value)
+                            Value = (godot_variant)defaultValuePair.Value.NativeVar // Not owned
                         };
 
                         interopDefaultValues[i] = interopProperty;
@@ -973,15 +995,12 @@ namespace Godot.Bridge
 
                     addDefValFunc(scriptPtr, interopDefaultValues, length);
 
-                    // We're borrowing the StringName's without making an owning copy, so the
-                    // managed collection needs to be kept alive until `addDefValFunc` returns.
+                    // We're borrowing the native value of the StringName and Variant entries.
+                    // The dictionary needs to be kept alive until `addDefValFunc` returns.
                     GC.KeepAlive(defaultValues);
                 }
                 finally
                 {
-                    for (int i = 0; i < length; i++)
-                        interopDefaultValues[i].Dispose();
-
                     if (!useStack)
                         NativeMemory.Free(interopDefaultValues);
                 }

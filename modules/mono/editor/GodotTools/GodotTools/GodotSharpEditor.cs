@@ -455,7 +455,7 @@ namespace GodotTools
             _menuPopup.IdPressed += _MenuOptionPressed;
 
             // External editor settings
-            EditorDef("mono/editor/external_editor", ExternalEditorId.None);
+            EditorDef("mono/editor/external_editor", Variant.From(ExternalEditorId.None));
 
             string settingsHintStr = "Disabled";
 

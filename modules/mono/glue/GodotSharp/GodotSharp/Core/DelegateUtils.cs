@@ -186,7 +186,7 @@ namespace Godot
                                 writer.Write(field.Name);
 
                                 var fieldValue = field.GetValue(target);
-                                using var fieldValueVariant = Marshaling.ConvertManagedObjectToVariant(fieldValue);
+                                using var fieldValueVariant = RuntimeTypeConversionHelper.ConvertToVariant(fieldValue);
                                 byte[] valueBuffer = VarToBytes(fieldValueVariant);
                                 writer.Write(valueBuffer.Length);
                                 writer.Write(valueBuffer);
@@ -443,7 +443,14 @@ namespace Godot
 
                             FieldInfo? fieldInfo = targetType.GetField(name,
                                 BindingFlags.Instance | BindingFlags.Public);
-                            fieldInfo?.SetValue(recreatedTarget, GD.BytesToVar(valueBuffer));
+
+                            if (fieldInfo != null)
+                            {
+                                var variantValue = GD.BytesToVar(valueBuffer);
+                                object? managedValue = RuntimeTypeConversionHelper.ConvertToObjectOfType(
+                                    (godot_variant)variantValue.NativeVar, fieldInfo.FieldType);
+                                fieldInfo.SetValue(recreatedTarget, managedValue);
+                            }
                         }
 
                         @delegate = Delegate.CreateDelegate(delegateType, recreatedTarget, methodInfo,
@@ -536,6 +543,270 @@ namespace Godot
             }
 
             return type;
+        }
+
+        internal static class RuntimeTypeConversionHelper
+        {
+            [SuppressMessage("ReSharper", "RedundantNameQualifier")]
+            public static godot_variant ConvertToVariant(object? obj)
+            {
+                if (obj == null)
+                    return default;
+
+                switch (obj)
+                {
+                    case bool @bool:
+                        return VariantUtils.CreateFrom(@bool);
+                    case char @char:
+                        return VariantUtils.CreateFrom(@char);
+                    case sbyte int8:
+                        return VariantUtils.CreateFrom(int8);
+                    case short int16:
+                        return VariantUtils.CreateFrom(int16);
+                    case int int32:
+                        return VariantUtils.CreateFrom(int32);
+                    case long int64:
+                        return VariantUtils.CreateFrom(int64);
+                    case byte uint8:
+                        return VariantUtils.CreateFrom(uint8);
+                    case ushort uint16:
+                        return VariantUtils.CreateFrom(uint16);
+                    case uint uint32:
+                        return VariantUtils.CreateFrom(uint32);
+                    case ulong uint64:
+                        return VariantUtils.CreateFrom(uint64);
+                    case float @float:
+                        return VariantUtils.CreateFrom(@float);
+                    case double @double:
+                        return VariantUtils.CreateFrom(@double);
+                    case Vector2 vector2:
+                        return VariantUtils.CreateFrom(vector2);
+                    case Vector2i vector2I:
+                        return VariantUtils.CreateFrom(vector2I);
+                    case Rect2 rect2:
+                        return VariantUtils.CreateFrom(rect2);
+                    case Rect2i rect2I:
+                        return VariantUtils.CreateFrom(rect2I);
+                    case Transform2D transform2D:
+                        return VariantUtils.CreateFrom(transform2D);
+                    case Vector3 vector3:
+                        return VariantUtils.CreateFrom(vector3);
+                    case Vector3i vector3I:
+                        return VariantUtils.CreateFrom(vector3I);
+                    case Vector4 vector4:
+                        return VariantUtils.CreateFrom(vector4);
+                    case Vector4i vector4I:
+                        return VariantUtils.CreateFrom(vector4I);
+                    case Basis basis:
+                        return VariantUtils.CreateFrom(basis);
+                    case Quaternion quaternion:
+                        return VariantUtils.CreateFrom(quaternion);
+                    case Transform3D transform3d:
+                        return VariantUtils.CreateFrom(transform3d);
+                    case Projection projection:
+                        return VariantUtils.CreateFrom(projection);
+                    case AABB aabb:
+                        return VariantUtils.CreateFrom(aabb);
+                    case Color color:
+                        return VariantUtils.CreateFrom(color);
+                    case Plane plane:
+                        return VariantUtils.CreateFrom(plane);
+                    case Callable callable:
+                        return VariantUtils.CreateFrom(callable);
+                    case SignalInfo signalInfo:
+                        return VariantUtils.CreateFrom(signalInfo);
+                    case string @string:
+                        return VariantUtils.CreateFrom(@string);
+                    case byte[] byteArray:
+                        return VariantUtils.CreateFrom(byteArray);
+                    case int[] int32Array:
+                        return VariantUtils.CreateFrom(int32Array);
+                    case long[] int64Array:
+                        return VariantUtils.CreateFrom(int64Array);
+                    case float[] floatArray:
+                        return VariantUtils.CreateFrom(floatArray);
+                    case double[] doubleArray:
+                        return VariantUtils.CreateFrom(doubleArray);
+                    case string[] stringArray:
+                        return VariantUtils.CreateFrom(stringArray);
+                    case Vector2[] vector2Array:
+                        return VariantUtils.CreateFrom(vector2Array);
+                    case Vector3[] vector3Array:
+                        return VariantUtils.CreateFrom(vector3Array);
+                    case Color[] colorArray:
+                        return VariantUtils.CreateFrom(colorArray);
+                    case StringName[] stringNameArray:
+                        return VariantUtils.CreateFrom(stringNameArray);
+                    case NodePath[] nodePathArray:
+                        return VariantUtils.CreateFrom(nodePathArray);
+                    case RID[] ridArray:
+                        return VariantUtils.CreateFrom(ridArray);
+                    case Godot.Object[] godotObjectArray:
+                        return VariantUtils.CreateFrom(godotObjectArray);
+                    case StringName stringName:
+                        return VariantUtils.CreateFrom(stringName);
+                    case NodePath nodePath:
+                        return VariantUtils.CreateFrom(nodePath);
+                    case RID rid:
+                        return VariantUtils.CreateFrom(rid);
+                    case Collections.Dictionary godotDictionary:
+                        return VariantUtils.CreateFrom(godotDictionary);
+                    case Collections.Array godotArray:
+                        return VariantUtils.CreateFrom(godotArray);
+                    case Variant variant:
+                        return VariantUtils.CreateFrom(variant);
+                    case Godot.Object godotObject:
+                        return VariantUtils.CreateFrom(godotObject);
+                    case Enum @enum:
+                        return VariantUtils.CreateFrom(Convert.ToInt64(@enum));
+                    case Collections.IGenericGodotDictionary godotDictionary:
+                        return VariantUtils.CreateFrom(godotDictionary.UnderlyingDictionary);
+                    case Collections.IGenericGodotArray godotArray:
+                        return VariantUtils.CreateFrom(godotArray.UnderlyingArray);
+                }
+
+                GD.PushError("Attempted to convert an unmarshallable managed type to Variant. Name: '" +
+                             obj.GetType().FullName + ".");
+                return new godot_variant();
+            }
+
+            private delegate object? ConvertToSystemObjectFunc(in godot_variant managed);
+
+            [SuppressMessage("ReSharper", "RedundantNameQualifier")]
+            // ReSharper disable once RedundantNameQualifier
+            private static readonly System.Collections.Generic.Dictionary<Type, ConvertToSystemObjectFunc>
+                ToSystemObjectFuncByType = new()
+                {
+                    [typeof(bool)] = (in godot_variant variant) => VariantUtils.ConvertTo<bool>(variant),
+                    [typeof(char)] = (in godot_variant variant) => VariantUtils.ConvertTo<char>(variant),
+                    [typeof(sbyte)] = (in godot_variant variant) => VariantUtils.ConvertTo<sbyte>(variant),
+                    [typeof(short)] = (in godot_variant variant) => VariantUtils.ConvertTo<short>(variant),
+                    [typeof(int)] = (in godot_variant variant) => VariantUtils.ConvertTo<int>(variant),
+                    [typeof(long)] = (in godot_variant variant) => VariantUtils.ConvertTo<long>(variant),
+                    [typeof(byte)] = (in godot_variant variant) => VariantUtils.ConvertTo<byte>(variant),
+                    [typeof(ushort)] = (in godot_variant variant) => VariantUtils.ConvertTo<ushort>(variant),
+                    [typeof(uint)] = (in godot_variant variant) => VariantUtils.ConvertTo<uint>(variant),
+                    [typeof(ulong)] = (in godot_variant variant) => VariantUtils.ConvertTo<ulong>(variant),
+                    [typeof(float)] = (in godot_variant variant) => VariantUtils.ConvertTo<float>(variant),
+                    [typeof(double)] = (in godot_variant variant) => VariantUtils.ConvertTo<double>(variant),
+                    [typeof(Vector2)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector2>(variant),
+                    [typeof(Vector2i)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector2i>(variant),
+                    [typeof(Rect2)] = (in godot_variant variant) => VariantUtils.ConvertTo<Rect2>(variant),
+                    [typeof(Rect2i)] = (in godot_variant variant) => VariantUtils.ConvertTo<Rect2i>(variant),
+                    [typeof(Transform2D)] = (in godot_variant variant) => VariantUtils.ConvertTo<Transform2D>(variant),
+                    [typeof(Vector3)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector3>(variant),
+                    [typeof(Vector3i)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector3i>(variant),
+                    [typeof(Basis)] = (in godot_variant variant) => VariantUtils.ConvertTo<Basis>(variant),
+                    [typeof(Quaternion)] = (in godot_variant variant) => VariantUtils.ConvertTo<Quaternion>(variant),
+                    [typeof(Transform3D)] = (in godot_variant variant) => VariantUtils.ConvertTo<Transform3D>(variant),
+                    [typeof(Vector4)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector4>(variant),
+                    [typeof(Vector4i)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector4i>(variant),
+                    [typeof(AABB)] = (in godot_variant variant) => VariantUtils.ConvertTo<AABB>(variant),
+                    [typeof(Color)] = (in godot_variant variant) => VariantUtils.ConvertTo<Color>(variant),
+                    [typeof(Plane)] = (in godot_variant variant) => VariantUtils.ConvertTo<Plane>(variant),
+                    [typeof(Callable)] = (in godot_variant variant) => VariantUtils.ConvertTo<Callable>(variant),
+                    [typeof(SignalInfo)] = (in godot_variant variant) => VariantUtils.ConvertTo<SignalInfo>(variant),
+                    [typeof(string)] = (in godot_variant variant) => VariantUtils.ConvertTo<string>(variant),
+                    [typeof(byte[])] = (in godot_variant variant) => VariantUtils.ConvertTo<byte[]>(variant),
+                    [typeof(int[])] = (in godot_variant variant) => VariantUtils.ConvertTo<int[]>(variant),
+                    [typeof(long[])] = (in godot_variant variant) => VariantUtils.ConvertTo<long[]>(variant),
+                    [typeof(float[])] = (in godot_variant variant) => VariantUtils.ConvertTo<float[]>(variant),
+                    [typeof(double[])] = (in godot_variant variant) => VariantUtils.ConvertTo<double[]>(variant),
+                    [typeof(string[])] = (in godot_variant variant) => VariantUtils.ConvertTo<string[]>(variant),
+                    [typeof(Vector2[])] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector2[]>(variant),
+                    [typeof(Vector3[])] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector3[]>(variant),
+                    [typeof(Color[])] = (in godot_variant variant) => VariantUtils.ConvertTo<Color[]>(variant),
+                    [typeof(StringName[])] =
+                        (in godot_variant variant) => VariantUtils.ConvertTo<StringName[]>(variant),
+                    [typeof(NodePath[])] = (in godot_variant variant) => VariantUtils.ConvertTo<NodePath[]>(variant),
+                    [typeof(RID[])] = (in godot_variant variant) => VariantUtils.ConvertTo<RID[]>(variant),
+                    [typeof(StringName)] = (in godot_variant variant) => VariantUtils.ConvertTo<StringName>(variant),
+                    [typeof(NodePath)] = (in godot_variant variant) => VariantUtils.ConvertTo<NodePath>(variant),
+                    [typeof(RID)] = (in godot_variant variant) => VariantUtils.ConvertTo<RID>(variant),
+                    [typeof(Godot.Collections.Dictionary)] = (in godot_variant variant) =>
+                        VariantUtils.ConvertTo<Godot.Collections.Dictionary>(variant),
+                    [typeof(Godot.Collections.Array)] =
+                        (in godot_variant variant) => VariantUtils.ConvertTo<Godot.Collections.Array>(variant),
+                    [typeof(Variant)] = (in godot_variant variant) => VariantUtils.ConvertTo<Variant>(variant),
+                };
+
+            [SuppressMessage("ReSharper", "RedundantNameQualifier")]
+            public static object? ConvertToObjectOfType(in godot_variant variant, Type type)
+            {
+                if (ToSystemObjectFuncByType.TryGetValue(type, out var func))
+                    return func(variant);
+
+                if (typeof(Godot.Object).IsAssignableFrom(type))
+                    return Convert.ChangeType(VariantUtils.ConvertTo<Godot.Object>(variant), type);
+
+                if (type.IsEnum)
+                {
+                    var enumUnderlyingType = type.GetEnumUnderlyingType();
+
+                    switch (Type.GetTypeCode(enumUnderlyingType))
+                    {
+                        case TypeCode.SByte:
+                            return Enum.ToObject(type, VariantUtils.ConvertToInt8(variant));
+                        case TypeCode.Int16:
+                            return Enum.ToObject(type, VariantUtils.ConvertToInt16(variant));
+                        case TypeCode.Int32:
+                            return Enum.ToObject(type, VariantUtils.ConvertToInt32(variant));
+                        case TypeCode.Int64:
+                            return Enum.ToObject(type, VariantUtils.ConvertToInt64(variant));
+                        case TypeCode.Byte:
+                            return Enum.ToObject(type, VariantUtils.ConvertToUInt8(variant));
+                        case TypeCode.UInt16:
+                            return Enum.ToObject(type, VariantUtils.ConvertToUInt16(variant));
+                        case TypeCode.UInt32:
+                            return Enum.ToObject(type, VariantUtils.ConvertToUInt32(variant));
+                        case TypeCode.UInt64:
+                            return Enum.ToObject(type, VariantUtils.ConvertToUInt64(variant));
+                        default:
+                        {
+                            GD.PushError(
+                                "Attempted to convert Variant to enum value of unsupported underlying type. Name: " +
+                                type.FullName + " : " + enumUnderlyingType.FullName + ".");
+                            return null;
+                        }
+                    }
+                }
+
+                if (type.IsGenericType)
+                {
+                    var genericTypeDef = type.GetGenericTypeDefinition();
+
+                    if (genericTypeDef == typeof(Godot.Collections.Dictionary<,>))
+                    {
+                        var ctor = type.GetConstructor(BindingFlags.Default,
+                            new[] { typeof(Godot.Collections.Dictionary) });
+
+                        if (ctor == null)
+                            throw new InvalidOperationException("Dictionary constructor not found");
+
+                        return ctor.Invoke(new object?[]
+                        {
+                            VariantUtils.ConvertTo<Godot.Collections.Dictionary>(variant)
+                        });
+                    }
+
+                    if (genericTypeDef == typeof(Godot.Collections.Array<>))
+                    {
+                        var ctor = type.GetConstructor(BindingFlags.Default,
+                            new[] { typeof(Godot.Collections.Array) });
+
+                        if (ctor == null)
+                            throw new InvalidOperationException("Array constructor not found");
+
+                        return ctor.Invoke(new object?[]
+                        {
+                            VariantUtils.ConvertTo<Godot.Collections.Array>(variant)
+                        });
+                    }
+                }
+
+                GD.PushError($"Attempted to convert Variant to unsupported type. Name: {type.FullName}.");
+                return null;
+            }
         }
     }
 }
