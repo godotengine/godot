@@ -58,11 +58,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/Xinerama.h>
-#include <X11/extensions/shape.h>
-
 // ICCCM
 #define WM_NormalState 1L // window normal state
 #define WM_IconicState 3L // window minimized
@@ -4710,6 +4705,46 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 }
 
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	if (initialize_xlib(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xlib dynamically.");
+	}
+
+	if (initialize_xcursor(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load XCursor dynamically.");
+	}
+
+	if (initialize_xext(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xext dynamically.");
+	}
+
+	if (initialize_xinerama(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xinerama dynamically.");
+	}
+
+	if (initialize_xrandr(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xrandr dynamically.");
+	}
+
+	if (initialize_xrender(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xrender dynamically.");
+	}
+
+	if (initialize_xinput2(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xinput2 dynamically.");
+	}
+
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -4910,7 +4945,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
 
-		if (gl_manager->initialize() != OK) {
+		if (gl_manager->initialize(x11_display) != OK) {
 			memdelete(gl_manager);
 			gl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
