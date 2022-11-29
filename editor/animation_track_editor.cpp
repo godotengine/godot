@@ -1754,7 +1754,9 @@ void AnimationTimelineEdit::update_values() {
 		length->set_step(1);
 		length->set_tooltip_text(TTR("Animation length (frames)"));
 		time_icon->set_tooltip_text(TTR("Animation length (frames)"));
-		track_edit->editor->_update_key_edit();
+		if (track_edit) {
+			track_edit->editor->_update_key_edit();
+		}
 	} else {
 		length->set_value(animation->get_length());
 		length->set_step(0.001);
