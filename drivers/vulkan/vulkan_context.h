@@ -110,10 +110,7 @@ private:
 	bool device_initialized = false;
 	bool inst_initialized = false;
 
-	// Vulkan 1.0 doesn't return version info so we assume this by default until we know otherwise.
-	uint32_t vulkan_major = 1;
-	uint32_t vulkan_minor = 0;
-	uint32_t vulkan_patch = 0;
+	uint32_t instance_api_version = VK_API_VERSION_1_0;
 	SubgroupCapabilities subgroup_capabilities;
 	MultiviewCapabilities multiview_capabilities;
 	VRSCapabilities vrs_capabilities;
@@ -276,8 +273,8 @@ public:
 	bool supports_renderpass2() const { return is_device_extension_enabled(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME); }
 	VkResult vkCreateRenderPass2KHR(VkDevice p_device, const VkRenderPassCreateInfo2 *p_create_info, const VkAllocationCallbacks *p_allocator, VkRenderPass *p_render_pass);
 
-	uint32_t get_vulkan_major() const { return vulkan_major; };
-	uint32_t get_vulkan_minor() const { return vulkan_minor; };
+	uint32_t get_vulkan_major() const { return VK_API_VERSION_MAJOR(device_api_version); };
+	uint32_t get_vulkan_minor() const { return VK_API_VERSION_MINOR(device_api_version); };
 	const SubgroupCapabilities &get_subgroup_capabilities() const { return subgroup_capabilities; };
 	const MultiviewCapabilities &get_multiview_capabilities() const { return multiview_capabilities; };
 	const VRSCapabilities &get_vrs_capabilities() const { return vrs_capabilities; };

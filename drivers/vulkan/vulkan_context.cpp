@@ -378,9 +378,7 @@ Error VulkanContext::_obtain_vulkan_version() {
 		uint32_t api_version;
 		VkResult res = func(&api_version);
 		if (res == VK_SUCCESS) {
-			vulkan_major = VK_API_VERSION_MAJOR(api_version);
-			vulkan_minor = VK_API_VERSION_MINOR(api_version);
-			vulkan_patch = VK_API_VERSION_PATCH(api_version);
+			instance_api_version = api_version;
 		} else {
 			// According to the documentation this shouldn't fail with anything except a memory allocation error
 			// in which case we're in deep trouble anyway.
@@ -388,13 +386,7 @@ Error VulkanContext::_obtain_vulkan_version() {
 		}
 	} else {
 		print_line("vkEnumerateInstanceVersion not available, assuming Vulkan 1.0.");
-	}
-
-	// We don't go above 1.2.
-	if ((vulkan_major > 1) || (vulkan_major == 1 && vulkan_minor > 2)) {
-		vulkan_major = 1;
-		vulkan_minor = 2;
-		vulkan_patch = 0;
+		instance_api_version = VK_API_VERSION_1_0;
 	}
 
 	return OK;
@@ -832,7 +824,7 @@ Error VulkanContext::_check_capabilities() {
 			VkPhysicalDeviceProperties2 physicalDeviceProperties{};
 			void *nextptr = nullptr;
 
-			if (!(vulkan_major == 1 && vulkan_minor == 0)) {
+			if (device_api_version >= VK_API_VERSION_1_1) { // Vulkan 1.1 or higher
 				subgroupProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
 				subgroupProperties.pNext = nextptr;
 
@@ -937,15 +929,21 @@ Error VulkanContext::_create_instance() {
 		enabled_extension_names[enabled_extension_count++] = extension_name.ptr();
 	}
 
+	// We'll set application version to the Vulkan version we're developing against, even if our instance is based on
+	// an older Vulkan version, devices can still support newer versions of Vulkan.
+	// The exception is when we're on Vulkan 1.0, we should not set this to anything but 1.0.
+	// Note that this value is only used by validation layers to warn us about version issues.
+	uint32_t application_api_version = instance_api_version == VK_API_VERSION_1_0 ? VK_API_VERSION_1_0 : VK_API_VERSION_1_2;
+
 	CharString cs = GLOBAL_GET("application/config/name").operator String().utf8();
 	const VkApplicationInfo app = {
 		/*sType*/ VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		/*pNext*/ nullptr,
 		/*pApplicationName*/ cs.get_data(),
-		/*applicationVersion*/ 0,
+		/*applicationVersion*/ 0, // It would be really nice if we store a version number in project settings, say "application/config/version"
 		/*pEngineName*/ VERSION_NAME,
 		/*engineVersion*/ VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH),
-		/*apiVersion*/ VK_MAKE_VERSION(vulkan_major, vulkan_minor, 0)
+		/*apiVersion*/ application_api_version
 	};
 	VkInstanceCreateInfo inst_info{};
 	inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -1257,11 +1255,11 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 		}
 	}
 
-	print_line(
-			"Vulkan API " + itos(vulkan_major) + "." + itos(vulkan_minor) + "." + itos(vulkan_patch) +
-			" - " + "Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
-
+	// Get device version
 	device_api_version = gpu_props.apiVersion;
+
+	// Output our device version
+	print_line("Vulkan API " + get_device_api_version() + " - " + "Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
 
 	{
 		Error _err = _initialize_device_extensions();
@@ -1345,7 +1343,7 @@ Error VulkanContext::_create_device() {
 	VkPhysicalDeviceVulkan11Features vulkan11features = {};
 	VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 	VkPhysicalDeviceMultiviewFeatures multiview_features = {};
-	if (vulkan_major > 1 || vulkan_minor >= 2) {
+	if (device_api_version >= VK_API_VERSION_1_2) {
 		// In Vulkan 1.2 and newer we use a newer struct to enable various features.
 
 		vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
@@ -1373,7 +1371,7 @@ Error VulkanContext::_create_device() {
 		storage_feature.storageInputOutput16 = storage_buffer_capabilities.storage_input_output_16;
 		nextptr = &storage_feature;
 
-		if (vulkan_major == 1 && vulkan_minor == 1) {
+		if (device_api_version >= VK_API_VERSION_1_1) { // any Vulkan 1.1.x version
 			multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
 			multiview_features.pNext = nextptr;
 			multiview_features.multiview = multiview_capabilities.is_supported;
@@ -2644,7 +2642,7 @@ RenderingDevice::DeviceType VulkanContext::get_device_type() const {
 }
 
 String VulkanContext::get_device_api_version() const {
-	return vformat("%d.%d.%d", vulkan_major, vulkan_minor, vulkan_patch);
+	return vformat("%d.%d.%d", VK_API_VERSION_MAJOR(device_api_version), VK_API_VERSION_MINOR(device_api_version), VK_API_VERSION_PATCH(device_api_version));
 }
 
 String VulkanContext::get_device_pipeline_cache_uuid() const {
