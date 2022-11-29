@@ -64,7 +64,6 @@ public:
 	enum UpdateMode {
 		UPDATE_CONTINUOUS,
 		UPDATE_DISCRETE,
-		UPDATE_TRIGGER,
 		UPDATE_CAPTURE,
 	};
 

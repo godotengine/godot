@@ -2877,40 +2877,38 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_ANIMATE_AS_TRIGGER" value="16384" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="32768" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="65536" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="131072" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="262144" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNAL" value="262144" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNAL" value="524288" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="1048576" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="524288" enum="PropertyUsageFlags">
 			If the property is a [Resource], a new copy of it is always created when calling [method Node.duplicate] or [method Resource.duplicate].
 		</constant>
-		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="2097152" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="1048576" enum="PropertyUsageFlags">
 			The property is only shown in the editor if modern renderers are supported (GLES3 is excluded).
 		</constant>
-		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="2097152" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="4194304" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="8388608" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="16777216" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="33554432" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="67108864" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_READ_ONLY" value="134217728" enum="PropertyUsageFlags">
 			The property is read-only in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_ARRAY" value="536870912" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ARRAY" value="268435456" enum="PropertyUsageFlags">
 			The property is an array.
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags">
