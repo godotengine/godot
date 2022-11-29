@@ -256,33 +256,6 @@ RID GridMap::get_navigation_map() const {
 	return RID();
 }
 
-void GridMap::set_navigation_layers(uint32_t p_navigation_layers) {
-	navigation_layers = p_navigation_layers;
-	_recreate_octant_data();
-}
-
-uint32_t GridMap::get_navigation_layers() const {
-	return navigation_layers;
-}
-
-void GridMap::set_navigation_layer_value(int p_layer_number, bool p_value) {
-	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
-	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
-	uint32_t _navigation_layers = get_navigation_layers();
-	if (p_value) {
-		_navigation_layers |= 1 << (p_layer_number - 1);
-	} else {
-		_navigation_layers &= ~(1 << (p_layer_number - 1));
-	}
-	set_navigation_layers(_navigation_layers);
-}
-
-bool GridMap::get_navigation_layer_value(int p_layer_number) const {
-	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
-	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
-	return get_navigation_layers() & (1 << (p_layer_number - 1));
-}
-
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	if (!mesh_library.is_null()) {
 		mesh_library->unregister_owner(this);
@@ -663,11 +636,12 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		if (navigation_mesh.is_valid()) {
 			Octant::NavigationCell nm;
 			nm.xform = xform * mesh_library->get_item_navigation_mesh_transform(c.item);
+			nm.navigation_layers = mesh_library->get_item_navigation_layers(c.item);
 
 			if (bake_navigation) {
 				RID region = NavigationServer3D::get_singleton()->region_create();
 				NavigationServer3D::get_singleton()->region_set_owner_id(region, get_instance_id());
-				NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
+				NavigationServer3D::get_singleton()->region_set_navigation_layers(region, nm.navigation_layers);
 				NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, navigation_mesh);
 				NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * nm.xform);
 				if (is_inside_tree()) {
@@ -792,7 +766,7 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 				if (navigation_mesh.is_valid()) {
 					RID region = NavigationServer3D::get_singleton()->region_create();
 					NavigationServer3D::get_singleton()->region_set_owner_id(region, get_instance_id());
-					NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
+					NavigationServer3D::get_singleton()->region_set_navigation_layers(region, F.value.navigation_layers);
 					NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, navigation_mesh);
 					NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * F.value.xform);
 					if (map_override.is_valid()) {
@@ -1070,12 +1044,6 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &GridMap::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &GridMap::get_navigation_map);
 
-	ClassDB::bind_method(D_METHOD("set_navigation_layers", "layers"), &GridMap::set_navigation_layers);
-	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &GridMap::get_navigation_layers);
-
-	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &GridMap::set_navigation_layer_value);
-	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &GridMap::get_navigation_layer_value);
-
 	ClassDB::bind_method(D_METHOD("set_mesh_library", "mesh_library"), &GridMap::set_mesh_library);
 	ClassDB::bind_method(D_METHOD("get_mesh_library"), &GridMap::get_mesh_library);
 
@@ -1135,7 +1103,6 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
