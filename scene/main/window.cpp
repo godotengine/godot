@@ -40,6 +40,218 @@
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 
+// Dynamic properties.
+
+bool Window::_set(const StringName &p_name, const Variant &p_value) {
+	String name = p_name;
+	if (!name.begins_with("theme_override")) {
+		return false;
+	}
+
+	if (p_value.get_type() == Variant::NIL || (p_value.get_type() == Variant::OBJECT && (Object *)p_value == nullptr)) {
+		if (name.begins_with("theme_override_icons/")) {
+			String dname = name.get_slicec('/', 1);
+			if (theme_icon_override.has(dname)) {
+				theme_icon_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+			}
+			theme_icon_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_styles/")) {
+			String dname = name.get_slicec('/', 1);
+			if (theme_style_override.has(dname)) {
+				theme_style_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+			}
+			theme_style_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_fonts/")) {
+			String dname = name.get_slicec('/', 1);
+			if (theme_font_override.has(dname)) {
+				theme_font_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+			}
+			theme_font_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_font_sizes/")) {
+			String dname = name.get_slicec('/', 1);
+			theme_font_size_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_colors/")) {
+			String dname = name.get_slicec('/', 1);
+			theme_color_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_constants/")) {
+			String dname = name.get_slicec('/', 1);
+			theme_constant_override.erase(dname);
+			_notify_theme_override_changed();
+		} else {
+			return false;
+		}
+
+	} else {
+		if (name.begins_with("theme_override_icons/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_icon_override(dname, p_value);
+		} else if (name.begins_with("theme_override_styles/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_style_override(dname, p_value);
+		} else if (name.begins_with("theme_override_fonts/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_font_override(dname, p_value);
+		} else if (name.begins_with("theme_override_font_sizes/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_font_size_override(dname, p_value);
+		} else if (name.begins_with("theme_override_colors/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_color_override(dname, p_value);
+		} else if (name.begins_with("theme_override_constants/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_constant_override(dname, p_value);
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Window::_get(const StringName &p_name, Variant &r_ret) const {
+	String sname = p_name;
+	if (!sname.begins_with("theme_override")) {
+		return false;
+	}
+
+	if (sname.begins_with("theme_override_icons/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_icon_override.has(name) ? Variant(theme_icon_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_styles/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_style_override.has(name) ? Variant(theme_style_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_fonts/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_font_override.has(name) ? Variant(theme_font_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_font_sizes/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_font_size_override.has(name) ? Variant(theme_font_size_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_colors/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_color_override.has(name) ? Variant(theme_color_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_constants/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_constant_override.has(name) ? Variant(theme_constant_override[name]) : Variant();
+	} else {
+		return false;
+	}
+
+	return true;
+}
+
+void Window::_get_property_list(List<PropertyInfo> *p_list) const {
+	Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
+
+	p_list->push_back(PropertyInfo(Variant::NIL, TTRC("Theme Overrides"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
+
+	{
+		List<StringName> names;
+		default_theme->get_color_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_color_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::COLOR, "theme_override_colors/" + E, PROPERTY_HINT_NONE, "", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_constant_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_constant_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_constants/" + E, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_font_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_font_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_fonts/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_font_size_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_font_size_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_icon_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_icon_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_icons/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_stylebox_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_style_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_styles/" + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
+		}
+	}
+}
+
+void Window::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "theme_type_variation") {
+		List<StringName> names;
+
+		// Only the default theme and the project theme are used for the list of options.
+		// This is an imposed limitation to simplify the logic needed to leverage those options.
+		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
+		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
+		}
+		names.sort_custom<StringName::AlphCompare>();
+
+		Vector<StringName> unique_names;
+		String hint_string;
+		for (const StringName &E : names) {
+			// Skip duplicate values.
+			if (unique_names.has(E)) {
+				continue;
+			}
+
+			hint_string += String(E) + ",";
+			unique_names.append(E);
+		}
+
+		p_property.hint_string = hint_string;
+	}
+}
+
+//
+
 void Window::set_title(const String &p_title) {
 	title = p_title;
 
@@ -1323,6 +1535,8 @@ void Window::remove_child_notify(Node *p_child) {
 	}
 }
 
+// Theming.
+
 void Window::set_theme_owner_node(Node *p_node) {
 	theme_owner->set_owner_node(p_node);
 }
@@ -1376,6 +1590,12 @@ void Window::_theme_changed() {
 	}
 }
 
+void Window::_notify_theme_override_changed() {
+	if (!bulk_theme_override && is_inside_tree()) {
+		notification(NOTIFICATION_THEME_CHANGED);
+	}
+}
+
 void Window::_invalidate_theme_cache() {
 	theme_icon_cache.clear();
 	theme_style_cache.clear();
@@ -1386,6 +1606,9 @@ void Window::_invalidate_theme_cache() {
 }
 
 void Window::_update_theme_item_cache() {
+	// Request an update on the next frame to reflect theme changes.
+	// Updating without a delay can cause a lot of lag.
+	child_controls_changed();
 }
 
 void Window::set_theme_type_variation(const StringName &p_theme_type) {
@@ -1399,7 +1622,16 @@ StringName Window::get_theme_type_variation() const {
 	return theme_type_variation;
 }
 
+/// Theme property lookup.
+
 Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const Ref<Texture2D> *tex = theme_icon_override.getptr(p_name);
+		if (tex) {
+			return *tex;
+		}
+	}
+
 	if (theme_icon_cache.has(p_theme_type) && theme_icon_cache[p_theme_type].has(p_name)) {
 		return theme_icon_cache[p_theme_type][p_name];
 	}
@@ -1412,6 +1644,13 @@ Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName
 }
 
 Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const Ref<StyleBox> *style = theme_style_override.getptr(p_name);
+		if (style) {
+			return *style;
+		}
+	}
+
 	if (theme_style_cache.has(p_theme_type) && theme_style_cache[p_theme_type].has(p_name)) {
 		return theme_style_cache[p_theme_type][p_name];
 	}
@@ -1424,6 +1663,13 @@ Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringN
 }
 
 Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const Ref<Font> *font = theme_font_override.getptr(p_name);
+		if (font) {
+			return *font;
+		}
+	}
+
 	if (theme_font_cache.has(p_theme_type) && theme_font_cache[p_theme_type].has(p_name)) {
 		return theme_font_cache[p_theme_type][p_name];
 	}
@@ -1436,6 +1682,13 @@ Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_t
 }
 
 int Window::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const int *font_size = theme_font_size_override.getptr(p_name);
+		if (font_size && (*font_size) > 0) {
+			return *font_size;
+		}
+	}
+
 	if (theme_font_size_cache.has(p_theme_type) && theme_font_size_cache[p_theme_type].has(p_name)) {
 		return theme_font_size_cache[p_theme_type][p_name];
 	}
@@ -1448,6 +1701,13 @@ int Window::get_theme_font_size(const StringName &p_name, const StringName &p_th
 }
 
 Color Window::get_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const Color *color = theme_color_override.getptr(p_name);
+		if (color) {
+			return *color;
+		}
+	}
+
 	if (theme_color_cache.has(p_theme_type) && theme_color_cache[p_theme_type].has(p_name)) {
 		return theme_color_cache[p_theme_type][p_name];
 	}
@@ -1460,6 +1720,13 @@ Color Window::get_theme_color(const StringName &p_name, const StringName &p_them
 }
 
 int Window::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const int *constant = theme_constant_override.getptr(p_name);
+		if (constant) {
+			return *constant;
+		}
+	}
+
 	if (theme_constant_cache.has(p_theme_type) && theme_constant_cache[p_theme_type].has(p_name)) {
 		return theme_constant_cache[p_theme_type][p_name];
 	}
@@ -1472,40 +1739,203 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_the
 }
 
 bool Window::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_icon_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
 bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_stylebox_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
 bool Window::has_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_font_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
 bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_font_size_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 }
 
 bool Window::has_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_color_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
 bool Window::has_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_constant_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
+
+/// Local property overrides.
+
+void Window::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
+	ERR_FAIL_COND(!p_icon.is_valid());
+
+	if (theme_icon_override.has(p_name)) {
+		theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_icon_override[p_name] = p_icon;
+	theme_icon_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
+	ERR_FAIL_COND(!p_style.is_valid());
+
+	if (theme_style_override.has(p_name)) {
+		theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_style_override[p_name] = p_style;
+	theme_style_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
+	ERR_FAIL_COND(!p_font.is_valid());
+
+	if (theme_font_override.has(p_name)) {
+		theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_font_override[p_name] = p_font;
+	theme_font_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_font_size_override(const StringName &p_name, int p_font_size) {
+	theme_font_size_override[p_name] = p_font_size;
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_color_override(const StringName &p_name, const Color &p_color) {
+	theme_color_override[p_name] = p_color;
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_constant_override(const StringName &p_name, int p_constant) {
+	theme_constant_override[p_name] = p_constant;
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_icon_override(const StringName &p_name) {
+	if (theme_icon_override.has(p_name)) {
+		theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_icon_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_style_override(const StringName &p_name) {
+	if (theme_style_override.has(p_name)) {
+		theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_style_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_font_override(const StringName &p_name) {
+	if (theme_font_override.has(p_name)) {
+		theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_font_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_font_size_override(const StringName &p_name) {
+	theme_font_size_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_color_override(const StringName &p_name) {
+	theme_color_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_constant_override(const StringName &p_name) {
+	theme_constant_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+bool Window::has_theme_icon_override(const StringName &p_name) const {
+	const Ref<Texture2D> *tex = theme_icon_override.getptr(p_name);
+	return tex != nullptr;
+}
+
+bool Window::has_theme_stylebox_override(const StringName &p_name) const {
+	const Ref<StyleBox> *style = theme_style_override.getptr(p_name);
+	return style != nullptr;
+}
+
+bool Window::has_theme_font_override(const StringName &p_name) const {
+	const Ref<Font> *font = theme_font_override.getptr(p_name);
+	return font != nullptr;
+}
+
+bool Window::has_theme_font_size_override(const StringName &p_name) const {
+	const int *font_size = theme_font_size_override.getptr(p_name);
+	return font_size != nullptr;
+}
+
+bool Window::has_theme_color_override(const StringName &p_name) const {
+	const Color *color = theme_color_override.getptr(p_name);
+	return color != nullptr;
+}
+
+bool Window::has_theme_constant_override(const StringName &p_name) const {
+	const int *constant = theme_constant_override.getptr(p_name);
+	return constant != nullptr;
+}
+
+/// Default theme properties.
 
 float Window::get_theme_default_base_scale() const {
 	return theme_owner->get_theme_default_base_scale();
@@ -1518,6 +1948,21 @@ Ref<Font> Window::get_theme_default_font() const {
 int Window::get_theme_default_font_size() const {
 	return theme_owner->get_theme_default_font_size();
 }
+
+/// Bulk actions.
+
+void Window::begin_bulk_theme_override() {
+	bulk_theme_override = true;
+}
+
+void Window::end_bulk_theme_override() {
+	ERR_FAIL_COND(!bulk_theme_override);
+
+	bulk_theme_override = false;
+	_notify_theme_override_changed();
+}
+
+//
 
 Rect2i Window::get_parent_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2i());
@@ -1609,34 +2054,6 @@ void Window::set_auto_translate(bool p_enable) {
 
 bool Window::is_auto_translating() const {
 	return auto_translate;
-}
-
-void Window::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "theme_type_variation") {
-		List<StringName> names;
-
-		// Only the default theme and the project theme are used for the list of options.
-		// This is an imposed limitation to simplify the logic needed to leverage those options.
-		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
-		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
-		}
-		names.sort_custom<StringName::AlphCompare>();
-
-		Vector<StringName> unique_names;
-		String hint_string;
-		for (const StringName &E : names) {
-			// Skip duplicate values.
-			if (unique_names.has(E)) {
-				continue;
-			}
-
-			hint_string += String(E) + ",";
-			unique_names.append(E);
-		}
-
-		p_property.hint_string = hint_string;
-	}
 }
 
 Transform2D Window::get_screen_transform() const {
@@ -1733,12 +2150,36 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_theme_type_variation", "theme_type"), &Window::set_theme_type_variation);
 	ClassDB::bind_method(D_METHOD("get_theme_type_variation"), &Window::get_theme_type_variation);
 
+	ClassDB::bind_method(D_METHOD("begin_bulk_theme_override"), &Window::begin_bulk_theme_override);
+	ClassDB::bind_method(D_METHOD("end_bulk_theme_override"), &Window::end_bulk_theme_override);
+
+	ClassDB::bind_method(D_METHOD("add_theme_icon_override", "name", "texture"), &Window::add_theme_icon_override);
+	ClassDB::bind_method(D_METHOD("add_theme_stylebox_override", "name", "stylebox"), &Window::add_theme_style_override);
+	ClassDB::bind_method(D_METHOD("add_theme_font_override", "name", "font"), &Window::add_theme_font_override);
+	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Window::add_theme_font_size_override);
+	ClassDB::bind_method(D_METHOD("add_theme_color_override", "name", "color"), &Window::add_theme_color_override);
+	ClassDB::bind_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Window::add_theme_constant_override);
+
+	ClassDB::bind_method(D_METHOD("remove_theme_icon_override", "name"), &Window::remove_theme_icon_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_stylebox_override", "name"), &Window::remove_theme_style_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_font_override", "name"), &Window::remove_theme_font_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_font_size_override", "name"), &Window::remove_theme_font_size_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Window::remove_theme_color_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Window::remove_theme_constant_override);
+
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Window::get_theme_font, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Window::get_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Window::get_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Window::get_theme_constant, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Window::has_theme_icon_override);
+	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Window::has_theme_stylebox_override);
+	ClassDB::bind_method(D_METHOD("has_theme_font_override", "name"), &Window::has_theme_font_override);
+	ClassDB::bind_method(D_METHOD("has_theme_font_size_override", "name"), &Window::has_theme_font_size_override);
+	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Window::has_theme_color_override);
+	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Window::has_theme_constant_override);
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Window::has_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Window::has_theme_stylebox, DEFVAL(""));
@@ -1793,12 +2234,12 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor"), "set_content_scale_factor", "get_content_scale_factor");
 
+	ADD_GROUP("Localization", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
+
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
-
-	ADD_GROUP("Auto Translate", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
@@ -1859,4 +2300,23 @@ Window::Window() {
 
 Window::~Window() {
 	memdelete(theme_owner);
+
+	// Resources need to be disconnected.
+	for (KeyValue<StringName, Ref<Texture2D>> &E : theme_icon_override) {
+		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+	for (KeyValue<StringName, Ref<StyleBox>> &E : theme_style_override) {
+		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+	for (KeyValue<StringName, Ref<Font>> &E : theme_font_override) {
+		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	// Then override maps can be simply cleared.
+	theme_icon_override.clear();
+	theme_style_override.clear();
+	theme_font_override.clear();
+	theme_font_size_override.clear();
+	theme_color_override.clear();
+	theme_constant_override.clear();
 }
