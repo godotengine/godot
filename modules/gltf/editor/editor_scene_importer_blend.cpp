@@ -33,7 +33,6 @@
 #ifdef TOOLS_ENABLED
 
 #include "../gltf_document.h"
-#include "../gltf_state.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_file_dialog.h"
@@ -42,8 +41,6 @@
 #include "editor/editor_settings.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
-#include "scene/main/node.h"
-#include "scene/resources/animation.h"
 
 #ifdef WINDOWS_ENABLED
 // Code by Pedro Estebanez (https://github.com/godotengine/godot/pull/59766)

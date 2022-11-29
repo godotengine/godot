@@ -31,7 +31,6 @@
 #ifndef GLTF_TEXTURE_SAMPLER_H
 #define GLTF_TEXTURE_SAMPLER_H
 
-#include "core/io/resource.h"
 #include "scene/resources/material.h"
 
 class GLTFTextureSampler : public Resource {

@@ -45,7 +45,7 @@
 			<param index="0" name="root" type="Node" />
 			<description>
 				Part of the export process. This method is run first, before all other parts of the export process.
-				The return value is used to determine if this GLTFDocumentExtension class should be used for exporting a given GLTF file. If [constant OK], the export will use this GLTFDocumentExtension class. If not overridden, [constant OK] is returned.
+				The return value is used to determine if this [GLTFDocumentExtension] instance should be used for exporting a given GLTF file. If [constant OK], the export will use this [GLTFDocumentExtension] instance. If not overridden, [constant OK] is returned.
 			</description>
 		</method>
 		<method name="_generate_scene_node" qualifiers="virtual">
@@ -99,7 +99,7 @@
 			<param index="1" name="extensions" type="PackedStringArray" />
 			<description>
 				Part of the import process. This method is run first, before all other parts of the import process.
-				The return value is used to determine if this GLTFDocumentExtension class should be used for importing a given GLTF file. If [constant OK], the import will use this GLTFDocumentExtension class. If not overridden, [constant OK] is returned.
+				The return value is used to determine if this [GLTFDocumentExtension] instance should be used for importing a given GLTF file. If [constant OK], the import will use this [GLTFDocumentExtension] instance. If not overridden, [constant OK] is returned.
 			</description>
 		</method>
 		<method name="_parse_node_extensions" qualifiers="virtual">
@@ -109,7 +109,7 @@
 			<param index="2" name="extensions" type="Dictionary" />
 			<description>
 				Part of the import process. This method is run after [method _get_supported_extensions] and before [method _generate_scene_node].
-				Runs when parsing the node extensions of a GLTFNode. This method can be used to process the extension JSON data into a format that can be used by [method _generate_scene_node].
+				Runs when parsing the node extensions of a GLTFNode. This method can be used to process the extension JSON data into a format that can be used by [method _generate_scene_node]. The return value should be a member of the [enum Error] enum.
 			</description>
 		</method>
 	</methods>
