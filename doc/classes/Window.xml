@@ -10,6 +10,66 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_theme_color_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Creates a local override for a theme [Color] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_color_override].
+				See also [method get_theme_color] and [method Control.add_theme_color_override] for more details.
+			</description>
+		</method>
+		<method name="add_theme_constant_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="constant" type="int" />
+			<description>
+				Creates a local override for a theme constant with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_constant_override].
+				See also [method get_theme_constant].
+			</description>
+		</method>
+		<method name="add_theme_font_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="font" type="Font" />
+			<description>
+				Creates a local override for a theme [Font] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_override].
+				See also [method get_theme_font].
+			</description>
+		</method>
+		<method name="add_theme_font_size_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="font_size" type="int" />
+			<description>
+				Creates a local override for a theme font size with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_size_override].
+				See also [method get_theme_font_size].
+			</description>
+		</method>
+		<method name="add_theme_icon_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="texture" type="Texture2D" />
+			<description>
+				Creates a local override for a theme icon with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_icon_override].
+				See also [method get_theme_icon].
+			</description>
+		</method>
+		<method name="add_theme_stylebox_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="stylebox" type="StyleBox" />
+			<description>
+				Creates a local override for a theme [StyleBox] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_stylebox_override].
+				See also [method get_theme_stylebox] and [method Control.add_theme_stylebox_override] for more details.
+			</description>
+		</method>
+		<method name="begin_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Prevents [code]*_theme_*_override[/code] methods from emitting [constant NOTIFICATION_THEME_CHANGED] until [method end_bulk_theme_override] is called.
+			</description>
+		</method>
 		<method name="can_draw" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -20,6 +80,12 @@
 			<return type="void" />
 			<description>
 				Requests an update of the [Window] size to fit underlying [Control] nodes.
+			</description>
+		</method>
+		<method name="end_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Ends a bulk theme override update. See [method begin_bulk_theme_override].
 			</description>
 		</method>
 		<method name="get_contents_minimum_size" qualifiers="const">
@@ -58,7 +124,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [Color] at [param name] if the theme has [param theme_type].
+				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
@@ -67,29 +133,29 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the constant at [param name] if the theme has [param theme_type].
+				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
 		<method name="get_theme_default_base_scale" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the default base scale defined in the attached [Theme].
-				See [member Theme.default_base_scale] for more details.
+				Returns the default base scale value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_base_scale] value.
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_default_font" qualifiers="const">
 			<return type="Font" />
 			<description>
-				Returns the default [Font] defined in the attached [Theme].
-				See [member Theme.default_font] for more details.
+				Returns the default font from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font] value.
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_default_font_size" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the default font size defined in the attached [Theme].
-				See [member Theme.default_font_size] for more details.
+				Returns the default font size value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font_size] value.
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
@@ -97,8 +163,8 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [Font] at [param name] if the theme has [param theme_type].
-				See [method Control.get_theme_color] for more details.
+				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
@@ -106,8 +172,8 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the font size at [param name] if the theme has [param theme_type].
-				See [method Control.get_theme_color] for more details.
+				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
@@ -115,8 +181,8 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the icon at [param name] if the theme has [param theme_type].
-				See [method Control.get_theme_color] for more details.
+				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
@@ -124,8 +190,8 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [StyleBox] at [param name] if the theme has [param theme_type].
-				See [method Control.get_theme_color] for more details.
+				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="grab_focus">
@@ -145,7 +211,16 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [Color] with [param name] is in [param theme_type].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a color item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_color_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme [Color] with the specified [param name] in this [Control] node.
+				See [method add_theme_color_override].
 			</description>
 		</method>
 		<method name="has_theme_constant" qualifiers="const">
@@ -153,7 +228,16 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if constant with [param name] is in [param theme_type].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_constant_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme constant with the specified [param name] in this [Control] node.
+				See [method add_theme_constant_override].
 			</description>
 		</method>
 		<method name="has_theme_font" qualifiers="const">
@@ -161,7 +245,16 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [Font] with [param name] is in [param theme_type].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_font_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme [Font] with the specified [param name] in this [Control] node.
+				See [method add_theme_font_override].
 			</description>
 		</method>
 		<method name="has_theme_font_size" qualifiers="const">
@@ -169,7 +262,16 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if font size with [param name] is in [param theme_type].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_font_size_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme font size with the specified [param name] in this [Control] node.
+				See [method add_theme_font_size_override].
 			</description>
 		</method>
 		<method name="has_theme_icon" qualifiers="const">
@@ -177,7 +279,16 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if icon with [param name] is in [param theme_type].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_icon_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme icon with the specified [param name] in this [Control] node.
+				See [method add_theme_icon_override].
 			</description>
 		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
@@ -185,7 +296,16 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [StyleBox] with [param name] is in [param theme_type].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_stylebox_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme [StyleBox] with the specified [param name] in this [Control] node.
+				See [method add_theme_stylebox_override].
 			</description>
 		</method>
 		<method name="hide">
@@ -262,6 +382,48 @@
 			<description>
 				Popups the [Window] with a position shifted by parent [Window]'s position.
 				If the [Window] is embedded, has the same effect as [method popup].
+			</description>
+		</method>
+		<method name="remove_theme_color_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme [Color] with the specified [param name] previously added by [method add_theme_color_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_constant_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme constant with the specified [param name] previously added by [method add_theme_constant_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_font_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme [Font] with the specified [param name] previously added by [method add_theme_font_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_font_size_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme font size with the specified [param name] previously added by [method add_theme_font_size_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_icon_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme icon with the specified [param name] previously added by [method add_theme_icon_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_stylebox_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme [StyleBox] with the specified [param name] previously added by [method add_theme_stylebox_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="request_attention">
@@ -373,8 +535,8 @@
 			The window's size in pixels.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
-			The [Theme] resource that determines the style of the underlying [Control] nodes.
-			[Window] styles will have no effect unless the window is embedded.
+			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
+			[b]Note:[/b] [Window] styles will have no effect unless the window is embedded.
 		</member>
 		<member name="theme_type_variation" type="StringName" setter="set_theme_type_variation" getter="get_theme_type_variation" default="&amp;&quot;&quot;">
 			The name of a theme type variation used by this [Window] to look up its own theme items. See [member Control.theme_type_variation] for more details.

@@ -140,6 +140,14 @@ private:
 	Ref<Theme> theme;
 	StringName theme_type_variation;
 
+	bool bulk_theme_override = false;
+	Theme::ThemeIconMap theme_icon_override;
+	Theme::ThemeStyleMap theme_style_override;
+	Theme::ThemeFontMap theme_font_override;
+	Theme::ThemeFontSizeMap theme_font_size_override;
+	Theme::ThemeColorMap theme_color_override;
+	Theme::ThemeConstantMap theme_constant_override;
+
 	mutable HashMap<StringName, Theme::ThemeIconMap> theme_icon_cache;
 	mutable HashMap<StringName, Theme::ThemeStyleMap> theme_style_cache;
 	mutable HashMap<StringName, Theme::ThemeFontMap> theme_font_cache;
@@ -148,6 +156,7 @@ private:
 	mutable HashMap<StringName, Theme::ThemeConstantMap> theme_constant_cache;
 
 	void _theme_changed();
+	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
 
 	Viewport *embedder = nullptr;
@@ -173,6 +182,10 @@ protected:
 	virtual Size2 _get_contents_minimum_size() const;
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void add_child_notify(Node *p_child) override;
@@ -271,16 +284,6 @@ public:
 	void popup_centered(const Size2i &p_minsize = Size2i());
 	void popup_centered_clamped(const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
-	void set_theme_owner_node(Node *p_node);
-	Node *get_theme_owner_node() const;
-	bool has_theme_owner_node() const;
-
-	void set_theme(const Ref<Theme> &p_theme);
-	Ref<Theme> get_theme() const;
-
-	void set_theme_type_variation(const StringName &p_theme_type);
-	StringName get_theme_type_variation() const;
-
 	Size2 get_contents_minimum_size() const;
 
 	void grab_focus();
@@ -296,12 +299,48 @@ public:
 
 	Rect2i get_usable_parent_rect() const;
 
+	// Theming.
+
+	void set_theme_owner_node(Node *p_node);
+	Node *get_theme_owner_node() const;
+	bool has_theme_owner_node() const;
+
+	void set_theme(const Ref<Theme> &p_theme);
+	Ref<Theme> get_theme() const;
+
+	void set_theme_type_variation(const StringName &p_theme_type);
+	StringName get_theme_type_variation() const;
+
+	void begin_bulk_theme_override();
+	void end_bulk_theme_override();
+
+	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
+	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
+	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
+	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
+	void add_theme_color_override(const StringName &p_name, const Color &p_color);
+	void add_theme_constant_override(const StringName &p_name, int p_constant);
+
+	void remove_theme_icon_override(const StringName &p_name);
+	void remove_theme_style_override(const StringName &p_name);
+	void remove_theme_font_override(const StringName &p_name);
+	void remove_theme_font_size_override(const StringName &p_name);
+	void remove_theme_color_override(const StringName &p_name);
+	void remove_theme_constant_override(const StringName &p_name);
+
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+
+	bool has_theme_icon_override(const StringName &p_name) const;
+	bool has_theme_stylebox_override(const StringName &p_name) const;
+	bool has_theme_font_override(const StringName &p_name) const;
+	bool has_theme_font_size_override(const StringName &p_name) const;
+	bool has_theme_color_override(const StringName &p_name) const;
+	bool has_theme_constant_override(const StringName &p_name) const;
 
 	bool has_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
@@ -313,6 +352,8 @@ public:
 	float get_theme_default_base_scale() const;
 	Ref<Font> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
+
+	//
 
 	virtual Transform2D get_screen_transform() const override;
 
