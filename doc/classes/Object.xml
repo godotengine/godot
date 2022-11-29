@@ -764,6 +764,22 @@
 				Emits the [signal property_list_changed] signal. This is mainly used to refresh the editor, so that the Inspector and editor plugins are properly updated.
 			</description>
 		</method>
+		<method name="property_can_revert" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given [param property] has a custom default value. Use [method property_get_revert] to get the [param property]'s default value.
+				[b]Note:[/b] This method is used by the Inspector dock to display a revert icon. The object must implement [method _property_can_revert] to customize the default value. If [method _property_can_revert] is not implemented, this method returns [code]false[/code].
+			</description>
+		</method>
+		<method name="property_get_revert" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Returns the custom default value of the given [param property]. Use [method property_can_revert] to check if the [param property] has a custom default value.
+				[b]Note:[/b] This method is used by the Inspector dock to display a revert icon. The object must implement [method _property_get_revert] to customize the default value. If [method _property_get_revert] is not implemented, this method returns [code]null[/code].
+			</description>
+		</method>
 		<method name="remove_meta">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />

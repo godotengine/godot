@@ -1473,6 +1473,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_indexed", "property_path"), &Object::_get_indexed_bind);
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
+	ClassDB::bind_method(D_METHOD("property_can_revert", "property"), &Object::property_can_revert);
+	ClassDB::bind_method(D_METHOD("property_get_revert", "property"), &Object::property_get_revert);
 	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("to_string"), &Object::to_string);
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
