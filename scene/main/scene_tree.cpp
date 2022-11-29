@@ -1515,7 +1515,7 @@ SceneTree::SceneTree() {
 					ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 				} else {
 					// File was erased, notify user.
-					ERR_PRINT(RTR("Default Environment as specified in Project Settings (Rendering -> Environment -> Default Environment) could not be loaded."));
+					ERR_PRINT(RTR("Default Environment as specified in the project setting \"rendering/environment/defaults/default_environment\" could not be loaded."));
 				}
 			}
 		}
