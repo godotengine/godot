@@ -52,10 +52,9 @@ namespace GodotTools.Internals
         {
             GlobalDef("dotnet/project/assembly_name", "");
             GlobalDef("dotnet/project/solution_directory", "");
-            GlobalDef("dotnet/project/c#_project_directory", "");
         }
 
-        private static void DetermineProjectLocation()
+        public static void DetermineProjectLocation()
         {
             static string DetermineProjectName()
             {
@@ -76,10 +75,11 @@ namespace GodotTools.Internals
             string slnParentDir = (string)ProjectSettings.GetSetting("dotnet/project/solution_directory");
             if (string.IsNullOrEmpty(slnParentDir))
                 slnParentDir = "res://";
+            else if (!slnParentDir.StartsWith("res://"))
+                slnParentDir = "res://" + slnParentDir;
 
-            string csprojParentDir = (string)ProjectSettings.GetSetting("dotnet/project/c#_project_directory");
-            if (string.IsNullOrEmpty(csprojParentDir))
-                csprojParentDir = "res://";
+            // The csproj should be in the same folder as project.godot.
+            string csprojParentDir = "res://";
 
             _projectSlnPath = Path.Combine(ProjectSettings.GlobalizePath(slnParentDir),
                 string.Concat(_projectAssemblyName, ".sln"));
