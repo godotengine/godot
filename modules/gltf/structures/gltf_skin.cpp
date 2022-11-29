@@ -30,7 +30,7 @@
 
 #include "gltf_skin.h"
 
-#include "gltf_template_convert.h"
+#include "../gltf_template_convert.h"
 #include "scene/resources/skin.h"
 
 void GLTFSkin::_bind_methods() {

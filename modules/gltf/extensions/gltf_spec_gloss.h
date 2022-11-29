@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_buffer_view.h                                                   */
+/*  gltf_spec_gloss.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,42 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_BUFFER_VIEW_H
-#define GLTF_BUFFER_VIEW_H
+#ifndef GLTF_SPEC_GLOSS_H
+#define GLTF_SPEC_GLOSS_H
 
+#include "../gltf_defines.h"
+#include "core/image.h"
 #include "core/resource.h"
-#include "gltf_defines.h"
 
-class GLTFBufferView : public Resource {
-	GDCLASS(GLTFBufferView, Resource);
+class GLTFSpecGloss : public Resource {
+	GDCLASS(GLTFSpecGloss, Resource);
 	friend class GLTFDocument;
 
 private:
-	GLTFBufferIndex buffer = -1;
-	int byte_offset = 0;
-	int byte_length = 0;
-	int byte_stride = -1;
-	bool indices = false;
+	Ref<Image> diffuse_img = nullptr;
+	Color diffuse_factor = Color(1.0f, 1.0f, 1.0f);
+	float gloss_factor = 1.0f;
+	Color specular_factor = Color(1.0f, 1.0f, 1.0f);
+	Ref<Image> spec_gloss_img = nullptr;
 
 protected:
 	static void _bind_methods();
 
 public:
-	GLTFBufferIndex get_buffer();
-	void set_buffer(GLTFBufferIndex p_buffer);
+	Ref<Image> get_diffuse_img();
+	void set_diffuse_img(Ref<Image> p_diffuse_img);
 
-	int get_byte_offset();
-	void set_byte_offset(int p_byte_offset);
+	Color get_diffuse_factor();
+	void set_diffuse_factor(Color p_diffuse_factor);
 
-	int get_byte_length();
-	void set_byte_length(int p_byte_length);
+	float get_gloss_factor();
+	void set_gloss_factor(float p_gloss_factor);
 
-	int get_byte_stride();
-	void set_byte_stride(int p_byte_stride);
+	Color get_specular_factor();
+	void set_specular_factor(Color p_specular_factor);
 
-	bool get_indices();
-	void set_indices(bool p_indices);
-	// matrices need to be transformed to this
+	Ref<Image> get_spec_gloss_img();
+	void set_spec_gloss_img(Ref<Image> p_spec_gloss_img);
 };
 
-#endif // GLTF_BUFFER_VIEW_H
+#endif // GLTF_SPEC_GLOSS_H
