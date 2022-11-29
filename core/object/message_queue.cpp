@@ -55,7 +55,7 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 		if (ObjectDB::get_instance(p_id)) {
 			type = ObjectDB::get_instance(p_id)->get_class();
 		}
-		ERR_PRINT("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id) + ". Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		ERR_PRINT("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id) + ". Message queue out of memory. Try increasing \"memory/limits/message_queue/max_size_kb\" in project settings.");
 		statistics();
 		return ERR_OUT_OF_MEMORY;
 	}
@@ -82,7 +82,7 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	uint8_t room_needed = sizeof(Message);
 
 	if ((buffer_end + room_needed) >= buffer_size) {
-		ERR_PRINT("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id) + ". Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		ERR_PRINT("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id) + ". Message queue out of memory. Try increasing \"memory/limits/message_queue/max_size_kb\" in project settings.");
 		statistics();
 		return ERR_OUT_OF_MEMORY;
 	}
@@ -117,7 +117,7 @@ Error MessageQueue::push_callablep(const Callable &p_callable, const Variant **p
 	int room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
 
 	if ((buffer_end + room_needed) >= buffer_size) {
-		ERR_PRINT("Failed method: " + p_callable + ". Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		ERR_PRINT("Failed method: " + p_callable + ". Message queue out of memory. Try increasing \"memory/limits/message_queue/max_size_kb\" in project settings.");
 		statistics();
 		return ERR_OUT_OF_MEMORY;
 	}

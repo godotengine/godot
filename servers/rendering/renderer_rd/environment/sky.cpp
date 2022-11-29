@@ -1619,7 +1619,7 @@ void SkyRD::update_dirty_skys() {
 			if (sky->mode == RS::SKY_MODE_REALTIME) {
 				layers = 8;
 				if (roughness_layers != 8) {
-					WARN_PRINT("When using REALTIME skies, roughness_layers should be set to 8 in the project settings for best quality reflections");
+					WARN_PRINT("When using the Real-Time sky update mode (or Automatic with a sky shader using \"TIME\"), \"rendering/reflections/sky_reflections/roughness_layers\" should be set to 8 in the project settings for best quality reflections.");
 				}
 			}
 
