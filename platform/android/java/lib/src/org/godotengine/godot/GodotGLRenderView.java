@@ -68,7 +68,7 @@ import java.io.InputStream;
  *   See ContextFactory class definition below.
  *
  * - The class must use a custom EGLConfigChooser to be able to select
- *   an EGLConfig that supports 2.0. This is done by providing a config
+ *   an EGLConfig that supports 3.0. This is done by providing a config
  *   specification to eglChooseConfig() that has the attribute
  *   EGL10.ELG_RENDERABLE_TYPE containing the EGL_OPENGL_ES2_BIT flag
  *   set. See ConfigChooser class definition below.

@@ -1540,6 +1540,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (rendering_driver.is_empty() && rendering_method.is_empty() && project_manager) {
 		rendering_driver = "opengl3";
 		rendering_method = "gl_compatibility";
+		default_renderer_mobile = "gl_compatibility";
 	}
 #endif
 	if (renderer_hints.is_empty()) {
