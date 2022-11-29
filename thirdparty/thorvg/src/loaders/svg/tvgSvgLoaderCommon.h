@@ -145,6 +145,26 @@ enum class SvgParserLengthType
     Other
 };
 
+enum class AspectRatioAlign
+{
+    None,
+    XMinYMin,
+    XMidYMin,
+    XMaxYMin,
+    XMinYMid,
+    XMidYMid,
+    XMaxYMid,
+    XMinYMax,
+    XMidYMax,
+    XMaxYMax
+};
+
+enum class AspectRatioMeetOrSlice
+{
+    Meet,
+    Slice
+};
+
 struct SvgDocNode
 {
     float w;
@@ -155,7 +175,8 @@ struct SvgDocNode
     float vh;
     SvgNode* defs;
     SvgNode* style;
-    bool preserveAspect;
+    AspectRatioAlign align;
+    AspectRatioMeetOrSlice meetOrSlice;
 };
 
 struct SvgGNode
@@ -171,7 +192,8 @@ struct SvgSymbolNode
 {
     float w, h;
     float vx, vy, vw, vh;
-    bool preserveAspect;
+    AspectRatioAlign align;
+    AspectRatioMeetOrSlice meetOrSlice;
     bool overflowVisible;
     bool hasViewBox;
     bool hasWidth;
