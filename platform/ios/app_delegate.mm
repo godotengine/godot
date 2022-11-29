@@ -45,7 +45,7 @@
 extern int gargc;
 extern char **gargv;
 
-extern int ios_main(int, char **, String, String);
+extern int ios_main(int, char **);
 extern void ios_finish();
 
 @implementation AppDelegate
@@ -66,12 +66,7 @@ static ViewController *mainViewController = nil;
 	// Create a full-screen window
 	self.window = [[UIWindow alloc] initWithFrame:windowBounds];
 
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-	NSString *documentsDirectory = [paths objectAtIndex:0];
-	paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-	NSString *cacheDirectory = [paths objectAtIndex:0];
-
-	int err = ios_main(gargc, gargv, String::utf8([documentsDirectory UTF8String]), String::utf8([cacheDirectory UTF8String]));
+	int err = ios_main(gargc, gargv);
 
 	if (err != 0) {
 		// bail, things did not go very well for us, should probably output a message on screen with our error code...

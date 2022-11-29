@@ -38,10 +38,6 @@
 
 static OS_IOS *os = nullptr;
 
-int add_path(int, char **);
-int add_cmdline(int, char **);
-int ios_main(int, char **, String);
-
 int add_path(int p_argc, char **p_args) {
 	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
 	if (!str) {
@@ -74,7 +70,7 @@ int add_cmdline(int p_argc, char **p_args) {
 	return p_argc;
 }
 
-int ios_main(int argc, char **argv, String data_dir, String cache_dir) {
+int ios_main(int argc, char **argv) {
 	size_t len = strlen(argv[0]);
 
 	while (len--) {
@@ -95,7 +91,7 @@ int ios_main(int argc, char **argv, String data_dir, String cache_dir) {
 	char cwd[512];
 	getcwd(cwd, sizeof(cwd));
 	printf("cwd %s\n", cwd);
-	os = new OS_IOS(data_dir, cache_dir);
+	os = new OS_IOS();
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
