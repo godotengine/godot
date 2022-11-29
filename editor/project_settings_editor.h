@@ -84,10 +84,11 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	LineEdit *action_name;
 	Button *action_add;
-	Label *action_add_error;
+	CheckButton *show_builtin_actions_checkbutton;
 	Tree *input_editor;
 	bool setting;
 	bool updating_translations;
+	bool show_builtin_actions;
 
 	Ref<InputEventKey> last_wait_for_key;
 
@@ -118,6 +119,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_adds(String);
 	void _action_add();
 	void _device_input_add();
+	void _set_show_builtin_actions(bool p_show);
 
 	void _item_checked(const String &p_item, bool p_check);
 	void _action_selected();
