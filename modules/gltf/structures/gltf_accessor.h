@@ -31,9 +31,8 @@
 #ifndef GLTF_ACCESSOR_H
 #define GLTF_ACCESSOR_H
 
-#include "core/io/resource.h"
-
 #include "../gltf_defines.h"
+#include "core/io/resource.h"
 
 struct GLTFAccessor : public Resource {
 	GDCLASS(GLTFAccessor, Resource);
