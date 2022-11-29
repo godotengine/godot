@@ -450,6 +450,39 @@ void CanvasItem::item_rect_changed(bool p_size_changed) {
 	emit_signal(SceneStringNames::get_singleton()->item_rect_changed);
 }
 
+void CanvasItem::set_z_index(int p_z) {
+	ERR_FAIL_COND(p_z < RS::CANVAS_ITEM_Z_MIN);
+	ERR_FAIL_COND(p_z > RS::CANVAS_ITEM_Z_MAX);
+	z_index = p_z;
+	RS::get_singleton()->canvas_item_set_z_index(canvas_item, z_index);
+	update_configuration_warnings();
+}
+
+void CanvasItem::set_z_as_relative(bool p_enabled) {
+	if (z_relative == p_enabled) {
+		return;
+	}
+	z_relative = p_enabled;
+	RS::get_singleton()->canvas_item_set_z_as_relative_to_parent(canvas_item, p_enabled);
+}
+
+bool CanvasItem::is_z_relative() const {
+	return z_relative;
+}
+
+int CanvasItem::get_z_index() const {
+	return z_index;
+}
+
+void CanvasItem::set_y_sort_enabled(bool p_enabled) {
+	y_sort_enabled = p_enabled;
+	RS::get_singleton()->canvas_item_set_sort_children_by_y(canvas_item, y_sort_enabled);
+}
+
+bool CanvasItem::is_y_sort_enabled() const {
+	return y_sort_enabled;
+}
+
 void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, real_t p_dash) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
@@ -913,8 +946,18 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &CanvasItem::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &CanvasItem::get_modulate);
+
 	ClassDB::bind_method(D_METHOD("set_self_modulate", "self_modulate"), &CanvasItem::set_self_modulate);
 	ClassDB::bind_method(D_METHOD("get_self_modulate"), &CanvasItem::get_self_modulate);
+
+	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &Node2D::set_z_index);
+	ClassDB::bind_method(D_METHOD("get_z_index"), &Node2D::get_z_index);
+
+	ClassDB::bind_method(D_METHOD("set_z_as_relative", "enable"), &Node2D::set_z_as_relative);
+	ClassDB::bind_method(D_METHOD("is_z_relative"), &Node2D::is_z_relative);
+
+	ClassDB::bind_method(D_METHOD("set_y_sort_enabled", "enabled"), &Node2D::set_y_sort_enabled);
+	ClassDB::bind_method(D_METHOD("is_y_sort_enabled"), &Node2D::is_y_sort_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_draw_behind_parent", "enable"), &CanvasItem::set_draw_behind_parent);
 	ClassDB::bind_method(D_METHOD("is_draw_behind_parent_enabled"), &CanvasItem::is_draw_behind_parent_enabled);
@@ -1004,6 +1047,11 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_children", PROPERTY_HINT_ENUM, "Disabled,Clip Only,Clip + Draw"), "set_clip_children_mode", "get_clip_children_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_layer", PROPERTY_HINT_LAYERS_2D_RENDER), "set_visibility_layer", "get_visibility_layer");
+
+	ADD_GROUP("Ordering", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_index", "get_z_index");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "z_as_relative"), "set_z_as_relative", "is_z_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "y_sort_enabled"), "set_y_sort_enabled", "is_y_sort_enabled");
 
 	ADD_GROUP("Texture", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
