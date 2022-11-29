@@ -59,7 +59,7 @@ void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) 
 }
 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,
-		const HashMap<StringName, Variant> &p_options, int p_bake_fps,
+		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
 	// Get global paths for source and sink.
 
@@ -228,14 +228,14 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
 		base_dir = sink.get_base_dir();
 	}
-	Error err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, p_bake_fps, base_dir);
+	Error err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
 		}
 		return nullptr;
 	}
-	return gltf->generate_scene(state, p_bake_fps);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"]);
 }
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
