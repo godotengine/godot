@@ -18,7 +18,7 @@
 #include <string>
 
 #ifdef TVG_BUILD
-    #if defined(_MSC_VER) && !defined(__clang__)
+    #if defined(_WIN32) && !defined(__clang__)
         #define TVG_EXPORT __declspec(dllexport)
         #define TVG_DEPRECATED __declspec(deprecated)
     #else
@@ -74,7 +74,7 @@ class Accessor;
 /**
  * @brief Enumeration specifying the result from the APIs.
  */
-enum class TVG_EXPORT Result
+enum class Result
 {
     Success = 0,           ///< The value returned in case of a correct request execution.
     InvalidArguments,      ///< The value returned in the event of a problem with the arguments given to the API - e.g. empty paths or null pointers.
@@ -91,7 +91,7 @@ enum class TVG_EXPORT Result
  * Not to be confused with the path commands from the svg path element (like M, L, Q, H and many others).
  * TVG interprets all of them and translates to the ones from the PathCommand values.
  */
-enum class TVG_EXPORT PathCommand
+enum class PathCommand
 {
     Close = 0, ///< Ends the current sub-path and connects it with its initial point. This command doesn't expect any points.
     MoveTo,    ///< Sets a new initial point of the sub-path and a new current point. This command expects 1 point: the starting position.
@@ -102,7 +102,7 @@ enum class TVG_EXPORT PathCommand
 /**
  * @brief Enumeration determining the ending type of a stroke in the open sub-paths.
  */
-enum class TVG_EXPORT StrokeCap
+enum class StrokeCap
 {
     Square = 0, ///< The stroke is extended in both end-points of a sub-path by a rectangle, with the width equal to the stroke width and the length equal to the half of the stroke width. For zero length sub-paths the square is rendered with the size of the stroke width.
     Round,      ///< The stroke is extended in both end-points of a sub-path by a half circle, with a radius equal to the half of a stroke width. For zero length sub-paths a full circle is rendered.
@@ -112,7 +112,7 @@ enum class TVG_EXPORT StrokeCap
 /**
  * @brief Enumeration determining the style used at the corners of joined stroked path segments.
  */
-enum class TVG_EXPORT StrokeJoin
+enum class StrokeJoin
 {
     Bevel = 0, ///< The outer corner of the joined path segments is bevelled at the join point. The triangular region of the corner is enclosed by a straight line between the outer corners of each stroke.
     Round,     ///< The outer corner of the joined path segments is rounded. The circular region is centered at the join point.
@@ -122,7 +122,7 @@ enum class TVG_EXPORT StrokeJoin
 /**
  * @brief Enumeration specifying how to fill the area outside the gradient bounds.
  */
-enum class TVG_EXPORT FillSpread
+enum class FillSpread
 {
     Pad = 0, ///< The remaining area is filled with the closest stop color.
     Reflect, ///< The gradient pattern is reflected outside the gradient area until the expected region is filled.
@@ -132,7 +132,7 @@ enum class TVG_EXPORT FillSpread
 /**
  * @brief Enumeration specifying the algorithm used to establish which parts of the shape are treated as the inside of the shape.
  */
-enum class TVG_EXPORT FillRule
+enum class FillRule
 {
     Winding = 0, ///< A line from the point to a location outside the shape is drawn. The intersections of the line with the path segment of the shape are counted. Starting from zero, if the path segment of the shape crosses the line clockwise, one is added, otherwise one is subtracted. If the resulting sum is non zero, the point is inside the shape.
     EvenOdd      ///< A line from the point to a location outside the shape is drawn and its intersections with the path segments of the shape are counted. If the number of intersections is an odd number, the point is inside the shape.
@@ -141,7 +141,7 @@ enum class TVG_EXPORT FillRule
 /**
  * @brief Enumeration indicating the method used in the composition of two objects - the target and the source.
  */
-enum class TVG_EXPORT CompositeMethod
+enum class CompositeMethod
 {
     None = 0,     ///< No composition is applied.
     ClipPath,     ///< The intersection of the source and the target is determined and only the resulting pixels from the source are rendered.
@@ -153,7 +153,7 @@ enum class TVG_EXPORT CompositeMethod
 /**
  * @brief Enumeration specifying the engine type used for the graphics backend. For multiple backends bitwise operation is allowed.
  */
-enum class TVG_EXPORT CanvasEngine
+enum class CanvasEngine
 {
     Sw = (1 << 1), ///< CPU rasterizer.
     Gl = (1 << 2)  ///< OpenGL rasterizer.
