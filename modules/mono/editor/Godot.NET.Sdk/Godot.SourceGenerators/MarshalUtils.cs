@@ -368,7 +368,7 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".ConvertToSignalInfo(", inputExpr, ")"),
                 MarshalType.Enum =>
                     source.Append("(", typeSymbol.FullQualifiedNameIncludeGlobal(),
-                        ")", VariantUtils, ".ConvertToInt32(", inputExpr, ")"),
+                        ")", VariantUtils, ".ConvertToInt64(", inputExpr, ")"),
                 MarshalType.ByteArray =>
                     source.Append(VariantUtils, ".ConvertAsPackedByteArrayToSystemArray(", inputExpr, ")"),
                 MarshalType.Int32Array =>
@@ -491,7 +491,7 @@ namespace Godot.SourceGenerators
                 MarshalType.SignalInfo =>
                     source.Append(VariantUtils, ".CreateFromSignalInfo(", inputExpr, ")"),
                 MarshalType.Enum =>
-                    source.Append(VariantUtils, ".CreateFromInt((int)", inputExpr, ")"),
+                    source.Append(VariantUtils, ".CreateFromInt((long)", inputExpr, ")"),
                 MarshalType.ByteArray =>
                     source.Append(VariantUtils, ".CreateFromPackedByteArray(", inputExpr, ")"),
                 MarshalType.Int32Array =>

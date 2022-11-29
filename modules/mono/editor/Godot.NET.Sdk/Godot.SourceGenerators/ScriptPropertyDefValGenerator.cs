@@ -174,7 +174,8 @@ namespace Godot.SourceGenerators
                     }
                     else
                     {
-                        var propertyGet = propertyDeclarationSyntax.AccessorList?.Accessors.Where(a => a.Keyword.IsKind(SyntaxKind.GetKeyword)).FirstOrDefault();
+                        var propertyGet = propertyDeclarationSyntax.AccessorList?.Accessors
+                            .Where(a => a.Keyword.IsKind(SyntaxKind.GetKeyword)).FirstOrDefault();
                         if (propertyGet != null)
                         {
                             if (propertyGet.ExpressionBody != null)
@@ -200,7 +201,8 @@ namespace Godot.SourceGenerators
                             {
                                 var returns = propertyGet.DescendantNodes().OfType<ReturnStatementSyntax>();
                                 if (returns.Count() == 1)
-                                {// Generate only single return
+                                {
+                                    // Generate only single return
                                     var returnStatementSyntax = returns.Single();
                                     if (returnStatementSyntax.Expression is IdentifierNameSyntax identifierNameSyntax)
                                     {
@@ -277,7 +279,8 @@ namespace Godot.SourceGenerators
             {
                 source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-                string dictionaryType = "System.Collections.Generic.Dictionary<Godot.StringName, object>";
+                string dictionaryType =
+                    "global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>";
 
                 source.Append("#if TOOLS\n");
                 source.Append("    internal new static ");
@@ -304,7 +307,7 @@ namespace Godot.SourceGenerators
                     source.Append("        values.Add(PropertyName.");
                     source.Append(exportedMember.Name);
                     source.Append(", ");
-                    source.Append(defaultValueLocalName);
+                    source.AppendManagedToVariantExpr(defaultValueLocalName, exportedMember.Type);
                     source.Append(");\n");
                 }
 
