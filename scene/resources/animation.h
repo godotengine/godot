@@ -74,6 +74,12 @@ public:
 		LOOP_PINGPONG,
 	};
 
+	enum LoopedFlag {
+		LOOPED_FLAG_NONE,
+		LOOPED_FLAG_END,
+		LOOPED_FLAG_START,
+	};
+
 #ifdef TOOLS_ENABLED
 	enum HandleMode {
 		HANDLE_MODE_FREE,
@@ -250,12 +256,11 @@ private:
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
 	template <class T>
-	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const;
+	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
 
 	double length = 1.0;
 	real_t step = 0.1;
 	LoopMode loop_mode = LOOP_NONE;
-	int pingponged = 0;
 
 	/* Animation compression page format (version 1):
 	 *
@@ -454,7 +459,7 @@ public:
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
-	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
+	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
 
 	void set_length(real_t p_length);
 	real_t get_length() const;
@@ -484,6 +489,7 @@ VARIANT_ENUM_CAST(Animation::TrackType);
 VARIANT_ENUM_CAST(Animation::InterpolationType);
 VARIANT_ENUM_CAST(Animation::UpdateMode);
 VARIANT_ENUM_CAST(Animation::LoopMode);
+VARIANT_ENUM_CAST(Animation::LoopedFlag);
 #ifdef TOOLS_ENABLED
 VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::HandleSetMode);
