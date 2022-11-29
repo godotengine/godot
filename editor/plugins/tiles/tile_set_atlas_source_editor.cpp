@@ -543,11 +543,13 @@ void TileSetAtlasSourceEditor::_update_source_inspector() {
 
 void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
 	// Fix selected.
-	for (RBSet<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
+	for (RBSet<TileSelection>::Element *E = selection.front(); E;) {
+		RBSet<TileSelection>::Element *N = E->next();
 		TileSelection selected = E->get();
 		if (!tile_set_atlas_source->has_tile(selected.tile) || !tile_set_atlas_source->has_alternative_tile(selected.tile, selected.alternative)) {
 			selection.erase(E);
 		}
+		E = N;
 	}
 
 	// Fix hovered.
