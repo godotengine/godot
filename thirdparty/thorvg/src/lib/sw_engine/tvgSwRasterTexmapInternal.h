@@ -30,7 +30,7 @@
     int32_t dw = surface->stride;
     int32_t x1, x2, x, y, ar, ab, iru, irv, px, ay;
     int32_t vv = 0, uu = 0;
-    int32_t minx, maxx;
+    int32_t minx = INT32_MAX, maxx = INT32_MIN;
     float dx, u, v, iptr;
     uint32_t* buf;
     SwSpan* span = nullptr;         //used only when rle based.
