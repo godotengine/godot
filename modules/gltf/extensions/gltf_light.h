@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  gltf_light.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef _3D_DISABLED
+#ifndef GLTF_LIGHT_H
+#define GLTF_LIGHT_H
 
-#include "register_types.h"
+#include "../gltf_defines.h"
+#include "core/resource.h"
 
-#include "extensions/gltf_spec_gloss.h"
-#include "gltf_state.h"
+class GLTFLight : public Resource {
+	GDCLASS(GLTFLight, Resource)
+	friend class GLTFDocument;
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-#include "editor_scene_exporter_gltf_plugin.h"
-#include "editor_scene_importer_gltf.h"
-#endif
+protected:
+	static void _bind_methods();
 
-#ifdef TOOLS_ENABLED
-static void _editor_init() {
-	Ref<EditorSceneImporterGLTF> import_gltf;
-	import_gltf.instance();
-	ResourceImporterScene::get_singleton()->add_importer(import_gltf);
-}
-#endif
+private:
+	Color color = Color(1.0f, 1.0f, 1.0f);
+	float intensity = 1.0f;
+	String type;
+	float range = INFINITY;
+	float inner_cone_angle = 0.0f;
+	float outer_cone_angle = Math_TAU / 8.0f;
 
-void register_gltf_types() {
-#ifdef TOOLS_ENABLED
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	ClassDB::register_class<EditorSceneImporterGLTF>();
-	ClassDB::register_class<GLTFMesh>();
-	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
-	ClassDB::set_current_api(prev_api);
-	EditorNode::add_init_callback(_editor_init);
-#endif
+public:
+	Color get_color();
+	void set_color(Color p_color);
 
-	ClassDB::register_class<GLTFSpecGloss>();
-	ClassDB::register_class<GLTFNode>();
-	ClassDB::register_class<GLTFAnimation>();
-	ClassDB::register_class<GLTFBufferView>();
-	ClassDB::register_class<GLTFAccessor>();
-	ClassDB::register_class<GLTFTexture>();
-	ClassDB::register_class<GLTFTextureSampler>();
-	ClassDB::register_class<GLTFSkeleton>();
-	ClassDB::register_class<GLTFSkin>();
-	ClassDB::register_class<GLTFCamera>();
-	ClassDB::register_class<GLTFLight>();
-	ClassDB::register_class<GLTFState>();
-	ClassDB::register_class<GLTFDocument>();
-	ClassDB::register_class<PackedSceneGLTF>();
-}
+	float get_intensity();
+	void set_intensity(float p_intensity);
 
-void unregister_gltf_types() {
-}
+	String get_type();
+	void set_type(String p_type);
 
-#endif // _3D_DISABLED
+	float get_range();
+	void set_range(float p_range);
+
+	float get_inner_cone_angle();
+	void set_inner_cone_angle(float p_inner_cone_angle);
+
+	float get_outer_cone_angle();
+	void set_outer_cone_angle(float p_outer_cone_angle);
+};
+
+#endif // GLTF_LIGHT_H

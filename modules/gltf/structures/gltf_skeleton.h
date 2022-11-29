@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_light.h                                                         */
+/*  gltf_skeleton.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,44 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_LIGHT_H
-#define GLTF_LIGHT_H
+#ifndef GLTF_SKELETON_H
+#define GLTF_SKELETON_H
 
+#include "../gltf_defines.h"
 #include "core/resource.h"
 
-class GLTFLight : public Resource {
-	GDCLASS(GLTFLight, Resource)
+class GLTFSkeleton : public Resource {
+	GDCLASS(GLTFSkeleton, Resource);
 	friend class GLTFDocument;
+
+private:
+	// The *synthesized* skeletons joints
+	PoolVector<GLTFNodeIndex> joints;
+
+	// The roots of the skeleton. If there are multiple, each root must have the
+	// same parent (ie roots are siblings)
+	PoolVector<GLTFNodeIndex> roots;
+
+	// The created Skeleton for the scene
+	Skeleton *godot_skeleton = nullptr;
+
+	// Set of unique bone names for the skeleton
+	Set<String> unique_names;
+
+	Map<int32_t, GLTFNodeIndex> godot_bone_node;
+
+	PoolVector<BoneAttachment *> bone_attachments;
 
 protected:
 	static void _bind_methods();
 
-private:
-	Color color = Color(1.0f, 1.0f, 1.0f);
-	float intensity = 1.0f;
-	String type;
-	float range = INFINITY;
-	float inner_cone_angle = 0.0f;
-	float outer_cone_angle = Math_TAU / 8.0f;
-
 public:
-	Color get_color();
-	void set_color(Color p_color);
+	PoolVector<GLTFNodeIndex> get_joints();
+	void set_joints(PoolVector<GLTFNodeIndex> p_joints);
 
-	float get_intensity();
-	void set_intensity(float p_intensity);
+	PoolVector<GLTFNodeIndex> get_roots();
+	void set_roots(PoolVector<GLTFNodeIndex> p_roots);
 
-	String get_type();
-	void set_type(String p_type);
+	Skeleton *get_godot_skeleton();
 
-	float get_range();
-	void set_range(float p_range);
+	Array get_unique_names();
+	void set_unique_names(Array p_unique_names);
 
-	float get_inner_cone_angle();
-	void set_inner_cone_angle(float p_inner_cone_angle);
+	Dictionary get_godot_bone_node();
+	void set_godot_bone_node(Dictionary p_indict);
 
-	float get_outer_cone_angle();
-	void set_outer_cone_angle(float p_outer_cone_angle);
+	BoneAttachment *get_bone_attachment(int idx);
+
+	int32_t get_bone_attachment_count();
 };
 
-#endif // GLTF_LIGHT_H
+#endif // GLTF_SKELETON_H

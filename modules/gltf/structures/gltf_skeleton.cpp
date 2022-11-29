@@ -30,7 +30,7 @@
 
 #include "gltf_skeleton.h"
 
-#include "gltf_template_convert.h"
+#include "../gltf_template_convert.h"
 #include "scene/3d/bone_attachment.h"
 
 void GLTFSkeleton::_bind_methods() {

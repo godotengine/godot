@@ -30,7 +30,7 @@
 
 #include "gltf_document.h"
 
-#include "gltf_spec_gloss.h"
+#include "extensions/gltf_spec_gloss.h"
 #include "gltf_state.h"
 
 #include "core/bind/core_bind.h" // FIXME: Shouldn't use _Directory but DirAccess.
