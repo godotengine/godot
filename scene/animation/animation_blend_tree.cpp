@@ -87,36 +87,38 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_is_ext
 	double anim_size = (double)anim->get_length();
 	double step = 0.0;
 	double prev_time = cur_time;
-	int pingponged = 0;
-	bool current_backward = signbit(p_time);
+	Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
+	bool node_backward = play_mode == PLAY_MODE_BACKWARD;
 
 	if (p_seek) {
 		step = p_time - cur_time;
 		cur_time = p_time;
 	} else {
 		p_time *= backward ? -1.0 : 1.0;
-		if (!(cur_time == anim_size && !current_backward) && !(cur_time == 0 && current_backward)) {
-			cur_time = cur_time + p_time;
-			step = p_time;
-		}
+		cur_time = cur_time + p_time;
+		step = p_time;
 	}
 
 	if (anim->get_loop_mode() == Animation::LOOP_PINGPONG) {
 		if (!Math::is_zero_approx(anim_size)) {
-			if ((int)Math::floor(abs(cur_time - prev_time) / anim_size) % 2 == 0) {
-				if (prev_time >= 0 && cur_time < 0) {
-					backward = !backward;
-					pingponged = -1;
-				}
-				if (prev_time <= anim_size && cur_time > anim_size) {
-					backward = !backward;
-					pingponged = 1;
-				}
+			if (prev_time >= 0 && cur_time < 0) {
+				backward = !backward;
+				looped_flag = node_backward ? Animation::LOOPED_FLAG_END : Animation::LOOPED_FLAG_START;
+			}
+			if (prev_time <= anim_size && cur_time > anim_size) {
+				backward = !backward;
+				looped_flag = node_backward ? Animation::LOOPED_FLAG_START : Animation::LOOPED_FLAG_END;
 			}
 			cur_time = Math::pingpong(cur_time, anim_size);
 		}
 	} else if (anim->get_loop_mode() == Animation::LOOP_LINEAR) {
 		if (!Math::is_zero_approx(anim_size)) {
+			if (prev_time >= 0 && cur_time < 0) {
+				looped_flag = node_backward ? Animation::LOOPED_FLAG_END : Animation::LOOPED_FLAG_START;
+			}
+			if (prev_time <= anim_size && cur_time > anim_size) {
+				looped_flag = node_backward ? Animation::LOOPED_FLAG_START : Animation::LOOPED_FLAG_END;
+			}
 			cur_time = Math::fposmod(cur_time, anim_size);
 		}
 		backward = false;
@@ -145,9 +147,9 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_is_ext
 	}
 
 	if (play_mode == PLAY_MODE_FORWARD) {
-		blend_animation(animation, cur_time, step, p_seek, p_is_external_seeking, 1.0, pingponged);
+		blend_animation(animation, cur_time, step, p_seek, p_is_external_seeking, 1.0, looped_flag);
 	} else {
-		blend_animation(animation, anim_size - cur_time, -step, p_seek, p_is_external_seeking, 1.0, pingponged);
+		blend_animation(animation, anim_size - cur_time, -step, p_seek, p_is_external_seeking, 1.0, looped_flag);
 	}
 	set_parameter(time, cur_time);
 
@@ -309,9 +311,7 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_is_exter
 			set_parameter(time_to_restart, cur_time_to_restart);
 		}
 
-		if (!cur_active) {
-			return blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
-		}
+		return blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
 	}
 
 	bool os_seek = p_seek;
@@ -349,10 +349,9 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_is_exter
 	if (mix == MIX_MODE_ADD) {
 		main_rem = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
 	} else {
-		main_rem = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0 - blend, FILTER_BLEND, sync);
+		main_rem = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0 - blend, FILTER_BLEND, sync); // Unlike below, processing this edge is a corner case.
 	}
-
-	double os_rem = blend_input(1, os_seek ? cur_time : p_time, os_seek, p_is_external_seeking, blend, FILTER_PASS, true);
+	double os_rem = blend_input(1, os_seek ? cur_time : p_time, os_seek, p_is_external_seeking, MAX(CMP_EPSILON, blend), FILTER_PASS, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
 	if (do_start) {
 		cur_remaining = os_rem;
@@ -769,17 +768,18 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 			blend = xfade_curve->sample(blend);
 		}
 
+		// Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 		if (from_start && !p_seek && switched) { //just switched, seek to start of current
-			rem = blend_input(cur_current, 0, true, p_is_external_seeking, 1.0 - blend, FILTER_IGNORE, true);
+			rem = blend_input(cur_current, 0, true, p_is_external_seeking, MAX(CMP_EPSILON, 1.0 - blend), FILTER_IGNORE, true);
 		} else {
-			rem = blend_input(cur_current, p_time, p_seek, p_is_external_seeking, 1.0 - blend, FILTER_IGNORE, true);
+			rem = blend_input(cur_current, p_time, p_seek, p_is_external_seeking, MAX(CMP_EPSILON, 1.0 - blend), FILTER_IGNORE, true);
 		}
 
 		if (p_seek) {
-			blend_input(cur_prev, p_time, true, p_is_external_seeking, blend, FILTER_IGNORE, true);
+			blend_input(cur_prev, p_time, true, p_is_external_seeking, MAX(CMP_EPSILON, blend), FILTER_IGNORE, true);
 			cur_time = p_time;
 		} else {
-			blend_input(cur_prev, p_time, false, p_is_external_seeking, blend, FILTER_IGNORE, true);
+			blend_input(cur_prev, p_time, false, p_is_external_seeking, MAX(CMP_EPSILON, blend), FILTER_IGNORE, true);
 			cur_time += p_time;
 			cur_prev_xfading -= p_time;
 			if (cur_prev_xfading < 0) {
