@@ -366,38 +366,46 @@ void GraphNode::_notification(int p_what) {
 				close_rect = Rect2();
 			}
 
-			for (const KeyValue<int, Slot> &E : slot_info) {
-				if (E.key < 0 || E.key >= cache_y.size()) {
-					continue;
-				}
-				if (!slot_info.has(E.key)) {
-					continue;
-				}
-				const Slot &s = slot_info[E.key];
-				// Left port.
-				if (s.enable_left) {
-					Ref<Texture2D> p = port;
-					if (s.custom_slot_left.is_valid()) {
-						p = s.custom_slot_left;
+			if (get_child_count() > 0) {
+				for (const KeyValue<int, Slot> &E : slot_info) {
+					if (E.key < 0 || E.key >= cache_y.size()) {
+						continue;
 					}
-					p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E.key]), s.color_left);
-				}
-				// Right port.
-				if (s.enable_right) {
-					Ref<Texture2D> p = port;
-					if (s.custom_slot_right.is_valid()) {
-						p = s.custom_slot_right;
+					if (!slot_info.has(E.key)) {
+						continue;
 					}
-					p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E.key]), s.color_right);
-				}
+					const Slot &s = slot_info[E.key];
+					// Left port.
+					if (s.enable_left) {
+						Ref<Texture2D> p = port;
+						if (s.custom_slot_left.is_valid()) {
+							p = s.custom_slot_left;
+						}
+						p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E.key]), s.color_left);
+					}
+					// Right port.
+					if (s.enable_right) {
+						Ref<Texture2D> p = port;
+						if (s.custom_slot_right.is_valid()) {
+							p = s.custom_slot_right;
+						}
+						p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E.key]), s.color_right);
+					}
 
-				// Draw slot stylebox.
-				if (s.draw_stylebox) {
-					Control *c = Object::cast_to<Control>(get_child(E.key));
-					Rect2 c_rect = c->get_rect();
-					c_rect.position.x = sb->get_margin(SIDE_LEFT);
-					c_rect.size.width = w;
-					draw_style_box(sb_slot, c_rect);
+					// Draw slot stylebox.
+					if (s.draw_stylebox) {
+						Control *c = Object::cast_to<Control>(get_child(E.key));
+						if (!c || !c->is_visible_in_tree()) {
+							continue;
+						}
+						if (c->is_set_as_top_level()) {
+							continue;
+						}
+						Rect2 c_rect = c->get_rect();
+						c_rect.position.x = sb->get_margin(SIDE_LEFT);
+						c_rect.size.width = w;
+						draw_style_box(sb_slot, c_rect);
+					}
 				}
 			}
 
