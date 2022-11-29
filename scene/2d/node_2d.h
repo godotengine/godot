@@ -40,9 +40,6 @@ class Node2D : public CanvasItem {
 	real_t rotation = 0.0;
 	Size2 scale = Vector2(1, 1);
 	real_t skew = 0.0;
-	int z_index = 0;
-	bool z_relative = true;
-	bool y_sort_enabled = false;
 
 	Transform2D transform;
 
@@ -103,20 +100,11 @@ public:
 	void set_global_skew(const real_t p_radians);
 	void set_global_scale(const Size2 &p_scale);
 
-	void set_z_index(int p_z);
-	int get_z_index() const;
-
 	void look_at(const Vector2 &p_pos);
 	real_t get_angle_to(const Vector2 &p_pos) const;
 
 	Point2 to_local(Point2 p_global) const;
 	Point2 to_global(Point2 p_local) const;
-
-	void set_z_as_relative(bool p_enabled);
-	bool is_z_relative() const;
-
-	virtual void set_y_sort_enabled(bool p_enabled);
-	virtual bool is_y_sort_enabled() const;
 
 	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
 
