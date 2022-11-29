@@ -33,9 +33,6 @@
 #include "editor_scene_importer_gltf.h"
 
 #include "../gltf_document.h"
-#include "../gltf_state.h"
-
-#include "scene/resources/animation.h"
 
 uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;

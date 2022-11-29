@@ -32,13 +32,6 @@
 #define GLTF_DOCUMENT_H
 
 #include "extensions/gltf_document_extension.h"
-#include "structures/gltf_animation.h"
-
-#include "scene/3d/bone_attachment_3d.h"
-#include "scene/3d/importer_mesh_instance_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/material.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 

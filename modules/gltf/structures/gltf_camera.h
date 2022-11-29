@@ -32,7 +32,8 @@
 #define GLTF_CAMERA_H
 
 #include "core/io/resource.h"
-#include "scene/3d/camera_3d.h"
+
+class Camera3D;
 
 // Reference and test file:
 // https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_015_SimpleCameras.md

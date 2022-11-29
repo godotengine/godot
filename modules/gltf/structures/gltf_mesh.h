@@ -31,10 +31,8 @@
 #ifndef GLTF_MESH_H
 #define GLTF_MESH_H
 
-#include "core/io/resource.h"
-#include "scene/3d/importer_mesh_instance_3d.h"
+#include "../gltf_defines.h"
 #include "scene/resources/importer_mesh.h"
-#include "scene/resources/mesh.h"
 
 class GLTFMesh : public Resource {
 	GDCLASS(GLTFMesh, Resource);

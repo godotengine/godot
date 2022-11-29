@@ -30,6 +30,8 @@
 
 #include "gltf_state.h"
 
+#include "gltf_template_convert.h"
+
 void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_used_extension", "extension_name", "required"), &GLTFState::add_used_extension);
 	ClassDB::bind_method(D_METHOD("get_json"), &GLTFState::get_json);
