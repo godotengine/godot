@@ -86,7 +86,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	}
 }
 
-void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, int p_pingponged) {
+void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag) {
 	ERR_FAIL_COND(!state);
 	ERR_FAIL_COND(!state->player->has_animation(p_animation));
 
@@ -112,7 +112,7 @@ void AnimationNode::blend_animation(const StringName &p_animation, double p_time
 	anim_state.time = p_time;
 	anim_state.animation = animation;
 	anim_state.seeked = p_seeked;
-	anim_state.pingponged = p_pingponged;
+	anim_state.looped_flag = p_looped_flag;
 	anim_state.is_external_seeking = p_is_external_seeking;
 
 	state->animation_states.push_back(anim_state);
@@ -413,7 +413,7 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
 
-	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "is_external_seeking", "blend", "pingponged"), &AnimationNode::blend_animation, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "is_external_seeking", "blend", "looped_flag"), &AnimationNode::blend_animation, DEFVAL(Animation::LOOPED_FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 
@@ -1018,7 +1018,7 @@ void AnimationTree::_process_graph(double p_delta) {
 			double delta = as.delta;
 			real_t weight = as.blend;
 			bool seeked = as.seeked;
-			int pingponged = as.pingponged;
+			Animation::LoopedFlag looped_flag = as.looped_flag;
 			bool is_external_seeking = as.is_external_seeking;
 #ifndef _3D_DISABLED
 			bool backward = signbit(delta); // This flag is required only for the root motion since it calculates the difference between the previous and current frames.
@@ -1390,7 +1390,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								t->object->set_indexed(t->subpath, value);
 							} else {
 								List<int> indices;
-								a->track_get_key_indices_in_range(i, time, delta, &indices, pingponged);
+								a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 								for (int &F : indices) {
 									Variant value = a->track_get_key_value(i, F);
 									value = _post_process_key_value(a, i, value, t->object);
@@ -1415,7 +1415,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						} else {
 							List<int> indices;
-							a->track_get_key_indices_in_range(i, time, delta, &indices, pingponged);
+							a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 							for (int &F : indices) {
 								StringName method = a->method_track_get_name(i, F);
 								Vector<Variant> params = a->method_track_get_params(i, F);
@@ -1478,7 +1478,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						} else {
 							//find stuff to play
 							List<int> to_play;
-							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
+							a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
 							if (to_play.size()) {
 								int idx = to_play.back()->get();
 
@@ -1593,7 +1593,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						} else {
 							//find stuff to play
 							List<int> to_play;
-							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
+							a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
 							if (to_play.size()) {
 								int idx = to_play.back()->get();
 

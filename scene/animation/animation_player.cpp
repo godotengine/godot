@@ -468,7 +468,7 @@ Variant AnimationPlayer::_post_process_key_value(const Ref<Animation> &p_anim, i
 	return p_value;
 }
 
-void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double p_time, double p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started, int p_pingponged) {
+void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double p_prev_time, double p_time, double p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started, Animation::LoopedFlag p_looped_flag) {
 	_ensure_node_caches(p_anim);
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
 
@@ -683,7 +683,13 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				} else if (p_is_current && p_delta != 0) {
 					List<int> indices;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_pingponged);
+					if (p_started) {
+						int first_key = a->track_find_key(i, p_prev_time, true);
+						if (first_key >= 0) {
+							indices.push_back(first_key);
+						}
+					}
+					a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 
 					for (int &F : indices) {
 						Variant value = a->track_get_key_value(i, F);
@@ -742,7 +748,13 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				}
 
 				List<int> indices;
-				a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_pingponged);
+				if (p_started) {
+					int first_key = a->track_find_key(i, p_prev_time, true);
+					if (first_key >= 0) {
+						indices.push_back(first_key);
+					}
+				}
+				a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 
 				for (int &E : indices) {
 					StringName method = a->method_track_get_name(i, E);
@@ -832,7 +844,13 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				} else {
 					//find stuff to play
 					List<int> to_play;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play, p_pingponged);
+					if (p_started) {
+						int first_key = a->track_find_key(i, p_prev_time, true);
+						if (first_key >= 0) {
+							to_play.push_back(first_key);
+						}
+					}
+					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play, p_looped_flag);
 					if (to_play.size()) {
 						int idx = to_play.back()->get();
 
@@ -939,7 +957,13 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				} else {
 					//find stuff to play
 					List<int> to_play;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play, p_pingponged);
+					if (p_started) {
+						int first_key = a->track_find_key(i, p_prev_time, true);
+						if (first_key >= 0) {
+							to_play.push_back(first_key);
+						}
+					}
+					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play, p_looped_flag);
 					if (to_play.size()) {
 						int idx = to_play.back()->get();
 
@@ -969,7 +993,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 	double next_pos = cd.pos + delta;
 
 	real_t len = cd.from->animation->get_length();
-	int pingponged = 0;
+	Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 
 	switch (cd.from->animation->get_loop_mode()) {
 		case Animation::LOOP_NONE: {
@@ -998,44 +1022,33 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 		} break;
 
 		case Animation::LOOP_LINEAR: {
-			double looped_next_pos = Math::fposmod(next_pos, (double)len);
-			if (looped_next_pos == 0 && next_pos != 0) {
-				// Loop multiples of the length to it, rather than 0
-				// so state at time=length is previewable in the editor
-				next_pos = len;
-			} else {
-				next_pos = looped_next_pos;
+			if (next_pos < 0 && cd.pos >= 0) {
+				looped_flag = Animation::LOOPED_FLAG_START;
 			}
+			if (next_pos > len && cd.pos <= len) {
+				looped_flag = Animation::LOOPED_FLAG_END;
+			}
+			next_pos = Math::fposmod(next_pos, (double)len);
 		} break;
 
 		case Animation::LOOP_PINGPONG: {
-			if ((int)Math::floor(abs(next_pos - cd.pos) / len) % 2 == 0) {
-				if (next_pos < 0 && cd.pos >= 0) {
-					cd.speed_scale *= -1.0;
-					pingponged = -1;
-				}
-				if (next_pos > len && cd.pos <= len) {
-					cd.speed_scale *= -1.0;
-					pingponged = 1;
-				}
+			if (next_pos < 0 && cd.pos >= 0) {
+				cd.speed_scale *= -1.0;
+				looped_flag = Animation::LOOPED_FLAG_START;
 			}
-			double looped_next_pos = Math::pingpong(next_pos, (double)len);
-			if (looped_next_pos == 0 && next_pos != 0) {
-				// Loop multiples of the length to it, rather than 0
-				// so state at time=length is previewable in the editor
-				next_pos = len;
-			} else {
-				next_pos = looped_next_pos;
+			if (next_pos > len && cd.pos <= len) {
+				cd.speed_scale *= -1.0;
+				looped_flag = Animation::LOOPED_FLAG_END;
 			}
+			next_pos = Math::pingpong(next_pos, (double)len);
 		} break;
 
 		default:
 			break;
 	}
 
+	_animation_process_animation(cd.from, cd.pos, next_pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started, looped_flag);
 	cd.pos = next_pos;
-
-	_animation_process_animation(cd.from, cd.pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started, pingponged);
 }
 
 void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {

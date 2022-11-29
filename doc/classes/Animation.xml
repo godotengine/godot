@@ -616,5 +616,14 @@
 		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
 			Repeats playback and reverse playback at both ends of the animation.
 		</constant>
+		<constant name="LOOPED_FLAG_NONE" value="0" enum="LoopedFlag">
+			This flag indicates that the animation proceeds without any looping.
+		</constant>
+		<constant name="LOOPED_FLAG_END" value="1" enum="LoopedFlag">
+			This flag indicates that the animation has reached the end of the animation and just after loop processed.
+		</constant>
+		<constant name="LOOPED_FLAG_START" value="2" enum="LoopedFlag">
+			This flag indicates that the animation has reached the start of the animation and just after loop processed.
+		</constant>
 	</constants>
 </class>
