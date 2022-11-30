@@ -2420,7 +2420,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if ([wd.window_object isZoomed]) {
+	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 		return;
 	}
 
@@ -2543,7 +2543,7 @@ void DisplayServerMacOS::window_set_size(const Size2i p_size, WindowID p_window)
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if ([wd.window_object isZoomed]) {
+	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 		return;
 	}
 
@@ -2625,7 +2625,7 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			wd.exclusive_fullscreen = false;
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
-			if ([wd.window_object isZoomed]) {
+			if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 				[wd.window_object zoom:nil];
 			}
 		} break;
@@ -2658,7 +2658,7 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
-			if (![wd.window_object isZoomed]) {
+			if (!NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 				[wd.window_object zoom:nil];
 			}
 		} break;
@@ -2678,7 +2678,7 @@ DisplayServer::WindowMode DisplayServerMacOS::window_get_mode(WindowID p_window)
 			return WINDOW_MODE_FULLSCREEN;
 		}
 	}
-	if ([wd.window_object isZoomed] && !wd.resize_disabled) {
+	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 		return WINDOW_MODE_MAXIMIZED;
 	}
 	if ([wd.window_object respondsToSelector:@selector(isMiniaturized)]) {
@@ -2788,8 +2788,10 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			}
 			if (p_enabled) {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
+				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:NO];
 			} else {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
+				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:YES];
 			}
 		} break;
 		case WINDOW_FLAG_EXTEND_TO_TITLE: {
