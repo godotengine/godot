@@ -701,6 +701,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						Variant default_value;
 						if (member.variable->initializer && member.variable->initializer->is_constant) {
 							default_value = member.variable->initializer->reduced_value;
+							GDScriptCompiler::convert_to_initializer_type(default_value, member.variable);
 						}
 						member_default_values_cache[member.variable->identifier->name] = default_value;
 					} break;
