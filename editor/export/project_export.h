@@ -82,6 +82,7 @@ private:
 	Button *export_button = nullptr;
 	Button *export_all_button = nullptr;
 	AcceptDialog *export_all_dialog = nullptr;
+	Button *release_button = nullptr;
 
 	LineEdit *custom_features = nullptr;
 	RichTextLabel *custom_feature_display = nullptr;

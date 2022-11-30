@@ -940,6 +940,17 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 
 void ProjectExportDialog::_export_all_dialog() {
 #ifndef ANDROID_ENABLED
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	String release_keystore = current->get("keystore/release");
+	bool release_keystore_status = FileAccess::exists(release_keystore);
+	release_button->set_disabled(!release_keystore_status);
+	if (!release_keystore_status) {
+		export_all_dialog->set_text(TTR("Choose an export mode:\nWarning! Release keystore not configured"));
+	} else {
+		export_all_dialog->set_text(TTR("Choose an export mode:"));
+	}
+
 	export_all_dialog->show();
 	export_all_dialog->popup_centered(Size2(300, 80));
 #endif
@@ -1218,7 +1229,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_dialog->set_text(TTR("Choose an export mode:"));
 	export_all_dialog->get_ok_button()->hide();
 	export_all_dialog->add_button(TTR("Debug"), true, "debug");
-	export_all_dialog->add_button(TTR("Release"), true, "release");
+	release_button = export_all_dialog->add_button(TTR("Release"), true, "release");
 	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));
 #ifdef ANDROID_ENABLED
 	export_all_dialog->hide();
