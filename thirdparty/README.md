@@ -308,7 +308,7 @@ Files extracted from upstream repository:
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
-- Version: 2.2.3 (2df8120326ed4246e049a7a6de707539604cd514, 2021)
+- Version: 2.2.4 (7d1d8bc3868b08ad003bad235eee57562b95b76d, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
