@@ -47,11 +47,15 @@ OpenXRAndroidExtension *OpenXRAndroidExtension::get_singleton() {
 OpenXRAndroidExtension::OpenXRAndroidExtension(OpenXRAPI *p_openxr_api) :
 		OpenXRExtensionWrapper(p_openxr_api) {
 	singleton = this;
-	request_extensions[XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME] = nullptr; // must be available
+	request_extensions[XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME] = &loader_init_extension_available;
 	request_extensions[XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME] = &create_instance_extension_available;
 }
 
 void OpenXRAndroidExtension::on_before_instance_created() {
+	if (!loader_init_extension_available) {
+		print_line("OpenXR: XR_KHR_loader_init_android is not reported as available - trying to initialize anyway...");
+	}
+
 	EXT_INIT_XR_FUNC(xrInitializeLoaderKHR);
 
 	JNIEnv *env = get_jni_env();
