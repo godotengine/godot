@@ -471,22 +471,22 @@ ColorPicker::PickerShapeType ColorPicker::_get_actual_shape() const {
 
 void ColorPicker::_reset_theme() {
 	Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
+
 	style_box_flat->set_default_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
+	style_box_flat->set_default_margin(SIDE_BOTTOM, 10 * get_theme_default_base_scale());
 	style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
+
 	for (int i = 0; i < SLIDER_COUNT; i++) {
 		sliders[i]->add_theme_icon_override("grabber", get_theme_icon(SNAME("bar_arrow"), SNAME("ColorPicker")));
 		sliders[i]->add_theme_icon_override("grabber_highlight", get_theme_icon(SNAME("bar_arrow"), SNAME("ColorPicker")));
-		sliders[i]->add_theme_constant_override("grabber_offset", 8 * get_theme_default_base_scale());
-		if (!colorize_sliders) {
-			sliders[i]->add_theme_style_override("slider", style_box_flat);
-		}
+		sliders[i]->add_theme_constant_override("grabber_offset", 6.5 * get_theme_default_base_scale());
+		sliders[i]->add_theme_style_override("slider", style_box_flat);
 	}
+
 	alpha_slider->add_theme_icon_override("grabber", get_theme_icon(SNAME("bar_arrow"), SNAME("ColorPicker")));
 	alpha_slider->add_theme_icon_override("grabber_highlight", get_theme_icon(SNAME("bar_arrow"), SNAME("ColorPicker")));
-	alpha_slider->add_theme_constant_override("grabber_offset", 8 * get_theme_default_base_scale());
-	if (!colorize_sliders) {
-		alpha_slider->add_theme_style_override("slider", style_box_flat);
-	}
+	alpha_slider->add_theme_constant_override("grabber_offset", 6.5 * get_theme_default_base_scale());
+	alpha_slider->add_theme_style_override("slider", style_box_flat);
 }
 
 void ColorPicker::_html_submitted(const String &p_html) {
@@ -879,27 +879,19 @@ void ColorPicker::set_colorize_sliders(bool p_colorize_sliders) {
 	colorize_sliders = p_colorize_sliders;
 	mode_popup->set_item_checked(MODE_MAX + 1, colorize_sliders);
 
-	if (colorize_sliders) {
-		Ref<StyleBoxEmpty> style_box_empty(memnew(StyleBoxEmpty));
+	Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
 
-		if (!slider_theme_modified) {
-			for (int i = 0; i < SLIDER_COUNT; i++) {
-				sliders[i]->add_theme_style_override("slider", style_box_empty);
-			}
-		}
-		alpha_slider->add_theme_style_override("slider", style_box_empty);
-	} else {
-		Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
-		style_box_flat->set_default_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
-		style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
+	style_box_flat->set_default_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
+	style_box_flat->set_default_margin(SIDE_BOTTOM, 10 * get_theme_default_base_scale());
+	style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
 
-		if (!slider_theme_modified) {
-			for (int i = 0; i < SLIDER_COUNT; i++) {
-				sliders[i]->add_theme_style_override("slider", style_box_flat);
-			}
+	if (!slider_theme_modified) {
+		for (int i = 0; i < SLIDER_COUNT; i++) {
+			sliders[i]->add_theme_style_override("slider", style_box_flat);
 		}
-		alpha_slider->add_theme_style_override("slider", style_box_flat);
 	}
+
+	alpha_slider->add_theme_style_override("slider", style_box_flat);
 }
 
 bool ColorPicker::is_colorizing_sliders() const {
