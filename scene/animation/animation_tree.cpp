@@ -807,10 +807,10 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 				if (was_discrete != track_value->is_discrete) {
-					WARN_PRINT_ONCE("Tracks with different update modes are blended. Blending prioritizes Discrete/Trigger mode, so other update mode tracks will not be blended.");
+					ERR_PRINT_ED("Value track: " + String(path) + " with different update modes are blended. Blending prioritizes Discrete/Trigger mode, so other update mode tracks will not be blended.");
 				}
 				if (was_using_angle != track_value->is_using_angle) {
-					WARN_PRINT_ONCE("Tracks for rotation with different interpolation types are blended. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
+					WARN_PRINT_ED("Value track: " + String(path) + " with different interpolation types for rotation are blended. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
 				}
 			}
 
