@@ -31,6 +31,7 @@
 #include "export.h"
 #include "codesign.h"
 
+#include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
@@ -813,7 +814,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 			String str;
 			int exitcode = 0;
 
-			Error err = OS::get_singleton()->execute("codesign", args, true, NULL, &str, NULL, true);
+			Error err = OS::get_singleton()->execute("codesign", args, true, NULL, &str, &exitcode, true);
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start codesign executable, make sure Xcode command line tools are installed."));
 				return err;
@@ -1180,8 +1181,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				} else {
 					Ref<Image> icon;
 					icon.instance();
-					icon->load(iconpath);
-					if (!icon->empty()) {
+					err = ImageLoader::load_image(iconpath, icon);
+					if (err == OK && !icon->empty()) {
 						_make_icon(p_preset, icon, data);
 					}
 				}
@@ -1719,8 +1720,8 @@ bool EditorExportPlatformOSX::has_valid_project_configuration(const Ref<EditorEx
 				if (p_preset->get("notarization/apple_id_name") != "") {
 					if (p_preset->get("notarization/apple_id_password") == "") {
 						err += TTR("Notarization: Apple ID password not specified.") + "\n";
+						valid = false;
 					}
-					valid = false;
 				}
 				if (p_preset->get("notarization/api_uuid") != "") {
 					if (p_preset->get("notarization/api_key") == "") {

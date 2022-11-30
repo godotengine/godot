@@ -137,7 +137,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 	// special case handling of command-period, which is traditionally a special
 	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
 	if ([event type] == NSEventTypeKeyDown) {
-		if (([event modifierFlags] & NSEventModifierFlagCommand) && [event keyCode] == 0x2f) {
+		if ((([event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask) == NSEventModifierFlagCommand) && [event keyCode] == 0x2f) {
 			Ref<InputEventKey> k;
 			k.instance();
 
@@ -195,7 +195,9 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notice {
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-	if (nsappname == nil || isatty(STDOUT_FILENO) || isatty(STDIN_FILENO) || isatty(STDERR_FILENO)) {
+	NSString *nsbundleid_env = [NSString stringWithUTF8String:getenv("__CFBundleIdentifier")];
+	NSString *nsbundleid = [[NSBundle mainBundle] bundleIdentifier];
+	if (nsappname == nil || isatty(STDOUT_FILENO) || isatty(STDIN_FILENO) || isatty(STDERR_FILENO) || ![nsbundleid isEqualToString:nsbundleid_env]) {
 		// If the executable is started from terminal or is not bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
 		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
 	}

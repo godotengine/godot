@@ -2887,10 +2887,14 @@ void Node::print_stray_nodes() {
 }
 
 void Node::queue_delete() {
+	// There are users which instantiate multiple scene trees for their games.
+	// Use the node's own tree to handle its deletion when relevant.
 	if (is_inside_tree()) {
 		get_tree()->queue_delete(this);
 	} else {
-		SceneTree::get_singleton()->queue_delete(this);
+		SceneTree *tree = SceneTree::get_singleton();
+		ERR_FAIL_NULL_MSG(tree, "Can't queue free a node when no SceneTree is available.");
+		tree->queue_delete(this);
 	}
 }
 

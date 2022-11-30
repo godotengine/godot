@@ -707,10 +707,14 @@ void _pb_start_simulation(const Skeleton *p_skeleton, Node *p_node, const Vector
 	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
 	if (pb) {
 		bool sim = false;
-		for (int i = p_sim_bones.size() - 1; 0 <= i; --i) {
-			if (p_sim_bones[i] == pb->get_bone_id() || p_skeleton->is_bone_parent_of(pb->get_bone_id(), p_sim_bones[i])) {
-				sim = true;
-				break;
+		if (p_sim_bones.empty()) { // If no bones is specified, activate ragdoll on full body.
+			sim = true;
+		} else {
+			for (int i = p_sim_bones.size() - 1; 0 <= i; --i) {
+				if (p_sim_bones[i] == pb->get_bone_id() || p_skeleton->is_bone_parent_of(pb->get_bone_id(), p_sim_bones[i])) {
+					sim = true;
+					break;
+				}
 			}
 		}
 
@@ -725,9 +729,7 @@ void _pb_start_simulation(const Skeleton *p_skeleton, Node *p_node, const Vector
 
 void Skeleton::physical_bones_start_simulation_on(const Array &p_bones) {
 	Vector<int> sim_bones;
-	if (p_bones.size() <= 0) {
-		sim_bones.push_back(0); // if no bones is specified, activate ragdoll on full body
-	} else {
+	if (p_bones.size() > 0) {
 		sim_bones.resize(p_bones.size());
 		int c = 0;
 		for (int i = sim_bones.size() - 1; 0 <= i; --i) {

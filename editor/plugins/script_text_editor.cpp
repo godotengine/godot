@@ -1478,16 +1478,17 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 }
 
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
-	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene) {
-		return nullptr;
+	// Check scripts only for the nodes belonging to the edited scene.
+	if (p_current_node == p_edited_scene || p_current_node->get_owner() == p_edited_scene) {
+		Ref<Script> scr = p_current_node->get_script();
+		if (scr.is_valid() && scr == script) {
+			return p_current_node;
+		}
 	}
 
-	Ref<Script> scr = p_current_node->get_script();
-
-	if (scr.is_valid() && scr == script) {
-		return p_current_node;
-	}
-
+	// Traverse all children, even the ones not owned by the edited scene as they
+	// can still have child nodes added within the edited scene and thus owned by
+	// it (e.g. nodes added to subscene's root or to its editable children).
 	for (int i = 0; i < p_current_node->get_child_count(); i++) {
 		Node *n = _find_script_node(p_edited_scene, p_current_node->get_child(i), script);
 		if (n) {

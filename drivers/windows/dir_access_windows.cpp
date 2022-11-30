@@ -154,7 +154,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	if (p_dir.is_rel_path())
 		p_dir = current_dir.plus_file(p_dir);
 
-	p_dir = p_dir.replace("/", "\\");
+	p_dir = p_dir.simplify_path().replace("/", "\\");
 
 	bool success;
 	int err;

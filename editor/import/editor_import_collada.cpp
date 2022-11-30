@@ -1074,6 +1074,12 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, uint32_t p_use_com
 						c->set_point_tilt(i, tilts->array[i]);
 					}
 				}
+				if (cd.closed && pc > 1) {
+					Vector3 pos = c->get_point_position(0);
+					Vector3 in = c->get_point_in(0);
+					Vector3 out = c->get_point_out(0);
+					c->add_point(pos, in, out, -1);
+				}
 
 				curve_cache[ng->source] = c;
 				path->set_curve(c);
