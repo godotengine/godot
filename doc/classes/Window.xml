@@ -41,7 +41,13 @@
 				Returns layout direction and text writing direction.
 			</description>
 		</method>
-		<method name="get_real_size" qualifiers="const">
+		<method name="get_position_with_decorations" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the window's position including its border.
+			</description>
+		</method>
+		<method name="get_size_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
 				Returns the window's size including its border.

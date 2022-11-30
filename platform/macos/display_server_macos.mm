@@ -2414,6 +2414,27 @@ Point2i DisplayServerMacOS::window_get_position(WindowID p_window) const {
 	return pos;
 }
 
+Point2i DisplayServerMacOS::window_get_position_with_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
+	const WindowData &wd = windows[p_window];
+
+	const NSRect nsrect = [wd.window_object frame];
+	Point2i pos;
+
+	// Return the position of the top-left corner, for OS X the y starts at the bottom.
+	const float scale = screen_get_max_scale();
+	pos.x = nsrect.origin.x;
+	pos.y = (nsrect.origin.y + nsrect.size.height);
+	pos *= scale;
+	pos -= _get_screens_origin();
+	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// Godot expects a positive value.
+	pos.y *= -1;
+	return pos;
+}
+
 void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -2573,7 +2594,7 @@ Size2i DisplayServerMacOS::window_get_size(WindowID p_window) const {
 	return wd.size;
 }
 
-Size2i DisplayServerMacOS::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerMacOS::window_get_size_with_decorations(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());

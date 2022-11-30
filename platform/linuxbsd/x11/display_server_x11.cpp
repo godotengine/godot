@@ -1397,8 +1397,8 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 			XRectangle rect;
 			rect.x = 0;
 			rect.y = 0;
-			rect.width = window_get_real_size(p_window).x;
-			rect.height = window_get_real_size(p_window).y;
+			rect.width = window_get_size_with_decorations(p_window).x;
+			rect.height = window_get_size_with_decorations(p_window).y;
 			XUnionRectWithRegion(&rect, region, region);
 		} else {
 			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * p_region.size());
@@ -1618,6 +1618,40 @@ Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 	return wd.position;
 }
 
+Point2i DisplayServerX11::window_get_position_with_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
+	const WindowData &wd = windows[p_window];
+
+	if (wd.fullscreen) {
+		return wd.position;
+	}
+
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+	int x = wd.position.x;
+	int y = wd.position.y;
+	Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+	if (prop != None) {
+		Atom type;
+		int format;
+		unsigned long len;
+		unsigned long remaining;
+		unsigned char *data = nullptr;
+		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+			if (format == 32 && len == 4 && data) {
+				long *extents = (long *)data;
+				x -= extents[0]; // left
+				y -= extents[2]; // top
+			}
+			XFree(data);
+		}
+	}
+	return Size2i(x, y);
+}
+
 void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -1762,11 +1796,15 @@ Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
 	return wd.size;
 }
 
-Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerX11::window_get_size_with_decorations(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
+
+	if (wd.fullscreen) {
+		return wd.size;
+	}
 
 	XWindowAttributes xwa;
 	XSync(x11_display, False);
