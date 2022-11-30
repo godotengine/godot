@@ -293,6 +293,10 @@ namespace Godot.NativeInterop
                     return VariantUtils.CreateFromDictionary(godotDictionary);
                 case Collections.Array godotArray:
                     return VariantUtils.CreateFromArray(godotArray);
+                case Collections.IGenericGodotDictionary godotDictionary:
+                    return VariantUtils.CreateFromDictionary(godotDictionary.UnderlyingDictionary);
+                case Collections.IGenericGodotArray godotArray:
+                    return VariantUtils.CreateFromArray(godotArray.UnderlyingArray);
                 case Variant variant:
                     return NativeFuncs.godotsharp_variant_new_copy((godot_variant)variant.NativeVar);
             }
