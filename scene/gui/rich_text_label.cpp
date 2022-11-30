@@ -217,7 +217,7 @@ String RichTextLabel::_letters(int p_num, bool p_capitalize) const {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = ABS(n % 24);
+		int mod = Math::abs(n % 24);
 		char a = (p_capitalize ? 'A' : 'a');
 		c[--chars] = a + mod - 1;
 
@@ -1262,7 +1262,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						} else if (item_fx->type == ITEM_RAINBOW) {
 							ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
 
-							font_color = font_color.from_hsv(MAX(item_rainbow->frequency, 0) * ABS(item_rainbow->elapsed_time * item_rainbow->speed + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+							font_color = font_color.from_hsv(MAX(item_rainbow->frequency, 0) * Math::abs(item_rainbow->elapsed_time * item_rainbow->speed + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
 						} else if (item_fx->type == ITEM_PULSE) {
 							ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
 

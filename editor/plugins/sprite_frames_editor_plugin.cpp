@@ -183,7 +183,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 				const int from = last_frame_selected;
 				const int to = idx;
 
-				const int diff = ABS(to - from);
+				const int diff = Math::abs(to - from);
 				const int dir = SIGN(to - from);
 
 				for (int i = 0; i <= diff; i++) {

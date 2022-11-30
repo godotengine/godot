@@ -593,7 +593,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 		Vector3 ref = Vector3(0.0, 1.0, 0.0);
 
-		if (ABS(p.normal.dot(ref)) > 0.95f) {
+		if (Math::abs(p.normal.dot(ref)) > 0.95f) {
 			ref = Vector3(0.0, 0.0, 1.0); // Change axis.
 		}
 

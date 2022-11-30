@@ -3858,10 +3858,10 @@ int TextEdit::get_last_unhidden_line() const {
 
 int TextEdit::get_next_visible_line_offset_from(int p_line_from, int p_visible_amount) const {
 	// Returns the number of lines (hidden and unhidden) from p_line_from to (p_line_from + visible_amount of unhidden lines).
-	ERR_FAIL_INDEX_V(p_line_from, text.size(), ABS(p_visible_amount));
+	ERR_FAIL_INDEX_V(p_line_from, text.size(), Math::abs(p_visible_amount));
 
 	if (!_is_hiding_enabled()) {
-		return ABS(p_visible_amount);
+		return Math::abs(p_visible_amount);
 	}
 
 	int num_visible = 0;
@@ -3877,7 +3877,7 @@ int TextEdit::get_next_visible_line_offset_from(int p_line_from, int p_visible_a
 			}
 		}
 	} else {
-		p_visible_amount = ABS(p_visible_amount);
+		p_visible_amount = Math::abs(p_visible_amount);
 		for (int i = p_line_from; i >= 0; i--) {
 			num_total++;
 			if (!_is_line_hidden(i)) {
@@ -3895,10 +3895,10 @@ Point2i TextEdit::get_next_visible_line_index_offset_from(int p_line_from, int p
 	// Returns the number of lines (hidden and unhidden) from (p_line_from + p_wrap_index_from) row to (p_line_from + visible_amount of unhidden and wrapped rows).
 	// Wrap index is set to the wrap index of the last line.
 	int wrap_index = 0;
-	ERR_FAIL_INDEX_V(p_line_from, text.size(), Point2i(ABS(p_visible_amount), 0));
+	ERR_FAIL_INDEX_V(p_line_from, text.size(), Point2i(Math::abs(p_visible_amount), 0));
 
 	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
-		return Point2i(ABS(p_visible_amount), 0);
+		return Point2i(Math::abs(p_visible_amount), 0);
 	}
 
 	int num_visible = 0;
@@ -3931,7 +3931,7 @@ Point2i TextEdit::get_next_visible_line_index_offset_from(int p_line_from, int p
 			wrap_index = backtrack.y;
 		}
 	} else {
-		p_visible_amount = ABS(p_visible_amount);
+		p_visible_amount = Math::abs(p_visible_amount);
 		int i;
 		num_visible -= get_line_wrap_count(p_line_from) - p_wrap_index_from;
 		for (i = p_line_from; i >= 0; i--) {

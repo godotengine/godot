@@ -86,7 +86,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		for (int i = 0; i < 3; i++) {
 			Vector3 axis;
 			axis[i] = 1.0;
-			real_t dot = ABS(normal.dot(axis));
+			real_t dot = Math::abs(normal.dot(axis));
 			if (i == 0 || dot > closest_dot) {
 				closest_axis = i;
 				closest_dot = dot;
@@ -136,7 +136,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector3 intersection;
 
 				if (!plane.intersects_segment(ray_from, ray_to, &intersection)) {
-					if (ABS(plane.distance_to(ray_from)) < ABS(plane.distance_to(ray_to))) {
+					if (Math::abs(plane.distance_to(ray_from)) < Math::abs(plane.distance_to(ray_to))) {
 						intersection = plane.project(ray_from);
 					} else {
 						intersection = plane.project(ray_to);

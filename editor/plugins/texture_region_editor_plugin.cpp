@@ -197,7 +197,7 @@ void TextureRegionEditor::_texture_overlay_draw() {
 
 	hscroll->set_min(scroll_rect.position.x);
 	hscroll->set_max(scroll_rect.position.x + scroll_rect.size.x);
-	if (ABS(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= scroll_margin.x) {
+	if (Math::abs(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= scroll_margin.x) {
 		hscroll->hide();
 	} else {
 		hscroll->show();
@@ -207,7 +207,7 @@ void TextureRegionEditor::_texture_overlay_draw() {
 
 	vscroll->set_min(scroll_rect.position.y);
 	vscroll->set_max(scroll_rect.position.y + scroll_rect.size.y);
-	if (ABS(scroll_rect.position.y - (scroll_rect.position.y + scroll_rect.size.y)) <= scroll_margin.y) {
+	if (Math::abs(scroll_rect.position.y - (scroll_rect.position.y + scroll_rect.size.y)) <= scroll_margin.y) {
 		vscroll->hide();
 		draw_ofs.y = scroll_rect.position.y;
 	} else {

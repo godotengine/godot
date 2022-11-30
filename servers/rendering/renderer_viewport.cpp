@@ -559,8 +559,8 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				float cull_distance = light->directional_distance;
 
 				Vector2 light_dir_sign;
-				light_dir_sign.x = (ABS(light_dir.x) < CMP_EPSILON) ? 0.0 : ((light_dir.x > 0.0) ? 1.0 : -1.0);
-				light_dir_sign.y = (ABS(light_dir.y) < CMP_EPSILON) ? 0.0 : ((light_dir.y > 0.0) ? 1.0 : -1.0);
+				light_dir_sign.x = (Math::abs(light_dir.x) < CMP_EPSILON) ? 0.0 : ((light_dir.x > 0.0) ? 1.0 : -1.0);
+				light_dir_sign.y = (Math::abs(light_dir.y) < CMP_EPSILON) ? 0.0 : ((light_dir.y > 0.0) ? 1.0 : -1.0);
 
 				Vector2 points[6];
 				int point_count = 0;

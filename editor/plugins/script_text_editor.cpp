@@ -953,7 +953,7 @@ void ScriptTextEditor::_on_caret_moved() {
 		return;
 	}
 	int current_line = code_editor->get_text_editor()->get_caret_line();
-	if (ABS(current_line - previous_line) >= 10) {
+	if (Math::abs(current_line - previous_line) >= 10) {
 		Dictionary nav_state = get_navigation_state();
 		nav_state["row"] = previous_line;
 		nav_state["scroll_position"] = -1;

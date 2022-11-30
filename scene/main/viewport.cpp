@@ -2665,11 +2665,11 @@ Viewport::SubWindowResize Viewport::_sub_window_get_resize_margin(Window *p_subw
 
 	int limit = p_subwindow->theme_cache.resize_margin;
 
-	if (ABS(dist_x) > limit) {
+	if (Math::abs(dist_x) > limit) {
 		return SUB_WINDOW_RESIZE_DISABLED;
 	}
 
-	if (ABS(dist_y) > limit) {
+	if (Math::abs(dist_y) > limit) {
 		return SUB_WINDOW_RESIZE_DISABLED;
 	}
 

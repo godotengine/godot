@@ -338,9 +338,9 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 		_recreate_octant_data();
 	}
 
-	ERR_FAIL_INDEX(ABS(p_position.x), 1 << 20);
-	ERR_FAIL_INDEX(ABS(p_position.y), 1 << 20);
-	ERR_FAIL_INDEX(ABS(p_position.z), 1 << 20);
+	ERR_FAIL_INDEX(Math::abs(p_position.x), 1 << 20);
+	ERR_FAIL_INDEX(Math::abs(p_position.y), 1 << 20);
+	ERR_FAIL_INDEX(Math::abs(p_position.z), 1 << 20);
 
 	IndexKey key;
 	key.x = p_position.x;
@@ -412,9 +412,9 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 }
 
 int GridMap::get_cell_item(const Vector3i &p_position) const {
-	ERR_FAIL_INDEX_V(ABS(p_position.x), 1 << 20, INVALID_CELL_ITEM);
-	ERR_FAIL_INDEX_V(ABS(p_position.y), 1 << 20, INVALID_CELL_ITEM);
-	ERR_FAIL_INDEX_V(ABS(p_position.z), 1 << 20, INVALID_CELL_ITEM);
+	ERR_FAIL_INDEX_V(Math::abs(p_position.x), 1 << 20, INVALID_CELL_ITEM);
+	ERR_FAIL_INDEX_V(Math::abs(p_position.y), 1 << 20, INVALID_CELL_ITEM);
+	ERR_FAIL_INDEX_V(Math::abs(p_position.z), 1 << 20, INVALID_CELL_ITEM);
 
 	IndexKey key;
 	key.x = p_position.x;
@@ -428,9 +428,9 @@ int GridMap::get_cell_item(const Vector3i &p_position) const {
 }
 
 int GridMap::get_cell_item_orientation(const Vector3i &p_position) const {
-	ERR_FAIL_INDEX_V(ABS(p_position.x), 1 << 20, -1);
-	ERR_FAIL_INDEX_V(ABS(p_position.y), 1 << 20, -1);
-	ERR_FAIL_INDEX_V(ABS(p_position.z), 1 << 20, -1);
+	ERR_FAIL_INDEX_V(Math::abs(p_position.x), 1 << 20, -1);
+	ERR_FAIL_INDEX_V(Math::abs(p_position.y), 1 << 20, -1);
+	ERR_FAIL_INDEX_V(Math::abs(p_position.z), 1 << 20, -1);
 
 	IndexKey key;
 	key.x = p_position.x;

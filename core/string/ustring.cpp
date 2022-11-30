@@ -1716,7 +1716,7 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = ABS(n % base);
+		int mod = Math::abs(n % base);
 		if (mod >= 10) {
 			char a = (capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
@@ -5593,7 +5593,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					// Get basic number.
 					String str;
 					if (!as_unsigned) {
-						str = String::num_int64(ABS(value), base, capitalize);
+						str = String::num_int64(Math::abs(value), base, capitalize);
 					} else {
 						uint64_t uvalue = *((uint64_t *)&value);
 						// In unsigned hex, if the value fits in 32 bits, trim it down to that.

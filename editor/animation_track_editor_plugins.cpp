@@ -1051,13 +1051,13 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 
 			int end = ofs + len * get_timeline()->get_zoom_scale();
 
-			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - end) < 5 * EDSCALE) {
+			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - end) < 5 * EDSCALE) {
 				len_resizing_start = false;
 				use_hsize_cursor = true;
 				len_resizing_index = i;
 			}
 
-			if (ofs >= get_timeline()->get_name_limit() && ofs <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - ofs) < 5 * EDSCALE) {
+			if (ofs >= get_timeline()->get_name_limit() && ofs <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - ofs) < 5 * EDSCALE) {
 				len_resizing_start = true;
 				use_hsize_cursor = true;
 				len_resizing_index = i;

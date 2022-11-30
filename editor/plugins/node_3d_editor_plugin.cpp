@@ -5360,7 +5360,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			}
 
 			static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(85.0f));
-			bool axis_is_orthogonal = ABS(plane.normal.dot(global_axis)) < orthogonal_threshold;
+			bool axis_is_orthogonal = Math::abs(plane.normal.dot(global_axis)) < orthogonal_threshold;
 
 			double angle = 0.0f;
 			if (axis_is_orthogonal) {

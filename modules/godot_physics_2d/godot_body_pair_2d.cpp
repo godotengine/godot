@@ -244,7 +244,7 @@ real_t combine_bounce(GodotBody2D *A, GodotBody2D *B) {
 }
 
 real_t combine_friction(GodotBody2D *A, GodotBody2D *B) {
-	return ABS(MIN(A->get_friction(), B->get_friction()));
+	return Math::abs(MIN(A->get_friction(), B->get_friction()));
 }
 
 bool GodotBodyPair2D::setup(real_t p_step) {

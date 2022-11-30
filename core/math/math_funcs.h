@@ -221,7 +221,10 @@ public:
 
 	static _ALWAYS_INLINE_ double abs(double g) { return absd(g); }
 	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
-	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }
+	static _ALWAYS_INLINE_ int8_t abs(int8_t g) { return g > 0 ? g : -g; }
+	static _ALWAYS_INLINE_ int16_t abs(int16_t g) { return g > 0 ? g : -g; }
+	static _ALWAYS_INLINE_ int32_t abs(int32_t g) { return ::abs(g); }
+	static _ALWAYS_INLINE_ int64_t abs(int64_t g) { return ::llabs(g); }
 
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
