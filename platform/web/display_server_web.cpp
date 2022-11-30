@@ -943,7 +943,11 @@ void DisplayServerWeb::window_set_current_screen(int p_screen, WindowID p_window
 }
 
 Point2i DisplayServerWeb::window_get_position(WindowID p_window) const {
-	return Point2i(); // TODO Does this need implementation?
+	return Point2i();
+}
+
+Point2i DisplayServerWeb::window_get_position_with_decorations(WindowID p_window) const {
+	return Point2i();
 }
 
 void DisplayServerWeb::window_set_position(const Point2i &p_position, WindowID p_window) {
@@ -980,7 +984,7 @@ Size2i DisplayServerWeb::window_get_size(WindowID p_window) const {
 	return Size2i(size[0], size[1]);
 }
 
-Size2i DisplayServerWeb::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerWeb::window_get_size_with_decorations(WindowID p_window) const {
 	return window_get_size(p_window);
 }
 
