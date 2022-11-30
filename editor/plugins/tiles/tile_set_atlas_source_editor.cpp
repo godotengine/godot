@@ -152,7 +152,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 
 	// ID and size related properties.
 	if (tiles.size() == 1) {
-		const Vector2i &coords = tiles.front()->get().tile;
+		const Vector2i coords = tiles.front()->get().tile;
 		const int &alternative = tiles.front()->get().alternative;
 
 		if (alternative == 0) {
