@@ -57,6 +57,7 @@ class SubViewport;
 class SubViewportContainer;
 class VSplitContainer;
 class WorldEnvironment;
+class ViewportNavigationControl;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
@@ -77,7 +78,7 @@ class ViewportRotationControl : public Control {
 	Vector<Color> axis_colors;
 	Vector<int> axis_menu_options;
 	Vector2i orbiting_mouse_start;
-	bool orbiting = false;
+	int orbiting_index = -1;
 	int focused_axis = -2;
 
 	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
@@ -90,6 +91,8 @@ protected:
 	void _get_sorted_axis(Vector<Axis2D> &r_axis);
 	void _update_focus();
 	void _on_mouse_exited();
+	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
+	void _process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position);
 
 public:
 	void set_viewport(Node3DEditorViewport *p_viewport);
@@ -98,6 +101,7 @@ public:
 class Node3DEditorViewport : public Control {
 	GDCLASS(Node3DEditorViewport, Control);
 	friend class Node3DEditor;
+	friend class ViewportNavigationControl;
 	friend class ViewportRotationControl;
 	enum {
 		VIEW_TOP,
@@ -236,6 +240,9 @@ private:
 	Label *preview_material_label_desc = nullptr;
 
 	VBoxContainer *top_right_vbox = nullptr;
+	VBoxContainer *bottom_center_vbox = nullptr;
+	ViewportNavigationControl *position_control = nullptr;
+	ViewportNavigationControl *look_control = nullptr;
 	ViewportRotationControl *rotation_control = nullptr;
 	Gradient *frame_time_gradient = nullptr;
 	Label *cpu_time_label = nullptr;
@@ -297,7 +304,8 @@ private:
 		NAVIGATION_PAN,
 		NAVIGATION_ZOOM,
 		NAVIGATION_ORBIT,
-		NAVIGATION_LOOK
+		NAVIGATION_LOOK,
+		NAVIGATION_MOVE
 	};
 	enum TransformMode {
 		TRANSFORM_NONE,
@@ -914,6 +922,31 @@ public:
 
 	Node3DEditorPlugin();
 	~Node3DEditorPlugin();
+};
+
+class ViewportNavigationControl : public Control {
+	GDCLASS(ViewportNavigationControl, Control);
+
+	Node3DEditorViewport *viewport = nullptr;
+	Vector2i focused_mouse_start;
+	Vector2 focused_pos;
+	int focused_index = -1;
+	Node3DEditorViewport::NavigationMode nav_mode = Node3DEditorViewport::NavigationMode::NAVIGATION_NONE;
+
+	const float AXIS_CIRCLE_RADIUS = 30.0f * EDSCALE;
+
+protected:
+	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _draw();
+	void _on_mouse_exited();
+	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
+	void _process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position);
+	void _update_navigation();
+
+public:
+	void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
+	void set_viewport(Node3DEditorViewport *p_viewport);
 };
 
 #endif // NODE_3D_EDITOR_PLUGIN_H
