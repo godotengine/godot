@@ -1834,8 +1834,8 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 				if (p_preset->get("notarization/apple_id_name") != "") {
 					if (p_preset->get("notarization/apple_id_password") == "") {
 						err += TTR("Notarization: Apple ID password not specified.") + "\n";
+						valid = false;
 					}
-					valid = false;
 				}
 				if (p_preset->get("notarization/api_uuid") != "") {
 					if (p_preset->get("notarization/api_key") == "") {
