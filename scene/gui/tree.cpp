@@ -1337,14 +1337,14 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 
 		// Icon.
 		if (cell.mode == CELL_MODE_CHECK) {
-			size.width += parent_tree->theme_cache.checked->get_width() + parent_tree->theme_cache.hseparation;
+			size.width += parent_tree->theme_cache.checked->get_width() + parent_tree->theme_cache.h_separation;
 		}
 		if (cell.icon.is_valid()) {
 			Size2i icon_size = cell.get_icon_size();
 			if (cell.icon_max_w > 0 && icon_size.width > cell.icon_max_w) {
 				icon_size.width = cell.icon_max_w;
 			}
-			size.width += icon_size.width + parent_tree->theme_cache.hseparation;
+			size.width += icon_size.width + parent_tree->theme_cache.h_separation;
 			size.height = MAX(size.height, icon_size.height);
 		}
 
@@ -1624,8 +1624,8 @@ void Tree::_update_theme_item_cache() {
 	theme_cache.font_color = get_theme_color(SNAME("font_color"));
 	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
 	theme_cache.drop_position_color = get_theme_color(SNAME("drop_position_color"));
-	theme_cache.hseparation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.vseparation = get_theme_constant(SNAME("v_separation"));
+	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
 	theme_cache.item_margin = get_theme_constant(SNAME("item_margin"));
 	theme_cache.button_margin = get_theme_constant(SNAME("button_margin"));
 
@@ -1710,7 +1710,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 		height = item_min_height;
 	}
 
-	height += theme_cache.vseparation;
+	height += theme_cache.v_separation;
 
 	return height;
 }
@@ -1720,7 +1720,7 @@ int Tree::get_item_height(TreeItem *p_item) const {
 		return 0;
 	}
 	int height = compute_item_height(p_item);
-	height += theme_cache.vseparation;
+	height += theme_cache.v_separation;
 
 	if (!p_item->collapsed) { /* if not collapsed, check the children */
 
@@ -1749,7 +1749,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 		if (p_cell.icon_max_w > 0 && bmsize.width > p_cell.icon_max_w) {
 			bmsize.width = p_cell.icon_max_w;
 		}
-		w += bmsize.width + theme_cache.hseparation;
+		w += bmsize.width + theme_cache.h_separation;
 		if (rect.size.width > 0 && (w + ts.width) > rect.size.width) {
 			ts.width = rect.size.width - w;
 		}
@@ -1783,8 +1783,8 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 			p_cell.text_buf->draw_outline(ci, draw_pos, p_ol_size, p_ol_color);
 		}
 		p_cell.text_buf->draw(ci, draw_pos, p_color);
-		rect.position.x += ts.width + theme_cache.hseparation;
-		rect.size.x -= ts.width + theme_cache.hseparation;
+		rect.position.x += ts.width + theme_cache.h_separation;
+		rect.size.x -= ts.width + theme_cache.h_separation;
 	}
 
 	if (!p_cell.icon.is_null()) {
@@ -1796,8 +1796,8 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 		}
 
 		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize, p_icon_color);
-		rect.position.x += bmsize.x + theme_cache.hseparation;
-		rect.size.x -= bmsize.x + theme_cache.hseparation;
+		rect.position.x += bmsize.x + theme_cache.h_separation;
+		rect.size.x -= bmsize.x + theme_cache.h_separation;
 	}
 
 	if (!rtl) {
@@ -1911,7 +1911,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 	bool rtl = cache.rtl;
 
 	/* Calculate height of the label part */
-	label_h += theme_cache.vseparation;
+	label_h += theme_cache.v_separation;
 
 	/* Draw label, if height fits */
 
@@ -1922,7 +1922,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 		ERR_FAIL_COND_V(theme_cache.font.is_null(), -1);
 
-		int ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.hseparation : theme_cache.item_margin);
+		int ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
 		int skip2 = 0;
 		for (int i = 0; i < columns.size(); i++) {
 			if (skip2) {
@@ -1940,8 +1940,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					continue;
 				}
 			} else {
-				ofs += theme_cache.hseparation;
-				w -= theme_cache.hseparation;
+				ofs += theme_cache.h_separation;
+				w -= theme_cache.h_separation;
 			}
 
 			if (p_item->cells[i].expand_right) {
@@ -1998,8 +1998,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			Rect2i item_rect = Rect2i(Point2i(ofs, p_pos.y) - theme_cache.offset + p_draw_ofs, Size2i(w, label_h));
 			Rect2i cell_rect = item_rect;
 			if (i != 0) {
-				cell_rect.position.x -= theme_cache.hseparation;
-				cell_rect.size.x += theme_cache.hseparation;
+				cell_rect.position.x -= theme_cache.h_separation;
+				cell_rect.size.x += theme_cache.h_separation;
 			}
 
 			if (theme_cache.draw_guides) {
@@ -2051,8 +2051,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					r.position.x = p_draw_ofs.x;
 					r.size.x = w + ofs;
 				} else {
-					r.position.x -= theme_cache.hseparation;
-					r.size.x += theme_cache.hseparation;
+					r.position.x -= theme_cache.h_separation;
+					r.size.x += theme_cache.h_separation;
 				}
 				if (rtl) {
 					r.position.x = get_size().width - r.position.x - r.size.x;
@@ -2136,7 +2136,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						unchecked->draw(ci, check_ofs);
 					}
 
-					int check_w = checked->get_width() + theme_cache.hseparation;
+					int check_w = checked->get_width() + theme_cache.h_separation;
 
 					text_pos.x += check_w;
 
@@ -2328,7 +2328,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			// Draw relationship lines.
 			if (theme_cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root) && c->is_visible()) {
-				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.hseparation : theme_cache.item_margin);
+				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
 				int parent_ofs = p_pos.x + theme_cache.item_margin;
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - theme_cache.offset + p_draw_ofs;
 
@@ -2615,7 +2615,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		return 0;
 	}
 
-	int item_h = compute_item_height(p_item) + theme_cache.vseparation;
+	int item_h = compute_item_height(p_item) + theme_cache.v_separation;
 
 	bool skip = (p_item == root && hide_root);
 
@@ -2649,7 +2649,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			if (p_item->cells[i].expand_right) {
 				int plus = 1;
 				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty() && p_item->cells[i + plus].icon.is_null()) {
-					col_width += theme_cache.hseparation;
+					col_width += theme_cache.h_separation;
 					col_width += get_column_width(i + plus);
 					plus++;
 				}
@@ -2669,16 +2669,16 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		if (col == -1) {
 			return -1;
 		} else if (col == 0) {
-			int margin = x_ofs + theme_cache.item_margin; //-theme_cache.hseparation;
+			int margin = x_ofs + theme_cache.item_margin; //-theme_cache.h_separation;
 			//int lm = theme_cache.panel_style->get_margin(SIDE_LEFT);
 			col_width -= margin;
 			limit_w -= margin;
 			col_ofs += margin;
 			x -= margin;
 		} else {
-			col_width -= theme_cache.hseparation;
-			limit_w -= theme_cache.hseparation;
-			x -= theme_cache.hseparation;
+			col_width -= theme_cache.h_separation;
+			limit_w -= theme_cache.h_separation;
+			x -= theme_cache.h_separation;
 		}
 
 		if (!p_item->disable_folding && !hide_folding && !p_item->cells[col].editable && !p_item->cells[col].selectable && p_item->get_first_child()) {
@@ -4426,7 +4426,7 @@ int Tree::get_column_minimum_width(int p_column) const {
 			if (p_column == 0) {
 				item_size.width += theme_cache.item_margin * depth;
 			} else {
-				item_size.width += theme_cache.hseparation;
+				item_size.width += theme_cache.h_separation;
 			}
 
 			// Check if the item is wider.
@@ -4522,7 +4522,7 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 
 		ofs += compute_item_height(it);
 		if (it != root || !hide_root) {
-			ofs += theme_cache.vseparation;
+			ofs += theme_cache.v_separation;
 		}
 
 		if (it->first_child && !it->collapsed) {
@@ -4561,7 +4561,7 @@ void Tree::ensure_cursor_is_visible() {
 		const int tbh = _get_title_button_height();
 		y_offset -= tbh;
 
-		const int cell_h = compute_item_height(selected_item) + theme_cache.vseparation;
+		const int cell_h = compute_item_height(selected_item) + theme_cache.v_separation;
 		int screen_h = area_size.height - tbh;
 		if (h_scroll->is_visible()) {
 			screen_h -= h_scroll->get_combined_minimum_size().height;
@@ -4727,7 +4727,7 @@ void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 		const int tbh = _get_title_button_height();
 		y_offset -= tbh;
 
-		const int cell_h = compute_item_height(p_item) + theme_cache.vseparation;
+		const int cell_h = compute_item_height(p_item) + theme_cache.v_separation;
 		int screen_h = area_size.height - tbh;
 		if (h_scroll->is_visible()) {
 			screen_h -= h_scroll->get_combined_minimum_size().height;
@@ -4855,7 +4855,7 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 	Point2 pos = p_pos;
 
 	if ((root != p_item || !hide_root) && p_item->is_visible()) {
-		h = compute_item_height(p_item) + theme_cache.vseparation;
+		h = compute_item_height(p_item) + theme_cache.v_separation;
 		if (pos.y < h) {
 			if (drop_mode_flags == DROP_MODE_ON_ITEM) {
 				section = 0;
