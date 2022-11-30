@@ -11720,7 +11720,7 @@ msgstr ""
 #: doc/classes/Button.xml
 msgid ""
 "Button's icon, if text is present the icon will be placed before the text.\n"
-"To edit margin and spacing of the icon, use [code]hseparation[/code] theme "
+"To edit margin and spacing of the icon, use [code]h_separation[/code] theme "
 "property of [Button] and [code]content_margin_*[/code] properties of the "
 "used [StyleBox]es."
 msgstr ""
@@ -61038,7 +61038,7 @@ msgstr ""
 
 #: doc/classes/TextEdit.xml
 msgid ""
-"If [code]true[/code], custom [code]font_color_selected[/code] will be used "
+"If [code]true[/code], custom [code]font_selected_color[/code] will be used "
 "for selected text."
 msgstr ""
 

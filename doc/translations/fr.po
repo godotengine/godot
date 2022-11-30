@@ -15391,14 +15391,14 @@ msgstr "Les boutons plats n’affichent pas de décoration."
 #: doc/classes/Button.xml
 msgid ""
 "Button's icon, if text is present the icon will be placed before the text.\n"
-"To edit margin and spacing of the icon, use [code]hseparation[/code] theme "
+"To edit margin and spacing of the icon, use [code]h_separation[/code] theme "
 "property of [Button] and [code]content_margin_*[/code] properties of the "
 "used [StyleBox]es."
 msgstr ""
 "L'icône du bouton, si le texte est présent, l'icône sera placée avant le "
 "texte.\n"
 "Pour modifier la marge et l'espacement de l'icône, utilisez la propriété "
-"[code]hseparation[/code] du thème pour le [Button] et les propriétés "
+"[code]h_separation[/code] du thème pour le [Button] et les propriétés "
 "[code]content_margin_*[/code] de la [StyleBox] utilisée."
 
 #: doc/classes/Button.xml
@@ -77048,10 +77048,10 @@ msgstr "La largeur, en pixels, de la mini-carte."
 
 #: doc/classes/TextEdit.xml
 msgid ""
-"If [code]true[/code], custom [code]font_color_selected[/code] will be used "
+"If [code]true[/code], custom [code]font_selected_color[/code] will be used "
 "for selected text."
 msgstr ""
-"Si [code]true[/code], la couleur [code]font_color_selected[/code] "
+"Si [code]true[/code], la couleur [code]font_selected_color[/code] "
 "personnalisée sera utilisée pour le texte sélectionné."
 
 #: doc/classes/TextEdit.xml
