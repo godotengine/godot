@@ -1,5 +1,5 @@
 diff --git a/thirdparty/minizip/ioapi.c b/thirdparty/minizip/ioapi.c
-index d666e5a228..db4c33b4b9 100644
+index 814a6fd38c..b50db35ac1 100644
 --- a/thirdparty/minizip/ioapi.c
 +++ b/thirdparty/minizip/ioapi.c
 @@ -80,8 +80,15 @@ void fill_zlib_filefunc64_32_def_from_filefunc32(zlib_filefunc64_32_def* p_filef
@@ -26,7 +26,7 @@ index d666e5a228..db4c33b4b9 100644
 +*/
 +/* GODOT end */
 diff --git a/thirdparty/minizip/ioapi.h b/thirdparty/minizip/ioapi.h
-index 114bfab762..2f24a5b6a0 100644
+index ae9ca7e833..6c73fc4ec3 100644
 --- a/thirdparty/minizip/ioapi.h
 +++ b/thirdparty/minizip/ioapi.h
 @@ -155,6 +155,10 @@ typedef struct zlib_filefunc_def_s
@@ -52,7 +52,7 @@ index 114bfab762..2f24a5b6a0 100644
  
  void fill_fopen64_filefunc OF((zlib_filefunc64_def* pzlib_filefunc_def));
 diff --git a/thirdparty/minizip/unzip.c b/thirdparty/minizip/unzip.c
-index 5e12e47474..3b191e827c 100644
+index 3036b470b7..e83aff2773 100644
 --- a/thirdparty/minizip/unzip.c
 +++ b/thirdparty/minizip/unzip.c
 @@ -157,6 +157,9 @@ typedef struct
@@ -122,7 +122,7 @@ index 5e12e47474..3b191e827c 100644
          }
  
          while(acc < file_info.size_file_extra)
-@@ -1575,8 +1604,10 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
+@@ -1576,8 +1605,10 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
      }
      else if ((s->cur_file_info.compression_method==Z_DEFLATED) && (!raw))
      {
@@ -135,7 +135,7 @@ index 5e12e47474..3b191e827c 100644
        pfile_in_zip_read_info->stream.opaque = (voidpf)0;
        pfile_in_zip_read_info->stream.next_in = 0;
        pfile_in_zip_read_info->stream.avail_in = 0;
-@@ -1608,6 +1639,9 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
+@@ -1610,6 +1641,9 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
                iSizeVar;
  
      pfile_in_zip_read_info->stream.avail_in = (uInt)0;
@@ -145,7 +145,7 @@ index 5e12e47474..3b191e827c 100644
  
      s->pfile_in_zip_read = pfile_in_zip_read_info;
                  s->encrypted = 0;
-@@ -1638,6 +1672,85 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
+@@ -1640,6 +1674,85 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
      return UNZ_OK;
  }
  
@@ -261,7 +261,7 @@ index 6f95e94d75..71a7d89692 100644
  
  extern ZPOS64_T ZEXPORT unztell64 OF((unzFile file));
 diff --git a/thirdparty/minizip/zip.c b/thirdparty/minizip/zip.c
-index 4e611e1163..6d1c26d9f8 100644
+index 66d693f85a..ddcc14132b 100644
 --- a/thirdparty/minizip/zip.c
 +++ b/thirdparty/minizip/zip.c
 @@ -854,9 +854,11 @@ extern zipFile ZEXPORT zipOpen3 (const void *pathname, int append, zipcharpc* gl
