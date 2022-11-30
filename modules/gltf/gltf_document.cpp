@@ -30,17 +30,8 @@
 
 #include "gltf_document.h"
 
-#include "gltf_accessor.h"
-#include "gltf_animation.h"
-#include "gltf_camera.h"
-#include "gltf_light.h"
-#include "gltf_mesh.h"
-#include "gltf_node.h"
-#include "gltf_skeleton.h"
-#include "gltf_skin.h"
 #include "gltf_spec_gloss.h"
 #include "gltf_state.h"
-#include "gltf_texture.h"
 
 #include "core/bind/core_bind.h" // FIXME: Shouldn't use _Directory but DirAccess.
 #include "core/crypto/crypto_core.h"
@@ -209,15 +200,21 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 }
 
 Error GLTFDocument::_serialize_extensions(Ref<GLTFState> state) const {
-	const String texture_transform = "KHR_texture_transform";
-	const String punctual_lights = "KHR_lights_punctual";
 	Array extensions_used;
-	extensions_used.push_back(punctual_lights);
-	extensions_used.push_back(texture_transform);
-	state->json["extensionsUsed"] = extensions_used;
 	Array extensions_required;
-	extensions_required.push_back(texture_transform);
-	state->json["extensionsRequired"] = extensions_required;
+	if (!state->lights.empty()) {
+		extensions_used.push_back("KHR_lights_punctual");
+	}
+	if (state->use_khr_texture_transform) {
+		extensions_used.push_back("KHR_texture_transform");
+		extensions_required.push_back("KHR_texture_transform");
+	}
+	if (!extensions_used.empty()) {
+		state->json["extensionsUsed"] = extensions_used;
+	}
+	if (!extensions_required.empty()) {
+		state->json["extensionsRequired"] = extensions_required;
+	}
 	return OK;
 }
 
@@ -973,58 +970,58 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> state) {
 	return OK;
 }
 
-String GLTFDocument::_get_accessor_type_name(const GLTFDocument::GLTFType p_type) {
-	if (p_type == GLTFDocument::TYPE_SCALAR) {
+String GLTFDocument::_get_accessor_type_name(const GLTFType p_type) {
+	if (p_type == GLTFType::TYPE_SCALAR) {
 		return "SCALAR";
 	}
-	if (p_type == GLTFDocument::TYPE_VEC2) {
+	if (p_type == GLTFType::TYPE_VEC2) {
 		return "VEC2";
 	}
-	if (p_type == GLTFDocument::TYPE_VEC3) {
+	if (p_type == GLTFType::TYPE_VEC3) {
 		return "VEC3";
 	}
-	if (p_type == GLTFDocument::TYPE_VEC4) {
+	if (p_type == GLTFType::TYPE_VEC4) {
 		return "VEC4";
 	}
 
-	if (p_type == GLTFDocument::TYPE_MAT2) {
+	if (p_type == GLTFType::TYPE_MAT2) {
 		return "MAT2";
 	}
-	if (p_type == GLTFDocument::TYPE_MAT3) {
+	if (p_type == GLTFType::TYPE_MAT3) {
 		return "MAT3";
 	}
-	if (p_type == GLTFDocument::TYPE_MAT4) {
+	if (p_type == GLTFType::TYPE_MAT4) {
 		return "MAT4";
 	}
 	ERR_FAIL_V("SCALAR");
 }
 
-GLTFDocument::GLTFType GLTFDocument::_get_type_from_str(const String &p_string) {
+GLTFType GLTFDocument::_get_type_from_str(const String &p_string) {
 	if (p_string == "SCALAR") {
-		return GLTFDocument::TYPE_SCALAR;
+		return GLTFType::TYPE_SCALAR;
 	}
 
 	if (p_string == "VEC2") {
-		return GLTFDocument::TYPE_VEC2;
+		return GLTFType::TYPE_VEC2;
 	}
 	if (p_string == "VEC3") {
-		return GLTFDocument::TYPE_VEC3;
+		return GLTFType::TYPE_VEC3;
 	}
 	if (p_string == "VEC4") {
-		return GLTFDocument::TYPE_VEC4;
+		return GLTFType::TYPE_VEC4;
 	}
 
 	if (p_string == "MAT2") {
-		return GLTFDocument::TYPE_MAT2;
+		return GLTFType::TYPE_MAT2;
 	}
 	if (p_string == "MAT3") {
-		return GLTFDocument::TYPE_MAT3;
+		return GLTFType::TYPE_MAT3;
 	}
 	if (p_string == "MAT4") {
-		return GLTFDocument::TYPE_MAT4;
+		return GLTFType::TYPE_MAT4;
 	}
 
-	ERR_FAIL_V(GLTFDocument::TYPE_SCALAR);
+	ERR_FAIL_V(GLTFType::TYPE_SCALAR);
 }
 
 Error GLTFDocument::_parse_accessors(Ref<GLTFState> state) {
@@ -1585,7 +1582,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> state, c
 	accessor.instance();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_SCALAR;
+	const GLTFType type = GLTFType::TYPE_SCALAR;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_INT;
 
 	PoolVector<float> max;
@@ -1681,7 +1678,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> state, c
 	accessor.instance();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC2;
+	const GLTFType type = GLTFType::TYPE_VEC2;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	PoolVector<float> max;
@@ -1742,7 +1739,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> state, 
 	accessor.instance();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC4;
+	const GLTFType type = GLTFType::TYPE_VEC4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 	PoolVector<float> max;
 	max.resize(type_max.size());
@@ -1818,7 +1815,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> state
 	accessor.instance();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC4;
+	const GLTFType type = GLTFType::TYPE_VEC4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	PoolVector<float> max;
@@ -1877,7 +1874,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> state,
 	accessor.instance();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC4;
+	const GLTFType type = GLTFType::TYPE_VEC4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_UNSIGNED_SHORT;
 
 	PoolVector<float> max;
@@ -1938,7 +1935,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quats(Ref<GLTFState> state, 
 	accessor.instance();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC4;
+	const GLTFType type = GLTFType::TYPE_VEC4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	PoolVector<float> max;
@@ -2015,7 +2012,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> state,
 	accessor.instance();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_SCALAR;
+	const GLTFType type = GLTFType::TYPE_SCALAR;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	PoolVector<float> max;
@@ -2073,7 +2070,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> state, c
 	accessor.instance();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC3;
+	const GLTFType type = GLTFType::TYPE_VEC3;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	PoolVector<float> max;
@@ -2153,7 +2150,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 	accessor.instance();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_MAT4;
+	const GLTFType type = GLTFType::TYPE_MAT4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	PoolVector<float> max;
@@ -3380,7 +3377,11 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				}
 				if (gltf_texture_index != -1) {
 					bct["index"] = gltf_texture_index;
-					bct["extensions"] = _serialize_texture_transform_uv1(material);
+					Dictionary extensions = _serialize_texture_transform_uv1(material);
+					if (!extensions.empty()) {
+						bct["extensions"] = extensions;
+						state->use_khr_texture_transform = true;
+					}
 					mr["baseColorTexture"] = bct;
 				}
 			}
@@ -3519,7 +3520,11 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				}
 				if (has_roughness || has_metalness) {
 					mrt["index"] = orm_texture_index;
-					mrt["extensions"] = _serialize_texture_transform_uv1(material);
+					Dictionary extensions = _serialize_texture_transform_uv1(material);
+					if (!extensions.empty()) {
+						mrt["extensions"] = extensions;
+						state->use_khr_texture_transform = true;
+					}
 					mr["metallicRoughnessTexture"] = mrt;
 				}
 			}
@@ -4626,6 +4631,9 @@ void GLTFDocument::_remove_duplicate_skins(Ref<GLTFState> state) {
 }
 
 Error GLTFDocument::_serialize_lights(Ref<GLTFState> state) {
+	if (state->lights.empty()) {
+		return OK;
+	}
 	Array lights;
 	for (GLTFLightIndex i = 0; i < state->lights.size(); i++) {
 		Dictionary d;
@@ -4650,10 +4658,6 @@ Error GLTFDocument::_serialize_lights(Ref<GLTFState> state) {
 		float range = light->range;
 		d["range"] = range;
 		lights.push_back(d);
-	}
-
-	if (!state->lights.size()) {
-		return OK;
 	}
 
 	Dictionary extensions;
@@ -6839,45 +6843,48 @@ Error GLTFDocument::parse(Ref<GLTFState> state, String p_path, bool p_read_binar
 	return OK;
 }
 
-Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<SpatialMaterial> p_material) {
-	Dictionary extension;
-	Ref<SpatialMaterial> mat = p_material;
-	if (mat.is_valid()) {
-		Dictionary texture_transform;
+Dictionary _serialize_texture_transform_uv(Vector2 p_offset, Vector2 p_scale) {
+	Dictionary texture_transform;
+	bool is_offset = p_offset != Vector2(0.0, 0.0);
+	if (is_offset) {
 		Array offset;
 		offset.resize(2);
-		offset[0] = mat->get_uv2_offset().x;
-		offset[1] = mat->get_uv2_offset().y;
+		offset[0] = p_offset.x;
+		offset[1] = p_offset.y;
 		texture_transform["offset"] = offset;
+	}
+	bool is_scaled = p_scale != Vector2(1.0, 1.0);
+	if (is_scaled) {
 		Array scale;
 		scale.resize(2);
-		scale[0] = mat->get_uv2_scale().x;
-		scale[1] = mat->get_uv2_scale().y;
+		scale[0] = p_scale.x;
+		scale[1] = p_scale.y;
 		texture_transform["scale"] = scale;
-		// Godot doesn't support texture rotation
+	}
+	Dictionary extension;
+	// Note: Godot doesn't support texture rotation.
+	if (is_offset || is_scaled) {
 		extension["KHR_texture_transform"] = texture_transform;
 	}
 	return extension;
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<SpatialMaterial> p_material) {
-	Dictionary extension;
 	if (p_material.is_valid()) {
-		Dictionary texture_transform;
-		Array offset;
-		offset.resize(2);
-		offset[0] = p_material->get_uv1_offset().x;
-		offset[1] = p_material->get_uv1_offset().y;
-		texture_transform["offset"] = offset;
-		Array scale;
-		scale.resize(2);
-		scale[0] = p_material->get_uv1_scale().x;
-		scale[1] = p_material->get_uv1_scale().y;
-		texture_transform["scale"] = scale;
-		// Godot doesn't support texture rotation
-		extension["KHR_texture_transform"] = texture_transform;
+		Vector3 offset = p_material->get_uv1_offset();
+		Vector3 scale = p_material->get_uv1_scale();
+		return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 	}
-	return extension;
+	return Dictionary();
+}
+
+Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<SpatialMaterial> p_material) {
+	if (p_material.is_valid()) {
+		Vector3 offset = p_material->get_uv2_offset();
+		Vector3 scale = p_material->get_uv2_scale();
+		return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
+	}
+	return Dictionary();
 }
 
 Error GLTFDocument::_serialize_version(Ref<GLTFState> state) {

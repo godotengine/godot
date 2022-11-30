@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_skeleton.h                                                      */
+/*  gltf_template_convert.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_SKELETON_H
-#define GLTF_SKELETON_H
+#ifndef GLTF_TEMPLATE_CONVERT_H
+#define GLTF_TEMPLATE_CONVERT_H
 
-#include "core/resource.h"
-#include "gltf_defines.h"
+#include "core/array.h"
+#include "core/dictionary.h"
+#include "core/set.h"
 
-class GLTFSkeleton : public Resource {
-	GDCLASS(GLTFSkeleton, Resource);
-	friend class GLTFDocument;
+namespace GLTFTemplateConvert {
+template <class T>
+static Array to_array(const Vector<T> &p_inp) {
+	Array ret;
+	for (int i = 0; i < p_inp.size(); i++) {
+		ret.push_back(p_inp[i]);
+	}
+	return ret;
+}
 
-private:
-	// The *synthesized* skeletons joints
-	PoolVector<GLTFNodeIndex> joints;
+template <class T>
+static Array to_array(const Set<T> &p_inp) {
+	Array ret;
+	typename Set<T>::Element *elem = p_inp.front();
+	while (elem) {
+		ret.push_back(elem->get());
+		elem = elem->next();
+	}
+	return ret;
+}
 
-	// The roots of the skeleton. If there are multiple, each root must have the
-	// same parent (ie roots are siblings)
-	PoolVector<GLTFNodeIndex> roots;
+template <class T>
+static void set_from_array(Vector<T> &r_out, const Array &p_inp) {
+	r_out.clear();
+	for (int i = 0; i < p_inp.size(); i++) {
+		r_out.push_back(p_inp[i]);
+	}
+}
 
-	// The created Skeleton for the scene
-	Skeleton *godot_skeleton = nullptr;
+template <class T>
+static void set_from_array(Set<T> &r_out, const Array &p_inp) {
+	r_out.clear();
+	for (int i = 0; i < p_inp.size(); i++) {
+		r_out.insert(p_inp[i]);
+	}
+}
 
-	// Set of unique bone names for the skeleton
-	Set<String> unique_names;
+template <class K, class V>
+static Dictionary to_dict(const Map<K, V> &p_inp) {
+	Dictionary ret;
+	for (typename Map<K, V>::Element *E = p_inp.front(); E; E = E->next()) {
+		ret[E->key()] = E->value();
+	}
+	return ret;
+}
 
-	Map<int32_t, GLTFNodeIndex> godot_bone_node;
+template <class K, class V>
+static void set_from_dict(Map<K, V> &r_out, const Dictionary &p_inp) {
+	r_out.clear();
+	Array keys = p_inp.keys();
+	for (int i = 0; i < keys.size(); i++) {
+		r_out[keys[i]] = p_inp[keys[i]];
+	}
+}
+} //namespace GLTFTemplateConvert
 
-	PoolVector<BoneAttachment *> bone_attachments;
-
-protected:
-	static void _bind_methods();
-
-public:
-	PoolVector<GLTFNodeIndex> get_joints();
-	void set_joints(PoolVector<GLTFNodeIndex> p_joints);
-
-	PoolVector<GLTFNodeIndex> get_roots();
-	void set_roots(PoolVector<GLTFNodeIndex> p_roots);
-
-	Skeleton *get_godot_skeleton();
-
-	Array get_unique_names();
-	void set_unique_names(Array p_unique_names);
-
-	Dictionary get_godot_bone_node();
-	void set_godot_bone_node(Dictionary p_indict);
-
-	BoneAttachment *get_bone_attachment(int idx);
-
-	int32_t get_bone_attachment_count();
-};
-
-#endif // GLTF_SKELETON_H
+#endif // GLTF_TEMPLATE_CONVERT_H

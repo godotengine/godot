@@ -30,6 +30,9 @@
 
 #include "gltf_skeleton.h"
 
+#include "gltf_template_convert.h"
+#include "scene/3d/bone_attachment.h"
+
 void GLTFSkeleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joints"), &GLTFSkeleton::get_joints);
 	ClassDB::bind_method(D_METHOD("set_joints", "joints"), &GLTFSkeleton::set_joints);
@@ -70,19 +73,19 @@ Skeleton *GLTFSkeleton::get_godot_skeleton() {
 }
 
 Array GLTFSkeleton::get_unique_names() {
-	return GLTFDocument::to_array(unique_names);
+	return GLTFTemplateConvert::to_array(unique_names);
 }
 
 void GLTFSkeleton::set_unique_names(Array p_unique_names) {
-	GLTFDocument::set_from_array(unique_names, p_unique_names);
+	GLTFTemplateConvert::set_from_array(unique_names, p_unique_names);
 }
 
 Dictionary GLTFSkeleton::get_godot_bone_node() {
-	return GLTFDocument::to_dict(godot_bone_node);
+	return GLTFTemplateConvert::to_dict(godot_bone_node);
 }
 
 void GLTFSkeleton::set_godot_bone_node(Dictionary p_indict) {
-	GLTFDocument::set_from_dict(godot_bone_node, p_indict);
+	GLTFTemplateConvert::set_from_dict(godot_bone_node, p_indict);
 }
 
 BoneAttachment *GLTFSkeleton::get_bone_attachment(int idx) {

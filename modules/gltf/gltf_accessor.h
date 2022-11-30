@@ -32,8 +32,7 @@
 #define GLTF_ACCESSOR_H
 
 #include "core/resource.h"
-
-#include "gltf_document.h"
+#include "gltf_defines.h"
 
 struct GLTFAccessor : public Resource {
 	GDCLASS(GLTFAccessor, Resource);
@@ -45,7 +44,7 @@ private:
 	int component_type = 0;
 	bool normalized = false;
 	int count = 0;
-	GLTFDocument::GLTFType type = GLTFDocument::TYPE_SCALAR;
+	GLTFType type = GLTFType::TYPE_SCALAR;
 	PoolVector<float> min;
 	PoolVector<float> max;
 	int sparse_count = 0;
