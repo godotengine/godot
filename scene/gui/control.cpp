@@ -485,10 +485,10 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		}
 	} else if (Object::cast_to<Container>(parent_node)) {
 		// If the parent is a container, display only container-related properties.
-		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset" ||
-				p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
-			p_property.usage ^= PROPERTY_USAGE_EDITOR;
-
+		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset") {
+			p_property.usage ^= PROPERTY_USAGE_DEFAULT;
+		} else if (p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
 		} else if (p_property.name == "layout_mode") {
 			// Set the layout mode to be disabled with the proper value.
 			p_property.hint_string = "Position,Anchors,Container,Uncontrolled";
