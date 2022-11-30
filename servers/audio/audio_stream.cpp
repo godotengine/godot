@@ -71,12 +71,9 @@ void AudioStreamPlayback::seek(double p_time) {
 }
 
 int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret)) {
-		return ret;
-	}
-
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
+	return ret;
 }
 
 void AudioStreamPlayback::tag_used_streams() {
@@ -107,20 +104,14 @@ void AudioStreamPlaybackResampled::begin_resample() {
 }
 
 int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret)) {
-		return ret;
-	}
-
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret);
+	return ret;
 }
 float AudioStreamPlaybackResampled::get_stream_sampling_rate() {
-	float ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret)) {
-		return ret;
-	}
-
-	return 0;
+	float ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret);
+	return ret;
 }
 
 void AudioStreamPlaybackResampled::_bind_methods() {

@@ -92,18 +92,13 @@ void Material::inspect_native_shader_code() {
 
 RID Material::get_shader_rid() const {
 	RID ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_shader_rid, ret)) {
-		return ret;
-	}
-	return RID();
+	GDVIRTUAL_REQUIRED_CALL(_get_shader_rid, ret);
+	return ret;
 }
 Shader::Mode Material::get_shader_mode() const {
-	Shader::Mode ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_shader_mode, ret)) {
-		return ret;
-	}
-
-	return Shader::MODE_MAX;
+	Shader::Mode ret = Shader::MODE_MAX;
+	GDVIRTUAL_REQUIRED_CALL(_get_shader_mode, ret);
+	return ret;
 }
 
 bool Material::_can_do_next_pass() const {

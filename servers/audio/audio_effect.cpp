@@ -31,9 +31,7 @@
 #include "audio_effect.h"
 
 void AudioEffectInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-	if (GDVIRTUAL_REQUIRED_CALL(_process, p_src_frames, p_dst_frames, p_frame_count)) {
-		return;
-	}
+	GDVIRTUAL_REQUIRED_CALL(_process, p_src_frames, p_dst_frames, p_frame_count);
 }
 bool AudioEffectInstance::process_silence() const {
 	bool ret = false;
@@ -50,10 +48,8 @@ void AudioEffectInstance::_bind_methods() {
 
 Ref<AudioEffectInstance> AudioEffect::instantiate() {
 	Ref<AudioEffectInstance> ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_instantiate, ret)) {
-		return ret;
-	}
-	return Ref<AudioEffectInstance>();
+	GDVIRTUAL_REQUIRED_CALL(_instantiate, ret);
+	return ret;
 }
 void AudioEffect::_bind_methods() {
 	GDVIRTUAL_BIND(_instantiate);
