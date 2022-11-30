@@ -398,7 +398,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("caret_color", "LineEdit", control_font_hover_color);
 	theme->set_color("selection_color", "LineEdit", control_selection_color);
 	theme->set_color("clear_button_color", "LineEdit", control_font_color);
-	theme->set_color("clear_button_color_pressed", "LineEdit", control_font_pressed_color);
+	theme->set_color("clear_button_pressed_color", "LineEdit", control_font_pressed_color);
 
 	theme->set_constant("minimum_character_width", "LineEdit", 4);
 	theme->set_constant("outline_size", "LineEdit", 0);

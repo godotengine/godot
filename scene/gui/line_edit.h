@@ -197,7 +197,7 @@ private:
 
 		Ref<Texture2D> clear_icon;
 		Color clear_button_color;
-		Color clear_button_color_pressed;
+		Color clear_button_pressed_color;
 
 		float base_scale = 1.0;
 	} theme_cache;

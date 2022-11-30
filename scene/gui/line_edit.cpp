@@ -728,7 +728,7 @@ void LineEdit::_update_theme_item_cache() {
 
 	theme_cache.clear_icon = get_theme_icon(SNAME("clear"));
 	theme_cache.clear_button_color = get_theme_color(SNAME("clear_button_color"));
-	theme_cache.clear_button_color_pressed = get_theme_color(SNAME("clear_button_color_pressed"));
+	theme_cache.clear_button_pressed_color = get_theme_color(SNAME("clear_button_pressed_color"));
 
 	theme_cache.base_scale = get_theme_default_base_scale();
 }
@@ -874,7 +874,7 @@ void LineEdit::_notification(int p_what) {
 				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
 				if (display_clear_icon) {
 					if (clear_button_status.press_attempt && clear_button_status.pressing_inside) {
-						color_icon = theme_cache.clear_button_color_pressed;
+						color_icon = theme_cache.clear_button_pressed_color;
 					} else {
 						color_icon = theme_cache.clear_button_color;
 					}
