@@ -885,7 +885,7 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 		}
 
 		float required_y_distance = 20.0f * EDSCALE;
-		if (ABS(reorder_mouse_y_delta) > required_y_distance) {
+		if (Math::abs(reorder_mouse_y_delta) > required_y_distance) {
 			int direction = reorder_mouse_y_delta > 0.0f ? 1 : -1;
 			reorder_mouse_y_delta -= required_y_distance * direction;
 

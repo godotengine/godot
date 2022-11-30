@@ -3732,7 +3732,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 				const TreeItem::Cell &c = popup_edited_item->cells[popup_edited_item_col];
 				float diff_y = -mm->get_relative().y;
-				diff_y = Math::pow(ABS(diff_y), 1.8f) * SIGN(diff_y);
+				diff_y = Math::pow(Math::abs(diff_y), 1.8f) * SIGN(diff_y);
 				diff_y *= 0.1;
 				range_drag_base = CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);
 				popup_edited_item->set_range(popup_edited_item_col, range_drag_base);
@@ -4386,15 +4386,15 @@ void Tree::_notification(int p_what) {
 			if (scrolling && get_rect().grow(theme_cache.scroll_border).has_point(mouse_position)) {
 				Point2 point;
 
-				if ((ABS(mouse_position.x) < ABS(mouse_position.x - get_size().width)) && (ABS(mouse_position.x) < theme_cache.scroll_border)) {
+				if ((Math::abs(mouse_position.x) < Math::abs(mouse_position.x - get_size().width)) && (Math::abs(mouse_position.x) < theme_cache.scroll_border)) {
 					point.x = mouse_position.x - theme_cache.scroll_border;
-				} else if (ABS(mouse_position.x - get_size().width) < theme_cache.scroll_border) {
+				} else if (Math::abs(mouse_position.x - get_size().width) < theme_cache.scroll_border) {
 					point.x = mouse_position.x - (get_size().width - theme_cache.scroll_border);
 				}
 
-				if ((ABS(mouse_position.y) < ABS(mouse_position.y - get_size().height)) && (ABS(mouse_position.y) < theme_cache.scroll_border)) {
+				if ((Math::abs(mouse_position.y) < Math::abs(mouse_position.y - get_size().height)) && (Math::abs(mouse_position.y) < theme_cache.scroll_border)) {
 					point.y = mouse_position.y - theme_cache.scroll_border;
-				} else if (ABS(mouse_position.y - get_size().height) < theme_cache.scroll_border) {
+				} else if (Math::abs(mouse_position.y - get_size().height) < theme_cache.scroll_border) {
 					point.y = mouse_position.y - (get_size().height - theme_cache.scroll_border);
 				}
 

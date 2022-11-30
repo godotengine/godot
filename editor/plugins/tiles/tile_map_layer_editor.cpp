@@ -1007,7 +1007,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 		String text = tile_set->local_to_map(edited_layer->get_local_mouse_position());
 		if (drawing_rect) {
 			Vector2i size = tile_set->local_to_map(edited_layer->get_local_mouse_position()) - tile_set->local_to_map(drag_start_mouse_pos);
-			text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), ABS(size.x) + 1, ABS(size.y) + 1);
+			text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), Math::abs(size.x) + 1, Math::abs(size.y) + 1);
 		}
 
 		p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
@@ -4029,18 +4029,18 @@ Vector<Vector2i> TileMapLayerEditor::get_line(const TileMapLayer *p_tile_map_lay
 		}
 
 		Vector2i delta = p_to_cell - p_from_cell;
-		delta = Vector2i(2 * delta.x + ABS(p_to_cell.y % 2) - ABS(p_from_cell.y % 2), delta.y);
+		delta = Vector2i(2 * delta.x + Math::abs(p_to_cell.y % 2) - Math::abs(p_from_cell.y % 2), delta.y);
 		Vector2i sign = delta.sign();
 
 		Vector2i current = p_from_cell;
 		points.push_back(TileSet::transform_coords_layout(transposed ? Vector2i(current.y, current.x) : current, tile_set->get_tile_offset_axis(), TileSet::TILE_LAYOUT_STACKED, tile_set->get_tile_layout()));
 
 		int err = 0;
-		if (ABS(delta.y) < ABS(delta.x)) {
+		if (Math::abs(delta.y) < Math::abs(delta.x)) {
 			Vector2i err_step = 3 * delta.abs();
 			while (current != p_to_cell) {
 				err += err_step.y;
-				if (err > ABS(delta.x)) {
+				if (err > Math::abs(delta.x)) {
 					if (sign.x == 0) {
 						current += Vector2(sign.y, 0);
 					} else {
