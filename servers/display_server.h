@@ -353,6 +353,7 @@ public:
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const = 0;
+	virtual Point2i window_get_position_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) = 0;
@@ -366,7 +367,7 @@ public:
 
 	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const = 0;
-	virtual Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const = 0; // FIXME: Find clearer name for this.
+	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const = 0;

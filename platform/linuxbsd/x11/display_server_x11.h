@@ -392,6 +392,7 @@ public:
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Point2i window_get_position_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
@@ -405,7 +406,7 @@ public:
 
 	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;

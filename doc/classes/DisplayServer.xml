@@ -1156,14 +1156,14 @@
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the position of the given window to on the screen.
+				Returns the position of the client area of the given window on the screen.
 			</description>
 		</method>
-		<method name="window_get_real_size" qualifiers="const">
+		<method name="window_get_position_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the size of the window specified by [param window_id] (in pixels), including the borders drawn by the operating system. See also [method window_get_size].
+				Returns the position of the given window on the screen including the borders drawn by the operating system. See also [method window_get_position].
 			</description>
 		</method>
 		<method name="window_get_safe_title_margins" qualifiers="const">
@@ -1177,7 +1177,14 @@
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the size of the window specified by [param window_id] (in pixels), excluding the borders drawn by the operating system. This is also called the "client area". See also [method window_get_real_size], [method window_set_size] and [method window_get_position].
+				Returns the size of the window specified by [param window_id] (in pixels), excluding the borders drawn by the operating system. This is also called the "client area". See also [method window_get_size_with_decorations], [method window_set_size] and [method window_get_position].
+			</description>
+		</method>
+		<method name="window_get_size_with_decorations" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the size of the window specified by [param window_id] (in pixels), including the borders drawn by the operating system. See also [method window_get_size].
 			</description>
 		</method>
 		<method name="window_get_vsync_mode" qualifiers="const">
