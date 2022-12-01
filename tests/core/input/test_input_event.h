@@ -36,9 +36,24 @@
 
 #include "tests/test_macros.h"
 
+#define INPUT_EVENT_TYPES InputEventWithModifiers, \
+	InputEventKey, \
+	InputEventMouse, \
+	InputEventMouseButton, \
+	InputEventMouseMotion, \
+	InputEventJoypadMotion, \
+	InputEventJoypadButton, \
+	InputEventScreenTouch, \
+	InputEventScreenDrag, \
+	InputEventAction, \
+	InputEventGesture, \
+	InputEventPanGesture, \
+	InputEventMIDI, \
+	InputEventShortcut
+
 namespace TestInputEvent {
 
-typedef std::tuple<
+/*typedef std::tuple<
 	InputEventWithModifiers,
 	InputEventKey,
 	InputEventMouse,
@@ -53,7 +68,7 @@ typedef std::tuple<
 	InputEventPanGesture,
 	InputEventMIDI,
 	InputEventShortcut
-	> InputEventTypes;
+	> InputEventTypes;*/
 
 TEST_CASE_TEMPLATE_DEFINE("[InputEvent] Event correctly changes and returns device", T, test_device) {
 	T event = T();
@@ -66,7 +81,7 @@ TEST_CASE_TEMPLATE_DEFINE("[InputEvent] Event correctly changes and returns devi
 	CHECK(event.InputEvent::get_device() == InputEvent::DEVICE_ID_INTERNAL);
 	CHECK(event.InputEvent::get_device() != InputEvent::DEVICE_ID_TOUCH_MOUSE);
 }
-TEST_CASE_TEMPLATE_APPLY(test_device, InputEventTypes);
+TEST_CASE_TEMPLATE_INVOKE(test_device, INPUT_EVENT_TYPES);
 
 TEST_CASE_TEMPLATE_DEFINE("[InputEvent] Test action properties through InputEvent", T, test_actions) {
 	T event = T();
@@ -75,31 +90,31 @@ TEST_CASE_TEMPLATE_DEFINE("[InputEvent] Test action properties through InputEven
 	StringName testEventName("TestInputEvent");
 	InputMap::get_singleton()->add_action(testEventName);
 
-	SUBCASE("Action is present") {
+	SUBCASE("[InputEvent] Action is present") {
 		CHECK(event.InputEvent::is_action(testEventName) == true);
 		CHECK(event.InputEvent::is_action(testEventName, true) == true);
 	}
 
-	SUBCASE("Action has default pressed value") {
+	SUBCASE("[InputEvent] Action has default pressed value") {
 		//default Action value is false
 		CHECK(event.InputEvent::is_action_pressed(testEventName) == false);
 		CHECK(event.InputEvent::is_action_pressed(testEventName, true) == false);
 		CHECK(event.InputEvent::is_action_pressed(testEventName, true, true) == false);
 	}
 
-	SUBCASE("Action has default released value") {
+	SUBCASE("[InputEvent] Action has default released value") {
 		//default Action value is true
 		CHECK(event.InputEvent::is_action_released(testEventName) == true);
 		CHECK(event.InputEvent::is_action_released(testEventName, true) == true);
 	}
 
-	SUBCASE("Action has default strength value") {
+	SUBCASE("[InputEvent] Action has default strength value") {
 		//default Action value is 0.5f
 		CHECK(event.InputEvent::get_action_strength(testEventName) == 0.5f);
 		CHECK(event.InputEvent::get_action_strength(testEventName, true) == 0.5f);
 	}
 
-	SUBCASE("Action has default strength value") {
+	SUBCASE("[InputEvent] Action has default strength value") {
 		//default Action value is 0.5f
 		CHECK(event.InputEvent::get_action_raw_strength(testEventName) == 0.5f);
 		CHECK(event.InputEvent::get_action_raw_strength(testEventName, true) == 0.5f);
@@ -107,7 +122,7 @@ TEST_CASE_TEMPLATE_DEFINE("[InputEvent] Test action properties through InputEven
 
 	InputMap::get_singleton()->erase_action(testEventName);
 }
-TEST_CASE_TEMPLATE_APPLY(test_actions, InputEventTypes);
+TEST_CASE_TEMPLATE_INVOKE(test_actions, INPUT_EVENT_TYPES);
 
 } // namespace TestInputEvent
 
