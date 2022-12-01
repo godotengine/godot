@@ -443,6 +443,10 @@ bool EditorHelpSearch::Runner::_phase_member_items_init() {
 }
 
 bool EditorHelpSearch::Runner::_phase_member_items() {
+	if (!iterator_match) {
+		return true;
+	}
+
 	ClassMatch &match = iterator_match->value;
 
 	if (!match.doc || match.doc->name.is_empty()) {
