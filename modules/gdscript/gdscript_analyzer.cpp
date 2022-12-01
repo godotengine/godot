@@ -1214,11 +1214,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			if (!valid) {
 				// Compute parent signature as a string to show in the error message.
-				String parent_signature = parent_return_type.is_hard_type() ? parent_return_type.to_string() : "Variant";
-				if (parent_signature == "null") {
-					parent_signature = "void";
-				}
-				parent_signature += " " + p_function->identifier->name.operator String() + "(";
+				String parent_signature = p_function->identifier->name.operator String() + "(";
 				int j = 0;
 				for (const GDScriptParser::DataType &par_type : parameters_types) {
 					if (j > 0) {
@@ -1235,7 +1231,15 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 					j++;
 				}
-				parent_signature += ")";
+				parent_signature += ") -> ";
+
+				const String return_type = parent_return_type.is_hard_type() ? parent_return_type.to_string() : "Variant";
+				if (return_type == "null") {
+					parent_signature += "void";
+				} else {
+					parent_signature += return_type;
+				}
+
 				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
 			}
 		}
