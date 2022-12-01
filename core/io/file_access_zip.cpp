@@ -234,7 +234,7 @@ ZipArchive::~ZipArchive() {
 	packages.clear();
 }
 
-Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessZip::open_internal(const String &p_path, int p_mode_flags) {
 	_close();
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, FAILED);
@@ -337,7 +337,7 @@ bool FileAccessZip::file_exists(const String &p_name) {
 }
 
 FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file) {
-	_open(p_path, FileAccess::READ);
+	open_internal(p_path, FileAccess::READ);
 }
 
 FileAccessZip::~FileAccessZip() {

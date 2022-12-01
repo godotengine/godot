@@ -170,9 +170,12 @@ private:
 	bool caret_blink_enabled = false;
 	bool caret_force_displayed = false;
 	bool draw_caret = true;
-	float caret_blink_speed = 0.65;
+	float caret_blink_interval = 0.65;
 	double caret_blink_timer = 0.0;
 	bool caret_blinking = false;
+
+	bool pending_select_all_on_focus = false;
+	bool select_all_on_focus = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal;
@@ -198,8 +201,6 @@ private:
 
 		float base_scale = 1.0;
 	} theme_cache;
-
-	bool _is_over_clear_button(const Point2 &p_pos) const;
 
 	void _clear_undo_stack();
 	void _clear_redo();
@@ -240,6 +241,7 @@ private:
 	void _ensure_menu();
 
 protected:
+	bool _is_over_clear_button(const Point2 &p_pos) const;
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -311,8 +313,8 @@ public:
 	bool is_caret_blink_enabled() const;
 	void set_caret_blink_enabled(const bool p_enabled);
 
-	float get_caret_blink_speed() const;
-	void set_caret_blink_speed(const float p_speed);
+	float get_caret_blink_interval() const;
+	void set_caret_blink_interval(const float p_interval);
 
 	void set_caret_force_displayed(const bool p_enabled);
 	bool is_caret_force_displayed() const;
@@ -365,6 +367,10 @@ public:
 
 	void set_flat(bool p_enabled);
 	bool is_flat() const;
+
+	void set_select_all_on_focus(bool p_enabled);
+	bool is_select_all_on_focus() const;
+	void clear_pending_select_all_on_focus(); // For other controls, e.g. SpinBox.
 
 	virtual bool is_text_field() const override;
 

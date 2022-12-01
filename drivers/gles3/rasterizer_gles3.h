@@ -68,7 +68,7 @@ protected:
 	RasterizerCanvasGLES3 *canvas = nullptr;
 	RasterizerSceneGLES3 *scene = nullptr;
 
-	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect);
+	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer);
 
 public:
 	RendererUtilities *get_utilities() { return utilities; }
@@ -103,8 +103,9 @@ public:
 		low_end = true;
 	}
 
-	uint64_t get_frame_number() const { return frame; }
-	double get_frame_delta_time() const { return delta; }
+	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
+	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
+	_ALWAYS_INLINE_ double get_total_time() const { return time_total; }
 
 	RasterizerGLES3();
 	~RasterizerGLES3();

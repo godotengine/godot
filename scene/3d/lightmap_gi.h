@@ -142,16 +142,16 @@ public:
 private:
 	BakeQuality bake_quality = BAKE_QUALITY_MEDIUM;
 	bool use_denoiser = true;
-	int bounces = 1;
+	int bounces = 3;
 	float bias = 0.0005;
 	int max_texture_size = 16384;
 	bool interior = false;
-	EnvironmentMode environment_mode = ENVIRONMENT_MODE_DISABLED;
+	EnvironmentMode environment_mode = ENVIRONMENT_MODE_SCENE;
 	Ref<Sky> environment_custom_sky;
-	Color environment_custom_color = Color(0.2, 0.7, 1.0);
+	Color environment_custom_color = Color(1, 1, 1);
 	float environment_custom_energy = 1.0;
 	bool directional = false;
-	GenerateProbes gen_probes = GENERATE_PROBES_DISABLED;
+	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
 
 	Ref<LightmapGIData> light_data;

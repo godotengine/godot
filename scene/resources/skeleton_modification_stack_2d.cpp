@@ -182,11 +182,11 @@ void SkeletonModificationStack2D::delete_modification(int p_mod_idx) {
 void SkeletonModificationStack2D::set_modification(int p_mod_idx, Ref<SkeletonModification2D> p_mod) {
 	ERR_FAIL_INDEX(p_mod_idx, modifications.size());
 
-	if (p_mod == nullptr) {
-		modifications.insert(p_mod_idx, nullptr);
+	if (p_mod.is_null()) {
+		modifications.write[p_mod_idx] = Ref<SkeletonModification2D>();
 	} else {
+		modifications.write[p_mod_idx] = p_mod;
 		p_mod->_setup_modification(this);
-		modifications.insert(p_mod_idx, p_mod);
 	}
 
 #ifdef TOOLS_ENABLED

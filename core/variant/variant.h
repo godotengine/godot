@@ -490,6 +490,7 @@ public:
 	}
 
 	// Only enum classes that need to be bound need this to be defined.
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(EulerOrder)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
@@ -552,9 +553,6 @@ public:
 	void zero();
 	Variant duplicate(bool p_deep = false) const;
 	Variant recursive_duplicate(bool p_deep, int recursion_count) const;
-	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
-	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
-	static void sub(const Variant &a, const Variant &b, Variant &r_dst);
 
 	/* Built-In Methods */
 
@@ -807,7 +805,22 @@ const Variant::ObjData &Variant::_get_obj() const {
 	return *reinterpret_cast<const ObjData *>(&_data._mem[0]);
 }
 
-String vformat(const String &p_text, const Variant &p1 = Variant(), const Variant &p2 = Variant(), const Variant &p3 = Variant(), const Variant &p4 = Variant(), const Variant &p5 = Variant());
+template <typename... VarArgs>
+String vformat(const String &p_text, const VarArgs... p_args) {
+	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+	Array args_array;
+	args_array.resize(sizeof...(p_args));
+	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+		args_array[i] = args[i];
+	}
+
+	bool error = false;
+	String fmt = p_text.sprintf(args_array, &error);
+
+	ERR_FAIL_COND_V_MSG(error, String(), fmt);
+
+	return fmt;
+}
 
 template <typename... VarArgs>
 Callable Callable::bind(VarArgs... p_args) {

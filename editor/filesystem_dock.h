@@ -79,7 +79,7 @@ private:
 		FILE_OPEN,
 		FILE_INHERIT,
 		FILE_MAIN_SCENE,
-		FILE_INSTANCE,
+		FILE_INSTANTIATE,
 		FILE_ADD_FAVORITE,
 		FILE_REMOVE_FAVORITE,
 		FILE_DEPENDENCIES,
@@ -213,11 +213,11 @@ private:
 	void _file_multi_selected(int p_index, bool p_selected);
 	void _tree_multi_selected(Object *p_item, int p_column, bool p_selected);
 
-	void _get_imported_files(const String &p_path, Vector<String> &files) const;
+	void _get_imported_files(const String &p_path, Vector<String> &r_files) const;
 	void _update_import_dock();
 
-	void _get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const;
-	void _find_remaps(EditorFileSystemDirectory *efsd, const HashMap<String, String> &renames, Vector<String> &to_remaps) const;
+	void _get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Vector<String> &r_files, Vector<String> &r_folders) const;
+	void _find_remaps(EditorFileSystemDirectory *p_efsd, const HashMap<String, String> &r_renames, Vector<String> &r_to_remaps) const;
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames);
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
 	void _update_dependencies_after_move(const HashMap<String, String> &p_renames) const;
@@ -297,12 +297,12 @@ private:
 
 	void _update_display_mode(bool p_force = false);
 
-	Vector<String> _tree_get_selected(bool remove_self_inclusion = true);
+	Vector<String> _tree_get_selected(bool remove_self_inclusion = true) const;
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
 	void _feature_profile_changed();
-	Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
+	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 private:
 	static FileSystemDock *singleton;
@@ -315,9 +315,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	String get_selected_path() const;
+	Vector<String> get_selected_paths() const;
 
 	String get_current_path() const;
+	String get_current_directory() const;
+
 	void navigate_to_path(const String &p_path);
 	void focus_on_filter();
 

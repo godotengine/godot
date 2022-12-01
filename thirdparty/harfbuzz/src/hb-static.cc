@@ -94,7 +94,7 @@ hb_face_t::load_num_glyphs () const
 
   ret = hb_max (ret, load_num_glyphs_from_maxp (this));
 
-  num_glyphs.set_relaxed (ret);
+  num_glyphs = ret;
   return ret;
 }
 
@@ -102,7 +102,7 @@ unsigned int
 hb_face_t::load_upem () const
 {
   unsigned int ret = table.head->get_upem ();
-  upem.set_relaxed (ret);
+  upem = ret;
   return ret;
 }
 

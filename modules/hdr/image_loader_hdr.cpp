@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, uint32_t p_flags, float p_scale) {
+Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	String header = f->get_token();
 
 	ERR_FAIL_COND_V_MSG(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED, "Unsupported header information in HDR: " + header + ".");
@@ -140,7 +140,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, uint32_t
 		}
 	}
 
-	p_image->create(width, height, false, Image::FORMAT_RGBE9995, imgdata);
+	p_image->set_data(width, height, false, Image::FORMAT_RGBE9995, imgdata);
 
 	return OK;
 }

@@ -40,7 +40,7 @@ class TileSetAtlasSource;
 struct TileMapQuadrant {
 	struct CoordsWorldComparator {
 		_ALWAYS_INLINE_ bool operator()(const Vector2i &p_a, const Vector2i &p_b) const {
-			// We sort the cells by their world coords, as it is needed by rendering.
+			// We sort the cells by their local coords, as it is needed by rendering.
 			if (p_a.y == p_b.y) {
 				return p_a.x > p_b.x;
 			} else {
@@ -49,7 +49,7 @@ struct TileMapQuadrant {
 		}
 	};
 
-	// Dirty list element
+	// Dirty list element.
 	SelfList<TileMapQuadrant> dirty_list_element;
 
 	// Quadrant layer and coords.
@@ -58,17 +58,17 @@ struct TileMapQuadrant {
 
 	// TileMapCells
 	RBSet<Vector2i> cells;
-	// We need those two maps to sort by world position for rendering
+	// We need those two maps to sort by local position for rendering
 	// This is kind of workaround, it would be better to sort the cells directly in the "cells" set instead.
-	RBMap<Vector2i, Vector2i> map_to_world;
-	RBMap<Vector2i, Vector2i, CoordsWorldComparator> world_to_map;
+	RBMap<Vector2i, Vector2i> map_to_local;
+	RBMap<Vector2i, Vector2i, CoordsWorldComparator> local_to_map;
 
 	// Debug.
 	RID debug_canvas_item;
 
 	// Rendering.
 	List<RID> canvas_items;
-	List<RID> occluders;
+	HashMap<Vector2i, RID> occluders;
 
 	// Physics.
 	List<RID> bodies;
@@ -115,7 +115,7 @@ public:
 	class TerrainConstraint {
 	private:
 		const TileMap *tile_map;
-		Vector2i base_cell_coords = Vector2i();
+		Vector2i base_cell_coords;
 		int bit = -1;
 		int terrain = -1;
 
@@ -236,6 +236,8 @@ private:
 	void _clear_layer_internals(int p_layer);
 	void _clear_internals();
 
+	HashSet<Vector3i> instantiated_scenes;
+
 	// Rect caching.
 	void _recompute_rect_cache();
 
@@ -266,9 +268,9 @@ private:
 	void _scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
 	// Terrains.
-	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, RBSet<TerrainConstraint> p_constraints);
+	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, RBSet<TerrainConstraint> p_constraints, TileSet::TerrainsPattern p_current_pattern);
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(Vector2i p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
-	RBSet<TerrainConstraint> _get_terrain_constraints_from_cells_list(int p_layer, const RBSet<Vector2i> &p_on_map, int p_terrain_set, bool p_ignore_empty_terrains) const;
+	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(int p_layer, const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
 	// Set and get tiles from data arrays.
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
@@ -352,7 +354,7 @@ public:
 	void set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPattern> p_pattern);
 
 	// Terrains.
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> p_constraints); // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> p_constraints); // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_pattern(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains = true); // Not exposed.
@@ -368,14 +370,14 @@ public:
 
 	virtual void set_y_sort_enabled(bool p_enable) override;
 
-	Vector2 map_to_world(const Vector2i &p_pos) const;
-	Vector2i world_to_map(const Vector2 &p_pos) const;
+	Vector2 map_to_local(const Vector2i &p_pos) const;
+	Vector2i local_to_map(const Vector2 &p_pos) const;
 
 	bool is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const;
 	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
 
 	TypedArray<Vector2i> get_used_cells(int p_layer) const;
-	Rect2 get_used_rect(); // Not const because of cache
+	Rect2i get_used_rect(); // Not const because of cache
 
 	// Override some methods of the CanvasItem class to pass the changes to the quadrants CanvasItems
 	virtual void set_light_mask(int p_light_mask) override;
@@ -406,7 +408,7 @@ public:
 	GDVIRTUAL3(_tile_data_runtime_update, int, Vector2i, TileData *);
 
 	// Configuration warnings.
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	TileMap();
 	~TileMap();

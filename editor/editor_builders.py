@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import tempfile
 import uuid
+import zlib
 from platform_methods import subprocess_main
 
 
@@ -28,7 +29,6 @@ def make_doc_header(target, source, env):
 
     buf = (docbegin + buf + docend).encode("utf-8")
     decomp_size = len(buf)
-    import zlib
 
     # Use maximum zlib compression level to further reduce file size
     # (at the cost of initial build times).
@@ -87,9 +87,6 @@ def make_translations_header(target, source, env, category):
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _{}_TRANSLATIONS_H\n".format(category.upper()))
     g.write("#define _{}_TRANSLATIONS_H\n".format(category.upper()))
-
-    import zlib
-    import os.path
 
     sorted_paths = sorted(source, key=lambda path: os.path.splitext(os.path.basename(path))[0])
 

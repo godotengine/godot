@@ -35,6 +35,9 @@
 #include "config.h"
 #endif
 
+#ifndef HB_BORING_EXPANSION
+#define HB_NO_BORING_EXPANSION
+#endif
 
 #ifdef HB_TINY
 #define HB_LEAN
@@ -68,6 +71,7 @@
 #define HB_NO_LANGUAGE_PRIVATE_SUBTAG
 #define HB_NO_LAYOUT_FEATURE_PARAMS
 #define HB_NO_LAYOUT_COLLECT_GLYPHS
+#define HB_NO_LAYOUT_RARELY_USED
 #define HB_NO_LAYOUT_UNUSED
 #define HB_NO_MATH
 #define HB_NO_META

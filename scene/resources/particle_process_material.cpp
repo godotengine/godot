@@ -115,6 +115,7 @@ void ParticleProcessMaterial::init_shaders() {
 
 	shader_names->sub_emitter_frequency = "sub_emitter_frequency";
 	shader_names->sub_emitter_amount_at_end = "sub_emitter_amount_at_end";
+	shader_names->sub_emitter_amount_at_collision = "sub_emitter_amount_at_collision";
 	shader_names->sub_emitter_keep_velocity = "sub_emitter_keep_velocity";
 
 	shader_names->collision_friction = "collision_friction";
@@ -234,6 +235,9 @@ void ParticleProcessMaterial::_update_shader() {
 		}
 		if (sub_emitter_mode == SUB_EMITTER_AT_END) {
 			code += "uniform int sub_emitter_amount_at_end;\n";
+		}
+		if (sub_emitter_mode == SUB_EMITTER_AT_COLLISION) {
+			code += "uniform int sub_emitter_amount_at_collision;\n";
 		}
 		code += "uniform bool sub_emitter_keep_velocity;\n";
 	}
@@ -830,6 +834,13 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
 
+	// scale by scale
+	code += "	float base_scale = mix(scale_min, scale_max, scale_rand);\n";
+	code += "	base_scale = sign(base_scale) * max(abs(base_scale), 0.001);\n";
+	code += "	TRANSFORM[0].xyz *= base_scale * sign(tex_scale.r) * max(abs(tex_scale.r), 0.001);\n";
+	code += "	TRANSFORM[1].xyz *= base_scale * sign(tex_scale.g) * max(abs(tex_scale.g), 0.001);\n";
+	code += "	TRANSFORM[2].xyz *= base_scale * sign(tex_scale.b) * max(abs(tex_scale.b), 0.001);\n";
+
 	if (collision_mode == COLLISION_RIGID) {
 		code += "	if (COLLIDED) {\n";
 		code += "		if (length(VELOCITY) > 3.0) {\n";
@@ -843,21 +854,6 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "			noise_direction = vec3(1.0, 0.0, 0.0);\n";
 		}
 		code += "		}\n";
-		code += "	}\n";
-	}
-
-	// scale by scale
-	code += "	float base_scale = mix(scale_min, scale_max, scale_rand);\n";
-	code += "	base_scale = sign(base_scale) * max(abs(base_scale), 0.001);\n";
-	code += "	TRANSFORM[0].xyz *= base_scale * sign(tex_scale.r) * max(abs(tex_scale.r), 0.001);\n";
-	code += "	TRANSFORM[1].xyz *= base_scale * sign(tex_scale.g) * max(abs(tex_scale.g), 0.001);\n";
-	code += "	TRANSFORM[2].xyz *= base_scale * sign(tex_scale.b) * max(abs(tex_scale.b), 0.001);\n";
-
-	if (collision_mode == COLLISION_RIGID) {
-		code += "	if (COLLIDED) {\n";
-		code += "		TRANSFORM[3].xyz+=COLLISION_NORMAL * COLLISION_DEPTH;\n";
-		code += "		VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce);\n";
-		code += "		VELOCITY = mix(VELOCITY,vec3(0.0),collision_friction * DELTA * 100.0);\n";
 		code += "	}\n";
 	} else if (collision_mode == COLLISION_HIDE_ON_CONTACT) {
 		code += "	if (COLLIDED) {\n";
@@ -874,7 +870,7 @@ void ParticleProcessMaterial::_update_shader() {
 				code += "	if (DELTA >= interval_rem) emit_count = 1;\n";
 			} break;
 			case SUB_EMITTER_AT_COLLISION: {
-				code += "	if (COLLIDED) emit_count = 1;\n";
+				code += "	if (COLLIDED) emit_count = sub_emitter_amount_at_collision;\n";
 			} break;
 			case SUB_EMITTER_AT_END: {
 				code += "	float unit_delta = DELTA/LIFETIME;\n";
@@ -1433,6 +1429,10 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
+	if (p_property.name == "sub_emitter_amount_at_collision" && sub_emitter_mode != SUB_EMITTER_AT_COLLISION) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
 	if (p_property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -1486,6 +1486,15 @@ void ParticleProcessMaterial::set_sub_emitter_amount_at_end(int p_amount) {
 
 int ParticleProcessMaterial::get_sub_emitter_amount_at_end() const {
 	return sub_emitter_amount_at_end;
+}
+
+void ParticleProcessMaterial::set_sub_emitter_amount_at_collision(int p_amount) {
+	sub_emitter_amount_at_collision = p_amount;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_amount_at_collision, p_amount);
+}
+
+int ParticleProcessMaterial::get_sub_emitter_amount_at_collision() const {
+	return sub_emitter_amount_at_collision;
 }
 
 void ParticleProcessMaterial::set_sub_emitter_keep_velocity(bool p_enable) {
@@ -1640,6 +1649,9 @@ void ParticleProcessMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sub_emitter_amount_at_end"), &ParticleProcessMaterial::get_sub_emitter_amount_at_end);
 	ClassDB::bind_method(D_METHOD("set_sub_emitter_amount_at_end", "amount"), &ParticleProcessMaterial::set_sub_emitter_amount_at_end);
 
+	ClassDB::bind_method(D_METHOD("get_sub_emitter_amount_at_collision"), &ParticleProcessMaterial::get_sub_emitter_amount_at_collision);
+	ClassDB::bind_method(D_METHOD("set_sub_emitter_amount_at_collision", "amount"), &ParticleProcessMaterial::set_sub_emitter_amount_at_collision);
+
 	ClassDB::bind_method(D_METHOD("get_sub_emitter_keep_velocity"), &ParticleProcessMaterial::get_sub_emitter_keep_velocity);
 	ClassDB::bind_method(D_METHOD("set_sub_emitter_keep_velocity", "enable"), &ParticleProcessMaterial::set_sub_emitter_keep_velocity);
 
@@ -1752,6 +1764,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_mode", PROPERTY_HINT_ENUM, "Disabled,Constant,At End,At Collision"), "set_sub_emitter_mode", "get_sub_emitter_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sub_emitter_frequency", PROPERTY_HINT_RANGE, "0.01,100,0.01,suffix:Hz"), "set_sub_emitter_frequency", "get_sub_emitter_frequency");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_amount_at_end", PROPERTY_HINT_RANGE, "1,32,1"), "set_sub_emitter_amount_at_end", "get_sub_emitter_amount_at_end");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_amount_at_collision", PROPERTY_HINT_RANGE, "1,32,1"), "set_sub_emitter_amount_at_collision", "get_sub_emitter_amount_at_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sub_emitter_keep_velocity"), "set_sub_emitter_keep_velocity", "get_sub_emitter_keep_velocity");
 
 	ADD_GROUP("Attractor Interaction", "attractor_interaction_");
@@ -1859,6 +1872,7 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 	set_sub_emitter_mode(SUB_EMITTER_DISABLED);
 	set_sub_emitter_frequency(4);
 	set_sub_emitter_amount_at_end(1);
+	set_sub_emitter_amount_at_collision(1);
 	set_sub_emitter_keep_velocity(false);
 
 	set_attractor_interaction_enabled(true);

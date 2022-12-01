@@ -25,12 +25,14 @@
 		<method name="clear_baked_meshes">
 			<return type="void" />
 			<description>
+				Clears all baked meshes. See [method make_baked_meshes].
 			</description>
 		</method>
 		<method name="get_bake_mesh_instance">
 			<return type="RID" />
 			<param index="0" name="idx" type="int" />
 			<description>
+				Returns [RID] of a baked mesh with the given [param idx].
 			</description>
 		</method>
 		<method name="get_bake_meshes">
@@ -57,7 +59,7 @@
 			<return type="Basis" />
 			<param index="0" name="position" type="Vector3i" />
 			<description>
-				Returns the basis that gives the specificed cell its orientation.
+				Returns the basis that gives the specified cell its orientation.
 			</description>
 		</method>
 		<method name="get_cell_item_orientation" qualifiers="const">
@@ -84,7 +86,7 @@
 		<method name="get_meshes" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
+				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in local space.
 			</description>
 		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
@@ -92,6 +94,13 @@
 			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the navigation map this GridMap node uses for its cell baked navigation meshes.
+				This function returns always the map set on the GridMap node and not the map on the NavigationServer. If the map is changed directly with the NavigationServer API the GridMap node will not be aware of the map change.
 			</description>
 		</method>
 		<method name="get_orthogonal_index_from_basis" qualifiers="const">
@@ -114,24 +123,33 @@
 				Returns an array of all cells with the given item index specified in [code]item[/code].
 			</description>
 		</method>
+		<method name="local_to_map" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="local_position" type="Vector3" />
+			<description>
+				Returns the map coordinates of the cell containing the given [param local_position]. If [param local_position] is in global coordinates, consider using [method Node3D.to_local] before passing it to this method. See also [method map_to_local].
+			</description>
+		</method>
 		<method name="make_baked_meshes">
 			<return type="void" />
 			<param index="0" name="gen_lightmap_uv" type="bool" default="false" />
 			<param index="1" name="lightmap_uv_texel_size" type="float" default="0.1" />
 			<description>
+				Bakes lightmap data for all meshes in the assigned [MeshLibrary].
 			</description>
 		</method>
-		<method name="map_to_world" qualifiers="const">
+		<method name="map_to_local" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="map_position" type="Vector3i" />
 			<description>
-				Returns the position of a grid cell in the GridMap's local coordinate space.
+				Returns the position of a grid cell in the GridMap's local coordinate space. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method map_to_local].
 			</description>
 		</method>
 		<method name="resource_changed">
 			<return type="void" />
 			<param index="0" name="resource" type="Resource" />
 			<description>
+				Notifies the [GridMap] about changed resource and recreates octant data.
 			</description>
 		</method>
 		<method name="set_cell_item">
@@ -169,12 +187,11 @@
 				Based on [code]value[/code], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
-		<method name="world_to_map" qualifiers="const">
-			<return type="Vector3i" />
-			<param index="0" name="world_position" type="Vector3" />
+		<method name="set_navigation_map">
+			<return type="void" />
+			<param index="0" name="navigation_map" type="RID" />
 			<description>
-				Returns the coordinates of the grid cell containing the given point.
-				[code]pos[/code] should be in the GridMap's local coordinate space.
+				Sets the [RID] of the navigation map this GridMap node should use for its cell baked navigation meshes.
 			</description>
 		</method>
 	</methods>

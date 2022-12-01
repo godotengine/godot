@@ -32,7 +32,7 @@
 #include "servers/rendering/rendering_server_globals.h"
 
 const Rect2 &RendererCanvasRender::Item::get_rect() const {
-	if (custom_rect || (!rect_dirty && !update_when_visible)) {
+	if (custom_rect || (!rect_dirty && !update_when_visible && skeleton == RID())) {
 		return rect;
 	}
 
@@ -80,7 +80,7 @@ const Rect2 &RendererCanvasRender::Item::get_rect() const {
 			} break;
 			case Item::Command::TYPE_MESH: {
 				const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
-				AABB aabb = RSG::mesh_storage->mesh_get_aabb(mesh->mesh, RID());
+				AABB aabb = RSG::mesh_storage->mesh_get_aabb(mesh->mesh, skeleton);
 
 				r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 

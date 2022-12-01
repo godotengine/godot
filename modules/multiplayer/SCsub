@@ -8,7 +8,7 @@ env_mp = env_modules.Clone()
 module_obj = []
 env_mp.add_source_files(module_obj, "*.cpp")
 
-if env["tools"]:
+if env.editor_build:
     env_mp.add_source_files(module_obj, "editor/*.cpp")
 
 env.modules_sources += module_obj

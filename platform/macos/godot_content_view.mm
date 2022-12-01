@@ -32,11 +32,66 @@
 
 #include "display_server_macos.h"
 #include "key_mapping_macos.h"
+#include "main/main.h"
 
-@implementation GodotContentView
+@implementation GodotContentLayerDelegate
 
 - (id)init {
 	self = [super init];
+	window_id = DisplayServer::INVALID_WINDOW_ID;
+	return self;
+}
+
+- (void)setWindowID:(DisplayServerMacOS::WindowID)wid {
+	window_id = wid;
+}
+
+- (void)displayLayer:(CALayer *)layer {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing()) {
+		Main::force_redraw();
+		if (!Main::is_iterating()) { // Avoid cyclic loop.
+			Main::iteration();
+		}
+	}
+}
+
+@end
+
+@implementation GodotContentView
+
+- (void)setFrameSize:(NSSize)newSize {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds && ds->has_window(window_id)) {
+		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+		NSRect frameRect = [wd.window_object frame];
+		bool left = (wd.last_frame_rect.origin.x != frameRect.origin.x);
+		bool top = (wd.last_frame_rect.origin.y == frameRect.origin.y);
+		if (left && top) {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementBottomRight;
+		} else if (left && !top) {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementTopRight;
+		} else if (!left && top) {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementBottomLeft;
+		} else {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
+		}
+		wd.last_frame_rect = frameRect;
+	}
+
+	[super setFrameSize:newSize];
+	[self.layer setNeedsDisplay]; // Force "drawRect" call.
+}
+
+- (void)updateLayerDelegate {
+	self.layer.delegate = layer_delegate;
+	self.layer.autoresizingMask = kCALayerHeightSizable | kCALayerWidthSizable;
+	self.layer.needsDisplayOnBoundsChange = YES;
+}
+
+- (id)init {
+	self = [super init];
+	layer_delegate = [[GodotContentLayerDelegate alloc] init];
 	window_id = DisplayServer::INVALID_WINDOW_ID;
 	tracking_area = nil;
 	ime_input_event_in_progress = false;
@@ -44,6 +99,9 @@
 	ignore_momentum_scroll = false;
 	last_pen_inverted = false;
 	[self updateTrackingAreas];
+
+	self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
+	self.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
 
 	if (@available(macOS 10.13, *)) {
 		[self registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeFileURL]];
@@ -58,6 +116,7 @@
 
 - (void)setWindowID:(DisplayServerMacOS::WindowID)wid {
 	window_id = wid;
+	[layer_delegate setWindowID:window_id];
 }
 
 // MARK: Backing Layer

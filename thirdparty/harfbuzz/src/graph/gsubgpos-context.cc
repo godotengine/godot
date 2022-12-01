@@ -33,8 +33,7 @@ gsubgpos_graph_context_t::gsubgpos_graph_context_t (hb_tag_t table_tag_,
     : table_tag (table_tag_),
       graph (graph_),
       lookup_list_index (0),
-      lookups (),
-      buffers ()
+      lookups ()
 {
   if (table_tag_ != HB_OT_TAG_GPOS
       &&  table_tag_ != HB_OT_TAG_GSUB)
@@ -53,7 +52,7 @@ unsigned gsubgpos_graph_context_t::create_node (unsigned size)
   if (!buffer)
     return -1;
 
-  buffers.push (buffer);
+  add_buffer (buffer);
 
   return graph.new_node (buffer, buffer + size);
 }

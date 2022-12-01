@@ -238,7 +238,7 @@ private:
 	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
 	mutable Ref<BitMap> alpha_cache;
@@ -415,7 +415,7 @@ class ImageTextureLayered : public TextureLayered {
 	LayeredType layered_type;
 
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 
 	int width = 0;
 	int height = 0;
@@ -495,7 +495,7 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
 	int layers = 0;
@@ -587,7 +587,7 @@ class ImageTexture3D : public Texture3D {
 
 	mutable RID texture;
 
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int width = 1;
 	int height = 1;
 	int depth = 1;
@@ -641,7 +641,7 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
 	int d = 0;
@@ -768,15 +768,6 @@ public:
 
 class GradientTexture1D : public Texture2D {
 	GDCLASS(GradientTexture1D, Texture2D);
-
-public:
-	struct Point {
-		float offset = 0.0;
-		Color color;
-		bool operator<(const Point &p_ponit) const {
-			return offset < p_ponit.offset;
-		}
-	};
 
 private:
 	Ref<Gradient> gradient;
@@ -922,15 +913,15 @@ private:
 
 	struct Frame {
 		Ref<Texture2D> texture;
-		float delay_sec = 0.0;
+		float duration = 1.0;
 	};
 
 	Frame frames[MAX_FRAMES];
 	int frame_count = 1.0;
 	int current_frame = 0;
 	bool pause = false;
-	bool oneshot = false;
-	float fps = 4.0;
+	bool one_shot = false;
+	float speed_scale = 1.0;
 
 	float time = 0.0;
 
@@ -952,17 +943,17 @@ public:
 	void set_pause(bool p_pause);
 	bool get_pause() const;
 
-	void set_oneshot(bool p_oneshot);
-	bool get_oneshot() const;
+	void set_one_shot(bool p_one_shot);
+	bool get_one_shot() const;
 
 	void set_frame_texture(int p_frame, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_frame_texture(int p_frame) const;
 
-	void set_frame_delay(int p_frame, float p_delay_sec);
-	float get_frame_delay(int p_frame) const;
+	void set_frame_duration(int p_frame, float p_duration);
+	float get_frame_duration(int p_frame) const;
 
-	void set_fps(float p_fps);
-	float get_fps() const;
+	void set_speed_scale(float p_scale);
+	float get_speed_scale() const;
 
 	virtual int get_width() const override;
 	virtual int get_height() const override;

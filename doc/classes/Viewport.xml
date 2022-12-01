@@ -45,6 +45,13 @@
 				Returns the currently active 3D camera.
 			</description>
 		</method>
+		<method name="get_canvas_cull_mask_bit" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns an individual bit on the rendering layer mask.
+			</description>
+		</method>
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
@@ -69,6 +76,12 @@
 			<param index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
 			<param index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
+			</description>
+		</method>
+		<method name="get_screen_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the transform from the Viewport's coordinates to the screen coordinates of the containing window manager window.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
@@ -129,6 +142,9 @@
 		<method name="is_input_handled" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns whether the current [InputEvent] has been handled. Input events are not handled until [method set_input_as_handled] has been called during the lifetime of an [InputEvent].
+				This is usually done as part of input handling methods like [method Node._input], [method Control._gui_input] or others, as well as in corresponding signal handlers.
+				If [member handle_input_locally] is set to [code]false[/code], this method will try finding the first parent viewport that is set to handle input locally, and return its value for [method is_input_handled] instead.
 			</description>
 		</method>
 		<method name="push_input">
@@ -136,6 +152,13 @@
 			<param index="0" name="event" type="InputEvent" />
 			<param index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
+				Triggers the given [param event] in this [Viewport]. This can be used to pass an [InputEvent] between viewports, or to locally apply inputs that were sent over the network or saved to a file.
+				If [param in_local_coords] is [code]false[/code], the event's position is in the embedder's coordinates and will be converted to viewport coordinates. If [param in_local_coords] is [code]true[/code], the event's position is in viewport coordinates.
+				While this method serves a similar purpose as [method Input.parse_input_event], it does not remap the specified [param event] based on project settings like [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
+				Calling this method will propagate calls to child nodes for following methods in the given order:
+				- [method Node._input]
+				- [method Control._gui_input] for [Control] nodes
+				If an earlier method marks the input as handled via [method set_input_as_handled], any later method in this list will not be called.
 			</description>
 		</method>
 		<method name="push_text_input">
@@ -149,6 +172,23 @@
 			<param index="0" name="event" type="InputEvent" />
 			<param index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
+				Triggers the given [InputEvent] in this [Viewport]. This can be used to pass input events between viewports, or to locally apply inputs that were sent over the network or saved to a file.
+				If [param in_local_coords] is [code]false[/code], the event's position is in the embedder's coordinates and will be converted to viewport coordinates. If [param in_local_coords] is [code]true[/code], the event's position is in viewport coordinates.
+				While this method serves a similar purpose as [method Input.parse_input_event], it does not remap the specified [param event] based on project settings like [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
+				Calling this method will propagate calls to child nodes for following methods in the given order:
+				- [method Node._shortcut_input]
+				- [method Node._unhandled_input]
+				- [method Node._unhandled_key_input]
+				If an earlier method marks the input as handled via [method set_input_as_handled], any later method in this list will not be called.
+				If none of the methods handle the event and [member physics_object_picking] is [code]true[/code], the event is used for physics object picking.
+			</description>
+		</method>
+		<method name="set_canvas_cull_mask_bit">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Set/clear individual bits on the rendering layer mask. This simplifies editing this [Viewport]'s layers.
 			</description>
 		</method>
 		<method name="set_input_as_handled">
@@ -179,6 +219,9 @@
 		</member>
 		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener_3d" getter="is_audio_listener_3d" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
+		</member>
+		<member name="canvas_cull_mask" type="int" setter="set_canvas_cull_mask" getter="get_canvas_cull_mask" default="4294967295">
+			The rendering layers in which this [Viewport] renders [CanvasItem] nodes.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
 			Sets the default filter mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureFilter] for options.
@@ -212,6 +255,9 @@
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
+			If [code]true[/code], this viewport will mark incoming input events as handled by itself. If [code]false[/code], this is instead done by the the first parent viewport that is set to handle input locally.
+			A [SubViewportContainer] will automatically set this property to [code]false[/code] for the [Viewport] contained inside of it.
+			See also [method set_input_as_handled] and [method is_input_handled].
 		</member>
 		<member name="mesh_lod_threshold" type="float" setter="set_mesh_lod_threshold" getter="get_mesh_lod_threshold" default="1.0">
 			The automatic LOD bias to use for meshes rendered within the [Viewport] (this is analogous to [member ReflectionProbe.mesh_lod_threshold]). Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member mesh_lod_threshold] to improve performance at the cost of geometry detail.
@@ -278,6 +324,8 @@
 			If [code]true[/code], the viewport should render its background as transparent.
 		</member>
 		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="is_using_debanding" default="false">
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
+			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
 		</member>
 		<member name="use_occlusion_culling" type="bool" setter="set_use_occlusion_culling" getter="is_using_occlusion_culling" default="false">
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D for this viewport. For the root viewport, [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] must be set to [code]true[/code] instead.
@@ -295,6 +343,19 @@
 		</member>
 		<member name="vrs_texture" type="Texture2D" setter="set_vrs_texture" getter="get_vrs_texture">
 			Texture to use when [member vrs_mode] is set to [constant Viewport.VRS_TEXTURE].
+			The texture [i]must[/i] use a lossless compression format so that colors can be matched precisely. The following VRS densities are mapped to various colors, with brighter colors representing a lower level of shading precision:
+			[codeblock]
+			- 1x1 = rgb(0, 0, 0)     - #000000
+			- 1x2 = rgb(0, 85, 0)    - #005500
+			- 2x1 = rgb(85, 0, 0)    - #550000
+			- 2x2 = rgb(85, 85, 0)   - #555500
+			- 2x4 = rgb(85, 170, 0)  - #55aa00
+			- 4x2 = rgb(170, 85, 0)  - #aa5500
+			- 4x4 = rgb(170, 170, 0) - #aaaa00
+			- 4x8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
+			- 8x4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
+			- 8x8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
+			[/codeblock]
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.

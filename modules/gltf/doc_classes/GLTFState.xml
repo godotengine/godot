@@ -7,9 +7,25 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_used_extension">
+			<return type="void" />
+			<param index="0" name="extension_name" type="String" />
+			<param index="1" name="required" type="bool" />
+			<description>
+				Appends an extension to the list of extensions used by this GLTF file during serialization. If [param required] is true, the extension will also be added to the list of required extensions. Do not run this in [method GLTFDocumentExtension._export_post], as that stage is too late to add extensions. The final list is sorted alphabetically.
+			</description>
+		</method>
 		<method name="get_accessors">
 			<return type="GLTFAccessor[]" />
 			<description>
+			</description>
+		</method>
+		<method name="get_additional_data">
+			<return type="Variant" />
+			<param index="0" name="extension_name" type="StringName" />
+			<description>
+				Gets additional arbitrary data in this [GLTFState] instance. This can be used to keep per-file state data in [GLTFDocumentExtension] classes, which is important because they are stateless.
+				The argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the GLTF file), and the return value can be anything you set. If nothing was set, the return value is null.
 			</description>
 		</method>
 		<method name="get_animation_player">
@@ -50,7 +66,7 @@
 			</description>
 		</method>
 		<method name="get_materials">
-			<return type="BaseMaterial3D[]" />
+			<return type="Material[]" />
 			<description>
 			</description>
 		</method>
@@ -85,6 +101,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_texture_samplers">
+			<return type="GLTFTextureSampler[]" />
+			<description>
+				Retrieves the array of texture samplers that are used by the textures contained in the GLTF.
+			</description>
+		</method>
 		<method name="get_textures">
 			<return type="GLTFTexture[]" />
 			<description>
@@ -104,6 +126,15 @@
 			<return type="void" />
 			<param index="0" name="accessors" type="GLTFAccessor[]" />
 			<description>
+			</description>
+		</method>
+		<method name="set_additional_data">
+			<return type="void" />
+			<param index="0" name="extension_name" type="StringName" />
+			<param index="1" name="additional_data" type="Variant" />
+			<description>
+				Sets additional arbitrary data in this [GLTFState] instance. This can be used to keep per-file state data in [GLTFDocumentExtension] classes, which is important because they are stateless.
+				The first argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the GLTF file), and the second argument can be anything you want.
 			</description>
 		</method>
 		<method name="set_animations">
@@ -138,7 +169,7 @@
 		</method>
 		<method name="set_materials">
 			<return type="void" />
-			<param index="0" name="materials" type="BaseMaterial3D[]" />
+			<param index="0" name="materials" type="Material[]" />
 			<description>
 			</description>
 		</method>
@@ -170,6 +201,13 @@
 			<return type="void" />
 			<param index="0" name="skins" type="GLTFSkin[]" />
 			<description>
+			</description>
+		</method>
+		<method name="set_texture_samplers">
+			<return type="void" />
+			<param index="0" name="texture_samplers" type="GLTFTextureSampler[]" />
+			<description>
+				Sets the array of texture samplers that are used by the textures contained in the GLTF.
 			</description>
 		</method>
 		<method name="set_textures">

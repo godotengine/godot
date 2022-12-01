@@ -395,14 +395,16 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 		uint32_t finished_users = group->finished.increment(); // fetch happens before inc, so increment later.
 
 		if (finished_users == max_users) {
-			// All tasks using this group are gone (finished before the group), so clear the gorup too.
+			// All tasks using this group are gone (finished before the group), so clear the group too.
 			task_mutex.lock();
 			group_allocator.free(group);
 			task_mutex.unlock();
 		}
 	}
 
-	groups.erase(p_group); // Threads do not access this, so safe to erase here.
+	task_mutex.lock(); // This mutex is needed when Physics 2D and/or 3D is selected to run on a separate thread.
+	groups.erase(p_group);
+	task_mutex.unlock();
 }
 
 void WorkerThreadPool::init(int p_thread_count, bool p_use_native_threads_low_priority, float p_low_priority_task_ratio) {

@@ -38,6 +38,14 @@
 
 namespace TestVector4 {
 
+TEST_CASE("[Vector4] Constructor methods") {
+	const Vector4 vector_empty = Vector4();
+	const Vector4 vector_zero = Vector4(0.0, 0.0, 0.0, 0.0);
+	CHECK_MESSAGE(
+			vector_empty == vector_zero,
+			"Vector4 Constructor with no inputs should return a zero Vector4.");
+}
+
 TEST_CASE("[Vector4] Axis methods") {
 	Vector4 vector = Vector4(1.2, 3.4, 5.6, -0.9);
 	CHECK_MESSAGE(
@@ -47,16 +55,12 @@ TEST_CASE("[Vector4] Axis methods") {
 			vector.min_axis_index() == Vector4::Axis::AXIS_W,
 			"Vector4 min_axis_index should work as expected.");
 	CHECK_MESSAGE(
-			vector.get_axis(vector.max_axis_index()) == (real_t)5.6,
-			"Vector4 get_axis should work as expected.");
+			vector[vector.max_axis_index()] == (real_t)5.6,
+			"Vector4 array operator should work as expected.");
 	CHECK_MESSAGE(
 			vector[vector.min_axis_index()] == (real_t)-0.9,
 			"Vector4 array operator should work as expected.");
 
-	vector.set_axis(Vector4::Axis::AXIS_Y, 4.7);
-	CHECK_MESSAGE(
-			vector.get_axis(Vector4::Axis::AXIS_Y) == (real_t)4.7,
-			"Vector4 set_axis should work as expected.");
 	vector[Vector4::Axis::AXIS_Y] = 3.7;
 	CHECK_MESSAGE(
 			vector[Vector4::Axis::AXIS_Y] == (real_t)3.7,
@@ -87,19 +91,19 @@ TEST_CASE("[Vector4] Length methods") {
 			vector1.length_squared() == 400,
 			"Vector4 length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.length(), 20),
+			vector1.length() == doctest::Approx(20),
 			"Vector4 length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 5400,
 			"Vector4 length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector2.length(), (real_t)73.484692283495),
+			vector2.length() == doctest::Approx((real_t)73.484692283495),
 			"Vector4 length should work as expected.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.distance_to(vector2), (real_t)54.772255750517),
+			vector1.distance_to(vector2) == doctest::Approx((real_t)54.772255750517),
 			"Vector4 distance_to should work as expected.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.distance_squared_to(vector2), 3000),
+			vector1.distance_squared_to(vector2) == doctest::Approx(3000),
 			"Vector4 distance_squared_to should work as expected.");
 }
 
@@ -307,9 +311,87 @@ TEST_CASE("[Vector4] Linear algebra methods") {
 			(vector_x * 10).dot(vector_x * 10) == 100.0,
 			"Vector4 dot product of same direction vectors should behave as expected.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx((vector1 * 2).dot(vector2 * 4), (real_t)-25.9 * 8),
+			(vector1 * 2).dot(vector2 * 4) == doctest::Approx((real_t)-25.9 * 8),
 			"Vector4 dot product should work as expected.");
 }
+
+TEST_CASE("[Vector4] Finite number checks") {
+	const double infinite[] = { NAN, INFINITY, -INFINITY };
+
+	CHECK_MESSAGE(
+			Vector4(0, 1, 2, 3).is_finite(),
+			"Vector4(0, 1, 2, 3) should be finite");
+
+	for (double x : infinite) {
+		CHECK_FALSE_MESSAGE(
+				Vector4(x, 1, 2, 3).is_finite(),
+				"Vector4 with one component infinite should not be finite.");
+		CHECK_FALSE_MESSAGE(
+				Vector4(0, x, 2, 3).is_finite(),
+				"Vector4 with one component infinite should not be finite.");
+		CHECK_FALSE_MESSAGE(
+				Vector4(0, 1, x, 3).is_finite(),
+				"Vector4 with one component infinite should not be finite.");
+		CHECK_FALSE_MESSAGE(
+				Vector4(0, 1, 2, x).is_finite(),
+				"Vector4 with one component infinite should not be finite.");
+	}
+
+	for (double x : infinite) {
+		for (double y : infinite) {
+			CHECK_FALSE_MESSAGE(
+					Vector4(x, y, 2, 3).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(x, 1, y, 3).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(x, 1, 2, y).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(0, x, y, 3).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(0, x, 2, y).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(0, 1, x, y).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+		}
+	}
+
+	for (double x : infinite) {
+		for (double y : infinite) {
+			for (double z : infinite) {
+				CHECK_FALSE_MESSAGE(
+						Vector4(0, x, y, z).is_finite(),
+						"Vector4 with three components infinite should not be finite.");
+				CHECK_FALSE_MESSAGE(
+						Vector4(x, 1, y, z).is_finite(),
+						"Vector4 with three components infinite should not be finite.");
+				CHECK_FALSE_MESSAGE(
+						Vector4(x, y, 2, z).is_finite(),
+						"Vector4 with three components infinite should not be finite.");
+				CHECK_FALSE_MESSAGE(
+						Vector4(x, y, z, 3).is_finite(),
+						"Vector4 with three components infinite should not be finite.");
+			}
+		}
+	}
+
+	for (double x : infinite) {
+		for (double y : infinite) {
+			for (double z : infinite) {
+				for (double w : infinite) {
+					CHECK_FALSE_MESSAGE(
+							Vector4(x, y, z, w).is_finite(),
+							"Vector4 with four components infinite should not be finite.");
+				}
+			}
+		}
+	}
+}
+
 } // namespace TestVector4
 
 #endif // TEST_VECTOR4_H

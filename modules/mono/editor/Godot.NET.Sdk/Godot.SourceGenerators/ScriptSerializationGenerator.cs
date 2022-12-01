@@ -66,14 +66,14 @@ namespace Godot.SourceGenerators
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedName() :
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
 
-            string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
-                                + "_ScriptSerialization_Generated";
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
+                                + "_ScriptSerialization.generated";
 
             var source = new StringBuilder();
 
@@ -159,7 +159,7 @@ namespace Godot.SourceGenerators
             {
                 string propertyName = property.PropertySymbol.Name;
 
-                source.Append("        info.AddProperty(GodotInternal.PropName_")
+                source.Append("        info.AddProperty(PropertyName.")
                     .Append(propertyName)
                     .Append(", ")
                     .AppendManagedToVariantExpr(string.Concat("this.", propertyName), property.Type)
@@ -172,7 +172,7 @@ namespace Godot.SourceGenerators
             {
                 string fieldName = field.FieldSymbol.Name;
 
-                source.Append("        info.AddProperty(GodotInternal.PropName_")
+                source.Append("        info.AddProperty(PropertyName.")
                     .Append(fieldName)
                     .Append(", ")
                     .AppendManagedToVariantExpr(string.Concat("this.", fieldName), field.Type)
@@ -185,7 +185,7 @@ namespace Godot.SourceGenerators
             {
                 string signalName = signalDelegate.Name;
 
-                source.Append("        info.AddSignalEventDelegate(GodotInternal.SignalName_")
+                source.Append("        info.AddSignalEventDelegate(SignalName.")
                     .Append(signalName)
                     .Append(", this.backing_")
                     .Append(signalName)
@@ -204,7 +204,7 @@ namespace Godot.SourceGenerators
             {
                 string propertyName = property.PropertySymbol.Name;
 
-                source.Append("        if (info.TryGetProperty(GodotInternal.PropName_")
+                source.Append("        if (info.TryGetProperty(PropertyName.")
                     .Append(propertyName)
                     .Append(", out var _value_")
                     .Append(propertyName)
@@ -223,7 +223,7 @@ namespace Godot.SourceGenerators
             {
                 string fieldName = field.FieldSymbol.Name;
 
-                source.Append("        if (info.TryGetProperty(GodotInternal.PropName_")
+                source.Append("        if (info.TryGetProperty(PropertyName.")
                     .Append(fieldName)
                     .Append(", out var _value_")
                     .Append(fieldName)
@@ -241,11 +241,11 @@ namespace Godot.SourceGenerators
             foreach (var signalDelegate in godotSignalDelegates)
             {
                 string signalName = signalDelegate.Name;
-                string signalDelegateQualifiedName = signalDelegate.DelegateSymbol.FullQualifiedName();
+                string signalDelegateQualifiedName = signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal();
 
                 source.Append("        if (info.TryGetSignalEventDelegate<")
                     .Append(signalDelegateQualifiedName)
-                    .Append(">(GodotInternal.SignalName_")
+                    .Append(">(SignalName.")
                     .Append(signalName)
                     .Append(", out var _value_")
                     .Append(signalName)

@@ -138,7 +138,7 @@ PackedStringArray HTTPClient::_get_response_headers() {
 }
 
 void HTTPClient::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port", "use_ssl", "verify_host"), &HTTPClient::connect_to_host, DEFVAL(-1), DEFVAL(false), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port", "use_tls", "verify_host"), &HTTPClient::connect_to_host, DEFVAL(-1), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_connection", "connection"), &HTTPClient::set_connection);
 	ClassDB::bind_method(D_METHOD("get_connection"), &HTTPClient::get_connection);
 	ClassDB::bind_method(D_METHOD("request_raw", "method", "url", "headers", "body"), &HTTPClient::_request_raw);
@@ -190,7 +190,7 @@ void HTTPClient::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATUS_REQUESTING); // Request in progress
 	BIND_ENUM_CONSTANT(STATUS_BODY); // Request resulted in body which must be read
 	BIND_ENUM_CONSTANT(STATUS_CONNECTION_ERROR);
-	BIND_ENUM_CONSTANT(STATUS_SSL_HANDSHAKE_ERROR);
+	BIND_ENUM_CONSTANT(STATUS_TLS_HANDSHAKE_ERROR);
 
 	BIND_ENUM_CONSTANT(RESPONSE_CONTINUE);
 	BIND_ENUM_CONSTANT(RESPONSE_SWITCHING_PROTOCOLS);

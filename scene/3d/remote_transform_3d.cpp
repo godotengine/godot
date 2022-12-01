@@ -68,7 +68,7 @@ void RemoteTransform3D::_update_remote() {
 			Transform3D our_trans = get_global_transform();
 
 			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_euler_normalized(Basis::EulerOrder(n->get_rotation_order())));
+				n->set_rotation(our_trans.basis.get_euler_normalized(EulerOrder(n->get_rotation_order())));
 			}
 
 			if (update_remote_scale) {
@@ -90,7 +90,7 @@ void RemoteTransform3D::_update_remote() {
 			Transform3D our_trans = get_transform();
 
 			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_euler_normalized(Basis::EulerOrder(n->get_rotation_order())));
+				n->set_rotation(our_trans.basis.get_euler_normalized(EulerOrder(n->get_rotation_order())));
 			}
 
 			if (update_remote_scale) {
@@ -178,8 +178,8 @@ void RemoteTransform3D::force_update_cache() {
 	_update_cache();
 }
 
-TypedArray<String> RemoteTransform3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray RemoteTransform3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node3D>(get_node(remote_node))) {
 		warnings.push_back(RTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work."));

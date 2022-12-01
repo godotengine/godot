@@ -130,7 +130,6 @@ namespace Godot.Bridge
             {
                 // Performance is not critical here as this will be replaced with source generators.
                 Type scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
-                var obj = (Object)FormatterServices.GetUninitializedObject(scriptType);
 
                 var ctor = scriptType
                     .GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
@@ -150,6 +149,8 @@ namespace Godot.Bridge
                             $"The class '{scriptType.FullName}' does not define a constructor that takes x parameters.");
                     }
                 }
+
+                var obj = (Object)FormatterServices.GetUninitializedObject(scriptType);
 
                 var parameters = ctor.GetParameters();
                 int paramCount = parameters.Length;
@@ -338,7 +339,7 @@ namespace Godot.Bridge
                 *outOwnerIsNull = godot_bool.False;
 
                 owner.RaiseGodotClassSignalCallbacks(CustomUnsafe.AsRef(eventSignalName),
-                    new NativeVariantPtrArgs(args), argCount);
+                    new NativeVariantPtrArgs(args, argCount));
             }
             catch (Exception e)
             {
@@ -826,7 +827,7 @@ namespace Godot.Bridge
                 {
                     // Weird limitation, hence the need for aux:
                     // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
-                    var aux = stackalloc godotsharp_property_info[length];
+                    var aux = stackalloc godotsharp_property_info[stackMaxLength];
                     interopProperties = aux;
                 }
                 else
@@ -946,7 +947,7 @@ namespace Godot.Bridge
                 {
                     // Weird limitation, hence the need for aux:
                     // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
-                    var aux = stackalloc godotsharp_property_def_val_pair[length];
+                    var aux = stackalloc godotsharp_property_def_val_pair[stackMaxLength];
                     interopDefaultValues = aux;
                 }
                 else

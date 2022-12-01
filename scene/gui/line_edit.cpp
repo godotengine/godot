@@ -372,6 +372,11 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				selection.drag_attempt = false;
 			}
 
+			if (pending_select_all_on_focus) {
+				select_all();
+				pending_select_all_on_focus = false;
+			}
+
 			show_virtual_keyboard();
 		}
 
@@ -589,7 +594,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		// Allow unicode handling if:
 		// * No Modifiers are pressed (except shift)
-		bool allow_unicode_handling = !(k->is_command_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
+		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
 			// Handle Unicode (if no modifiers active)
@@ -734,7 +739,7 @@ void LineEdit::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (Engine::get_singleton()->is_editor_hint() && !get_tree()->is_node_being_edited(this)) {
 				set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-				set_caret_blink_speed(EDITOR_GET("text_editor/appearance/caret/caret_blink_speed"));
+				set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
 
 				if (!EditorSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed))) {
 					EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed));
@@ -777,7 +782,7 @@ void LineEdit::_notification(int p_what) {
 			if (caret_blinking) {
 				caret_blink_timer += get_process_delta_time();
 
-				if (caret_blink_timer >= caret_blink_speed) {
+				if (caret_blink_timer >= caret_blink_interval) {
 					caret_blink_timer = 0.0;
 					_toggle_draw_caret();
 				}
@@ -955,23 +960,47 @@ void LineEdit::_notification(int p_what) {
 				if (ime_text.length() == 0) {
 					// Normal caret.
 					CaretInfo caret = TS->shaped_text_get_carets(text_rid, caret_column);
-
-					if (caret.l_caret == Rect2() && caret.t_caret == Rect2()) {
+					if (using_placeholder || (caret.l_caret == Rect2() && caret.t_caret == Rect2())) {
 						// No carets, add one at the start.
 						int h = theme_cache.font->get_height(theme_cache.font_size);
 						int y = style->get_offset().y + (y_area - h) / 2;
-						if (rtl) {
-							caret.l_dir = TextServer::DIRECTION_RTL;
-							caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
-						} else {
-							caret.l_dir = TextServer::DIRECTION_LTR;
-							caret.l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
+						caret.l_dir = (rtl) ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR;
+						switch (alignment) {
+							case HORIZONTAL_ALIGNMENT_FILL:
+							case HORIZONTAL_ALIGNMENT_LEFT: {
+								if (rtl) {
+									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
+								} else {
+									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+								}
+							} break;
+							case HORIZONTAL_ALIGNMENT_CENTER: {
+								caret.l_caret = Rect2(Vector2(size.x / 2, y), Size2(caret_width, h));
+							} break;
+							case HORIZONTAL_ALIGNMENT_RIGHT: {
+								if (rtl) {
+									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+								} else {
+									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
+								}
+							} break;
 						}
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
 					} else {
 						if (caret.l_caret != Rect2() && caret.l_dir == TextServer::DIRECTION_AUTO) {
 							// Draw extra marker on top of mid caret.
-							Rect2 trect = Rect2(caret.l_caret.position.x - 3 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
+							Rect2 trect = Rect2(caret.l_caret.position.x - 2.5 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
+							trect.position += ofs;
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+						} else if (caret.l_caret != Rect2() && caret.t_caret != Rect2() && caret.l_dir != caret.t_dir) {
+							// Draw extra direction marker on top of split caret.
+							float d = (caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+							Rect2 trect = Rect2(caret.l_caret.position.x + d * caret_width, caret.l_caret.position.y + caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
+							trect.position += ofs;
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+
+							d = (caret.t_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+							trect = Rect2(caret.t_caret.position.x + d * caret_width, caret.t_caret.position.y, 3 * caret_width, caret_width);
 							trect.position += ofs;
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 						}
@@ -1045,10 +1074,19 @@ void LineEdit::_notification(int p_what) {
 				}
 			}
 
+			if (select_all_on_focus) {
+				if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
+					// Select all when the mouse button is up.
+					pending_select_all_on_focus = true;
+				} else {
+					select_all();
+				}
+			}
+
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				Point2 caret_column = Point2(get_caret_column(), 1) * get_minimum_size().height;
-				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + caret_column, get_viewport()->get_window_id());
+				Point2 column = Point2(get_caret_column(), 1) * get_minimum_size().height;
+				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + column, get_viewport()->get_window_id());
 			}
 
 			show_virtual_keyboard();
@@ -1392,13 +1430,13 @@ void LineEdit::set_caret_force_displayed(const bool p_enabled) {
 	queue_redraw();
 }
 
-float LineEdit::get_caret_blink_speed() const {
-	return caret_blink_speed;
+float LineEdit::get_caret_blink_interval() const {
+	return caret_blink_interval;
 }
 
-void LineEdit::set_caret_blink_speed(const float p_speed) {
-	ERR_FAIL_COND(p_speed <= 0);
-	caret_blink_speed = p_speed;
+void LineEdit::set_caret_blink_interval(const float p_interval) {
+	ERR_FAIL_COND(p_interval <= 0);
+	caret_blink_interval = p_interval;
 }
 
 void LineEdit::_reset_caret_blink_timer() {
@@ -2037,7 +2075,7 @@ PopupMenu *LineEdit::get_menu() const {
 void LineEdit::_editor_settings_changed() {
 #ifdef TOOLS_ENABLED
 	set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-	set_caret_blink_speed(EDITOR_GET("text_editor/appearance/caret/caret_blink_speed"));
+	set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
 #endif
 }
 
@@ -2153,6 +2191,18 @@ bool LineEdit::is_flat() const {
 	return flat;
 }
 
+void LineEdit::set_select_all_on_focus(bool p_enabled) {
+	select_all_on_focus = p_enabled;
+}
+
+bool LineEdit::is_select_all_on_focus() const {
+	return select_all_on_focus;
+}
+
+void LineEdit::clear_pending_select_all_on_focus() {
+	pending_select_all_on_focus = false;
+}
+
 void LineEdit::_text_changed() {
 	_emit_text_change();
 	_clear_redo();
@@ -2164,6 +2214,12 @@ void LineEdit::_emit_text_change() {
 }
 
 void LineEdit::_shape() {
+	const Ref<Font> &font = theme_cache.font;
+	int font_size = theme_cache.font_size;
+	if (font.is_null()) {
+		return;
+	}
+
 	Size2 old_size = TS->shaped_text_get_size(text_rid);
 	TS->shaped_text_clear(text_rid);
 
@@ -2186,9 +2242,6 @@ void LineEdit::_shape() {
 	}
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
-	const Ref<Font> &font = theme_cache.font;
-	int font_size = theme_cache.font_size;
-	ERR_FAIL_COND(font.is_null());
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
@@ -2274,7 +2327,7 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 }
 
 void LineEdit::_validate_property(PropertyInfo &p_property) const {
-	if (!caret_blink_enabled && p_property.name == "caret_blink_speed") {
+	if (!caret_blink_enabled && p_property.name == "caret_blink_interval") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -2317,8 +2370,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_caret_mid_grapheme_enabled"), &LineEdit::is_caret_mid_grapheme_enabled);
 	ClassDB::bind_method(D_METHOD("set_caret_force_displayed", "enabled"), &LineEdit::set_caret_force_displayed);
 	ClassDB::bind_method(D_METHOD("is_caret_force_displayed"), &LineEdit::is_caret_force_displayed);
-	ClassDB::bind_method(D_METHOD("set_caret_blink_speed", "blink_speed"), &LineEdit::set_caret_blink_speed);
-	ClassDB::bind_method(D_METHOD("get_caret_blink_speed"), &LineEdit::get_caret_blink_speed);
+	ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "interval"), &LineEdit::set_caret_blink_interval);
+	ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &LineEdit::get_caret_blink_interval);
 	ClassDB::bind_method(D_METHOD("set_max_length", "chars"), &LineEdit::set_max_length);
 	ClassDB::bind_method(D_METHOD("get_max_length"), &LineEdit::get_max_length);
 	ClassDB::bind_method(D_METHOD("insert_text_at_caret", "text"), &LineEdit::insert_text_at_caret);
@@ -2353,6 +2406,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &LineEdit::is_flat);
+	ClassDB::bind_method(D_METHOD("set_select_all_on_focus", "enabled"), &LineEdit::set_select_all_on_focus);
+	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &LineEdit::is_select_all_on_focus);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
@@ -2416,10 +2471,11 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "set_caret_blink_speed", "get_caret_blink_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_interval", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "set_caret_blink_interval", "get_caret_blink_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_column", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_caret_column", "get_caret_column");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_force_displayed"), "set_caret_force_displayed", "is_caret_force_displayed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");

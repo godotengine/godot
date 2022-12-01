@@ -227,8 +227,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 	Ref<FileAccess> f = FileAccess::open(p_output_file, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file '" + p_output_file + "'.");
-	JSON json;
-	f->store_string(json.stringify(classes_dict, "\t"));
+	f->store_string(JSON::stringify(classes_dict, "\t"));
 
 	print_line(String() + "ClassDB API JSON written to: " + ProjectSettings::get_singleton()->globalize_path(p_output_file));
 }

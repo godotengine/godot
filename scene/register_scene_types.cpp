@@ -794,6 +794,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CylinderMesh);
 	GDREGISTER_CLASS(PlaneMesh);
 	GDREGISTER_CLASS(PrismMesh);
+	GDREGISTER_CLASS(QuadMesh);
 	GDREGISTER_CLASS(SphereMesh);
 	GDREGISTER_CLASS(TextMesh);
 	GDREGISTER_CLASS(TorusMesh);
@@ -959,7 +960,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
 	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 	ClassDB::add_compatibility_class("OpenSimplexNoise", "FastNoiseLite");
-	ClassDB::add_compatibility_class("QuadMesh", "PlaneMesh");
+	ClassDB::add_compatibility_class("ProximityGroup", "Node3D");
 	ClassDB::add_compatibility_class("ToolButton", "Button");
 	ClassDB::add_compatibility_class("YSort", "Node2D");
 	// Portal and room occlusion was replaced by raster occlusion (OccluderInstance3D node).
@@ -1130,6 +1131,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("StreamTexture2DArray", "CompressedTexture2DArray");
 	ClassDB::add_compatibility_class("StreamTexture3D", "CompressedTexture3D");
 	ClassDB::add_compatibility_class("StreamTextureLayered", "CompressedTextureLayered");
+	ClassDB::add_compatibility_class("VisualShaderNodeFloatUniform", "VisualShaderNodeFloatParameter");
 #endif /* DISABLE_DEPRECATED */
 
 	OS::get_singleton()->yield(); // may take time to init
@@ -1183,7 +1185,7 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_shader_include);
 	resource_loader_shader_include.unref();
 
-	// StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
+	// StandardMaterial3D is not initialized when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED
 	BaseMaterial3D::finish_shaders();
 	PhysicalSkyMaterial::cleanup_shader();

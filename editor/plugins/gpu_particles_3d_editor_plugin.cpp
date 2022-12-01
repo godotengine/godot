@@ -36,6 +36,8 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/cpu_particles_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/menu_button.h"
 #include "scene/resources/particle_process_material.h"
 
 bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3> &normals) {
@@ -255,8 +257,8 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			}
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
-			Ref<ParticleProcessMaterial> material = node->get_process_material();
-			if (material.is_null()) {
+			Ref<ParticleProcessMaterial> mat = node->get_process_material();
+			if (mat.is_null()) {
 				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticleProcessMaterial' is required."));
 				return;
 			}
@@ -366,13 +368,13 @@ void GPUParticles3DEditor::_generate_emission_points() {
 	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
 	Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
 
-	Ref<ParticleProcessMaterial> material = node->get_process_material();
-	ERR_FAIL_COND(material.is_null());
+	Ref<ParticleProcessMaterial> mat = node->get_process_material();
+	ERR_FAIL_COND(mat.is_null());
 
 	if (normals.size() > 0) {
-		material->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
-		material->set_emission_point_count(point_count);
-		material->set_emission_point_texture(tex);
+		mat->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
+		mat->set_emission_point_count(point_count);
+		mat->set_emission_point_texture(tex);
 
 		Vector<uint8_t> point_img2;
 		point_img2.resize(w * h * 3 * sizeof(float));
@@ -390,11 +392,11 @@ void GPUParticles3DEditor::_generate_emission_points() {
 		}
 
 		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
-		material->set_emission_normal_texture(ImageTexture::create_from_image(image2));
+		mat->set_emission_normal_texture(ImageTexture::create_from_image(image2));
 	} else {
-		material->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
-		material->set_emission_point_count(point_count);
-		material->set_emission_point_texture(tex);
+		mat->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
+		mat->set_emission_point_count(point_count);
+		mat->set_emission_point_texture(tex);
 	}
 }
 
@@ -454,7 +456,7 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 
 GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin() {
 	particles_editor = memnew(GPUParticles3DEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(particles_editor);
+	EditorNode::get_singleton()->get_main_screen_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

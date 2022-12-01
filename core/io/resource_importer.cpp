@@ -108,6 +108,15 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		}
 	}
 
+#ifdef TOOLS_ENABLED
+	if (r_path_and_type.metadata && !r_path_and_type.path.is_empty()) {
+		Dictionary meta = r_path_and_type.metadata;
+		if (meta.has("has_editor_variant")) {
+			r_path_and_type.path = r_path_and_type.path.get_basename() + ".editor." + r_path_and_type.path.get_extension();
+		}
+	}
+#endif
+
 	if (r_path_and_type.path.is_empty() || r_path_and_type.type.is_empty()) {
 		return ERR_FILE_CORRUPT;
 	}

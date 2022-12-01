@@ -45,7 +45,7 @@ public:
 	static void cleanup();
 
 	virtual Error open_custom(const uint8_t *p_data, uint64_t p_len); ///< open a file
-	virtual Error _open(const String &p_path, int p_mode_flags) override; ///< open a file
+	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
 
 	virtual void seek(uint64_t p_position) override; ///< seek to a given position

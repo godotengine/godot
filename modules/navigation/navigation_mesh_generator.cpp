@@ -209,6 +209,9 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 			for (uint32_t shape_owner : shape_owners) {
 				const int shape_count = static_body->shape_owner_get_shape_count(shape_owner);
 				for (int i = 0; i < shape_count; i++) {
+					if (static_body->is_shape_owner_disabled(i)) {
+						continue;
+					}
 					Ref<Shape3D> s = static_body->shape_owner_get_shape(shape_owner, i);
 					if (s.is_null()) {
 						continue;
@@ -263,10 +266,10 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 						if (err == OK) {
 							PackedVector3Array faces;
 
-							for (int j = 0; j < md.faces.size(); ++j) {
-								Geometry3D::MeshData::Face face = md.faces[j];
+							for (uint32_t j = 0; j < md.faces.size(); ++j) {
+								const Geometry3D::MeshData::Face &face = md.faces[j];
 
-								for (int k = 2; k < face.indices.size(); ++k) {
+								for (uint32_t k = 2; k < face.indices.size(); ++k) {
 									faces.push_back(md.vertices[face.indices[0]]);
 									faces.push_back(md.vertices[face.indices[k - 1]]);
 									faces.push_back(md.vertices[face.indices[k]]);
@@ -389,10 +392,10 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 						if (err == OK) {
 							PackedVector3Array faces;
 
-							for (int j = 0; j < md.faces.size(); ++j) {
-								Geometry3D::MeshData::Face face = md.faces[j];
+							for (uint32_t j = 0; j < md.faces.size(); ++j) {
+								const Geometry3D::MeshData::Face &face = md.faces[j];
 
-								for (int k = 2; k < face.indices.size(); ++k) {
+								for (uint32_t k = 2; k < face.indices.size(); ++k) {
 									faces.push_back(md.vertices[face.indices[0]]);
 									faces.push_back(md.vertices[face.indices[k - 1]]);
 									faces.push_back(md.vertices[face.indices[k]]);
@@ -572,12 +575,8 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.bmax[2] = bmax[2];
 
 	AABB baking_aabb = p_nav_mesh->get_filter_baking_aabb();
-
-	bool aabb_has_no_volume = baking_aabb.has_no_volume();
-
-	if (!aabb_has_no_volume) {
+	if (baking_aabb.has_volume()) {
 		Vector3 baking_aabb_offset = p_nav_mesh->get_filter_baking_aabb_offset();
-
 		cfg.bmin[0] = baking_aabb.position[0] + baking_aabb_offset.x;
 		cfg.bmin[1] = baking_aabb.position[1] + baking_aabb_offset.y;
 		cfg.bmin[2] = baking_aabb.position[2] + baking_aabb_offset.z;

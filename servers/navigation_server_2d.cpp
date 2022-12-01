@@ -243,6 +243,8 @@ void NavigationServer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &NavigationServer2D::map_force_update);
 
+	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result"), &NavigationServer2D::query_path);
+
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer2D::region_create);
 	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &NavigationServer2D::region_set_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_get_enter_cost", "region"), &NavigationServer2D::region_get_enter_cost);
@@ -409,3 +411,12 @@ bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
 void FORWARD_4_C(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata, rid_to_rid, obj_to_obj, sn_to_sn, var_to_var);
 
 void FORWARD_1_C(free, RID, p_object, rid_to_rid);
+
+void NavigationServer2D::query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const {
+	ERR_FAIL_COND(!p_query_parameters.is_valid());
+	ERR_FAIL_COND(!p_query_result.is_valid());
+
+	const NavigationUtilities::PathQueryResult _query_result = NavigationServer3D::get_singleton()->_query_path(p_query_parameters->get_parameters());
+
+	p_query_result->set_path(vector_v3_to_v2(_query_result.path));
+}

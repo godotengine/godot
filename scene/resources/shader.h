@@ -87,15 +87,44 @@ public:
 
 	virtual bool is_text_shader() const;
 
-	_FORCE_INLINE_ StringName remap_uniform(const StringName &p_uniform) const {
+	// Finds the shader parameter name for the given property name, which should start with "shader_parameter/".
+	_FORCE_INLINE_ StringName remap_parameter(const StringName &p_property) const {
 		if (params_cache_dirty) {
 			get_shader_uniform_list(nullptr);
 		}
 
-		const HashMap<StringName, StringName>::Iterator E = params_cache.find(p_uniform);
-		if (E) {
-			return E->value;
+		String n = p_property;
+
+		// Backwards compatibility with old shader parameter names.
+		// Note: The if statements are important to make sure we are only replacing text exactly at index 0.
+		if (n.find("param/") == 0) {
+			n = n.replace_first("param/", "shader_parameter/");
 		}
+		if (n.find("shader_param/") == 0) {
+			n = n.replace_first("shader_param/", "shader_parameter/");
+		}
+		if (n.find("shader_uniform/") == 0) {
+			n = n.replace_first("shader_uniform/", "shader_parameter/");
+		}
+
+		{
+			// Additional backwards compatibility for projects between #62972 and #64092 (about a month of v4.0 development).
+			// These projects did not have any prefix for shader uniforms due to a bug.
+			// This code should be removed during beta or rc of 4.0.
+			const HashMap<StringName, StringName>::Iterator E = params_cache.find(n);
+			if (E) {
+				return E->value;
+			}
+		}
+
+		if (n.begins_with("shader_parameter/")) {
+			n = n.replace_first("shader_parameter/", "");
+			const HashMap<StringName, StringName>::Iterator E = params_cache.find(n);
+			if (E) {
+				return E->value;
+			}
+		}
+
 		return StringName();
 	}
 

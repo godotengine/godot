@@ -87,7 +87,7 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 	} else {
 		logf_error("USER %s: %s\n", err_type, err_details);
 	}
-	logf_error("   at: %s (%s:%i) - %s\n", p_function, p_file, p_line, p_code);
+	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
 }
 
 void Logger::logf(const char *p_format, ...) {

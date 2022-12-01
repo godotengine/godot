@@ -141,12 +141,6 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="find_named_color" qualifiers="static">
-			<return type="int" />
-			<param index="0" name="name" type="String" />
-			<description>
-			</description>
-		</method>
 		<method name="from_hsv" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="h" type="float" />
@@ -187,6 +181,7 @@
 			<return type="Color" />
 			<param index="0" name="rgbe" type="int" />
 			<description>
+				Encodes a [Color] from a RGBE9995 format integer. See [constant Image.FORMAT_RGBE9995].
 			</description>
 		</method>
 		<method name="from_string" qualifiers="static">
@@ -194,6 +189,7 @@
 			<param index="0" name="str" type="String" />
 			<param index="1" name="default" type="Color" />
 			<description>
+				Creates a [Color] from string, which can be either a HTML color code or a named color. Fallbacks to [param default] if the string does not denote any valid color.
 			</description>
 		</method>
 		<method name="get_luminance" qualifiers="const">
@@ -201,36 +197,24 @@
 			<description>
 				Returns the luminance of the color in the [code][0.0, 1.0][/code] range.
 				This is useful when determining light or dark color. Colors with a luminance smaller than 0.5 can be generally considered dark.
-				[b]Note:[/b] [method get_luminance] relies on the colour being in the linear color space to return an accurate relative luminance value. If the color is in the sRGB color space, use [method srgb_to_linear] to convert it to the linear color space first.
-			</description>
-		</method>
-		<method name="get_named_color" qualifiers="static">
-			<return type="Color" />
-			<param index="0" name="idx" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="get_named_color_count" qualifiers="static">
-			<return type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="get_named_color_name" qualifiers="static">
-			<return type="String" />
-			<param index="0" name="idx" type="int" />
-			<description>
+				[b]Note:[/b] [method get_luminance] relies on the color being in the linear color space to return an accurate relative luminance value. If the color is in the sRGB color space, use [method srgb_to_linear] to convert it to the linear color space first.
 			</description>
 		</method>
 		<method name="hex" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
+				Returns the [Color] associated with the provided integer number, with 8 bits per channel in ARGB order. The integer should be 32-bit. Best used with hexadecimal notation.
+				[codeblock]
+				modulate = Color.hex(0xffff0000) # red
+				[/codeblock]
 			</description>
 		</method>
 		<method name="hex64" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
+				Same as [method hex], but takes 64-bit integer and the color uses 16 bits per channel.
 			</description>
 		</method>
 		<method name="html" qualifiers="static">

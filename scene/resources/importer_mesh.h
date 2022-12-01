@@ -112,14 +112,14 @@ public:
 
 	void set_surface_material(int p_surface, const Ref<Material> &p_material);
 
-	void generate_lods(float p_normal_merge_angle, float p_normal_split_angle);
+	void generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array);
 
 	void create_shadow_mesh();
 	Ref<ImporterMesh> get_shadow_mesh() const;
 
 	Vector<Face3> get_faces() const;
 	Vector<Ref<Shape3D>> convex_decompose(const Mesh::ConvexDecompositionSettings &p_settings) const;
-	Ref<Shape3D> create_trimesh_shape() const;
+	Ref<ConcavePolygonShape3D> create_trimesh_shape() const;
 	Ref<NavigationMesh> create_navigation_mesh();
 	Error lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache);
 

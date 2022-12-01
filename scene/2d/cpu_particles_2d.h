@@ -152,8 +152,8 @@ private:
 	Vector2 direction = Vector2(1, 0);
 	real_t spread = 45.0;
 
-	real_t parameters_min[PARAM_MAX];
-	real_t parameters_max[PARAM_MAX];
+	real_t parameters_min[PARAM_MAX] = {};
+	real_t parameters_max[PARAM_MAX] = {};
 
 	Ref<Curve> curve_parameters[PARAM_MAX];
 	Color color;
@@ -282,7 +282,7 @@ public:
 	void set_gravity(const Vector2 &p_gravity);
 	Vector2 get_gravity() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void restart();
 

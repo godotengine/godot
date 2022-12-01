@@ -31,7 +31,6 @@
 #ifndef AABB_H
 #define AABB_H
 
-#include "core/math/math_defs.h"
 #include "core/math/plane.h"
 #include "core/math/vector3.h"
 
@@ -47,12 +46,12 @@ struct _NO_DISCARD_ AABB {
 	Vector3 size;
 
 	real_t get_volume() const;
-	_FORCE_INLINE_ bool has_no_volume() const {
-		return (size.x <= 0 || size.y <= 0 || size.z <= 0);
+	_FORCE_INLINE_ bool has_volume() const {
+		return size.x > 0.0f && size.y > 0.0f && size.z > 0.0f;
 	}
 
-	_FORCE_INLINE_ bool has_no_surface() const {
-		return (size.x <= 0 && size.y <= 0 && size.z <= 0);
+	_FORCE_INLINE_ bool has_surface() const {
+		return size.x > 0.0f || size.y > 0.0f || size.z > 0.0f;
 	}
 
 	const Vector3 &get_position() const { return position; }
@@ -64,6 +63,7 @@ struct _NO_DISCARD_ AABB {
 	bool operator!=(const AABB &p_rval) const;
 
 	bool is_equal_approx(const AABB &p_aabb) const;
+	bool is_finite() const;
 	_FORCE_INLINE_ bool intersects(const AABB &p_aabb) const; /// Both AABBs overlap
 	_FORCE_INLINE_ bool intersects_inclusive(const AABB &p_aabb) const; /// Both AABBs (or their faces) overlap
 	_FORCE_INLINE_ bool encloses(const AABB &p_aabb) const; /// p_aabb is completely inside this
@@ -101,7 +101,7 @@ struct _NO_DISCARD_ AABB {
 	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
 
 	_FORCE_INLINE_ AABB abs() const {
-		return AABB(Vector3(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0), position.z + MIN(size.z, 0)), size.abs());
+		return AABB(Vector3(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0), position.z + MIN(size.z, (real_t)0)), size.abs());
 	}
 
 	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;

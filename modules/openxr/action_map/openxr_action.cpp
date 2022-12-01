@@ -42,7 +42,7 @@ void OpenXRAction::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_toplevel_paths", "toplevel_paths"), &OpenXRAction::set_toplevel_paths);
 	ClassDB::bind_method(D_METHOD("get_toplevel_paths"), &OpenXRAction::get_toplevel_paths);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "toplevel_paths", PROPERTY_HINT_ARRAY_TYPE, "STRING"), "set_toplevel_paths", "get_toplevel_paths");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "toplevel_paths"), "set_toplevel_paths", "get_toplevel_paths");
 
 	BIND_ENUM_CONSTANT(OPENXR_ACTION_BOOL);
 	BIND_ENUM_CONSTANT(OPENXR_ACTION_FLOAT);
@@ -64,13 +64,13 @@ Ref<OpenXRAction> OpenXRAction::new_action(const char *p_name, const char *p_loc
 }
 
 String OpenXRAction::get_name_with_set() const {
-	String name = get_name();
+	String action_name = get_name();
 
 	if (action_set != nullptr) {
-		name = action_set->get_name() + "/" + name;
+		action_name = action_set->get_name() + "/" + action_name;
 	}
 
-	return name;
+	return action_name;
 }
 
 void OpenXRAction::set_localized_name(const String p_localized_name) {

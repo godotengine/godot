@@ -5,15 +5,28 @@
 	</brief_description>
 	<description>
 		3D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. [NavigationObstacle3D] is physics safe.
-		[b]Note:[/b] Obstacles are intended as a last resort option for constantly moving objects that cannot be (re)baked to a navigation mesh efficiently.
+		Obstacles [b]don't[/b] change the resulting path from the pathfinding, they only affect the navigation agent movement in a radius. Therefore, using obstacles for the static walls in your level won't work because those walls don't exist in the pathfinding. The navigation agent will be pushed in a semi-random direction away while moving inside that radius. Obstacles are intended as a last resort option for constantly moving objects that cannot be (re)baked to a navigation mesh efficiently.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the navigation map for this NavigationObstacle node. This function returns always the map set on the NavigationObstacle node and not the map of the abstract agent on the NavigationServer. If the agent map is changed directly with the NavigationServer API the NavigationObstacle node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationObstacle and also update the agent on the NavigationServer.
+			</description>
+		</method>
 		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
 				Returns the [RID] of this obstacle on the [NavigationServer3D].
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<param index="0" name="navigation_map" type="RID" />
+			<description>
+				Sets the [RID] of the navigation map this NavigationObstacle node should use and also updates the [code]agent[/code] on the NavigationServer.
 			</description>
 		</method>
 	</methods>

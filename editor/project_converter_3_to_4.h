@@ -31,7 +31,6 @@
 #ifndef PROJECT_CONVERTER_3_TO_4_H
 #define PROJECT_CONVERTER_3_TO_4_H
 
-#include "core/core_bind.h"
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
@@ -76,7 +75,7 @@ private:
 	Vector<String> check_for_files();
 
 	Vector<String> parse_arguments(const String &line);
-	int get_end_parenthess(const String &line) const;
+	int get_end_parenthesis(const String &line) const;
 	String connect_arguments(const Vector<String> &line, int from, int to = -1) const;
 	String get_starting_space(const String &line) const;
 	String get_object_of_execution(const String &line) const;

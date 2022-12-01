@@ -82,17 +82,17 @@ void CheckButton::_update_theme_item_cache() {
 	Button::_update_theme_item_cache();
 
 	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.check_v_adjust = get_theme_constant(SNAME("check_v_adjust"));
+	theme_cache.check_v_offset = get_theme_constant(SNAME("check_v_offset"));
 	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
 
-	theme_cache.checked = get_theme_icon(SNAME("on"));
-	theme_cache.unchecked = get_theme_icon(SNAME("off"));
-	theme_cache.checked_disabled = get_theme_icon(SNAME("on_disabled"));
-	theme_cache.unchecked_disabled = get_theme_icon(SNAME("off_disabled"));
-	theme_cache.checked_mirrored = get_theme_icon(SNAME("on_mirrored"));
-	theme_cache.unchecked_mirrored = get_theme_icon(SNAME("off_mirrored"));
-	theme_cache.checked_disabled_mirrored = get_theme_icon(SNAME("on_disabled_mirrored"));
-	theme_cache.unchecked_disabled_mirrored = get_theme_icon(SNAME("off_disabled_mirrored"));
+	theme_cache.checked = get_theme_icon(SNAME("checked"));
+	theme_cache.unchecked = get_theme_icon(SNAME("unchecked"));
+	theme_cache.checked_disabled = get_theme_icon(SNAME("checked_disabled"));
+	theme_cache.unchecked_disabled = get_theme_icon(SNAME("unchecked_disabled"));
+	theme_cache.checked_mirrored = get_theme_icon(SNAME("checked_mirrored"));
+	theme_cache.unchecked_mirrored = get_theme_icon(SNAME("unchecked_mirrored"));
+	theme_cache.checked_disabled_mirrored = get_theme_icon(SNAME("checked_disabled_mirrored"));
+	theme_cache.unchecked_disabled_mirrored = get_theme_icon(SNAME("unchecked_disabled_mirrored"));
 }
 
 void CheckButton::_notification(int p_what) {
@@ -142,7 +142,7 @@ void CheckButton::_notification(int p_what) {
 			} else {
 				ofs.x = get_size().width - (tex_size.width + theme_cache.normal_style->get_margin(SIDE_RIGHT));
 			}
-			ofs.y = (get_size().height - tex_size.height) / 2 + theme_cache.check_v_adjust;
+			ofs.y = (get_size().height - tex_size.height) / 2 + theme_cache.check_v_offset;
 
 			if (is_pressed()) {
 				on_tex->draw(ci, ofs);

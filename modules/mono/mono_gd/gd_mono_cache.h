@@ -47,10 +47,12 @@ class CSharpScript;
 
 namespace GDMonoCache {
 
+#ifndef GD_CLR_STDCALL
 #ifdef WIN32
 #define GD_CLR_STDCALL __stdcall
 #else
 #define GD_CLR_STDCALL
+#endif
 #endif
 
 struct godotsharp_property_info {
@@ -68,11 +70,11 @@ struct godotsharp_property_def_val_pair {
 };
 
 struct ManagedCallbacks {
-	using Callback_ScriptManagerBridge_GetPropertyInfoList_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const String *, godotsharp_property_info *p_props, int32_t p_count);
-	using Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, godotsharp_property_def_val_pair *p_def_vals, int32_t p_count);
+	using Callback_ScriptManagerBridge_GetPropertyInfoList_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const String *, void *p_props, int32_t p_count);
+	using Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, void *p_def_vals, int32_t p_count);
 
 	using FuncSignalAwaiter_SignalCallback = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Variant **, int32_t, bool *);
-	using FuncDelegateUtils_InvokeWithVariantArgs = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Variant **, uint32_t, const Variant *);
+	using FuncDelegateUtils_InvokeWithVariantArgs = void(GD_CLR_STDCALL *)(GCHandleIntPtr, void *, const Variant **, int32_t, const Variant *);
 	using FuncDelegateUtils_DelegateEquals = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr);
 	using FuncDelegateUtils_TrySerializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const Array *);
 	using FuncDelegateUtils_TryDeserializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(const Array *, GCHandleIntPtr *);
@@ -144,7 +146,5 @@ extern bool godot_api_cache_updated;
 void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks);
 
 } // namespace GDMonoCache
-
-#undef GD_CLR_STDCALL
 
 #endif // GD_MONO_CACHE_H

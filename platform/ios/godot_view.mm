@@ -30,6 +30,7 @@
 
 #import "godot_view.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
 #import "display_layer.h"
@@ -74,7 +75,7 @@ static const float earth_gravity = 9.80665;
 
 	if ([driverName isEqualToString:@"vulkan"]) {
 		layer = [GodotMetalLayer layer];
-	} else if ([driverName isEqualToString:@"opengl_es"]) {
+	} else if ([driverName isEqualToString:@"opengl3"]) {
 		if (@available(iOS 13, *)) {
 			NSLog(@"OpenGL ES is deprecated on iOS 13");
 		}
@@ -205,16 +206,16 @@ static const float earth_gravity = 9.80665;
 	if (self.useCADisplayLink) {
 		self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
 
-		// Approximate frame rate
-		// assumes device refreshes at 60 fps
-		int displayFPS = (NSInteger)(1.0 / self.renderingInterval);
-
-		self.displayLink.preferredFramesPerSecond = displayFPS;
+		if (GLOBAL_GET("display/window/ios/allow_high_refresh_rate")) {
+			self.displayLink.preferredFramesPerSecond = 120;
+		} else {
+			self.displayLink.preferredFramesPerSecond = 60;
+		}
 
 		// Setup DisplayLink in main thread
 		[self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 	} else {
-		self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:self.renderingInterval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
+		self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:(1.0 / 60) target:self selector:@selector(drawView) userInfo:nil repeats:YES];
 	}
 }
 

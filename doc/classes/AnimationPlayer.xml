@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		An animation player is used for general-purpose playback of [Animation] resources. It contains a dictionary of [AnimationLibrary] resources and custom blend times between animation transitions.
-		Some methods and properties use a single key to refence an animation directly. These keys are formatted as the key for the library, followed by a forward slash, then the key for the animation whithin the library, for example [code]"movement/run"[/code]. If the library's key is an empty string (known as the default library), the forward slash is omitted, being the same key used by the library.
+		Some methods and properties use a single key to reference an animation directly. These keys are formatted as the key for the library, followed by a forward slash, then the key for the animation within the library, for example [code]"movement/run"[/code]. If the library's key is an empty string (known as the default library), the forward slash is omitted, being the same key used by the library.
 		[AnimationPlayer] is more suited than [Tween] for animations where you know the final values in advance. For example, fading a screen in and out is more easily done with an [AnimationPlayer] node thanks to the animation tools provided by the editor. That particular example can also be implemented with a [Tween], but it requires doing everything by code.
 		Updating the target properties of animations occurs at process time.
 	</description>
@@ -170,7 +170,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes the [AnimationLibrary] assosiated with the key [param name].
+				Removes the [AnimationLibrary] associated with the key [param name].
 			</description>
 		</method>
 		<method name="rename_animation_library">
@@ -217,7 +217,7 @@
 		</member>
 		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation" default="&quot;&quot;">
 			The key of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
-			[b]Note:[/b] while this property appears in the inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
+			[b]Note:[/b] While this property appears in the Inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
 		</member>
 		<member name="current_animation_length" type="float" setter="" getter="get_current_animation_length">
 			The length (in seconds) of the currently playing animation.
@@ -242,7 +242,7 @@
 			The process notification in which to update animations.
 		</member>
 		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
-			The speed scaling ratio. For instance, if this value is 1, then the animation plays at normal speed. If it's 0.5, then it plays at half speed. If it's 2, then it plays at double speed.
+			The speed scaling ratio. For example, if this value is 1, then the animation plays at normal speed. If it's 0.5, then it plays at half speed. If it's 2, then it plays at double speed.
 		</member>
 		<member name="reset_on_save" type="bool" setter="set_reset_on_save_enabled" getter="is_reset_on_save_enabled" default="true">
 			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation (the animation with the key [code]"RESET"[/code]) applied as if it had been seeked to time 0, with the editor keeping the values that the scene had before saving.
@@ -266,6 +266,16 @@
 			<description>
 				Notifies when an animation finished playing.
 				[b]Note:[/b] This signal is not emitted if an animation is looping.
+			</description>
+		</signal>
+		<signal name="animation_libraries_updated">
+			<description>
+				Notifies when the animation libraries have changed.
+			</description>
+		</signal>
+		<signal name="animation_list_changed">
+			<description>
+				Notifies when an animation list is changed.
 			</description>
 		</signal>
 		<signal name="animation_started">

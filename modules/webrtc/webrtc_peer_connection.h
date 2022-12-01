@@ -47,6 +47,21 @@ public:
 		STATE_CLOSED
 	};
 
+	enum GatheringState {
+		GATHERING_STATE_NEW,
+		GATHERING_STATE_GATHERING,
+		GATHERING_STATE_COMPLETE,
+	};
+
+	enum SignalingState {
+		SIGNALING_STATE_STABLE,
+		SIGNALING_STATE_HAVE_LOCAL_OFFER,
+		SIGNALING_STATE_HAVE_REMOTE_OFFER,
+		SIGNALING_STATE_HAVE_LOCAL_PRANSWER,
+		SIGNALING_STATE_HAVE_REMOTE_PRANSWER,
+		SIGNALING_STATE_CLOSED,
+	};
+
 private:
 	static StringName default_extension;
 
@@ -57,6 +72,8 @@ public:
 	static void set_default_extension(const StringName &p_name);
 
 	virtual ConnectionState get_connection_state() const = 0;
+	virtual GatheringState get_gathering_state() const = 0;
+	virtual SignalingState get_signaling_state() const = 0;
 
 	virtual Error initialize(Dictionary p_config = Dictionary()) = 0;
 	virtual Ref<WebRTCDataChannel> create_data_channel(String p_label, Dictionary p_options = Dictionary()) = 0;
@@ -74,5 +91,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(WebRTCPeerConnection::ConnectionState);
+VARIANT_ENUM_CAST(WebRTCPeerConnection::GatheringState);
+VARIANT_ENUM_CAST(WebRTCPeerConnection::SignalingState);
 
 #endif // WEBRTC_PEER_CONNECTION_H

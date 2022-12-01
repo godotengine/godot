@@ -57,7 +57,7 @@ CSGShape3DGizmoPlugin::CSGShape3DGizmoPlugin() {
 }
 
 String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
+	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_node_3d());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
 		return "Radius";
@@ -79,7 +79,7 @@ String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, 
 }
 
 Variant CSGShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
+	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_node_3d());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
 		CSGSphere3D *s = Object::cast_to<CSGSphere3D>(cs);
@@ -105,7 +105,7 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo
 }
 
 void CSGShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
+	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_node_3d());
 
 	Transform3D gt = cs->get_global_transform();
 	//gt.orthonormalize();
@@ -208,7 +208,7 @@ void CSGShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 }
 
 void CSGShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
+	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_node_3d());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
 		CSGSphere3D *s = Object::cast_to<CSGSphere3D>(cs);
@@ -308,7 +308,7 @@ bool CSGShape3DGizmoPlugin::is_selectable_when_hidden() const {
 void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
-	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
+	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_node_3d());
 
 	Vector<Vector3> faces = cs->get_brush_faces();
 

@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/string/ustring.h"
-
 #ifndef MONO_MACOS_UTILS_H
 #define MONO_MACOS_UTILS_H
 
 #ifdef MACOS_ENABLED
+
+#include "core/string/ustring.h"
 
 bool macos_is_app_bundle_installed(const String &p_bundle_id);
 

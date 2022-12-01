@@ -47,7 +47,6 @@ class Array {
 	void _unref() const;
 
 protected:
-	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	bool _assign(const Array &p_array);
 
 public:
@@ -80,6 +79,7 @@ public:
 
 	Variant front() const;
 	Variant back() const;
+	Variant pick_random() const;
 
 	void sort();
 	void sort_custom(const Callable &p_callable);
@@ -90,7 +90,6 @@ public:
 
 	int find(const Variant &p_value, int p_from = 0) const;
 	int rfind(const Variant &p_value, int p_from = -1) const;
-	int find_last(const Variant &p_value) const;
 	int count(const Variant &p_value) const;
 	bool has(const Variant &p_value) const;
 
@@ -131,6 +130,7 @@ public:
 	void set_read_only(bool p_enable);
 	bool is_read_only() const;
 
+	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array();
 	~Array();

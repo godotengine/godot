@@ -162,7 +162,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_pressed()) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_or_control_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (offset > 0) {
 					offset--;
@@ -172,7 +172,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_pressed()) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (missing_right && offset < tabs.size()) {
 					offset++;
@@ -385,9 +385,6 @@ void TabBar::_notification(int p_what) {
 					if (tabs[i].disabled) {
 						sb = theme_cache.tab_disabled_style;
 						col = theme_cache.font_disabled_color;
-					} else if (i == current) {
-						sb = theme_cache.tab_selected_style;
-						col = theme_cache.font_selected_color;
 					} else {
 						sb = theme_cache.tab_unselected_style;
 						col = theme_cache.font_unselected_color;

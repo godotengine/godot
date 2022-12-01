@@ -45,7 +45,7 @@ class GDScriptAnalyzer {
 	List<GDScriptParser::LambdaNode *> lambda_stack;
 
 	// Tests for detecting invalid overloading of script members
-	static _FORCE_INLINE_ bool has_member_name_conflict_in_script_class(const StringName &p_name, const GDScriptParser::ClassNode *p_current_class_node);
+	static _FORCE_INLINE_ bool has_member_name_conflict_in_script_class(const StringName &p_name, const GDScriptParser::ClassNode *p_current_class_node, const GDScriptParser::Node *p_member);
 	static _FORCE_INLINE_ bool has_member_name_conflict_in_native_type(const StringName &p_name, const StringName &p_native_type_string);
 	Error check_native_member_name_conflict(const StringName &p_member_name, const GDScriptParser::Node *p_member_node, const StringName &p_native_type_string);
 	Error check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node);
@@ -63,7 +63,7 @@ class GDScriptAnalyzer {
 	void resolve_class_body(GDScriptParser::ClassNode *p_class);
 	void resolve_function_signature(GDScriptParser::FunctionNode *p_function);
 	void resolve_function_body(GDScriptParser::FunctionNode *p_function);
-	void resolve_node(GDScriptParser::Node *p_node);
+	void resolve_node(GDScriptParser::Node *p_node, bool p_is_root = true);
 	void resolve_suite(GDScriptParser::SuiteNode *p_suite);
 	void resolve_if(GDScriptParser::IfNode *p_if);
 	void resolve_for(GDScriptParser::ForNode *p_for);

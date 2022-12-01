@@ -8,7 +8,7 @@
 		The [method _post_import] callback receives the imported scene's root node and returns the modified version of the scene. Usage example:
 		[codeblocks]
 		[gdscript]
-		tool # Needed so it runs in editor.
+		@tool # Needed so it runs in editor.
 		extends EditorScenePostImport
 		# This sample changes all node names.
 		# Called right after the scene is imported and gets the root node.

@@ -167,9 +167,8 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
-#ifndef _MSC_VER
-#warning This is missing 64 bits arrays, I have no idea how to do it in JNI
-#endif
+
+			// TODO: This is missing 64 bits arrays, I have no idea how to do it in JNI.
 
 		default: {
 			v.val.i = 0;
@@ -266,33 +265,33 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 	if (name == "[D") {
 		jdoubleArray arr = (jdoubleArray)obj;
 		int fCount = env->GetArrayLength(arr);
-		PackedFloat32Array sarr;
-		sarr.resize(fCount);
+		PackedFloat64Array packed_array;
+		packed_array.resize(fCount);
 
-		real_t *w = sarr.ptrw();
+		double *w = packed_array.ptrw();
 
 		for (int i = 0; i < fCount; i++) {
 			double n;
 			env->GetDoubleArrayRegion(arr, i, 1, &n);
 			w[i] = n;
 		}
-		return sarr;
+		return packed_array;
 	}
 
 	if (name == "[F") {
 		jfloatArray arr = (jfloatArray)obj;
 		int fCount = env->GetArrayLength(arr);
-		PackedFloat32Array sarr;
-		sarr.resize(fCount);
+		PackedFloat32Array packed_array;
+		packed_array.resize(fCount);
 
-		real_t *w = sarr.ptrw();
+		float *w = packed_array.ptrw();
 
 		for (int i = 0; i < fCount; i++) {
 			float n;
 			env->GetFloatArrayRegion(arr, i, 1, &n);
 			w[i] = n;
 		}
-		return sarr;
+		return packed_array;
 	}
 
 	if (name == "[Ljava.lang.Object;") {

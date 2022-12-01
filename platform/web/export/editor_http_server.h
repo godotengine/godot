@@ -32,7 +32,7 @@
 #define WEB_EDITOR_HTTP_SERVER_H
 
 #include "core/io/image_loader.h"
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_paths.h"
@@ -42,18 +42,18 @@ private:
 	Ref<TCPServer> server;
 	HashMap<String, String> mimes;
 	Ref<StreamPeerTCP> tcp;
-	Ref<StreamPeerSSL> ssl;
+	Ref<StreamPeerTLS> tls;
 	Ref<StreamPeer> peer;
 	Ref<CryptoKey> key;
 	Ref<X509Certificate> cert;
-	bool use_ssl = false;
+	bool use_tls = false;
 	uint64_t time = 0;
 	uint8_t req_buf[4096];
 	int req_pos = 0;
 
 	void _clear_client() {
 		peer = Ref<StreamPeer>();
-		ssl = Ref<StreamPeerSSL>();
+		tls = Ref<StreamPeerTLS>();
 		tcp = Ref<StreamPeerTCP>();
 		memset(req_buf, 0, sizeof(req_buf));
 		time = 0;
@@ -98,19 +98,19 @@ public:
 		_clear_client();
 	}
 
-	Error listen(int p_port, IPAddress p_address, bool p_use_ssl, String p_ssl_key, String p_ssl_cert) {
-		use_ssl = p_use_ssl;
-		if (use_ssl) {
+	Error listen(int p_port, IPAddress p_address, bool p_use_tls, String p_tls_key, String p_tls_cert) {
+		use_tls = p_use_tls;
+		if (use_tls) {
 			Ref<Crypto> crypto = Crypto::create();
 			if (crypto.is_null()) {
 				return ERR_UNAVAILABLE;
 			}
-			if (!p_ssl_key.is_empty() && !p_ssl_cert.is_empty()) {
+			if (!p_tls_key.is_empty() && !p_tls_cert.is_empty()) {
 				key = Ref<CryptoKey>(CryptoKey::create());
-				Error err = key->load(p_ssl_key);
+				Error err = key->load(p_tls_key);
 				ERR_FAIL_COND_V(err != OK, err);
 				cert = Ref<X509Certificate>(X509Certificate::create());
-				err = cert->load(p_ssl_cert);
+				err = cert->load(p_tls_cert);
 				ERR_FAIL_COND_V(err != OK, err);
 			} else {
 				_set_internal_certs(crypto);
@@ -201,22 +201,22 @@ public:
 			return;
 		}
 
-		if (use_ssl) {
-			if (ssl.is_null()) {
-				ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
-				peer = ssl;
-				ssl->set_blocking_handshake_enabled(false);
-				if (ssl->accept_stream(tcp, key, cert) != OK) {
+		if (use_tls) {
+			if (tls.is_null()) {
+				tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
+				peer = tls;
+				tls->set_blocking_handshake_enabled(false);
+				if (tls->accept_stream(tcp, key, cert) != OK) {
 					_clear_client();
 					return;
 				}
 			}
-			ssl->poll();
-			if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING) {
+			tls->poll();
+			if (tls->get_status() == StreamPeerTLS::STATUS_HANDSHAKING) {
 				// Still handshaking, keep waiting.
 				return;
 			}
-			if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
+			if (tls->get_status() != StreamPeerTLS::STATUS_CONNECTED) {
 				_clear_client();
 				return;
 			}

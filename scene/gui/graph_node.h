@@ -78,15 +78,17 @@ private:
 
 	Vector<int> cache_y;
 
-	struct ConnCache {
-		Vector2 pos;
+	struct PortCache {
+		Vector2 position;
+		int height;
+
+		int slot_idx;
 		int type = 0;
 		Color color;
-		int height;
 	};
 
-	Vector<ConnCache> conn_input_cache;
-	Vector<ConnCache> conn_output_cache;
+	Vector<PortCache> left_port_cache;
+	Vector<PortCache> right_port_cache;
 
 	HashMap<int, Slot> slot_info;
 
@@ -165,16 +167,18 @@ public:
 	bool is_close_button_visible() const;
 
 	int get_connection_input_count();
-	int get_connection_input_height(int p_idx);
-	Vector2 get_connection_input_position(int p_idx);
-	int get_connection_input_type(int p_idx);
-	Color get_connection_input_color(int p_idx);
+	int get_connection_input_height(int p_port);
+	Vector2 get_connection_input_position(int p_port);
+	int get_connection_input_type(int p_port);
+	Color get_connection_input_color(int p_port);
+	int get_connection_input_slot(int p_port);
 
 	int get_connection_output_count();
-	int get_connection_output_height(int p_idx);
-	Vector2 get_connection_output_position(int p_idx);
-	int get_connection_output_type(int p_idx);
-	Color get_connection_output_color(int p_idx);
+	int get_connection_output_height(int p_port);
+	Vector2 get_connection_output_position(int p_port);
+	int get_connection_output_type(int p_port);
+	Color get_connection_output_color(int p_port);
+	int get_connection_output_slot(int p_port);
 
 	void set_overlay(Overlay p_overlay);
 	Overlay get_overlay() const;

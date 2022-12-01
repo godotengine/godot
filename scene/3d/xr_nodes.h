@@ -48,14 +48,14 @@ protected:
 	StringName pose_name = "default";
 	Ref<XRPositionalTracker> tracker;
 
-	void _notification(int p_what);
-
+	void _bind_tracker();
+	void _unbind_tracker();
 	void _changed_tracker(const StringName p_tracker_name, int p_tracker_type);
 	void _removed_tracker(const StringName p_tracker_name, int p_tracker_type);
 	void _pose_changed(const Ref<XRPose> &p_pose);
 
 public:
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
@@ -107,7 +107,7 @@ public:
 
 	Ref<XRPose> get_pose();
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	XRNode3D();
 	~XRNode3D();
@@ -180,20 +180,21 @@ class XROrigin3D : public Node3D {
 	GDCLASS(XROrigin3D, Node3D);
 
 private:
-	XRCamera3D *tracked_camera = nullptr;
+	bool current = false;
+	static Vector<XROrigin3D *> origin_nodes; // all origin nodes in tree
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	TypedArray<String> get_configuration_warnings() const override;
-
-	void set_tracked_camera(XRCamera3D *p_tracked_camera);
-	XRCamera3D *get_tracked_camera() const;
+	PackedStringArray get_configuration_warnings() const override;
 
 	real_t get_world_scale() const;
 	void set_world_scale(real_t p_world_scale);
+
+	void set_current(bool p_enabled);
+	bool is_current() const;
 
 	XROrigin3D() {}
 	~XROrigin3D() {}

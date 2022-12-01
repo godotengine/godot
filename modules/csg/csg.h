@@ -39,7 +39,6 @@
 #include "core/object/ref_counted.h"
 #include "core/templates/list.h"
 #include "core/templates/oa_hash_map.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "scene/resources/material.h"
 

@@ -142,24 +142,24 @@
 				Returns a copy of the [AABB] grown a given number of units towards all the sides.
 			</description>
 		</method>
-		<method name="has_no_surface" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the [AABB] is empty.
-			</description>
-		</method>
-		<method name="has_no_volume" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the [AABB] is flat or empty.
-			</description>
-		</method>
 		<method name="has_point" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if the [AABB] contains a point. Points on the faces of the AABB are considered included, though float-point precision errors may impact the accuracy of such checks.
 				[b]Note:[/b] This method is not reliable for [AABB] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent [AABB] to check for contained points.
+			</description>
+		</method>
+		<method name="has_surface" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [AABB] has a surface or a length, and [code]false[/code] if the [AABB] is empty (all components of [member size] are zero or negative).
+			</description>
+		</method>
+		<method name="has_volume" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [AABB] has a volume, and [code]false[/code] if the [AABB] is flat, empty, or has a negative [member size].
 			</description>
 		</method>
 		<method name="intersection" qualifiers="const">
@@ -188,6 +188,7 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="dir" type="Vector3" />
 			<description>
+				Returns [code]true[/code] if the given ray intersects with this [AABB]. Ray length is infinite.
 			</description>
 		</method>
 		<method name="intersects_segment" qualifiers="const">
@@ -203,6 +204,12 @@
 			<param index="0" name="aabb" type="AABB" />
 			<description>
 				Returns [code]true[/code] if this [AABB] and [param aabb] are approximately equal, by calling [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [AABB] is finite, by calling [method @GlobalScope.is_finite] on each component.
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">

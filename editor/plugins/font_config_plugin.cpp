@@ -31,6 +31,7 @@
 #include "font_config_plugin.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 
 /*************************************************************************/
@@ -154,7 +155,7 @@ void EditorPropertyFontMetaOverride::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			if (Object::cast_to<Button>(button_add)) {
+			if (button_add) {
 				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;
@@ -260,7 +261,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 			button_add = nullptr;
 		}
@@ -457,7 +458,7 @@ void EditorPropertyOTVariation::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 		}
 
@@ -549,7 +550,7 @@ void EditorPropertyOTFeatures::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			if (Object::cast_to<Button>(button_add)) {
+			if (button_add) {
 				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;
@@ -622,6 +623,16 @@ void EditorPropertyOTFeatures::update_property() {
 		supported = fd->get_supported_feature_list();
 	}
 
+	if (supported.is_empty()) {
+		edit->set_text(vformat(TTR("No supported features")));
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			button_add = nullptr;
+			container = nullptr;
+		}
+		return;
+	}
 	edit->set_text(vformat(TTR("Features (%d of %d set)"), dict.size(), supported.size()));
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
@@ -652,7 +663,7 @@ void EditorPropertyOTFeatures::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 			button_add = nullptr;
 		}

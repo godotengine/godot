@@ -159,6 +159,15 @@
 				Sets the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
+		<method name="set_restart_if_changed">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="restart" type="bool" />
+			<description>
+				Sets whether a setting requires restarting the editor to properly take effect.
+				[b]Note:[/b] This is just a hint to display to the user that the editor must be restarted for changes to take effect. Enabling [method set_restart_if_changed] does [i]not[/i] delay the setting being set when changed.
+			</description>
+		</method>
 		<method name="set_setting">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
@@ -199,7 +208,7 @@
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high-resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
 		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
-			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
+			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If a custom directory name is defined, this name will be appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
@@ -226,7 +235,8 @@
 			[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/code] will still be read to override the project settings.
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
+			If [code]true[/code], the project will save user data to its own user directory. If [member application/config/custom_user_dir_name] is empty, [code]&lt;OS user data directory&gt;/&lt;project name&gt;[/code] directory will be used. If [code]false[/code], the project will save user data to [code]&lt;OS user data directory&gt;/Godot/app_userdata/&lt;project name&gt;[/code].
+			See also [url=$DOCS_URL/tutorials/io/data_paths.html#accessing-persistent-user-data-user]File paths in Godot projects[/url]. This setting is only effective on desktop platforms.
 		</member>
 		<member name="application/config/use_hidden_project_data_directory" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the project will use a hidden directory ([code].godot[/code]) for storing project-specific data (metadata, shader cache, etc.).
@@ -242,7 +252,7 @@
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] command line argument. See also [member application/run/disable_stderr].
+			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. See also [member application/run/disable_stderr].
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
@@ -267,6 +277,15 @@
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
 		</member>
+		<member name="application/run/max_fps" type="int" setter="" getter="" default="0">
+			Maximum number of frames per second allowed. A value of [code]0[/code] means "no limit". The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project logic and rendering.
+			Limiting the FPS can be useful to reduce system power consumption, which reduces heat and noise emissions (and improves battery life on mobile devices).
+			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
+			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
+			If [member display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
+			See also [member physics/common/physics_ticks_per_second].
+			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.max_fps] instead.
+		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
@@ -279,7 +298,7 @@
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
 			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
@@ -299,11 +318,13 @@
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
 		</member>
-		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="1.0">
-			The base strength of the panning effect for all AudioStreamPlayer2D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength].
+		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="0.5">
+			The base strength of the panning effect for all [AudioStreamPlayer2D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
+			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
 		</member>
-		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="1.0">
-			The base strength of the panning effect for all AudioStreamPlayer3D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength].
+		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="0.5">
+			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
+			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
 		</member>
 		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
@@ -323,6 +344,9 @@
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="" default="27">
 			Largest size limit (in power of 2) allowed when compressing using long-distance matching with Zstandard. Higher values can result in better compression, but will require more memory when compressing and decompressing.
 		</member>
+		<member name="debug/disable_touch" type="bool" setter="" getter="" default="false">
+			Disable touch input. Only has effect on iOS.
+		</member>
 		<member name="debug/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], logs all output to files.
 		</member>
@@ -330,25 +354,25 @@
 			Desktop override for [member debug/file_logging/enable_file_logging], as log files are not readily accessible on mobile/Web platforms.
 		</member>
 		<member name="debug/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
-			Path to logs within the project. Using an [code]user://[/code] path is recommended.
+			Path at which to store log files for the project. Using a path under [code]user://[/code] is recommended.
 		</member>
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum number of log files allowed (used for rotation).
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns false.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to false.
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns true.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to true.
 		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a constant is used as a function.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a constant is used as a function.
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when deprecated keywords are used.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when deprecated keywords are used.
 		</member>
 		<member name="debug/gdscript/warnings/empty_file" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when an empty file is parsed.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an empty file is parsed.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
@@ -357,99 +381,97 @@
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
 		</member>
 		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when using a function as if it was a property.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a function as if it is a property.
 		</member>
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a ternary operator may emit values with incompatible types.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a ternary operator may emit values with incompatible types.
 		</member>
 		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when trying to assign an integer to a variable that expects an enum value.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to assign an integer to a variable that expects an enum value.
 		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when dividing an integer by another integer (the decimal part will be discarded).
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
 		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
 		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when using a property as if it was a function.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a function that is not a coroutine is called with await.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
 		</member>
-		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
+		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when defining a local or subclass member variable, signal, or enum that would have the same name as a built-in function or global class name, which possibly shadow it.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable that would shadow a member variable that the class defines.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable_base_class" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or subclass member variable that would shadow a variable that is inherited from a parent class.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+		</member>
+		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
 		</member>
 		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], all warnings will be reported as if they were errors.
+			If [code]true[/code], all warnings will be reported as if they are errors.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when using a variable that wasn't previously assigned.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a variable that wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unreachable_code" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
 		</member>
 		<member name="debug/gdscript/warnings/unreachable_pattern" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when an unreachable [code]match[/code] pattern is detected.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an unreachable [code]match[/code] pattern is detected.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_call_argument" type="int" setter="" getter="" default="0">
-			If [code]enabled[/code], prints a warning or an error when using an expression whose type may not be compatible with the function parameter expected.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using an expression whose type may not be compatible with the function parameter expected.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_cast" type="int" setter="" getter="" default="0">
-			If [code]enabled[/code], prints a warning or an error when performing an unsafe cast.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when performing an unsafe cast.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_method_access" type="int" setter="" getter="" default="0">
-			If [code]enabled[/code], prints a warning or an error when calling a method whose presence is not guaranteed at compile-time in the class.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a method whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_property_access" type="int" setter="" getter="" default="0">
-			If [code]enabled[/code], prints a warning or an error when accessing a property whose presence is not guaranteed at compile-time in the class.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when accessing a property whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a local constant is never used.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local constant is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_parameter" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a function parameter is never used.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function parameter is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_private_class_variable" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a class variable is never used.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a private member variable is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a signal is unused.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a signal is declared but never emitted.
 		</member>
 		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a local variable is unused.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable is unused.
 		</member>
 		<member name="debug/gdscript/warnings/void_assignment" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when assigning the result of a function that returns [code]void[/code] to a variable.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when assigning the result of a function that returns [code]void[/code] to a variable.
 		</member>
 		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug to the project developer.&quot;">
 			Message to be displayed before the backtrace when the engine crashes. By default, this message is only used in exported projects due to the editor-only override applied to this setting.
 		</member>
 		<member name="debug/settings/crash_handler/message.editor" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on: https://github.com/godotengine/godot/issues&quot;">
 			Editor-only override for [member debug/settings/crash_handler/message]. Does not affect exported projects in debug or release mode.
-		</member>
-		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="" default="0">
-			Maximum number of frames per second allowed. The actual number of frames per second may still be below this value if the game is lagging.
-			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate. See also [member physics/common/physics_ticks_per_second].
-			This setting is therefore mostly relevant for lowering the maximum FPS below VSync, e.g. to perform non-real-time rendering of static frames, or test the project under lag conditions.
-			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.target_fps] instead.
 		</member>
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
@@ -461,9 +483,10 @@
 			Print frames per second to standard output every second.
 		</member>
 		<member name="debug/settings/stdout/print_gpu_profile" type="bool" setter="" getter="" default="false">
+			Print GPU profile information to standard output every second. This includes how long each frame takes the GPU to render on average, broken down into different steps of the render pipeline, such as CanvasItems, shadows, glow, etc.
 		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
-			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] command line argument, even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
+			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
 		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
@@ -476,9 +499,6 @@
 		</member>
 		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color(0, 0.6, 0.7, 0.42)">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
-		</member>
-		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color(1, 0.7, 0.1, 0.4)">
-			Color of the disabled navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/navigation/edge_connection_color" type="Color" setter="" getter="" default="Color(1, 0, 1, 1)">
 			Color to display edge connections between navigation regions, visible when "Visible Navigation" is enabled in the Debug menu.
@@ -503,9 +523,6 @@
 		</member>
 		<member name="debug/shapes/navigation/enable_link_connections_xray" type="bool" setter="" getter="" default="true">
 			If enabled, displays navigation link connections through geometry when "Visible Navigation" is enabled in the Debug menu.
-		</member>
-		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
-			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/navigation/geometry_edge_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 1)">
 			Color to display enabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
@@ -541,7 +558,7 @@
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], allows HiDPI display on Windows, macOS, Android, iOS and Web. If [code]false[/code], the platform's low-DPI fallback will be used on HiDPI displays, which causes the window to be displayed in a blurry or pixelated manner (and can cause various window management bugs). Therefore, it is recommended to make your project scale to [url=$DOCS_URL/tutorials/viewports/multiple_resolutions.html]multiple resolutions[/url] instead of disabling this setting.
+			If [code]true[/code], allows HiDPI display on Windows, macOS, Android, iOS and Web. If [code]false[/code], the platform's low-DPI fallback will be used on HiDPI displays, which causes the window to be displayed in a blurry or pixelated manner (and can cause various window management bugs). Therefore, it is recommended to make your project scale to [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] instead of disabling this setting.
 			[b]Note:[/b] This setting has no effect on Linux as DPI-awareness fallbacks are not supported there.
 		</member>
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
@@ -554,11 +571,21 @@
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
 			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
 		</member>
+		<member name="display/window/ios/allow_high_refresh_rate" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], iOS devices that support high refresh rate/"ProMotion" will be allowed to render at up to 120 frames per second.
+		</member>
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
 		</member>
+		<member name="display/window/ios/hide_status_bar" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the status bar is hidden while the app is running.
+		</member>
+		<member name="display/window/ios/suppress_ui_gesture" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], it will require two swipes to access iOS UI that uses gestures.
+			[b]Note:[/b] This setting has no effect on the home indicator if [code]hide_home_indicator[/code] is [code]true[/code].
+		</member>
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it.
+			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it. See also [member display/window/size/transparent] and [member rendering/transparent_background].
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
 			Forces the main window to be always on top.
@@ -568,14 +595,24 @@
 			Forces the main window to be borderless.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
 		</member>
-		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
-			Sets the main window to full screen when the project starts. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
-			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
-			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
+		<member name="display/window/size/extend_to_title" type="bool" setter="" getter="" default="false">
+			Main window content is expanded to the full size of the window. Unlike a borderless window, the frame is left intact and can be used to resize the window, and the title bar is transparent, but has minimize/maximize/close buttons.
+			[b]Note:[/b] This setting is implemented only on macOS.
+		</member>
+		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
+			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
+		</member>
+		<member name="display/window/size/no_focus" type="bool" setter="" getter="" default="false">
+			Main window can't be focused. No-focus window will ignore all input, except mouse clicks.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 			[b]Note:[/b] This setting is ignored on iOS.
+		</member>
+		<member name="display/window/size/transparent" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables a window manager hint that the main window background [i]can[/i] be transparent. This does not make the background actually transparent. For the background to be transparent, the root viewport must also be made transparent by enabling [member rendering/transparent_background].
+			[b]Note:[/b] To use a transparent splash screen, set [member application/boot_splash/bg_color] to [code]Color(0, 0, 0, 0)[/code].
+			[b]Note:[/b] This setting has no effect if [member display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
@@ -602,7 +639,7 @@
 		</member>
 		<member name="editor/movie_writer/fps" type="int" setter="" getter="" default="60">
 			The number of frames per second to record in the video when writing a movie. Simulation speed will adjust to always match the specified framerate, which means the engine will appear to run slower at higher [member editor/movie_writer/fps] values. Certain FPS values will require you to adjust [member editor/movie_writer/mix_rate] to prevent audio from desynchronizing over time.
-			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument.
+			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="editor/movie_writer/mix_rate" type="int" setter="" getter="" default="48000">
 			The audio mix rate to use in the recorded audio when writing a movie (in Hz). This can be different from [member audio/driver/mix_rate], but this value must be divisible by [member editor/movie_writer/fps] to prevent audio from desynchronizing over time.
@@ -646,20 +683,34 @@
 			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
 			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender3_path[/code]. Blender 3.0 or later is required.
 		</member>
+		<member name="filesystem/import/blender/enabled.android" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/blender/enabled] on Android where Blender can't easily be accessed from Godot.
+		</member>
+		<member name="filesystem/import/blender/enabled.web" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/blender/enabled] on the Web where Blender can't easily be accessed from Godot.
+		</member>
 		<member name="filesystem/import/fbx/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Autodesk FBX 3D scene files with the [code].fbx[/code] extension will be imported by converting them to glTF 2.0.
 			This requires configuring a path to a FBX2glTF executable in the editor settings at [code]filesystem/import/fbx/fbx2gltf_path[/code].
+		</member>
+		<member name="filesystem/import/fbx/enabled.android" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/fbx/enabled] on Android where FBX2glTF can't easily be accessed from Godot.
+		</member>
+		<member name="filesystem/import/fbx/enabled.web" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/fbx/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
 		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
-			If [code]true[/code], swaps Cancel and OK buttons in dialogs on Windows and UWP to follow interface conventions.
+			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows and UWP to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
+			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
+			Maximum undo/redo history size for [TextEdit] fields.
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
-			Path to a custom [Theme] resource file to use for the project ([code]theme[/code] or generic [code]tres[/code]/[code]res[/code] extension).
+			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
 		</member>
 		<member name="gui/theme/custom_font" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
@@ -681,12 +732,14 @@
 			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
 		</member>
 		<member name="gui/theme/default_font_subpixel_positioning" type="int" setter="" getter="" default="1">
-			Default font glyph sub-pixel positioning mode. See [member FontFile.subpixel_positioning].
+			Default font glyph subpixel positioning mode. See [member FontFile.subpixel_positioning].
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
+			The default scale factor for [Control]s, when not overridden by a [Theme].
+			[b]Note:[/b] This property is only read when the project starts. To change the default scale at runtime, set [member ThemeDB.fallback_base_scale] instead.
 		</member>
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
-			LCD sub-pixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
+			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).
@@ -706,8 +759,12 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_copy" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to copy a selection to the clipboard.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_cut" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to cut a selection to the clipboard.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move down in the UI.
@@ -718,10 +775,16 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_filedialog_refresh" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to refresh the contents of the current directory of a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_filedialog_show_hidden" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to toggle showing hidden files and directories in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_filedialog_up_one_level" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to go up one directory in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to focus the next [Control] in the scene. The focus behavior can be configured via [member Control.focus_next].
@@ -732,8 +795,12 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_graph_delete" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete a [GraphNode] in a [GraphEdit].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_graph_duplicate" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to duplicate a [GraphNode] in a [GraphEdit].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_home" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the start position of a [Control] (e.g. first item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_HOME] on typical desktop UI systems.
@@ -744,6 +811,8 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_menu" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to open a context menu in a text field.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_page_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go down a page in a [Control] (e.g. in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_PAGEDOWN] on typical desktop UI systems.
@@ -754,8 +823,12 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_paste" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to paste from the clipboard.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_redo" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to redo an undone action.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_right" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move right in the UI.
@@ -766,98 +839,199 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to swap input direction, i.e. change between left-to-right to right-to-left modes. Affects text-editting controls ([LineEdit], [TextEdit]).
+		</member>
+		<member name="input/ui_text_add_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
+			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret and selects the next occurrence.
+			If no selection is currently active with the last caret in text fields, selects the word currently under the caret.
+			The action can be performed sequentially for all occurrences of the selection of the last caret and for all existing carets.
+			The viewport is adjusted to the latest newly added caret.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_backspace" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete the character before the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_backspace_all_to_left" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete [b]all[/b] text before the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_backspace_all_to_left.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to delete all text before the text cursor.
 		</member>
 		<member name="input/ui_text_backspace_word" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete all characters before the cursor up until a whitespace or punctuation character.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_backspace_word.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to delete a word.
+		</member>
+		<member name="input/ui_text_caret_add_above" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to add an additional caret above every caret of a text
+		</member>
+		<member name="input/ui_text_caret_add_above.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to add a caret above every caret
+		</member>
+		<member name="input/ui_text_caret_add_below" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to add an additional caret below every caret of a text
+		</member>
+		<member name="input/ui_text_caret_add_below.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to add a caret below every caret
 		</member>
 		<member name="input/ui_text_caret_document_end" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor the the end of the text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_document_end.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor to the end of the text.
 		</member>
 		<member name="input/ui_text_caret_document_start" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor to the start of the text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_document_start.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor to the start of the text.
 		</member>
 		<member name="input/ui_text_caret_down" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor down.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_left" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor left.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_line_end" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor to the end of the line.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_line_end.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor to the end of the line.
 		</member>
 		<member name="input/ui_text_caret_line_start" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor to the start of the line.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_line_start.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor to the start of the line.
 		</member>
 		<member name="input/ui_text_caret_page_down" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor down one page.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_page_up" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor up one page.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_right" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor right.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_up" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor up.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_word_left" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor left to the next whitespace or punctuation.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_word_left.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor back one word.
 		</member>
 		<member name="input/ui_text_caret_word_right" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor right to the next whitespace or punctuation.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_word_right.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor forward one word.
+		</member>
+		<member name="input/ui_text_clear_carets_and_selection" type="Dictionary" setter="" getter="">
+			If there's only one caret active and with a selection, clears the selection.
+			In case there's more than one caret active, removes the secondary carets and clears their selections.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to accept an autocompetion hint.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_query" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to request autocompetion.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_replace" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to accept an autocompetion hint, replacing existing text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_dedent" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to unindent text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_delete" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete the character after the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_delete_all_to_right" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete [b]all[/b] text after the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_delete_all_to_right.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to delete all text after the text cursor.
 		</member>
 		<member name="input/ui_text_delete_word" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete all characters after the cursor up until a whitespace or punctuation character.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_delete_word.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to delete a word after the text cursor.
 		</member>
 		<member name="input/ui_text_indent" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to indent the current line.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_newline" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to insert a new line at the position of the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_newline_above" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to insert a new line before the current one.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_newline_blank" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to insert a new line after the current one.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_scroll_down" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to scroll down one line of text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_scroll_down.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to scroll down one line.
 		</member>
 		<member name="input/ui_text_scroll_up" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to scroll up one line of text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_scroll_up.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to scroll up one line.
 		</member>
 		<member name="input/ui_text_select_all" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to select all text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_select_word_under_caret" type="Dictionary" setter="" getter="">
 			If no selection is currently active, selects the word currently under the caret in text fields. If a selection is currently active, deselects the current selection.
-			[b]Note:[/b] Currently, this is only implemented in [TextEdit], not [LineEdit].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_submit" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to submit a text field.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_toggle_insert_mode" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to toggle [i]insert mode[/i] in a text field. While in insert mode, inserting new text overrides the character after the cursor, unless the next character is a new line.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to undo the most recent action.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_up" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move up in the UI.
@@ -871,7 +1045,7 @@
 		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
@@ -936,8 +1110,8 @@
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
 			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
-			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] command line argument.
-			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] command line argument.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
@@ -1494,8 +1668,8 @@
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
 			Page size used by remote filesystem (in bytes).
 		</member>
-		<member name="network/ssl/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
-			The CA certificates bundle to use for SSL connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
+		<member name="network/tls/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
+			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
@@ -1641,15 +1815,19 @@
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.
 		</member>
+		<member name="physics/common/max_physics_steps_per_frame" type="int" setter="" getter="" default="8">
+			Controls the maximum number of physics steps that can be simulated each rendered frame. The default value is tuned to avoid "spiral of death" situations where expensive physics simulations trigger more expensive simulations indefinitely. However, the game will appear to slow down if the rendering FPS is less than [code]1 / max_physics_steps_per_frame[/code] of [member physics/common/physics_ticks_per_second]. This occurs even if [code]delta[/code] is consistently used in physics calculations. To avoid this, increase [member physics/common/max_physics_steps_per_frame] if you have increased [member physics/common/physics_ticks_per_second] significantly above its default value.
+			[b]Note:[/b] This property is only read when the project starts. To change the maximum number of simulated physics steps per frame at runtime, set [member Engine.max_physics_steps_per_frame] instead.
+		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member debug/settings/fps/force_fps].
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member application/run/max_fps].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
-			[b]Note:[/b] Only 8 physics ticks may be simulated per rendered frame at most. If more than 8 physics ticks have to be simulated per rendered frame to keep up with rendering, the game will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended not to increase [member physics/common/physics_ticks_per_second] above 240. Otherwise, the game will slow down when the rendering framerate goes below 30 FPS.
+			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 		</member>
@@ -1672,6 +1850,9 @@
 			Another way to combat specular aliasing is to enable [member rendering/anti_aliasing/screen_space_roughness_limiter/enabled].
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS].
+			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
+			[b]Note:[/b] This property is only read when the project starts. To set debanding at run-time, set [member Viewport.use_debanding] on the root [Viewport] instead.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
 			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
@@ -1699,13 +1880,6 @@
 			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
 			[b]Note:[/b] Only supported when using the Vulkan Clustered backend or the OpenGL backend. When using Vulkan Mobile there is no depth prepass performed.
 		</member>
-		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;vulkan&quot;">
-			The video driver to use.
-			[b]Note:[/b] OpenGL support is currently incomplete. Only basic rendering is supported.
-			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
-			[b]FIXME:[/b] No longer valid after DisplayServer split:
-			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
-		</member>
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
@@ -1728,7 +1902,7 @@
 			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
 		</member>
 		<member name="rendering/environment/ssao/adaptive_target" type="float" setter="" getter="" default="0.5">
-			Quality target to use when [member rendering/environment/ssao/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
+			Quality target to use when [member rendering/environment/ssao/quality] is set to [code]Ultra[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]Medium[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
 		</member>
 		<member name="rendering/environment/ssao/blur_passes" type="int" setter="" getter="" default="2">
 			Number of blur passes to use when computing screen-space ambient occlusion. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
@@ -1743,10 +1917,10 @@
 			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details. If [code]false[/code], screen-space ambient occlusion will be rendered at full size.
 		</member>
 		<member name="rendering/environment/ssao/quality" type="int" setter="" getter="" default="2">
-			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
+			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]Ultra[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
 		</member>
 		<member name="rendering/environment/ssil/adaptive_target" type="float" setter="" getter="" default="0.5">
-			Quality target to use when [member rendering/environment/ssil/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance. When using the adaptive target, the performance cost scales with the complexity of the scene.
+			Quality target to use when [member rendering/environment/ssil/quality] is set to [code]Ultra[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]Medium[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance. When using the adaptive target, the performance cost scales with the complexity of the scene.
 		</member>
 		<member name="rendering/environment/ssil/blur_passes" type="int" setter="" getter="" default="4">
 			Number of blur passes to use when computing screen-space indirect lighting. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
@@ -1761,7 +1935,7 @@
 			If [code]true[/code], screen-space indirect lighting will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details and may result in some objects appearing to glow at their edges.
 		</member>
 		<member name="rendering/environment/ssil/quality" type="int" setter="" getter="" default="2">
-			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
+			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]Ultra[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
 		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
 			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
@@ -1776,10 +1950,34 @@
 			Enables filtering of the volumetric fog effect prior to integration. This substantially blurs the fog which reduces fine details but also smooths out harsh edges and aliasing artifacts. Disable when more detail is required.
 		</member>
 		<member name="rendering/environment/volumetric_fog/volume_depth" type="int" setter="" getter="" default="64">
-			Number of slices to use along the depth of the froxel buffer for volumetric fog. A lower number will be more efficient but may result in artifacts appearing during camera movement.
+			Number of slices to use along the depth of the froxel buffer for volumetric fog. A lower number will be more efficient but may result in artifacts appearing during camera movement. See also [member Environment.volumetric_fog_length].
 		</member>
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
+		</member>
+		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			Sets the driver to be used by the renderer when using the Compatibility renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
+		</member>
+		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			Android override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			iOS override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			LinuxBSD override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			macOS override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			Web override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			Windows override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/item_buffer_size" type="int" setter="" getter="" default="16384">
+			Maximum number of canvas items commands that can be drawn in a single viewport update. If more render commands are issued they will be ignored. Decreasing this limit may improve performance on bandwidth limited devices. Increase this limit if you find that not all objects are being drawn in a frame.
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
@@ -1825,6 +2023,9 @@
 		</member>
 		<member name="rendering/lightmapping/bake_quality/ultra_quality_ray_count" type="int" setter="" getter="" default="1024">
 			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_ULTRA].
+		</member>
+		<member name="rendering/lightmapping/primitive_meshes/texel_size" type="float" setter="" getter="" default="0.2">
+			The texel_size that is used to calculate the [member Mesh.lightmap_size_hint] on [PrimitiveMesh] resources if [member PrimitiveMesh.add_uv2] is enabled.
 		</member>
 		<member name="rendering/lightmapping/probe_capture/update_speed" type="float" setter="" getter="" default="15">
 			The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area.
@@ -1941,6 +2142,44 @@
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/renderer/rendering_method" type="String" setter="" getter="" default="&quot;forward_plus&quot;">
+			Sets the renderer that will be used by the project. Options are:
+			[b]Forward Plus[/b]: High-end renderer designed for Desktop devices. Has a higher base overhead, but scales well with complex scenes. Not suitable for older devices or mobile.
+			[b]Mobile[/b]: Modern renderer designed for mobile devices. Has a lower base overhead than Forward Plus, but does not scale as well to large scenes with many elements.
+			[b]GL Compatibility[/b]: Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3/ OpenGL ES 3.0 / WebGL 2 APIs.
+		</member>
+		<member name="rendering/renderer/rendering_method.mobile" type="String" setter="" getter="" default="&quot;mobile&quot;">
+			Override for [member rendering/renderer/rendering_method] on mobile devices.
+		</member>
+		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
+			Override for [member rendering/renderer/rendering_method] on web.
+		</member>
+		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the clustered renderer or the mobile renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
+		</member>
+		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			Android override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			iOS override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			LinuxBSD override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			macOS override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			Windows override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
+		</member>
+		<member name="rendering/rendering_device/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">
+		</member>
+		<member name="rendering/rendering_device/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
+		</member>
+		<member name="rendering/rendering_device/vulkan/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
+		</member>
 		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 		</member>
@@ -1953,6 +2192,7 @@
 		<member name="rendering/shader_compiler/shader_cache/compress" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/enabled" type="bool" setter="" getter="" default="true">
+			Enable the shader cache, which stores compiled shaders to disk to prevent stuttering from shader compilation the next time the shader is needed.
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/strip_debug" type="bool" setter="" getter="" default="false">
 		</member>
@@ -1997,9 +2237,6 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
-		<member name="rendering/textures/lossless_compression/webp_compression_level" type="int" setter="" getter="" default="2">
-			The default compression level for lossless WebP. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. Supported values are 0 to 9. Note that compression levels above 6 are very slow and offer very little savings.
-		</member>
 		<member name="rendering/textures/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the Vulkan renderer.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
@@ -2016,23 +2253,33 @@
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
+		<member name="rendering/textures/webp_compression/compression_method" type="int" setter="" getter="" default="2">
+			The default compression method for WebP. Affects both lossy and lossless WebP. A higher value results in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression method. Supported values are 0 to 6. Note that compression methods above 4 are very slow and offer very little savings.
+		</member>
+		<member name="rendering/textures/webp_compression/lossless_compression_factor" type="float" setter="" getter="" default="25">
+			The default compression factor for lossless WebP. Decompression speed is mostly unaffected by the compression factor. Supported values are 0 to 100.
+		</member>
+		<member name="rendering/transparent_background" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables [member Viewport.transparent_bg] on the root viewport. This allows per-pixel transparency to be effective after also enabling [member display/window/size/transparent] and [member display/window/per_pixel_transparency/allowed].
+		</member>
 		<member name="rendering/vrs/mode" type="int" setter="" getter="" default="0">
 			Set the default Variable Rate Shading (VRS) mode for the main viewport. See [member Viewport.vrs_mode] to change this at runtime, and [enum Viewport.VRSMode] for possible values.
 		</member>
 		<member name="rendering/vrs/texture" type="String" setter="" getter="" default="&quot;&quot;">
-			If [member rendering/vrs/mode] is set to texture, this is the path to default texture loaded as the VRS image.
-		</member>
-		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
-		</member>
-		<member name="rendering/vulkan/rendering/back_end" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/vulkan/rendering/back_end.mobile" type="int" setter="" getter="" default="1">
-		</member>
-		<member name="rendering/vulkan/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
-		</member>
-		<member name="rendering/vulkan/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">
-		</member>
-		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
+			If [member rendering/vrs/mode] is set to [b]Texture[/b], this is the path to default texture loaded as the VRS image.
+			The texture [i]must[/i] use a lossless compression format so that colors can be matched precisely. The following VRS densities are mapped to various colors, with brighter colors representing a lower level of shading precision:
+			[codeblock]
+			- 1x1 = rgb(0, 0, 0)     - #000000
+			- 1x2 = rgb(0, 85, 0)    - #005500
+			- 2x1 = rgb(85, 0, 0)    - #550000
+			- 2x2 = rgb(85, 85, 0)   - #555500
+			- 2x4 = rgb(85, 170, 0)  - #55aa00
+			- 4x2 = rgb(170, 85, 0)  - #aa5500
+			- 4x4 = rgb(170, 170, 0) - #aaaa00
+			- 4x8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
+			- 8x4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
+			- 8x8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
+			[/codeblock]
 		</member>
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
 		</member>
@@ -2044,7 +2291,7 @@
 			Action map configuration to load by default.
 		</member>
 		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
-			If [code]true[/code] Godot will setup and initialise OpenXR on startup.
+			If [code]true[/code] Godot will setup and initialize OpenXR on startup.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.

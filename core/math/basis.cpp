@@ -31,7 +31,7 @@
 #include "basis.h"
 
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 #define cofac(row1, col1, row2, col2) \
 	(rows[row1][col1] * rows[row2][col2] - rows[row1][col2] * rows[row2][col1])
@@ -142,8 +142,8 @@ bool Basis::is_symmetric() const {
 #endif
 
 Basis Basis::diagonalize() {
-//NOTE: only implemented for symmetric matrices
-//with the Jacobi iterative method
+// NOTE: only implemented for symmetric matrices
+// with the Jacobi iterative method
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(!is_symmetric(), Basis());
 #endif
@@ -453,7 +453,7 @@ void Basis::get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) cons
 
 Vector3 Basis::get_euler(EulerOrder p_order) const {
 	switch (p_order) {
-		case EULER_ORDER_XYZ: {
+		case EulerOrder::XYZ: {
 			// Euler angles in XYZ convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -487,8 +487,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 				euler.z = 0.0f;
 			}
 			return euler;
-		} break;
-		case EULER_ORDER_XZY: {
+		}
+		case EulerOrder::XZY: {
 			// Euler angles in XZY convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -516,8 +516,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 				euler.z = -Math_PI / 2.0f;
 			}
 			return euler;
-		} break;
-		case EULER_ORDER_YXZ: {
+		}
+		case EulerOrder::YXZ: {
 			// Euler angles in YXZ convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -554,8 +554,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			}
 
 			return euler;
-		} break;
-		case EULER_ORDER_YZX: {
+		}
+		case EulerOrder::YZX: {
 			// Euler angles in YZX convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -584,7 +584,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			}
 			return euler;
 		} break;
-		case EULER_ORDER_ZXY: {
+		case EulerOrder::ZXY: {
 			// Euler angles in ZXY convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -612,7 +612,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			}
 			return euler;
 		} break;
-		case EULER_ORDER_ZYX: {
+		case EulerOrder::ZYX: {
 			// Euler angles in ZYX convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -639,7 +639,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 				euler.z = -Math::atan2(rows[0][1], rows[1][1]);
 			}
 			return euler;
-		} break;
+		}
 		default: {
 			ERR_FAIL_V_MSG(Vector3(), "Invalid parameter for get_euler(order)");
 		}
@@ -663,22 +663,22 @@ void Basis::set_euler(const Vector3 &p_euler, EulerOrder p_order) {
 	Basis zmat(c, -s, 0, s, c, 0, 0, 0, 1);
 
 	switch (p_order) {
-		case EULER_ORDER_XYZ: {
+		case EulerOrder::XYZ: {
 			*this = xmat * (ymat * zmat);
 		} break;
-		case EULER_ORDER_XZY: {
+		case EulerOrder::XZY: {
 			*this = xmat * zmat * ymat;
 		} break;
-		case EULER_ORDER_YXZ: {
+		case EulerOrder::YXZ: {
 			*this = ymat * xmat * zmat;
 		} break;
-		case EULER_ORDER_YZX: {
+		case EulerOrder::YZX: {
 			*this = ymat * zmat * xmat;
 		} break;
-		case EULER_ORDER_ZXY: {
+		case EulerOrder::ZXY: {
 			*this = zmat * xmat * ymat;
 		} break;
-		case EULER_ORDER_ZYX: {
+		case EulerOrder::ZYX: {
 			*this = zmat * ymat * xmat;
 		} break;
 		default: {
@@ -689,6 +689,10 @@ void Basis::set_euler(const Vector3 &p_euler, EulerOrder p_order) {
 
 bool Basis::is_equal_approx(const Basis &p_basis) const {
 	return rows[0].is_equal_approx(p_basis.rows[0]) && rows[1].is_equal_approx(p_basis.rows[1]) && rows[2].is_equal_approx(p_basis.rows[2]);
+}
+
+bool Basis::is_finite() const {
+	return rows[0].is_finite() && rows[1].is_finite() && rows[2].is_finite();
 }
 
 bool Basis::operator==(const Basis &p_matrix) const {
@@ -754,29 +758,28 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(!is_rotation());
 #endif
-*/
-	real_t angle, x, y, z; // variables for result
-	real_t angle_epsilon = 0.1; // margin to distinguish between 0 and 180 degrees
+	*/
 
-	if ((Math::abs(rows[1][0] - rows[0][1]) < CMP_EPSILON) && (Math::abs(rows[2][0] - rows[0][2]) < CMP_EPSILON) && (Math::abs(rows[2][1] - rows[1][2]) < CMP_EPSILON)) {
-		// singularity found
-		// first check for identity matrix which must have +1 for all terms
-		// in leading diagonal and zero in other terms
-		if ((Math::abs(rows[1][0] + rows[0][1]) < angle_epsilon) && (Math::abs(rows[2][0] + rows[0][2]) < angle_epsilon) && (Math::abs(rows[2][1] + rows[1][2]) < angle_epsilon) && (Math::abs(rows[0][0] + rows[1][1] + rows[2][2] - 3) < angle_epsilon)) {
-			// this singularity is identity matrix so angle = 0
+	// https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
+	real_t x, y, z; // Variables for result.
+	if (Math::is_zero_approx(rows[0][1] - rows[1][0]) && Math::is_zero_approx(rows[0][2] - rows[2][0]) && Math::is_zero_approx(rows[1][2] - rows[2][1])) {
+		// Singularity found.
+		// First check for identity matrix which must have +1 for all terms in leading diagonal and zero in other terms.
+		if (is_diagonal() && (Math::abs(rows[0][0] + rows[1][1] + rows[2][2] - 3) < 3 * CMP_EPSILON)) {
+			// This singularity is identity matrix so angle = 0.
 			r_axis = Vector3(0, 1, 0);
 			r_angle = 0;
 			return;
 		}
-		// otherwise this singularity is angle = 180
-		angle = Math_PI;
+		// Otherwise this singularity is angle = 180.
 		real_t xx = (rows[0][0] + 1) / 2;
 		real_t yy = (rows[1][1] + 1) / 2;
 		real_t zz = (rows[2][2] + 1) / 2;
-		real_t xy = (rows[1][0] + rows[0][1]) / 4;
-		real_t xz = (rows[2][0] + rows[0][2]) / 4;
-		real_t yz = (rows[2][1] + rows[1][2]) / 4;
-		if ((xx > yy) && (xx > zz)) { // rows[0][0] is the largest diagonal term
+		real_t xy = (rows[0][1] + rows[1][0]) / 4;
+		real_t xz = (rows[0][2] + rows[2][0]) / 4;
+		real_t yz = (rows[1][2] + rows[2][1]) / 4;
+
+		if ((xx > yy) && (xx > zz)) { // rows[0][0] is the largest diagonal term.
 			if (xx < CMP_EPSILON) {
 				x = 0;
 				y = Math_SQRT12;
@@ -786,7 +789,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 				y = xy / x;
 				z = xz / x;
 			}
-		} else if (yy > zz) { // rows[1][1] is the largest diagonal term
+		} else if (yy > zz) { // rows[1][1] is the largest diagonal term.
 			if (yy < CMP_EPSILON) {
 				x = Math_SQRT12;
 				y = 0;
@@ -796,7 +799,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 				x = xy / y;
 				z = yz / y;
 			}
-		} else { // rows[2][2] is the largest diagonal term so base result on this
+		} else { // rows[2][2] is the largest diagonal term so base result on this.
 			if (zz < CMP_EPSILON) {
 				x = Math_SQRT12;
 				y = Math_SQRT12;
@@ -808,22 +811,24 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 			}
 		}
 		r_axis = Vector3(x, y, z);
-		r_angle = angle;
+		r_angle = Math_PI;
 		return;
 	}
-	// as we have reached here there are no singularities so we can handle normally
-	real_t s = Math::sqrt((rows[1][2] - rows[2][1]) * (rows[1][2] - rows[2][1]) + (rows[2][0] - rows[0][2]) * (rows[2][0] - rows[0][2]) + (rows[0][1] - rows[1][0]) * (rows[0][1] - rows[1][0])); // s=|axis||sin(angle)|, used to normalise
+	// As we have reached here there are no singularities so we can handle normally.
+	double s = Math::sqrt((rows[2][1] - rows[1][2]) * (rows[2][1] - rows[1][2]) + (rows[0][2] - rows[2][0]) * (rows[0][2] - rows[2][0]) + (rows[1][0] - rows[0][1]) * (rows[1][0] - rows[0][1])); // Used to normalize.
 
-	angle = Math::acos((rows[0][0] + rows[1][1] + rows[2][2] - 1) / 2);
-	if (angle < 0) {
-		s = -s;
+	if (Math::abs(s) < CMP_EPSILON) {
+		// Prevent divide by zero, should not happen if matrix is orthogonal and should be caught by singularity test above.
+		s = 1;
 	}
+
 	x = (rows[2][1] - rows[1][2]) / s;
 	y = (rows[0][2] - rows[2][0]) / s;
 	z = (rows[1][0] - rows[0][1]) / s;
 
 	r_axis = Vector3(x, y, z);
-	r_angle = angle;
+	// CLAMP to avoid NaN if the value passed to acos is not in [0,1].
+	r_angle = Math::acos(CLAMP((rows[0][0] + rows[1][1] + rows[2][2] - 1) / 2, (real_t)0.0, (real_t)1.0));
 }
 
 void Basis::set_quaternion(const Quaternion &p_quaternion) {

@@ -54,7 +54,7 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native void initialize(Activity activity,
+	public static native boolean initialize(Activity activity,
 			Godot p_instance,
 			AssetManager p_asset_manager,
 			GodotIO godotIO,
@@ -74,7 +74,7 @@ public class GodotLib {
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
 	 * @param p_cmdline Command line arguments used to configure Godot native layer components.
 	 */
-	public static native void setup(String[] p_cmdline);
+	public static native boolean setup(String[] p_cmdline);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.
@@ -92,7 +92,7 @@ public class GodotLib {
 	public static native void newcontext(Surface p_surface);
 
 	/**
-	 * Forward {@link Activity#onBackPressed()} event from the main thread to the GL thread.
+	 * Forward {@link Activity#onBackPressed()} event.
 	 */
 	public static native void back();
 
@@ -108,63 +108,60 @@ public class GodotLib {
 	public static native void ttsCallback(int event, int id, int pos);
 
 	/**
-	 * Forward touch events from the main thread to the GL thread.
+	 * Forward touch events.
 	 */
-	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions);
-	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask);
-	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask, float verticalFactor, float horizontalFactor);
+	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap);
 
 	/**
-	 * Forward hover events from the main thread to the GL thread.
+	 * Dispatch mouse events
 	 */
-	public static native void hover(int type, float x, float y);
+	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative);
+
+	public static native void magnify(float x, float y, float factor);
+
+	public static native void pan(float x, float y, float deltaX, float deltaY);
 
 	/**
-	 * Forward double_tap events from the main thread to the GL thread.
-	 */
-	public static native void doubleTap(int buttonMask, int x, int y);
-
-	/**
-	 * Forward accelerometer sensor events from the main thread to the GL thread.
+	 * Forward accelerometer sensor events.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void accelerometer(float x, float y, float z);
 
 	/**
-	 * Forward gravity sensor events from the main thread to the GL thread.
+	 * Forward gravity sensor events.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void gravity(float x, float y, float z);
 
 	/**
-	 * Forward magnetometer sensor events from the main thread to the GL thread.
+	 * Forward magnetometer sensor events.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void magnetometer(float x, float y, float z);
 
 	/**
-	 * Forward gyroscope sensor events from the main thread to the GL thread.
+	 * Forward gyroscope sensor events.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void gyroscope(float x, float y, float z);
 
 	/**
-	 * Forward regular key events from the main thread to the GL thread.
+	 * Forward regular key events.
 	 */
 	public static native void key(int p_keycode, int p_physical_keycode, int p_unicode, boolean p_pressed);
 
 	/**
-	 * Forward game device's key events from the main thread to the GL thread.
+	 * Forward game device's key events.
 	 */
 	public static native void joybutton(int p_device, int p_but, boolean p_pressed);
 
 	/**
-	 * Forward joystick devices axis motion events from the main thread to the GL thread.
+	 * Forward joystick devices axis motion events.
 	 */
 	public static native void joyaxis(int p_device, int p_axis, float p_value);
 
 	/**
-	 * Forward joystick devices hat motion events from the main thread to the GL thread.
+	 * Forward joystick devices hat motion events.
 	 */
 	public static native void joyhat(int p_device, int p_hat_x, int p_hat_y);
 

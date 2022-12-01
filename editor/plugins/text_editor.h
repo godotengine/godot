@@ -33,6 +33,8 @@
 
 #include "script_editor_plugin.h"
 
+#include "editor/code_editor.h"
+
 class TextEditor : public ScriptEditorBase {
 	GDCLASS(TextEditor, ScriptEditorBase);
 
@@ -63,8 +65,8 @@ private:
 		EDIT_CONVERT_INDENT_TO_TABS,
 		EDIT_MOVE_LINE_UP,
 		EDIT_MOVE_LINE_DOWN,
-		EDIT_INDENT_RIGHT,
-		EDIT_INDENT_LEFT,
+		EDIT_INDENT,
+		EDIT_UNINDENT,
 		EDIT_DELETE_LINE,
 		EDIT_DUPLICATE_SELECTION,
 		EDIT_TO_UPPERCASE,
@@ -111,12 +113,13 @@ public:
 	virtual Ref<Texture2D> get_theme_icon() override;
 	virtual Ref<Resource> get_edited_resource() const override;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
-	virtual void enable_editor() override;
+	virtual void enable_editor(Control *p_shortcut_context = nullptr) override;
 	virtual void reload_text() override;
 	virtual void apply_code() override;
 	virtual bool is_unsaved() override;
 	virtual Variant get_edit_state() override;
 	virtual void set_edit_state(const Variant &p_state) override;
+	virtual Variant get_navigation_state() override;
 	virtual Vector<String> get_functions() override;
 	virtual PackedInt32Array get_breakpoints() override;
 	virtual void set_breakpoint(int p_line, bool p_enabled) override{};

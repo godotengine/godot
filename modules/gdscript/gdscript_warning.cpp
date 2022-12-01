@@ -96,7 +96,7 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case RETURN_VALUE_DISCARDED: {
 			CHECK_SYMBOLS(1);
-			return "The function '" + symbols[0] + "()' returns a value, but this value is never used.";
+			return "The function '" + symbols[0] + "()' returns a value that will be discarded if not used.";
 		} break;
 		case PROPERTY_USED_AS_FUNCTION: {
 			CHECK_SYMBOLS(2);
@@ -155,6 +155,10 @@ String GDScriptWarning::get_message() const {
 		case INT_ASSIGNED_TO_ENUM: {
 			return "Integer used when an enum value is expected. If this is intended cast the integer to the enum type.";
 		}
+		case STATIC_CALLED_ON_INSTANCE: {
+			CHECK_SYMBOLS(2);
+			return vformat(R"(The function '%s()' is a static function but was called from an instance. Instead, it should be directly called from the type: '%s.%s()'.)", symbols[0], symbols[1], symbols[0]);
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -165,6 +169,10 @@ String GDScriptWarning::get_message() const {
 
 int GDScriptWarning::get_default_value(Code p_code) {
 	if (get_name_from_code(p_code).to_lower().begins_with("unsafe_")) {
+		return WarnLevel::IGNORE;
+	}
+	// Too spammy by default on common cases (connect, Tween, etc.).
+	if (p_code == RETURN_VALUE_DISCARDED) {
 		return WarnLevel::IGNORE;
 	}
 	return WarnLevel::WARN;
@@ -215,6 +223,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"EMPTY_FILE",
 		"SHADOWED_GLOBAL_IDENTIFIER",
 		"INT_ASSIGNED_TO_ENUM",
+		"STATIC_CALLED_ON_INSTANCE",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");

@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 InspectorDock *InspectorDock::singleton = nullptr;
@@ -227,7 +228,7 @@ void InspectorDock::_load_resource(const String &p_type) {
 		load_resource_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 	}
 
-	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (int i = 0; i < textfile_ext.size(); i++) {
 		load_resource_dialog->add_filter("*." + textfile_ext[i], textfile_ext[i].to_upper());
 	}
@@ -240,7 +241,7 @@ void InspectorDock::_resource_file_selected(String p_file) {
 	if (ResourceLoader::exists(p_file, "")) {
 		res = ResourceLoader::load(p_file);
 	} else {
-		const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+		const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 		if (textfile_ext.has(p_file.get_extension())) {
 			res = ScriptEditor::get_singleton()->open_file(p_file);
 		}
@@ -255,8 +256,8 @@ void InspectorDock::_resource_file_selected(String p_file) {
 }
 
 void InspectorDock::_save_resource(bool save_as) {
-	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
+	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
+	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -270,8 +271,8 @@ void InspectorDock::_save_resource(bool save_as) {
 }
 
 void InspectorDock::_unref_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
+	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
+	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -281,8 +282,8 @@ void InspectorDock::_unref_resource() {
 }
 
 void InspectorDock::_copy_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
+	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
+	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -311,7 +312,6 @@ void InspectorDock::_prepare_history() {
 
 	history_menu->get_popup()->clear();
 
-	Ref<Texture2D> base_icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	HashSet<ObjectID> already;
 	for (int i = editor_history->get_history_len() - 1; i >= history_to; i--) {
 		ObjectID id = editor_history->get_history_obj(i);
@@ -325,13 +325,12 @@ void InspectorDock::_prepare_history() {
 
 		already.insert(id);
 
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj, "");
-		if (icon.is_null()) {
-			icon = base_icon;
-		}
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj, "Object");
 
 		String text;
-		if (Object::cast_to<Resource>(obj)) {
+		if (obj->has_method("_get_editor_name")) {
+			text = obj->call("_get_editor_name");
+		} else if (Object::cast_to<Resource>(obj)) {
 			Resource *r = Object::cast_to<Resource>(obj);
 			if (r->get_path().is_resource_file()) {
 				text = r->get_path().get_file();
@@ -349,14 +348,14 @@ void InspectorDock::_prepare_history() {
 		}
 
 		if (i == editor_history->get_history_pos() && current) {
-			text = "[" + text + "]";
+			text += " " + TTR("(Current)");
 		}
 		history_menu->get_popup()->add_icon_item(icon, text, i);
 	}
 }
 
 void InspectorDock::_select_history(int p_idx) {
-	//push it to the top, it is not correct, but it's more useful
+	// Push it to the top, it is not correct, but it's more useful.
 	ObjectID id = EditorNode::get_singleton()->get_editor_selection_history()->get_history_obj(p_idx);
 	Object *obj = ObjectDB::get_instance(id);
 	if (!obj) {
@@ -366,7 +365,7 @@ void InspectorDock::_select_history(int p_idx) {
 }
 
 void InspectorDock::_resource_created() {
-	Variant c = new_resource_dialog->instance_selected();
+	Variant c = new_resource_dialog->instantiate_selected();
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);
@@ -612,8 +611,8 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 	}
 
 	for (const Pair<StringName, Variant> &E : stored_properties) {
-		Variant current;
-		if (si->get(E.first, current) && current.get_type() == E.second.get_type()) {
+		Variant current_prop;
+		if (si->get(E.first, current_prop) && current_prop.get_type() == E.second.get_type()) {
 			si->set(E.first, E.second);
 		}
 	}
@@ -671,14 +670,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	backward_button = memnew(Button);
 	backward_button->set_flat(true);
 	general_options_hb->add_child(backward_button);
-	backward_button->set_tooltip_text(TTR("Go to the previous edited object in history."));
+	backward_button->set_tooltip_text(TTR("Go to previous edited object in history."));
 	backward_button->set_disabled(true);
 	backward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_back));
 
 	forward_button = memnew(Button);
 	forward_button->set_flat(true);
 	general_options_hb->add_child(forward_button);
-	forward_button->set_tooltip_text(TTR("Go to the next edited object in history."));
+	forward_button->set_tooltip_text(TTR("Go to next edited object in history."));
 	forward_button->set_disabled(true);
 	forward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_forward));
 
@@ -771,7 +770,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_property_name_style(EditorPropertyNameProcessor::get_default_inspector_style());
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
-	inspector->set_undo_redo(editor_data->get_undo_redo());
 
 	inspector->set_use_filter(true); // TODO: check me
 

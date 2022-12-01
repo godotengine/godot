@@ -47,23 +47,23 @@ class AudioStreamPlayback : public RefCounted {
 
 protected:
 	static void _bind_methods();
-	GDVIRTUAL1(_start, float)
+	GDVIRTUAL1(_start, double)
 	GDVIRTUAL0(_stop)
 	GDVIRTUAL0RC(bool, _is_playing)
 	GDVIRTUAL0RC(int, _get_loop_count)
-	GDVIRTUAL0RC(float, _get_playback_position)
-	GDVIRTUAL1(_seek, float)
+	GDVIRTUAL0RC(double, _get_playback_position)
+	GDVIRTUAL1(_seek, double)
 	GDVIRTUAL3R(int, _mix, GDNativePtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
 public:
-	virtual void start(float p_from_pos = 0.0);
+	virtual void start(double p_from_pos = 0.0);
 	virtual void stop();
 	virtual bool is_playing() const;
 
 	virtual int get_loop_count() const; //times it looped
 
-	virtual float get_playback_position() const;
-	virtual void seek(float p_time);
+	virtual double get_playback_position() const;
+	virtual void seek(double p_time);
 
 	virtual void tag_used_streams();
 
@@ -119,7 +119,7 @@ protected:
 
 	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instantiate_playback)
 	GDVIRTUAL0RC(String, _get_stream_name)
-	GDVIRTUAL0RC(float, _get_length)
+	GDVIRTUAL0RC(double, _get_length)
 	GDVIRTUAL0RC(bool, _is_monophonic)
 	GDVIRTUAL0RC(double, _get_bpm)
 	GDVIRTUAL0RC(bool, _has_loop)
@@ -135,7 +135,7 @@ public:
 	virtual int get_bar_beats() const;
 	virtual int get_beat_count() const;
 
-	virtual float get_length() const;
+	virtual double get_length() const;
 	virtual bool is_monophonic() const;
 
 	void tag_used(float p_offset);
@@ -161,7 +161,7 @@ public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
-	virtual float get_length() const override; //if supported, otherwise return 0
+	virtual double get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
 
@@ -180,18 +180,18 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
 	virtual float get_stream_sampling_rate() override;
-	virtual float get_playback_position() const override;
+	virtual double get_playback_position() const override;
 
 public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
-	virtual void start(float p_from_pos = 0.0) override;
+	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
 	virtual bool is_playing() const override;
 
 	virtual int get_loop_count() const override; //times it looped
 
-	virtual void seek(float p_time) override;
+	virtual void seek(double p_time) override;
 
 	virtual void tag_used_streams() override;
 
@@ -265,7 +265,7 @@ public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
-	virtual float get_length() const override; //if supported, otherwise return 0
+	virtual double get_length() const override; //if supported, otherwise return 0
 	virtual bool is_monophonic() const override;
 
 	AudioStreamRandomizer();
@@ -283,14 +283,14 @@ class AudioStreamPlaybackRandomizer : public AudioStreamPlayback {
 	float volume_scale;
 
 public:
-	virtual void start(float p_from_pos = 0.0) override;
+	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
 	virtual bool is_playing() const override;
 
 	virtual int get_loop_count() const override; //times it looped
 
-	virtual float get_playback_position() const override;
-	virtual void seek(float p_time) override;
+	virtual double get_playback_position() const override;
+	virtual void seek(double p_time) override;
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 

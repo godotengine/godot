@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
 
@@ -65,6 +66,7 @@ void EditorDebuggerTree::_notification(int p_what) {
 void EditorDebuggerTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("save_node", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "filename"), PropertyInfo(Variant::INT, "debugger")));
+	ADD_SIGNAL(MethodInfo("open"));
 }
 
 void EditorDebuggerTree::_scene_tree_selected() {
@@ -162,7 +164,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		}
 		item->set_metadata(0, node.id);
 
-		// Set current item as collapsed if necessary (root is never collapsed)
+		// Set current item as collapsed if necessary (root is never collapsed).
 		if (parent) {
 			if (!unfold_cache.has(node.id)) {
 				item->set_collapsed(true);
@@ -178,12 +180,39 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			}
 		} else { // Must use path
 			if (last_path == _get_path(item)) {
-				updating_scene_tree = false; // Force emission of new selection
+				updating_scene_tree = false; // Force emission of new selection.
 				item->select(0);
 				if (filter_changed) {
 					scroll_item = item;
 				}
 				updating_scene_tree = true;
+			}
+		}
+
+		// Add buttons.
+		const Color remote_button_color = Color(1, 1, 1, 0.8);
+		if (!node.scene_file_path.is_empty()) {
+			String node_scene_file_path = node.scene_file_path;
+			Ref<Texture2D> button_icon = get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons"));
+			String tooltip = vformat(TTR("This node has been instantiated from a PackedScene file:\n%s\nClick to open the original file in the Editor."), node_scene_file_path);
+
+			item->set_meta("scene_file_path", node_scene_file_path);
+			item->add_button(0, button_icon, BUTTON_SUBSCENE, false, tooltip);
+			item->set_button_color(0, item->get_button_count(0) - 1, remote_button_color);
+		}
+
+		if (node.view_flags & SceneDebuggerTree::RemoteNode::VIEW_HAS_VISIBLE_METHOD) {
+			bool node_visible = node.view_flags & SceneDebuggerTree::RemoteNode::VIEW_VISIBLE;
+			bool node_visible_in_tree = node.view_flags & SceneDebuggerTree::RemoteNode::VIEW_VISIBLE_IN_TREE;
+			Ref<Texture2D> button_icon = get_theme_icon(node_visible ? SNAME("GuiVisibilityVisible") : SNAME("GuiVisibilityHidden"), SNAME("EditorIcons"));
+			String tooltip = TTR("Toggle Visibility");
+
+			item->set_meta("visible", node_visible);
+			item->add_button(0, button_icon, BUTTON_VISIBILITY, false, tooltip);
+			if (ClassDB::is_parent_class(node.type_name, "CanvasItem") || ClassDB::is_parent_class(node.type_name, "Node3D")) {
+				item->set_button_color(0, item->get_button_count(0) - 1, node_visible_in_tree ? remote_button_color : Color(1, 1, 1, 0.6));
+			} else {
+				item->set_button_color(0, item->get_button_count(0) - 1, remote_button_color);
 			}
 		}
 

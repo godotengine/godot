@@ -40,6 +40,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/separator.h"
 #include "scene/main/window.h"
 
 void GridMapEditor::_node_removed(Node *p_node) {
@@ -459,6 +461,7 @@ void GridMapEditor::_delete_selection() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("GridMap Delete Selection"));
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
@@ -479,6 +482,7 @@ void GridMapEditor::_fill_selection() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("GridMap Fill Selection"));
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
@@ -572,6 +576,7 @@ void GridMapEditor::_do_paste() {
 	rot = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 
 	Vector3 ofs = paste_indicator.current - paste_indicator.click;
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("GridMap Paste Selection"));
 
 	for (const ClipboardItem &item : clipboard_items) {
@@ -603,13 +608,13 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MouseButton::WHEEL_UP && (mb->is_command_pressed() || mb->is_shift_pressed())) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && (mb->is_command_or_control_pressed() || mb->is_shift_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() + mb->get_factor());
 			}
 
 			return EditorPlugin::AFTER_GUI_INPUT_STOP; // Eaten.
-		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && (mb->is_command_pressed() || mb->is_shift_pressed())) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && (mb->is_command_or_control_pressed() || mb->is_shift_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() - mb->get_factor());
 			}
@@ -617,7 +622,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 		}
 
 		if (mb->is_pressed()) {
-			Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
+			Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 			if ((nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA || nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) && mb->is_alt_pressed()) {
 				input_action = INPUT_NONE;
 			} else if (mb->get_button_index() == MouseButton::LEFT) {
@@ -629,7 +634,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				} else if (mb->is_shift_pressed() && can_edit) {
 					input_action = INPUT_SELECT;
 					last_selection = selection;
-				} else if (mb->is_command_pressed() && can_edit) {
+				} else if (mb->is_command_or_control_pressed() && can_edit) {
 					input_action = INPUT_PICK;
 				} else {
 					input_action = INPUT_PAINT;
@@ -659,6 +664,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 		} else {
 			if ((mb->get_button_index() == MouseButton::RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MouseButton::LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
+					Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 					undo_redo->create_action(TTR("GridMap Paint"));
 					for (const SetItem &si : set_items) {
 						undo_redo->add_do_method(node, "set_cell_item", si.position, si.new_value, si.new_orientation);
@@ -680,6 +686,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			}
 
 			if (mb->get_button_index() == MouseButton::LEFT && input_action == INPUT_SELECT) {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("GridMap Selection"));
 				undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 				undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
@@ -746,7 +753,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		if (pan_gesture->is_alt_pressed() && (pan_gesture->is_command_pressed() || pan_gesture->is_shift_pressed())) {
+		if (pan_gesture->is_alt_pressed() && (pan_gesture->is_command_or_control_pressed() || pan_gesture->is_shift_pressed())) {
 			const real_t delta = pan_gesture->get_delta().y * 0.5;
 			accumulated_floor_delta += delta;
 			int step = 0;
@@ -807,7 +814,7 @@ void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
 	const Ref<InputEventMouseButton> mb = p_ie;
 
 	// Zoom in/out using Ctrl + mouse wheel
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed()) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_command_or_control_pressed()) {
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 			size_slider->set_value(size_slider->get_value() + 0.2);
 		}
@@ -1142,8 +1149,6 @@ void GridMapEditor::_bind_methods() {
 }
 
 GridMapEditor::GridMapEditor() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
 	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(mw, 0) * EDSCALE);
@@ -1434,7 +1439,7 @@ GridMapEditor::~GridMapEditor() {
 void GridMapEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
+			switch ((int)EDITOR_GET("editors/grid_map/editor_side")) {
 				case 0: { // Left.
 					Node3DEditor::get_singleton()->move_control_to_left_panel(grid_map_editor);
 				} break;
@@ -1472,7 +1477,7 @@ GridMapEditorPlugin::GridMapEditorPlugin() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
 
 	grid_map_editor = memnew(GridMapEditor);
-	switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
+	switch ((int)EDITOR_GET("editors/grid_map/editor_side")) {
 		case 0: { // Left.
 			Node3DEditor::get_singleton()->add_control_to_left_panel(grid_map_editor);
 		} break;

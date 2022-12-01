@@ -30,16 +30,18 @@
 
 #include "a_star_grid_2d.h"
 
-static real_t heuristic_manhattan(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
-	return dx + dy;
-}
+#include "core/variant/typed_array.h"
 
 static real_t heuristic_euclidian(const Vector2i &p_from, const Vector2i &p_to) {
 	real_t dx = (real_t)ABS(p_to.x - p_from.x);
 	real_t dy = (real_t)ABS(p_to.y - p_from.y);
 	return (real_t)Math::sqrt(dx * dx + dy * dy);
+}
+
+static real_t heuristic_manhattan(const Vector2i &p_from, const Vector2i &p_to) {
+	real_t dx = (real_t)ABS(p_to.x - p_from.x);
+	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	return dx + dy;
 }
 
 static real_t heuristic_octile(const Vector2i &p_from, const Vector2i &p_to) {
@@ -55,7 +57,7 @@ static real_t heuristic_chebyshev(const Vector2i &p_from, const Vector2i &p_to) 
 	return MAX(dx, dy);
 }
 
-static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(const Vector2i &, const Vector2i &) = { heuristic_manhattan, heuristic_euclidian, heuristic_octile, heuristic_chebyshev };
+static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(const Vector2i &, const Vector2i &) = { heuristic_euclidian, heuristic_manhattan, heuristic_octile, heuristic_chebyshev };
 
 void AStarGrid2D::set_size(const Size2i &p_size) {
 	ERR_FAIL_COND(p_size.x < 0 || p_size.y < 0);
@@ -492,17 +494,17 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 	return path;
 }
 
-Vector<Vector2> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
-	ERR_FAIL_COND_V_MSG(dirty, Vector<Vector2>(), "Grid is not initialized. Call the update method.");
-	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_from_id.x, size.width, p_from_id.y, size.height));
-	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), Vector<Vector2>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_to_id.x, size.width, p_to_id.y, size.height));
+TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+	ERR_FAIL_COND_V_MSG(dirty, TypedArray<Vector2i>(), "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_from_id.x, size.width, p_from_id.y, size.height));
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_to_id.x, size.width, p_to_id.y, size.height));
 
 	Point *a = _get_point(p_from_id.x, p_from_id.y);
 	Point *b = _get_point(p_to_id.x, p_to_id.y);
 
 	if (a == b) {
-		Vector<Vector2> ret;
-		ret.push_back(Vector2((float)a->id.x, (float)a->id.y));
+		TypedArray<Vector2i> ret;
+		ret.push_back(a);
 		return ret;
 	}
 
@@ -511,7 +513,7 @@ Vector<Vector2> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector
 
 	bool found_route = _solve(begin_point, end_point);
 	if (!found_route) {
-		return Vector<Vector2>();
+		return TypedArray<Vector2i>();
 	}
 
 	Point *p = end_point;
@@ -521,20 +523,18 @@ Vector<Vector2> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector
 		p = p->prev_point;
 	}
 
-	Vector<Vector2> path;
+	TypedArray<Vector2i> path;
 	path.resize(pc);
 
 	{
-		Vector2 *w = path.ptrw();
-
 		p = end_point;
 		int64_t idx = pc - 1;
 		while (p != begin_point) {
-			w[idx--] = Vector2((float)p->id.x, (float)p->id.y);
+			path[idx--] = p->id;
 			p = p->prev_point;
 		}
 
-		w[0] = p->id;
+		path[0] = p->id;
 	}
 
 	return path;
@@ -572,7 +572,7 @@ void AStarGrid2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "jumping_enabled"), "set_jumping_enabled", "is_jumping_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_heuristic", PROPERTY_HINT_ENUM, "Manhattan,Euclidean,Octile,Chebyshev,Max"), "set_default_heuristic", "get_default_heuristic");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev,Max"), "set_default_heuristic", "get_default_heuristic");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Never,Always,At Least One Walkable,Only If No Obstacles,Max"), "set_diagonal_mode", "get_diagonal_mode");
 
 	BIND_ENUM_CONSTANT(HEURISTIC_EUCLIDEAN);

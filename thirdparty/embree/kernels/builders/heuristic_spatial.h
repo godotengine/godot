@@ -159,72 +159,6 @@ namespace embree
         assert(binID < BINS);
         bounds  [binID][dim].extend(b);        
       }
-      
-      /*! bins an array of triangles */
-      template<typename SplitPrimitive>
-        __forceinline void bin(const SplitPrimitive& splitPrimitive, const PrimRef* prims, size_t N, const SpatialBinMapping<BINS>& mapping)
-      {
-        for (size_t i=0; i<N; i++)
-        {
-          const PrimRef prim = prims[i];
-          unsigned splits = prim.geomID() >> (32-RESERVED_NUM_SPATIAL_SPLITS_GEOMID_BITS);
-
-          if (unlikely(splits == 1))
-          {
-            const vint4 bin = mapping.bin(center(prim.bounds()));
-            for (size_t dim=0; dim<3; dim++) 
-            {
-              assert(bin[dim] >= (int)0 && bin[dim] < (int)BINS);
-              numBegin[bin[dim]][dim]++;
-              numEnd  [bin[dim]][dim]++;
-              bounds  [bin[dim]][dim].extend(prim.bounds());
-            }
-          } 
-          else
-          {
-            const vint4 bin0 = mapping.bin(prim.bounds().lower);
-            const vint4 bin1 = mapping.bin(prim.bounds().upper);
-            
-            for (size_t dim=0; dim<3; dim++) 
-            {
-              size_t bin;
-              PrimRef rest = prim;
-              size_t l = bin0[dim];
-              size_t r = bin1[dim];
-
-              // same bin optimization
-              if (likely(l == r)) 
-              {
-                numBegin[l][dim]++;
-                numEnd  [l][dim]++;
-                bounds  [l][dim].extend(prim.bounds());
-                continue;
-              }
-
-              for (bin=(size_t)bin0[dim]; bin<(size_t)bin1[dim]; bin++) 
-              {
-                const float pos = mapping.pos(bin+1,dim);
-                
-                PrimRef left,right;
-                splitPrimitive(rest,(int)dim,pos,left,right);
-                if (unlikely(left.bounds().empty())) l++;                
-                bounds[bin][dim].extend(left.bounds());
-                rest = right;
-              }
-              if (unlikely(rest.bounds().empty())) r--;
-              numBegin[l][dim]++;
-              numEnd  [r][dim]++;
-              bounds  [bin][dim].extend(rest.bounds());
-            }
-          }
-        }
-      }
-      
-      /*! bins a range of primitives inside an array */
-      template<typename SplitPrimitive>
-        void bin(const SplitPrimitive& splitPrimitive, const PrimRef* prims, size_t begin, size_t end, const SpatialBinMapping<BINS>& mapping) {
-	bin(splitPrimitive,prims+begin,end-begin,mapping);
-      }
 
       /*! bins an array of primitives */
       template<typename PrimitiveSplitterFactory>
@@ -232,44 +166,63 @@ namespace embree
       {
         for (size_t i=begin; i<end; i++)
         {
-          const PrimRef &prim = source[i];
-          const vint4 bin0 = mapping.bin(prim.bounds().lower);
-          const vint4 bin1 = mapping.bin(prim.bounds().upper);
+          const PrimRef& prim = source[i];
+          unsigned splits = prim.geomID() >> (32-RESERVED_NUM_SPATIAL_SPLITS_GEOMID_BITS);
           
-          for (size_t dim=0; dim<3; dim++) 
+          if (unlikely(splits <= 1))
           {
-            if (unlikely(mapping.invalid(dim))) 
-              continue;
-            
-            size_t bin;
-            size_t l = bin0[dim];
-            size_t r = bin1[dim];
-            
-            // same bin optimization
-            if (likely(l == r)) 
+            const vint4 bin = mapping.bin(center(prim.bounds()));
+            for (size_t dim=0; dim<3; dim++) 
             {
-              add(dim,l,l,l,prim.bounds());
-              continue;
+              assert(bin[dim] >= (int)0 && bin[dim] < (int)BINS);
+              add(dim,bin[dim],bin[dim],bin[dim],prim.bounds());
             }
-            const size_t bin_start = bin0[dim];
-            const size_t bin_end   = bin1[dim];
-            BBox3fa rest = prim.bounds();
-            const auto splitter = splitterFactory(prim);
-            for (bin=bin_start; bin<bin_end; bin++) 
-            {
-              const float pos = mapping.pos(bin+1,dim);
-              BBox3fa left,right;
-              splitter(rest,dim,pos,left,right);
-              if (unlikely(left.empty())) l++;                
-              extend(dim,bin,left);
-              rest = right;
-            }
-            if (unlikely(rest.empty())) r--;
-            add(dim,l,r,bin,rest);
           }
-        }              
+          else
+          {
+            const vint4 bin0 = mapping.bin(prim.bounds().lower);
+            const vint4 bin1 = mapping.bin(prim.bounds().upper);
+            
+            for (size_t dim=0; dim<3; dim++) 
+            {
+              if (unlikely(mapping.invalid(dim))) 
+                continue;
+              
+              size_t bin;
+              size_t l = bin0[dim];
+              size_t r = bin1[dim];
+              
+              // same bin optimization
+              if (likely(l == r)) 
+              {
+                add(dim,l,l,l,prim.bounds());
+                continue;
+              }
+              size_t bin_start = bin0[dim];
+              size_t bin_end   = bin1[dim];
+              BBox3fa rest = prim.bounds();
+              
+              /* assure that split position always overlaps the primitive bounds */
+              while (bin_start < bin_end && mapping.pos(bin_start+1,dim) <= rest.lower[dim]) bin_start++;
+              while (bin_start < bin_end && mapping.pos(bin_end    ,dim) >= rest.upper[dim]) bin_end--;
+              
+              const auto splitter = splitterFactory(prim);
+              for (bin=bin_start; bin<bin_end; bin++) 
+              {
+                const float pos = mapping.pos(bin+1,dim);
+                BBox3fa left,right;
+                splitter(rest,dim,pos,left,right);
+                
+                if (unlikely(left.empty())) l++;                
+                extend(dim,bin,left);
+                rest = right;
+              }
+              if (unlikely(rest.empty())) r--;
+              add(dim,l,r,bin,rest);
+            }
+          }              
+        }
       }
-
 
 
       /*! bins an array of primitives */

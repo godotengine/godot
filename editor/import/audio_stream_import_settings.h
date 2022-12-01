@@ -34,8 +34,11 @@
 #include "editor/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/texture.h"
+
+class CheckBox;
 
 class AudioStreamImportSettings : public ConfirmationDialog {
 	GDCLASS(AudioStreamImportSettings, ConfirmationDialog);

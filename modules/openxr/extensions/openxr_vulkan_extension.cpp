@@ -31,29 +31,11 @@
 #include "core/string/print_string.h"
 
 #include "../extensions/openxr_vulkan_extension.h"
-#include "../openxr_api.h"
 #include "../openxr_util.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
-
-// need to include Vulkan so we know of type definitions
-#define XR_USE_GRAPHICS_API_VULKAN
-
-#ifdef WINDOWS_ENABLED
-// Including windows.h here is absolutely evil, we shouldn't be doing this outside of platform
-// however due to the way the openxr headers are put together, we have no choice.
-#include <windows.h>
-#endif
-
-// include platform dependent structs
-#include <openxr/openxr_platform.h>
-
-PFN_xrGetVulkanGraphicsRequirements2KHR xrGetVulkanGraphicsRequirements2KHR_ptr = nullptr;
-PFN_xrCreateVulkanInstanceKHR xrCreateVulkanInstanceKHR_ptr = nullptr;
-PFN_xrGetVulkanGraphicsDevice2KHR xrGetVulkanGraphicsDevice2KHR_ptr = nullptr;
-PFN_xrCreateVulkanDeviceKHR xrCreateVulkanDeviceKHR_ptr = nullptr;
 
 OpenXRVulkanExtension::OpenXRVulkanExtension(OpenXRAPI *p_openxr_api) :
 		OpenXRGraphicsExtensionWrapper(p_openxr_api) {
@@ -69,36 +51,15 @@ OpenXRVulkanExtension::~OpenXRVulkanExtension() {
 }
 
 void OpenXRVulkanExtension::on_instance_created(const XrInstance p_instance) {
-	XrResult result;
-
 	ERR_FAIL_NULL(openxr_api);
 
 	// Obtain pointers to functions we're accessing here, they are (not yet) part of core.
-	result = xrGetInstanceProcAddr(p_instance, "xrGetVulkanGraphicsRequirements2KHR", (PFN_xrVoidFunction *)&xrGetVulkanGraphicsRequirements2KHR_ptr);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to xrGetVulkanGraphicsRequirements2KHR entry point [", openxr_api->get_error_string(result), "]");
-	}
 
-	result = xrGetInstanceProcAddr(p_instance, "xrCreateVulkanInstanceKHR", (PFN_xrVoidFunction *)&xrCreateVulkanInstanceKHR_ptr);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to xrCreateVulkanInstanceKHR entry point [", openxr_api->get_error_string(result), "]");
-	}
-
-	result = xrGetInstanceProcAddr(p_instance, "xrGetVulkanGraphicsDevice2KHR", (PFN_xrVoidFunction *)&xrGetVulkanGraphicsDevice2KHR_ptr);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to xrGetVulkanGraphicsDevice2KHR entry point [", openxr_api->get_error_string(result), "]");
-	}
-
-	result = xrGetInstanceProcAddr(p_instance, "xrCreateVulkanDeviceKHR", (PFN_xrVoidFunction *)&xrCreateVulkanDeviceKHR_ptr);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to xrCreateVulkanDeviceKHR entry point [", openxr_api->get_error_string(result), "]");
-	}
-}
-
-XrResult OpenXRVulkanExtension::xrGetVulkanGraphicsRequirements2KHR(XrInstance p_instance, XrSystemId p_system_id, XrGraphicsRequirementsVulkanKHR *p_graphics_requirements) {
-	ERR_FAIL_NULL_V(xrGetVulkanGraphicsRequirements2KHR_ptr, XR_ERROR_HANDLE_INVALID);
-
-	return (*xrGetVulkanGraphicsRequirements2KHR_ptr)(p_instance, p_system_id, p_graphics_requirements);
+	EXT_INIT_XR_FUNC(xrGetVulkanGraphicsRequirements2KHR);
+	EXT_INIT_XR_FUNC(xrCreateVulkanInstanceKHR);
+	EXT_INIT_XR_FUNC(xrGetVulkanGraphicsDevice2KHR);
+	EXT_INIT_XR_FUNC(xrCreateVulkanDeviceKHR);
+	EXT_INIT_XR_FUNC(xrEnumerateSwapchainImages);
 }
 
 bool OpenXRVulkanExtension::check_graphics_api_support(XrVersion p_desired_version) {
@@ -139,12 +100,6 @@ bool OpenXRVulkanExtension::check_graphics_api_support(XrVersion p_desired_versi
 	}
 
 	return true;
-}
-
-XrResult OpenXRVulkanExtension::xrCreateVulkanInstanceKHR(XrInstance p_instance, const XrVulkanInstanceCreateInfoKHR *p_create_info, VkInstance *r_vulkan_instance, VkResult *r_vulkan_result) {
-	ERR_FAIL_NULL_V(xrCreateVulkanInstanceKHR_ptr, XR_ERROR_HANDLE_INVALID);
-
-	return (*xrCreateVulkanInstanceKHR_ptr)(p_instance, p_create_info, r_vulkan_instance, r_vulkan_result);
 }
 
 bool OpenXRVulkanExtension::create_vulkan_instance(const VkInstanceCreateInfo *p_vulkan_create_info, VkInstance *r_instance) {
@@ -195,12 +150,6 @@ bool OpenXRVulkanExtension::create_vulkan_instance(const VkInstanceCreateInfo *p
 	return true;
 }
 
-XrResult OpenXRVulkanExtension::xrGetVulkanGraphicsDevice2KHR(XrInstance p_instance, const XrVulkanGraphicsDeviceGetInfoKHR *p_get_info, VkPhysicalDevice *r_vulkan_physical_device) {
-	ERR_FAIL_NULL_V(xrGetVulkanGraphicsDevice2KHR_ptr, XR_ERROR_HANDLE_INVALID);
-
-	return (*xrGetVulkanGraphicsDevice2KHR_ptr)(p_instance, p_get_info, r_vulkan_physical_device);
-}
-
 bool OpenXRVulkanExtension::get_physical_device(VkPhysicalDevice *r_device) {
 	ERR_FAIL_NULL_V(openxr_api, false);
 
@@ -220,12 +169,6 @@ bool OpenXRVulkanExtension::get_physical_device(VkPhysicalDevice *r_device) {
 	*r_device = vulkan_physical_device;
 
 	return true;
-}
-
-XrResult OpenXRVulkanExtension::xrCreateVulkanDeviceKHR(XrInstance p_instance, const XrVulkanDeviceCreateInfoKHR *p_create_info, VkDevice *r_device, VkResult *r_result) {
-	ERR_FAIL_NULL_V(xrCreateVulkanDeviceKHR_ptr, XR_ERROR_HANDLE_INVALID);
-
-	return (*xrCreateVulkanDeviceKHR_ptr)(p_instance, p_create_info, r_device, r_result);
 }
 
 bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) {
@@ -285,6 +228,12 @@ void OpenXRVulkanExtension::get_usable_swapchain_formats(Vector<int64_t> &p_usab
 	p_usable_swap_chains.push_back(VK_FORMAT_B8G8R8A8_UINT);
 }
 
+void OpenXRVulkanExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) {
+	p_usable_swap_chains.push_back(VK_FORMAT_R32_SFLOAT);
+	p_usable_swap_chains.push_back(VK_FORMAT_D24_UNORM_S8_UINT);
+	p_usable_swap_chains.push_back(VK_FORMAT_D32_SFLOAT_S8_UINT);
+}
+
 bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) {
 	XrSwapchainImageVulkanKHR *images = nullptr;
 
@@ -328,7 +277,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_R8G8B8A8_SRGB;
 	RenderingDevice::TextureSamples samples = RenderingDevice::TEXTURE_SAMPLES_1;
-	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT;
 
 	switch (p_swapchain_format) {
 		case VK_FORMAT_R8G8B8A8_SRGB:
@@ -340,16 +289,32 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 			// will thus do an sRGB -> Linear conversion as expected.
 			// format = RenderingDevice::DATA_FORMAT_R8G8B8A8_SRGB;
 			format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UNORM;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_B8G8R8A8_SRGB:
 			// format = RenderingDevice::DATA_FORMAT_B8G8R8A8_SRGB;
 			format = RenderingDevice::DATA_FORMAT_B8G8R8A8_UNORM;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_R8G8B8A8_UINT:
 			format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UINT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_B8G8R8A8_UINT:
 			format = RenderingDevice::DATA_FORMAT_B8G8R8A8_UINT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+			break;
+		case VK_FORMAT_R32_SFLOAT:
+			format = RenderingDevice::DATA_FORMAT_R32_SFLOAT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			break;
+		case VK_FORMAT_D24_UNORM_S8_UINT:
+			format = RenderingDevice::DATA_FORMAT_D24_UNORM_S8_UINT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			break;
+		case VK_FORMAT_D32_SFLOAT_S8_UINT:
+			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 			break;
 		default:
 			// continue with our default value
@@ -385,8 +350,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 			break;
 	}
 
-	Vector<RID> image_rids;
-	Vector<RID> framebuffers;
+	Vector<RID> texture_rids;
 
 	// create Godot texture objects for each entry in our swapchain
 	for (uint64_t i = 0; i < swapchain_length; i++) {
@@ -401,19 +365,10 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 				1,
 				p_array_size);
 
-		image_rids.push_back(image_rid);
-
-		{
-			Vector<RID> fb;
-			fb.push_back(image_rid);
-
-			RID fb_rid = rendering_device->framebuffer_create(fb, RenderingDevice::INVALID_ID, p_array_size);
-			framebuffers.push_back(fb_rid);
-		}
+		texture_rids.push_back(image_rid);
 	}
 
-	data->image_rids = image_rids;
-	data->framebuffers = framebuffers;
+	data->texture_rids = texture_rids;
 
 	memfree(images);
 
@@ -427,33 +382,19 @@ bool OpenXRVulkanExtension::create_projection_fov(const XrFovf p_fov, double p_z
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			r_camera_matrix.matrix[j][i] = matrix.m[j * 4 + i];
+			r_camera_matrix.columns[j][i] = matrix.m[j * 4 + i];
 		}
 	}
 
 	return true;
 }
 
-bool OpenXRVulkanExtension::copy_render_target_to_image(RID p_from_render_target, void *p_swapchain_graphics_data, int p_image_index) {
+RID OpenXRVulkanExtension::get_texture(void *p_swapchain_graphics_data, int p_image_index) {
 	SwapchainGraphicsData *data = (SwapchainGraphicsData *)p_swapchain_graphics_data;
-	ERR_FAIL_NULL_V(data, false);
-	ERR_FAIL_COND_V(p_from_render_target.is_null(), false);
+	ERR_FAIL_NULL_V(data, RID());
 
-	RID source_image = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(p_from_render_target);
-	ERR_FAIL_COND_V(source_image.is_null(), false);
-
-	RID depth_image; // TODO implement
-
-	ERR_FAIL_INDEX_V(p_image_index, data->framebuffers.size(), false);
-	RID fb = data->framebuffers[p_image_index];
-	ERR_FAIL_COND_V(fb.is_null(), false);
-
-	// Our vulkan extension can only be used in conjunction with our vulkan renderer.
-	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
-	ERR_FAIL_NULL_V(copy_effects, false);
-	copy_effects->copy_to_fb_rect(source_image, fb, Rect2i(), false, false, false, false, depth_image, data->is_multiview);
-
-	return true;
+	ERR_FAIL_INDEX_V(p_image_index, data->texture_rids.size(), RID());
+	return data->texture_rids[p_image_index];
 }
 
 void OpenXRVulkanExtension::cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) {
@@ -468,17 +409,11 @@ void OpenXRVulkanExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
 	ERR_FAIL_NULL(rendering_device);
 
-	for (int i = 0; i < data->image_rids.size(); i++) {
+	for (int i = 0; i < data->texture_rids.size(); i++) {
 		// This should clean up our RIDs and associated texture objects but shouldn't destroy the images, they are owned by our XrSwapchain
-		rendering_device->free(data->image_rids[i]);
+		rendering_device->free(data->texture_rids[i]);
 	}
-	data->image_rids.clear();
-
-	for (int i = 0; i < data->framebuffers.size(); i++) {
-		// This should clean up our RIDs and associated texture objects but shouldn't destroy the images, they are owned by our XrSwapchain
-		rendering_device->free(data->framebuffers[i]);
-	}
-	data->framebuffers.clear();
+	data->texture_rids.clear();
 
 	memdelete(data);
 	*p_swapchain_graphics_data = nullptr;

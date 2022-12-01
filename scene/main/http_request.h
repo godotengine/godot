@@ -32,6 +32,7 @@
 #define HTTP_REQUEST_H
 
 #include "core/io/http_client.h"
+#include "core/io/stream_peer_gzip.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
@@ -48,7 +49,7 @@ public:
 		RESULT_CANT_CONNECT,
 		RESULT_CANT_RESOLVE,
 		RESULT_CONNECTION_ERROR,
-		RESULT_SSL_HANDSHAKE_ERROR,
+		RESULT_TLS_HANDSHAKE_ERROR,
 		RESULT_NO_RESPONSE,
 		RESULT_BODY_SIZE_LIMIT_EXCEEDED,
 		RESULT_BODY_DECOMPRESS_FAILED,
@@ -67,8 +68,8 @@ private:
 	String url;
 	int port = 80;
 	Vector<String> headers;
-	bool validate_ssl = false;
-	bool use_ssl = false;
+	bool validate_tls = false;
+	bool use_tls = false;
 	HTTPClient::Method method;
 	Vector<uint8_t> request_data;
 
@@ -84,10 +85,12 @@ private:
 
 	String download_to_file;
 
+	Ref<StreamPeerGZIP> decompressor;
 	Ref<FileAccess> file;
 
 	int body_len = -1;
 	SafeNumeric<int> downloaded;
+	SafeNumeric<int> final_body_size;
 	int body_size_limit = -1;
 
 	int redirections = 0;
@@ -113,6 +116,7 @@ private:
 
 	Thread thread;
 
+	void _defer_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data);
 	void _request_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data);
 	static void _thread_func(void *p_userdata);
 
@@ -121,8 +125,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
-	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const Vector<uint8_t> &p_request_data_raw = Vector<uint8_t>()); //connects to a full url and perform request
+	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_tls_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
+	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_tls_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const Vector<uint8_t> &p_request_data_raw = Vector<uint8_t>()); //connects to a full url and perform request
 	void cancel_request();
 	HTTPClient::Status get_http_client_status() const;
 

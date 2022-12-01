@@ -268,7 +268,7 @@ public:
 		uint32_t remainder = count & page_size_mask;
 
 		T *remainder_page = nullptr;
-		uint32_t remainder_page_id;
+		uint32_t remainder_page_id = 0;
 
 		if (remainder > 0) {
 			uint32_t last_page = _get_pages_in_use() - 1;

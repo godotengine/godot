@@ -30,6 +30,8 @@
 
 #include "texture_layered_editor_plugin.h"
 
+#include "scene/gui/label.h"
+
 void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -214,10 +216,6 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	}
 }
 
-void TextureLayeredEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_layer_changed"), &TextureLayeredEditor::_layer_changed);
-}
-
 TextureLayeredEditor::TextureLayeredEditor() {
 	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	set_custom_minimum_size(Size2(1, 150));
@@ -249,7 +247,7 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	info->add_theme_constant_override("shadow_offset_y", 2);
 
 	setting = false;
-	layer->connect("value_changed", Callable(this, "_layer_changed"));
+	layer->connect("value_changed", callable_mp(this, &TextureLayeredEditor::_layer_changed));
 }
 
 TextureLayeredEditor::~TextureLayeredEditor() {

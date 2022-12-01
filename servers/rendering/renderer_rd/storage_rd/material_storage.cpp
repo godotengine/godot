@@ -85,7 +85,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					gui[j + 3] = 0; // ignored
 				}
 			} else {
-				int v = value;
+				uint32_t v = value;
 				gui[0] = v & 1 ? 1 : 0;
 				gui[1] = v & 2 ? 1 : 0;
 			}
@@ -112,7 +112,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					gui[j + 3] = 0; // ignored
 				}
 			} else {
-				int v = value;
+				uint32_t v = value;
 				gui[0] = (v & 1) ? 1 : 0;
 				gui[1] = (v & 2) ? 1 : 0;
 				gui[2] = (v & 4) ? 1 : 0;
@@ -141,7 +141,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					}
 				}
 			} else {
-				int v = value;
+				uint32_t v = value;
 				gui[0] = (v & 1) ? 1 : 0;
 				gui[1] = (v & 2) ? 1 : 0;
 				gui[2] = (v & 4) ? 1 : 0;
@@ -720,7 +720,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 				Projection v = value;
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
-						gui[i * 4 + j] = v.matrix[i][j];
+						gui[i * 4 + j] = v.columns[i][j];
 					}
 				}
 			}
@@ -734,7 +734,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 	switch (type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			uint32_t *gui = (uint32_t *)data;
-			*gui = value[0].boolean ? 1 : 0;
+			gui[0] = value[0].boolean ? 1 : 0;
 		} break;
 		case ShaderLanguage::TYPE_BVEC2: {
 			uint32_t *gui = (uint32_t *)data;
@@ -903,7 +903,9 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_BVEC3:
 		case ShaderLanguage::TYPE_IVEC3:
 		case ShaderLanguage::TYPE_UVEC3:
-		case ShaderLanguage::TYPE_VEC3:
+		case ShaderLanguage::TYPE_VEC3: {
+			memset(data, 0, 12 * p_array_size);
+		} break;
 		case ShaderLanguage::TYPE_BVEC4:
 		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC4:
@@ -1270,7 +1272,7 @@ void MaterialStorage::MaterialData::free_parameters_uniform_set(RID p_uniform_se
 	}
 }
 
-bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier) {
+bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, uint32_t p_barrier) {
 	if ((uint32_t)ubo_data.size() != p_ubo_size) {
 		p_uniform_dirty = true;
 		if (uniform_buffer.is_valid()) {
@@ -1294,7 +1296,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 
 	//check whether buffer changed
 	if (p_uniform_dirty && ubo_data.size()) {
-		update_uniform_buffer(p_uniforms, p_uniform_offsets, p_parameters, ubo_data.ptrw(), ubo_data.size(), true);
+		update_uniform_buffer(p_uniforms, p_uniform_offsets, p_parameters, ubo_data.ptrw(), ubo_data.size(), p_use_linear_color);
 		RD::get_singleton()->buffer_update(uniform_buffer, 0, ubo_data.size(), ubo_data.ptrw(), p_barrier);
 	}
 
@@ -1526,6 +1528,18 @@ MaterialStorage::~MaterialStorage() {
 	}
 
 	singleton = nullptr;
+}
+
+bool MaterialStorage::free(RID p_rid) {
+	if (owns_shader(p_rid)) {
+		shader_free(p_rid);
+		return true;
+	} else if (owns_material(p_rid)) {
+		material_free(p_rid);
+		return true;
+	}
+
+	return false;
 }
 
 /* Samplers */
@@ -2099,7 +2113,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 	for (const PropertyInfo &E : settings) {
 		if (E.name.begins_with("shader_globals/")) {
 			StringName name = E.name.get_slice("/", 1);
-			Dictionary d = ProjectSettings::get_singleton()->get(E.name);
+			Dictionary d = GLOBAL_GET(E.name);
 
 			ERR_CONTINUE(!d.has("type"));
 			ERR_CONTINUE(!d.has("value"));
@@ -2199,7 +2213,7 @@ void MaterialStorage::global_shader_parameters_instance_free(RID p_instance) {
 	global_shader_uniforms.instance_buffer_pos.erase(p_instance);
 }
 
-void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value) {
+void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count) {
 	if (!global_shader_uniforms.instance_buffer_pos.has(p_instance)) {
 		return; //just not allocated, ignore
 	}
@@ -2209,7 +2223,9 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 		return; //again, not allocated, ignore
 	}
 	ERR_FAIL_INDEX(p_index, ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
-	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(p_value.get_type())); //anything greater not supported
+
+	Variant::Type value_type = p_value.get_type();
+	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(value_type)); //anything greater not supported
 
 	const ShaderLanguage::DataType datatype_from_value[Variant::COLOR + 1] = {
 		ShaderLanguage::TYPE_MAX, //nil
@@ -2235,9 +2251,23 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 		ShaderLanguage::TYPE_VEC4 //color
 	};
 
-	ShaderLanguage::DataType datatype = datatype_from_value[p_value.get_type()];
-
-	ERR_FAIL_COND_MSG(datatype == ShaderLanguage::TYPE_MAX, "Unsupported variant type for instance parameter: " + Variant::get_type_name(p_value.get_type())); //anything greater not supported
+	ShaderLanguage::DataType datatype = ShaderLanguage::TYPE_MAX;
+	if (value_type == Variant::INT && p_flags_count > 0) {
+		switch (p_flags_count) {
+			case 1:
+				datatype = ShaderLanguage::TYPE_BVEC2;
+				break;
+			case 2:
+				datatype = ShaderLanguage::TYPE_BVEC3;
+				break;
+			case 3:
+				datatype = ShaderLanguage::TYPE_BVEC4;
+				break;
+		}
+	} else {
+		datatype = datatype_from_value[value_type];
+	}
+	ERR_FAIL_COND_MSG(datatype == ShaderLanguage::TYPE_MAX, "Unsupported variant type for instance parameter: " + Variant::get_type_name(value_type)); //anything greater not supported
 
 	pos += p_index;
 
@@ -2526,7 +2556,7 @@ void MaterialStorage::_update_queued_materials() {
 		material_update_list.remove(&material->update_element);
 
 		if (uniforms_changed) {
-			//some implementations such as 3D renderer cache the matreial uniform set, so update is required
+			//some implementations such as 3D renderer cache the material uniform set, so update is required
 			material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 		}
 	}

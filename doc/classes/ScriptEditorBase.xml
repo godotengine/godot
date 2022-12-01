@@ -19,14 +19,14 @@
 		<method name="get_base_editor" qualifiers="const">
 			<return type="Control" />
 			<description>
-				Returns the underlying [Control] used for editing scripts. This can be either [CodeEdit] (for text scripts) or [GraphEdit] (for visual scripts).
+				Returns the underlying [Control] used for editing scripts. For text scripts, this is a [CodeEdit].
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="edited_script_changed">
 			<description>
-				Emitted after script validation. For visual scripts on modification.
+				Emitted after script validation.
 			</description>
 		</signal>
 		<signal name="go_to_help">
@@ -35,15 +35,22 @@
 				Emitted when the user requests a specific documentation page.
 			</description>
 		</signal>
+		<signal name="go_to_method">
+			<param index="0" name="script" type="Object" />
+			<param index="1" name="method" type="String" />
+			<description>
+				Emitted when the user requests to view a specific method of a script, similar to [signal request_open_script_at_line].
+			</description>
+		</signal>
 		<signal name="name_changed">
 			<description>
-				Emitted after script validation or when the edited resource has changed. Not used by visual scripts.
+				Emitted after script validation or when the edited resource has changed.
 			</description>
 		</signal>
 		<signal name="replace_in_files_requested">
 			<param index="0" name="text" type="String" />
 			<description>
-				Emitted when the user request to find and replace text in the file system. Not used by visual scripts.
+				Emitted when the user request to find and replace text in the file system.
 			</description>
 		</signal>
 		<signal name="request_help">
@@ -56,7 +63,7 @@
 			<param index="0" name="script" type="Object" />
 			<param index="1" name="line" type="int" />
 			<description>
-				Emitted when the user requests a script.
+				Emitted when the user requests to view a specific line of a script, similar to [signal go_to_method].
 			</description>
 		</signal>
 		<signal name="request_save_history">
@@ -67,7 +74,7 @@
 		<signal name="search_in_files_requested">
 			<param index="0" name="text" type="String" />
 			<description>
-				Emitted when the user request to search text in the file system. Not used by visual scripts.
+				Emitted when the user request to search text in the file system.
 			</description>
 		</signal>
 	</signals>

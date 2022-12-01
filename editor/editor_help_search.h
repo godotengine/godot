@@ -50,7 +50,8 @@ class EditorHelpSearch : public ConfirmationDialog {
 		SEARCH_CONSTANTS = 1 << 5,
 		SEARCH_PROPERTIES = 1 << 6,
 		SEARCH_THEME_ITEMS = 1 << 7,
-		SEARCH_ALL = SEARCH_CLASSES | SEARCH_CONSTRUCTORS | SEARCH_METHODS | SEARCH_OPERATORS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS,
+		SEARCH_ANNOTATIONS = 1 << 8,
+		SEARCH_ALL = SEARCH_CLASSES | SEARCH_CONSTRUCTORS | SEARCH_METHODS | SEARCH_OPERATORS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS | SEARCH_ANNOTATIONS,
 		SEARCH_CASE_SENSITIVE = 1 << 29,
 		SEARCH_SHOW_HIERARCHY = 1 << 30
 	};
@@ -108,15 +109,17 @@ class EditorHelpSearch::Runner : public RefCounted {
 		Vector<DocData::ConstantDoc *> constants;
 		Vector<DocData::PropertyDoc *> properties;
 		Vector<DocData::ThemeItemDoc *> theme_properties;
+		Vector<DocData::MethodDoc *> annotations;
 
 		bool required() {
-			return name || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size();
+			return name || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size() || annotations.size();
 		}
 	};
 
 	Control *ui_service = nullptr;
 	Tree *results_tree = nullptr;
 	String term;
+	Vector<String> terms;
 	int search_flags;
 
 	Ref<Texture2D> empty_icon;
@@ -141,16 +144,21 @@ class EditorHelpSearch::Runner : public RefCounted {
 	bool _phase_member_items();
 	bool _phase_select_match();
 
+	String _build_method_tooltip(const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) const;
+
+	void _match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<DocData::MethodDoc *> *r_match_methods);
+	bool _all_terms_in_name(String name);
 	bool _match_string(const String &p_term, const String &p_string) const;
 	void _match_item(TreeItem *p_item, const String &p_text);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
 	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray);
 	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc);
 	TreeItem *_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc);
+	TreeItem *_create_annotation_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc);
 	TreeItem *_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc);
 	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
 	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc);
-	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip);
+	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, bool is_deprecated, bool is_experimental);
 
 public:
 	bool work(uint64_t slot = 100000);

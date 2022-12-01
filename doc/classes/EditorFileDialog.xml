@@ -4,6 +4,7 @@
 		A modified version of [FileDialog] used by the editor.
 	</brief_description>
 	<description>
+		[EditorFileDialog] is an enhanced version of [FileDialog] available only to editor plugins. Additional features include list of favorited/recent files and ability to see files as thumbnails grid instead of list.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -62,7 +63,7 @@
 			The dialog's open or save mode, which affects the selection behavior. See [enum FileMode]
 		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
-			If [code]true[/code], hidden files and directories will be visible in the [EditorFileDialog].
+			If [code]true[/code], hidden files and directories will be visible in the [EditorFileDialog]. This property is synchronized with [member EditorSettings.filesystem/file_dialog/show_hidden_files].
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 	</members>

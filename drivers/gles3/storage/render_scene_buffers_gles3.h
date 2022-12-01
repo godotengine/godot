@@ -56,14 +56,11 @@ public:
 	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 	//RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	//bool use_debanding = false;
-	//uint32_t view_count = 1;
+	uint32_t view_count = 1;
 
 	bool is_transparent = false;
 
 	RID render_target;
-	GLuint internal_texture = 0; // Used for rendering when post effects are enabled
-	GLuint depth_texture = 0; // Main depth texture
-	GLuint framebuffer = 0; // Main framebuffer, contains internal_texture and depth_texture or render_target->color and depth_texture
 
 	//built-in textures used for ping pong image processing and blurring
 	struct Blur {

@@ -485,6 +485,20 @@ void GodotPhysicsServer2D::area_set_monitorable(RID p_area, bool p_monitorable) 
 	area->set_monitorable(p_monitorable);
 }
 
+void GodotPhysicsServer2D::area_set_collision_layer(RID p_area, uint32_t p_layer) {
+	GodotArea2D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_collision_layer(p_layer);
+}
+
+uint32_t GodotPhysicsServer2D::area_get_collision_layer(RID p_area) const {
+	GodotArea2D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+
+	return area->get_collision_layer();
+}
+
 void GodotPhysicsServer2D::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
@@ -492,11 +506,11 @@ void GodotPhysicsServer2D::area_set_collision_mask(RID p_area, uint32_t p_mask) 
 	area->set_collision_mask(p_mask);
 }
 
-void GodotPhysicsServer2D::area_set_collision_layer(RID p_area, uint32_t p_layer) {
+uint32_t GodotPhysicsServer2D::area_get_collision_mask(RID p_area) const {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
-	ERR_FAIL_COND(!area);
+	ERR_FAIL_COND_V(!area, 0);
 
-	area->set_collision_layer(p_layer);
+	return area->get_collision_mask();
 }
 
 void GodotPhysicsServer2D::area_set_monitor_callback(RID p_area, const Callable &p_callback) {
@@ -951,10 +965,10 @@ int GodotPhysicsServer2D::body_get_max_contacts_reported(RID p_body) const {
 	return body->get_max_contacts_reported();
 }
 
-void GodotPhysicsServer2D::body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) {
+void GodotPhysicsServer2D::body_set_state_sync_callback(RID p_body, const Callable &p_callable) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_state_sync_callback(p_instance, p_callback);
+	body->set_state_sync_callback(p_callable);
 }
 
 void GodotPhysicsServer2D::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata) {
@@ -1018,6 +1032,7 @@ RID GodotPhysicsServer2D::joint_create() {
 
 void GodotPhysicsServer2D::joint_clear(RID p_joint) {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
 	if (joint->get_type() != JOINT_TYPE_MAX) {
 		GodotJoint2D *empty_joint = memnew(GodotJoint2D);
 		empty_joint->copy_settings_from(joint);
@@ -1144,38 +1159,38 @@ void GodotPhysicsServer2D::joint_make_damped_spring(RID p_joint, const Vector2 &
 }
 
 void GodotPhysicsServer2D::pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) {
-	GodotJoint2D *j = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_COND(!j);
-	ERR_FAIL_COND(j->get_type() != JOINT_TYPE_PIN);
+	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_PIN);
 
-	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(j);
+	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(joint);
 	pin_joint->set_param(p_param, p_value);
 }
 
 real_t GodotPhysicsServer2D::pin_joint_get_param(RID p_joint, PinJointParam p_param) const {
-	GodotJoint2D *j = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_COND_V(!j, 0);
-	ERR_FAIL_COND_V(j->get_type() != JOINT_TYPE_PIN, 0);
+	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, 0);
 
-	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(j);
+	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(joint);
 	return pin_joint->get_param(p_param);
 }
 
 void GodotPhysicsServer2D::damped_spring_joint_set_param(RID p_joint, DampedSpringParam p_param, real_t p_value) {
-	GodotJoint2D *j = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_COND(!j);
-	ERR_FAIL_COND(j->get_type() != JOINT_TYPE_DAMPED_SPRING);
+	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_DAMPED_SPRING);
 
-	GodotDampedSpringJoint2D *dsj = static_cast<GodotDampedSpringJoint2D *>(j);
+	GodotDampedSpringJoint2D *dsj = static_cast<GodotDampedSpringJoint2D *>(joint);
 	dsj->set_param(p_param, p_value);
 }
 
 real_t GodotPhysicsServer2D::damped_spring_joint_get_param(RID p_joint, DampedSpringParam p_param) const {
-	GodotJoint2D *j = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_COND_V(!j, 0);
-	ERR_FAIL_COND_V(j->get_type() != JOINT_TYPE_DAMPED_SPRING, 0);
+	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_DAMPED_SPRING, 0);
 
-	GodotDampedSpringJoint2D *dsj = static_cast<GodotDampedSpringJoint2D *>(j);
+	GodotDampedSpringJoint2D *dsj = static_cast<GodotDampedSpringJoint2D *>(joint);
 	return dsj->get_param(p_param);
 }
 

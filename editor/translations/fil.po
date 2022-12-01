@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-05-15 09:38+0000\n"
+"PO-Revision-Date: 2022-08-30 03:11+0000\n"
 "Last-Translator: Marco Santos <enum.scima@gmail.com>\n"
 "Language-Team: Filipino <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fil/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -33,7 +33,7 @@ msgstr "Clipboard"
 
 #: core/bind/core_bind.cpp
 msgid "Current Screen"
-msgstr "Kasalukuyang Screen"
+msgstr "Screen Ngayon"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
@@ -41,15 +41,15 @@ msgstr "Umalis sa Code"
 
 #: core/bind/core_bind.cpp
 msgid "V-Sync Enabled"
-msgstr "Binuksan ang V-Sync"
+msgstr "Nakabukas na ang V-Sync"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr "V-Sync Via Compositor"
+msgstr "V-Sync gamit Compositor"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr "Delta Smoothing"
+msgstr "Pagkinis sa Delta"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode"
@@ -57,7 +57,7 @@ msgstr "Mababang Paggamit sa Processor"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "Mababang Paggamit sa Processor Tulog (µsec)"
+msgstr "Pagtulog ng Mababang Paggamit sa Processor (µsec)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
@@ -65,15 +65,15 @@ msgstr "Panatilihing Nakabukas ang Screen"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
-msgstr "Min na Laki ng Window"
+msgstr "Min na Sukat ng Window"
 
 #: core/bind/core_bind.cpp
 msgid "Max Window Size"
-msgstr "Max na Laki ng Window"
+msgstr "Max na Sukat ng Window"
 
 #: core/bind/core_bind.cpp
 msgid "Screen Orientation"
-msgstr "Screen Orientation"
+msgstr "Orientation ng Screen"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
 #: platform/uwp/os_uwp.cpp
@@ -86,7 +86,7 @@ msgstr "Walang border"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
-msgstr "Nakabukas ang Kada Pixel na Transparency"
+msgstr "Nakabukas na ang Kada Pixel na Transparency"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
@@ -123,7 +123,7 @@ msgstr "Posisyon"
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
 msgid "Size"
-msgstr "Laki"
+msgstr "Sukat"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
@@ -131,15 +131,15 @@ msgstr "Endian Swap"
 
 #: core/bind/core_bind.cpp
 msgid "Editor Hint"
-msgstr "Editor Hint"
+msgstr "Hint sa Editor"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr "I-print mga Mensahe ng Error"
+msgstr "I-print ang mga Mensahe ng Error"
 
 #: core/bind/core_bind.cpp
 msgid "Iterations Per Second"
-msgstr "Ikot Kada Segundo"
+msgstr "Iteration Kada Segundo"
 
 #: core/bind/core_bind.cpp
 msgid "Target FPS"
@@ -313,9 +313,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Kulang sa bytes para i-decode ang bytes, o invalid na format."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Invalid na input %i (di pinasa) sa expression"
+msgstr "Invalid na input na %d (di pinasa) sa expression"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -359,13 +358,12 @@ msgid "Max Size (KB)"
 msgstr "Max na Laki (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Kopya"
+msgstr "Mouse Mode"
 
 #: core/os/input.cpp
 msgid "Use Accumulated Input"
-msgstr ""
+msgstr "Gamitin ang Nakolektang Input"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -393,9 +391,8 @@ msgid "Command"
 msgstr "Command"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr "Pisika"
+msgstr "Pisikal"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -425,7 +422,7 @@ msgstr "Mask ng Button"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
 msgid "Global Position"
-msgstr "Global na Posisyon"
+msgstr "Pandaigdigang Posisyon"
 
 #: core/os/input_event.cpp
 msgid "Factor"
@@ -441,7 +438,7 @@ msgstr "Dobleng pindot"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
-msgstr "Kiling"
+msgstr "Tabingi"
 
 #: core/os/input_event.cpp
 msgid "Pressure"
@@ -449,7 +446,7 @@ msgstr "Presyur"
 
 #: core/os/input_event.cpp
 msgid "Pen Inverted"
-msgstr ""
+msgstr "Baligtad na Pen"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -479,7 +476,7 @@ msgstr "Index"
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/touch_screen_button.cpp
 msgid "Action"
-msgstr "Gawain"
+msgstr "Kilos"
 
 #: core/os/input_event.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
@@ -532,7 +529,7 @@ msgstr "Config"
 
 #: core/project_settings.cpp
 msgid "Project Settings Override"
-msgstr "Override sa Pagsasaayos ng Proyekto"
+msgstr "Override sa Pagsasaayos sa Proyekto"
 
 #: core/project_settings.cpp core/resource.cpp
 #: editor/animation_track_editor.cpp editor/editor_autoload_settings.cpp
@@ -575,7 +572,7 @@ msgstr "Patayin ang stderr"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr "Gamitin ang Hidden Project Data Directory"
+msgstr "Gamitin ang Nakatagong Directory ng Data ng Proyekto"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
@@ -589,13 +586,13 @@ msgstr "Pangalan ng Sariling User Dir"
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
 msgid "Display"
-msgstr ""
+msgstr "Pagpapakita"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Lapad"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
@@ -604,19 +601,19 @@ msgstr ""
 #: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
 msgid "Height"
-msgstr ""
+msgstr "Tangkad"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
-msgstr ""
+msgstr "Palaging Nasa Taas"
 
 #: core/project_settings.cpp
 msgid "Test Width"
-msgstr ""
+msgstr "Lapad ng Test"
 
 #: core/project_settings.cpp
 msgid "Test Height"
-msgstr ""
+msgstr "Tangkad ng Test"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -640,7 +637,7 @@ msgstr "Pangunahing Args sa Pagtakbo"
 
 #: core/project_settings.cpp
 msgid "Scene Naming"
-msgstr ""
+msgstr "Pagpangalan sa Eksena"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
@@ -4358,6 +4355,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr ""
 
@@ -7074,7 +7072,8 @@ msgid "8 Bit"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr ""
 
@@ -14797,18 +14796,18 @@ msgstr ""
 msgid "Make Local"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Pagbago ng Haba ng Animation"
+
+#: editor/scene_tree_dock.cpp
+msgid "Unique names already used by another node in the scene:"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Pagbago ng Haba ng Animation"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-#, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "Pagbago ng Haba ng Animation"
 
 #: editor/scene_tree_dock.cpp
@@ -14998,6 +14997,11 @@ msgid "Button Group"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Pagbago ng Haba ng Animation"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr ""
 
@@ -15058,6 +15062,10 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -16867,6 +16875,19 @@ msgstr ""
 msgid "Auto Update Project"
 msgstr "Ilipat Ang Mga Bezier Points"
 
+#: modules/mono/godotsharp_dirs.cpp
+msgid "Assembly Name"
+msgstr ""
+
+#: modules/mono/godotsharp_dirs.cpp
+msgid "Solution Directory"
+msgstr ""
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Gamitin ang Nakatagong Directory ng Data ng Proyekto"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
@@ -18580,6 +18601,11 @@ msgstr "Mga Functions:"
 msgid "Custom BG Color"
 msgstr "Mga Functions:"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "3D Transform Track"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 msgid "Prepare Templates"
@@ -19373,6 +19399,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp

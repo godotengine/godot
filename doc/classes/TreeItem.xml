@@ -321,6 +321,14 @@
 				Returns the [Tree] that owns this TreeItem.
 			</description>
 		</method>
+		<method name="is_any_collapsed">
+			<return type="bool" />
+			<param index="0" name="only_visible" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if this [TreeItem], or any of its descendants, is collapsed.
+				If [param only_visible] is [code]true[/code] it ignores non-visible [TreeItem]s.
+			</description>
+		</method>
 		<method name="is_button_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
@@ -417,6 +425,15 @@
 				Sets the given column's button [Texture2D] at index [param button_idx] to [param button].
 			</description>
 		</method>
+		<method name="set_button_color">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="button_idx" type="int" />
+			<param index="2" name="color" type="Color" />
+			<description>
+				Sets the given column's button color at index [param button_idx] to [param color].
+			</description>
+		</method>
 		<method name="set_button_disabled">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
@@ -440,6 +457,13 @@
 			<param index="1" name="checked" type="bool" />
 			<description>
 				If [code]true[/code], the given [param column] is checked. Clears column's indeterminate status.
+			</description>
+		</method>
+		<method name="set_collapsed_recursive">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Collapses or uncollapses this [TreeItem] and all the descendants of this item.
 			</description>
 		</method>
 		<method name="set_custom_as_button">

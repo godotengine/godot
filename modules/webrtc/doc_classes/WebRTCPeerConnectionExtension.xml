@@ -37,6 +37,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_gathering_state" qualifiers="virtual const">
+			<return type="int" enum="WebRTCPeerConnection.GatheringState" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_signaling_state" qualifiers="virtual const">
+			<return type="int" enum="WebRTCPeerConnection.SignalingState" />
+			<description>
+			</description>
+		</method>
 		<method name="_initialize" qualifiers="virtual">
 			<return type="int" enum="Error" />
 			<param index="0" name="p_config" type="Dictionary" />

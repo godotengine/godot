@@ -137,12 +137,12 @@ void FileAccessNetworkClient::_thread_func() {
 				int64_t offset = get_64();
 				int32_t len = get_32();
 
-				Vector<uint8_t> block;
-				block.resize(len);
-				client->get_data(block.ptrw(), len);
+				Vector<uint8_t> resp_block;
+				resp_block.resize(len);
+				client->get_data(resp_block.ptrw(), len);
 
 				if (fa) { //may have been queued
-					fa->_set_block(offset, block);
+					fa->_set_block(offset, resp_block);
 				}
 
 			} break;
@@ -252,7 +252,7 @@ void FileAccessNetwork::_respond(uint64_t p_len, Error p_status) {
 	pages.resize(pc);
 }
 
-Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessNetwork::open_internal(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(p_mode_flags != READ, ERR_UNAVAILABLE);
 	_close();
 

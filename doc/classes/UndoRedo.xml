@@ -62,12 +62,11 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="add_do_method" qualifiers="vararg">
+		<method name="add_do_method">
 			<return type="void" />
-			<param index="0" name="object" type="Object" />
-			<param index="1" name="method" type="StringName" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
-				Register a [param method] that will be called when the action is committed.
+				Register a [Callable] that will be called when the action is committed.
 			</description>
 		</method>
 		<method name="add_do_property">
@@ -86,12 +85,11 @@
 				Register a reference for "do" that will be erased if the "do" history is lost. This is useful mostly for new nodes created for the "do" call. Do not use for resources.
 			</description>
 		</method>
-		<method name="add_undo_method" qualifiers="vararg">
+		<method name="add_undo_method">
 			<return type="void" />
-			<param index="0" name="object" type="Object" />
-			<param index="1" name="method" type="StringName" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
-				Register a [param method] that will be called when the action is undone.
+				Register a [Callable] that will be called when the action is undone.
 			</description>
 		</method>
 		<method name="add_undo_property">

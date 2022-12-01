@@ -39,7 +39,7 @@
 #include <mbedtls/ssl.h>
 
 class CryptoMbedTLS;
-class SSLContextMbedTLS;
+class TLSContextMbedTLS;
 class CryptoKeyMbedTLS : public CryptoKey {
 private:
 	mbedtls_pk_context pkey;
@@ -69,7 +69,7 @@ public:
 	_FORCE_INLINE_ void unlock() { locks--; }
 
 	friend class CryptoMbedTLS;
-	friend class SSLContextMbedTLS;
+	friend class TLSContextMbedTLS;
 };
 
 class X509CertificateMbedTLS : public X509Certificate {
@@ -98,7 +98,7 @@ public:
 	_FORCE_INLINE_ void unlock() { locks--; }
 
 	friend class CryptoMbedTLS;
-	friend class SSLContextMbedTLS;
+	friend class TLSContextMbedTLS;
 };
 
 class HMACContextMbedTLS : public HMACContext {

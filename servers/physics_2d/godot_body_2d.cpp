@@ -65,10 +65,10 @@ void GodotBody2D::update_mass_properties() {
 
 						real_t area = get_shape_aabb(i).get_area();
 
-						real_t mass = area * this->mass / total_area;
+						real_t mass_new = area * mass / total_area;
 
 						// NOTE: we assume that the shape origin is also its center of mass.
-						center_of_mass_local += mass * get_shape_transform(i).get_origin();
+						center_of_mass_local += mass_new * get_shape_transform(i).get_origin();
 					}
 
 					center_of_mass_local /= mass;
@@ -90,12 +90,12 @@ void GodotBody2D::update_mass_properties() {
 						continue;
 					}
 
-					real_t mass = area * this->mass / total_area;
+					real_t mass_new = area * mass / total_area;
 
 					Transform2D mtx = get_shape_transform(i);
 					Vector2 scale = mtx.get_scale();
 					Vector2 shape_origin = mtx.get_origin() - center_of_mass_local;
-					inertia += shape->get_moment_of_inertia(mass, scale) + mass * shape_origin.length_squared();
+					inertia += shape->get_moment_of_inertia(mass_new, scale) + mass_new * shape_origin.length_squared();
 				}
 			}
 
@@ -578,14 +578,14 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 				damp = 0;
 			}
 
-			real_t angular_damp = 1.0 - p_step * total_angular_damp;
+			real_t angular_damp_new = 1.0 - p_step * total_angular_damp;
 
-			if (angular_damp < 0) { // reached zero in the given time
-				angular_damp = 0;
+			if (angular_damp_new < 0) { // reached zero in the given time
+				angular_damp_new = 0;
 			}
 
 			linear_velocity *= damp;
-			angular_velocity *= angular_damp;
+			angular_velocity *= angular_damp_new;
 
 			linear_velocity += _inv_mass * force * p_step;
 			angular_velocity += _inv_inertia * torque * p_step;
@@ -615,7 +615,7 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 		return;
 	}
 
-	if (fi_callback_data || body_state_callback) {
+	if (fi_callback_data || body_state_callback.get_object()) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	}
 
@@ -673,11 +673,12 @@ void GodotBody2D::wakeup_neighbours() {
 }
 
 void GodotBody2D::call_queries() {
+	Variant direct_state_variant = get_direct_state();
+
 	if (fi_callback_data) {
 		if (!fi_callback_data->callable.get_object()) {
 			set_force_integration_callback(Callable());
 		} else {
-			Variant direct_state_variant = get_direct_state();
 			const Variant *vp[2] = { &direct_state_variant, &fi_callback_data->udata };
 
 			Callable::CallError ce;
@@ -691,8 +692,11 @@ void GodotBody2D::call_queries() {
 		}
 	}
 
-	if (body_state_callback) {
-		(body_state_callback)(body_state_callback_instance, get_direct_state());
+	if (body_state_callback.get_object()) {
+		const Variant *vp[1] = { &direct_state_variant };
+		Callable::CallError ce;
+		Variant rv;
+		body_state_callback.callp(vp, 1, rv, ce);
 	}
 }
 
@@ -713,9 +717,8 @@ bool GodotBody2D::sleep_test(real_t p_step) {
 	}
 }
 
-void GodotBody2D::set_state_sync_callback(void *p_instance, PhysicsServer2D::BodyStateCallback p_callback) {
-	body_state_callback_instance = p_instance;
-	body_state_callback = p_callback;
+void GodotBody2D::set_state_sync_callback(const Callable &p_callable) {
+	body_state_callback = p_callable;
 }
 
 void GodotBody2D::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {

@@ -33,6 +33,8 @@
 #include "collision_shape_3d.h"
 #include "core/core_string_names.h"
 #include "physics_body_3d.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_polygon_shape_3d.h"
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -224,7 +226,7 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 		return nullptr;
 	}
 
-	Ref<Shape3D> shape = mesh->create_trimesh_shape();
+	Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 	if (shape.is_null()) {
 		return nullptr;
 	}
@@ -254,7 +256,7 @@ Node *MeshInstance3D::create_convex_collision_node(bool p_clean, bool p_simplify
 		return nullptr;
 	}
 
-	Ref<Shape3D> shape = mesh->create_convex_shape(p_clean, p_simplify);
+	Ref<ConvexPolygonShape3D> shape = mesh->create_convex_shape(p_clean, p_simplify);
 	if (shape.is_null()) {
 		return nullptr;
 	}
@@ -346,9 +348,9 @@ Ref<Material> MeshInstance3D::get_surface_override_material(int p_surface) const
 }
 
 Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
-	Ref<Material> material_override = get_material_override();
-	if (material_override.is_valid()) {
-		return material_override;
+	Ref<Material> mat_override = get_material_override();
+	if (mat_override.is_valid()) {
+		return mat_override;
 	}
 
 	Ref<Material> surface_material = get_surface_override_material(p_surface);
@@ -356,9 +358,9 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 		return surface_material;
 	}
 
-	Ref<Mesh> mesh = get_mesh();
-	if (mesh.is_valid()) {
-		return mesh->surface_get_material(p_surface);
+	Ref<Mesh> m = get_mesh();
+	if (m.is_valid()) {
+		return m->surface_get_material(p_surface);
 	}
 
 	return Ref<Material>();
@@ -390,17 +392,17 @@ void MeshInstance3D::_mesh_changed() {
 	update_gizmos();
 }
 
-void MeshInstance3D::create_debug_tangents() {
+MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 	Vector<Vector3> lines;
 	Vector<Color> colors;
 
-	Ref<Mesh> mesh = get_mesh();
-	if (!mesh.is_valid()) {
-		return;
+	Ref<Mesh> m = get_mesh();
+	if (!m.is_valid()) {
+		return nullptr;
 	}
 
-	for (int i = 0; i < mesh->get_surface_count(); i++) {
-		Array arrays = mesh->surface_get_arrays(i);
+	for (int i = 0; i < m->get_surface_count(); i++) {
+		Array arrays = m->surface_get_arrays(i);
 		ERR_CONTINUE(arrays.size() != Mesh::ARRAY_MAX);
 
 		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
@@ -457,15 +459,23 @@ void MeshInstance3D::create_debug_tangents() {
 		MeshInstance3D *mi = memnew(MeshInstance3D);
 		mi->set_mesh(am);
 		mi->set_name("DebugTangents");
-		add_child(mi, true);
-#ifdef TOOLS_ENABLED
+		return mi;
+	}
 
-		if (is_inside_tree() && this == get_tree()->get_edited_scene_root()) {
-			mi->set_owner(this);
-		} else {
-			mi->set_owner(get_owner());
-		}
-#endif
+	return nullptr;
+}
+
+void MeshInstance3D::create_debug_tangents() {
+	MeshInstance3D *mi = create_debug_tangents_node();
+	if (!mi) {
+		return;
+	}
+
+	add_child(mi, true);
+	if (is_inside_tree() && this == get_tree()->get_edited_scene_root()) {
+		mi->set_owner(this);
+	} else {
+		mi->set_owner(get_owner());
 	}
 }
 
@@ -495,8 +505,6 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_shape_value", "blend_shape_idx", "value"), &MeshInstance3D::set_blend_shape_value);
 
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance3D::create_debug_tangents);
-	ClassDB::set_method_flags("MeshInstance3D", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_GROUP("Skeleton", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");

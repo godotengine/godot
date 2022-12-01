@@ -138,10 +138,10 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_home") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_home", true) && p_event->is_pressed()) {
 			set_value(get_min());
 			accept_event();
-		} else if (p_event->is_action("ui_end") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_end", true) && p_event->is_pressed()) {
 			set_value(get_max());
 			accept_event();
 		}
@@ -227,7 +227,7 @@ void Slider::_notification(int p_what) {
 						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
 					}
 				}
-				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2, size.height - ratio * areasize - grabber->get_size().height));
+				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2 + get_theme_constant(SNAME("grabber_offset")), size.height - ratio * areasize - grabber->get_size().height));
 			} else {
 				int widget_height = style->get_minimum_size().height + style->get_center_size().height;
 				double areasize = size.width - grabber->get_size().width;
@@ -245,7 +245,7 @@ void Slider::_notification(int p_what) {
 						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
 					}
 				}
-				grabber->draw(ci, Point2i(ratio * areasize, size.height / 2 - grabber->get_size().height / 2));
+				grabber->draw(ci, Point2i(ratio * areasize, size.height / 2 - grabber->get_size().height / 2 + get_theme_constant(SNAME("grabber_offset"))));
 			}
 		} break;
 	}

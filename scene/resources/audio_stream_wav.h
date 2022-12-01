@@ -64,14 +64,14 @@ class AudioStreamPlaybackWAV : public AudioStreamPlayback {
 	void do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &offset, int32_t &increment, uint32_t amount, IMA_ADPCM_State *ima_adpcm);
 
 public:
-	virtual void start(float p_from_pos = 0.0) override;
+	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
 	virtual bool is_playing() const override;
 
 	virtual int get_loop_count() const override; //times it looped
 
-	virtual float get_playback_position() const override;
-	virtual void seek(float p_time) override;
+	virtual double get_playback_position() const override;
+	virtual void seek(double p_time) override;
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
@@ -137,7 +137,7 @@ public:
 	void set_stereo(bool p_enable);
 	bool is_stereo() const;
 
-	virtual float get_length() const override; //if supported, otherwise return 0
+	virtual double get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
 

@@ -50,11 +50,13 @@
 #include "hb-ot-color-cbdt-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
+#include "hb-ot-var-fvar-table.hh"
 #include "hb-ot-var-gvar-table.hh"
 #include "hb-ot-var-hvar-table.hh"
 #include "hb-ot-math-table.hh"
 #include "hb-ot-stat-table.hh"
 #include "hb-repacker.hh"
+#include "hb-subset-accelerator.hh"
 
 using OT::Layout::GSUB;
 using OT::Layout::GPOS;
@@ -406,6 +408,27 @@ _passthrough (hb_subset_plan_t *plan, hb_tag_t tag)
 }
 
 static bool
+_dependencies_satisfied (hb_subset_plan_t *plan, hb_tag_t tag,
+                         hb_set_t &visited_set, hb_set_t &revisit_set)
+{
+  switch (tag)
+  {
+  case HB_OT_TAG_hmtx:
+  case HB_OT_TAG_vmtx:
+    if (!plan->pinned_at_default &&
+        !visited_set.has (HB_OT_TAG_glyf))
+    {
+      revisit_set.add (tag);
+      return false;
+    }
+    return true;
+
+  default:
+    return true;
+  }
+}
+
+static bool
 _subset_table (hb_subset_plan_t *plan,
 	       hb_vector_t<char> &buf,
 	       hb_tag_t tag)
@@ -454,6 +477,9 @@ _subset_table (hb_subset_plan_t *plan,
   case HB_OT_TAG_HVAR: return _subset<const OT::HVAR> (plan, buf);
   case HB_OT_TAG_VVAR: return _subset<const OT::VVAR> (plan, buf);
 #endif
+  case HB_OT_TAG_fvar:
+    if (plan->user_axes_location->is_empty ()) return _passthrough (plan, tag);
+    return _subset<const OT::fvar> (plan, buf);
   case HB_OT_TAG_STAT:
     /*TODO(qxliu): change the condition as we support more complex
      * instancing operation*/
@@ -467,6 +493,27 @@ _subset_table (hb_subset_plan_t *plan,
     // Drop table
     return true;
   }
+}
+
+static void _attach_accelerator_data (const hb_subset_plan_t* plan,
+                                      hb_face_t* face /* IN/OUT */)
+{
+  hb_subset_accelerator_t* accel =
+      hb_subset_accelerator_t::create (*plan->codepoint_to_glyph,
+                                       *plan->unicodes);
+
+  if (accel->in_error ())
+  {
+    hb_subset_accelerator_t::destroy (accel);
+    return;
+  }
+
+  if (!hb_face_set_user_data(face,
+                             hb_subset_accelerator_t::user_data_key(),
+                             accel,
+                             hb_subset_accelerator_t::destroy,
+                             true))
+    hb_subset_accelerator_t::destroy (accel);
 }
 
 /**
@@ -514,7 +561,7 @@ hb_subset_plan_execute_or_fail (hb_subset_plan_t *plan)
     return nullptr;
   }
 
-  hb_set_t tags_set;
+  hb_set_t tags_set, revisit_set;
   bool success = true;
   hb_tag_t table_tags[32];
   unsigned offset = 0, num_tables = ARRAY_LENGTH (table_tags);
@@ -527,11 +574,32 @@ hb_subset_plan_execute_or_fail (hb_subset_plan_t *plan)
     {
       hb_tag_t tag = table_tags[i];
       if (_should_drop_table (plan, tag) && !tags_set.has (tag)) continue;
+      if (!_dependencies_satisfied (plan, tag, tags_set, revisit_set)) continue;
       tags_set.add (tag);
       success = _subset_table (plan, buf, tag);
       if (unlikely (!success)) goto end;
     }
+
+    /*delayed subsetting for some tables since they might have dependency on other tables in some cases:
+    e.g: during instantiating glyf tables, hmetrics/vmetrics are updated and saved in subset plan,
+    hmtx/vmtx subsetting need to use these updated metrics values*/
+    while (!revisit_set.is_empty ())
+    {
+      hb_set_t revisit_temp;
+      for (hb_tag_t tag : revisit_set)
+      {
+        if (!_dependencies_satisfied (plan, tag, tags_set, revisit_temp)) continue;
+        tags_set.add (tag);
+        success = _subset_table (plan, buf, tag);
+        if (unlikely (!success)) goto end;
+      }
+      revisit_set = revisit_temp;
+    }
     offset += num_tables;
+  }
+
+  if (success && plan->attach_accelerator_data) {
+    _attach_accelerator_data (plan, plan->dest);
   }
 
 end:

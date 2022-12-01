@@ -27,7 +27,7 @@ __forceinline T sin(const T &v)
   // Reduced range version of x
   auto x = v - kReal * piOverTwoVec;
   auto kMod4 = k & 3;
-  auto sinUseCos = (kMod4 == 1 | kMod4 == 3);
+  auto sinUseCos = (kMod4 == 1) | (kMod4 == 3);
   auto flipSign = (kMod4 > 1);
 
   // These coefficients are from sollya with fpminimax(sin(x)/x, [|0, 2,
@@ -76,8 +76,8 @@ __forceinline T cos(const T &v)
   auto x = v - kReal * piOverTwoVec;
 
   auto kMod4 = k & 3;
-  auto cosUseCos = (kMod4 == 0 | kMod4 == 2);
-  auto flipSign = (kMod4 == 1 | kMod4 == 2);
+  auto cosUseCos = (kMod4 == 0) | (kMod4 == 2);
+  auto flipSign = (kMod4 == 1) | (kMod4 == 2);
 
   const float sinC2  = -0.16666667163372039794921875;
   const float sinC4  = +8.333347737789154052734375e-3;

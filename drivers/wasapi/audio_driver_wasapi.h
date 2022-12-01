@@ -83,13 +83,13 @@ class AudioDriverWASAPI : public AudioDriver {
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
 	static void thread_func(void *p_udata);
 
-	Error init_render_device(bool reinit = false);
-	Error init_capture_device(bool reinit = false);
+	Error init_render_device(bool p_reinit = false);
+	Error init_capture_device(bool p_reinit = false);
 
 	Error finish_render_device();
 	Error finish_capture_device();
 
-	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool reinit);
+	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool p_reinit, bool p_no_audio_client_3 = false);
 	Error audio_device_finish(AudioDeviceWASAPI *p_device);
 	PackedStringArray audio_device_get_list(bool p_capture);
 

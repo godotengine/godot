@@ -57,6 +57,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.ConfigurationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Sensor;
@@ -69,6 +70,7 @@ import android.os.Environment;
 import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -85,6 +87,8 @@ import android.widget.TextView;
 import androidx.annotation.CallSuper;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
@@ -105,6 +109,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class Godot extends Fragment implements SensorEventListener, IDownloaderClient {
+	private static final String TAG = Godot.class.getSimpleName();
+
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
 	private TextView mProgressFraction;
@@ -169,6 +175,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	public GodotIO io;
 	public GodotNetUtils netUtils;
 	public GodotTTS tts;
+	DirectoryAccessHandler directoryAccessHandler;
 
 	public interface ResultCallback {
 		void callback(int requestCode, int resultCode, Intent data);
@@ -250,7 +257,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	 * Used by the native code (java_godot_lib_jni.cpp) to complete initialization of the GLSurfaceView view and renderer.
 	 */
 	@Keep
-	private void onVideoInit() {
+	private boolean onVideoInit() {
 		final Activity activity = getActivity();
 		containerLayout = new FrameLayout(activity);
 		containerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -262,13 +269,17 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		// ...add to FrameLayout
 		containerLayout.addView(editText);
 
-		GodotLib.setup(command_line);
+		if (!GodotLib.setup(command_line)) {
+			Log.e(TAG, "Unable to setup the Godot engine! Aborting...");
+			alert(R.string.error_engine_setup_message, R.string.text_error_title, this::forceQuit);
+			return false;
+		}
 
-		final String videoDriver = GodotLib.getGlobal("rendering/driver/driver_name");
-		if (videoDriver.equals("vulkan")) {
-			mRenderView = new GodotVulkanRenderView(activity, this);
-		} else {
+		final String renderer = GodotLib.getGlobal("rendering/renderer/rendering_method");
+		if (renderer.equals("gl_compatibility")) {
 			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_debug_opengl);
+		} else {
+			mRenderView = new GodotVulkanRenderView(activity, this);
 		}
 
 		View view = mRenderView.getView();
@@ -289,7 +300,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 				plugin.onRegisterPluginWithGodotNative();
 			}
-			setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
+			setKeepScreenOn(Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
 		});
 
 		// Include the returned non-null views in the Godot view hierarchy.
@@ -303,6 +314,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				}
 			}
 		}
+		return true;
 	}
 
 	public void setKeepScreenOn(final boolean p_enabled) {
@@ -344,13 +356,27 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public void alert(final String message, final String title) {
+		alert(message, title, null);
+	}
+
+	private void alert(@StringRes int messageResId, @StringRes int titleResId, @Nullable Runnable okCallback) {
+		Resources res = getResources();
+		alert(res.getString(messageResId), res.getString(titleResId), okCallback);
+	}
+
+	private void alert(final String message, final String title, @Nullable Runnable okCallback) {
 		final Activity activity = getActivity();
 		runOnUiThread(() -> {
 			AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 			builder.setMessage(message).setTitle(title);
 			builder.setPositiveButton(
 					"OK",
-					(dialog, id) -> dialog.cancel());
+					(dialog, id) -> {
+						if (okCallback != null) {
+							okCallback.run();
+						}
+						dialog.cancel();
+					});
 			AlertDialog dialog = builder.create();
 			dialog.show();
 		});
@@ -463,7 +489,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		netUtils = new GodotNetUtils(activity);
 		tts = new GodotTTS(activity);
 		Context context = getContext();
-		DirectoryAccessHandler directoryAccessHandler = new DirectoryAccessHandler(context);
+		directoryAccessHandler = new DirectoryAccessHandler(context);
 		FileAccessHandler fileAccessHandler = new FileAccessHandler(context);
 		mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -471,7 +497,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
-		GodotLib.initialize(activity,
+		godot_initialized = GodotLib.initialize(activity,
 				this,
 				activity.getAssets(),
 				io,
@@ -482,8 +508,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				tts);
 
 		result_callback = null;
-
-		godot_initialized = true;
 	}
 
 	@Override
@@ -1023,7 +1047,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	@Keep
-	private GodotRenderView getRenderView() { // used by native side to get renderView
+	public GodotRenderView getRenderView() { // used by native side to get renderView
 		return mRenderView;
 	}
 

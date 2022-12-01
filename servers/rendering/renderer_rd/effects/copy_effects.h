@@ -63,6 +63,8 @@ private:
 		BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE,
 		BLUR_MODE_COPY,
 
+		BLUR_MODE_SET_COLOR,
+
 		BLUR_MODE_MAX
 	};
 
@@ -174,19 +176,28 @@ private:
 
 		COPY_TO_FB_MULTIVIEW,
 		COPY_TO_FB_MULTIVIEW_WITH_DEPTH,
+
+		COPY_TO_FB_SET_COLOR,
 		COPY_TO_FB_MAX,
+	};
+
+	enum CopyToFBFlags {
+		COPY_TO_FB_FLAG_FLIP_Y = (1 << 0),
+		COPY_TO_FB_FLAG_USE_SECTION = (1 << 1),
+		COPY_TO_FB_FLAG_FORCE_LUMINANCE = (1 << 2),
+		COPY_TO_FB_FLAG_ALPHA_TO_ZERO = (1 << 3),
+		COPY_TO_FB_FLAG_SRGB = (1 << 4),
+		COPY_TO_FB_FLAG_ALPHA_TO_ONE = (1 << 5),
+		COPY_TO_FB_FLAG_LINEAR = (1 << 6),
 	};
 
 	struct CopyToFbPushConstant {
 		float section[4];
 		float pixel_size[2];
-		uint32_t flip_y;
-		uint32_t use_section;
+		float luminance_multiplier;
+		uint32_t flags;
 
-		uint32_t force_luminance;
-		uint32_t alpha_to_zero;
-		uint32_t srgb;
-		uint32_t pad;
+		float set_color[4];
 	};
 
 	struct CopyToFb {
@@ -316,11 +327,12 @@ public:
 	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
 	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
-	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false);
+	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false, bool alpha_to_one = false, bool p_linear = false);
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
 	void copy_raster(RID p_source_texture, RID p_dest_framebuffer);
 
 	void gaussian_blur(RID p_source_rd_texture, RID p_texture, const Rect2i &p_region, bool p_8bit_dst = false);
+	void gaussian_blur_raster(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_region, const Size2i &p_size);
 	void gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_scale = 1.0);
 	void gaussian_glow_raster(RID p_source_rd_texture, RID p_half_texture, RID p_dest_texture, float p_luminance_multiplier, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_scale = 1.0);
 
@@ -328,6 +340,7 @@ public:
 	void make_mipmap_raster(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
 
 	void set_color(RID p_dest_texture, const Color &p_color, const Rect2i &p_region, bool p_8bit_dst = false);
+	void set_color_raster(RID p_dest_texture, const Color &p_color, const Rect2i &p_region);
 
 	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip);
 	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);

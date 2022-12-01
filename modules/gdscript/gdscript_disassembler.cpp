@@ -104,10 +104,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 		text += ": ";
 
 		// This makes the compiler complain if some opcode is unchecked in the switch.
-		Opcode code = Opcode(_code_ptr[ip] & INSTR_MASK);
+		Opcode opcode = Opcode(_code_ptr[ip] & INSTR_MASK);
 		int instr_var_args = (_code_ptr[ip] & INSTR_ARGS_MASK) >> INSTR_BITS;
 
-		switch (code) {
+		switch (opcode) {
 			case OPCODE_OPERATOR: {
 				int operation = _code_ptr[ip + 4];
 

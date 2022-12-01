@@ -44,12 +44,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 	}
 
 	for (int i = 0; i < p_amount; i++) {
-		RID texture = texture_storage->render_target_get_texture(p_render_targets[i].render_target);
-		ERR_CONTINUE(texture.is_null());
-		RID rd_texture = texture_storage->texture_get_rd_texture(texture);
+		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(rd_texture.is_null());
-
-		// TODO if keep_3d_linear was set when rendering to this render target we need to add a linear->sRGB conversion in.
 
 		if (!render_target_descriptors.has(rd_texture) || !RD::get_singleton()->uniform_set_is_valid(render_target_descriptors[rd_texture])) {
 			Vector<RD::Uniform> uniforms;
@@ -106,10 +102,8 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 }
 
 void RendererCompositorRD::end_frame(bool p_swap_buffers) {
-#ifndef _MSC_VER
-#warning TODO: likely pass a bool to swap buffers to avoid display?
-#endif
-	RD::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
+	// TODO: Likely pass a bool to swap buffers to avoid display?
+	RD::get_singleton()->swap_buffers();
 }
 
 void RendererCompositorRD::initialize() {
@@ -170,6 +164,10 @@ void RendererCompositorRD::finalize() {
 }
 
 void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+	if (p_image.is_null() || p_image->is_empty()) {
+		return;
+	}
+
 	RD::get_singleton()->prepare_screen_for_drawing();
 
 	RID texture = texture_storage->texture_allocate();
@@ -299,14 +297,19 @@ RendererCompositorRD::RendererCompositorRD() {
 	fog = memnew(RendererRD::Fog);
 	canvas = memnew(RendererCanvasRenderRD());
 
-	back_end = (bool)(int)GLOBAL_GET("rendering/vulkan/rendering/back_end");
+	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
 	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
-	if (back_end || textures_per_stage < 48) {
+	if (rendering_method == "mobile" || textures_per_stage < 48) {
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile());
-	} else { // back_end == false
+		if (rendering_method == "forward_plus") {
+			WARN_PRINT_ONCE("Platform supports less than 48 textures per stage which is less than required by the Clustered renderer. Defaulting to Mobile renderer.");
+		}
+	} else if (rendering_method == "forward_plus") {
 		// default to our high end renderer
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered());
+	} else {
+		ERR_FAIL_MSG("Cannot instantiate RenderingDevice-based renderer with renderer type " + rendering_method);
 	}
 
 	scene->init();

@@ -41,6 +41,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "main/main.h"
+#include "scene/gui/line_edit.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 
@@ -58,7 +59,7 @@ void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) 
 }
 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,
-		const HashMap<StringName, Variant> &p_options, int p_bake_fps,
+		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
 	// Get global paths for source and sink.
 
@@ -77,20 +78,19 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_arg += "export_extras=False,";
 	}
-	if (p_options.has(SNAME("blender/meshes/skins")) && p_options[SNAME("blender/meshes/skins")]) {
+	if (p_options.has(SNAME("blender/meshes/skins"))) {
 		int32_t skins = p_options["blender/meshes/skins"];
 		if (skins == BLEND_BONE_INFLUENCES_NONE) {
-			parameters_arg += "export_all_influences=False,";
+			parameters_arg += "export_skins=False,";
 		} else if (skins == BLEND_BONE_INFLUENCES_COMPATIBLE) {
-			parameters_arg += "export_all_influences=False,";
+			parameters_arg += "export_all_influences=False,export_skins=True,";
 		} else if (skins == BLEND_BONE_INFLUENCES_ALL) {
-			parameters_arg += "export_all_influences=True,";
+			parameters_arg += "export_all_influences=True,export_skins=True,";
 		}
-		parameters_arg += "export_skins=True,";
 	} else {
 		parameters_arg += "export_skins=False,";
 	}
-	if (p_options.has(SNAME("blender/materials/export_materials")) && p_options[SNAME("blender/materials/export_materials")]) {
+	if (p_options.has(SNAME("blender/materials/export_materials"))) {
 		int32_t exports = p_options["blender/materials/export_materials"];
 		if (exports == BLEND_MATERIAL_EXPORT_PLACEHOLDER) {
 			parameters_arg += "export_materials='PLACEHOLDER',";
@@ -115,7 +115,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_arg += "export_colors=False,";
 	}
-	if (p_options.has(SNAME("blender/nodes/visible")) && p_options[SNAME("blender/nodes/visible")]) {
+	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
 		if (visible == BLEND_VISIBLE_VISIBLE_ONLY) {
 			parameters_arg += "use_visible=True,";
@@ -180,13 +180,13 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 			"export_format='GLTF_SEPARATE',"
 			"export_yup=True," +
 			parameters_arg;
-	String script =
+	String export_script =
 			String("import bpy, sys;") +
 			"print('Blender 3.0 or higher is required.', file=sys.stderr) if bpy.app.version < (3, 0, 0) else None;" +
 			vformat("bpy.ops.wm.open_mainfile(filepath='%s');", source_global) +
 			unpack_all +
 			vformat("bpy.ops.export_scene.gltf(export_keep_originals=True,%s);", common_args);
-	print_verbose(script);
+	print_verbose(export_script);
 
 	// Run script with configured Blender binary.
 
@@ -201,7 +201,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	List<String> args;
 	args.push_back("--background");
 	args.push_back("--python-expr");
-	args.push_back(script);
+	args.push_back(export_script);
 
 	String standard_out;
 	int ret;
@@ -228,14 +228,14 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
 		base_dir = sink.get_base_dir();
 	}
-	Error err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, p_bake_fps, base_dir);
+	Error err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
 		}
 		return nullptr;
 	}
-	return gltf->generate_scene(state, p_bake_fps);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"]);
 }
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
@@ -261,7 +261,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 #define ADD_OPTION_ENUM(PATH, ENUM_HINT, VALUE) \
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
 
-	ADD_OPTION_ENUM("blender/nodes/visible", "Visible Only,Renderable,All", BLEND_VISIBLE_ALL);
+	ADD_OPTION_ENUM("blender/nodes/visible", "All,Visible Only,Renderable", BLEND_VISIBLE_ALL);
 	ADD_OPTION_BOOL("blender/nodes/punctual_lights", true);
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);
@@ -350,9 +350,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
 
-	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
-
-	if (blend_enabled && !_test_blender_path(blender_path)) {
+	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender3_path").operator String())) {
 		// Intending to import Blender, but blend not configured.
 		return true;
 	}

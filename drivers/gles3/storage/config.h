@@ -44,6 +44,10 @@
 #include OPENGL_INCLUDE_H
 #endif
 
+#ifdef ANDROID_ENABLED
+typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei);
+#endif
+
 namespace GLES3 {
 
 class Config {
@@ -52,17 +56,18 @@ private:
 
 public:
 	bool use_nearest_mip_filter = false;
-	bool use_skeleton_software = false;
 	bool use_depth_prepass = true;
-	bool use_rgba_2d_shadows = false;
 
 	int max_vertex_texture_image_units = 0;
 	int max_texture_image_units = 0;
 	int max_texture_size = 0;
+	int max_viewport_size[2] = { 0, 0 };
 	int max_uniform_buffer_size = 0;
 	int max_renderable_elements = 0;
 	int max_renderable_lights = 0;
 	int max_lights_per_object = 0;
+
+	int uniform_buffer_offset_alignment = 0;
 
 	// TODO implement wireframe in OpenGL
 	// bool generate_wireframes;
@@ -79,6 +84,11 @@ public:
 
 	bool support_anisotropic_filter = false;
 	float anisotropic_level = 0.0f;
+
+	bool multiview_supported = false;
+#ifdef ANDROID_ENABLED
+	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC eglFramebufferTextureMultiviewOVR = nullptr;
+#endif
 
 	static Config *get_singleton() { return singleton; };
 

@@ -7,7 +7,7 @@ env_gdscript = env_modules.Clone()
 
 env_gdscript.add_source_files(env.modules_sources, "*.cpp")
 
-if env["tools"]:
+if env.editor_build:
     env_gdscript.add_source_files(env.modules_sources, "./editor/*.cpp")
 
     SConscript("editor/script_templates/SCsub")

@@ -58,20 +58,20 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	bool has_check = false;
 
 	for (int i = 0; i < items.size(); i++) {
-		Size2 size;
+		Size2 item_size;
 
 		Size2 icon_size = items[i].get_icon_size();
-		size.height = _get_item_height(i);
+		item_size.height = _get_item_height(i);
 		icon_w = MAX(icon_size.width, icon_w);
 
-		size.width += items[i].indent * theme_cache.indent;
+		item_size.width += items[i].indent * theme_cache.indent;
 
 		if (items[i].checkable_type && !items[i].separator) {
 			has_check = true;
 		}
 
-		size.width += items[i].text_buf->get_size().x;
-		size.height += theme_cache.v_separation;
+		item_size.width += items[i].text_buf->get_size().x;
+		item_size.height += theme_cache.v_separation;
 
 		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
 			int accel_w = theme_cache.h_separation * 2;
@@ -80,12 +80,12 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		}
 
 		if (!items[i].submenu.is_empty()) {
-			size.width += theme_cache.submenu->get_width();
+			item_size.width += theme_cache.submenu->get_width();
 		}
 
-		max_w = MAX(max_w, size.width);
+		max_w = MAX(max_w, item_size.width);
 
-		minsize.height += size.height;
+		minsize.height += item_size.height;
 	}
 
 	int item_side_padding = theme_cache.item_start_padding + theme_cache.item_end_padding;
@@ -209,7 +209,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	if (p_by_keyboard) {
 		for (int i = 0; i < submenu_pum->get_item_count(); i++) {
 			if (!submenu_pum->is_item_disabled(i)) {
-				submenu_pum->set_current_index(i);
+				submenu_pum->set_focused_item(i);
 				break;
 			}
 		}
@@ -273,7 +273,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!items.is_empty()) {
-		if (p_event->is_action("ui_down") && p_event->is_pressed()) {
+		if (p_event->is_action("ui_down", true) && p_event->is_pressed()) {
 			int search_from = mouse_over + 1;
 			if (search_from >= items.size()) {
 				search_from = 0;
@@ -305,7 +305,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 					}
 				}
 			}
-		} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_up", true) && p_event->is_pressed()) {
 			int search_from = mouse_over - 1;
 			if (search_from < 0) {
 				search_from = items.size() - 1;
@@ -337,7 +337,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 					}
 				}
 			}
-		} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_left", true) && p_event->is_pressed()) {
 			Node *n = get_parent();
 			if (n) {
 				if (Object::cast_to<PopupMenu>(n)) {
@@ -349,7 +349,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 					return;
 				}
 			}
-		} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_right", true) && p_event->is_pressed()) {
 			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && !items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
 				_activate_submenu(mouse_over, true);
 				set_input_as_handled();
@@ -361,7 +361,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 					return;
 				}
 			}
-		} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
 			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
 				if (!items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
 					_activate_submenu(mouse_over, true);
@@ -472,7 +472,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 	if (allow_search && k.is_valid() && k->get_unicode() && k->is_pressed()) {
 		uint64_t now = OS::get_singleton()->get_ticks_msec();
 		uint64_t diff = now - search_time_msec;
-		uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000));
+		uint64_t max_interval = uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"));
 		search_time_msec = now;
 
 		if (diff > max_interval) {
@@ -558,7 +558,7 @@ void PopupMenu::_draw_items() {
 		check_ofs += theme_cache.h_separation;
 	}
 
-	Point2 ofs = Point2();
+	Point2 ofs;
 
 	// Loop through all items and draw each.
 	for (int i = 0; i < items.size(); i++) {
@@ -1547,7 +1547,7 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 	return items[p_idx].shortcut_is_disabled;
 }
 
-void PopupMenu::set_current_index(int p_idx) {
+void PopupMenu::set_focused_item(int p_idx) {
 	if (p_idx != -1) {
 		ERR_FAIL_INDEX(p_idx, items.size());
 	}
@@ -1564,7 +1564,7 @@ void PopupMenu::set_current_index(int p_idx) {
 	control->queue_redraw();
 }
 
-int PopupMenu::get_current_index() const {
+int PopupMenu::get_focused_item() const {
 	return mouse_over;
 }
 
@@ -1762,7 +1762,7 @@ void PopupMenu::clear() {
 void PopupMenu::_ref_shortcut(Ref<Shortcut> p_sc) {
 	if (!shortcut_refcount.has(p_sc)) {
 		shortcut_refcount[p_sc] = 1;
-		p_sc->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		p_sc->connect("changed", callable_mp(this, &PopupMenu::_shortcut_changed));
 	} else {
 		shortcut_refcount[p_sc] += 1;
 	}
@@ -1772,9 +1772,16 @@ void PopupMenu::_unref_shortcut(Ref<Shortcut> p_sc) {
 	ERR_FAIL_COND(!shortcut_refcount.has(p_sc));
 	shortcut_refcount[p_sc]--;
 	if (shortcut_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		p_sc->disconnect("changed", callable_mp(this, &PopupMenu::_shortcut_changed));
 		shortcut_refcount.erase(p_sc);
 	}
+}
+
+void PopupMenu::_shortcut_changed() {
+	for (int i = 0; i < items.size(); i++) {
+		items.write[i].dirty = true;
+	}
+	control->queue_redraw();
 }
 
 // Hide on item selection determines whether or not the popup will close after item selection
@@ -2057,8 +2064,8 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "index"), &PopupMenu::get_item_shortcut);
 	ClassDB::bind_method(D_METHOD("get_item_indent", "index"), &PopupMenu::get_item_indent);
 
-	ClassDB::bind_method(D_METHOD("set_current_index", "index"), &PopupMenu::set_current_index);
-	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);
+	ClassDB::bind_method(D_METHOD("set_focused_item", "index"), &PopupMenu::set_focused_item);
+	ClassDB::bind_method(D_METHOD("get_focused_item"), &PopupMenu::get_focused_item);
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &PopupMenu::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &PopupMenu::get_item_count);
 

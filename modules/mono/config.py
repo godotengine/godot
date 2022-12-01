@@ -4,23 +4,13 @@ supported_platforms = ["windows", "macos", "linuxbsd"]
 
 
 def can_build(env, platform):
-    return not env["arch"].startswith("rv")
+    if env["arch"].startswith("rv"):
+        return False
 
+    if env.editor_build:
+        env.module_add_dependencies("mono", ["regex"])
 
-def get_opts(platform):
-    from SCons.Variables import BoolVariable, PathVariable
-
-    default_mono_static = platform in ["ios", "web"]
-    default_mono_bundles_zlib = platform in ["web"]
-
-    return [
-        PathVariable(
-            "dotnet_root",
-            "Path to the .NET Sdk installation directory for the target platform and architecture",
-            "",
-            PathVariable.PathAccept,
-        ),
-    ]
+    return True
 
 
 def configure(env):

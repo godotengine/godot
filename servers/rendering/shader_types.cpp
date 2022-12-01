@@ -86,8 +86,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].main_function = true;
 
 	//builtins
-	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["MODEL_MATRIX"] = ShaderLanguage::TYPE_MAT4;
-	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["MODEL_NORMAL_MATRIX"] = ShaderLanguage::TYPE_MAT3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["MODEL_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["MODEL_NORMAL_MATRIX"] = constt(ShaderLanguage::TYPE_MAT3);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["INV_VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["PROJECTION_MATRIX"] = ShaderLanguage::TYPE_MAT4;
@@ -297,6 +297,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["SPECULAR_SHININESS"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_POSITION"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_DIRECTION"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_ENERGY"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_IS_DIRECTIONAL"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_VERTEX"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["SHADOW_MODULATE"] = ShaderLanguage::TYPE_VEC4;
@@ -340,6 +343,11 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["INDEX"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["EMISSION_TRANSFORM"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["RANDOM_SEED"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["FLAG_EMIT_POSITION"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["FLAG_EMIT_ROT_SCALE"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["FLAG_EMIT_VELOCITY"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["FLAG_EMIT_COLOR"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["FLAG_EMIT_CUSTOM"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["RESTART_POSITION"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["RESTART_ROT_SCALE"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["RESTART_VELOCITY"] = constt(ShaderLanguage::TYPE_BOOL);
@@ -385,6 +393,7 @@ ShaderTypes::ShaderTypes() {
 		emit_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("custom", ShaderLanguage::TYPE_VEC4));
 		emit_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("flags", ShaderLanguage::TYPE_UINT));
 		emit_vertex_func.return_type = ShaderLanguage::TYPE_BOOL; //whether it could emit
+		shader_modes[RS::SHADER_PARTICLES].functions["start"].stage_functions["emit_subparticle"] = emit_vertex_func;
 		shader_modes[RS::SHADER_PARTICLES].functions["process"].stage_functions["emit_subparticle"] = emit_vertex_func;
 	}
 
@@ -444,6 +453,7 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("use_half_res_pass") });
 		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("use_quarter_res_pass") });
 		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("disable_fog") });
+		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("use_debanding") });
 	}
 
 	/************ FOG **************************/

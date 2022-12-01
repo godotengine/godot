@@ -87,6 +87,14 @@
 			The global offset of all sub-nodes.
 		</member>
 	</members>
+	<signals>
+		<signal name="node_changed">
+			<param index="0" name="node_name" type="StringName" />
+			<description>
+				Emitted when the input port information is changed.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="CONNECTION_OK" value="0">
 			The connection was successful.

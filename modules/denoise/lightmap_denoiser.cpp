@@ -51,7 +51,7 @@ Ref<Image> LightmapDenoiserOIDN::denoise_image(const Ref<Image> &p_image) {
 		return p_image;
 	}
 
-	img->create(img->get_width(), img->get_height(), false, img->get_format(), data);
+	img->set_data(img->get_width(), img->get_height(), false, img->get_format(), data);
 	return img;
 }
 

@@ -37,11 +37,11 @@ class NavigationLink2D : public Node2D {
 	GDCLASS(NavigationLink2D, Node2D);
 
 	bool enabled = true;
-	RID link = RID();
+	RID link;
 	bool bidirectional = true;
 	uint32_t navigation_layers = 1;
-	Vector2 end_location = Vector2();
-	Vector2 start_location = Vector2();
+	Vector2 end_location;
+	Vector2 start_location;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
 
@@ -79,7 +79,7 @@ public:
 	void set_travel_cost(real_t p_travel_cost);
 	real_t get_travel_cost() const { return travel_cost; }
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	NavigationLink2D();
 	~NavigationLink2D();

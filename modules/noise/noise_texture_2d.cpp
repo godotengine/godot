@@ -152,33 +152,31 @@ Ref<Image> NoiseTexture2D::_generate_texture() {
 		return Ref<Image>();
 	}
 
-	Ref<Image> image;
+	Ref<Image> new_image;
 
 	if (seamless) {
-		image = ref_noise->get_seamless_image(size.x, size.y, invert, in_3d_space, seamless_blend_skirt);
+		new_image = ref_noise->get_seamless_image(size.x, size.y, invert, in_3d_space, seamless_blend_skirt);
 	} else {
-		image = ref_noise->get_image(size.x, size.y, invert, in_3d_space);
+		new_image = ref_noise->get_image(size.x, size.y, invert, in_3d_space);
 	}
 	if (color_ramp.is_valid()) {
-		image = _modulate_with_gradient(image, color_ramp);
+		new_image = _modulate_with_gradient(new_image, color_ramp);
 	}
 	if (as_normal_map) {
-		image->bump_map_to_normal_map(bump_strength);
+		new_image->bump_map_to_normal_map(bump_strength);
 	}
 	if (generate_mipmaps) {
-		image->generate_mipmaps();
+		new_image->generate_mipmaps();
 	}
 
-	return image;
+	return new_image;
 }
 
 Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient) {
 	int width = p_image->get_width();
 	int height = p_image->get_height();
 
-	Ref<Image> new_image;
-	new_image.instantiate();
-	new_image->create(width, height, false, Image::FORMAT_RGBA8);
+	Ref<Image> new_image = Image::create_empty(width, height, false, Image::FORMAT_RGBA8);
 
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
@@ -197,9 +195,6 @@ void NoiseTexture2D::_update_texture() {
 		use_thread = false;
 		first_time = false;
 	}
-#ifdef NO_THREADS
-	use_thread = false;
-#endif
 	if (use_thread) {
 		if (!noise_thread.is_started()) {
 			noise_thread.start(_thread_function, this);
@@ -209,8 +204,8 @@ void NoiseTexture2D::_update_texture() {
 		}
 
 	} else {
-		Ref<Image> image = _generate_texture();
-		_set_texture_image(image);
+		Ref<Image> new_image = _generate_texture();
+		_set_texture_image(new_image);
 	}
 	update_queued = false;
 }

@@ -186,6 +186,7 @@ void main() {
 	uv += pixel_size * 0.5; //half pixel to read centers
 
 	vec4 color = texture(color_texture, uv);
+	float initial_blur = color.a;
 	float accum = 1.0;
 	float radius = params.blur_scale;
 
@@ -193,8 +194,8 @@ void main() {
 		vec2 suv = uv + vec2(cos(ang), sin(ang)) * pixel_size * radius;
 		vec4 sample_color = texture(color_texture, suv);
 		float sample_size = abs(sample_color.a);
-		if (sample_color.a > color.a) {
-			sample_size = clamp(sample_size, 0.0, abs(color.a) * 2.0);
+		if (sample_color.a > initial_blur) {
+			sample_size = clamp(sample_size, 0.0, abs(initial_blur) * 2.0);
 		}
 
 		float m = smoothstep(radius - 0.5, radius + 0.5, sample_size);

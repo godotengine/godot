@@ -66,6 +66,7 @@ class DisplayServerAndroid : public DisplayServer {
 	MouseMode mouse_mode = MouseMode::MOUSE_MODE_VISIBLE;
 
 	bool keep_screen_on;
+	bool swap_buffers_flag;
 
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
@@ -188,13 +189,15 @@ public:
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
 
+	void _cursor_set_shape_helper(CursorShape p_shape, bool force = false);
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_android_driver();
 
@@ -204,7 +207,14 @@ public:
 	virtual Point2i mouse_get_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 
-	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	void reset_swap_buffers_flag();
+	bool should_swap_buffers() const;
+	virtual void swap_buffers() override;
+
+	virtual void set_native_icon(const String &p_filename) override;
+	virtual void set_icon(const Ref<Image> &p_icon) override;
+
+	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerAndroid();
 };
 

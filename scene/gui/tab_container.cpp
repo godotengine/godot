@@ -345,7 +345,7 @@ Vector<Control *> TabContainer::_get_tab_controls() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_set_as_top_level() || control == tab_bar || control == child_removing) {
+		if (!control || control->is_set_as_top_level() || control == tab_bar || children_removing.has(control)) {
 			continue;
 		}
 
@@ -519,11 +519,11 @@ void TabContainer::_refresh_tab_names() {
 }
 
 void TabContainer::add_child_notify(Node *p_child) {
+	Container::add_child_notify(p_child);
+
 	if (p_child == tab_bar) {
 		return;
 	}
-
-	Container::add_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (!c || c->is_set_as_top_level()) {
@@ -584,10 +584,10 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	int idx = get_tab_idx_from_control(c);
 
-	// Before this, the tab control has not changed; after this, the tab control has changed.
-	child_removing = p_child;
+	// As the child hasn't been removed yet, keep track of it so when the "tab_changed" signal is fired it can be ignored.
+	children_removing.push_back(c);
 	tab_bar->remove_tab(idx);
-	child_removing = nullptr;
+	children_removing.erase(c);
 
 	_update_margins();
 	if (get_tab_count() == 0) {
@@ -838,7 +838,7 @@ Size2 TabContainer::get_minimum_size() const {
 	}
 
 	Vector<Control *> controls = _get_tab_controls();
-	int max_control_height = 0;
+	Size2 largest_child_min_size;
 	for (int i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
@@ -847,13 +847,14 @@ Size2 TabContainer::get_minimum_size() const {
 		}
 
 		Size2 cms = c->get_combined_minimum_size();
-		ms.x = MAX(ms.x, cms.x);
-		max_control_height = MAX(max_control_height, cms.y);
+		largest_child_min_size.x = MAX(largest_child_min_size.x, cms.x);
+		largest_child_min_size.y = MAX(largest_child_min_size.y, cms.y);
 	}
-	ms.y += max_control_height;
+	ms.y += largest_child_min_size.y;
 
 	Size2 panel_ms = theme_cache.panel_style->get_minimum_size();
-	ms.x = MAX(ms.x, panel_ms.x);
+
+	ms.x = MAX(ms.x, largest_child_min_size.x + panel_ms.x);
 	ms.y += panel_ms.y;
 
 	return ms;

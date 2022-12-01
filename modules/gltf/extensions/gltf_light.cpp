@@ -109,6 +109,7 @@ void GLTFLight::set_outer_cone_angle(float p_outer_cone_angle) {
 Ref<GLTFLight> GLTFLight::from_node(const Light3D *p_light) {
 	Ref<GLTFLight> l;
 	l.instantiate();
+	ERR_FAIL_COND_V_MSG(!p_light, l, "Tried to create a GLTFLight from a Light3D node, but the given node was null.");
 	l->color = p_light->get_color();
 	if (cast_to<DirectionalLight3D>(p_light)) {
 		l->light_type = "directional";
@@ -141,18 +142,17 @@ Light3D *GLTFLight::to_node() const {
 		light->set_color(color);
 		return light;
 	}
-	const float range = CLAMP(this->range, 0, 4096);
 	if (light_type == "point") {
 		OmniLight3D *light = memnew(OmniLight3D);
 		light->set_param(OmniLight3D::PARAM_ENERGY, intensity);
-		light->set_param(OmniLight3D::PARAM_RANGE, range);
+		light->set_param(OmniLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
 		light->set_color(color);
 		return light;
 	}
 	if (light_type == "spot") {
 		SpotLight3D *light = memnew(SpotLight3D);
 		light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
-		light->set_param(SpotLight3D::PARAM_RANGE, range);
+		light->set_param(SpotLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
 		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad_to_deg(outer_cone_angle));
 		light->set_color(color);
 		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b

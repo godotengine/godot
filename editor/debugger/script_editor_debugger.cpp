@@ -37,7 +37,6 @@
 #include "core/string/ustring.h"
 #include "core/version.h"
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
-#include "editor/debugger/editor_network_profiler.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
@@ -47,6 +46,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -54,6 +54,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -317,7 +318,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (!error.is_empty()) {
 			tabs->set_current_tab(0);
 		}
-		profiler->set_enabled(false);
+		profiler->set_enabled(false, false);
 		inspector->clear_cache(); // Take a chance to force remote objects update.
 
 	} else if (p_msg == "debug_exit") {
@@ -327,7 +328,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		_update_buttons_state();
 		_set_reason_text(TTR("Execution resumed."), MESSAGE_SUCCESS);
 		emit_signal(SNAME("breaked"), false, false, "", false);
-		profiler->set_enabled(true);
+		profiler->set_enabled(true, false);
 		profiler->disable_seeking();
 	} else if (p_msg == "set_pid") {
 		ERR_FAIL_COND(p_data.size() < 1);
@@ -714,17 +715,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			profiler->add_frame_metric(metric, true);
 		}
 
-	} else if (p_msg == "multiplayer:rpc") {
-		SceneDebugger::RPCProfilerFrame frame;
-		frame.deserialize(p_data);
-		for (int i = 0; i < frame.infos.size(); i++) {
-			network_profiler->add_node_frame_data(frame.infos[i]);
-		}
-
-	} else if (p_msg == "multiplayer:bandwidth") {
-		ERR_FAIL_COND(p_data.size() < 2);
-		network_profiler->set_bandwidth(p_data[0], p_data[1]);
-
 	} else if (p_msg == "request_quit") {
 		emit_signal(SNAME("stop_requested"));
 		_stop_and_notify();
@@ -742,22 +732,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		int colon_index = p_msg.find_char(':');
 		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
 
-		bool parsed = false;
-		const String cap = p_msg.substr(0, colon_index);
-		HashMap<StringName, Callable>::Iterator element = captures.find(cap);
-		if (element) {
-			Callable &c = element->value;
-			ERR_FAIL_COND_MSG(c.is_null(), "Invalid callable registered: " + cap);
-			Variant cmd = p_msg.substr(colon_index + 1), data = p_data;
-			const Variant *args[2] = { &cmd, &data };
-			Variant retval;
-			Callable::CallError err;
-			c.callp(args, 2, retval, err);
-			ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(c, args, 2, err));
-			ERR_FAIL_COND_MSG(retval.get_type() != Variant::BOOL, "Error calling 'capture' to callable: " + String(c) + ". Return type is not bool.");
-			parsed = retval;
-		}
-
+		bool parsed = EditorDebuggerNode::get_singleton()->plugins_capture(this, p_msg, p_data);
 		if (!parsed) {
 			WARN_PRINT("unknown message " + p_msg);
 		}
@@ -896,9 +871,9 @@ void ScriptEditorDebugger::_clear_execution() {
 }
 
 void ScriptEditorDebugger::_set_breakpoint(const String &p_file, const int &p_line, const bool &p_enabled) {
-	Ref<Script> script = ResourceLoader::load(p_file);
-	emit_signal(SNAME("set_breakpoint"), script, p_line - 1, p_enabled);
-	script.unref();
+	Ref<Script> scr = ResourceLoader::load(p_file);
+	emit_signal(SNAME("set_breakpoint"), scr, p_line - 1, p_enabled);
+	scr.unref();
 }
 
 void ScriptEditorDebugger::_clear_breakpoints() {
@@ -915,6 +890,8 @@ void ScriptEditorDebugger::_breakpoint_tree_clicked() {
 void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	_clear_errors_list();
 	stop();
+
+	profiler->set_enabled(true, true);
 
 	peer = p_peer;
 	ERR_FAIL_COND(p_peer.is_null());
@@ -971,20 +948,18 @@ void ScriptEditorDebugger::stop() {
 	res_path_cache.clear();
 	profiler_signature.clear();
 
+	profiler->set_enabled(true, false);
+
 	inspector->edit(nullptr);
 	_update_buttons_state();
 }
 
 void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
-	Array data;
-	data.push_back(p_enable);
+	Array msg_data;
+	msg_data.push_back(p_enable);
 	switch (p_type) {
-		case PROFILER_NETWORK:
-			_put_msg("profiler:multiplayer", data);
-			_put_msg("profiler:rpc", data);
-			break;
 		case PROFILER_VISUAL:
-			_put_msg("profiler:visual", data);
+			_put_msg("profiler:visual", msg_data);
 			break;
 		case PROFILER_SCRIPTS_SERVERS:
 			if (p_enable) {
@@ -992,11 +967,11 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 				profiler_signature.clear();
 				// Add max funcs options to request.
 				Array opts;
-				int max_funcs = EditorSettings::get_singleton()->get("debugger/profiler_frame_max_functions");
+				int max_funcs = EDITOR_GET("debugger/profiler_frame_max_functions");
 				opts.push_back(CLAMP(max_funcs, 16, 512));
-				data.push_back(opts);
+				msg_data.push_back(opts);
 			}
-			_put_msg("profiler:servers", data);
+			_put_msg("profiler:servers", msg_data);
 			break;
 		default:
 			ERR_FAIL_MSG("Invalid profiler type");
@@ -1280,13 +1255,13 @@ void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, cons
 	}
 }
 
-void ScriptEditorDebugger::live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
+void ScriptEditorDebugger::live_debug_instantiate_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_parent);
 		msg.push_back(p_path);
 		msg.push_back(p_name);
-		_put_msg("scene:live_instance_node", msg);
+		_put_msg("scene:live_instantiate_node", msg);
 	}
 }
 
@@ -1542,8 +1517,22 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 				ti = ti->get_parent();
 			}
 
-			// We only need the first child here (C++ source stack trace).
+			// Find the child with the "C++ Source".
+			// It's not at a fixed position as "C++ Error" may come first.
 			TreeItem *ci = ti->get_first_child();
+			const String cpp_source = "<" + TTR("C++ Source") + ">";
+			while (ci) {
+				if (ci->get_text(0) == cpp_source) {
+					break;
+				}
+				ci = ci->get_next();
+			}
+
+			if (!ci) {
+				WARN_PRINT_ED("No C++ source reference is available for this error.");
+				return;
+			}
+
 			// Parse back the `file:line @ method()` string.
 			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
@@ -1591,7 +1580,7 @@ void ScriptEditorDebugger::_tab_changed(int p_tab) {
 
 void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("live_debug_create_node"), &ScriptEditorDebugger::live_debug_create_node);
-	ClassDB::bind_method(D_METHOD("live_debug_instance_node"), &ScriptEditorDebugger::live_debug_instance_node);
+	ClassDB::bind_method(D_METHOD("live_debug_instantiate_node"), &ScriptEditorDebugger::live_debug_instantiate_node);
 	ClassDB::bind_method(D_METHOD("live_debug_remove_node"), &ScriptEditorDebugger::live_debug_remove_node);
 	ClassDB::bind_method(D_METHOD("live_debug_remove_and_keep_node"), &ScriptEditorDebugger::live_debug_remove_and_keep_node);
 	ClassDB::bind_method(D_METHOD("live_debug_restore_node"), &ScriptEditorDebugger::live_debug_restore_node);
@@ -1623,41 +1612,25 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("errors_cleared"));
 }
 
-void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {
-	if (!debugger_plugins.has(p_script)) {
-		EditorDebuggerPlugin *plugin = memnew(EditorDebuggerPlugin());
-		plugin->attach_debugger(this);
-		plugin->set_script(p_script);
-		tabs->add_child(plugin);
-		debugger_plugins.insert(p_script, plugin);
-	}
+void ScriptEditorDebugger::add_debugger_tab(Control *p_control) {
+	tabs->add_child(p_control);
 }
 
-void ScriptEditorDebugger::remove_debugger_plugin(const Ref<Script> &p_script) {
-	if (debugger_plugins.has(p_script)) {
-		tabs->remove_child(debugger_plugins[p_script]);
-		debugger_plugins[p_script]->detach_debugger(false);
-		memdelete(debugger_plugins[p_script]);
-		debugger_plugins.erase(p_script);
-	}
+void ScriptEditorDebugger::remove_debugger_tab(Control *p_control) {
+	int idx = tabs->get_tab_idx_from_control(p_control);
+	ERR_FAIL_COND(idx < 0);
+	p_control->queue_free();
 }
 
 void ScriptEditorDebugger::send_message(const String &p_message, const Array &p_args) {
 	_put_msg(p_message, p_args);
 }
 
-void ScriptEditorDebugger::register_message_capture(const StringName &p_name, const Callable &p_callable) {
-	ERR_FAIL_COND_MSG(has_capture(p_name), "Capture already registered: " + p_name);
-	captures.insert(p_name, p_callable);
-}
-
-void ScriptEditorDebugger::unregister_message_capture(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(!has_capture(p_name), "Capture not registered: " + p_name);
-	captures.erase(p_name);
-}
-
-bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
-	return captures.has(p_name);
+void ScriptEditorDebugger::toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data) {
+	Array msg_data;
+	msg_data.push_back(p_enable);
+	msg_data.append_array(p_data);
+	_put_msg("profiler:" + p_profiler, msg_data);
 }
 
 ScriptEditorDebugger::ScriptEditorDebugger() {
@@ -1666,6 +1639,8 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	add_child(tabs);
+
+	InspectorDock::get_inspector_singleton()->connect("object_id_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
@@ -1867,13 +1842,6 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		visual_profiler->set_name(TTR("Visual Profiler"));
 		tabs->add_child(visual_profiler);
 		visual_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_VISUAL));
-	}
-
-	{ //network profiler
-		network_profiler = memnew(EditorNetworkProfiler);
-		network_profiler->set_name(TTR("Network Profiler"));
-		tabs->add_child(network_profiler);
-		network_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_NETWORK));
 	}
 
 	{ //monitors

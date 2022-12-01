@@ -42,7 +42,7 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 #else
 		Key key = Key::CTRL;
 #endif
-		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers. Hold Shift for more precise changes."), find_keycode_name(key));
+		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
 	}
 	return TS->format_number(rtos(get_value()));
 }
@@ -121,7 +121,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					pre_grab_value = get_max();
 				}
 
-				if (mm->is_command_pressed()) {
+				if (mm->is_command_or_control_pressed()) {
 					// If control was just pressed, don't make the value do a huge jump in magnitude.
 					if (grabbing_spinner_dist_cache != 0) {
 						pre_grab_value += grabbing_spinner_dist_cache * get_step();
@@ -143,7 +143,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && k->is_action("ui_accept")) {
+	if (k.is_valid() && k->is_pressed() && k->is_action("ui_accept", true)) {
 		_focus_entered();
 	}
 }
@@ -398,7 +398,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
-		bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+		bool display_grabber = (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
 		if (grabber->is_visible() != display_grabber) {
 			if (display_grabber) {
 				grabber->show();
@@ -619,11 +619,9 @@ bool EditorSpinSlider::is_grabbing() const {
 
 void EditorSpinSlider::_focus_entered() {
 	_ensure_input_popup();
-	Rect2 gr = get_screen_rect();
 	value_input->set_text(get_text_value());
-	value_input_popup->set_position(gr.position);
-	value_input_popup->set_size(gr.size);
-	value_input_popup->call_deferred(SNAME("popup"));
+	value_input_popup->set_size(get_size());
+	value_input_popup->call_deferred(SNAME("show"));
 	value_input->call_deferred(SNAME("grab_focus"));
 	value_input->call_deferred(SNAME("select_all"));
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
@@ -658,14 +656,13 @@ void EditorSpinSlider::_ensure_input_popup() {
 		return;
 	}
 
-	value_input_popup = memnew(Popup);
+	value_input_popup = memnew(Control);
 	add_child(value_input_popup);
 
 	value_input = memnew(LineEdit);
 	value_input_popup->add_child(value_input);
-	value_input_popup->set_wrap_controls(true);
 	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
+	value_input_popup->connect("hidden", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect("gui_input", callable_mp(this, &EditorSpinSlider::_value_input_gui_input));

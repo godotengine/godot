@@ -38,8 +38,6 @@
 #include "core/templates/command_queue_mt.h"
 #include "tests/test_macros.h"
 
-#if !defined(NO_THREADS)
-
 namespace TestCommandQueue {
 
 class ThreadWork {
@@ -425,7 +423,5 @@ TEST_CASE("[Stress][CommandQueue] Stress test command queue") {
 			ProjectSettings::get_singleton()->property_get_revert(COMMAND_QUEUE_SETTING));
 }
 } // namespace TestCommandQueue
-
-#endif // !defined(NO_THREADS)
 
 #endif // TEST_COMMAND_QUEUE_H

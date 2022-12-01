@@ -37,6 +37,8 @@
 
 //@ TODO, excellent candidate for THREAD_SAFE MACRO, should go through all these and add THREAD_SAFE where it applies
 class DirAccess : public RefCounted {
+	GDCLASS(DirAccess, RefCounted);
+
 public:
 	enum AccessType {
 		ACCESS_RESOURCES,
@@ -50,10 +52,18 @@ public:
 private:
 	AccessType _access_type = ACCESS_FILESYSTEM;
 	static CreateFunc create_func[ACCESS_MAX]; ///< set this to instance a filesystem object
+	static Ref<DirAccess> _open(const String &p_path);
 
 	Error _copy_dir(Ref<DirAccess> &p_target_da, String p_to, int p_chmod_flags, bool p_copy_links);
+	PackedStringArray _get_contents(bool p_directories);
+
+	thread_local static Error last_dir_open_error;
+	bool include_navigational = false;
+	bool include_hidden = false;
 
 protected:
+	static void _bind_methods();
+
 	String _get_root_path() const;
 	virtual String _get_root_string() const;
 
@@ -118,6 +128,7 @@ public:
 	static Ref<DirAccess> create_for_path(const String &p_path);
 
 	static Ref<DirAccess> create(AccessType p_access);
+	static Error get_open_error();
 
 	template <class T>
 	static void make_default(AccessType p_access) {
@@ -125,6 +136,28 @@ public:
 	}
 
 	static Ref<DirAccess> open(const String &p_path, Error *r_error = nullptr);
+
+	static int _get_drive_count();
+	static String get_drive_name(int p_idx);
+
+	static Error make_dir_absolute(const String &p_dir);
+	static Error make_dir_recursive_absolute(const String &p_dir);
+	static bool dir_exists_absolute(const String &p_dir);
+
+	static Error copy_absolute(const String &p_from, const String &p_to, int p_chmod_flags = -1);
+	static Error rename_absolute(const String &p_from, const String &p_to);
+	static Error remove_absolute(const String &p_path);
+
+	PackedStringArray get_files();
+	static PackedStringArray get_files_at(const String &p_path);
+	PackedStringArray get_directories();
+	static PackedStringArray get_directories_at(const String &p_path);
+	String _get_next();
+
+	void set_include_navigational(bool p_enable);
+	bool get_include_navigational() const;
+	void set_include_hidden(bool p_enable);
+	bool get_include_hidden() const;
 
 	DirAccess() {}
 	virtual ~DirAccess() {}

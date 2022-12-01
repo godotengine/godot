@@ -38,6 +38,8 @@ class String;
 struct Vector2;
 
 struct _NO_DISCARD_ Vector2i {
+	static const int AXIS_COUNT = 2;
+
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
@@ -115,8 +117,9 @@ struct _NO_DISCARD_ Vector2i {
 
 	real_t aspect() const { return width / (real_t)height; }
 	Vector2i sign() const { return Vector2i(SIGN(x), SIGN(y)); }
-	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
+	Vector2i abs() const { return Vector2i(Math::abs(x), Math::abs(y)); }
 	Vector2i clamp(const Vector2i &p_min, const Vector2i &p_max) const;
+	Vector2i snapped(const Vector2i &p_step) const;
 
 	operator String() const;
 	operator Vector2() const;

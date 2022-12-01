@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "animation_node_state_machine.h"
+#include "scene/main/window.h"
 
 /////////////////////////////////////////////////
 
@@ -86,14 +87,6 @@ void AnimationNodeStateMachineTransition::set_advance_expression(const String &p
 
 String AnimationNodeStateMachineTransition::get_advance_expression() const {
 	return advance_expression;
-}
-
-void AnimationNodeStateMachineTransition::set_advance_expression_base_node(const NodePath &p_expression_base_node) {
-	advance_expression_base_node = p_expression_base_node;
-}
-
-NodePath AnimationNodeStateMachineTransition::get_advance_expression_base_node() const {
-	return advance_expression_base_node;
 }
 
 void AnimationNodeStateMachineTransition::set_xfade_time(float p_xfade) {
@@ -157,9 +150,6 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_advance_expression", "text"), &AnimationNodeStateMachineTransition::set_advance_expression);
 	ClassDB::bind_method(D_METHOD("get_advance_expression"), &AnimationNodeStateMachineTransition::get_advance_expression);
 
-	ClassDB::bind_method(D_METHOD("set_advance_expression_base_node", "path"), &AnimationNodeStateMachineTransition::set_advance_expression_base_node);
-	ClassDB::bind_method(D_METHOD("get_advance_expression_base_node"), &AnimationNodeStateMachineTransition::get_advance_expression_base_node);
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,240,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
@@ -169,7 +159,6 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_GROUP("Advance", "advance_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "advance_expression", PROPERTY_HINT_EXPRESSION, ""), "set_advance_expression", "get_advance_expression");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_GROUP("Disabling", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
@@ -343,11 +332,11 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 	return true;
 }
 
-double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking) {
 	if (p_time == -1) {
 		Ref<AnimationNodeStateMachine> anodesm = p_state_machine->states[current].node;
 		if (anodesm.is_valid()) {
-			p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+			p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 		}
 		playing = false;
 		return 0;
@@ -416,7 +405,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			current = p_state_machine->start_node;
 		}
 
-		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 1.0, AnimationNode::FILTER_IGNORE, true);
+		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, 1.0, AnimationNode::FILTER_IGNORE, true);
 		pos_current = 0;
 	}
 
@@ -444,10 +433,10 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	if (current_curve.is_valid()) {
 		fade_blend = current_curve->sample(fade_blend);
 	}
-	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_seek_root, fade_blend, AnimationNode::FILTER_IGNORE, true);
+	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, fade_blend, AnimationNode::FILTER_IGNORE, true);
 
 	if (fading_from != StringName()) {
-		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_seek_root, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, true);
+		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, true);
 	}
 
 	//guess playback position
@@ -604,19 +593,19 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			{ // if the current node is a state machine, update the "playing" variable to false by passing -1 in p_time
 				Ref<AnimationNodeStateMachine> anodesm = p_state_machine->states[current].node;
 				if (anodesm.is_valid()) {
-					p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+					p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 				}
 			}
 
 			current = next;
 
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 				pos_current = MIN(pos_current, len_current);
-				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 
 			} else {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 				pos_current = 0;
 			}
 
@@ -655,14 +644,11 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 		AnimationTree *tree_base = state_machine->get_animation_tree();
 		ERR_FAIL_COND_V(tree_base == nullptr, false);
 
-		NodePath advance_expression_base_node_path;
-		if (!transition->advance_expression_base_node.is_empty()) {
-			advance_expression_base_node_path = transition->advance_expression_base_node;
-		} else {
-			advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
-		}
-
+		NodePath advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
 		Node *expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
+
+		WARN_PRINT_ONCE("Animation transition has a valid expression, but no expression base node was set on its AnimationTree.");
+
 		if (expression_base) {
 			Ref<Expression> exp = transition->expression;
 			bool ret = exp->execute(Array(), expression_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
@@ -725,11 +711,11 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(String(p_name).contains("/"));
 
-	State state;
-	state.node = p_node;
-	state.position = p_position;
+	State state_new;
+	state_new.node = p_node;
+	state_new.position = p_position;
 
-	states[p_name] = state;
+	states[p_name] = state_new;
 
 	Ref<AnimationNodeStateMachine> anodesm = p_node;
 
@@ -957,8 +943,8 @@ bool AnimationNodeStateMachine::_can_connect(const StringName &p_name, Vector<An
 		return true;
 	}
 
-	String name = p_name;
-	Vector<String> path = name.split("/");
+	String node_name = p_name;
+	Vector<String> path = node_name.split("/");
 
 	if (path.size() < 2) {
 		return false;
@@ -966,12 +952,12 @@ bool AnimationNodeStateMachine::_can_connect(const StringName &p_name, Vector<An
 
 	if (path[0] == "..") {
 		if (prev_state_machine != nullptr) {
-			return prev_state_machine->_can_connect(name.replace_first("../", ""), p_parents);
+			return prev_state_machine->_can_connect(node_name.replace_first("../", ""), p_parents);
 		}
 	} else if (states.has(path[0])) {
 		Ref<AnimationNodeStateMachine> anodesm = states[path[0]].node;
 		if (anodesm.is_valid()) {
-			return anodesm->_can_connect(name.replace_first(path[0] + "/", ""), p_parents);
+			return anodesm->_can_connect(node_name.replace_first(path[0] + "/", ""), p_parents);
 		}
 	}
 
@@ -1147,11 +1133,11 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
-double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_seek_root) {
-	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
-	ERR_FAIL_COND_V(playback.is_null(), 0.0);
+double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	Ref<AnimationNodeStateMachinePlayback> playback_new = get_parameter(playback);
+	ERR_FAIL_COND_V(playback_new.is_null(), 0.0);
 
-	return playback->process(this, p_time, p_seek, p_seek_root);
+	return playback_new->process(this, p_time, p_seek, p_is_external_seeking);
 }
 
 String AnimationNodeStateMachine::get_caption() const {
@@ -1175,10 +1161,10 @@ Ref<AnimationNode> AnimationNodeStateMachine::get_child_by_name(const StringName
 }
 
 bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
-	if (name.begins_with("states/")) {
-		String node_name = name.get_slicec('/', 1);
-		String what = name.get_slicec('/', 2);
+	String prop_name = p_name;
+	if (prop_name.begins_with("states/")) {
+		String node_name = prop_name.get_slicec('/', 1);
+		String what = prop_name.get_slicec('/', 2);
 
 		if (what == "node") {
 			Ref<AnimationNode> anode = p_value;
@@ -1194,7 +1180,7 @@ bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_
 			}
 			return true;
 		}
-	} else if (name == "transitions") {
+	} else if (prop_name == "transitions") {
 		Array trans = p_value;
 		ERR_FAIL_COND_V(trans.size() % 3 != 0, false);
 
@@ -1202,7 +1188,7 @@ bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_
 			add_transition(trans[i], trans[i + 1], trans[i + 2]);
 		}
 		return true;
-	} else if (name == "graph_offset") {
+	} else if (prop_name == "graph_offset") {
 		set_graph_offset(p_value);
 		return true;
 	}
@@ -1211,10 +1197,10 @@ bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_
 }
 
 bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-	if (name.begins_with("states/")) {
-		String node_name = name.get_slicec('/', 1);
-		String what = name.get_slicec('/', 2);
+	String prop_name = p_name;
+	if (prop_name.begins_with("states/")) {
+		String node_name = prop_name.get_slicec('/', 1);
+		String what = prop_name.get_slicec('/', 2);
 
 		if (what == "node") {
 			if (states.has(node_name) && can_edit_node(node_name)) {
@@ -1229,7 +1215,7 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 				return true;
 			}
 		}
-	} else if (name == "transitions") {
+	} else if (prop_name == "transitions") {
 		Array trans;
 		for (int i = 0; i < transitions.size(); i++) {
 			String from = transitions[i].from;
@@ -1246,7 +1232,7 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 
 		r_ret = trans;
 		return true;
-	} else if (name == "graph_offset") {
+	} else if (prop_name == "graph_offset") {
 		r_ret = get_graph_offset();
 		return true;
 	}
@@ -1261,9 +1247,9 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	}
 	names.sort_custom<StringName::AlphCompare>();
 
-	for (const StringName &name : names) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	for (const StringName &prop_name : names) {
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));

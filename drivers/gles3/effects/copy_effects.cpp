@@ -114,19 +114,23 @@ CopyEffects::~CopyEffects() {
 	copy.shader.version_free(copy.shader_version);
 }
 
-void CopyEffects::copy_to_rect(const Rect2i &p_rect) {
-	copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
+void CopyEffects::copy_to_rect(const Rect2 &p_rect) {
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
+	if (!success) {
+		return;
+	}
+
 	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
-	glBindVertexArray(quad_array);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+	draw_screen_quad();
 }
 
 void CopyEffects::copy_screen() {
-	copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_DEFAULT);
-	glBindVertexArray(screen_triangle_array);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glBindVertexArray(0);
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_DEFAULT);
+	if (!success) {
+		return;
+	}
+
+	draw_screen_triangle();
 }
 
 void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region) {
@@ -155,11 +159,26 @@ void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, con
 }
 
 void CopyEffects::set_color(const Color &p_color, const Rect2i &p_region) {
-	copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_SIMPLE_COLOR);
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_SIMPLE_COLOR);
+	if (!success) {
+		return;
+	}
+
 	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_region.position.x, p_region.position.y, p_region.size.x, p_region.size.y, copy.shader_version, CopyShaderGLES3::MODE_SIMPLE_COLOR);
 	copy.shader.version_set_uniform(CopyShaderGLES3::COLOR_IN, p_color, copy.shader_version, CopyShaderGLES3::MODE_SIMPLE_COLOR);
+	draw_screen_quad();
+}
+
+void CopyEffects::draw_screen_triangle() {
+	glBindVertexArray(screen_triangle_array);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindVertexArray(0);
+}
+
+void CopyEffects::draw_screen_quad() {
 	glBindVertexArray(quad_array);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
+
 #endif // GLES3_ENABLED

@@ -71,29 +71,29 @@ void ParallaxBackground::_update_scroll() {
 		return;
 	}
 
-	Vector2 ofs = base_offset + offset * base_scale;
+	Vector2 scroll_ofs = base_offset + offset * base_scale;
 
 	Size2 vps = get_viewport_size();
 
-	ofs = -ofs;
+	scroll_ofs = -scroll_ofs;
 	if (limit_begin.x < limit_end.x) {
-		if (ofs.x < limit_begin.x) {
-			ofs.x = limit_begin.x;
-		} else if (ofs.x + vps.x > limit_end.x) {
-			ofs.x = limit_end.x - vps.x;
+		if (scroll_ofs.x < limit_begin.x) {
+			scroll_ofs.x = limit_begin.x;
+		} else if (scroll_ofs.x + vps.x > limit_end.x) {
+			scroll_ofs.x = limit_end.x - vps.x;
 		}
 	}
 
 	if (limit_begin.y < limit_end.y) {
-		if (ofs.y < limit_begin.y) {
-			ofs.y = limit_begin.y;
-		} else if (ofs.y + vps.y > limit_end.y) {
-			ofs.y = limit_end.y - vps.y;
+		if (scroll_ofs.y < limit_begin.y) {
+			scroll_ofs.y = limit_begin.y;
+		} else if (scroll_ofs.y + vps.y > limit_end.y) {
+			scroll_ofs.y = limit_end.y - vps.y;
 		}
 	}
-	ofs = -ofs;
+	scroll_ofs = -scroll_ofs;
 
-	final_offset = ofs;
+	final_offset = scroll_ofs;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		ParallaxLayer *l = Object::cast_to<ParallaxLayer>(get_child(i));
@@ -102,9 +102,9 @@ void ParallaxBackground::_update_scroll() {
 		}
 
 		if (ignore_camera_zoom) {
-			l->set_base_offset_and_scale((ofs + screen_offset * (scale - 1)) / scale, 1.0, screen_offset);
+			l->set_base_offset_and_scale((scroll_ofs + screen_offset * (scale - 1)) / scale, 1.0);
 		} else {
-			l->set_base_offset_and_scale(ofs, scale, screen_offset);
+			l->set_base_offset_and_scale(scroll_ofs, scale);
 		}
 	}
 }

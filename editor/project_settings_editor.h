@@ -42,7 +42,6 @@
 #include "editor/shader_globals_editor.h"
 #include "scene/gui/tab_container.h"
 
-class EditorUndoRedoManager;
 class FileSystemDock;
 
 class ProjectSettingsEditor : public AcceptDialog {
@@ -53,6 +52,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	Timer *timer = nullptr;
 
 	TabContainer *tab_container = nullptr;
+	VBoxContainer *general_editor = nullptr;
 	SectionedInspector *general_settings_inspector = nullptr;
 	ActionMapEditor *action_map_editor = nullptr;
 	LocalizationEditor *localization_editor = nullptr;
@@ -77,7 +77,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	ImportDefaultsEditor *import_defaults_editor = nullptr;
 	EditorData *data = nullptr;
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	void _advanced_toggled(bool p_button_pressed);
 	void _update_advanced(bool p_is_advanced);
@@ -116,6 +115,7 @@ public:
 	static ProjectSettingsEditor *get_singleton() { return singleton; }
 	void popup_project_settings();
 	void set_plugins_page();
+	void set_general_page(const String &p_category);
 	void update_plugins();
 
 	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }

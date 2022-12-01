@@ -45,9 +45,10 @@ public:
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
 	enum {
-		//properties that are not for built in values begin from this value, so builtin ones are displayed first
+		// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
 		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};
+
 #ifdef TOOLS_ENABLED
 	const static PackedStringArray get_required_features();
 	const static PackedStringArray get_unsupported_features(const PackedStringArray &p_project_features);

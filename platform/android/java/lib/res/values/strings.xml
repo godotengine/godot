@@ -12,6 +12,8 @@
     <string name="text_button_resume">Resume Download</string>
     <string name="text_button_cancel">Cancel</string>
     <string name="text_button_cancel_verify">Cancel Verification</string>
+    <string name="text_error_title">Error!</string>
+    <string name="error_engine_setup_message">Unable to setup the Godot Engine! Aborting…</string>
 
     <!-- APK Expansion Strings -->
 

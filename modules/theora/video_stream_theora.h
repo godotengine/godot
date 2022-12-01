@@ -64,7 +64,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	int buffer_data();
 	int queue_page(ogg_page *page);
 	void video_write();
-	float get_time() const;
+	double get_time() const;
 
 	bool theora_eos = false;
 	bool vorbis_eos = false;
@@ -76,7 +76,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	th_info ti;
 	th_comment tc;
 	th_dec_ctx *td = nullptr;
-	vorbis_info vi;
+	vorbis_info vi = {};
 	vorbis_dsp_state vd;
 	vorbis_block vb;
 	vorbis_comment vc;
@@ -136,19 +136,19 @@ public:
 	virtual void set_loop(bool p_enable) override;
 	virtual bool has_loop() const override;
 
-	virtual float get_length() const override;
+	virtual double get_length() const override;
 
 	virtual String get_stream_name() const;
 
 	virtual int get_loop_count() const;
 
-	virtual float get_playback_position() const override;
-	virtual void seek(float p_time) override;
+	virtual double get_playback_position() const override;
+	virtual void seek(double p_time) override;
 
 	void set_file(const String &p_file);
 
 	virtual Ref<Texture2D> get_texture() const override;
-	virtual void update(float p_delta) override;
+	virtual void update(double p_delta) override;
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata) override;
 	virtual int get_channels() const override;

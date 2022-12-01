@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/menu_button.h"
 
 void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -119,6 +120,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				// Check for point deletion.
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				if ((mb->get_button_index() == MouseButton::RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == MouseButton::LEFT && mode == MODE_DELETE)) {
 					if (dist_to_p < grab_threshold) {
 						undo_redo->create_action(TTR("Remove Point from Curve"));
@@ -150,9 +152,10 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for point creation.
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && ((mb->is_command_pressed() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && ((mb->is_command_or_control_pressed() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
 			Ref<Curve2D> curve = node->get_curve();
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add Point to Curve"));
 			undo_redo->add_do_method(curve.ptr(), "add_point", cpoint);
 			undo_redo->add_undo_method(curve.ptr(), "remove_point", curve->get_point_count());
@@ -188,6 +191,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				insertion_point = curve->get_point_count() - 2;
 			}
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Split Curve"));
 			undo_redo->add_do_method(curve.ptr(), "add_point", xform.affine_inverse().xform(gpoint2), Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
 			undo_redo->add_undo_method(curve.ptr(), "remove_point", insertion_point + 1);
@@ -211,6 +215,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && action != ACTION_NONE) {
 			Ref<Curve2D> curve = node->get_curve();
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
 			switch (action) {
 				case ACTION_NONE:
@@ -486,6 +491,7 @@ void Path2DEditor::_mode_selected(int p_mode) {
 			return;
 		}
 
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Remove Point from Curve"));
 		undo_redo->add_do_method(node->get_curve().ptr(), "add_point", begin);
 		undo_redo->add_undo_method(node->get_curve().ptr(), "remove_point", node->get_curve()->get_point_count());
@@ -519,7 +525,6 @@ void Path2DEditor::_handle_option_pressed(int p_option) {
 
 Path2DEditor::Path2DEditor() {
 	canvas_item_editor = nullptr;
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	mirror_handle_angle = true;
 	mirror_handle_length = true;
 	on_edge = false;
@@ -537,7 +542,7 @@ Path2DEditor::Path2DEditor() {
 	curve_edit->set_flat(true);
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
 	curve_edit->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_EDIT));
 	base_hb->add_child(curve_edit);
 

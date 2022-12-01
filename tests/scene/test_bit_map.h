@@ -76,15 +76,11 @@ TEST_CASE("[BitMap] Create bit map from image alpha") {
 	bit_map.create_from_image_alpha(empty_img);
 	CHECK_MESSAGE(bit_map.get_size() == Size2i(256, 256), "Bitmap should have its old values because bitmap creation from an empty image should fail.");
 
-	Ref<Image> wrong_format_img;
-	wrong_format_img.instantiate();
-	wrong_format_img->create(3, 3, false, Image::Format::FORMAT_DXT1);
+	Ref<Image> wrong_format_img = Image::create_empty(3, 3, false, Image::Format::FORMAT_DXT1);
 	bit_map.create_from_image_alpha(wrong_format_img);
 	CHECK_MESSAGE(bit_map.get_size() == Size2i(256, 256), "Bitmap should have its old values because converting from a compressed image should fail.");
 
-	Ref<Image> img;
-	img.instantiate();
-	img->create(3, 3, false, Image::Format::FORMAT_RGBA8);
+	Ref<Image> img = Image::create_empty(3, 3, false, Image::Format::FORMAT_RGBA8);
 	img->set_pixel(0, 0, Color(0, 0, 0, 0));
 	img->set_pixel(0, 1, Color(0, 0, 0, 0.09f));
 	img->set_pixel(0, 2, Color(0, 0, 0, 0.25f));
@@ -183,7 +179,7 @@ TEST_CASE("[BitMap] Get true bit count") {
 	CHECK(bit_map.get_true_bit_count() == 0);
 
 	bit_map.create(dim);
-	CHECK_MESSAGE(bit_map.get_true_bit_count() == 0, "Unitialized bit map should have no true bits");
+	CHECK_MESSAGE(bit_map.get_true_bit_count() == 0, "Uninitialized bit map should have no true bits");
 	bit_map.set_bit_rect(Rect2i{ 0, 0, 256, 256 }, true);
 	CHECK(bit_map.get_true_bit_count() == 65536);
 	bit_map.set_bitv(Point2i{ 0, 0 }, false);
@@ -196,7 +192,7 @@ TEST_CASE("[BitMap] Get size") {
 	const Size2i dim{ 256, 256 };
 	BitMap bit_map{};
 
-	CHECK_MESSAGE(bit_map.get_size() == Size2i(0, 0), "Unitialized bit map should have a size of 0x0");
+	CHECK_MESSAGE(bit_map.get_size() == Size2i(0, 0), "Uninitialized bit map should have a size of 0x0");
 
 	bit_map.create(dim);
 	CHECK(bit_map.get_size() == Size2i(256, 256));
@@ -238,7 +234,7 @@ TEST_CASE("[BitMap] Resize") {
 TEST_CASE("[BitMap] Grow and shrink mask") {
 	const Size2i dim{ 256, 256 };
 	BitMap bit_map{};
-	bit_map.grow_mask(100, Rect2i(0, 0, 128, 128)); // Check if method does not crash when working with an uninitialised bit map.
+	bit_map.grow_mask(100, Rect2i(0, 0, 128, 128)); // Check if method does not crash when working with an uninitialized bit map.
 	CHECK_MESSAGE(bit_map.get_size() == Size2i(0, 0), "Size should still be equal to 0x0");
 
 	bit_map.create(dim);
@@ -339,21 +335,21 @@ TEST_CASE("[BitMap] Blit") {
 
 	blit_bit_map.instantiate();
 
-	// Testing if uninitialised blit bit map and uninitialised bit map does not crash
+	// Testing if uninitialized blit bit map and uninitialized bit map does not crash
 	bit_map.blit(blit_pos, blit_bit_map);
 
-	// Testing if uninitialised bit map does not crash
+	// Testing if uninitialized bit map does not crash
 	blit_bit_map->create(blit_size);
 	bit_map.blit(blit_pos, blit_bit_map);
 
-	// Testing if uninitialised bit map does not crash
+	// Testing if uninitialized bit map does not crash
 	blit_bit_map.unref();
 	blit_bit_map.instantiate();
 	CHECK_MESSAGE(blit_bit_map->get_size() == Point2i(0, 0), "Size should be cleared by unref and instance calls.");
 	bit_map.create(bit_map_size);
 	bit_map.blit(Point2i(128, 128), blit_bit_map);
 
-	// Testing if both initialised does not crash.
+	// Testing if both initialized does not crash.
 	blit_bit_map->create(blit_size);
 	bit_map.blit(blit_pos, blit_bit_map);
 
@@ -390,7 +386,7 @@ TEST_CASE("[BitMap] Convert to image") {
 	bit_map.create(dim);
 	img = bit_map.convert_to_image();
 	CHECK_MESSAGE(img->get_size() == dim, "Image should have the same dimensions as the BitMap");
-	CHECK_MESSAGE(img->get_pixel(0, 0).is_equal_approx(Color(0, 0, 0)), "BitMap is intialized to all 0's, so Image should be all black");
+	CHECK_MESSAGE(img->get_pixel(0, 0).is_equal_approx(Color(0, 0, 0)), "BitMap is initialized to all 0's, so Image should be all black");
 
 	reset_bit_map(bit_map);
 	bit_map.set_bit_rect(Rect2i(0, 0, 128, 128), true);
@@ -436,6 +432,37 @@ TEST_CASE("[BitMap] Clip to polygon") {
 	bit_map.set_bit_rect(Rect2i(124, 112, 8, 32), true);
 	bit_map.set_bit_rect(Rect2i(112, 124, 32, 8), true);
 	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 128, 128));
+	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
+	CHECK_MESSAGE(polygons[0].size() == 6, "The polygon should have exactly 6 points");
+
+	reset_bit_map(bit_map);
+	bit_map.set_bit_rect(Rect2i(0, 0, 64, 64), true);
+	bit_map.set_bit_rect(Rect2i(64, 64, 64, 64), true);
+	bit_map.set_bit_rect(Rect2i(192, 128, 64, 64), true);
+	bit_map.set_bit_rect(Rect2i(128, 192, 64, 64), true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256));
+	CHECK_MESSAGE(polygons.size() == 4, "We should have exactly 4 polygons");
+	CHECK_MESSAGE(polygons[0].size() == 4, "The polygon should have exactly 4 points");
+	CHECK_MESSAGE(polygons[1].size() == 4, "The polygon should have exactly 4 points");
+	CHECK_MESSAGE(polygons[2].size() == 4, "The polygon should have exactly 4 points");
+	CHECK_MESSAGE(polygons[3].size() == 4, "The polygon should have exactly 4 points");
+
+	reset_bit_map(bit_map);
+	bit_map.set_bit(0, 0, true);
+	bit_map.set_bit(2, 0, true);
+	bit_map.set_bit_rect(Rect2i(1, 1, 1, 2), true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 3, 3));
+	CHECK_MESSAGE(polygons.size() == 3, "We should have exactly 3 polygons");
+	CHECK_MESSAGE(polygons[0].size() == 4, "The polygon should have exactly 4 points");
+	CHECK_MESSAGE(polygons[1].size() == 4, "The polygon should have exactly 4 points");
+	CHECK_MESSAGE(polygons[2].size() == 4, "The polygon should have exactly 4 points");
+
+	reset_bit_map(bit_map);
+	bit_map.set_bit_rect(Rect2i(0, 0, 2, 1), true);
+	bit_map.set_bit_rect(Rect2i(0, 2, 3, 1), true);
+	bit_map.set_bit(0, 1, true);
+	bit_map.set_bit(2, 1, true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 4, 4));
 	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
 	CHECK_MESSAGE(polygons[0].size() == 6, "The polygon should have exactly 6 points");
 }

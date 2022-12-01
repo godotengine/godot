@@ -1,8 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AStarGrid2D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A* (or "A-Star") pathfinding tailored to find the shortest paths on 2D grids.
 	</brief_description>
 	<description>
+		Compared to [AStar2D] you don't need to manually create points or connect them together. It also supports multiple type of heuristics and modes for diagonal movement. This class also provides a jumping mode which is faster to calculate than without it in the [AStar2D] class.
+		In contrast to [AStar2D], you only need set the [member size] of the grid, optionally set the [member cell_size] and then call the [method update] method:
+		[codeblocks]
+		[gdscript]
+		var astar_grid = AStarGrid2D.new()
+		astar_grid.size = Vector2i(32, 32)
+		astar_grid.cell_size = Vector2(16, 16)
+		astar_grid.update()
+		print(astar_grid.get_id_path(Vector2i(0, 0), Vector2i(3, 4))) # prints (0, 0), (1, 1), (2, 2), (3, 3), (3, 4)
+		print(astar_grid.get_point_path(Vector2i(0, 0), Vector2i(3, 4))) # prints (0, 0), (16, 16), (32, 32), (48, 48), (48, 64)
+		[/gdscript]
+		[csharp]
+		AStarGrid2D astarGrid = new AStarGrid2D();
+		astarGrid.Size = new Vector2i(32, 32);
+		astarGrid.CellSize = new Vector2i(16, 16);
+		astarGrid.Update();
+		GD.Print(astarGrid.GetIdPath(Vector2i.Zero, new Vector2i(3, 4))); // prints (0, 0), (1, 1), (2, 2), (3, 3), (3, 4)
+		GD.Print(astarGrid.GetPointPath(Vector2i.Zero, new Vector2i(3, 4))); // prints (0, 0), (16, 16), (32, 32), (48, 48), (48, 64)
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,6 +33,8 @@
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
 			<description>
+				Called when computing the cost between two connected points.
+				Note that this function is hidden in the default [code]AStarGrid2D[/code] class.
 			</description>
 		</method>
 		<method name="_estimate_cost" qualifiers="virtual const">
@@ -19,18 +42,22 @@
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
 			<description>
+				Called when estimating the cost between a point and the path's ending point.
+				Note that this function is hidden in the default [code]AStarGrid2D[/code] class.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
+				Clears the grid and sets the [member size] to [constant Vector2i.ZERO].
 			</description>
 		</method>
 		<method name="get_id_path">
-			<return type="PackedVector2Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
 			<description>
+				Returns an array with the IDs of the points that form the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.
 			</description>
 		</method>
 		<method name="get_point_path">
@@ -38,11 +65,14 @@
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
 			<description>
+				Returns an array with the points that are in the path found by AStarGrid2D between the given points. The array is ordered from the starting point to the ending point of the path.
+				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
 			</description>
 		</method>
 		<method name="is_dirty" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Indicates that the grid parameters were changed and [method update] needs to be called.
 			</description>
 		</method>
 		<method name="is_in_bounds" qualifiers="const">
@@ -50,18 +80,21 @@
 			<param index="0" name="x" type="int" />
 			<param index="1" name="y" type="int" />
 			<description>
+				Returns [code]true[/code] if the [param x] and [param y] is a valid grid coordinate (id).
 			</description>
 		</method>
 		<method name="is_in_boundsv" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="id" type="Vector2i" />
 			<description>
+				Returns [code]true[/code] if the [param id] vector is a valid grid coordinate.
 			</description>
 		</method>
 		<method name="is_point_solid" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="id" type="Vector2i" />
 			<description>
+				Returns [code]true[/code] if a point is disabled for pathfinding. By default, all points are enabled.
 			</description>
 		</method>
 		<method name="set_point_solid">
@@ -69,48 +102,87 @@
 			<param index="0" name="id" type="Vector2i" />
 			<param index="1" name="solid" type="bool" default="true" />
 			<description>
+				Disables or enables the specified point for pathfinding. Useful for making an obstacle. By default, all points are enabled.
 			</description>
 		</method>
 		<method name="update">
 			<return type="void" />
 			<description>
+				Updates the internal state of the grid according to the parameters to prepare it to search the path. Needs to be called if parameters like [member size], [member cell_size] or [member offset] are changed. [method is_dirty] will return [code]true[/code] if this is the case and this needs to be called.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="cell_size" type="Vector2" setter="set_cell_size" getter="get_cell_size" default="Vector2(1, 1)">
+			The size of the point cell which will be applied to calculate the resulting point position returned by [method get_point_path]. If changed, [method update] needs to be called before finding the next path.
 		</member>
 		<member name="default_heuristic" type="int" setter="set_default_heuristic" getter="get_default_heuristic" enum="AStarGrid2D.Heuristic" default="0">
+			The default [enum Heuristic] which will be used to calculate the path if [method _compute_cost] and/or [method _estimate_cost] were not overridden.
 		</member>
 		<member name="diagonal_mode" type="int" setter="set_diagonal_mode" getter="get_diagonal_mode" enum="AStarGrid2D.DiagonalMode" default="0">
+			A specific [enum DiagonalMode] mode which will force the path to avoid or accept the specified diagonals.
 		</member>
 		<member name="jumping_enabled" type="bool" setter="set_jumping_enabled" getter="is_jumping_enabled" default="false">
+			Enables or disables jumping to skip up the intermediate points and speeds up the searching algorithm.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
+			The offset of the grid which will be applied to calculate the resulting point position returned by [method get_point_path]. If changed, [method update] needs to be called before finding the next path.
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)">
+			The size of the grid (number of cells of size [member cell_size] on each axis). If changed, [method update] needs to be called before finding the next path.
 		</member>
 	</members>
 	<constants>
 		<constant name="HEURISTIC_EUCLIDEAN" value="0" enum="Heuristic">
+			The Euclidean heuristic to be used for the pathfinding using the following formula:
+			[codeblock]
+			dx = abs(to_id.x - from_id.x)
+			dy = abs(to_id.y - from_id.y)
+			result = sqrt(dx * dx + dy * dy)
+			[/codeblock]
 		</constant>
 		<constant name="HEURISTIC_MANHATTAN" value="1" enum="Heuristic">
+			The Manhattan heuristic to be used for the pathfinding using the following formula:
+			[codeblock]
+			dx = abs(to_id.x - from_id.x)
+			dy = abs(to_id.y - from_id.y)
+			result = dx + dy
+			[/codeblock]
 		</constant>
 		<constant name="HEURISTIC_OCTILE" value="2" enum="Heuristic">
+			The Octile heuristic to be used for the pathfinding using the following formula:
+			[codeblock]
+			dx = abs(to_id.x - from_id.x)
+			dy = abs(to_id.y - from_id.y)
+			f = sqrt(2) - 1
+			result = (dx &lt; dy) ? f * dx + dy : f * dy + dx;
+			[/codeblock]
 		</constant>
 		<constant name="HEURISTIC_CHEBYSHEV" value="3" enum="Heuristic">
+			The Chebyshev heuristic to be used for the pathfinding using the following formula:
+			[codeblock]
+			dx = abs(to_id.x - from_id.x)
+			dy = abs(to_id.y - from_id.y)
+			result = max(dx, dy)
+			[/codeblock]
 		</constant>
 		<constant name="HEURISTIC_MAX" value="4" enum="Heuristic">
+			Represents the size of the [enum Heuristic] enum.
 		</constant>
 		<constant name="DIAGONAL_MODE_ALWAYS" value="0" enum="DiagonalMode">
+			The pathfinding algorithm will ignore solid neighbors around the target cell and allow passing using diagonals.
 		</constant>
 		<constant name="DIAGONAL_MODE_NEVER" value="1" enum="DiagonalMode">
+			The pathfinding algorithm will ignore all diagonals and the way will be always orthogonal.
 		</constant>
 		<constant name="DIAGONAL_MODE_AT_LEAST_ONE_WALKABLE" value="2" enum="DiagonalMode">
+			The pathfinding algorithm will avoid using diagonals if at least two obstacles have been placed around the neighboring cells of the specific path segment.
 		</constant>
 		<constant name="DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES" value="3" enum="DiagonalMode">
+			The pathfinding algorithm will avoid using diagonals if any obstacle has been placed around the neighboring cells of the specific path segment.
 		</constant>
 		<constant name="DIAGONAL_MODE_MAX" value="4" enum="DiagonalMode">
+			Represents the size of the [enum DiagonalMode] enum.
 		</constant>
 	</constants>
 </class>

@@ -33,6 +33,13 @@
 				Given an array of [Vector2]s, returns the convex hull as a list of points in counterclockwise order. The last point is the same as the first one.
 			</description>
 		</method>
+		<method name="decompose_polygon_in_convex">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon" type="PackedVector2Array" />
+			<description>
+				Decomposes the [param polygon] into multiple convex hulls and returns an array of [PackedVector2Array].
+			</description>
+		</method>
 		<method name="exclude_polygons">
 			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon_a" type="PackedVector2Array" />
@@ -126,7 +133,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="sizes" type="PackedVector2Array" />
 			<description>
-				Given an array of [Vector2]s representing tiles, builds an atlas. The returned dictionary has two keys: [code]points[/code] is an array of [Vector2] that specifies the positions of each tile, [code]size[/code] contains the overall size of the whole atlas as [Vector2].
+				Given an array of [Vector2]s representing tiles, builds an atlas. The returned dictionary has two keys: [code]points[/code] is a [PackedVector2Array] that specifies the positions of each tile, [code]size[/code] contains the overall size of the whole atlas as [Vector2i].
 			</description>
 		</method>
 		<method name="merge_polygons">

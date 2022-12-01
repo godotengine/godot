@@ -94,6 +94,11 @@ void rcContext::log(const rcLogCategory category, const char* format, ...)
 	doLog(category, msg, len);
 }
 
+void rcContext::doResetLog()
+{
+	// Defined out of line to fix the weak v-tables warning
+}
+
 rcHeightfield* rcAllocHeightfield()
 {
 	return rcNew<rcHeightfield>(RC_ALLOC_PERM);

@@ -31,6 +31,8 @@
 #ifndef VULKAN_CONTEXT_WIN_H
 #define VULKAN_CONTEXT_WIN_H
 
+#ifdef VULKAN_ENABLED
+
 #include "drivers/vulkan/vulkan_context.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -40,10 +42,12 @@ class VulkanContextWindows : public VulkanContext {
 	virtual const char *_get_platform_surface_extension() const;
 
 public:
-	int window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, HWND p_window, HINSTANCE p_instance, int p_width, int p_height);
+	Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, HWND p_window, HINSTANCE p_instance, int p_width, int p_height);
 
 	VulkanContextWindows();
 	~VulkanContextWindows();
 };
+
+#endif // VULKAN_ENABLED
 
 #endif // VULKAN_CONTEXT_WIN_H

@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef POOLED_LIST_H
+#define POOLED_LIST_H
 
 // Simple template to provide a pool with O(1) allocate and free.
 // The freelist could alternatively be a linked list placed within the unused elements
@@ -111,7 +112,7 @@ public:
 		list.resize(r_id + 1);
 
 		static_assert((!zero_on_first_request) || (__is_pod(T)), "zero_on_first_request requires trivial type");
-		if (zero_on_first_request && __is_pod(T)) {
+		if constexpr (zero_on_first_request && __is_pod(T)) {
 			list[r_id] = {};
 		}
 
@@ -206,3 +207,5 @@ private:
 	LocalVector<U, U> _active_map;
 	LocalVector<U, U> _active_list;
 };
+
+#endif // POOLED_LIST_H

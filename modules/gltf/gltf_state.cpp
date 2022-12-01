@@ -31,6 +31,7 @@
 #include "gltf_state.h"
 
 void GLTFState::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_used_extension", "extension_name", "required"), &GLTFState::add_used_extension);
 	ClassDB::bind_method(D_METHOD("get_json"), &GLTFState::get_json);
 	ClassDB::bind_method(D_METHOD("set_json", "json"), &GLTFState::set_json);
 	ClassDB::bind_method(D_METHOD("get_major_version"), &GLTFState::get_major_version);
@@ -63,6 +64,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_nodes", "root_nodes"), &GLTFState::set_root_nodes);
 	ClassDB::bind_method(D_METHOD("get_textures"), &GLTFState::get_textures);
 	ClassDB::bind_method(D_METHOD("set_textures", "textures"), &GLTFState::set_textures);
+	ClassDB::bind_method(D_METHOD("get_texture_samplers"), &GLTFState::get_texture_samplers);
+	ClassDB::bind_method(D_METHOD("set_texture_samplers", "texture_samplers"), &GLTFState::set_texture_samplers);
 	ClassDB::bind_method(D_METHOD("get_images"), &GLTFState::get_images);
 	ClassDB::bind_method(D_METHOD("set_images", "images"), &GLTFState::set_images);
 	ClassDB::bind_method(D_METHOD("get_skins"), &GLTFState::get_skins);
@@ -84,6 +87,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations);
 	ClassDB::bind_method(D_METHOD("get_scene_node", "idx"), &GLTFState::get_scene_node);
+	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFState::get_additional_data);
+	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFState::set_additional_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "json"), "set_json", "get_json"); // Dictionary
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "major_version"), "set_major_version", "get_major_version"); // int
@@ -100,6 +105,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_path"), "set_base_path", "get_base_path"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "root_nodes"), "set_root_nodes", "get_root_nodes"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_textures", "get_textures"); // Vector<Ref<GLTFTexture>>
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "texture_samplers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_texture_samplers", "get_texture_samplers"); //Vector<Ref<GLTFTextureSampler>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "images", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_images", "get_images"); // Vector<Ref<Texture>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "skins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skins", "get_skins"); // Vector<Ref<GLTFSkin>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "cameras", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_cameras", "get_cameras"); // Vector<Ref<GLTFCamera>>
@@ -110,6 +116,17 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "skeleton_to_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeleton_to_node", "get_skeleton_to_node"); // RBMap<GLTFSkeletonIndex,
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
+}
+
+void GLTFState::add_used_extension(const String &p_extension_name, bool p_required) {
+	if (!extensions_used.has(p_extension_name)) {
+		extensions_used.push_back(p_extension_name);
+	}
+	if (p_required) {
+		if (!extensions_required.has(p_extension_name)) {
+			extensions_required.push_back(p_extension_name);
+		}
+	}
 }
 
 Dictionary GLTFState::get_json() {
@@ -192,11 +209,11 @@ void GLTFState::set_meshes(TypedArray<GLTFMesh> p_meshes) {
 	GLTFTemplateConvert::set_from_array(meshes, p_meshes);
 }
 
-TypedArray<BaseMaterial3D> GLTFState::get_materials() {
+TypedArray<Material> GLTFState::get_materials() {
 	return GLTFTemplateConvert::to_array(materials);
 }
 
-void GLTFState::set_materials(TypedArray<BaseMaterial3D> p_materials) {
+void GLTFState::set_materials(TypedArray<Material> p_materials) {
 	GLTFTemplateConvert::set_from_array(materials, p_materials);
 }
 
@@ -222,6 +239,14 @@ TypedArray<GLTFTexture> GLTFState::get_textures() {
 
 void GLTFState::set_textures(TypedArray<GLTFTexture> p_textures) {
 	GLTFTemplateConvert::set_from_array(textures, p_textures);
+}
+
+TypedArray<GLTFTextureSampler> GLTFState::get_texture_samplers() {
+	return GLTFTemplateConvert::to_array(texture_samplers);
+}
+
+void GLTFState::set_texture_samplers(TypedArray<GLTFTextureSampler> p_texture_samplers) {
+	GLTFTemplateConvert::set_from_array(texture_samplers, p_texture_samplers);
 }
 
 TypedArray<Texture2D> GLTFState::get_images() {
@@ -334,4 +359,12 @@ String GLTFState::get_base_path() {
 
 void GLTFState::set_base_path(String p_base_path) {
 	base_path = p_base_path;
+}
+
+Variant GLTFState::get_additional_data(const StringName &p_extension_name) {
+	return additional_data[p_extension_name];
+}
+
+void GLTFState::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
+	additional_data[p_extension_name] = p_additional_data;
 }

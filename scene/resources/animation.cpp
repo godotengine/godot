@@ -35,7 +35,7 @@
 #include "scene/scene_string_names.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
+	String prop_name = p_name;
 
 	if (p_name == SNAME("_compression")) {
 		ERR_FAIL_COND_V(tracks.size() > 0, false); //can only set compression if no tracks exist
@@ -63,9 +63,9 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		compression.enabled = true;
 		return true;
-	} else if (name.begins_with("tracks/")) {
-		int track = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	} else if (prop_name.begins_with("tracks/")) {
+		int track = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 
 		if (tracks.size() == track && what == "type") {
 			String type = p_value;
@@ -431,7 +431,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
+	String prop_name = p_name;
 
 	if (p_name == SNAME("_compression")) {
 		ERR_FAIL_COND_V(!compression.enabled, false);
@@ -456,15 +456,15 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 
 		r_ret = comp;
 		return true;
-	} else if (name == "length") {
+	} else if (prop_name == "length") {
 		r_ret = length;
-	} else if (name == "loop_mode") {
+	} else if (prop_name == "loop_mode") {
 		r_ret = loop_mode;
-	} else if (name == "step") {
+	} else if (prop_name == "step") {
 		r_ret = step;
-	} else if (name.begins_with("tracks/")) {
-		int track = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	} else if (prop_name.begins_with("tracks/")) {
+		int track = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 		ERR_FAIL_INDEX_V(track, tracks.size(), false);
 		if (what == "type") {
 			switch (track_get_type(track)) {
@@ -888,7 +888,6 @@ int Animation::add_track(TrackType p_type, int p_at_pos) {
 		}
 	}
 	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 	return p_at_pos;
 }
 
@@ -951,7 +950,6 @@ void Animation::remove_track(int p_track) {
 	memdelete(t);
 	tracks.remove_at(p_track);
 	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 int Animation::get_track_count() const {
@@ -967,7 +965,6 @@ void Animation::track_set_path(int p_track, const NodePath &p_path) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	tracks[p_track]->path = p_path;
 	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 NodePath Animation::track_get_path(int p_track) const {
@@ -2102,11 +2099,9 @@ bool Animation::track_is_compressed(int p_track) const {
 			return bst->compressed_track >= 0;
 		} break;
 		default: {
-			return false; //animation does not really use transitions
+			return false; // Animation does not really use transitions.
 		} break;
 	}
-
-	ERR_FAIL_V(false);
 }
 
 void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p_value) {
@@ -2317,9 +2312,7 @@ Quaternion Animation::_interpolate(const Quaternion &p_a, const Quaternion &p_b,
 }
 
 Variant Animation::_interpolate(const Variant &p_a, const Variant &p_b, real_t p_c) const {
-	Variant dst;
-	Variant::interpolate(p_a, p_b, p_c, dst);
-	return dst;
+	return interpolate_variant(p_a, p_b, p_c);
 }
 
 real_t Animation::_interpolate(const real_t &p_a, const real_t &p_b, real_t p_c) const {
@@ -2471,7 +2464,6 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 
 	ERR_FAIL_COND_V(idx == -2, T());
 
-	bool result = true;
 	int next = 0;
 	real_t c = 0.0;
 	// prepare for all cases of interpolation
@@ -2603,10 +2595,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 	}
 
 	if (p_ok) {
-		*p_ok = result;
-	}
-	if (!result) {
-		return T();
+		*p_ok = true;
 	}
 
 	real_t tr = p_keys[idx].transition;
@@ -2716,106 +2705,6 @@ Variant Animation::value_track_interpolate(int p_track, double p_time) const {
 	return Variant();
 }
 
-void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, double from_time, double to_time, List<int> *p_indices) const {
-	if (from_time != length && to_time == length) {
-		to_time = length + CMP_EPSILON; //include a little more if at the end
-	}
-	int to = _find(vt->values, to_time);
-
-	if (to >= 0 && from_time == to_time && vt->values[to].time == from_time) {
-		//find exact (0 delta), return if found
-		p_indices->push_back(to);
-		return;
-	}
-	// can't really send the events == time, will be sent in the next frame.
-	// if event>=len then it will probably never be requested by the anim player.
-
-	if (to >= 0 && vt->values[to].time >= to_time) {
-		to--;
-	}
-
-	if (to < 0) {
-		return; // not bother
-	}
-
-	int from = _find(vt->values, from_time);
-
-	// position in the right first event.+
-	if (from < 0 || vt->values[from].time < from_time) {
-		from++;
-	}
-
-	int max = vt->values.size();
-
-	for (int i = from; i <= to; i++) {
-		ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
-		p_indices->push_back(i);
-	}
-}
-
-void Animation::value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged) const {
-	ERR_FAIL_INDEX(p_track, tracks.size());
-	Track *t = tracks[p_track];
-	ERR_FAIL_COND(t->type != TYPE_VALUE);
-
-	ValueTrack *vt = static_cast<ValueTrack *>(t);
-
-	double from_time = p_time - p_delta;
-	double to_time = p_time;
-
-	if (from_time > to_time) {
-		SWAP(from_time, to_time);
-	}
-
-	switch (loop_mode) {
-		case LOOP_NONE: {
-			if (from_time < 0) {
-				from_time = 0;
-			}
-			if (from_time > length) {
-				from_time = length;
-			}
-
-			if (to_time < 0) {
-				to_time = 0;
-			}
-			if (to_time > length) {
-				to_time = length;
-			}
-		} break;
-		case LOOP_LINEAR: {
-			from_time = Math::fposmod(from_time, length);
-			to_time = Math::fposmod(to_time, length);
-
-			if (from_time > to_time) {
-				// handle loop by splitting
-				_value_track_get_key_indices_in_range(vt, from_time, length, p_indices);
-				_value_track_get_key_indices_in_range(vt, 0, to_time, p_indices);
-				return;
-			}
-		} break;
-		case LOOP_PINGPONG: {
-			from_time = Math::pingpong(from_time, length);
-			to_time = Math::pingpong(to_time, length);
-
-			if (p_pingponged == -1) {
-				// handle loop by splitting
-				_value_track_get_key_indices_in_range(vt, 0, from_time, p_indices);
-				_value_track_get_key_indices_in_range(vt, 0, to_time, p_indices);
-				return;
-			}
-			if (p_pingponged == 1) {
-				// handle loop by splitting
-				_value_track_get_key_indices_in_range(vt, from_time, length, p_indices);
-				_value_track_get_key_indices_in_range(vt, to_time, length, p_indices);
-				return;
-			}
-		} break;
-	}
-
-	_value_track_get_key_indices_in_range(vt, from_time, to_time, p_indices);
-}
-
 void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
@@ -2838,7 +2727,7 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 
 template <class T>
 void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const {
-	if (from_time != length && to_time == length) {
+	if (to_time == length) {
 		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 
@@ -2872,6 +2761,11 @@ void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double
 
 void Animation::track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged) const {
 	ERR_FAIL_INDEX(p_track, tracks.size());
+
+	if (p_delta == 0) {
+		return; // Prevent to get key continuously.
+	}
+
 	const Track *t = tracks[p_track];
 
 	double from_time = p_time - p_delta;
@@ -2988,86 +2882,88 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 			if ((int)Math::floor(abs(p_delta) / length) % 2 == 0) {
 				if (p_pingponged == -1) {
 					// handle loop by splitting
+					to_time = MAX(CMP_EPSILON, to_time); // To avoid overlapping keys at the turnaround point, one of the point will needs to be shifted slightly.
 					switch (t->type) {
 						case TYPE_POSITION_3D: {
 							const PositionTrack *tt = static_cast<const PositionTrack *>(t);
 							if (tt->compressed_track >= 0) {
 								_get_compressed_key_indices_in_range<3>(tt->compressed_track, 0, from_time, p_indices);
-								_get_compressed_key_indices_in_range<3>(tt->compressed_track, 0, to_time, p_indices);
+								_get_compressed_key_indices_in_range<3>(tt->compressed_track, CMP_EPSILON, to_time, p_indices);
 							} else {
 								_track_get_key_indices_in_range(tt->positions, 0, from_time, p_indices);
-								_track_get_key_indices_in_range(tt->positions, 0, to_time, p_indices);
+								_track_get_key_indices_in_range(tt->positions, CMP_EPSILON, to_time, p_indices);
 							}
 						} break;
 						case TYPE_ROTATION_3D: {
 							const RotationTrack *rt = static_cast<const RotationTrack *>(t);
 							if (rt->compressed_track >= 0) {
 								_get_compressed_key_indices_in_range<3>(rt->compressed_track, 0, from_time, p_indices);
-								_get_compressed_key_indices_in_range<3>(rt->compressed_track, 0, to_time, p_indices);
+								_get_compressed_key_indices_in_range<3>(rt->compressed_track, CMP_EPSILON, to_time, p_indices);
 							} else {
 								_track_get_key_indices_in_range(rt->rotations, 0, from_time, p_indices);
-								_track_get_key_indices_in_range(rt->rotations, 0, to_time, p_indices);
+								_track_get_key_indices_in_range(rt->rotations, CMP_EPSILON, to_time, p_indices);
 							}
 						} break;
 						case TYPE_SCALE_3D: {
 							const ScaleTrack *st = static_cast<const ScaleTrack *>(t);
 							if (st->compressed_track >= 0) {
 								_get_compressed_key_indices_in_range<3>(st->compressed_track, 0, from_time, p_indices);
-								_get_compressed_key_indices_in_range<3>(st->compressed_track, 0, to_time, p_indices);
+								_get_compressed_key_indices_in_range<3>(st->compressed_track, CMP_EPSILON, to_time, p_indices);
 							} else {
 								_track_get_key_indices_in_range(st->scales, 0, from_time, p_indices);
-								_track_get_key_indices_in_range(st->scales, 0, to_time, p_indices);
+								_track_get_key_indices_in_range(st->scales, CMP_EPSILON, to_time, p_indices);
 							}
 						} break;
 						case TYPE_BLEND_SHAPE: {
 							const BlendShapeTrack *bst = static_cast<const BlendShapeTrack *>(t);
 							if (bst->compressed_track >= 0) {
 								_get_compressed_key_indices_in_range<1>(bst->compressed_track, 0, from_time, p_indices);
-								_get_compressed_key_indices_in_range<1>(bst->compressed_track, 0, to_time, p_indices);
+								_get_compressed_key_indices_in_range<1>(bst->compressed_track, CMP_EPSILON, to_time, p_indices);
 							} else {
 								_track_get_key_indices_in_range(bst->blend_shapes, 0, from_time, p_indices);
-								_track_get_key_indices_in_range(bst->blend_shapes, 0, to_time, p_indices);
+								_track_get_key_indices_in_range(bst->blend_shapes, CMP_EPSILON, to_time, p_indices);
 							}
 						} break;
 						case TYPE_VALUE: {
 							const ValueTrack *vt = static_cast<const ValueTrack *>(t);
 							_track_get_key_indices_in_range(vt->values, 0, from_time, p_indices);
-							_track_get_key_indices_in_range(vt->values, 0, to_time, p_indices);
+							_track_get_key_indices_in_range(vt->values, CMP_EPSILON, to_time, p_indices);
 						} break;
 						case TYPE_METHOD: {
 							const MethodTrack *mt = static_cast<const MethodTrack *>(t);
 							_track_get_key_indices_in_range(mt->methods, 0, from_time, p_indices);
-							_track_get_key_indices_in_range(mt->methods, 0, to_time, p_indices);
+							_track_get_key_indices_in_range(mt->methods, CMP_EPSILON, to_time, p_indices);
 						} break;
 						case TYPE_BEZIER: {
 							const BezierTrack *bz = static_cast<const BezierTrack *>(t);
 							_track_get_key_indices_in_range(bz->values, 0, from_time, p_indices);
-							_track_get_key_indices_in_range(bz->values, 0, to_time, p_indices);
+							_track_get_key_indices_in_range(bz->values, CMP_EPSILON, to_time, p_indices);
 						} break;
 						case TYPE_AUDIO: {
 							const AudioTrack *ad = static_cast<const AudioTrack *>(t);
 							_track_get_key_indices_in_range(ad->values, 0, from_time, p_indices);
-							_track_get_key_indices_in_range(ad->values, 0, to_time, p_indices);
+							_track_get_key_indices_in_range(ad->values, CMP_EPSILON, to_time, p_indices);
 						} break;
 						case TYPE_ANIMATION: {
 							const AnimationTrack *an = static_cast<const AnimationTrack *>(t);
 							_track_get_key_indices_in_range(an->values, 0, from_time, p_indices);
-							_track_get_key_indices_in_range(an->values, 0, to_time, p_indices);
+							_track_get_key_indices_in_range(an->values, CMP_EPSILON, to_time, p_indices);
 						} break;
 					}
 					return;
 				}
 				if (p_pingponged == 1) {
 					// handle loop by splitting
+					to_time = MIN(length - CMP_EPSILON, to_time);
 					switch (t->type) {
 						case TYPE_POSITION_3D: {
 							const PositionTrack *tt = static_cast<const PositionTrack *>(t);
 							if (tt->compressed_track >= 0) {
 								_get_compressed_key_indices_in_range<3>(tt->compressed_track, from_time, length, p_indices);
-								_get_compressed_key_indices_in_range<3>(tt->compressed_track, to_time, length, p_indices);
+								_get_compressed_key_indices_in_range<3>(tt->compressed_track, to_time, length - CMP_EPSILON, p_indices);
 							} else {
 								_track_get_key_indices_in_range(tt->positions, from_time, length, p_indices);
-								_track_get_key_indices_in_range(tt->positions, to_time, length, p_indices);
+								_track_get_key_indices_in_range(tt->positions, to_time, length - CMP_EPSILON, p_indices);
 							}
 						} break;
 						case TYPE_ROTATION_3D: {
@@ -3077,7 +2973,7 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 								_get_compressed_key_indices_in_range<3>(rt->compressed_track, to_time, length, p_indices);
 							} else {
 								_track_get_key_indices_in_range(rt->rotations, from_time, length, p_indices);
-								_track_get_key_indices_in_range(rt->rotations, to_time, length, p_indices);
+								_track_get_key_indices_in_range(rt->rotations, to_time, length - CMP_EPSILON, p_indices);
 							}
 						} break;
 						case TYPE_SCALE_3D: {
@@ -3087,43 +2983,43 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 								_get_compressed_key_indices_in_range<3>(st->compressed_track, to_time, length, p_indices);
 							} else {
 								_track_get_key_indices_in_range(st->scales, from_time, length, p_indices);
-								_track_get_key_indices_in_range(st->scales, to_time, length, p_indices);
+								_track_get_key_indices_in_range(st->scales, to_time, length - CMP_EPSILON, p_indices);
 							}
 						} break;
 						case TYPE_BLEND_SHAPE: {
 							const BlendShapeTrack *bst = static_cast<const BlendShapeTrack *>(t);
 							if (bst->compressed_track >= 0) {
 								_get_compressed_key_indices_in_range<1>(bst->compressed_track, from_time, length, p_indices);
-								_get_compressed_key_indices_in_range<1>(bst->compressed_track, to_time, length, p_indices);
+								_get_compressed_key_indices_in_range<1>(bst->compressed_track, to_time, length - CMP_EPSILON, p_indices);
 							} else {
 								_track_get_key_indices_in_range(bst->blend_shapes, from_time, length, p_indices);
-								_track_get_key_indices_in_range(bst->blend_shapes, to_time, length, p_indices);
+								_track_get_key_indices_in_range(bst->blend_shapes, to_time, length - CMP_EPSILON, p_indices);
 							}
 						} break;
 						case TYPE_VALUE: {
 							const ValueTrack *vt = static_cast<const ValueTrack *>(t);
 							_track_get_key_indices_in_range(vt->values, from_time, length, p_indices);
-							_track_get_key_indices_in_range(vt->values, to_time, length, p_indices);
+							_track_get_key_indices_in_range(vt->values, to_time, length - CMP_EPSILON, p_indices);
 						} break;
 						case TYPE_METHOD: {
 							const MethodTrack *mt = static_cast<const MethodTrack *>(t);
 							_track_get_key_indices_in_range(mt->methods, from_time, length, p_indices);
-							_track_get_key_indices_in_range(mt->methods, to_time, length, p_indices);
+							_track_get_key_indices_in_range(mt->methods, to_time, length - CMP_EPSILON, p_indices);
 						} break;
 						case TYPE_BEZIER: {
 							const BezierTrack *bz = static_cast<const BezierTrack *>(t);
 							_track_get_key_indices_in_range(bz->values, from_time, length, p_indices);
-							_track_get_key_indices_in_range(bz->values, to_time, length, p_indices);
+							_track_get_key_indices_in_range(bz->values, to_time, length - CMP_EPSILON, p_indices);
 						} break;
 						case TYPE_AUDIO: {
 							const AudioTrack *ad = static_cast<const AudioTrack *>(t);
 							_track_get_key_indices_in_range(ad->values, from_time, length, p_indices);
-							_track_get_key_indices_in_range(ad->values, to_time, length, p_indices);
+							_track_get_key_indices_in_range(ad->values, to_time, length - CMP_EPSILON, p_indices);
 						} break;
 						case TYPE_ANIMATION: {
 							const AnimationTrack *an = static_cast<const AnimationTrack *>(t);
 							_track_get_key_indices_in_range(an->values, from_time, length, p_indices);
-							_track_get_key_indices_in_range(an->values, to_time, length, p_indices);
+							_track_get_key_indices_in_range(an->values, to_time, length - CMP_EPSILON, p_indices);
 						} break;
 					}
 					return;
@@ -3186,110 +3082,6 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 			_track_get_key_indices_in_range(an->values, from_time, to_time, p_indices);
 		} break;
 	}
-}
-
-void Animation::_method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const {
-	if (from_time != length && to_time == length) {
-		to_time = length + CMP_EPSILON; //include a little more if at the end
-	}
-
-	int to = _find(mt->methods, to_time);
-
-	// can't really send the events == time, will be sent in the next frame.
-	// if event>=len then it will probably never be requested by the anim player.
-
-	if (to >= 0 && mt->methods[to].time >= to_time) {
-		to--;
-	}
-
-	if (to < 0) {
-		return; // not bother
-	}
-
-	int from = _find(mt->methods, from_time);
-
-	// position in the right first event.+
-	if (from < 0 || mt->methods[from].time < from_time) {
-		from++;
-	}
-
-	int max = mt->methods.size();
-
-	for (int i = from; i <= to; i++) {
-		ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
-		p_indices->push_back(i);
-	}
-}
-
-void Animation::method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged) const {
-	ERR_FAIL_INDEX(p_track, tracks.size());
-	Track *t = tracks[p_track];
-	ERR_FAIL_COND(t->type != TYPE_METHOD);
-
-	MethodTrack *mt = static_cast<MethodTrack *>(t);
-
-	double from_time = p_time - p_delta;
-	double to_time = p_time;
-
-	if (from_time > to_time) {
-		SWAP(from_time, to_time);
-	}
-
-	switch (loop_mode) {
-		case LOOP_NONE: {
-			if (from_time < 0) {
-				from_time = 0;
-			}
-			if (from_time > length) {
-				from_time = length;
-			}
-
-			if (to_time < 0) {
-				to_time = 0;
-			}
-			if (to_time > length) {
-				to_time = length;
-			}
-		} break;
-		case LOOP_LINEAR: {
-			if (from_time > length || from_time < 0) {
-				from_time = Math::fposmod(from_time, length);
-			}
-			if (to_time > length || to_time < 0) {
-				to_time = Math::fposmod(to_time, length);
-			}
-
-			if (from_time > to_time) {
-				// handle loop by splitting
-				_method_track_get_key_indices_in_range(mt, from_time, length, p_indices);
-				_method_track_get_key_indices_in_range(mt, 0, to_time, p_indices);
-				return;
-			}
-		} break;
-		case LOOP_PINGPONG: {
-			if (from_time > length || from_time < 0) {
-				from_time = Math::pingpong(from_time, length);
-			}
-			if (to_time > length || to_time < 0) {
-				to_time = Math::pingpong(to_time, length);
-			}
-
-			if (p_pingponged == -1) {
-				_method_track_get_key_indices_in_range(mt, 0, from_time, p_indices);
-				_method_track_get_key_indices_in_range(mt, 0, to_time, p_indices);
-				return;
-			}
-			if (p_pingponged == 1) {
-				_method_track_get_key_indices_in_range(mt, from_time, length, p_indices);
-				_method_track_get_key_indices_in_range(mt, to_time, length, p_indices);
-				return;
-			}
-		} break;
-		default:
-			break;
-	}
-
-	_method_track_get_key_indices_in_range(mt, from_time, to_time, p_indices);
 }
 
 Vector<Variant> Animation::method_track_get_params(int p_track, int p_key_idx) const {
@@ -3838,7 +3630,6 @@ void Animation::track_move_up(int p_track) {
 	}
 
 	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 void Animation::track_move_down(int p_track) {
@@ -3847,7 +3638,6 @@ void Animation::track_move_down(int p_track) {
 	}
 
 	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 void Animation::track_move_to(int p_track, int p_to_index) {
@@ -3863,7 +3653,6 @@ void Animation::track_move_to(int p_track, int p_to_index) {
 	tracks.insert(p_to_index > p_track ? p_to_index - 1 : p_to_index, track);
 
 	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 void Animation::track_swap(int p_track, int p_with_track) {
@@ -3875,7 +3664,6 @@ void Animation::track_swap(int p_track, int p_with_track) {
 	SWAP(tracks.write[p_track], tracks.write[p_with_track]);
 
 	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 void Animation::set_step(real_t p_step) {
@@ -3956,10 +3744,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("value_track_set_update_mode", "track_idx", "mode"), &Animation::value_track_set_update_mode);
 	ClassDB::bind_method(D_METHOD("value_track_get_update_mode", "track_idx"), &Animation::value_track_get_update_mode);
 
-	ClassDB::bind_method(D_METHOD("value_track_get_key_indices", "track_idx", "time_sec", "delta"), &Animation::_value_track_get_key_indices);
 	ClassDB::bind_method(D_METHOD("value_track_interpolate", "track_idx", "time_sec"), &Animation::value_track_interpolate);
 
-	ClassDB::bind_method(D_METHOD("method_track_get_key_indices", "track_idx", "time_sec", "delta"), &Animation::_method_track_get_key_indices);
 	ClassDB::bind_method(D_METHOD("method_track_get_name", "track_idx", "key_idx"), &Animation::method_track_get_name);
 	ClassDB::bind_method(D_METHOD("method_track_get_params", "track_idx", "key_idx"), &Animation::method_track_get_params);
 
@@ -4005,8 +3791,6 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");
 
-	ADD_SIGNAL(MethodInfo("tracks_changed"));
-
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);
 	BIND_ENUM_CONSTANT(TYPE_ROTATION_3D);
@@ -4045,7 +3829,6 @@ void Animation::clear() {
 	compression.pages.clear();
 	compression.fps = 120;
 	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 bool Animation::_float_track_optimize_key(const TKey<float> t0, const TKey<float> t1, const TKey<float> t2, real_t p_allowed_velocity_err, real_t p_allowed_precision_error) {
@@ -4968,7 +4751,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 
 			if (rollback || best_frame == FRAME_MAX) {
 				// Commit the page if had to rollback or if no track was found
-				print_animc("\tCommiting page..");
+				print_animc("\tCommiting page...");
 
 				// The end frame for the page depends entirely on whether its valid or
 				// no more keys were found.
@@ -5243,9 +5026,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 
 	double page_base_time = compression.pages[page_index].time_offset;
 	const uint8_t *page_data = compression.pages[page_index].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+	// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 	const uint32_t *indices = (const uint32_t *)page_data;
 	const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 	uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5388,9 +5169,7 @@ void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track
 
 		double page_base_time = compression.pages[page_index].time_offset;
 		const uint8_t *page_data = compression.pages[page_index].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 		uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5460,9 +5239,7 @@ int Animation::_get_compressed_key_count(uint32_t p_compressed_track) const {
 
 	for (uint32_t i = 0; i < compression.pages.size(); i++) {
 		const uint8_t *page_data = compression.pages[i].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 		uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5496,9 +5273,7 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 
 	for (uint32_t i = 0; i < compression.pages.size(); i++) {
 		const uint8_t *page_data = compression.pages[i].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 		uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5561,6 +5336,466 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 	}
 
 	return false;
+}
+
+// Helper math functions for Variant.
+Variant Animation::add_variant(const Variant &a, const Variant &b) {
+	if (a.get_type() != b.get_type()) {
+		return a;
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		}
+		case Variant::BOOL: {
+			return (a.operator real_t()) + (b.operator real_t()); // It is cast for interpolation.
+		}
+		case Variant::RECT2: {
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			return Rect2(ra.position + rb.position, ra.size + rb.size);
+		}
+		case Variant::RECT2I: {
+			const Rect2i ra = a.operator Rect2i();
+			const Rect2i rb = b.operator Rect2i();
+			return Rect2i(ra.position + rb.position, ra.size + rb.size);
+		}
+		case Variant::PLANE: {
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			return Plane(pa.normal + pb.normal, pa.d + pb.d);
+		}
+		case Variant::AABB: {
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			return ::AABB(aa.position + ab.position, aa.size + ab.size);
+		}
+		case Variant::QUATERNION: {
+			return (a.operator Quaternion()) * (b.operator Quaternion());
+		}
+		case Variant::TRANSFORM2D: {
+			return (a.operator Transform2D()) * (b.operator Transform2D());
+		}
+		case Variant::TRANSFORM3D: {
+			return (a.operator Transform3D()) * (b.operator Transform3D());
+		}
+		default: {
+			return Variant::evaluate(Variant::OP_ADD, a, b);
+		}
+	}
+}
+
+Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
+	if (a.get_type() != b.get_type()) {
+		return a;
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		}
+		case Variant::BOOL: {
+			return (a.operator real_t()) - (b.operator real_t()); // It is cast for interpolation.
+		}
+		case Variant::RECT2: {
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			return Rect2(ra.position - rb.position, ra.size - rb.size);
+		}
+		case Variant::RECT2I: {
+			const Rect2i ra = a.operator Rect2i();
+			const Rect2i rb = b.operator Rect2i();
+			return Rect2i(ra.position - rb.position, ra.size - rb.size);
+		}
+		case Variant::PLANE: {
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			return Plane(pa.normal - pb.normal, pa.d - pb.d);
+		}
+		case Variant::AABB: {
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			return ::AABB(aa.position - ab.position, aa.size - ab.size);
+		}
+		case Variant::QUATERNION: {
+			return (b.operator Quaternion()).inverse() * (a.operator Quaternion());
+		}
+		case Variant::TRANSFORM2D: {
+			return (b.operator Transform2D()).inverse() * (a.operator Transform2D());
+		}
+		case Variant::TRANSFORM3D: {
+			return (b.operator Transform3D()).inverse() * (a.operator Transform3D());
+		}
+		default: {
+			return Variant::evaluate(Variant::OP_SUBTRACT, a, b);
+		}
+	}
+}
+
+Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
+	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			real_t va = a;
+			real_t vb = b;
+			return va + vb * c;
+		}
+		return a;
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		}
+		case Variant::INT: {
+			return int((a.operator int64_t()) + (b.operator int64_t()) * c + 0.5);
+		}
+		case Variant::FLOAT: {
+			return (a.operator double()) + (b.operator double()) * c;
+		}
+		case Variant::VECTOR2: {
+			return (a.operator Vector2()) + (b.operator Vector2()) * c;
+		}
+		case Variant::VECTOR2I: {
+			const Vector2i va = a.operator Vector2i();
+			const Vector2i vb = b.operator Vector2i();
+			return Vector2i(int32_t(va.x + vb.x * c + 0.5), int32_t(va.y + vb.y * c + 0.5));
+		}
+		case Variant::RECT2: {
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			return Rect2(ra.position + rb.position * c, ra.size + rb.size * c);
+		}
+		case Variant::RECT2I: {
+			const Rect2i ra = a.operator Rect2i();
+			const Rect2i rb = b.operator Rect2i();
+			return Rect2i(int32_t(ra.position.x + rb.position.x * c + 0.5), int32_t(ra.position.y + rb.position.y * c + 0.5), int32_t(ra.size.x + rb.size.x * c + 0.5), int32_t(ra.size.y + rb.size.y * c + 0.5));
+		}
+		case Variant::VECTOR3: {
+			return (a.operator Vector3()) + (b.operator Vector3()) * c;
+		}
+		case Variant::VECTOR3I: {
+			const Vector3i va = a.operator Vector3i();
+			const Vector3i vb = b.operator Vector3i();
+			return Vector3i(int32_t(va.x + vb.x * c + 0.5), int32_t(va.y + vb.y * c + 0.5), int32_t(va.z + vb.z * c + 0.5));
+		}
+		case Variant::VECTOR4: {
+			return (a.operator Vector4()) + (b.operator Vector4()) * c;
+		}
+		case Variant::VECTOR4I: {
+			const Vector4i va = a.operator Vector4i();
+			const Vector4i vb = b.operator Vector4i();
+			return Vector4i(int32_t(va.x + vb.x * c + 0.5), int32_t(va.y + vb.y * c + 0.5), int32_t(va.z + vb.z * c + 0.5), int32_t(va.w + vb.w * c + 0.5));
+		}
+		case Variant::PLANE: {
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			return Plane(pa.normal + pb.normal * c, pa.d + pb.d * c);
+		}
+		case Variant::COLOR: {
+			return (a.operator Color()) + (b.operator Color()) * c;
+		}
+		case Variant::AABB: {
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			return ::AABB(aa.position + ab.position * c, aa.size + ab.size * c);
+		}
+		case Variant::BASIS: {
+			return (a.operator Basis()) + (b.operator Basis()) * c;
+		}
+		case Variant::QUATERNION: {
+			return (a.operator Quaternion()) * Quaternion().slerp((b.operator Quaternion()), c);
+		}
+		case Variant::TRANSFORM2D: {
+			return (a.operator Transform2D()) * Transform2D().interpolate_with((b.operator Transform2D()), c);
+		}
+		case Variant::TRANSFORM3D: {
+			return (a.operator Transform3D()) * Transform3D().interpolate_with((b.operator Transform3D()), c);
+		}
+		default: {
+			return c < 0.5 ? a : b;
+		}
+	}
+}
+
+Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float c) {
+	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			real_t va = a;
+			real_t vb = b;
+			return va + (vb - va) * c;
+		}
+		return a;
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		}
+		case Variant::INT: {
+			const int64_t va = a.operator int64_t();
+			return int(va + ((b.operator int64_t()) - va) * c);
+		}
+		case Variant::FLOAT: {
+			const real_t va = a.operator real_t();
+			return va + ((b.operator real_t()) - va) * c;
+		}
+		case Variant::VECTOR2: {
+			return (a.operator Vector2()).lerp(b.operator Vector2(), c);
+		}
+		case Variant::VECTOR2I: {
+			const Vector2i va = a.operator Vector2i();
+			const Vector2i vb = b.operator Vector2i();
+			return Vector2i(int32_t(va.x + (vb.x - va.x) * c), int32_t(va.y + (vb.y - va.y) * c));
+		}
+		case Variant::RECT2: {
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			return Rect2(ra.position.lerp(rb.position, c), ra.size.lerp(rb.size, c));
+		}
+		case Variant::RECT2I: {
+			const Rect2i ra = a.operator Rect2i();
+			const Rect2i rb = b.operator Rect2i();
+			return Rect2i(int32_t(ra.position.x + (rb.position.x - ra.position.x) * c), int32_t(ra.position.y + (rb.position.y - ra.position.y) * c), int32_t(ra.size.x + (rb.size.x - ra.size.x) * c), int32_t(ra.size.y + (rb.size.y - ra.size.y) * c));
+		}
+		case Variant::VECTOR3: {
+			return (a.operator Vector3()).lerp(b.operator Vector3(), c);
+		}
+		case Variant::VECTOR3I: {
+			const Vector3i va = a.operator Vector3i();
+			const Vector3i vb = b.operator Vector3i();
+			return Vector3i(int32_t(va.x + (vb.x - va.x) * c), int32_t(va.y + (vb.y - va.y) * c), int32_t(va.z + (vb.z - va.z) * c));
+		}
+		case Variant::VECTOR4: {
+			return (a.operator Vector4()).lerp(b.operator Vector4(), c);
+		}
+		case Variant::VECTOR4I: {
+			const Vector4i va = a.operator Vector4i();
+			const Vector4i vb = b.operator Vector4i();
+			return Vector4i(int32_t(va.x + (vb.x - va.x) * c), int32_t(va.y + (vb.y - va.y) * c), int32_t(va.z + (vb.z - va.z) * c), int32_t(va.w + (vb.w - va.w) * c));
+		}
+		case Variant::PLANE: {
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			return Plane(pa.normal.lerp(pb.normal, c), pa.d + (pb.d - pa.d) * c);
+		}
+		case Variant::COLOR: {
+			return (a.operator Color()).lerp(b.operator Color(), c);
+		}
+		case Variant::AABB: {
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			return ::AABB(aa.position.lerp(ab.position, c), aa.size.lerp(ab.size, c));
+		}
+		case Variant::BASIS: {
+			return (a.operator Basis()).lerp(b.operator Basis(), c);
+		}
+		case Variant::QUATERNION: {
+			return (a.operator Quaternion()).slerp(b.operator Quaternion(), c);
+		}
+		case Variant::TRANSFORM2D: {
+			return (a.operator Transform2D()).interpolate_with(b.operator Transform2D(), c);
+		}
+		case Variant::TRANSFORM3D: {
+			return (a.operator Transform3D()).interpolate_with(b.operator Transform3D(), c);
+		}
+		case Variant::STRING: {
+			// This is pretty funny and bizarre, but artists like to use it for typewriter effects.
+			const String sa = a.operator String();
+			const String sb = b.operator String();
+			String dst;
+			int sa_len = sa.length();
+			int sb_len = sb.length();
+			int csize = sa_len + (sb_len - sa_len) * c;
+			if (csize == 0) {
+				return "";
+			}
+			dst.resize(csize + 1);
+			dst[csize] = 0;
+			int split = csize / 2;
+
+			for (int i = 0; i < csize; i++) {
+				char32_t chr = ' ';
+
+				if (i < split) {
+					if (i < sa.length()) {
+						chr = sa[i];
+					} else if (i < sb.length()) {
+						chr = sb[i];
+					}
+
+				} else {
+					if (i < sb.length()) {
+						chr = sb[i];
+					} else if (i < sa.length()) {
+						chr = sa[i];
+					}
+				}
+
+				dst[i] = chr;
+			}
+
+			return dst;
+		}
+		case Variant::PACKED_INT32_ARRAY: {
+			const Vector<int32_t> arr_a = a;
+			const Vector<int32_t> arr_b = b;
+			int32_t sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
+				return a;
+			} else {
+				Vector<int32_t> v;
+				v.resize(sz);
+				{
+					int32_t *vw = v.ptrw();
+					const int32_t *ar = arr_a.ptr();
+					const int32_t *br = arr_b.ptr();
+
+					Variant va;
+					for (int32_t i = 0; i < sz; i++) {
+						va = interpolate_variant(ar[i], br[i], c);
+						vw[i] = va;
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_INT64_ARRAY: {
+			const Vector<int64_t> arr_a = a;
+			const Vector<int64_t> arr_b = b;
+			int64_t sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
+				return a;
+			} else {
+				Vector<int64_t> v;
+				v.resize(sz);
+				{
+					int64_t *vw = v.ptrw();
+					const int64_t *ar = arr_a.ptr();
+					const int64_t *br = arr_b.ptr();
+
+					Variant va;
+					for (int64_t i = 0; i < sz; i++) {
+						va = interpolate_variant(ar[i], br[i], c);
+						vw[i] = va;
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_FLOAT32_ARRAY: {
+			const Vector<float> arr_a = a;
+			const Vector<float> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
+				return a;
+			} else {
+				Vector<float> v;
+				v.resize(sz);
+				{
+					float *vw = v.ptrw();
+					const float *ar = arr_a.ptr();
+					const float *br = arr_b.ptr();
+
+					Variant va;
+					for (int i = 0; i < sz; i++) {
+						va = interpolate_variant(ar[i], br[i], c);
+						vw[i] = va;
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_FLOAT64_ARRAY: {
+			const Vector<double> arr_a = a;
+			const Vector<double> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
+				return a;
+			} else {
+				Vector<double> v;
+				v.resize(sz);
+				{
+					double *vw = v.ptrw();
+					const double *ar = arr_a.ptr();
+					const double *br = arr_b.ptr();
+
+					Variant va;
+					for (int i = 0; i < sz; i++) {
+						va = interpolate_variant(ar[i], br[i], c);
+						vw[i] = va;
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_VECTOR2_ARRAY: {
+			const Vector<Vector2> arr_a = a;
+			const Vector<Vector2> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
+				return a;
+			} else {
+				Vector<Vector2> v;
+				v.resize(sz);
+				{
+					Vector2 *vw = v.ptrw();
+					const Vector2 *ar = arr_a.ptr();
+					const Vector2 *br = arr_b.ptr();
+
+					for (int i = 0; i < sz; i++) {
+						vw[i] = ar[i].lerp(br[i], c);
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_VECTOR3_ARRAY: {
+			const Vector<Vector3> arr_a = a;
+			const Vector<Vector3> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
+				return a;
+			} else {
+				Vector<Vector3> v;
+				v.resize(sz);
+				{
+					Vector3 *vw = v.ptrw();
+					const Vector3 *ar = arr_a.ptr();
+					const Vector3 *br = arr_b.ptr();
+
+					for (int i = 0; i < sz; i++) {
+						vw[i] = ar[i].lerp(br[i], c);
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_COLOR_ARRAY: {
+			const Vector<Color> arr_a = a;
+			const Vector<Color> arr_b = b;
+			int sz = arr_a.size();
+			if (sz == 0 || arr_b.size() != sz) {
+				return a;
+			} else {
+				Vector<Color> v;
+				v.resize(sz);
+				{
+					Color *vw = v.ptrw();
+					const Color *ar = arr_a.ptr();
+					const Color *br = arr_b.ptr();
+
+					for (int i = 0; i < sz; i++) {
+						vw[i] = ar[i].lerp(br[i], c);
+					}
+				}
+				return v;
+			}
+		}
+		default: {
+			return c < 0.5 ? a : b;
+		}
+	}
 }
 
 Animation::Animation() {}

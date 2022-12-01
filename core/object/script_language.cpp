@@ -106,23 +106,23 @@ Dictionary Script::_get_script_constant_map() {
 
 PropertyInfo Script::get_class_category() const {
 	String path = get_path();
-	String name;
+	String scr_name;
 
 	if (is_built_in()) {
 		if (get_name().is_empty()) {
-			name = TTR("Built-in script");
+			scr_name = TTR("Built-in script");
 		} else {
-			name = vformat("%s (%s)", get_name(), TTR("Built-in"));
+			scr_name = vformat("%s (%s)", get_name(), TTR("Built-in"));
 		}
 	} else {
 		if (get_name().is_empty()) {
-			name = path.get_file();
+			scr_name = path.get_file();
 		} else {
-			name = get_name();
+			scr_name = get_name();
 		}
 	}
 
-	return PropertyInfo(Variant::NIL, name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY);
+	return PropertyInfo(Variant::NIL, scr_name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY);
 }
 
 #endif // TOOLS_ENABLED
@@ -166,6 +166,7 @@ ScriptLanguage *ScriptServer::get_language(int p_idx) {
 }
 
 void ScriptServer::register_language(ScriptLanguage *p_language) {
+	ERR_FAIL_NULL(p_language);
 	ERR_FAIL_COND(_language_count >= MAX_LANGUAGES);
 	_languages[_language_count++] = p_language;
 }
@@ -183,10 +184,10 @@ void ScriptServer::unregister_language(const ScriptLanguage *p_language) {
 }
 
 void ScriptServer::init_languages() {
-	{ //load global classes
+	{ // Load global classes.
 		global_classes_clear();
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
-			Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");
+			Array script_classes = GLOBAL_GET("_global_script_classes");
 
 			for (int i = 0; i < script_classes.size(); i++) {
 				Dictionary c = script_classes[i];
@@ -304,7 +305,7 @@ void ScriptServer::save_global_classes() {
 
 	Array old;
 	if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
-		old = ProjectSettings::get_singleton()->get("_global_script_classes");
+		old = GLOBAL_GET("_global_script_classes");
 	}
 	if ((!old.is_empty() || gcarr.is_empty()) && gcarr.hash() == old.hash()) {
 		return;
@@ -408,7 +409,9 @@ bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_v
 	if (values.has(p_name)) {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
-			if (defval == p_value) {
+			// The evaluate function ensures that a NIL variant is equal to e.g. an empty Resource.
+			// Simply doing defval == p_value does not do this.
+			if (Variant::evaluate(Variant::OP_EQUAL, defval, p_value)) {
 				values.erase(p_name);
 				return true;
 			}
@@ -418,7 +421,7 @@ bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_v
 	} else {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
-			if (defval != p_value) {
+			if (Variant::evaluate(Variant::OP_NOT_EQUAL, defval, p_value)) {
 				values[p_name] = p_value;
 			}
 			return true;

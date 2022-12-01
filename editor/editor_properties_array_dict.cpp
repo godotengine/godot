@@ -34,6 +34,7 @@
 #include "core/io/marshalls.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/inspector_dock.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
@@ -260,14 +261,15 @@ void EditorPropertyArray::update_property() {
 			HBoxContainer *hbox = memnew(HBoxContainer);
 			vbox->add_child(hbox);
 
-			Label *label = memnew(Label(TTR("Size:")));
-			label->set_h_size_flags(SIZE_EXPAND_FILL);
-			hbox->add_child(label);
+			Label *size_label = memnew(Label(TTR("Size:")));
+			size_label->set_h_size_flags(SIZE_EXPAND_FILL);
+			hbox->add_child(size_label);
 
 			size_slider = memnew(EditorSpinSlider);
 			size_slider->set_step(1);
 			size_slider->set_max(1000000);
 			size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+			size_slider->set_read_only(is_read_only());
 			size_slider->connect("value_changed", callable_mp(this, &EditorPropertyArray::_length_changed));
 			hbox->add_child(size_slider);
 
@@ -278,6 +280,7 @@ void EditorPropertyArray::update_property() {
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_add_item->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyArray::_add_element));
+			button_add_item->set_disabled(is_read_only());
 			vbox->add_child(button_add_item);
 
 			paginator = memnew(EditorPaginator);
@@ -291,7 +294,7 @@ void EditorPropertyArray::update_property() {
 					continue; // Don't remove the property that the user is moving.
 				}
 
-				child->queue_delete(); // Button still needed after pressed is called.
+				child->queue_free(); // Button still needed after pressed is called.
 				property_vbox->remove_child(child);
 			}
 		}
@@ -328,6 +331,7 @@ void EditorPropertyArray::update_property() {
 			Button *reorder_button = memnew(Button);
 			reorder_button->set_icon(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 			reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
+			reorder_button->set_disabled(is_read_only());
 			reorder_button->connect("gui_input", callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
 			reorder_button->connect("button_down", callable_mp(this, &EditorPropertyArray::_reorder_button_down).bind(i + offset));
 			reorder_button->connect("button_up", callable_mp(this, &EditorPropertyArray::_reorder_button_up));
@@ -358,20 +362,23 @@ void EditorPropertyArray::update_property() {
 			prop->connect("property_changed", callable_mp(this, &EditorPropertyArray::_property_changed));
 			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyArray::_object_id_selected));
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
+			prop->set_read_only(is_read_only());
 			hbox->add_child(prop);
 
 			bool is_untyped_array = array.get_type() == Variant::ARRAY && subtype == Variant::NIL;
 
 			if (is_untyped_array) {
-				Button *edit = memnew(Button);
-				edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-				hbox->add_child(edit);
-				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type).bind(edit, i + offset));
+				Button *edit_btn = memnew(Button);
+				edit_btn->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+				hbox->add_child(edit_btn);
+				edit_btn->set_disabled(is_read_only());
+				edit_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, i + offset));
 			} else {
-				Button *remove = memnew(Button);
-				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(i + offset));
-				hbox->add_child(remove);
+				Button *remove_btn = memnew(Button);
+				remove_btn->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+				remove_btn->set_disabled(is_read_only());
+				remove_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(i + offset));
+				hbox->add_child(remove_btn);
 			}
 
 			prop->update_property();
@@ -409,6 +416,10 @@ void EditorPropertyArray::_button_draw() {
 }
 
 bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
+	if (is_read_only()) {
+		return false;
+	}
+
 	String allowed_type = Variant::get_type_name(subtype);
 
 	// When the subtype is of type Object, an additional subtype may be specified in the hint string
@@ -456,7 +467,7 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		Variant array = object->get_array();
 
-		// Handle the case where array is not initialised yet.
+		// Handle the case where array is not initialized yet.
 		if (!array.is_array()) {
 			Callable::CallError ce;
 			Variant::construct(array_type, array, nullptr, 0, ce);
@@ -500,7 +511,7 @@ void EditorPropertyArray::_notification(int p_what) {
 			change_type->add_separator();
 			change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
-			if (Object::cast_to<Button>(button_add_item)) {
+			if (button_add_item) {
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;
@@ -609,7 +620,7 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 }
 
 void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_event) {
-	if (reorder_from_index < 0) {
+	if (reorder_from_index < 0 || is_read_only()) {
 		return;
 	}
 
@@ -646,6 +657,10 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 }
 
 void EditorPropertyArray::_reorder_button_down(int p_index) {
+	if (is_read_only()) {
+		return;
+	}
+
 	reorder_from_index = p_index;
 	reorder_to_index = p_index;
 	reorder_selected_element_hbox = Object::cast_to<HBoxContainer>(property_vbox->get_child(p_index % page_length));
@@ -656,6 +671,10 @@ void EditorPropertyArray::_reorder_button_down(int p_index) {
 }
 
 void EditorPropertyArray::_reorder_button_up() {
+	if (is_read_only()) {
+		return;
+	}
+
 	if (reorder_from_index != reorder_to_index) {
 		// Move the element.
 		Variant array = object->get_array();
@@ -674,6 +693,8 @@ void EditorPropertyArray::_reorder_button_up() {
 	reorder_mouse_y_delta = 0.0f;
 
 	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+
+	ERR_FAIL_NULL(reorder_selected_button);
 	reorder_selected_button->warp_mouse(reorder_selected_button->get_size() / 2.0f);
 
 	reorder_selected_element_hbox = nullptr;
@@ -843,7 +864,7 @@ void EditorPropertyDictionary::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 		}
 
@@ -1097,6 +1118,10 @@ void EditorPropertyDictionary::update_property() {
 				}
 			}
 
+			ERR_FAIL_COND(!prop);
+
+			prop->set_read_only(is_read_only());
+
 			if (i == amount) {
 				PanelContainer *pc = memnew(PanelContainer);
 				property_vbox->add_child(pc);
@@ -1133,16 +1158,18 @@ void EditorPropertyDictionary::update_property() {
 			}
 			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			Button *edit = memnew(Button);
-			edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-			hbox->add_child(edit);
-			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit, change_index));
+			Button *edit_btn = memnew(Button);
+			edit_btn->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			edit_btn->set_disabled(is_read_only());
+			hbox->add_child(edit_btn);
+			edit_btn->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, change_index));
 
 			prop->update_property();
 
 			if (i == amount + 1) {
 				button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+				button_add_item->set_disabled(is_read_only());
 				button_add_item->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 				add_vbox->add_child(button_add_item);
 			}
@@ -1181,7 +1208,7 @@ void EditorPropertyDictionary::_notification(int p_what) {
 			change_type->add_separator();
 			change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
-			if (Object::cast_to<Button>(button_add_item)) {
+			if (button_add_item) {
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;
@@ -1325,7 +1352,7 @@ void EditorPropertyLocalizableString::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 		}
 
@@ -1372,10 +1399,10 @@ void EditorPropertyLocalizableString::update_property() {
 			property_vbox->add_child(hbox);
 			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			Button *edit = memnew(Button);
-			edit->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-			hbox->add_child(edit);
-			edit->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit, remove_index));
+			Button *edit_btn = memnew(Button);
+			edit_btn->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			hbox->add_child(edit_btn);
+			edit_btn->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
 
 			prop->update_property();
 		}
@@ -1407,7 +1434,7 @@ void EditorPropertyLocalizableString::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			if (Object::cast_to<Button>(button_add_item)) {
+			if (button_add_item) {
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;

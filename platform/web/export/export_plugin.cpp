@@ -307,13 +307,7 @@ void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> 
 	}
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
-		String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-		if (driver == "opengl3") {
-			r_features->push_back("etc");
-		} else if (driver == "vulkan") {
-			// FIXME: Review if this is correct.
-			r_features->push_back("etc2");
-		}
+		r_features->push_back("etc2");
 	}
 	r_features->push_back("wasm32");
 }
@@ -355,15 +349,6 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 }
 
 bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
-#ifndef DEV_ENABLED
-	// We don't provide export templates for the Web platform currently as there
-	// is no suitable renderer to use with them. So we forbid exporting and tell
-	// users why. This is skipped in DEV_ENABLED so that contributors can still test
-	// the pipeline once we start having WebGL or WebGPU support.
-	r_error = "The Web platform is currently not supported in Godot 4.0, as there is no suitable renderer for it.\n";
-	return false;
-#endif
-
 	String err;
 	bool valid = false;
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
@@ -396,15 +381,6 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 }
 
 bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
-#ifndef DEV_ENABLED
-	// We don't provide export templates for the Web platform currently as there
-	// is no suitable renderer to use with them. So we forbid exporting and tell
-	// users why. This is skipped in DEV_ENABLED so that contributors can still test
-	// the pipeline once we start having WebGL or WebGPU support.
-	r_error = "The Web platform is currently not supported in Godot 4.0, as there is no suitable renderer for it.\n";
-	return false;
-#endif
-
 	String err;
 	bool valid = true;
 
@@ -509,6 +485,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	}
 	html.resize(f->get_length());
 	f->get_buffer(html.ptrw(), html.size());
+	f.unref(); // close file.
 
 	// Generate HTML file with replaced strings.
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
@@ -633,23 +610,23 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 	}
 	ERR_FAIL_COND_V_MSG(!bind_ip.is_valid(), ERR_INVALID_PARAMETER, "Invalid editor setting 'export/web/http_host': '" + bind_host + "'. Try using '127.0.0.1'.");
 
-	const bool use_ssl = EDITOR_GET("export/web/use_ssl");
-	const String ssl_key = EDITOR_GET("export/web/ssl_key");
-	const String ssl_cert = EDITOR_GET("export/web/ssl_certificate");
+	const bool use_tls = EDITOR_GET("export/web/use_tls");
+	const String tls_key = EDITOR_GET("export/web/tls_key");
+	const String tls_cert = EDITOR_GET("export/web/tls_certificate");
 
 	// Restart server.
 	{
 		MutexLock lock(server_lock);
 
 		server->stop();
-		err = server->listen(bind_port, bind_ip, use_ssl, ssl_key, ssl_cert);
+		err = server->listen(bind_port, bind_ip, use_tls, tls_key, tls_cert);
 	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Error starting HTTP server: %d."), err));
 		return err;
 	}
 
-	OS::get_singleton()->shell_open(String((use_ssl ? "https://" : "http://") + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
+	OS::get_singleton()->shell_open(String((use_tls ? "https://" : "http://") + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
 	// FIXME: Find out how to clean up export files after running the successfully
 	// exported game. Might not be trivial.
 	return OK;

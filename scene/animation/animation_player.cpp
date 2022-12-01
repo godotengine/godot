@@ -109,7 +109,7 @@ bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 			Ref<AnimationLibrary> lib = d[lib_name];
 			add_animation_library(lib_name, lib);
 		}
-
+		emit_signal("animation_libraries_updated");
 	} else if (name.begins_with("next/")) {
 		String which = name.get_slicec('/', 1);
 		animation_set_next(which, p_value);
@@ -156,7 +156,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 	} else if (name == "blend_times") {
 		Vector<BlendKey> keys;
-		for (const KeyValue<BlendKey, float> &E : blend_times) {
+		for (const KeyValue<BlendKey, double> &E : blend_times) {
 			keys.ordered_insert(E.key);
 		}
 
@@ -216,7 +216,7 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "blend_times", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
-void AnimationPlayer::advance(float p_time) {
+void AnimationPlayer::advance(double p_time) {
 	_animation_process(p_time);
 }
 
@@ -323,7 +323,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 #endif // _3D_DISABLED
 
 		if (!child->is_connected("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed))) {
-			child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed).bind(child), CONNECT_ONESHOT);
+			child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed).bind(child), CONNECT_ONE_SHOT);
 		}
 
 		TrackNodeCacheKey key;
@@ -650,15 +650,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						double c = Math::ease(p_time / first_key_time, transition);
 						Variant first_value = a->track_get_key_value(i, first_key);
 						first_value = _post_process_key_value(a, i, first_value, nc->node);
-						Variant interp_value;
-						Variant::interpolate(pa->capture, first_value, c, interp_value);
+						Variant interp_value = Animation::interpolate_variant(pa->capture, first_value, c);
 						if (pa->accum_pass != accum_pass) {
 							ERR_CONTINUE(cache_update_prop_size >= NODE_CACHE_UPDATE_MAX);
 							cache_update_prop[cache_update_prop_size++] = pa;
 							pa->value_accum = interp_value;
 							pa->accum_pass = accum_pass;
 						} else {
-							Variant::interpolate(pa->value_accum, interp_value, p_interp, pa->value_accum);
+							pa->value_accum = Animation::interpolate_variant(pa->value_accum, interp_value, p_interp);
 						}
 
 						continue; //handled
@@ -679,12 +678,12 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						pa->value_accum = value;
 						pa->accum_pass = accum_pass;
 					} else {
-						Variant::interpolate(pa->value_accum, value, p_interp, pa->value_accum);
+						pa->value_accum = Animation::interpolate_variant(pa->value_accum, value, p_interp);
 					}
 
 				} else if (p_is_current && p_delta != 0) {
 					List<int> indices;
-					a->value_track_get_key_indices(i, p_time, p_delta, &indices, p_pingponged);
+					a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_pingponged);
 
 					for (int &F : indices) {
 						Variant value = a->track_get_key_value(i, F);
@@ -743,8 +742,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				}
 
 				List<int> indices;
-
-				a->method_track_get_key_indices(i, p_time, p_delta, &indices, p_pingponged);
+				a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_pingponged);
 
 				for (int &E : indices) {
 					StringName method = a->method_track_get_name(i, E);
@@ -1270,9 +1268,28 @@ void AnimationPlayer::_animation_set_cache_update() {
 		// If something was modified or removed, caches need to be cleared
 		clear_caches();
 	}
+
+	emit_signal(SNAME("animation_list_changed"));
 }
 
 void AnimationPlayer::_animation_added(const StringName &p_name, const StringName &p_library) {
+	{
+		int at_pos = -1;
+
+		for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+			if (animation_libraries[i].name == p_library) {
+				at_pos = i;
+				break;
+			}
+		}
+
+		ERR_FAIL_COND(at_pos == -1);
+
+		ERR_FAIL_COND(!animation_libraries[at_pos].library->animations.has(p_name));
+
+		_ref_anim(animation_libraries[at_pos].library->animations[p_name]);
+	}
+
 	_animation_set_cache_update();
 }
 
@@ -1282,11 +1299,17 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 	if (!animation_set.has(name)) {
 		return; // No need to update because not the one from the library being used.
 	}
+
+	AnimationData animation_data = animation_set[name];
+	if (animation_data.animation_library == p_library) {
+		_unref_anim(animation_data.animation);
+	}
+
 	_animation_set_cache_update();
 
 	// Erase blends if needed
 	List<BlendKey> to_erase;
-	for (const KeyValue<BlendKey, float> &E : blend_times) {
+	for (const KeyValue<BlendKey, double> &E : blend_times) {
 		BlendKey bk = E.key;
 		if (bk.from == name || bk.to == name) {
 			to_erase.push_back(bk);
@@ -1302,8 +1325,8 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 void AnimationPlayer::_rename_animation(const StringName &p_from_name, const StringName &p_to_name) {
 	// Rename autoplay or blends if needed.
 	List<BlendKey> to_erase;
-	HashMap<BlendKey, float, BlendKey> to_insert;
-	for (const KeyValue<BlendKey, float> &E : blend_times) {
+	HashMap<BlendKey, double, BlendKey> to_insert;
+	for (const KeyValue<BlendKey, double> &E : blend_times) {
 		BlendKey bk = E.key;
 		BlendKey new_bk = bk;
 		bool erase = false;
@@ -1375,8 +1398,12 @@ Error AnimationPlayer::add_animation_library(const StringName &p_name, const Ref
 	animation_libraries.insert(insert_pos, ald);
 
 	ald.library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_name));
-	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_name));
+	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_removed).bind(p_name));
 	ald.library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed).bind(p_name));
+
+	for (const KeyValue<StringName, Ref<Animation>> &K : ald.library->animations) {
+		_ref_anim(K.value);
+	}
 
 	_animation_set_cache_update();
 
@@ -1398,7 +1425,7 @@ void AnimationPlayer::remove_animation_library(const StringName &p_name) {
 	ERR_FAIL_COND(at_pos == -1);
 
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added));
-	animation_libraries[at_pos].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added));
+	animation_libraries[at_pos].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_removed));
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed));
 
 	stop();
@@ -1414,11 +1441,11 @@ void AnimationPlayer::remove_animation_library(const StringName &p_name) {
 }
 
 void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed), CONNECT_REFERENCE_COUNTED);
+	Ref<Animation>(p_anim)->connect("changed", callable_mp(this, &AnimationPlayer::_animation_changed), CONNECT_REFERENCE_COUNTED);
 }
 
 void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->disconnect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed));
+	Ref<Animation>(p_anim)->disconnect("changed", callable_mp(this, &AnimationPlayer::_animation_changed));
 }
 
 void AnimationPlayer::rename_animation_library(const StringName &p_name, const StringName &p_new_name) {
@@ -1437,11 +1464,11 @@ void AnimationPlayer::rename_animation_library(const StringName &p_name, const S
 			animation_libraries[i].name = p_new_name;
 			// rename connections
 			animation_libraries[i].library->disconnect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added));
-			animation_libraries[i].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added));
+			animation_libraries[i].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_removed));
 			animation_libraries[i].library->disconnect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed));
 
 			animation_libraries[i].library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_new_name));
-			animation_libraries[i].library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_new_name));
+			animation_libraries[i].library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_removed).bind(p_new_name));
 			animation_libraries[i].library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed).bind(p_new_name));
 
 			for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[i].library->animations) {
@@ -1503,9 +1530,9 @@ bool AnimationPlayer::has_animation(const StringName &p_name) const {
 Ref<Animation> AnimationPlayer::get_animation(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: \"%s\".", p_name));
 
-	const AnimationData &data = animation_set[p_name];
+	const AnimationData &anim_data = animation_set[p_name];
 
-	return data.animation;
+	return anim_data.animation;
 }
 
 void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
@@ -1522,7 +1549,7 @@ void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 	}
 }
 
-void AnimationPlayer::set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time) {
+void AnimationPlayer::set_blend_time(const StringName &p_animation1, const StringName &p_animation2, double p_time) {
 	ERR_FAIL_COND_MSG(!animation_set.has(p_animation1), vformat("Animation not found: %s.", p_animation1));
 	ERR_FAIL_COND_MSG(!animation_set.has(p_animation2), vformat("Animation not found: %s.", p_animation2));
 	ERR_FAIL_COND_MSG(p_time < 0, "Blend time cannot be smaller than 0.");
@@ -1537,7 +1564,7 @@ void AnimationPlayer::set_blend_time(const StringName &p_animation1, const Strin
 	}
 }
 
-float AnimationPlayer::get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const {
+double AnimationPlayer::get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const {
 	BlendKey bk;
 	bk.from = p_animation1;
 	bk.to = p_animation2;
@@ -1570,11 +1597,11 @@ void AnimationPlayer::clear_queue() {
 	queued.clear();
 }
 
-void AnimationPlayer::play_backwards(const StringName &p_name, float p_custom_blend) {
+void AnimationPlayer::play_backwards(const StringName &p_name, double p_custom_blend) {
 	play(p_name, p_custom_blend, -1, true);
 }
 
-void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float p_custom_scale, bool p_from_end) {
+void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, float p_custom_scale, bool p_from_end) {
 	StringName name = p_name;
 
 	if (String(name) == "") {
@@ -1586,7 +1613,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	Playback &c = playback;
 
 	if (c.current.from) {
-		float blend_time = 0.0;
+		double blend_time = 0.0;
 		// find if it can blend
 		BlendKey bk;
 		bk.from = c.current.from->name;
@@ -1740,7 +1767,7 @@ void AnimationPlayer::seek(double p_time, bool p_update) {
 	}
 }
 
-void AnimationPlayer::seek_delta(double p_time, float p_delta) {
+void AnimationPlayer::seek_delta(double p_time, double p_delta) {
 	if (!playback.current.from) {
 		if (playback.assigned) {
 			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
@@ -1761,12 +1788,12 @@ bool AnimationPlayer::is_valid() const {
 	return (playback.current.from);
 }
 
-float AnimationPlayer::get_current_animation_position() const {
+double AnimationPlayer::get_current_animation_position() const {
 	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
 	return playback.current.pos;
 }
 
-float AnimationPlayer::get_current_animation_length() const {
+double AnimationPlayer::get_current_animation_length() const {
 	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
 	return playback.current.from->animation->get_length();
 }
@@ -1932,11 +1959,11 @@ StringName AnimationPlayer::animation_get_next(const StringName &p_animation) co
 	return animation_set[p_animation].next;
 }
 
-void AnimationPlayer::set_default_blend_time(float p_default) {
+void AnimationPlayer::set_default_blend_time(double p_default) {
 	default_blend_time = p_default;
 }
 
-float AnimationPlayer::get_default_blend_time() const {
+double AnimationPlayer::get_default_blend_time() const {
 	return default_blend_time;
 }
 
@@ -2036,10 +2063,9 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 	aux_player->add_animation_library("", al);
 	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
 	// Forcing the use of the original root because the scene where original player belongs may be not the active one
-	Node *root = get_node(get_root());
-	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(root);
+	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(get_node(get_root()));
 	aux_player->seek(0.0f, true);
-	aux_player->queue_delete();
+	aux_player->queue_free();
 
 	if (p_user_initiated) {
 		Ref<AnimatedValuesBackup> new_values = aux_player->backup_animated_values();
@@ -2150,6 +2176,8 @@ void AnimationPlayer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
 	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_list_changed"));
+	ADD_SIGNAL(MethodInfo("animation_libraries_updated"));
 	ADD_SIGNAL(MethodInfo("caches_cleared"));
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);

@@ -110,7 +110,9 @@ void EditorNode3DGizmo::clear() {
 	collision_mesh = Ref<TriangleMesh>();
 	instances.clear();
 	handles.clear();
+	handle_ids.clear();
 	secondary_handles.clear();
+	secondary_handle_ids.clear();
 }
 
 void EditorNode3DGizmo::redraw() {
@@ -231,7 +233,7 @@ void EditorNode3DGizmo::commit_subgizmos(const Vector<int> &p_ids, const Vector<
 	gizmo_plugin->commit_subgizmos(this, p_ids, p_restore, p_cancel);
 }
 
-void EditorNode3DGizmo::set_spatial_node(Node3D *p_node) {
+void EditorNode3DGizmo::set_node_3d(Node3D *p_node) {
 	ERR_FAIL_NULL(p_node);
 	spatial_node = p_node;
 }
@@ -406,12 +408,15 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 		return;
 	}
 
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
+
+	Vector<Vector3> &handle_list = p_secondary ? secondary_handles : handles;
+	Vector<int> &id_list = p_secondary ? secondary_handle_ids : handle_ids;
 
 	if (p_ids.is_empty()) {
-		ERR_FAIL_COND_MSG((!handles.is_empty() && !handle_ids.is_empty()) || (!secondary_handles.is_empty() && !secondary_handle_ids.is_empty()), "Fail");
+		ERR_FAIL_COND_MSG(!id_list.is_empty(), "IDs must be provided for all handles, as handles with IDs already exist.");
 	} else {
-		ERR_FAIL_COND_MSG(handles.size() != handle_ids.size() || secondary_handles.size() != secondary_handle_ids.size(), "Fail");
+		ERR_FAIL_COND_MSG(p_handles.size() != p_ids.size(), "The number of IDs should be the same as the number of handles.");
 	}
 
 	bool is_current_hover_gizmo = Node3DEditor::get_singleton()->get_current_hover_gizmo() == this;
@@ -464,19 +469,17 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	}
 	instances.push_back(ins);
 
-	Vector<Vector3> &h = p_secondary ? secondary_handles : handles;
-	int current_size = h.size();
-	h.resize(current_size + p_handles.size());
+	int current_size = handle_list.size();
+	handle_list.resize(current_size + p_handles.size());
 	for (int i = 0; i < p_handles.size(); i++) {
-		h.write[current_size + i] = p_handles[i];
+		handle_list.write[current_size + i] = p_handles[i];
 	}
 
 	if (!p_ids.is_empty()) {
-		Vector<int> &ids = p_secondary ? secondary_handle_ids : handle_ids;
-		current_size = ids.size();
-		ids.resize(current_size + p_ids.size());
+		current_size = id_list.size();
+		id_list.resize(current_size + p_ids.size());
 		for (int i = 0; i < p_ids.size(); i++) {
-			ids.write[current_size + i] = p_ids[i];
+			id_list.write[current_size + i] = p_ids[i];
 		}
 	}
 }
@@ -839,8 +842,8 @@ void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles"), &EditorNode3DGizmo::add_collision_triangles);
 	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale", "modulate"), &EditorNode3DGizmo::add_unscaled_billboard, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("add_handles", "handles", "material", "ids", "billboard", "secondary"), &EditorNode3DGizmo::add_handles, DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("set_spatial_node", "node"), &EditorNode3DGizmo::_set_spatial_node);
-	ClassDB::bind_method(D_METHOD("get_spatial_node"), &EditorNode3DGizmo::get_spatial_node);
+	ClassDB::bind_method(D_METHOD("set_node_3d", "node"), &EditorNode3DGizmo::_set_node_3d);
+	ClassDB::bind_method(D_METHOD("get_node_3d"), &EditorNode3DGizmo::get_node_3d);
 	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorNode3DGizmo::get_plugin);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorNode3DGizmo::clear);
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorNode3DGizmo::set_hidden);
@@ -1039,7 +1042,7 @@ Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::get_gizmo(Node3D *p_spatial) {
 	}
 
 	ref->set_plugin(this);
-	ref->set_spatial_node(p_spatial);
+	ref->set_node_3d(p_spatial);
 	ref->set_hidden(current_state == HIDDEN);
 
 	current_gizmos.push_back(ref.ptr());
@@ -1078,11 +1081,9 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 }
 
 bool EditorNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	bool success;
-	if (GDVIRTUAL_CALL(_has_gizmo, p_spatial, success)) {
-		return success;
-	}
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_has_gizmo, p_spatial, success);
+	return success;
 }
 
 Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
@@ -1099,19 +1100,15 @@ Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::create_gizmo(Node3D *p_spatial) 
 }
 
 bool EditorNode3DGizmoPlugin::can_be_hidden() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_can_be_hidden, ret)) {
-		return ret;
-	}
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_can_be_hidden, ret);
+	return ret;
 }
 
 bool EditorNode3DGizmoPlugin::is_selectable_when_hidden() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_is_selectable_when_hidden, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_is_selectable_when_hidden, ret);
+	return ret;
 }
 
 void EditorNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
@@ -1119,27 +1116,21 @@ void EditorNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 }
 
 bool EditorNode3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_is_handle_highlighted, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_is_handle_highlighted, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret);
+	return ret;
 }
 
 String EditorNode3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	String ret;
-	if (GDVIRTUAL_CALL(_get_handle_name, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret)) {
-		return ret;
-	}
-	return "";
+	GDVIRTUAL_CALL(_get_handle_name, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret);
+	return ret;
 }
 
 Variant EditorNode3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	Variant ret;
-	if (GDVIRTUAL_CALL(_get_handle_value, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret)) {
-		return ret;
-	}
-	return Variant();
+	GDVIRTUAL_CALL(_get_handle_value, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret);
+	return ret;
 }
 
 void EditorNode3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -1151,34 +1142,26 @@ void EditorNode3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, in
 }
 
 int EditorNode3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const {
-	int ret;
-	if (GDVIRTUAL_CALL(_subgizmos_intersect_ray, Ref<EditorNode3DGizmo>(p_gizmo), p_camera, p_point, ret)) {
-		return ret;
-	}
-	return -1;
+	int ret = -1;
+	GDVIRTUAL_CALL(_subgizmos_intersect_ray, Ref<EditorNode3DGizmo>(p_gizmo), p_camera, p_point, ret);
+	return ret;
 }
 
 Vector<int> EditorNode3DGizmoPlugin::subgizmos_intersect_frustum(const EditorNode3DGizmo *p_gizmo, const Camera3D *p_camera, const Vector<Plane> &p_frustum) const {
-	TypedArray<Transform3D> frustum;
+	TypedArray<Plane> frustum;
 	frustum.resize(p_frustum.size());
 	for (int i = 0; i < p_frustum.size(); i++) {
 		frustum[i] = p_frustum[i];
 	}
 	Vector<int> ret;
-	if (GDVIRTUAL_CALL(_subgizmos_intersect_frustum, Ref<EditorNode3DGizmo>(p_gizmo), p_camera, frustum, ret)) {
-		return ret;
-	}
-
-	return Vector<int>();
+	GDVIRTUAL_CALL(_subgizmos_intersect_frustum, Ref<EditorNode3DGizmo>(p_gizmo), p_camera, frustum, ret);
+	return ret;
 }
 
 Transform3D EditorNode3DGizmoPlugin::get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const {
 	Transform3D ret;
-	if (GDVIRTUAL_CALL(_get_subgizmo_transform, Ref<EditorNode3DGizmo>(p_gizmo), p_id, ret)) {
-		return ret;
-	}
-
-	return Transform3D();
+	GDVIRTUAL_CALL(_get_subgizmo_transform, Ref<EditorNode3DGizmo>(p_gizmo), p_id, ret);
+	return ret;
 }
 
 void EditorNode3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) {
@@ -1217,7 +1200,7 @@ EditorNode3DGizmoPlugin::EditorNode3DGizmoPlugin() {
 EditorNode3DGizmoPlugin::~EditorNode3DGizmoPlugin() {
 	for (int i = 0; i < current_gizmos.size(); ++i) {
 		current_gizmos[i]->set_plugin(nullptr);
-		current_gizmos[i]->get_spatial_node()->remove_gizmo(current_gizmos[i]);
+		current_gizmos[i]->get_node_3d()->remove_gizmo(current_gizmos[i]);
 	}
 	if (Node3DEditor::get_singleton()) {
 		Node3DEditor::get_singleton()->update_all_gizmos();
@@ -1261,7 +1244,7 @@ String Light3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int
 }
 
 Variant Light3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
+	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_node_3d());
 	if (p_id == 0) {
 		return light->get_param(Light3D::PARAM_RANGE);
 	}
@@ -1300,7 +1283,7 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vec
 }
 
 void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
+	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_node_3d());
 	Transform3D gt = light->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
 
@@ -1344,7 +1327,7 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 }
 
 void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
+	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_node_3d());
 	if (p_cancel) {
 		light->set_param(p_id == 0 ? Light3D::PARAM_RANGE : Light3D::PARAM_SPOT_ANGLE, p_restore);
 
@@ -1364,7 +1347,7 @@ void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 }
 
 void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
+	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_node_3d());
 
 	Color color = light->get_color().srgb_to_linear() * light->get_correlated_color().srgb_to_linear();
 	color = color.linear_to_srgb();
@@ -1526,12 +1509,12 @@ String AudioStreamPlayer3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *
 }
 
 Variant AudioStreamPlayer3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
+	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_node_3d());
 	return player->get_emission_angle();
 }
 
 void AudioStreamPlayer3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
+	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_node_3d());
 
 	Transform3D gt = player->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
@@ -1568,7 +1551,7 @@ void AudioStreamPlayer3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo
 }
 
 void AudioStreamPlayer3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
+	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_node_3d());
 
 	if (p_cancel) {
 		player->set_emission_angle(p_restore);
@@ -1583,7 +1566,7 @@ void AudioStreamPlayer3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gi
 }
 
 void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	const AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
+	const AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -1762,7 +1745,7 @@ int Camera3DGizmoPlugin::get_priority() const {
 }
 
 String Camera3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
+	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_node_3d());
 
 	if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
 		return "FOV";
@@ -1772,7 +1755,7 @@ String Camera3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, in
 }
 
 Variant Camera3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
+	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_node_3d());
 
 	if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
 		return camera->get_fov();
@@ -1782,7 +1765,7 @@ Variant Camera3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, 
 }
 
 void Camera3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
+	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_node_3d());
 
 	Transform3D gt = camera->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
@@ -1811,7 +1794,7 @@ void Camera3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id,
 }
 
 void Camera3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
+	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_node_3d());
 
 	if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
 		if (p_cancel) {
@@ -1838,7 +1821,7 @@ void Camera3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_
 }
 
 void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
+	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -1937,6 +1920,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 #undef ADD_QUAD
 
 	p_gizmo->add_lines(lines, material);
+	p_gizmo->add_collision_segments(lines);
 	p_gizmo->add_handles(handles, get_material("handles"));
 }
 
@@ -1962,7 +1946,7 @@ bool MeshInstance3DGizmoPlugin::can_be_hidden() const {
 }
 
 void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(p_gizmo->get_spatial_node());
+	MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -1998,7 +1982,7 @@ int OccluderInstance3DGizmoPlugin::get_priority() const {
 }
 
 String OccluderInstance3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	const OccluderInstance3D *cs = Object::cast_to<OccluderInstance3D>(p_gizmo->get_spatial_node());
+	const OccluderInstance3D *cs = Object::cast_to<OccluderInstance3D>(p_gizmo->get_node_3d());
 
 	Ref<Occluder3D> o = cs->get_occluder();
 	if (o.is_null()) {
@@ -2017,7 +2001,7 @@ String OccluderInstance3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p
 }
 
 Variant OccluderInstance3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	OccluderInstance3D *oi = Object::cast_to<OccluderInstance3D>(p_gizmo->get_spatial_node());
+	OccluderInstance3D *oi = Object::cast_to<OccluderInstance3D>(p_gizmo->get_node_3d());
 
 	Ref<Occluder3D> o = oi->get_occluder();
 	if (o.is_null()) {
@@ -2043,7 +2027,7 @@ Variant OccluderInstance3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo 
 }
 
 void OccluderInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	OccluderInstance3D *oi = Object::cast_to<OccluderInstance3D>(p_gizmo->get_spatial_node());
+	OccluderInstance3D *oi = Object::cast_to<OccluderInstance3D>(p_gizmo->get_node_3d());
 
 	Ref<Occluder3D> o = oi->get_occluder();
 	if (o.is_null()) {
@@ -2130,7 +2114,7 @@ void OccluderInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo,
 }
 
 void OccluderInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	OccluderInstance3D *oi = Object::cast_to<OccluderInstance3D>(p_gizmo->get_spatial_node());
+	OccluderInstance3D *oi = Object::cast_to<OccluderInstance3D>(p_gizmo->get_node_3d());
 
 	Ref<Occluder3D> o = oi->get_occluder();
 	if (o.is_null()) {
@@ -2181,7 +2165,7 @@ void OccluderInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_giz
 }
 
 void OccluderInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	OccluderInstance3D *occluder_instance = Object::cast_to<OccluderInstance3D>(p_gizmo->get_spatial_node());
+	OccluderInstance3D *occluder_instance = Object::cast_to<OccluderInstance3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -2250,7 +2234,7 @@ bool Sprite3DGizmoPlugin::can_be_hidden() const {
 }
 
 void Sprite3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Sprite3D *sprite = Object::cast_to<Sprite3D>(p_gizmo->get_spatial_node());
+	Sprite3D *sprite = Object::cast_to<Sprite3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -2282,7 +2266,7 @@ bool Label3DGizmoPlugin::can_be_hidden() const {
 }
 
 void Label3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Label3D *label = Object::cast_to<Label3D>(p_gizmo->get_spatial_node());
+	Label3D *label = Object::cast_to<Label3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -2296,10 +2280,10 @@ void Label3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	pos3d_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
-	cursor_points = Vector<Vector3>();
 
+	Vector<Vector3> cursor_points;
 	Vector<Color> cursor_colors;
-	const float cs = 0.25;
+	const float cs = 1.0;
 	// Add more points to create a "hard stop" in the color gradient.
 	cursor_points.push_back(Vector3(+cs, 0, 0));
 	cursor_points.push_back(Vector3());
@@ -2367,9 +2351,22 @@ int Marker3DGizmoPlugin::get_priority() const {
 }
 
 void Marker3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	const Marker3D *marker = Object::cast_to<Marker3D>(p_gizmo->get_node_3d());
+	const real_t extents = marker->get_gizmo_extents();
+	const Transform3D xform(Basis::from_scale(Vector3(extents, extents, extents)));
+
 	p_gizmo->clear();
-	p_gizmo->add_mesh(pos3d_mesh);
-	p_gizmo->add_collision_segments(cursor_points);
+	p_gizmo->add_mesh(pos3d_mesh, Ref<Material>(), xform);
+
+	const Vector<Vector3> points = {
+		Vector3(-extents, 0, 0),
+		Vector3(+extents, 0, 0),
+		Vector3(0, -extents, 0),
+		Vector3(0, +extents, 0),
+		Vector3(0, 0, -extents),
+		Vector3(0, 0, +extents),
+	};
+	p_gizmo->add_collision_segments(points);
 }
 
 ////
@@ -2393,7 +2390,7 @@ int PhysicalBone3DGizmoPlugin::get_priority() const {
 void PhysicalBone3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
-	PhysicalBone3D *physical_bone = Object::cast_to<PhysicalBone3D>(p_gizmo->get_spatial_node());
+	PhysicalBone3D *physical_bone = Object::cast_to<PhysicalBone3D>(p_gizmo->get_node_3d());
 
 	if (!physical_bone) {
 		return;
@@ -2528,7 +2525,7 @@ int RayCast3DGizmoPlugin::get_priority() const {
 }
 
 void RayCast3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	RayCast3D *raycast = Object::cast_to<RayCast3D>(p_gizmo->get_spatial_node());
+	RayCast3D *raycast = Object::cast_to<RayCast3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -2566,7 +2563,7 @@ int ShapeCast3DGizmoPlugin::get_priority() const {
 }
 
 void ShapeCast3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	ShapeCast3D *shapecast = Object::cast_to<ShapeCast3D>(p_gizmo->get_spatial_node());
+	ShapeCast3D *shapecast = Object::cast_to<ShapeCast3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -2584,7 +2581,7 @@ void ShapeCast3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 /////
 
 void SpringArm3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	SpringArm3D *spring_arm = Object::cast_to<SpringArm3D>(p_gizmo->get_spatial_node());
+	SpringArm3D *spring_arm = Object::cast_to<SpringArm3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -2636,7 +2633,7 @@ int VehicleWheel3DGizmoPlugin::get_priority() const {
 }
 
 void VehicleWheel3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	VehicleWheel3D *car_wheel = Object::cast_to<VehicleWheel3D>(p_gizmo->get_spatial_node());
+	VehicleWheel3D *car_wheel = Object::cast_to<VehicleWheel3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -2712,7 +2709,7 @@ bool SoftBody3DGizmoPlugin::is_selectable_when_hidden() const {
 }
 
 void SoftBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
+	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -2753,17 +2750,17 @@ String SoftBody3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, 
 }
 
 Variant SoftBody3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
+	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_node_3d());
 	return Variant(soft_body->is_point_pinned(p_id));
 }
 
 void SoftBody3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
+	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_node_3d());
 	soft_body->pin_point_toggle(p_id);
 }
 
 bool SoftBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
+	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_node_3d());
 	return soft_body->is_point_pinned(p_id);
 }
 
@@ -2809,12 +2806,12 @@ String VisibleOnScreenNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DG
 }
 
 Variant VisibleOnScreenNotifier3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
+	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_node_3d());
 	return notifier->get_aabb();
 }
 
 void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
+	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_node_3d());
 
 	Transform3D gt = notifier->get_global_transform();
 
@@ -2866,7 +2863,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p
 }
 
 void VisibleOnScreenNotifier3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
+	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_node_3d());
 
 	if (p_cancel) {
 		notifier->set_aabb(p_restore);
@@ -2881,7 +2878,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::commit_handle(const EditorNode3DGizmo
 }
 
 void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
+	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -3001,12 +2998,12 @@ String GPUParticles3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_giz
 }
 
 Variant GPUParticles3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_spatial_node());
+	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_node_3d());
 	return particles->get_visibility_aabb();
 }
 
 void GPUParticles3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_spatial_node());
+	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_node_3d());
 
 	Transform3D gt = particles->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
@@ -3057,7 +3054,7 @@ void GPUParticles3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int
 }
 
 void GPUParticles3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_spatial_node());
+	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_node_3d());
 
 	if (p_cancel) {
 		particles->set_visibility_aabb(p_restore);
@@ -3072,7 +3069,7 @@ void GPUParticles3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, 
 }
 
 void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_spatial_node());
+	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -3148,7 +3145,7 @@ int GPUParticlesCollision3DGizmoPlugin::get_priority() const {
 }
 
 String GPUParticlesCollision3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	const Node3D *cs = p_gizmo->get_spatial_node();
+	const Node3D *cs = p_gizmo->get_node_3d();
 
 	if (Object::cast_to<GPUParticlesCollisionSphere3D>(cs) || Object::cast_to<GPUParticlesAttractorSphere3D>(cs)) {
 		return "Radius";
@@ -3162,21 +3159,21 @@ String GPUParticlesCollision3DGizmoPlugin::get_handle_name(const EditorNode3DGiz
 }
 
 Variant GPUParticlesCollision3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	const Node3D *cs = p_gizmo->get_spatial_node();
+	const Node3D *cs = p_gizmo->get_node_3d();
 
 	if (Object::cast_to<GPUParticlesCollisionSphere3D>(cs) || Object::cast_to<GPUParticlesAttractorSphere3D>(cs)) {
-		return p_gizmo->get_spatial_node()->call("get_radius");
+		return p_gizmo->get_node_3d()->call("get_radius");
 	}
 
 	if (Object::cast_to<GPUParticlesCollisionBox3D>(cs) || Object::cast_to<GPUParticlesAttractorBox3D>(cs) || Object::cast_to<GPUParticlesAttractorVectorField3D>(cs) || Object::cast_to<GPUParticlesCollisionSDF3D>(cs) || Object::cast_to<GPUParticlesCollisionHeightField3D>(cs)) {
-		return Vector3(p_gizmo->get_spatial_node()->call("get_extents"));
+		return Vector3(p_gizmo->get_node_3d()->call("get_extents"));
 	}
 
 	return Variant();
 }
 
 void GPUParticlesCollision3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	Node3D *sn = p_gizmo->get_spatial_node();
+	Node3D *sn = p_gizmo->get_node_3d();
 
 	Transform3D gt = sn->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
@@ -3222,7 +3219,7 @@ void GPUParticlesCollision3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_g
 }
 
 void GPUParticlesCollision3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	Node3D *sn = p_gizmo->get_spatial_node();
+	Node3D *sn = p_gizmo->get_node_3d();
 
 	if (Object::cast_to<GPUParticlesCollisionSphere3D>(sn) || Object::cast_to<GPUParticlesAttractorSphere3D>(sn)) {
 		if (p_cancel) {
@@ -3252,7 +3249,7 @@ void GPUParticlesCollision3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *
 }
 
 void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Node3D *cs = p_gizmo->get_spatial_node();
+	Node3D *cs = p_gizmo->get_node_3d();
 
 	p_gizmo->clear();
 
@@ -3430,12 +3427,12 @@ String ReflectionProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gi
 }
 
 Variant ReflectionProbeGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_spatial_node());
+	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_node_3d());
 	return AABB(probe->get_extents(), probe->get_origin_offset());
 }
 
 void ReflectionProbeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_spatial_node());
+	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_node_3d());
 	Transform3D gt = probe->get_global_transform();
 
 	Transform3D gi = gt.affine_inverse();
@@ -3492,7 +3489,7 @@ void ReflectionProbeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, in
 }
 
 void ReflectionProbeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_spatial_node());
+	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_node_3d());
 
 	AABB restore = p_restore;
 
@@ -3512,7 +3509,7 @@ void ReflectionProbeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo,
 }
 
 void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_spatial_node());
+	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -3609,12 +3606,12 @@ String DecalGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p
 }
 
 Variant DecalGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
+	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_node_3d());
 	return decal->get_extents();
 }
 
 void DecalGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
+	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_node_3d());
 	Transform3D gt = decal->get_global_transform();
 
 	Transform3D gi = gt.affine_inverse();
@@ -3645,7 +3642,7 @@ void DecalGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bo
 }
 
 void DecalGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
+	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_node_3d());
 
 	Vector3 restore = p_restore;
 
@@ -3662,7 +3659,7 @@ void DecalGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id,
 }
 
 void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
+	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -3749,12 +3746,12 @@ String VoxelGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int
 }
 
 Variant VoxelGIGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
+	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_node_3d());
 	return probe->get_extents();
 }
 
 void VoxelGIGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
+	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_node_3d());
 
 	Transform3D gt = probe->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
@@ -3785,7 +3782,7 @@ void VoxelGIGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 }
 
 void VoxelGIGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
+	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_node_3d());
 
 	Vector3 restore = p_restore;
 
@@ -3802,7 +3799,7 @@ void VoxelGIGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 }
 
 void VoxelGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
+	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_node_3d());
 
 	Ref<Material> material = get_material("voxel_gi_material", p_gizmo);
 	Ref<Material> icon = get_material("voxel_gi_icon", p_gizmo);
@@ -3913,7 +3910,7 @@ int LightmapGIGizmoPlugin::get_priority() const {
 
 void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<Material> icon = get_material("baked_indirect_light_icon", p_gizmo);
-	LightmapGI *baker = Object::cast_to<LightmapGI>(p_gizmo->get_spatial_node());
+	LightmapGI *baker = Object::cast_to<LightmapGI>(p_gizmo->get_node_3d());
 	Ref<LightmapGIData> data = baker->get_light_data();
 
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
@@ -4163,13 +4160,13 @@ int CollisionObject3DGizmoPlugin::get_priority() const {
 }
 
 void CollisionObject3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_gizmo->get_spatial_node());
+	CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
-	List<uint32_t> owners;
-	co->get_shape_owners(&owners);
-	for (uint32_t &owner_id : owners) {
+	List<uint32_t> owner_ids;
+	co->get_shape_owners(&owner_ids);
+	for (uint32_t &owner_id : owner_ids) {
 		Transform3D xform = co->shape_owner_get_transform(owner_id);
 		Object *owner = co->shape_owner_get_owner(owner_id);
 		// Exclude CollisionShape3D and CollisionPolygon3D as they have their gizmo.
@@ -4214,7 +4211,7 @@ int CollisionShape3DGizmoPlugin::get_priority() const {
 }
 
 String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	const CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
+	const CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_node_3d());
 
 	Ref<Shape3D> s = cs->get_shape();
 	if (s.is_null()) {
@@ -4245,7 +4242,7 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 }
 
 Variant CollisionShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
+	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_node_3d());
 
 	Ref<Shape3D> s = cs->get_shape();
 	if (s.is_null()) {
@@ -4281,7 +4278,7 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p
 }
 
 void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
+	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_node_3d());
 
 	Ref<Shape3D> s = cs->get_shape();
 	if (s.is_null()) {
@@ -4395,7 +4392,7 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 }
 
 void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
+	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_node_3d());
 
 	Ref<Shape3D> s = cs->get_shape();
 	if (s.is_null()) {
@@ -4499,7 +4496,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 }
 
 void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
+	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -4751,9 +4748,9 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			if (err == OK) {
 				Vector<Vector3> points2;
 				points2.resize(md.edges.size() * 2);
-				for (int i = 0; i < md.edges.size(); i++) {
-					points2.write[i * 2 + 0] = md.vertices[md.edges[i].a];
-					points2.write[i * 2 + 1] = md.vertices[md.edges[i].b];
+				for (uint32_t i = 0; i < md.edges.size(); i++) {
+					points2.write[i * 2 + 0] = md.vertices[md.edges[i].vertex_a];
+					points2.write[i * 2 + 1] = md.vertices[md.edges[i].vertex_b];
 				}
 
 				p_gizmo->add_lines(points2, material);
@@ -4814,7 +4811,7 @@ int CollisionPolygon3DGizmoPlugin::get_priority() const {
 }
 
 void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	CollisionPolygon3D *polygon = Object::cast_to<CollisionPolygon3D>(p_gizmo->get_spatial_node());
+	CollisionPolygon3D *polygon = Object::cast_to<CollisionPolygon3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -4861,7 +4858,7 @@ int NavigationRegion3DGizmoPlugin::get_priority() const {
 }
 
 void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	NavigationRegion3D *navigationregion = Object::cast_to<NavigationRegion3D>(p_gizmo->get_spatial_node());
+	NavigationRegion3D *navigationregion = Object::cast_to<NavigationRegion3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 	Ref<NavigationMesh> navigationmesh = navigationregion->get_navigation_mesh();
@@ -5021,7 +5018,7 @@ int NavigationLink3DGizmoPlugin::get_priority() const {
 }
 
 void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_spatial_node());
+	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_node_3d());
 
 	RID nav_map = link->get_world_3d()->get_navigation_map();
 	real_t search_radius = NavigationServer3D::get_singleton()->map_get_link_connection_radius(nav_map);
@@ -5106,12 +5103,12 @@ String NavigationLink3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 }
 
 Variant NavigationLink3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_spatial_node());
+	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_node_3d());
 	return p_id == 0 ? link->get_start_location() : link->get_end_location();
 }
 
 void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_spatial_node());
+	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_node_3d());
 
 	Transform3D gt = link->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
@@ -5144,7 +5141,7 @@ void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 }
 
 void NavigationLink3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_spatial_node());
+	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_node_3d());
 
 	if (p_cancel) {
 		if (p_id == 0) {
@@ -5444,7 +5441,7 @@ int Joint3DGizmoPlugin::get_priority() const {
 }
 
 void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Joint3D *joint = Object::cast_to<Joint3D>(p_gizmo->get_spatial_node());
+	Joint3D *joint = Object::cast_to<Joint3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
@@ -5877,11 +5874,11 @@ String FogVolumeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, i
 }
 
 Variant FogVolumeGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	return Vector3(p_gizmo->get_spatial_node()->call("get_extents"));
+	return Vector3(p_gizmo->get_node_3d()->call("get_extents"));
 }
 
 void FogVolumeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
-	Node3D *sn = p_gizmo->get_spatial_node();
+	Node3D *sn = p_gizmo->get_node_3d();
 
 	Transform3D gt = sn->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
@@ -5910,7 +5907,7 @@ void FogVolumeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id
 }
 
 void FogVolumeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	Node3D *sn = p_gizmo->get_spatial_node();
+	Node3D *sn = p_gizmo->get_node_3d();
 
 	if (p_cancel) {
 		sn->call("set_extents", p_restore);
@@ -5925,11 +5922,11 @@ void FogVolumeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p
 }
 
 void FogVolumeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Node3D *cs = p_gizmo->get_spatial_node();
+	Node3D *cs = p_gizmo->get_node_3d();
 
 	p_gizmo->clear();
 
-	if (RS::FogVolumeShape(int(p_gizmo->get_spatial_node()->call("get_shape"))) != RS::FOG_VOLUME_SHAPE_WORLD) {
+	if (RS::FogVolumeShape(int(p_gizmo->get_node_3d()->call("get_shape"))) != RS::FOG_VOLUME_SHAPE_WORLD) {
 		const Ref<Material> material =
 				get_material("shape_material", p_gizmo);
 		const Ref<Material> material_internal =

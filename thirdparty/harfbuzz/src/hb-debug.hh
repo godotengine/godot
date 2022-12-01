@@ -67,12 +67,12 @@ hb_options ()
 #endif
   /* Make a local copy, so we can access bitfield threadsafely. */
   hb_options_union_t u;
-  u.i = _hb_options.get_relaxed ();
+  u.i = _hb_options;
 
   if (unlikely (!u.i))
   {
     _hb_options_init ();
-    u.i = _hb_options.get_relaxed ();
+    u.i = _hb_options;
   }
 
   return u.opts;

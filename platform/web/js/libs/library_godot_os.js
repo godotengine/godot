@@ -106,12 +106,14 @@ autoAddDeps(GodotConfig, '$GodotConfig');
 mergeInto(LibraryManager.library, GodotConfig);
 
 const GodotFS = {
-	$GodotFS__deps: ['$ERRNO_CODES', '$FS', '$IDBFS', '$GodotRuntime'],
+	$GodotFS__deps: ['$FS', '$IDBFS', '$GodotRuntime'],
 	$GodotFS__postset: [
 		'Module["initFS"] = GodotFS.init;',
 		'Module["copyToFS"] = GodotFS.copy_to_fs;',
 	].join(''),
 	$GodotFS: {
+		// ERRNO_CODES works every odd version of emscripten, but this will break too eventually.
+		ENOENT: 44,
 		_idbfs: false,
 		_syncing: false,
 		_mount_points: [],
@@ -138,8 +140,9 @@ const GodotFS = {
 				try {
 					FS.stat(dir);
 				} catch (e) {
-					if (e.errno !== ERRNO_CODES.ENOENT) {
-						throw e;
+					if (e.errno !== GodotFS.ENOENT) {
+						// Let mkdirTree throw in case, we cannot trust the above check.
+						GodotRuntime.error(e);
 					}
 					FS.mkdirTree(dir);
 				}
@@ -208,8 +211,9 @@ const GodotFS = {
 			try {
 				FS.stat(dir);
 			} catch (e) {
-				if (e.errno !== ERRNO_CODES.ENOENT) {
-					throw e;
+				if (e.errno !== GodotFS.ENOENT) {
+					// Let mkdirTree throw in case, we cannot trust the above check.
+					GodotRuntime.error(e);
 				}
 				FS.mkdirTree(dir);
 			}

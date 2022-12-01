@@ -722,7 +722,14 @@ void GodotSoftBody3D::reoptimize_link_order() {
 	const int reop_not_dependent = -1;
 	const int reop_node_complete = -2;
 
-	uint32_t i, link_count = links.size(), node_count = nodes.size();
+	uint32_t link_count = links.size();
+	uint32_t node_count = nodes.size();
+
+	if (link_count < 1 || node_count < 2) {
+		return;
+	}
+
+	uint32_t i;
 	Link *lr;
 	int ar, br;
 	Node *node0 = &(nodes[0]);
@@ -1004,7 +1011,6 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 						} break;
 						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
 						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-							gravity = Vector3(0, 0, 0);
 							gravity = area_gravity;
 							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
 						} break;

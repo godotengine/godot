@@ -151,8 +151,12 @@ public:
 	virtual Variant area_get_param(RID p_area, AreaParameter p_param) const override;
 	virtual Transform2D area_get_transform(RID p_area) const override;
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) override;
-	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) override;
+
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) override;
+	virtual uint32_t area_get_collision_layer(RID p_area) const override;
+
+	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) override;
+	virtual uint32_t area_get_collision_mask(RID p_area) const override;
 
 	virtual void area_set_monitor_callback(RID p_area, const Callable &p_callback) override;
 	virtual void area_set_area_monitor_callback(RID p_area, const Callable &p_callback) override;
@@ -243,7 +247,7 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts) override;
 	virtual int body_get_max_contacts_reported(RID p_body) const override;
 
-	virtual void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override;
+	virtual void body_set_state_sync_callback(RID p_body, const Callable &p_callable) override;
 	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) override;
 
 	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override;

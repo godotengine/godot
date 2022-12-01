@@ -57,10 +57,17 @@ void Fog::fog_volume_initialize(RID p_rid) {
 	fog_volume_owner.initialize_rid(p_rid, FogVolume());
 }
 
-void Fog::fog_free(RID p_rid) {
+void Fog::fog_volume_free(RID p_rid) {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_rid);
 	fog_volume->dependency.deleted_notify(p_rid);
 	fog_volume_owner.free(p_rid);
+}
+
+Dependency *Fog::fog_volume_get_dependency(RID p_fog_volume) const {
+	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
+	ERR_FAIL_NULL_V(fog_volume, nullptr);
+
+	return &fog_volume->dependency;
 }
 
 void Fog::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
@@ -122,8 +129,6 @@ AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
 			return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 		}
 	}
-
-	return AABB();
 }
 
 Vector3 Fog::fog_volume_get_extents(RID p_fog_volume) const {
@@ -138,7 +143,7 @@ Vector3 Fog::fog_volume_get_extents(RID p_fog_volume) const {
 bool Fog::FogMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	uniform_set_updated = true;
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, Fog::get_singleton()->volumetric_fog.shader.version_get_shader(shader_data->version, 0), VolumetricFogShader::FogSet::FOG_SET_MATERIAL);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, Fog::get_singleton()->volumetric_fog.shader.version_get_shader(shader_data->version, 0), VolumetricFogShader::FogSet::FOG_SET_MATERIAL, true);
 }
 
 Fog::FogMaterialData::~FogMaterialData() {
@@ -722,9 +727,9 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 			any_uses_time |= shader_data->uses_time;
 
-			Vector3i min = Vector3i();
-			Vector3i max = Vector3i();
-			Vector3i kernel_size = Vector3i();
+			Vector3i min;
+			Vector3i max;
+			Vector3i kernel_size;
 
 			Vector3 position = fog_volume_instance->transform.get_origin();
 			RS::FogVolumeShape volume_type = RendererRD::Fog::get_singleton()->fog_volume_get_shape(fog_volume);

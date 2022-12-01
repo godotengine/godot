@@ -30,6 +30,9 @@
 
 #include "line_2d_editor_plugin.h"
 
+#include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
+
 Node2D *Line2DEditor::_get_node() const {
 	return node;
 }
@@ -51,9 +54,10 @@ void Line2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {
 }
 
 void Line2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
-	Node2D *node = _get_node();
-	undo_redo->add_do_method(node, "set_points", p_polygon);
-	undo_redo->add_undo_method(node, "set_points", p_previous);
+	Node2D *_node = _get_node();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	undo_redo->add_do_method(_node, "set_points", p_polygon);
+	undo_redo->add_undo_method(_node, "set_points", p_previous);
 }
 
 Line2DEditor::Line2DEditor() {}

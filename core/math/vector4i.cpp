@@ -33,16 +33,6 @@
 #include "core/math/vector4.h"
 #include "core/string/ustring.h"
 
-void Vector4i::set_axis(const int p_axis, const int32_t p_value) {
-	ERR_FAIL_INDEX(p_axis, 4);
-	coord[p_axis] = p_value;
-}
-
-int32_t Vector4i::get_axis(const int p_axis) const {
-	ERR_FAIL_INDEX_V(p_axis, 4, 0);
-	return operator[](p_axis);
-}
-
 Vector4i::Axis Vector4i::min_axis_index() const {
 	uint32_t min_index = 0;
 	int32_t min_value = x;
@@ -75,6 +65,14 @@ Vector4i Vector4i::clamp(const Vector4i &p_min, const Vector4i &p_max) const {
 			CLAMP(w, p_min.w, p_max.w));
 }
 
+Vector4i Vector4i::snapped(const Vector4i &p_step) const {
+	return Vector4i(
+			Math::snapped(x, p_step.x),
+			Math::snapped(y, p_step.y),
+			Math::snapped(z, p_step.z),
+			Math::snapped(w, p_step.w));
+}
+
 Vector4i::operator String() const {
 	return "(" + itos(x) + ", " + itos(y) + ", " + itos(z) + ", " + itos(w) + ")";
 }
@@ -84,8 +82,10 @@ Vector4i::operator Vector4() const {
 }
 
 Vector4i::Vector4i(const Vector4 &p_vec4) {
-	x = p_vec4.x;
-	y = p_vec4.y;
-	z = p_vec4.z;
-	w = p_vec4.w;
+	x = (int32_t)p_vec4.x;
+	y = (int32_t)p_vec4.y;
+	z = (int32_t)p_vec4.z;
+	w = (int32_t)p_vec4.w;
 }
+
+static_assert(sizeof(Vector4i) == 4 * sizeof(int32_t));

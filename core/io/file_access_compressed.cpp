@@ -95,7 +95,7 @@ Error FileAccessCompressed::open_after_magic(Ref<FileAccess> p_base) {
 	return ret == -1 ? ERR_FILE_CORRUPT : OK;
 }
 
-Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessCompressed::open_internal(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(p_mode_flags == READ_WRITE, ERR_UNAVAILABLE);
 	_close();
 

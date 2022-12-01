@@ -37,6 +37,7 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		return;
 	}
+
 	enabled = p_enabled;
 
 	if (!is_inside_tree()) {
@@ -81,35 +82,50 @@ bool NavigationRegion3D::is_enabled() const {
 }
 
 void NavigationRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
-	NavigationServer3D::get_singleton()->region_set_navigation_layers(region, p_navigation_layers);
+	if (navigation_layers == p_navigation_layers) {
+		return;
+	}
+
+	navigation_layers = p_navigation_layers;
+
+	NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 }
 
 uint32_t NavigationRegion3D::get_navigation_layers() const {
-	return NavigationServer3D::get_singleton()->region_get_navigation_layers(region);
+	return navigation_layers;
 }
 
 void NavigationRegion3D::set_navigation_layer_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
+
 	uint32_t _navigation_layers = get_navigation_layers();
+
 	if (p_value) {
 		_navigation_layers |= 1 << (p_layer_number - 1);
 	} else {
 		_navigation_layers &= ~(1 << (p_layer_number - 1));
 	}
+
 	set_navigation_layers(_navigation_layers);
 }
 
 bool NavigationRegion3D::get_navigation_layer_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
+
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
 void NavigationRegion3D::set_enter_cost(real_t p_enter_cost) {
 	ERR_FAIL_COND_MSG(p_enter_cost < 0.0, "The enter_cost must be positive.");
-	enter_cost = MAX(p_enter_cost, 0.0);
-	NavigationServer3D::get_singleton()->region_set_enter_cost(region, p_enter_cost);
+	if (Math::is_equal_approx(enter_cost, p_enter_cost)) {
+		return;
+	}
+
+	enter_cost = p_enter_cost;
+
+	NavigationServer3D::get_singleton()->region_set_enter_cost(region, enter_cost);
 }
 
 real_t NavigationRegion3D::get_enter_cost() const {
@@ -118,7 +134,12 @@ real_t NavigationRegion3D::get_enter_cost() const {
 
 void NavigationRegion3D::set_travel_cost(real_t p_travel_cost) {
 	ERR_FAIL_COND_MSG(p_travel_cost < 0.0, "The travel_cost must be positive.");
-	travel_cost = MAX(p_travel_cost, 0.0);
+	if (Math::is_equal_approx(travel_cost, p_travel_cost)) {
+		return;
+	}
+
+	travel_cost = p_travel_cost;
+
 	NavigationServer3D::get_singleton()->region_set_travel_cost(region, travel_cost);
 }
 
@@ -129,8 +150,6 @@ real_t NavigationRegion3D::get_travel_cost() const {
 RID NavigationRegion3D::get_region_rid() const {
 	return region;
 }
-
-/////////////////////////////
 
 void NavigationRegion3D::_notification(int p_what) {
 	switch (p_what) {
@@ -242,12 +261,7 @@ void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
 	args->nav_region = this;
 
-	if (p_on_thread && !OS::get_singleton()->can_use_threads()) {
-		WARN_PRINT("NavigationMesh bake 'on_thread' will be disabled as the current OS does not support multiple threads."
-				   "\nAs a fallback the navigation mesh will bake on the main thread which can cause framerate issues.");
-	}
-
-	if (p_on_thread && OS::get_singleton()->can_use_threads()) {
+	if (p_on_thread) {
 		bake_thread.start(_bake_navigation_mesh, args);
 	} else {
 		_bake_navigation_mesh(args);
@@ -260,8 +274,8 @@ void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 	emit_signal(SNAME("bake_finished"));
 }
 
-TypedArray<String> NavigationRegion3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray NavigationRegion3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!navmesh.is_valid()) {
@@ -539,6 +553,7 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 	}
 
 	Vector<Vector3> vertex_array;
+	vertex_array.resize(connections_count * 6);
 
 	for (int i = 0; i < connections_count; i++) {
 		Vector3 connection_pathway_start = NavigationServer3D::get_singleton()->region_get_connection_pathway_start(region, i);

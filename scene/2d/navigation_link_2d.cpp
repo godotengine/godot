@@ -113,6 +113,10 @@ void NavigationLink2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 Rect2 NavigationLink2D::_edit_get_rect() const {
+	if (!is_inside_tree()) {
+		return Rect2();
+	}
+
 	real_t radius = NavigationServer2D::get_singleton()->map_get_link_connection_radius(get_world_2d()->get_navigation_map());
 
 	Rect2 rect(get_start_location(), Size2());
@@ -263,8 +267,8 @@ void NavigationLink2D::set_travel_cost(real_t p_travel_cost) {
 	NavigationServer2D::get_singleton()->link_set_travel_cost(link, travel_cost);
 }
 
-TypedArray<String> NavigationLink2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray NavigationLink2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (start_location.is_equal_approx(end_location)) {
 		warnings.push_back(RTR("NavigationLink2D start location should be different than the end location to be useful."));

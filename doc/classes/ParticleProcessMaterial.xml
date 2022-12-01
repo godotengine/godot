@@ -217,7 +217,7 @@
 			Maximum linear acceleration applied to each particle in the direction of motion.
 		</member>
 		<member name="linear_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum equivalent of [member linear_accel_min].
+			Minimum equivalent of [member linear_accel_max].
 		</member>
 		<member name="orbit_velocity_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's orbital velocity will vary along this [CurveTexture].
@@ -258,6 +258,10 @@
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
 			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees.
+		</member>
+		<member name="sub_emitter_amount_at_collision" type="int" setter="set_sub_emitter_amount_at_collision" getter="get_sub_emitter_amount_at_collision">
+			Sub particle amount on collision.
+			Maximum amount set in the sub particles emitter.
 		</member>
 		<member name="sub_emitter_amount_at_end" type="int" setter="set_sub_emitter_amount_at_end" getter="get_sub_emitter_amount_at_end">
 		</member>

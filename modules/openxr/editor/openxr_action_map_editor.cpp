@@ -57,7 +57,7 @@ void OpenXRActionMapEditor::_notification(int p_what) {
 			for (int i = 0; i < tabs->get_child_count(); i++) {
 				Control *tab = static_cast<Control *>(tabs->get_child(i));
 				if (tab) {
-					tab->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+					tab->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 				}
 			}
 		} break;
@@ -113,7 +113,7 @@ OpenXRInteractionProfileEditorBase *OpenXRActionMapEditor::_add_interaction_prof
 	// now add it in..
 	ERR_FAIL_NULL_V(new_profile_editor, nullptr);
 	tabs->add_child(new_profile_editor);
-	new_profile_editor->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	new_profile_editor->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 	tabs->set_tab_button_icon(tabs->get_tab_count() - 1, get_theme_icon(SNAME("close"), SNAME("TabBar")));
 
 	interaction_profiles.push_back(new_profile_editor);
@@ -128,7 +128,7 @@ void OpenXRActionMapEditor::_update_interaction_profiles() {
 		interaction_profiles.remove_at(0);
 
 		tabs->remove_child(interaction_profile);
-		interaction_profile->queue_delete();
+		interaction_profile->queue_free();
 	}
 
 	// in with the new...
@@ -205,7 +205,7 @@ void OpenXRActionMapEditor::_on_remove_action_set(Object *p_action_set_editor) {
 
 	action_map->remove_action_set(action_set);
 	actionsets_vb->remove_child(action_set_editor);
-	action_set_editor->queue_delete();
+	action_set_editor->queue_free();
 }
 
 void OpenXRActionMapEditor::_on_action_removed() {
@@ -290,7 +290,7 @@ void OpenXRActionMapEditor::_on_tab_button_pressed(int p_tab) {
 
 	action_map->remove_interaction_profile(interaction_profile);
 	tabs->remove_child(profile_editor);
-	profile_editor->queue_delete();
+	profile_editor->queue_free();
 }
 
 void OpenXRActionMapEditor::open_action_map(String p_path) {
@@ -364,7 +364,7 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	select_interaction_profile_dialog->connect("interaction_profile_selected", callable_mp(this, &OpenXRActionMapEditor::_on_interaction_profile_selected));
 	add_child(select_interaction_profile_dialog);
 
-	_load_action_map(ProjectSettings::get_singleton()->get("xr/openxr/default_action_map"));
+	_load_action_map(GLOBAL_GET("xr/openxr/default_action_map"));
 }
 
 OpenXRActionMapEditor::~OpenXRActionMapEditor() {

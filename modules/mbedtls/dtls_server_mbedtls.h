@@ -32,7 +32,7 @@
 #define DTLS_SERVER_MBEDTLS_H
 
 #include "core/io/dtls_server.h"
-#include "ssl_context_mbedtls.h"
+#include "tls_context_mbedtls.h"
 
 class DTLSServerMbedTLS : public DTLSServer {
 private:

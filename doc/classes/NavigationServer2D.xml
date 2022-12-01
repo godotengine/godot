@@ -368,6 +368,14 @@
 				Set the map's link connection radius used to connect links to navigation polygons.
 			</description>
 		</method>
+		<method name="query_path" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="parameters" type="NavigationPathQueryParameters2D" />
+			<param index="1" name="result" type="NavigationPathQueryResult2D" />
+			<description>
+				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters2D]. Updates the provided [NavigationPathQueryResult2D] result object with the path among other results requested by the query.
+			</description>
+		</method>
 		<method name="region_create" qualifiers="const">
 			<return type="RID" />
 			<description>

@@ -87,8 +87,11 @@ void MeshStorage::mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count
 	ERR_FAIL_COND(!mesh);
 
 	ERR_FAIL_COND(mesh->surface_count > 0); //surfaces already exist
-	WARN_PRINT_ONCE("blend shapes not supported by GLES3 renderer yet");
 	mesh->blend_shape_count = p_blend_shape_count;
+
+	if (p_blend_shape_count > 0) {
+		WARN_PRINT_ONCE("blend shapes not supported by GLES3 renderer yet");
+	}
 }
 
 bool MeshStorage::mesh_needs_instance(RID p_mesh, bool p_has_skeleton) {
@@ -260,7 +263,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		}
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			const AABB &bone = p_surface.bone_aabbs[i];
-			if (!bone.has_no_volume()) {
+			if (bone.has_volume()) {
 				mesh->bone_aabbs.write[i].merge_with(bone);
 			}
 		}
@@ -309,12 +312,48 @@ RS::BlendShapeMode MeshStorage::mesh_get_blend_shape_mode(RID p_mesh) const {
 }
 
 void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_COND(p_data.size() == 0);
+
+	uint64_t data_size = p_data.size();
+	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->vertex_buffer_size);
+	const uint8_t *r = p_data.ptr();
+
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->vertex_buffer);
+	glBufferSubData(GL_ARRAY_BUFFER, p_offset, data_size, r);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_COND(p_data.size() == 0);
+
+	uint64_t data_size = p_data.size();
+	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->attribute_buffer_size);
+	const uint8_t *r = p_data.ptr();
+
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->attribute_buffer);
+	glBufferSubData(GL_ARRAY_BUFFER, p_offset, data_size, r);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void MeshStorage::mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_COND(p_data.size() == 0);
+
+	uint64_t data_size = p_data.size();
+	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->skin_buffer_size);
+	const uint8_t *r = p_data.ptr();
+
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->skin_buffer);
+	glBufferSubData(GL_ARRAY_BUFFER, p_offset, data_size, r);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
@@ -350,6 +389,10 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 
 	if (s.attribute_buffer != 0) {
 		sd.attribute_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.attribute_buffer, s.attribute_buffer_size);
+	}
+
+	if (s.skin_buffer != 0) {
+		sd.skin_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.skin_buffer, s.skin_buffer_size);
 	}
 
 	sd.vertex_count = s.vertex_count;
@@ -550,6 +593,21 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 			glDeleteBuffers(1, &s.index_buffer);
 			s.index_buffer = 0;
 		}
+
+		if (s.versions) {
+			memfree(s.versions); //reallocs, so free with memfree.
+		}
+
+		if (s.lod_count) {
+			for (uint32_t j = 0; j < s.lod_count; j++) {
+				if (s.lods[j].index_buffer != 0) {
+					glDeleteBuffers(1, &s.lods[j].index_buffer);
+					s.lods[j].index_buffer = 0;
+				}
+			}
+			memdelete_arr(s.lods);
+		}
+
 		memdelete(mesh->surfaces[i]);
 	}
 	if (mesh->surfaces) {
@@ -949,7 +1007,7 @@ void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 #define MULTIMESH_DIRTY_REGION_SIZE 512
 
 void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
-	if (multimesh->data_cache.size() > 0) {
+	if (multimesh->data_cache.size() > 0 || multimesh->instances == 0) {
 		return; //already local
 	}
 	ERR_FAIL_COND(multimesh->data_cache.size() > 0);
@@ -1366,7 +1424,7 @@ Vector<float> MeshStorage::multimesh_get_buffer(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Vector<float>());
 	Vector<float> ret;
-	if (multimesh->buffer == 0) {
+	if (multimesh->buffer == 0 || multimesh->instances == 0) {
 		return Vector<float>();
 	} else if (multimesh->data_cache.size()) {
 		ret = multimesh->data_cache;

@@ -87,7 +87,8 @@ CommandLineToArgvA(
 	i = 0;
 	j = 0;
 
-	while ((a = CmdLine[i])) {
+	a = CmdLine[i];
+	while (a) {
 		if (in_QM) {
 			if (a == '\"') {
 				in_QM = FALSE;
@@ -130,6 +131,7 @@ CommandLineToArgvA(
 			}
 		}
 		i++;
+		a = CmdLine[i];
 	}
 	_argv[j] = '\0';
 	argv[argc] = nullptr;

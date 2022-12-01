@@ -47,7 +47,6 @@
 #include "scene/gui/tree.h"
 
 class ConnectDialogBinds;
-class EditorUndoRedoManager;
 
 class ConnectDialog : public ConfirmationDialog {
 	GDCLASS(ConnectDialog, ConfirmationDialog);
@@ -112,6 +111,7 @@ private:
 	LineEdit *dst_method = nullptr;
 	ConnectDialogBinds *cdbinds = nullptr;
 	bool edit_mode = false;
+	bool first_popup = true;
 	NodePath dst_path;
 	VBoxContainer *vbc_right = nullptr;
 
@@ -121,7 +121,7 @@ private:
 	EditorInspector *bind_editor = nullptr;
 	OptionButton *type_list = nullptr;
 	CheckBox *deferred = nullptr;
-	CheckBox *oneshot = nullptr;
+	CheckBox *one_shot = nullptr;
 	CheckButton *advanced = nullptr;
 	Vector<Control *> bind_controls;
 
@@ -143,6 +143,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	static StringName generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target);
 	Node *get_source() const;
 	StringName get_signal_name() const;
 	NodePath get_dst_path() const;
@@ -153,7 +154,7 @@ public:
 	Vector<Variant> get_binds() const;
 
 	bool get_deferred() const;
-	bool get_oneshot() const;
+	bool get_one_shot() const;
 	bool is_editing() const;
 
 	void init(ConnectionData p_cd, bool p_edit = false);
@@ -195,7 +196,6 @@ class ConnectionsDock : public VBoxContainer {
 	Button *connect_button = nullptr;
 	PopupMenu *signal_menu = nullptr;
 	PopupMenu *slot_menu = nullptr;
-	Ref<EditorUndoRedoManager> undo_redo;
 	LineEdit *search_box = nullptr;
 
 	HashMap<StringName, HashMap<StringName, String>> descr_cache;
@@ -210,13 +210,16 @@ class ConnectionsDock : public VBoxContainer {
 	void _tree_item_selected();
 	void _tree_item_activated();
 	bool _is_item_signal(TreeItem &p_item);
+	bool _is_connection_inherited(Connection &p_connection);
 
 	void _open_connection_dialog(TreeItem &p_item);
 	void _open_connection_dialog(ConnectDialog::ConnectionData p_cd);
 	void _go_to_script(TreeItem &p_item);
 
 	void _handle_signal_menu_option(int p_option);
+	void _signal_menu_about_to_popup();
 	void _handle_slot_menu_option(int p_option);
+	void _slot_menu_about_to_popup();
 	void _rmb_pressed(Vector2 p_position, MouseButton p_button);
 	void _close();
 
@@ -226,7 +229,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_node(Node *p_node);
 	void update_tree();
 

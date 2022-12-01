@@ -145,7 +145,7 @@ typedef struct hb_glyph_info_t {
  * @HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL: In scripts that use elongation (Arabic,
 				   Mongolian, Syriac, etc.), this flag signifies
 				   that it is safe to insert a U+0640 TATWEEL
-				   character *before* this cluster for elongation.
+				   character before this cluster for elongation.
 				   This flag does not determine the
 				   script-specific elongation places, but only
 				   when it is safe to do the elongation without

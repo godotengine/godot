@@ -369,7 +369,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
 		Geometry3D::MeshData::Face &f = E->get();
 
-		for (int i = 0; i < f.indices.size(); i++) {
+		for (uint32_t i = 0; i < f.indices.size(); i++) {
 			int a = E->get().indices[i];
 			int b = E->get().indices[(i + 1) % f.indices.size()];
 			Edge e(a, b);
@@ -436,17 +436,24 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	r_mesh.faces.clear();
 	r_mesh.faces.resize(ret_faces.size());
 
+	HashMap<List<Geometry3D::MeshData::Face>::Element *, int> face_indices;
+
 	int idx = 0;
-	for (const Geometry3D::MeshData::Face &E : ret_faces) {
-		r_mesh.faces.write[idx++] = E;
+	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
+		face_indices[E] = idx;
+		r_mesh.faces[idx++] = E->get();
 	}
 	r_mesh.edges.resize(ret_edges.size());
 	idx = 0;
 	for (const KeyValue<Edge, RetFaceConnect> &E : ret_edges) {
 		Geometry3D::MeshData::Edge e;
-		e.a = E.key.vertices[0];
-		e.b = E.key.vertices[1];
-		r_mesh.edges.write[idx++] = e;
+		e.vertex_a = E.key.vertices[0];
+		e.vertex_b = E.key.vertices[1];
+		ERR_CONTINUE(!face_indices.has(E.value.left));
+		ERR_CONTINUE(!face_indices.has(E.value.right));
+		e.face_a = face_indices[E.value.left];
+		e.face_b = face_indices[E.value.right];
+		r_mesh.edges[idx++] = e;
 	}
 
 	r_mesh.vertices = p_points;

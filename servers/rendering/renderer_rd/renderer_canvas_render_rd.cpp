@@ -706,7 +706,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 				//bind textures
 
-				_bind_canvas_texture(p_draw_list, RID(), current_filter, current_repeat, last_texture, push_constant, texpixel_size);
+				_bind_canvas_texture(p_draw_list, primitive->texture, current_filter, current_repeat, last_texture, push_constant, texpixel_size);
 
 				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[MIN(3u, primitive->point_count) - 1]);
 
@@ -796,7 +796,6 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					RenderingServerDefault::redraw_request(); // active particles means redraw request
 
-					bool local_coords = true;
 					int dpc = particles_storage->particles_get_draw_passes(pt->particles);
 					if (dpc == 0) {
 						break; //nothing to draw
@@ -818,12 +817,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					if (particles_storage->particles_has_collision(pt->particles) && texture_storage->render_target_is_sdf_enabled(p_render_target)) {
 						//pass collision information
-						Transform2D xform;
-						if (local_coords) {
-							xform = p_item->final_transform;
-						} else {
-							xform = p_canvas_transform_inverse;
-						}
+						Transform2D xform = p_item->final_transform;
 
 						RID sdf_texture = texture_storage->render_target_get_sdf_texture(p_render_target);
 
@@ -1075,10 +1069,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			clear_colors.push_back(texture_storage->render_target_get_clear_request_color(p_to_render_target));
 			texture_storage->render_target_disable_clear_request(p_to_render_target);
 		}
-#ifndef _MSC_VER
-#warning TODO obtain from framebuffer format eventually when this is implemented
-#endif
-
+		// TODO: Obtain from framebuffer format eventually when this is implemented.
 		fb_uniform_set = texture_storage->render_target_get_framebuffer_uniform_set(p_to_render_target);
 	}
 
@@ -1114,8 +1105,20 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 
 		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
 
-		if (material.is_null() && ci->canvas_group != nullptr) {
-			material = default_canvas_group_material;
+		if (ci->canvas_group != nullptr) {
+			if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
+				if (!p_to_backbuffer) {
+					material = default_clip_children_material;
+				}
+			} else {
+				if (material.is_null()) {
+					if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_ONLY) {
+						material = default_clip_children_material;
+					} else {
+						material = default_canvas_group_material;
+					}
+				}
+			}
 		}
 
 		if (material != prev_material) {
@@ -1362,9 +1365,12 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		default_repeat = p_default_repeat;
 	}
 
-	//fill the list until rendering is possible.
-	bool material_screen_texture_found = false;
 	Item *ci = p_item_list;
+
+	//fill the list until rendering is possible.
+	bool material_screen_texture_cached = false;
+	bool material_screen_texture_mipmaps_cached = false;
+
 	Rect2 back_buffer_rect;
 	bool backbuffer_copy = false;
 	bool backbuffer_gen_mipmaps = false;
@@ -1393,9 +1399,11 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			CanvasMaterialData *md = static_cast<CanvasMaterialData *>(material_storage->material_get_data(material, RendererRD::MaterialStorage::SHADER_TYPE_2D));
 			if (md && md->shader_data->valid) {
 				if (md->shader_data->uses_screen_texture && canvas_group_owner == nullptr) {
-					if (!material_screen_texture_found) {
+					if (!material_screen_texture_cached) {
 						backbuffer_copy = true;
 						back_buffer_rect = Rect2();
+						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
+					} else if (!material_screen_texture_mipmaps_cached) {
 						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
 					}
 				}
@@ -1435,10 +1443,12 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 				item_count = 0;
 
-				Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
-
-				if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_OPAQUE) {
+				if (ci->canvas_group_owner->canvas_group->mode != RS::CANVAS_GROUP_MODE_TRANSPARENT) {
+					Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
 					texture_storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
+					if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
+						items[item_count++] = ci->canvas_group_owner;
+					}
 				} else if (!backbuffer_cleared) {
 					texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
 					backbuffer_cleared = true;
@@ -1470,6 +1480,8 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			}
 
 			canvas_group_owner = nullptr;
+			// Backbuffer is dirty now and needs to be re-cleared if another CanvasGroup needs it.
+			backbuffer_cleared = false;
 		}
 
 		if (backbuffer_copy) {
@@ -1486,7 +1498,15 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 			backbuffer_copy = false;
 			backbuffer_gen_mipmaps = false;
-			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
+			material_screen_texture_cached = true; // After a backbuffer copy, screen texture makes no further copies.
+			material_screen_texture_mipmaps_cached = backbuffer_gen_mipmaps;
+		}
+
+		if (backbuffer_gen_mipmaps) {
+			texture_storage->render_target_gen_back_buffer_mipmaps(p_to_render_target, back_buffer_rect);
+
+			backbuffer_gen_mipmaps = false;
+			material_screen_texture_mipmaps_cached = true;
 		}
 
 		items[item_count++] = ci;
@@ -1608,13 +1628,13 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 			projection.set_frustum(xmin, xmax, ymin, ymax, nearp, farp);
 		}
 
-		Vector3 cam_target = Basis(Vector3(0, 0, Math_TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
+		Vector3 cam_target = Basis::from_euler(Vector3(0, 0, Math_TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
 		projection = projection * Projection(Transform3D().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
 
 		ShadowRenderPushConstant push_constant;
 		for (int y = 0; y < 4; y++) {
 			for (int x = 0; x < 4; x++) {
-				push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+				push_constant.projection[y * 4 + x] = projection.columns[y][x];
 			}
 		}
 		static const Vector2 directions[4] = { Vector2(1, 0), Vector2(0, 1), Vector2(-1, 0), Vector2(0, -1) };
@@ -1689,7 +1709,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
 		for (int x = 0; x < 4; x++) {
-			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+			push_constant.projection[y * 4 + x] = projection.columns[y][x];
 		}
 	}
 
@@ -1757,7 +1777,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
 		for (int x = 0; x < 4; x++) {
-			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+			push_constant.projection[y * 4 + x] = projection.columns[y][x];
 		}
 	}
 
@@ -1888,11 +1908,12 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 			}
 		}
 
-		//if same buffer len is being set, just use BufferSubData to avoid a pipeline flush
+		//if same buffer len is being set, just use buffer_update to avoid a pipeline flush
 
 		if (oc->vertex_array.is_null()) {
 			//create from scratch
 			//vertices
+			// TODO: geometry is always of length lc * 6 * sizeof(float), so in doubles builds this will receive half the data it needs
 			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(real_t), geometry);
 
 			Vector<RID> buffer;
@@ -2311,7 +2332,7 @@ RendererRD::MaterialStorage::ShaderData *RendererCanvasRenderRD::_create_shader_
 bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false);
 }
 
 RendererCanvasRenderRD::CanvasMaterialData::~CanvasMaterialData() {
@@ -2499,6 +2520,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
 
 		actions.renames["LIGHT_POSITION"] = "light_position";
+		actions.renames["LIGHT_DIRECTION"] = "light_direction";
+		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
 		actions.renames["LIGHT_COLOR"] = "light_color";
 		actions.renames["LIGHT_ENERGY"] = "light_energy";
 		actions.renames["LIGHT"] = "light";
@@ -2652,16 +2675,6 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		primitive_arrays.index_array[3] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 6);
 	}
 
-	{ //default skeleton buffer
-
-		shader.default_skeleton_uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SkeletonUniform));
-		SkeletonUniform su;
-		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_inverse);
-		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_transform);
-		RD::get_singleton()->buffer_update(shader.default_skeleton_uniform_buffer, 0, sizeof(SkeletonUniform), &su);
-
-		shader.default_skeleton_texture_buffer = RD::get_singleton()->texture_buffer_create(32, RD::DATA_FORMAT_R32G32B32A32_SFLOAT);
-	}
 	{
 		//default shadow texture to keep uniform set happy
 		RD::TextureFormat tf;
@@ -2724,6 +2737,26 @@ void fragment() {
 		material_storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
 	}
 
+	{
+		default_clip_children_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(default_clip_children_shader);
+
+		material_storage->shader_set_code(default_clip_children_shader, R"(
+// Default clip children shader.
+
+shader_type canvas_item;
+
+void fragment() {
+	vec4 c = textureLod(SCREEN_TEXTURE, SCREEN_UV, 0.0);
+	COLOR.rgb = c.rgb;
+}
+)");
+		default_clip_children_material = material_storage->material_allocate();
+		material_storage->material_initialize(default_clip_children_material);
+
+		material_storage->material_set_shader(default_clip_children_material, default_clip_children_shader);
+	}
+
 	static_assert(sizeof(PushConstant) == 128);
 }
 
@@ -2775,6 +2808,9 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	material_storage->material_free(default_canvas_group_material);
 	material_storage->shader_free(default_canvas_group_shader);
 
+	material_storage->material_free(default_clip_children_material);
+	material_storage->shader_free(default_clip_children_shader);
+
 	{
 		if (state.canvas_state_buffer.is_valid()) {
 			RD::get_singleton()->free(state.canvas_state_buffer);
@@ -2782,8 +2818,6 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 
 		memdelete_arr(state.light_uniforms);
 		RD::get_singleton()->free(state.lights_uniform_buffer);
-		RD::get_singleton()->free(shader.default_skeleton_uniform_buffer);
-		RD::get_singleton()->free(shader.default_skeleton_texture_buffer);
 	}
 
 	//shadow rendering

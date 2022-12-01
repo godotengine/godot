@@ -180,6 +180,9 @@ public:
 	TypedArray<Node2D> get_overlapping_bodies() const; //function for script
 	TypedArray<Area2D> get_overlapping_areas() const; //function for script
 
+	bool has_overlapping_bodies() const;
+	bool has_overlapping_areas() const;
+
 	bool overlaps_area(Node *p_area) const;
 	bool overlaps_body(Node *p_body) const;
 

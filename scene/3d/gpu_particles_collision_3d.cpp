@@ -225,23 +225,23 @@ static _FORCE_INLINE_ real_t Vector3_dot2(const Vector3 &p_vec3) {
 	return p_vec3.dot(p_vec3);
 }
 
-void GPUParticlesCollisionSDF3D::_find_closest_distance(const Vector3 &p_pos, const BVH *bvh, uint32_t p_bvh_cell, const Face3 *triangles, float thickness, float &closest_distance) {
+void GPUParticlesCollisionSDF3D::_find_closest_distance(const Vector3 &p_pos, const BVH *p_bvh, uint32_t p_bvh_cell, const Face3 *p_triangles, float p_thickness, float &r_closest_distance) {
 	if (p_bvh_cell & BVH::LEAF_BIT) {
 		p_bvh_cell &= BVH::LEAF_MASK; //remove bit
 
 		Vector3 point = p_pos;
-		Plane p = triangles[p_bvh_cell].get_plane();
+		Plane p = p_triangles[p_bvh_cell].get_plane();
 		float d = p.distance_to(point);
 		float inside_d = 1e20;
-		if (d < 0 && d > -thickness) {
+		if (d < 0 && d > -p_thickness) {
 			//inside planes, do this in 2D
 
-			Vector3 x_axis = (triangles[p_bvh_cell].vertex[0] - triangles[p_bvh_cell].vertex[1]).normalized();
+			Vector3 x_axis = (p_triangles[p_bvh_cell].vertex[0] - p_triangles[p_bvh_cell].vertex[1]).normalized();
 			Vector3 y_axis = p.normal.cross(x_axis).normalized();
 
 			Vector2 points[3];
 			for (int i = 0; i < 3; i++) {
-				points[i] = Vector2(x_axis.dot(triangles[p_bvh_cell].vertex[i]), y_axis.dot(triangles[p_bvh_cell].vertex[i]));
+				points[i] = Vector2(x_axis.dot(p_triangles[p_bvh_cell].vertex[i]), y_axis.dot(p_triangles[p_bvh_cell].vertex[i]));
 			}
 
 			Vector2 p2d = Vector2(x_axis.dot(point), y_axis.dot(point));
@@ -270,19 +270,19 @@ void GPUParticlesCollisionSDF3D::_find_closest_distance(const Vector3 &p_pos, co
 			//make sure distance to planes is not shorter if inside
 			if (inside_d < 0) {
 				inside_d = MAX(inside_d, d);
-				inside_d = MAX(inside_d, -(thickness + d));
+				inside_d = MAX(inside_d, -(p_thickness + d));
 			}
 
-			closest_distance = MIN(closest_distance, inside_d);
+			r_closest_distance = MIN(r_closest_distance, inside_d);
 		} else {
 			if (d < 0) {
-				point -= p.normal * thickness; //flatten
+				point -= p.normal * p_thickness; //flatten
 			}
 
 			// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-			Vector3 a = triangles[p_bvh_cell].vertex[0];
-			Vector3 b = triangles[p_bvh_cell].vertex[1];
-			Vector3 c = triangles[p_bvh_cell].vertex[2];
+			Vector3 a = p_triangles[p_bvh_cell].vertex[0];
+			Vector3 b = p_triangles[p_bvh_cell].vertex[1];
+			Vector3 c = p_triangles[p_bvh_cell].vertex[2];
 
 			Vector3 ba = b - a;
 			Vector3 pa = point - a;
@@ -300,28 +300,28 @@ void GPUParticlesCollisionSDF3D::_find_closest_distance(const Vector3 &p_pos, co
 									  Vector3_dot2(ac * CLAMP(ac.dot(pc) / Vector3_dot2(ac), 0.0, 1.0) - pc))
 							: nor.dot(pa) * nor.dot(pa) / Vector3_dot2(nor));
 
-			closest_distance = MIN(closest_distance, inside_d);
+			r_closest_distance = MIN(r_closest_distance, inside_d);
 		}
 
 	} else {
 		bool pass = true;
-		if (!bvh[p_bvh_cell].bounds.has_point(p_pos)) {
+		if (!p_bvh[p_bvh_cell].bounds.has_point(p_pos)) {
 			//outside, find closest point
-			Vector3 he = bvh[p_bvh_cell].bounds.size * 0.5;
-			Vector3 center = bvh[p_bvh_cell].bounds.position + he;
+			Vector3 he = p_bvh[p_bvh_cell].bounds.size * 0.5;
+			Vector3 center = p_bvh[p_bvh_cell].bounds.position + he;
 
 			Vector3 rel = (p_pos - center).abs();
 			Vector3 closest(MIN(rel.x, he.x), MIN(rel.y, he.y), MIN(rel.z, he.z));
 			float d = rel.distance_to(closest);
 
-			if (d >= closest_distance) {
+			if (d >= r_closest_distance) {
 				pass = false; //already closer than this aabb, discard
 			}
 		}
 
 		if (pass) {
-			_find_closest_distance(p_pos, bvh, bvh[p_bvh_cell].children[0], triangles, thickness, closest_distance);
-			_find_closest_distance(p_pos, bvh, bvh[p_bvh_cell].children[1], triangles, thickness, closest_distance);
+			_find_closest_distance(p_pos, p_bvh, p_bvh[p_bvh_cell].children[0], p_triangles, p_thickness, r_closest_distance);
+			_find_closest_distance(p_pos, p_bvh, p_bvh[p_bvh_cell].children[1], p_triangles, p_thickness, r_closest_distance);
 		}
 	}
 }
@@ -347,7 +347,9 @@ void GPUParticlesCollisionSDF3D::_compute_sdf(ComputeSDFParams *params) {
 	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GPUParticlesCollisionSDF3D::_compute_sdf_z, params, params->size.z);
 	while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task)) {
 		OS::get_singleton()->delay_usec(10000);
-		bake_step_function(WorkerThreadPool::get_singleton()->get_group_processed_element_count(group_task) * 100 / params->size.z, "Baking SDF");
+		if (bake_step_function) {
+			bake_step_function(WorkerThreadPool::get_singleton()->get_group_processed_element_count(group_task) * 100 / params->size.z, "Baking SDF");
+		}
 	}
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 }
@@ -473,15 +475,15 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 
 	_create_bvh(bvh, face_pos.ptr(), face_pos.size(), faces.ptr(), th);
 
-	Vector<uint8_t> data;
-	data.resize(sdf_size.z * sdf_size.y * sdf_size.x * (int)sizeof(float));
+	Vector<uint8_t> cells_data;
+	cells_data.resize(sdf_size.z * sdf_size.y * sdf_size.x * (int)sizeof(float));
 
 	if (bake_step_function) {
 		bake_step_function(0, "Baking SDF");
 	}
 
 	ComputeSDFParams params;
-	params.cells = (float *)data.ptrw();
+	params.cells = (float *)cells_data.ptrw();
 	params.size = sdf_size;
 	params.cell_size = cell_size;
 	params.cell_offset = aabb.position + Vector3(cell_size * 0.5, cell_size * 0.5, cell_size * 0.5);
@@ -490,9 +492,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	params.thickness = th;
 	_compute_sdf(&params);
 
-	Ref<Image> ret;
-	ret.instantiate();
-	ret->create(sdf_size.x, sdf_size.y * sdf_size.z, false, Image::FORMAT_RF, data);
+	Ref<Image> ret = Image::create_from_data(sdf_size.x, sdf_size.y * sdf_size.z, false, Image::FORMAT_RF, cells_data);
 	ret->convert(Image::FORMAT_RH); //convert to half, save space
 	ret->set_meta("depth", sdf_size.z); //hack, make sure to add to the docs of this function
 
@@ -503,8 +503,8 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	return ret;
 }
 
-TypedArray<String> GPUParticlesCollisionSDF3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray GPUParticlesCollisionSDF3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (bake_mask == 0) {
 		warnings.push_back(RTR("The Bake Mask has no bits enabled, which means baking will not produce any collision for this GPUParticlesCollisionSDF3D.\nTo resolve this, enable at least one bit in the Bake Mask property."));
@@ -532,7 +532,7 @@ void GPUParticlesCollisionSDF3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bake_mask_value", "layer_number"), &GPUParticlesCollisionSDF3D::get_bake_mask_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_extents", "get_extents");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "16,32,64,128,256,512,suffix:px"), "set_resolution", "get_resolution");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "16,32,64,128,256,512"), "set_resolution", "get_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "thickness", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,suffix:m"), "set_thickness", "get_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_texture", "get_texture");

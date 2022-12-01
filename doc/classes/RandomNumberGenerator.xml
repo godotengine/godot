@@ -10,10 +10,9 @@
 		[codeblock]
 		var rng = RandomNumberGenerator.new()
 		func _ready():
-		    rng.randomize()
 		    var my_random_number = rng.randf_range(-10.0, 10.0)
 		[/codeblock]
-		[b]Note:[/b] The default values of [member seed] and [member state] properties are pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
+		[b]Note:[/b] The default values of [member seed] and [member state] properties are pseudo-random, and change when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
 	</description>
 	<tutorials>
 		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>

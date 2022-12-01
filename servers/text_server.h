@@ -230,6 +230,7 @@ public:
 	virtual String tag_to_name(int64_t p_tag) const { return ""; };
 
 	/* Font interface */
+
 	virtual RID create_font() = 0;
 
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) = 0;
@@ -249,8 +250,8 @@ public:
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_style_name(const RID &p_font_rid) const = 0;
 
-	virtual void font_set_antialiasing(RID p_font_rid, FontAntialiasing p_antialiasing) = 0;
-	virtual FontAntialiasing font_get_antialiasing(RID p_font_rid) const = 0;
+	virtual void font_set_antialiasing(const RID &p_font_rid, FontAntialiasing p_antialiasing) = 0;
+	virtual FontAntialiasing font_get_antialiasing(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) = 0;
 	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const = 0;
@@ -485,7 +486,7 @@ public:
 	// String functions.
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const = 0;
 
-	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
+	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
 	virtual bool spoof_check(const String &p_string) const { return false; };
 
 	virtual String strip_diacritics(const String &p_string) const;

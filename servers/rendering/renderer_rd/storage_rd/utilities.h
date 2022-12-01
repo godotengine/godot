@@ -115,6 +115,8 @@ public:
 	virtual String get_video_adapter_vendor() const override;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
 	virtual String get_video_adapter_api_version() const override;
+
+	virtual Size2i get_maximum_viewport_size() const override;
 };
 
 } // namespace RendererRD

@@ -147,7 +147,7 @@ public:
 	void set_steering(real_t p_steering);
 	real_t get_steering() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	VehicleWheel3D();
 };

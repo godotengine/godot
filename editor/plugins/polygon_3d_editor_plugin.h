@@ -34,15 +34,15 @@
 #include "editor/editor_plugin.h"
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/box_container.h"
 #include "scene/resources/immediate_mesh.h"
 
 class CanvasItemEditor;
-class EditorUndoRedoManager;
+class MenuButton;
 
 class Polygon3DEditor : public HBoxContainer {
 	GDCLASS(Polygon3DEditor, HBoxContainer);
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	enum Mode {
 		MODE_CREATE,
 		MODE_EDIT,
@@ -90,7 +90,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
+	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 	void edit(Node *p_node);
 	Polygon3DEditor();
 	~Polygon3DEditor();
@@ -102,7 +102,7 @@ class Polygon3DEditorPlugin : public EditorPlugin {
 	Polygon3DEditor *polygon_editor = nullptr;
 
 public:
-	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
+	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return polygon_editor->forward_3d_gui_input(p_camera, p_event); }
 
 	virtual String get_name() const override { return "Polygon3DEditor"; }
 	bool has_main_screen() const override { return false; }

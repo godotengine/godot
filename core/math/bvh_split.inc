@@ -13,7 +13,7 @@ void _split_inform_references(uint32_t p_node_id) {
 
 void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, uint16_t *group_b, const BVHABB_CLASS *temp_bounds, const BVHABB_CLASS full_bound) {
 	// special case for low leaf sizes .. should static compile out
-	if (MAX_ITEMS < 4) {
+	if constexpr (MAX_ITEMS < 4) {
 		uint32_t ind = group_a[0];
 
 		// add to b
@@ -34,7 +34,7 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 	order[POINT::AXIS_COUNT - 1] = size.max_axis_index();
 
 	static_assert(POINT::AXIS_COUNT <= 3, "BVH POINT::AXIS_COUNT has unexpected size");
-	if (POINT::AXIS_COUNT == 3) {
+	if constexpr (POINT::AXIS_COUNT == 3) {
 		order[1] = 3 - (order[0] + order[2]);
 	}
 

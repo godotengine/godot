@@ -12,6 +12,7 @@
 /*MMX fDCT implementation for x86_32*/
 /*$Id: fdct_ses2.c 14579 2008-03-12 06:42:40Z xiphmont $*/
 #include "x86enc.h"
+#include "x86zigzag.h"
 
 #if defined(OC_X86_ASM)
 
@@ -462,8 +463,9 @@
    mm7 = d3 c3 b3 a3*/ \
 
 /*MMX implementation of the fDCT.*/
-void oc_enc_fdct8x8_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
-  ptrdiff_t a;
+void oc_enc_fdct8x8_mmxext(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
+  OC_ALIGN8(ogg_int16_t buf[64]);
+  ptrdiff_t   a;
   __asm__ __volatile__(
     /*Add two extra bits of working precision to improve accuracy; any more and
        we could overflow.*/
@@ -586,77 +588,88 @@ void oc_enc_fdct8x8_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
     "movq 0x30(%[y]),%%mm3\n\t"
     OC_FDCT_STAGE1_8x4
     OC_FDCT8x4("0x00","0x10","0x20","0x30","0x08","0x18","0x28","0x38")
-    OC_TRANSPOSE8x4("0x00","0x10","0x20","0x30","0x08","0x18","0x28","0x38")
-    /*mm0={-2}x4*/
-    "pcmpeqw %%mm0,%%mm0\n\t"
-    "paddw %%mm0,%%mm0\n\t"
-    /*Round the results.*/
-    "psubw %%mm0,%%mm1\n\t"
-    "psubw %%mm0,%%mm2\n\t"
-    "psraw $2,%%mm1\n\t"
-    "psubw %%mm0,%%mm3\n\t"
-    "movq %%mm1,0x18(%[y])\n\t"
-    "psraw $2,%%mm2\n\t"
-    "psubw %%mm0,%%mm4\n\t"
-    "movq 0x08(%[y]),%%mm1\n\t"
-    "psraw $2,%%mm3\n\t"
-    "psubw %%mm0,%%mm5\n\t"
+    /*mm2={-2}x4*/
+    "pcmpeqw %%mm2,%%mm2\n\t"
+    "paddw %%mm2,%%mm2\n\t"
+    /*Round and store the results (no transpose).*/
+    "movq 0x10(%[y]),%%mm7\n\t"
+    "psubw %%mm2,%%mm4\n\t"
+    "psubw %%mm2,%%mm6\n\t"
     "psraw $2,%%mm4\n\t"
-    "psubw %%mm0,%%mm6\n\t"
-    "psraw $2,%%mm5\n\t"
-    "psubw %%mm0,%%mm7\n\t"
+    "psubw %%mm2,%%mm0\n\t"
+    "movq %%mm4,"OC_MEM_OFFS(0x00,buf)"\n\t"
+    "movq 0x30(%[y]),%%mm4\n\t"
     "psraw $2,%%mm6\n\t"
-    "psubw %%mm0,%%mm1\n\t"
-    "psraw $2,%%mm7\n\t"
-    "movq 0x40(%[y]),%%mm0\n\t"
+    "psubw %%mm2,%%mm5\n\t"
+    "movq %%mm6,"OC_MEM_OFFS(0x20,buf)"\n\t"
+    "psraw $2,%%mm0\n\t"
+    "psubw %%mm2,%%mm3\n\t"
+    "movq %%mm0,"OC_MEM_OFFS(0x40,buf)"\n\t"
+    "psraw $2,%%mm5\n\t"
+    "psubw %%mm2,%%mm1\n\t"
+    "movq %%mm5,"OC_MEM_OFFS(0x50,buf)"\n\t"
+    "psraw $2,%%mm3\n\t"
+    "psubw %%mm2,%%mm7\n\t"
+    "movq %%mm3,"OC_MEM_OFFS(0x60,buf)"\n\t"
     "psraw $2,%%mm1\n\t"
-    "movq %%mm7,0x30(%[y])\n\t"
+    "psubw %%mm2,%%mm4\n\t"
+    "movq %%mm1,"OC_MEM_OFFS(0x70,buf)"\n\t"
+    "psraw $2,%%mm7\n\t"
+    "movq %%mm7,"OC_MEM_OFFS(0x10,buf)"\n\t"
+    "psraw $2,%%mm4\n\t"
+    "movq %%mm4,"OC_MEM_OFFS(0x30,buf)"\n\t"
+    /*Load the next block.*/
+    "movq 0x40(%[y]),%%mm0\n\t"
     "movq 0x78(%[y]),%%mm7\n\t"
-    "movq %%mm1,0x08(%[y])\n\t"
     "movq 0x50(%[y]),%%mm1\n\t"
-    "movq %%mm6,0x20(%[y])\n\t"
     "movq 0x68(%[y]),%%mm6\n\t"
-    "movq %%mm2,0x28(%[y])\n\t"
     "movq 0x60(%[y]),%%mm2\n\t"
-    "movq %%mm5,0x10(%[y])\n\t"
     "movq 0x58(%[y]),%%mm5\n\t"
-    "movq %%mm3,0x38(%[y])\n\t"
     "movq 0x70(%[y]),%%mm3\n\t"
-    "movq %%mm4,0x00(%[y])\n\t"
     "movq 0x48(%[y]),%%mm4\n\t"
     OC_FDCT_STAGE1_8x4
     OC_FDCT8x4("0x40","0x50","0x60","0x70","0x48","0x58","0x68","0x78")
-    OC_TRANSPOSE8x4("0x40","0x50","0x60","0x70","0x48","0x58","0x68","0x78")
-    /*mm0={-2}x4*/
-    "pcmpeqw %%mm0,%%mm0\n\t"
-    "paddw %%mm0,%%mm0\n\t"
-    /*Round the results.*/
-    "psubw %%mm0,%%mm1\n\t"
-    "psubw %%mm0,%%mm2\n\t"
-    "psraw $2,%%mm1\n\t"
-    "psubw %%mm0,%%mm3\n\t"
-    "movq %%mm1,0x58(%[y])\n\t"
-    "psraw $2,%%mm2\n\t"
-    "psubw %%mm0,%%mm4\n\t"
-    "movq 0x48(%[y]),%%mm1\n\t"
-    "psraw $2,%%mm3\n\t"
-    "psubw %%mm0,%%mm5\n\t"
-    "movq %%mm2,0x68(%[y])\n\t"
+    /*mm2={-2}x4*/
+    "pcmpeqw %%mm2,%%mm2\n\t"
+    "paddw %%mm2,%%mm2\n\t"
+    /*Round and store the results (no transpose).*/
+    "movq 0x50(%[y]),%%mm7\n\t"
+    "psubw %%mm2,%%mm4\n\t"
+    "psubw %%mm2,%%mm6\n\t"
     "psraw $2,%%mm4\n\t"
-    "psubw %%mm0,%%mm6\n\t"
-    "movq %%mm3,0x78(%[y])\n\t"
-    "psraw $2,%%mm5\n\t"
-    "psubw %%mm0,%%mm7\n\t"
-    "movq %%mm4,0x40(%[y])\n\t"
+    "psubw %%mm2,%%mm0\n\t"
+    "movq %%mm4,"OC_MEM_OFFS(0x08,buf)"\n\t"
+    "movq 0x70(%[y]),%%mm4\n\t"
     "psraw $2,%%mm6\n\t"
-    "psubw %%mm0,%%mm1\n\t"
-    "movq %%mm5,0x50(%[y])\n\t"
-    "psraw $2,%%mm7\n\t"
-    "movq %%mm6,0x60(%[y])\n\t"
+    "psubw %%mm2,%%mm5\n\t"
+    "movq %%mm6,"OC_MEM_OFFS(0x28,buf)"\n\t"
+    "psraw $2,%%mm0\n\t"
+    "psubw %%mm2,%%mm3\n\t"
+    "movq %%mm0,"OC_MEM_OFFS(0x48,buf)"\n\t"
+    "psraw $2,%%mm5\n\t"
+    "psubw %%mm2,%%mm1\n\t"
+    "movq %%mm5,"OC_MEM_OFFS(0x58,buf)"\n\t"
+    "psraw $2,%%mm3\n\t"
+    "psubw %%mm2,%%mm7\n\t"
+    "movq %%mm3,"OC_MEM_OFFS(0x68,buf)"\n\t"
     "psraw $2,%%mm1\n\t"
-    "movq %%mm7,0x70(%[y])\n\t"
-    "movq %%mm1,0x48(%[y])\n\t"
-    :[a]"=&r"(a)
+    "psubw %%mm2,%%mm4\n\t"
+    "movq %%mm1,"OC_MEM_OFFS(0x78,buf)"\n\t"
+    "psraw $2,%%mm7\n\t"
+    "movq %%mm7,"OC_MEM_OFFS(0x18,buf)"\n\t"
+    "psraw $2,%%mm4\n\t"
+    "movq %%mm4,"OC_MEM_OFFS(0x38,buf)"\n\t"
+    /*Final transpose and zig-zag.*/
+#define OC_ZZ_LOAD_ROW_LO(_row,_reg) \
+    "movq "OC_MEM_OFFS(16*_row,buf)","_reg"\n\t" \
+
+#define OC_ZZ_LOAD_ROW_HI(_row,_reg) \
+    "movq "OC_MEM_OFFS(16*_row+8,buf)","_reg"\n\t" \
+
+    OC_TRANSPOSE_ZIG_ZAG_MMXEXT
+#undef OC_ZZ_LOAD_ROW_LO
+#undef OC_ZZ_LOAD_ROW_HI
+    :[a]"=&r"(a),[buf]"=m"(OC_ARRAY_OPERAND(ogg_int16_t,buf,64))
     :[y]"r"(_y),[x]"r"(_x)
     :"memory"
   );

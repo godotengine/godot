@@ -144,6 +144,7 @@ public:
 	};
 
 	virtual Ref<EditorExportPreset> create_preset();
+	virtual bool is_executable(const String &p_path) const { return false; }
 
 	virtual void clear_messages() { messages.clear(); }
 	virtual void add_message(ExportMessageType p_type, const String &p_category, const String &p_message) {
@@ -210,7 +211,7 @@ public:
 		DEBUG_FLAG_DUMB_CLIENT = 1,
 		DEBUG_FLAG_REMOTE_DEBUG = 2,
 		DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST = 4,
-		DEBUG_FLAG_VIEW_COLLISONS = 8,
+		DEBUG_FLAG_VIEW_COLLISIONS = 8,
 		DEBUG_FLAG_VIEW_NAVIGATION = 16,
 	};
 

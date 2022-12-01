@@ -126,12 +126,12 @@
 			AVSpeechUtterance *new_utterance = [[AVSpeechUtterance alloc] initWithString:[NSString stringWithUTF8String:message.text.utf8().get_data()]];
 			[new_utterance setVoice:[AVSpeechSynthesisVoice voiceWithIdentifier:[NSString stringWithUTF8String:message.voice.utf8().get_data()]]];
 			if (message.rate > 1.f) {
-				[new_utterance setRate:Math::range_lerp(message.rate, 1.f, 10.f, AVSpeechUtteranceDefaultSpeechRate, AVSpeechUtteranceMaximumSpeechRate)];
+				[new_utterance setRate:Math::remap(message.rate, 1.f, 10.f, AVSpeechUtteranceDefaultSpeechRate, AVSpeechUtteranceMaximumSpeechRate)];
 			} else if (message.rate < 1.f) {
-				[new_utterance setRate:Math::range_lerp(message.rate, 0.1f, 1.f, AVSpeechUtteranceMinimumSpeechRate, AVSpeechUtteranceDefaultSpeechRate)];
+				[new_utterance setRate:Math::remap(message.rate, 0.1f, 1.f, AVSpeechUtteranceMinimumSpeechRate, AVSpeechUtteranceDefaultSpeechRate)];
 			}
 			[new_utterance setPitchMultiplier:message.pitch];
-			[new_utterance setVolume:(Math::range_lerp(message.volume, 0.f, 100.f, 0.f, 1.f))];
+			[new_utterance setVolume:(Math::remap(message.volume, 0.f, 100.f, 0.f, 1.f))];
 
 			ids[new_utterance] = message.id;
 			[av_synth speakUtterance:new_utterance];
@@ -141,7 +141,7 @@
 			[ns_synth setVoice:[NSString stringWithUTF8String:message.voice.utf8().get_data()]];
 			int base_pitch = [[ns_synth objectForProperty:NSSpeechPitchBaseProperty error:nil] intValue];
 			[ns_synth setObject:[NSNumber numberWithInt:(base_pitch * (message.pitch / 2.f + 0.5f))] forProperty:NSSpeechPitchBaseProperty error:nullptr];
-			[ns_synth setVolume:(Math::range_lerp(message.volume, 0.f, 100.f, 0.f, 1.f))];
+			[ns_synth setVolume:(Math::remap(message.volume, 0.f, 100.f, 0.f, 1.f))];
 			[ns_synth setRate:(message.rate * 200)];
 
 			last_utterance = message.id;

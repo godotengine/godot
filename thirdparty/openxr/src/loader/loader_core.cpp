@@ -711,9 +711,6 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 XRAPI_ATTR XrResult XRAPI_CALL LoaderXrGetInstanceProcAddr(XrInstance instance, const char *name,
                                                            PFN_xrVoidFunction *function) XRLOADER_ABI_TRY {
-    // Initialize the function to nullptr in case it does not get caught in a known case
-    *function = nullptr;
-
     if (nullptr == function) {
         LoaderLogger::LogValidationErrorMessage("VUID-xrGetInstanceProcAddr-function-parameter", "xrGetInstanceProcAddr",
                                                 "Invalid Function pointer");
@@ -725,6 +722,9 @@ XRAPI_ATTR XrResult XRAPI_CALL LoaderXrGetInstanceProcAddr(XrInstance instance, 
                                                 "Invalid Name pointer");
         return XR_ERROR_VALIDATION_FAILURE;
     }
+
+    // Initialize the function to nullptr in case it does not get caught in a known case
+    *function = nullptr;
 
     LoaderInstance *loader_instance = nullptr;
     if (instance == XR_NULL_HANDLE) {

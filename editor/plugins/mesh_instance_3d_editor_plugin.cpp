@@ -38,6 +38,9 @@
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/menu_button.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_polygon_shape_3d.h"
 
 void MeshInstance3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -66,7 +69,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			if (selection.is_empty()) {
-				Ref<Shape3D> shape = mesh->create_trimesh_shape();
+				Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 				if (shape.is_null()) {
 					err_dialog->set_text(TTR("Couldn't create a Trimesh collision shape."));
 					err_dialog->popup_centered();
@@ -105,7 +108,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 					continue;
 				}
 
-				Ref<Shape3D> shape = m->create_trimesh_shape();
+				Ref<ConcavePolygonShape3D> shape = m->create_trimesh_shape();
 				if (shape.is_null()) {
 					continue;
 				}
@@ -137,7 +140,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Ref<Shape3D> shape = mesh->create_trimesh_shape();
+			Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 			if (shape.is_null()) {
 				return;
 			}
@@ -171,7 +174,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			bool simplify = (p_option == MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
 
-			Ref<Shape3D> shape = mesh->create_convex_shape(true, simplify);
+			Ref<ConvexPolygonShape3D> shape = mesh->create_convex_shape(true, simplify);
 
 			if (shape.is_null()) {
 				err_dialog->set_text(TTR("Couldn't create a single convex collision shape."));
@@ -269,6 +272,24 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
 			outline_dialog->popup_centered(Vector2(200, 90));
+		} break;
+		case MENU_OPTION_CREATE_DEBUG_TANGENTS: {
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			ur->create_action(TTR("Create Debug Tangents"));
+
+			MeshInstance3D *tangents = node->create_debug_tangents_node();
+
+			if (tangents) {
+				Node *owner = get_tree()->get_edited_scene_root();
+
+				ur->add_do_reference(tangents);
+				ur->add_do_method(node, "add_child", tangents, true);
+				ur->add_do_method(tangents, "set_owner", owner);
+
+				ur->add_undo_method(node, "remove_child", tangents);
+			}
+
+			ur->commit_action();
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
 			Ref<ArrayMesh> mesh2 = node->get_mesh();
@@ -511,6 +532,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Outline Mesh..."), MENU_OPTION_CREATE_OUTLINE_MESH);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the StandardMaterial Grow property when using that property isn't possible."));
+	options->get_popup()->add_item(TTR("Create Debug Tangents"), MENU_OPTION_CREATE_DEBUG_TANGENTS);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
 	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
@@ -567,7 +589,7 @@ void MeshInstance3DEditorPlugin::make_visible(bool p_visible) {
 
 MeshInstance3DEditorPlugin::MeshInstance3DEditorPlugin() {
 	mesh_editor = memnew(MeshInstance3DEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(mesh_editor);
+	EditorNode::get_singleton()->get_main_screen_control()->add_child(mesh_editor);
 
 	mesh_editor->options->hide();
 }

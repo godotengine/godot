@@ -77,7 +77,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 			read_pos += echo_buffer_size;
 		}
 
-		float in = undenormalise(echo_buffer[read_pos] * params.predelay_fb + p_src[i]);
+		float in = undenormalize(echo_buffer[read_pos] * params.predelay_fb + p_src[i]);
 
 		echo_buffer[echo_buffer_pos] = in;
 
@@ -111,7 +111,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 				c.pos = 0;
 			}
 
-			float out = undenormalise(c.buffer[c.pos] * c.feedback);
+			float out = undenormalize(c.buffer[c.pos] * c.feedback);
 			out = out * (1.0 - c.damp) + c.damp_h * c.damp; //lowpass
 			c.damp_h = out;
 			c.buffer[c.pos] = input_buffer[j] + out;
@@ -138,7 +138,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 	ap=&allpass[m_ap];	\
 	if (ap->pos>=ap_size_limit[m_ap])	\
 		ap->pos=0;	\
-	aux=undenormalise(ap->buffer[ap->pos]);	\
+	aux=undenormalize(ap->buffer[ap->pos]);	\
 	in=sample;	\
 	sample=-in+aux;	\
 	ap->pos++;
@@ -163,7 +163,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 			}
 
 			float aux = a.buffer[a.pos];
-			a.buffer[a.pos] = undenormalise(allpass_feedback * aux + p_dst[j]);
+			a.buffer[a.pos] = undenormalize(allpass_feedback * aux + p_dst[j]);
 			p_dst[j] = aux - allpass_feedback * a.buffer[a.pos];
 			a.pos++;
 		}

@@ -55,6 +55,7 @@
 		</member>
 		<member name="light_angular_distance" type="float" setter="set_param" getter="get_param" default="0.0">
 			The light's angular size in degrees. Increasing this will make shadows softer at greater distances. Only available for [DirectionalLight3D]s. For reference, the Sun from the Earth is approximately [code]0.5[/code].
+			[b]Note:[/b] [member light_angular_distance] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 		</member>
 		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light3D.BakeMode" default="2">
 			The light's bake mode. This will affect the global illumination techniques that have an effect on the light's rendering. See [enum BakeMode].
@@ -91,6 +92,7 @@
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0">
 			The size of the light in Godot units. Only available for [OmniLight3D]s and [SpotLight3D]s. Increasing this value will make the light fade out slower and shadows appear blurrier. This can be used to simulate area lights to an extent.
+			[b]Note:[/b] [member light_size] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 		</member>
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="0.5">
 			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.

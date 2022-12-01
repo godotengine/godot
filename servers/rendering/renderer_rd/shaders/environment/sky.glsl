@@ -153,6 +153,15 @@ layout(set = 3, binding = 0) uniform texture3D volumetric_fog_texture;
 
 layout(location = 0) out vec4 frag_color;
 
+#ifdef USE_DEBANDING
+// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+vec3 interleaved_gradient_noise(vec2 pos) {
+	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
+	float res = fract(magic.z * fract(dot(pos, magic.xy))) * 2.0 - 1.0;
+	return vec3(res, -res, res) / 255.0;
+}
+#endif
+
 vec4 volumetric_fog_process(vec2 screen_uv) {
 	vec3 fog_pos = vec3(screen_uv, 1.0);
 
@@ -252,4 +261,8 @@ void main() {
 	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
 	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
 	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
+
+#ifdef USE_DEBANDING
+	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy);
+#endif
 }

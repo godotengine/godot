@@ -75,6 +75,8 @@ public:
 	virtual List<String> get_cmdline_platform_args() const override;
 
 	virtual String get_name() const override;
+	virtual String get_distribution_name() const override;
+	virtual String get_version() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 

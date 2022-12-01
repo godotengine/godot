@@ -33,17 +33,17 @@
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
-	float radius = get_radius();
-	float height = get_height();
+	float c_radius = get_radius();
+	float c_height = get_height();
 
 	Vector<Vector3> points;
 
-	Vector3 d(0, height * 0.5, 0);
+	Vector3 d(0, c_height * 0.5, 0);
 	for (int i = 0; i < 360; i++) {
 		float ra = Math::deg_to_rad((float)i);
 		float rb = Math::deg_to_rad((float)i + 1);
-		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
-		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
+		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * c_radius;
+		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * c_radius;
 
 		points.push_back(Vector3(a.x, 0, a.y) + d);
 		points.push_back(Vector3(b.x, 0, b.y) + d);

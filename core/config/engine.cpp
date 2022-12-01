@@ -48,6 +48,15 @@ int Engine::get_physics_ticks_per_second() const {
 	return ips;
 }
 
+void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
+	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
+	max_physics_steps_per_frame = p_max_physics_steps;
+}
+
+int Engine::get_max_physics_steps_per_frame() const {
+	return max_physics_steps_per_frame;
+}
+
 void Engine::set_physics_jitter_fix(double p_threshold) {
 	if (p_threshold < 0) {
 		p_threshold = 0;
@@ -59,12 +68,12 @@ double Engine::get_physics_jitter_fix() const {
 	return physics_jitter_fix;
 }
 
-void Engine::set_target_fps(int p_fps) {
-	_target_fps = p_fps > 0 ? p_fps : 0;
+void Engine::set_max_fps(int p_fps) {
+	_max_fps = p_fps > 0 ? p_fps : 0;
 }
 
-int Engine::get_target_fps() const {
-	return _target_fps;
+int Engine::get_max_fps() const {
+	return _max_fps;
 }
 
 uint64_t Engine::get_frames_drawn() {
@@ -194,7 +203,7 @@ String Engine::get_architecture_name() const {
 #elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 	return "arm64";
 
-#elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7S__) || defined(_M_ARM)
+#elif defined(__arm__) || defined(_M_ARM)
 	return "arm32";
 
 #elif defined(__riscv)

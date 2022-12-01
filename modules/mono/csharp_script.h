@@ -48,20 +48,10 @@ class CSharpScript;
 class CSharpInstance;
 class CSharpLanguage;
 
-#ifdef NO_SAFE_CAST
-template <typename TScriptInstance, typename TScriptLanguage>
-TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
-	if (!p_inst) {
-		return nullptr;
-	}
-	return p_inst->get_language() == TScriptLanguage::get_singleton() ? static_cast<TScriptInstance *>(p_inst) : nullptr;
-}
-#else
 template <typename TScriptInstance, typename TScriptLanguage>
 TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
 	return dynamic_cast<TScriptInstance *>(p_inst);
 }
-#endif
 
 #define CAST_CSHARP_INSTANCE(m_inst) (cast_script_instance<CSharpInstance, CSharpLanguage>(m_inst))
 
@@ -90,6 +80,9 @@ class CSharpScript : public Script {
 
 	HashSet<ObjectID> pending_reload_instances;
 	RBMap<ObjectID, StateBackup> pending_reload_state;
+
+	bool was_tool_before_reload = false;
+	HashSet<ObjectID> pending_replace_placeholders;
 #endif
 
 	String source;
@@ -130,6 +123,10 @@ class CSharpScript : public Script {
 
 	void _clear();
 
+	static void GD_CLR_STDCALL _add_property_info_list_callback(CSharpScript *p_script, const String *p_current_class_name, void *p_props, int32_t p_count);
+#ifdef TOOLS_ENABLED
+	static void GD_CLR_STDCALL _add_property_default_values_callback(CSharpScript *p_script, void *p_def_vals, int32_t p_count);
+#endif
 	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);

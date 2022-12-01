@@ -154,7 +154,7 @@ bool EditorImportPlugin::get_option_visibility(const String &p_path, const Strin
 		d[E->key] = E->value;
 		++E;
 	}
-	bool visible;
+	bool visible = false;
 	if (GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, d, visible)) {
 		return visible;
 	}
@@ -172,7 +172,7 @@ Error EditorImportPlugin::import(const String &p_source_file, const String &p_sa
 		++E;
 	}
 
-	int err;
+	int err = 0;
 	if (GDVIRTUAL_CALL(_import, p_source_file, p_save_path, options, platform_variants, gen_files, err)) {
 		Error ret_err = Error(err);
 

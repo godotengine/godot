@@ -31,12 +31,21 @@
 #include "editor_quick_open.h"
 
 #include "core/os/keyboard.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 
-void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_dontclear) {
+void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dontclear) {
 	base_type = p_base;
 	allow_multi_select = p_enable_multi;
 	search_options->set_select_mode(allow_multi_select ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
-	popup_centered_clamped(Size2i(600, 440), 0.8f);
+
+	static bool was_showed = false;
+	if (!was_showed) {
+		was_showed = true;
+		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
+	} else {
+		show();
+	}
 
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem();
 	_build_search_cache(efsd);
@@ -55,19 +64,31 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		_build_search_cache(p_efsd->get_subdir(i));
 	}
 
-	Vector<String> base_types = String(base_type).split(String(","));
+	Vector<String> base_types = base_type.split(",");
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
-		String file_type = p_efsd->get_file_type(i);
+		String file = p_efsd->get_file_path(i);
+		String engine_type = p_efsd->get_file_type(i);
+		// TODO: Fix lack of caching for resource's script's global class name (if applicable).
+		String script_type;
+		if (_load_resources) {
+			Ref<Resource> res = ResourceLoader::load(file);
+			if (res.is_valid()) {
+				Ref<Script> scr = res->get_script();
+				if (scr.is_valid()) {
+					script_type = scr->get_language()->get_global_class_name(file);
+				}
+			}
+		}
+		String actual_type = script_type.is_empty() ? engine_type : script_type;
 		// Iterate all possible base types.
 		for (String &parent_type : base_types) {
-			if (ClassDB::is_parent_class(file_type, parent_type)) {
-				String file = p_efsd->get_file_path(i);
+			if (ClassDB::is_parent_class(engine_type, parent_type) || EditorNode::get_editor_data().script_class_is_parent(script_type, parent_type)) {
 				files.push_back(file.substr(6, file.length()));
 
 				// Store refs to used icons.
 				String ext = file.get_extension();
 				if (!icons.has(ext)) {
-					icons.insert(ext, get_theme_icon((has_theme_icon(file_type, SNAME("EditorIcons")) ? file_type : String("Object")), SNAME("EditorIcons")));
+					icons.insert(ext, get_theme_icon((has_theme_icon(actual_type, SNAME("EditorIcons")) ? actual_type : "Object"), SNAME("EditorIcons")));
 				}
 
 				// Stop testing base types as soon as we got a match.
@@ -218,7 +239,7 @@ Vector<String> EditorQuickOpen::get_selected_files() const {
 	return selected_files;
 }
 
-StringName EditorQuickOpen::get_base_type() const {
+String EditorQuickOpen::get_base_type() const {
 	return base_type;
 }
 

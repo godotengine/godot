@@ -35,6 +35,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/menu_button.h"
 #include "thirdparty/misc/clipper.hpp"
 
 void Skeleton2DEditor::_node_removed(Node *p_node) {
@@ -131,7 +132,7 @@ void Skeleton2DEditorPlugin::make_visible(bool p_visible) {
 
 Skeleton2DEditorPlugin::Skeleton2DEditorPlugin() {
 	sprite_editor = memnew(Skeleton2DEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(sprite_editor);
+	EditorNode::get_singleton()->get_main_screen_control()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

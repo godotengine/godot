@@ -35,10 +35,12 @@
 
 #include "../godotsharp_defs.h"
 
+#ifndef GD_CLR_STDCALL
 #ifdef WIN32
 #define GD_CLR_STDCALL __stdcall
 #else
 #define GD_CLR_STDCALL
+#endif
 #endif
 
 namespace gdmono {
@@ -55,8 +57,6 @@ struct PluginCallbacks {
 #endif
 
 } // namespace gdmono
-
-#undef GD_CLR_STDCALL
 
 class GDMono {
 	bool runtime_initialized;

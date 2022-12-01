@@ -44,19 +44,12 @@ namespace RendererSceneRenderImplementation {
 class RenderForwardMobile : public RendererSceneRenderRD {
 	friend SceneShaderForwardMobile;
 
-	struct ForwardIDAllocator {
-		LocalVector<bool> allocations;
-		LocalVector<uint8_t> map;
-	};
-
-	ForwardIDAllocator forward_id_allocators[FORWARD_ID_MAX];
-
-	virtual ForwardID _allocate_forward_id(ForwardIDType p_type) override;
-	virtual void _free_forward_id(ForwardIDType p_type, ForwardID p_id) override;
-	virtual void _map_forward_id(ForwardIDType p_type, ForwardID p_id, uint32_t p_index) override;
-	virtual bool _uses_forward_ids() const override { return true; }
-
 protected:
+	struct GeometryInstanceSurfaceDataCache;
+
+private:
+	static RenderForwardMobile *singleton;
+
 	/* Scene Shader */
 
 	enum {
@@ -157,8 +150,6 @@ protected:
 		// PASS_MODE_SDF,
 	};
 
-	class GeometryInstanceForwardMobile;
-	struct GeometryInstanceSurfaceDataCache;
 	struct RenderElementInfo;
 
 	struct RenderListParameters {
@@ -172,16 +163,15 @@ protected:
 		RID render_pass_uniform_set;
 		bool force_wireframe = false;
 		Vector2 uv_offset;
-		Plane lod_plane;
 		uint32_t spec_constant_base_flags = 0;
 		float lod_distance_multiplier = 0.0;
 		float screen_mesh_lod_threshold = 0.0;
 		RD::FramebufferFormatID framebuffer_format = 0;
 		uint32_t element_offset = 0;
-		uint32_t barrier = RD::BARRIER_MASK_ALL;
+		uint32_t barrier = RD::BARRIER_MASK_ALL_BARRIERS;
 		uint32_t subpass = 0;
 
-		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, uint32_t p_spec_constant_base_flags = 0, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, uint32_t p_spec_constant_base_flags = 0, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL_BARRIERS) {
 			elements = p_elements;
 			element_info = p_element_info;
 			element_count = p_element_count;
@@ -192,7 +182,6 @@ protected:
 			render_pass_uniform_set = p_render_pass_uniform_set;
 			force_wireframe = p_force_wireframe;
 			uv_offset = p_uv_offset;
-			lod_plane = p_lod_plane;
 			lod_distance_multiplier = p_lod_distance_multiplier;
 			screen_mesh_lod_threshold = p_screen_mesh_lod_threshold;
 			element_offset = p_element_offset;
@@ -201,35 +190,26 @@ protected:
 		}
 	};
 
-	virtual float _render_buffers_get_luminance_multiplier() override;
-	virtual RD::DataFormat _render_buffers_get_color_format() override;
-	virtual bool _render_buffers_can_be_storage() override;
+	/* Render shadows */
+
+	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_mesh_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true, RenderingMethod::RenderInfo *p_render_info = nullptr);
+	void _render_shadow_begin();
+	void _render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RenderingMethod::RenderInfo *p_render_info = nullptr);
+	void _render_shadow_process();
+	void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL_BARRIERS);
+
+	/* Render Scene */
 
 	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas = false, int p_index = 0);
-	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
-
-	virtual void _render_shadow_begin() override;
-	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RendererScene::RenderInfo *p_render_info = nullptr) override;
-	virtual void _render_shadow_process() override;
-	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) override;
-
-	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) override;
-	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
-	virtual void _render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) override;
-	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) override;
+	void _pre_opaque_render(RenderDataRD *p_render_data);
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
-	virtual void _base_uniforms_changed() override;
 	void _update_render_base_uniform_set();
-	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
-	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
 	void _fill_element_info(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1);
 	// void _update_instance_data_buffer(RenderListType p_render_list);
-
-	static RenderForwardMobile *singleton;
 
 	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false, int p_index = 0);
 	void _setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
@@ -252,75 +232,6 @@ protected:
 	/* Scene state */
 
 	struct SceneState {
-		// This struct is loaded into Set 1 - Binding 0, populated at start of rendering a frame, must match with shader code
-		struct UBO {
-			float projection_matrix[16];
-			float inv_projection_matrix[16];
-			float inv_view_matrix[16];
-			float view_matrix[16];
-
-			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
-			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
-			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
-
-			float viewport_size[2];
-			float screen_pixel_size[2];
-
-			float directional_penumbra_shadow_kernel[128]; //32 vec4s
-			float directional_soft_shadow_kernel[128];
-			float penumbra_shadow_kernel[128];
-			float soft_shadow_kernel[128];
-
-			float ambient_light_color_energy[4];
-
-			float ambient_color_sky_mix;
-			uint32_t use_ambient_light;
-			uint32_t use_ambient_cubemap;
-			uint32_t use_reflection_cubemap;
-
-			float radiance_inverse_xform[12];
-
-			float shadow_atlas_pixel_size[2];
-			float directional_shadow_pixel_size[2];
-
-			uint32_t directional_light_count;
-			float dual_paraboloid_side;
-			float z_far;
-			float z_near;
-
-			uint32_t ssao_enabled;
-			float ssao_light_affect;
-			float ssao_ao_affect;
-			uint32_t roughness_limiter_enabled;
-
-			float roughness_limiter_amount;
-			float roughness_limiter_limit;
-			float opaque_prepass_threshold;
-			uint32_t roughness_limiter_pad;
-
-			// Fog
-			uint32_t fog_enabled;
-			float fog_density;
-			float fog_height;
-			float fog_height_density;
-
-			float fog_light_color[3];
-			float fog_sun_scatter;
-
-			float fog_aerial_perspective;
-			uint32_t material_uv2_mode;
-
-			float time;
-			float reflection_multiplier;
-
-			uint32_t pancake_shadows;
-			float emissive_exposure_normalization; // Needed to normalize emissive when using physical units.
-			float IBL_exposure_normalization; // Adjusts for baked exposure.
-			uint32_t pad3;
-		};
-
-		UBO ubo;
-
 		LocalVector<RID> uniform_buffers;
 
 		// !BAS! We need to change lightmaps, we're not going to do this with a buffer but pushing the used lightmap in
@@ -438,17 +349,38 @@ protected:
 
 	RenderList render_list[RENDER_LIST_MAX];
 
+protected:
+	/* setup */
+	virtual void _update_shader_quality_settings() override;
+
+	virtual float _render_buffers_get_luminance_multiplier() override;
+	virtual RD::DataFormat _render_buffers_get_color_format() override;
+	virtual bool _render_buffers_can_be_storage() override;
+
+	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
+	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
+
+	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override{};
+	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override{};
+	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override{};
+
+	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) override{};
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override{};
+
 	/* Geometry instance */
 
-	// check which ones of these apply, probably all except GI and SDFGI
+	class GeometryInstanceForwardMobile;
+
+	// When changing any of these enums, remember to change the corresponding enums in the shader files as well.
 	enum {
-		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 5,
-		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 6,
-		INSTANCE_DATA_FLAG_USE_SDFGI = 1 << 7,
-		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 8,
-		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 9,
-		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 10,
-		INSTANCE_DATA_FLAG_USE_VOXEL_GI = 1 << 11,
+		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
+		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,
+		INSTANCE_DATA_FLAG_USE_SDFGI = 1 << 6,
+		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 7,
+		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 8,
+		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 9,
+		INSTANCE_DATA_FLAG_USE_VOXEL_GI = 1 << 10,
+		INSTANCE_DATA_FLAG_PARTICLES = 1 << 11,
 		INSTANCE_DATA_FLAG_MULTIMESH = 1 << 12,
 		INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D = 1 << 13,
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR = 1 << 14,
@@ -552,13 +484,13 @@ protected:
 
 		// culled light info
 		uint32_t reflection_probe_count = 0;
-		ForwardID reflection_probes[MAX_RDL_CULL];
+		RendererRD::ForwardID reflection_probes[MAX_RDL_CULL];
 		uint32_t omni_light_count = 0;
-		ForwardID omni_lights[MAX_RDL_CULL];
+		RendererRD::ForwardID omni_lights[MAX_RDL_CULL];
 		uint32_t spot_light_count = 0;
-		ForwardID spot_lights[MAX_RDL_CULL];
+		RendererRD::ForwardID spot_lights[MAX_RDL_CULL];
 		uint32_t decals_count = 0;
-		ForwardID decals[MAX_RDL_CULL];
+		RendererRD::ForwardID decals[MAX_RDL_CULL];
 
 		GeometryInstanceSurfaceDataCache *surface_caches = nullptr;
 
@@ -581,9 +513,41 @@ protected:
 		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override;
 	};
 
-	_FORCE_INLINE_ void _fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, uint32_t &spec_constants, const GeometryInstanceForwardMobile *p_instance);
+	/* Rendering */
 
-	void _update_shader_quality_settings() override;
+	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
+
+	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) override;
+	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+	virtual void _render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) override;
+	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) override;
+
+	/* Forward ID */
+
+	class ForwardIDStorageMobile : public RendererRD::ForwardIDStorage {
+	public:
+		struct ForwardIDAllocator {
+			LocalVector<bool> allocations;
+			LocalVector<uint8_t> map;
+		};
+
+		ForwardIDAllocator forward_id_allocators[RendererRD::FORWARD_ID_MAX];
+
+	public:
+		virtual RendererRD::ForwardID allocate_forward_id(RendererRD::ForwardIDType p_type) override;
+		virtual void free_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id) override;
+		virtual void map_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id, uint32_t p_index) override;
+		virtual bool uses_forward_ids() const override { return true; }
+
+		void fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, uint32_t &spec_constants, const GeometryInstanceForwardMobile *p_instance);
+	};
+
+	ForwardIDStorageMobile *forward_id_storage_mobile = nullptr;
+
+	virtual RendererRD::ForwardIDStorage *create_forward_id_storage() override {
+		forward_id_storage_mobile = memnew(ForwardIDStorageMobile);
+		return forward_id_storage_mobile;
+	}
 
 public:
 	static RenderForwardMobile *get_singleton() { return singleton; }
@@ -612,8 +576,9 @@ public:
 
 	virtual bool free(RID p_rid) override;
 
+	virtual void base_uniforms_changed() override;
+
 	virtual bool is_dynamic_gi_supported() const override;
-	virtual bool is_clustered_enabled() const override;
 	virtual bool is_volumetric_supported() const override;
 	virtual uint32_t get_max_elements() const override;
 

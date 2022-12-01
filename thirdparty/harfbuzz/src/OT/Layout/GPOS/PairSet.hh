@@ -163,7 +163,7 @@ struct PairSet
       newFormats,
       len1,
       &glyph_map,
-      c->plan->layout_variation_idx_map
+      c->plan->layout_variation_idx_delta_map
     };
 
     const PairValueRecord *record = &firstPairValueRecord;

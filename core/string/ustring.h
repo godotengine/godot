@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Note: _GODOT suffix added to avoid conflict with ICU header with the same guard.
-
 #ifndef USTRING_GODOT_H
 #define USTRING_GODOT_H
+
+// Note: _GODOT suffix added to header guard to avoid conflict with ICU header.
 
 #include "core/string/char_utils.h"
 #include "core/templates/cowdata.h"
@@ -156,6 +156,7 @@ public:
 
 	void operator=(const char *p_cstr);
 	bool operator<(const CharString &p_right) const;
+	bool operator==(const CharString &p_right) const;
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char *get_data() const;
@@ -345,10 +346,10 @@ public:
 	String get_slice(String p_splitter, int p_slice) const;
 	String get_slicec(char32_t p_splitter, int p_slice) const;
 
-	Vector<String> split(const String &p_splitter, bool p_allow_empty = true, int p_maxsplit = 0) const;
-	Vector<String> rsplit(const String &p_splitter, bool p_allow_empty = true, int p_maxsplit = 0) const;
+	Vector<String> split(const String &p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
+	Vector<String> rsplit(const String &p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
 	Vector<String> split_spaces() const;
-	Vector<float> split_floats(const String &p_splitter, bool p_allow_empty = true) const;
+	Vector<double> split_floats(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<float> split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;

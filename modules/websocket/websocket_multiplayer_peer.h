@@ -32,6 +32,8 @@
 #define WEBSOCKET_MULTIPLAYER_PEER_H
 
 #include "core/error/error_list.h"
+#include "core/io/stream_peer_tls.h"
+#include "core/io/tcp_server.h"
 #include "core/templates/list.h"
 #include "scene/main/multiplayer_peer.h"
 #include "websocket_peer.h"
@@ -40,9 +42,7 @@ class WebSocketMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(WebSocketMultiplayerPeer, MultiplayerPeer);
 
 private:
-	Vector<uint8_t> _make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size);
-	void _store_pkt(int32_t p_source, int32_t p_dest, const uint8_t *p_data, uint32_t p_data_size);
-	Error _server_relay(int32_t p_from, int32_t p_to, const uint8_t *p_buffer, uint32_t p_buffer_size);
+	Ref<WebSocketPeer> _create_peer();
 
 protected:
 	enum {
@@ -56,30 +56,56 @@ protected:
 
 	struct Packet {
 		int source = 0;
-		int destination = 0;
 		uint8_t *data = nullptr;
 		uint32_t size = 0;
 	};
 
-	List<Packet> _incoming_packets;
-	HashMap<int, Ref<WebSocketPeer>> _peer_map;
-	Packet _current_packet;
+	struct PendingPeer {
+		uint64_t time = 0;
+		Ref<StreamPeerTCP> tcp;
+		Ref<StreamPeer> connection;
+		Ref<WebSocketPeer> ws;
+	};
 
-	bool _is_multiplayer = false;
-	int _target_peer = 0;
-	int _peer_id = 0;
+	uint64_t handshake_timeout = 3000;
+	Ref<WebSocketPeer> peer_config;
+	HashMap<int, PendingPeer> pending_peers;
+	Ref<TCPServer> tcp_server;
+	bool use_tls = false;
+	Ref<X509Certificate> tls_certificate;
+	Ref<CryptoKey> tls_key;
+
+	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
+
+	List<Packet> incoming_packets;
+	HashMap<int, Ref<WebSocketPeer>> peers_map;
+	Packet current_packet;
+
+	int target_peer = 0;
+	int unique_id = 0;
 
 	static void _bind_methods();
 
-	void _send_add(int32_t p_peer_id);
-	void _send_sys(Ref<WebSocketPeer> p_peer, uint8_t p_type, int32_t p_peer_id);
-	void _send_del(int32_t p_peer_id);
+	void _poll_client();
+	void _poll_server();
+	void _clear();
 
 public:
 	/* MultiplayerPeer */
-	void set_target_peer(int p_target_peer) override;
-	int get_packet_peer() const override;
-	int get_unique_id() const override;
+	virtual void set_target_peer(int p_target_peer) override;
+	virtual int get_packet_peer() const override;
+	virtual int get_packet_channel() const override { return 0; }
+	virtual TransferMode get_packet_mode() const override { return TRANSFER_MODE_RELIABLE; }
+	virtual int get_unique_id() const override;
+	virtual bool is_server_relay_supported() const override { return true; }
+
+	virtual int get_max_packet_size() const override;
+	virtual bool is_server() const override;
+	virtual void poll() override;
+	virtual void close() override;
+	virtual void disconnect_peer(int p_peer_id, bool p_force = false) override;
+
+	virtual ConnectionStatus get_connection_status() const override;
 
 	/* PacketPeer */
 	virtual int get_available_packet_count() const override;
@@ -87,11 +113,31 @@ public:
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
 	/* WebSocketPeer */
-	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) = 0;
-	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const = 0;
+	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const;
 
-	void _process_multiplayer(Ref<WebSocketPeer> p_peer, uint32_t p_peer_id);
-	void _clear();
+	Error create_client(const String &p_url, bool p_verify_tls, Ref<X509Certificate> p_tls_certificate);
+	Error create_server(int p_port, IPAddress p_bind_ip, Ref<CryptoKey> p_tls_key, Ref<X509Certificate> p_tls_certificate);
+
+	void set_supported_protocols(const Vector<String> &p_protocols);
+	Vector<String> get_supported_protocols() const;
+
+	void set_handshake_headers(const Vector<String> &p_headers);
+	Vector<String> get_handshake_headers() const;
+
+	void set_outbound_buffer_size(int p_buffer_size);
+	int get_outbound_buffer_size() const;
+
+	void set_inbound_buffer_size(int p_buffer_size);
+	int get_inbound_buffer_size() const;
+
+	float get_handshake_timeout() const;
+	void set_handshake_timeout(float p_timeout);
+
+	IPAddress get_peer_address(int p_peer_id) const;
+	int get_peer_port(int p_peer_id) const;
+
+	void set_max_queued_packets(int p_max_queued_packets);
+	int get_max_queued_packets() const;
 
 	WebSocketMultiplayerPeer();
 	~WebSocketMultiplayerPeer();

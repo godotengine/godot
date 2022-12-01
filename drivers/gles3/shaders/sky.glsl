@@ -104,6 +104,15 @@ uniform uint directional_light_count;
 
 layout(location = 0) out vec4 frag_color;
 
+#ifdef USE_DEBANDING
+// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+vec3 interleaved_gradient_noise(vec2 pos) {
+	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
+	float res = fract(magic.z * fract(dot(pos, magic.xy))) * 2.0 - 1.0;
+	return vec3(res, -res, res) / 255.0;
+}
+#endif
+
 void main() {
 	vec3 cube_normal;
 	cube_normal.z = -1.0;
@@ -168,4 +177,8 @@ void main() {
 
 	frag_color.rgb = color;
 	frag_color.a = alpha;
+
+#ifdef USE_DEBANDING
+	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy);
+#endif
 }

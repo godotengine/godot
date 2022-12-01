@@ -34,4 +34,21 @@
 #include "GLES3/gl3.h"
 #include "webgl/webgl2.h"
 
+#define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR 0x9630
+#define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR 0x9632
+#define GL_MAX_VIEWS_OVR 0x9631
+#define GL_FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR 0x9633
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void godot_webgl2_glFramebufferTextureMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
+
+#define glFramebufferTextureMultiviewOVR godot_webgl2_glFramebufferTextureMultiviewOVR
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // GODOT_WEBGL2_H

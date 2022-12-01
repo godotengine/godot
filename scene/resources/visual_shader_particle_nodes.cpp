@@ -460,9 +460,9 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector2> 
 	image.instantiate();
 
 	if (p_array.size() == 0) {
-		image->create(1, 1, false, Image::Format::FORMAT_RGBF);
+		image->initialize_data(1, 1, false, Image::Format::FORMAT_RGBF);
 	} else {
-		image->create(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
+		image->initialize_data(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
 	}
 
 	for (int i = 0; i < p_array.size(); i++) {
@@ -481,9 +481,9 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector3> 
 	image.instantiate();
 
 	if (p_array.size() == 0) {
-		image->create(1, 1, false, Image::Format::FORMAT_RGBF);
+		image->initialize_data(1, 1, false, Image::Format::FORMAT_RGBF);
 	} else {
-		image->create(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
+		image->initialize_data(p_array.size(), 1, false, Image::Format::FORMAT_RGBF);
 	}
 
 	for (int i = 0; i < p_array.size(); i++) {
@@ -502,9 +502,9 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Color> &p
 	image.instantiate();
 
 	if (p_array.size() == 0) {
-		image->create(1, 1, false, Image::Format::FORMAT_RGBA8);
+		image->initialize_data(1, 1, false, Image::Format::FORMAT_RGBA8);
 	} else {
-		image->create(p_array.size(), 1, false, Image::Format::FORMAT_RGBA8);
+		image->initialize_data(p_array.size(), 1, false, Image::Format::FORMAT_RGBA8);
 	}
 
 	for (int i = 0; i < p_array.size(); i++) {
@@ -1130,31 +1130,38 @@ VisualShaderNodeParticleAccelerator::VisualShaderNodeParticleAccelerator() {
 // VisualShaderNodeParticleOutput
 
 String VisualShaderNodeParticleOutput::get_caption() const {
-	if (shader_type == VisualShader::TYPE_START) {
-		return "StartOutput";
-	} else if (shader_type == VisualShader::TYPE_PROCESS) {
-		return "ProcessOutput";
-	} else if (shader_type == VisualShader::TYPE_COLLIDE) {
-		return "CollideOutput";
-	} else if (shader_type == VisualShader::TYPE_START_CUSTOM) {
-		return "CustomStartOutput";
-	} else if (shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-		return "CustomProcessOutput";
+	switch (shader_type) {
+		case VisualShader::TYPE_START:
+			return "StartOutput";
+		case VisualShader::TYPE_PROCESS:
+			return "ProcessOutput";
+		case VisualShader::TYPE_COLLIDE:
+			return "CollideOutput";
+		case VisualShader::TYPE_START_CUSTOM:
+			return "CustomStartOutput";
+		case VisualShader::TYPE_PROCESS_CUSTOM:
+			return "CustomProcessOutput";
+		default:
+			ERR_PRINT(vformat("Unexpected shader_type %d for VisualShaderNodeParticleOutput.", shader_type));
+			return "";
 	}
-	return String();
 }
 
 int VisualShaderNodeParticleOutput::get_input_port_count() const {
-	if (shader_type == VisualShader::TYPE_START) {
-		return 8;
-	} else if (shader_type == VisualShader::TYPE_COLLIDE) {
-		return 5;
-	} else if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-		return 6;
-	} else { // TYPE_PROCESS
-		return 7;
+	switch (shader_type) {
+		case VisualShader::TYPE_START:
+			return 8;
+		case VisualShader::TYPE_PROCESS:
+			return 7;
+		case VisualShader::TYPE_COLLIDE:
+			return 5;
+		case VisualShader::TYPE_START_CUSTOM:
+		case VisualShader::TYPE_PROCESS_CUSTOM:
+			return 6;
+		default:
+			ERR_PRINT(vformat("Unexpected shader_type %d for VisualShaderNodeParticleOutput.", shader_type));
+			return 0;
 	}
-	return 0;
 }
 
 VisualShaderNodeParticleOutput::PortType VisualShaderNodeParticleOutput::get_input_port_type(int p_port) const {
@@ -1284,12 +1291,12 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 
 bool VisualShaderNodeParticleOutput::is_port_separator(int p_index) const {
 	if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
-		String name = get_input_port_name(p_index);
-		return bool(name == "Scale");
+		String port_name = get_input_port_name(p_index);
+		return bool(port_name == "Scale");
 	}
 	if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-		String name = get_input_port_name(p_index);
-		return bool(name == "Velocity");
+		String port_name = get_input_port_name(p_index);
+		return bool(port_name == "Velocity");
 	}
 	return false;
 }
@@ -1597,24 +1604,24 @@ String VisualShaderNodeParticleEmit::generate_code(Shader::Mode p_mode, VisualSh
 		flags_arr.push_back("FLAG_EMIT_CUSTOM");
 	}
 
-	String flags;
+	String flags_str;
 
 	for (int i = 0; i < flags_arr.size(); i++) {
 		if (i > 0) {
-			flags += "|";
+			flags_str += "|";
 		}
-		flags += flags_arr[i];
+		flags_str += flags_arr[i];
 	}
 
-	if (flags.is_empty()) {
-		flags = "uint(0)";
+	if (flags_str.is_empty()) {
+		flags_str = "uint(0)";
 	}
 
 	if (!default_condition) {
 		code += "	if (" + p_input_vars[0] + ") {\n";
 	}
 
-	code += tab + "emit_subparticle(" + transform + ", " + velocity + ", vec4(" + color + ", " + alpha + "), vec4(" + custom + ", " + custom_alpha + "), " + flags + ");\n";
+	code += tab + "emit_subparticle(" + transform + ", " + velocity + ", vec4(" + color + ", " + alpha + "), vec4(" + custom + ", " + custom_alpha + "), " + flags_str + ");\n";
 
 	if (!default_condition) {
 		code += "	}\n";

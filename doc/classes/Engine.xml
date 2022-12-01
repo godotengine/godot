@@ -14,12 +14,20 @@
 			<description>
 				Returns the name of the CPU architecture the Godot binary was built for. Possible return values are [code]x86_64[/code], [code]x86_32[/code], [code]arm64[/code], [code]armv7[/code], [code]rv64[/code], [code]riscv[/code], [code]ppc64[/code], [code]ppc[/code], [code]wasm64[/code] and [code]wasm32[/code].
 				To detect whether the current CPU architecture is 64-bit, you can use the fact that all 64-bit architecture names have [code]64[/code] in their name:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				if "64" in Engine.get_architecture_name():
 				    print("Running on 64-bit CPU.")
 				else:
 				    print("Running on 32-bit CPU.")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				if (Engine.GetArchitectureName().Contains("64"))
+				    GD.Print("Running on 64-bit CPU.");
+				else
+				    GD.Print("Running on 32-bit CPU.");
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] [method get_architecture_name] does [i]not[/i] return the name of the host CPU architecture. For example, if running an x86_32 Godot binary on a x86_64 system, the returned value will be [code]x86_32[/code].
 			</description>
 		</method>
@@ -83,11 +91,24 @@
 			<description>
 				Returns the total number of frames passed since engine initialization which is advanced on each [b]physics frame[/b]. See also [method get_process_frames].
 				[method get_physics_frames] can be used to run expensive logic less often without relying on a [Timer]:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _physics_process(_delta):
 				    if Engine.get_physics_frames() % 2 == 0:
 				        pass  # Run expensive logic only once every 2 physics frames here.
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _PhysicsProcess(double delta)
+				{
+				    base._PhysicsProcess(delta);
+
+				    if (Engine.GetPhysicsFrames() % 2 == 0)
+				    {
+				        // Run expensive logic only once every 2 physics frames here.
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_physics_interpolation_fraction" qualifiers="const">
@@ -101,22 +122,37 @@
 			<description>
 				Returns the total number of frames passed since engine initialization which is advanced on each [b]process frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn] and [method get_physics_frames].
 				[method get_process_frames] can be used to run expensive logic less often without relying on a [Timer]:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _process(_delta):
 				    if Engine.get_process_frames() % 2 == 0:
 				        pass  # Run expensive logic only once every 2 process (render) frames here.
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Process(double delta)
+				{
+				    base._Process(delta);
+
+				    if (Engine.GetProcessFrames() % 2 == 0)
+				    {
+				        // Run expensive logic only once every 2 physics frames here.
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_script_language" qualifiers="const">
 			<return type="ScriptLanguage" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns an instance of a [ScriptLanguage] with the given index.
 			</description>
 		</method>
 		<method name="get_script_language_count">
 			<return type="int" />
 			<description>
+				Returns the number of available script languages. Use with [method get_script_language].
 			</description>
 		</method>
 		<method name="get_singleton" qualifiers="const">
@@ -129,6 +165,7 @@
 		<method name="get_singleton_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
+				Returns a list of available global singletons.
 			</description>
 		</method>
 		<method name="get_version_info" qualifiers="const">
@@ -182,12 +219,20 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the script is currently running inside the editor, [code]false[/code] otherwise. This is useful for [code]@tool[/code] scripts to conditionally draw editor helpers, or prevent accidentally running "game" code that would affect the scene state while in the editor:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				if Engine.is_editor_hint():
 				    draw_gizmos()
 				else:
 				    simulate_physics()
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				if (Engine.IsEditorHint())
+				    DrawGizmos();
+				else
+				    SimulatePhysics();
+				[/csharp]
+				[/codeblocks]
 				See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url] in the documentation for more information.
 				[b]Note:[/b] To detect whether the script is run from an editor [i]build[/i] (e.g. when pressing [kbd]F5[/kbd]), use [method OS.has_feature] with the [code]"editor"[/code] argument instead. [code]OS.has_feature("editor")[/code] will evaluate to [code]true[/code] both when the code is running in the editor and when running the project from the editor, but it will evaluate to [code]false[/code] when the code is run from an exported project.
 			</description>
@@ -202,6 +247,7 @@
 			<return type="void" />
 			<param index="0" name="language" type="ScriptLanguage" />
 			<description>
+				Registers a [ScriptLanguage] instance to be available with [code]ScriptServer[/code].
 			</description>
 		</method>
 		<method name="register_singleton">
@@ -209,31 +255,41 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="instance" type="Object" />
 			<description>
+				Registers the given object as a singleton, globally available under [param name].
 			</description>
 		</method>
 		<method name="unregister_singleton">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
+				Unregisters the singleton registered under [param name]. The singleton object is not freed. Only works with user-defined singletons created with [method register_singleton].
 			</description>
 		</method>
 	</methods>
 	<members>
+		<member name="max_fps" type="int" setter="set_max_fps" getter="get_max_fps" default="0">
+			The maximum number of frames per second that can be rendered. A value of [code]0[/code] means "no limit". The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project logic and rendering.
+			Limiting the FPS can be useful to reduce system power consumption, which reduces heat and noise emissions (and improves battery life on mobile devices).
+			If [member ProjectSettings.display/window/vsync/vsync_mode] is [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
+			If [member ProjectSettings.display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
+			If [member ProjectSettings.display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
+			See also [member physics_ticks_per_second] and [member ProjectSettings.application/run/max_fps].
+		</member>
+		<member name="max_physics_steps_per_frame" type="int" setter="set_max_physics_steps_per_frame" getter="get_max_physics_steps_per_frame" default="8">
+			Controls the maximum number of physics steps that can be simulated each rendered frame. The default value is tuned to avoid "spiral of death" situations where expensive physics simulations trigger more expensive simulations indefinitely. However, the game will appear to slow down if the rendering FPS is less than [code]1 / max_physics_steps_per_frame[/code] of [member physics_ticks_per_second]. This occurs even if [code]delta[/code] is consistently used in physics calculations. To avoid this, increase [member max_physics_steps_per_frame] if you have increased [member physics_ticks_per_second] significantly above its default value.
+		</member>
 		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of the in-game clock and real clock but smooth out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics_jitter_fix] to [code]0[/code].
 		</member>
 		<member name="physics_ticks_per_second" type="int" setter="set_physics_ticks_per_second" getter="get_physics_ticks_per_second" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. This value should generally always be set to [code]60[/code] or above, as Godot doesn't interpolate the physics step. As a result, values lower than [code]60[/code] will look stuttery. This value can be increased to make input more reactive or work around collision tunneling issues, but keep in mind doing so will increase CPU usage. See also [member target_fps] and [member ProjectSettings.physics/common/physics_ticks_per_second].
-			[b]Note:[/b] Only 8 physics ticks may be simulated per rendered frame at most. If more than 8 physics ticks have to be simulated per rendered frame to keep up with rendering, the game will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended not to increase [member physics_ticks_per_second] above 240. Otherwise, the game will slow down when the rendering framerate goes below 30 FPS.
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. This value should generally always be set to [code]60[/code] or above, as Godot doesn't interpolate the physics step. As a result, values lower than [code]60[/code] will look stuttery. This value can be increased to make input more reactive or work around collision tunneling issues, but keep in mind doing so will increase CPU usage. See also [member max_fps] and [member ProjectSettings.physics/common/physics_ticks_per_second].
+			[b]Note:[/b] Only [member max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member max_physics_steps_per_frame] if increasing [member physics_ticks_per_second] significantly above its default value.
 		</member>
 		<member name="print_error_messages" type="bool" setter="set_print_error_messages" getter="is_printing_error_messages" default="true">
 			If [code]false[/code], stops printing error and warning messages to the console and editor Output log. This can be used to hide error and warning messages during unit test suite runs. This property is equivalent to the [member ProjectSettings.application/run/disable_stderr] project setting.
 			[b]Warning:[/b] If you set this to [code]false[/code] anywhere in the project, important error messages may be hidden even if they are emitted from other scripts. If this is set to [code]false[/code] in a [code]@tool[/code] script, this will also impact the editor itself. Do [i]not[/i] report bugs before ensuring error messages are enabled (as they are by default).
 			[b]Note:[/b] This property does not impact the editor's Errors tab when running a project from the editor.
-		</member>
-		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps" default="0">
-			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. A value of 0 means no limit. See also [member physics_ticks_per_second] and [member ProjectSettings.debug/settings/fps/force_fps].
 		</member>
 		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale" default="1.0">
 			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed.

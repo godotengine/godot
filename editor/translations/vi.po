@@ -21,13 +21,14 @@
 # IoeCmcomc <hopdaigia2004@gmail.com>, 2021, 2022.
 # Hung <hungthitkhia@gmail.com>, 2021.
 # Paweł Fertyk <pfertyk@pfertyk.me>, 2022.
+# MInhTriet <luckyblockblack@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-10 13:14+0000\n"
-"Last-Translator: Paweł Fertyk <pfertyk@pfertyk.me>\n"
+"PO-Revision-Date: 2022-08-17 18:20+0000\n"
+"Last-Translator: MInhTriet <luckyblockblack@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -35,44 +36,44 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
-msgstr ""
+msgstr "Trình điều khiển màn hình"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
-msgstr "Bảng tạm"
+msgstr "Bộ nhớ tạm"
 
 #: core/bind/core_bind.cpp
 msgid "Current Screen"
-msgstr "Màn hình hiện tại"
+msgstr "Màn hình hiện có"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr "Mã thoát"
+msgstr "Mã lỗi"
 
 #: core/bind/core_bind.cpp
 msgid "V-Sync Enabled"
-msgstr "Sử dụng V-Sync"
+msgstr "V-sync Enabled"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr ""
+msgstr "V-Sync thông qua Compositor"
 
 #: core/bind/core_bind.cpp main/main.cpp
+#, fuzzy
 msgid "Delta Smoothing"
-msgstr "Làm mượt delta"
+msgstr "Delta smoothing"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Chế độ Di chuyển"
+msgstr "Chế độ tiết kiệm của bộ vi xử lý"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr ""
+msgstr "Chế độ tiết kiệm năng lượng bộ vi xử lý (tính bằng µsec)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
@@ -80,11 +81,11 @@ msgstr "Giữ màn hình mở"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
-msgstr "Cỡ cửa sổ tối thiểu"
+msgstr "Kính cỡ nhỏ nhất của màn hình"
 
 #: core/bind/core_bind.cpp
 msgid "Max Window Size"
-msgstr "Cỡ cửa sổ tối đa"
+msgstr "Kích cỡ tối đa của màn hình"
 
 #: core/bind/core_bind.cpp
 msgid "Screen Orientation"
@@ -97,11 +98,11 @@ msgstr "Cửa sổ"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
-msgstr "Tràn viền"
+msgstr "Không có viền cửa sổ"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
-msgstr "Bật độ trong suốt mỗi điểm ảnh"
+msgstr "Chế độ trong suốt từng pixel đã được bật"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
@@ -109,11 +110,11 @@ msgstr "Toàn màn hình"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
-msgstr "Đã cực đại hoá"
+msgstr "Đã phóng to"
 
 #: core/bind/core_bind.cpp
 msgid "Minimized"
-msgstr "Đã cực tiểu hoá"
+msgstr "Đã thu nhỏ"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
@@ -142,7 +143,7 @@ msgstr "Kích thước"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
-msgstr ""
+msgstr "Hoán đổi endian"
 
 #: core/bind/core_bind.cpp
 msgid "Editor Hint"
@@ -158,7 +159,7 @@ msgstr "Số lần lặp mỗi giây"
 
 #: core/bind/core_bind.cpp
 msgid "Target FPS"
-msgstr "FPS mục tiêu:"
+msgstr "FPS cần đạt tới"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -4516,6 +4517,7 @@ msgstr "Dự án ngoài lề hoặc các công cụ toàn phân cảnh."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Dự Án"
 
@@ -7393,7 +7395,8 @@ msgid "8 Bit"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr ""
 
@@ -15491,18 +15494,19 @@ msgstr ""
 msgid "Make Local"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
-msgstr ""
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Tên Node:"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Tên Node:"
+msgid "Unique names already used by another node in the scene:"
+msgstr "Tên đã được sử dụng bởi func/var/signal khác:"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "Tên Node:"
 
 #: editor/scene_tree_dock.cpp
@@ -15705,6 +15709,11 @@ msgstr "Thêm vào Nhóm"
 
 #: editor/scene_tree_editor.cpp
 #, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Tên Node:"
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
 msgid "(Connecting From)"
 msgstr "Kết nối bị lỗi"
 
@@ -15778,6 +15787,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Tên nút không hợp lệ, các ký tự sau bị cấm:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17713,6 +17726,21 @@ msgstr "Chọn tất cả"
 msgid "Auto Update Project"
 msgstr "Dự án không tên"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Hiển thị tất cả"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Chọn một Thư mục"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Chọn một Thư mục"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
@@ -19579,6 +19607,11 @@ msgstr "Cắt các nút"
 msgid "Custom BG Color"
 msgstr "Cắt các nút"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Mở rộng Tất cả"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20433,6 +20466,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp

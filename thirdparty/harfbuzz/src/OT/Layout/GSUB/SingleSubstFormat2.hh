@@ -41,7 +41,6 @@ struct SingleSubstFormat2_4
     | hb_map (hb_second)
     | hb_sink (c->output)
     ;
-
   }
 
   void closure_lookups (hb_closure_lookups_context_t *c) const {}

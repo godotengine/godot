@@ -168,7 +168,6 @@ class EditorFileSystem : public Node {
 
 	EditorFileSystemDirectory *new_filesystem = nullptr;
 
-	bool abort_scan = false;
 	bool scanning = false;
 	bool importing = false;
 	bool first_scan = true;

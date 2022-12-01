@@ -191,7 +191,7 @@ private:
 
 	uint64_t accum_pass = 1;
 	float speed_scale = 1.0;
-	float default_blend_time = 0.0;
+	double default_blend_time = 0.0;
 
 	struct AnimationData {
 		String name;
@@ -230,7 +230,7 @@ private:
 		}
 	};
 
-	HashMap<BlendKey, float, BlendKey> blend_times;
+	HashMap<BlendKey, double, BlendKey> blend_times;
 
 	struct PlaybackData {
 		AnimationData *from = nullptr;
@@ -241,8 +241,8 @@ private:
 	struct Blend {
 		PlaybackData data;
 
-		float blend_time = 0.0;
-		float blend_left = 0.0;
+		double blend_time = 0.0;
+		double blend_left = 0.0;
 	};
 
 	struct Playback {
@@ -334,17 +334,17 @@ public:
 	void get_animation_list(List<StringName> *p_animations) const;
 	bool has_animation(const StringName &p_name) const;
 
-	void set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time);
-	float get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const;
+	void set_blend_time(const StringName &p_animation1, const StringName &p_animation2, double p_time);
+	double get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const;
 
 	void animation_set_next(const StringName &p_animation, const StringName &p_next);
 	StringName animation_get_next(const StringName &p_animation) const;
 
-	void set_default_blend_time(float p_default);
-	float get_default_blend_time() const;
+	void set_default_blend_time(double p_default);
+	double get_default_blend_time() const;
 
-	void play(const StringName &p_name = StringName(), float p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
-	void play_backwards(const StringName &p_name = StringName(), float p_custom_blend = -1);
+	void play(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
+	void play_backwards(const StringName &p_name = StringName(), double p_custom_blend = -1);
 	void queue(const StringName &p_name);
 	Vector<String> get_queue();
 	void clear_queue();
@@ -378,11 +378,11 @@ public:
 	bool is_movie_quit_on_finish_enabled() const;
 
 	void seek(double p_time, bool p_update = false);
-	void seek_delta(double p_time, float p_delta);
-	float get_current_animation_position() const;
-	float get_current_animation_length() const;
+	void seek_delta(double p_time, double p_delta);
+	double get_current_animation_position() const;
+	double get_current_animation_length() const;
 
-	void advance(float p_time);
+	void advance(double p_time);
 
 	void set_root(const NodePath &p_root);
 	NodePath get_root() const;

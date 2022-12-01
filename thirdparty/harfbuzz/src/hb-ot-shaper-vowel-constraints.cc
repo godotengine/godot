@@ -10,8 +10,8 @@
  * # Date: 2015-03-12, 21:17:00 GMT [AG]
  * # Date: 2019-11-08, 23:22:00 GMT [AG]
  *
- * # Scripts-14.0.0.txt
- * # Date: 2021-07-10, 00:35:31 GMT
+ * # Scripts-15.0.0.txt
+ * # Date: 2022-04-26, 23:15:02 GMT
  */
 
 #include "hb.hh"
@@ -335,6 +335,40 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    break;
 	  case 0x1100Fu:
 	    matched = 0x11042u == buffer->cur (1).codepoint;
+	    break;
+	}
+	(void) buffer->next_glyph ();
+	if (matched) _output_with_dotted_circle (buffer);
+      }
+      break;
+
+    case HB_SCRIPT_KHOJKI:
+      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      {
+	bool matched = false;
+	switch (buffer->cur ().codepoint)
+	{
+	  case 0x11200u:
+	    switch (buffer->cur (1).codepoint)
+	    {
+	      case 0x1122Cu: case 0x11231u: case 0x11233u:
+		matched = true;
+		break;
+	    }
+	    break;
+	  case 0x11206u:
+	    matched = 0x1122Cu == buffer->cur (1).codepoint;
+	    break;
+	  case 0x1122Cu:
+	    switch (buffer->cur (1).codepoint)
+	    {
+	      case 0x11230u: case 0x11231u:
+		matched = true;
+		break;
+	    }
+	    break;
+	  case 0x11240u:
+	    matched = 0x1122Eu == buffer->cur (1).codepoint;
 	    break;
 	}
 	(void) buffer->next_glyph ();

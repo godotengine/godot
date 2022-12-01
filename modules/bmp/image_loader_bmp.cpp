@@ -156,7 +156,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 		if (p_color_buffer == nullptr || color_table_size == 0) { // regular pixels
 
-			p_image->create(width, height, false, Image::FORMAT_RGBA8, data);
+			p_image->set_data(width, height, false, Image::FORMAT_RGBA8, data);
 
 		} else { // data is in indexed format, extend it
 
@@ -194,13 +194,13 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 				dest += 4;
 			}
-			p_image->create(width, height, false, Image::FORMAT_RGBA8, extended_data);
+			p_image->set_data(width, height, false, Image::FORMAT_RGBA8, extended_data);
 		}
 	}
 	return err;
 }
 
-Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, uint32_t p_flags, float p_scale) {
+Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	bmp_header_s bmp_header;
 	Error err = ERR_INVALID_DATA;
 

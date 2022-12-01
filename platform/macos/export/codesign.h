@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef MACOS_CODESIGN_H
+#define MACOS_CODESIGN_H
+
 // macOS code signature creation utility.
 //
 // Current implementation has the following limitation:
@@ -37,9 +40,6 @@
 //  - Reading and writing binary property lists i snot supported (third-party frameworks with binary Info.plist will not work unless .plist is converted to text format).
 //  - Requirements code generator is not implemented (only hard-coded requirements for the ad-hoc signing is supported).
 //  - RFC5652/CMS blob generation is not implemented, supports ad-hoc signing only.
-
-#ifndef MACOS_CODESIGN_H
-#define MACOS_CODESIGN_H
 
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"

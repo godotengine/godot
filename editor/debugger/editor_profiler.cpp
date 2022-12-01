@@ -85,7 +85,7 @@ void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 }
 
 void EditorProfiler::clear() {
-	int metric_size = EditorSettings::get_singleton()->get("debugger/profiler_frame_history_size");
+	int metric_size = EDITOR_GET("debugger/profiler_frame_history_size");
 	metric_size = CLAMP(metric_size, 60, 10000);
 	frame_metrics.clear();
 	frame_metrics.resize(metric_size);
@@ -104,6 +104,10 @@ void EditorProfiler::clear() {
 	updating_frame = false;
 	hover_metric = -1;
 	seeking = false;
+
+	// Ensure button text (start, stop) is correct
+	_set_button_text();
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 static String _get_percent_txt(float p_value, float p_total) {
@@ -304,9 +308,7 @@ void EditorProfiler::_update_plot() {
 		}
 	}
 
-	Ref<Image> img;
-	img.instantiate();
-	img->create(w, h, false, Image::FORMAT_RGBA8, graph_image);
+	Ref<Image> img = Image::create_from_data(w, h, false, Image::FORMAT_RGBA8, graph_image);
 
 	if (reset_texture) {
 		if (graph_texture.is_null()) {
@@ -374,15 +376,23 @@ void EditorProfiler::_update_frame() {
 	updating_frame = false;
 }
 
-void EditorProfiler::_activate_pressed() {
+void EditorProfiler::_set_button_text() {
 	if (activate->is_pressed()) {
 		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Stop"));
-		_clear_pressed();
 	} else {
 		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Start"));
 	}
+}
+
+void EditorProfiler::_activate_pressed() {
+	_set_button_text();
+
+	if (activate->is_pressed()) {
+		_clear_pressed();
+	}
+
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
@@ -499,8 +509,12 @@ void EditorProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("break_request"));
 }
 
-void EditorProfiler::set_enabled(bool p_enable) {
+void EditorProfiler::set_enabled(bool p_enable, bool p_clear) {
+	activate->set_pressed(false);
 	activate->set_disabled(!p_enable);
+	if (p_clear) {
+		clear();
+	}
 }
 
 bool EditorProfiler::is_profiling() {

@@ -24,6 +24,7 @@ SConscript("winmidi/SCsub")
 
 # Graphics drivers
 if env["vulkan"]:
+    SConscript("spirv-reflect/SCsub")
     SConscript("vulkan/SCsub")
 if env["opengl3"]:
     SConscript("gl_context/SCsub")
@@ -31,7 +32,6 @@ if env["opengl3"]:
 
 # Core dependencies
 SConscript("png/SCsub")
-SConscript("spirv-reflect/SCsub")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
 

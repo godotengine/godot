@@ -11,6 +11,10 @@ from emscripten_helpers import (
 )
 from methods import get_compiler_version
 from SCons.Util import WhereIs
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
 
 
 def is_active():
@@ -31,7 +35,6 @@ def get_opts():
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 32),
         BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
-        BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use Emscripten address sanitizer (ASAN)", False),
         BoolVariable("use_lsan", "Use Emscripten leak sanitizer (LSAN)", False),
@@ -48,7 +51,7 @@ def get_opts():
 def get_flags():
     return [
         ("arch", "wasm32"),
-        ("tools", False),
+        ("target", "template_debug"),
         ("builtin_pcre2_with_jit", False),
         ("vulkan", False),
         # Use -Os to prioritize optimizing for reduced file size. This is
@@ -61,7 +64,7 @@ def get_flags():
     ]
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["wasm32"]
     if env["arch"] not in supported_arches:
@@ -78,26 +81,17 @@ def configure(env):
         sys.exit(255)
 
     ## Build type
-    if env["target"].startswith("release"):
-        if env["optimize"] == "size":
-            env.Append(CCFLAGS=["-Os"])
-            env.Append(LINKFLAGS=["-Os"])
-        elif env["optimize"] == "speed":
-            env.Append(CCFLAGS=["-O3"])
-            env.Append(LINKFLAGS=["-O3"])
 
-        if env["target"] == "release_debug":
-            # Retain function names for backtraces at the cost of file size.
-            env.Append(LINKFLAGS=["--profiling-funcs"])
-    else:  # "debug"
-        env.Append(CCFLAGS=["-O1", "-g"])
-        env.Append(LINKFLAGS=["-O1", "-g"])
+    if env.debug_features:
+        # Retain function names for backtraces at the cost of file size.
+        env.Append(LINKFLAGS=["--profiling-funcs"])
+    else:
         env["use_assertions"] = True
 
     if env["use_assertions"]:
         env.Append(LINKFLAGS=["-s", "ASSERTIONS=1"])
 
-    if env["tools"]:
+    if env.editor_build:
         if env["initial_memory"] < 64:
             print('Note: Forcing "initial_memory=64" as it is required for the web editor.')
             env["initial_memory"] = 64
@@ -110,12 +104,17 @@ def configure(env):
     env["ENV"] = os.environ
 
     # LTO
-    if env["use_thinlto"]:
-        env.Append(CCFLAGS=["-flto=thin"])
-        env.Append(LINKFLAGS=["-flto=thin"])
-    elif env["use_lto"]:
-        env.Append(CCFLAGS=["-flto=full"])
-        env.Append(LINKFLAGS=["-flto=full"])
+
+    if env["lto"] == "auto":  # Full LTO for production.
+        env["lto"] = "full"
+
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            env.Append(CCFLAGS=["-flto=thin"])
+            env.Append(LINKFLAGS=["-flto=thin"])
+        else:
+            env.Append(CCFLAGS=["-flto"])
+            env.Append(LINKFLAGS=["-flto"])
 
     # Sanitizers
     if env["use_ubsan"]:
@@ -227,3 +226,7 @@ def configure(env):
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
+
+    # This workaround creates a closure that prevents the garbage collector from freeing the WebGL context.
+    # We also only use WebGL2, and changing context version is not widely supported anyway.
+    env.Append(LINKFLAGS=["-s", "GL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0"])

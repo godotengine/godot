@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.InteropServices;
 using JetBrains.Annotations;
 using OS = GodotTools.Utils.OS;
 
@@ -15,6 +16,23 @@ namespace GodotTools.Build
         {
             // In the future, this method may do more than just search in PATH. We could look in
             // known locations or use Godot's linked nethost to search from the hostfxr location.
+
+            if (OS.IsMacOS)
+            {
+                if (RuntimeInformation.OSArchitecture == Architecture.X64)
+                {
+                    string dotnet_x64 = "/usr/local/share/dotnet/x64/dotnet"; // Look for x64 version, when running under Rosetta 2.
+                    if (File.Exists(dotnet_x64))
+                    {
+                        return dotnet_x64;
+                    }
+                }
+                string dotnet = "/usr/local/share/dotnet/dotnet"; // Look for native version.
+                if (File.Exists(dotnet))
+                {
+                    return dotnet;
+                }
+            }
 
             return OS.PathWhich("dotnet");
         }

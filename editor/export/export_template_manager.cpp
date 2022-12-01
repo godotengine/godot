@@ -40,6 +40,7 @@
 #include "editor/editor_settings.h"
 #include "editor/progress_dialog.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
@@ -172,7 +173,7 @@ void ExportTemplateManager::_download_template_completed(int p_status, int p_cod
 		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
 		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
-		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
+		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
 		case HTTPRequest::RESULT_CANT_CONNECT: {
 			_set_current_progress_status(TTR("Can't connect to the mirror."), true);
 		} break;
@@ -265,9 +266,9 @@ void ExportTemplateManager::_refresh_mirrors_completed(int p_status, int p_code,
 
 	mirrors_available = false;
 
-	Dictionary data = json.get_data();
-	if (data.has("mirrors")) {
-		Array mirrors = data["mirrors"];
+	Dictionary mirror_data = json.get_data();
+	if (mirror_data.has("mirrors")) {
+		Array mirrors = mirror_data["mirrors"];
 
 		for (int i = 0; i < mirrors.size(); i++) {
 			Dictionary m = mirrors[i];
@@ -345,8 +346,8 @@ bool ExportTemplateManager::_humanize_http_status(HTTPRequest *p_request, String
 			*r_status = TTR("Connection Error");
 			success = false;
 			break;
-		case HTTPClient::STATUS_SSL_HANDSHAKE_ERROR:
-			*r_status = TTR("SSL Handshake Error");
+		case HTTPClient::STATUS_TLS_HANDSHAKE_ERROR:
+			*r_status = TTR("TLS Handshake Error");
 			success = false;
 			break;
 	}
@@ -401,17 +402,17 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 
 		String file = String::utf8(fname);
 		if (file.ends_with("version.txt")) {
-			Vector<uint8_t> data;
-			data.resize(info.uncompressed_size);
+			Vector<uint8_t> uncomp_data;
+			uncomp_data.resize(info.uncompressed_size);
 
 			// Read.
 			unzOpenCurrentFile(pkg);
-			ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+			ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
 			ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
 			unzCloseCurrentFile(pkg);
 
 			String data_str;
-			data_str.parse_utf8((const char *)data.ptr(), data.size());
+			data_str.parse_utf8((const char *)uncomp_data.ptr(), uncomp_data.size());
 			data_str = data_str.strip_edges();
 
 			// Version number should be of the form major.minor[.patch].status[.module_config]
@@ -473,12 +474,12 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			continue;
 		}
 
-		Vector<uint8_t> data;
-		data.resize(info.uncompressed_size);
+		Vector<uint8_t> uncomp_data;
+		uncomp_data.resize(info.uncompressed_size);
 
 		// Read
 		unzOpenCurrentFile(pkg);
-		ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+		ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
 		ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
 		unzCloseCurrentFile(pkg);
 
@@ -512,7 +513,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			ERR_CONTINUE_MSG(true, "Can't open file from path '" + String(to_write) + "'.");
 		}
 
-		f->store_buffer(data.ptr(), data.size());
+		f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
 		f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
 		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
@@ -714,12 +715,12 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 		String base_dir = path.get_base_dir();
 
 		if (!path.ends_with("/")) {
-			Vector<uint8_t> data;
-			data.resize(info.uncompressed_size);
+			Vector<uint8_t> uncomp_data;
+			uncomp_data.resize(info.uncompressed_size);
 
 			// Read.
 			unzOpenCurrentFile(pkg);
-			unzReadCurrentFile(pkg, data.ptrw(), data.size());
+			unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
 			unzCloseCurrentFile(pkg);
 
 			if (!dirs_tested.has(base_dir)) {
@@ -730,7 +731,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 			String to_write = String("res://android/build").path_join(path);
 			Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
 			if (f.is_valid()) {
-				f->store_buffer(data.ptr(), data.size());
+				f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
 				f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
 				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);

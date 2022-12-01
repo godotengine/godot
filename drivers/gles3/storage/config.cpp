@@ -34,6 +34,15 @@
 #include "core/config/project_settings.h"
 #include "core/templates/vector.h"
 
+#ifdef ANDROID_ENABLED
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
+#include <GLES3/gl3platform.h>
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif
+
 using namespace GLES3;
 
 #define _GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
@@ -62,7 +71,7 @@ Config::Config() {
 	s3tc_supported = true;
 	rgtc_supported = true; //RGTC - core since OpenGL version 3.0
 #else
-	float_texture_supported = extensions.has("GL_ARB_texture_float") || extensions.has("GL_OES_texture_float");
+	float_texture_supported = extensions.has("GL_EXT_color_buffer_float");
 	etc2_supported = true;
 #if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
 	// Some Android devices report support for S3TC but we don't expect that and don't export the textures.
@@ -75,26 +84,29 @@ Config::Config() {
 	rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
 #endif
 
-#ifdef GLES_OVER_GL
-	use_rgba_2d_shadows = false;
-#else
-	use_rgba_2d_shadows = !(float_texture_supported && extensions.has("GL_EXT_texture_rg"));
-#endif
-
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
 
-	// the use skeleton software path should be used if either float texture is not supported,
-	// OR max_vertex_texture_image_units is zero
-	use_skeleton_software = (float_texture_supported == false) || (max_vertex_texture_image_units == 0);
+	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniform_buffer_offset_alignment);
 
 	support_anisotropic_filter = extensions.has("GL_EXT_texture_filter_anisotropic");
 	if (support_anisotropic_filter) {
 		glGetFloatv(_GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropic_level);
-		anisotropic_level = MIN(float(1 << int(ProjectSettings::get_singleton()->get("rendering/textures/default_filters/anisotropic_filtering_level"))), anisotropic_level);
+		anisotropic_level = MIN(float(1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"))), anisotropic_level);
 	}
+
+	multiview_supported = extensions.has("GL_OVR_multiview2") || extensions.has("GL_OVR_multiview");
+#ifdef ANDROID_ENABLED
+	if (multiview_supported) {
+		eglFramebufferTextureMultiviewOVR = (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)eglGetProcAddress("glFramebufferTextureMultiviewOVR");
+		if (eglFramebufferTextureMultiviewOVR == nullptr) {
+			multiview_supported = false;
+		}
+	}
+#endif
 
 	force_vertex_shading = false; //GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
 	use_nearest_mip_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");

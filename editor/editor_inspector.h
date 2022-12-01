@@ -31,17 +31,19 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
-#include "editor/editor_undo_redo_manager.h"
 #include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/texture_rect.h"
+
+class AcceptDialog;
+class Button;
+class ConfirmationDialog;
+class LineEdit;
+class OptionButton;
+class PanelContainer;
+class PopupMenu;
+class SpinBox;
+class TextureRect;
 
 class EditorPropertyRevert {
 public:
@@ -58,8 +60,8 @@ class EditorProperty : public Container {
 
 public:
 	enum MenuItems {
-		MENU_COPY_PROPERTY,
-		MENU_PASTE_PROPERTY,
+		MENU_COPY_VALUE,
+		MENU_PASTE_VALUE,
 		MENU_COPY_PROPERTY_PATH,
 		MENU_PIN_VALUE,
 		MENU_OPEN_DOCUMENTATION,
@@ -120,6 +122,8 @@ private:
 	HashMap<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
+	GDVIRTUAL1(_set_read_only, bool)
+
 	void _update_pin_flags();
 
 protected:
@@ -151,7 +155,7 @@ public:
 	void set_doc_path(const String &p_doc_path);
 
 	virtual void update_property();
-	void update_revert_and_pin_status();
+	void update_editor_property_status();
 
 	virtual bool use_keying_next() const;
 
@@ -303,8 +307,6 @@ public:
 class EditorInspectorArray : public EditorInspectorSection {
 	GDCLASS(EditorInspectorArray, EditorInspectorSection);
 
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	enum Mode {
 		MODE_NONE,
 		MODE_USE_COUNT_PROPERTY,
@@ -333,6 +335,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 	int begin_array_index = 0;
 	int end_array_index = 0;
 
+	bool read_only = false;
 	bool movable = true;
 	bool numbered = false;
 
@@ -398,13 +401,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
-
 	void setup_with_move_element_function(Object *p_object, String p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "");
 	void setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
 	VBoxContainer *get_vbox(int p_index);
 
-	EditorInspectorArray();
+	EditorInspectorArray(bool p_read_only);
 };
 
 class EditorPaginator : public HBoxContainer {
@@ -438,7 +439,6 @@ public:
 class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	enum {
 		MAX_PLUGINS = 1024
 	};
@@ -551,8 +551,6 @@ public:
 	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
-
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 
 	String get_selected_path() const;
 

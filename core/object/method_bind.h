@@ -241,9 +241,17 @@ class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>,
 	friend class MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>;
 
 public:
+#if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
+	// Workaround GH-66343 raised only with UBSAN, seems to be a false positive.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		return (static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>::method)(p_args, p_arg_count, r_error);
 	}
+#if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 	MethodBindVarArgTR(
 			R (T::*p_method)(const Variant **, int, Callable::CallError &),
@@ -284,11 +292,6 @@ class MethodBindT : public MethodBind {
 	void (MB_T::*method)(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -296,9 +299,6 @@ protected:
 			return Variant::NIL;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
@@ -359,11 +359,6 @@ class MethodBindTC : public MethodBind {
 	void (MB_T::*method)(P...) const;
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -371,9 +366,6 @@ protected:
 			return Variant::NIL;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
@@ -436,11 +428,6 @@ class MethodBindTR : public MethodBind {
 	(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -458,9 +445,6 @@ protected:
 			return GetTypeInfo<R>::get_class_info();
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
@@ -523,11 +507,6 @@ class MethodBindTRC : public MethodBind {
 	(P...) const;
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -545,9 +524,6 @@ protected:
 			return GetTypeInfo<R>::get_class_info();
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
@@ -607,11 +583,6 @@ class MethodBindTS : public MethodBind {
 	void (*function)(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -619,9 +590,6 @@ protected:
 			return Variant::NIL;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
@@ -670,11 +638,6 @@ class MethodBindTRS : public MethodBind {
 	(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -682,9 +645,6 @@ protected:
 			return GetTypeInfo<R>::VARIANT_TYPE;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {

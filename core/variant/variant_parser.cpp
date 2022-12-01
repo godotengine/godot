@@ -1283,7 +1283,7 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 
 			Variant v;
 			err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
-			if (err) {
+			if (err && err != ERR_FILE_MISSING_DEPENDENCIES) {
 				return err;
 			}
 			object[key] = v;
@@ -1651,7 +1651,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(t.matrix[i][j]);
+					s += rtos_fix(t.columns[i][j]);
 				}
 			}
 
@@ -1680,7 +1680,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 
 		case Variant::OBJECT: {
-			Object *obj = p_variant;
+			Object *obj = p_variant.get_validated_object();
 
 			if (!obj) {
 				p_store_string_func(p_store_string_ud, "null");

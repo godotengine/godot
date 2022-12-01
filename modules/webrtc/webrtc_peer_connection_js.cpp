@@ -51,6 +51,16 @@ void WebRTCPeerConnectionJS::_on_connection_state_changed(void *p_obj, int p_sta
 	peer->_conn_state = (ConnectionState)p_state;
 }
 
+void WebRTCPeerConnectionJS::_on_gathering_state_changed(void *p_obj, int p_state) {
+	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(p_obj);
+	peer->_gathering_state = (GatheringState)p_state;
+}
+
+void WebRTCPeerConnectionJS::_on_signaling_state_changed(void *p_obj, int p_state) {
+	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(p_obj);
+	peer->_signaling_state = (SignalingState)p_state;
+}
+
 void WebRTCPeerConnectionJS::_on_error(void *p_obj) {
 	ERR_PRINT("RTCPeerConnection error!");
 }
@@ -100,7 +110,7 @@ Error WebRTCPeerConnectionJS::initialize(Dictionary p_config) {
 	_conn_state = STATE_NEW;
 
 	String config = Variant(p_config).to_json_string();
-	_js_id = godot_js_rtc_pc_create(config.utf8().get_data(), this, &_on_connection_state_changed, &_on_ice_candidate, &_on_data_channel);
+	_js_id = godot_js_rtc_pc_create(config.utf8().get_data(), this, &_on_connection_state_changed, &_on_gathering_state_changed, &_on_signaling_state_changed, &_on_ice_candidate, &_on_data_channel);
 	return _js_id ? OK : FAILED;
 }
 
@@ -117,14 +127,19 @@ Error WebRTCPeerConnectionJS::poll() {
 	return OK;
 }
 
+WebRTCPeerConnection::GatheringState WebRTCPeerConnectionJS::get_gathering_state() const {
+	return _gathering_state;
+}
+
+WebRTCPeerConnection::SignalingState WebRTCPeerConnectionJS::get_signaling_state() const {
+	return _signaling_state;
+}
+
 WebRTCPeerConnection::ConnectionState WebRTCPeerConnectionJS::get_connection_state() const {
 	return _conn_state;
 }
 
 WebRTCPeerConnectionJS::WebRTCPeerConnectionJS() {
-	_conn_state = STATE_NEW;
-	_js_id = 0;
-
 	Dictionary config;
 	initialize(config);
 }
