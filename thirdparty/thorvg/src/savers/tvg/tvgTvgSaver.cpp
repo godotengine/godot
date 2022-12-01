@@ -28,10 +28,10 @@
 
 #ifdef _WIN32
     #include <malloc.h>
-#elif __FreeBSD__
-    #include<stdlib.h>
-#else
+#elif defined(__linux__)
     #include <alloca.h>
+#else
+    #include <stdlib.h>
 #endif
 
 static FILE* _fopen(const char* filename, const char* mode)
