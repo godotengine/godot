@@ -139,6 +139,14 @@ struct hb_serialize_context_t
         objidx = o.objidx;
       }
 #endif
+
+      HB_INTERNAL static int cmp (const void* a, const void* b)
+      {
+        int cmp = ((const link_t*)a)->position - ((const link_t*)b)->position;
+        if (cmp) return cmp;
+
+        return ((const link_t*)a)->objidx - ((const link_t*)b)->objidx;
+      }
     };
 
     char *head;
@@ -315,7 +323,7 @@ struct hb_serialize_context_t
   {
     object_t *obj = current;
     if (unlikely (!obj)) return;
-    if (unlikely (in_error())) return;
+    if (unlikely (in_error() && !only_overflow ())) return;
 
     current = current->next;
     revert (obj->head, obj->tail);

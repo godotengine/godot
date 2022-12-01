@@ -51,12 +51,14 @@ class SkinReference : public RefCounted {
 	uint64_t skeleton_version = 0;
 	Vector<uint32_t> skin_bone_indices;
 	uint32_t *skin_bone_indices_ptrs = nullptr;
-	void _skin_changed();
 
 protected:
 	static void _bind_methods();
 
 public:
+	// Public for use with callable_mp.
+	void _skin_changed();
+
 	RID get_skeleton() const;
 	Ref<Skin> get_skin() const;
 	~SkinReference();

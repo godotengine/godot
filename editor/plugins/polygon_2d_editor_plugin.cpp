@@ -32,14 +32,20 @@
 
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/2d/skeleton_2d.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/view_panner.h"
 
 Node2D *Polygon2DEditor::_get_node() const {
@@ -67,7 +73,7 @@ void Polygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			uv_panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			uv_panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -94,8 +100,8 @@ void Polygon2DEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			bone_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			bone_scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -150,6 +156,7 @@ void Polygon2DEditor::_sync_bones() {
 
 	Array new_bones = node->call("_get_bones");
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Sync Bones"));
 	undo_redo->add_do_method(node, "_set_bones", new_bones);
 	undo_redo->add_undo_method(node, "_set_bones", prev_bones);
@@ -279,6 +286,7 @@ void Polygon2DEditor::_uv_edit_popup_hide() {
 }
 
 void Polygon2DEditor::_menu_option(int p_option) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (p_option) {
 		case MODE_EDIT_UV: {
 			if (node->get_texture().is_null()) {
@@ -299,7 +307,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			}
 
 			if (EditorSettings::get_singleton()->has_setting("interface/dialogs/uv_editor_bounds")) {
-				uv_edit->popup(EditorSettings::get_singleton()->get("interface/dialogs/uv_editor_bounds"));
+				uv_edit->popup(EDITOR_GET("interface/dialogs/uv_editor_bounds"));
 			} else {
 				uv_edit->popup_centered_ratio(0.85);
 			}
@@ -391,6 +399,7 @@ void Polygon2DEditor::_update_polygon_editing_state() {
 
 void Polygon2DEditor::_commit_action() {
 	// Makes that undo/redoing actions made outside of the UV editor still affect its polygon.
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->add_do_method(uv_edit_draw, "queue_redraw");
 	undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
 	undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "update_viewport");
@@ -458,8 +467,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	mtx.columns[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
-	Ref<InputEventMouseButton> mb = p_input;
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 
+	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
@@ -627,11 +637,11 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				}
 
 				if (uv_move_current == UV_MODE_EDIT_POINT) {
-					if (mb->is_shift_pressed() && mb->is_command_pressed()) {
+					if (mb->is_shift_pressed() && mb->is_command_or_control_pressed()) {
 						uv_move_current = UV_MODE_SCALE;
 					} else if (mb->is_shift_pressed()) {
 						uv_move_current = UV_MODE_MOVE;
-					} else if (mb->is_command_pressed()) {
+					} else if (mb->is_command_or_control_pressed()) {
 						uv_move_current = UV_MODE_ROTATE;
 					}
 				}

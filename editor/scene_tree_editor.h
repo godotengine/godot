@@ -32,12 +32,8 @@
 #define SCENE_TREE_EDITOR_H
 
 #include "editor/editor_data.h"
-#include "editor/editor_settings.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
-
-class EditorUndoRedoManager;
 
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
@@ -62,6 +58,7 @@ class SceneTreeEditor : public Control {
 	ObjectID instance_node;
 
 	String filter;
+	String filter_term_warning;
 
 	AcceptDialog *error = nullptr;
 	AcceptDialog *warning = nullptr;
@@ -76,8 +73,8 @@ class SceneTreeEditor : public Control {
 
 	void _add_nodes(Node *p_node, TreeItem *p_parent);
 	void _test_update_tree();
-	void _update_tree(bool p_scroll_to_selected = false);
 	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);
+	bool _item_matches_all_terms(TreeItem *p_item, PackedStringArray p_terms);
 	void _tree_changed();
 	void _tree_process_mode_changed();
 	void _node_removed(Node *p_node);
@@ -97,9 +94,9 @@ class SceneTreeEditor : public Control {
 	bool can_open_instance;
 	bool updating_tree = false;
 	bool show_enabled_subscene = false;
+	bool is_scene_tree_dock = false;
 
 	void _renamed();
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	HashSet<Node *> marked;
 	bool marked_selectable = false;
@@ -137,10 +134,14 @@ class SceneTreeEditor : public Control {
 	Vector<StringName> valid_types;
 
 public:
+	// Public for use with callable_mp.
+	void _update_tree(bool p_scroll_to_selected = false);
+
 	void set_filter(const String &p_filter);
 	String get_filter() const;
+	String get_filter_term_warning();
 
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
+	void set_as_scene_tree_dock();
 	void set_display_foreign_nodes(bool p_display);
 
 	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);

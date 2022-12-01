@@ -81,6 +81,7 @@ protected:
 public:
 	virtual StringName get_message(const StringName &p_src_text, const StringName &p_context = "") const override; //overridable for other implementations
 	virtual StringName get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context = "") const override;
+	virtual Vector<String> get_translated_message_list() const override;
 	void generate(const Ref<Translation> &p_from);
 
 	OptimizedTranslation() {}

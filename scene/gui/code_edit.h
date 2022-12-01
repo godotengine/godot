@@ -214,6 +214,7 @@ private:
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
+	int code_completion_force_item_center = -1;
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 	Rect2i code_completion_scroll_rect;
@@ -261,8 +262,8 @@ protected:
 	/* Text manipulation */
 
 	// Overridable actions
-	virtual void _handle_unicode_input_internal(const uint32_t p_unicode) override;
-	virtual void _backspace_internal() override;
+	virtual void _handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) override;
+	virtual void _backspace_internal(int p_caret) override;
 
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)

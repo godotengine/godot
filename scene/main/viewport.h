@@ -208,6 +208,7 @@ private:
 	friend class ViewportTexture;
 
 	Viewport *parent = nullptr;
+	Viewport *gui_parent = nullptr; // Whose gui.tooltip_popup it is.
 
 	AudioListener2D *audio_listener_2d = nullptr;
 	Camera2D *camera_2d = nullptr;
@@ -316,6 +317,8 @@ private:
 	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
 	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;
 
+	uint32_t canvas_cull_mask = 0xffffffff; // by default show everything
+
 	enum SubWindowDrag {
 		SUB_WINDOW_DRAG_DISABLED,
 		SUB_WINDOW_DRAG_MOVE,
@@ -402,6 +405,7 @@ private:
 	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
 	void _gui_input_event(Ref<InputEvent> p_event);
+	void _perform_drop(Control *p_control = nullptr, Point2 p_pos = Point2());
 	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
 
 	_FORCE_INLINE_ Transform2D _get_input_pre_xform() const;
@@ -451,8 +455,6 @@ private:
 	void _drop_physics_mouseover(bool p_paused_only = false);
 
 	void _update_canvas_items(Node *p_node);
-
-	void _gui_set_root_order_dirty();
 
 	friend class Window;
 
@@ -509,6 +511,8 @@ public:
 	Transform2D get_global_canvas_transform() const;
 
 	Transform2D get_final_transform() const;
+
+	void gui_set_root_order_dirty();
 
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;
@@ -568,7 +572,7 @@ public:
 	bool is_input_disabled() const;
 
 	Vector2 get_mouse_position() const;
-	virtual void warp_mouse(const Vector2 &p_position);
+	void warp_mouse(const Vector2 &p_position);
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
@@ -581,7 +585,7 @@ public:
 	void gui_release_focus();
 	Control *gui_get_focus_owner();
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
@@ -637,6 +641,12 @@ public:
 	Window *get_base_window() const;
 
 	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
+
+	void set_canvas_cull_mask(uint32_t p_layers);
+	uint32_t get_canvas_cull_mask() const;
+
+	void set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable);
+	bool get_canvas_cull_mask_bit(uint32_t p_layer) const;
 
 	virtual Transform2D get_screen_transform() const;
 

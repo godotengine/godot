@@ -16,7 +16,7 @@ def make_default_controller_mappings(target, source, env):
     g.write('#include "core/input/default_controller_mappings.h"\n')
 
     # ensure mappings have a consistent order
-    platform_mappings = OrderedDict()
+    platform_mappings: dict = OrderedDict()
     for src_path in source:
         with open(src_path, "r") as f:
             # read mapping file and skip header

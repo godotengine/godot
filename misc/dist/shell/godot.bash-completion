@@ -47,6 +47,7 @@ _complete_godot_options() {
 --remote-fs-password
 --audio-driver
 --display-driver
+--rendering-method
 --rendering-driver
 --gpu-index
 --text-driver
@@ -58,7 +59,6 @@ _complete_godot_options() {
 --always-on-top
 --resolution
 --position
---headless
 --single-window
 --debug
 --breakpoints
@@ -78,7 +78,7 @@ _complete_godot_options() {
 --print-fps
 --script
 --check-only
---export
+--export-release
 --export-debug
 --export-pack
 --convert-3to4
@@ -86,6 +86,7 @@ _complete_godot_options() {
 --doctool
 --no-docbase
 --build-solutions
+--dump-gdextension-interface
 --dump-extension-api
 --test
 " -- "$1"))
@@ -112,6 +113,10 @@ _complete_godot_bash() {
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
     COMPREPLY=($(compgen -W "unsafe safe separate" -- "$cur"))
+  elif [[ $prev == "--rendering-method" ]]; then
+    local IFS=$' \n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -W "forward_plus mobile gl_compatibility" -- "$cur"))
   elif [[ $prev == "--rendering-driver" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207

@@ -32,11 +32,10 @@
 
 #ifndef _3D_DISABLED
 
+#include "extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "extensions/gltf_light.h"
 #include "extensions/gltf_spec_gloss.h"
 #include "gltf_document.h"
-#include "gltf_document_extension.h"
-#include "gltf_document_extension_convert_importer_mesh.h"
 #include "gltf_state.h"
 #include "structures/gltf_accessor.h"
 #include "structures/gltf_animation.h"
@@ -47,6 +46,7 @@
 #include "structures/gltf_skeleton.h"
 #include "structures/gltf_skin.h"
 #include "structures/gltf_texture.h"
+#include "structures/gltf_texture_sampler.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
@@ -108,6 +108,11 @@ static void _editor_init() {
 }
 #endif // TOOLS_ENABLED
 
+#define GLTF_REGISTER_DOCUMENT_EXTENSION(m_doc_ext_class) \
+	Ref<m_doc_ext_class> extension_##m_doc_ext_class;     \
+	extension_##m_doc_ext_class.instantiate();            \
+	GLTFDocument::register_gltf_document_extension(extension_##m_doc_ext_class);
+
 void initialize_gltf_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		// glTF API available at runtime.
@@ -126,6 +131,12 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFSpecGloss);
 		GDREGISTER_CLASS(GLTFState);
 		GDREGISTER_CLASS(GLTFTexture);
+		GDREGISTER_CLASS(GLTFTextureSampler);
+		// Register GLTFDocumentExtension classes with GLTFDocument.
+		bool is_editor = ::Engine::get_singleton()->is_editor_hint();
+		if (!is_editor) {
+			GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionConvertImporterMesh);
+		}
 	}
 
 #ifdef TOOLS_ENABLED
@@ -142,6 +153,11 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GLOBAL_DEF_RST("filesystem/import/fbx/enabled", true);
 		GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
 		GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
+		// Can't (a priori) run external app on these platforms.
+		GLOBAL_DEF_RST("filesystem/import/blender/enabled.android", false);
+		GLOBAL_DEF_RST("filesystem/import/blender/enabled.web", false);
+		GLOBAL_DEF_RST("filesystem/import/fbx/enabled.android", false);
+		GLOBAL_DEF_RST("filesystem/import/fbx/enabled.web", false);
 
 		ClassDB::set_current_api(prev_api);
 		EditorNode::add_init_callback(_editor_init);
@@ -154,6 +170,7 @@ void uninitialize_gltf_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GLTFDocument::unregister_all_gltf_document_extensions();
 }
 
 #endif // _3D_DISABLED

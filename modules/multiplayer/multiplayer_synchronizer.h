@@ -53,6 +53,11 @@ private:
 	HashSet<Callable> visibility_filters;
 	HashSet<int> peer_visibility;
 
+	ObjectID root_node_cache;
+	uint64_t last_sync_msec = 0;
+	uint16_t last_inbound_sync = 0;
+	uint32_t net_id = 0;
+
 	static Object *_get_prop_target(Object *p_obj, const NodePath &p_prop);
 	void _start();
 	void _stop();
@@ -66,9 +71,19 @@ public:
 	static Error get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs);
 	static Error set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state);
 
+	void reset();
+	Node *get_root_node();
+
+	uint32_t get_net_id() const;
+	void set_net_id(uint32_t p_net_id);
+
+	bool update_outbound_sync_time(uint64_t p_msec);
+	bool update_inbound_sync_time(uint16_t p_network_time);
+
+	PackedStringArray get_configuration_warnings() const override;
+
 	void set_replication_interval(double p_interval);
 	double get_replication_interval() const;
-	uint64_t get_replication_interval_msec() const;
 
 	void set_replication_config(Ref<SceneReplicationConfig> p_config);
 	Ref<SceneReplicationConfig> get_replication_config();

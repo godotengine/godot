@@ -63,6 +63,21 @@ void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_ret
 	}
 }
 
+Variant Callable::callv(const Array &p_arguments) const {
+	int argcount = p_arguments.size();
+	const Variant **argptrs = nullptr;
+	if (argcount) {
+		argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		for (int i = 0; i < argcount; i++) {
+			argptrs[i] = &p_arguments[i];
+		}
+	}
+	CallError ce;
+	Variant ret;
+	callp(argptrs, argcount, ret, ce);
+	return ret;
+}
+
 Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const {
 	if (is_null()) {
 		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -387,33 +402,33 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 }
 
 Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
-	Object *object = get_object();
-	ERR_FAIL_COND_V(!object, ERR_UNCONFIGURED);
+	Object *obj = get_object();
+	ERR_FAIL_COND_V(!obj, ERR_UNCONFIGURED);
 
-	return object->connect(name, p_callable, p_flags);
+	return obj->connect(name, p_callable, p_flags);
 }
 
 void Signal::disconnect(const Callable &p_callable) {
-	Object *object = get_object();
-	ERR_FAIL_COND(!object);
-	object->disconnect(name, p_callable);
+	Object *obj = get_object();
+	ERR_FAIL_COND(!obj);
+	obj->disconnect(name, p_callable);
 }
 
 bool Signal::is_connected(const Callable &p_callable) const {
-	Object *object = get_object();
-	ERR_FAIL_COND_V(!object, false);
+	Object *obj = get_object();
+	ERR_FAIL_COND_V(!obj, false);
 
-	return object->is_connected(name, p_callable);
+	return obj->is_connected(name, p_callable);
 }
 
 Array Signal::get_connections() const {
-	Object *object = get_object();
-	if (!object) {
+	Object *obj = get_object();
+	if (!obj) {
 		return Array();
 	}
 
 	List<Object::Connection> connections;
-	object->get_signal_connection_list(name, &connections);
+	obj->get_signal_connection_list(name, &connections);
 
 	Array arr;
 	for (const Object::Connection &E : connections) {

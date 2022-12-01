@@ -32,7 +32,7 @@
 		</signal>
 		<signal name="folder_moved">
 			<param index="0" name="old_folder" type="String" />
-			<param index="1" name="new_file" type="String" />
+			<param index="1" name="new_folder" type="String" />
 			<description>
 			</description>
 		</signal>
@@ -46,7 +46,7 @@
 			<description>
 			</description>
 		</signal>
-		<signal name="instance">
+		<signal name="instantiate">
 			<param index="0" name="files" type="PackedStringArray" />
 			<description>
 			</description>

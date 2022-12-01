@@ -27,14 +27,14 @@
 			<return type="String" />
 			<param index="0" name="from" type="NodePath" />
 			<description>
-				Constructs a new String from the given [NodePath].
+				Constructs a new [String] from the given [NodePath].
 			</description>
 		</constructor>
 		<constructor name="String">
 			<return type="String" />
 			<param index="0" name="from" type="StringName" />
 			<description>
-				Constructs a new String from the given [StringName].
+				Constructs a new [String] from the given [StringName].
 			</description>
 		</constructor>
 	</constructors>
@@ -51,7 +51,7 @@
 			<description>
 				Returns an array containing the bigrams (pairs of consecutive letters) of this string.
 				[codeblock]
-				print("Bigrams".bigrams()) # Prints "[Bi, ig, gr, ra, am, ms]"
+				print("Bigrams".bigrams()) # Prints ["Bi", "ig", "gr", "ra", "am", "ms"]
 				[/codeblock]
 			</description>
 		</method>
@@ -80,7 +80,7 @@
 		<method name="c_unescape" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\?[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
+				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
 				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
 			</description>
 		</method>
@@ -239,7 +239,7 @@
 			<description>
 				Splits a string using a [param delimiter] and returns a substring at index [param slice]. Returns an empty string if the index doesn't exist.
 				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
-				Example:
+				[b]Example:[/b]
 				[codeblock]
 				print("i/am/example/string".get_slice("/", 2)) # Prints 'example'.
 				[/codeblock]
@@ -364,7 +364,7 @@
 			<return type="bool" />
 			<param index="0" name="with_prefix" type="bool" default="false" />
 			<description>
-				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [param with_prefix] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
+				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [param with_prefix] is [code]true[/code], then a validity of the hexadecimal number is determined by the [code]0x[/code] prefix, for example: [code]0xDEADC0DE[/code].
 			</description>
 		</method>
 		<method name="is_valid_html_color" qualifiers="const">
@@ -408,7 +408,7 @@
 			<param index="0" name="parts" type="PackedStringArray" />
 			<description>
 				Returns a [String] which is the concatenation of the [param parts]. The separator between elements is the string providing this method.
-				Example:
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				print(", ".join(["One", "Two", "Three", "Four"]))
@@ -430,7 +430,7 @@
 			<param index="0" name="length" type="int" />
 			<description>
 				Returns a number of characters from the left of the string. If negative [param length] is used, the characters are counted downwards from [String]'s length.
-				Examples:
+				[b]Example:[/b]
 				[codeblock]
 				print("sample text".left(3)) #prints "sam"
 				print("sample text".left(-3)) #prints "sample t"
@@ -514,7 +514,7 @@
 				Converts a [float] to a string representation of a decimal number.
 				The number of decimal places can be specified with [param decimals]. If [param decimals] is [code]-1[/code] (default), decimal places will be automatically adjusted so that the string representation has 14 significant digits (counting both digits to the left and the right of the decimal point).
 				Trailing zeros are not included in the string. The last digit will be rounded and not truncated.
-				Some examples:
+				[b]Example:[/b]
 				[codeblock]
 				String.num(3.141593)     # "3.141593"
 				String.num(3.141593, 3)  # "3.142"
@@ -617,7 +617,7 @@
 			<param index="0" name="length" type="int" />
 			<description>
 				Returns a number of characters from the right of the string. If negative [param length] is used, the characters are counted downwards from [String]'s length.
-				Examples:
+				[b]Example:[/b]
 				[codeblock]
 				print("sample text".right(3)) #prints "ext"
 				print("sample text".right(-3)) #prints "ple text"
@@ -634,15 +634,15 @@
 		</method>
 		<method name="rsplit" qualifiers="const">
 			<return type="PackedStringArray" />
-			<param index="0" name="delimiter" type="String" />
+			<param index="0" name="delimiter" type="String" default="&quot;&quot;" />
 			<param index="1" name="allow_empty" type="bool" default="true" />
 			<param index="2" name="maxsplit" type="int" default="0" />
 			<description>
-				Splits the string by a [param delimiter] string and returns an array of the substrings, starting from right.
+				Splits the string by a [param delimiter] string and returns an array of the substrings, starting from right. If [param delimiter] is an empty string, each substring will be a single character.
 				The splits in the returned array are sorted in the same order as the original string, from left to right.
 				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
 				If [param maxsplit] is specified, it defines the number of splits to do from the right up to [param maxsplit]. The default value of 0 means that all items are split, thus giving the same result as [method split].
-				Example:
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_string = "One,Two,Three,Four"
@@ -710,15 +710,15 @@
 		</method>
 		<method name="split" qualifiers="const">
 			<return type="PackedStringArray" />
-			<param index="0" name="delimiter" type="String" />
+			<param index="0" name="delimiter" type="String" default="&quot;&quot;" />
 			<param index="1" name="allow_empty" type="bool" default="true" />
 			<param index="2" name="maxsplit" type="int" default="0" />
 			<description>
-				Splits the string by a [param delimiter] string and returns an array of the substrings. The [param delimiter] can be of any length.
+				Splits the string by a [param delimiter] string and returns an array of the substrings. The [param delimiter] can be of any length. If [param delimiter] is an empty string, each substring will be a single character.
 				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
 				If [param maxsplit] is specified, it defines the number of splits to do from the left up to [param maxsplit]. The default value of [code]0[/code] means that all items are split.
 				If you need only one element from the array at a specific index, [method get_slice] is a more performant option.
-				Example:
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_string = "One,Two,Three,Four"
@@ -738,7 +738,7 @@
 			</description>
 		</method>
 		<method name="split_floats" qualifiers="const">
-			<return type="PackedFloat32Array" />
+			<return type="PackedFloat64Array" />
 			<param index="0" name="delimiter" type="String" />
 			<param index="1" name="allow_empty" type="bool" default="true" />
 			<description>
@@ -920,72 +920,88 @@
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if both strings do not contain the same sequence of characters.
 			</description>
 		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if this [String] is not equivalent to the given [StringName].
 			</description>
 		</operator>
 		<operator name="operator %">
 			<return type="String" />
 			<param index="0" name="right" type="Variant" />
 			<description>
+				Formats the [String], replacing the placeholders with one or more parameters.
+				To pass multiple parameters, [param right] needs to be an [Array].
+				[codeblock]
+				print("I caught %d fishes!" % 2) # Prints "I caught 2 fishes!"
+
+				var my_message = "Travelling to %s, at %2.2f per second."
+				var location = "Deep Valley"
+				var speed = 40.3485
+				print(my_message % [location, speed]) # Prints "Travelling to Deep Valley, at 40.35 km/h."
+				[/codeblock]
+				In C#, there is no direct equivalent to this operator. Use the [method format] method, instead.
+				For more information, see the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url] tutorial.
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="String" />
 			<param index="0" name="right" type="String" />
 			<description>
-			</description>
-		</operator>
-		<operator name="operator +">
-			<return type="String" />
-			<param index="0" name="right" type="int" />
-			<description>
+				Appends [param right] at the end of this [String], also known as a string concatenation.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes before [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order. Useful for sorting.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes before [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order, or if both are equal.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if both strings contain the same sequence of characters.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Returns [code]true[/code] if this [String] is equivalent to the given [StringName].
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes after [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order. Useful for sorting.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Returns [code]true[/code] if the left [String] comes after [param right] in [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url], which roughly matches the alphabetical order, or if both are equal.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns a new [String] that only contains the character at [param index]. Indices start from [code]0[/code]. If [param index] is greater or equal to [code]0[/code], the character is fetched starting from the beginning of the string. If [param index] is a negative value, it is fetched starting from the end. Accessing a string out-of-bounds will cause a run-time error, pausing the project execution if run from the editor.
 			</description>
 		</operator>
 	</operators>

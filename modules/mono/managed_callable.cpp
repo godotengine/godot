@@ -79,7 +79,9 @@ CallableCustom::CompareLessFunc ManagedCallable::get_compare_less_func() const {
 }
 
 ObjectID ManagedCallable::get_object() const {
-	// TODO: If the delegate target extends Godot.Object, use that instead!
+	if (object_id != ObjectID()) {
+		return object_id;
+	}
 	return CSharpLanguage::get_singleton()->get_managed_callable_middleman()->get_instance_id();
 }
 
@@ -90,7 +92,7 @@ void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant 
 	ERR_FAIL_COND(delegate_handle.value == nullptr);
 
 	GDMonoCache::managed_callbacks.DelegateUtils_InvokeWithVariantArgs(
-			delegate_handle, p_arguments, p_argcount, &r_return_value);
+			delegate_handle, trampoline, p_arguments, p_argcount, &r_return_value);
 
 	r_call_error.error = Callable::CallError::CALL_OK;
 }
@@ -104,7 +106,8 @@ void ManagedCallable::release_delegate_handle() {
 
 // Why you do this clang-format...
 /* clang-format off */
-ManagedCallable::ManagedCallable(GCHandleIntPtr p_delegate_handle) : delegate_handle(p_delegate_handle) {
+ManagedCallable::ManagedCallable(GCHandleIntPtr p_delegate_handle, void *p_trampoline, ObjectID p_object_id) :
+		delegate_handle(p_delegate_handle), trampoline(p_trampoline), object_id(p_object_id) {
 #ifdef GD_MONO_HOT_RELOAD
 	{
 		MutexLock lock(instances_mutex);

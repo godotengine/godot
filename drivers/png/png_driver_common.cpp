@@ -119,7 +119,7 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, 
 	ERR_FAIL_COND_V(!success, ERR_FILE_CORRUPT);
 
 	//print_line("png width: "+itos(png_img.width)+" height: "+itos(png_img.height));
-	p_image->create(png_img.width, png_img.height, false, dest_format, buffer);
+	p_image->set_data(png_img.width, png_img.height, false, dest_format, buffer);
 
 	return OK;
 }

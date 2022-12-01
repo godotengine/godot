@@ -34,22 +34,26 @@
 #include "main/main.h"
 #include "servers/display_server.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+
 #ifdef X11_ENABLED
-#include "display_server_x11.h"
+#include "x11/display_server_x11.h"
 #endif
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>
 #endif
 
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <dlfcn.h>
-#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 
 #ifdef FONTCONFIG_ENABLED
@@ -124,6 +128,8 @@ void OS_LinuxBSD::initialize() {
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
+
+	system_dir_desktop_cache = get_system_dir(SYSTEM_DIR_DESKTOP);
 }
 
 void OS_LinuxBSD::initialize_joypads() {
@@ -205,6 +211,240 @@ String OS_LinuxBSD::get_name() const {
 #endif
 }
 
+String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
+	static String info;
+	if (info.is_empty()) {
+		Ref<FileAccess> f = FileAccess::open("/etc/os-release", FileAccess::READ);
+		if (f.is_valid()) {
+			while (!f->eof_reached()) {
+				const String line = f->get_line();
+				if (line.find(key) != -1) {
+					return line.split("=")[1].strip_edges();
+				}
+			}
+		}
+	}
+	return info;
+}
+
+String OS_LinuxBSD::get_distribution_name() const {
+	static String systemd_name = get_systemd_os_release_info_value("NAME"); // returns a value for systemd users, otherwise an empty string.
+	if (!systemd_name.is_empty()) {
+		return systemd_name;
+	}
+	struct utsname uts; // returns a decent value for BSD family.
+	uname(&uts);
+	return uts.sysname;
+}
+
+String OS_LinuxBSD::get_version() const {
+	static String systemd_version = get_systemd_os_release_info_value("VERSION"); // returns a value for systemd users, otherwise an empty string.
+	if (!systemd_version.is_empty()) {
+		return systemd_version;
+	}
+	struct utsname uts; // returns a decent value for BSD family.
+	uname(&uts);
+	return uts.version;
+}
+
+Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
+	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+		return Vector<String>();
+	}
+
+	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name(); // e.g. `NVIDIA GeForce GTX 970`
+	const String rendering_device_vendor = RenderingServer::get_singleton()->get_rendering_device()->get_device_vendor_name(); // e.g. `NVIDIA`
+	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`
+
+	String vendor_device_id_mappings;
+	List<String> lspci_args;
+	lspci_args.push_back("-n");
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", lspci_args, &vendor_device_id_mappings);
+	if (err != OK || vendor_device_id_mappings.is_empty()) {
+		return Vector<String>();
+	}
+
+	// Usually found under "VGA", but for example NVIDIA mobile/laptop adapters are often listed under "3D" and some AMD adapters are under "Display".
+	const String dc_vga = "0300"; // VGA compatible controller
+	const String dc_display = "0302"; // Display controller
+	const String dc_3d = "0380"; // 3D controller
+
+	// splitting results by device class allows prioritizing, if multiple devices are found.
+	Vector<String> class_vga_device_candidates;
+	Vector<String> class_display_device_candidates;
+	Vector<String> class_3d_device_candidates;
+
+#ifdef MODULE_REGEX_ENABLED
+	RegEx regex_id_format = RegEx();
+	regex_id_format.compile("^[a-f0-9]{4}:[a-f0-9]{4}$"); // e.g. `10de:13c2`; IDs are always in hexadecimal
+#endif
+
+	Vector<String> value_lines = vendor_device_id_mappings.split("\n", false); // example: `02:00.0 0300: 10de:13c2 (rev a1)`
+	for (const String &line : value_lines) {
+		Vector<String> columns = line.split(" ", false);
+		if (columns.size() < 3) {
+			continue;
+		}
+		String device_class = columns[1].trim_suffix(":");
+		String vendor_device_id_mapping = columns[2];
+
+#ifdef MODULE_REGEX_ENABLED
+		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
+			continue;
+		}
+#endif
+
+		if (device_class == dc_vga) {
+			class_vga_device_candidates.push_back(vendor_device_id_mapping);
+		} else if (device_class == dc_display) {
+			class_display_device_candidates.push_back(vendor_device_id_mapping);
+		} else if (device_class == dc_3d) {
+			class_3d_device_candidates.push_back(vendor_device_id_mapping);
+		}
+	}
+
+	// Check results against currently used device (`card_name`), in case the user has multiple graphics cards.
+	const String device_lit = "Device"; // line of interest
+	class_vga_device_candidates = OS_LinuxBSD::lspci_device_filter(class_vga_device_candidates, dc_vga, device_lit, card_name);
+	class_display_device_candidates = OS_LinuxBSD::lspci_device_filter(class_display_device_candidates, dc_display, device_lit, card_name);
+	class_3d_device_candidates = OS_LinuxBSD::lspci_device_filter(class_3d_device_candidates, dc_3d, device_lit, card_name);
+
+	// Get driver names and filter out invalid ones, because some adapters are dummys used only for passthrough.
+	// And they have no indicator besides certain driver names.
+	const String kernel_lit = "Kernel driver in use"; // line of interest
+	const String dummys = "vfio"; // for e.g. pci passthrough dummy kernel driver `vfio-pci`
+	Vector<String> class_vga_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_vga_device_candidates, kernel_lit, dummys);
+	Vector<String> class_display_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_display_device_candidates, kernel_lit, dummys);
+	Vector<String> class_3d_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_3d_device_candidates, kernel_lit, dummys);
+
+	static String driver_name;
+	static String driver_version;
+
+	// Use first valid value:
+	for (const String &driver : class_3d_device_drivers) {
+		driver_name = driver;
+		break;
+	}
+	if (driver_name.is_empty()) {
+		for (const String &driver : class_display_device_drivers) {
+			driver_name = driver;
+			break;
+		}
+	}
+	if (driver_name.is_empty()) {
+		for (const String &driver : class_vga_device_drivers) {
+			driver_name = driver;
+			break;
+		}
+	}
+
+	Vector<String> info;
+	info.push_back(driver_name);
+
+	String modinfo;
+	List<String> modinfo_args;
+	modinfo_args.push_back(driver_name);
+	err = const_cast<OS_LinuxBSD *>(this)->execute("modinfo", modinfo_args, &modinfo);
+	if (err != OK || modinfo.is_empty()) {
+		info.push_back(""); // So that this method always either returns an empty array, or an array of length 2.
+		return info;
+	}
+	Vector<String> lines = modinfo.split("\n", false);
+	for (const String &line : lines) {
+		Vector<String> columns = line.split(":", false, 1);
+		if (columns.size() < 2) {
+			continue;
+		}
+		if (columns[0].strip_edges() == "version") {
+			driver_version = columns[1].strip_edges(); // example value: `510.85.02` on Linux/BSD
+			break;
+		}
+	}
+
+	info.push_back(driver_version);
+
+	return info;
+}
+
+Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const {
+	// NOTE: whitelist can be changed to `Vector<String>`, if the need arises.
+	const String sep = ":";
+	Vector<String> devices;
+	for (const String &mapping : vendor_device_id_mapping) {
+		String device;
+		List<String> d_args;
+		d_args.push_back("-d");
+		d_args.push_back(mapping + sep + class_suffix);
+		d_args.push_back("-vmm");
+		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2:0300 -vmm`
+		if (err != OK) {
+			return Vector<String>();
+		} else if (device.is_empty()) {
+			continue;
+		}
+
+		Vector<String> device_lines = device.split("\n", false);
+		for (const String &line : device_lines) {
+			Vector<String> columns = line.split(":", false, 1);
+			if (columns.size() < 2) {
+				continue;
+			}
+			if (columns[0].strip_edges() == check_column) {
+				// for `column[0] == "Device"` this may contain `GM204 [GeForce GTX 970]`
+				bool is_valid = true;
+				if (!whitelist.is_empty()) {
+					is_valid = columns[1].strip_edges().contains(whitelist);
+				}
+				if (is_valid) {
+					devices.push_back(mapping);
+				}
+				break;
+			}
+		}
+	}
+	return devices;
+}
+
+Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const {
+	// NOTE: blacklist can be changed to `Vector<String>`, if the need arises.
+	const String sep = ":";
+	Vector<String> values;
+	for (const String &mapping : vendor_device_id_mapping) {
+		String device;
+		List<String> d_args;
+		d_args.push_back("-d");
+		d_args.push_back(mapping);
+		d_args.push_back("-k");
+		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2 -k`
+		if (err != OK) {
+			return Vector<String>();
+		} else if (device.is_empty()) {
+			continue;
+		}
+
+		Vector<String> device_lines = device.split("\n", false);
+		for (const String &line : device_lines) {
+			Vector<String> columns = line.split(":", false, 1);
+			if (columns.size() < 2) {
+				continue;
+			}
+			if (columns[0].strip_edges() == check_column) {
+				// for `column[0] == "Kernel driver in use"` this may contain `nvidia`
+				bool is_valid = true;
+				const String value = columns[1].strip_edges();
+				if (!blacklist.is_empty()) {
+					is_valid = !value.contains(blacklist);
+				}
+				if (is_valid) {
+					values.push_back(value);
+				}
+				break;
+			}
+		}
+	}
+	return values;
+}
+
 Error OS_LinuxBSD::shell_open(String p_uri) {
 	Error ok;
 	int err_code;
@@ -243,7 +483,16 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc";
+#ifdef FONTCONFIG_ENABLED
+	if (p_feature == "system_fonts") {
+		return font_config_initialized;
+	}
+#endif
+	if (p_feature == "pc") {
+		return true;
+	}
+
+	return false;
 }
 
 uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
@@ -385,6 +634,8 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 		ERR_FAIL_V_MSG(String(), "Unable to load fontconfig, system font support is disabled.");
 	}
 
+	bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
+
 	String ret;
 
 	FcConfig *config = FcInitLoadConfigAndFonts();
@@ -406,6 +657,19 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 		FcResult result;
 		FcPattern *match = FcFontMatch(0, pattern, &result);
 		if (match) {
+			if (!allow_substitutes) {
+				char *family_name = nullptr;
+				if (FcPatternGetString(match, FC_FAMILY, 0, reinterpret_cast<FcChar8 **>(&family_name)) == FcResultMatch) {
+					if (family_name && String::utf8(family_name).to_lower() != p_font_name.to_lower()) {
+						FcPatternDestroy(match);
+						FcPatternDestroy(pattern);
+						FcObjectSetDestroy(object_set);
+						FcConfigDestroy(config);
+
+						return String();
+					}
+				}
+			}
 			char *file_name = nullptr;
 			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
 				if (file_name) {
@@ -472,6 +736,10 @@ String OS_LinuxBSD::get_cache_path() const {
 }
 
 String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
+	if (p_dir == SYSTEM_DIR_DESKTOP && !system_dir_desktop_cache.is_empty()) {
+		return system_dir_desktop_cache;
+	}
+
 	String xdgparam;
 
 	switch (p_dir) {
@@ -480,31 +748,24 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const
 		} break;
 		case SYSTEM_DIR_DCIM: {
 			xdgparam = "PICTURES";
-
 		} break;
 		case SYSTEM_DIR_DOCUMENTS: {
 			xdgparam = "DOCUMENTS";
-
 		} break;
 		case SYSTEM_DIR_DOWNLOADS: {
 			xdgparam = "DOWNLOAD";
-
 		} break;
 		case SYSTEM_DIR_MOVIES: {
 			xdgparam = "VIDEOS";
-
 		} break;
 		case SYSTEM_DIR_MUSIC: {
 			xdgparam = "MUSIC";
-
 		} break;
 		case SYSTEM_DIR_PICTURES: {
 			xdgparam = "PICTURES";
-
 		} break;
 		case SYSTEM_DIR_RINGTONES: {
 			xdgparam = "MUSIC";
-
 		} break;
 	}
 
@@ -686,10 +947,9 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	String renamed_path = path.get_base_dir() + "/" + file_name;
 
 	// Generates the .trashinfo file
-	OS::Date date = OS::get_singleton()->get_date(false);
-	OS::Time time = OS::get_singleton()->get_time(false);
-	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, (int)date.month, date.day, time.hour, time.minute);
-	timestamp = vformat("%s%02d", timestamp, time.second); // vformat only supports up to 6 arguments.
+	OS::DateTime dt = OS::get_singleton()->get_datetime(false);
+	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", dt.year, (int)dt.month, dt.day, dt.hour, dt.minute);
+	timestamp = vformat("%s%02d", timestamp, dt.second); // vformat only supports up to 6 arguments.
 	String trash_info = "[Trash Info]\nPath=" + path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
 	{
 		Error err;

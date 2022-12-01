@@ -387,11 +387,25 @@ void GodotPhysicsServer3D::area_set_collision_layer(RID p_area, uint32_t p_layer
 	area->set_collision_layer(p_layer);
 }
 
+uint32_t GodotPhysicsServer3D::area_get_collision_layer(RID p_area) const {
+	GodotArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+
+	return area->get_collision_layer();
+}
+
 void GodotPhysicsServer3D::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 	GodotArea3D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 
 	area->set_collision_mask(p_mask);
+}
+
+uint32_t GodotPhysicsServer3D::area_get_collision_mask(RID p_area) const {
+	GodotArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+
+	return area->get_collision_mask();
 }
 
 void GodotPhysicsServer3D::area_set_monitorable(RID p_area, bool p_monitorable) {
@@ -877,10 +891,10 @@ int GodotPhysicsServer3D::body_get_max_contacts_reported(RID p_body) const {
 	return body->get_max_contacts_reported();
 }
 
-void GodotPhysicsServer3D::body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) {
+void GodotPhysicsServer3D::body_set_state_sync_callback(RID p_body, const Callable &p_callable) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_state_sync_callback(p_instance, p_callback);
+	body->set_state_sync_callback(p_callable);
 }
 
 void GodotPhysicsServer3D::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata) {
@@ -1196,6 +1210,7 @@ RID GodotPhysicsServer3D::joint_create() {
 
 void GodotPhysicsServer3D::joint_clear(RID p_joint) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
 	if (joint->get_type() != JOINT_TYPE_MAX) {
 		GodotJoint3D *empty_joint = memnew(GodotJoint3D);
 		empty_joint->copy_settings_from(joint);

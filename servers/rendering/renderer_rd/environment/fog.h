@@ -46,7 +46,9 @@
 namespace RendererRD {
 
 class Fog : public RendererFog {
-public:
+private:
+	static Fog *singleton;
+
 	/* FOG VOLUMES */
 
 	struct FogVolume {
@@ -58,16 +60,14 @@ public:
 		Dependency dependency;
 	};
 
+	mutable RID_Owner<FogVolume, true> fog_volume_owner;
+
 	struct FogVolumeInstance {
 		RID volume;
 		Transform3D transform;
 		bool active = false;
 	};
 
-private:
-	static Fog *singleton;
-
-	mutable RID_Owner<FogVolume, true> fog_volume_owner;
 	mutable RID_Owner<FogVolumeInstance> fog_volume_instance_owner;
 
 	/* Volumetric Fog */
@@ -240,12 +240,12 @@ public:
 
 	/* FOG VOLUMES */
 
-	FogVolume *get_fog_volume(RID p_rid) { return fog_volume_owner.get_or_null(p_rid); };
 	bool owns_fog_volume(RID p_rid) { return fog_volume_owner.owns(p_rid); };
 
 	virtual RID fog_volume_allocate() override;
 	virtual void fog_volume_initialize(RID p_rid) override;
-	virtual void fog_free(RID p_rid) override;
+	virtual void fog_volume_free(RID p_rid) override;
+	Dependency *fog_volume_get_dependency(RID p_fog_volume) const;
 
 	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override;
 	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) override;
@@ -257,11 +257,34 @@ public:
 
 	/* FOG VOLUMES INSTANCE */
 
-	FogVolumeInstance *get_fog_volume_instance(RID p_rid) { return fog_volume_instance_owner.get_or_null(p_rid); };
 	bool owns_fog_volume_instance(RID p_rid) { return fog_volume_instance_owner.owns(p_rid); };
 
 	RID fog_volume_instance_create(RID p_fog_volume);
 	void fog_instance_free(RID p_rid);
+
+	void fog_volume_instance_set_transform(RID p_fog_volume_instance, const Transform3D &p_transform) {
+		Fog::FogVolumeInstance *fvi = fog_volume_instance_owner.get_or_null(p_fog_volume_instance);
+		ERR_FAIL_COND(!fvi);
+		fvi->transform = p_transform;
+	}
+
+	void fog_volume_instance_set_active(RID p_fog_volume_instance, bool p_active) {
+		Fog::FogVolumeInstance *fvi = fog_volume_instance_owner.get_or_null(p_fog_volume_instance);
+		ERR_FAIL_COND(!fvi);
+		fvi->active = p_active;
+	}
+
+	RID fog_volume_instance_get_volume(RID p_fog_volume_instance) const {
+		Fog::FogVolumeInstance *fvi = fog_volume_instance_owner.get_or_null(p_fog_volume_instance);
+		ERR_FAIL_COND_V(!fvi, RID());
+		return fvi->volume;
+	}
+
+	Vector3 fog_volume_instance_get_position(RID p_fog_volume_instance) const {
+		Fog::FogVolumeInstance *fvi = fog_volume_instance_owner.get_or_null(p_fog_volume_instance);
+		ERR_FAIL_COND_V(!fvi, Vector3());
+		return fvi->transform.get_origin();
+	}
 
 	/* Volumetric FOG */
 	class VolumetricFog : public RenderBufferCustomDataRD {

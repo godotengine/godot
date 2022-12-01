@@ -479,8 +479,8 @@ void PhysicsTestMotionParameters2D::set_exclude_bodies(const TypedArray<RID> &p_
 	}
 }
 
-Array PhysicsTestMotionParameters2D::get_exclude_objects() const {
-	Array exclude;
+TypedArray<uint64_t> PhysicsTestMotionParameters2D::get_exclude_objects() const {
+	TypedArray<uint64_t> exclude;
 	exclude.resize(parameters.exclude_objects.size());
 
 	int object_index = 0;
@@ -491,7 +491,7 @@ Array PhysicsTestMotionParameters2D::get_exclude_objects() const {
 	return exclude;
 }
 
-void PhysicsTestMotionParameters2D::set_exclude_objects(const Array &p_exclude) {
+void PhysicsTestMotionParameters2D::set_exclude_objects(const TypedArray<uint64_t> &p_exclude) {
 	for (int i = 0; i < p_exclude.size(); ++i) {
 		ObjectID object_id = p_exclude[i];
 		ERR_CONTINUE(object_id.is_null());
@@ -652,7 +652,10 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_clear_shapes", "area"), &PhysicsServer2D::area_clear_shapes);
 
 	ClassDB::bind_method(D_METHOD("area_set_collision_layer", "area", "layer"), &PhysicsServer2D::area_set_collision_layer);
+	ClassDB::bind_method(D_METHOD("area_get_collision_layer", "area"), &PhysicsServer2D::area_get_collision_layer);
+
 	ClassDB::bind_method(D_METHOD("area_set_collision_mask", "area", "mask"), &PhysicsServer2D::area_set_collision_mask);
+	ClassDB::bind_method(D_METHOD("area_get_collision_mask", "area"), &PhysicsServer2D::area_get_collision_mask);
 
 	ClassDB::bind_method(D_METHOD("area_set_param", "area", "param", "value"), &PhysicsServer2D::area_set_param);
 	ClassDB::bind_method(D_METHOD("area_set_transform", "area", "transform"), &PhysicsServer2D::area_set_transform);
@@ -876,9 +879,7 @@ PhysicsServer2D::~PhysicsServer2D() {
 	singleton = nullptr;
 }
 
-Vector<PhysicsServer2DManager::ClassInfo> PhysicsServer2DManager::physics_2d_servers;
-int PhysicsServer2DManager::default_server_id = -1;
-int PhysicsServer2DManager::default_server_priority = -1;
+PhysicsServer2DManager *PhysicsServer2DManager::singleton = nullptr;
 const String PhysicsServer2DManager::setting_property_name(PNAME("physics/2d/physics_engine"));
 
 void PhysicsServer2DManager::on_servers_changed() {
@@ -889,10 +890,19 @@ void PhysicsServer2DManager::on_servers_changed() {
 	ProjectSettings::get_singleton()->set_custom_property_info(setting_property_name, PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers));
 }
 
-void PhysicsServer2DManager::register_server(const String &p_name, CreatePhysicsServer2DCallback p_creat_callback) {
-	ERR_FAIL_COND(!p_creat_callback);
+void PhysicsServer2DManager::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("register_server", "name", "create_callback"), &PhysicsServer2DManager::register_server);
+	ClassDB::bind_method(D_METHOD("set_default_server", "name", "priority"), &PhysicsServer2DManager::set_default_server);
+}
+
+PhysicsServer2DManager *PhysicsServer2DManager::get_singleton() {
+	return singleton;
+}
+
+void PhysicsServer2DManager::register_server(const String &p_name, const Callable &p_create_callback) {
+	//ERR_FAIL_COND(!p_create_callback.is_valid());
 	ERR_FAIL_COND(find_server_id(p_name) != -1);
-	physics_2d_servers.push_back(ClassInfo(p_name, p_creat_callback));
+	physics_2d_servers.push_back(ClassInfo(p_name, p_create_callback));
 	on_servers_changed();
 }
 
@@ -925,7 +935,11 @@ String PhysicsServer2DManager::get_server_name(int p_id) {
 
 PhysicsServer2D *PhysicsServer2DManager::new_default_server() {
 	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
-	return physics_2d_servers[default_server_id].create_callback();
+	Variant ret;
+	Callable::CallError ce;
+	physics_2d_servers[default_server_id].create_callback.callp(nullptr, 0, ret, ce);
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
+	return Object::cast_to<PhysicsServer2D>(ret.get_validated_object());
 }
 
 PhysicsServer2D *PhysicsServer2DManager::new_server(const String &p_name) {
@@ -933,6 +947,18 @@ PhysicsServer2D *PhysicsServer2DManager::new_server(const String &p_name) {
 	if (id == -1) {
 		return nullptr;
 	} else {
-		return physics_2d_servers[id].create_callback();
+		Variant ret;
+		Callable::CallError ce;
+		physics_2d_servers[id].create_callback.callp(nullptr, 0, ret, ce);
+		ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
+		return Object::cast_to<PhysicsServer2D>(ret.get_validated_object());
 	}
+}
+
+PhysicsServer2DManager::PhysicsServer2DManager() {
+	singleton = this;
+}
+
+PhysicsServer2DManager::~PhysicsServer2DManager() {
+	singleton = nullptr;
 }

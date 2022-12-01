@@ -503,7 +503,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 16, ERR_INVALID_DATA);
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
-						val.matrix[i][j] = decode_double(&buf[(i * 4 + j) * sizeof(double)]);
+						val.columns[i][j] = decode_double(&buf[(i * 4 + j) * sizeof(double)]);
 					}
 				}
 				if (r_len) {
@@ -513,7 +513,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 16, ERR_INVALID_DATA);
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
-						val.matrix[i][j] = decode_float(&buf[(i * 4 + j) * sizeof(float)]);
+						val.columns[i][j] = decode_float(&buf[(i * 4 + j) * sizeof(float)]);
 					}
 				}
 
@@ -1450,7 +1450,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Projection val = p_variant;
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
-						memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val.matrix[i][j], sizeof(real_t));
+						memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val.columns[i][j], sizeof(real_t));
 					}
 				}
 			}

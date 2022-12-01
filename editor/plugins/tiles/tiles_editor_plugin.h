@@ -71,7 +71,7 @@ private:
 	// For synchronization.
 	int atlas_sources_lists_current = 0;
 	float atlas_view_zoom = 1.0;
-	Vector2 atlas_view_scroll = Vector2();
+	Vector2 atlas_view_scroll;
 
 	void _tile_map_changed();
 
@@ -122,7 +122,7 @@ public:
 
 	// Sorting.
 	void set_sorting_option(int p_option);
-	List<int> get_sorted_sources(const Ref<TileSet> tile_set) const;
+	List<int> get_sorted_sources(const Ref<TileSet> p_tile_set) const;
 
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

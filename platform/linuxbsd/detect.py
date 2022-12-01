@@ -4,6 +4,11 @@ import sys
 from methods import get_compiler_version, using_gcc
 from platform_methods import detect_arch
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 
 def is_active():
     return True
@@ -31,7 +36,6 @@ def get_opts():
     return [
         EnumVariable("linker", "Linker program", "default", ("default", "bfd", "gold", "lld", "mold")),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
-        BoolVariable("use_thinlto", "Use ThinLTO (LLVM only, requires linker=lld, implies use_lto=yes)", False),
         BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
         BoolVariable("use_coverage", "Test Godot coverage", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
@@ -45,8 +49,6 @@ def get_opts():
         BoolVariable("fontconfig", "Detect and use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
-        BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
-        BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
@@ -58,7 +60,7 @@ def get_flags():
     ]
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64"]
     if env["arch"] not in supported_arches:
@@ -70,26 +72,9 @@ def configure(env):
 
     ## Build type
 
-    if env["target"] == "release":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O3"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-
-    elif env["target"] == "release_debug":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O2"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-
-    elif env["target"] == "debug":
-        env.Prepend(CCFLAGS=["-g3"])
+    if env.dev_build:
+        # This is needed for our crash handler to work properly.
+        # gdb works fine without it though, so maybe our crash handler could too.
         env.Append(LINKFLAGS=["-rdynamic"])
 
     # CPU architecture flags.
@@ -128,13 +113,6 @@ def configure(env):
                 env.Append(LINKFLAGS=["-fuse-ld=mold"])
         else:
             env.Append(LINKFLAGS=["-fuse-ld=%s" % env["linker"]])
-
-    if env["use_thinlto"]:
-        if not env["use_llvm"] or env["linker"] != "lld":
-            print("ThinLTO is only compatible with LLVM and the LLD linker, use `use_llvm=yes linker=lld`.")
-            sys.exit(255)
-        else:
-            env["use_lto"] = True  # ThinLTO implies LTO
 
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
@@ -178,8 +156,16 @@ def configure(env):
             env.Append(CCFLAGS=["-fsanitize-recover=memory"])
             env.Append(LINKFLAGS=["-fsanitize=memory"])
 
-    if env["use_lto"]:
-        if env["use_thinlto"]:
+    # LTO
+
+    if env["lto"] == "auto":  # Full LTO for production.
+        env["lto"] = "full"
+
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            if not env["use_llvm"]:
+                print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
+                sys.exit(255)
             env.Append(CCFLAGS=["-flto=thin"])
             env.Append(LINKFLAGS=["-flto=thin"])
         elif not env["use_llvm"] and env.GetOption("num_jobs") > 1:
@@ -370,20 +356,22 @@ def configure(env):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        env.ParseConfig("pkg-config gl --cflags --libs")
 
     env.Append(LIBS=["pthread"])
 
     if platform.system() == "Linux":
         env.Append(LIBS=["dl"])
 
-    if platform.system().find("BSD") >= 0:
+    if not env["execinfo"] and platform.libc_ver()[0] != "glibc":
+        # The default crash handler depends on glibc, so if the host uses
+        # a different libc (BSD libc, musl), fall back to libexecinfo.
+        print("Note: Using `execinfo=yes` for the crash handler as required on platforms where glibc is missing.")
         env["execinfo"] = True
 
     if env["execinfo"]:
         env.Append(LIBS=["execinfo"])
 
-    if not env["tools"]:
+    if not env.editor_build:
         import subprocess
         import re
 

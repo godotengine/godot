@@ -53,6 +53,7 @@
 #include <process.h>
 #include <regstr.h>
 #include <shlobj.h>
+#include <wbemcli.h>
 
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
@@ -102,8 +103,6 @@ void RedirectIOToConsole() {
 		RedirectStream("CONIN$", "r", stdin, STD_INPUT_HANDLE);
 		RedirectStream("CONOUT$", "w", stdout, STD_OUTPUT_HANDLE);
 		RedirectStream("CONOUT$", "w", stderr, STD_ERROR_HANDLE);
-
-		printf("\n"); // Make sure our output is starting from the new line.
 	}
 }
 
@@ -290,7 +289,123 @@ String OS_Windows::get_name() const {
 	return "Windows";
 }
 
-OS::Date OS_Windows::get_date(bool p_utc) const {
+String OS_Windows::get_distribution_name() const {
+	return get_name();
+}
+
+String OS_Windows::get_version() const {
+	typedef LONG NTSTATUS;
+	typedef NTSTATUS(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	if (version_ptr != nullptr) {
+		RTL_OSVERSIONINFOW fow;
+		ZeroMemory(&fow, sizeof(fow));
+		fow.dwOSVersionInfoSize = sizeof(fow);
+		if (version_ptr(&fow) == 0x00000000) {
+			return vformat("%d.%d.%d", (int64_t)fow.dwMajorVersion, (int64_t)fow.dwMinorVersion, (int64_t)fow.dwBuildNumber);
+		}
+	}
+	return "";
+}
+
+Vector<String> OS_Windows::get_video_adapter_driver_info() const {
+	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+		return Vector<String>();
+	}
+
+	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
+	REFIID uuid = IID_IWbemLocator; // Interface UUID
+	IWbemLocator *wbemLocator = NULL; // to get the services
+	IWbemServices *wbemServices = NULL; // to get the class
+	IEnumWbemClassObject *iter = NULL;
+	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
+	static String driver_name;
+	static String driver_version;
+
+	const String device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name();
+	if (device_name.is_empty()) {
+		return Vector<String>();
+	}
+
+	CoInitialize(nullptr);
+
+	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
+	if (hr != S_OK) {
+		return Vector<String>();
+	}
+	BSTR resource_name = SysAllocString(L"root\\CIMV2");
+	hr = wbemLocator->ConnectServer(resource_name, NULL, NULL, NULL, 0, NULL, NULL, &wbemServices);
+	SysFreeString(resource_name);
+
+	SAFE_RELEASE(wbemLocator) // from now on, use `wbemServices`
+	if (hr != S_OK) {
+		SAFE_RELEASE(wbemServices)
+		return Vector<String>();
+	}
+
+	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", device_name);
+	BSTR query = SysAllocString((const WCHAR *)gpu_device_class_query.utf16().get_data());
+	BSTR query_lang = SysAllocString(L"WQL");
+	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, NULL, &iter);
+	SysFreeString(query_lang);
+	SysFreeString(query);
+	if (hr == S_OK) {
+		ULONG resultCount;
+		hr = iter->Next(5000, 1, pnpSDriverObject, &resultCount); // Get exactly 1. Wait max 5 seconds.
+
+		if (hr == S_OK && resultCount > 0) {
+			VARIANT dn;
+			VariantInit(&dn);
+
+			BSTR object_name = SysAllocString(L"DriverName");
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, NULL, NULL);
+			SysFreeString(object_name);
+			if (hr == S_OK) {
+				String d_name = String(V_BSTR(&dn));
+				if (d_name.is_empty()) {
+					object_name = SysAllocString(L"DriverProviderName");
+					hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, NULL, NULL);
+					SysFreeString(object_name);
+					if (hr == S_OK) {
+						driver_name = String(V_BSTR(&dn));
+					}
+				} else {
+					driver_name = d_name;
+				}
+			} else {
+				object_name = SysAllocString(L"DriverProviderName");
+				hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, NULL, NULL);
+				SysFreeString(object_name);
+				if (hr == S_OK) {
+					driver_name = String(V_BSTR(&dn));
+				}
+			}
+
+			VARIANT dv;
+			VariantInit(&dv);
+			object_name = SysAllocString(L"DriverVersion");
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &dv, NULL, NULL);
+			SysFreeString(object_name);
+			if (hr == S_OK) {
+				driver_version = String(V_BSTR(&dv));
+			}
+			for (ULONG i = 0; i < resultCount; i++) {
+				SAFE_RELEASE(pnpSDriverObject[i])
+			}
+		}
+	}
+
+	SAFE_RELEASE(wbemServices)
+	SAFE_RELEASE(iter)
+
+	Vector<String> info;
+	info.push_back(driver_name);
+	info.push_back(driver_version);
+
+	return info;
+}
+
+OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 	SYSTEMTIME systemtime;
 	if (p_utc) {
 		GetSystemTime(&systemtime);
@@ -305,28 +420,16 @@ OS::Date OS_Windows::get_date(bool p_utc) const {
 		daylight = true;
 	}
 
-	Date date;
-	date.day = systemtime.wDay;
-	date.month = Month(systemtime.wMonth);
-	date.weekday = Weekday(systemtime.wDayOfWeek);
-	date.year = systemtime.wYear;
-	date.dst = daylight;
-	return date;
-}
-
-OS::Time OS_Windows::get_time(bool p_utc) const {
-	SYSTEMTIME systemtime;
-	if (p_utc) {
-		GetSystemTime(&systemtime);
-	} else {
-		GetLocalTime(&systemtime);
-	}
-
-	Time time;
-	time.hour = systemtime.wHour;
-	time.minute = systemtime.wMinute;
-	time.second = systemtime.wSecond;
-	return time;
+	DateTime dt;
+	dt.year = systemtime.wYear;
+	dt.month = Month(systemtime.wMonth);
+	dt.day = systemtime.wDay;
+	dt.weekday = Weekday(systemtime.wDayOfWeek);
+	dt.hour = systemtime.wHour;
+	dt.minute = systemtime.wMinute;
+	dt.second = systemtime.wSecond;
+	dt.dst = daylight;
+	return dt;
 }
 
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
@@ -746,7 +849,19 @@ String OS_Windows::get_system_font_path(const String &p_font_name, bool p_bold, 
 		if (FAILED(hr)) {
 			continue;
 		}
-		return String::utf16((const char16_t *)&file_path[0]);
+		String fpath = String::utf16((const char16_t *)&file_path[0]);
+
+		WIN32_FIND_DATAW d;
+		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
+		if (fnd != INVALID_HANDLE_VALUE) {
+			String fname = String::utf16((const char16_t *)d.cFileName);
+			if (!fname.is_empty()) {
+				fpath = fpath.get_base_dir().path_join(fname);
+			}
+			FindClose(fnd);
+		}
+
+		return fpath;
 	}
 	return String();
 }
@@ -862,17 +977,6 @@ BOOL is_wow64() {
 	}
 
 	return wow64;
-}
-
-int OS_Windows::get_processor_count() const {
-	SYSTEM_INFO sysinfo;
-	if (is_wow64()) {
-		GetNativeSystemInfo(&sysinfo);
-	} else {
-		GetSystemInfo(&sysinfo);
-	}
-
-	return sysinfo.dwNumberOfProcessors;
 }
 
 String OS_Windows::get_processor_name() const {
@@ -1063,11 +1167,11 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 }
 
 String OS_Windows::get_user_data_dir() const {
-	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
+	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
 	if (!appname.is_empty()) {
-		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
+		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
-			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
+			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
 			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
@@ -1087,7 +1191,14 @@ String OS_Windows::get_unique_id() const {
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc";
+	if (p_feature == "system_fonts") {
+		return true;
+	}
+	if (p_feature == "pc") {
+		return true;
+	}
+
+	return false;
 }
 
 void OS_Windows::disable_crash_handler() {
@@ -1127,15 +1238,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
-	ticks_per_second = 0;
-	ticks_start = 0;
-	main_loop = nullptr;
-	process_map = nullptr;
-
 	hInstance = _hInstance;
-#ifdef STDOUT_FILE
-	stdo = fopen("stdout.txt", "wb");
-#endif
 
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);
@@ -1146,13 +1249,22 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 	DisplayServerWindows::register_windows_driver();
 
+	// Enable ANSI escape code support on Windows 10 v1607 (Anniversary Update) and later.
+	// This lets the engine and projects use ANSI escape codes to color text just like on macOS and Linux.
+	//
+	// NOTE: The engine does not use ANSI escape codes to color error/warning messages; it uses Windows API calls instead.
+	// Therefore, error/warning messages are still colored on Windows versions older than 10.
+	HANDLE stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD outMode = ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	if (!SetConsoleMode(stdoutHandle, outMode)) {
+		// Windows 8.1 or below, or Windows 10 prior to Anniversary Update.
+		print_verbose("Can't set the ENABLE_VIRTUAL_TERMINAL_PROCESSING Windows console mode. `print_rich()` will not work as expected.");
+	}
+
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(WindowsTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 OS_Windows::~OS_Windows() {
-#ifdef STDOUT_FILE
-	fclose(stdo);
-#endif
 }

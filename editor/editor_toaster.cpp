@@ -78,19 +78,19 @@ void EditorToaster::_notification(int p_what) {
 			// Change alpha over time.
 			bool needs_update = false;
 			for (const KeyValue<Control *, Toast> &element : toasts) {
-				Color modulate = element.key->get_modulate();
+				Color modulate_fade = element.key->get_modulate();
 
 				// Change alpha over time.
-				if (element.value.popped && modulate.a < 1.0) {
-					modulate.a += delta * 3;
-					element.key->set_modulate(modulate);
-				} else if (!element.value.popped && modulate.a > 0.0) {
-					modulate.a -= delta * 2;
-					element.key->set_modulate(modulate);
+				if (element.value.popped && modulate_fade.a < 1.0) {
+					modulate_fade.a += delta * 3;
+					element.key->set_modulate(modulate_fade);
+				} else if (!element.value.popped && modulate_fade.a > 0.0) {
+					modulate_fade.a -= delta * 2;
+					element.key->set_modulate(modulate_fade);
 				}
 
 				// Hide element if it is not visible anymore.
-				if (modulate.a <= 0) {
+				if (modulate_fade.a <= 0) {
 					if (element.key->is_visible()) {
 						element.key->hide();
 						needs_update = true;
@@ -231,7 +231,7 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 	// Delete the control right away (removed as child) as it might cause issues otherwise when iterative over the vbox_container children.
 	for (unsigned int i = 0; i < to_delete.size(); i++) {
 		vbox_container->remove_child(to_delete[i]);
-		to_delete[i]->queue_delete();
+		to_delete[i]->queue_free();
 		toasts.erase(to_delete[i]);
 	}
 
@@ -284,7 +284,7 @@ void EditorToaster::_draw_button() {
 void EditorToaster::_draw_progress(Control *panel) {
 	if (toasts.has(panel) && toasts[panel].remaining_time > 0 && toasts[panel].duration > 0) {
 		Size2 size = panel->get_size();
-		size.x *= MIN(1, Math::range_lerp(toasts[panel].remaining_time, 0, toasts[panel].duration, 0, 2));
+		size.x *= MIN(1, Math::remap(toasts[panel].remaining_time, 0, toasts[panel].duration, 0, 2));
 
 		Ref<StyleBoxFlat> stylebox;
 		switch (toasts[panel].severity) {
@@ -317,7 +317,7 @@ void EditorToaster::_set_notifications_enabled(bool p_enabled) {
 void EditorToaster::_repop_old() {
 	// Repop olds, up to max_temporary_count
 	bool needs_update = false;
-	int visible = 0;
+	int visible_count = 0;
 	for (int i = vbox_container->get_child_count() - 1; i >= 0; i--) {
 		Control *control = Object::cast_to<Control>(vbox_container->get_child(i));
 		if (!control->is_visible()) {
@@ -326,8 +326,8 @@ void EditorToaster::_repop_old() {
 			toasts[control].popped = true;
 			needs_update = true;
 		}
-		visible++;
-		if (visible >= max_temporary_count) {
+		visible_count++;
+		if (visible_count >= max_temporary_count) {
 			break;
 		}
 	}
@@ -498,10 +498,7 @@ EditorToaster::EditorToaster() {
 
 	Ref<StyleBoxFlat> boxes[] = { info_panel_style_background, warning_panel_style_background, error_panel_style_background };
 	for (int i = 0; i < 3; i++) {
-		boxes[i]->set_default_margin(SIDE_LEFT, int(stylebox_radius * 2.5));
-		boxes[i]->set_default_margin(SIDE_RIGHT, int(stylebox_radius * 2.5));
-		boxes[i]->set_default_margin(SIDE_TOP, 3);
-		boxes[i]->set_default_margin(SIDE_BOTTOM, 3);
+		boxes[i]->set_default_margin_individual(int(stylebox_radius * 2.5), 3, int(stylebox_radius * 2.5), 3);
 	}
 
 	// Theming (progress).

@@ -255,8 +255,7 @@ Error EditorBuildProfile::save_to_file(const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
-	JSON json;
-	String text = json.stringify(data, "\t");
+	String text = JSON::stringify(data, "\t");
 	f->store_string(text);
 	return OK;
 }
@@ -876,7 +875,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	import_profile = memnew(EditorFileDialog);
 	add_child(import_profile);
 	import_profile->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	import_profile->add_filter("*.build", TTR("Egine Build Profile"));
+	import_profile->add_filter("*.build", TTR("Engine Build Profile"));
 	import_profile->connect("files_selected", callable_mp(this, &EditorBuildProfileManager::_import_profile));
 	import_profile->set_title(TTR("Load Profile"));
 	import_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -884,7 +883,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.build", TTR("Egine Build Profile"));
+	export_profile->add_filter("*.build", TTR("Engine Build Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorBuildProfileManager::_export_profile));
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

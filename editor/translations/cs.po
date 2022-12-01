@@ -30,13 +30,15 @@
 # Jakub Janšta <jansta.ja@gmail.com>, 2021.
 # Petr Voparil <voparil.petr96@gmail.com>, 2022.
 # JoeMoos <josephmoose13@gmail.com>, 2022.
+# Mirinek <mirek.nozicka77@gmail.com>, 2022.
+# Lubomír Baloun <lubosbaloun@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-08 07:29+0000\n"
-"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
+"PO-Revision-Date: 2022-09-19 05:22+0000\n"
+"Last-Translator: Lubomír Baloun <lubosbaloun@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -44,11 +46,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
-msgstr ""
+msgstr "Ovladač Grafického Tabletu"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
@@ -65,11 +67,11 @@ msgstr "Kód pro ukončení (exit code)"
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Povolit"
+msgstr "V-Sync Zapnutý"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr ""
+msgstr "V-Sync Pomocí Kompozitoru"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
@@ -78,7 +80,7 @@ msgstr ""
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Režim přesouvání"
+msgstr "Režim Nízkého Využití Procesoru"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
@@ -90,14 +92,12 @@ msgid "Keep Screen On"
 msgstr "Nechat ladící program otevřený"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Min Window Size"
-msgstr "Velikost obrysu:"
+msgstr "Minimální Velikost Okna"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Max Window Size"
-msgstr "Velikost obrysu:"
+msgstr "Maximální Velikost Okna"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -116,8 +116,9 @@ msgid "Borderless"
 msgstr "Hraniční pixely"
 
 #: core/bind/core_bind.cpp
+#, fuzzy
 msgid "Per Pixel Transparency Enabled"
-msgstr ""
+msgstr "Per Pixel Průhlednost Aktivována"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 #, fuzzy
@@ -136,7 +137,7 @@ msgstr "Inicializovat"
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
-msgstr ""
+msgstr "Přizpůsobitelná velikost"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -170,7 +171,7 @@ msgstr "Editor"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Vypsat chybové hlášky"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -183,9 +184,8 @@ msgid "Target FPS"
 msgstr "Cíl"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "Uzel TimeScale"
+msgstr "Časová Osa"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -213,7 +213,7 @@ msgstr "Výsledky hledání"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Paměť"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -229,11 +229,11 @@ msgstr ""
 #: core/command_queue_mt.cpp
 #, fuzzy
 msgid "Command Queue"
-msgstr "Příkaz: Otočit"
+msgstr "Fronta Příkazů"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
-msgstr ""
+msgstr "Velikost vícevláknové fronty (KB)"
 
 #: core/func_ref.cpp modules/visual_script/visual_script_builtin_funcs.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -263,9 +263,8 @@ msgid "Remote FS"
 msgstr "Vzdálený "
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Page Size"
-msgstr "Strana: "
+msgstr "Velikost Stránky"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
@@ -292,11 +291,11 @@ msgstr "Kreslené objekty:"
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
 #, fuzzy
 msgid "Allow Object Decoding"
-msgstr "Povolit Onion Skinning"
+msgstr "Povolit Dekódování Objektu"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
-msgstr ""
+msgstr "Odmítnout nová síťová připojení"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 #, fuzzy
@@ -309,9 +308,8 @@ msgid "Root Node"
 msgstr "Název kořenového uzlu"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Refuse New Connections"
-msgstr "Připojit"
+msgstr "Odmítnout Nová Připojení"
 
 #: core/io/networked_multiplayer_peer.cpp
 #, fuzzy
@@ -398,8 +396,9 @@ msgstr "Při volání '%s':"
 
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
+#, fuzzy
 msgid "Seed"
-msgstr ""
+msgstr "Seed"
 
 #: core/math/random_number_generator.cpp
 #, fuzzy
@@ -412,7 +411,7 @@ msgstr ""
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "Maximální Velikost (KB)"
 
 #: core/os/input.cpp
 #, fuzzy
@@ -435,8 +434,9 @@ msgid "Alt"
 msgstr "všichni"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -450,7 +450,7 @@ msgstr ""
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Command"
-msgstr "Komunita"
+msgstr "Příkaz"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -462,7 +462,7 @@ msgstr "Fyzická Klávesa"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Pressed"
-msgstr "Profil"
+msgstr "Stisknuté"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -475,8 +475,9 @@ msgid "Physical Scancode"
 msgstr "Fyzická Klávesa"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Unicode"
-msgstr ""
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
@@ -488,9 +489,8 @@ msgid "Button Mask"
 msgstr "Tlačítko"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Global Position"
-msgstr "Konstantní"
+msgstr "Globální Pozice"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -503,12 +503,14 @@ msgid "Button Index"
 msgstr "Index tlačítka myši:"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Doubleclick"
-msgstr ""
+msgstr "Dvojklik"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Tilt"
-msgstr ""
+msgstr "Sklon"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -556,11 +558,12 @@ msgstr "Akce"
 #: core/os/input_event.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
 msgid "Strength"
-msgstr ""
+msgstr "Síla"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Delta"
-msgstr ""
+msgstr "Delta"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -648,12 +651,12 @@ msgstr "Hlavní scéna"
 #: core/project_settings.cpp
 #, fuzzy
 msgid "Disable stdout"
-msgstr "Deaktivovat Autotile"
+msgstr "Deaktivovat stdout"
 
 #: core/project_settings.cpp
 #, fuzzy
 msgid "Disable stderr"
-msgstr "Deaktivovaná položka"
+msgstr "Deaktivovat stderr"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
@@ -678,7 +681,7 @@ msgstr "Zobrazit všechny"
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Šířka"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
@@ -686,13 +689,13 @@ msgstr ""
 #: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
 #: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
-#, fuzzy
 msgid "Height"
-msgstr "Světlo"
+msgstr "Výška"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Always On Top"
-msgstr ""
+msgstr "Vždy na hoře"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -757,7 +760,7 @@ msgstr "Přidat vstup"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
-msgstr ""
+msgstr "Potvrdit"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -790,8 +793,9 @@ msgid "UI Right"
 msgstr "Vpravo nahoře"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "UI Up"
-msgstr ""
+msgstr "Nahoře"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -836,7 +840,7 @@ msgstr "Fyzikální snímek %"
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
 #: servers/physics/space_sw.cpp servers/physics_server.cpp
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -864,7 +868,7 @@ msgstr "Vykreslovač:"
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "Kvalita"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
 #: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
@@ -874,8 +878,9 @@ msgid "Filters"
 msgstr "Filtry:"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
+#, fuzzy
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "Intenzita Zaostření"
 
 #: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
@@ -924,8 +929,9 @@ msgid "Long Distance Matching"
 msgstr ""
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Compression Level"
-msgstr ""
+msgstr "Úroveň Komprese"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
@@ -937,19 +943,20 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Gzip"
-msgstr ""
+msgstr "Gzip"
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "Android"
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "Moduly"
 
 #: core/register_core_types.cpp
+#, fuzzy
 msgid "TCP"
-msgstr ""
+msgstr "TCP"
 
 #: core/register_core_types.cpp
 #, fuzzy
@@ -966,12 +973,11 @@ msgstr ""
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
-#, fuzzy
 msgid "Certificates"
-msgstr "Vrcholy:"
+msgstr "Certifikáty"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_resource_picker.cpp
@@ -1042,8 +1048,9 @@ msgstr "EiB"
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
+#, fuzzy
 msgid "Buffers"
-msgstr ""
+msgstr "Vyrovnávací Paměti"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1065,7 +1072,7 @@ msgstr ""
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1144,7 +1151,7 @@ msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "Vysoká Kvalita"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
@@ -4645,6 +4652,7 @@ msgstr "Různé nástroje pro projekt nebo scény."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Projekt"
 
@@ -7576,7 +7584,8 @@ msgid "8 Bit"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr ""
 
@@ -15659,18 +15668,19 @@ msgstr ""
 msgid "Make Local"
 msgstr "Změnit na lokální"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
-msgstr ""
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Název uzlu:"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Název uzlu:"
+msgid "Unique names already used by another node in the scene:"
+msgstr "Jméno už je použito jinou funkcí/proměnnou/signálem:"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "Název uzlu:"
 
 #: editor/scene_tree_dock.cpp
@@ -15868,6 +15878,11 @@ msgid "Button Group"
 msgstr "Skupina tlačítek"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Název uzlu:"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(Připojování z)"
 
@@ -15941,6 +15956,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Neplatný název uzlu, následující znaky nejsou povoleny:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17871,6 +17890,21 @@ msgstr "Vyplnit výběr"
 msgid "Auto Update Project"
 msgstr "Nepojmenovaný projekt"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Zobrazit všechny"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Vyberte složku"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Vyberte složku"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "Konec zásobníku trasování vnitřní výjimky"
@@ -19742,6 +19776,11 @@ msgstr "Vyjmout uzly"
 msgid "Custom BG Color"
 msgstr "Vyjmout uzly"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Rozbalit vše"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20593,6 +20632,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -28481,9 +28526,8 @@ msgid "Ninepatch Mode"
 msgstr "Interpolační režim"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "OpenGL"
-msgstr "Otevřít"
+msgstr "OpenGL"
 
 #: servers/visual_server.cpp
 msgid "Batching Send Null"

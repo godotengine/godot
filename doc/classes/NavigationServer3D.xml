@@ -410,6 +410,14 @@
 				[b]Note:[/b] This function is not thread safe.
 			</description>
 		</method>
+		<method name="query_path" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="parameters" type="NavigationPathQueryParameters3D" />
+			<param index="1" name="result" type="NavigationPathQueryResult3D" />
+			<description>
+				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query.
+			</description>
+		</method>
 		<method name="region_bake_navmesh" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="mesh" type="NavigationMesh" />

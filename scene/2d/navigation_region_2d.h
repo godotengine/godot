@@ -96,10 +96,10 @@ class NavigationRegion2D : public Node2D {
 
 	bool enabled = true;
 	RID region;
-	Ref<NavigationPolygon> navpoly;
-
+	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
+	Ref<NavigationPolygon> navpoly;
 
 	void _navpoly_changed();
 	void _map_changed(RID p_RID);
@@ -134,7 +134,7 @@ public:
 	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	NavigationRegion2D();
 	~NavigationRegion2D();

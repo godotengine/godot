@@ -31,10 +31,14 @@
 #ifndef SCRIPT_TEXT_EDITOR_H
 #define SCRIPT_TEXT_EDITOR_H
 
+#include "script_editor_plugin.h"
+
+#include "editor/code_editor.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
-#include "script_editor_plugin.h"
+
+class RichTextLabel;
 
 class ConnectionInfoDialog : public AcceptDialog {
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);
@@ -79,7 +83,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 	PopupMenu *breakpoints_menu = nullptr;
 	PopupMenu *highlighter_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
-	PopupMenu *convert_case = nullptr;
 
 	GotoLineDialog *goto_line_dialog = nullptr;
 	ScriptEditorQuickOpen *quick_open = nullptr;
@@ -117,8 +120,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_TOGGLE_COMMENT,
 		EDIT_MOVE_LINE_UP,
 		EDIT_MOVE_LINE_DOWN,
-		EDIT_INDENT_RIGHT,
-		EDIT_INDENT_LEFT,
+		EDIT_INDENT,
+		EDIT_UNINDENT,
 		EDIT_DELETE_LINE,
 		EDIT_DUPLICATE_SELECTION,
 		EDIT_PICK_COLOR,
@@ -207,7 +210,7 @@ public:
 	virtual void apply_code() override;
 	virtual Ref<Resource> get_edited_resource() const override;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
-	virtual void enable_editor() override;
+	virtual void enable_editor(Control *p_shortcut_context = nullptr) override;
 	virtual Vector<String> get_functions() override;
 	virtual void reload_text() override;
 	virtual String get_name() override;
@@ -215,6 +218,7 @@ public:
 	virtual bool is_unsaved() override;
 	virtual Variant get_edit_state() override;
 	virtual void set_edit_state(const Variant &p_state) override;
+	virtual Variant get_navigation_state() override;
 	virtual void ensure_focus() override;
 	virtual void trim_trailing_whitespace() override;
 	virtual void insert_final_newline() override;

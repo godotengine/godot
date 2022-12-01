@@ -43,7 +43,6 @@
 #include "core/math/bvh_abb.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/vector3.h"
-#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pooled_list.h"
 #include <limits.h>
@@ -235,7 +234,7 @@ private:
 
 		// no need to keep back references for children at the moment
 
-		uint32_t sibling_id; // always a node id, as tnode is never a leaf
+		uint32_t sibling_id = 0; // always a node id, as tnode is never a leaf
 		bool sibling_present = false;
 
 		// if there are more children, or this is the root node, don't try and delete

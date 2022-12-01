@@ -74,18 +74,18 @@ int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 }
 
 void StreamPeerMbedTLS::_cleanup() {
-	ssl_ctx->clear();
+	tls_ctx->clear();
 	base = Ref<StreamPeer>();
 	status = STATUS_DISCONNECTED;
 }
 
 Error StreamPeerMbedTLS::_do_handshake() {
 	int ret = 0;
-	while ((ret = mbedtls_ssl_handshake(ssl_ctx->get_context())) != 0) {
+	while ((ret = mbedtls_ssl_handshake(tls_ctx->get_context())) != 0) {
 		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
 			// An error occurred.
 			ERR_PRINT("TLS handshake error: " + itos(ret));
-			SSLContextMbedTLS::print_mbedtls_error(ret);
+			TLSContextMbedTLS::print_mbedtls_error(ret);
 			disconnect_from_stream();
 			status = STATUS_ERROR;
 			return FAILED;
@@ -108,11 +108,11 @@ Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	base = p_base;
 	int authmode = p_validate_certs ? MBEDTLS_SSL_VERIFY_REQUIRED : MBEDTLS_SSL_VERIFY_NONE;
 
-	Error err = ssl_ctx->init_client(MBEDTLS_SSL_TRANSPORT_STREAM, authmode, p_ca_certs);
+	Error err = tls_ctx->init_client(MBEDTLS_SSL_TRANSPORT_STREAM, authmode, p_ca_certs);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	mbedtls_ssl_set_hostname(ssl_ctx->get_context(), p_for_hostname.utf8().get_data());
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
+	mbedtls_ssl_set_hostname(tls_ctx->get_context(), p_for_hostname.utf8().get_data());
+	mbedtls_ssl_set_bio(tls_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 
 	status = STATUS_HANDSHAKING;
 
@@ -127,12 +127,12 @@ Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 Error StreamPeerMbedTLS::accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) {
 	ERR_FAIL_COND_V(p_base.is_null(), ERR_INVALID_PARAMETER);
 
-	Error err = ssl_ctx->init_server(MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert);
+	Error err = tls_ctx->init_server(MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	base = p_base;
 
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
+	mbedtls_ssl_set_bio(tls_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 
 	status = STATUS_HANDSHAKING;
 
@@ -173,7 +173,7 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 		return OK;
 	}
 
-	int ret = mbedtls_ssl_write(ssl_ctx->get_context(), p_data, p_bytes);
+	int ret = mbedtls_ssl_write(tls_ctx->get_context(), p_data, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		// Non blocking IO
 		ret = 0;
@@ -182,7 +182,7 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 		disconnect_from_stream();
 		return ERR_FILE_EOF;
 	} else if (ret <= 0) {
-		SSLContextMbedTLS::print_mbedtls_error(ret);
+		TLSContextMbedTLS::print_mbedtls_error(ret);
 		disconnect_from_stream();
 		return ERR_CONNECTION_ERROR;
 	}
@@ -216,7 +216,7 @@ Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r
 
 	r_received = 0;
 
-	int ret = mbedtls_ssl_read(ssl_ctx->get_context(), p_buffer, p_bytes);
+	int ret = mbedtls_ssl_read(tls_ctx->get_context(), p_buffer, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		ret = 0; // non blocking io
 	} else if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
@@ -224,7 +224,7 @@ Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r
 		disconnect_from_stream();
 		return ERR_FILE_EOF;
 	} else if (ret <= 0) {
-		SSLContextMbedTLS::print_mbedtls_error(ret);
+		TLSContextMbedTLS::print_mbedtls_error(ret);
 		disconnect_from_stream();
 		return ERR_CONNECTION_ERROR;
 	}
@@ -242,10 +242,10 @@ void StreamPeerMbedTLS::poll() {
 		return;
 	}
 
-	// We could pass nullptr as second parameter, but some behaviour sanitizers don't seem to like that.
+	// We could pass nullptr as second parameter, but some behavior sanitizers don't seem to like that.
 	// Passing a 1 byte buffer to workaround it.
 	uint8_t byte;
-	int ret = mbedtls_ssl_read(ssl_ctx->get_context(), &byte, 0);
+	int ret = mbedtls_ssl_read(tls_ctx->get_context(), &byte, 0);
 
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		// Nothing to read/write (non blocking IO)
@@ -254,7 +254,7 @@ void StreamPeerMbedTLS::poll() {
 		disconnect_from_stream();
 		return;
 	} else if (ret < 0) {
-		SSLContextMbedTLS::print_mbedtls_error(ret);
+		TLSContextMbedTLS::print_mbedtls_error(ret);
 		disconnect_from_stream();
 		return;
 	}
@@ -269,11 +269,11 @@ void StreamPeerMbedTLS::poll() {
 int StreamPeerMbedTLS::get_available_bytes() const {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, 0);
 
-	return mbedtls_ssl_get_bytes_avail(&(ssl_ctx->ssl));
+	return mbedtls_ssl_get_bytes_avail(&(tls_ctx->tls));
 }
 
 StreamPeerMbedTLS::StreamPeerMbedTLS() {
-	ssl_ctx.instantiate();
+	tls_ctx.instantiate();
 }
 
 StreamPeerMbedTLS::~StreamPeerMbedTLS() {
@@ -288,7 +288,7 @@ void StreamPeerMbedTLS::disconnect_from_stream() {
 	Ref<StreamPeerTCP> tcp = base;
 	if (tcp.is_valid() && tcp->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 		// We are still connected on the socket, try to send close notify.
-		mbedtls_ssl_close_notify(ssl_ctx->get_context());
+		mbedtls_ssl_close_notify(tls_ctx->get_context());
 	}
 
 	_cleanup();
@@ -302,16 +302,16 @@ Ref<StreamPeer> StreamPeerMbedTLS::get_stream() const {
 	return base;
 }
 
-StreamPeerSSL *StreamPeerMbedTLS::_create_func() {
+StreamPeerTLS *StreamPeerMbedTLS::_create_func() {
 	return memnew(StreamPeerMbedTLS);
 }
 
-void StreamPeerMbedTLS::initialize_ssl() {
+void StreamPeerMbedTLS::initialize_tls() {
 	_create = _create_func;
 	available = true;
 }
 
-void StreamPeerMbedTLS::finalize_ssl() {
+void StreamPeerMbedTLS::finalize_tls() {
 	available = false;
 	_create = nullptr;
 }

@@ -56,10 +56,8 @@ Variant RichTextEffect::get_bbcode() const {
 
 bool RichTextEffect::_process_effect_impl(Ref<CharFXTransform> p_cfx) {
 	bool return_value = false;
-	if (GDVIRTUAL_CALL(_process_custom_fx, p_cfx, return_value)) {
-		return return_value;
-	}
-	return false;
+	GDVIRTUAL_CALL(_process_custom_fx, p_cfx, return_value);
+	return return_value;
 }
 
 RichTextEffect::RichTextEffect() {

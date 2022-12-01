@@ -42,21 +42,15 @@ ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
 Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	int64_t res;
-	if (GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, res)) {
-		return (Error)res;
-	}
-
-	return ERR_METHOD_NOT_FOUND;
+	int64_t res = ERR_METHOD_NOT_FOUND;
+	GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, res);
+	return (Error)res;
 }
 
 bool ResourceFormatSaver::recognize(const Ref<Resource> &p_resource) const {
-	bool success;
-	if (GDVIRTUAL_CALL(_recognize, p_resource, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_recognize, p_resource, success);
+	return success;
 }
 
 void ResourceFormatSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
@@ -69,10 +63,31 @@ void ResourceFormatSaver::get_recognized_extensions(const Ref<Resource> &p_resou
 	}
 }
 
+bool ResourceFormatSaver::recognize_path(const Ref<Resource> &p_resource, const String &p_path) const {
+	bool ret = false;
+	if (GDVIRTUAL_CALL(_recognize_path, p_resource, p_path, ret)) {
+		return ret;
+	}
+
+	String extension = p_path.get_extension();
+
+	List<String> extensions;
+	get_recognized_extensions(p_resource, &extensions);
+
+	for (const String &E : extensions) {
+		if (E.nocasecmp_to(extension) == 0) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_save, "resource", "path", "flags");
 	GDVIRTUAL_BIND(_recognize, "resource");
 	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
+	GDVIRTUAL_BIND(_recognize_path, "resource", "path");
 }
 
 Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
@@ -90,17 +105,7 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 			continue;
 		}
 
-		List<String> extensions;
-		bool recognized = false;
-		saver[i]->get_recognized_extensions(p_resource, &extensions);
-
-		for (const String &E : extensions) {
-			if (E.nocasecmp_to(extension) == 0) {
-				recognized = true;
-			}
-		}
-
-		if (!recognized) {
+		if (!saver[i]->recognize_path(p_resource, path)) {
 			continue;
 		}
 

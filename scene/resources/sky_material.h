@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/templates/rid.h"
-#include "scene/resources/material.h"
-
 #ifndef SKY_MATERIAL_H
 #define SKY_MATERIAL_H
+
+#include "core/templates/rid.h"
+#include "scene/resources/material.h"
 
 class ProceduralSkyMaterial : public Material {
 	GDCLASS(ProceduralSkyMaterial, Material);
@@ -55,7 +55,7 @@ private:
 	bool use_debanding = true;
 
 	static Mutex shader_mutex;
-	static RID shader;
+	static RID shader_cache[2];
 	static void _update_shader();
 	mutable bool shader_set = false;
 
@@ -160,7 +160,7 @@ class PhysicalSkyMaterial : public Material {
 
 private:
 	static Mutex shader_mutex;
-	static RID shader;
+	static RID shader_cache[2];
 
 	float rayleigh = 0.0f;
 	Color rayleigh_color;

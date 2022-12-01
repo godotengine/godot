@@ -6,7 +6,7 @@
 	<description>
 		The [JSON] enables all data types to be converted to and from a JSON string. This useful for serializing data to save to a file or send over the network.
 		[method stringify] is used to convert any data type into a JSON string.
-		[method parse] is used to convert any existing JSON data into a [Variant] that can be used within Godot. If successfully parsed, use [method get_data] to retrieve the [Variant], and use [code]typeof[/code] to check if the Variant's type is what you expect. JSON Objects are converted into a [Dictionary], but JSON data can be used to store [Array]s, numbers, [String]s and even just a boolean.
+		[method parse] is used to convert any existing JSON data into a [Variant] that can be used within Godot. If successfully parsed, use [member data] to retrieve the [Variant], and use [code]typeof[/code] to check if the Variant's type is what you expect. JSON Objects are converted into a [Dictionary], but JSON data can be used to store [Array]s, numbers, [String]s and even just a boolean.
 		[b]Example[/b]
 		[codeblock]
 		var data_to_send = ["a", "b", "c"]
@@ -16,7 +16,7 @@
 		# Retrieve data
 		var error = json.parse(json_string)
 		if error == OK:
-		    var data_received = json.get_data()
+		    var data_received = json.data
 		    if typeof(data_received) == TYPE_ARRAY:
 		        print(data_received) # Prints array
 		    else:
@@ -28,17 +28,15 @@
 		[codeblock]
 		var data = JSON.parse_string(json_string) # Returns null if parsing failed.
 		[/codeblock]
+		[b]Note:[/b] Both parse methods do not fully comply with the JSON specification:
+		- Trailing commas in arrays or objects are ignored, instead of causing a parser error.
+		- New line and tab characters are accepted in string literals, and are treated like their corresponding escape sequences [code]\n[/code] and [code]\t[/code].
+		- Numbers are parsed using [method String.to_float] which is generally more lax than the JSON specification.
+		- Certain errors, such as invalid Unicode sequences, do not cause a parser error. Instead, the string is cleansed and an error is logged to the console.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_data" qualifiers="const">
-			<return type="Variant" />
-			<description>
-				Returns the [Variant] containing the data of a successful [method parse].
-				[b]Note:[/b] It will return [code]Null[/code] if the last call to parse was unsuccessful or [method parse] has not yet been called.
-			</description>
-		</method>
 		<method name="get_error_line" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -56,7 +54,7 @@
 			<param index="0" name="json_string" type="String" />
 			<description>
 				Attempts to parse the [param json_string] provided.
-				Returns an [enum Error]. If the parse was successful, it returns [code]OK[/code] and the result can be retrieved using [method get_data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
+				Returns an [enum Error]. If the parse was successful, it returns [constant OK] and the result can be retrieved using [member data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
 				Non-static variant of [method parse_string], if you want custom error handling.
 			</description>
 		</method>
@@ -118,4 +116,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="data" type="Variant" setter="set_data" getter="get_data" default="null">
+			Contains the parsed JSON data in [Variant] form.
+		</member>
+	</members>
 </class>

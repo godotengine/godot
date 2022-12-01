@@ -28,16 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Property list file format (application/x-plist) parser, property list ASN-1 serialization.
-
 #ifndef MACOS_PLIST_H
 #define MACOS_PLIST_H
 
+// Property list file format (application/x-plist) parser, property list ASN-1 serialization.
+
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access.h"
-#include "modules/modules_enabled.gen.h" // For regex.
-
-#ifdef MODULE_REGEX_ENABLED
 
 class PListNode;
 
@@ -110,7 +107,5 @@ public:
 	PListNode() {}
 	~PListNode() {}
 };
-
-#endif // MODULE_REGEX_ENABLED
 
 #endif // MACOS_PLIST_H

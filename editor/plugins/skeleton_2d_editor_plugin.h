@@ -35,6 +35,9 @@
 #include "scene/2d/skeleton_2d.h"
 #include "scene/gui/spin_box.h"
 
+class AcceptDialog;
+class MenuButton;
+
 class Skeleton2DEditor : public Control {
 	GDCLASS(Skeleton2DEditor, Control);
 

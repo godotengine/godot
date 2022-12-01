@@ -322,53 +322,62 @@ void Node::_propagate_exit_tree() {
 	data.depth = -1;
 }
 
-void Node::move_child(Node *p_child, int p_pos) {
+void Node::move_child(Node *p_child, int p_index) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
 
 	// We need to check whether node is internal and move it only in the relevant node range.
 	if (p_child->_is_internal_front()) {
-		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_front, vformat("Invalid new child position: %d. Child is internal.", p_pos));
-		_move_child(p_child, p_pos);
+		if (p_index < 0) {
+			p_index += data.internal_children_front;
+		}
+		ERR_FAIL_INDEX_MSG(p_index, data.internal_children_front, vformat("Invalid new child index: %d. Child is internal.", p_index));
+		_move_child(p_child, p_index);
 	} else if (p_child->_is_internal_back()) {
-		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_back, vformat("Invalid new child position: %d. Child is internal.", p_pos));
-		_move_child(p_child, data.children.size() - data.internal_children_back + p_pos);
+		if (p_index < 0) {
+			p_index += data.internal_children_back;
+		}
+		ERR_FAIL_INDEX_MSG(p_index, data.internal_children_back, vformat("Invalid new child index: %d. Child is internal.", p_index));
+		_move_child(p_child, data.children.size() - data.internal_children_back + p_index);
 	} else {
-		ERR_FAIL_INDEX_MSG(p_pos, data.children.size() + 1 - data.internal_children_front - data.internal_children_back, vformat("Invalid new child position: %d.", p_pos));
-		_move_child(p_child, p_pos + data.internal_children_front);
+		if (p_index < 0) {
+			p_index += get_child_count(false);
+		}
+		ERR_FAIL_INDEX_MSG(p_index, data.children.size() + 1 - data.internal_children_front - data.internal_children_back, vformat("Invalid new child index: %d.", p_index));
+		_move_child(p_child, p_index + data.internal_children_front);
 	}
 }
 
-void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
+void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `move_child()` failed. Consider using `move_child.call_deferred(child, index)` instead (or `popup.call_deferred()` if this is from a popup).");
 
 	// Specifying one place beyond the end
-	// means the same as moving to the last position
+	// means the same as moving to the last index
 	if (!p_ignore_end) { // p_ignore_end is a little hack to make back internal children work properly.
 		if (p_child->_is_internal_front()) {
-			if (p_pos == data.internal_children_front) {
-				p_pos--;
+			if (p_index == data.internal_children_front) {
+				p_index--;
 			}
 		} else if (p_child->_is_internal_back()) {
-			if (p_pos == data.children.size()) {
-				p_pos--;
+			if (p_index == data.children.size()) {
+				p_index--;
 			}
 		} else {
-			if (p_pos == data.children.size() - data.internal_children_back) {
-				p_pos--;
+			if (p_index == data.children.size() - data.internal_children_back) {
+				p_index--;
 			}
 		}
 	}
 
-	if (p_child->data.pos == p_pos) {
+	if (p_child->data.index == p_index) {
 		return; //do nothing
 	}
 
-	int motion_from = MIN(p_pos, p_child->data.pos);
-	int motion_to = MAX(p_pos, p_child->data.pos);
+	int motion_from = MIN(p_index, p_child->data.index);
+	int motion_to = MAX(p_index, p_child->data.index);
 
-	data.children.remove_at(p_child->data.pos);
-	data.children.insert(p_pos, p_child);
+	data.children.remove_at(p_child->data.index);
+	data.children.insert(p_index, p_child);
 
 	if (data.tree) {
 		data.tree->tree_changed();
@@ -377,7 +386,7 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	data.blocked++;
 	//new pos first
 	for (int i = motion_from; i <= motion_to; i++) {
-		data.children[i]->data.pos = i;
+		data.children[i]->data.index = i;
 	}
 	// notification second
 	move_child_notify(p_child);
@@ -387,21 +396,6 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	p_child->_propagate_groups_dirty();
 
 	data.blocked--;
-}
-
-void Node::raise() {
-	if (!data.parent) {
-		return;
-	}
-
-	// Internal children move within a different index range.
-	if (_is_internal_front()) {
-		data.parent->move_child(this, data.parent->data.internal_children_front - 1);
-	} else if (_is_internal_back()) {
-		data.parent->move_child(this, data.parent->data.internal_children_back - 1);
-	} else {
-		data.parent->move_child(this, data.parent->get_child_count(false) - 1);
-	}
 }
 
 void Node::_propagate_groups_dirty() {
@@ -1030,11 +1024,9 @@ String increase_numeric_string(const String &s) {
 
 void Node::_generate_serial_child_name(const Node *p_child, StringName &name) const {
 	if (name == StringName()) {
-		//no name and a new name is needed, create one.
+		// No name and a new name is needed, create one.
 
 		name = p_child->get_class();
-		// Adjust casing according to project setting.
-		name = adjust_name_casing(name);
 	}
 
 	//quickly test if proposed name exists
@@ -1112,7 +1104,7 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	//add a child node quickly, without name validation
 
 	p_child->data.name = p_name;
-	p_child->data.pos = data.children.size();
+	p_child->data.index = data.children.size();
 	data.children.push_back(p_child);
 	p_child->data.parent = this;
 
@@ -1131,16 +1123,16 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	add_child_notify(p_child);
 }
 
-void Node::add_child(Node *p_child, bool p_legible_unique_name, InternalMode p_internal) {
+void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_internal) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
 	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(p_child->is_ancestor_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", p_child->get_name(), get_name(), p_child->get_name(), get_name()));
 #endif
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_child()` failed. Consider using `add_child.call_deferred(child)` instead.");
 
-	_validate_child_name(p_child, p_legible_unique_name);
+	_validate_child_name(p_child, p_force_readable_name);
 	_add_child_nocheck(p_child, p_child->data.name);
 
 	if (p_internal == INTERNAL_MODE_FRONT) {
@@ -1154,11 +1146,11 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name, InternalMode p_i
 	}
 }
 
-void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
+void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_NULL(p_sibling);
 	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_sibling() failed. Consider using call_deferred(\"add_sibling\", sibling) instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
 
 	InternalMode internal = INTERNAL_MODE_DISABLED;
 	if (_is_internal_front()) { // The sibling will have the same internal status.
@@ -1167,21 +1159,21 @@ void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
 		internal = INTERNAL_MODE_BACK;
 	}
 
-	data.parent->add_child(p_sibling, p_legible_unique_name, internal);
+	data.parent->add_child(p_sibling, p_force_readable_name, internal);
 	data.parent->_move_child(p_sibling, get_index() + 1);
 }
 
 void Node::remove_child(Node *p_child) {
 	ERR_FAIL_NULL(p_child);
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\", child) instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `remove_child()` failed. Consider using `remove_child.call_deferred(child)` instead.");
 
 	int child_count = data.children.size();
 	Node **children = data.children.ptrw();
 	int idx = -1;
 
-	if (p_child->data.pos >= 0 && p_child->data.pos < child_count) {
-		if (children[p_child->data.pos] == p_child) {
-			idx = p_child->data.pos;
+	if (p_child->data.index >= 0 && p_child->data.index < child_count) {
+		if (children[p_child->data.index] == p_child) {
+			idx = p_child->data.index;
 		}
 	}
 
@@ -1217,12 +1209,12 @@ void Node::remove_child(Node *p_child) {
 	children = data.children.ptrw();
 
 	for (int i = idx; i < child_count; i++) {
-		children[i]->data.pos = i;
+		children[i]->data.index = i;
 		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
 
 	p_child->data.parent = nullptr;
-	p_child->data.pos = -1;
+	p_child->data.index = -1;
 
 	if (data.inside_tree) {
 		p_child->_propagate_after_exit_tree();
@@ -1349,12 +1341,23 @@ Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 
 	if (unlikely(!node)) {
+		// Try to get a clear description of this node in the error message.
+		String desc;
+		if (is_inside_tree()) {
+			desc = get_path();
+		} else {
+			desc = get_name();
+			if (desc.is_empty()) {
+				desc = get_class();
+			}
+		}
+
 		if (p_path.is_absolute()) {
 			ERR_FAIL_V_MSG(nullptr,
-					vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, get_path()));
+					vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, desc));
 		} else {
 			ERR_FAIL_V_MSG(nullptr,
-					vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, get_path()));
+					vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, desc));
 		}
 	}
 
@@ -1417,14 +1420,14 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 		if (cptr[i]->is_class(p_type)) {
 			ret.append(cptr[i]);
 		} else if (cptr[i]->get_script_instance()) {
-			Ref<Script> script = cptr[i]->get_script_instance()->get_script();
-			while (script.is_valid()) {
-				if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == script->get_path()) || p_type == script->get_path()) {
+			Ref<Script> scr = cptr[i]->get_script_instance()->get_script();
+			while (scr.is_valid()) {
+				if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
 					ret.append(cptr[i]);
 					break;
 				}
 
-				script = script->get_base_script();
+				scr = scr->get_base_script();
 			}
 		}
 
@@ -1472,26 +1475,16 @@ bool Node::is_greater_than(const Node *p_node) const {
 
 	ERR_FAIL_COND_V(data.depth < 0, false);
 	ERR_FAIL_COND_V(p_node->data.depth < 0, false);
-#ifdef NO_ALLOCA
-
-	Vector<int> this_stack;
-	Vector<int> that_stack;
-	this_stack.resize(data.depth);
-	that_stack.resize(p_node->data.depth);
-
-#else
 
 	int *this_stack = (int *)alloca(sizeof(int) * data.depth);
 	int *that_stack = (int *)alloca(sizeof(int) * p_node->data.depth);
-
-#endif
 
 	const Node *n = this;
 
 	int idx = data.depth - 1;
 	while (n) {
 		ERR_FAIL_INDEX_V(idx, data.depth, false);
-		this_stack[idx--] = n->data.pos;
+		this_stack[idx--] = n->data.index;
 		n = n->data.parent;
 	}
 	ERR_FAIL_COND_V(idx != -1, false);
@@ -1499,7 +1492,7 @@ bool Node::is_greater_than(const Node *p_node) const {
 	idx = p_node->data.depth - 1;
 	while (n) {
 		ERR_FAIL_INDEX_V(idx, p_node->data.depth, false);
-		that_stack[idx--] = n->data.pos;
+		that_stack[idx--] = n->data.index;
 
 		n = n->data.parent;
 	}
@@ -1667,7 +1660,7 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 	return const_cast<Node *>(common_parent);
 }
 
-NodePath Node::get_path_to(const Node *p_node) const {
+NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 	ERR_FAIL_NULL_V(p_node, NodePath());
 
 	if (this == p_node) {
@@ -1697,20 +1690,58 @@ NodePath Node::get_path_to(const Node *p_node) const {
 	visited.clear();
 
 	Vector<StringName> path;
-
-	n = p_node;
-
-	while (n != common_parent) {
-		path.push_back(n->get_name());
-		n = n->data.parent;
-	}
-
-	n = this;
 	StringName up = String("..");
 
-	while (n != common_parent) {
-		path.push_back(up);
-		n = n->data.parent;
+	if (p_use_unique_path) {
+		n = p_node;
+
+		bool is_detected = false;
+		while (n != common_parent) {
+			if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
+				path.push_back(UNIQUE_NODE_PREFIX + String(n->get_name()));
+				is_detected = true;
+				break;
+			}
+			path.push_back(n->get_name());
+			n = n->data.parent;
+		}
+
+		if (!is_detected) {
+			n = this;
+
+			String detected_name;
+			int up_count = 0;
+			while (n != common_parent) {
+				if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
+					detected_name = n->get_name();
+					up_count = 0;
+				}
+				up_count++;
+				n = n->data.parent;
+			}
+
+			for (int i = 0; i < up_count; i++) {
+				path.push_back(up);
+			}
+
+			if (!detected_name.is_empty()) {
+				path.push_back(UNIQUE_NODE_PREFIX + detected_name);
+			}
+		}
+	} else {
+		n = p_node;
+
+		while (n != common_parent) {
+			path.push_back(n->get_name());
+			n = n->data.parent;
+		}
+
+		n = this;
+
+		while (n != common_parent) {
+			path.push_back(up);
+			n = n->data.parent;
+		}
 	}
 
 	path.reverse();
@@ -1766,11 +1797,11 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 }
 
 void Node::remove_from_group(const StringName &p_identifier) {
-	ERR_FAIL_COND(!data.grouped.has(p_identifier));
-
 	HashMap<StringName, GroupData>::Iterator E = data.grouped.find(p_identifier);
 
-	ERR_FAIL_COND(!E);
+	if (!E) {
+		return;
+	}
 
 	if (data.tree) {
 		data.tree->remove_from_group(E->key, this);
@@ -1910,9 +1941,9 @@ int Node::get_index(bool p_include_internal) const {
 	ERR_FAIL_COND_V_MSG(!p_include_internal && (_is_internal_front() || _is_internal_back()), -1, "Node is internal. Can't get index with 'include_internal' being false.");
 
 	if (data.parent && !p_include_internal) {
-		return data.pos - data.parent->data.internal_children_front;
+		return data.index - data.parent->data.internal_children_front;
 	}
-	return data.pos;
+	return data.index;
 }
 
 Ref<Tween> Node::create_tween() {
@@ -1920,43 +1951,6 @@ Ref<Tween> Node::create_tween() {
 	Ref<Tween> tween = get_tree()->create_tween();
 	tween->bind_node(this);
 	return tween;
-}
-
-void Node::remove_and_skip() {
-	ERR_FAIL_COND(!data.parent);
-
-	Node *new_owner = get_owner();
-
-	List<Node *> children;
-
-	while (true) {
-		bool clear = true;
-		for (int i = 0; i < data.children.size(); i++) {
-			Node *c_node = data.children[i];
-			if (!c_node->get_owner()) {
-				continue;
-			}
-
-			remove_child(c_node);
-			c_node->_propagate_replace_owner(this, nullptr);
-			children.push_back(c_node);
-			clear = false;
-			break;
-		}
-
-		if (clear) {
-			break;
-		}
-	}
-
-	while (!children.is_empty()) {
-		Node *c_node = children.front()->get();
-		data.parent->add_child(c_node);
-		c_node->_propagate_replace_owner(nullptr, new_owner);
-		children.pop_front();
-	}
-
-	data.parent->remove_child(this);
 }
 
 void Node::set_scene_file_path(const String &p_scene_file_path) {
@@ -2104,7 +2098,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		nip->set_instance_path(ip->get_instance_path());
 		node = nip;
 
-	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && !get_scene_file_path().is_empty()) {
+	} else if ((p_flags & DUPLICATE_USE_INSTANTIATION) && !get_scene_file_path().is_empty()) {
 		Ref<PackedScene> res = ResourceLoader::load(get_scene_file_path());
 		ERR_FAIL_COND_V(res.is_null(), nullptr);
 		PackedScene::GenEditState ges = PackedScene::GEN_EDIT_STATE_DISABLED;
@@ -2174,9 +2168,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 		if (p_flags & DUPLICATE_SCRIPTS) {
 			bool is_valid = false;
-			Variant script = N->get()->get(script_property_name, &is_valid);
+			Variant scr = N->get()->get(script_property_name, &is_valid);
 			if (is_valid) {
-				current_node->set(script_property_name, script);
+				current_node->set(script_property_name, scr);
 			}
 		}
 
@@ -2290,7 +2284,7 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) con
 }
 
 Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
-	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR, &r_duplimap);
+	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR, &r_duplimap);
 
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
 	if (!p_resource_remap.is_empty()) {
@@ -2444,12 +2438,12 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	}
 
 	Node *parent = data.parent;
-	int pos_in_parent = data.pos;
+	int index_in_parent = data.index;
 
 	if (data.parent) {
 		parent->remove_child(this);
 		parent->add_child(p_node);
-		parent->move_child(p_node, pos_in_parent);
+		parent->move_child(p_node, index_in_parent);
 	}
 
 	while (get_child_count()) {
@@ -2614,21 +2608,21 @@ static void _Node_debug_sn(Object *p_obj) {
 }
 #endif // DEBUG_ENABLED
 
-void Node::_print_orphan_nodes() {
-	print_orphan_nodes();
-}
-
 void Node::print_orphan_nodes() {
 #ifdef DEBUG_ENABLED
 	ObjectDB::debug_objects(_Node_debug_sn);
 #endif
 }
 
-void Node::queue_delete() {
+void Node::queue_free() {
+	// There are users which instantiate multiple scene trees for their games.
+	// Use the node's own tree to handle its deletion when relevant.
 	if (is_inside_tree()) {
 		get_tree()->queue_delete(this);
 	} else {
-		SceneTree::get_singleton()->queue_delete(this);
+		SceneTree *tree = SceneTree::get_singleton();
+		ERR_FAIL_NULL_MSG(tree, "Can't queue free a node when no SceneTree is available.");
+		tree->queue_delete(this);
 	}
 }
 
@@ -2683,29 +2677,27 @@ void Node::clear_internal_tree_resource_paths() {
 	}
 }
 
-TypedArray<String> Node::get_configuration_warnings() const {
-	TypedArray<String> ret;
+PackedStringArray Node::get_configuration_warnings() const {
+	PackedStringArray ret;
 
 	Vector<String> warnings;
 	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
-		for (int i = 0; i < warnings.size(); i++) {
-			ret.push_back(warnings[i]);
-		}
+		ret.append_array(warnings);
 	}
 
 	return ret;
 }
 
 String Node::get_configuration_warnings_as_string() const {
-	TypedArray<String> warnings = get_configuration_warnings();
-	String all_warnings = String();
+	PackedStringArray warnings = get_configuration_warnings();
+	String all_warnings;
 	for (int i = 0; i < warnings.size(); i++) {
 		if (i > 0) {
 			all_warnings += "\n\n";
 		}
 		// Format as a bullet point list to make multiple warnings easier to distinguish
 		// from each other.
-		all_warnings += String::utf8("•  ") + String(warnings[i]);
+		all_warnings += String::utf8("•  ") + warnings[i];
 	}
 	return all_warnings;
 }
@@ -2787,11 +2779,12 @@ void Node::_bind_methods() {
 	GLOBAL_DEF("editor/node_naming/name_casing", NAME_CASING_PASCAL_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_casing", PropertyInfo(Variant::INT, "editor/node_naming/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
-	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "legible_unique_name"), &Node::add_sibling, DEFVAL(false));
+	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
+	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
-	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
 	ClassDB::bind_method(D_METHOD("get_children", "include_internal"), &Node::_get_children, DEFVAL(false));
@@ -2810,16 +2803,14 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_ancestor_of", "node"), &Node::is_ancestor_of);
 	ClassDB::bind_method(D_METHOD("is_greater_than", "node"), &Node::is_greater_than);
 	ClassDB::bind_method(D_METHOD("get_path"), &Node::get_path);
-	ClassDB::bind_method(D_METHOD("get_path_to", "node"), &Node::get_path_to);
+	ClassDB::bind_method(D_METHOD("get_path_to", "node", "use_unique_path"), &Node::get_path_to, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_from_group", "group"), &Node::remove_from_group);
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
-	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_position"), &Node::move_child);
+	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_index"), &Node::move_child);
 	ClassDB::bind_method(D_METHOD("get_groups"), &Node::_get_groups);
-	ClassDB::bind_method(D_METHOD("raise"), &Node::raise);
 	ClassDB::bind_method(D_METHOD("set_owner", "owner"), &Node::set_owner);
 	ClassDB::bind_method(D_METHOD("get_owner"), &Node::get_owner);
-	ClassDB::bind_method(D_METHOD("remove_and_skip"), &Node::remove_and_skip);
 	ClassDB::bind_method(D_METHOD("get_index", "include_internal"), &Node::get_index, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
@@ -2846,7 +2837,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Node::set_process_mode);
 	ClassDB::bind_method(D_METHOD("get_process_mode"), &Node::get_process_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
-	ClassDB::bind_method(D_METHOD("print_orphan_nodes"), &Node::_print_orphan_nodes);
 
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);
@@ -2860,7 +2850,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
-	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANCING | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
+	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANTIATION | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
 	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
@@ -2870,7 +2860,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
 
-	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_delete);
+	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_free);
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 
@@ -2966,7 +2956,7 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(DUPLICATE_SIGNALS);
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
-	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANCING);
+	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANTIATION);
 
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_FRONT);
@@ -3006,7 +2996,7 @@ void Node::_bind_methods() {
 }
 
 String Node::_get_name_num_separator() {
-	switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_num_separator").operator int()) {
+	switch (GLOBAL_GET("editor/node_naming/name_num_separator").operator int()) {
 		case 0:
 			return "";
 		case 1:

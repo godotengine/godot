@@ -132,7 +132,7 @@ hb_face_create_for_tables (hb_reference_table_func_t  reference_table_func,
   face->user_data = user_data;
   face->destroy = destroy;
 
-  face->num_glyphs.set_relaxed (-1);
+  face->num_glyphs = -1;
 
   face->data.init0 (face);
   face->table.init0 (face);
@@ -479,7 +479,7 @@ hb_face_set_upem (hb_face_t    *face,
   if (hb_object_is_immutable (face))
     return;
 
-  face->upem.set_relaxed (upem);
+  face->upem = upem;
 }
 
 /**
@@ -514,7 +514,7 @@ hb_face_set_glyph_count (hb_face_t    *face,
   if (hb_object_is_immutable (face))
     return;
 
-  face->num_glyphs.set_relaxed (glyph_count);
+  face->num_glyphs = glyph_count;
 }
 
 /**
@@ -633,20 +633,29 @@ hb_face_collect_variation_unicodes (hb_face_t *face,
  * face-builder: A face that has add_table().
  */
 
+struct face_table_info_t
+{
+  hb_blob_t* data;
+  unsigned order;
+};
+
 struct hb_face_builder_data_t
 {
-  hb_hashmap_t<hb_tag_t, hb_blob_t *> tables;
+  hb_hashmap_t<hb_tag_t, face_table_info_t> tables;
 };
 
 static int compare_entries (const void* pa, const void* pb)
 {
-  const auto& a = * (const hb_pair_t<hb_tag_t, hb_blob_t*> *) pa;
-  const auto& b = * (const hb_pair_t<hb_tag_t, hb_blob_t*> *) pb;
+  const auto& a = * (const hb_pair_t<hb_tag_t, face_table_info_t> *) pa;
+  const auto& b = * (const hb_pair_t<hb_tag_t, face_table_info_t> *) pb;
 
   /* Order by blob size first (smallest to largest) and then table tag */
 
-  if (a.second->length != b.second->length)
-    return a.second->length < b.second->length ? -1 : +1;
+  if (a.second.order != b.second.order)
+    return a.second.order < b.second.order ? -1 : +1;
+
+  if (a.second.data->length != b.second.data->length)
+    return a.second.data->length < b.second.data->length ? -1 : +1;
 
   return a.first < b.first ? -1 : a.first == b.first ? 0 : +1;
 }
@@ -668,8 +677,8 @@ _hb_face_builder_data_destroy (void *user_data)
 {
   hb_face_builder_data_t *data = (hb_face_builder_data_t *) user_data;
 
-  for (hb_blob_t* b : data->tables.values())
-    hb_blob_destroy (b);
+  for (auto info : data->tables.values())
+    hb_blob_destroy (info.data);
 
   data->tables.fini ();
 
@@ -683,8 +692,8 @@ _hb_face_builder_data_reference_blob (hb_face_builder_data_t *data)
   unsigned int table_count = data->tables.get_population ();
   unsigned int face_length = table_count * 16 + 12;
 
-  for (hb_blob_t* b : data->tables.values())
-    face_length += hb_ceil_to_4 (hb_blob_get_length (b));
+  for (auto info : data->tables.values())
+    face_length += hb_ceil_to_4 (hb_blob_get_length (info.data));
 
   char *buf = (char *) hb_malloc (face_length);
   if (unlikely (!buf))
@@ -699,7 +708,7 @@ _hb_face_builder_data_reference_blob (hb_face_builder_data_t *data)
   hb_tag_t sfnt_tag = is_cff ? OT::OpenTypeFontFile::CFFTag : OT::OpenTypeFontFile::TrueTypeTag;
 
   // Sort the tags so that produced face is deterministic.
-  hb_vector_t<hb_pair_t <hb_tag_t, hb_blob_t*>> sorted_entries;
+  hb_vector_t<hb_pair_t <hb_tag_t, face_table_info_t>> sorted_entries;
   data->tables.iter () | hb_sink (sorted_entries);
   if (unlikely (sorted_entries.in_error ()))
   {
@@ -708,7 +717,13 @@ _hb_face_builder_data_reference_blob (hb_face_builder_data_t *data)
   }
 
   sorted_entries.qsort (compare_entries);
-  bool ret = f->serialize_single (&c, sfnt_tag, + sorted_entries.iter());
+
+  bool ret = f->serialize_single (&c,
+                                  sfnt_tag,
+                                  + sorted_entries.iter()
+                                  | hb_map ([&] (hb_pair_t<hb_tag_t, face_table_info_t> _) {
+                                    return hb_pair_t<hb_tag_t, hb_blob_t*> (_.first, _.second.data);
+                                  }));
 
   c.end_serialize ();
 
@@ -729,7 +744,7 @@ _hb_face_builder_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void 
   if (!tag)
     return _hb_face_builder_data_reference_blob (data);
 
-  return hb_blob_reference (data->tables[tag]);
+  return hb_blob_reference (data->tables[tag].data);
 }
 
 
@@ -777,8 +792,8 @@ hb_face_builder_add_table (hb_face_t *face, hb_tag_t tag, hb_blob_t *blob)
 
   hb_face_builder_data_t *data = (hb_face_builder_data_t *) face->user_data;
 
-  hb_blob_t* previous = data->tables.get (tag);
-  if (!data->tables.set (tag, hb_blob_reference (blob)))
+  hb_blob_t* previous = data->tables.get (tag).data;
+  if (!data->tables.set (tag, face_table_info_t {hb_blob_reference (blob), 0}))
   {
     hb_blob_destroy (blob);
     return false;
@@ -786,4 +801,37 @@ hb_face_builder_add_table (hb_face_t *face, hb_tag_t tag, hb_blob_t *blob)
 
   hb_blob_destroy (previous);
   return true;
+}
+
+/**
+ * hb_face_builder_sort_tables:
+ * @face: A face object created with hb_face_builder_create()
+ * @tags: (array zero-terminated=1): ordered list of table tags terminated by
+ *   %HB_TAG_NONE
+ *
+ * Set the ordering of tables for serialization. Any tables not
+ * specified in the tags list will be ordered after the tables in
+ * tags, ordered by the default sort ordering.
+ *
+ * Since: 5.3.0
+ **/
+void
+hb_face_builder_sort_tables (hb_face_t *face,
+                             const hb_tag_t  *tags)
+{
+  hb_face_builder_data_t *data = (hb_face_builder_data_t *) face->user_data;
+
+  // Sort all unspecified tables after any specified tables.
+  for (auto& info : data->tables.values_ref())
+    info.order = -1;
+
+  unsigned order = 0;
+  for (const hb_tag_t* tag = tags;
+       *tag;
+       tag++)
+  {
+    face_table_info_t* info;
+    if (!data->tables.has (*tag, &info)) continue;
+    info->order = order++;
+  }
 }

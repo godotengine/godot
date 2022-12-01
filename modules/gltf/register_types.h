@@ -28,7 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef GLTF_REGISTER_TYPES_H
+#define GLTF_REGISTER_TYPES_H
+
 #include "modules/register_module_types.h"
 
 void initialize_gltf_module(ModuleInitializationLevel p_level);
 void uninitialize_gltf_module(ModuleInitializationLevel p_level);
+
+#endif // GLTF_REGISTER_TYPES_H

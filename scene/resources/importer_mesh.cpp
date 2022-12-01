@@ -254,7 +254,20 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	mesh.unref();
 }
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle) {
+#define VERTEX_SKIN_FUNC(bone_count, vert_idx, read_array, write_array, transform_array, bone_array, weight_array) \
+	Vector3 transformed_vert;                                                                                      \
+	for (unsigned int weight_idx = 0; weight_idx < bone_count; weight_idx++) {                                     \
+		int bone_idx = bone_array[vert_idx * bone_count + weight_idx];                                             \
+		float w = weight_array[vert_idx * bone_count + weight_idx];                                                \
+		if (w < FLT_EPSILON) {                                                                                     \
+			continue;                                                                                              \
+		}                                                                                                          \
+		ERR_FAIL_INDEX(bone_idx, static_cast<int>(transform_array.size()));                                        \
+		transformed_vert += transform_array[bone_idx].xform(read_array[vert_idx]) * w;                             \
+	}                                                                                                              \
+	write_array[vert_idx] = transformed_vert;
+
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
@@ -263,6 +276,12 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 	}
 	if (!SurfaceTool::optimize_vertex_cache_func) {
 		return;
+	}
+
+	LocalVector<Transform3D> bone_transform_vector;
+	for (int i = 0; i < p_bone_transform_array.size(); i++) {
+		ERR_FAIL_COND(p_bone_transform_array[i].get_type() != Variant::TRANSFORM3D);
+		bone_transform_vector.push_back(p_bone_transform_array[i]);
 	}
 
 	for (int i = 0; i < surfaces.size(); i++) {
@@ -276,6 +295,8 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		Vector<Vector3> normals = surfaces[i].arrays[RS::ARRAY_NORMAL];
 		Vector<Vector2> uvs = surfaces[i].arrays[RS::ARRAY_TEX_UV];
 		Vector<Vector2> uv2s = surfaces[i].arrays[RS::ARRAY_TEX_UV2];
+		Vector<int> bones = surfaces[i].arrays[RS::ARRAY_BONES];
+		Vector<float> weights = surfaces[i].arrays[RS::ARRAY_WEIGHTS];
 
 		unsigned int index_count = indices.size();
 		unsigned int vertex_count = vertices.size();
@@ -299,6 +320,22 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				n_ptr[j + 1] = n;
 				n_ptr[j + 2] = n;
 			}
+		}
+
+		if (bones.size() > 0 && weights.size() && bone_transform_vector.size() > 0) {
+			Vector3 *vertices_ptrw = vertices.ptrw();
+
+			// Apply bone transforms to regular surface.
+			unsigned int bone_weight_length = surfaces[i].flags & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+
+			const int *bo = bones.ptr();
+			const float *we = weights.ptr();
+
+			for (unsigned int j = 0; j < vertex_count; j++) {
+				VERTEX_SKIN_FUNC(bone_weight_length, j, vertices_ptr, vertices_ptrw, bone_transform_vector, bo, we)
+			}
+
+			vertices_ptr = vertices.ptr();
 		}
 
 		float normal_merge_threshold = Math::cos(Math::deg_to_rad(p_normal_merge_angle));
@@ -792,9 +829,9 @@ void ImporterMesh::_set_data(const Dictionary &p_data) {
 			ERR_CONTINUE(prim >= Mesh::PRIMITIVE_MAX);
 			Array arr = s["arrays"];
 			Dictionary lods;
-			String name;
+			String surf_name;
 			if (s.has("name")) {
-				name = s["name"];
+				surf_name = s["name"];
 			}
 			if (s.has("lods")) {
 				lods = s["lods"];
@@ -811,7 +848,7 @@ void ImporterMesh::_set_data(const Dictionary &p_data) {
 			if (s.has("flags")) {
 				flags = s["flags"];
 			}
-			add_surface(prim, arr, b_shapes, lods, material, name, flags);
+			add_surface(prim, arr, b_shapes, lods, material, surf_name, flags);
 		}
 	}
 }
@@ -934,10 +971,10 @@ Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Mesh::ConvexDecomposit
 	return ret;
 }
 
-Ref<Shape3D> ImporterMesh::create_trimesh_shape() const {
+Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
 	Vector<Face3> faces = get_faces();
 	if (faces.size() == 0) {
-		return Ref<Shape3D>();
+		return Ref<ConcavePolygonShape3D>();
 	}
 
 	Vector<Vector3> face_points;
@@ -1246,7 +1283,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
-	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle"), &ImporterMesh::generate_lods);
+	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::generate_lods);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 

@@ -40,6 +40,7 @@
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "key_mapping_windows.h"
 #include "servers/audio_server.h"
+
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
@@ -49,10 +50,10 @@
 #include "platform/windows/vulkan_context_win.h"
 #endif
 
-#include <fcntl.h>
 #include <io.h>
 #include <shellapi.h>
 #include <stdio.h>
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
@@ -60,6 +61,10 @@
 #ifdef DEBUG_ENABLED
 // forward error messages to OutputDebugString
 #define WINDOWS_DEBUG_OUTPUT_ENABLED
+#endif
+
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif
 
 template <class T>
@@ -83,13 +88,10 @@ public:
 };
 
 class JoypadWindows;
-class OS_Windows : public OS {
-#ifdef STDOUT_FILE
-	FILE *stdo = nullptr;
-#endif
 
-	uint64_t ticks_start;
-	uint64_t ticks_per_second;
+class OS_Windows : public OS {
+	uint64_t ticks_start = 0;
+	uint64_t ticks_per_second = 0;
 
 	HINSTANCE hInstance;
 	MainLoop *main_loop = nullptr;
@@ -129,7 +131,7 @@ protected:
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
 	};
-	HashMap<ProcessID, ProcessInfo> *process_map;
+	HashMap<ProcessID, ProcessInfo> *process_map = nullptr;
 
 public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
@@ -143,11 +145,14 @@ public:
 	virtual MainLoop *get_main_loop() const override;
 
 	virtual String get_name() const override;
+	virtual String get_distribution_name() const override;
+	virtual String get_version() const override;
+
+	virtual Vector<String> get_video_adapter_driver_info() const override;
 
 	virtual void initialize_joypads() override {}
 
-	virtual Date get_date(bool p_utc) const override;
-	virtual Time get_time(bool p_utc) const override;
+	virtual DateTime get_datetime(bool p_utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
 	virtual double get_unix_time() const override;
 
@@ -173,7 +178,6 @@ public:
 
 	virtual String get_locale() const override;
 
-	virtual int get_processor_count() const override;
 	virtual String get_processor_name() const override;
 
 	virtual uint64_t get_embedded_pck_offset() const override;

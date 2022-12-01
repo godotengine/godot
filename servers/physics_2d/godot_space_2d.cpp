@@ -129,8 +129,8 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 
 	bool collided = false;
 	Vector2 res_point, res_normal;
-	int res_shape;
-	const GodotCollisionObject2D *res_obj;
+	int res_shape = -1;
+	const GodotCollisionObject2D *res_obj = nullptr;
 	real_t min_d = 1e10;
 
 	for (int i = 0; i < amount; i++) {
@@ -190,6 +190,7 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 	if (!collided) {
 		return false;
 	}
+	ERR_FAIL_NULL_V(res_obj, false); // Shouldn't happen but silences warning.
 
 	r_result.collider_id = res_obj->get_instance_id();
 	if (r_result.collider_id.is_valid()) {
@@ -1036,8 +1037,6 @@ void *GodotSpace2D::_broadphase_pair(GodotCollisionObject2D *A, int p_subindex_A
 		GodotBodyPair2D *b = memnew(GodotBodyPair2D(static_cast<GodotBody2D *>(A), p_subindex_A, static_cast<GodotBody2D *>(B), p_subindex_B));
 		return b;
 	}
-
-	return nullptr;
 }
 
 void GodotSpace2D::_broadphase_unpair(GodotCollisionObject2D *A, int p_subindex_A, GodotCollisionObject2D *B, int p_subindex_B, void *p_data, void *p_self) {
@@ -1226,7 +1225,7 @@ GodotSpace2D::GodotSpace2D() {
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/solver_iterations", PropertyInfo(Variant::INT, "physics/2d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"));
 
 	contact_recycle_radius = GLOBAL_DEF("physics/2d/solver/contact_recycle_radius", 1.0);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
 
 	contact_max_separation = GLOBAL_DEF("physics/2d/solver/contact_max_separation", 1.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_max_separation", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));

@@ -39,6 +39,11 @@ namespace Godot.SourceGenerators
             for (int i = 0; i < typeArgListSyntax.Arguments.Count; i++)
             {
                 var typeSyntax = typeArgListSyntax.Arguments[i];
+
+                // Ignore omitted type arguments, e.g.: List<>, Dictionary<,>, etc
+                if (typeSyntax is OmittedTypeArgumentSyntax)
+                    continue;
+
                 var typeSymbol = sm.GetSymbolInfo(typeSyntax).Symbol as ITypeSymbol;
                 Debug.Assert(typeSymbol != null);
 

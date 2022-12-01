@@ -37,8 +37,10 @@ class NavigationObstacle3D : public Node {
 	GDCLASS(NavigationObstacle3D, Node);
 
 	Node3D *parent_node3d = nullptr;
+
 	RID agent;
 	RID map_before_pause;
+	RID map_override;
 
 	bool estimate_radius = true;
 	real_t radius = 1.0;
@@ -56,6 +58,11 @@ public:
 		return agent;
 	}
 
+	void set_agent_parent(Node *p_agent_parent);
+
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
+
 	void set_estimate_radius(bool p_estimate_radius);
 	bool is_radius_estimated() const {
 		return estimate_radius;
@@ -65,7 +72,7 @@ public:
 		return radius;
 	}
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 private:
 	void initialize_agent();

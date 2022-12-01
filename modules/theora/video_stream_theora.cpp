@@ -33,7 +33,16 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4127)
+#endif
+
 #include "thirdparty/misc/yuv2rgb.h"
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);
@@ -91,8 +100,6 @@ void VideoStreamPlaybackTheora::video_write() {
 		uint8_t *w = frame_data.ptrw();
 		char *dst = (char *)w;
 
-		//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
-
 		if (px_fmt == TH_PF_444) {
 			yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
 
@@ -101,7 +108,7 @@ void VideoStreamPlaybackTheora::video_write() {
 
 		} else if (px_fmt == TH_PF_420) {
 			yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
-		};
+		}
 
 		format = Image::FORMAT_RGBA8;
 	}
@@ -123,7 +130,7 @@ void VideoStreamPlaybackTheora::clear() {
 		if (vorbis_p >= 3) {
 			vorbis_block_clear(&vb);
 			vorbis_dsp_clear(&vd);
-		};
+		}
 		vorbis_comment_clear(&vc);
 		vorbis_info_clear(&vi);
 		vorbis_p = 0;
@@ -154,7 +161,7 @@ void VideoStreamPlaybackTheora::clear() {
 
 	file.unref();
 	playing = false;
-};
+}
 
 void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	ERR_FAIL_COND(playing);
@@ -174,7 +181,6 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	ring_buffer.write(read_buffer.ptr(), read);
 
 	thread.start(_streaming_thread, this);
-
 #endif
 
 	ogg_sync_init(&oy);
@@ -245,10 +251,9 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 	/* we're expecting more header packets. */
 	while ((theora_p && theora_p < 3) || (vorbis_p && vorbis_p < 3)) {
-		int ret;
-
 		/* look for further theora headers */
-		while (theora_p && (theora_p < 3) && (ret = ogg_stream_packetout(&to, &op))) {
+		int ret = ogg_stream_packetout(&to, &op);
+		while (theora_p && theora_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Theora stream headers; corrupt stream?\n");
 				clear();
@@ -259,11 +264,13 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 				clear();
 				return;
 			}
+			ret = ogg_stream_packetout(&to, &op);
 			theora_p++;
 		}
 
 		/* look for more vorbis header packets */
-		while (vorbis_p && (vorbis_p < 3) && (ret = ogg_stream_packetout(&vo, &op))) {
+		ret = ogg_stream_packetout(&vo, &op);
+		while (vorbis_p && vorbis_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Vorbis stream headers; corrupt stream?\n");
 				clear();
@@ -279,6 +286,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 			if (vorbis_p == 3) {
 				break;
 			}
+			ret = ogg_stream_packetout(&vo, &op);
 		}
 
 		/* The header pages/packets will arrive before anything else we
@@ -328,9 +336,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		size.x = w;
 		size.y = h;
 
-		Ref<Image> img;
-		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGBA8);
+		Ref<Image> img = Image::create_empty(w, h, false, Image::FORMAT_RGBA8);
 		texture->set_image(img);
 
 	} else {
@@ -355,20 +361,20 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	buffering = true;
 	time = 0;
 	audio_frames_wrote = 0;
-};
+}
 
-float VideoStreamPlaybackTheora::get_time() const {
+double VideoStreamPlaybackTheora::get_time() const {
 	// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
 	// systematically return 0. Now that it gives a proper latency, it broke this
 	// code where the delay compensation likely never really worked.
 	return time - /* AudioServer::get_singleton()->get_output_latency() - */ delay_compensation;
-};
+}
 
 Ref<Texture2D> VideoStreamPlaybackTheora::get_texture() const {
 	return texture;
 }
 
-void VideoStreamPlaybackTheora::update(float p_delta) {
+void VideoStreamPlaybackTheora::update(double p_delta) {
 	if (file.is_null()) {
 		return;
 	}
@@ -376,7 +382,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	if (!playing || paused) {
 		//printf("not playing\n");
 		return;
-	};
+	}
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_sem->post();
@@ -444,7 +450,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 					}
 				} else { /* we need more data; break out to suck in another page */
 					break;
-				};
+				}
 			}
 
 			audio_done = videobuf_time < (audio_frames_wrote / float(vi.rate));
@@ -457,12 +463,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 		while (theora_p && !frame_done) {
 			/* theora is one in, one out... */
 			if (ogg_stream_packetout(&to, &op) > 0) {
-				if (false && pp_inc) {
-					pp_level += pp_inc;
-					th_decode_ctl(td, TH_DECCTL_SET_PPLEVEL, &pp_level,
-							sizeof(pp_level));
-					pp_inc = 0;
-				}
 				/*HACK: This should be set after a seek or a gap, but we might not have
 				a granulepos for the first packet (we only have them for the last
 				packet on a page), so we just set it as often as we get it.
@@ -507,7 +507,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 			//printf("video done, stopping\n");
 			stop();
 			return;
-		};
+		}
 
 		if (!frame_done || !audio_done) {
 			//what's the point of waiting for audio to grab a page?
@@ -529,7 +529,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 			//printf("frame at %f not ready (time %f), ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
 		}
 
-		float tdiff = videobuf_time - get_time();
+		double tdiff = videobuf_time - get_time();
 		/*If we have lots of extra time, increase the post-processing level.*/
 		if (tdiff > ti.fps_denominator * 0.25 / ti.fps_numerator) {
 			pp_inc = pp_level < pp_level_max ? 1 : 0;
@@ -539,7 +539,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	}
 
 	video_write();
-};
+}
 
 void VideoStreamPlaybackTheora::play() {
 	if (!playing) {
@@ -549,9 +549,9 @@ void VideoStreamPlaybackTheora::play() {
 	}
 
 	playing = true;
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video/video_delay_compensation_ms");
+	delay_compensation = GLOBAL_GET("audio/video/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
-};
+}
 
 void VideoStreamPlaybackTheora::stop() {
 	if (playing) {
@@ -560,44 +560,44 @@ void VideoStreamPlaybackTheora::stop() {
 	}
 	playing = false;
 	time = 0;
-};
+}
 
 bool VideoStreamPlaybackTheora::is_playing() const {
 	return playing;
-};
+}
 
 void VideoStreamPlaybackTheora::set_paused(bool p_paused) {
 	paused = p_paused;
-};
+}
 
 bool VideoStreamPlaybackTheora::is_paused() const {
 	return paused;
-};
+}
 
 void VideoStreamPlaybackTheora::set_loop(bool p_enable) {
 }
 
 bool VideoStreamPlaybackTheora::has_loop() const {
 	return false;
-};
+}
 
-float VideoStreamPlaybackTheora::get_length() const {
+double VideoStreamPlaybackTheora::get_length() const {
 	return 0;
-};
+}
 
 String VideoStreamPlaybackTheora::get_stream_name() const {
 	return "";
-};
+}
 
 int VideoStreamPlaybackTheora::get_loop_count() const {
 	return 0;
-};
+}
 
-float VideoStreamPlaybackTheora::get_playback_position() const {
+double VideoStreamPlaybackTheora::get_playback_position() const {
 	return get_time();
-};
+}
 
-void VideoStreamPlaybackTheora::seek(float p_time) {
+void VideoStreamPlaybackTheora::seek(double p_time) {
 	WARN_PRINT_ONCE("Seeking in Theora videos is not implemented yet (it's only supported for GDExtension-provided video streams).");
 }
 
@@ -650,15 +650,14 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 	thread_sem = Semaphore::create();
 
 #endif
-};
+}
 
 VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 #ifdef THEORA_USE_THREAD_STREAMING
-
 	memdelete(thread_sem);
 #endif
 	clear();
-};
+}
 
 void VideoStreamTheora::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamTheora::set_file);

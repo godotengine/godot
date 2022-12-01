@@ -31,16 +31,74 @@
 
 #include "hb-subset.h"
 #include "hb-subset-input.hh"
+#include "hb-subset-accelerator.hh"
 
 #include "hb-map.hh"
+#include "hb-bimap.hh"
 #include "hb-set.hh"
+
+namespace OT {
+struct Feature;
+}
 
 struct hb_subset_plan_t
 {
+  hb_subset_plan_t ()
+  {}
+
+  ~hb_subset_plan_t()
+  {
+    hb_set_destroy (unicodes);
+    hb_set_destroy (name_ids);
+    hb_set_destroy (name_languages);
+    hb_set_destroy (layout_features);
+    hb_set_destroy (layout_scripts);
+    hb_set_destroy (glyphs_requested);
+    hb_set_destroy (drop_tables);
+    hb_set_destroy (no_subset_tables);
+    hb_face_destroy (source);
+    hb_face_destroy (dest);
+    hb_map_destroy (codepoint_to_glyph);
+    hb_map_destroy (glyph_map);
+    hb_map_destroy (reverse_glyph_map);
+    hb_map_destroy (glyph_map_gsub);
+    hb_set_destroy (_glyphset);
+    hb_set_destroy (_glyphset_gsub);
+    hb_set_destroy (_glyphset_mathed);
+    hb_set_destroy (_glyphset_colred);
+    hb_map_destroy (gsub_lookups);
+    hb_map_destroy (gpos_lookups);
+    hb_map_destroy (gsub_features);
+    hb_map_destroy (gpos_features);
+    hb_map_destroy (colrv1_layers);
+    hb_map_destroy (colr_palettes);
+    hb_map_destroy (axes_index_map);
+    hb_map_destroy (axes_old_index_tag_map);
+
+    hb_hashmap_destroy (gsub_langsys);
+    hb_hashmap_destroy (gpos_langsys);
+    hb_hashmap_destroy (gsub_feature_record_cond_idx_map);
+    hb_hashmap_destroy (gpos_feature_record_cond_idx_map);
+    hb_hashmap_destroy (gsub_feature_substitutes_map);
+    hb_hashmap_destroy (gpos_feature_substitutes_map);
+    hb_hashmap_destroy (axes_location);
+    hb_hashmap_destroy (sanitized_table_cache);
+    hb_hashmap_destroy (hmtx_map);
+    hb_hashmap_destroy (vmtx_map);
+    hb_hashmap_destroy (layout_variation_idx_delta_map);
+
+    if (user_axes_location)
+    {
+      hb_object_destroy (user_axes_location);
+      hb_free (user_axes_location);
+    }
+  }
+
   hb_object_header_t header;
 
   bool successful;
   unsigned flags;
+  bool attach_accelerator_data = false;
 
   // For each cp that we'd like to retain maps to the corresponding gid.
   hb_set_t *unicodes;
@@ -97,21 +155,43 @@ struct hb_subset_plan_t
   hb_map_t *gsub_features;
   hb_map_t *gpos_features;
 
+  //active feature variation records/condition index with variations
+  hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *gsub_feature_record_cond_idx_map;
+  hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *gpos_feature_record_cond_idx_map;
+
+  //feature index-> address of substituation feature table mapping with
+  //variations
+  hb_hashmap_t<unsigned, const OT::Feature*> *gsub_feature_substitutes_map;
+  hb_hashmap_t<unsigned, const OT::Feature*> *gpos_feature_substitutes_map;
+
   //active layers/palettes we'd like to retain
   hb_map_t *colrv1_layers;
   hb_map_t *colr_palettes;
 
-  //The set of layout item variation store delta set indices to be retained
-  hb_set_t *layout_variation_indices;
-  //Old -> New layout item variation store delta set index mapping
-  hb_map_t *layout_variation_idx_map;
+  //Old layout item variation index -> (New varidx, delta) mapping
+  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map;
+
+  //gdef varstore retained varidx mapping
+  hb_vector_t<hb_inc_bimap_t> gdef_varstore_inner_maps;
 
   hb_hashmap_t<hb_tag_t, hb::unique_ptr<hb_blob_t>>* sanitized_table_cache;
   //normalized axes location map
   hb_hashmap_t<hb_tag_t, int> *axes_location;
   //user specified axes location map
   hb_hashmap_t<hb_tag_t, float> *user_axes_location;
+  //retained old axis index -> new axis index mapping in fvar axis array
+  hb_map_t *axes_index_map;
+  //axis_index->axis_tag mapping in fvar axis array
+  hb_map_t *axes_old_index_tag_map;
   bool all_axes_pinned;
+  bool pinned_at_default;
+
+  //hmtx metrics map: new gid->(advance, lsb)
+  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *hmtx_map;
+  //vmtx metrics map: new gid->(advance, lsb)
+  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *vmtx_map;
+
+  const hb_subset_accelerator_t* accelerator;
 
  public:
 

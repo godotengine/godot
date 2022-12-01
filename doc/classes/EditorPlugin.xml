@@ -64,8 +64,8 @@
 				    if event is InputEventMouseMotion:
 				        # Redraw viewport when cursor is moved.
 				        update_overlays()
-				        return true
-				    return false
+				        return EditorPlugin.AFTER_GUI_INPUT_STOP
+				    return EditorPlugin.AFTER_GUI_INPUT_PASS
 				[/gdscript]
 				[csharp]
 				public override void _Forward3dDrawOverViewport(Godot.Control overlay)
@@ -74,15 +74,15 @@
 				    overlay.DrawCircle(overlay.GetLocalMousePosition(), 64, Colors.White);
 				}
 
-				public override bool _Forward3dGuiInput(Godot.Camera3D camera, InputEvent @event)
+				public override EditorPlugin.AfterGUIInput _Forward3dGuiInput(Godot.Camera3D camera, InputEvent @event)
 				{
 				    if (@event is InputEventMouseMotion)
 				    {
 				        // Redraw viewport when cursor is moved.
 				        UpdateOverlays();
-				        return true;
+				        return EditorPlugin.AFTER_GUI_INPUT_STOP;
 				    }
-				    return false;
+				    return EditorPlugin.AFTER_GUI_INPUT_PASS;
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -100,33 +100,35 @@
 			<param index="0" name="viewport_camera" type="Camera3D" />
 			<param index="1" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 3D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes. Example:
+				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 3D viewport. The return value decides whether the [InputEvent] is consumed or forwarded to other [EditorPlugin]s. See [enum AfterGUIInput] for options.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
-				# Prevents the InputEvent to reach other Editor classes.
+				# Prevents the InputEvent from reaching other Editor classes.
 				func _forward_3d_gui_input(camera, event):
 				    return EditorPlugin.AFTER_GUI_INPUT_STOP
 				[/gdscript]
 				[csharp]
-				// Prevents the InputEvent to reach other Editor classes.
-				public override bool _Forward3dGuiInput(Camera3D camera, InputEvent @event)
+				// Prevents the InputEvent from reaching other Editor classes.
+				public override EditorPlugin.AfterGUIInput _Forward3dGuiInput(Camera3D camera, InputEvent @event)
 				{
 				    return EditorPlugin.AFTER_GUI_INPUT_STOP;
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
+				Must [code]return EditorPlugin.AFTER_GUI_INPUT_PASS[/code] in order to forward the [InputEvent] to other Editor classes.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
 				func _forward_3d_gui_input(camera, event):
-				    return event is InputEventMouseMotion
+				    return EditorPlugin.AFTER_GUI_INPUT_STOP if event is InputEventMouseMotion else EditorPlugin.AFTER_GUI_INPUT_PASS
 				[/gdscript]
 				[csharp]
 				// Consumes InputEventMouseMotion and forwards other InputEvent types.
-				public override bool _Forward3dGuiInput(Camera3D camera, InputEvent @event)
+				public override EditorPlugin.AfterGUIInput _Forward3dGuiInput(Camera3D camera, InputEvent @event)
 				{
-				    return @event is InputEventMouseMotion;
+				    return @event is InputEventMouseMotion ? EditorPlugin.AFTER_GUI_INPUT_STOP : EditorPlugin.AFTER_GUI_INPUT_PASS;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -182,22 +184,24 @@
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes. Example:
+				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
-				# Prevents the InputEvent to reach other Editor classes.
+				# Prevents the InputEvent from reaching other Editor classes.
 				func _forward_canvas_gui_input(event):
 				    return true
 				[/gdscript]
 				[csharp]
-				// Prevents the InputEvent to reach other Editor classes.
+				// Prevents the InputEvent from reaching other Editor classes.
 				public override bool ForwardCanvasGuiInput(InputEvent @event)
 				{
 				    return true;
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
+				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
@@ -237,7 +241,7 @@
 				    # You can use a custom icon:
 				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
 				    # Or use a built-in icon:
-				    return get_editor_interface().get_base_control().get_icon("Node", "EditorIcons")
+				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
 				[/gdscript]
 				[csharp]
 				public override Texture2D GetPluginIcon()
@@ -245,7 +249,7 @@
 				    // You can use a custom icon:
 				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
 				    // Or use a built-in icon:
-				    return GetEditorInterface().GetBaseControl().GetIcon("Node", "EditorIcons");
+				    return GetEditorInterface().GetBaseControl().GetThemeIcon("Node", "EditorIcons");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -303,7 +307,7 @@
 
 				func _enter_tree():
 				    plugin_control = preload("my_plugin_control.tscn").instantiate()
-				    get_editor_interface().get_editor_main_control().add_child(plugin_control)
+				    get_editor_interface().get_editor_main_screen().add_child(plugin_control)
 				    plugin_control.hide()
 
 				func _has_main_screen():
@@ -406,11 +410,12 @@
 				When a given node or resource is selected, the base type will be instantiated (e.g. "Node3D", "Control", "Resource"), then the script will be loaded and set to this object.
 				You can use the virtual method [method _handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
+				[b]Note:[/b] Custom types added this way are not true classes. They are just a helper to create a node with specific script.
 			</description>
 		</method>
 		<method name="add_debugger_plugin">
 			<return type="void" />
-			<param index="0" name="script" type="Script" />
+			<param index="0" name="script" type="EditorDebuggerPlugin" />
 			<description>
 				Adds a [Script] as debugger plugin to the Debugger. The script must extend [EditorDebuggerPlugin].
 			</description>
@@ -454,6 +459,14 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="add_node_3d_gizmo_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorNode3DGizmoPlugin" />
+			<description>
+				Registers a new [EditorNode3DGizmoPlugin]. Gizmo plugins are used to add custom gizmos to the 3D preview viewport for a [Node3D].
+				See [method add_inspector_plugin] for an example of how to register a plugin.
+			</description>
+		</method>
 		<method name="add_scene_format_importer_plugin">
 			<return type="void" />
 			<param index="0" name="scene_format_importer" type="EditorSceneFormatImporter" />
@@ -470,14 +483,6 @@
 			<description>
 				Add a [EditorScenePostImportPlugin]. These plugins allow customizing the import process of 3D assets by adding new options to the import dialogs.
 				If [param first_priority] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
-			</description>
-		</method>
-		<method name="add_spatial_gizmo_plugin">
-			<return type="void" />
-			<param index="0" name="plugin" type="EditorNode3DGizmoPlugin" />
-			<description>
-				Registers a new [EditorNode3DGizmoPlugin]. Gizmo plugins are used to add custom gizmos to the 3D preview viewport for a [Node3D].
-				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
 		<method name="add_tool_menu_item">
@@ -594,7 +599,7 @@
 		</method>
 		<method name="remove_debugger_plugin">
 			<return type="void" />
-			<param index="0" name="script" type="Script" />
+			<param index="0" name="script" type="EditorDebuggerPlugin" />
 			<description>
 				Removes the debugger plugin with given script from the Debugger.
 			</description>
@@ -620,6 +625,13 @@
 				Removes an inspector plugin registered by [method add_import_plugin]
 			</description>
 		</method>
+		<method name="remove_node_3d_gizmo_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorNode3DGizmoPlugin" />
+			<description>
+				Removes a gizmo plugin registered by [method add_node_3d_gizmo_plugin].
+			</description>
+		</method>
 		<method name="remove_scene_format_importer_plugin">
 			<return type="void" />
 			<param index="0" name="scene_format_importer" type="EditorSceneFormatImporter" />
@@ -632,13 +644,6 @@
 			<param index="0" name="scene_import_plugin" type="EditorScenePostImportPlugin" />
 			<description>
 				Remove the [EditorScenePostImportPlugin], added with [method add_scene_post_import_plugin].
-			</description>
-		</method>
-		<method name="remove_spatial_gizmo_plugin">
-			<return type="void" />
-			<param index="0" name="plugin" type="EditorNode3DGizmoPlugin" />
-			<description>
-				Removes a gizmo plugin registered by [method add_spatial_gizmo_plugin].
 			</description>
 		</method>
 		<method name="remove_tool_menu_item">
@@ -690,11 +695,13 @@
 		</signal>
 		<signal name="project_settings_changed">
 			<description>
+				Emitted when any project setting has changed.
 			</description>
 		</signal>
 		<signal name="resource_saved">
 			<param index="0" name="resource" type="Resource" />
 			<description>
+				Emitted when the given [param resource] was saved on disc.
 			</description>
 		</signal>
 		<signal name="scene_changed">
@@ -712,47 +719,76 @@
 	</signals>
 	<constants>
 		<constant name="CONTAINER_TOOLBAR" value="0" enum="CustomControlContainer">
+			Main editor toolbar, next to play buttons.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_MENU" value="1" enum="CustomControlContainer">
+			The toolbar that appears when 3D editor is active.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE_LEFT" value="2" enum="CustomControlContainer">
+			Left sidebar of the 3D editor.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT" value="3" enum="CustomControlContainer">
+			Right sidebar of the 3D editor.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_BOTTOM" value="4" enum="CustomControlContainer">
+			Bottom panel of the 3D editor.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_MENU" value="5" enum="CustomControlContainer">
+			The toolbar that appears when 2D editor is active.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_SIDE_LEFT" value="6" enum="CustomControlContainer">
+			Left sidebar of the 2D editor.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_SIDE_RIGHT" value="7" enum="CustomControlContainer">
+			Right sidebar of the 2D editor.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_BOTTOM" value="8" enum="CustomControlContainer">
+			Bottom panel of the 2D editor.
 		</constant>
 		<constant name="CONTAINER_INSPECTOR_BOTTOM" value="9" enum="CustomControlContainer">
+			Bottom section of the inspector.
 		</constant>
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_LEFT" value="10" enum="CustomControlContainer">
+			Tab of Project Settings dialog, to the left of other tabs.
 		</constant>
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_RIGHT" value="11" enum="CustomControlContainer">
+			Tab of Project Settings dialog, to the right of other tabs.
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
+			Dock slot, left side, upper-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_BL" value="1" enum="DockSlot">
+			Dock slot, left side, bottom-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_UR" value="2" enum="DockSlot">
+			Dock slot, left side, upper-right (in default layout includes Scene and Import docks).
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_BR" value="3" enum="DockSlot">
+			Dock slot, left side, bottom-right (in default layout includes FileSystem dock).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UL" value="4" enum="DockSlot">
+			Dock slot, right side, upper-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BL" value="5" enum="DockSlot">
+			Dock slot, right side, bottom-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UR" value="6" enum="DockSlot">
+			Dock slot, right side, upper-right (in default layout includes Inspector, Node and History docks).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
+			Dock slot, right side, bottom-right (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_MAX" value="8" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
+		</constant>
+		<constant name="AFTER_GUI_INPUT_PASS" value="0" enum="AfterGUIInput">
+			Forwards the [InputEvent] to other EditorPlugins.
+		</constant>
+		<constant name="AFTER_GUI_INPUT_STOP" value="1" enum="AfterGUIInput">
+			Prevents the [InputEvent] from reaching other Editor classes.
+		</constant>
+		<constant name="AFTER_GUI_INPUT_CUSTOM" value="2" enum="AfterGUIInput">
+			Pass the [InputEvent] to other editor plugins except the main [Node3D] one. This can be used to prevent node selection changes and work with sub-gizmos instead.
 		</constant>
 	</constants>
 </class>

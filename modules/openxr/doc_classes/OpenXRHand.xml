@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRHand" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Node supporting finger tracking in OpenXR.
+	</brief_description>
+	<description>
+		This node enables OpenXR's hand tracking functionality. The node should be a child node of an [XROrigin3D] node, tracking will update its position to where the player's actual hand is positioned. This node also updates the skeleton of a properly skinned hand model. The hand mesh should be a child node of this node.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="hand" type="int" setter="set_hand" getter="get_hand" enum="OpenXRHand.Hands" default="0">
+			Specifies whether this node tracks the left or right hand of the player.
+		</member>
+		<member name="hand_skeleton" type="NodePath" setter="set_hand_skeleton" getter="get_hand_skeleton" default="NodePath(&quot;&quot;)">
+			Set a [Skeleton3D] node for which the pose positions will be updated.
+		</member>
+		<member name="motion_range" type="int" setter="set_motion_range" getter="get_motion_range" enum="OpenXRHand.MotionRange" default="0">
+			Set the motion range (if supported) limiting the hand motion.
+		</member>
+	</members>
+	<constants>
+		<constant name="HAND_LEFT" value="0" enum="Hands">
+			Tracking the player's left hand.
+		</constant>
+		<constant name="HAND_RIGHT" value="1" enum="Hands">
+			Tracking the player's right hand.
+		</constant>
+		<constant name="HAND_MAX" value="2" enum="Hands">
+			Maximum supported hands.
+		</constant>
+		<constant name="MOTION_RANGE_UNOBSTRUCTED" value="0" enum="MotionRange">
+			When player grips, hand skeleton will form a full fist.
+		</constant>
+		<constant name="MOTION_RANGE_CONFORM_TO_CONTROLLER" value="1" enum="MotionRange">
+			When player grips, hand skeleton conforms to the controller the player is holding.
+		</constant>
+		<constant name="MOTION_RANGE_MAX" value="2" enum="MotionRange">
+			Maximum supported motion ranges.
+		</constant>
+	</constants>
+</class>

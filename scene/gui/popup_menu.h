@@ -121,6 +121,8 @@ class PopupMenu : public Popup {
 	void _ref_shortcut(Ref<Shortcut> p_sc);
 	void _unref_shortcut(Ref<Shortcut> p_sc);
 
+	void _shortcut_changed();
+
 	bool allow_search = true;
 	uint64_t search_time_msec = 0;
 	String search_string = "";
@@ -261,8 +263,8 @@ public:
 	int get_item_max_states(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
-	void set_current_index(int p_idx);
-	int get_current_index() const;
+	void set_focused_item(int p_idx);
+	int get_focused_item() const;
 
 	void set_item_count(int p_count);
 	int get_item_count() const;

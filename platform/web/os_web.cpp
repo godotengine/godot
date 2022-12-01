@@ -37,15 +37,12 @@
 #include "platform/web/display_server_web.h"
 
 #include "modules/modules_enabled.gen.h" // For websocket.
-#ifdef MODULE_WEBSOCKET_ENABLED
-#include "modules/websocket/remote_debugger_peer_websocket.h"
-#endif
 
 #include <dlfcn.h>
 #include <emscripten.h>
 #include <stdlib.h>
 
-#include "api/javascript_singleton.h"
+#include "api/javascript_bridge_singleton.h"
 #include "godot_js.h"
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
@@ -56,11 +53,6 @@ void OS_Web::alert(const String &p_alert, const String &p_title) {
 void OS_Web::initialize() {
 	OS_Unix::initialize_core();
 	DisplayServerWeb::register_web_driver();
-
-#ifdef MODULE_WEBSOCKET_ENABLED
-	EngineDebugger::register_uri_handler("ws://", RemoteDebuggerPeerWebSocket::create);
-	EngineDebugger::register_uri_handler("wss://", RemoteDebuggerPeerWebSocket::create);
-#endif
 }
 
 void OS_Web::resume_audio() {
@@ -199,8 +191,8 @@ void OS_Web::update_pwa_state_callback() {
 	if (OS_Web::get_singleton()) {
 		OS_Web::get_singleton()->pwa_is_waiting = true;
 	}
-	if (JavaScript::get_singleton()) {
-		JavaScript::get_singleton()->emit_signal("pwa_update_available");
+	if (JavaScriptBridge::get_singleton()) {
+		JavaScriptBridge::get_singleton()->emit_signal("pwa_update_available");
 	}
 }
 
@@ -239,9 +231,6 @@ OS_Web::OS_Web() {
 	godot_js_pwa_cb(&OS_Web::update_pwa_state_callback);
 
 	if (AudioDriverWeb::is_available()) {
-#ifdef NO_THREADS
-		audio_drivers.push_back(memnew(AudioDriverScriptProcessor));
-#endif
 		audio_drivers.push_back(memnew(AudioDriverWorklet));
 	}
 	for (int i = 0; i < audio_drivers.size(); i++) {

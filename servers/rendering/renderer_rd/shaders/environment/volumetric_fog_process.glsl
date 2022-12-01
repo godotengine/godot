@@ -381,7 +381,7 @@ void main() {
 	float cell_depth_size = abs(view_pos.z - get_depth_at_pos(fog_cell_size.z, pos.z + 1));
 	//compute directional lights
 
-	if (total_density > 0.001) {
+	if (total_density > 0.00005) {
 		for (uint i = 0; i < params.directional_light_count; i++) {
 			if (directional_lights.data[i].volumetric_fog_energy > 0.001) {
 				vec3 shadow_attenuation = vec3(1.0);

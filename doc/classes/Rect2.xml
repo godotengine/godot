@@ -82,9 +82,9 @@
 				var rect2 = rect.expand(Vector2(0, -1))
 				[/gdscript]
 				[csharp]
-				# position (-3, 2), size (1, 1)
+				// position (-3, 2), size (1, 1)
 				var rect = new Rect2(new Vector2(-3, 2), new Vector2(1, 1));
-				# position (-3, -1), size (3, 4), so we fit both rect and Vector2(0, -1)
+				// position (-3, -1), size (3, 4), so we fit both rect and Vector2(0, -1)
 				var rect2 = rect.Expand(new Vector2(0, -1));
 				[/csharp]
 				[/codeblocks]
@@ -93,7 +93,7 @@
 		<method name="get_area" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the area of the [Rect2]. See also [method has_no_area].
+				Returns the area of the [Rect2]. See also [method has_area].
 			</description>
 		</method>
 		<method name="get_center" qualifiers="const">
@@ -127,11 +127,10 @@
 				Returns a copy of the [Rect2] grown by the specified [param amount] on the specified [enum Side].
 			</description>
 		</method>
-		<method name="has_no_area" qualifiers="const">
+		<method name="has_area" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the [Rect2] is flat or empty, [code]false[/code] otherwise. See also [method get_area].
-				[b]Note:[/b] If the [Rect2] has a negative size and is not flat or empty, [method has_no_area] will return [code]true[/code].
+				Returns [code]true[/code] if the [Rect2] has area, and [code]false[/code] if the [Rect2] is linear, empty, or has a negative [member size]. See also [method get_area].
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
@@ -164,6 +163,12 @@
 			<param index="0" name="rect" type="Rect2" />
 			<description>
 				Returns [code]true[/code] if this [Rect2] and [param rect] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Rect2] is finite, by calling [method @GlobalScope.is_finite] on each component.
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">

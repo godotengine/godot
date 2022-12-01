@@ -161,13 +161,19 @@ void EditorZoomWidget::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("zoom_changed", PropertyInfo(Variant::FLOAT, "zoom")));
 }
 
+void EditorZoomWidget::set_shortcut_context(Node *p_node) const {
+	zoom_minus->set_shortcut_context(p_node);
+	zoom_plus->set_shortcut_context(p_node);
+	zoom_reset->set_shortcut_context(p_node);
+}
+
 EditorZoomWidget::EditorZoomWidget() {
 	// Zoom buttons
 	zoom_minus = memnew(Button);
 	zoom_minus->set_flat(true);
 	add_child(zoom_minus);
 	zoom_minus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
-	zoom_minus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_minus", TTR("Zoom Out"), KeyModifierMask::CMD | Key::MINUS));
+	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTR("Zoom Out"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
 	zoom_minus->set_shortcut_context(this);
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 
@@ -189,7 +195,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_plus->set_flat(true);
 	add_child(zoom_plus);
 	zoom_plus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
-	zoom_plus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_plus", TTR("Zoom In"), KeyModifierMask::CMD | Key::EQUAL)); // Usually direct access key for PLUS
+	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTR("Zoom In"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 	zoom_plus->set_shortcut_context(this);
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 

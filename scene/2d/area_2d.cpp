@@ -459,6 +459,16 @@ TypedArray<Area2D> Area2D::get_overlapping_areas() const {
 	return ret;
 }
 
+bool Area2D::has_overlapping_bodies() const {
+	ERR_FAIL_COND_V_MSG(!monitoring, false, "Can't find overlapping bodies when monitoring is off.");
+	return !body_map.is_empty();
+}
+
+bool Area2D::has_overlapping_areas() const {
+	ERR_FAIL_COND_V_MSG(!monitoring, false, "Can't find overlapping areas when monitoring is off.");
+	return !area_map.is_empty();
+}
+
 bool Area2D::overlaps_area(Node *p_area) const {
 	ERR_FAIL_NULL_V(p_area, false);
 	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(p_area->get_instance_id());
@@ -577,6 +587,9 @@ void Area2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_overlapping_bodies"), &Area2D::get_overlapping_bodies);
 	ClassDB::bind_method(D_METHOD("get_overlapping_areas"), &Area2D::get_overlapping_areas);
+
+	ClassDB::bind_method(D_METHOD("has_overlapping_bodies"), &Area2D::has_overlapping_bodies);
+	ClassDB::bind_method(D_METHOD("has_overlapping_areas"), &Area2D::has_overlapping_areas);
 
 	ClassDB::bind_method(D_METHOD("overlaps_body", "body"), &Area2D::overlaps_body);
 	ClassDB::bind_method(D_METHOD("overlaps_area", "area"), &Area2D::overlaps_area);

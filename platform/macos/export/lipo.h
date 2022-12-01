@@ -28,18 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Universal / Universal 2 fat binary file creator and extractor.
-
 #ifndef MACOS_LIPO_H
 #define MACOS_LIPO_H
 
+// Universal / Universal 2 fat binary file creator and extractor.
+
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
-#include "modules/modules_enabled.gen.h" // For regex.
 
 #include "macho.h"
-
-#ifdef MODULE_REGEX_ENABLED
 
 class LipO : public RefCounted {
 	struct FatArch {
@@ -70,7 +67,5 @@ public:
 
 	~LipO();
 };
-
-#endif // MODULE_REGEX_ENABLED
 
 #endif // MACOS_LIPO_H

@@ -34,7 +34,7 @@
 #include "servers/rendering/environment/renderer_fog.h"
 #include "servers/rendering/environment/renderer_gi.h"
 #include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/rendering_method.h"
 #include "servers/rendering/storage/camera_attributes_storage.h"
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/material_storage.h"
@@ -102,6 +102,7 @@ public:
 	virtual void finalize() = 0;
 	virtual uint64_t get_frame_number() const = 0;
 	virtual double get_frame_delta_time() const = 0;
+	virtual double get_total_time() const = 0;
 
 	static bool is_low_end() { return low_end; };
 	virtual bool is_xr_enabled() const;

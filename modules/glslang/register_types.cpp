@@ -53,7 +53,6 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	};
 
 	int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
-	bool check_subgroup_support = true; // assume we support subgroups
 
 	glslang::EShTargetClientVersion ClientVersion = glslang::EShTargetVulkan_1_2;
 	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_5;
@@ -63,7 +62,6 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		if (capabilities->version_major == 1 && capabilities->version_minor == 0) {
 			ClientVersion = glslang::EShTargetVulkan_1_0;
 			TargetVersion = glslang::EShTargetSpv_1_0;
-			check_subgroup_support = false; // subgroups are not supported in Vulkan 1.0
 		} else if (capabilities->version_major == 1 && capabilities->version_minor == 1) {
 			ClientVersion = glslang::EShTargetVulkan_1_1;
 			TargetVersion = glslang::EShTargetSpv_1_3;
@@ -88,7 +86,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	shader.setEnvClient(glslang::EShClientVulkan, ClientVersion);
 	shader.setEnvTarget(glslang::EShTargetSpv, TargetVersion);
 
-	if (check_subgroup_support) {
+	{
 		uint32_t stage_bit = 1 << p_stage;
 
 		uint32_t subgroup_in_shaders = uint32_t(p_render_device->limit_get(RD::LIMIT_SUBGROUP_IN_SHADERS));

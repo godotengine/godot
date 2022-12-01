@@ -46,6 +46,7 @@
 #include "editor/editor_internal_calls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/script_templates/templates.gen.h"
 #endif
@@ -710,6 +711,12 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		return;
 	}
 
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		// We disable collectible assemblies in the game player, because the limitations cause
+		// issues with mocking libraries. As such, we can only reload assemblies in the editor.
+		return;
+	}
+
 	// TODO:
 	//  Currently, this reloads all scripts, including those whose class is not part of the
 	//  assembly load context being unloaded. As such, we unnecessarily reload GodotTools.
@@ -1299,7 +1306,7 @@ GDNativeBool CSharpLanguage::_instance_binding_reference_callback(void *p_token,
 
 	MonoGCHandleData &gchandle = script_binding.gchandle;
 
-	int refcount = rc_owner->reference_get_count();
+	int refcount = rc_owner->get_reference_count();
 
 	if (!script_binding.inited) {
 		return refcount == 0;
@@ -1818,7 +1825,7 @@ void CSharpInstance::refcount_incremented() {
 
 	RefCounted *rc_owner = Object::cast_to<RefCounted>(owner);
 
-	if (rc_owner->reference_get_count() > 1 && gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
+	if (rc_owner->get_reference_count() > 1 && gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
 		// The reference count was increased after the managed side was the only one referencing our owner.
 		// This means the owner is being referenced again by the unmanaged side,
 		// so the owner must hold the managed side alive again to avoid it from being GCed.
@@ -1849,7 +1856,7 @@ bool CSharpInstance::refcount_decremented() {
 
 	RefCounted *rc_owner = Object::cast_to<RefCounted>(owner);
 
-	int refcount = rc_owner->reference_get_count();
+	int refcount = rc_owner->get_reference_count();
 
 	if (refcount == 1 && !gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
 		// If owner owner is no longer referenced by the unmanaged side,
@@ -1995,7 +2002,7 @@ CSharpInstance::~CSharpInstance() {
 
 #ifdef DEBUG_ENABLED
 		// The "instance binding" holds a reference so the refcount should be at least 2 before `scope_keep_owner_alive` goes out of scope
-		CRASH_COND(rc_owner->reference_get_count() <= 1);
+		CRASH_COND(rc_owner->get_reference_count() <= 1);
 #endif
 	}
 
@@ -2035,6 +2042,52 @@ void CSharpScript::_update_exports_values(HashMap<StringName, Variant> &values, 
 }
 #endif
 
+void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript *p_script, const String *p_current_class_name, void *p_props, int32_t p_count) {
+	GDMonoCache::godotsharp_property_info *props = (GDMonoCache::godotsharp_property_info *)p_props;
+
+#ifdef TOOLS_ENABLED
+	p_script->exported_members_cache.push_back(PropertyInfo(
+			Variant::NIL, *p_current_class_name, PROPERTY_HINT_NONE,
+			p_script->get_path(), PROPERTY_USAGE_CATEGORY));
+#endif
+
+	for (int i = 0; i < p_count; i++) {
+		const GDMonoCache::godotsharp_property_info &prop = props[i];
+
+		StringName name = *reinterpret_cast<const StringName *>(&prop.name);
+		String hint_string = *reinterpret_cast<const String *>(&prop.hint_string);
+
+		PropertyInfo pinfo(prop.type, name, prop.hint, hint_string, prop.usage);
+
+		p_script->member_info[name] = pinfo;
+
+		if (prop.exported) {
+#ifdef TOOLS_ENABLED
+			p_script->exported_members_cache.push_back(pinfo);
+#endif
+
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+			p_script->exported_members_names.insert(name);
+#endif
+		}
+	}
+}
+
+#ifdef TOOLS_ENABLED
+void GD_CLR_STDCALL CSharpScript::_add_property_default_values_callback(CSharpScript *p_script, void *p_def_vals, int32_t p_count) {
+	GDMonoCache::godotsharp_property_def_val_pair *def_vals = (GDMonoCache::godotsharp_property_def_val_pair *)p_def_vals;
+
+	for (int i = 0; i < p_count; i++) {
+		const GDMonoCache::godotsharp_property_def_val_pair &def_val_pair = def_vals[i];
+
+		StringName name = *reinterpret_cast<const StringName *>(&def_val_pair.name);
+		Variant value = *reinterpret_cast<const Variant *>(&def_val_pair.value);
+
+		p_script->exported_members_defval_cache[name] = value;
+	}
+}
+#endif
+
 bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_update) {
 #ifdef TOOLS_ENABLED
 	bool is_editor = Engine::get_singleton()->is_editor_hint();
@@ -2066,49 +2119,10 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 #endif
 
 		if (GDMonoCache::godot_api_cache_updated) {
-			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyInfoList(this,
-					[](CSharpScript *p_script, const String *p_current_class_name, GDMonoCache::godotsharp_property_info *p_props, int32_t p_count) {
-#ifdef TOOLS_ENABLED
-						p_script->exported_members_cache.push_back(PropertyInfo(
-								Variant::NIL, *p_current_class_name, PROPERTY_HINT_NONE,
-								p_script->get_path(), PROPERTY_USAGE_CATEGORY));
-#endif
-
-						for (int i = 0; i < p_count; i++) {
-							const GDMonoCache::godotsharp_property_info &prop = p_props[i];
-
-							StringName name = *reinterpret_cast<const StringName *>(&prop.name);
-							String hint_string = *reinterpret_cast<const String *>(&prop.hint_string);
-
-							PropertyInfo pinfo(prop.type, name, prop.hint, hint_string, prop.usage);
-
-							p_script->member_info[name] = pinfo;
-
-							if (prop.exported) {
+			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyInfoList(this, &_add_property_info_list_callback);
 
 #ifdef TOOLS_ENABLED
-								p_script->exported_members_cache.push_back(pinfo);
-#endif
-
-#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
-								p_script->exported_members_names.insert(name);
-#endif
-							}
-						}
-					});
-
-#ifdef TOOLS_ENABLED
-			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyDefaultValues(this,
-					[](CSharpScript *p_script, GDMonoCache::godotsharp_property_def_val_pair *p_def_vals, int32_t p_count) {
-						for (int i = 0; i < p_count; i++) {
-							const GDMonoCache::godotsharp_property_def_val_pair &def_val_pair = p_def_vals[i];
-
-							StringName name = *reinterpret_cast<const StringName *>(&def_val_pair.name);
-							Variant value = *reinterpret_cast<const Variant *>(&def_val_pair.value);
-
-							p_script->exported_members_defval_cache[name] = value;
-						}
-					});
+			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyDefaultValues(this, &_add_property_default_values_callback);
 #endif
 		}
 	}
@@ -2391,9 +2405,9 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 		if (EngineDebugger::is_active()) {
 			CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
 					"Script inherits from native type '" + String(native_name) +
-							"', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
+							"', so it can't be assigned to an object of type: '" + p_this->get_class() + "'");
 		}
-		ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'.");
+		ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be assigned to an object of type: '" + p_this->get_class() + "'.");
 	}
 
 	Callable::CallError unchecked_error;

@@ -190,6 +190,12 @@
 				Sets the tooltip of the item at index [param idx].
 			</description>
 		</method>
+		<method name="show_popup">
+			<return type="void" />
+			<description>
+				Adjusts popup position and sizing for the [OptionButton], then shows the [PopupMenu]. Prefer this over using [code]get_popup().popup()[/code].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" overrides="BaseButton" enum="BaseButton.ActionMode" default="0" />
@@ -210,7 +216,7 @@
 		<signal name="item_focused">
 			<param index="0" name="index" type="int" />
 			<description>
-				Emitted when the user navigates to an item using the [code]ui_up[/code] or [code]ui_down[/code] actions. The index of the item selected is passed as argument.
+				Emitted when the user navigates to an item using the [member ProjectSettings.input/ui_up] or [member ProjectSettings.input/ui_down] input actions. The index of the item selected is passed as argument.
 			</description>
 		</signal>
 		<signal name="item_selected">

@@ -70,7 +70,7 @@ private:
 	bool follow_focus = false;
 
 	struct ThemeCache {
-		Ref<StyleBox> bg_style;
+		Ref<StyleBox> panel_style;
 	} theme_cache;
 
 	void _cancel_drag();
@@ -114,7 +114,7 @@ public:
 	VScrollBar *get_v_scroll_bar();
 	void ensure_control_visible(Control *p_control);
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	ScrollContainer();
 };

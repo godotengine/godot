@@ -155,6 +155,7 @@
 		<method name="get_layers_count" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the number of layers in the TileMap.
 			</description>
 		</method>
 		<method name="get_neighbor_cell" qualifiers="const">
@@ -188,7 +189,7 @@
 			</description>
 		</method>
 		<method name="get_used_rect">
-			<return type="Rect2" />
+			<return type="Rect2i" />
 			<description>
 				Returns a rectangle enclosing the used (non-empty) tiles of the map, including all layers.
 			</description>
@@ -207,6 +208,13 @@
 				Returns if a layer Y-sorts its tiles.
 			</description>
 		</method>
+		<method name="local_to_map" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="local_position" type="Vector2" />
+			<description>
+				Returns the map coordinates of the cell containing the given [param local_position]. If [param local_position] is in global coordinates, consider using [method Node2D.to_local] before passing it to this method. See also [method map_to_local].
+			</description>
+		</method>
 		<method name="map_pattern">
 			<return type="Vector2i" />
 			<param index="0" name="position_in_tilemap" type="Vector2i" />
@@ -216,12 +224,12 @@
 				Returns for the given coordinate [param coords_in_pattern] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [param position_in_tilemap] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code]
 			</description>
 		</method>
-		<method name="map_to_world" qualifiers="const">
+		<method name="map_to_local" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="map_position" type="Vector2i" />
 			<description>
-				Returns a local position of the center of the cell at the given tilemap (grid-based) coordinates.
-				[b]Note:[/b] This doesn't correspond to the visual position of the tile, i.e. it ignores the [member TileData.texture_offset] property of individual tiles.
+				Returns the centered position of a cell in the TileMap's local coordinate space. To convert the returned value into global coordinates, use [method Node2D.to_global]. See also [method local_to_map].
+				[b]Note:[/b] This may not correspond to the visual position of the tile, i.e. it ignores the [member TileData.texture_offset] property of individual tiles.
 			</description>
 		</method>
 		<method name="move_layer">
@@ -344,13 +352,6 @@
 				Paste the given [TileMapPattern] at the given [param position] and [param layer] in the tile map.
 			</description>
 		</method>
-		<method name="world_to_map" qualifiers="const">
-			<return type="Vector2i" />
-			<param index="0" name="world_position" type="Vector2" />
-			<description>
-				Returns the tilemap (grid-based) coordinates corresponding to the given local position.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size" default="16">
@@ -364,7 +365,7 @@
 			Show or hide the TileMap's collision shapes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show collision debug settings.
 		</member>
 		<member name="navigation_visibility_mode" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMap.VisibilityMode" default="0">
-			Show or hide the TileMap's collision shapes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
+			Show or hide the TileMap's navigation meshes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].

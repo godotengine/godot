@@ -38,8 +38,8 @@
 void ExtendGDScriptParser::update_diagnostics() {
 	diagnostics.clear();
 
-	const List<ParserError> &errors = get_errors();
-	for (const ParserError &error : errors) {
+	const List<ParserError> &parser_errors = get_errors();
+	for (const ParserError &error : parser_errors) {
 		lsp::Diagnostic diagnostic;
 		diagnostic.severity = lsp::DiagnosticSeverity::Error;
 		diagnostic.message = error.message;
@@ -47,9 +47,9 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostic.code = -1;
 		lsp::Range range;
 		lsp::Position pos;
-		const PackedStringArray lines = get_lines();
-		int line = CLAMP(LINE_NUMBER_TO_INDEX(error.line), 0, lines.size() - 1);
-		const String &line_text = lines[line];
+		const PackedStringArray line_array = get_lines();
+		int line = CLAMP(LINE_NUMBER_TO_INDEX(error.line), 0, line_array.size() - 1);
+		const String &line_text = line_array[line];
 		pos.line = line;
 		pos.character = line_text.length() - line_text.strip_edges(true, false).length();
 		range.start = pos;
@@ -59,8 +59,8 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostics.push_back(diagnostic);
 	}
 
-	const List<GDScriptWarning> &warnings = get_warnings();
-	for (const GDScriptWarning &warning : warnings) {
+	const List<GDScriptWarning> &parser_warnings = get_warnings();
+	for (const GDScriptWarning &warning : parser_warnings) {
 		lsp::Diagnostic diagnostic;
 		diagnostic.severity = lsp::DiagnosticSeverity::Warning;
 		diagnostic.message = "(" + warning.get_name() + "): " + warning.get_message();
@@ -83,8 +83,7 @@ void ExtendGDScriptParser::update_diagnostics() {
 void ExtendGDScriptParser::update_symbols() {
 	members.clear();
 
-	const GDScriptParser::Node *head = get_tree();
-	if (const GDScriptParser::ClassNode *gdclass = dynamic_cast<const GDScriptParser::ClassNode *>(head)) {
+	if (const GDScriptParser::ClassNode *gdclass = dynamic_cast<const GDScriptParser::ClassNode *>(get_tree())) {
 		parse_class_symbol(gdclass, class_symbol);
 
 		for (int i = 0; i < class_symbol.children.size(); i++) {
@@ -107,26 +106,26 @@ void ExtendGDScriptParser::update_symbols() {
 void ExtendGDScriptParser::update_document_links(const String &p_code) {
 	document_links.clear();
 
-	GDScriptTokenizer tokenizer;
+	GDScriptTokenizer scr_tokenizer;
 	Ref<FileAccess> fs = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-	tokenizer.set_source_code(p_code);
+	scr_tokenizer.set_source_code(p_code);
 	while (true) {
-		GDScriptTokenizer::Token token = tokenizer.scan();
+		GDScriptTokenizer::Token token = scr_tokenizer.scan();
 		if (token.type == GDScriptTokenizer::Token::TK_EOF) {
 			break;
 		} else if (token.type == GDScriptTokenizer::Token::LITERAL) {
 			const Variant &const_val = token.literal;
 			if (const_val.get_type() == Variant::STRING) {
-				String path = const_val;
-				bool exists = fs->file_exists(path);
+				String scr_path = const_val;
+				bool exists = fs->file_exists(scr_path);
 				if (!exists) {
-					path = get_path().get_base_dir() + "/" + path;
-					exists = fs->file_exists(path);
+					scr_path = get_path().get_base_dir() + "/" + scr_path;
+					exists = fs->file_exists(scr_path);
 				}
 				if (exists) {
 					String value = const_val;
 					lsp::DocumentLink link;
-					link.target = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(path);
+					link.target = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(scr_path);
 					link.range.start.line = LINE_NUMBER_TO_INDEX(token.start_line);
 					link.range.end.line = LINE_NUMBER_TO_INDEX(token.end_line);
 					link.range.start.character = LINE_NUMBER_TO_INDEX(token.start_column);
@@ -437,11 +436,11 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 
 	if (!p_docs_down) { // inline comment
 		String inline_comment = lines[p_line];
-		int comment_start = inline_comment.find("#");
+		int comment_start = inline_comment.find("##");
 		if (comment_start != -1) {
 			inline_comment = inline_comment.substr(comment_start, inline_comment.length()).strip_edges();
 			if (inline_comment.length() > 1) {
-				doc_lines.push_back(inline_comment.substr(1, inline_comment.length()));
+				doc_lines.push_back(inline_comment.substr(2, inline_comment.length()));
 			}
 		}
 	}
@@ -454,8 +453,8 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 		}
 
 		String line_comment = lines[i].strip_edges(true, false);
-		if (line_comment.begins_with("#")) {
-			line_comment = line_comment.substr(1, line_comment.length());
+		if (line_comment.begins_with("##")) {
+			line_comment = line_comment.substr(2, line_comment.length());
 			if (p_docs_down) {
 				doc_lines.push_back(line_comment);
 			} else {
@@ -731,7 +730,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 
 	Array nested_classes;
 	Array constants;
-	Array members;
+	Array class_members;
 	Array signals;
 	Array methods;
 	Array static_functions;
@@ -792,7 +791,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 					api["signature"] = symbol->detail;
 					api["description"] = symbol->documentation;
 				}
-				members.push_back(api);
+				class_members.push_back(api);
 			} break;
 			case ClassNode::Member::SIGNAL: {
 				Dictionary api;
@@ -824,7 +823,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 
 	class_api["sub_classes"] = nested_classes;
 	class_api["constants"] = constants;
-	class_api["members"] = members;
+	class_api["members"] = class_members;
 	class_api["signals"] = signals;
 	class_api["methods"] = methods;
 	class_api["static_functions"] = static_functions;
@@ -834,8 +833,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 
 Dictionary ExtendGDScriptParser::generate_api() const {
 	Dictionary api;
-	const GDScriptParser::Node *head = get_tree();
-	if (const GDScriptParser::ClassNode *gdclass = dynamic_cast<const GDScriptParser::ClassNode *>(head)) {
+	if (const GDScriptParser::ClassNode *gdclass = dynamic_cast<const GDScriptParser::ClassNode *>(get_tree())) {
 		api = dump_class_api(gdclass);
 	}
 	return api;

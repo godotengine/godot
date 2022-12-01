@@ -251,7 +251,9 @@ struct BVH_ABB {
 
 	void expand(real_t p_change) {
 		POINT change;
-		change.set_all(p_change);
+		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
+			change[axis] = p_change;
+		}
 		grow(change);
 	}
 
@@ -262,7 +264,9 @@ struct BVH_ABB {
 	}
 
 	void set_to_max_opposite_extents() {
-		neg_max.set_all(FLT_MAX);
+		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
+			neg_max[axis] = FLT_MAX;
+		}
 		min = neg_max;
 	}
 

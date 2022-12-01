@@ -31,6 +31,7 @@
   "texunit_names": [],
   "ubos": [],
   "ubo_names": [],
+  "feedbacks": [],
   "vertex_included_files": [],
   "fragment_included_files": [],
   "reading": "fragment",

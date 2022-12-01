@@ -62,9 +62,9 @@ void CollisionShape3D::make_convex_from_siblings() {
 		}
 	}
 
-	Ref<ConvexPolygonShape3D> shape = memnew(ConvexPolygonShape3D);
-	shape->set_points(vertices);
-	set_shape(shape);
+	Ref<ConvexPolygonShape3D> shape_new = memnew(ConvexPolygonShape3D);
+	shape_new->set_points(vertices);
+	set_shape(shape_new);
 }
 
 void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
@@ -114,8 +114,8 @@ void CollisionShape3D::resource_changed(Ref<Resource> res) {
 	update_gizmos();
 }
 
-TypedArray<String> CollisionShape3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray CollisionShape3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
 		warnings.push_back(RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));

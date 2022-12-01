@@ -183,35 +183,35 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_pressed()) {
-		if (p_event->is_action("ui_left")) {
+		if (p_event->is_action("ui_left", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (p_event->is_action("ui_right")) {
+		} else if (p_event->is_action("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (p_event->is_action("ui_up")) {
+		} else if (p_event->is_action("ui_up", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
 
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (p_event->is_action("ui_down")) {
+		} else if (p_event->is_action("ui_down", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (p_event->is_action("ui_home")) {
+		} else if (p_event->is_action("ui_home", true)) {
 			set_value(get_min());
 
-		} else if (p_event->is_action("ui_end")) {
+		} else if (p_event->is_action("ui_end", true)) {
 			set_value(get_max());
 		}
 	}
@@ -321,7 +321,7 @@ void ScrollBar::_notification(int p_what) {
 
 			if (drag_node) {
 				drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-				drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONESHOT);
+				drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
 			}
 		} break;
 
@@ -338,7 +338,7 @@ void ScrollBar::_notification(int p_what) {
 			if (scrolling) {
 				if (get_value() != target_scroll) {
 					double target = target_scroll - get_value();
-					double dist = sqrt(target * target);
+					double dist = abs(target);
 					double vel = ((target / dist) * 500) * get_physics_process_delta_time();
 
 					if (Math::abs(vel) >= dist) {
@@ -613,7 +613,7 @@ void ScrollBar::set_drag_node(const NodePath &p_path) {
 
 		if (drag_node) {
 			drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-			drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONESHOT);
+			drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
 		}
 	}
 }

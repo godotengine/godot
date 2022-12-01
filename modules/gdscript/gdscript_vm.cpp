@@ -2163,7 +2163,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_AWAIT) {
 				CHECK_SPACE(2);
 
-				// Do the oneshot connect.
+				// Do the one-shot connect.
 				GET_INSTRUCTION_ARG(argobj, 0);
 
 				Signal sig;
@@ -2216,7 +2216,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					gdfs->state.line = line;
 					gdfs->state.script = _script;
 					{
-						MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+						MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 						_script->pending_func_states.add(&gdfs->scripts_list);
 						if (p_instance) {
 							gdfs->state.instance = p_instance;
@@ -2234,7 +2234,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					retvalue = gdfs;
 
-					Error err = sig.connect(Callable(gdfs.ptr(), "_signal_callback").bind(retvalue), Object::CONNECT_ONESHOT);
+					Error err = sig.connect(Callable(gdfs.ptr(), "_signal_callback").bind(retvalue), Object::CONNECT_ONE_SHOT);
 					if (err != OK) {
 						err_text = "Error connecting to signal: " + sig.get_name() + " during await.";
 						OPCODE_BREAK;

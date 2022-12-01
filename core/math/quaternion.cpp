@@ -31,32 +31,18 @@
 #include "quaternion.h"
 
 #include "core/math/basis.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 real_t Quaternion::angle_to(const Quaternion &p_to) const {
 	real_t d = dot(p_to);
 	return Math::acos(CLAMP(d * d * 2 - 1, -1, 1));
 }
 
-// get_euler_xyz returns a vector containing the Euler angles in the format
-// (ax,ay,az), where ax is the angle of rotation around x axis,
-// and similar for other axes.
-// This implementation uses XYZ convention (Z is the first rotation).
-Vector3 Quaternion::get_euler_xyz() const {
-	Basis m(*this);
-	return m.get_euler(Basis::EULER_ORDER_XYZ);
-}
-
-// get_euler_yxz returns a vector containing the Euler angles in the format
-// (ax,ay,az), where ax is the angle of rotation around x axis,
-// and similar for other axes.
-// This implementation uses YXZ convention (Z is the first rotation).
-Vector3 Quaternion::get_euler_yxz() const {
+Vector3 Quaternion::get_euler(EulerOrder p_order) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion must be normalized.");
 #endif
-	Basis m(*this);
-	return m.get_euler(Basis::EULER_ORDER_YXZ);
+	return Basis(*this).get_euler(p_order);
 }
 
 void Quaternion::operator*=(const Quaternion &p_q) {
@@ -77,6 +63,10 @@ Quaternion Quaternion::operator*(const Quaternion &p_q) const {
 
 bool Quaternion::is_equal_approx(const Quaternion &p_quaternion) const {
 	return Math::is_equal_approx(x, p_quaternion.x) && Math::is_equal_approx(y, p_quaternion.y) && Math::is_equal_approx(z, p_quaternion.z) && Math::is_equal_approx(w, p_quaternion.w);
+}
+
+bool Quaternion::is_finite() const {
+	return Math::is_finite(x) && Math::is_finite(y) && Math::is_finite(z) && Math::is_finite(w);
 }
 
 real_t Quaternion::length() const {
@@ -326,7 +316,7 @@ Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 // (ax, ay, az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
 // This implementation uses YXZ convention (Z is the first rotation).
-Quaternion::Quaternion(const Vector3 &p_euler) {
+Quaternion Quaternion::from_euler(const Vector3 &p_euler) {
 	real_t half_a1 = p_euler.y * 0.5f;
 	real_t half_a2 = p_euler.x * 0.5f;
 	real_t half_a3 = p_euler.z * 0.5f;
@@ -342,8 +332,9 @@ Quaternion::Quaternion(const Vector3 &p_euler) {
 	real_t cos_a3 = Math::cos(half_a3);
 	real_t sin_a3 = Math::sin(half_a3);
 
-	x = sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3;
-	y = sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3;
-	z = -sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3;
-	w = sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3;
+	return Quaternion(
+			sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3,
+			sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3,
+			-sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3,
+			sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3);
 }

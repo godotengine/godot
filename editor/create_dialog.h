@@ -110,7 +110,7 @@ protected:
 	void _save_and_update_favorite_list();
 
 public:
-	Variant instance_selected();
+	Variant instantiate_selected();
 	String get_selected_type();
 
 	void set_base_type(const String &p_base) { base_type = p_base; }
@@ -120,7 +120,7 @@ public:
 	void set_preferred_search_result_type(const String &p_preferred_type) { preferred_search_result_type = p_preferred_type; }
 	String get_preferred_search_result_type() { return preferred_search_result_type; }
 
-	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_select_type = "Node", const String &p_select_name = "");
+	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_current_type = "", const String &p_current_name = "");
 
 	CreateDialog();
 };

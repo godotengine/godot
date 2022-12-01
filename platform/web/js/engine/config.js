@@ -275,7 +275,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'print': this.onPrint,
 			'printErr': this.onPrintError,
 			'thisProgram': this.executable,
-			'noExitRuntime': true,
+			'noExitRuntime': false,
 			'dynamicLibraries': [`${loadPath}.side.wasm`],
 			'instantiateWasm': function (imports, onSuccess) {
 				function done(result) {
@@ -317,7 +317,8 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		if (!(this.canvas instanceof HTMLCanvasElement)) {
 			const nodes = document.getElementsByTagName('canvas');
 			if (nodes.length && nodes[0] instanceof HTMLCanvasElement) {
-				this.canvas = nodes[0];
+				const first = nodes[0];
+				this.canvas = /** @type {!HTMLCanvasElement} */ (first);
 			}
 			if (!this.canvas) {
 				throw new Error('No canvas found in page');

@@ -84,6 +84,18 @@ public:
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) = 0;
 	virtual uint64_t light_get_version(RID p_light) const = 0;
 
+	/* LIGHT INSTANCE API */
+
+	virtual RID light_instance_create(RID p_light) = 0;
+	virtual void light_instance_free(RID p_light_instance) = 0;
+	virtual void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) = 0;
+	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) = 0;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) = 0;
+	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
+	virtual bool light_instances_can_render_shadow_cube() const {
+		return true;
+	}
+
 	/* PROBE API */
 
 	virtual RID reflection_probe_allocate() = 0;
@@ -114,6 +126,24 @@ public:
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const = 0;
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const = 0;
 
+	/* REFLECTION ATLAS */
+
+	virtual RID reflection_atlas_create() = 0;
+	virtual void reflection_atlas_free(RID p_ref_atlas) = 0;
+	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) = 0;
+	virtual int reflection_atlas_get_size(RID p_ref_atlas) const = 0;
+
+	/* REFLECTION PROBE INSTANCE */
+
+	virtual RID reflection_probe_instance_create(RID p_probe) = 0;
+	virtual void reflection_probe_instance_free(RID p_instance) = 0;
+	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) = 0;
+	virtual void reflection_probe_release_atlas_index(RID p_instance) = 0;
+	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) = 0;
+	virtual bool reflection_probe_instance_has_reflection(RID p_instance) = 0;
+	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) = 0;
+	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) = 0;
+
 	/* LIGHTMAP  */
 
 	virtual RID lightmap_allocate() = 0;
@@ -134,6 +164,27 @@ public:
 	virtual bool lightmap_is_interior(RID p_lightmap) const = 0;
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
 	virtual float lightmap_get_probe_capture_update_speed() const = 0;
+
+	/* LIGHTMAP INSTANCE */
+
+	virtual RID lightmap_instance_create(RID p_lightmap) = 0;
+	virtual void lightmap_instance_free(RID p_lightmap) = 0;
+	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) = 0;
+
+	/* SHADOW ATLAS */
+
+	virtual RID shadow_atlas_create() = 0;
+	virtual void shadow_atlas_free(RID p_atlas) = 0;
+
+	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = true) = 0;
+	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
+	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) = 0;
+
+	virtual void shadow_atlas_update(RID p_atlas) = 0;
+
+	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
+	virtual int get_directional_light_shadow_size(RID p_light_intance) = 0;
+	virtual void set_directional_shadow_count(int p_count) = 0;
 };
 
 #endif // LIGHT_STORAGE_H

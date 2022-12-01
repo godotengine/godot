@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
@@ -211,11 +212,11 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 void AnimationBezierTrackEdit::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -338,14 +339,14 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				Ref<Texture2D> unlock = get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons"));
 				float lock_hpos = remove_hpos - hsep - lock->get_width();
 
-				Ref<Texture2D> visible = get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons"));
-				Ref<Texture2D> hidden = get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons"));
-				float visibility_hpos = lock_hpos - hsep - visible->get_width();
+				Ref<Texture2D> visibility_visible = get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons"));
+				Ref<Texture2D> visibility_hidden = get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons"));
+				float visibility_hpos = lock_hpos - hsep - visibility_visible->get_width();
 
 				Ref<Texture2D> solo = get_theme_icon(SNAME("AudioBusSolo"), SNAME("EditorIcons"));
 				float solo_hpos = visibility_hpos - hsep - solo->get_width();
 
-				float buttons_width = remove->get_width() + lock->get_width() + visible->get_width() + solo->get_width() + hsep * 3;
+				float buttons_width = remove->get_width() + lock->get_width() + visibility_visible->get_width() + solo->get_width() + hsep * 3;
 
 				for (int i = 0; i < tracks.size(); ++i) {
 					// RELATED TRACKS TITLES
@@ -418,11 +419,11 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 						draw_texture(unlock, lock_rect.position);
 					}
 
-					Rect2 visible_rect = Rect2(visibility_hpos, icon_start_height - visible->get_height() / 2.0, visible->get_width(), visible->get_height());
+					Rect2 visible_rect = Rect2(visibility_hpos, icon_start_height - visibility_visible->get_height() / 2.0, visibility_visible->get_width(), visibility_visible->get_height());
 					if (hidden_tracks.has(current_track)) {
-						draw_texture(hidden, visible_rect.position);
+						draw_texture(visibility_hidden, visible_rect.position);
 					} else {
-						draw_texture(visible, visible_rect.position);
+						draw_texture(visibility_visible, visible_rect.position);
 					}
 
 					Rect2 solo_rect = Rect2(solo_hpos, icon_start_height - solo->get_height() / 2.0, solo->get_width(), solo->get_height());
@@ -655,10 +656,6 @@ Size2 AnimationBezierTrackEdit::get_minimum_size() const {
 	return Vector2(1, 1);
 }
 
-void AnimationBezierTrackEdit::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
-}
-
 void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
 	timeline->connect("zoom_changed", callable_mp(this, &AnimationBezierTrackEdit::_zoom_changed));
@@ -667,8 +664,8 @@ void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 
 void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
-	connect("clear_selection", Callable(editor, "_clear_selection").bind(false));
-	connect("select_key", Callable(editor, "_key_selected"), CONNECT_DEFERRED);
+	connect("clear_selection", callable_mp(editor, &AnimationTrackEditor::_clear_selection).bind(false));
+	connect("select_key", callable_mp(editor, &AnimationTrackEditor::_key_selected), CONNECT_DEFERRED);
 }
 
 void AnimationBezierTrackEdit::_play_position_draw() {
@@ -791,6 +788,7 @@ void AnimationBezierTrackEdit::_clear_selection() {
 }
 
 void AnimationBezierTrackEdit::_change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Update Selected Key Handles"));
 	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 		const IntPair track_key_pair = E->get();
@@ -903,11 +901,17 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			float zoom_value = timeline->get_zoom()->get_max() - zv;
 
-			timeline->get_zoom()->set_value(zoom_value);
-			timeline->call_deferred("set_value", minimum_time);
+			if (Math::is_finite(minimum_time) && Math::is_finite(maximum_time) && maximum_time - minimum_time > CMP_EPSILON) {
+				timeline->get_zoom()->set_value(zoom_value);
+				timeline->call_deferred("set_value", minimum_time);
+			}
 
-			v_scroll = (maximum_value + minimum_value) / 2.0;
-			v_zoom = (maximum_value - minimum_value) / ((get_size().height - timeline->get_size().height) * 0.9);
+			if (Math::is_finite(minimum_value) && Math::is_finite(maximum_value)) {
+				v_scroll = (maximum_value + minimum_value) / 2.0;
+				if (maximum_value - minimum_value > CMP_EPSILON) {
+					v_zoom = (maximum_value - minimum_value) / ((get_size().height - timeline->get_size().height) * 0.9);
+				}
+			}
 
 			queue_redraw();
 			accept_event();
@@ -938,9 +942,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				Vector2 popup_pos = get_screen_position() + mb->get_position();
 
 				menu->clear();
-				if (!locked_tracks.has(selected_track) || locked_tracks.has(selected_track)) {
-					menu->add_icon_item(bezier_icon, TTR("Insert Key Here"), MENU_KEY_INSERT);
-				}
+				menu->add_icon_item(bezier_icon, TTR("Insert Key Here"), MENU_KEY_INSERT);
 				if (selection.size()) {
 					menu->add_separator();
 					menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Duplicate Selected Key(s)"), MENU_KEY_DUPLICATE);
@@ -983,6 +985,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (I.value.has_point(mb->get_position())) {
 					if (I.key == REMOVE_ICON) {
 						if (!read_only) {
+							Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 							undo_redo->create_action("Remove Bezier Track");
 
 							undo_redo->add_do_method(this, "_update_locked_tracks_after", track);
@@ -1088,7 +1091,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			//first check point
 			//command makes it ignore the main point, so control point editors can be force-edited
 			//path 2D editing in the 3D and 2D editors works the same way
-			if (!mb->is_command_pressed()) {
+			if (!mb->is_command_or_control_pressed()) {
 				if (edit_points[i].point_rect.has_point(mb->get_position())) {
 					IntPair pair = IntPair(edit_points[i].track, edit_points[i].key);
 					if (mb->is_shift_pressed()) {
@@ -1152,7 +1155,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		//insert new point
-		if (mb->get_position().x >= limit && mb->get_position().x < get_size().width && mb->is_command_pressed()) {
+		if (mb->get_position().x >= limit && mb->get_position().x < get_size().width && mb->is_command_or_control_pressed()) {
 			Array new_point;
 			new_point.resize(5);
 
@@ -1169,6 +1172,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				time += 0.001;
 			}
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add Bezier Point"));
 			undo_redo->add_do_method(animation.ptr(), "bezier_track_insert_key", selected_track, time, new_point);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
@@ -1266,6 +1270,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (moving_selection) {
 				//combit it
 
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Move Bezier Points"));
 
 				List<AnimMoveRestore> to_restore;
@@ -1466,6 +1471,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if ((moving_handle == -1 || moving_handle == 1) && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (!read_only) {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Move Bezier Points"));
 			if (moving_handle == -1) {
 				real_t ratio = timeline->get_zoom_scale() * v_zoom;
@@ -1537,6 +1543,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 					time += 0.001;
 				}
 
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Add Bezier Point"));
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, time, new_point);
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
@@ -1584,6 +1591,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 		}
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Anim Duplicate Keys"));
 
 	List<Pair<int, real_t>> new_selection_values;
@@ -1629,6 +1637,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 
 void AnimationBezierTrackEdit::delete_selection() {
 	if (selection.size()) {
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Anim Delete Keys"));
 
 		for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
@@ -1684,8 +1693,8 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	set_clip_contents(true);
 
 	ED_SHORTCUT("animation_bezier_editor/focus", TTR("Focus"), Key::F);
-	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTR("Select All Keys"), KeyModifierMask::CMD | Key::A);
-	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTR("Deselect All Keys"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTR("Select All Keys"), KeyModifierMask::CMD_OR_CTRL | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTR("Deselect All Keys"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
 
 	menu = memnew(PopupMenu);
 	add_child(menu);

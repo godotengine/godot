@@ -141,13 +141,12 @@ private:
 	float reverb_amount = 0.0;
 	float reverb_uniformity = 0.0;
 
-	void _validate_property(PropertyInfo &p_property) const;
-
 	void _initialize_wind();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_gravity_space_override_mode(SpaceOverride p_mode);
@@ -201,6 +200,9 @@ public:
 	TypedArray<Node3D> get_overlapping_bodies() const;
 	TypedArray<Area3D> get_overlapping_areas() const; //function for script
 
+	bool has_overlapping_bodies() const;
+	bool has_overlapping_areas() const;
+
 	bool overlaps_area(Node *p_area) const;
 	bool overlaps_body(Node *p_body) const;
 
@@ -213,8 +215,8 @@ public:
 	void set_use_reverb_bus(bool p_enable);
 	bool is_using_reverb_bus() const;
 
-	void set_reverb_bus(const StringName &p_audio_bus);
-	StringName get_reverb_bus() const;
+	void set_reverb_bus_name(const StringName &p_audio_bus);
+	StringName get_reverb_bus_name() const;
 
 	void set_reverb_amount(float p_amount);
 	float get_reverb_amount() const;

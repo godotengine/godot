@@ -51,6 +51,7 @@ class RasterizerDummy : public RendererCompositor {
 private:
 	uint64_t frame = 1;
 	double delta = 0;
+	double time = 0.0;
 
 protected:
 	RasterizerCanvasDummy canvas;
@@ -82,6 +83,7 @@ public:
 	void begin_frame(double frame_step) override {
 		frame++;
 		delta = frame_step;
+		time += frame_step;
 	}
 
 	void prepare_for_blitting_render_targets() override {}
@@ -106,6 +108,7 @@ public:
 
 	uint64_t get_frame_number() const override { return frame; }
 	double get_frame_delta_time() const override { return delta; }
+	double get_total_time() const override { return time; }
 
 	RasterizerDummy() {}
 	~RasterizerDummy() {}

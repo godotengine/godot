@@ -28,12 +28,14 @@
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<description>
+				Returns the maximum value range for the given parameter.
 			</description>
 		</method>
 		<method name="get_param_min" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<description>
+				Returns the minimum value range for the given parameter.
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
@@ -62,7 +64,7 @@
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<param index="1" name="value" type="float" />
 			<description>
-				Sets the maximum value for the given parameter
+				Sets the maximum value for the given parameter.
 			</description>
 		</method>
 		<method name="set_param_min">
@@ -70,7 +72,7 @@
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<param index="1" name="value" type="float" />
 			<description>
-				Sets the minimum value for the given parameter
+				Sets the minimum value for the given parameter.
 			</description>
 		</method>
 		<method name="set_particle_flag">
@@ -187,7 +189,7 @@
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins.
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="0">
-			The particle system's frame rate is fixed to a value. For instance, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the particle system itself.
+			The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the particle system itself.
 		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
 			Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts particles to X/Z plane.

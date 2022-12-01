@@ -355,7 +355,7 @@
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
 			Set's the window's current mode.
-			[b]Note:[/b] Fullscreen mode is not exclusive fullscreen on Windows and Linux.
+			[b]Note:[/b] Fullscreen mode is not exclusive full screen on Windows and Linux.
 		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
@@ -377,11 +377,13 @@
 			The window's title. If the [Window] is non-embedded, title styles set in [Theme] will have no effect.
 		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
-			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. Transient windows can't be in fullscreen mode and will return focus to their parent when closed.
+			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. Transient window is will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 			Note that behavior might be different depending on the platform.
 		</member>
 		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows. Currently non-embedded [Window] transparency is implemented only for MacOS.
+			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows.
+			[b]Note:[/b] For native windows, this flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
+			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
 		</member>
 		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.
@@ -454,6 +456,11 @@
 				Emitted when the [constant NOTIFICATION_THEME_CHANGED] notification is sent.
 			</description>
 		</signal>
+		<signal name="titlebar_changed">
+			<description>
+				Emitted when window title bar decorations are changed, e.g. macOS window enter/exit full screen mode, or extend-to-title flag is changed.
+			</description>
+		</signal>
 		<signal name="visibility_changed">
 			<description>
 				Emitted when [Window] is made visible or disappears.
@@ -462,7 +469,7 @@
 		<signal name="window_input">
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Emitted when the [Window] is currently focused and receives any input, passing the received event as an argument.
+				Emitted when the [Window] is currently focused and receives any input, passing the received event as an argument. The event's position, if present, is in the embedder's coordinate system.
 			</description>
 		</signal>
 	</signals>
@@ -478,43 +485,45 @@
 			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
 		</constant>
 		<constant name="MODE_WINDOWED" value="0" enum="Mode">
-			Windowed mode, i.e. [Window] doesn't occupy whole screen (unless set to the size of the screen).
+			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
 		</constant>
 		<constant name="MODE_MINIMIZED" value="1" enum="Mode">
-			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is presesd.
+			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
 		</constant>
 		<constant name="MODE_MAXIMIZED" value="2" enum="Mode">
-			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the minimize button is presesd.
+			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
 		</constant>
 		<constant name="MODE_FULLSCREEN" value="3" enum="Mode">
-			Fullscreen window mode. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
-			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+			Full screen window mode. Note that this is not [i]exclusive[/i] full screen. On Windows and Linux, a borderless window is used to emulate full screen. On macOS, a new desktop is used to display the running project.
+			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="Mode">
-			Exclusive fullscreen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant MODE_FULLSCREEN].
-			Only one window in exclusive fullscreen mode can be visible on a given screen at a time. If multiple windows are in exclusive fullscreen mode for the same screen, the last one being set to this mode takes precedence.
-			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+			Exclusive full screen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant MODE_FULLSCREEN].
+			Only one window in exclusive full screen mode can be visible on a given screen at a time. If multiple windows are in exclusive full screen mode for the same screen, the last one being set to this mode takes precedence.
+			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
-			The window's ability to be resized. Set with [member unresizable].
+			The window can't be resizing by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
 		</constant>
 		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
-			Borderless window. Set with [member borderless].
+			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
 		</constant>
 		<constant name="FLAG_ALWAYS_ON_TOP" value="2" enum="Flags">
-			Flag for making the window always on top of all other windows. Set with [member always_on_top].
+			The window is floating on top of all other windows. This flag is ignored for full-screen windows. Set with [member always_on_top].
 		</constant>
 		<constant name="FLAG_TRANSPARENT" value="3" enum="Flags">
-			Flag for per-pixel transparency. Set with [member transparent].
+			The window background can be transparent.
+			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code]. Set with [member transparent].
 		</constant>
 		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
-			The window's ability to gain focus. Set with [member unfocusable].
+			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
 		</constant>
 		<constant name="FLAG_POPUP" value="5" enum="Flags">
-			Whether the window is popup or a regular window. Set with [member popup_window].
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [code]transient parent[/code] set (see [member transient]).
 		</constant>
 		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
-			Window contents is expanded to the full size of the window, window title bar is transparent.
+			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
+			[b]Note:[/b] This flag is implemented on macOS.
 		</constant>
 		<constant name="FLAG_MAX" value="7" enum="Flags">
 			Max value of the [enum Flags].

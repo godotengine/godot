@@ -73,10 +73,10 @@ void ColorModeRGB::slider_draw(int p_which) {
 	Color left_color;
 	Color right_color;
 	Color color = color_picker->get_pick_color();
-	const real_t margin = 4 * color_picker->get_theme_default_base_scale();
+	const real_t margin = 16 * color_picker->get_theme_default_base_scale();
 
 	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, margin), Size2(size.x, margin)), true);
+		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, 0), Size2(size.x, margin)), true);
 
 		left_color = color;
 		left_color.a = 0;
@@ -97,10 +97,10 @@ void ColorModeRGB::slider_draw(int p_which) {
 	col.set(1, right_color);
 	col.set(2, right_color);
 	col.set(3, left_color);
-	pos.set(0, Vector2(0, margin));
-	pos.set(1, Vector2(size.x, margin));
-	pos.set(2, Vector2(size.x, margin * 2));
-	pos.set(3, Vector2(0, margin * 2));
+	pos.set(0, Vector2(0, 0));
+	pos.set(1, Vector2(size.x, 0));
+	pos.set(2, Vector2(size.x, margin));
+	pos.set(3, Vector2(0, margin));
 
 	slider->draw_polygon(pos, col);
 }
@@ -147,10 +147,10 @@ void ColorModeHSV::slider_draw(int p_which) {
 	Color left_color;
 	Color right_color;
 	Color color = color_picker->get_pick_color();
-	const real_t margin = 4 * color_picker->get_theme_default_base_scale();
+	const real_t margin = 16 * color_picker->get_theme_default_base_scale();
 
 	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, margin), Size2(size.x, margin)), true);
+		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, 0), Size2(size.x, margin)), true);
 
 		left_color = color;
 		left_color.a = 0;
@@ -158,8 +158,7 @@ void ColorModeHSV::slider_draw(int p_which) {
 		right_color.a = 1;
 	} else if (p_which == 0) {
 		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_hue"), SNAME("ColorPicker"));
-		slider->draw_set_transform(Point2(), -Math_PI / 2, Size2(1.0, 1.0));
-		slider->draw_texture_rect(hue, Rect2(Vector2(margin * -2, 0), Vector2(margin, size.x)), false);
+		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false);
 		return;
 	} else {
 		Color s_col;
@@ -174,10 +173,10 @@ void ColorModeHSV::slider_draw(int p_which) {
 	col.set(1, right_color);
 	col.set(2, right_color);
 	col.set(3, left_color);
-	pos.set(0, Vector2(0, margin));
-	pos.set(1, Vector2(size.x, margin));
-	pos.set(2, Vector2(size.x, margin * 2));
-	pos.set(3, Vector2(0, margin * 2));
+	pos.set(0, Vector2(0, 0));
+	pos.set(1, Vector2(size.x, 0));
+	pos.set(2, Vector2(size.x, margin));
+	pos.set(3, Vector2(0, margin));
 
 	slider->draw_polygon(pos, col);
 }
@@ -216,10 +215,10 @@ void ColorModeRAW::slider_draw(int p_which) {
 	Color left_color;
 	Color right_color;
 	Color color = color_picker->get_pick_color();
-	const real_t margin = 4 * color_picker->get_theme_default_base_scale();
+	const real_t margin = 16 * color_picker->get_theme_default_base_scale();
 
 	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, margin), Size2(size.x, margin)), true);
+		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, 0), Size2(size.x, margin)), true);
 
 		left_color = color;
 		left_color.a = 0;
@@ -230,10 +229,10 @@ void ColorModeRAW::slider_draw(int p_which) {
 		col.set(1, right_color);
 		col.set(2, right_color);
 		col.set(3, left_color);
-		pos.set(0, Vector2(0, margin));
-		pos.set(1, Vector2(size.x, margin));
-		pos.set(2, Vector2(size.x, margin * 2));
-		pos.set(3, Vector2(0, margin * 2));
+		pos.set(0, Vector2(0, 0));
+		pos.set(1, Vector2(size.x, 0));
+		pos.set(2, Vector2(size.x, margin));
+		pos.set(3, Vector2(0, margin));
 
 		slider->draw_polygon(pos, col);
 	}
@@ -245,8 +244,7 @@ bool ColorModeRAW::apply_theme() const {
 		slider->remove_theme_icon_override("grabber");
 		slider->remove_theme_icon_override("grabber_highlight");
 		slider->remove_theme_style_override("slider");
-		slider->remove_theme_style_override("grabber_area");
-		slider->remove_theme_style_override("grabber_area_highlight");
+		slider->remove_theme_constant_override("grabber_offset");
 	}
 
 	return true;
@@ -285,46 +283,67 @@ Color ColorModeOKHSL::get_color() const {
 }
 
 void ColorModeOKHSL::slider_draw(int p_which) {
-	Vector<Vector2> pos;
-	pos.resize(4);
-	Vector<Color> col;
-	col.resize(4);
 	HSlider *slider = color_picker->get_slider(p_which);
 	Size2 size = slider->get_size();
+	const real_t margin = 16 * color_picker->get_theme_default_base_scale();
+
+	if (p_which == 0) { // H
+		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_okhsl_hue"), SNAME("ColorPicker"));
+		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false);
+		return;
+	}
+
+	Vector<Vector2> pos;
+	Vector<Color> col;
 	Color left_color;
 	Color right_color;
 	Color color = color_picker->get_pick_color();
-	const real_t margin = 4 * color_picker->get_theme_default_base_scale();
 
-	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, margin), Size2(size.x, margin)), true);
+	if (p_which == 2) { // L
+		pos.resize(6);
+		col.resize(6);
+		left_color = Color(0, 0, 0);
+		Color middle_color;
+		middle_color.set_ok_hsl(color.get_ok_hsl_h(), color.get_ok_hsl_s(), 0.5);
+		right_color.set_ok_hsl(color.get_ok_hsl_h(), color.get_ok_hsl_s(), 1);
 
-		left_color = color;
-		left_color.a = 0;
-		right_color = color;
-		right_color.a = 1;
-	} else if (p_which == 0) {
-		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_hue"), SNAME("ColorPicker"));
-		slider->draw_set_transform(Point2(), -Math_PI / 2, Size2(1.0, 1.0));
-		slider->draw_texture_rect(hue, Rect2(Vector2(margin * -2, 0), Vector2(margin, size.x)), false);
-		return;
-	} else {
-		Color s_col;
-		Color v_col;
-		s_col.set_ok_hsl(color.get_h(), 0, color.get_v());
-		left_color = (p_which == 1) ? s_col : Color(0, 0, 0);
-		s_col.set_ok_hsl(color.get_h(), 1, color.get_v());
-		v_col.set_ok_hsl(color.get_h(), color.get_s(), 1);
-		right_color = (p_which == 1) ? s_col : v_col;
+		col.set(0, left_color);
+		col.set(1, middle_color);
+		col.set(2, right_color);
+		col.set(3, right_color);
+		col.set(4, middle_color);
+		col.set(5, left_color);
+		pos.set(0, Vector2(0, 0));
+		pos.set(1, Vector2(size.x * 0.5, 0));
+		pos.set(2, Vector2(size.x, 0));
+		pos.set(3, Vector2(size.x, margin));
+		pos.set(4, Vector2(size.x * 0.5, margin));
+		pos.set(5, Vector2(0, margin));
+	} else { // A / S
+		pos.resize(4);
+		col.resize(4);
+
+		if (p_which == ColorPicker::SLIDER_COUNT) {
+			slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, 0), Size2(size.x, margin)), true);
+
+			left_color = color;
+			left_color.a = 0;
+			right_color = color;
+			right_color.a = 1;
+		} else {
+			left_color.set_ok_hsl(color.get_ok_hsl_h(), 0, color.get_ok_hsl_l());
+			right_color.set_ok_hsl(color.get_ok_hsl_h(), 1, color.get_ok_hsl_l());
+		}
+
+		col.set(0, left_color);
+		col.set(1, right_color);
+		col.set(2, right_color);
+		col.set(3, left_color);
+		pos.set(0, Vector2(0, 0));
+		pos.set(1, Vector2(size.x, 0));
+		pos.set(2, Vector2(size.x, margin));
+		pos.set(3, Vector2(0, margin));
 	}
-	col.set(0, left_color);
-	col.set(1, right_color);
-	col.set(2, right_color);
-	col.set(3, left_color);
-	pos.set(0, Vector2(0, margin));
-	pos.set(1, Vector2(size.x, margin));
-	pos.set(2, Vector2(size.x, margin * 2));
-	pos.set(3, Vector2(0, margin * 2));
 
 	slider->draw_polygon(pos, col);
 }

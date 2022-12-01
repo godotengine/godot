@@ -1379,7 +1379,7 @@ struct cff1
       if (unlikely (!len)) return false;
 
     retry:
-      hb_sorted_vector_t<gname_t> *names = glyph_names.get ();
+      hb_sorted_vector_t<gname_t> *names = glyph_names.get_acquire ();
       if (unlikely (!names))
       {
 	names = (hb_sorted_vector_t<gname_t> *) hb_calloc (sizeof (hb_sorted_vector_t<gname_t>), 1);

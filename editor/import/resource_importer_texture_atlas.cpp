@@ -273,9 +273,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	EditorAtlasPacker::chart_pack(charts, atlas_width, atlas_height);
 
 	//blit the atlas
-	Ref<Image> new_atlas;
-	new_atlas.instantiate();
-	new_atlas->create(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
+	Ref<Image> new_atlas = Image::create_empty(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
 
 	for (int i = 0; i < pack_data_files.size(); i++) {
 		PackData &pack_data = pack_data_files.write[i];

@@ -173,6 +173,8 @@ private:
 		}
 	}
 
+	bool _is_any_collapsed(bool p_only_visible);
+
 protected:
 	static void _bind_methods();
 
@@ -271,6 +273,9 @@ public:
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed();
+
+	void set_collapsed_recursive(bool p_collapsed);
+	bool is_any_collapsed(bool p_only_visible = false);
 
 	void set_visible(bool p_visible);
 	bool is_visible();
@@ -483,12 +488,14 @@ private:
 	void propagate_set_columns(TreeItem *p_item);
 
 	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+		Ref<StyleBox> focus_style;
+
 		Ref<Font> font;
 		Ref<Font> tb_font;
 		int font_size = 0;
 		int tb_font_size = 0;
-		Ref<StyleBox> bg;
-		Ref<StyleBox> bg_focus;
+
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
 		Ref<StyleBox> cursor;
@@ -611,6 +618,8 @@ private:
 
 	bool hide_folding = false;
 
+	bool enable_recursive_folding = true;
+
 	int _count_selected_items(TreeItem *p_from) const;
 	bool _is_branch_selected(TreeItem *p_from) const;
 	bool _is_sibling_branch_selected(TreeItem *p_from) const;
@@ -657,6 +666,7 @@ public:
 	bool is_root_hidden() const;
 	TreeItem *get_next_selected(TreeItem *p_item);
 	TreeItem *get_selected() const;
+	void set_selected(TreeItem *p_item, int p_column = 0);
 	int get_selected_column() const;
 	int get_pressed_button() const;
 	void set_select_mode(SelectMode p_mode);
@@ -709,6 +719,9 @@ public:
 
 	void set_hide_folding(bool p_hide);
 	bool is_folding_hidden() const;
+
+	void set_enable_recursive_folding(bool p_enable);
+	bool is_recursive_folding_enabled() const;
 
 	void set_drop_mode_flags(int p_flags);
 	int get_drop_mode_flags() const;

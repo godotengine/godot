@@ -43,11 +43,16 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
 			}
+			set_stream_paused(false);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			stop();
+			set_stream_paused(true);
 			AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
+		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			stop();
 		} break;
 
 		case NOTIFICATION_PAUSED: {
@@ -279,6 +284,9 @@ bool AudioStreamPlayer2D::is_playing() const {
 			return true;
 		}
 	}
+	if (setplay.get() >= 0) {
+		return true; // play() has been called this frame, but no playback exists just yet.
+	}
 	return false;
 }
 
@@ -472,7 +480,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer2D::_bus_layout_changed));
-	cached_global_panning_strength = ProjectSettings::get_singleton()->get("audio/general/2d_panning_strength");
+	cached_global_panning_strength = GLOBAL_GET("audio/general/2d_panning_strength");
 }
 
 AudioStreamPlayer2D::~AudioStreamPlayer2D() {

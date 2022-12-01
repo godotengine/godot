@@ -7,7 +7,7 @@ env:
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
   DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: false
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
@@ -21,57 +21,52 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor w Mono (target=release_debug, tools=yes, tests=yes)
+          - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono
-            target: release_debug
-            tools: true
+            target: editor
             tests: false # Disabled due freeze caused by mix Mono build and CI
             sconsflags: module_mono_enabled=yes
             doc-test: true
-            bin: "./bin/godot.linuxbsd.opt.tools.x86_64.mono"
+            bin: "./bin/godot.linuxbsd.editor.x86_64.mono"
             build-mono: true
             proj-conv: true
             artifact: true
 
-          - name: Editor with doubles and GCC sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes, linker=gold)
+          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, float=64, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
-            target: debug
-            tools: true
+            target: editor
             tests: true
-            sconsflags: float=64 use_asan=yes use_ubsan=yes linker=gold
+            sconsflags: dev_build=yes float=64 use_asan=yes use_ubsan=yes linker=gold
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
             godot-cpp-test: true
-            bin: "./bin/godot.linuxbsd.double.tools.x86_64.san"
+            bin: "./bin/godot.linuxbsd.editor.dev.double.x86_64.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-          - name: Editor with clang sanitizers (target=debug, tools=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
+          - name: Editor with clang sanitizers (target=editor, tests=yes, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
-            target: debug
-            tools: true
+            target: editor
             tests: true
-            sconsflags: use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
-            bin: "./bin/godot.linuxbsd.tools.x86_64.llvm.san"
+            sconsflags: dev_build=yes use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
+            bin: "./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-          - name: Template w/ Mono (target=release, tools=no)
+          - name: Template w/ Mono (target=template_release)
             cache-name: linux-template-mono
-            target: release
-            tools: false
+            target: template_release
             tests: false
-            sconsflags: module_mono_enabled=yes debug_symbols=no
+            sconsflags: module_mono_enabled=yes
             build-mono: false
             artifact: true
 
-          - name: Minimal Template (target=release, tools=no, everything disabled)
+          - name: Minimal template (target=template_release, everything disabled)
             cache-name: linux-template-minimal
-            target: release
-            tools: false
+            target: template_release
             tests: false
             sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no
             artifact: true
@@ -107,13 +102,15 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
+      - name: Setup GCC problem matcher
+        uses: ammaraskar/gcc-problem-matcher@master
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
           sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
           platform: linuxbsd
           target: ${{ matrix.target }}
-          tools: ${{ matrix.tools }}
           tests: ${{ matrix.tests }}
 
       - name: Generate C# glue
@@ -221,7 +218,7 @@ jobs:
         if: ${{ matrix.godot-cpp-test }}
         run: |
           cd godot-cpp/test
-          scons target=${{ matrix.target }}
+          scons target=template_debug dev_build=yes
           cd ../..
 
       - name: Prepare artifact

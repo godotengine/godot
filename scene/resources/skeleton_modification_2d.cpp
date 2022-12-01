@@ -127,7 +127,7 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
+		bone_ik_color = EDITOR_GET("editors/2d/bone_ik_color");
 	}
 #endif // TOOLS_ENABLED
 
@@ -230,7 +230,7 @@ void SkeletonModification2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_draw_gizmo"), &SkeletonModification2D::get_editor_draw_gizmo);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process, physics_process"), "set_execution_mode", "get_execution_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process,physics_process"), "set_execution_mode", "get_execution_mode");
 }
 
 SkeletonModification2D::SkeletonModification2D() {

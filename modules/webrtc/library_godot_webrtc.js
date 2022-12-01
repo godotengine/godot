@@ -220,64 +220,123 @@ mergeInto(LibraryManager.library, GodotRTCDataChannel);
 const GodotRTCPeerConnection = {
 	$GodotRTCPeerConnection__deps: ['$IDHandler', '$GodotRuntime', '$GodotRTCDataChannel'],
 	$GodotRTCPeerConnection: {
-		onstatechange: function (p_id, p_conn, callback, event) {
-			const ref = IDHandler.get(p_id);
-			if (!ref) {
-				return;
-			}
-			let state;
-			switch (p_conn.iceConnectionState) {
-			case 'new':
-				state = 0;
-				break;
-			case 'checking':
-				state = 1;
-				break;
-			case 'connected':
-			case 'completed':
-				state = 2;
-				break;
-			case 'disconnected':
-				state = 3;
-				break;
-			case 'failed':
-				state = 4;
-				break;
-			case 'closed':
-			default:
-				state = 5;
-				break;
-			}
-			callback(state);
+		// Enums
+		ConnectionState: {
+			'new': 0,
+			'connecting': 1,
+			'connected': 2,
+			'disconnected': 3,
+			'failed': 4,
+			'closed': 5,
 		},
 
-		onicecandidate: function (p_id, callback, event) {
-			const ref = IDHandler.get(p_id);
-			if (!ref || !event.candidate) {
-				return;
-			}
-
-			const c = event.candidate;
-			const candidate_str = GodotRuntime.allocString(c.candidate);
-			const mid_str = GodotRuntime.allocString(c.sdpMid);
-			callback(mid_str, c.sdpMLineIndex, candidate_str);
-			GodotRuntime.free(candidate_str);
-			GodotRuntime.free(mid_str);
+		ConnectionStateCompat: {
+			// Using values from IceConnectionState for browsers that do not support ConnectionState (notably Firefox).
+			'new': 0,
+			'checking': 1,
+			'connected': 2,
+			'completed': 2,
+			'disconnected': 3,
+			'failed': 4,
+			'closed': 5,
 		},
 
-		ondatachannel: function (p_id, callback, event) {
-			const ref = IDHandler.get(p_id);
-			if (!ref) {
-				return;
+		IceGatheringState: {
+			'new': 0,
+			'gathering': 1,
+			'complete': 2,
+		},
+
+		SignalingState: {
+			'stable': 0,
+			'have-local-offer': 1,
+			'have-remote-offer': 2,
+			'have-local-pranswer': 3,
+			'have-remote-pranswer': 4,
+			'closed': 5,
+		},
+
+		// Callbacks
+		create: function (config, onConnectionChange, onSignalingChange, onIceGatheringChange, onIceCandidate, onDataChannel) {
+			let conn = null;
+			try {
+				conn = new RTCPeerConnection(config);
+			} catch (e) {
+				GodotRuntime.error(e);
+				return 0;
 			}
 
-			const cid = IDHandler.add(event.channel);
-			callback(cid);
+			const id = IDHandler.add(conn);
+
+			if ('connectionState' in conn && conn['connectionState'] !== undefined) {
+				// Use "connectionState" if supported
+				conn.onconnectionstatechange = function (event) {
+					if (!IDHandler.get(id)) {
+						return;
+					}
+					onConnectionChange(GodotRTCPeerConnection.ConnectionState[conn.connectionState] || 0);
+				};
+			} else {
+				// Fall back to using "iceConnectionState" when "connectionState" is not supported (notably Firefox).
+				conn.oniceconnectionstatechange = function (event) {
+					if (!IDHandler.get(id)) {
+						return;
+					}
+					onConnectionChange(GodotRTCPeerConnection.ConnectionStateCompat[conn.iceConnectionState] || 0);
+				};
+			}
+			conn.onicegatheringstatechange = function (event) {
+				if (!IDHandler.get(id)) {
+					return;
+				}
+				onIceGatheringChange(GodotRTCPeerConnection.IceGatheringState[conn.iceGatheringState] || 0);
+			};
+			conn.onsignalingstatechange = function (event) {
+				if (!IDHandler.get(id)) {
+					return;
+				}
+				onSignalingChange(GodotRTCPeerConnection.SignalingState[conn.signalingState] || 0);
+			};
+			conn.onicecandidate = function (event) {
+				if (!IDHandler.get(id)) {
+					return;
+				}
+				const c = event.candidate;
+				if (!c || !c.candidate) {
+					return;
+				}
+				const candidate_str = GodotRuntime.allocString(c.candidate);
+				const mid_str = GodotRuntime.allocString(c.sdpMid);
+				onIceCandidate(mid_str, c.sdpMLineIndex, candidate_str);
+				GodotRuntime.free(candidate_str);
+				GodotRuntime.free(mid_str);
+			};
+			conn.ondatachannel = function (event) {
+				if (!IDHandler.get(id)) {
+					return;
+				}
+				const cid = IDHandler.add(event.channel);
+				onDataChannel(cid);
+			};
+			return id;
+		},
+
+		destroy: function (p_id) {
+			const conn = IDHandler.get(p_id);
+			if (!conn) {
+				return;
+			}
+			conn.onconnectionstatechange = null;
+			conn.oniceconnectionstatechange = null;
+			conn.onicegatheringstatechange = null;
+			conn.onsignalingstatechange = null;
+			conn.onicecandidate = null;
+			conn.ondatachannel = null;
+			IDHandler.remove(p_id);
 		},
 
 		onsession: function (p_id, callback, session) {
-			const ref = IDHandler.get(p_id);
-			if (!ref) {
+			if (!IDHandler.get(p_id)) {
 				return;
 			}
 			const type_str = GodotRuntime.allocString(session.type);
@@ -297,27 +356,19 @@ const GodotRTCPeerConnection = {
 		},
 	},
 
-	godot_js_rtc_pc_create__sig: 'iiiiii',
-	godot_js_rtc_pc_create: function (p_config, p_ref, p_on_state_change, p_on_candidate, p_on_datachannel) {
-		const onstatechange = GodotRuntime.get_func(p_on_state_change).bind(null, p_ref);
-		const oncandidate = GodotRuntime.get_func(p_on_candidate).bind(null, p_ref);
-		const ondatachannel = GodotRuntime.get_func(p_on_datachannel).bind(null, p_ref);
-
-		const config = JSON.parse(GodotRuntime.parseString(p_config));
-		let conn = null;
-		try {
-			conn = new RTCPeerConnection(config);
-		} catch (e) {
-			GodotRuntime.error(e);
-			return 0;
-		}
-
-		const base = GodotRTCPeerConnection;
-		const id = IDHandler.add(conn);
-		conn.oniceconnectionstatechange = base.onstatechange.bind(null, id, conn, onstatechange);
-		conn.onicecandidate = base.onicecandidate.bind(null, id, oncandidate);
-		conn.ondatachannel = base.ondatachannel.bind(null, id, ondatachannel);
-		return id;
+	godot_js_rtc_pc_create__sig: 'iiiiiiii',
+	godot_js_rtc_pc_create: function (p_config, p_ref, p_on_connection_state_change, p_on_ice_gathering_state_change, p_on_signaling_state_change, p_on_ice_candidate, p_on_datachannel) {
+		const wrap = function (p_func) {
+			return GodotRuntime.get_func(p_func).bind(null, p_ref);
+		};
+		return GodotRTCPeerConnection.create(
+			JSON.parse(GodotRuntime.parseString(p_config)),
+			wrap(p_on_connection_state_change),
+			wrap(p_on_signaling_state_change),
+			wrap(p_on_ice_gathering_state_change),
+			wrap(p_on_ice_candidate),
+			wrap(p_on_datachannel)
+		);
 	},
 
 	godot_js_rtc_pc_close__sig: 'vi',
@@ -331,14 +382,7 @@ const GodotRTCPeerConnection = {
 
 	godot_js_rtc_pc_destroy__sig: 'vi',
 	godot_js_rtc_pc_destroy: function (p_id) {
-		const ref = IDHandler.get(p_id);
-		if (!ref) {
-			return;
-		}
-		ref.oniceconnectionstatechange = null;
-		ref.onicecandidate = null;
-		ref.ondatachannel = null;
-		IDHandler.remove(p_id);
+		GodotRTCPeerConnection.destroy(p_id);
 	},
 
 	godot_js_rtc_pc_offer_create__sig: 'viiii',

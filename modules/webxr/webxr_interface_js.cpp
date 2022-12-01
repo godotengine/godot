@@ -34,9 +34,11 @@
 
 #include "core/input/input.h"
 #include "core/os/os.h"
+#include "drivers/gles3/storage/texture_storage.h"
 #include "emscripten.h"
 #include "godot_webxr.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #include <stdlib.h>
 
@@ -232,6 +234,8 @@ bool WebXRInterfaceJS::initialize() {
 		}
 
 		// we must create a tracker for our head
+		head_transform.basis = Basis();
+		head_transform.origin = Vector3();
 		head_tracker.instantiate();
 		head_tracker->set_tracker_type(XRServer::TRACKER_HEAD);
 		head_tracker->set_tracker_name("head");
@@ -334,15 +338,17 @@ Transform3D WebXRInterfaceJS::get_camera_transform() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
 
-	float *js_matrix = godot_webxr_get_transform_for_eye(0);
-	if (!initialized || js_matrix == nullptr) {
-		return transform_for_eye;
+	if (initialized) {
+		float world_scale = xr_server->get_world_scale();
+
+		// just scale our origin point of our transform
+		Transform3D _head_transform = head_transform;
+		_head_transform.origin *= world_scale;
+
+		transform_for_eye = (xr_server->get_reference_frame()) * _head_transform;
 	}
 
-	transform_for_eye = _js_matrix_to_transform(js_matrix);
-	free(js_matrix);
-
-	return xr_server->get_reference_frame() * transform_for_eye;
+	return transform_for_eye;
 };
 
 Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
@@ -360,6 +366,14 @@ Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Tran
 	transform_for_eye = _js_matrix_to_transform(js_matrix);
 	free(js_matrix);
 
+	float world_scale = xr_server->get_world_scale();
+	// Scale only the center point of our eye transform, so we don't scale the
+	// distance between the eyes.
+	Transform3D _head_transform = head_transform;
+	transform_for_eye.origin -= _head_transform.origin;
+	_head_transform.origin *= world_scale;
+	transform_for_eye.origin += _head_transform.origin;
+
 	return p_cam_transform * xr_server->get_reference_frame() * transform_for_eye;
 };
 
@@ -374,15 +388,15 @@ Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_a
 	int k = 0;
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			eye.matrix[i][j] = js_matrix[k++];
+			eye.columns[i][j] = js_matrix[k++];
 		}
 	}
 
 	free(js_matrix);
 
 	// Copied from godot_oculus_mobile's ovr_mobile_session.cpp
-	eye.matrix[2][2] = -(p_z_far + p_z_near) / (p_z_far - p_z_near);
-	eye.matrix[3][2] = -(2.0f * p_z_far * p_z_near) / (p_z_far - p_z_near);
+	eye.columns[2][2] = -(p_z_far + p_z_near) / (p_z_far - p_z_near);
+	eye.columns[3][2] = -(2.0f * p_z_far * p_z_near) / (p_z_far - p_z_near);
 
 	return eye;
 }
@@ -394,29 +408,32 @@ Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, c
 		return blit_to_screen;
 	}
 
-	// @todo Refactor this to be based on "views" rather than "eyes".
-	godot_webxr_commit_for_eye(1);
-	if (godot_webxr_get_view_count() > 1) {
-		godot_webxr_commit_for_eye(2);
+	GLES3::TextureStorage *texture_storage = dynamic_cast<GLES3::TextureStorage *>(RSG::texture_storage);
+	if (!texture_storage) {
+		return blit_to_screen;
 	}
+
+	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
+
+	godot_webxr_commit(rt->color);
 
 	return blit_to_screen;
 };
 
 void WebXRInterfaceJS::process() {
 	if (initialized) {
-		godot_webxr_sample_controller_data();
-
+		// Get the "head" position.
+		float *js_matrix = godot_webxr_get_transform_for_eye(0);
+		if (js_matrix != nullptr) {
+			head_transform = _js_matrix_to_transform(js_matrix);
+			free(js_matrix);
+		}
 		if (head_tracker.is_valid()) {
-			// TODO set default pose to our head location (i.e. get_camera_transform without world scale and reference frame applied)
-			// head_tracker->set_pose("default", head_transform, Vector3(), Vector3());
+			head_tracker->set_pose("default", head_transform, Vector3(), Vector3());
 		}
 
+		godot_webxr_sample_controller_data();
 		int controller_count = godot_webxr_get_controller_count();
-		if (controller_count == 0) {
-			return;
-		}
-
 		for (int i = 0; i < controller_count; i++) {
 			_update_tracker(i);
 		}

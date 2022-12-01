@@ -32,17 +32,14 @@
 #define EDITOR_FILE_DIALOG_H
 
 #include "core/io/dir_access.h"
-#include "editor/plugins/editor_preview_plugins.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/texture_rect.h"
 
 class DependencyRemoveDialog;
+class HSplitContainer;
+class ItemList;
+class OptionButton;
+class PopupMenu;
+class TextureRect;
 
 class EditorFileDialog : public ConfirmationDialog {
 	GDCLASS(EditorFileDialog, ConfirmationDialog);
@@ -161,7 +158,7 @@ private:
 		Ref<Texture2D> favorites_down;
 
 		Ref<Texture2D> folder;
-		Color folder_icon_modulate;
+		Color folder_icon_color;
 
 		Ref<Texture2D> action_copy;
 		Ref<Texture2D> action_delete;
@@ -202,7 +199,6 @@ private:
 
 	void _select_drive(int p_idx);
 	void _dir_submitted(String p_dir);
-	void _file_submitted(const String &p_file);
 	void _action_pressed();
 	void _save_confirm_pressed();
 	void _cancel_pressed();
@@ -240,6 +236,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	// Public for use with callable_mp.
+	void _file_submitted(const String &p_file);
+
 	void popup_file_dialog();
 	void clear_filters();
 	void add_filter(const String &p_filter, const String &p_description = "");

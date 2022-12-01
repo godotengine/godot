@@ -15,7 +15,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="animation" type="Animation" />
 			<description>
-				Adds the [param animation] to the library, accesible by the key [param name].
+				Adds the [param animation] to the library, accessible by the key [param name].
 			</description>
 		</method>
 		<method name="get_animation" qualifiers="const">

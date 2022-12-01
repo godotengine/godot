@@ -28,11 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
 #include "plist.h"
-
-#ifdef MODULE_REGEX_ENABLED
 
 Ref<PListNode> PListNode::new_array() {
 	Ref<PListNode> node = memnew(PListNode());
@@ -566,5 +562,3 @@ String PList::save_text() const {
 Ref<PListNode> PList::get_root() {
 	return root;
 }
-
-#endif // MODULE_REGEX_ENABLED

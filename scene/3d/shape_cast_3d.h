@@ -120,6 +120,7 @@ public:
 
 	int get_collision_count() const;
 	Object *get_collider(int p_idx) const;
+	RID get_collider_rid(int p_idx) const;
 	int get_collider_shape(int p_idx) const;
 	Vector3 get_collision_point(int p_idx) const;
 	Vector3 get_collision_normal(int p_idx) const;
@@ -136,7 +137,7 @@ public:
 	void remove_exception(const Object *p_object);
 	void clear_exceptions();
 
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 };
 
 #endif // SHAPE_CAST_3D_H

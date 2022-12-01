@@ -118,9 +118,9 @@ private:
 		Ref<Texture2D> folder;
 		Ref<Texture2D> file;
 
-		Color folder_icon_modulate;
-		Color file_icon_modulate;
-		Color files_disabled;
+		Color folder_icon_color;
+		Color file_icon_color;
+		Color file_disabled_color;
 
 		Color icon_normal_color;
 		Color icon_hover_color;

@@ -180,7 +180,7 @@ RID RendererSceneOcclusionCull::HZBuffer::get_debug_texture() {
 		ptrw[i] = MIN(mips[0][i] / debug_tex_range, 1.0) * 255;
 	}
 
-	debug_image->create(sizes[0].x, sizes[0].y, false, Image::FORMAT_L8, debug_data);
+	debug_image->set_data(sizes[0].x, sizes[0].y, false, Image::FORMAT_L8, debug_data);
 
 	if (debug_texture.is_null()) {
 		debug_texture = RS::get_singleton()->texture_2d_create(debug_image);

@@ -85,6 +85,9 @@ void DocTools::merge_from(const DocTools &p_data) {
 
 		const DocData::ClassDoc &cf = p_data.class_list[c.name];
 
+		c.is_deprecated = cf.is_deprecated;
+		c.is_experimental = cf.is_experimental;
+
 		c.description = cf.description;
 		c.brief_description = cf.brief_description;
 		c.tutorials = cf.tutorials;
@@ -133,6 +136,8 @@ void DocTools::merge_from(const DocTools &p_data) {
 				const DocData::MethodDoc &mf = cf.constructors[j];
 
 				m.description = mf.description;
+				m.is_deprecated = mf.is_deprecated;
+				m.is_experimental = mf.is_experimental;
 				break;
 			}
 		}
@@ -148,6 +153,8 @@ void DocTools::merge_from(const DocTools &p_data) {
 				const DocData::MethodDoc &mf = cf.methods[j];
 
 				m.description = mf.description;
+				m.is_deprecated = mf.is_deprecated;
+				m.is_experimental = mf.is_experimental;
 				break;
 			}
 		}
@@ -162,6 +169,8 @@ void DocTools::merge_from(const DocTools &p_data) {
 				const DocData::MethodDoc &mf = cf.signals[j];
 
 				m.description = mf.description;
+				m.is_deprecated = mf.is_deprecated;
+				m.is_experimental = mf.is_experimental;
 				break;
 			}
 		}
@@ -176,6 +185,8 @@ void DocTools::merge_from(const DocTools &p_data) {
 				const DocData::ConstantDoc &mf = cf.constants[j];
 
 				m.description = mf.description;
+				m.is_deprecated = mf.is_deprecated;
+				m.is_experimental = mf.is_experimental;
 				break;
 			}
 		}
@@ -190,6 +201,8 @@ void DocTools::merge_from(const DocTools &p_data) {
 				const DocData::MethodDoc &mf = cf.annotations[j];
 
 				m.description = mf.description;
+				m.is_deprecated = mf.is_deprecated;
+				m.is_experimental = mf.is_experimental;
 				break;
 			}
 		}
@@ -204,6 +217,8 @@ void DocTools::merge_from(const DocTools &p_data) {
 				const DocData::PropertyDoc &pf = cf.properties[j];
 
 				p.description = pf.description;
+				p.is_deprecated = pf.is_deprecated;
+				p.is_experimental = pf.is_experimental;
 				break;
 			}
 		}
@@ -266,6 +281,8 @@ void DocTools::merge_from(const DocTools &p_data) {
 				const DocData::MethodDoc &mf = cf.operators[j];
 
 				m.description = mf.description;
+				m.is_deprecated = mf.is_deprecated;
+				m.is_experimental = mf.is_experimental;
 				break;
 			}
 		}
@@ -318,7 +335,7 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	Variant default_value = Variant();
 	r_default_value_valid = false;
 
-	if (ClassDB::can_instantiate(p_class_name)) {
+	if (ClassDB::can_instantiate(p_class_name) && !ClassDB::is_virtual(p_class_name)) { // Keep this condition in sync with ClassDB::class_get_default_property_value.
 		default_value = ClassDB::class_get_default_property_value(p_class_name, p_property_name, &r_default_value_valid);
 	} else {
 		// Cannot get default value of classes that can't be instantiated
@@ -1007,6 +1024,12 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 				if (parser->has_attribute("qualifiers")) {
 					method.qualifiers = parser->get_attribute_value("qualifiers");
 				}
+				if (parser->has_attribute("is_deprecated")) {
+					method.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
+				}
+				if (parser->has_attribute("is_experimental")) {
+					method.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
+				}
 
 				while (parser->read() == OK) {
 					if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
@@ -1138,6 +1161,14 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 			c.inherits = parser->get_attribute_value("inherits");
 		}
 
+		if (parser->has_attribute("is_deprecated")) {
+			c.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
+		}
+
+		if (parser->has_attribute("is_experimental")) {
+			c.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
+		}
+
 		while (parser->read() == OK) {
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
 				String name2 = parser->get_node_name();
@@ -1211,6 +1242,12 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								if (parser->has_attribute("enum")) {
 									prop2.enumeration = parser->get_attribute_value("enum");
 								}
+								if (parser->has_attribute("is_deprecated")) {
+									prop2.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
+								}
+								if (parser->has_attribute("is_experimental")) {
+									prop2.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
+								}
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1275,6 +1312,12 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								if (parser->has_attribute("is_bitfield")) {
 									constant2.is_bitfield = parser->get_attribute_value("is_bitfield").to_lower() == "true";
 								}
+								if (parser->has_attribute("is_deprecated")) {
+									constant2.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
+								}
+								if (parser->has_attribute("is_experimental")) {
+									constant2.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
+								}
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1327,7 +1370,15 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
 			}
 
-			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
+			String additional_attributes;
+			if (m.is_deprecated) {
+				additional_attributes += " is_deprecated=\"true\"";
+			}
+			if (m.is_experimental) {
+				additional_attributes += " is_experimental=\"true\"";
+			}
+
+			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + additional_attributes + ">");
 
 			if (!m.return_type.is_empty()) {
 				String enum_text;
@@ -1390,6 +1441,12 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		String header = "<class name=\"" + c.name + "\"";
 		if (!c.inherits.is_empty()) {
 			header += " inherits=\"" + c.inherits + "\"";
+			if (c.is_deprecated) {
+				header += " is_deprecated=\"true\"";
+			}
+			if (c.is_experimental) {
+				header += " is_experimental=\"true\"";
+			}
 		}
 		header += String(" version=\"") + VERSION_BRANCH + "\"";
 		// Reference the XML schema so editors can provide error checking.
@@ -1433,6 +1490,12 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				if (!c.properties[i].default_value.is_empty()) {
 					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";
 				}
+				if (c.properties[i].is_deprecated) {
+					additional_attributes += " is_deprecated=\"true\"";
+				}
+				if (c.properties[i].is_experimental) {
+					additional_attributes += " is_experimental=\"true\"";
+				}
 
 				const DocData::PropertyDoc &p = c.properties[i];
 
@@ -1453,21 +1516,30 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 			_write_string(f, 1, "<constants>");
 			for (int i = 0; i < c.constants.size(); i++) {
 				const DocData::ConstantDoc &k = c.constants[i];
+
+				String additional_attributes;
+				if (c.constants[i].is_deprecated) {
+					additional_attributes += " is_deprecated=\"true\"";
+				}
+				if (c.constants[i].is_experimental) {
+					additional_attributes += " is_experimental=\"true\"";
+				}
+
 				if (k.is_value_valid) {
 					if (!k.enumeration.is_empty()) {
 						if (k.is_bitfield) {
-							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\" is_bitfield=\"true\">");
+							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\" is_bitfield=\"true\"" + additional_attributes + ">");
 						} else {
-							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\"" + additional_attributes + ">");
 						}
 					} else {
-						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\"" + additional_attributes + ">");
 					}
 				} else {
 					if (!k.enumeration.is_empty()) {
-						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\"" + additional_attributes + ">");
 					} else {
-						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\"" + additional_attributes + ">");
 					}
 				}
 				_write_string(f, 3, _translate_doc_string(k.description).strip_edges().xml_escape());

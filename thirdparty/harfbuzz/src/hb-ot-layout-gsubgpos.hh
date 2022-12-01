@@ -4236,12 +4236,18 @@ struct GSUBGPOS
   }
 
   void feature_variation_collect_lookups (const hb_set_t *feature_indexes,
+					  const hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map,
 					  hb_set_t       *lookup_indexes /* OUT */) const
   {
 #ifndef HB_NO_VAR
-    get_feature_variations ().collect_lookups (feature_indexes, lookup_indexes);
+    get_feature_variations ().collect_lookups (feature_indexes, feature_substitutes_map, lookup_indexes);
 #endif
   }
+
+#ifndef HB_NO_VAR
+  void collect_feature_substitutes_with_variations (hb_collect_feature_substitutes_with_var_context_t *c) const
+  { get_feature_variations ().collect_feature_substitutes_with_variations (c); }
+#endif
 
   template <typename TLookup>
   void closure_lookups (hb_face_t      *face,
@@ -4261,6 +4267,7 @@ struct GSUBGPOS
   }
 
   void prune_langsys (const hb_map_t *duplicate_feature_map,
+                      const hb_set_t *layout_scripts,
                       hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> *script_langsys_map,
                       hb_set_t       *new_feature_indexes /* OUT */) const
   {
@@ -4269,12 +4276,16 @@ struct GSUBGPOS
     unsigned count = get_script_count ();
     for (unsigned script_index = 0; script_index < count; script_index++)
     {
+      const Tag& tag = get_script_tag (script_index);
+      if (!layout_scripts->has (tag)) continue;
       const Script& s = get_script (script_index);
       s.prune_langsys (&c, script_index);
     }
   }
 
   void prune_features (const hb_map_t *lookup_indices, /* IN */
+		       const hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *feature_record_cond_idx_map, /* IN */
+		       const hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map, /* IN */
 		       hb_set_t       *feature_indices /* IN/OUT */) const
   {
 #ifndef HB_NO_VAR
@@ -4282,7 +4293,7 @@ struct GSUBGPOS
     // if the FeatureVariation's table and the alternate version(s) intersect the
     // set of lookup indices.
     hb_set_t alternate_feature_indices;
-    get_feature_variations ().closure_features (lookup_indices, &alternate_feature_indices);
+    get_feature_variations ().closure_features (lookup_indices, feature_record_cond_idx_map, &alternate_feature_indices);
     if (unlikely (alternate_feature_indices.in_error()))
     {
       feature_indices->err ();
@@ -4292,7 +4303,6 @@ struct GSUBGPOS
 
     for (unsigned i : feature_indices->iter())
     {
-      const Feature& f = get_feature (i);
       hb_tag_t tag =  get_feature_tag (i);
       if (tag == HB_TAG ('p', 'r', 'e', 'f'))
         // Note: Never ever drop feature 'pref', even if it's empty.
@@ -4302,11 +4312,16 @@ struct GSUBGPOS
         continue;
 
 
-      if (!f.featureParams.is_null () &&
+      const Feature *f = &(get_feature (i));
+      const Feature** p = nullptr;
+      if (feature_substitutes_map->has (i, &p))
+        f = *p;
+
+      if (!f->featureParams.is_null () &&
           tag == HB_TAG ('s', 'i', 'z', 'e'))
         continue;
 
-      if (!f.intersects_lookup_indexes (lookup_indices)
+      if (!f->intersects_lookup_indexes (lookup_indices)
 #ifndef HB_NO_VAR
           && !alternate_feature_indices.has (i)
 #endif

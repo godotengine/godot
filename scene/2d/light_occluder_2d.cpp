@@ -246,8 +246,8 @@ int LightOccluder2D::get_occluder_light_mask() const {
 	return mask;
 }
 
-TypedArray<String> LightOccluder2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray LightOccluder2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!occluder_polygon.is_valid()) {
 		warnings.push_back(RTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));

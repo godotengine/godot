@@ -43,12 +43,12 @@ protected:
 
 public:
 	virtual bool is_peer_connected() = 0;
+	virtual int get_max_message_size() const = 0;
 	virtual bool has_message() = 0;
 	virtual Error put_message(const Array &p_arr) = 0;
 	virtual Array get_message() = 0;
 	virtual void close() = 0;
 	virtual void poll() = 0;
-	virtual int get_max_message_size() const = 0;
 	virtual bool can_block() const { return true; } // If blocking io is allowed on main thread (debug).
 
 	RemoteDebuggerPeer();
@@ -81,12 +81,12 @@ public:
 
 	Error connect_to_host(const String &p_host, uint16_t p_port);
 
-	void poll() override;
 	bool is_peer_connected() override;
-	bool has_message() override;
-	Array get_message() override;
-	Error put_message(const Array &p_arr) override;
 	int get_max_message_size() const override;
+	bool has_message() override;
+	Error put_message(const Array &p_arr) override;
+	Array get_message() override;
+	void poll() override;
 	void close() override;
 
 	RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_stream = Ref<StreamPeerTCP>());

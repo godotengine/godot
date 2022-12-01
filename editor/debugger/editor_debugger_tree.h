@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene/gui/tree.h"
-
 #ifndef EDITOR_DEBUGGER_TREE_H
 #define EDITOR_DEBUGGER_TREE_H
+
+#include "scene/gui/tree.h"
 
 class SceneDebuggerTree;
 class EditorFileDialog;
@@ -65,6 +65,11 @@ protected:
 	void _notification(int p_what);
 
 public:
+	enum Button {
+		BUTTON_SUBSCENE = 0,
+		BUTTON_VISIBILITY = 1,
+	};
+
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 
 	String get_selected_path();

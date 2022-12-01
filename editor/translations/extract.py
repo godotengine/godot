@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+from typing import Dict, Tuple
 
 
 class Message:
@@ -42,7 +43,7 @@ class Message:
         return "\n".join(lines)
 
 
-messages_map = {}  # (id, context) -> Message.
+messages_map: Dict[Tuple[str, str], Message] = {}  # (id, context) -> Message.
 
 line_nb = False
 
@@ -51,11 +52,11 @@ for arg in sys.argv[1:]:
         print("Enabling line numbers in the context locations.")
         line_nb = True
     else:
-        os.sys.exit("Non supported argument '" + arg + "'. Aborting.")
+        sys.exit("Non supported argument '" + arg + "'. Aborting.")
 
 
 if not os.path.exists("editor"):
-    os.sys.exit("ERROR: This script should be started from the root of the git repo.")
+    sys.exit("ERROR: This script should be started from the root of the git repo.")
 
 
 matches = []
@@ -70,11 +71,24 @@ matches.sort()
 
 remaps = {}
 remap_re = re.compile(r'^\t*capitalize_string_remaps\["(?P<from>.+)"\] = (String::utf8\()?"(?P<to>.+)"')
+stop_words = set()
+stop_words_re = re.compile(r'^\t*"(?P<word>.+)",')
+is_inside_stop_words = False
 with open("editor/editor_property_name_processor.cpp") as f:
     for line in f:
-        m = remap_re.search(line)
-        if m:
-            remaps[m.group("from")] = m.group("to")
+        if is_inside_stop_words:
+            m = stop_words_re.search(line)
+            if m:
+                stop_words.add(m.group("word"))
+            else:
+                is_inside_stop_words = False
+        else:
+            m = remap_re.search(line)
+            if m:
+                remaps[m.group("from")] = m.group("to")
+
+        if not is_inside_stop_words and not stop_words:
+            is_inside_stop_words = "stop_words = " in line
 
 
 main_po = """
@@ -146,9 +160,12 @@ capitalize_re = re.compile(r"(?<=\D)(?=\d)|(?<=\d)(?=\D([a-z]|\d))")
 def _process_editor_string(name):
     # See EditorPropertyNameProcessor::process_string().
     capitalized_parts = []
-    for segment in name.split("_"):
-        if not segment:
+    parts = list(filter(bool, name.split("_")))  # Non-empty only.
+    for i, segment in enumerate(parts):
+        if i > 0 and i + 1 < len(parts) and segment in stop_words:
+            capitalized_parts.append(segment)
             continue
+
         remapped = remaps.get(segment)
         if remapped:
             capitalized_parts.append(remapped)

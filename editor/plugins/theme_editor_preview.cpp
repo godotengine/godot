@@ -36,9 +36,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/text_edit.h"
+#include "scene/gui/tree.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 
@@ -459,7 +462,7 @@ void SceneThemeEditorPreview::_reload_scene() {
 
 	for (int i = preview_content->get_child_count() - 1; i >= 0; i--) {
 		Node *node = preview_content->get_child(i);
-		node->queue_delete();
+		node->queue_free();
 		preview_content->remove_child(node);
 	}
 

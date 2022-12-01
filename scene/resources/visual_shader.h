@@ -90,11 +90,10 @@ public:
 
 	struct Varying {
 		String name;
-		VaryingMode mode;
-		VaryingType type;
+		VaryingMode mode = VARYING_MODE_MAX;
+		VaryingType type = VARYING_TYPE_MAX;
 
-		Varying() {
-		}
+		Varying() {}
 
 		Varying(String p_name, VaryingMode p_mode, VaryingType p_type) :
 				name(p_name), mode(p_mode), type(p_type) {}
@@ -157,7 +156,7 @@ private:
 		}
 	};
 
-	Error _write_node(Type p_type, StringBuilder *global_code, StringBuilder *global_code_per_node, HashMap<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, HashSet<int> &processed, bool for_preview, HashSet<StringName> &r_classes) const;
+	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
@@ -518,6 +517,10 @@ private:
 protected:
 	static void _bind_methods();
 	String _get_qual_str() const;
+
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
 
 public:
 	void set_parameter_name(const String &p_name);

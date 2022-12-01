@@ -39,6 +39,7 @@
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 
+class MenuButton;
 class EditorUndoRedoManager;
 
 class TileDataEditor : public VBoxContainer {
@@ -95,7 +96,6 @@ private:
 	bool multiple_polygon_mode = false;
 
 	bool use_undo_redo = true;
-	Ref<EditorUndoRedoManager> editor_undo_redo;
 
 	// UI
 	int hovered_polygon_index = -1;
@@ -216,10 +216,9 @@ private:
 protected:
 	DummyObject *dummy_object = memnew(DummyObject);
 
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	StringName type;
 	String property;
+	Variant::Type property_type;
 	void _notification(int p_what);
 
 	virtual Variant _get_painted_value();
@@ -237,6 +236,7 @@ public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;
 
 	void setup_property_editor(Variant::Type p_type, String p_property, String p_label = "", Variant p_default_value = Variant());
+	Variant::Type get_property_type();
 
 	TileDataDefaultEditor();
 	~TileDataDefaultEditor();
@@ -281,8 +281,6 @@ private:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) override;
 
 protected:
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	virtual void _tile_set_changed() override;
 
 	void _notification(int p_what);
@@ -316,8 +314,6 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) override;
 
 protected:
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	virtual void _tile_set_changed() override;
 
 	void _notification(int p_what);
@@ -368,8 +364,6 @@ protected:
 
 	void _notification(int p_what);
 
-	Ref<EditorUndoRedoManager> undo_redo;
-
 public:
 	virtual Control *get_toolbar() override { return toolbar; };
 	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) override;
@@ -401,8 +395,6 @@ private:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) override;
 
 protected:
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	virtual void _tile_set_changed() override;
 
 	void _notification(int p_what);

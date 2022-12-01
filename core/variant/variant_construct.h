@@ -222,6 +222,64 @@ public:
 	}
 };
 
+template <class T>
+class VariantConstructorFromString {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::STRING) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::STRING;
+			return;
+		}
+
+		VariantTypeChanger<T>::change(&r_ret);
+		const String &src_str = *VariantGetInternalPtr<String>::get_ptr(p_args[0]);
+
+		if (r_ret.get_type() == Variant::Type::INT) {
+			r_ret = src_str.to_int();
+		} else if (r_ret.get_type() == Variant::Type::FLOAT) {
+			r_ret = src_str.to_float();
+		}
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<T>::change(r_ret);
+		const String &src_str = *VariantGetInternalPtr<String>::get_ptr(p_args[0]);
+		T ret = Variant();
+		if (r_ret->get_type() == Variant::Type::INT) {
+			ret = src_str.to_int();
+		} else if (r_ret->get_type() == Variant::Type::FLOAT) {
+			ret = src_str.to_float();
+		}
+		*r_ret = ret;
+	}
+
+	static void ptr_construct(void *base, const void **p_args) {
+		String src_str = PtrToArg<String>::convert(p_args[0]);
+		T dst_var = Variant();
+		Variant type_test = Variant(dst_var);
+		if (type_test.get_type() == Variant::Type::INT) {
+			dst_var = src_str.to_int();
+		} else if (type_test.get_type() == Variant::Type::FLOAT) {
+			dst_var = src_str.to_float();
+		}
+		PtrConstruct<T>::construct(dst_var, base);
+	}
+
+	static int get_argument_count() {
+		return 1;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		return Variant::STRING;
+	}
+
+	static Variant::Type get_base_type() {
+		return GetTypeInfo<T>::VARIANT_TYPE;
+	}
+};
+
 class VariantConstructorCallableArgs {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
@@ -333,6 +391,82 @@ public:
 
 	static Variant::Type get_base_type() {
 		return Variant::SIGNAL;
+	}
+};
+
+class VariantConstructorTypedArray {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::ARRAY) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::ARRAY;
+			return;
+		}
+
+		if (p_args[1]->get_type() != Variant::INT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = Variant::INT;
+			return;
+		}
+
+		if (p_args[2]->get_type() != Variant::STRING_NAME) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 2;
+			r_error.expected = Variant::STRING_NAME;
+			return;
+		}
+
+		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+		const uint32_t type = p_args[1]->operator uint32_t();
+		const StringName &class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+		r_ret = Array(base_arr, type, class_name, *p_args[3]);
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+		const uint32_t type = p_args[1]->operator uint32_t();
+		const StringName &class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+		*r_ret = Array(base_arr, type, class_name, *p_args[3]);
+	}
+
+	static void ptr_construct(void *base, const void **p_args) {
+		const Array &base_arr = PtrToArg<Array>::convert(p_args[0]);
+		const uint32_t type = PtrToArg<uint32_t>::convert(p_args[1]);
+		const StringName &class_name = PtrToArg<StringName>::convert(p_args[2]);
+		const Variant &script = PtrToArg<Variant>::convert(p_args[3]);
+		Array dst_arr = Array(base_arr, type, class_name, script);
+
+		PtrConstruct<Array>::construct(dst_arr, base);
+	}
+
+	static int get_argument_count() {
+		return 4;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		switch (p_arg) {
+			case 0: {
+				return Variant::ARRAY;
+			} break;
+			case 1: {
+				return Variant::INT;
+			} break;
+			case 2: {
+				return Variant::STRING_NAME;
+			} break;
+			case 3: {
+				return Variant::NIL;
+			} break;
+			default: {
+				return Variant::NIL;
+			} break;
+		}
+	}
+
+	static Variant::Type get_base_type() {
+		return Variant::ARRAY;
 	}
 };
 

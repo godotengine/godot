@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		ImporterMesh is a type of [Resource] analogous to [ArrayMesh]. It contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
-
 		Unlike its runtime counterpart, [ImporterMesh] contains mesh data before various import steps, such as lod and shadow mesh generation, have taken place. Modify surface data by calling [method clear], followed by [method add_surface] for each surface.
 	</description>
 	<tutorials>
@@ -43,10 +42,12 @@
 			<return type="void" />
 			<param index="0" name="normal_merge_angle" type="float" />
 			<param index="1" name="normal_split_angle" type="float" />
+			<param index="2" name="bone_transform_array" type="Array" />
 			<description>
 				Generates all lods for this ImporterMesh.
 				[param normal_merge_angle] and [param normal_split_angle] are in degrees and used in the same way as the importer settings in [code]lods[/code]. As a good default, use 25 and 60 respectively.
 				The number of generated lods can be accessed using [method get_surface_lod_count], and each LOD is available in [method get_surface_lod_size] and [method get_surface_lod_indices].
+				[param bone_transform_array] is an [Array] which can be either empty or contain [Transform3D]s which, for each of the mesh's bone IDs, will apply mesh skinning when generating the LOD mesh variations. This is usually used to account for discrepancies in scale between the mesh itself and its skinning data.
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">

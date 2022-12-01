@@ -36,6 +36,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
 #include "editor/project_settings_editor.h"
+#include "scene/gui/grid_container.h"
 
 void PluginConfigDialog::_clear_fields() {
 	name_edit->set_text("");
@@ -80,11 +81,11 @@ void PluginConfigDialog::_on_confirmed() {
 		if (!templates.is_empty()) {
 			template_content = templates[0].content;
 		}
-		Ref<Script> script = ScriptServer::get_language(lang_idx)->make_template(template_content, class_name, "EditorPlugin");
-		script->set_path(script_path, true);
-		ResourceSaver::save(script);
+		Ref<Script> scr = ScriptServer::get_language(lang_idx)->make_template(template_content, class_name, "EditorPlugin");
+		scr->set_path(script_path, true);
+		ResourceSaver::save(scr);
 
-		emit_signal(SNAME("plugin_ready"), script.ptr(), active_edit->is_pressed() ? _to_absolute_plugin_path(_get_subfolder()) : "");
+		emit_signal(SNAME("plugin_ready"), scr.ptr(), active_edit->is_pressed() ? _to_absolute_plugin_path(_get_subfolder()) : "");
 	} else {
 		EditorNode::get_singleton()->get_project_settings()->update_plugins();
 	}

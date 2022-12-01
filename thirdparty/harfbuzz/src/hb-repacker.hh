@@ -244,7 +244,7 @@ bool _process_overflows (const hb_vector_t<graph::overflow_record_t>& overflows,
     {
       // The child object is shared, we may be able to eliminate the overflow
       // by duplicating it.
-      if (!sorted_graph.duplicate (r.parent, r.child)) continue;
+      if (sorted_graph.duplicate (r.parent, r.child) == (unsigned) -1) continue;
       return true;
     }
 
@@ -276,33 +276,17 @@ bool _process_overflows (const hb_vector_t<graph::overflow_record_t>& overflows,
   return resolution_attempted;
 }
 
-/*
- * Attempts to modify the topological sorting of the provided object graph to
- * eliminate offset overflows in the links between objects of the graph. If a
- * non-overflowing ordering is found the updated graph is serialized it into the
- * provided serialization context.
- *
- * If necessary the structure of the graph may be modified in ways that do not
- * affect the functionality of the graph. For example shared objects may be
- * duplicated.
- *
- * For a detailed writeup describing how the algorithm operates see:
- * docs/repacker.md
- */
-template<typename T>
-inline hb_blob_t*
-hb_resolve_overflows (const T& packed,
-                      hb_tag_t table_tag,
-                      unsigned max_rounds = 20,
-                      bool recalculate_extensions = false) {
-  graph_t sorted_graph (packed);
+inline bool
+hb_resolve_graph_overflows (hb_tag_t table_tag,
+                            unsigned max_rounds ,
+                            bool recalculate_extensions,
+                            graph_t& sorted_graph /* IN/OUT */)
+{
   sorted_graph.sort_shortest_distance ();
 
   bool will_overflow = graph::will_overflow (sorted_graph);
   if (!will_overflow)
-  {
-    return graph::serialize (sorted_graph);
-  }
+    return true;
 
   graph::gsubgpos_graph_context_t ext_context (table_tag, sorted_graph);
   if ((table_tag == HB_OT_TAG_GPOS
@@ -314,13 +298,13 @@ hb_resolve_overflows (const T& packed,
       DEBUG_MSG (SUBSET_REPACK, nullptr, "Splitting subtables if needed.");
       if (!_presplit_subtables_if_needed (ext_context)) {
         DEBUG_MSG (SUBSET_REPACK, nullptr, "Subtable splitting failed.");
-        return nullptr;
+        return false;
       }
 
       DEBUG_MSG (SUBSET_REPACK, nullptr, "Promoting lookups to extensions if needed.");
       if (!_promote_extensions_if_needed (ext_context)) {
         DEBUG_MSG (SUBSET_REPACK, nullptr, "Extensions promotion failed.");
-        return nullptr;
+        return false;
       }
     }
 
@@ -360,14 +344,40 @@ hb_resolve_overflows (const T& packed,
   if (sorted_graph.in_error ())
   {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Sorted graph in error state.");
-    return nullptr;
+    return false;
   }
 
   if (graph::will_overflow (sorted_graph))
   {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Offset overflow resolution failed.");
-    return nullptr;
+    return false;
   }
+
+  return true;
+}
+
+/*
+ * Attempts to modify the topological sorting of the provided object graph to
+ * eliminate offset overflows in the links between objects of the graph. If a
+ * non-overflowing ordering is found the updated graph is serialized it into the
+ * provided serialization context.
+ *
+ * If necessary the structure of the graph may be modified in ways that do not
+ * affect the functionality of the graph. For example shared objects may be
+ * duplicated.
+ *
+ * For a detailed writeup describing how the algorithm operates see:
+ * docs/repacker.md
+ */
+template<typename T>
+inline hb_blob_t*
+hb_resolve_overflows (const T& packed,
+                      hb_tag_t table_tag,
+                      unsigned max_rounds = 20,
+                      bool recalculate_extensions = false) {
+  graph_t sorted_graph (packed);
+  if (!hb_resolve_graph_overflows (table_tag, max_rounds, recalculate_extensions, sorted_graph))
+    return nullptr;
 
   return graph::serialize (sorted_graph);
 }

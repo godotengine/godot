@@ -18,13 +18,14 @@
 # FlooferLand <yunaflarf@gmail.com>, 2021, 2022.
 # N3mEee <n3mebusiness@gmail.com>, 2021.
 # Psynt <nichita@cadvegra.com>, 2022.
+# Ilie Adrian Avramescu <himark1977@protonmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-15 09:38+0000\n"
-"Last-Translator: Psynt <nichita@cadvegra.com>\n"
+"PO-Revision-Date: 2022-09-27 21:37+0000\n"
+"Last-Translator: Ilie Adrian Avramescu <himark1977@protonmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -33,11 +34,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
-msgstr ""
+msgstr "Driver de tableta"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
@@ -61,7 +62,7 @@ msgstr "V-Sync Prin Compozitor"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "Netezirea Delta"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -70,11 +71,11 @@ msgstr "Mod Mutare"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr ""
+msgstr "Timp de utilizare scăzut al procesorului (μsec)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
-msgstr ""
+msgstr "Păstrați ecranul pornit"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
@@ -116,7 +117,7 @@ msgstr "Minimizat"
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
-msgstr ""
+msgstr "Redimensionabil"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -148,7 +149,7 @@ msgstr "Indiciu Editor"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Imprimare mesaje de eroare"
 
 #: core/bind/core_bind.cpp
 msgid "Iterations Per Second"
@@ -159,9 +160,8 @@ msgid "Target FPS"
 msgstr "Frecvență Țintă"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "Nod DimensiuneTimp"
+msgstr "Scară de timp"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -173,22 +173,20 @@ msgid "Error"
 msgstr "Eroare"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error String"
-msgstr "Eroare La Salvarea"
+msgstr "Eroare string"
 
 #: core/bind/core_bind.cpp
 msgid "Error Line"
 msgstr "Linia Erorii"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Result"
-msgstr "Căutați în Ajutor"
+msgstr "Rezultat"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Memorie"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -208,7 +206,7 @@ msgstr "Trage: Rotire"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
-msgstr ""
+msgstr "Mărimea cozii de așteptare pentru mai multe fire (KB)"
 
 #: core/func_ref.cpp modules/visual_script/visual_script_builtin_funcs.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -220,7 +218,7 @@ msgstr "Funcție"
 #: core/image.cpp core/packed_data_container.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Data"
-msgstr ""
+msgstr "Date"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
@@ -242,11 +240,11 @@ msgstr "Marime Pagina"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
-msgstr ""
+msgstr "Pagina Citește înainte"
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
-msgstr ""
+msgstr "Mod de blocare Activat"
 
 #: core/io/http_client.cpp
 msgid "Connection"
@@ -300,7 +298,7 @@ msgstr ""
 
 #: core/io/packet_peer.cpp
 msgid "Stream Peer"
-msgstr ""
+msgstr "Fluxul Peer"
 
 #: core/io/stream_peer.cpp
 msgid "Big Endian"
@@ -312,7 +310,7 @@ msgstr ""
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
-msgstr ""
+msgstr "Blocare Handshake"
 
 #: core/io/udp_server.cpp
 #, fuzzy
@@ -367,7 +365,7 @@ msgstr "În apelarea lui '%s':"
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Seed"
-msgstr ""
+msgstr "Semințe"
 
 #: core/math/random_number_generator.cpp
 #, fuzzy
@@ -376,7 +374,7 @@ msgstr "Mod Rotație"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
-msgstr ""
+msgstr "Coada de mesaje"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
@@ -411,7 +409,7 @@ msgstr "Control"
 
 #: core/os/input_event.cpp
 msgid "Meta"
-msgstr ""
+msgstr "Meta"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -444,7 +442,7 @@ msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
-msgstr ""
+msgstr "Ecou"
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
 #, fuzzy
@@ -478,7 +476,7 @@ msgstr "Presiune"
 
 #: core/os/input_event.cpp
 msgid "Pen Inverted"
-msgstr ""
+msgstr "Stilou inversat"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -552,7 +550,7 @@ msgstr "Linia Numărul:"
 
 #: core/os/input_event.cpp
 msgid "Controller Value"
-msgstr ""
+msgstr "Valoarea controlerului"
 
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
@@ -679,7 +677,7 @@ msgstr "Editor"
 
 #: core/project_settings.cpp
 msgid "Main Run Args"
-msgstr ""
+msgstr "Argumente principale ale rulării"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -688,7 +686,7 @@ msgstr "Calea Scenei:"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
-msgstr ""
+msgstr "Căutare în extensii de fișiere"
 
 #: core/project_settings.cpp
 msgid "Script Templates Search Path"
@@ -721,7 +719,7 @@ msgstr "Selectează"
 
 #: core/project_settings.cpp
 msgid "UI Cancel"
-msgstr ""
+msgstr "Anulare interfață utilizator"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -754,7 +752,7 @@ msgstr "Descarcă"
 
 #: core/project_settings.cpp
 msgid "UI Page Up"
-msgstr ""
+msgstr "Pagina UI în sus"
 
 #: core/project_settings.cpp
 msgid "UI Page Down"
@@ -762,11 +760,11 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "UI Home"
-msgstr ""
+msgstr "UI Acasă"
 
 #: core/project_settings.cpp
 msgid "UI End"
-msgstr ""
+msgstr "Sfârșitul interfeței de utilizator"
 
 #: core/project_settings.cpp main/main.cpp modules/bullet/register_types.cpp
 #: modules/bullet/space_bullet.cpp scene/2d/physics_body_2d.cpp
@@ -815,7 +813,7 @@ msgstr ""
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "Calitate"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
 #: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
@@ -826,7 +824,7 @@ msgstr "Filtre:"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "Intensitate Sharpen"
 
 #: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
@@ -849,7 +847,7 @@ msgstr "Setări:"
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Profiler"
-msgstr ""
+msgstr "Profiler"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -871,35 +869,35 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Long Distance Matching"
-msgstr ""
+msgstr "Potrivire la distanță"
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr ""
+msgstr "Nivelul de compresie"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
-msgstr ""
+msgstr "Dimensiunea jurnalului de fereastră"
 
 #: core/project_settings.cpp
 msgid "Zlib"
-msgstr ""
+msgstr "Zlib"
 
 #: core/project_settings.cpp
 msgid "Gzip"
-msgstr ""
+msgstr "Gzip"
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "Android"
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "Module"
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr ""
+msgstr "TCP"
 
 #: core/register_core_types.cpp
 #, fuzzy
@@ -908,7 +906,7 @@ msgstr "Conectați la Nod:"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
-msgstr ""
+msgstr "Pachet Peer Stream"
 
 #: core/register_core_types.cpp
 msgid "Max Buffer (Power of 2)"
@@ -957,7 +955,7 @@ msgstr "Se Testează"
 
 #: core/translation.cpp scene/resources/font.cpp
 msgid "Fallback"
-msgstr ""
+msgstr "Fallback"
 
 #: core/ustring.cpp scene/resources/segment_shape_2d.cpp
 msgid "B"
@@ -1015,7 +1013,7 @@ msgstr ""
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1032,7 +1030,7 @@ msgstr "Utilizează Pixel Snap"
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Immediate Buffer Size (KB)"
-msgstr ""
+msgstr "Dimensiunea imediată a bufferului (KB)"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
@@ -1043,7 +1041,7 @@ msgstr "Procesează Lightmaps"
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Use Bicubic Sampling"
-msgstr ""
+msgstr "Utilizarea eșantionării bicubice"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Elements"
@@ -4608,6 +4606,7 @@ msgstr "Proiect Divers sau unelte pentru scenă."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Proiect"
 
@@ -7508,7 +7507,8 @@ msgid "8 Bit"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr ""
 
@@ -15712,18 +15712,18 @@ msgstr ""
 msgid "Make Local"
 msgstr "Creează Oase"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Nume Nod:"
+
+#: editor/scene_tree_dock.cpp
+msgid "Unique names already used by another node in the scene:"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Nume Nod:"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-#, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "Nume Nod:"
 
 #: editor/scene_tree_dock.cpp
@@ -15930,6 +15930,11 @@ msgstr "Adaugă în Grup"
 
 #: editor/scene_tree_editor.cpp
 #, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Nume Nod:"
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
 msgid "(Connecting From)"
 msgstr "Eroare de Conexiune"
 
@@ -15990,6 +15995,10 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -16747,7 +16756,7 @@ msgstr ""
 
 #: main/main.cpp
 msgid "iOS"
-msgstr ""
+msgstr "iOS"
 
 #: main/main.cpp
 msgid "Hide Home Indicator"
@@ -17920,6 +17929,21 @@ msgstr "Toată selecția"
 #, fuzzy
 msgid "Auto Update Project"
 msgstr "Exportă Proiectul"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Afișează Tot"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Alegeţi un Director"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Alegeţi un Director"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -19752,6 +19776,11 @@ msgstr "Creează Nod"
 msgid "Custom BG Color"
 msgstr "Creează Nod"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Extinde Toate"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -19903,7 +19932,7 @@ msgstr "Eroare la scrierea TextFile:"
 
 #: platform/javascript/export/export.cpp
 msgid "Web"
-msgstr ""
+msgstr "Web"
 
 #: platform/javascript/export/export.cpp
 msgid "HTTP Host"
@@ -20600,6 +20629,12 @@ msgid "Show Name On Square 310 X 310"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Invalid package short name."
 msgstr "Nume nevalid."
@@ -20824,9 +20859,8 @@ msgid "Executable \"pck\" section not found."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Windows"
-msgstr "Fereastră Nouă"
+msgstr "Windows"
 
 #: platform/windows/export/export.cpp
 msgid "Rcedit"

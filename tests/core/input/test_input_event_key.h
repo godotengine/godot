@@ -102,7 +102,7 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 	// as text. These cases are a bit weird, since None has no textual representation
 	// (find_keycode_name(Key::NONE) results in a nullptr). Thus, these tests look weird
 	// with only (Physical) or a lonely modifier with (Physical) but (as far as I
-	// understand the code, that is intended behaviour.
+	// understand the code, that is intended behavior.
 
 	// Key is None without a physical key.
 	none_key.set_keycode(Key::NONE);
@@ -118,7 +118,7 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 
 	InputEventKey none_key2;
 
-	// Key is None without modifers with a physical key.
+	// Key is None without modifiers with a physical key.
 	none_key2.set_keycode(Key::NONE);
 	none_key2.set_physical_keycode(Key::ENTER);
 
@@ -148,7 +148,7 @@ TEST_CASE("[InputEventKey] Key correctly converts its state to a string represen
 	CHECK(none_key.to_string() == "InputEventKey: keycode=0 (), mods=none, physical=true, pressed=false, echo=false");
 	// Set physical key to Escape.
 	none_key.set_physical_keycode(Key::ESCAPE);
-	CHECK(none_key.to_string() == "InputEventKey: keycode=16777217 (Escape), mods=none, physical=true, pressed=false, echo=false");
+	CHECK(none_key.to_string() == "InputEventKey: keycode=4194305 (Escape), mods=none, physical=true, pressed=false, echo=false");
 
 	InputEventKey key;
 
@@ -167,7 +167,11 @@ TEST_CASE("[InputEventKey] Key correctly converts its state to a string represen
 	// Press Ctrl and Alt.
 	key.set_ctrl_pressed(true);
 	key.set_alt_pressed(true);
+#ifdef MACOS_ENABLED
+	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=Ctrl+Option, physical=false, pressed=true, echo=true");
+#else
 	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=Ctrl+Alt, physical=false, pressed=true, echo=true");
+#endif
 }
 
 TEST_CASE("[InputEventKey] Key is correctly converted to reference") {

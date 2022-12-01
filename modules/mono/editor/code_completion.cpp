@@ -140,7 +140,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			}
 		} break;
 		case CompletionKind::RESOURCE_PATHS: {
-			if (bool(EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))) {
+			if (bool(EDITOR_GET("text_editor/completion/complete_file_paths"))) {
 				_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), suggestions);
 			}
 		} break;

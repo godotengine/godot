@@ -36,7 +36,7 @@
 #include "scene/debugger/scene_debugger.h"
 
 bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p_value) {
-	if (!editable || !prop_values.has(p_name) || String(p_name).begins_with("Constants/")) {
+	if (!prop_values.has(p_name) || String(p_name).begins_with("Constants/")) {
 		return false;
 	}
 
@@ -85,14 +85,12 @@ void EditorDebuggerRemoteObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_variant"), &EditorDebuggerRemoteObject::get_variant);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorDebuggerRemoteObject::clear);
 	ClassDB::bind_method(D_METHOD("get_remote_object_id"), &EditorDebuggerRemoteObject::get_remote_object_id);
-	ClassDB::bind_method(D_METHOD("_is_read_only"), &EditorDebuggerRemoteObject::_is_read_only);
 
 	ADD_SIGNAL(MethodInfo("value_edited", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value")));
 }
 
 EditorDebuggerInspector::EditorDebuggerInspector() {
 	variables = memnew(EditorDebuggerRemoteObject);
-	variables->editable = false;
 }
 
 EditorDebuggerInspector::~EditorDebuggerInspector() {
@@ -168,11 +166,11 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 				if (pinfo.hint_string == "Script") {
 					if (debug_obj->get_script() != var) {
 						debug_obj->set_script(Ref<RefCounted>());
-						Ref<Script> script(var);
-						if (!script.is_null()) {
-							ScriptInstance *script_instance = script->placeholder_instance_create(debug_obj);
-							if (script_instance) {
-								debug_obj->set_script_and_instance(var, script_instance);
+						Ref<Script> scr(var);
+						if (!scr.is_null()) {
+							ScriptInstance *scr_instance = scr->placeholder_instance_create(debug_obj);
+							if (scr_instance) {
+								debug_obj->set_script_and_instance(var, scr_instance);
 							}
 						}
 					}
@@ -232,7 +230,7 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
 	Variant v = var.value;
 
 	PropertyHint h = PROPERTY_HINT_NONE;
-	String hs = String();
+	String hs;
 
 	if (v.get_type() == Variant::OBJECT) {
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();

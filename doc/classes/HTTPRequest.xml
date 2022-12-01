@@ -6,7 +6,7 @@
 	<description>
 		A node with the ability to send HTTP requests. Uses [HTTPClient] internally.
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
-		[b]Warning:[/b] See the notes and warnings on [HTTPClient] for limitations, especially regarding SSL security.
+		[b]Warning:[/b] See the notes and warnings on [HTTPClient] for limitations, especially regarding TLS security.
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 		[b]Example of contacting a REST API and printing one of its returned fields:[/b]
 		[codeblocks]
@@ -29,7 +29,6 @@
 		    error = http_request.request("https://httpbin.org/post", [], true, HTTPClient.METHOD_POST, body)
 		    if error != OK:
 		        push_error("An error occurred in the HTTP request.")
-
 
 		# Called when the HTTP request is completed.
 		func _http_request_completed(result, response_code, headers, body):
@@ -95,7 +94,6 @@
 		    if error != OK:
 		        push_error("An error occurred in the HTTP request.")
 
-
 		# Called when the HTTP request is completed.
 		func _http_request_completed(result, response_code, headers, body):
 		    if result != HTTPRequest.RESULT_SUCCESS:
@@ -157,7 +155,7 @@
 	</description>
 	<tutorials>
 		<link title="Making HTTP requests">$DOCS_URL/tutorials/networking/http_request_class.html</link>
-		<link title="SSL certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
+		<link title="TLS certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="cancel_request">
@@ -189,21 +187,21 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />
 			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
-			<param index="2" name="ssl_validate_domain" type="bool" default="true" />
+			<param index="2" name="tls_validate_domain" type="bool" default="true" />
 			<param index="3" name="method" type="int" enum="HTTPClient.Method" default="0" />
 			<param index="4" name="request_data" type="String" default="&quot;&quot;" />
 			<description>
 				Creates request on the underlying [HTTPClient]. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
 				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
 				[b]Note:[/b] When [param method] is [constant HTTPClient.METHOD_GET], the payload sent via [param request_data] might be ignored by the server or even cause the server to reject the request (check [url=https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.1]RFC 7231 section 4.3.1[/url] for more details). As a workaround, you can send data as a query string in the URL (see [method String.uri_encode] for an example).
-				[b]Note:[/b] It's recommended to use transport encryption (SSL/TLS) and to avoid sending sensitive information (such as login credentials) in HTTP GET URL parameters. Consider using HTTP POST requests or HTTP headers for such information instead.
+				[b]Note:[/b] It's recommended to use transport encryption (TLS) and to avoid sending sensitive information (such as login credentials) in HTTP GET URL parameters. Consider using HTTP POST requests or HTTP headers for such information instead.
 			</description>
 		</method>
 		<method name="request_raw">
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />
 			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
-			<param index="2" name="ssl_validate_domain" type="bool" default="true" />
+			<param index="2" name="tls_validate_domain" type="bool" default="true" />
 			<param index="3" name="method" type="int" enum="HTTPClient.Method" default="0" />
 			<param index="4" name="request_data_raw" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
@@ -283,8 +281,8 @@
 		<constant name="RESULT_CONNECTION_ERROR" value="4" enum="Result">
 			Request failed due to connection (read/write) error.
 		</constant>
-		<constant name="RESULT_SSL_HANDSHAKE_ERROR" value="5" enum="Result">
-			Request failed on SSL handshake.
+		<constant name="RESULT_TLS_HANDSHAKE_ERROR" value="5" enum="Result">
+			Request failed on TLS handshake.
 		</constant>
 		<constant name="RESULT_NO_RESPONSE" value="6" enum="Result">
 			Request does not have a response (yet).

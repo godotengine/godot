@@ -60,9 +60,10 @@ private:
 	int ips = 60;
 	double physics_jitter_fix = 0.5;
 	double _fps = 1;
-	int _target_fps = 0;
+	int _max_fps = 0;
 	double _time_scale = 1.0;
 	uint64_t _physics_frames = 0;
+	int max_physics_steps_per_frame = 8;
 	double _physics_interpolation_fraction = 0.0f;
 	bool abort_on_gpu_errors = false;
 	bool use_validation_layers = false;
@@ -93,11 +94,14 @@ public:
 	virtual void set_physics_ticks_per_second(int p_ips);
 	virtual int get_physics_ticks_per_second() const;
 
+	virtual void set_max_physics_steps_per_frame(int p_max_physics_steps);
+	virtual int get_max_physics_steps_per_frame() const;
+
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
 
-	virtual void set_target_fps(int p_fps);
-	virtual int get_target_fps() const;
+	virtual void set_max_fps(int p_fps);
+	virtual int get_max_fps() const;
 
 	virtual double get_frames_per_second() const { return _fps; }
 

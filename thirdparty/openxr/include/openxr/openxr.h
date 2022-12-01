@@ -2,7 +2,7 @@
 #define OPENXR_H_ 1
 
 /*
-** Copyright (c) 2017-2022, The Khronos Group Inc.
+** Copyright 2017-2022 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
@@ -25,7 +25,7 @@ extern "C" {
     ((((major) & 0xffffULL) << 48) | (((minor) & 0xffffULL) << 32) | ((patch) & 0xffffffffULL))
 
 // OpenXR current version number.
-#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 0, 23)
+#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 0, 25)
 
 #define XR_VERSION_MAJOR(version) (uint16_t)(((uint64_t)(version) >> 48)& 0xffffULL)
 #define XR_VERSION_MINOR(version) (uint16_t)(((uint64_t)(version) >> 32) & 0xffffULL)
@@ -401,6 +401,7 @@ typedef enum XrStructureType {
     XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB = 1000118003,
     XR_TYPE_GEOMETRY_INSTANCE_CREATE_INFO_FB = 1000118004,
     XR_TYPE_GEOMETRY_INSTANCE_TRANSFORM_FB = 1000118005,
+    XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES2_FB = 1000118006,
     XR_TYPE_PASSTHROUGH_STYLE_FB = 1000118020,
     XR_TYPE_PASSTHROUGH_COLOR_MAP_MONO_TO_RGBA_FB = 1000118021,
     XR_TYPE_PASSTHROUGH_COLOR_MAP_MONO_TO_MONO_FB = 1000118022,
@@ -439,6 +440,9 @@ typedef enum XrStructureType {
     XR_TYPE_SWAPCHAIN_STATE_SAMPLER_VULKAN_FB = 1000163000,
     XR_TYPE_COMPOSITION_LAYER_SPACE_WARP_INFO_FB = 1000171000,
     XR_TYPE_SYSTEM_SPACE_WARP_PROPERTIES_FB = 1000171001,
+    XR_TYPE_SEMANTIC_LABELS_FB = 1000175000,
+    XR_TYPE_ROOM_LAYOUT_FB = 1000175001,
+    XR_TYPE_BOUNDARY_2D_FB = 1000175002,
     XR_TYPE_DIGITAL_LENS_CONTROL_ALMALENCE = 1000196000,
     XR_TYPE_SPACE_CONTAINER_FB = 1000199000,
     XR_TYPE_PASSTHROUGH_KEYBOARD_HANDS_INTENSITY_FB = 1000203002,
@@ -2603,7 +2607,7 @@ typedef struct XrHandJointsMotionRangeInfoEXT {
 
             XR_DEFINE_HANDLE(XrSceneMSFT)
 
-#define XR_MSFT_scene_understanding_SPEC_VERSION 1
+#define XR_MSFT_scene_understanding_SPEC_VERSION 2
 #define XR_MSFT_SCENE_UNDERSTANDING_EXTENSION_NAME "XR_MSFT_scene_understanding"
 
 typedef enum XrSceneComputeFeatureMSFT {
@@ -2925,7 +2929,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetSceneMeshBuffersMSFT(
 
 
 #define XR_MSFT_scene_understanding_serialization 1
-#define XR_MSFT_scene_understanding_serialization_SPEC_VERSION 1
+#define XR_MSFT_scene_understanding_serialization_SPEC_VERSION 2
 #define XR_MSFT_SCENE_UNDERSTANDING_SERIALIZATION_EXTENSION_NAME "XR_MSFT_scene_understanding_serialization"
 typedef struct XrSerializedSceneFragmentDataGetInfoMSFT {
     XrStructureType             type;
@@ -3166,7 +3170,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetFacialExpressionsHTC(
 
 
 #define XR_FB_color_space 1
-#define XR_FB_color_space_SPEC_VERSION    2
+#define XR_FB_color_space_SPEC_VERSION    3
 #define XR_FB_COLOR_SPACE_EXTENSION_NAME  "XR_FB_color_space"
 
 typedef enum XrColorSpaceFB {
@@ -3206,7 +3210,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSetColorSpaceFB(
 
 
 #define XR_FB_hand_tracking_mesh 1
-#define XR_FB_hand_tracking_mesh_SPEC_VERSION 2
+#define XR_FB_hand_tracking_mesh_SPEC_VERSION 3
 #define XR_FB_HAND_TRACKING_MESH_EXTENSION_NAME "XR_FB_hand_tracking_mesh"
 typedef struct XrVector4sFB {
     int16_t    x;
@@ -3317,6 +3321,10 @@ XR_DEFINE_ATOM(XrAsyncRequestIdFB)
 typedef enum XrSpaceComponentTypeFB {
     XR_SPACE_COMPONENT_TYPE_LOCATABLE_FB = 0,
     XR_SPACE_COMPONENT_TYPE_STORABLE_FB = 1,
+    XR_SPACE_COMPONENT_TYPE_BOUNDED_2D_FB = 3,
+    XR_SPACE_COMPONENT_TYPE_BOUNDED_3D_FB = 4,
+    XR_SPACE_COMPONENT_TYPE_SEMANTIC_LABELS_FB = 5,
+    XR_SPACE_COMPONENT_TYPE_ROOM_LAYOUT_FB = 6,
     XR_SPACE_COMPONENT_TYPE_SPACE_CONTAINER_FB = 7,
     XR_SPACE_COMPONENT_TYPE_MAX_ENUM_FB = 0x7FFFFFFF
 } XrSpaceComponentTypeFB;
@@ -3625,7 +3633,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrTriangleMeshEndVertexBufferUpdateFB(
 XR_DEFINE_HANDLE(XrPassthroughFB)
 XR_DEFINE_HANDLE(XrPassthroughLayerFB)
 XR_DEFINE_HANDLE(XrGeometryInstanceFB)
-#define XR_FB_passthrough_SPEC_VERSION    2
+#define XR_FB_passthrough_SPEC_VERSION    3
 #define XR_FB_PASSTHROUGH_EXTENSION_NAME  "XR_FB_passthrough"
 #define XR_PASSTHROUGH_COLOR_MAP_MONO_SIZE_FB 256
 
@@ -3636,10 +3644,18 @@ typedef enum XrPassthroughLayerPurposeFB {
     XR_PASSTHROUGH_LAYER_PURPOSE_TRACKED_KEYBOARD_MASKED_HANDS_FB = 1000203002,
     XR_PASSTHROUGH_LAYER_PURPOSE_MAX_ENUM_FB = 0x7FFFFFFF
 } XrPassthroughLayerPurposeFB;
+typedef XrFlags64 XrPassthroughCapabilityFlagsFB;
+
+// Flag bits for XrPassthroughCapabilityFlagsFB
+static const XrPassthroughCapabilityFlagsFB XR_PASSTHROUGH_CAPABILITY_BIT_FB = 0x00000001;
+static const XrPassthroughCapabilityFlagsFB XR_PASSTHROUGH_CAPABILITY_COLOR_BIT_FB = 0x00000002;
+static const XrPassthroughCapabilityFlagsFB XR_PASSTHROUGH_CAPABILITY_LAYER_DEPTH_BIT_FB = 0x00000004;
+
 typedef XrFlags64 XrPassthroughFlagsFB;
 
 // Flag bits for XrPassthroughFlagsFB
 static const XrPassthroughFlagsFB XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB = 0x00000001;
+static const XrPassthroughFlagsFB XR_PASSTHROUGH_LAYER_DEPTH_BIT_FB = 0x00000002;
 
 typedef XrFlags64 XrPassthroughStateChangedFlagsFB;
 
@@ -3655,6 +3671,13 @@ typedef struct XrSystemPassthroughPropertiesFB {
     const void* XR_MAY_ALIAS    next;
     XrBool32                    supportsPassthrough;
 } XrSystemPassthroughPropertiesFB;
+
+// XrSystemPassthroughProperties2FB extends XrSystemProperties
+typedef struct XrSystemPassthroughProperties2FB {
+    XrStructureType                   type;
+    const void* XR_MAY_ALIAS          next;
+    XrPassthroughCapabilityFlagsFB    capabilities;
+} XrSystemPassthroughProperties2FB;
 
 typedef struct XrPassthroughCreateInfoFB {
     XrStructureType             type;
@@ -3801,7 +3824,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGeometryInstanceSetTransformFB(
 #define XR_NULL_RENDER_MODEL_KEY_FB 0
 
 XR_DEFINE_ATOM(XrRenderModelKeyFB)
-#define XR_FB_render_model_SPEC_VERSION   2
+#define XR_FB_render_model_SPEC_VERSION   3
 #define XR_FB_RENDER_MODEL_EXTENSION_NAME "XR_FB_render_model"
 #define XR_MAX_RENDER_MODEL_NAME_SIZE_FB  64
 typedef XrFlags64 XrRenderModelFlagsFB;
@@ -4005,6 +4028,11 @@ XRAPI_ATTR XrResult  XRAPI_CALL xrSetViewOffsetVARJO(
     float                                       offset);
 #endif /* XR_EXTENSION_PROTOTYPES */
 #endif /* !XR_NO_PROTOTYPES */
+
+
+#define XR_ML_ml2_controller_interaction 1
+#define XR_ML_ml2_controller_interaction_SPEC_VERSION 1
+#define XR_ML_ML2_CONTROLLER_INTERACTION_EXTENSION_NAME "XR_ML_ml2_controller_interaction"
 
 
 #define XR_MSFT_spatial_anchor_persistence 1
@@ -4303,6 +4331,93 @@ typedef struct XrSystemSpaceWarpPropertiesFB {
 
 
 
+#define XR_FB_scene 1
+#define XR_FB_scene_SPEC_VERSION          1
+#define XR_FB_SCENE_EXTENSION_NAME        "XR_FB_scene"
+typedef struct XrExtent3DfFB {
+    float    width;
+    float    height;
+    float    depth;
+} XrExtent3DfFB;
+
+typedef struct XrOffset3DfFB {
+    float    x;
+    float    y;
+    float    z;
+} XrOffset3DfFB;
+
+typedef struct XrRect3DfFB {
+    XrOffset3DfFB    offset;
+    XrExtent3DfFB    extent;
+} XrRect3DfFB;
+
+typedef struct XrSemanticLabelsFB {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    bufferCapacityInput;
+    uint32_t                    bufferCountOutput;
+    char*                       buffer;
+} XrSemanticLabelsFB;
+
+typedef struct XrRoomLayoutFB {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrUuidEXT                   floorUuid;
+    XrUuidEXT                   ceilingUuid;
+    uint32_t                    wallUuidCapacityInput;
+    uint32_t                    wallUuidCountOutput;
+    XrUuidEXT*                  wallUuids;
+} XrRoomLayoutFB;
+
+typedef struct XrBoundary2DFB {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    vertexCapacityInput;
+    uint32_t                    vertexCountOutput;
+    XrVector2f*                 vertices;
+} XrBoundary2DFB;
+
+typedef XrResult (XRAPI_PTR *PFN_xrGetSpaceBoundingBox2DFB)(XrSession session, XrSpace space, XrRect2Df* boundingBox2DOutput);
+typedef XrResult (XRAPI_PTR *PFN_xrGetSpaceBoundingBox3DFB)(XrSession session, XrSpace space, XrRect3DfFB* boundingBox3DOutput);
+typedef XrResult (XRAPI_PTR *PFN_xrGetSpaceSemanticLabelsFB)(XrSession session, XrSpace space, XrSemanticLabelsFB* semanticLabelsOutput);
+typedef XrResult (XRAPI_PTR *PFN_xrGetSpaceBoundary2DFB)(XrSession session, XrSpace space, XrBoundary2DFB* boundary2DOutput);
+typedef XrResult (XRAPI_PTR *PFN_xrGetSpaceRoomLayoutFB)(XrSession session, XrSpace space, XrRoomLayoutFB* roomLayoutOutput);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSpaceBoundingBox2DFB(
+    XrSession                                   session,
+    XrSpace                                     space,
+    XrRect2Df*                                  boundingBox2DOutput);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSpaceBoundingBox3DFB(
+    XrSession                                   session,
+    XrSpace                                     space,
+    XrRect3DfFB*                                boundingBox3DOutput);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSpaceSemanticLabelsFB(
+    XrSession                                   session,
+    XrSpace                                     space,
+    XrSemanticLabelsFB*                         semanticLabelsOutput);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSpaceBoundary2DFB(
+    XrSession                                   session,
+    XrSpace                                     space,
+    XrBoundary2DFB*                             boundary2DOutput);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSpaceRoomLayoutFB(
+    XrSession                                   session,
+    XrSpace                                     space,
+    XrRoomLayoutFB*                             roomLayoutOutput);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+#define XR_EXT_palm_pose 1
+#define XR_EXT_palm_pose_SPEC_VERSION     2
+#define XR_EXT_PALM_POSE_EXTENSION_NAME   "XR_EXT_palm_pose"
+
+
 #define XR_ALMALENCE_digital_lens_control 1
 #define XR_ALMALENCE_digital_lens_control_SPEC_VERSION 1
 #define XR_ALMALENCE_DIGITAL_LENS_CONTROL_EXTENSION_NAME "XR_ALMALENCE_digital_lens_control"
@@ -4329,13 +4444,13 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSetDigitalLensControlALMALENCE(
 
 
 #define XR_FB_spatial_entity_container 1
-#define XR_FB_spatial_entity_container_SPEC_VERSION 1
+#define XR_FB_spatial_entity_container_SPEC_VERSION 2
 #define XR_FB_SPATIAL_ENTITY_CONTAINER_EXTENSION_NAME "XR_FB_spatial_entity_container"
 typedef struct XrSpaceContainerFB {
     XrStructureType             type;
     const void* XR_MAY_ALIAS    next;
     uint32_t                    uuidCapacityInput;
-    uint32_t*                   uuidCountOutput;
+    uint32_t                    uuidCountOutput;
     XrUuidEXT*                  uuids;
 } XrSpaceContainerFB;
 

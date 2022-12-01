@@ -56,6 +56,8 @@ String JSON::_make_indent(const String &p_indent, int p_size) {
 }
 
 String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision) {
+	ERR_FAIL_COND_V_MSG(p_cur_indent > Variant::MAX_RECURSION_DEPTH, "...", "JSON structure is too deep. Bailing.");
+
 	String colon = ":";
 	String end_statement = "";
 
@@ -357,17 +359,22 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str) {
+Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
+	if (p_depth > Variant::MAX_RECURSION_DEPTH) {
+		r_err_str = "JSON structure is too deep. Bailing.";
+		return ERR_OUT_OF_MEMORY;
+	}
+
 	if (token.type == TK_CURLY_BRACKET_OPEN) {
 		Dictionary d;
-		Error err = _parse_object(d, p_str, index, p_len, line, r_err_str);
+		Error err = _parse_object(d, p_str, index, p_len, line, p_depth + 1, r_err_str);
 		if (err) {
 			return err;
 		}
 		value = d;
 	} else if (token.type == TK_BRACKET_OPEN) {
 		Array a;
-		Error err = _parse_array(a, p_str, index, p_len, line, r_err_str);
+		Error err = _parse_array(a, p_str, index, p_len, line, p_depth + 1, r_err_str);
 		if (err) {
 			return err;
 		}
@@ -396,7 +403,7 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 	return OK;
 }
 
-Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str) {
+Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
 	Token token;
 	bool need_comma = false;
 
@@ -421,7 +428,7 @@ Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_
 		}
 
 		Variant v;
-		err = _parse_value(v, token, p_str, index, p_len, line, r_err_str);
+		err = _parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str);
 		if (err) {
 			return err;
 		}
@@ -434,7 +441,7 @@ Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str) {
+Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
 	bool at_key = true;
 	String key;
 	Token token;
@@ -483,7 +490,7 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 			}
 
 			Variant v;
-			err = _parse_value(v, token, p_str, index, p_len, line, r_err_str);
+			err = _parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -495,6 +502,10 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 
 	r_err_str = "Expected '}'";
 	return ERR_PARSE_ERROR;
+}
+
+void JSON::set_data(const Variant &p_data) {
+	data = p_data;
 }
 
 Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line) {
@@ -510,7 +521,7 @@ Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_st
 		return err;
 	}
 
-	err = _parse_value(r_ret, token, str, idx, len, r_err_line, r_err_str);
+	err = _parse_value(r_ret, token, str, idx, len, r_err_line, 0, r_err_str);
 
 	// Check if EOF is reached
 	// or it's a type of the next token.
@@ -557,6 +568,88 @@ void JSON::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse", "json_string"), &JSON::parse);
 
 	ClassDB::bind_method(D_METHOD("get_data"), &JSON::get_data);
+	ClassDB::bind_method(D_METHOD("set_data", "data"), &JSON::set_data);
 	ClassDB::bind_method(D_METHOD("get_error_line"), &JSON::get_error_line);
 	ClassDB::bind_method(D_METHOD("get_error_message"), &JSON::get_error_message);
+
+	ADD_PROPERTY(PropertyInfo(Variant::NIL, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT), "set_data", "get_data"); // Ensures that it can be serialized as binary.
+}
+
+////
+
+////////////
+
+Ref<Resource> ResourceFormatLoaderJSON::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	if (r_error) {
+		*r_error = ERR_FILE_CANT_OPEN;
+	}
+
+	if (!FileAccess::exists(p_path)) {
+		*r_error = ERR_FILE_NOT_FOUND;
+		return Ref<Resource>();
+	}
+
+	Ref<JSON> json;
+	json.instantiate();
+
+	Error err = json->parse(FileAccess::get_file_as_string(p_path));
+	if (err != OK) {
+		if (r_error) {
+			*r_error = err;
+		}
+		ERR_PRINT("Error parsing JSON file at '" + p_path + "', on line " + itos(json->get_error_line()) + ": " + json->get_error_message());
+		return Ref<Resource>();
+	}
+
+	if (r_error) {
+		*r_error = OK;
+	}
+
+	return json;
+}
+
+void ResourceFormatLoaderJSON::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("json");
+}
+
+bool ResourceFormatLoaderJSON::handles_type(const String &p_type) const {
+	return (p_type == "JSON");
+}
+
+String ResourceFormatLoaderJSON::get_resource_type(const String &p_path) const {
+	String el = p_path.get_extension().to_lower();
+	if (el == "json") {
+		return "JSON";
+	}
+	return "";
+}
+
+Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+	Ref<JSON> json = p_resource;
+	ERR_FAIL_COND_V(json.is_null(), ERR_INVALID_PARAMETER);
+
+	String source = JSON::stringify(json->get_data(), "\t", false, true);
+
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot save json '" + p_path + "'.");
+
+	file->store_string(source);
+	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
+		return ERR_CANT_CREATE;
+	}
+
+	return OK;
+}
+
+void ResourceFormatSaverJSON::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+	Ref<JSON> json = p_resource;
+	if (json.is_valid()) {
+		p_extensions->push_back("json");
+	}
+}
+
+bool ResourceFormatSaverJSON::recognize(const Ref<Resource> &p_resource) const {
+	return p_resource->get_class_name() == "JSON"; //only json, not inherited
 }

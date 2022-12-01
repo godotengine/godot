@@ -122,6 +122,7 @@ private:
 	Timer *frame_delay = nullptr;
 	Timer *plot_delay = nullptr;
 
+	void _set_button_text();
 	void _update_frame();
 
 	void _activate_pressed();
@@ -153,7 +154,7 @@ protected:
 
 public:
 	void add_frame_metric(const Metric &p_metric, bool p_final = false);
-	void set_enabled(bool p_enable);
+	void set_enabled(bool p_enable, bool p_clear = true);
 	bool is_profiling();
 	bool is_seeking() { return seeking; }
 	void disable_seeking();

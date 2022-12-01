@@ -31,27 +31,23 @@
 #ifndef SCENE_TREE_DOCK_H
 #define SCENE_TREE_DOCK_H
 
-#include "editor/create_dialog.h"
-#include "editor/editor_data.h"
-#include "editor/editor_quick_open.h"
-#include "editor/groups_editor.h"
-#include "editor/reparent_dialog.h"
-#include "editor/script_create_dialog.h"
-#include "scene/animation/animation_player.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
+
+#include "editor/editor_data.h"
+#include "editor/script_create_dialog.h"
+#include "scene/gui/box_container.h"
+#include "scene/resources/animation.h"
+
+class EditorQuickOpen;
+class MenuButton;
+class ReparentDialog;
+class ShaderCreateDialog;
+class TextureRect;
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 class RenameDialog;
 #endif // MODULE_REGEX_ENABLED
-
-class ShaderCreateDialog;
 
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
@@ -137,7 +133,6 @@ class SceneTreeDock : public VBoxContainer {
 	HBoxContainer *tool_hbc = nullptr;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 	void _property_selected(int p_idx);
-	void _node_collapsed(Object *p_obj);
 
 	Node *property_drop_node = nullptr;
 	String resource_drop_path;
@@ -161,7 +156,13 @@ class SceneTreeDock : public VBoxContainer {
 	EditorQuickOpen *quick_open = nullptr;
 	EditorFileDialog *new_scene_from_dialog = nullptr;
 
+	enum FilterMenuItems {
+		FILTER_BY_TYPE = 64, // Used in the same menus as the Tool enum.
+		FILTER_BY_GROUP,
+	};
+
 	LineEdit *filter = nullptr;
+	PopupMenu *filter_quick_menu = nullptr;
 	TextureRect *filter_icon = nullptr;
 
 	PopupMenu *menu = nullptr;
@@ -187,9 +188,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
-
-	bool _is_collapsed_recursive(TreeItem *p_item) const;
-	void _set_collapsed_recursive(TreeItem *p_item, bool p_collapsed);
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
 
@@ -228,8 +226,6 @@ class SceneTreeDock : public VBoxContainer {
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	void _import_subscene();
-
 	void _new_scene_from(String p_file);
 	void _set_node_owner_recursive(Node *p_node, Node *p_owner);
 
@@ -249,8 +245,12 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
 	void _update_tree_menu();
+	void _update_filter_menu();
 
 	void _filter_changed(const String &p_filter);
+	void _filter_gui_input(const Ref<InputEvent> &p_event);
+	void _filter_option_selected(int option);
+	void _append_filter_options_to(PopupMenu *p_menu, bool p_include_separator = true);
 
 	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
 	void _replace_with_branch_scene(const String &p_file, Node *base);
@@ -292,7 +292,6 @@ public:
 
 	void _focus_node();
 
-	void import_subscene();
 	void add_root_node(Node *p_node);
 	void set_edited_scene(Node *p_scene);
 	void instantiate(const String &p_file);

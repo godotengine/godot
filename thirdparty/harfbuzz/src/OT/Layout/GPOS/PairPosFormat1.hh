@@ -127,6 +127,12 @@ struct PairPosFormat1_3
       out->valueFormat[1] = newFormats.second;
     }
 
+    if (c->plan->all_axes_pinned)
+    {
+      out->valueFormat[0] = out->valueFormat[0].drop_device_table_flags ();
+      out->valueFormat[1] = out->valueFormat[1].drop_device_table_flags ();
+    }
+
     hb_sorted_vector_t<hb_codepoint_t> new_coverage;
 
     + hb_zip (this+coverage, pairSet)

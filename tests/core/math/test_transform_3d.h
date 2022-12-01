@@ -84,6 +84,29 @@ TEST_CASE("[Transform3D] rotation") {
 	CHECK(orig.rotated(axis, phi) == R * orig);
 	CHECK(orig.rotated_local(axis, phi) == orig * R);
 }
+
+TEST_CASE("[Transform3D] Finite number checks") {
+	const Vector3 y(0, 1, 2);
+	const Vector3 infinite_vec(NAN, NAN, NAN);
+	const Basis x(y, y, y);
+	const Basis infinite_basis(infinite_vec, infinite_vec, infinite_vec);
+
+	CHECK_MESSAGE(
+			Transform3D(x, y).is_finite(),
+			"Transform3D with all components finite should be finite");
+
+	CHECK_FALSE_MESSAGE(
+			Transform3D(x, infinite_vec).is_finite(),
+			"Transform3D with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Transform3D(infinite_basis, y).is_finite(),
+			"Transform3D with one component infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			Transform3D(infinite_basis, infinite_vec).is_finite(),
+			"Transform3D with two components infinite should not be finite.");
+}
+
 } // namespace TestTransform3D
 
 #endif // TEST_TRANSFORM_3D_H

@@ -44,6 +44,105 @@ void PostImportPluginSkeletonRenamer::get_internal_import_options(InternalImport
 	}
 }
 
+void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options, HashMap<String, String> p_rename_map) {
+	// Prepare objects.
+	Object *map = p_options["retarget/bone_map"].get_validated_object();
+	if (!map || !bool(p_options["retarget/bone_renamer/rename_bones"])) {
+		return;
+	}
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node);
+
+	// Rename bones in Skeleton3D.
+	{
+		int len = skeleton->get_bone_count();
+		for (int i = 0; i < len; i++) {
+			StringName bn = p_rename_map[skeleton->get_bone_name(i)];
+			if (bn) {
+				skeleton->set_bone_name(i, bn);
+			}
+		}
+	}
+
+	// Rename bones in Skin.
+	{
+		TypedArray<Node> nodes = p_base_scene->find_children("*", "ImporterMeshInstance3D");
+		while (nodes.size()) {
+			ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(nodes.pop_back());
+			Ref<Skin> skin = mi->get_skin();
+			if (skin.is_valid()) {
+				Node *node = mi->get_node(mi->get_skeleton_path());
+				if (node) {
+					Skeleton3D *mesh_skeleton = Object::cast_to<Skeleton3D>(node);
+					if (mesh_skeleton && node == skeleton) {
+						int len = skin->get_bind_count();
+						for (int i = 0; i < len; i++) {
+							StringName bn = p_rename_map[skin->get_bind_name(i)];
+							if (bn) {
+								skin->set_bind_name(i, bn);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Rename bones in AnimationPlayer.
+	{
+		TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
+		while (nodes.size()) {
+			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
+			List<StringName> anims;
+			ap->get_animation_list(&anims);
+			for (const StringName &name : anims) {
+				Ref<Animation> anim = ap->get_animation(name);
+				int len = anim->get_track_count();
+				for (int i = 0; i < len; i++) {
+					if (anim->track_get_path(i).get_subname_count() != 1 || !(anim->track_get_type(i) == Animation::TYPE_POSITION_3D || anim->track_get_type(i) == Animation::TYPE_ROTATION_3D || anim->track_get_type(i) == Animation::TYPE_SCALE_3D)) {
+						continue;
+					}
+					String track_path = String(anim->track_get_path(i).get_concatenated_names());
+					Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+					if (node) {
+						Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+						if (track_skeleton && track_skeleton == skeleton) {
+							StringName bn = p_rename_map[anim->track_get_path(i).get_subname(0)];
+							if (bn) {
+								anim->track_set_path(i, track_path + ":" + bn);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Rename bones in all Nodes by calling method.
+	{
+		Vector<Variant> vargs;
+		vargs.push_back(p_base_scene);
+		vargs.push_back(skeleton);
+		Dictionary rename_map_dict;
+		for (HashMap<String, String>::Iterator E = p_rename_map.begin(); E; ++E) {
+			rename_map_dict[E->key] = E->value;
+		}
+		vargs.push_back(rename_map_dict);
+		const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * vargs.size());
+		const Variant *args = vargs.ptr();
+		uint32_t argcount = vargs.size();
+		for (uint32_t i = 0; i < argcount; i++) {
+			argptrs[i] = &args[i];
+		}
+
+		TypedArray<Node> nodes = p_base_scene->find_children("*");
+		while (nodes.size()) {
+			Node *nd = Object::cast_to<Node>(nodes.pop_back());
+			Callable::CallError ce;
+			nd->callp("_notify_skeleton_bones_renamed", argptrs, argcount, ce);
+		}
+	}
+}
+
 void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options) {
 	if (p_category == INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE) {
 		// Prepare objects.
@@ -51,93 +150,58 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 		if (!map || !bool(p_options["retarget/bone_renamer/rename_bones"])) {
 			return;
 		}
-		BoneMap *bone_map = Object::cast_to<BoneMap>(map);
 		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node);
+		BoneMap *bone_map = Object::cast_to<BoneMap>(map);
+		int len = skeleton->get_bone_count();
 
-		// Rename bones in Skeleton3D.
+		// First, prepare main rename map.
+		HashMap<String, String> main_rename_map;
+		for (int i = 0; i < len; i++) {
+			String bone_name = skeleton->get_bone_name(i);
+			String target_name = bone_map->find_profile_bone_name(bone_name);
+			if (target_name.is_empty()) {
+				continue;
+			}
+			main_rename_map.insert(bone_name, target_name);
+		}
+
+		// Preprocess of renaming bones to avoid to conflict with original bone name.
+		HashMap<String, String> pre_rename_map; // HashMap<skeleton bone name, target(profile) bone name>
 		{
-			int len = skeleton->get_bone_count();
+			Vector<String> solved_name_stack;
 			for (int i = 0; i < len; i++) {
-				StringName bn = bone_map->find_profile_bone_name(skeleton->get_bone_name(i));
-				if (bn) {
-					skeleton->set_bone_name(i, bn);
+				String bone_name = skeleton->get_bone_name(i);
+				String target_name = bone_map->find_profile_bone_name(bone_name);
+				if (target_name.is_empty() || bone_name == target_name || skeleton->find_bone(target_name) == -1) {
+					continue; // No conflicting.
 				}
+
+				// Solve conflicting.
+				Ref<SkeletonProfile> profile = bone_map->get_profile();
+				String solved_name = target_name;
+				for (int j = 2; skeleton->find_bone(solved_name) >= 0 || profile->find_bone(solved_name) >= 0 || solved_name_stack.has(solved_name); j++) {
+					solved_name = target_name + itos(j);
+				}
+				solved_name_stack.push_back(solved_name);
+				pre_rename_map.insert(target_name, solved_name);
 			}
+			_internal_process(p_category, p_base_scene, p_node, p_resource, p_options, pre_rename_map);
 		}
 
-		// Rename bones in Skin.
+		// Main process of renaming bones.
 		{
-			TypedArray<Node> nodes = p_base_scene->find_children("*", "ImporterMeshInstance3D");
-			while (nodes.size()) {
-				ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(nodes.pop_back());
-				Ref<Skin> skin = mi->get_skin();
-				if (skin.is_valid()) {
-					Node *node = mi->get_node(mi->get_skeleton_path());
-					if (node) {
-						Skeleton3D *mesh_skeleton = Object::cast_to<Skeleton3D>(node);
-						if (mesh_skeleton && node == skeleton) {
-							int len = skin->get_bind_count();
-							for (int i = 0; i < len; i++) {
-								StringName bn = bone_map->find_profile_bone_name(skin->get_bind_name(i));
-								if (bn) {
-									skin->set_bind_name(i, bn);
-								}
-							}
-						}
-					}
+			// Apply pre-renaming result to prepared main rename map.
+			Vector<String> remove_queue;
+			for (HashMap<String, String>::Iterator E = main_rename_map.begin(); E; ++E) {
+				if (pre_rename_map.has(E->key)) {
+					remove_queue.push_back(E->key);
 				}
 			}
-		}
-
-		// Rename bones in AnimationPlayer.
-		{
-			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
-			while (nodes.size()) {
-				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				List<StringName> anims;
-				ap->get_animation_list(&anims);
-				for (const StringName &name : anims) {
-					Ref<Animation> anim = ap->get_animation(name);
-					int len = anim->get_track_count();
-					for (int i = 0; i < len; i++) {
-						if (anim->track_get_path(i).get_subname_count() != 1 || !(anim->track_get_type(i) == Animation::TYPE_POSITION_3D || anim->track_get_type(i) == Animation::TYPE_ROTATION_3D || anim->track_get_type(i) == Animation::TYPE_SCALE_3D)) {
-							continue;
-						}
-						String track_path = String(anim->track_get_path(i).get_concatenated_names());
-						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
-						if (node) {
-							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
-							if (track_skeleton && track_skeleton == skeleton) {
-								StringName bn = bone_map->find_profile_bone_name(anim->track_get_path(i).get_subname(0));
-								if (bn) {
-									anim->track_set_path(i, track_path + ":" + bn);
-								}
-							}
-						}
-					}
-				}
+			for (int i = 0; i < remove_queue.size(); i++) {
+				main_rename_map.insert(pre_rename_map[remove_queue[i]], main_rename_map[remove_queue[i]]);
+				main_rename_map.erase(remove_queue[i]);
 			}
-		}
-
-		// Rename bones in all Nodes by calling method.
-		{
-			Vector<Variant> vargs;
-			vargs.push_back(p_base_scene);
-			vargs.push_back(skeleton);
-			vargs.push_back(bone_map);
-			const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * vargs.size());
-			const Variant *args = vargs.ptr();
-			uint32_t argcount = vargs.size();
-			for (uint32_t i = 0; i < argcount; i++) {
-				argptrs[i] = &args[i];
-			}
-
-			TypedArray<Node> nodes = p_base_scene->find_children("*");
-			while (nodes.size()) {
-				Node *nd = Object::cast_to<Node>(nodes.pop_back());
-				Callable::CallError ce;
-				nd->callp("_notify_skeleton_bones_renamed", argptrs, argcount, ce);
-			}
+			_internal_process(p_category, p_base_scene, p_node, p_resource, p_options, main_rename_map);
 		}
 
 		// Make unique skeleton.

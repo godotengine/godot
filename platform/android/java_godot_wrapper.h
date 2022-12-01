@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// note, swapped java and godot around in the file name so all the java
-// wrappers are together
-
 #ifndef JAVA_GODOT_WRAPPER_H
 #define JAVA_GODOT_WRAPPER_H
 
@@ -49,7 +46,7 @@ private:
 	jclass godot_class;
 	jclass activity_class;
 
-	GodotJavaViewWrapper *_godot_view = nullptr;
+	GodotJavaViewWrapper *godot_view = nullptr;
 
 	jmethodID _on_video_init = nullptr;
 	jmethodID _restart = nullptr;
@@ -72,6 +69,7 @@ private:
 	jmethodID _on_godot_main_loop_started = nullptr;
 	jmethodID _get_class_loader = nullptr;
 	jmethodID _create_new_godot_instance = nullptr;
+	jmethodID _get_render_view = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -83,7 +81,7 @@ public:
 	jobject get_class_loader();
 	GodotJavaViewWrapper *get_godot_view();
 
-	void on_video_init(JNIEnv *p_env = nullptr);
+	bool on_video_init(JNIEnv *p_env = nullptr);
 	void on_godot_setup_completed(JNIEnv *p_env = nullptr);
 	void on_godot_main_loop_started(JNIEnv *p_env = nullptr);
 	void restart(JNIEnv *p_env = nullptr);

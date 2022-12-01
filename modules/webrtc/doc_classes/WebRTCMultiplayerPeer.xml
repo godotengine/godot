@@ -6,7 +6,7 @@
 	<description>
 		This class constructs a full mesh of [WebRTCPeerConnection] (one connection for each peer) that can be used as a [member MultiplayerAPI.multiplayer_peer].
 		You can add each [WebRTCPeerConnection] via [method add_peer] or remove them via [method remove_peer]. Peers must be added in [constant WebRTCPeerConnection.STATE_NEW] state to allow it to create the appropriate channels. This class will not create offers nor set descriptions, it will only poll them, and notify connections and disconnections.
-		[signal MultiplayerPeer.connection_succeeded] and [signal MultiplayerPeer.server_disconnected] will not be emitted unless [code]server_compatibility[/code] is [code]true[/code] in [method initialize]. Beside that data transfer works like in a [MultiplayerPeer].
+		When creating the peer via [method create_client] or [method create_server] the [method MultiplayerPeer.is_server_relay_supported] method will return [code]true[/code] enabling peer exchange and packet relaying when supported by the [MultiplayerAPI] implementation.
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>
@@ -22,10 +22,29 @@
 				Three channels will be created for reliable, unreliable, and ordered transport. The value of [code]unreliable_lifetime[/code] will be passed to the [code]maxPacketLifetime[/code] option when creating unreliable and ordered channels (see [method WebRTCPeerConnection.create_data_channel]).
 			</description>
 		</method>
-		<method name="close">
-			<return type="void" />
+		<method name="create_client">
+			<return type="int" enum="Error" />
+			<param index="0" name="peer_id" type="int" />
+			<param index="1" name="channels_config" type="Array" default="[]" />
 			<description>
-				Close all the add peer connections and channels, freeing all resources.
+				Initialize the multiplayer peer as a client with the given [code]peer_id[/code] (must be between 2 and 2147483647). In this mode, you should only call [method add_peer] once and with [code]peer_id[/code] of [code]1[/code]. This mode enables [method MultiplayerPeer.is_server_relay_supported], allowing the upper [MultiplayerAPI] layer to perform peer exchange and packet relaying.
+				You can optionally specify a [code]channels_config[/code] array of [enum MultiplayerPeer.TransferMode] which will be used to create extra channels (WebRTC only supports one transfer mode per channel).
+			</description>
+		</method>
+		<method name="create_mesh">
+			<return type="int" enum="Error" />
+			<param index="0" name="peer_id" type="int" />
+			<param index="1" name="channels_config" type="Array" default="[]" />
+			<description>
+				Initialize the multiplayer peer as a mesh (i.e. all peers connect to each other) with the given [code]peer_id[/code] (must be between 1 and 2147483647).
+			</description>
+		</method>
+		<method name="create_server">
+			<return type="int" enum="Error" />
+			<param index="0" name="channels_config" type="Array" default="[]" />
+			<description>
+				Initialize the multiplayer peer as a server (with unique ID of [code]1[/code]). This mode enables [method MultiplayerPeer.is_server_relay_supported], allowing the upper [MultiplayerAPI] layer to perform peer exchange and packet relaying.
+				You can optionally specify a [code]channels_config[/code] array of [enum MultiplayerPeer.TransferMode] which will be used to create extra channels (WebRTC only supports one transfer mode per channel).
 			</description>
 		</method>
 		<method name="get_peer">
@@ -46,18 +65,6 @@
 			<param index="0" name="peer_id" type="int" />
 			<description>
 				Returns [code]true[/code] if the given [code]peer_id[/code] is in the peers map (it might not be connected though).
-			</description>
-		</method>
-		<method name="initialize">
-			<return type="int" enum="Error" />
-			<param index="0" name="peer_id" type="int" />
-			<param index="1" name="server_compatibility" type="bool" default="false" />
-			<param index="2" name="channels_config" type="Array" default="[]" />
-			<description>
-				Initialize the multiplayer peer with the given [code]peer_id[/code] (must be between 1 and 2147483647).
-				If [code]server_compatibilty[/code] is [code]false[/code] (default), the multiplayer peer will be immediately in state [constant MultiplayerPeer.CONNECTION_CONNECTED] and [signal MultiplayerPeer.connection_succeeded] will not be emitted.
-				If [code]server_compatibilty[/code] is [code]true[/code] the peer will suppress all [signal MultiplayerPeer.peer_connected] signals until a peer with id [constant MultiplayerPeer.TARGET_PEER_SERVER] connects and then emit [signal MultiplayerPeer.connection_succeeded]. After that the signal [signal MultiplayerPeer.peer_connected] will be emitted for every already connected peer, and any new peer that might connect. If the server peer disconnects after that, signal [signal MultiplayerPeer.server_disconnected] will be emitted and state will become [constant MultiplayerPeer.CONNECTION_CONNECTED].
-				You can optionally specify a [code]channels_config[/code] array of [enum MultiplayerPeer.TransferMode] which will be used to create extra channels (WebRTC only supports one transfer mode per channel).
 			</description>
 		</method>
 		<method name="remove_peer">

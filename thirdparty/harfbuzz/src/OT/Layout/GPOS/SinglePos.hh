@@ -38,11 +38,15 @@ struct SinglePos
   void serialize (hb_serialize_context_t *c,
                   const SrcLookup* src,
                   Iterator glyph_val_iter_pairs,
-                  const hb_map_t *layout_variation_idx_map)
+                  const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map,
+                  bool all_axes_pinned)
   {
     if (unlikely (!c->extend_min (u.format))) return;
     unsigned format = 2;
     ValueFormat new_format = src->get_value_format ();
+
+    if (all_axes_pinned)
+      new_format = new_format.drop_device_table_flags ();
 
     if (glyph_val_iter_pairs)
       format = get_format (glyph_val_iter_pairs);
@@ -53,13 +57,13 @@ struct SinglePos
                                  src,
                                  glyph_val_iter_pairs,
                                  new_format,
-                                 layout_variation_idx_map);
+                                 layout_variation_idx_delta_map);
       return;
     case 2: u.format2.serialize (c,
                                  src,
                                  glyph_val_iter_pairs,
                                  new_format,
-                                 layout_variation_idx_map);
+                                 layout_variation_idx_delta_map);
       return;
     default:return;
     }
@@ -84,8 +88,9 @@ static void
 SinglePos_serialize (hb_serialize_context_t *c,
                      const SrcLookup *src,
                      Iterator it,
-                     const hb_map_t *layout_variation_idx_map)
-{ c->start_embed<SinglePos> ()->serialize (c, src, it, layout_variation_idx_map); }
+                     const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map,
+                     bool all_axes_pinned)
+{ c->start_embed<SinglePos> ()->serialize (c, src, it, layout_variation_idx_delta_map, all_axes_pinned); }
 
 
 }

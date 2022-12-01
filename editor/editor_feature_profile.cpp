@@ -47,6 +47,7 @@ const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("Node Dock"),
 	TTRC("FileSystem Dock"),
 	TTRC("Import Dock"),
+	TTRC("History Dock"),
 };
 
 const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
@@ -57,6 +58,7 @@ const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
 	TTRC("Allows to work with signals and groups of the node selected in the Scene dock."),
 	TTRC("Allows to browse the local file system via a dedicated dock."),
 	TTRC("Allows to configure import settings for individual assets. Requires the FileSystem dock to function."),
+	TTRC("Provides an overview of the editor's and each scene's undo history."),
 };
 
 const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
@@ -67,6 +69,7 @@ const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
 	"node_dock",
 	"filesystem_dock",
 	"import_dock",
+	"history_dock",
 };
 
 void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_disabled) {
@@ -302,10 +305,15 @@ void EditorFeatureProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NODE_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_FILESYSTEM_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_IMPORT_DOCK);
+	BIND_ENUM_CONSTANT(FEATURE_HISTORY_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 }
 
-EditorFeatureProfile::EditorFeatureProfile() {}
+EditorFeatureProfile::EditorFeatureProfile() {
+	for (int i = 0; i < FEATURE_MAX; i++) {
+		features_disabled[i] = false;
+	}
+}
 
 //////////////////////////
 
@@ -742,6 +750,8 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	class_list->clear();
 
 	String profile = _get_selected_profile();
+	profile_actions[PROFILE_SET]->set_disabled(profile == current_profile);
+
 	if (profile.is_empty()) { //nothing selected, nothing edited
 		property_list->clear();
 		edited.unref();
@@ -763,7 +773,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	TreeItem *root = class_list->create_item();
 
 	TreeItem *features = class_list->create_item(root);
-	TreeItem *last_feature;
+	TreeItem *last_feature = nullptr;
 	features->set_text(0, TTR("Main Features:"));
 	for (int i = 0; i < EditorFeatureProfile::FEATURE_MAX; i++) {
 		TreeItem *feature;

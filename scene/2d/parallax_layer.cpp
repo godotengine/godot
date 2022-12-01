@@ -37,9 +37,9 @@ void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb && is_inside_tree()) {
-		Vector2 ofs = pb->get_final_offset();
-		real_t scale = pb->get_scroll_scale();
-		set_base_offset_and_scale(ofs, scale, screen_offset);
+		Vector2 final_ofs = pb->get_final_offset();
+		real_t scroll_scale = pb->get_scroll_scale();
+		set_base_offset_and_scale(final_ofs, scroll_scale);
 	}
 }
 
@@ -52,9 +52,9 @@ void ParallaxLayer::set_motion_offset(const Size2 &p_offset) {
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb && is_inside_tree()) {
-		Vector2 ofs = pb->get_final_offset();
-		real_t scale = pb->get_scroll_scale();
-		set_base_offset_and_scale(ofs, scale, screen_offset);
+		Vector2 final_ofs = pb->get_final_offset();
+		real_t scroll_scale = pb->get_scroll_scale();
+		set_base_offset_and_scale(final_ofs, scroll_scale);
 	}
 }
 
@@ -111,9 +111,7 @@ void ParallaxLayer::_notification(int p_what) {
 	}
 }
 
-void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_scale, const Point2 &p_screen_offset) {
-	screen_offset = p_screen_offset;
-
+void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_scale) {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -121,7 +119,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 		return;
 	}
 
-	Point2 new_ofs = (screen_offset + (p_offset - screen_offset) * motion_scale) + motion_offset * p_scale + orig_offset * p_scale;
+	Point2 new_ofs = p_offset * motion_scale + motion_offset * p_scale + orig_offset * p_scale;
 
 	if (mirroring.x) {
 		real_t den = mirroring.x * p_scale;
@@ -139,8 +137,8 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 	_update_mirroring();
 }
 
-TypedArray<String> ParallaxLayer::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray ParallaxLayer::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
 		warnings.push_back(RTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));

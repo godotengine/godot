@@ -45,7 +45,6 @@ void SkinReference::_skin_changed() {
 }
 
 void SkinReference::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_skin_changed"), &SkinReference::_skin_changed);
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &SkinReference::get_skeleton);
 	ClassDB::bind_method(D_METHOD("get_skin"), &SkinReference::get_skin);
 }
@@ -542,7 +541,7 @@ void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
 
 	for (int i = 0; i < bone_size; i++) {
 		if (i != p_bone) {
-			ERR_FAIL_COND(bones[i].name == p_name);
+			ERR_FAIL_COND_MSG(bones[i].name == p_name, "Skeleton3D: '" + get_name() + "', bone name:  '" + p_name + "' is already exist.");
 		}
 	}
 
@@ -889,10 +888,14 @@ void _pb_start_simulation(const Skeleton3D *p_skeleton, Node *p_node, const Vect
 
 	PhysicalBone3D *pb = Object::cast_to<PhysicalBone3D>(p_node);
 	if (pb) {
-		for (int i = p_sim_bones.size() - 1; 0 <= i; --i) {
-			if (p_sim_bones[i] == pb->get_bone_id() || p_skeleton->is_bone_parent_of(pb->get_bone_id(), p_sim_bones[i])) {
-				pb->set_simulate_physics(true);
-				break;
+		if (p_sim_bones.is_empty()) { // If no bones is specified, activate ragdoll on full body.
+			pb->set_simulate_physics(true);
+		} else {
+			for (int i = p_sim_bones.size() - 1; 0 <= i; --i) {
+				if (p_sim_bones[i] == pb->get_bone_id() || p_skeleton->is_bone_parent_of(pb->get_bone_id(), p_sim_bones[i])) {
+					pb->set_simulate_physics(true);
+					break;
+				}
 			}
 		}
 	}
@@ -902,9 +905,7 @@ void Skeleton3D::physical_bones_start_simulation_on(const TypedArray<StringName>
 	set_physics_process_internal(false);
 
 	Vector<int> sim_bones;
-	if (p_bones.size() <= 0) {
-		sim_bones.push_back(0); // If no bones is specified, activate ragdoll on full body.
-	} else {
+	if (p_bones.size() > 0) {
 		sim_bones.resize(p_bones.size());
 		int c = 0;
 		for (int i = sim_bones.size() - 1; 0 <= i; --i) {
@@ -1007,7 +1008,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 	skin_bindings.insert(skin_ref.operator->());
 
-	skin_ref->skin->connect("changed", Callable(skin_ref.operator->(), "_skin_changed"));
+	skin_ref->skin->connect("changed", callable_mp(skin_ref.operator->(), &SkinReference::_skin_changed));
 
 	_make_dirty(); // Skin needs to be updated, so update skeleton.
 

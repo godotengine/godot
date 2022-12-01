@@ -47,7 +47,6 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	ED_SHORTCUT("debugger/step_over", TTR("Step Over"), Key::F10);
 	ED_SHORTCUT("debugger/break", TTR("Break"));
 	ED_SHORTCUT("debugger/continue", TTR("Continue"), Key::F12);
-	ED_SHORTCUT("debugger/keep_debugger_open", TTR("Keep Debugger Open"));
 	ED_SHORTCUT("debugger/debug_with_external_editor", TTR("Debug with External Editor"));
 
 	// File Server for deploy with remote filesystem.
@@ -69,7 +68,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, using one-click deploy for Android will only export an executable without the project data.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploying will use the USB cable for faster performance. This option speeds up testing for projects with large assets."));
 	debug_menu->add_separator();
-	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISIONS);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_paths", TTR("Visible Paths")), RUN_DEBUG_PATHS);
@@ -85,6 +84,9 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Synchronize Script Changes")), RUN_RELOAD_SCRIPTS);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, any script that is saved will be reloaded in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/keep_server_open", TTR("Keep Debug Server Open")), SERVER_KEEP_OPEN);
+	debug_menu->set_item_tooltip(-1,
+			TTR("When this option is enabled, the editor debug server will stay open and listen for new sessions started outside of the editor itself."));
 
 	// Multi-instance, start/stop
 	instances_menu = memnew(PopupMenu);
@@ -150,10 +152,10 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
 
 		} break;
-		case RUN_DEBUG_COLLISONS: {
-			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISONS));
-			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISONS), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisons", !ischecked);
+		case RUN_DEBUG_COLLISIONS: {
+			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS));
+			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisions", !ischecked);
 
 		} break;
 		case RUN_DEBUG_PATHS: {
@@ -176,6 +178,14 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
 
 		} break;
+		case SERVER_KEEP_OPEN: {
+			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(SERVER_KEEP_OPEN));
+			debug_menu->set_item_checked(debug_menu->get_item_index(SERVER_KEEP_OPEN), !ischecked);
+
+			EditorDebuggerNode::get_singleton()->set_keep_open(!ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "server_keep_open", !ischecked);
+
+		} break;
 	}
 }
 
@@ -190,11 +200,12 @@ void DebuggerEditorPlugin::_notification(int p_what) {
 void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_deploy_remote = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
 	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
-	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
+	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisions", false);
 	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
+	bool check_server_keep_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "server_keep_open", false);
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 
 	if (check_deploy_remote) {
@@ -204,7 +215,7 @@ void DebuggerEditorPlugin::_update_debug_options() {
 		_menu_option(RUN_FILE_SERVER);
 	}
 	if (check_debug_collisions) {
-		_menu_option(RUN_DEBUG_COLLISONS);
+		_menu_option(RUN_DEBUG_COLLISIONS);
 	}
 	if (check_debug_paths) {
 		_menu_option(RUN_DEBUG_PATHS);
@@ -217,6 +228,9 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_reload_scripts) {
 		_menu_option(RUN_RELOAD_SCRIPTS);
+	}
+	if (check_server_keep_open) {
+		_menu_option(SERVER_KEEP_OPEN);
 	}
 
 	int len = instances_menu->get_item_count();

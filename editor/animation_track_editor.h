@@ -79,7 +79,6 @@ class AnimationTimelineEdit : public Range {
 	void _anim_loop_pressed();
 
 	void _play_position_draw();
-	Ref<EditorUndoRedoManager> undo_redo;
 	Rect2 hsize_rect;
 
 	bool editing = false;
@@ -113,7 +112,6 @@ public:
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 
 	void set_play_position(float p_pos);
 	float get_play_position() const;
@@ -135,6 +133,7 @@ class AnimationTrackEditor;
 
 class AnimationTrackEdit : public Control {
 	GDCLASS(AnimationTrackEdit, Control);
+	friend class AnimationTimelineEdit;
 
 	enum {
 		MENU_CALL_MODE_CONTINUOUS,
@@ -155,7 +154,6 @@ class AnimationTrackEdit : public Control {
 	};
 
 	AnimationTimelineEdit *timeline = nullptr;
-	Ref<EditorUndoRedoManager> undo_redo;
 	Popup *path_popup = nullptr;
 	LineEdit *path = nullptr;
 	Node *root = nullptr;
@@ -236,12 +234,10 @@ public:
 	Ref<Animation> get_animation() const;
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
 	AnimationTrackEditor *get_editor() const { return editor; }
-	Ref<EditorUndoRedoManager> get_undo_redo() const;
 	NodePath get_path() const;
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
 
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
@@ -280,7 +276,6 @@ class AnimationTrackEditGroup : public Control {
 	void _zoom_changed();
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
@@ -294,6 +289,7 @@ public:
 
 class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
+	friend class AnimationTimelineEdit;
 
 	Ref<Animation> animation;
 	bool read_only = false;
@@ -327,7 +323,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	bool animation_changing_awaiting_update = false;
 	void _animation_update(); // Updated by AnimationTrackEditor(this)
 	int _get_track_selected();
-	void _sync_animation_change();
 	void _animation_changed();
 	void _update_tracks();
 	void _redraw_tracks();
@@ -338,8 +333,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _track_remove_request(int p_track);
 	void _animation_track_remove_request(int p_track, Ref<Animation> p_from_animation);
 	void _track_grab_focus(int p_track);
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	void _update_scroll(double);
 	void _update_step(double p_new_step);
@@ -407,7 +400,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
 
-	void _clear_selection(bool p_update = false);
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 
@@ -425,9 +417,6 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	RBMap<SelectedKey, KeyInfo> selection;
 
-	void _key_selected(int p_key, bool p_single, int p_track);
-	void _key_deselected(int p_key, int p_track);
-
 	bool moving_selection = false;
 	float moving_selection_offset = 0.0f;
 	void _move_selection_begin();
@@ -438,7 +427,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	AnimationTrackKeyEdit *key_edit = nullptr;
 	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
 	void _update_key_edit();
-
 	void _clear_key_edit();
 
 	Control *box_selection = nullptr;
@@ -531,6 +519,11 @@ protected:
 	void _notification(int p_what);
 
 public:
+	// Public for use with callable_mp.
+	void _clear_selection(bool p_update = false);
+	void _key_selected(int p_key, bool p_single, int p_track);
+	void _key_deselected(int p_key, int p_track);
+
 	enum {
 		EDIT_COPY_TRACKS,
 		EDIT_COPY_TRACKS_CONFIRM,

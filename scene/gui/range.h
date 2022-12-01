@@ -72,6 +72,7 @@ protected:
 
 public:
 	void set_value(double p_val);
+	void set_value_no_signal(double p_val);
 	void set_min(double p_min);
 	void set_max(double p_max);
 	void set_step(double p_step);
@@ -100,7 +101,7 @@ public:
 	void share(Range *p_range);
 	void unshare();
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	Range();
 	~Range();

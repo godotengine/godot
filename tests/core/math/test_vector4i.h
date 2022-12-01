@@ -36,6 +36,14 @@
 
 namespace TestVector4i {
 
+TEST_CASE("[Vector4i] Constructor methods") {
+	const Vector4i vector_empty = Vector4i();
+	const Vector4i vector_zero = Vector4i(0, 0, 0, 0);
+	CHECK_MESSAGE(
+			vector_empty == vector_zero,
+			"Vector4i Constructor with no inputs should return a zero Vector4i.");
+}
+
 TEST_CASE("[Vector4i] Axis methods") {
 	Vector4i vector = Vector4i(1, 2, 3, 4);
 	CHECK_MESSAGE(
@@ -45,16 +53,12 @@ TEST_CASE("[Vector4i] Axis methods") {
 			vector.min_axis_index() == Vector4i::Axis::AXIS_X,
 			"Vector4i min_axis_index should work as expected.");
 	CHECK_MESSAGE(
-			vector.get_axis(vector.max_axis_index()) == 4,
-			"Vector4i get_axis should work as expected.");
+			vector[vector.max_axis_index()] == 4,
+			"Vector4i array operator should work as expected.");
 	CHECK_MESSAGE(
 			vector[vector.min_axis_index()] == 1,
 			"Vector4i array operator should work as expected.");
 
-	vector.set_axis(Vector4i::Axis::AXIS_Y, 5);
-	CHECK_MESSAGE(
-			vector.get_axis(Vector4i::Axis::AXIS_Y) == 5,
-			"Vector4i set_axis should work as expected.");
 	vector[Vector4i::Axis::AXIS_Y] = 5;
 	CHECK_MESSAGE(
 			vector[Vector4i::Axis::AXIS_Y] == 5,
@@ -78,13 +82,13 @@ TEST_CASE("[Vector4i] Length methods") {
 			vector1.length_squared() == 400,
 			"Vector4i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.length(), 20),
+			vector1.length() == doctest::Approx(20),
 			"Vector4i length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 5400,
 			"Vector4i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector2.length(), 73.4846922835),
+			vector2.length() == doctest::Approx(73.4846922835),
 			"Vector4i length should work as expected.");
 }
 
@@ -124,6 +128,14 @@ TEST_CASE("[Vector4i] Operators") {
 	CHECK_MESSAGE(
 			Vector4i(Vector4(1.1, 2.9, 3.9, 100.5)) == Vector4i(1, 2, 3, 100),
 			"Vector4i constructed from Vector4 should work as expected.");
+}
+
+TEST_CASE("[Vector3i] Other methods") {
+	const Vector4i vector = Vector4i(1, 3, -7, 13);
+
+	CHECK_MESSAGE(
+			vector.snapped(Vector4i(4, 2, 5, 8)) == Vector4i(0, 4, -5, 16),
+			"Vector4i snapped should work as expected.");
 }
 
 TEST_CASE("[Vector4i] Abs and sign methods") {

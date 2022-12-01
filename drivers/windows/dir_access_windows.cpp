@@ -160,7 +160,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 		p_dir = current_dir.path_join(p_dir);
 	}
 
-	p_dir = p_dir.replace("/", "\\");
+	p_dir = p_dir.simplify_path().replace("/", "\\");
 
 	bool success;
 	int err;
@@ -200,9 +200,9 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) const {
 		return current_dir;
 	} else {
 		if (_get_root_string().is_empty()) {
-			int p = current_dir.find(":");
-			if (p != -1) {
-				return current_dir.substr(p + 1);
+			int pos = current_dir.find(":");
+			if (pos != -1) {
+				return current_dir.substr(pos + 1);
 			}
 		}
 		return current_dir;
@@ -309,39 +309,13 @@ Error DirAccessWindows::remove(String p_path) {
 	}
 }
 
-/*
-
-FileType DirAccessWindows::get_file_type(const String& p_file) const {
-	WCHAR real_current_dir_name[2048];
-	GetCurrentDirectoryW(2048, real_current_dir_name);
-	String prev_dir = Strong::utf16((const char16_t *)real_current_dir_name);
-
-	bool worked = SetCurrentDirectoryW((LPCWSTR)(current_dir.utf16().get_data()));
-
-	DWORD attr;
-	if (worked) {
-		WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-		attr = GetFileAttributesExW((LPCWSTR)(p_file.utf16().get_data()), GetFileExInfoStandard, &fileInfo);
-	}
-
-	SetCurrentDirectoryW((LPCWSTR)(prev_dir.utf16().get_data()));
-
-	if (!worked) {
-		return FILE_TYPE_NONE;
-	}
-
-	return (attr & FILE_ATTRIBUTE_DIRECTORY) ? FILE_TYPE_
-}
-
-*/
-
 uint64_t DirAccessWindows::get_space_left() {
 	uint64_t bytes = 0;
 	if (!GetDiskFreeSpaceEx(nullptr, (PULARGE_INTEGER)&bytes, nullptr, nullptr)) {
 		return 0;
 	}
 
-	//this is either 0 or a value in bytes.
+	// This is either 0 or a value in bytes.
 	return bytes;
 }
 

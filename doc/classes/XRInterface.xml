@@ -32,7 +32,17 @@
 		<method name="get_play_area" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns an array of vectors that denotes the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualise the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
+				Returns an array of vectors that denotes the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
+			</description>
+		</method>
+		<method name="get_projection_for_view">
+			<return type="Projection" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="near" type="float" />
+			<param index="3" name="far" type="float" />
+			<description>
+				Returns the projection matrix for a view/eye.
 			</description>
 		</method>
 		<method name="get_render_target_size">
@@ -45,6 +55,16 @@
 			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
 				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
+			</description>
+		</method>
+		<method name="get_transform_for_view">
+			<return type="Transform3D" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="cam_transform" type="Transform3D" />
+			<description>
+				Returns the transform for a view/eye.
+				[param view] is the view/eye index.
+				[param cam_transform] is the transform that maps device coordinates to scene coordinates, typically the global_transform of the current XROrigin3D.
 			</description>
 		</method>
 		<method name="get_view_count">
@@ -66,7 +86,19 @@
 		<method name="is_initialized" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if this interface has been initialised.
+				Is [code]true[/code] if this interface has been initialized.
+			</description>
+		</method>
+		<method name="is_passthrough_enabled">
+			<return type="bool" />
+			<description>
+				Is [code]true[/code] if passthrough is enabled.
+			</description>
+		</method>
+		<method name="is_passthrough_supported">
+			<return type="bool" />
+			<description>
+				Is [code]true[/code] if this interface supports passthrough.
 			</description>
 		</method>
 		<method name="set_play_area_mode">
@@ -74,6 +106,19 @@
 			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Sets the active play area mode, will return [code]false[/code] if the mode can't be used with this interface.
+			</description>
+		</method>
+		<method name="start_passthrough">
+			<return type="bool" />
+			<description>
+				Starts passthrough, will return [code]false[/code] if passthrough couldn't be started.
+				[b]Note:[/b] The viewport used for XR must have a transparent background, otherwise passthrough may not properly render.
+			</description>
+		</method>
+		<method name="stop_passthrough">
+			<return type="void" />
+			<description>
+				Stops passthrough.
 			</description>
 		</method>
 		<method name="supports_play_area_mode">

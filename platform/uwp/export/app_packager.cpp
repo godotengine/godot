@@ -301,7 +301,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 	Vector<uint8_t> file_buffer;
 
 	// Data for compression
-	z_stream strm;
+	z_stream strm{};
 	Vector<uint8_t> strm_in;
 	strm_in.resize(BLOCK_SIZE);
 	Vector<uint8_t> strm_out;

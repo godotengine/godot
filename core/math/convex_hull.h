@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef CONVEX_HULL_H
+#define CONVEX_HULL_H
+
 /*
 Copyright (c) 2011 Ole Kniemeyer, MAXON, www.maxon.net
 This software is provided 'as-is', without any express or implied warranty.
@@ -39,9 +42,6 @@ subject to the following restrictions:
 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
-
-#ifndef CONVEX_HULL_H
-#define CONVEX_HULL_H
 
 #include "core/math/geometry_3d.h"
 #include "core/math/vector3.h"
@@ -62,6 +62,10 @@ public:
 		friend class ConvexHullComputer;
 
 	public:
+		int32_t get_next_relative() const {
+			return next;
+		}
+
 		int32_t get_source_vertex() const {
 			return (this + reverse)->target_vertex;
 		}
@@ -86,7 +90,7 @@ public:
 	};
 
 	// Vertices of the output hull
-	Vector<Vector3> vertices;
+	LocalVector<Vector3> vertices;
 
 	// Edges of the output hull
 	LocalVector<Edge> edges;

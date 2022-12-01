@@ -94,7 +94,6 @@ public:
 	EXBIND1RC(Vector2, get_contact_local_position, int)
 	EXBIND1RC(Vector2, get_contact_local_normal, int)
 	EXBIND1RC(int, get_contact_local_shape, int)
-
 	EXBIND1RC(RID, get_contact_collider, int)
 	EXBIND1RC(Vector2, get_contact_collider_position, int)
 	EXBIND1RC(ObjectID, get_contact_collider_id, int)
@@ -183,13 +182,7 @@ public:
 
 typedef PhysicsServer2D::MotionResult PhysicsServer2DExtensionMotionResult;
 
-struct PhysicsServer2DExtensionStateCallback {
-	void *instance = nullptr;
-	void (*callback)(void *p_instance, PhysicsDirectBodyState2D *p_state);
-};
-
 GDVIRTUAL_NATIVE_PTR(PhysicsServer2DExtensionMotionResult)
-GDVIRTUAL_NATIVE_PTR(PhysicsServer2DExtensionStateCallback)
 
 class PhysicsServer2DExtension : public PhysicsServer2D {
 	GDCLASS(PhysicsServer2DExtension, PhysicsServer2D);
@@ -203,6 +196,8 @@ protected:
 
 public:
 	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
+
+	/* SHAPE API */
 
 	EXBIND0R(RID, world_boundary_shape_create)
 	EXBIND0R(RID, separation_ray_shape_create)
@@ -252,6 +247,7 @@ public:
 	EXBIND4(area_add_shape, RID, RID, const Transform2D &, bool)
 	EXBIND3(area_set_shape, RID, int, RID)
 	EXBIND3(area_set_shape_transform, RID, int, const Transform2D &)
+	EXBIND3(area_set_shape_disabled, RID, int, bool)
 
 	EXBIND1RC(int, area_get_shape_count, RID)
 	EXBIND2RC(RID, area_get_shape, RID, int)
@@ -259,8 +255,6 @@ public:
 
 	EXBIND2(area_remove_shape, RID, int)
 	EXBIND1(area_clear_shapes, RID)
-
-	EXBIND3(area_set_shape_disabled, RID, int, bool)
 
 	EXBIND2(area_attach_object_instance_id, RID, ObjectID)
 	EXBIND1RC(ObjectID, area_get_object_instance_id, RID)
@@ -274,8 +268,11 @@ public:
 	EXBIND2RC(Variant, area_get_param, RID, AreaParameter)
 	EXBIND1RC(Transform2D, area_get_transform, RID)
 
-	EXBIND2(area_set_collision_mask, RID, uint32_t)
 	EXBIND2(area_set_collision_layer, RID, uint32_t)
+	EXBIND1RC(uint32_t, area_get_collision_layer, RID)
+
+	EXBIND2(area_set_collision_mask, RID, uint32_t)
+	EXBIND1RC(uint32_t, area_get_collision_mask, RID)
 
 	EXBIND2(area_set_monitorable, RID, bool)
 	EXBIND2(area_set_pickable, RID, bool)
@@ -375,13 +372,7 @@ public:
 	EXBIND2(body_set_omit_force_integration, RID, bool)
 	EXBIND1RC(bool, body_is_omitting_force_integration, RID)
 
-	GDVIRTUAL2(_body_set_state_sync_callback, RID, GDNativePtr<PhysicsServer2DExtensionStateCallback>)
-	void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override {
-		PhysicsServer2DExtensionStateCallback callback;
-		callback.callback = p_callback;
-		callback.instance = p_instance;
-		GDVIRTUAL_REQUIRED_CALL(_body_set_state_sync_callback, p_body, &callback);
-	}
+	EXBIND2(body_set_state_sync_callback, RID, const Callable &)
 	EXBIND3(body_set_force_integration_callback, RID, const Callable &, const Variant &)
 
 	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override {
@@ -415,7 +406,6 @@ public:
 	/* JOINT API */
 
 	EXBIND0R(RID, joint_create)
-
 	EXBIND1(joint_clear, RID)
 
 	EXBIND3(joint_set_param, RID, JointParam, real_t)

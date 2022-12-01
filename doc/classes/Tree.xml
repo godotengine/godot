@@ -84,6 +84,7 @@
 			<return type="int" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns the expand ratio assigned to the column.
 			</description>
 		</method>
 		<method name="get_column_title" qualifiers="const">
@@ -223,12 +224,14 @@
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns [code]true[/code] if the column has enabled clipping (see [method set_column_clip_content]).
 			</description>
 		</method>
 		<method name="is_column_expanding" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns [code]true[/code] if the column has enabled expanding (see [method set_column_expand]).
 			</description>
 		</method>
 		<method name="scroll_to_item">
@@ -244,6 +247,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Allows to enable clipping for column's content, making the content size ignored.
 			</description>
 		</method>
 		<method name="set_column_custom_minimum_width">
@@ -251,7 +255,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="min_width" type="int" />
 			<description>
-				Overrides the calculated minimum width of a column. It can be set to `0` to restore the default behavior. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
+				Overrides the calculated minimum width of a column. It can be set to [code]0[/code] to restore the default behavior. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
 			</description>
 		</method>
 		<method name="set_column_expand">
@@ -259,7 +263,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="expand" type="bool" />
 			<description>
-				If [code]true[/code], the column will have the "Expand" flag of [Control]. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
+				If [code]true[/code], the column will have the "Expand" flag of [Control]. Columns that have the "Expand" flag will use their expand ratio in a similar fashion to [member Control.size_flags_stretch_ratio] (see [method set_column_expand_ratio]).
 			</description>
 		</method>
 		<method name="set_column_expand_ratio">
@@ -267,6 +271,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="ratio" type="int" />
 			<description>
+				Sets the relative expand ratio for a column. See [method set_column_expand].
 			</description>
 		</method>
 		<method name="set_column_title">
@@ -293,6 +298,14 @@
 				Sets language code of column title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
+		<method name="set_selected">
+			<return type="void" />
+			<param index="0" name="item" type="TreeItem" />
+			<param index="1" name="column" type="int" />
+			<description>
+				Selects the specified [TreeItem] and column.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
@@ -311,6 +324,9 @@
 		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags" default="0">
 			The drop mode as an OR combination of flags. See [enum DropModeFlags] constants. Once dropping is done, reverts to [constant DROP_MODE_DISABLED]. Setting this during [method Control._can_drop_data] is recommended.
 			This controls the drop sections, i.e. the decision and drawing of possible drop locations based on the mouse position.
+		</member>
+		<member name="enable_recursive_folding" type="bool" setter="set_enable_recursive_folding" getter="is_recursive_folding_enabled" default="true">
+			If [code]true[/code], recursive folding is enabled for this [Tree]. Holding down Shift while clicking the fold arrow collapses or uncollapses the [TreeItem] and all its descendants.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="hide_folding" type="bool" setter="set_hide_folding" getter="is_folding_hidden" default="false">
@@ -558,12 +574,6 @@
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
-		<theme_item name="bg" data_type="style" type="StyleBox">
-			Default [StyleBox] for the [Tree], i.e. used when the control is not being focused.
-		</theme_item>
-		<theme_item name="bg_focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [Tree] is being focused.
-		</theme_item>
 		<theme_item name="button_pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when a button in the tree is pressed.
 		</theme_item>
@@ -581,6 +591,12 @@
 		</theme_item>
 		<theme_item name="custom_button_pressed" data_type="style" type="StyleBox">
 			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's pressed.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The focused style for the [Tree], drawn on top of everything.
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			The background style for the [Tree].
 		</theme_item>
 		<theme_item name="selected" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [Tree] is not being focused.

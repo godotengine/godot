@@ -37,7 +37,10 @@
 #include "scene/gui/split_container.h"
 #include "scene/resources/tile_set.h"
 
+class Popup;
 class TileSet;
+class Tree;
+class VSeparator;
 
 class TileSetAtlasSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetAtlasSourceEditor, HBoxContainer);
@@ -113,8 +116,6 @@ private:
 	Ref<TileSet> tile_set;
 	TileSetAtlasSource *tile_set_atlas_source = nullptr;
 	int tile_set_atlas_source_id = TileSet::INVALID_SOURCE;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool tile_set_changed_needs_update = false;
 

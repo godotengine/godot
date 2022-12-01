@@ -41,6 +41,7 @@
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/menu_button.h"
 #include "thirdparty/misc/clipper.hpp"
 
 void Sprite2DEditor::_node_removed(Node *p_node) {
@@ -604,7 +605,7 @@ void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 
 Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 	sprite_editor = memnew(Sprite2DEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(sprite_editor);
+	EditorNode::get_singleton()->get_main_screen_control()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

@@ -154,7 +154,7 @@ private:
 		float thickness = 0.0;
 	};
 
-	void _find_closest_distance(const Vector3 &p_pos, const BVH *bvh, uint32_t p_bvh_cell, const Face3 *triangles, float thickness, float &closest_distance);
+	void _find_closest_distance(const Vector3 &p_pos, const BVH *p_bvh, uint32_t p_bvh_cell, const Face3 *p_triangles, float p_thickness, float &r_closest_distance);
 	void _compute_sdf_z(uint32_t p_z, ComputeSDFParams *params);
 	void _compute_sdf(ComputeSDFParams *params);
 
@@ -162,7 +162,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	void set_thickness(float p_thickness);
 	float get_thickness() const;

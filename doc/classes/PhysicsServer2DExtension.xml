@@ -47,6 +47,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="_area_get_collision_layer" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_collision_mask" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_area_get_object_instance_id" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
@@ -139,6 +151,13 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.AreaParameter" />
 			<param index="2" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_pickable" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="pickable" type="bool" />
 			<description>
 			</description>
 		</method>
@@ -282,6 +301,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="_body_collide_shape" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="body_shape" type="int" />
+			<param index="2" name="shape" type="RID" />
+			<param index="3" name="shape_xform" type="Transform2D" />
+			<param index="4" name="motion" type="Vector2" />
+			<param index="5" name="results" type="void*" />
+			<param index="6" name="result_max" type="int" />
+			<param index="7" name="result_count" type="int32_t*" />
+			<description>
+			</description>
+		</method>
 		<method name="_body_create" qualifiers="virtual">
 			<return type="RID" />
 			<description>
@@ -289,6 +321,12 @@
 		</method>
 		<method name="_body_get_canvas_instance_id" qualifiers="virtual const">
 			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_collision_exceptions" qualifiers="virtual const">
+			<return type="RID[]" />
 			<param index="0" name="body" type="RID" />
 			<description>
 			</description>
@@ -318,6 +356,12 @@
 			</description>
 		</method>
 		<method name="_body_get_constant_torque" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_contacts_reported_depth_threshold" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
 			<description>
@@ -461,6 +505,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_body_set_contacts_reported_depth_threshold" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="threshold" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="_body_set_continuous_collision_detection_mode" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -502,6 +553,13 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
 			<param index="2" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_pickable" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="pickable" type="bool" />
 			<description>
 			</description>
 		</method>
@@ -553,6 +611,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_body_set_state_sync_callback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+			</description>
+		</method>
 		<method name="_body_test_motion" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
@@ -600,6 +665,21 @@
 			<description>
 			</description>
 		</method>
+		<method name="_end_sync" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_finish" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_flush_queries" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 		<method name="_free_rid" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
@@ -609,6 +689,16 @@
 		<method name="_get_process_info" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="process_info" type="int" enum="PhysicsServer2D.ProcessInfo" />
+			<description>
+			</description>
+		</method>
+		<method name="_init" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_flushing_queries" qualifiers="virtual const">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
@@ -623,6 +713,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_joint_disable_collisions_between_bodies" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="disable" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_joint_get_param" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
@@ -632,6 +729,12 @@
 		</method>
 		<method name="_joint_get_type" qualifiers="virtual const">
 			<return type="int" enum="PhysicsServer2D.JointType" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_is_disabled_collisions_between_bodies" qualifiers="virtual const">
+			<return type="bool" />
 			<param index="0" name="joint" type="RID" />
 			<description>
 			</description>
@@ -710,6 +813,26 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shape_collide" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shape_A" type="RID" />
+			<param index="1" name="xform_A" type="Transform2D" />
+			<param index="2" name="motion_A" type="Vector2" />
+			<param index="3" name="shape_B" type="RID" />
+			<param index="4" name="xform_B" type="Transform2D" />
+			<param index="5" name="motion_B" type="Vector2" />
+			<param index="6" name="results" type="void*" />
+			<param index="7" name="result_max" type="int" />
+			<param index="8" name="result_count" type="int32_t*" />
+			<description>
+			</description>
+		</method>
+		<method name="_shape_get_custom_solver_bias" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_shape_get_data" qualifiers="virtual const">
 			<return type="Variant" />
 			<param index="0" name="shape" type="RID" />
@@ -722,6 +845,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shape_set_custom_solver_bias" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="bias" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="_shape_set_data" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="shape" type="RID" />
@@ -731,6 +861,18 @@
 		</method>
 		<method name="_space_create" qualifiers="virtual">
 			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_get_contact_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_get_contacts" qualifiers="virtual const">
+			<return type="PackedVector2Array" />
+			<param index="0" name="space" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -760,11 +902,29 @@
 			<description>
 			</description>
 		</method>
+		<method name="_space_set_debug_contacts" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="max_contacts" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_space_set_param" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="space" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.SpaceParameter" />
 			<param index="2" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_step" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="step" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_sync" qualifiers="virtual">
+			<return type="void" />
 			<description>
 			</description>
 		</method>

@@ -365,7 +365,6 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 		// Inverse lerp length to map (p_deadzone, 1) to (0, 1).
 		return vector * (Math::inverse_lerp(p_deadzone, 1.0f, length) / length);
 	}
-	return vector;
 }
 
 float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
@@ -520,6 +519,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event.instantiate();
 			touch_event->set_pressed(mb->is_pressed());
 			touch_event->set_position(mb->get_position());
+			touch_event->set_double_tap(mb->is_double_click());
 			event_dispatch_function(touch_event);
 		}
 	}
@@ -581,6 +581,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event->set_global_position(st->get_position());
 				button_event->set_pressed(st->is_pressed());
 				button_event->set_button_index(MouseButton::LEFT);
+				button_event->set_double_click(st->is_double_tap());
 				if (st->is_pressed()) {
 					button_event->set_button_mask(MouseButton(mouse_button_mask | MouseButton::MASK_LEFT));
 				} else {
@@ -1309,7 +1310,7 @@ void Input::parse_mapping(String p_mapping) {
 		JoyButton output_button = _get_output_button(output);
 		JoyAxis output_axis = _get_output_axis(output);
 		ERR_CONTINUE_MSG(output_button == JoyButton::INVALID && output_axis == JoyAxis::INVALID,
-				vformat("Unrecognised output string \"%s\" in mapping:\n%s", output, p_mapping));
+				vformat("Unrecognized output string \"%s\" in mapping:\n%s", output, p_mapping));
 		ERR_CONTINUE_MSG(output_button != JoyButton::INVALID && output_axis != JoyAxis::INVALID,
 				vformat("Output string \"%s\" matched both button and axis in mapping:\n%s", output, p_mapping));
 

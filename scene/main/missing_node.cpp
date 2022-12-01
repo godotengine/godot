@@ -74,9 +74,9 @@ bool MissingNode::is_recording_properties() const {
 	return recording_properties;
 }
 
-TypedArray<String> MissingNode::get_configuration_warnings() const {
+PackedStringArray MissingNode::get_configuration_warnings() const {
 	// The mere existence of this node is warning.
-	TypedArray<String> ret;
+	PackedStringArray ret;
 	ret.push_back(vformat(RTR("This node was saved as class type '%s', which was no longer available when this scene was loaded."), original_class));
 	ret.push_back(RTR("Data from the original node is kept as a placeholder until this type of node is available again. It can hence be safely re-saved without risk of data loss."));
 	return ret;

@@ -30,18 +30,7 @@
 
 #include "vector4.h"
 
-#include "core/math/basis.h"
-#include "core/string/print_string.h"
-
-void Vector4::set_axis(const int p_axis, const real_t p_value) {
-	ERR_FAIL_INDEX(p_axis, 4);
-	components[p_axis] = p_value;
-}
-
-real_t Vector4::get_axis(const int p_axis) const {
-	ERR_FAIL_INDEX_V(p_axis, 4, 0);
-	return operator[](p_axis);
-}
+#include "core/string/ustring.h"
 
 Vector4::Axis Vector4::min_axis_index() const {
 	uint32_t min_index = 0;
@@ -73,6 +62,10 @@ bool Vector4::is_equal_approx(const Vector4 &p_vec4) const {
 
 bool Vector4::is_zero_approx() const {
 	return Math::is_zero_approx(x) && Math::is_zero_approx(y) && Math::is_zero_approx(z) && Math::is_zero_approx(w);
+}
+
+bool Vector4::is_finite() const {
+	return Math::is_finite(x) && Math::is_finite(y) && Math::is_finite(z) && Math::is_finite(w);
 }
 
 real_t Vector4::length() const {
@@ -137,11 +130,12 @@ Vector4 Vector4::round() const {
 }
 
 Vector4 Vector4::lerp(const Vector4 &p_to, const real_t p_weight) const {
-	return Vector4(
-			x + (p_weight * (p_to.x - x)),
-			y + (p_weight * (p_to.y - y)),
-			z + (p_weight * (p_to.z - z)),
-			w + (p_weight * (p_to.w - w)));
+	Vector4 res = *this;
+	res.x = Math::lerp(res.x, p_to.x, p_weight);
+	res.y = Math::lerp(res.y, p_to.y, p_weight);
+	res.z = Math::lerp(res.z, p_to.z, p_weight);
+	res.w = Math::lerp(res.w, p_to.w, p_weight);
+	return res;
 }
 
 Vector4 Vector4::cubic_interpolate(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, const real_t p_weight) const {

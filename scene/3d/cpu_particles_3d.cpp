@@ -188,8 +188,8 @@ bool CPUParticles3D::get_fractional_delta() const {
 	return fractional_delta;
 }
 
-TypedArray<String> CPUParticles3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = GeometryInstance3D::get_configuration_warnings();
+PackedStringArray CPUParticles3D::get_configuration_warnings() const {
+	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
 
 	bool mesh_found = false;
 	bool anim_material_found = false;
@@ -867,7 +867,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 					real_t ring_random_angle = Math::randf() * Math_TAU;
 					real_t ring_random_radius = Math::randf() * (emission_ring_radius - emission_ring_inner_radius) + emission_ring_inner_radius;
 					Vector3 axis = emission_ring_axis.normalized();
-					Vector3 ortho_axis = Vector3();
+					Vector3 ortho_axis;
 					if (axis == Vector3(1.0, 0.0, 0.0)) {
 						ortho_axis = Vector3(0.0, 1.0, 0.0).cross(axis);
 					} else {
@@ -1326,24 +1326,24 @@ void CPUParticles3D::_notification(int p_what) {
 }
 
 void CPUParticles3D::convert_from_particles(Node *p_particles) {
-	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_particles);
-	ERR_FAIL_COND_MSG(!particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
+	GPUParticles3D *gpu_particles = Object::cast_to<GPUParticles3D>(p_particles);
+	ERR_FAIL_COND_MSG(!gpu_particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
 
-	set_emitting(particles->is_emitting());
-	set_amount(particles->get_amount());
-	set_lifetime(particles->get_lifetime());
-	set_one_shot(particles->get_one_shot());
-	set_pre_process_time(particles->get_pre_process_time());
-	set_explosiveness_ratio(particles->get_explosiveness_ratio());
-	set_randomness_ratio(particles->get_randomness_ratio());
-	set_use_local_coordinates(particles->get_use_local_coordinates());
-	set_fixed_fps(particles->get_fixed_fps());
-	set_fractional_delta(particles->get_fractional_delta());
-	set_speed_scale(particles->get_speed_scale());
-	set_draw_order(DrawOrder(particles->get_draw_order()));
-	set_mesh(particles->get_draw_pass_mesh(0));
+	set_emitting(gpu_particles->is_emitting());
+	set_amount(gpu_particles->get_amount());
+	set_lifetime(gpu_particles->get_lifetime());
+	set_one_shot(gpu_particles->get_one_shot());
+	set_pre_process_time(gpu_particles->get_pre_process_time());
+	set_explosiveness_ratio(gpu_particles->get_explosiveness_ratio());
+	set_randomness_ratio(gpu_particles->get_randomness_ratio());
+	set_use_local_coordinates(gpu_particles->get_use_local_coordinates());
+	set_fixed_fps(gpu_particles->get_fixed_fps());
+	set_fractional_delta(gpu_particles->get_fractional_delta());
+	set_speed_scale(gpu_particles->get_speed_scale());
+	set_draw_order(DrawOrder(gpu_particles->get_draw_order()));
+	set_mesh(gpu_particles->get_draw_pass_mesh(0));
 
-	Ref<ParticleProcessMaterial> material = particles->get_process_material();
+	Ref<ParticleProcessMaterial> material = gpu_particles->get_process_material();
 	if (material.is_null()) {
 		return;
 	}

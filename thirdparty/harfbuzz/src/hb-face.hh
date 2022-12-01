@@ -83,7 +83,7 @@ struct hb_face_t
 
   unsigned int get_upem () const
   {
-    unsigned int ret = upem.get_relaxed ();
+    unsigned int ret = upem;
     if (unlikely (!ret))
     {
       return load_upem ();
@@ -93,7 +93,7 @@ struct hb_face_t
 
   unsigned int get_num_glyphs () const
   {
-    unsigned int ret = num_glyphs.get_relaxed ();
+    unsigned int ret = num_glyphs;
     if (unlikely (ret == UINT_MAX))
       return load_num_glyphs ();
     return ret;

@@ -35,7 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/io/zip_io.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -49,6 +49,7 @@
 #include "editor/editor_vcs_interface.h"
 #include "main/main.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
@@ -58,6 +59,8 @@
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
+
+constexpr int GODOT4_CONFIG_VERSION = 5;
 
 class ProjectDialog : public ConfirmationDialog {
 	GDCLASS(ProjectDialog, ConfirmationDialog);
@@ -90,9 +93,9 @@ private:
 	Container *name_container;
 	Container *path_container;
 	Container *install_path_container;
-	Container *rasterizer_container;
+	Container *renderer_container;
 	HBoxContainer *default_files_container;
-	Ref<ButtonGroup> rasterizer_button_group;
+	Ref<ButtonGroup> renderer_button_group;
 	Label *msg;
 	LineEdit *project_path;
 	LineEdit *project_name;
@@ -141,7 +144,11 @@ private:
 			install_status_rect->set_texture(new_icon);
 		}
 
-		set_size(Size2i(500, 0) * EDSCALE);
+		Size2i window_size = get_size();
+		Size2 contents_min_size = get_contents_minimum_size();
+		if (window_size.x < contents_min_size.x || window_size.y < contents_min_size.y) {
+			set_size(window_size.max(contents_min_size));
+		}
 	}
 
 	String _test_path() {
@@ -429,17 +436,17 @@ private:
 				return;
 			}
 
-			ProjectSettings *current = memnew(ProjectSettings);
-
-			int err = current->setup(dir2, "");
+			// Load project.godot as ConfigFile to set the new name.
+			ConfigFile cfg;
+			String project_godot = dir2.path_join("project.godot");
+			Error err = cfg.load(project_godot);
 			if (err != OK) {
-				set_message(vformat(TTR("Couldn't load project.godot in project path (error %d). It may be missing or corrupted."), err), MESSAGE_ERROR);
+				set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
 			} else {
-				ProjectSettings::CustomMap edited_settings;
-				edited_settings["application/config/name"] = project_name->get_text().strip_edges();
-
-				if (current->save_custom(dir2.path_join("project.godot"), edited_settings, Vector<String>(), true) != OK) {
-					set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
+				cfg.set_value("application", "config/name", project_name->get_text().strip_edges());
+				err = cfg.save(project_godot);
+				if (err != OK) {
+					set_message(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err), MESSAGE_ERROR);
 				}
 			}
 
@@ -471,16 +478,19 @@ private:
 					}
 					PackedStringArray project_features = ProjectSettings::get_required_features();
 					ProjectSettings::CustomMap initial_settings;
+
 					// Be sure to change this code if/when renderers are changed.
-					int renderer_type = rasterizer_button_group->get_pressed_button()->get_meta(SNAME("driver_name"));
-					initial_settings["rendering/vulkan/rendering/back_end"] = renderer_type;
-					if (renderer_type == 0) {
-						project_features.push_back("Vulkan Clustered");
-					} else if (renderer_type == 1) {
-						project_features.push_back("Vulkan Mobile");
+					String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
+					initial_settings["rendering/renderer/rendering_method"] = renderer_type;
+
+					if (renderer_type == "forward_plus") {
+						project_features.push_back("Forward Plus");
+					} else if (renderer_type == "mobile") {
+						project_features.push_back("Mobile");
 					} else {
 						WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
 					}
+
 					project_features.sort();
 					initial_settings["application/config/features"] = project_features;
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
@@ -537,7 +547,6 @@ private:
 
 					Vector<String> failed_files;
 
-					int idx = 0;
 					while (ret == UNZ_OK) {
 						//get filename
 						unz_file_info info;
@@ -558,25 +567,24 @@ private:
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 							da->make_dir(dir.path_join(rel_path));
 						} else {
-							Vector<uint8_t> data;
-							data.resize(info.uncompressed_size);
+							Vector<uint8_t> uncomp_data;
+							uncomp_data.resize(info.uncompressed_size);
 							String rel_path = path.substr(zip_root.length());
 
 							//read
 							unzOpenCurrentFile(pkg);
-							ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+							ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
 							ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", rel_path));
 							unzCloseCurrentFile(pkg);
 
 							Ref<FileAccess> f = FileAccess::open(dir.path_join(rel_path), FileAccess::WRITE);
 							if (f.is_valid()) {
-								f->store_buffer(data.ptr(), data.size());
+								f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
 							} else {
 								failed_files.push_back(rel_path);
 							}
 						}
 
-						idx++;
 						ret = unzGoToNextFile(pkg);
 					}
 
@@ -682,22 +690,23 @@ public:
 			msg->hide();
 			install_path_container->hide();
 			install_status_rect->hide();
-			rasterizer_container->hide();
+			renderer_container->hide();
 			default_files_container->hide();
 			get_ok_button()->set_disabled(false);
 
-			ProjectSettings *current = memnew(ProjectSettings);
-
-			int err = current->setup(project_path->get_text(), "");
+			// Fetch current name from project.godot to prefill the text input.
+			ConfigFile cfg;
+			String project_godot = project_path->get_text().path_join("project.godot");
+			Error err = cfg.load(project_godot);
 			if (err != OK) {
-				set_message(vformat(TTR("Couldn't load project.godot in project path (error %d). It may be missing or corrupted."), err), MESSAGE_ERROR);
+				set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
 				status_rect->show();
 				msg->show();
 				get_ok_button()->set_disabled(true);
-			} else if (current->has_setting("application/config/name")) {
-				String proj = current->get("application/config/name");
-				project_name->set_text(proj);
-				_text_changed(proj);
+			} else {
+				String cur_name = cfg.get_value("application", "config/name", "");
+				project_name->set_text(cur_name);
+				_text_changed(cur_name);
 			}
 
 			project_name->call_deferred(SNAME("grab_focus"));
@@ -705,7 +714,7 @@ public:
 			create_dir->hide();
 
 		} else {
-			fav_dir = EditorSettings::get_singleton()->get("filesystem/directories/default_project_path");
+			fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
 			if (!fav_dir.is_empty()) {
 				project_path->set_text(fav_dir);
 				fdialog->set_current_dir(fav_dir);
@@ -733,7 +742,7 @@ public:
 				set_ok_button_text(TTR("Import & Edit"));
 				name_container->hide();
 				install_path_container->hide();
-				rasterizer_container->hide();
+				renderer_container->hide();
 				default_files_container->hide();
 				project_path->grab_focus();
 
@@ -742,7 +751,7 @@ public:
 				set_ok_button_text(TTR("Create & Edit"));
 				name_container->show();
 				install_path_container->hide();
-				rasterizer_container->show();
+				renderer_container->show();
 				default_files_container->show();
 				project_name->call_deferred(SNAME("grab_focus"));
 				project_name->call_deferred(SNAME("select_all"));
@@ -753,7 +762,7 @@ public:
 				project_name->set_text(zip_title);
 				name_container->show();
 				install_path_container->hide();
-				rasterizer_container->hide();
+				renderer_container->hide();
 				default_files_container->hide();
 				project_path->grab_focus();
 			}
@@ -761,7 +770,7 @@ public:
 			_test_path();
 		}
 
-		popup_centered(Size2i(500, 0) * EDSCALE);
+		popup_centered(Size2(500, 0) * EDSCALE);
 	}
 
 	ProjectDialog() {
@@ -841,23 +850,23 @@ public:
 		msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		vb->add_child(msg);
 
-		// rasterizer selection
-		rasterizer_container = memnew(VBoxContainer);
-		vb->add_child(rasterizer_container);
+		// Renderer selection.
+		renderer_container = memnew(VBoxContainer);
+		vb->add_child(renderer_container);
 		l = memnew(Label);
 		l->set_text(TTR("Renderer:"));
-		rasterizer_container->add_child(l);
-		Container *rshb = memnew(HBoxContainer);
-		rasterizer_container->add_child(rshb);
-		rasterizer_button_group.instantiate();
+		renderer_container->add_child(l);
+		HBoxContainer *rshc = memnew(HBoxContainer);
+		renderer_container->add_child(rshc);
+		renderer_button_group.instantiate();
 
 		Container *rvb = memnew(VBoxContainer);
 		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		rshb->add_child(rvb);
+		rshc->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
-		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("Vulkan Clustered"));
-		rs_button->set_meta(SNAME("driver_name"), 0); // Vulkan backend "Forward Clustered"
+		rs_button->set_button_group(renderer_button_group);
+		rs_button->set_text(TTR("Forward+"));
+		rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
 		rs_button->set_pressed(true);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
@@ -869,15 +878,15 @@ public:
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
-		rshb->add_child(memnew(VSeparator));
+		rshc->add_child(memnew(VSeparator));
 
 		rvb = memnew(VBoxContainer);
 		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		rshb->add_child(rvb);
+		rshc->add_child(rvb);
 		rs_button = memnew(CheckBox);
-		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("Vulkan Mobile"));
-		rs_button->set_meta(SNAME("driver_name"), 1); // Vulkan backend "Forward Mobile"
+		rs_button->set_button_group(renderer_button_group);
+		rs_button->set_text(TTR("Mobile"));
+		rs_button->set_meta(SNAME("rendering_method"), "mobile");
 		rvb->add_child(rs_button);
 		l = memnew(Label);
 		l->set_text(
@@ -895,7 +904,7 @@ public:
 		l->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		l->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 		l->set_modulate(Color(1, 1, 1, 0.7));
-		rasterizer_container->add_child(l);
+		renderer_container->add_child(l);
 
 		default_files_container = memnew(HBoxContainer);
 		vb->add_child(default_files_container);
@@ -1065,6 +1074,7 @@ public:
 	int refresh_project(const String &dir_path);
 	void add_project(const String &dir_path, bool favorite);
 	void save_config();
+	void set_project_version(const String &p_project_path, int version);
 
 private:
 	static void _bind_methods();
@@ -1243,7 +1253,6 @@ void ProjectList::migrate_config() {
 	if (FileAccess::exists(_config_path)) {
 		return;
 	}
-	print_line("Migrating legacy project list");
 
 	List<PropertyInfo> properties;
 	EditorSettings::get_singleton()->get_property_list(&properties);
@@ -1255,7 +1264,9 @@ void ProjectList::migrate_config() {
 			continue;
 		}
 
-		String path = EditorSettings::get_singleton()->get(property_key);
+		String path = EDITOR_GET(property_key);
+		print_line("Migrating legacy project '" + path + "'.");
+
 		String favoriteKey = "favorite_projects/" + property_key.get_slice("/", 1);
 		bool favorite = EditorSettings::get_singleton()->has_setting(favoriteKey);
 		add_project(path, favorite);
@@ -1368,7 +1379,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	favorite_box->set_name("FavoriteBox");
 	TextureButton *favorite = memnew(TextureButton);
 	favorite->set_name("FavoriteButton");
-	favorite->set_normal_texture(favorite_icon);
+	favorite->set_texture_normal(favorite_icon);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));
@@ -1484,7 +1495,7 @@ void ProjectList::sort_projects() {
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
 
-		bool visible = true;
+		bool item_visible = true;
 		if (!_search_term.is_empty()) {
 			String search_path;
 			if (_search_term.contains("/")) {
@@ -1496,10 +1507,10 @@ void ProjectList::sort_projects() {
 			}
 
 			// When searching, display projects whose name or path contain the search term
-			visible = item.project_name.findn(_search_term) != -1 || search_path.findn(_search_term) != -1;
+			item_visible = item.project_name.findn(_search_term) != -1 || search_path.findn(_search_term) != -1;
 		}
 
-		item.control->set_visible(visible);
+		item.control->set_visible(item_visible);
 	}
 
 	for (int i = 0; i < _projects.size(); ++i) {
@@ -1671,6 +1682,15 @@ void ProjectList::add_project(const String &dir_path, bool favorite) {
 
 void ProjectList::save_config() {
 	_config.save(_config_path);
+}
+
+void ProjectList::set_project_version(const String &p_project_path, int p_version) {
+	for (ProjectList::Item &E : _projects) {
+		if (E.path == p_project_path) {
+			E.version = p_version;
+			break;
+		}
+	}
 }
 
 int ProjectList::get_project_count() const {
@@ -1897,7 +1917,7 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			int default_sorting = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
+			int default_sorting = (int)EDITOR_GET("project_manager/sorting_order");
 			filter_option->select(default_sorting);
 			_project_list->set_order_option(default_sorting);
 
@@ -1993,7 +2013,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 		// This is handled by the platform implementation on macOS,
 		// so only define the shortcut on other platforms
 #ifndef MACOS_ENABLED
-		if (k->get_keycode_with_modifiers() == (KeyModifierMask::CMD | Key::Q)) {
+		if (k->get_keycode_with_modifiers() == (KeyModifierMask::META | Key::Q)) {
 			_dim_window();
 			get_tree()->quit();
 		}
@@ -2051,7 +2071,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 
 			} break;
 			case Key::F: {
-				if (k->is_command_pressed()) {
+				if (k->is_command_or_control_pressed()) {
 					this->search_box->grab_focus();
 				} else {
 					keycode_handled = false;
@@ -2152,9 +2172,11 @@ void ProjectManager::_open_selected_projects_ask() {
 		return;
 	}
 
+	const Size2i popup_min_width = Size2i(600.0 * EDSCALE, 0);
+
 	if (selected_list.size() > 1) {
-		multi_open_ask->set_text(TTR("Are you sure to open more than one project?"));
-		multi_open_ask->popup_centered();
+		multi_open_ask->set_text(vformat(TTR("You requested to open %d projects in parallel. Do you confirm?\nNote that usual checks for engine version compatibility will be bypassed."), selected_list.size()));
+		multi_open_ask->popup_centered(popup_min_width);
 		return;
 	}
 
@@ -2163,30 +2185,40 @@ void ProjectManager::_open_selected_projects_ask() {
 		return;
 	}
 
-	// Update the project settings or don't open
-	const String conf = project.path.path_join("project.godot");
+	// Update the project settings or don't open.
 	const int config_version = project.version;
 	PackedStringArray unsupported_features = project.unsupported_features;
 
 	Label *ask_update_label = ask_update_settings->get_label();
 	ask_update_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT); // Reset in case of previous center align.
+	full_convert_button->hide();
 
-	// Check if the config_version property was empty or 0
+	ask_update_settings->get_ok_button()->set_text("OK");
+
+	// Check if the config_version property was empty or 0.
 	if (config_version == 0) {
-		ask_update_settings->set_text(vformat(TTR("The following project settings file does not specify the version of Godot through which it was created.\n\n%s\n\nIf you proceed with opening it, it will be converted to Godot's current configuration file format.\nWarning: You won't be able to open the project with previous versions of the engine anymore."), conf));
-		ask_update_settings->popup_centered();
+		ask_update_settings->set_text(vformat(TTR("The selected project \"%s\" does not specify its supported Godot version in its configuration file (\"project.godot\").\n\nProject path: %s\n\nIf you proceed with opening it, it will be converted to Godot's current configuration file format.\n\nWarning: You won't be able to open the project with previous versions of the engine anymore."), project.project_name, project.path));
+		ask_update_settings->popup_centered(popup_min_width);
 		return;
 	}
-	// Check if we need to convert project settings from an earlier engine version
+	// Check if we need to convert project settings from an earlier engine version.
 	if (config_version < ProjectSettings::CONFIG_VERSION) {
-		ask_update_settings->set_text(vformat(TTR("The following project settings file was generated by an older engine version, and needs to be converted for this version:\n\n%s\n\nDo you want to convert it?\nWarning: You won't be able to open the project with previous versions of the engine anymore."), conf));
-		ask_update_settings->popup_centered();
+		if (config_version == GODOT4_CONFIG_VERSION - 1 && ProjectSettings::CONFIG_VERSION == GODOT4_CONFIG_VERSION) { // Conversion from Godot 3 to 4.
+			full_convert_button->show();
+			ask_update_settings->set_text(vformat(TTR("The selected project \"%s\" was generated by Godot 3.x, and needs to be converted for Godot 4.x.\n\nProject path: %s\n\nYou have three options:\n- Convert only the configuration file (\"project.godot\"). Use this to open the project without attempting to convert its scenes, resources and scripts.\n- Convert the entire project including its scenes, resources and scripts (recommended if you are upgrading).\n- Do nothing and go back.\n\nWarning: If you select a conversion option, you won't be able to open the project with previous versions of the engine anymore."), project.project_name, project.path));
+			ask_update_settings->get_ok_button()->set_text(TTR("Convert project.godot Only"));
+		} else {
+			ask_update_settings->set_text(vformat(TTR("The selected project \"%s\" was generated by an older engine version, and needs to be converted for this version.\n\nProject path: %s\n\nDo you want to convert it?\n\nWarning: You won't be able to open the project with previous versions of the engine anymore."), project.project_name, project.path));
+			ask_update_settings->get_ok_button()->set_text(TTR("Convert project.godot"));
+		}
+		ask_update_settings->popup_centered(popup_min_width);
+		ask_update_settings->get_cancel_button()->grab_focus(); // To prevent accidents.
 		return;
 	}
-	// Check if the file was generated by a newer, incompatible engine version
+	// Check if the file was generated by a newer, incompatible engine version.
 	if (config_version > ProjectSettings::CONFIG_VERSION) {
-		dialog_error->set_text(vformat(TTR("Can't open project at '%s'.") + "\n" + TTR("The project settings were created by a newer engine version, whose settings are not compatible with this version."), project.path));
-		dialog_error->popup_centered();
+		dialog_error->set_text(vformat(TTR("Can't open project \"%s\" at the following path:\n\n%s\n\nThe project settings were created by a newer engine version, whose settings are not compatible with this version."), project.project_name, project.path));
+		dialog_error->popup_centered(popup_min_width);
 		return;
 	}
 	// Check if the project is using features not supported by this build of Godot.
@@ -2215,12 +2247,44 @@ void ProjectManager::_open_selected_projects_ask() {
 		warning_message += TTR("Open anyway? Project will be modified.");
 		ask_update_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		ask_update_settings->set_text(warning_message);
-		ask_update_settings->popup_centered();
+		ask_update_settings->popup_centered(popup_min_width);
 		return;
 	}
 
-	// Open if the project is up-to-date
+	// Open if the project is up-to-date.
 	_open_selected_projects();
+}
+
+void ProjectManager::_full_convert_button_pressed() {
+	ask_update_settings->hide();
+	ask_full_convert_dialog->popup_centered(Size2i(600.0 * EDSCALE, 0));
+	ask_full_convert_dialog->get_cancel_button()->grab_focus();
+}
+
+void ProjectManager::_perform_full_project_conversion() {
+	Vector<ProjectList::Item> selected_list = _project_list->get_selected_projects();
+	if (selected_list.is_empty()) {
+		return;
+	}
+
+	const String &path = selected_list[0].path;
+
+	print_line("Converting project: " + path);
+
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	cf->load(path.path_join("project.godot"));
+	cf->set_value("", "config_version", GODOT4_CONFIG_VERSION);
+	cf->save(path.path_join("project.godot"));
+	_project_list->set_project_version(path, GODOT4_CONFIG_VERSION);
+
+	List<String> args;
+	args.push_back("--path");
+	args.push_back(path);
+	args.push_back("--convert-3to4");
+
+	Error err = OS::get_singleton()->create_instance(args);
+	ERR_FAIL_COND(err);
 }
 
 void ProjectManager::_run_project_confirm() {
@@ -2498,7 +2562,7 @@ ProjectManager::ProjectManager() {
 	EditorSettings::get_singleton()->set_optimize_save(false); //just write settings as they came
 
 	{
-		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");
+		int display_scale = EDITOR_GET("interface/editor/display_scale");
 
 		switch (display_scale) {
 			case 0:
@@ -2524,7 +2588,7 @@ ProjectManager::ProjectManager() {
 				editor_set_scale(2.0);
 				break;
 			default:
-				editor_set_scale(EditorSettings::get_singleton()->get("interface/editor/custom_display_scale"));
+				editor_set_scale(EDITOR_GET("interface/editor/custom_display_scale"));
 				break;
 		}
 		EditorFileDialog::get_icon_func = &ProjectManager::_file_dialog_get_icon;
@@ -2533,7 +2597,13 @@ ProjectManager::ProjectManager() {
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
 	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
-	EditorFileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
+	EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+
+	int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+	if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
+		// Swap on means OK first.
+		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
+	}
 
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	set_theme(create_custom_theme());
@@ -2606,7 +2676,7 @@ ProjectManager::ProjectManager() {
 		}
 
 		PanelContainer *pc = memnew(PanelContainer);
-		pc->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		pc->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 		pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		search_tree_vb->add_child(pc);
 
@@ -2628,21 +2698,21 @@ ProjectManager::ProjectManager() {
 		create_btn = memnew(Button);
 		create_btn->set_text(TTR("New Project"));
 		create_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD | Key::N));
+		create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD_OR_CTRL | Key::N));
 		create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
 		tree_vb->add_child(create_btn);
 
 		import_btn = memnew(Button);
 		import_btn->set_text(TTR("Import"));
 		import_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD | Key::I));
+		import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD_OR_CTRL | Key::I));
 		import_btn->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
 		tree_vb->add_child(import_btn);
 
 		scan_btn = memnew(Button);
 		scan_btn->set_text(TTR("Scan"));
 		scan_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD | Key::S));
+		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD_OR_CTRL | Key::S));
 		scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
 		tree_vb->add_child(scan_btn);
 
@@ -2651,14 +2721,14 @@ ProjectManager::ProjectManager() {
 		open_btn = memnew(Button);
 		open_btn->set_text(TTR("Edit"));
 		open_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD | Key::E));
+		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD_OR_CTRL | Key::E));
 		open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 		tree_vb->add_child(open_btn);
 
 		run_btn = memnew(Button);
 		run_btn->set_text(TTR("Run"));
 		run_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD | Key::R));
+		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD_OR_CTRL | Key::R));
 		run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
 		tree_vb->add_child(run_btn);
 
@@ -2724,9 +2794,10 @@ ProjectManager::ProjectManager() {
 		settings_hb->add_child(h_spacer);
 
 		language_btn = memnew(OptionButton);
-		language_btn->set_flat(true);
 		language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
 		language_btn->set_focus_mode(Control::FOCUS_NONE);
+		language_btn->set_fit_to_longest_item(false);
+		language_btn->set_flat(true);
 		language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
 #ifdef ANDROID_ENABLED
 		// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
@@ -2745,7 +2816,7 @@ ProjectManager::ProjectManager() {
 			}
 		}
 
-		String current_lang = EditorSettings::get_singleton()->get("interface/editor/editor_language");
+		String current_lang = EDITOR_GET("interface/editor/editor_language");
 		language_btn->set_text(current_lang);
 
 		for (int i = 0; i < editor_languages.size(); i++) {
@@ -2784,7 +2855,7 @@ ProjectManager::ProjectManager() {
 		scan_dir->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 		scan_dir->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
-		scan_dir->set_current_dir(EditorSettings::get_singleton()->get("filesystem/directories/default_project_path"));
+		scan_dir->set_current_dir(EDITOR_GET("filesystem/directories/default_project_path"));
 		add_child(scan_dir);
 		scan_dir->connect("dir_selected", callable_mp(this, &ProjectManager::_scan_begin));
 
@@ -2823,8 +2894,17 @@ ProjectManager::ProjectManager() {
 		add_child(multi_scan_ask);
 
 		ask_update_settings = memnew(ConfirmationDialog);
+		ask_update_settings->set_autowrap(true);
 		ask_update_settings->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
+		full_convert_button = ask_update_settings->add_button("Convert Full Project", !GLOBAL_GET("gui/common/swap_cancel_ok"));
+		full_convert_button->connect("pressed", callable_mp(this, &ProjectManager::_full_convert_button_pressed));
 		add_child(ask_update_settings);
+
+		ask_full_convert_dialog = memnew(ConfirmationDialog);
+		ask_full_convert_dialog->set_autowrap(true);
+		ask_full_convert_dialog->set_text(TTR("This option will perform full project conversion, updating scenes, resources and scripts from Godot 3.x to work in Godot 4.0.\n\nNote that this is a best-effort conversion, i.e. it makes upgrading the project easier, but it will not open out-of-the-box and will still require manual adjustments.\n\nIMPORTANT: Make sure to backup your project before converting, as this operation makes it impossible to open it in older versions of Godot."));
+		ask_full_convert_dialog->connect("confirmed", callable_mp(this, &ProjectManager::_perform_full_project_conversion));
+		add_child(ask_full_convert_dialog);
 
 		npdialog = memnew(ProjectDialog);
 		npdialog->connect("projects_updated", callable_mp(this, &ProjectManager::_on_projects_updated));
@@ -2857,7 +2937,7 @@ ProjectManager::ProjectManager() {
 
 	Ref<DirAccess> dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
 
-	String default_project_path = EditorSettings::get_singleton()->get("filesystem/directories/default_project_path");
+	String default_project_path = EDITOR_GET("filesystem/directories/default_project_path");
 	if (!dir_access->dir_exists(default_project_path)) {
 		Error error = dir_access->make_dir_recursive(default_project_path);
 		if (error != OK) {
@@ -2865,7 +2945,7 @@ ProjectManager::ProjectManager() {
 		}
 	}
 
-	String autoscan_path = EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path");
+	String autoscan_path = EDITOR_GET("filesystem/directories/autoscan_project_path");
 	if (!autoscan_path.is_empty()) {
 		if (dir_access->dir_exists(autoscan_path)) {
 			_scan_begin(autoscan_path);

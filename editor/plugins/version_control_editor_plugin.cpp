@@ -38,6 +38,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/separator.h"
 
 #define CHECK_PLUGIN_INITIALIZED() \
@@ -430,7 +431,7 @@ void VersionControlEditorPlugin::_discard_file(String p_file_path, EditorVCSInte
 		CHECK_PLUGIN_INITIALIZED();
 		EditorVCSInterface::get_singleton()->discard_file(p_file_path);
 	}
-	// FIXIT: The project.godot file shows weird behaviour
+	// FIXIT: The project.godot file shows weird behavior
 	EditorFileSystem::get_singleton()->update_file(p_file_path);
 }
 
@@ -1124,6 +1125,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_password->connect(SNAME("text_changed"), callable_mp(this, &VersionControlEditorPlugin::_update_set_up_warning));
 	set_up_password_input->add_child(set_up_password);
 
+	const String home_dir = OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS);
+
 	HBoxContainer *set_up_ssh_public_key_input = memnew(HBoxContainer);
 	set_up_ssh_public_key_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_settings_vbc->add_child(set_up_ssh_public_key_input);
@@ -1147,10 +1150,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_public_key_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	set_up_ssh_public_key_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 	set_up_ssh_public_key_file_dialog->set_show_hidden_files(true);
-	// TODO: Make this start at the user's home folder
-	Ref<DirAccess> d = DirAccess::open(OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS));
-	d->change_dir("../");
-	set_up_ssh_public_key_file_dialog->set_current_dir(d->get_current_dir());
+	set_up_ssh_public_key_file_dialog->set_current_dir(home_dir);
 	set_up_ssh_public_key_file_dialog->connect(SNAME("file_selected"), callable_mp(this, &VersionControlEditorPlugin::_ssh_public_key_selected));
 	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_file_dialog);
 
@@ -1183,8 +1183,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_private_key_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	set_up_ssh_private_key_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 	set_up_ssh_private_key_file_dialog->set_show_hidden_files(true);
-	// TODO: Make this start at the user's home folder
-	set_up_ssh_private_key_file_dialog->set_current_dir(d->get_current_dir());
+	set_up_ssh_private_key_file_dialog->set_current_dir(home_dir);
 	set_up_ssh_private_key_file_dialog->connect("file_selected", callable_mp(this, &VersionControlEditorPlugin::_ssh_private_key_selected));
 	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_file_dialog);
 
@@ -1319,7 +1318,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->connect(SNAME("gui_input"), callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
 	commit_area->add_child(commit_message);
 
-	ED_SHORTCUT("version_control/commit", TTR("Commit"), KeyModifierMask::CMD | Key::ENTER);
+	ED_SHORTCUT("version_control/commit", TTR("Commit"), KeyModifierMask::CMD_OR_CTRL | Key::ENTER);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));

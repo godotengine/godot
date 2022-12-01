@@ -146,9 +146,16 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	String wrapper_template_path = template_path.get_basename() + "_console.exe";
+	int con_wrapper_mode = p_preset->get("debug/export_console_script");
+	bool copy_wrapper = (con_wrapper_mode == 1 && p_debug) || (con_wrapper_mode == 2);
+
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->make_dir_recursive(p_path.get_base_dir());
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
+	if (err == OK && copy_wrapper && FileAccess::exists(wrapper_template_path)) {
+		err = da->copy(wrapper_template_path, p_path.get_basename() + ".console.exe", get_chmod_flags());
+	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
 	}
@@ -185,10 +192,12 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 			String src_path = ProjectSettings::get_singleton()->globalize_path(so_files[i].path);
 			String target_path;
 			if (so_files[i].target.is_empty()) {
-				target_path = p_path.get_base_dir().path_join(src_path.get_file());
+				target_path = p_path.get_base_dir();
 			} else {
-				target_path = p_path.get_base_dir().path_join(so_files[i].target).path_join(src_path.get_file());
+				target_path = p_path.get_base_dir().path_join(so_files[i].target);
+				da->make_dir_recursive(target_path);
 			}
+			target_path = target_path.path_join(src_path.get_file());
 
 			if (da->dir_exists(src_path)) {
 				err = da->make_dir_recursive(target_path);

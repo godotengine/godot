@@ -53,6 +53,8 @@ public:
 
 	/** GDExtension **/
 	EXBIND0RC(ConnectionState, get_connection_state);
+	EXBIND0RC(GatheringState, get_gathering_state);
+	EXBIND0RC(SignalingState, get_signaling_state);
 	EXBIND1R(Error, initialize, Dictionary);
 	EXBIND0R(Error, create_offer);
 	EXBIND2R(Error, set_remote_description, String, String);

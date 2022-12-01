@@ -32,7 +32,7 @@
 #define SCENE_SHADER_FORWARD_MOBILE_H
 
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/shaders/scene_forward_mobile.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile.glsl.gen.h"
 
 namespace RendererSceneRenderImplementation {
 
@@ -132,6 +132,8 @@ public:
 		bool uses_depth_texture = false;
 		bool uses_normal_texture = false;
 		bool uses_time = false;
+		bool uses_vertex_time = false;
+		bool uses_fragment_time = false;
 		bool writes_modelview_or_projection = false;
 		bool uses_world_coordinates = false;
 

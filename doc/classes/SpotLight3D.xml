@@ -14,6 +14,7 @@
 		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.03" />
 		<member name="spot_angle" type="float" setter="set_param" getter="get_param" default="45.0">
 			The spotlight's angle in degrees.
+			[b]Note:[/b] [member spot_angle] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 		</member>
 		<member name="spot_angle_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
 			The spotlight's angular attenuation curve.
@@ -23,6 +24,7 @@
 		</member>
 		<member name="spot_range" type="float" setter="set_param" getter="get_param" default="5.0">
 			The maximal range that can be reached by the spotlight. Note that the effectively lit area may appear to be smaller depending on the [member spot_attenuation] in use. No matter the [member spot_attenuation] in use, the light will never reach anything outside this range.
+			[b]Note:[/b] [member spot_range] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 		</member>
 	</members>
 </class>

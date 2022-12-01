@@ -31,6 +31,7 @@
 #ifndef TEXTURE_LAYERED_EDITOR_PLUGIN_H
 #define TEXTURE_LAYERED_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/shader.h"
@@ -68,7 +69,6 @@ class TextureLayeredEditor : public Control {
 protected:
 	void _notification(int p_what);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	static void _bind_methods();
 
 public:
 	void edit(Ref<TextureLayered> p_texture);

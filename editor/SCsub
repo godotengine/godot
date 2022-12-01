@@ -24,7 +24,7 @@ def _make_doc_data_class_path(to_path):
     g.close()
 
 
-if env["tools"]:
+if env.editor_build:
     # Register exporters
     reg_exporters_inc = '#include "register_exporters.h"\n'
     reg_exporters = "void register_exporters() {\n"

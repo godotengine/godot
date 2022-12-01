@@ -76,6 +76,7 @@ public:
 		id window_delegate;
 		id window_object;
 		id window_view;
+		id window_button_view;
 
 		Vector<Vector2> mpath;
 
@@ -84,6 +85,9 @@ public:
 		Size2i min_size;
 		Size2i max_size;
 		Size2i size;
+		Vector2i wb_offset = Vector2i(14, 14);
+
+		NSRect last_frame_rect;
 
 		bool im_active = false;
 		Size2i im_position;
@@ -102,6 +106,7 @@ public:
 
 		bool layered_window = false;
 		bool fullscreen = false;
+		bool exclusive_fullscreen = false;
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
@@ -175,6 +180,12 @@ private:
 
 	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
 
+	struct MenuCall {
+		Variant tag;
+		Callable callback;
+	};
+	Vector<MenuCall> deferred_menu_calls;
+
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);
 
@@ -186,6 +197,8 @@ private:
 	Point2i _get_screens_origin() const;
 	Point2i _get_native_screen_position(int p_screen) const;
 	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
+
+	WindowID _get_focused_window_or_popup() const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
@@ -220,10 +233,12 @@ public:
 	void popup_close(WindowID p_window);
 	void set_is_resizing(bool p_is_resizing);
 	bool get_is_resizing() const;
+	void reparent_check(WindowID p_window);
 
 	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
+	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
@@ -387,7 +402,8 @@ public:
 	virtual bool window_maximize_on_title_dbl_click() const override;
 	virtual bool window_minimize_on_title_dbl_click() const override;
 
-	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
@@ -416,12 +432,12 @@ public:
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 
 	static void register_macos_driver();
 
-	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerMacOS();
 };
 

@@ -19,17 +19,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (target=release_debug, tools=yes, tests=yes)
+          - name: Editor (target=editor, tests=yes)
             cache-name: macos-editor
-            target: release_debug
-            tools: true
+            target: editor
             tests: true
-            bin: "./bin/godot.macos.opt.tools.x86_64"
+            bin: "./bin/godot.macos.editor.x86_64"
 
-          - name: Template (target=release, tools=no)
+          - name: Template (target=template_release)
             cache-name: macos-template
-            target: release
-            tools: false
+            target: template_release
             tests: false
             sconsflags: debug_symbols=no
 
@@ -55,7 +53,6 @@ jobs:
           sconsflags: ${{ env.SCONSFLAGS }}
           platform: macos
           target: ${{ matrix.target }}
-          tools: ${{ matrix.tools }}
           tests: ${{ matrix.tests }}
 
       # Execute unit tests for the editor

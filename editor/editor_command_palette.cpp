@@ -130,7 +130,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		ti->set_metadata(0, entries[i].key_name);
 		ti->set_text_alignment(1, HORIZONTAL_ALIGNMENT_RIGHT);
 		ti->set_text(1, shortcut_text);
-		Color c = Color(1, 1, 1, 0.5);
+		Color c = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5);
 		ti->set_custom_color(1, c);
 	}
 
@@ -171,7 +171,13 @@ void EditorCommandPalette::_confirmed() {
 }
 
 void EditorCommandPalette::open_popup() {
-	popup_centered_clamped(Size2i(600, 440), 0.8f);
+	static bool was_showed = false;
+	if (!was_showed) {
+		was_showed = true;
+		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
+	} else {
+		show();
+	}
 
 	command_search_box->clear();
 	command_search_box->grab_focus();
@@ -226,7 +232,7 @@ void EditorCommandPalette::_add_command(String p_command_name, String p_key_name
 void EditorCommandPalette::execute_command(String &p_command_key) {
 	ERR_FAIL_COND_MSG(!commands.has(p_command_key), p_command_key + " not found.");
 	commands[p_command_key].last_used = OS::get_singleton()->get_unix_time();
-	commands[p_command_key].callable.call_deferredp(nullptr, 0);
+	commands[p_command_key].callable.call_deferred();
 	_save_history();
 }
 

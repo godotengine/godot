@@ -77,28 +77,36 @@ void Popup::_update_theme_item_cache() {
 void Popup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible()) {
-				_initialize_visible_parents();
-			} else {
-				_deinitialize_visible_parents();
-				emit_signal(SNAME("popup_hide"));
-				popped_up = false;
+			if (!is_in_edited_scene_root()) {
+				if (is_visible()) {
+					_initialize_visible_parents();
+				} else {
+					_deinitialize_visible_parents();
+					emit_signal(SNAME("popup_hide"));
+					popped_up = false;
+				}
 			}
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
-			if (has_focus()) {
-				popped_up = true;
+			if (!is_in_edited_scene_root()) {
+				if (has_focus()) {
+					popped_up = true;
+				}
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			_deinitialize_visible_parents();
+			if (!is_in_edited_scene_root()) {
+				_deinitialize_visible_parents();
+			}
 		} break;
 
 		case NOTIFICATION_WM_CLOSE_REQUEST:
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			_close_pressed();
+			if (!is_in_edited_scene_root()) {
+				_close_pressed();
+			}
 		} break;
 	}
 }
@@ -126,52 +134,62 @@ void Popup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
 
+void Popup::_validate_property(PropertyInfo &p_property) const {
+	if (
+			p_property.name == "transient" ||
+			p_property.name == "exclusive" ||
+			p_property.name == "popup_window" ||
+			p_property.name == "unfocusable") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+}
+
 Rect2i Popup::_popup_adjust_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
-	Rect2i parent = get_usable_parent_rect();
+	Rect2i parent_rect = get_usable_parent_rect();
 
-	if (parent == Rect2i()) {
+	if (parent_rect == Rect2i()) {
 		return Rect2i();
 	}
 
 	Rect2i current(get_position(), get_size());
 
-	if (current.position.x + current.size.x > parent.position.x + parent.size.x) {
-		current.position.x = parent.position.x + parent.size.x - current.size.x;
+	if (current.position.x + current.size.x > parent_rect.position.x + parent_rect.size.x) {
+		current.position.x = parent_rect.position.x + parent_rect.size.x - current.size.x;
 	}
 
-	if (current.position.x < parent.position.x) {
-		current.position.x = parent.position.x;
+	if (current.position.x < parent_rect.position.x) {
+		current.position.x = parent_rect.position.x;
 	}
 
-	if (current.position.y + current.size.y > parent.position.y + parent.size.y) {
-		current.position.y = parent.position.y + parent.size.y - current.size.y;
+	if (current.position.y + current.size.y > parent_rect.position.y + parent_rect.size.y) {
+		current.position.y = parent_rect.position.y + parent_rect.size.y - current.size.y;
 	}
 
-	if (current.position.y < parent.position.y) {
-		current.position.y = parent.position.y;
+	if (current.position.y < parent_rect.position.y) {
+		current.position.y = parent_rect.position.y;
 	}
 
-	if (current.size.y > parent.size.y) {
-		current.size.y = parent.size.y;
+	if (current.size.y > parent_rect.size.y) {
+		current.size.y = parent_rect.size.y;
 	}
 
-	if (current.size.x > parent.size.x) {
-		current.size.x = parent.size.x;
+	if (current.size.x > parent_rect.size.x) {
+		current.size.x = parent_rect.size.x;
 	}
 
 	// Early out if max size not set.
-	Size2i max_size = get_max_size();
-	if (max_size <= Size2()) {
+	Size2i popup_max_size = get_max_size();
+	if (popup_max_size <= Size2()) {
 		return current;
 	}
 
-	if (current.size.x > max_size.x) {
-		current.size.x = max_size.x;
+	if (current.size.x > popup_max_size.x) {
+		current.size.x = popup_max_size.x;
 	}
 
-	if (current.size.y > max_size.y) {
-		current.size.y = max_size.y;
+	if (current.size.y > popup_max_size.y) {
+		current.size.y = popup_max_size.y;
 	}
 
 	return current;

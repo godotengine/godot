@@ -61,20 +61,6 @@ const Engine = (function () {
 	};
 
 	/**
-	 * Check whether WebGL is available. Optionally, specify a particular version of WebGL to check for.
-	 *
-	 * @param {number=} [majorVersion=1] The major WebGL version to check for.
-	 * @returns {boolean} If the given major version of WebGL is available.
-	 * @function Engine.isWebGLAvailable
-	 */
-	Engine.isWebGLAvailable = function (majorVersion = 1) {
-		try {
-			return !!document.createElement('canvas').getContext(['webgl', 'webgl2'][majorVersion - 1]);
-		} catch (e) { /* Not available */ }
-		return false;
-	};
-
-	/**
 	 * Safe Engine constructor, creates a new prototype for every new instance to avoid prototype pollution.
 	 * @ignore
 	 * @constructor
@@ -265,14 +251,21 @@ const Engine = (function () {
 		// Also expose static methods as instance methods
 		Engine.prototype['load'] = Engine.load;
 		Engine.prototype['unload'] = Engine.unload;
-		Engine.prototype['isWebGLAvailable'] = Engine.isWebGLAvailable;
 		return new Engine(initConfig);
 	}
 
 	// Closure compiler exported static methods.
 	SafeEngine['load'] = Engine.load;
 	SafeEngine['unload'] = Engine.unload;
-	SafeEngine['isWebGLAvailable'] = Engine.isWebGLAvailable;
+
+	// Feature-detection utilities.
+	SafeEngine['isWebGLAvailable'] = Features.isWebGLAvailable;
+	SafeEngine['isFetchAvailable'] = Features.isFetchAvailable;
+	SafeEngine['isSecureContext'] = Features.isSecureContext;
+	SafeEngine['isCrossOriginIsolated'] = Features.isCrossOriginIsolated;
+	SafeEngine['isSharedArrayBufferAvailable'] = Features.isSharedArrayBufferAvailable;
+	SafeEngine['isAudioWorkletAvailable'] = Features.isAudioWorkletAvailable;
+	SafeEngine['getMissingFeatures'] = Features.getMissingFeatures;
 
 	return SafeEngine;
 }());

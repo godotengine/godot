@@ -168,16 +168,16 @@
 				Removes everything in the gizmo including meshes, collisions and handles.
 			</description>
 		</method>
+		<method name="get_node_3d" qualifiers="const">
+			<return type="Node3D" />
+			<description>
+				Returns the [Node3D] node associated with this gizmo.
+			</description>
+		</method>
 		<method name="get_plugin" qualifiers="const">
 			<return type="EditorNode3DGizmoPlugin" />
 			<description>
 				Returns the [EditorNode3DGizmoPlugin] that owns this gizmo. It's useful to retrieve materials using [method EditorNode3DGizmoPlugin.get_material].
-			</description>
-		</method>
-		<method name="get_spatial_node" qualifiers="const">
-			<return type="Node3D" />
-			<description>
-				Returns the Node3D node associated with this gizmo.
 			</description>
 		</method>
 		<method name="get_subgizmo_selection" qualifiers="const">
@@ -200,7 +200,7 @@
 				Sets the gizmo's hidden state. If [code]true[/code], the gizmo will be hidden. If [code]false[/code], it will be shown.
 			</description>
 		</method>
-		<method name="set_spatial_node">
+		<method name="set_node_3d">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
 			<description>

@@ -13,6 +13,7 @@
 			<return type="int" />
 			<param index="0" name="margin" type="int" enum="Side" />
 			<description>
+				Returns the stretch margin with the specified index. See [member stretch_margin_bottom] and related properties.
 			</description>
 		</method>
 		<method name="set_stretch_margin">
@@ -20,6 +21,7 @@
 			<param index="0" name="margin" type="int" enum="Side" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Sets the stretch margin with the specified index. See [member stretch_margin_bottom] and related properties.
 			</description>
 		</method>
 	</methods>
@@ -27,6 +29,7 @@
 		<member name="fill_mode" type="int" setter="set_fill_mode" getter="get_fill_mode" default="0">
 			The fill direction. See [enum FillMode] for possible values.
 		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 		<member name="nine_patch_stretch" type="bool" setter="set_nine_patch_stretch" getter="get_nine_patch_stretch" default="false">
 			If [code]true[/code], Godot treats the bar's textures like in [NinePatchRect]. Use the [code]stretch_margin_*[/code] properties like [member stretch_margin_bottom] to set up the nine patch's 3×3 grid. When using a radial [member fill_mode], this setting will enable stretching.
 		</member>
@@ -40,6 +43,8 @@
 		<member name="radial_initial_angle" type="float" setter="set_radial_initial_angle" getter="get_radial_initial_angle" default="0.0">
 			Starting angle for the fill of [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE] or [constant FILL_COUNTER_CLOCKWISE]. When the node's [code]value[/code] is equal to its [code]min_value[/code], the texture doesn't show up at all. When the [code]value[/code] increases, the texture fills and tends towards [member radial_fill_degrees].
 		</member>
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" default="1" />
+		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
 		<member name="stretch_margin_bottom" type="int" setter="set_stretch_margin" getter="get_stretch_margin" default="0">
 			The height of the 9-patch's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
 		</member>

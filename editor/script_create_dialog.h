@@ -119,8 +119,8 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _update_template_menu();
 	void _update_dialog();
 	ScriptLanguage::ScriptTemplate _get_current_template() const;
-	Vector<ScriptLanguage::ScriptTemplate> _get_user_templates(const ScriptLanguage *language, const StringName &p_object, const String &p_dir, const ScriptLanguage::TemplateLocation &p_origin) const;
-	ScriptLanguage::ScriptTemplate _parse_template(const ScriptLanguage *language, const String &p_path, const String &p_filename, const ScriptLanguage::TemplateLocation &p_origin, const String &p_inherits) const;
+	Vector<ScriptLanguage::ScriptTemplate> _get_user_templates(const ScriptLanguage *p_language, const StringName &p_object, const String &p_dir, const ScriptLanguage::TemplateLocation &p_origin) const;
+	ScriptLanguage::ScriptTemplate _parse_template(const ScriptLanguage *p_language, const String &p_path, const String &p_filename, const ScriptLanguage::TemplateLocation &p_origin, const String &p_inherits) const;
 	String _get_script_origin_label(const ScriptLanguage::TemplateLocation &p_origin) const;
 
 protected:

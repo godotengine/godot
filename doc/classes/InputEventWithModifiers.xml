@@ -9,27 +9,30 @@
 	<tutorials>
 		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
+	<methods>
+		<method name="is_command_or_control_pressed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				On macOS, returns [code]true[/code] if [kbd]Meta[/kbd] ([kbd]Command[/kbd]) is pressed.
+				On other platforms, returns [code]true[/code] if [kbd]Ctrl[/kbd] is pressed.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="alt_pressed" type="bool" setter="set_alt_pressed" getter="is_alt_pressed" default="false">
 			State of the [kbd]Alt[/kbd] modifier.
 		</member>
-		<member name="command_pressed" type="bool" setter="set_command_pressed" getter="is_command_pressed" default="false">
-			State of the [kbd]Cmd[/kbd] modifier. On macOS, this is equivalent to [member meta_pressed]. On other platforms, this is equivalent to [member ctrl_pressed].
-			This modifier should be preferred to [member ctrl_pressed] or [member meta_pressed] for system shortcuts, as it maintains better cross-platform compatibility.
+		<member name="command_or_control_autoremap" type="bool" setter="set_command_or_control_autoremap" getter="is_command_or_control_autoremap" default="false">
+			Automatically use [kbd]Meta[/kbd] ([kbd]Command[/kbd]) on macOS and [kbd]Ctrl[/kbd] on other platforms. If [code]true[/code], [member ctrl_pressed] and [member meta_pressed] cannot be set.
 		</member>
 		<member name="ctrl_pressed" type="bool" setter="set_ctrl_pressed" getter="is_ctrl_pressed" default="false">
 			State of the [kbd]Ctrl[/kbd] modifier.
 		</member>
 		<member name="meta_pressed" type="bool" setter="set_meta_pressed" getter="is_meta_pressed" default="false">
-			State of the [kbd]Meta[/kbd] modifier. On Windows and Linux, this represents the Windows key (sometimes called "meta" or "super" on Linux). On macOS, this represents the Command key, and is equivalent to [member command_pressed].
-			For better cross-system compatibility, use [member command_pressed] instead.
+			State of the [kbd]Meta[/kbd] modifier. On Windows and Linux, this represents the Windows key (sometimes called "meta" or "super" on Linux). On macOS, this represents the Command key.
 		</member>
 		<member name="shift_pressed" type="bool" setter="set_shift_pressed" getter="is_shift_pressed" default="false">
 			State of the [kbd]Shift[/kbd] modifier.
-		</member>
-		<member name="store_command" type="bool" setter="set_store_command" getter="is_storing_command" default="true">
-			If [code]true[/code], pressing [kbd]Cmd[/kbd] on macOS or [kbd]Ctrl[/kbd] on all other platforms will both be serialized as [member command_pressed]. If [code]false[/code], those same keys will be serialized as [member meta_pressed] on macOS and [member ctrl_pressed] on all other platforms.
-			This aids with cross-platform compatibility when developing e.g. on Windows for macOS, or vice-versa.
 		</member>
 	</members>
 </class>

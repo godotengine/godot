@@ -69,6 +69,8 @@ void WebRTCPeerConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close"), &WebRTCPeerConnection::close);
 
 	ClassDB::bind_method(D_METHOD("get_connection_state"), &WebRTCPeerConnection::get_connection_state);
+	ClassDB::bind_method(D_METHOD("get_gathering_state"), &WebRTCPeerConnection::get_gathering_state);
+	ClassDB::bind_method(D_METHOD("get_signaling_state"), &WebRTCPeerConnection::get_signaling_state);
 
 	ADD_SIGNAL(MethodInfo("session_description_created", PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::STRING, "sdp")));
 	ADD_SIGNAL(MethodInfo("ice_candidate_created", PropertyInfo(Variant::STRING, "media"), PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::STRING, "name")));
@@ -80,6 +82,17 @@ void WebRTCPeerConnection::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATE_DISCONNECTED);
 	BIND_ENUM_CONSTANT(STATE_FAILED);
 	BIND_ENUM_CONSTANT(STATE_CLOSED);
+
+	BIND_ENUM_CONSTANT(GATHERING_STATE_NEW);
+	BIND_ENUM_CONSTANT(GATHERING_STATE_GATHERING);
+	BIND_ENUM_CONSTANT(GATHERING_STATE_COMPLETE);
+
+	BIND_ENUM_CONSTANT(SIGNALING_STATE_STABLE);
+	BIND_ENUM_CONSTANT(SIGNALING_STATE_HAVE_LOCAL_OFFER);
+	BIND_ENUM_CONSTANT(SIGNALING_STATE_HAVE_REMOTE_OFFER);
+	BIND_ENUM_CONSTANT(SIGNALING_STATE_HAVE_LOCAL_PRANSWER);
+	BIND_ENUM_CONSTANT(SIGNALING_STATE_HAVE_REMOTE_PRANSWER);
+	BIND_ENUM_CONSTANT(SIGNALING_STATE_CLOSED);
 }
 
 WebRTCPeerConnection::WebRTCPeerConnection() {

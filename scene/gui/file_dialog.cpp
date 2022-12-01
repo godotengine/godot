@@ -70,9 +70,9 @@ void FileDialog::_update_theme_item_cache() {
 	theme_cache.folder = get_theme_icon(SNAME("folder"));
 	theme_cache.file = get_theme_icon(SNAME("file"));
 
-	theme_cache.folder_icon_modulate = get_theme_color(SNAME("folder_icon_modulate"));
-	theme_cache.file_icon_modulate = get_theme_color(SNAME("file_icon_modulate"));
-	theme_cache.files_disabled = get_theme_color(SNAME("files_disabled"));
+	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"));
+	theme_cache.file_icon_color = get_theme_color(SNAME("file_icon_color"));
+	theme_cache.file_disabled_color = get_theme_color(SNAME("file_disabled_color"));
 
 	// TODO: Define own colors?
 	theme_cache.icon_normal_color = get_theme_color(SNAME("font_color"), SNAME("Button"));
@@ -87,6 +87,8 @@ void FileDialog::_notification(int p_what) {
 			if (!is_visible()) {
 				set_process_shortcut_input(false);
 			}
+
+			invalidate(); // Put it here to preview in the editor.
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -143,7 +145,7 @@ void FileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 
 			switch (k->get_keycode()) {
 				case Key::H: {
-					if (k->is_command_pressed()) {
+					if (k->is_command_or_control_pressed()) {
 						set_show_hidden_files(!show_hidden_files);
 					} else {
 						handled = false;
@@ -170,18 +172,20 @@ void FileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 
 void FileDialog::set_enable_multiple_selection(bool p_enable) {
 	tree->set_select_mode(p_enable ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
-};
+}
 
 Vector<String> FileDialog::get_selected_files() const {
 	Vector<String> list;
 
 	TreeItem *item = tree->get_root();
-	while ((item = tree->get_next_selected(item))) {
+	item = tree->get_next_selected(item);
+	while (item) {
 		list.push_back(dir_access->get_current_dir().path_join(item->get_text(0)));
-	};
+		item = tree->get_next_selected(item);
+	}
 
 	return list;
-};
+}
 
 void FileDialog::update_dir() {
 	if (root_prefix.is_empty()) {
@@ -223,10 +227,6 @@ void FileDialog::_save_confirm_pressed() {
 
 void FileDialog::_post_popup() {
 	ConfirmationDialog::_post_popup();
-	if (invalidated) {
-		update_file_list();
-		invalidated = false;
-	}
 	if (mode == FILE_MODE_SAVE_FILE) {
 		file->grab_focus();
 	} else {
@@ -552,7 +552,7 @@ void FileDialog::update_file_list() {
 		TreeItem *ti = tree->create_item(root);
 		ti->set_text(0, dir_name);
 		ti->set_icon(0, theme_cache.folder);
-		ti->set_icon_modulate(0, theme_cache.folder_icon_modulate);
+		ti->set_icon_modulate(0, theme_cache.folder_icon_color);
 
 		Dictionary d;
 		d["name"] = dir_name;
@@ -613,10 +613,10 @@ void FileDialog::update_file_list() {
 			} else {
 				ti->set_icon(0, theme_cache.file);
 			}
-			ti->set_icon_modulate(0, theme_cache.file_icon_modulate);
+			ti->set_icon_modulate(0, theme_cache.file_icon_color);
 
 			if (mode == FILE_MODE_OPEN_DIR) {
-				ti->set_custom_color(0, theme_cache.files_disabled);
+				ti->set_custom_color(0, theme_cache.file_disabled_color);
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;
@@ -632,8 +632,11 @@ void FileDialog::update_file_list() {
 		files.pop_front();
 	}
 
-	if (tree->get_root() && tree->get_root()->get_first_child() && tree->get_selected() == nullptr) {
-		tree->get_root()->get_first_child()->select(0);
+	if (mode != FILE_MODE_SAVE_FILE) {
+		// Select the first file from list if nothing is selected.
+		if (tree->get_root() && tree->get_root()->get_first_child() && tree->get_selected() == nullptr) {
+			tree->get_root()->get_first_child()->select(0);
+		}
 	}
 }
 
@@ -743,10 +746,10 @@ void FileDialog::set_current_path(const String &p_path) {
 	if (pos == -1) {
 		set_current_file(p_path);
 	} else {
-		String dir = p_path.substr(0, pos);
-		String file = p_path.substr(pos + 1, p_path.length());
-		set_current_dir(dir);
-		set_current_file(file);
+		String path_dir = p_path.substr(0, pos);
+		String path_file = p_path.substr(pos + 1, p_path.length());
+		set_current_dir(path_dir);
+		set_current_file(path_file);
 	}
 }
 

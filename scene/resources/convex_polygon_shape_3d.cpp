@@ -33,18 +33,18 @@
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() const {
-	Vector<Vector3> points = get_points();
+	Vector<Vector3> poly_points = get_points();
 
-	if (points.size() > 3) {
-		Vector<Vector3> varr = Variant(points);
+	if (poly_points.size() > 3) {
+		Vector<Vector3> varr = Variant(poly_points);
 		Geometry3D::MeshData md;
 		Error err = ConvexHullComputer::convex_hull(varr, md);
 		if (err == OK) {
 			Vector<Vector3> lines;
 			lines.resize(md.edges.size() * 2);
-			for (int i = 0; i < md.edges.size(); i++) {
-				lines.write[i * 2 + 0] = md.vertices[md.edges[i].a];
-				lines.write[i * 2 + 1] = md.vertices[md.edges[i].b];
+			for (uint32_t i = 0; i < md.edges.size(); i++) {
+				lines.write[i * 2 + 0] = md.vertices[md.edges[i].vertex_a];
+				lines.write[i * 2 + 1] = md.vertices[md.edges[i].vertex_b];
 			}
 			return lines;
 		}

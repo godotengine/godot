@@ -38,6 +38,8 @@ class String;
 struct Vector3;
 
 struct _NO_DISCARD_ Vector3i {
+	static const int AXIS_COUNT = 3;
+
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
@@ -64,9 +66,6 @@ struct _NO_DISCARD_ Vector3i {
 		return coord[p_axis];
 	}
 
-	void set_axis(const int p_axis, const int32_t p_value);
-	int32_t get_axis(const int p_axis) const;
-
 	Vector3i::Axis min_axis_index() const;
 	Vector3i::Axis max_axis_index() const;
 
@@ -78,6 +77,7 @@ struct _NO_DISCARD_ Vector3i {
 	_FORCE_INLINE_ Vector3i abs() const;
 	_FORCE_INLINE_ Vector3i sign() const;
 	Vector3i clamp(const Vector3i &p_min, const Vector3i &p_max) const;
+	Vector3i snapped(const Vector3i &p_step) const;
 
 	/* Operators */
 

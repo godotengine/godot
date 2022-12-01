@@ -167,9 +167,8 @@ void GLManager_MacOS::make_current() {
 }
 
 void GLManager_MacOS::swap_buffers() {
-	for (const KeyValue<DisplayServer::WindowID, GLWindow> &E : windows) {
-		[E.value.context flushBuffer];
-	}
+	GLWindow &win = windows[current_window];
+	[win.context flushBuffer];
 }
 
 void GLManager_MacOS::window_update(DisplayServer::WindowID p_window_id) {
@@ -214,6 +213,15 @@ void GLManager_MacOS::set_use_vsync(bool p_use) {
 
 bool GLManager_MacOS::is_using_vsync() const {
 	return use_vsync;
+}
+
+NSOpenGLContext *GLManager_MacOS::get_context(DisplayServer::WindowID p_window_id) {
+	if (!windows.has(p_window_id)) {
+		return nullptr;
+	}
+
+	GLWindow &win = windows[p_window_id];
+	return win.context;
 }
 
 GLManager_MacOS::GLManager_MacOS(ContextType p_context_type) {

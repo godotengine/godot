@@ -123,6 +123,8 @@ bool PhysicsServer2DExtension::body_test_motion_is_excluding_object(ObjectID p_o
 }
 
 void PhysicsServer2DExtension::_bind_methods() {
+	/* SHAPE API */
+
 	GDVIRTUAL_BIND(_world_boundary_shape_create);
 	GDVIRTUAL_BIND(_separation_ray_shape_create);
 	GDVIRTUAL_BIND(_segment_shape_create);
@@ -133,18 +135,32 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_concave_polygon_shape_create);
 
 	GDVIRTUAL_BIND(_shape_set_data, "shape", "data");
+	GDVIRTUAL_BIND(_shape_set_custom_solver_bias, "shape", "bias");
 
 	GDVIRTUAL_BIND(_shape_get_type, "shape");
 	GDVIRTUAL_BIND(_shape_get_data, "shape");
+	GDVIRTUAL_BIND(_shape_get_custom_solver_bias, "shape");
+	GDVIRTUAL_BIND(_shape_collide, "shape_A", "xform_A", "motion_A", "shape_B", "xform_B", "motion_B", "results", "result_max", "result_count");
+
+	/* SPACE API */
 
 	GDVIRTUAL_BIND(_space_create);
 	GDVIRTUAL_BIND(_space_set_active, "space", "active");
 	GDVIRTUAL_BIND(_space_is_active, "space");
+
 	GDVIRTUAL_BIND(_space_set_param, "space", "param", "value");
 	GDVIRTUAL_BIND(_space_get_param, "space", "param");
+
 	GDVIRTUAL_BIND(_space_get_direct_state, "space");
 
+	GDVIRTUAL_BIND(_space_set_debug_contacts, "space", "max_contacts");
+	GDVIRTUAL_BIND(_space_get_contacts, "space");
+	GDVIRTUAL_BIND(_space_get_contact_count, "space");
+
+	/* AREA API */
+
 	GDVIRTUAL_BIND(_area_create);
+
 	GDVIRTUAL_BIND(_area_set_space, "area", "space");
 	GDVIRTUAL_BIND(_area_get_space, "area");
 
@@ -160,8 +176,11 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_area_remove_shape, "area", "shape_idx");
 	GDVIRTUAL_BIND(_area_clear_shapes, "area");
 
-	GDVIRTUAL_BIND(_area_set_collision_layer, "area", "layer");
-	GDVIRTUAL_BIND(_area_set_collision_mask, "area", "mask");
+	GDVIRTUAL_BIND(_area_attach_object_instance_id, "area", "id");
+	GDVIRTUAL_BIND(_area_get_object_instance_id, "area");
+
+	GDVIRTUAL_BIND(_area_attach_canvas_instance_id, "area", "id");
+	GDVIRTUAL_BIND(_area_get_canvas_instance_id, "area");
 
 	GDVIRTUAL_BIND(_area_set_param, "area", "param", "value");
 	GDVIRTUAL_BIND(_area_set_transform, "area", "transform");
@@ -169,15 +188,19 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_area_get_param, "area", "param");
 	GDVIRTUAL_BIND(_area_get_transform, "area");
 
-	GDVIRTUAL_BIND(_area_attach_object_instance_id, "area", "id");
-	GDVIRTUAL_BIND(_area_get_object_instance_id, "area");
+	GDVIRTUAL_BIND(_area_set_collision_layer, "area", "layer");
+	GDVIRTUAL_BIND(_area_get_collision_layer, "area");
 
-	GDVIRTUAL_BIND(_area_attach_canvas_instance_id, "area", "id");
-	GDVIRTUAL_BIND(_area_get_canvas_instance_id, "area");
+	GDVIRTUAL_BIND(_area_set_collision_mask, "area", "mask");
+	GDVIRTUAL_BIND(_area_get_collision_mask, "area");
+
+	GDVIRTUAL_BIND(_area_set_monitorable, "area", "monitorable");
+	GDVIRTUAL_BIND(_area_set_pickable, "area", "pickable");
 
 	GDVIRTUAL_BIND(_area_set_monitor_callback, "area", "callback");
 	GDVIRTUAL_BIND(_area_set_area_monitor_callback, "area", "callback");
-	GDVIRTUAL_BIND(_area_set_monitorable, "area", "monitorable");
+
+	/* BODY API */
 
 	GDVIRTUAL_BIND(_body_create);
 
@@ -195,11 +218,11 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_body_get_shape, "body", "shape_idx");
 	GDVIRTUAL_BIND(_body_get_shape_transform, "body", "shape_idx");
 
-	GDVIRTUAL_BIND(_body_remove_shape, "body", "shape_idx");
-	GDVIRTUAL_BIND(_body_clear_shapes, "body");
-
 	GDVIRTUAL_BIND(_body_set_shape_disabled, "body", "shape_idx", "disabled");
 	GDVIRTUAL_BIND(_body_set_shape_as_one_way_collision, "body", "shape_idx", "enable", "margin");
+
+	GDVIRTUAL_BIND(_body_remove_shape, "body", "shape_idx");
+	GDVIRTUAL_BIND(_body_clear_shapes, "body");
 
 	GDVIRTUAL_BIND(_body_attach_object_instance_id, "body", "id");
 	GDVIRTUAL_BIND(_body_get_object_instance_id, "body");
@@ -249,24 +272,38 @@ void PhysicsServer2DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_body_add_collision_exception, "body", "excepted_body");
 	GDVIRTUAL_BIND(_body_remove_collision_exception, "body", "excepted_body");
+	GDVIRTUAL_BIND(_body_get_collision_exceptions, "body");
 
 	GDVIRTUAL_BIND(_body_set_max_contacts_reported, "body", "amount");
 	GDVIRTUAL_BIND(_body_get_max_contacts_reported, "body");
 
+	GDVIRTUAL_BIND(_body_set_contacts_reported_depth_threshold, "body", "threshold");
+	GDVIRTUAL_BIND(_body_get_contacts_reported_depth_threshold, "body");
+
 	GDVIRTUAL_BIND(_body_set_omit_force_integration, "body", "enable");
 	GDVIRTUAL_BIND(_body_is_omitting_force_integration, "body");
 
+	GDVIRTUAL_BIND(_body_set_state_sync_callback, "body", "callable");
 	GDVIRTUAL_BIND(_body_set_force_integration_callback, "body", "callable", "userdata");
+
+	GDVIRTUAL_BIND(_body_collide_shape, "body", "body_shape", "shape", "shape_xform", "motion", "results", "result_max", "result_count");
+
+	GDVIRTUAL_BIND(_body_set_pickable, "body", "pickable");
+
+	GDVIRTUAL_BIND(_body_get_direct_state, "body");
 
 	GDVIRTUAL_BIND(_body_test_motion, "body", "from", "motion", "margin", "collide_separation_ray", "recovery_as_collision", "result");
 
-	GDVIRTUAL_BIND(_body_get_direct_state, "body");
+	/* JOINT API */
 
 	GDVIRTUAL_BIND(_joint_create);
 	GDVIRTUAL_BIND(_joint_clear, "joint");
 
 	GDVIRTUAL_BIND(_joint_set_param, "joint", "param", "value");
 	GDVIRTUAL_BIND(_joint_get_param, "joint", "param");
+
+	GDVIRTUAL_BIND(_joint_disable_collisions_between_bodies, "joint", "disable");
+	GDVIRTUAL_BIND(_joint_is_disabled_collisions_between_bodies, "joint");
 
 	GDVIRTUAL_BIND(_joint_make_pin, "joint", "anchor", "body_a", "body_b");
 	GDVIRTUAL_BIND(_joint_make_groove, "joint", "a_groove1", "a_groove2", "b_anchor", "body_a", "body_b");
@@ -280,10 +317,20 @@ void PhysicsServer2DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_joint_get_type, "joint");
 
+	/* MISC */
+
 	GDVIRTUAL_BIND(_free_rid, "rid");
 
 	GDVIRTUAL_BIND(_set_active, "active");
 
+	GDVIRTUAL_BIND(_init);
+	GDVIRTUAL_BIND(_step, "step");
+	GDVIRTUAL_BIND(_sync);
+	GDVIRTUAL_BIND(_flush_queries);
+	GDVIRTUAL_BIND(_end_sync);
+	GDVIRTUAL_BIND(_finish);
+
+	GDVIRTUAL_BIND(_is_flushing_queries);
 	GDVIRTUAL_BIND(_get_process_info, "process_info");
 }
 

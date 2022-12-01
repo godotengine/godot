@@ -18,5 +18,6 @@
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			Sets the mesh used to draw. It must be a mesh using 2D vertices.
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 	</members>
 </class>

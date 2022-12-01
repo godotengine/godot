@@ -6,7 +6,7 @@ env:
   # Only used for the cache key. Increment version to force clean build.
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no
-  EM_VERSION: 3.1.20
+  EM_VERSION: 3.1.18
   EM_CACHE_FOLDER: "emsdk-cache"
 
 concurrency:
@@ -16,7 +16,7 @@ concurrency:
 jobs:
   web-template:
     runs-on: "ubuntu-20.04"
-    name: Template (target=release, tools=no)
+    name: Template (target=template_release)
 
     steps:
       - uses: actions/checkout@v3
@@ -43,8 +43,7 @@ jobs:
         with:
           sconsflags: ${{ env.SCONSFLAGS }}
           platform: web
-          target: release
-          tools: false
+          target: template_release
           tests: false
 
       - name: Upload artifact

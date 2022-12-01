@@ -41,11 +41,13 @@
 #include "scene/resources/immediate_mesh.h"
 
 class EditorInspectorPluginSkeleton;
-class EditorUndoRedoManager;
 class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
 class Button;
+class Tree;
+class TreeItem;
+class VSeparator;
 
 class BoneTransformEditor : public VBoxContainer {
 	GDCLASS(BoneTransformEditor, VBoxContainer);
@@ -64,8 +66,6 @@ class BoneTransformEditor : public VBoxContainer {
 
 	Skeleton3D *skeleton = nullptr;
 	// String property;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool toggle_enabled = false;
 	bool updating = false;
@@ -238,7 +238,7 @@ class Skeleton3DEditorPlugin : public EditorPlugin {
 	EditorInspectorPluginSkeleton *skeleton_plugin = nullptr;
 
 public:
-	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
+	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
 	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;

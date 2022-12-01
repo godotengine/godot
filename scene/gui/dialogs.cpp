@@ -54,16 +54,23 @@ void AcceptDialog::_update_theme_item_cache() {
 	Window::_update_theme_item_cache();
 
 	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
-	theme_cache.margin = get_theme_constant(SNAME("margin"));
-	theme_cache.button_margin = get_theme_constant(SNAME("button_margin"));
+	theme_cache.buttons_separation = get_theme_constant(SNAME("buttons_separation"));
 }
 
 void AcceptDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_VISIBILITY_CHANGED: {
+		case NOTIFICATION_POST_ENTER_TREE: {
 			if (is_visible()) {
 				get_ok_button()->grab_focus();
+			}
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				if (get_ok_button()->is_inside_tree()) {
+					get_ok_button()->grab_focus();
+				}
 				_update_child_rects();
+
 				parent_visible = get_parent_visible_window();
 				if (parent_visible) {
 					parent_visible->connect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
@@ -77,10 +84,12 @@ void AcceptDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			bg->add_theme_style_override("panel", theme_cache.panel_style);
+			bg_panel->add_theme_style_override("panel", theme_cache.panel_style);
 
-			label->set_begin(Point2(theme_cache.margin, theme_cache.margin));
-			label->set_end(Point2(-theme_cache.margin, -theme_cache.button_margin - 10));
+			child_controls_changed();
+			if (is_visible()) {
+				_update_child_rects();
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -137,14 +146,16 @@ void AcceptDialog::_cancel_pressed() {
 }
 
 String AcceptDialog::get_text() const {
-	return label->get_text();
+	return message_label->get_text();
 }
 
 void AcceptDialog::set_text(String p_text) {
-	if (label->get_text() == p_text) {
+	if (message_label->get_text() == p_text) {
 		return;
 	}
-	label->set_text(p_text);
+
+	message_label->set_text(p_text);
+
 	child_controls_changed();
 	if (is_visible()) {
 		_update_child_rects();
@@ -168,19 +179,24 @@ bool AcceptDialog::get_close_on_escape() const {
 }
 
 void AcceptDialog::set_autowrap(bool p_autowrap) {
-	label->set_autowrap_mode(p_autowrap ? TextServer::AUTOWRAP_WORD : TextServer::AUTOWRAP_OFF);
+	message_label->set_autowrap_mode(p_autowrap ? TextServer::AUTOWRAP_WORD : TextServer::AUTOWRAP_OFF);
 }
 
 bool AcceptDialog::has_autowrap() {
-	return label->get_autowrap_mode() != TextServer::AUTOWRAP_OFF;
+	return message_label->get_autowrap_mode() != TextServer::AUTOWRAP_OFF;
 }
 
 void AcceptDialog::set_ok_button_text(String p_ok_button_text) {
-	ok->set_text(p_ok_button_text);
+	ok_button->set_text(p_ok_button_text);
+
+	child_controls_changed();
+	if (is_visible()) {
+		_update_child_rects();
+	}
 }
 
 String AcceptDialog::get_ok_button_text() const {
-	return ok->get_text();
+	return ok_button->get_text();
 }
 
 void AcceptDialog::register_text_enter(Control *p_line_edit) {
@@ -192,68 +208,79 @@ void AcceptDialog::register_text_enter(Control *p_line_edit) {
 }
 
 void AcceptDialog::_update_child_rects() {
-	Size2 label_size = label->get_minimum_size();
-	if (label->get_text().is_empty()) {
-		label_size.height = 0;
-	}
+	Size2 dlg_size = get_size();
+	float h_margins = theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT);
+	float v_margins = theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM);
 
-	Size2 size = get_size();
-	Size2 hminsize = hbc->get_combined_minimum_size();
+	// Fill the entire size of the window with the background.
+	bg_panel->set_position(Point2());
+	bg_panel->set_size(dlg_size);
 
-	Vector2 cpos(theme_cache.margin, theme_cache.margin + label_size.height);
-	Vector2 csize(size.x - theme_cache.margin * 2, size.y - theme_cache.margin * 3 - hminsize.y - label_size.height);
+	// Place the buttons from the bottom edge to their minimum required size.
+	Size2 buttons_minsize = buttons_hbox->get_combined_minimum_size();
+	Size2 buttons_size = Size2(dlg_size.x - h_margins, buttons_minsize.y);
+	Point2 buttons_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), dlg_size.y - theme_cache.panel_style->get_margin(SIDE_BOTTOM) - buttons_size.y);
+	buttons_hbox->set_position(buttons_position);
+	buttons_hbox->set_size(buttons_size);
+
+	// Place the content from the top to fill the rest of the space (minus the separation).
+	Point2 content_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), theme_cache.panel_style->get_margin(SIDE_TOP));
+	Size2 content_size = Size2(dlg_size.x - h_margins, dlg_size.y - v_margins - buttons_size.y - theme_cache.buttons_separation);
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c) {
 			continue;
 		}
-
-		if (c == hbc || c == label || c == bg || c->is_set_as_top_level()) {
+		if (c == buttons_hbox || c == bg_panel || c->is_set_as_top_level()) {
 			continue;
 		}
 
-		c->set_position(cpos);
-		c->set_size(csize);
+		c->set_position(content_position);
+		c->set_size(content_size);
 	}
-
-	cpos.y += csize.y + theme_cache.margin;
-	csize.y = hminsize.y;
-
-	hbc->set_position(cpos);
-	hbc->set_size(csize);
-
-	bg->set_position(Point2());
-	bg->set_size(size);
 }
 
 Size2 AcceptDialog::_get_contents_minimum_size() const {
-	Size2 minsize = label->get_combined_minimum_size();
-
+	// First, we then iterate over the label and any other custom controls
+	// to try and find the size that encompasses all content.
+	Size2 content_minsize;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c) {
 			continue;
 		}
 
-		if (c == hbc || c == label || c->is_set_as_top_level()) {
+		// Buttons will be included afterwards.
+		// The panel only displays the stylebox and doesn't contribute to the size.
+		if (c == buttons_hbox || c == bg_panel || c->is_set_as_top_level()) {
 			continue;
 		}
 
-		Size2 cminsize = c->get_combined_minimum_size();
-		minsize.x = MAX(cminsize.x, minsize.x);
-		minsize.y = MAX(cminsize.y, minsize.y);
+		Size2 child_minsize = c->get_combined_minimum_size();
+		content_minsize.x = MAX(child_minsize.x, content_minsize.x);
+		content_minsize.y = MAX(child_minsize.y, content_minsize.y);
 	}
 
-	Size2 hminsize = hbc->get_combined_minimum_size();
-	minsize.x = MAX(hminsize.x, minsize.x);
-	minsize.y += hminsize.y;
-	minsize.x += theme_cache.margin * 2;
-	minsize.y += theme_cache.margin * 3; //one as separation between hbc and child
+	// Then we take the background panel as it provides the offsets,
+	// which are always added to the minimum size.
+	if (theme_cache.panel_style.is_valid()) {
+		content_minsize += theme_cache.panel_style->get_minimum_size();
+	}
 
-	Size2 wmsize = get_min_size();
-	minsize.x = MAX(wmsize.x, minsize.x);
-	return minsize;
+	// Then we add buttons. Horizontally we're interested in whichever
+	// value is the biggest. Vertically buttons add to the overall size.
+	Size2 buttons_minsize = buttons_hbox->get_combined_minimum_size();
+	content_minsize.x = MAX(buttons_minsize.x, content_minsize.x);
+	content_minsize.y += buttons_minsize.y;
+	// Plus there is a separation size added on top.
+	content_minsize.y += theme_cache.buttons_separation;
+
+	// Last, we make sure that we aren't below the minimum window size.
+	Size2 window_minsize = get_min_size();
+	content_minsize.x = MAX(window_minsize.x, content_minsize.x);
+	content_minsize.y = MAX(window_minsize.y, content_minsize.y);
+	return content_minsize;
 }
 
 void AcceptDialog::_custom_action(const String &p_action) {
@@ -264,13 +291,19 @@ void AcceptDialog::_custom_action(const String &p_action) {
 Button *AcceptDialog::add_button(const String &p_text, bool p_right, const String &p_action) {
 	Button *button = memnew(Button);
 	button->set_text(p_text);
+
 	if (p_right) {
-		hbc->add_child(button);
-		hbc->add_spacer();
+		buttons_hbox->add_child(button);
+		buttons_hbox->add_spacer();
 	} else {
-		hbc->add_child(button);
-		hbc->move_child(button, 0);
-		hbc->add_spacer(true);
+		buttons_hbox->add_child(button);
+		buttons_hbox->move_child(button, 0);
+		buttons_hbox->add_spacer(true);
+	}
+
+	child_controls_changed();
+	if (is_visible()) {
+		_update_child_rects();
 	}
 
 	if (!p_action.is_empty()) {
@@ -285,30 +318,38 @@ Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	if (p_cancel.is_empty()) {
 		c = "Cancel";
 	}
+
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
+
 	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+
 	return b;
 }
 
 void AcceptDialog::remove_button(Control *p_button) {
 	Button *button = Object::cast_to<Button>(p_button);
 	ERR_FAIL_NULL(button);
-	ERR_FAIL_COND_MSG(button->get_parent() != hbc, vformat("Cannot remove button %s as it does not belong to this dialog.", button->get_name()));
-	ERR_FAIL_COND_MSG(button == ok, "Cannot remove dialog's OK button.");
-
-	Node *right_spacer = hbc->get_child(button->get_index() + 1);
-	// Should always be valid but let's avoid crashing
-	if (right_spacer) {
-		hbc->remove_child(right_spacer);
-		memdelete(right_spacer);
-	}
-	hbc->remove_child(button);
+	ERR_FAIL_COND_MSG(button->get_parent() != buttons_hbox, vformat("Cannot remove button %s as it does not belong to this dialog.", button->get_name()));
+	ERR_FAIL_COND_MSG(button == ok_button, "Cannot remove dialog's OK button.");
 
 	if (button->is_connected("pressed", callable_mp(this, &AcceptDialog::_custom_action))) {
 		button->disconnect("pressed", callable_mp(this, &AcceptDialog::_custom_action));
 	}
 	if (button->is_connected("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed))) {
 		button->disconnect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+	}
+
+	Node *right_spacer = buttons_hbox->get_child(button->get_index() + 1);
+	// Should always be valid but let's avoid crashing.
+	if (right_spacer) {
+		buttons_hbox->remove_child(right_spacer);
+		memdelete(right_spacer);
+	}
+	buttons_hbox->remove_child(button);
+
+	child_controls_changed();
+	if (is_visible()) {
+		_update_child_rects();
 	}
 }
 
@@ -336,7 +377,7 @@ void AcceptDialog::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ok_button_text"), "set_ok_button_text", "get_ok_button_text");
 
-	ADD_GROUP("Dialog", "dialog");
+	ADD_GROUP("Dialog", "dialog_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_close_on_escape"), "set_close_on_escape", "get_close_on_escape");
@@ -355,25 +396,25 @@ AcceptDialog::AcceptDialog() {
 	set_exclusive(true);
 	set_clamp_to_embedder(true);
 
-	bg = memnew(Panel);
-	add_child(bg, false, INTERNAL_MODE_FRONT);
+	bg_panel = memnew(Panel);
+	add_child(bg_panel, false, INTERNAL_MODE_FRONT);
 
-	hbc = memnew(HBoxContainer);
+	buttons_hbox = memnew(HBoxContainer);
 
-	label = memnew(Label);
-	label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
-	label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
-	add_child(label, false, INTERNAL_MODE_FRONT);
+	message_label = memnew(Label);
+	message_label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
+	message_label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
+	add_child(message_label, false, INTERNAL_MODE_FRONT);
 
-	add_child(hbc, false, INTERNAL_MODE_FRONT);
+	add_child(buttons_hbox, false, INTERNAL_MODE_FRONT);
 
-	hbc->add_spacer();
-	ok = memnew(Button);
-	ok->set_text("OK");
-	hbc->add_child(ok);
-	hbc->add_spacer();
+	buttons_hbox->add_spacer();
+	ok_button = memnew(Button);
+	ok_button->set_text("OK");
+	buttons_hbox->add_child(ok_button);
+	buttons_hbox->add_spacer();
 
-	ok->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
+	ok_button->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
 
 	set_title(TTRC("Alert!"));
 

@@ -30,6 +30,8 @@
 
 #include "texture_3d_editor_plugin.h"
 
+#include "scene/gui/label.h"
+
 void Texture3DEditor::_texture_rect_draw() {
 	texture_rect->draw_rect(Rect2(Point2(), texture_rect->get_size()), Color(1, 1, 1, 1));
 }
@@ -138,10 +140,6 @@ void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 	}
 }
 
-void Texture3DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_layer_changed"), &Texture3DEditor::_layer_changed);
-}
-
 Texture3DEditor::Texture3DEditor() {
 	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	set_custom_minimum_size(Size2(1, 150));
@@ -173,7 +171,7 @@ Texture3DEditor::Texture3DEditor() {
 	info->add_theme_constant_override("shadow_offset_y", 2);
 
 	setting = false;
-	layer->connect("value_changed", Callable(this, "_layer_changed"));
+	layer->connect("value_changed", callable_mp(this, &Texture3DEditor::_layer_changed));
 }
 
 Texture3DEditor::~Texture3DEditor() {

@@ -36,6 +36,7 @@
 #include "export_plugin.h"
 
 void register_android_exporter() {
+#ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/android/android_sdk_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 	EDITOR_DEF("export/android/debug_keystore", "");
@@ -47,6 +48,7 @@ void register_android_exporter() {
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
 
 	EDITOR_DEF("export/android/one_click_deploy_clear_previous_install", false);
+#endif
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>(memnew(EditorExportPlatformAndroid));
 	EditorExport::get_singleton()->add_export_platform(exporter);

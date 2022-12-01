@@ -48,6 +48,12 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_current_directory" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current directory being viewed in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
+			</description>
+		</method>
 		<method name="get_current_path" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -60,17 +66,17 @@
 				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
-		<method name="get_editor_main_control">
-			<return type="Control" />
+		<method name="get_editor_main_screen">
+			<return type="VBoxContainer" />
 			<description>
-				Returns the main editor control. Use this as a parent for main screens.
-				[b]Note:[/b] This returns the main editor control containing the whole editor, not the 2D or 3D viewports specifically.
+				Returns the editor control responsible for main screen plugins and tools. Use it with plugins that implement [method EditorPlugin._has_main_screen].
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_editor_paths">
 			<return type="EditorPaths" />
 			<description>
+				Returns the [EditorPaths] singleton.
 			</description>
 		</method>
 		<method name="get_editor_scale" qualifiers="const">
@@ -131,10 +137,10 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
-		<method name="get_selected_path" qualifiers="const">
-			<return type="String" />
+		<method name="get_selected_paths" qualifiers="const">
+			<return type="PackedStringArray" />
 			<description>
-				Returns the path of the directory currently selected in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
+				Returns an array containing the paths of the currently selected files (and directories) in the [FileSystemDock].
 			</description>
 		</method>
 		<method name="get_selection">
@@ -150,6 +156,12 @@
 			<param index="2" name="inspector_only" type="bool" default="false" />
 			<description>
 				Shows the given property on the given [param object] in the editor's Inspector dock. If [param inspector_only] is [code]true[/code], plugins will not attempt to edit [param object].
+			</description>
+		</method>
+		<method name="is_movie_maker_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if Movie Maker mode is enabled in the editor. See also [method set_movie_maker_enabled]. See [MovieWriter] for more information.
 			</description>
 		</method>
 		<method name="is_playing_scene" qualifiers="const">
@@ -216,7 +228,7 @@
 		<method name="save_scene">
 			<return type="int" enum="Error" />
 			<description>
-				Saves the scene. Returns either [code]OK[/code] or [code]ERR_CANT_CREATE[/code] (see [@GlobalScope] constants).
+				Saves the scene. Returns either [constant OK] or [constant ERR_CANT_CREATE].
 			</description>
 		</method>
 		<method name="save_scene_as">
@@ -239,6 +251,13 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the text of the tab in question exactly ([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/code]).
+			</description>
+		</method>
+		<method name="set_movie_maker_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Sets whether Movie Maker mode is enabled in the editor. See also [method is_movie_maker_enabled]. See [MovieWriter] for more information.
 			</description>
 		</method>
 		<method name="set_plugin_enabled">

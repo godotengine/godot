@@ -38,6 +38,8 @@ class String;
 struct Vector4;
 
 struct _NO_DISCARD_ Vector4i {
+	static const int AXIS_COUNT = 4;
+
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
@@ -66,9 +68,6 @@ struct _NO_DISCARD_ Vector4i {
 		return coord[p_axis];
 	}
 
-	void set_axis(const int p_axis, const int32_t p_value);
-	int32_t get_axis(const int p_axis) const;
-
 	Vector4i::Axis min_axis_index() const;
 	Vector4i::Axis max_axis_index() const;
 
@@ -80,6 +79,7 @@ struct _NO_DISCARD_ Vector4i {
 	_FORCE_INLINE_ Vector4i abs() const;
 	_FORCE_INLINE_ Vector4i sign() const;
 	Vector4i clamp(const Vector4i &p_min, const Vector4i &p_max) const;
+	Vector4i snapped(const Vector4i &p_step) const;
 
 	/* Operators */
 

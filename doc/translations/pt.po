@@ -10,12 +10,16 @@
 # Diogo Gomes <dgomes@graphnode.com>, 2022.
 # El_ExpertPlayer <xpertnathan37@gmail.com>, 2022.
 # Esdras Caleb Oliveira Silva <acheicaleb@gmail.com>, 2022.
+# Rafael Testa <rafael1testa@gmail.com>, 2022.
+# Lucas Campos <lucas@lcmps.dev>, 2022.
+# Nathan Soares <eu@nathan.com.br>, 2022.
+# Baiterson <baiter160@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-06-29 10:31+0000\n"
-"Last-Translator: Esdras Caleb Oliveira Silva <acheicaleb@gmail.com>\n"
+"PO-Revision-Date: 2022-08-25 13:04+0000\n"
+"Last-Translator: Baiterson <baiter160@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/pt/>\n"
 "Language: pt\n"
@@ -23,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -513,6 +517,23 @@ msgid ""
 "want a true content-aware comparison, you have to use [code]deep_equal[/"
 "code]."
 msgstr ""
+"Compara dois valores verificando seu conteúdo real, por meio de recursão em "
+"um [Array] ou [Dictionary] em todos os seus níveis.\n"
+"Esta função se asemelha ou difere de [code]==[/code] de diversas maneiras:\n"
+"- Para [code]null[/code], [code]int[/code], [code]float[/code], "
+"[code]String[/code], [code]Object[/code] e [code] RID[/code] tanto "
+"[code]deep_equal[/code] quanto [code]==[/code] funcionam da mesma forma.\n"
+"- Para [code]Dictionary[/code], [code]==[/code] considera-se igual se, e "
+"somente se, ambas as variáveis apontarem para o mesmo [code]Dictionary[/"
+"code], sem recursão ou checagem de seu conteúdo.\n"
+"- Para [code]Array[/code], [code]==[/code] considera igual se, e somente se, "
+"cada item no primeiro [code]Array[/code] for igual ao seu homólogo no "
+"segundo [ code]Array[/code], conforme informado pelo próprio [code]==[/"
+"code]. Isso implica que [code]==[/code] se faz a recursão em [code]Array[/"
+"code], mas não em [code]Dictionary[/code].\n"
+"Resumindo, sempre que um [code]Dictionary[/code] estiver potencialmente "
+"envolvido, se você quiser uma comparação verdadeira com verificação de "
+"conteúdo, você deve usar [code]deep_equal[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -802,6 +823,7 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Returns an interpolation or extrapolation factor considering the range "
 "specified in [code]from[/code] and [code]to[/code], and the interpolated "
@@ -809,8 +831,9 @@ msgid ""
 "[code]0.0[/code] and [code]1.0[/code] if [code]weight[/code] is between "
 "[code]from[/code] and [code]to[/code] (inclusive). If [code]weight[/code] is "
 "located outside this range, then an extrapolation factor will be returned "
-"(return value lower than [code]0.0[/code] or greater than [code]1.0[/"
-"code]).\n"
+"(return value lower than [code]0.0[/code] or greater than [code]1.0[/code]). "
+"Use [method clamp] on the result of [method inverse_lerp] if this is not "
+"desired.\n"
 "[codeblock]\n"
 "# The interpolation ratio in the `lerp()` call below is 0.75.\n"
 "var middle = lerp(20, 30, 0.75)\n"
@@ -820,7 +843,8 @@ msgid ""
 "var ratio = inverse_lerp(20, 30, 27.5)\n"
 "# `ratio` is now 0.75.\n"
 "[/codeblock]\n"
-"See also [method lerp] which performs the reverse of this operation."
+"See also [method lerp] which performs the reverse of this operation, and "
+"[method range_lerp] to map a continuous series of values to another."
 msgstr ""
 "Returna um fator de interpolação ou extrapolação considerando o alcance "
 "especifico em [code]from[/code] e [code]to[/code], e o valor interpolado "
@@ -908,12 +932,14 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Linearly interpolates between two values by the factor defined in "
 "[code]weight[/code]. To perform interpolation, [code]weight[/code] should be "
 "between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values "
 "outside this range are allowed and can be used to perform [i]extrapolation[/"
-"i].\n"
+"i]. Use [method clamp] on the result of [method lerp] if this is not "
+"desired.\n"
 "If the [code]from[/code] and [code]to[/code] arguments are of type [int] or "
 "[float], the return value is a [float].\n"
 "If both are of the same vector type ([Vector2], [Vector3] or [Color]), the "
@@ -925,7 +951,8 @@ msgid ""
 "[/codeblock]\n"
 "See also [method inverse_lerp] which performs the reverse of this operation. "
 "To perform eased interpolation with [method lerp], combine it with [method "
-"ease] or [method smoothstep]."
+"ease] or [method smoothstep]. See also [method range_lerp] to map a "
+"continuous series of values to another."
 msgstr ""
 "Interpola linearmente entre dois valores pelo fator definido em "
 "[code]weight[/code]. Para realizar a interpolação, [code]weight[/code] deve "
@@ -1340,7 +1367,6 @@ msgstr ""
 "rastreamento de pilha quando um erro ou aviso é impresso ."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Like [method print], but includes the current stack frame when running with "
 "the debugger turned on.\n"
@@ -1350,11 +1376,12 @@ msgid ""
 "   At: res://test.gd:15:_process()\n"
 "[/codeblock]"
 msgstr ""
-"Imprime a pilha de chamadas no local do código, só funciona com o depurador "
-"ativado.\n"
-"Saída no console vai parecer assim:\n"
+"Similar à [method print], mas inclui a pilha de chamadas no local do código "
+"quando o depurador esta ativado.\n"
+"A saída no console será exibida da seguinte maneira:\n"
 "[codeblock]\n"
-"Frame 0 - res://test.gd:16 in function '_process'\n"
+"Test print\n"
+"   At: res://test.gd:15:_process()\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -1607,20 +1634,59 @@ msgid ""
 "3\n"
 "[/codeblock]"
 msgstr ""
+"Retorna um [Array] com o intervalo fornecido. [method range] pode ser "
+"invocado de três maneiras:\n"
+"- [code]range(n: int)[/code]: inicia em 0, incrementa 1 passo até parar "
+"[i]antes[/i] de [code]n[/code]. O argumento [code]n[/code] é [b]exclusivo[/"
+"b].\n"
+"[código]intervalo(b: int, n: int)[/código]: inicia em [código]b[/código], "
+"incrementa 1 passo até parar [i]antes[/i] de [code]n[/code]. Os argumentos "
+"[code]b[/code] e [code]n[/code] são [b]inclusivo[/b] e [b]exclusivo[/b], "
+"respectivamente.\n"
+"- [code]range(b: int, n: int, s: int)[/code]: inicia em [code]b[/code], "
+"aumenta/diminui [code]s[/code] passos até parar [i]antes[/i] de [code]n[/"
+"code]. Os argumentos [code]b[/code] e [code]n[/code] são [b]inclusivo[/b] e "
+"[b]exclusivo[/b], respectivamente. O argumento [code]s[/code] [b]pode[/b] "
+"ser negativo, mas não [code]0[/code]. Se [code]s[/code] for [code]0[/code], "
+"uma mensagem de erro será exibida.\n"
+"- [method range] converte todos os argumentos em [int] antes do "
+"processamento.\n"
+"[b]Observação:[/b] Retorna uma matriz vazia se nenhum valor atender às "
+"restrições do intervalo (por exemplo, [code]range(2, 5, -1)[/code] ou "
+"[code]range(5, 5, 1)[/code]).\n"
+"Exemplos:\n"
+"[codeblock]\n"
+"print(range(4))        # Escreve [0, 1, 2, 3]\n"
+"print(range(2, 5))     # Escreve [2, 3, 4]\n"
+"print(range(0, 6, 2))  # Escreve [0, 2, 4]\n"
+"print(range(4, 1, -1)) # Escreve [4, 3, 2]\n"
+"[/codeblock]\n"
+"Para iterar sobre um [Array] para trás, use:\n"
+"[codeblock]\n"
+"var array = [3, 6, 9]\n"
+"for i in range(array.size(), 0, -1):\n"
+"    print(array[i - 1])\n"
+"[/codeblock]\n"
+"Saída:\n"
+"[codeblock]\n"
+"9\n"
+"6\n"
+"3\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
 "Maps a [code]value[/code] from range [code][istart, istop][/code] to [code]"
-"[ostart, ostop][/code].\n"
+"[ostart, ostop][/code]. See also [method lerp] and [method inverse_lerp]. If "
+"[code]value[/code] is outside [code][istart, istop][/code], then the "
+"resulting value will also be outside [code][ostart, ostop][/code]. Use "
+"[method clamp] on the result of [method range_lerp] if this is not desired.\n"
 "[codeblock]\n"
 "range_lerp(75, 0, 100, -1, 1) # Returns 0.5\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"For complex use cases where you need multiple ranges, consider using [Curve] "
+"or [Gradient] instead."
 msgstr ""
-"Mapeia um [code]value[/code] do intervalo [code][istart, istop][/code] para "
-"o intervalo [code][ostart, ostop][/code].\n"
-"[codeblock]\n"
-"range_lerp(75, 0, 100, -1, 1) # Retorna 0.5\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1633,6 +1699,14 @@ msgid ""
 "[/codeblock]\n"
 "See also [method floor], [method ceil], [method stepify], and [int]."
 msgstr ""
+"Arredonda [code]s[/code] para o número inteiro mais próximo, com a metade "
+"arredondada para cima.\n"
+"[codeblock]\n"
+"a = round(2.49) # a is 2.0\n"
+"a = round(2.5) # a is 3.0\n"
+"a = round(2.51) # a is 3.0\n"
+"[/codeblock]\n"
+"Veja também[method floor], [method ceil], [method stepify], e [int]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1717,6 +1791,29 @@ msgid ""
 "smoothstep_ease_comparison.png]Comparison between smoothstep() and ease(x, "
 "-1.6521) return values[/url]"
 msgstr ""
+"Retorna o resultado da interpolação suave do valor de [code]s[/code] entre "
+"[code]0[/code] e [code]1[/code], na qual [code]s[/code] se encontra incluso "
+"no intervalo dos limites [code]from[/code] e [code]to[/code].\n"
+"O valor de retornado é [code]0[/code] se [code]s <= from[/code], e [code]1[/"
+"code] se [code]s >= to[/code]. Se [code]s[/code] estiver entre [code]from[/"
+"code] e [code]to[/code], o valor retornado segue uma curva em forma de S que "
+"mapeia [code]s[/code] entre [ code]0[/code] e [code]1[/code].\n"
+"Esta curva em forma de S é o interpolador cúbico de Hermite, dado por "
+"[code]f(y) = 3*y^2 - 2*y^3[/code] na qual [code]y = (x-from) / (to -from)[/"
+"code].\n"
+"[codeblock]\n"
+"smoothstep(0, 2, -5.0) # Retorna 0.0\n"
+"smoothstep(0, 2, 0.5) # Retorna 0.15625\n"
+"smoothstep(0, 2, 1.0) # Retorna 0.5\n"
+"smoothstep(0, 2, 2.0) # Retorna 1.0\n"
+"[/codeblock]\n"
+"Comparado [method ease] com um valor de curva de [code]-1.6521[/code], "
+"[method smoothstep] retorna a curva mais suave possível sem mudanças "
+"repentinas na derivada. Se você precisar realizar transições mais avançadas, "
+"use [Tween] ou [AnimationPlayer].\n"
+"[url=https://raw.githubusercontent.com/godotengine/godot-docs/3.5/img/"
+"smoothstep_ease_comparison.png]Comparação entre os valores retornados por "
+"smoothstep() e ease(x, -1.6521)[/url]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1728,8 +1825,17 @@ msgid ""
 "[b]Note:[/b] Negative values of [code]s[/code] return NaN. If you need "
 "negative inputs, use [code]System.Numerics.Complex[/code] in C#."
 msgstr ""
+"Retorna a raiz quadrada de [code]s[/code], onde [code]s[/code] é um número "
+"não-negativo.\n"
+"[codeblock]\n"
+"sqrt(9) # Retorna 3\n"
+"[/codeblock]\n"
+"[b]Nota:[/b] Valores negativos de [code]s[/code] retornam NaN. Se você "
+"necessita de inputs negativos, use [code]System.Numerics.Complex[/code] em "
+"C#."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Returns the position of the first non-zero digit, after the decimal point. "
 "Note that the maximum return value is 10, which is a design decision in the "
@@ -1740,6 +1846,14 @@ msgid ""
 "n = step_decimals(0.000000005) # n is 9\n"
 "[/codeblock]"
 msgstr ""
+"Retorna a posição do primeiro dígito diferente de 0 após o ponto decimal. "
+"Note que o valor máximo retornado é 10, que é uma decisão de design na "
+"implementação.\n"
+"[codeblock]\n"
+"n = step_decimals(5)           # n é 0\n"
+"n = step_decimals(1.0005)      # n é 4\n"
+"n = step_decimals(0.000000005) # n é 9\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1752,6 +1866,14 @@ msgid ""
 "[/codeblock]\n"
 "See also [method ceil], [method floor], [method round], and [int]."
 msgstr ""
+"Fixa valor flutuante [code]s[/code] para um dado [code]step[/code]. Também "
+"pode ser usado para arredondar um número flutuante para um número arbitrário "
+"de decimais.\n"
+"[codeblock]\n"
+"stepify(100, 32) # Retorna 96.0\n"
+"stepify(3.14159, 0.01) # Retorna 3.14\n"
+"[/codeblock]\n"
+"Veja também [method ceil], [method floor], [method round], e [int]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1764,6 +1886,14 @@ msgid ""
 "len(b) # Returns 12\n"
 "[/codeblock]"
 msgstr ""
+"Converte um ou mais argumentos de quaisquer tipos para string na melhor "
+"maneira possível.\n"
+"[codeblock]\n"
+"var a = [10, 20, 30]\n"
+"var b = str(a);\n"
+"len(a) # Retorna 3\n"
+"len(b) # Retorna 12\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1803,6 +1933,11 @@ msgid ""
 "b = tanh(a)  # b is 0.6\n"
 "[/codeblock]"
 msgstr ""
+"Retorna a tangente hiperbólica de [code]s[/code].\n"
+"[codeblock]\n"
+"a = log(2.0) # a é 0.693147\n"
+"b = tanh(a)  # b é 0.6\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1845,6 +1980,11 @@ msgid ""
 "type_exists(\"Variant\") # Returns false\n"
 "[/codeblock]"
 msgstr ""
+"Retorna se uma dada classe existe em [ClassDB].\n"
+"[codeblock]\n"
+"type_exists(\"Sprite\") # Retorna true\n"
+"type_exists(\"Variant\") # Retorna false\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -2177,16 +2317,22 @@ msgid "Global scope constants and variables."
 msgstr "Constantes e variáveis de escopo global."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "Global scope constants and variables. This is all that resides in the "
 "globals, constants regarding error codes, scancodes, property hints, etc.\n"
 "Singletons are also documented here, since they can be accessed from "
 "anywhere."
 msgstr ""
+"Constante e variáveis de escopo global. É tudo aquilo que reside no escopo "
+"global, constantes relacionadas a códigos de erro, scancodes, dicas de "
+"propriedades, etc.\n"
+"Singletons também estão documentados aqui, uma vez que podem ser acessados "
+"de qualquer lugar."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [ARVRServer] singleton."
-msgstr ""
+msgstr "O singleton [ARVRServer]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [AudioServer] singleton."
@@ -2206,7 +2352,7 @@ msgstr "O singleton [Engine]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [Geometry] singleton."
-msgstr ""
+msgstr "O singleton [Geometry]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [IP] singleton."
@@ -2245,19 +2391,16 @@ msgid "The [Marshalls] singleton."
 msgstr "O singleton [Marshalls]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [Navigation2DServer] singleton."
-msgstr "O singleton [TranslationServer]."
+msgstr "O singleton [Navigation2DServer]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [NavigationMeshGenerator] singleton."
-msgstr "O singleton [TranslationServer]."
+msgstr "O singleton [NavigationMeshGenerator]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [NavigationServer] singleton."
-msgstr "O singleton [TranslationServer]."
+msgstr "O singleton [NavigationServer]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [OS] singleton."
@@ -2269,11 +2412,11 @@ msgstr "O singleton [Performance]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [Physics2DServer] singleton."
-msgstr ""
+msgstr "O singleton [Physics2DServer]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [PhysicsServer] singleton."
-msgstr ""
+msgstr "O singleton [PhysicsServer]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [ProjectSettings] singleton."
@@ -2289,7 +2432,7 @@ msgstr "O singleton [ResourceSaver]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [Time] singleton."
-msgstr ""
+msgstr "O singleton [Time]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [TranslationServer] singleton."
@@ -2301,7 +2444,7 @@ msgstr "O singleton [VisualScriptEditor]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [VisualServer] singleton."
-msgstr ""
+msgstr "O singleton [VisualServer]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Left margin, usually used for [Control] or [StyleBox]-derived classes."
@@ -2393,7 +2536,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Scancodes with this bit applied are non-printable."
-msgstr ""
+msgstr "Scancodes com este bit aplicado não são printáveis."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Escape key."
@@ -2405,7 +2548,7 @@ msgstr "Tecla Tab."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Shift+Tab key."
-msgstr ""
+msgstr "Tecla Shift+Tab."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Backspace key."
@@ -2665,8 +2808,9 @@ msgid ""
 msgstr "Tecla Voltar Media. Não confundir com tecla Voltar no device Android."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Media forward key."
-msgstr ""
+msgstr "Tecla avançar Mídia."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Media stop key."
@@ -2674,7 +2818,7 @@ msgstr "Tecla de parada de mídia."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Media refresh key."
-msgstr ""
+msgstr "Tecla repetir Mídia."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Volume down key."
@@ -3565,6 +3709,11 @@ msgid ""
 "- Linux: Up to 80 buttons.\n"
 "- Windows and macOS: Up to 128 buttons."
 msgstr ""
+"O número máximo de botões de controle suportados pela engine. O limite poder "
+"ser menor em plataformas específicas:\n"
+"- Android: Até 36 botões.\n"
+"- Linux: Até 80 botões.\n"
+"- Windows e macOS: Até 128 botões."
 
 #: doc/classes/@GlobalScope.xml
 msgid "DualShock circle button."
@@ -3584,35 +3733,35 @@ msgstr "Botão triângulo do Dualshock."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Xbox controller B button."
-msgstr ""
+msgstr "Botão B do controle de Xbox."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Xbox controller A button."
-msgstr ""
+msgstr "Botão A do controle de Xbox."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Xbox controller X button."
-msgstr ""
+msgstr "Botão X do controle de Xbox."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Xbox controller Y button."
-msgstr ""
+msgstr "Botão Y do controle de Xbox."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Nintendo controller A button."
-msgstr ""
+msgstr "Botão A do controle da Nintendo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Nintendo controller B button."
-msgstr ""
+msgstr "Botão B do controle da Nintendo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Nintendo controller X button."
-msgstr ""
+msgstr "Botão X do controle da Nintendo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Nintendo controller Y button."
-msgstr ""
+msgstr "Botão Y do controle da Nintendo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Grip (side) buttons on a VR controller."
@@ -3678,35 +3827,36 @@ msgstr "Botão direito no direcional do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL guide button."
-msgstr ""
+msgstr "Botão guia do controle SDL."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL miscellaneous button."
 msgstr "Botão diverso SDL do controle."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Gamepad SDL paddle 1 button."
-msgstr ""
+msgstr "Botão paddle 1 do controle SDL."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL paddle 2 button."
-msgstr ""
+msgstr "Botão paddle 2 do controle SDL."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL paddle 3 button."
-msgstr ""
+msgstr "Botão paddle 3 do controle SDL."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL paddle 4 button."
-msgstr ""
+msgstr "Botão paddle 4 do controle SDL."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL touchpad button."
-msgstr ""
+msgstr "Touchpad do controle SDL."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left Shoulder button."
-msgstr ""
+msgstr "Touchpad botão L1."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left trigger."
@@ -3718,7 +3868,7 @@ msgstr "Clique na alavanca esquerda do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right Shoulder button."
-msgstr ""
+msgstr "Touchpad botão L2."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right trigger."
@@ -3785,8 +3935,9 @@ msgid "VR Controller analog trigger."
 msgstr "Gatilho analógico do controle VR."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "VR Controller analog grip (side buttons)."
-msgstr ""
+msgstr "VR Controle analógico (botões laterais)"
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3809,30 +3960,38 @@ msgid ""
 "MIDI note OFF message. See the documentation of [InputEventMIDI] for "
 "information of how to use MIDI inputs."
 msgstr ""
+"MIDI nota OFF mensagem. Ver na documentação [InputEventMIDI] como usar."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI note ON message. See the documentation of [InputEventMIDI] for "
 "information of how to use MIDI inputs."
-msgstr ""
+msgstr "MIDI nota ON mensagem. Ver na documentação [InputEventMIDI] como usar."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI aftertouch message. This message is most often sent by pressing down on "
 "the key after it \"bottoms out\"."
 msgstr ""
+"MIDI aftertouch mensagem. Essa mensagem é mais enviada quando pressionada a "
+"tecla e depois de \"bottons out\"."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI control change message. This message is sent when a controller value "
 "changes. Controllers include devices such as pedals and levers."
 msgstr ""
+"MIDI control change mensagem. Essa mensagem é enviada quando um valor de um "
+"controle muda. Controles do tipo pedais e alavancas."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI program change message. This message sent when the program patch number "
 "changes."
 msgstr ""
+"MIDI program change message. Essa mensagem é enviada quando o número de um "
+"patch de um programa."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3925,6 +4084,19 @@ msgid ""
 "    print(\"Still failing!\")\n"
 "[/codeblock]"
 msgstr ""
+"Métodos que retornam [enum Error] retornam [constant OK] quando nenhum erro "
+"ocorre. Note que muitas funções não retornam um código de erro, mas "
+"imprimirão mensagens de erro na saída padrão.\n"
+"Uma vez que [constant OK] tem valor 0 e todos os outros códigos de erro são "
+"inteiros positivos, também pode ser usado em uma checagem booleana, ex:\n"
+"[codeblock]\n"
+"var err = method_that_returns_error()\n"
+"if err != OK:\n"
+"    print(\"Failure!\")\n"
+"# Ou o equivalente:\n"
+"if err:\n"
+"    print(\"Still failing!\")\n"
+"[/codeblock]"
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic error."
@@ -3932,31 +4104,34 @@ msgstr "Erro genérico."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unavailable error."
-msgstr ""
+msgstr "Erro não disponível."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unconfigured error."
-msgstr ""
+msgstr "Erro não configurado."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unauthorized error."
-msgstr ""
+msgstr "Erro não autorizado."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Parameter range error."
-msgstr ""
+msgstr "Erro de intervalo de parâmetro."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Out of memory (OOM) error."
-msgstr ""
+msgstr "Erro de falta de memória (OOM)."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "File: Not found error."
-msgstr ""
+msgstr "Arquivo: Erro de arquivo não encontrado."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "File: Bad drive error."
-msgstr ""
+msgstr "Arquivo: Erro unidade defeituosa."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Bad path error."
@@ -3971,24 +4146,29 @@ msgid "File: Already in use error."
 msgstr "Ficheiro: Erro ficheiro já em uso."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "File: Can't open error."
-msgstr ""
+msgstr "Arquivo: Erro não foi possível abrir."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "File: Can't write error."
-msgstr ""
+msgstr "Arquivo: Erro não foi possível escrever."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "File: Can't read error."
-msgstr ""
+msgstr "Arquivo: Erro não foi possível ler."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "File: Unrecognized error."
-msgstr ""
+msgstr "Arquivo: Erro não reconhecido."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "File: Corrupt error."
-msgstr ""
+msgstr "Arquivo: Erro corrompido."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Missing dependencies error."
@@ -3996,27 +4176,28 @@ msgstr "Ficheiro: Erro faltam dependências."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: End of file (EOF) error."
-msgstr ""
+msgstr "Arquivo: Erro fim do arquivo (EOF)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't open error."
-msgstr ""
+msgstr "Erro não foi possível abrir."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't create error."
-msgstr ""
+msgstr "Erro não foi possível criar."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Query failed error."
-msgstr ""
+msgstr "Erro falha na consulta."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Already in use error."
-msgstr ""
+msgstr "Erro já está sendo utilizado."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Locked error."
-msgstr ""
+msgstr "Erro Bloqueado (Locked error)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Timeout error."
@@ -4024,7 +4205,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't connect error."
-msgstr ""
+msgstr "Erro não foi possível conectar."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't resolve error."
@@ -4036,15 +4217,15 @@ msgstr "Erro de conexão."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't acquire resource error."
-msgstr ""
+msgstr "Erro não foi possível adquirir o recurso."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't fork process error."
-msgstr ""
+msgstr "Erro não foi possível dividir o processo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Invalid data error."
-msgstr ""
+msgstr "Erro dados inválidos."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Invalid parameter error."
@@ -4079,8 +4260,9 @@ msgid "Linking failed error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Script failed error."
-msgstr ""
+msgstr "Erro falha no script."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Cycling link (import cycle) error."
@@ -4095,8 +4277,9 @@ msgid "Duplicate symbol error."
 msgstr "Erro de símbolo duplicado."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Parse error."
-msgstr ""
+msgstr "Erro de parse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Busy error."
@@ -4112,13 +4295,15 @@ msgstr "Erro de ajuda."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Bug error."
-msgstr ""
+msgstr "Erro bug."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Printer on fire error. (This is an easter egg, no engine methods return this "
 "error code.)"
 msgstr ""
+"Erro impressora em chamas. (Isso é um easter egg, nenhum método da engine "
+"retornará esse código de erro.)"
 
 #: doc/classes/@GlobalScope.xml
 msgid "No hint for the edited property."
@@ -4165,12 +4350,17 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "Hints that a float property should be edited via an exponential easing "
 "function. The hint string can include [code]\"attenuation\"[/code] to flip "
 "the curve horizontally and/or [code]\"inout\"[/code] to also include in/out "
 "easing."
 msgstr ""
+"Sugere que uma propriedade float deve ser editada através de uma função de "
+"suavização. A string de sugestão pode incluir [code]\"attenuation\"[/code] "
+"para virar a curva horizontalmente e/ou [code]\"inout\"[/code] para incluir "
+"também a suavização in/out."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Deprecated hint, unused."
@@ -5666,19 +5856,21 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
-msgid "Gets the text caption for this node (used by some editors)."
+msgid ""
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"override the text caption for this node."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Gets a child node by index (used by editors inheriting from "
-"[AnimationRootNode])."
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return a child node by its [code]name[/code]."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Gets all children nodes in order as a [code]name: node[/code] dictionary. "
-"Only useful when inheriting [AnimationRootNode]."
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return all children nodes in order as a [code]name: node[/code] dictionary."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
@@ -5699,21 +5891,25 @@ msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Gets the default value of a parameter. Parameters are custom local memory "
-"used for your nodes, given a resource can be reused in multiple trees."
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return the default value of parameter \"[code]name[/code]\". Parameters are "
+"custom local memory used for your nodes, given a resource can be reused in "
+"multiple trees."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Gets the property information for parameter. Parameters are custom local "
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return a list of the properties on this node. Parameters are custom local "
 "memory used for your nodes, given a resource can be reused in multiple "
 "trees. Format is similar to [method Object.get_property_list]."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Returns [code]true[/code] whether you want the blend tree editor to display "
-"filter editing on this node."
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return whether the blend tree editor should display filter editing on this "
+"node."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
@@ -5723,9 +5919,10 @@ msgstr "Retorna o RID do ecrã usada por essa camada."
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"User-defined callback called when a custom node is processed. The "
-"[code]time[/code] parameter is a relative delta, unless [code]seek[/code] is "
-"[code]true[/code], in which case it is absolute.\n"
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"run some code when this node is processed. The [code]time[/code] parameter "
+"is a relative delta, unless [code]seek[/code] is [code]true[/code], in which "
+"case it is absolute.\n"
 "Here, call the [method blend_input], [method blend_node] or [method "
 "blend_animation] functions. You can also use [method get_parameter] and "
 "[method set_parameter] to modify local memory.\n"
@@ -6384,9 +6581,9 @@ msgid ""
 "Turn on auto advance when this condition is set. The provided name will "
 "become a boolean parameter on the [AnimationTree] that can be controlled "
 "from code (see [url=$DOCS_URL/tutorials/animation/animation_tree."
-"html#controlling-from-code][/url]). For example, if [member AnimationTree."
-"tree_root] is an [AnimationNodeStateMachine] and [member advance_condition] "
-"is set to [code]\"idle\"[/code]:\n"
+"html#controlling-from-code]Using AnimationTree[/url]). For example, if "
+"[member AnimationTree.tree_root] is an [AnimationNodeStateMachine] and "
+"[member advance_condition] is set to [code]\"idle\"[/code]:\n"
 "[codeblock]\n"
 "$animation_tree[\"parameters/conditions/idle\"] = is_on_floor and "
 "(linear_velocity.x == 0)\n"
@@ -6560,8 +6757,8 @@ msgstr ""
 
 #: doc/classes/AnimationPlayer.xml
 msgid ""
-"Returns the [Animation] with key [code]name[/code] or [code]null[/code] if "
-"not found."
+"Returns the [Animation] with the key [code]name[/code]. If the animation "
+"does not exist, [code]null[/code] is returned and an error is logged."
 msgstr ""
 
 #: doc/classes/AnimationPlayer.xml
@@ -7272,7 +7469,12 @@ msgstr ""
 msgid ""
 "3D area that detects [CollisionObject] nodes overlapping, entering, or "
 "exiting. Can also alter or override local physics parameters (gravity, "
-"damping) and route audio to custom audio buses."
+"damping) and route audio to a custom audio bus.\n"
+"To give the area its shape, add a [CollisionShape] or a [CollisionPolygon] "
+"node as a [i]direct[/i] child (or add multiple such nodes as direct "
+"children) of the area.\n"
+"[b]Warning:[/b] See [ConcavePolygonShape] (also called \"trimesh\") for a "
+"warning about possibly unexpected behavior when using that shape for an area."
 msgstr ""
 
 #: doc/classes/Area.xml doc/classes/QuadMesh.xml doc/classes/Viewport.xml
@@ -7509,7 +7711,12 @@ msgstr ""
 msgid ""
 "2D area that detects [CollisionObject2D] nodes overlapping, entering, or "
 "exiting. Can also alter or override local physics parameters (gravity, "
-"damping) and route audio to a custom audio bus."
+"damping) and route audio to a custom audio bus.\n"
+"To give the area its shape, add a [CollisionShape2D] or a "
+"[CollisionPolygon2D] node as a [i]direct[/i] child (or add multiple such "
+"nodes as direct children) of the area.\n"
+"[b]Warning:[/b] See [ConcavePolygonShape2D] for a warning about possibly "
+"unexpected behavior when using that shape for an area."
 msgstr ""
 
 #: doc/classes/Area2D.xml
@@ -8157,7 +8364,15 @@ msgid ""
 "mode\" where the vertex and other arrays become the sources of data and the "
 "index array defines the vertex order. All sub-arrays must have the same "
 "length as the vertex array or be empty, except for [constant ARRAY_INDEX] if "
-"it is used."
+"it is used.\n"
+"[code]compress_flags[/code] is a bitfield made of [enum Mesh.ArrayFormat] "
+"values. It defaults to [constant Mesh.ARRAY_COMPRESS_DEFAULT].\n"
+"[b]Note:[/b] The default [code]compress_flags[/code] enable [constant Mesh."
+"ARRAY_COMPRESS_COLOR], which makes vertex colors stored as 8-bit unsigned "
+"integers. This will clamp overbright vertex colors to [code]Color(1, 1, 1, 1)"
+"[/code] and reduce their precision. To store HDR vertex colors, remove the "
+"vertex color compression flag by passing [code]Mesh.ARRAY_COMPRESS_DEFAULT ^ "
+"Mesh.ARRAY_COMPRESS_COLOR[/code] as the value of [code]compress_flags[/code]."
 msgstr ""
 
 #: doc/classes/ArrayMesh.xml
@@ -9563,8 +9778,9 @@ msgid ""
 "resource is applied on."
 msgstr ""
 
-#: doc/classes/AudioEffect.xml doc/classes/AudioEffectRecord.xml
-#: doc/classes/AudioServer.xml doc/classes/AudioStream.xml
+#: doc/classes/AudioEffect.xml doc/classes/AudioEffectCapture.xml
+#: doc/classes/AudioEffectRecord.xml doc/classes/AudioServer.xml
+#: doc/classes/AudioStream.xml doc/classes/AudioStreamMicrophone.xml
 #: doc/classes/AudioStreamPlayer.xml
 msgid "Audio Mic Record Demo"
 msgstr ""
@@ -9615,10 +9831,20 @@ msgid ""
 "attached audio effect bus into its internal ring buffer.\n"
 "Application code should consume these audio frames from this ring buffer "
 "using [method get_buffer] and process it as needed, for example to capture "
-"data from a microphone, implement application defined effects, or to "
-"transmit audio over the network. When capturing audio data from a "
+"data from an [AudioStreamMicrophone], implement application-defined effects, "
+"or to transmit audio over the network. When capturing audio data from a "
 "microphone, the format of the samples will be stereo 32-bit floating point "
-"PCM."
+"PCM.\n"
+"[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be "
+"[code]true[/code] for audio input to work. See also that setting's "
+"description for caveats related to permissions and operating system privacy "
+"settings."
+msgstr ""
+
+#: doc/classes/AudioEffectCapture.xml doc/classes/AudioEffectDistortion.xml
+#: doc/classes/AudioEffectFilter.xml doc/classes/AudioEffectHighShelfFilter.xml
+#: doc/classes/AudioEffectLowShelfFilter.xml doc/classes/AudioServer.xml
+msgid "Audio buses"
 msgstr ""
 
 #: doc/classes/AudioEffectCapture.xml
@@ -9858,12 +10084,6 @@ msgid ""
 "By distorting the waveform the frequency content change, which will often "
 "make the sound \"crunchy\" or \"abrasive\". For games, it can simulate sound "
 "coming from some saturated device or speaker very efficiently."
-msgstr ""
-
-#: doc/classes/AudioEffectDistortion.xml doc/classes/AudioEffectFilter.xml
-#: doc/classes/AudioEffectHighShelfFilter.xml
-#: doc/classes/AudioEffectLowShelfFilter.xml doc/classes/AudioServer.xml
-msgid "Audio buses"
 msgstr ""
 
 #: doc/classes/AudioEffectDistortion.xml
@@ -10411,7 +10631,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioServer.xml
-msgid "Returns the names of all audio input devices detected on the system."
+msgid ""
+"Returns the names of all audio input devices detected on the system.\n"
+"[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be "
+"[code]true[/code] for audio input to work. See also that setting's "
+"description for caveats related to permissions and operating system privacy "
+"settings."
 msgstr ""
 
 #: doc/classes/AudioServer.xml
@@ -10572,12 +10797,16 @@ msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid ""
-"Name of the current device for audio input (see [method get_device_list]). "
-"On systems with multiple audio inputs (such as analog, USB and HDMI audio), "
-"this can be used to select the audio input device. The value "
-"[code]\"Default\"[/code] will record audio on the system-wide default audio "
-"input. If an invalid device name is set, the value will be reverted back to "
-"[code]\"Default\"[/code]."
+"Name of the current device for audio input (see [method "
+"capture_get_device_list]). On systems with multiple audio inputs (such as "
+"analog, USB and HDMI audio), this can be used to select the audio input "
+"device. The value [code]\"Default\"[/code] will record audio on the system-"
+"wide default audio input. If an invalid device name is set, the value will "
+"be reverted back to [code]\"Default\"[/code].\n"
+"[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be "
+"[code]true[/code] for audio input to work. See also that setting's "
+"description for caveats related to permissions and operating system privacy "
+"settings."
 msgstr ""
 
 #: doc/classes/AudioServer.xml
@@ -10725,6 +10954,21 @@ msgid ""
 "GDNative, but [method push_frame] may be [i]more[/i] efficient in GDScript."
 msgstr ""
 
+#: doc/classes/AudioStreamMicrophone.xml
+msgid "Plays real-time audio input data."
+msgstr ""
+
+#: doc/classes/AudioStreamMicrophone.xml
+msgid ""
+"When used directly in an [AudioStreamPlayer] node, [AudioStreamMicrophone] "
+"plays back microphone input in real-time. This can be used in conjunction "
+"with [AudioEffectCapture] to process the data or save it.\n"
+"[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be "
+"[code]true[/code] for audio input to work. See also that setting's "
+"description for caveats related to permissions and operating system privacy "
+"settings."
+msgstr ""
+
 #: modules/minimp3/doc_classes/AudioStreamMP3.xml
 msgid "MP3 audio stream driver."
 msgstr ""
@@ -10865,7 +11109,10 @@ msgstr "Reproduz um som posicional em espaço 2D."
 
 #: doc/classes/AudioStreamPlayer2D.xml
 msgid ""
-"Plays audio that dampens with distance from screen center.\n"
+"Plays audio that dampens with distance from a given position.\n"
+"By default, audio is heard from the screen center. This can be changed by "
+"adding a [Listener2D] node to the scene and enabling it by calling [method "
+"Listener2D.make_current] on it.\n"
 "See also [AudioStreamPlayer] to play a sound non-positionally.\n"
 "[b]Note:[/b] Hiding an [AudioStreamPlayer2D] node does not disable its audio "
 "output. To temporarily disable an [AudioStreamPlayer2D]'s audio output, set "
@@ -12548,7 +12795,7 @@ msgid ""
 "Sets the camera projection to frustum mode (see [constant "
 "PROJECTION_FRUSTUM]), by specifying a [code]size[/code], an [code]offset[/"
 "code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in "
-"world space units."
+"world space units. See also [member frustum_offset]."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -12641,7 +12888,9 @@ msgstr ""
 msgid ""
 "The camera's frustum offset. This can be changed from the default to create "
 "\"tilted frustum\" effects such as [url=https://zdoom.org/wiki/Y-shearing]Y-"
-"shearing[/url]."
+"shearing[/url].\n"
+"[b]Note:[/b] Only effective if [member projection] is [constant "
+"PROJECTION_FRUSTUM]."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -12669,9 +12918,9 @@ msgstr ""
 
 #: doc/classes/Camera.xml
 msgid ""
-"The camera's size measured as 1/2 the width or height. Only applicable in "
-"orthogonal and frustum modes. Since [member keep_aspect] locks on axis, "
-"[code]size[/code] sets the other axis' size length."
+"The camera's size in meters measured as the diameter of the width or height, "
+"depending on [member keep_aspect]. Only applicable in orthogonal and frustum "
+"modes."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -13171,13 +13420,14 @@ msgid ""
 "inherit and extend their parent's transform. [CanvasItem] is extended by "
 "[Control] for anything GUI-related, and by [Node2D] for anything related to "
 "the 2D engine.\n"
-"Any [CanvasItem] can draw. For this, [method update] must be called, then "
-"[constant NOTIFICATION_DRAW] will be received on idle time to request "
-"redraw. Because of this, canvas items don't need to be redrawn on every "
-"frame, improving the performance significantly. Several functions for "
+"Any [CanvasItem] can draw. For this, [method update] is called by the "
+"engine, then [constant NOTIFICATION_DRAW] will be received on idle time to "
+"request redraw. Because of this, canvas items don't need to be redrawn on "
+"every frame, improving the performance significantly. Several functions for "
 "drawing on the [CanvasItem] are provided (see [code]draw_*[/code] "
-"functions). However, they can only be used inside the [method Object."
-"_notification], signal or [method _draw] virtual functions.\n"
+"functions). However, they can only be used inside [method _draw], its "
+"corresponding [method Object._notification] or methods connected to the "
+"[signal draw] signal.\n"
 "Canvas items are drawn in tree order. By default, children are on top of "
 "their parents so a root [CanvasItem] will be drawn behind everything. This "
 "behavior can be changed on a per-item basis.\n"
@@ -13203,8 +13453,10 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Overridable function called by the engine (if defined) to draw the canvas "
-"item."
+"Called when [CanvasItem] has been requested to redraw (when [method update] "
+"is called, either manually or by the engine).\n"
+"Corresponds to the [constant NOTIFICATION_DRAW] notification in [method "
+"Object._notification]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -13517,12 +13769,12 @@ msgid ""
 "to children."
 msgstr ""
 
-#: doc/classes/CanvasItem.xml doc/classes/Spatial.xml
+#: doc/classes/CanvasItem.xml
 msgid ""
 "Returns [code]true[/code] if the node is present in the [SceneTree], its "
 "[member visible] property is [code]true[/code] and all its antecedents are "
 "also visible. If any antecedent is hidden, this node will not be visible in "
-"the scene tree."
+"the scene tree, and is consequently not drawn (see [method _draw])."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -13567,8 +13819,10 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Queue the [CanvasItem] for update. [constant NOTIFICATION_DRAW] will be "
-"called on idle time to request redraw."
+"Queues the [CanvasItem] to redraw. During idle time, if [CanvasItem] is "
+"visible, [constant NOTIFICATION_DRAW] is sent and [method _draw] is called. "
+"This only occurs [b]once[/b] per frame, even if this method has been called "
+"multiple times."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -13616,8 +13870,11 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Emitted when the [CanvasItem] must redraw. This can only be connected "
-"realtime, as deferred will not allow drawing."
+"Emitted when the [CanvasItem] must redraw, [i]after[/i] the related "
+"[constant NOTIFICATION_DRAW] notification, and [i]before[/i] [method _draw] "
+"is called.\n"
+"[b]Note:[/b] Deferred connections do not allow drawing through the "
+"[code]draw_*[/code] methods."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -13683,7 +13940,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-msgid "The [CanvasItem] is requested to draw."
+msgid "The [CanvasItem] is requested to draw (see [method _draw])."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -13819,10 +14076,12 @@ msgstr ""
 
 #: doc/classes/CanvasLayer.xml
 msgid ""
-"Sets the layer to follow the viewport in order to simulate a pseudo 3D "
+"If enabled, the [CanvasLayer] will use the viewport's transform, so it will "
+"move when camera moves instead of being anchored in a fixed position on the "
+"screen.\n"
+"Together with [member follow_viewport_scale] it can be used for a pseudo 3D "
 "effect."
 msgstr ""
-"Define que a camada irá seguir a janela para simular um efeito pseudo-3D."
 
 #: doc/classes/CanvasLayer.xml
 msgid ""
@@ -14531,17 +14790,17 @@ msgstr ""
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 msgid ""
 "If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/"
-"code] in the the [member collision_layer].\n"
+"code] in the [member collision_layer].\n"
 "If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/"
-"code] in the the [member collision_layer]."
+"code] in the [member collision_layer]."
 msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 msgid ""
 "If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/"
-"code] in the the [member collision_mask].\n"
+"code] in the [member collision_mask].\n"
 "If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/"
-"code] in the the [member collision_mask]."
+"code] in the [member collision_mask]."
 msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
@@ -14848,12 +15107,13 @@ msgstr ""
 
 #: doc/classes/CollisionShape.xml
 msgid ""
-"Editor facility for creating and editing collision shapes in 3D space. You "
-"can use this node to represent all sorts of collision shapes, for example, "
-"add this to an [Area] to give it a detection shape, or add it to a "
-"[PhysicsBody] to create a solid object. [b]IMPORTANT[/b]: this is an Editor-"
-"only helper to create shapes, use [method CollisionObject."
-"shape_owner_get_shape] to get the actual shape."
+"Editor facility for creating and editing collision shapes in 3D space. Set "
+"the [member shape] property to configure the shape. [b]IMPORTANT[/b]: this "
+"is an Editor-only helper to create shapes, use [method CollisionObject."
+"shape_owner_get_shape] to get the actual shape.\n"
+"You can use this node to represent all sorts of collision shapes, for "
+"example, add this to an [Area] to give it a detection shape, or add it to a "
+"[PhysicsBody] to create a solid object."
 msgstr ""
 
 #: doc/classes/CollisionShape.xml doc/classes/CollisionShape2D.xml
@@ -14890,12 +15150,13 @@ msgstr ""
 
 #: doc/classes/CollisionShape2D.xml
 msgid ""
-"Editor facility for creating and editing collision shapes in 2D space. You "
-"can use this node to represent all sorts of collision shapes, for example, "
-"add this to an [Area2D] to give it a detection shape, or add it to a "
-"[PhysicsBody2D] to create a solid object. [b]IMPORTANT[/b]: this is an "
-"Editor-only helper to create shapes, use [method CollisionObject2D."
-"shape_owner_get_shape] to get the actual shape."
+"Editor facility for creating and editing collision shapes in 2D space. Set "
+"the [member shape] property to configure the shape. [b]IMPORTANT[/b]: this "
+"is an Editor-only helper to create shapes, use [method CollisionObject2D."
+"shape_owner_get_shape] to get the actual shape.\n"
+"You can use this node to represent all sorts of collision shapes, for "
+"example, add this to an [Area2D] to give it a detection shape, or add it to "
+"a [PhysicsBody2D] to create a solid object."
 msgstr ""
 
 #: doc/classes/CollisionShape2D.xml doc/classes/KinematicBody2D.xml
@@ -16064,7 +16325,15 @@ msgid ""
 "area. This shape is created by feeding a list of triangles.\n"
 "[b]Note:[/b] When used for collision, [ConcavePolygonShape] is intended to "
 "work with static [PhysicsBody] nodes like [StaticBody] and will not work "
-"with [KinematicBody] or [RigidBody] with a mode other than Static."
+"with [KinematicBody] or [RigidBody] with a mode other than Static.\n"
+"[b]Warning:[/b] Using this shape for an [Area] (via a [CollisionShape] node, "
+"created e.g. by using the [i]Create Trimesh Collision Sibling[/i] option in "
+"the [i]Mesh[/i] menu that appears when selecting a [MeshInstance] node) may "
+"give unexpected results: when using Godot Physics, the area will only detect "
+"collisions with the triangle faces in the [ConcavePolygonShape] (and not "
+"with any \"inside\" of the shape, for example), and when using Bullet "
+"Physics the area will not detect any collisions with the concave shape at "
+"all (this is a known bug)."
 msgstr ""
 
 #: doc/classes/ConcavePolygonShape.xml
@@ -16090,7 +16359,11 @@ msgid ""
 "The main difference between a [ConvexPolygonShape2D] and a "
 "[ConcavePolygonShape2D] is that a concave polygon assumes it is concave and "
 "uses a more complex method of collision detection, and a convex one forces "
-"itself to be convex in order to speed up collision detection."
+"itself to be convex in order to speed up collision detection.\n"
+"[b]Warning:[/b] Using this shape for an [Area2D] (via a [CollisionShape2D] "
+"node) may give unexpected results: the area will only detect collisions with "
+"the segments in the [ConcavePolygonShape2D] (and not with any \"inside\" of "
+"the shape, for example)."
 msgstr ""
 
 #: doc/classes/ConcavePolygonShape2D.xml
@@ -16831,7 +17104,9 @@ msgstr ""
 #: doc/classes/Control.xml
 msgid ""
 "Steal the focus from another control and become the focused control (see "
-"[member focus_mode])."
+"[member focus_mode]).\n"
+"[b]Note[/b]: Using this method together with [method Object.call_deferred] "
+"makes it more reliable, especially when called inside [method Node._ready]."
 msgstr ""
 
 #: doc/classes/Control.xml
@@ -19568,7 +19843,9 @@ msgstr "Uma curva matemática."
 msgid ""
 "A curve that can be saved and re-used for other objects. By default, it "
 "ranges between [code]0[/code] and [code]1[/code] on the Y axis and positions "
-"points relative to the [code]0.5[/code] Y position."
+"points relative to the [code]0.5[/code] Y position.\n"
+"See also [Gradient] which is designed for color interpolation. See also "
+"[Curve2D] and [Curve3D]."
 msgstr ""
 
 #: doc/classes/Curve.xml
@@ -19717,16 +19994,17 @@ msgid ""
 "further calculations."
 msgstr ""
 
-#: doc/classes/Curve2D.xml
+#: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
-"Adds a point to a curve at [code]position[/code] relative to the [Curve2D]'s "
-"position, with control points [code]in[/code] and [code]out[/code].\n"
-"If [code]at_position[/code] is given, the point is inserted before the point "
-"number [code]at_position[/code], moving that point (and every point after) "
-"after the inserted point. If [code]at_position[/code] is not given, or is an "
-"illegal value ([code]at_position <0[/code] or [code]at_position >= [method "
-"get_point_count][/code]), the point will be appended at the end of the point "
-"list."
+"Adds a point with the specified [code]position[/code] relative to the "
+"curve's own position, with control points [code]in[/code] and [code]out[/"
+"code]. Appends the new point at the end of the point list.\n"
+"If [code]index[/code] is given, the new point is inserted before the "
+"existing point identified by index [code]index[/code]. Every existing point "
+"starting from [code]index[/code] is shifted further down the list of points. "
+"The index must be greater than or equal to [code]0[/code] and must not "
+"exceed the number of existing points in the line. See [method "
+"get_point_count]."
 msgstr ""
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
@@ -19868,18 +20146,6 @@ msgid ""
 "shape to a [Path], but can be manually sampled for other purposes.\n"
 "It keeps a cache of precalculated points along the curve, to speed up "
 "further calculations."
-msgstr ""
-
-#: doc/classes/Curve3D.xml
-msgid ""
-"Adds a point to a curve at [code]position[/code] relative to the [Curve3D]'s "
-"position, with control points [code]in[/code] and [code]out[/code].\n"
-"If [code]at_position[/code] is given, the point is inserted before the point "
-"number [code]at_position[/code], moving that point (and every point after) "
-"after the inserted point. If [code]at_position[/code] is not given, or is an "
-"illegal value ([code]at_position <0[/code] or [code]at_position >= [method "
-"get_point_count][/code]), the point will be appended at the end of the point "
-"list."
 msgstr ""
 
 #: doc/classes/Curve3D.xml
@@ -24797,8 +25063,12 @@ msgstr ""
 
 #: doc/classes/File.xml
 msgid ""
-"Returns the whole file as a [String].\n"
-"Text is interpreted as being UTF-8 encoded."
+"Returns the whole file as a [String]. Text is interpreted as being UTF-8 "
+"encoded.\n"
+"If [code]skip_cr[/code] is [code]true[/code], carriage return characters "
+"([code]\\r[/code], CR) will be ignored when parsing the UTF-8, so that only "
+"line feed characters ([code]\\n[/code], LF) represent a new line (Unix "
+"convention)."
 msgstr ""
 
 #: doc/classes/File.xml
@@ -25420,7 +25690,9 @@ msgid ""
 "[code]next[/code] is passed. clipping the width. [code]position[/code] "
 "specifies the baseline, not the top. To draw from the top, [i]ascent[/i] "
 "must be added to the Y axis. The width used by the character is returned, "
-"making this function useful for drawing strings character by character."
+"making this function useful for drawing strings character by character.\n"
+"If [code]outline[/code] is [code]true[/code], the outline of the character "
+"is drawn instead of the character itself."
 msgstr ""
 
 #: doc/classes/Font.xml
@@ -27008,10 +27280,13 @@ msgstr ""
 #: doc/classes/Gradient.xml
 msgid ""
 "Given a set of colors, this resource will interpolate them in order. This "
-"means that if you have color 1, color 2 and color 3, the ramp will "
-"interpolate from color 1 to color 2 and from color 2 to color 3. The ramp "
-"will initially have 2 colors (black and white), one (black) at ramp lower "
-"offset 0 and the other (white) at the ramp higher offset 1."
+"means that if you have color 1, color 2 and color 3, the gradient will "
+"interpolate from color 1 to color 2 and from color 2 to color 3. The "
+"gradient will initially have 2 colors (black and white), one (black) at "
+"gradient lower offset 0 and the other (white) at the gradient higher offset "
+"1.\n"
+"See also [Curve] which supports more complex easing methods, but does not "
+"support colors."
 msgstr ""
 
 #: doc/classes/Gradient.xml
@@ -28419,8 +28694,8 @@ msgstr ""
 msgid ""
 "Hyper-text transfer protocol client (sometimes called \"User Agent\"). Used "
 "to make HTTP requests to download web content, upload files and other data "
-"or to communicate with various services, among other use cases. [b]See the "
-"[HTTPRequest] node for a higher-level alternative.[/b]\n"
+"or to communicate with various services, among other use cases.\n"
+"See the [HTTPRequest] node for a higher-level alternative.\n"
 "[b]Note:[/b] This client only needs to connect to a host once (see [method "
 "connect_to_host]) to send multiple requests. Because of this, methods that "
 "take URLs usually take just the part after the host instead of the full URL, "
@@ -30720,11 +30995,14 @@ msgstr ""
 
 #: doc/classes/Input.xml
 msgid ""
-"Vibrate Android and iOS devices.\n"
+"Vibrate handheld devices.\n"
+"[b]Note:[/b] This method is implemented on Android, iOS, and HTML5.\n"
 "[b]Note:[/b] For Android, it requires enabling the [code]VIBRATE[/code] "
 "permission in the export preset.\n"
 "[b]Note:[/b] For iOS, specifying the duration is supported in iOS 13 and "
-"later."
+"later.\n"
+"[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not "
+"support this method."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -31573,7 +31851,11 @@ msgstr ""
 
 #: doc/classes/InstancePlaceholder.xml
 msgid ""
-"Not thread-safe. Use [method Object.call_deferred] if calling from a thread."
+"Call this method to actually load in the node. The created node will be "
+"placed as a sibling [i]above[/i] the [InstancePlaceholder] in the scene "
+"tree. The [Node]'s reference is also returned for convenience.\n"
+"[b]Note:[/b] [method create_instance] is not thread-safe. Use [method Object."
+"call_deferred] if calling from a thread."
 msgstr ""
 
 #: doc/classes/InstancePlaceholder.xml
@@ -31581,6 +31863,16 @@ msgid ""
 "Gets the path to the [PackedScene] resource file that is loaded by default "
 "when calling [method replace_by_instance]. Not thread-safe. Use [method "
 "Object.call_deferred] if calling from a thread."
+msgstr ""
+
+#: doc/classes/InstancePlaceholder.xml
+msgid ""
+"Returns the list of properties that will be applied to the node when [method "
+"create_instance] is called.\n"
+"If [code]with_order[/code] is [code]true[/code], a key named [code].order[/"
+"code] (note the leading period) is added to the dictionary. This [code]."
+"order[/code] key is an [Array] of [String] property names specifying the "
+"order in which properties will be applied (with index 0 being the first)."
 msgstr ""
 
 #: doc/classes/InstancePlaceholder.xml
@@ -33954,14 +34246,14 @@ msgstr ""
 
 #: doc/classes/Line2D.xml
 msgid ""
-"Adds a point at the [code]position[/code]. Appends the point at the end of "
-"the line.\n"
-"If [code]at_position[/code] is given, the point is inserted before the point "
-"number [code]at_position[/code], moving that point (and every point after) "
-"after the inserted point. If [code]at_position[/code] is not given, or is an "
-"illegal value ([code]at_position < 0[/code] or [code]at_position >= [method "
-"get_point_count][/code]), the point will be appended at the end of the point "
-"list."
+"Adds a point with the specified [code]position[/code] relative to the line's "
+"own position. Appends the new point at the end of the point list.\n"
+"If [code]index[/code] is given, the new point is inserted before the "
+"existing point identified by index [code]index[/code]. Every existing point "
+"starting from [code]index[/code] is shifted further down the list of points. "
+"The index must be greater than or equal to [code]0[/code] and must not "
+"exceed the number of existing points in the line. See [method "
+"get_point_count]."
 msgstr ""
 
 #: doc/classes/Line2D.xml
@@ -33969,22 +34261,28 @@ msgid "Removes all points from the line."
 msgstr "Remove todos os pontos da linha."
 
 #: doc/classes/Line2D.xml
-msgid "Returns the Line2D's amount of points."
+#, fuzzy
+msgid "Returns the amount of points in the line."
 msgstr "Retorna a quantidade de pontos de uma Line2D."
 
 #: doc/classes/Line2D.xml
-msgid "Returns point [code]i[/code]'s position."
-msgstr ""
+#, fuzzy
+msgid "Returns the position of the point at index [code]index[/code]."
+msgstr "Retorna o tipo do nó em at [code]idx[/code]."
 
 #: doc/classes/Line2D.xml
-msgid "Removes the point at index [code]i[/code] from the line."
-msgstr ""
+#, fuzzy
+msgid "Removes the point at index [code]index[/code] from the line."
+msgstr "Retorna o tipo do nó em at [code]idx[/code]."
 
 #: doc/classes/Line2D.xml
+#, fuzzy
 msgid ""
-"Overwrites the position in point [code]i[/code] with the supplied "
-"[code]position[/code]."
+"Overwrites the position of the point at index [code]index[/code] with the "
+"supplied [code]position[/code]."
 msgstr ""
+"Retorna [code]true[/code] se a guia no índice [code]tab_idx[/code] estiver "
+"oculta."
 
 #: doc/classes/Line2D.xml
 msgid ""
@@ -35261,8 +35559,12 @@ msgstr ""
 msgid "Flag used to mark a compressed (half float) tangent array."
 msgstr ""
 
-#: doc/classes/Mesh.xml doc/classes/VisualServer.xml
-msgid "Flag used to mark a compressed (half float) color array."
+#: doc/classes/Mesh.xml
+msgid ""
+"Flag used to mark a compressed (half float) color array.\n"
+"[b]Note:[/b] If this flag is enabled, vertex colors will be stored as 8-bit "
+"unsigned integers. This will clamp overbright colors to [code]Color(1, 1, 1, "
+"1)[/code] and reduce colors' precision."
 msgstr ""
 
 #: doc/classes/Mesh.xml doc/classes/VisualServer.xml
@@ -35307,7 +35609,10 @@ msgid ""
 "ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant "
 "ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV], [constant "
 "ARRAY_COMPRESS_TEX_UV2], [constant ARRAY_COMPRESS_WEIGHTS], and [constant "
-"ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION] quickly."
+"ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION] quickly.\n"
+"[b]Note:[/b] Since this flag enables [constant ARRAY_COMPRESS_COLOR], vertex "
+"colors will be stored as 8-bit unsigned integers. This will clamp overbright "
+"colors to [code]Color(1, 1, 1, 1)[/code] and reduce colors' precision."
 msgstr ""
 
 #: doc/classes/Mesh.xml
@@ -35562,9 +35867,9 @@ msgid ""
 "MeshInstance is a node that takes a [Mesh] resource and adds it to the "
 "current scenario by creating an instance of it. This is the class most often "
 "used to get 3D geometry rendered and can be used to instance a single [Mesh] "
-"in many places. This allows to reuse geometry and save on resources. When a "
-"[Mesh] has to be instanced more than thousands of times at close proximity, "
-"consider using a [MultiMesh] in a [MultiMeshInstance] instead."
+"in many places. This allows reusing geometry, which can save on resources. "
+"When a [Mesh] has to be instanced more than thousands of times at close "
+"proximity, consider using a [MultiMesh] in a [MultiMeshInstance] instead."
 msgstr ""
 
 #: doc/classes/MeshInstance.xml
@@ -36024,7 +36329,9 @@ msgid ""
 "existing vertex colors.\n"
 "For the color to take effect, ensure that [member color_format] is non-"
 "[code]null[/code] on the [MultiMesh] and [member SpatialMaterial."
-"vertex_color_use_as_albedo] is [code]true[/code] on the material."
+"vertex_color_use_as_albedo] is [code]true[/code] on the material. If the "
+"color doesn't look as expected, make sure the material's albedo color is set "
+"to pure white ([code]Color(1, 1, 1)[/code])."
 msgstr ""
 
 #: doc/classes/MultiMesh.xml
@@ -37160,7 +37467,7 @@ msgstr ""
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
 "Notifies when the collision avoidance velocity is calculated after a call to "
-"[method set_velocity]."
+"[method set_velocity]. Only emitted when [member avoidance_enabled] is true."
 msgstr ""
 
 #: doc/classes/NavigationAgent2D.xml
@@ -37985,13 +38292,25 @@ msgstr ""
 #: doc/classes/NetworkedMultiplayerCustom.xml
 msgid ""
 "Initialize the peer with the given [code]peer_id[/code] (must be between 1 "
-"and 2147483647)."
+"and 2147483647).\n"
+"Can only be called if the connection status is [constant "
+"NetworkedMultiplayerPeer.CONNECTION_CONNECTING]. See [method "
+"set_connection_status]."
 msgstr ""
 
 #: doc/classes/NetworkedMultiplayerCustom.xml
 msgid ""
 "Set the state of the connection. See [enum NetworkedMultiplayerPeer."
-"ConnectionStatus]."
+"ConnectionStatus].\n"
+"This will emit the [signal NetworkedMultiplayerPeer.connection_succeeded], "
+"[signal NetworkedMultiplayerPeer.connection_failed] or [signal "
+"NetworkedMultiplayerPeer.server_disconnected] signals depending on the "
+"status and if the peer has the unique network id of [code]1[/code].\n"
+"You can only change to [constant NetworkedMultiplayerPeer."
+"CONNECTION_CONNECTING] from [constant NetworkedMultiplayerPeer."
+"CONNECTION_DISCONNECTED] and to [constant NetworkedMultiplayerPeer."
+"CONNECTION_CONNECTED] from [constant NetworkedMultiplayerPeer."
+"CONNECTION_CONNECTING]."
 msgstr ""
 
 #: doc/classes/NetworkedMultiplayerCustom.xml
@@ -38559,6 +38878,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid "Nodes and Scenes"
 msgstr "Nós e Cenas"
 
@@ -41657,7 +41977,9 @@ msgid ""
 "are also subject to automatic adjustments by the operating system. [b]Always "
 "use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time "
 "calculation instead, since they are guaranteed to be monotonic (i.e. never "
-"decrease)."
+"decrease).\n"
+"[b]Note:[/b] To get a floating point timestamp with sub-second precision, "
+"use [method Time.get_unix_time_from_system]."
 msgstr ""
 
 #: doc/classes/OS.xml
@@ -47026,7 +47348,9 @@ msgstr ""
 
 #: doc/classes/PopupMenu.xml
 #, fuzzy
-msgid "Sets the currently focused item as the given [code]index[/code]."
+msgid ""
+"Sets the currently focused item as the given [code]index[/code].\n"
+"Passing [code]-1[/code] as the index makes so that no item is focused."
 msgstr "Retorna o nome do nó em [code]idx[/code]."
 
 #: doc/classes/PopupMenu.xml
@@ -47266,7 +47590,9 @@ msgstr ""
 msgid ""
 "Class for displaying popups with a panel background. In some cases it might "
 "be simpler to use than [Popup], since it provides a configurable background. "
-"If you are making windows, better check [WindowDialog]."
+"If you are making windows, better check [WindowDialog].\n"
+"If any [Control] node is added as a child of this [PopupPanel], it will be "
+"stretched to fit the panel's size (similar to how [PanelContainer] works)."
 msgstr ""
 
 #: doc/classes/PopupPanel.xml
@@ -47995,7 +48321,11 @@ msgstr ""
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "If [code]true[/code], microphone input will be allowed. This requires "
-"appropriate permissions to be set when exporting to Android or iOS."
+"appropriate permissions to be set when exporting to Android or iOS.\n"
+"[b]Note:[/b] If the operating system blocks access to audio input devices "
+"(due to the user's privacy settings), audio capture will only return "
+"silence. On Windows 10 and later, make sure that apps are allowed to access "
+"the microphone in the OS' privacy settings."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -50739,8 +51069,19 @@ msgstr ""
 msgid ""
 "Maximum anisotropic filter level used for textures with anisotropy enabled. "
 "Higher values will result in sharper textures when viewed from oblique "
-"angles, at the cost of performance. Only power-of-two values are valid (2, "
-"4, 8, 16)."
+"angles, at the cost of performance. With the exception of [code]1[/code], "
+"only power-of-two values are valid ([code]2[/code], [code]4[/code], [code]8[/"
+"code], [code]16[/code]). A value of [code]1[/code] forcibly disables "
+"anisotropic filtering, even on textures where it is enabled.\n"
+"[b]Note:[/b] For performance reasons, anisotropic filtering [i]is not "
+"enabled by default[/i] on textures. For this setting to have an effect, "
+"anisotropic texture filtering can be enabled by selecting a texture in the "
+"FileSystem dock, going to the Import dock, checking the [b]Anisotropic[/b] "
+"checkbox then clicking [b]Reimport[/b]. However, anisotropic filtering is "
+"rarely useful in 2D, so only enable it for textures in 2D if it makes a "
+"meaningful visual difference.\n"
+"[b]Note:[/b] This property is only read when the project starts. There is "
+"currently no way to change this setting at run-time."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -54317,11 +54658,15 @@ msgstr ""
 msgid ""
 "Switches the portal culling system on and off.\n"
 "It is important to note that when portal culling is active, it is "
-"responsible for [b]all[/b] the 3d culling. Some editor functionality may be "
-"more difficult to use, so switching the active flag is intended to be used "
-"to make sure your [Room] / [Portal] layout works within the editor.\n"
+"responsible for [b]all[/b] the 3d culling. Some editor visual debugging "
+"helpers may not be available when active, so switching the active flag is "
+"intended to be used to ensure your [Room] / [Portal] layout works within the "
+"editor.\n"
 "Switching to [code]active[/code] will have no effect when the [code]room "
-"graph[/code] is unloaded (the rooms have not yet been converted)."
+"graph[/code] is unloaded (the rooms have not yet been converted).\n"
+"[b]Note:[/b] For efficiency, the portal system is designed to work with only "
+"the core visual object types. In particular, only nodes derived from "
+"[VisualInstance] are expected to show when the system is active."
 msgstr ""
 
 #: doc/classes/RoomManager.xml
@@ -54758,7 +55103,9 @@ msgid ""
 "cannot be instantiated.\n"
 "[b]Note:[/b] The scene change is deferred, which means that the new scene "
 "node is added on the next idle frame. You won't be able to access it "
-"immediately after the [method change_scene_to] call."
+"immediately after the [method change_scene_to] call.\n"
+"[b]Note:[/b] Passing a value of [code]null[/code] into the method will "
+"unload the current scene without loading a new one."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
@@ -54902,13 +55249,19 @@ msgstr "A cena atual."
 #: doc/classes/SceneTree.xml
 msgid ""
 "If [code]true[/code], collision shapes will be visible when running the game "
-"from the editor for debugging purposes."
+"from the editor for debugging purposes.\n"
+"[b]Note:[/b] This property is not designed to be changed at run-time. "
+"Changing the value of [member debug_collisions_hint] while the project is "
+"running will not have the desired effect."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid ""
 "If [code]true[/code], navigation polygons will be visible when running the "
-"game from the editor for debugging purposes."
+"game from the editor for debugging purposes.\n"
+"[b]Note:[/b] This property is not designed to be changed at run-time. "
+"Changing the value of [member debug_navigation_hint] while the project is "
+"running will not have the desired effect."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
@@ -55233,6 +55586,18 @@ msgid ""
 "[/codeblock]\n"
 "In the example above, all children of a node are moved one after another to "
 "position (0, 0).\n"
+"You should avoid using more than one [SceneTreeTween] per object's property. "
+"If two or more tweens animate one property at the same time, the last one "
+"created will take priority and assign the final value. If you want to "
+"interrupt and restart an animation, consider assigning the [SceneTreeTween] "
+"to a variable:\n"
+"[codeblock]\n"
+"var tween\n"
+"func animate():\n"
+"    if tween:\n"
+"        tween.kill() # Abort the previous animation.\n"
+"    tween = create_tween()\n"
+"[/codeblock]\n"
 "Some [Tweener]s use transitions and eases. The first accepts a [enum Tween."
 "TransitionType] constant, and refers to the way the timing of the animation "
 "is handled (see [url=https://easings.net/]easings.net[/url] for some "
@@ -55245,7 +55610,10 @@ msgid ""
 "tween_cheatsheet.png]Tween easing and transition types cheatsheet[/url]\n"
 "[b]Note:[/b] All [SceneTreeTween]s will automatically start by default. To "
 "prevent a [SceneTreeTween] from autostarting, you can call [method stop] "
-"immediately after it is created."
+"immediately after it is created.\n"
+"[b]Note:[/b] [SceneTreeTween]s are processing after all of nodes in the "
+"current frame, i.e. after [method Node._process] or [method Node."
+"_physics_process] (depending on [enum Tween.TweenProcessMode])."
 msgstr ""
 
 #: doc/classes/SceneTreeTween.xml
@@ -56101,7 +56469,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Shape2D.xml
-msgid "The shape's custom solver bias."
+msgid ""
+"The shape's custom solver bias. Defines how much bodies react to enforce "
+"contact separation when this shape is involved.\n"
+"When set to [code]0.0[/code], the default value of [code]0.3[/code] is used."
 msgstr ""
 
 #: doc/classes/ShortCut.xml
@@ -56721,6 +57092,14 @@ msgstr ""
 
 #: doc/classes/Spatial.xml
 msgid ""
+"Returns [code]true[/code] if the node is present in the [SceneTree], its "
+"[member visible] property is [code]true[/code] and all its antecedents are "
+"also visible. If any antecedent is hidden, this node will not be visible in "
+"the scene tree."
+msgstr ""
+
+#: doc/classes/Spatial.xml
+msgid ""
 "Rotates the node so that the local forward axis (-Z) points toward the "
 "[code]target[/code] position.\n"
 "The local up axis (+Y) points as close to the [code]up[/code] vector as "
@@ -57055,7 +57434,9 @@ msgid ""
 "[b]Note:[/b] Material anisotropy should not to be confused with anisotropic "
 "texture filtering. Anisotropic texture filtering can be enabled by selecting "
 "a texture in the FileSystem dock, going to the Import dock, checking the "
-"[b]Anisotropic[/b] checkbox then clicking [b]Reimport[/b]."
+"[b]Anisotropic[/b] checkbox then clicking [b]Reimport[/b]. The anisotropic "
+"filtering level can be changed by adjusting [member ProjectSettings."
+"rendering/quality/filters/anisotropic_filter_level]."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
@@ -58506,7 +58887,7 @@ msgstr ""
 #: doc/classes/Sprite3D.xml
 msgid ""
 "[Texture] object to draw. If [member GeometryInstance.material_override] is "
-"used, this will be overridden."
+"used, this will be overridden. The size information is still used."
 msgstr ""
 
 #: doc/classes/SpriteBase3D.xml
@@ -59773,6 +60154,9 @@ msgid ""
 "the substrings, starting from right.\n"
 "The splits in the returned array are sorted in the same order as the "
 "original string, from left to right.\n"
+"If [code]allow_empty[/code] is [code]true[/code], and there are two adjacent "
+"delimiters in the string, it will add an empty string to the array of "
+"substrings at this position.\n"
 "If [code]maxsplit[/code] is specified, it defines the number of splits to do "
 "from the right up to [code]maxsplit[/code]. The default value of 0 means "
 "that all items are split, thus giving the same result as [method split].\n"
@@ -59834,6 +60218,9 @@ msgstr ""
 msgid ""
 "Splits the string by a [code]delimiter[/code] string and returns an array of "
 "the substrings. The [code]delimiter[/code] can be of any length.\n"
+"If [code]allow_empty[/code] is [code]true[/code], and there are two adjacent "
+"delimiters in the string, it will add an empty string to the array of "
+"substrings at this position.\n"
 "If [code]maxsplit[/code] is specified, it defines the number of splits to do "
 "from the left up to [code]maxsplit[/code]. The default value of [code]0[/"
 "code] means that all items are split.\n"
@@ -59856,7 +60243,10 @@ msgid ""
 "Splits the string in floats by using a delimiter string and returns an array "
 "of the substrings.\n"
 "For example, [code]\"1,2.5,3\"[/code] will return [code][1,2.5,3][/code] if "
-"split by [code]\",\"[/code]."
+"split by [code]\",\"[/code].\n"
+"If [code]allow_empty[/code] is [code]true[/code], and there are two adjacent "
+"delimiters in the string, it will add an empty string to the array of "
+"substrings at this position."
 msgstr ""
 
 #: doc/classes/String.xml
@@ -60995,6 +61385,11 @@ msgid "Returns [code]true[/code] if select with right mouse button is enabled."
 msgstr ""
 
 #: doc/classes/Tabs.xml
+#, fuzzy
+msgid "Returns the button icon from the tab at index [code]tab_idx[/code]."
+msgstr "Retorna o tipo do nó em at [code]idx[/code]."
+
+#: doc/classes/Tabs.xml
 msgid "Returns the number of hidden tabs offsetted to the left."
 msgstr ""
 
@@ -61022,6 +61417,11 @@ msgstr ""
 msgid ""
 "If [code]true[/code], enables selecting a tab with the right mouse button."
 msgstr ""
+
+#: doc/classes/Tabs.xml
+#, fuzzy
+msgid "Sets the button icon from the tab at index [code]tab_idx[/code]."
+msgstr "Retorna o tipo do nó em at [code]idx[/code]."
 
 #: doc/classes/Tabs.xml
 msgid "Sets an [code]icon[/code] for the tab at index [code]tab_idx[/code]."
@@ -61065,8 +61465,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Tabs.xml
-msgid "Emitted when a tab is right-clicked."
+#, fuzzy
+msgid ""
+"Emitted when a tab's right button is pressed. See [method "
+"set_tab_button_icon]."
 msgstr ""
+"Emitido quando um botão personalizado é pressionado. Veja [method "
+"add_button]."
 
 #: doc/classes/Tabs.xml
 msgid "Emitted when a tab is clicked, even if it is the current tab."
@@ -62418,40 +62823,52 @@ msgid "Clears all values on the theme."
 msgstr "Limpa todos os valores no tema."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
-"Clears the [Color] at [code]name[/code] if the theme has [code]node_type[/"
+"Clears the [Color] at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
-msgstr ""
-
-#: doc/classes/Theme.xml
-msgid ""
-"Clears the constant at [code]name[/code] if the theme has [code]node_type[/"
-"code]."
-msgstr ""
-
-#: doc/classes/Theme.xml
-msgid ""
-"Clears the [Font] at [code]name[/code] if the theme has [code]node_type[/"
-"code]."
-msgstr ""
-
-#: doc/classes/Theme.xml
-msgid ""
-"Clears the icon at [code]name[/code] if the theme has [code]node_type[/code]."
 msgstr ""
 "Limpa o ícone em [code]name[/code] se o tema tiver [code]node_type[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
-"Clears [StyleBox] at [code]name[/code] if the theme has [code]node_type[/"
+"Clears the constant at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
 msgstr ""
+"Limpa o ícone em [code]name[/code] se o tema tiver [code]node_type[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
+msgid ""
+"Clears the [Font] at [code]name[/code] if the theme has [code]theme_type[/"
+"code]."
+msgstr ""
+"Limpa o ícone em [code]name[/code] se o tema tiver [code]node_type[/code]."
+
+#: doc/classes/Theme.xml
+#, fuzzy
+msgid ""
+"Clears the icon at [code]name[/code] if the theme has [code]theme_type[/"
+"code]."
+msgstr ""
+"Limpa o ícone em [code]name[/code] se o tema tiver [code]node_type[/code]."
+
+#: doc/classes/Theme.xml
+#, fuzzy
+msgid ""
+"Clears [StyleBox] at [code]name[/code] if the theme has [code]theme_type[/"
+"code]."
+msgstr ""
+"Limpa o ícone em [code]name[/code] se o tema tiver [code]node_type[/code]."
+
+#: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Clears the theme item of [code]data_type[/code] at [code]name[/code] if the "
-"theme has [code]node_type[/code]."
+"theme has [code]theme_type[/code]."
 msgstr ""
+"Limpa o ícone em [code]name[/code] se o tema tiver [code]node_type[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -62468,15 +62885,18 @@ msgid "Sets the theme's values to a copy of a given theme."
 msgstr ""
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
-"Returns the [Color] at [code]name[/code] if the theme has [code]node_type[/"
+"Returns the [Color] at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
 msgstr ""
+"Limpa o ícone em [code]name[/code] se o tema tiver [code]node_type[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
 "Returns all the [Color]s as a [PoolStringArray] filled with each [Color]'s "
-"name, for use in [method get_color], if the theme has [code]node_type[/code]."
+"name, for use in [method get_color], if the theme has [code]theme_type[/"
+"code]."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -62486,15 +62906,17 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
-"Returns the constant at [code]name[/code] if the theme has [code]node_type[/"
+"Returns the constant at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
 msgstr ""
+"Limpa o ícone em [code]name[/code] se o tema tiver [code]node_type[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
 "Returns all the constants as a [PoolStringArray] filled with each constant's "
-"name, for use in [method get_constant], if the theme has [code]node_type[/"
+"name, for use in [method get_constant], if the theme has [code]theme_type[/"
 "code]."
 msgstr ""
 
@@ -62507,7 +62929,7 @@ msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
-"Returns the [Font] at [code]name[/code] if the theme has [code]node_type[/"
+"Returns the [Font] at [code]name[/code] if the theme has [code]theme_type[/"
 "code]. If such item does not exist and [member default_font] is set on the "
 "theme, the default font will be returned."
 msgstr ""
@@ -62515,7 +62937,7 @@ msgstr ""
 #: doc/classes/Theme.xml
 msgid ""
 "Returns all the [Font]s as a [PoolStringArray] filled with each [Font]'s "
-"name, for use in [method get_font], if the theme has [code]node_type[/code]."
+"name, for use in [method get_font], if the theme has [code]theme_type[/code]."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -62525,15 +62947,17 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns the icon [Texture] at [code]name[/code] if the theme has "
-"[code]node_type[/code]."
+"[code]theme_type[/code]."
 msgstr ""
+"Limpa o ícone em [code]name[/code] se o tema tiver [code]node_type[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
 "Returns all the icons as a [PoolStringArray] filled with each [Texture]'s "
-"name, for use in [method get_icon], if the theme has [code]node_type[/code]."
+"name, for use in [method get_icon], if the theme has [code]theme_type[/code]."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -62545,17 +62969,19 @@ msgstr ""
 #: doc/classes/Theme.xml
 msgid ""
 "Returns the [StyleBox] at [code]name[/code] if the theme has "
-"[code]node_type[/code].\n"
+"[code]theme_type[/code].\n"
 "Valid [code]name[/code]s may be found using [method get_stylebox_list]. "
-"Valid [code]node_type[/code]s may be found using [method get_stylebox_types]."
+"Valid [code]theme_type[/code]s may be found using [method "
+"get_stylebox_types]."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Returns all the [StyleBox]s as a [PoolStringArray] filled with each "
 "[StyleBox]'s name, for use in [method get_stylebox], if the theme has "
-"[code]node_type[/code].\n"
-"Valid [code]node_type[/code]s may be found using [method get_stylebox_types]."
+"[code]theme_type[/code].\n"
+"Valid [code]theme_type[/code]s may be found using [method "
+"get_stylebox_types]."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -62568,9 +62994,9 @@ msgstr ""
 #: doc/classes/Theme.xml
 msgid ""
 "Returns the theme item of [code]data_type[/code] at [code]name[/code] if the "
-"theme has [code]node_type[/code].\n"
+"theme has [code]theme_type[/code].\n"
 "Valid [code]name[/code]s may be found using [method get_theme_item_list] or "
-"a data type specific method. Valid [code]node_type[/code]s may be found "
+"a data type specific method. Valid [code]theme_type[/code]s may be found "
 "using [method get_theme_item_types] or a data type specific method."
 msgstr ""
 
@@ -62578,8 +63004,8 @@ msgstr ""
 msgid ""
 "Returns all the theme items of [code]data_type[/code] as a [PoolStringArray] "
 "filled with each theme items's name, for use in [method get_theme_item] or a "
-"data type specific method, if the theme has [code]node_type[/code].\n"
-"Valid [code]node_type[/code]s may be found using [method "
+"data type specific method, if the theme has [code]theme_type[/code].\n"
+"Valid [code]theme_type[/code]s may be found using [method "
 "get_theme_item_types] or a data type specific method."
 msgstr ""
 
@@ -62594,7 +63020,7 @@ msgstr ""
 msgid ""
 "Returns all the theme types as a [PoolStringArray] filled with unique type "
 "names, for use in other [code]get_*[/code] functions of this theme.\n"
-"[b]Note:[/b] [code]node_type[/code] has no effect and will be removed in "
+"[b]Note:[/b] [code]theme_type[/code] has no effect and will be removed in "
 "future version."
 msgstr ""
 
@@ -62611,18 +63037,26 @@ msgid ""
 msgstr "Retorna o produto cruzado deste vetor e [code]b[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if [Color] with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
+"Retorna [code]true[/code] se o vetor for normalizado, [code]false[/code] "
+"caso contrário."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if constant with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
+"Retorna [code]true[/code] se o vetor for normalizado, [code]false[/code] "
+"caso contrário."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -62631,31 +63065,44 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if [Font] with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
+"Retorna [code]true[/code] se o vetor for normalizado, [code]false[/code] "
+"caso contrário."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if icon [Texture] with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
+"Retorna [code]true[/code] se o vetor for normalizado, [code]false[/code] "
+"caso contrário."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if [StyleBox] with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
+"Retorna [code]true[/code] se o vetor for normalizado, [code]false[/code] "
+"caso contrário."
 
 #: doc/classes/Theme.xml
 msgid ""
 "Returns [code]true[/code] if a theme item of [code]data_type[/code] with "
-"[code]name[/code] is in [code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]name[/code] is in [code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -62686,87 +63133,87 @@ msgstr ""
 #: doc/classes/Theme.xml
 msgid ""
 "Renames the [Color] at [code]old_name[/code] to [code]name[/code] if the "
-"theme has [code]node_type[/code]. If [code]name[/code] is already taken, "
+"theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Renames the constant at [code]old_name[/code] to [code]name[/code] if the "
-"theme has [code]node_type[/code]. If [code]name[/code] is already taken, "
+"theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Renames the [Font] at [code]old_name[/code] to [code]name[/code] if the "
-"theme has [code]node_type[/code]. If [code]name[/code] is already taken, "
+"theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Renames the icon at [code]old_name[/code] to [code]name[/code] if the theme "
-"has [code]node_type[/code]. If [code]name[/code] is already taken, this "
+"has [code]theme_type[/code]. If [code]name[/code] is already taken, this "
 "method fails."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Renames [StyleBox] at [code]old_name[/code] to [code]name[/code] if the "
-"theme has [code]node_type[/code]. If [code]name[/code] is already taken, "
+"theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Renames the theme item of [code]data_type[/code] at [code]old_name[/code] to "
-"[code]name[/code] if the theme has [code]node_type[/code]. If [code]name[/"
+"[code]name[/code] if the theme has [code]theme_type[/code]. If [code]name[/"
 "code] is already taken, this method fails."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Sets the theme's [Color] to [code]color[/code] at [code]name[/code] in "
-"[code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"[code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Sets the theme's constant to [code]constant[/code] at [code]name[/code] in "
-"[code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"[code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Sets the theme's [Font] to [code]font[/code] at [code]name[/code] in "
-"[code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"[code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Sets the theme's icon [Texture] to [code]texture[/code] at [code]name[/code] "
-"in [code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"in [code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Sets theme's [StyleBox] to [code]stylebox[/code] at [code]name[/code] in "
-"[code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"[code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Sets the theme item of [code]data_type[/code] to [code]value[/code] at "
-"[code]name[/code] in [code]node_type[/code].\n"
+"[code]name[/code] in [code]theme_type[/code].\n"
 "Does nothing if the [code]value[/code] type does not match [code]data_type[/"
 "code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -65948,21 +66395,25 @@ msgid "Makes subsequent actions with the same name be merged into one."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
-msgid "UPNP network functions."
+msgid ""
+"Universal Plug and Play (UPnP) functions for network device discovery, "
+"querying and port forwarding."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
 msgid ""
-"Provides UPNP functionality to discover [UPNPDevice]s on the local network "
-"and execute commands on them, like managing port mappings (port forwarding) "
-"and querying the local and remote network IP address. Note that methods on "
-"this class are synchronous and block the calling thread.\n"
-"To forward a specific port:\n"
+"This class can be used to discover compatible [UPNPDevice]s on the local "
+"network and execute commands on them, like managing port mappings (for port "
+"forwarding/NAT traversal) and querying the local and remote network IP "
+"address. Note that methods on this class are synchronous and block the "
+"calling thread.\n"
+"To forward a specific port (here [code]7777[/code], note both [method "
+"discover] and [method add_port_mapping] can return errors that should be "
+"checked):\n"
 "[codeblock]\n"
-"const PORT = 7777\n"
 "var upnp = UPNP.new()\n"
-"upnp.discover(2000, 2, \"InternetGatewayDevice\")\n"
-"upnp.add_port_mapping(port)\n"
+"upnp.discover()\n"
+"upnp.add_port_mapping(7777)\n"
 "[/codeblock]\n"
 "To close a specific port (e.g. after you have finished using it):\n"
 "[codeblock]\n"
@@ -65975,7 +66426,7 @@ msgid ""
 "or failure).\n"
 "signal upnp_completed(error)\n"
 "\n"
-"# Replace this with your own server port number between 1025 and 65535.\n"
+"# Replace this with your own server port number between 1024 and 65535.\n"
 "const SERVER_PORT = 3928\n"
 "var thread = null\n"
 "\n"
@@ -66004,7 +66455,39 @@ msgid ""
 "    # Wait for thread finish here to handle game exit while the thread is "
 "running.\n"
 "    thread.wait_to_finish()\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Terminology:[/b] In the context of UPnP networking, \"gateway\" (or "
+"\"internet gateway device\", short IGD) refers to network devices that allow "
+"computers in the local network to access the internet (\"wide area "
+"network\", WAN). These gateways are often also called \"routers\".\n"
+"[b]Pitfalls:[/b]\n"
+"- As explained above, these calls are blocking and shouldn't be run on the "
+"main thread, especially as they can block for multiple seconds at a time. "
+"Use threading!\n"
+"- Networking is physical and messy. Packets get lost in transit or get "
+"filtered, addresses, free ports and assigned mappings change, and devices "
+"may leave or join the network at any time. Be mindful of this, be diligent "
+"when checking and handling errors, and handle these gracefully if you can: "
+"add clear error UI, timeouts and re-try handling.\n"
+"- Port mappings may change (and be removed) at any time, and the remote/"
+"external IP address of the gateway can change likewise. You should consider "
+"re-querying the external IP and try to update/refresh the port mapping "
+"periodically (for example, every 5 minutes and on networking failures).\n"
+"- Not all devices support UPnP, and some users disable UPnP support. You "
+"need to handle this (e.g. documenting and requiring the user to manually "
+"forward ports, or adding alternative methods of NAT traversal, like a relay/"
+"mirror server, or NAT hole punching, STUN/TURN, etc.).\n"
+"- Consider what happens on mapping conflicts. Maybe multiple users on the "
+"same network would like to play your game at the same time, or maybe another "
+"application uses the same port. Make the port configurable, and optimally "
+"choose a port automatically (re-trying with a different port on failure).\n"
+"[b]Further reading:[/b] If you want to know more about UPnP (and the "
+"Internet Gateway Device (IGD) and Port Control Protocol (PCP) specifically), "
+"[url=https://en.wikipedia.org/wiki/Universal_Plug_and_Play]Wikipedia[/url] "
+"is a good first stop, the specification can be found at the [url=https://"
+"openconnectivity.org/developer/specifications/upnp-resources/upnp/]Open "
+"Connectivity Foundation[/url] and Godot's implementation is based on the "
+"[url=https://github.com/miniupnp/miniupnp]MiniUPnP client[/url]."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
@@ -66014,22 +66497,35 @@ msgstr ""
 #: modules/upnp/doc_classes/UPNP.xml
 msgid ""
 "Adds a mapping to forward the external [code]port[/code] (between 1 and "
-"65535) on the default gateway (see [method get_gateway]) to the "
-"[code]internal_port[/code] on the local machine for the given protocol "
-"[code]proto[/code] (either [code]TCP[/code] or [code]UDP[/code], with UDP "
-"being the default). If a port mapping for the given port and protocol "
-"combination already exists on that gateway device, this method tries to "
-"overwrite it. If that is not desired, you can retrieve the gateway manually "
-"with [method get_gateway] and call [method add_port_mapping] on it, if any.\n"
+"65535, although recommended to use port 1024 or above) on the default "
+"gateway (see [method get_gateway]) to the [code]internal_port[/code] on the "
+"local machine for the given protocol [code]proto[/code] (either [code]TCP[/"
+"code] or [code]UDP[/code], with UDP being the default). If a port mapping "
+"for the given port and protocol combination already exists on that gateway "
+"device, this method tries to overwrite it. If that is not desired, you can "
+"retrieve the gateway manually with [method get_gateway] and call [method "
+"add_port_mapping] on it, if any. Note that forwarding a well-known port "
+"(below 1024) with UPnP may fail depending on the device.\n"
+"Depending on the gateway device, if a mapping for that port already exists, "
+"it will either be updated or it will refuse this command due to that "
+"conflict, especially if the existing mapping for that port wasn't created "
+"via UPnP or points to a different network address (or device) than this "
+"one.\n"
 "If [code]internal_port[/code] is [code]0[/code] (the default), the same port "
 "number is used for both the external and the internal port (the [code]port[/"
 "code] value).\n"
-"The description ([code]desc[/code]) is shown in some router UIs and can be "
-"used to point out which application added the mapping. The mapping's lease "
-"duration can be limited by specifying a [code]duration[/code] (in seconds). "
-"However, some routers are incompatible with one or both of these, so use "
-"with caution and add fallback logic in case of errors to retry without them "
-"if in doubt.\n"
+"The description ([code]desc[/code]) is shown in some routers management UIs "
+"and can be used to point out which application added the mapping.\n"
+"The mapping's lease [code]duration[/code] can be limited by specifying a "
+"duration in seconds. The default of [code]0[/code] means no duration, i.e. a "
+"permanent lease and notably some devices only support these permanent "
+"leases. Note that whether permanent or not, this is only a request and the "
+"gateway may still decide at any point to remove the mapping (which usually "
+"happens on a reboot of the gateway, when its external IP address changes, or "
+"on some models when it detects a port mapping has become inactive, i.e. had "
+"no traffic for multiple minutes). If not [code]0[/code] (permanent), the "
+"allowed range according to spec is between [code]120[/code] (2 minutes) and "
+"[code]86400[/code] seconds (24 hours).\n"
 "See [enum UPNPResult] for possible return values."
 msgstr ""
 
@@ -66042,8 +66538,10 @@ msgid ""
 "Deletes the port mapping for the given port and protocol combination on the "
 "default gateway (see [method get_gateway]) if one exists. [code]port[/code] "
 "must be a valid port between 1 and 65535, [code]proto[/code] can be either "
-"[code]TCP[/code] or [code]UDP[/code]. See [enum UPNPResult] for possible "
-"return values."
+"[code]TCP[/code] or [code]UDP[/code]. May be refused for mappings pointing "
+"to addresses other than this one, for well-known ports (below 1024), or for "
+"mappings not added via UPnP. See [enum UPNPResult] for possible return "
+"values."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
@@ -66241,16 +66739,16 @@ msgid "Unknown error."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
-msgid "UPNP device."
+msgid "Universal Plug and Play (UPnP) device."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid ""
-"UPNP device. See [UPNP] for UPNP discovery and utility functions. Provides "
-"low-level access to UPNP control commands. Allows to manage port mappings "
-"(port forwarding) and to query network information of the device (like local "
-"and external IP address and status). Note that methods on this class are "
-"synchronous and block the calling thread."
+"Universal Plug and Play (UPnP) device. See [UPNP] for UPnP discovery and "
+"utility functions. Provides low-level access to UPNP control commands. "
+"Allows to manage port mappings (port forwarding) and to query network "
+"information of the device (like local and external IP address and status). "
+"Note that methods on this class are synchronous and block the calling thread."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
@@ -72352,6 +72850,10 @@ msgid "Flag used to mark an index array."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
+msgid "Flag used to mark a compressed (half float) color array."
+msgstr ""
+
+#: doc/classes/VisualServer.xml
 msgid ""
 "Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant "
 "ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant "
@@ -74893,7 +75395,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/WeakRef.xml
-msgid "Returns the [Object] this weakref is referring to."
+msgid ""
+"Returns the [Object] this weakref is referring to. Returns [code]null[/code] "
+"if that object no longer exists."
 msgstr ""
 
 #: modules/webrtc/doc_classes/WebRTCDataChannel.xml

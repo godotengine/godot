@@ -1176,7 +1176,7 @@ Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, Strin
 	return OK;
 }
 
-Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, IncludeCompletionFunction p_include_completion_func) {
+Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, List<ScriptLanguage::CodeCompletionOption> *r_completion_defines, IncludeCompletionFunction p_include_completion_func) {
 	State pp_state;
 	if (!p_filename.is_empty()) {
 		pp_state.current_filename = p_filename;
@@ -1198,6 +1198,13 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 		*r_includes = pp_state.shader_includes;
 	}
 
+	if (r_completion_defines) {
+		for (const KeyValue<String, Define *> &E : state->defines) {
+			ScriptLanguage::CodeCompletionOption option(E.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+			r_completion_defines->push_back(option);
+		}
+	}
+
 	if (r_completion_options) {
 		switch (pp_state.completion_type) {
 			case COMPLETION_TYPE_DIRECTIVE: {
@@ -1212,7 +1219,6 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 			} break;
 			case COMPLETION_TYPE_PRAGMA: {
 				List<String> options;
-
 				ShaderPreprocessor::get_pragma_list(&options);
 
 				for (const String &E : options) {

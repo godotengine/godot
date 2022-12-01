@@ -30,22 +30,18 @@
 
 #include "file_access_unix.h"
 
-#if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
+#if defined(UNIX_ENABLED)
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <errno.h>
-
 #if defined(UNIX_ENABLED)
 #include <unistd.h>
-#endif
-
-#ifndef ANDROID_ENABLED
-#include <sys/statvfs.h>
 #endif
 
 #ifdef MSVC
@@ -56,12 +52,6 @@
 #define S_ISREG(m) ((m)&S_IFREG)
 #endif
 
-#ifndef NO_FCNTL
-#include <fcntl.h>
-#else
-#include <sys/ioctl.h>
-#endif
-
 void FileAccessUnix::check_errors() const {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
@@ -70,7 +60,7 @@ void FileAccessUnix::check_errors() const {
 	}
 }
 
-Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 	_close();
 
 	path_src = p_path;
@@ -96,7 +86,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	   backend (unix-compatible mostly) supports utf8 encoding */
 
 	//printf("opening %s as %s\n", p_path.utf8().get_data(), path.utf8().get_data());
-	struct stat st;
+	struct stat st = {};
 	int err = stat(path.utf8().get_data(), &st);
 	if (!err) {
 		switch (st.st_mode & S_IFMT) {
@@ -131,13 +121,8 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	int fd = fileno(f);
 
 	if (fd != -1) {
-#if defined(NO_FCNTL)
-		unsigned long par = 0;
-		ioctl(fd, FIOCLEX, &par);
-#else
 		int opts = fcntl(fd, F_GETFD);
 		fcntl(fd, F_SETFD, opts | FD_CLOEXEC);
-#endif
 	}
 
 	last_error = OK;
@@ -267,7 +252,7 @@ void FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 
 bool FileAccessUnix::file_exists(const String &p_path) {
 	int err;
-	struct stat st;
+	struct stat st = {};
 	String filename = fix_path(p_path);
 
 	// Does the name exist at all?
@@ -299,7 +284,7 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 
 uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat flags;
+	struct stat flags = {};
 	int err = stat(file.utf8().get_data(), &flags);
 
 	if (!err) {
@@ -312,7 +297,7 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 
 uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat flags;
+	struct stat flags = {};
 	int err = stat(file.utf8().get_data(), &flags);
 
 	if (!err) {
@@ -339,4 +324,4 @@ FileAccessUnix::~FileAccessUnix() {
 	_close();
 }
 
-#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+#endif // UNIX_ENABLED

@@ -44,6 +44,7 @@
 #include "node.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/gui/control.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
@@ -105,10 +106,10 @@ bool SceneTreeTimer::is_ignore_time_scale() {
 }
 
 void SceneTreeTimer::release_connections() {
-	List<Connection> connections;
-	get_all_signal_connections(&connections);
+	List<Connection> signal_connections;
+	get_all_signal_connections(&signal_connections);
 
-	for (const Connection &connection : connections) {
+	for (const Connection &connection : signal_connections) {
 		disconnect(connection.signal.get_name(), connection.callable);
 	}
 }
@@ -207,15 +208,15 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 		return;
 	}
 
-	Node **nodes = g.nodes.ptrw();
-	int node_count = g.nodes.size();
+	Node **gr_nodes = g.nodes.ptrw();
+	int gr_node_count = g.nodes.size();
 
 	if (p_use_priority) {
 		SortArray<Node *, Node::ComparatorWithPriority> node_sort;
-		node_sort.sort(nodes, node_count);
+		node_sort.sort(gr_nodes, gr_node_count);
 	} else {
 		SortArray<Node *, Node::Comparator> node_sort;
-		node_sort.sort(nodes, node_count);
+		node_sort.sort(gr_nodes, gr_node_count);
 	}
 	g.changed = false;
 }
@@ -253,36 +254,36 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = nodes_copy.ptrw();
-	int node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
 
 	call_lock++;
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
-		for (int i = node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = gr_node_count - 1; i >= 0; i--) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
-				nodes[i]->callp(p_function, p_args, p_argcount, ce);
+				gr_nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
-				MessageQueue::get_singleton()->push_callp(nodes[i], p_function, p_args, p_argcount);
+				MessageQueue::get_singleton()->push_callp(gr_nodes[i], p_function, p_args, p_argcount);
 			}
 		}
 
 	} else {
-		for (int i = 0; i < node_count; i++) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = 0; i < gr_node_count; i++) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
-				nodes[i]->callp(p_function, p_args, p_argcount, ce);
+				gr_nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
-				MessageQueue::get_singleton()->push_callp(nodes[i], p_function, p_args, p_argcount);
+				MessageQueue::get_singleton()->push_callp(gr_nodes[i], p_function, p_args, p_argcount);
 			}
 		}
 	}
@@ -306,34 +307,34 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = nodes_copy.ptrw();
-	int node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
 
 	call_lock++;
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
-		for (int i = node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = gr_node_count - 1; i >= 0; i--) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				nodes[i]->notification(p_notification);
+				gr_nodes[i]->notification(p_notification);
 			} else {
-				MessageQueue::get_singleton()->push_notification(nodes[i], p_notification);
+				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
 			}
 		}
 
 	} else {
-		for (int i = 0; i < node_count; i++) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = 0; i < gr_node_count; i++) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				nodes[i]->notification(p_notification);
+				gr_nodes[i]->notification(p_notification);
 			} else {
-				MessageQueue::get_singleton()->push_notification(nodes[i], p_notification);
+				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
 			}
 		}
 	}
@@ -357,34 +358,34 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = nodes_copy.ptrw();
-	int node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
 
 	call_lock++;
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
-		for (int i = node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = gr_node_count - 1; i >= 0; i--) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				nodes[i]->set(p_name, p_value);
+				gr_nodes[i]->set(p_name, p_value);
 			} else {
-				MessageQueue::get_singleton()->push_set(nodes[i], p_name, p_value);
+				MessageQueue::get_singleton()->push_set(gr_nodes[i], p_name, p_value);
 			}
 		}
 
 	} else {
-		for (int i = 0; i < node_count; i++) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = 0; i < gr_node_count; i++) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				nodes[i]->set(p_name, p_value);
+				gr_nodes[i]->set(p_name, p_value);
 			} else {
-				MessageQueue::get_singleton()->push_set(nodes[i], p_name, p_value);
+				MessageQueue::get_singleton()->push_set(gr_nodes[i], p_name, p_value);
 			}
 		}
 	}
@@ -484,7 +485,7 @@ bool SceneTree::process(double p_time) {
 #ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
-		String env_path = ProjectSettings::get_singleton()->get(SNAME("rendering/environment/defaults/default_environment"));
+		String env_path = GLOBAL_GET(SNAME("rendering/environment/defaults/default_environment"));
 		env_path = env_path.strip_edges(); //user may have added a space or two
 		String cpath;
 		Ref<Environment> fallback = get_root()->get_world_3d()->get_fallback_environment();
@@ -510,7 +511,7 @@ bool SceneTree::process(double p_time) {
 	return _quit;
 }
 
-void SceneTree::process_timers(float p_delta, bool p_physics_frame) {
+void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
@@ -542,7 +543,7 @@ void SceneTree::process_timers(float p_delta, bool p_physics_frame) {
 	}
 }
 
-void SceneTree::process_tweens(float p_delta, bool p_physics) {
+void SceneTree::process_tweens(double p_delta, bool p_physics) {
 	// This methods works similarly to how SceneTreeTimers are handled.
 	List<Ref<Tween>>::Element *L = tweens.back();
 
@@ -722,22 +723,6 @@ float SceneTree::get_debug_paths_width() const {
 	return debug_paths_width;
 }
 
-void SceneTree::set_debug_navigation_color(const Color &p_color) {
-	debug_navigation_color = p_color;
-}
-
-Color SceneTree::get_debug_navigation_color() const {
-	return debug_navigation_color;
-}
-
-void SceneTree::set_debug_navigation_disabled_color(const Color &p_color) {
-	debug_navigation_disabled_color = p_color;
-}
-
-Color SceneTree::get_debug_navigation_disabled_color() const {
-	return debug_navigation_disabled_color;
-}
-
 Ref<Material> SceneTree::get_debug_paths_material() {
 	if (debug_paths_material.is_valid()) {
 		return debug_paths_material;
@@ -753,40 +738,6 @@ Ref<Material> SceneTree::get_debug_paths_material() {
 	debug_paths_material = _debug_material;
 
 	return debug_paths_material;
-}
-
-Ref<Material> SceneTree::get_debug_navigation_material() {
-	if (navigation_material.is_valid()) {
-		return navigation_material;
-	}
-
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_albedo(get_debug_navigation_color());
-
-	navigation_material = line_material;
-
-	return navigation_material;
-}
-
-Ref<Material> SceneTree::get_debug_navigation_disabled_material() {
-	if (navigation_disabled_material.is_valid()) {
-		return navigation_disabled_material;
-	}
-
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_albedo(get_debug_navigation_disabled_color());
-
-	navigation_disabled_material = line_material;
-
-	return navigation_disabled_material;
 }
 
 Ref<Material> SceneTree::get_debug_collision_material() {
@@ -896,13 +847,13 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 	//performance is not lost because only if something is added/removed the vector is copied.
 	Vector<Node *> nodes_copy = g.nodes;
 
-	int node_count = nodes_copy.size();
-	Node **nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
 
 	call_lock++;
 
-	for (int i = 0; i < node_count; i++) {
-		Node *n = nodes[i];
+	for (int i = 0; i < gr_node_count; i++) {
+		Node *n = gr_nodes[i];
 		if (call_lock && call_skip.has(n)) {
 			continue;
 		}
@@ -915,7 +866,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 		}
 
 		n->notification(p_notification);
-		//ERR_FAIL_COND(node_count != g.nodes.size());
+		//ERR_FAIL_COND(gr_node_count != g.nodes.size());
 	}
 
 	call_lock--;
@@ -940,17 +891,19 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	//performance is not lost because only if something is added/removed the vector is copied.
 	Vector<Node *> nodes_copy = g.nodes;
 
-	int node_count = nodes_copy.size();
-	Node **nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
 
 	call_lock++;
 
-	for (int i = node_count - 1; i >= 0; i--) {
+	Vector<ObjectID> no_context_node_ids; // Nodes may be deleted due to this shortcut input.
+
+	for (int i = gr_node_count - 1; i >= 0; i--) {
 		if (p_viewport->is_input_handled()) {
 			break;
 		}
 
-		Node *n = nodes[i];
+		Node *n = gr_nodes[i];
 		if (call_lock && call_skip.has(n)) {
 			continue;
 		}
@@ -963,15 +916,35 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 			case CALL_INPUT_TYPE_INPUT:
 				n->_call_input(p_input);
 				break;
-			case CALL_INPUT_TYPE_SHORTCUT_INPUT:
+			case CALL_INPUT_TYPE_SHORTCUT_INPUT: {
+				const Control *c = Object::cast_to<Control>(n);
+				if (c) {
+					// If calling shortcut input on a control, ensure it respects the shortcut context.
+					// Shortcut context (based on focus) only makes sense for controls (UI), so don't need to worry about it for nodes
+					if (c->get_shortcut_context() == nullptr) {
+						no_context_node_ids.append(n->get_instance_id());
+						continue;
+					}
+					if (!c->is_focus_owner_in_shortcut_context()) {
+						continue;
+					}
+				}
 				n->_call_shortcut_input(p_input);
 				break;
+			}
 			case CALL_INPUT_TYPE_UNHANDLED_INPUT:
 				n->_call_unhandled_input(p_input);
 				break;
 			case CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT:
 				n->_call_unhandled_key_input(p_input);
 				break;
+		}
+	}
+
+	for (const ObjectID &id : no_context_node_ids) {
+		Node *n = Object::cast_to<Node>(ObjectDB::get_instance(id));
+		if (n) {
+			n->_call_shortcut_input(p_input);
 		}
 	}
 
@@ -1135,19 +1108,20 @@ void SceneTree::_change_scene(Node *p_to) {
 	if (p_to) {
 		current_scene = p_to;
 		root->add_child(p_to);
+		root->update_mouse_cursor_shape();
 	}
 }
 
-Error SceneTree::change_scene(const String &p_path) {
+Error SceneTree::change_scene_to_file(const String &p_path) {
 	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
 	if (new_scene.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
-	return change_scene_to(new_scene);
+	return change_scene_to_packed(new_scene);
 }
 
-Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
+Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = nullptr;
 	if (p_scene.is_valid()) {
 		new_scene = p_scene->instantiate();
@@ -1161,7 +1135,7 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
 	String fname = current_scene->get_scene_file_path();
-	return change_scene(fname);
+	return change_scene_to_file(fname);
 }
 
 void SceneTree::add_current_scene(Node *p_current) {
@@ -1310,8 +1284,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_scene", "child_node"), &SceneTree::set_current_scene);
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);
 
-	ClassDB::bind_method(D_METHOD("change_scene", "path"), &SceneTree::change_scene);
-	ClassDB::bind_method(D_METHOD("change_scene_to", "packed_scene"), &SceneTree::change_scene_to);
+	ClassDB::bind_method(D_METHOD("change_scene_to_file", "path"), &SceneTree::change_scene_to_file);
+	ClassDB::bind_method(D_METHOD("change_scene_to_packed", "packed_scene"), &SceneTree::change_scene_to_packed);
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
 
@@ -1366,7 +1340,7 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 }
 
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	if (p_function == "change_scene") {
+	if (p_function == "change_scene_to_file") {
 		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		List<String> directories;
 		directories.push_back(dir_access->get_current_dir());
@@ -1404,8 +1378,6 @@ SceneTree::SceneTree() {
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
 	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
 	debug_paths_width = GLOBAL_DEF("debug/shapes/paths/geometry_width", 2.0);
-	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
-	debug_navigation_disabled_color = GLOBAL_DEF("debug/shapes/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
 	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/shapes/collision/max_contacts_displayed", PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1")); // No negative
 
@@ -1418,7 +1390,7 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
 	root->set_name("root");
-	root->set_title(ProjectSettings::get_singleton()->get("application/config/name"));
+	root->set_title(GLOBAL_GET("application/config/name"));
 
 #ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {
@@ -1440,6 +1412,9 @@ SceneTree::SceneTree() {
 	const int msaa_mode_3d = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/msaa_3d", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa_3d", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
 	root->set_msaa_3d(Viewport::MSAA(msaa_mode_3d));
+
+	const bool transparent_background = GLOBAL_DEF("rendering/transparent_background", false);
+	root->set_transparent_background(transparent_background);
 
 	const int ssaa_mode = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/screen_space_aa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/screen_space_aa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
@@ -1472,7 +1447,7 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vrs/texture",
 			PropertyInfo(Variant::STRING,
 					"rendering/vrs/texture",
-					PROPERTY_HINT_FILE, "*.png"));
+					PROPERTY_HINT_FILE, "*.bmp,*.png,*.tga,*.webp"));
 	if (vrs_mode == 1 && !vrs_texture_path.is_empty()) {
 		Ref<Image> vrs_image;
 		vrs_image.instantiate();

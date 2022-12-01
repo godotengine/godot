@@ -57,7 +57,7 @@ env.modules_sources += thirdparty_obj
 module_obj = []
 
 env_navigation.add_source_files(module_obj, "*.cpp")
-if env["tools"]:
+if env.editor_build:
     env_navigation.add_source_files(module_obj, "editor/*.cpp")
 env.modules_sources += module_obj
 

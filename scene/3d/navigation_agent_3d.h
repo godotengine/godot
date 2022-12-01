@@ -34,6 +34,8 @@
 #include "scene/main/node.h"
 
 class Node3D;
+class NavigationPathQueryParameters3D;
+class NavigationPathQueryResult3D;
 
 class NavigationAgent3D : public Node {
 	GDCLASS(NavigationAgent3D, Node);
@@ -60,7 +62,8 @@ class NavigationAgent3D : public Node {
 	real_t path_max_distance = 3.0;
 
 	Vector3 target_location;
-	Vector<Vector3> navigation_path;
+	Ref<NavigationPathQueryParameters3D> navigation_query;
+	Ref<NavigationPathQueryResult3D> navigation_result;
 	int nav_path_index = 0;
 	bool velocity_submitted = false;
 	Vector3 prev_safe_velocity;
@@ -150,9 +153,7 @@ public:
 
 	Vector3 get_next_location();
 
-	Vector<Vector3> get_nav_path() const {
-		return navigation_path;
-	}
+	const Vector<Vector3> &get_nav_path() const;
 
 	int get_nav_path_index() const {
 		return nav_path_index;
@@ -167,7 +168,7 @@ public:
 	void set_velocity(Vector3 p_velocity);
 	void _avoidance_done(Vector3 p_new_velocity);
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 private:
 	void update_navigation();

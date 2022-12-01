@@ -48,5 +48,7 @@ public interface GodotRenderView {
 
 	GodotInputHandler getInputHandler();
 
+	void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY);
+
 	void setPointerIcon(int pointerType);
 }

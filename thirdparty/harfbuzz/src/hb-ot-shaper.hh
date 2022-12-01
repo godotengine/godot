@@ -380,6 +380,10 @@ hb_ot_shaper_categorize (const hb_ot_shape_planner_t *planner)
     case HB_SCRIPT_TOTO:
     case HB_SCRIPT_VITHKUQI:
 
+    /* Unicode-15.0 additions */
+    case HB_SCRIPT_KAWI:
+    case HB_SCRIPT_NAG_MUNDARI:
+
       /* If the designer designed the font for the 'DFLT' script,
        * (or we ended up arbitrarily pick 'latn'), use the default shaper.
        * Otherwise, use the specific shaper.

@@ -31,12 +31,14 @@
 #include "connections_dialog.h"
 
 #include "editor/doc_tools.h"
+#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
+#include "scene/resources/packed_scene.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -160,6 +162,9 @@ void ConnectDialog::_tree_node_selected() {
 	}
 
 	dst_path = source->get_path_to(current);
+	if (!edit_mode) {
+		set_dst_method(generate_method_callback_name(source, signal, current));
+	}
 	_update_ok_enabled();
 }
 
@@ -184,8 +189,8 @@ void ConnectDialog::_add_bind() {
 	Variant::Type type = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
 	Variant value;
-	Callable::CallError error;
-	Variant::construct(type, value, nullptr, 0, error);
+	Callable::CallError err;
+	Variant::construct(type, value, nullptr, 0, err);
 
 	cdbinds->params.push_back(value);
 	cdbinds->notify_changed();
@@ -204,6 +209,45 @@ void ConnectDialog::_remove_bind() {
 	ERR_FAIL_INDEX(idx, cdbinds->params.size());
 	cdbinds->params.remove_at(idx);
 	cdbinds->notify_changed();
+}
+/*
+ * Automatically generates a name for the callback method.
+ */
+StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target) {
+	String node_name = p_source->get_name();
+	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
+		char32_t c = node_name[i];
+		if (!is_ascii_identifier_char(c)) {
+			if (c == ' ') {
+				// Replace spaces with underlines.
+				c = '_';
+			} else {
+				// Remove any other characters.
+				node_name.remove_at(i);
+				i--;
+				continue;
+			}
+		}
+		node_name[i] = c;
+	}
+
+	Dictionary subst;
+	subst["NodeName"] = node_name.to_pascal_case();
+	subst["nodeName"] = node_name.to_camel_case();
+	subst["node_name"] = node_name.to_snake_case();
+
+	subst["SignalName"] = p_signal_name.to_pascal_case();
+	subst["signalName"] = p_signal_name.to_camel_case();
+	subst["signal_name"] = p_signal_name.to_snake_case();
+
+	String dst_method;
+	if (p_source == p_target) {
+		dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_to_self_name")).format(subst);
+	} else {
+		dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_name")).format(subst);
+	}
+
+	return dst_method;
 }
 
 /*
@@ -237,6 +281,12 @@ void ConnectDialog::_notification(int p_what) {
 			for (int i = 0; i < type_list->get_item_count(); i++) {
 				String type_name = Variant::get_type_name((Variant::Type)type_list->get_item_id(i));
 				type_list->set_item_icon(i, get_theme_icon(type_name, SNAME("EditorIcons")));
+			}
+
+			Ref<StyleBox> style = get_theme_stylebox("normal", "LineEdit")->duplicate();
+			if (style.is_valid()) {
+				style->set_default_margin(SIDE_TOP, style->get_default_margin(SIDE_TOP) + 1.0);
+				from_signal->add_theme_style_override("normal", style);
 			}
 		} break;
 	}
@@ -289,8 +339,8 @@ bool ConnectDialog::get_deferred() const {
 	return deferred->is_pressed();
 }
 
-bool ConnectDialog::get_oneshot() const {
-	return oneshot->is_pressed();
+bool ConnectDialog::get_one_shot() const {
+	return one_shot->is_pressed();
 }
 
 /*
@@ -322,10 +372,10 @@ void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
 	_update_ok_enabled();
 
 	bool b_deferred = (p_cd.flags & CONNECT_DEFERRED) == CONNECT_DEFERRED;
-	bool b_oneshot = (p_cd.flags & CONNECT_ONESHOT) == CONNECT_ONESHOT;
+	bool b_oneshot = (p_cd.flags & CONNECT_ONE_SHOT) == CONNECT_ONE_SHOT;
 
 	deferred->set_pressed(b_deferred);
-	oneshot->set_pressed(b_oneshot);
+	one_shot->set_pressed(b_oneshot);
 
 	MethodInfo r_signal;
 	Ref<Script> source_script = source->get_script();
@@ -361,6 +411,11 @@ void ConnectDialog::popup_dialog(const String &p_for_signal) {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
 
+	if (first_popup) {
+		first_popup = false;
+		_advanced_pressed();
+	}
+
 	popup_centered();
 }
 
@@ -383,6 +438,7 @@ void ConnectDialog::_advanced_pressed() {
 	}
 
 	_update_ok_enabled();
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "use_advanced_connections", advanced->is_pressed());
 
 	popup_centered();
 }
@@ -465,30 +521,32 @@ ConnectDialog::ConnectDialog() {
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
 
-	HBoxContainer *dstm_hb = memnew(HBoxContainer);
-	vbc_left->add_margin_child(TTR("Receiver Method:"), dstm_hb);
-
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dst_method->connect("text_submitted", callable_mp(this, &ConnectDialog::_text_submitted));
-	dstm_hb->add_child(dst_method);
+	vbc_left->add_margin_child(TTR("Receiver Method:"), dst_method);
 
 	advanced = memnew(CheckButton);
-	dstm_hb->add_child(advanced);
+	vbc_left->add_child(advanced);
 	advanced->set_text(TTR("Advanced"));
+	advanced->set_h_size_flags(Control::SIZE_SHRINK_BEGIN | Control::SIZE_EXPAND);
+	advanced->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "use_advanced_connections", false));
 	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	vbc_right->add_child(hbox);
 
 	deferred = memnew(CheckBox);
 	deferred->set_h_size_flags(0);
 	deferred->set_text(TTR("Deferred"));
 	deferred->set_tooltip_text(TTR("Defers the signal, storing it in a queue and only firing it at idle time."));
-	vbc_right->add_child(deferred);
+	hbox->add_child(deferred);
 
-	oneshot = memnew(CheckBox);
-	oneshot->set_h_size_flags(0);
-	oneshot->set_text(TTR("Oneshot"));
-	oneshot->set_tooltip_text(TTR("Disconnects the signal after its first emission."));
-	vbc_right->add_child(oneshot);
+	one_shot = memnew(CheckBox);
+	one_shot->set_h_size_flags(0);
+	one_shot->set_text(TTR("One Shot"));
+	one_shot->set_tooltip_text(TTR("Disconnects the signal after its first emission."));
+	hbox->add_child(one_shot);
 
 	cdbinds = memnew(ConnectDialogBinds);
 
@@ -564,25 +622,25 @@ void ConnectionsDock::_make_or_edit_connection() {
 		cd.binds = connect_dialog->get_binds();
 	}
 	bool b_deferred = connect_dialog->get_deferred();
-	bool b_oneshot = connect_dialog->get_oneshot();
-	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONESHOT : 0);
+	bool b_oneshot = connect_dialog->get_one_shot();
+	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0);
 
 	// Conditions to add function: must have a script and must not have the method already
 	// (in the class, the script itself, or inherited).
 	bool add_script_function = false;
-	Ref<Script> script = target->get_script();
-	if (!target->get_script().is_null() && !ClassDB::has_method(target->get_class(), cd.method)) {
+	Ref<Script> scr = target->get_script();
+	if (!scr.is_null() && !ClassDB::has_method(target->get_class(), cd.method)) {
 		// There is a chance that the method is inherited from another script.
 		bool found_inherited_function = false;
-		Ref<Script> inherited_script = script->get_base_script();
-		while (!inherited_script.is_null()) {
-			int line = inherited_script->get_language()->find_function(cd.method, inherited_script->get_source_code());
+		Ref<Script> inherited_scr = scr->get_base_script();
+		while (!inherited_scr.is_null()) {
+			int line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
 			if (line != -1) {
 				found_inherited_function = true;
 				break;
 			}
 
-			inherited_script = inherited_script->get_base_script();
+			inherited_scr = inherited_scr->get_base_script();
 		}
 
 		add_script_function = !found_inherited_function;
@@ -627,6 +685,7 @@ void ConnectionsDock::_connect(ConnectDialog::ConnectionData p_cd) {
 	}
 
 	Callable callable = p_cd.get_callable();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"), String(p_cd.signal), String(p_cd.method)));
 	undo_redo->add_do_method(source, "connect", p_cd.signal, callable, p_cd.flags);
 	undo_redo->add_undo_method(source, "disconnect", p_cd.signal, callable);
@@ -647,6 +706,7 @@ void ConnectionsDock::_disconnect(TreeItem &p_item) {
 
 	ERR_FAIL_COND(cd.source != selected_node); // Shouldn't happen but... Bugcheck.
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(vformat(TTR("Disconnect '%s' from '%s'"), cd.signal, cd.method));
 
 	Callable callable = cd.get_callable();
@@ -673,13 +733,16 @@ void ConnectionsDock::_disconnect_all() {
 
 	TreeItem *child = item->get_first_child();
 	String signal_name = item->get_metadata(0).operator Dictionary()["name"];
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(vformat(TTR("Disconnect all from signal: '%s'"), signal_name));
 
 	while (child) {
 		Connection connection = child->get_metadata(0);
-		ConnectDialog::ConnectionData cd = connection;
-		undo_redo->add_do_method(selected_node, "disconnect", cd.signal, cd.get_callable());
-		undo_redo->add_undo_method(selected_node, "connect", cd.signal, cd.get_callable(), cd.binds, cd.flags);
+		if (!_is_connection_inherited(connection)) {
+			ConnectDialog::ConnectionData cd = connection;
+			undo_redo->add_do_method(selected_node, "disconnect", cd.signal, cd.get_callable());
+			undo_redo->add_undo_method(selected_node, "connect", cd.signal, cd.get_callable(), cd.binds, cd.flags);
+		}
 		child = child->get_next();
 	}
 
@@ -724,49 +787,43 @@ bool ConnectionsDock::_is_item_signal(TreeItem &p_item) {
 	return (p_item.get_parent() == tree->get_root() || p_item.get_parent()->get_parent() == tree->get_root());
 }
 
+bool ConnectionsDock::_is_connection_inherited(Connection &p_connection) {
+	Node *scene_root = EditorNode::get_singleton()->get_edited_scene();
+	Ref<PackedScene> scn = ResourceLoader::load(scene_root->get_scene_file_path());
+	ERR_FAIL_NULL_V(scn, false);
+
+	Ref<SceneState> state = scn->get_state();
+	ERR_FAIL_NULL_V(state, false);
+
+	Node *source = Object::cast_to<Node>(p_connection.signal.get_object());
+	Node *target = Object::cast_to<Node>(p_connection.callable.get_object());
+
+	const NodePath source_path = scene_root->get_path_to(source);
+	const NodePath target_path = scene_root->get_path_to(target);
+	const StringName signal_name = p_connection.signal.get_name();
+	const StringName method_name = p_connection.callable.get_method();
+
+	// If it cannot be found in PackedScene, this connection was inherited.
+	return !state->has_connection(source_path, signal_name, target_path, method_name, true);
+}
+
 /*
  * Open connection dialog with TreeItem data to CREATE a brand-new connection.
  */
 void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	String signal_name = p_item.get_metadata(0).operator Dictionary()["name"];
 	const String &signal_name_ref = signal_name;
-	String node_name = selected_node->get_name();
-	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
-		char32_t c = node_name[i];
-		if (!is_ascii_identifier_char(c)) {
-			if (c == ' ') {
-				// Replace spaces with underlines.
-				c = '_';
-			} else {
-				// Remove any other characters.
-				node_name.remove_at(i);
-				i--;
-				continue;
-			}
-		}
-		node_name[i] = c;
-	}
 
 	Node *dst_node = selected_node->get_owner() ? selected_node->get_owner() : selected_node;
 	if (!dst_node || dst_node->get_script().is_null()) {
 		dst_node = _find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root());
 	}
 
-	Dictionary subst;
-	subst["NodeName"] = node_name.to_pascal_case();
-	subst["nodeName"] = node_name.to_camel_case();
-	subst["node_name"] = node_name.to_snake_case();
-	subst["SignalName"] = signal_name.to_pascal_case();
-	subst["signalName"] = signal_name.to_camel_case();
-	subst["signal_name"] = signal_name.to_snake_case();
-
-	String dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_name")).format(subst);
-
 	ConnectDialog::ConnectionData cd;
 	cd.source = selected_node;
 	cd.signal = StringName(signal_name_ref);
 	cd.target = dst_node;
-	cd.method = StringName(dst_method);
+	cd.method = ConnectDialog::generate_method_callback_name(cd.source, signal_name, cd.target);
 	connect_dialog->popup_dialog(signal_name_ref);
 	connect_dialog->init(cd);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
@@ -803,14 +860,14 @@ void ConnectionsDock::_go_to_script(TreeItem &p_item) {
 		return;
 	}
 
-	Ref<Script> script = cd.target->get_script();
+	Ref<Script> scr = cd.target->get_script();
 
-	if (script.is_null()) {
+	if (scr.is_null()) {
 		return;
 	}
 
-	if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, cd.method)) {
-		EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+	if (scr.is_valid() && ScriptEditor::get_singleton()->script_goto_method(scr, cd.method)) {
+		EditorNode::get_singleton()->editor_select(EditorNode::EDITOR_SCRIPT);
 	}
 }
 
@@ -836,6 +893,19 @@ void ConnectionsDock::_handle_signal_menu_option(int p_option) {
 	}
 }
 
+void ConnectionsDock::_signal_menu_about_to_popup() {
+	TreeItem *signal_item = tree->get_selected();
+
+	bool disable_disconnect_all = true;
+	for (int i = 0; i < signal_item->get_child_count(); i++) {
+		if (!signal_item->get_child(i)->has_meta("_inherited_connection")) {
+			disable_disconnect_all = false;
+		}
+	}
+
+	signal_menu->set_item_disabled(slot_menu->get_item_index(DISCONNECT_ALL), disable_disconnect_all);
+}
+
 void ConnectionsDock::_handle_slot_menu_option(int p_option) {
 	TreeItem *item = tree->get_selected();
 
@@ -856,6 +926,13 @@ void ConnectionsDock::_handle_slot_menu_option(int p_option) {
 			update_tree();
 		} break;
 	}
+}
+
+void ConnectionsDock::_slot_menu_about_to_popup() {
+	bool connection_is_inherited = tree->get_selected()->has_meta("_inherited_connection");
+
+	slot_menu->set_item_disabled(slot_menu->get_item_index(EDIT), connection_is_inherited);
+	slot_menu->set_item_disabled(slot_menu->get_item_index(DISCONNECT), connection_is_inherited);
 }
 
 void ConnectionsDock::_rmb_pressed(Vector2 p_position, MouseButton p_button) {
@@ -918,10 +995,6 @@ void ConnectionsDock::_bind_methods() {
 	ClassDB::bind_method("update_tree", &ConnectionsDock::update_tree);
 }
 
-void ConnectionsDock::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
-}
-
 void ConnectionsDock::set_node(Node *p_node) {
 	selected_node = p_node;
 	update_tree();
@@ -971,7 +1044,7 @@ void ConnectionsDock::update_tree() {
 			name = base;
 		}
 
-		if (!icon.is_valid()) {
+		if (icon.is_null()) {
 			icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 		}
 
@@ -1064,10 +1137,10 @@ void ConnectionsDock::update_tree() {
 			}
 
 			// List existing connections.
-			List<Object::Connection> connections;
-			selected_node->get_signal_connection_list(signal_name, &connections);
+			List<Object::Connection> existing_connections;
+			selected_node->get_signal_connection_list(signal_name, &existing_connections);
 
-			for (const Object::Connection &F : connections) {
+			for (const Object::Connection &F : existing_connections) {
 				Connection connection = F;
 				if (!(connection.flags & CONNECT_PERSIST)) {
 					continue;
@@ -1083,8 +1156,8 @@ void ConnectionsDock::update_tree() {
 				if (cd.flags & CONNECT_DEFERRED) {
 					path += " (deferred)";
 				}
-				if (cd.flags & CONNECT_ONESHOT) {
-					path += " (oneshot)";
+				if (cd.flags & CONNECT_ONE_SHOT) {
+					path += " (one-shot)";
 				}
 				if (cd.unbinds > 0) {
 					path += " unbinds(" + itos(cd.unbinds) + ")";
@@ -1103,6 +1176,12 @@ void ConnectionsDock::update_tree() {
 				connection_item->set_text(0, path);
 				connection_item->set_metadata(0, connection);
 				connection_item->set_icon(0, get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
+
+				if (_is_connection_inherited(connection)) {
+					// The scene inherits this connection.
+					connection_item->set_custom_color(0, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+					connection_item->set_meta("_inherited_connection", true);
+				}
 			}
 		}
 
@@ -1155,6 +1234,7 @@ ConnectionsDock::ConnectionsDock() {
 	signal_menu = memnew(PopupMenu);
 	add_child(signal_menu);
 	signal_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_signal_menu_option));
+	signal_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_signal_menu_about_to_popup));
 	signal_menu->add_item(TTR("Connect..."), CONNECT);
 	signal_menu->add_item(TTR("Disconnect All"), DISCONNECT_ALL);
 	signal_menu->add_item(TTR("Copy Name"), COPY_NAME);
@@ -1162,6 +1242,7 @@ ConnectionsDock::ConnectionsDock() {
 	slot_menu = memnew(PopupMenu);
 	add_child(slot_menu);
 	slot_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_slot_menu_option));
+	slot_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_slot_menu_about_to_popup));
 	slot_menu->add_item(TTR("Edit..."), EDIT);
 	slot_menu->add_item(TTR("Go to Method"), GO_TO_SCRIPT);
 	slot_menu->add_item(TTR("Disconnect"), DISCONNECT);
@@ -1174,6 +1255,7 @@ ConnectionsDock::ConnectionsDock() {
 	add_theme_constant_override("separation", 3 * EDSCALE);
 
 	EDITOR_DEF("interface/editors/default_signal_callback_name", "_on_{node_name}_{signal_name}");
+	EDITOR_DEF("interface/editors/default_signal_callback_to_self_name", "_on_{signal_name}");
 }
 
 ConnectionsDock::~ConnectionsDock() {

@@ -15,6 +15,7 @@ SCsub                               @godotengine/buildsystem
 /core/                              @godotengine/core
 /core/crypto/                       @godotengine/network
 /core/debugger/                     @godotengine/debugger
+/core/extension/                    @godotengine/gdextension
 /core/input/                        @godotengine/input
 
 # Doc
@@ -36,6 +37,7 @@ doc_classes/*                       @godotengine/documentation
 
 ## Rendering
 /drivers/dummy/                     @godotengine/rendering
+/drivers/gles3/                     @godotengine/rendering
 /drivers/spirv-reflect/             @godotengine/rendering
 /drivers/vulkan/                    @godotengine/rendering
 
@@ -110,11 +112,9 @@ doc_classes/*                       @godotengine/documentation
 /modules/xatlas_unwrap/             @godotengine/rendering
 
 ## Scripting
-/modules/gdnative/                  @godotengine/gdnative
 /modules/gdscript/                  @godotengine/gdscript
 /modules/jsonrpc/                   @godotengine/gdscript
-/modules/mono/                      @godotengine/mono
-/modules/visual_script/             @godotengine/visualscript
+/modules/mono/                      @godotengine/dotnet
 
 ## Text
 /modules/freetype/                  @godotengine/buildsystem

@@ -50,6 +50,7 @@
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
 		</member>
 		<member name="label_settings" type="LabelSettings" setter="set_label_settings" getter="get_label_settings">
+			A [LabelSettings] resource that can be shared between multiple [Label] nodes. Takes priority over theme properties.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -100,7 +101,7 @@
 			Default text [Color] of the [Label].
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			The tint of text outline.
+			The color of text outline.
 		</theme_item>
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			[Color] of the text's shadow effect.

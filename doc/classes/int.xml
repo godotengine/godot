@@ -54,6 +54,13 @@
 		</constructor>
 		<constructor name="int">
 			<return type="int" />
+			<param index="0" name="from" type="String" />
+			<description>
+				Converts a [String] to an [int], following the same rules as [method String.to_int].
+			</description>
+		</constructor>
+		<constructor name="int">
+			<return type="int" />
 			<param index="0" name="from" type="bool" />
 			<description>
 				Cast a [bool] value to an integer value, [code]int(true)[/code] will be equals to 1 and [code]int(false)[/code] will be equals to 0.
@@ -72,14 +79,14 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] if operands are different from each other.
+				Returns [code]true[/code] if this [int] is not equivalent to the given [float].
 			</description>
 		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] if operands are different from each other.
+				Returns [code]true[/code] if the integers are not equal.
 			</description>
 		</operator>
 		<operator name="operator %">
@@ -161,12 +168,14 @@
 			<return type="Vector4" />
 			<param index="0" name="right" type="Vector4" />
 			<description>
+				Multiplies each component of the [Vector4] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector4i" />
 			<param index="0" name="right" type="Vector4i" />
 			<description>
+				Multiplies each component of the [Vector4i] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -187,19 +196,20 @@
 			<return type="float" />
 			<param index="0" name="right" type="float" />
 			<description>
+				Raises an [int] to a power of a [float]. The result is a [float].
+				[codeblock]
+				print(8**0.25) # 1.68179283050743
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator **">
 			<return type="int" />
 			<param index="0" name="right" type="int" />
 			<description>
-			</description>
-		</operator>
-		<operator name="operator +">
-			<return type="String" />
-			<param index="0" name="right" type="String" />
-			<description>
-				Adds Unicode character with code [int] to the [String].
+				Raises an [int] to a power of a [int].
+				[codeblock]
+				print(5**5) # 3125
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator +">
@@ -262,7 +272,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] the left integer is less than the right one.
+				Returns [code]true[/code] if the left integer is less than the right one.
 			</description>
 		</operator>
 		<operator name="operator &lt;&lt;">
@@ -287,7 +297,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] the left integer is less than or equal to the right one.
+				Returns [code]true[/code] if the left integer is less than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -315,7 +325,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] the left integer is greater than the right one.
+				Returns [code]true[/code] if the left integer is greater than the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
@@ -329,7 +339,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Returns [code]true[/code] the left integer is greater than or equal to the right one.
+				Returns [code]true[/code] if the left integer is greater than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;&gt;">

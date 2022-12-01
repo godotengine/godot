@@ -2,6 +2,11 @@ import os
 import sys
 from methods import detect_darwin_sdk_path
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 
 def is_active():
     return True
@@ -37,12 +42,12 @@ def get_opts():
 def get_flags():
     return [
         ("arch", "arm64"),  # Default for convenience.
-        ("tools", False),
+        ("target", "template_debug"),
         ("use_volk", False),
     ]
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:
@@ -52,27 +57,18 @@ def configure(env):
         )
         sys.exit()
 
-    ## Build type
+    ## LTO
 
-    if env["target"].startswith("release"):
-        env.Append(CPPDEFINES=["NDEBUG", ("NS_BLOCK_ASSERTIONS", 1)])
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
-            # when using `target=release_debug`.
-            opt = "-O3" if env["target"] == "release" else "-O2"
-            env.Append(CCFLAGS=[opt, "-ftree-vectorize", "-fomit-frame-pointer"])
-            env.Append(LINKFLAGS=[opt])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["-Os", "-ftree-vectorize"])
-            env.Append(LINKFLAGS=["-Os"])
+    if env["lto"] == "auto":  # Disable by default as it makes linking in Xcode very slow.
+        env["lto"] = "none"
 
-    elif env["target"] == "debug":
-        env.Append(CCFLAGS=["-gdwarf-2", "-O0"])
-        env.Append(CPPDEFINES=["_DEBUG", ("DEBUG", 1)])
-
-    if env["use_lto"]:
-        env.Append(CCFLAGS=["-flto"])
-        env.Append(LINKFLAGS=["-flto"])
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            env.Append(CCFLAGS=["-flto=thin"])
+            env.Append(LINKFLAGS=["-flto=thin"])
+        else:
+            env.Append(CCFLAGS=["-flto"])
+            env.Append(LINKFLAGS=["-flto"])
 
     ## Compiler configuration
 
@@ -112,6 +108,10 @@ def configure(env):
         env.Append(CCFLAGS=["-miphoneos-version-min=11.0"])
 
     if env["arch"] == "x86_64":
+        if not env["ios_simulator"]:
+            print("ERROR: Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
+            sys.exit(255)
+
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
         env.Append(
             CCFLAGS=(
@@ -133,12 +133,10 @@ def configure(env):
         env.Append(ASFLAGS=["-arch", "arm64"])
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
 
-    # Disable exceptions on non-tools (template) builds
-    if not env["tools"]:
-        if env["ios_exceptions"]:
-            env.Append(CCFLAGS=["-fexceptions"])
-        else:
-            env.Append(CCFLAGS=["-fno-exceptions"])
+    if env["ios_exceptions"]:
+        env.Append(CCFLAGS=["-fexceptions"])
+    else:
+        env.Append(CCFLAGS=["-fno-exceptions"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])

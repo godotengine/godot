@@ -32,33 +32,34 @@
 #define EDITOR_PLUGIN_H
 
 #include "core/io/config_file.h"
-#include "core/object/undo_redo.h"
-#include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_translation_parser.h"
-#include "editor/import/editor_import_plugin.h"
-#include "editor/import/resource_importer_scene.h"
-#include "editor/script_create_dialog.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/main/node.h"
-#include "scene/resources/texture.h"
+#include "scene/gui/control.h"
 
 class Node3D;
-class Camera3D;
+class Button;
+class PopupMenu;
 class EditorCommandPalette;
-class EditorSelection;
+class EditorDebuggerPlugin;
 class EditorExport;
-class EditorSettings;
-class EditorImportPlugin;
 class EditorExportPlugin;
-class EditorNode3DGizmoPlugin;
-class EditorResourcePreview;
-class EditorUndoRedoManager;
 class EditorFileSystem;
-class EditorToolAddons;
+class EditorImportPlugin;
+class EditorInspector;
+class EditorInspectorPlugin;
+class EditorNode3DGizmoPlugin;
 class EditorPaths;
+class EditorResourcePreview;
+class EditorSceneFormatImporter;
+class EditorScenePostImportPlugin;
+class EditorSelection;
+class EditorSettings;
+class EditorToolAddons;
+class EditorTranslationParserPlugin;
+class EditorUndoRedoManager;
 class FileSystemDock;
+class ScriptCreateDialog;
 class ScriptEditor;
+class VBoxContainer;
 
 class EditorInterface : public Node {
 	GDCLASS(EditorInterface, Node);
@@ -72,7 +73,7 @@ protected:
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
-	Control *get_editor_main_control();
+	VBoxContainer *get_editor_main_screen();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);
 	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
@@ -93,8 +94,9 @@ public:
 	EditorCommandPalette *get_command_palette() const;
 
 	void select_file(const String &p_file);
-	String get_selected_path() const;
+	Vector<String> get_selected_paths() const;
 	String get_current_path() const;
+	String get_current_directory() const;
 
 	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
 
@@ -112,6 +114,9 @@ public:
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
+
+	void set_movie_maker_enabled(bool p_enabled);
+	bool is_movie_maker_enabled() const;
 
 	EditorInspector *get_inspector() const;
 
@@ -131,7 +136,6 @@ public:
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;
@@ -204,7 +208,7 @@ public:
 	enum AfterGUIInput {
 		AFTER_GUI_INPUT_PASS,
 		AFTER_GUI_INPUT_STOP,
-		AFTER_GUI_INPUT_DESELECT
+		AFTER_GUI_INPUT_CUSTOM
 	};
 
 	//TODO: send a resource for editing to the editor node?
@@ -237,9 +241,9 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay);
 
-	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
-	virtual void forward_spatial_draw_over_viewport(Control *p_overlay);
-	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay);
+	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
+	virtual void forward_3d_draw_over_viewport(Control *p_overlay);
+	virtual void forward_3d_force_draw_over_viewport(Control *p_overlay);
 
 	virtual String get_name() const;
 	virtual const Ref<Texture2D> get_icon() const;
@@ -285,8 +289,8 @@ public:
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 
-	void add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
-	void remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
+	void add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
+	void remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
@@ -300,8 +304,8 @@ public:
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
 
-	void add_debugger_plugin(const Ref<Script> &p_script);
-	void remove_debugger_plugin(const Ref<Script> &p_script);
+	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 
 	void enable_plugin();
 	void disable_plugin();
@@ -312,12 +316,13 @@ public:
 
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
 VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
+VARIANT_ENUM_CAST(EditorPlugin::AfterGUIInput);
 
 typedef EditorPlugin *(*EditorPluginCreateFunc)();
 
 class EditorPlugins {
 	enum {
-		MAX_CREATE_FUNCS = 64
+		MAX_CREATE_FUNCS = 128
 	};
 
 	static EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];

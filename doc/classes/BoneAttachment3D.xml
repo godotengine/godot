@@ -16,10 +16,11 @@
 				Returns the [NodePath] to the external [Skeleton3D] node, if one has been set.
 			</description>
 		</method>
-		<method name="get_override_mode" qualifiers="const">
+		<method name="get_override_mode" qualifiers="const" is_deprecated="true">
 			<return type="int" />
 			<description>
-				Returns the override mode for the BoneAttachment3D node.
+				Deprecated. Local pose overrides will be removed.
+				Returns the override mode for the BoneAttachment3D node (0=global / 1=local).
 			</description>
 		</method>
 		<method name="get_override_pose" qualifiers="const">
@@ -48,11 +49,12 @@
 				Sets the [NodePath] to the external skeleton that the BoneAttachment3D node should use. The external [Skeleton3D] node is only used when [code]use_external_skeleton[/code] is set to [code]true[/code].
 			</description>
 		</method>
-		<method name="set_override_mode">
+		<method name="set_override_mode" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="override_mode" type="int" />
 			<description>
-				Sets the override mode for the BoneAttachment3D node. The override mode defines which of the bone poses the BoneAttachment3D node will override.
+				Deprecated. Local pose overrides will be removed.
+				Sets the override mode for the BoneAttachment3D node (0=global / 1=local). The override mode defines which of the bone poses the BoneAttachment3D node will override.
 			</description>
 		</method>
 		<method name="set_override_pose">

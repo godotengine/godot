@@ -35,12 +35,10 @@
 #include "scene/2d/node_2d.h"
 
 class CanvasItemEditor;
-class EditorUndoRedoManager;
 
 class Cast2DEditor : public Control {
 	GDCLASS(Cast2DEditor, Control);
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	Node2D *node = nullptr;
 
@@ -55,8 +53,6 @@ public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node2D *p_node);
-
-	Cast2DEditor();
 };
 
 class Cast2DEditorPlugin : public EditorPlugin {

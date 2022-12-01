@@ -147,6 +147,7 @@ public:
 	Color get_correlated_color() const;
 
 	virtual AABB get_aabb() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	Light3D();
 	~Light3D();
@@ -216,7 +217,7 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	OmniLight3D();
 };
@@ -230,7 +231,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	SpotLight3D() :
 			Light3D(RenderingServer::LIGHT_SPOT) {}

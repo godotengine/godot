@@ -119,6 +119,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	Control *ui_service = nullptr;
 	Tree *results_tree = nullptr;
 	String term;
+	Vector<String> terms;
 	int search_flags;
 
 	Ref<Texture2D> empty_icon;
@@ -145,6 +146,8 @@ class EditorHelpSearch::Runner : public RefCounted {
 
 	String _build_method_tooltip(const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) const;
 
+	void _match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<DocData::MethodDoc *> *r_match_methods);
+	bool _all_terms_in_name(String name);
 	bool _match_string(const String &p_term, const String &p_string) const;
 	void _match_item(TreeItem *p_item, const String &p_text);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
@@ -155,7 +158,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	TreeItem *_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc);
 	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
 	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc);
-	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip);
+	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, bool is_deprecated, bool is_experimental);
 
 public:
 	bool work(uint64_t slot = 100000);

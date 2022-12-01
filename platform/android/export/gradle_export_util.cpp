@@ -158,7 +158,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		return ERR_CANT_OPEN;
 	}
 	da->list_dir_begin();
-	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
+	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
 	while (true) {
 		String file = da->get_next();
 		if (file.is_empty()) {
@@ -189,9 +189,7 @@ String bool_to_string(bool v) {
 }
 
 String _get_gles_tag() {
-	bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/driver/driver_name") == "GLES3" &&
-			!ProjectSettings::get_singleton()->get("rendering/driver/fallback_to_gles2");
-	return min_gles3 ? "    <uses-feature android:glEsVersion=\"0x00030000\" android:required=\"true\" />\n" : "";
+	return "    <uses-feature android:glEsVersion=\"0x00030000\" android:required=\"true\" />\n";
 }
 
 String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {

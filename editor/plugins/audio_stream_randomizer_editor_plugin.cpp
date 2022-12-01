@@ -44,8 +44,8 @@ void AudioStreamRandomizerEditorPlugin::make_visible(bool p_visible) {
 }
 
 void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
-	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
-	ERR_FAIL_COND(undo_redo.is_null());
+	Ref<EditorUndoRedoManager> undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(undo_redo_man.is_null());
 
 	AudioStreamRandomizer *randomizer = Object::cast_to<AudioStreamRandomizer>(p_edited);
 	if (!randomizer) {
@@ -76,12 +76,12 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 		end = MIN(MAX(p_from_index, p_to_pos) + 1, end);
 	}
 
-#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
+#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
 	// Save layers' properties.
 	if (p_from_index < 0) {
-		undo_redo->add_undo_method(randomizer, "remove_stream", p_to_pos < 0 ? randomizer->get_streams_count() : p_to_pos);
+		undo_redo_man->add_undo_method(randomizer, "remove_stream", p_to_pos < 0 ? randomizer->get_streams_count() : p_to_pos);
 	} else if (p_to_pos < 0) {
-		undo_redo->add_undo_method(randomizer, "add_stream", p_from_index);
+		undo_redo_man->add_undo_method(randomizer, "add_stream", p_from_index);
 	}
 
 	List<PropertyInfo> properties;
@@ -107,11 +107,11 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 #undef ADD_UNDO
 
 	if (p_from_index < 0) {
-		undo_redo->add_do_method(randomizer, "add_stream", p_to_pos);
+		undo_redo_man->add_do_method(randomizer, "add_stream", p_to_pos);
 	} else if (p_to_pos < 0) {
-		undo_redo->add_do_method(randomizer, "remove_stream", p_from_index);
+		undo_redo_man->add_do_method(randomizer, "remove_stream", p_from_index);
 	} else {
-		undo_redo->add_do_method(randomizer, "move_stream", p_from_index, p_to_pos);
+		undo_redo_man->add_do_method(randomizer, "move_stream", p_from_index, p_to_pos);
 	}
 }
 

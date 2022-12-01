@@ -220,6 +220,8 @@ public:
 	void set_visible(bool p_visible);
 	bool is_visible() const;
 
+	void update_mouse_cursor_shape();
+
 	void show();
 	void hide();
 
@@ -231,6 +233,8 @@ public:
 
 	void set_clamp_to_embedder(bool p_enable);
 	bool is_clamped_to_embedder() const;
+
+	bool is_in_edited_scene_root() const;
 
 	bool can_draw() const;
 
@@ -253,8 +257,6 @@ public:
 
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;
-
-	void warp_mouse(const Vector2 &p_position) override;
 
 	void set_wrap_controls(bool p_enable);
 	bool is_wrapping_controls() const;

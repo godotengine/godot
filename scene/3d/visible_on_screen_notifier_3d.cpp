@@ -95,10 +95,11 @@ VisibleOnScreenNotifier3D::VisibleOnScreenNotifier3D() {
 	RS::get_singleton()->visibility_notifier_set_callbacks(notifier, callable_mp(this, &VisibleOnScreenNotifier3D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier3D::_visibility_exit));
 	set_base(notifier);
 }
+
 VisibleOnScreenNotifier3D::~VisibleOnScreenNotifier3D() {
-	RID base = get_base();
+	RID base_old = get_base();
 	set_base(RID());
-	RS::get_singleton()->free(base);
+	RS::get_singleton()->free(base_old);
 }
 
 //////////////////////////////////////
@@ -188,7 +189,7 @@ void VisibleOnScreenEnabler3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_enable_node_path"), &VisibleOnScreenEnabler3D::get_enable_node_path);
 
 	ADD_GROUP("Enabling", "enable_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_mode", PROPERTY_HINT_ENUM, "Inherit,Always,WhenPaused"), "set_enable_mode", "get_enable_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_mode", PROPERTY_HINT_ENUM, "Inherit,Always,When Paused"), "set_enable_mode", "get_enable_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "enable_node_path"), "set_enable_node_path", "get_enable_node_path");
 
 	BIND_ENUM_CONSTANT(ENABLE_MODE_INHERIT);

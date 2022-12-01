@@ -79,6 +79,7 @@ void NavigationAgent3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_target_location", "location"), &NavigationAgent3D::set_target_location);
 	ClassDB::bind_method(D_METHOD("get_target_location"), &NavigationAgent3D::get_target_location);
+
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent3D::get_next_location);
 	ClassDB::bind_method(D_METHOD("distance_to_target"), &NavigationAgent3D::distance_to_target);
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &NavigationAgent3D::set_velocity);
@@ -92,6 +93,7 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_avoidance_done", "new_velocity"), &NavigationAgent3D::_avoidance_done);
 
 	ADD_GROUP("Pathfinding", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_location", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_target_location", "get_target_location");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:m"), "set_path_desired_distance", "get_path_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:m"), "set_target_desired_distance", "get_target_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_height_offset", PROPERTY_HINT_RANGE, "-100.0,100,0.01,suffix:m"), "set_agent_height_offset", "get_agent_height_offset");
@@ -185,6 +187,13 @@ NavigationAgent3D::NavigationAgent3D() {
 	set_radius(1.0);
 	set_max_speed(10.0);
 	set_ignore_y(true);
+
+	// Preallocate query and result objects to improve performance.
+	navigation_query = Ref<NavigationPathQueryParameters3D>();
+	navigation_query.instantiate();
+
+	navigation_result = Ref<NavigationPathQueryResult3D>();
+	navigation_result.instantiate();
 }
 
 NavigationAgent3D::~NavigationAgent3D() {
@@ -330,12 +339,18 @@ Vector3 NavigationAgent3D::get_target_location() const {
 
 Vector3 NavigationAgent3D::get_next_location() {
 	update_navigation();
+
+	const Vector<Vector3> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
 		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector3(), "The agent has no parent.");
 		return agent_parent->get_global_transform().origin;
 	} else {
 		return navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0);
 	}
+}
+
+const Vector<Vector3> &NavigationAgent3D::get_nav_path() const {
+	return navigation_result->get_path();
 }
 
 real_t NavigationAgent3D::distance_to_target() const {
@@ -358,6 +373,8 @@ bool NavigationAgent3D::is_navigation_finished() {
 
 Vector3 NavigationAgent3D::get_final_location() {
 	update_navigation();
+
+	const Vector<Vector3> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
 		return Vector3();
 	}
@@ -383,8 +400,8 @@ void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
 	emit_signal(SNAME("velocity_computed"), p_new_velocity);
 }
 
-TypedArray<String> NavigationAgent3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray NavigationAgent3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
 		warnings.push_back(RTR("The NavigationAgent3D can be used only under a Node3D inheriting parent node."));
@@ -406,24 +423,26 @@ void NavigationAgent3D::update_navigation() {
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();
 
-	Vector3 o = agent_parent->get_global_transform().origin;
+	Vector3 origin = agent_parent->get_global_transform().origin;
 
 	bool reload_path = false;
 
 	if (NavigationServer3D::get_singleton()->agent_is_map_changed(agent)) {
 		reload_path = true;
-	} else if (navigation_path.size() == 0) {
+	} else if (navigation_result->get_path().size() == 0) {
 		reload_path = true;
 	} else {
 		// Check if too far from the navigation path
 		if (nav_path_index > 0) {
+			const Vector<Vector3> &navigation_path = navigation_result->get_path();
+
 			Vector3 segment[2];
 			segment[0] = navigation_path[nav_path_index - 1];
 			segment[1] = navigation_path[nav_path_index];
 			segment[0].y -= navigation_height_offset;
 			segment[1].y -= navigation_height_offset;
-			Vector3 p = Geometry3D::get_closest_point_to_segment(o, segment);
-			if (o.distance_to(p) >= path_max_distance) {
+			Vector3 p = Geometry3D::get_closest_point_to_segment(origin, segment);
+			if (origin.distance_to(p) >= path_max_distance) {
 				// To faraway, reload path
 				reload_path = true;
 			}
@@ -431,24 +450,31 @@ void NavigationAgent3D::update_navigation() {
 	}
 
 	if (reload_path) {
+		navigation_query->set_start_position(origin);
+		navigation_query->set_target_position(target_location);
+		navigation_query->set_navigation_layers(navigation_layers);
+
 		if (map_override.is_valid()) {
-			navigation_path = NavigationServer3D::get_singleton()->map_get_path(map_override, o, target_location, true, navigation_layers);
+			navigation_query->set_map(map_override);
 		} else {
-			navigation_path = NavigationServer3D::get_singleton()->map_get_path(agent_parent->get_world_3d()->get_navigation_map(), o, target_location, true, navigation_layers);
+			navigation_query->set_map(agent_parent->get_world_3d()->get_navigation_map());
 		}
+
+		NavigationServer3D::get_singleton()->query_path(navigation_query, navigation_result);
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal(SNAME("path_changed"));
 	}
 
-	if (navigation_path.size() == 0) {
+	if (navigation_result->get_path().size() == 0) {
 		return;
 	}
 
 	// Check if we can advance the navigation path
 	if (navigation_finished == false) {
 		// Advances to the next far away location.
-		while (o.distance_to(navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0)) < path_desired_distance) {
+		const Vector<Vector3> &navigation_path = navigation_result->get_path();
+		while (origin.distance_to(navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0)) < path_desired_distance) {
 			nav_path_index += 1;
 			if (nav_path_index == navigation_path.size()) {
 				_check_distance_to_target();
@@ -462,7 +488,7 @@ void NavigationAgent3D::update_navigation() {
 }
 
 void NavigationAgent3D::_request_repath() {
-	navigation_path.clear();
+	navigation_result->reset();
 	target_reached = false;
 	navigation_finished = false;
 	update_frame_id = 0;
@@ -471,8 +497,8 @@ void NavigationAgent3D::_request_repath() {
 void NavigationAgent3D::_check_distance_to_target() {
 	if (!target_reached) {
 		if (distance_to_target() < target_desired_distance) {
-			emit_signal(SNAME("target_reached"));
 			target_reached = true;
+			emit_signal(SNAME("target_reached"));
 		}
 	}
 }

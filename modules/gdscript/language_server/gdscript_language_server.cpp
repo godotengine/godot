@@ -61,12 +61,12 @@ void GDScriptLanguageServer::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			String host = String(_EDITOR_GET("network/language_server/remote_host"));
-			int port = (int)_EDITOR_GET("network/language_server/remote_port");
-			bool use_thread = (bool)_EDITOR_GET("network/language_server/use_thread");
-			if (host != this->host || port != this->port || use_thread != this->use_thread) {
-				this->stop();
-				this->start();
+			String remote_host = String(_EDITOR_GET("network/language_server/remote_host"));
+			int remote_port = (int)_EDITOR_GET("network/language_server/remote_port");
+			bool remote_use_thread = (bool)_EDITOR_GET("network/language_server/use_thread");
+			if (remote_host != host || remote_port != port || remote_use_thread != use_thread) {
+				stop();
+				start();
 			}
 		} break;
 	}

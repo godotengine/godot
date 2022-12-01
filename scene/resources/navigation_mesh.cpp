@@ -32,7 +32,7 @@
 
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
-#endif
+#endif // DEBUG_ENABLED
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	ERR_FAIL_COND(p_mesh.is_null());
@@ -341,94 +341,8 @@ void NavigationMesh::clear_polygons() {
 	polygons.clear();
 }
 
-#ifndef DISABLE_DEPRECATED
-Ref<Mesh> NavigationMesh::get_debug_mesh() {
-	if (debug_mesh.is_valid()) {
-		return debug_mesh;
-	}
-
-	Vector<Vector3> vertices = get_vertices();
-	const Vector3 *vr = vertices.ptr();
-	List<Face3> faces;
-	for (int i = 0; i < get_polygon_count(); i++) {
-		Vector<int> p = get_polygon(i);
-
-		for (int j = 2; j < p.size(); j++) {
-			Face3 f;
-			f.vertex[0] = vr[p[0]];
-			f.vertex[1] = vr[p[j - 1]];
-			f.vertex[2] = vr[p[j]];
-
-			faces.push_back(f);
-		}
-	}
-
-	HashMap<_EdgeKey, bool, _EdgeKey> edge_map;
-	Vector<Vector3> tmeshfaces;
-	tmeshfaces.resize(faces.size() * 3);
-
-	{
-		Vector3 *tw = tmeshfaces.ptrw();
-		int tidx = 0;
-
-		for (const Face3 &f : faces) {
-			for (int j = 0; j < 3; j++) {
-				tw[tidx++] = f.vertex[j];
-				_EdgeKey ek;
-				ek.from = f.vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-				ek.to = f.vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-				if (ek.from < ek.to) {
-					SWAP(ek.from, ek.to);
-				}
-
-				HashMap<_EdgeKey, bool, _EdgeKey>::Iterator F = edge_map.find(ek);
-
-				if (F) {
-					F->value = false;
-
-				} else {
-					edge_map[ek] = true;
-				}
-			}
-		}
-	}
-	List<Vector3> lines;
-
-	for (const KeyValue<_EdgeKey, bool> &E : edge_map) {
-		if (E.value) {
-			lines.push_back(E.key.from);
-			lines.push_back(E.key.to);
-		}
-	}
-
-	Vector<Vector3> varr;
-	varr.resize(lines.size());
-	{
-		Vector3 *w = varr.ptrw();
-		int idx = 0;
-		for (const Vector3 &E : lines) {
-			w[idx++] = E;
-		}
-	}
-
-	debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
-
-	if (!lines.size()) {
-		return debug_mesh;
-	}
-
-	Array arr;
-	arr.resize(Mesh::ARRAY_MAX);
-	arr[Mesh::ARRAY_VERTEX] = varr;
-
-	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
-
-	return debug_mesh;
-}
-#endif // DISABLE_DEPRECATED
-
 #ifdef DEBUG_ENABLED
-Ref<ArrayMesh> NavigationMesh::_get_debug_mesh() {
+Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	if (debug_mesh.is_valid()) {
 		// Blocks further updates for now, code below is intended for dynamic updates e.g. when settings change.
 		return debug_mesh;
@@ -479,8 +393,6 @@ Ref<ArrayMesh> NavigationMesh::_get_debug_mesh() {
 		for (int i = 0; i < polygon_count; i++) {
 			polygon_color = debug_navigation_geometry_face_color * (Color(Math::randf(), Math::randf(), Math::randf()));
 
-			Vector<int> polygon = get_polygon(i);
-
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);
@@ -490,7 +402,7 @@ Ref<ArrayMesh> NavigationMesh::_get_debug_mesh() {
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
 	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_material();
-	debug_mesh->surface_set_material(debug_mesh->get_surface_count(), debug_geometry_face_material);
+	debug_mesh->surface_set_material(0, debug_geometry_face_material);
 
 	// if enabled build geometry edge line surface
 	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
@@ -515,12 +427,12 @@ Ref<ArrayMesh> NavigationMesh::_get_debug_mesh() {
 		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
 		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, line_mesh_array);
 		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_material();
-		debug_mesh->surface_set_material(debug_mesh->get_surface_count(), debug_geometry_edge_material);
+		debug_mesh->surface_set_material(1, debug_geometry_edge_material);
 	}
 
 	return debug_mesh;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sample_partition_type", "sample_partition_type"), &NavigationMesh::set_sample_partition_type);
@@ -615,7 +527,7 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY_DEFAULT("geometry_collision_mask", 0xFFFFFFFF);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "NavMesh Children, Group With Children, Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "NavMesh Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
 	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navmesh"));
 	ADD_GROUP("Cells", "cell_");
@@ -678,16 +590,16 @@ void NavigationMesh::_validate_property(PropertyInfo &p_property) const {
 
 #ifndef DISABLE_DEPRECATED
 bool NavigationMesh::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
-	if (name.find("/") != -1) {
+	String prop_name = p_name;
+	if (prop_name.find("/") != -1) {
 		// Compatibility with pre-3.5 "category/path" property names.
-		name = name.replace("/", "_");
-		if (name == "sample_partition_type_sample_partition_type") {
+		prop_name = prop_name.replace("/", "_");
+		if (prop_name == "sample_partition_type_sample_partition_type") {
 			set("sample_partition_type", p_value);
-		} else if (name == "filter_filter_walkable_low_height_spans") {
+		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
 			set("filter_walkable_low_height_spans", p_value);
 		} else {
-			set(name, p_value);
+			set(prop_name, p_value);
 		}
 
 		return true;
@@ -696,16 +608,16 @@ bool NavigationMesh::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-	if (name.find("/") != -1) {
+	String prop_name = p_name;
+	if (prop_name.find("/") != -1) {
 		// Compatibility with pre-3.5 "category/path" property names.
-		name = name.replace("/", "_");
-		if (name == "sample_partition_type_sample_partition_type") {
+		prop_name = prop_name.replace("/", "_");
+		if (prop_name == "sample_partition_type_sample_partition_type") {
 			r_ret = get("sample_partition_type");
-		} else if (name == "filter_filter_walkable_low_height_spans") {
+		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
 			r_ret = get("filter_walkable_low_height_spans");
 		} else {
-			r_ret = get(name);
+			r_ret = get(prop_name);
 		}
 		return true;
 	}

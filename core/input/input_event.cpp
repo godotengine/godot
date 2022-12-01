@@ -142,13 +142,33 @@ int64_t InputEventFromWindow::get_window_id() const {
 
 ///////////////////////////////////
 
-void InputEventWithModifiers::set_store_command(bool p_enabled) {
-	store_command = p_enabled;
+void InputEventWithModifiers::set_command_or_control_autoremap(bool p_enabled) {
+	command_or_control_autoremap = p_enabled;
+	if (command_or_control_autoremap) {
+#ifdef MACOS_ENABLED
+		ctrl_pressed = false;
+		meta_pressed = true;
+#else
+		ctrl_pressed = true;
+		meta_pressed = false;
+#endif
+	} else {
+		ctrl_pressed = false;
+		meta_pressed = false;
+	}
 	emit_changed();
 }
 
-bool InputEventWithModifiers::is_storing_command() const {
-	return store_command;
+bool InputEventWithModifiers::is_command_or_control_autoremap() const {
+	return command_or_control_autoremap;
+}
+
+bool InputEventWithModifiers::is_command_or_control_pressed() const {
+#ifdef MACOS_ENABLED
+	return meta_pressed;
+#else
+	return ctrl_pressed;
+#endif
 }
 
 void InputEventWithModifiers::set_shift_pressed(bool p_enabled) {
@@ -170,6 +190,7 @@ bool InputEventWithModifiers::is_alt_pressed() const {
 }
 
 void InputEventWithModifiers::set_ctrl_pressed(bool p_enabled) {
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Control directly!");
 	ctrl_pressed = p_enabled;
 	emit_changed();
 }
@@ -179,21 +200,13 @@ bool InputEventWithModifiers::is_ctrl_pressed() const {
 }
 
 void InputEventWithModifiers::set_meta_pressed(bool p_enabled) {
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Meta directly!");
 	meta_pressed = p_enabled;
 	emit_changed();
 }
 
 bool InputEventWithModifiers::is_meta_pressed() const {
 	return meta_pressed;
-}
-
-void InputEventWithModifiers::set_command_pressed(bool p_enabled) {
-	command_pressed = p_enabled;
-	emit_changed();
-}
-
-bool InputEventWithModifiers::is_command_pressed() const {
-	return command_pressed;
 }
 
 void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *event) {
@@ -216,6 +229,13 @@ Key InputEventWithModifiers::get_modifiers_mask() const {
 	}
 	if (is_meta_pressed()) {
 		mask |= KeyModifierMask::META;
+	}
+	if (is_command_or_control_autoremap()) {
+#ifdef MACOS_ENABLED
+		mask |= KeyModifierMask::META;
+#else
+		mask |= KeyModifierMask::CTRL;
+#endif
 	}
 	return mask;
 }
@@ -248,8 +268,10 @@ String InputEventWithModifiers::to_string() {
 }
 
 void InputEventWithModifiers::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_store_command", "enable"), &InputEventWithModifiers::set_store_command);
-	ClassDB::bind_method(D_METHOD("is_storing_command"), &InputEventWithModifiers::is_storing_command);
+	ClassDB::bind_method(D_METHOD("set_command_or_control_autoremap", "enable"), &InputEventWithModifiers::set_command_or_control_autoremap);
+	ClassDB::bind_method(D_METHOD("is_command_or_control_autoremap"), &InputEventWithModifiers::is_command_or_control_autoremap);
+
+	ClassDB::bind_method(D_METHOD("is_command_or_control_pressed"), &InputEventWithModifiers::is_command_or_control_pressed);
 
 	ClassDB::bind_method(D_METHOD("set_alt_pressed", "pressed"), &InputEventWithModifiers::set_alt_pressed);
 	ClassDB::bind_method(D_METHOD("is_alt_pressed"), &InputEventWithModifiers::is_alt_pressed);
@@ -263,34 +285,24 @@ void InputEventWithModifiers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_meta_pressed", "pressed"), &InputEventWithModifiers::set_meta_pressed);
 	ClassDB::bind_method(D_METHOD("is_meta_pressed"), &InputEventWithModifiers::is_meta_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_command_pressed", "pressed"), &InputEventWithModifiers::set_command_pressed);
-	ClassDB::bind_method(D_METHOD("is_command_pressed"), &InputEventWithModifiers::is_command_pressed);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "store_command"), "set_store_command", "is_storing_command");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_or_control_autoremap"), "set_command_or_control_autoremap", "is_command_or_control_autoremap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alt_pressed"), "set_alt_pressed", "is_alt_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift_pressed"), "set_shift_pressed", "is_shift_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ctrl_pressed"), "set_ctrl_pressed", "is_ctrl_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_pressed"), "set_meta_pressed", "is_meta_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_pressed"), "set_command_pressed", "is_command_pressed");
 }
 
 void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const {
-	if (store_command) {
-		// If we only want to Store "Command".
-#ifdef APPLE_STYLE_KEYS
-		// Don't store "Meta" on Mac.
+	if (command_or_control_autoremap) {
+		// Cannot be used with Meta/Command or Control!
 		if (p_property.name == "meta_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
-#else
-		// Don't store "Ctrl".
 		if (p_property.name == "ctrl_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
-#endif
 	} else {
-		// We don't want to store command, only ctrl or meta (on mac).
-		if (p_property.name == "command_pressed") {
+		if (p_property.name == "command_or_control_autoremap") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 	}
@@ -399,14 +411,18 @@ Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode) {
 	if ((p_keycode & KeyModifierMask::ALT) != Key::NONE) {
 		ie->set_alt_pressed(true);
 	}
-	if ((p_keycode & KeyModifierMask::CTRL) != Key::NONE) {
-		ie->set_ctrl_pressed(true);
-	}
-	if ((p_keycode & KeyModifierMask::CMD) != Key::NONE) {
-		ie->set_command_pressed(true);
-	}
-	if ((p_keycode & KeyModifierMask::META) != Key::NONE) {
-		ie->set_meta_pressed(true);
+	if ((p_keycode & KeyModifierMask::CMD_OR_CTRL) != Key::NONE) {
+		ie->set_command_or_control_autoremap(true);
+		if ((p_keycode & KeyModifierMask::CTRL) != Key::NONE || (p_keycode & KeyModifierMask::META) != Key::NONE) {
+			WARN_PRINT("Invalid Key Modifiers: Command or Control autoremapping is enabled, Meta and Control values are ignored!");
+		}
+	} else {
+		if ((p_keycode & KeyModifierMask::CTRL) != Key::NONE) {
+			ie->set_ctrl_pressed(true);
+		}
+		if ((p_keycode & KeyModifierMask::META) != Key::NONE) {
+			ie->set_meta_pressed(true);
+		}
 	}
 
 	return ie;
@@ -433,11 +449,11 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_ma
 		match &= action_mask == key_mask;
 	}
 	if (match) {
-		bool pressed = key->is_pressed();
+		bool key_pressed = key->is_pressed();
 		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+			*r_pressed = key_pressed;
 		}
-		float strength = pressed ? 1.0f : 0.0f;
+		float strength = key_pressed ? 1.0f : 0.0f;
 		if (r_strength != nullptr) {
 			*r_strength = strength;
 		}
@@ -594,20 +610,20 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool p_
 	}
 
 	bool match = button_index == mb->button_index;
-	Key action_mask = get_modifiers_mask();
-	Key button_mask = mb->get_modifiers_mask();
+	Key action_modifiers_mask = get_modifiers_mask();
+	Key button_modifiers_mask = mb->get_modifiers_mask();
 	if (mb->is_pressed()) {
-		match &= (action_mask & button_mask) == action_mask;
+		match &= (action_modifiers_mask & button_modifiers_mask) == action_modifiers_mask;
 	}
 	if (p_exact_match) {
-		match &= action_mask == button_mask;
+		match &= action_modifiers_mask == button_modifiers_mask;
 	}
 	if (match) {
-		bool pressed = mb->is_pressed();
+		bool mb_pressed = mb->is_pressed();
 		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+			*r_pressed = mb_pressed;
 		}
-		float strength = pressed ? 1.0f : 0.0f;
+		float strength = mb_pressed ? 1.0f : 0.0f;
 		if (r_strength != nullptr) {
 			*r_strength = strength;
 		}
@@ -792,9 +808,9 @@ String InputEventMouseMotion::as_text() const {
 }
 
 String InputEventMouseMotion::to_string() {
-	MouseButton button_mask = get_button_mask();
-	String button_mask_string = itos((int64_t)button_mask);
-	switch (button_mask) {
+	MouseButton mouse_button_mask = get_button_mask();
+	String button_mask_string = itos((int64_t)mouse_button_mask);
+	switch (mouse_button_mask) {
 		case MouseButton::MASK_LEFT:
 			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
 			break;
@@ -1029,11 +1045,11 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool p
 
 	bool match = button_index == jb->button_index;
 	if (match) {
-		bool pressed = jb->is_pressed();
+		bool jb_pressed = jb->is_pressed();
 		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+			*r_pressed = jb_pressed;
 		}
-		float strength = pressed ? 1.0f : 0.0f;
+		float strength = jb_pressed ? 1.0f : 0.0f;
 		if (r_strength != nullptr) {
 			*r_strength = strength;
 		}
@@ -1146,6 +1162,13 @@ bool InputEventScreenTouch::is_pressed() const {
 	return pressed;
 }
 
+void InputEventScreenTouch::set_double_tap(bool p_double_tap) {
+	double_tap = p_double_tap;
+}
+bool InputEventScreenTouch::is_double_tap() const {
+	return double_tap;
+}
+
 Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenTouch> st;
 	st.instantiate();
@@ -1154,6 +1177,7 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 	st->set_index(index);
 	st->set_position(p_xform.xform(pos + p_local_ofs));
 	st->set_pressed(pressed);
+	st->set_double_tap(double_tap);
 
 	return st;
 }
@@ -1166,7 +1190,8 @@ String InputEventScreenTouch::as_text() const {
 
 String InputEventScreenTouch::to_string() {
 	String p = pressed ? "true" : "false";
-	return vformat("InputEventScreenTouch: index=%d, pressed=%s, position=(%s)", index, p, String(get_position()));
+	String double_tap_string = double_tap ? "true" : "false";
+	return vformat("InputEventScreenTouch: index=%d, pressed=%s, position=(%s), double_tap=%s", index, p, String(get_position()), double_tap_string);
 }
 
 void InputEventScreenTouch::_bind_methods() {
@@ -1179,9 +1204,13 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventScreenTouch::set_pressed);
 	//ClassDB::bind_method(D_METHOD("is_pressed"),&InputEventScreenTouch::is_pressed);
 
+	ClassDB::bind_method(D_METHOD("set_double_tap", "double_tap"), &InputEventScreenTouch::set_double_tap);
+	ClassDB::bind_method(D_METHOD("is_double_tap"), &InputEventScreenTouch::is_double_tap);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_tap"), "set_double_tap", "is_double_tap");
 }
 
 ///////////////////////////////////
@@ -1309,7 +1338,7 @@ bool InputEventAction::is_match(const Ref<InputEvent> &p_event, bool p_exact_mat
 		return false;
 	}
 
-	return p_event->is_action(action);
+	return p_event->is_action(action, p_exact_match);
 }
 
 bool InputEventAction::is_action(const StringName &p_action) const {
@@ -1324,16 +1353,16 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool p_exact
 
 	bool match = action == act->action;
 	if (match) {
-		bool pressed = act->pressed;
+		bool act_pressed = act->pressed;
 		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+			*r_pressed = act_pressed;
 		}
-		float strength = pressed ? 1.0f : 0.0f;
+		float act_strength = act_pressed ? 1.0f : 0.0f;
 		if (r_strength != nullptr) {
-			*r_strength = strength;
+			*r_strength = act_strength;
 		}
 		if (r_raw_strength != nullptr) {
-			*r_raw_strength = strength;
+			*r_raw_strength = act_strength;
 		}
 	}
 	return match;
@@ -1533,7 +1562,7 @@ String InputEventMIDI::as_text() const {
 }
 
 String InputEventMIDI::to_string() {
-	return vformat("InputEventMIDI: channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d", channel, message, pitch, velocity, pressure);
+	return vformat("InputEventMIDI: channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d, controller_number=%d, controller_value=%d", channel, message, pitch, velocity, pressure, controller_number, controller_value);
 }
 
 void InputEventMIDI::_bind_methods() {

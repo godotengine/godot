@@ -70,7 +70,7 @@ public:
 
 	Error open_after_magic(Ref<FileAccess> p_base);
 
-	virtual Error _open(const String &p_path, int p_mode_flags) override; ///< open a file
+	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
 
 	virtual void seek(uint64_t p_position) override; ///< seek to a given position

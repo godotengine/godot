@@ -38,6 +38,8 @@
 #include "action_map/openxr_action_set.h"
 #include "action_map/openxr_interaction_profile.h"
 
+#include "scene/openxr_hand.h"
+
 #ifdef TOOLS_ENABLED
 
 #include "editor/editor_node.h"
@@ -81,6 +83,8 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRActionMap);
 		GDREGISTER_CLASS(OpenXRIPBinding);
 		GDREGISTER_CLASS(OpenXRInteractionProfile);
+
+		GDREGISTER_CLASS(OpenXRHand);
 
 		XRServer *xr_server = XRServer::get_singleton();
 		if (xr_server) {

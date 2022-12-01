@@ -93,15 +93,14 @@ String Resource::get_path() const {
 String Resource::generate_scene_unique_id() {
 	// Generate a unique enough hash, but still user-readable.
 	// If it's not unique it does not matter because the saver will try again.
-	OS::Date date = OS::get_singleton()->get_date();
-	OS::Time time = OS::get_singleton()->get_time();
+	OS::DateTime dt = OS::get_singleton()->get_datetime();
 	uint32_t hash = hash_murmur3_one_32(OS::get_singleton()->get_ticks_usec());
-	hash = hash_murmur3_one_32(date.year, hash);
-	hash = hash_murmur3_one_32(date.month, hash);
-	hash = hash_murmur3_one_32(date.day, hash);
-	hash = hash_murmur3_one_32(time.hour, hash);
-	hash = hash_murmur3_one_32(time.minute, hash);
-	hash = hash_murmur3_one_32(time.second, hash);
+	hash = hash_murmur3_one_32(dt.year, hash);
+	hash = hash_murmur3_one_32(dt.month, hash);
+	hash = hash_murmur3_one_32(dt.day, hash);
+	hash = hash_murmur3_one_32(dt.hour, hash);
+	hash = hash_murmur3_one_32(dt.minute, hash);
+	hash = hash_murmur3_one_32(dt.second, hash);
 	hash = hash_murmur3_one_32(Math::rand(), hash);
 
 	static constexpr uint32_t characters = 5;
@@ -437,7 +436,7 @@ void Resource::_bind_methods() {
 	ADD_GROUP("Resource", "resource_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 
 	MethodInfo get_rid_bind("_get_rid");
 	get_rid_bind.return_val.type = Variant::RID;
@@ -490,7 +489,7 @@ bool ResourceCache::has(const String &p_path) {
 
 	Resource **res = resources.getptr(p_path);
 
-	if (res && (*res)->reference_get_count() == 0) {
+	if (res && (*res)->get_reference_count() == 0) {
 		// This resource is in the process of being deleted, ignore its existence.
 		(*res)->path_cache = String();
 		resources.erase(p_path);

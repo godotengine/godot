@@ -54,7 +54,6 @@ private:
 	bool disabled = false;
 	int priority = 1;
 	String advance_expression;
-	NodePath advance_expression_base_node;
 
 	friend class AnimationNodeStateMachinePlayback;
 	Ref<Expression> expression;
@@ -76,9 +75,6 @@ public:
 
 	void set_advance_expression(const String &p_expression);
 	String get_advance_expression() const;
-
-	void set_advance_expression_base_node(const NodePath &p_expression_base_node);
-	NodePath get_advance_expression_base_node() const;
 
 	void set_xfade_time(float p_xfade);
 	float get_xfade_time() const;
@@ -137,7 +133,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	bool _travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel);
 
-	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_seek_root);
+	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking);
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
 
@@ -243,7 +239,7 @@ public:
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 	virtual String get_caption() const override;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;

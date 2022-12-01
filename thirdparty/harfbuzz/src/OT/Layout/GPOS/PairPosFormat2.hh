@@ -274,13 +274,19 @@ struct PairPosFormat2_4
     out->valueFormat1 = newFormats.first;
     out->valueFormat2 = newFormats.second;
 
+    if (c->plan->all_axes_pinned)
+    {
+      out->valueFormat1 = out->valueFormat1.drop_device_table_flags ();
+      out->valueFormat2 = out->valueFormat2.drop_device_table_flags ();
+    }
+
     for (unsigned class1_idx : + hb_range ((unsigned) class1Count) | hb_filter (klass1_map))
     {
       for (unsigned class2_idx : + hb_range ((unsigned) class2Count) | hb_filter (klass2_map))
       {
         unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * (len1 + len2);
-        valueFormat1.copy_values (c->serializer, newFormats.first, this, &values[idx], c->plan->layout_variation_idx_map);
-        valueFormat2.copy_values (c->serializer, newFormats.second, this, &values[idx + len1], c->plan->layout_variation_idx_map);
+        valueFormat1.copy_values (c->serializer, out->valueFormat1, this, &values[idx], c->plan->layout_variation_idx_delta_map);
+        valueFormat2.copy_values (c->serializer, out->valueFormat2, this, &values[idx + len1], c->plan->layout_variation_idx_delta_map);
       }
     }
 

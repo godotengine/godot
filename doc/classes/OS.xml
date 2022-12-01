@@ -4,7 +4,8 @@
 		Operating System functions.
 	</brief_description>
 	<description>
-		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
+		Operating System functions. [OS] wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, delays, environment variables, execution of binaries, command line, etc.
+		[b]Note:[/b] In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.
 	</description>
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
@@ -16,12 +17,6 @@
 			<param index="1" name="title" type="String" default="&quot;Alert!&quot;" />
 			<description>
 				Displays a modal dialog box using the host OS' facilities. Execution is blocked until the dialog is closed.
-			</description>
-		</method>
-		<method name="can_use_threads" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the current host platform is using multiple threads.
 			</description>
 		</method>
 		<method name="close_midi_inputs">
@@ -139,7 +134,7 @@
 		<method name="get_cache_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
+				Returns the [i]global[/i] cache data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -187,17 +182,19 @@
 		<method name="get_cmdline_user_args">
 			<return type="PackedStringArray" />
 			<description>
-				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] argument). These are left untouched by Godot for the user.
+				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] or double plus [code]++[/code] argument). These are left untouched by Godot for the user. [code]++[/code] can be used in situations where [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				For example, in the command line below, [code]--fullscreen[/code] will not be returned in [method get_cmdline_user_args] and [code]--level 1[/code] will only be returned in [method get_cmdline_user_args]:
 				[codeblock]
 				godot --fullscreen -- --level 1
+				# Or:
+				godot --fullscreen ++ --level 1
 				[/codeblock]
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
+				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -205,15 +202,24 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns an array of MIDI device names.
-				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
+				The returned array will be empty if the system MIDI driver has not previously been initialized with [method open_midi_inputs].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
+				Returns the [i]global[/i] user data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
+			</description>
+		</method>
+		<method name="get_distribution_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the distribution for Linux and BSD platforms (e.g. Ubuntu, Manjaro, OpenBSD, etc.).
+				Returns the same value as [method get_name] for stock Android ROMs, but attempts to return the custom ROM name for popular Android derivatives such as LineageOS.
+				Returns the same value as [method get_name] for other platforms.
+				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
@@ -430,6 +436,27 @@
 				Not to be confused with [method get_data_dir], which returns the [i]global[/i] (non-project-specific) user home directory.
 			</description>
 		</method>
+		<method name="get_version" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the exact production and build version of the operating system. This is different from the branded version used in marketing. This helps to distinguish between different releases of operating systems, including minor versions, and insider and custom builds.
+				For Windows, the major and minor version are returned, as well as the build number. For example, the returned string can look like [code]10.0.9926[/code] for a build of Windows 10, and it can look like [code]6.1.7601[/code] for a build of Windows 7 SP1.
+				For rolling distributions, such as Arch Linux, an empty string is returned.
+				For macOS and iOS, the major and minor version are returned, as well as the patch number.
+				For UWP, the device family version is returned.
+				For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
+				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
+			</description>
+		</method>
+		<method name="get_video_adapter_driver_info" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the video adapter driver name and version for the user's currently active graphics card.
+				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
+				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
+				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows when not running in headless mode. It returns an empty array on other platforms.
+			</description>
+		</method>
 		<method name="has_environment" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="variable" type="String" />
@@ -442,7 +469,7 @@
 			<return type="bool" />
 			<param index="0" name="tag_name" type="String" />
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>
@@ -501,13 +528,19 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Moves the file or directory to the system's recycle bin. See also [method Directory.remove].
-				The method takes only global paths, so you may need to use [method ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/code] as it will not work in exported project.
+				Moves the file or directory to the system's recycle bin. See also [method DirAccess.remove].
+				The method takes only global paths, so you may need to use [method ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/code] as it will not work in exported projects.
 				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var file_to_remove = "user://slot1.sav"
 				OS.move_to_trash(ProjectSettings.globalize_path(file_to_remove))
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var fileToRemove = "user://slot1.sav";
+				OS.MoveToTrash(ProjectSettings.GlobalizePath(fileToRemove));
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="open_midi_inputs">
@@ -515,6 +548,14 @@
 			<description>
 				Initialises the singleton for the system MIDI driver.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="read_string_from_stdin">
+			<return type="String" />
+			<param index="0" name="block" type="bool" default="true" />
+			<description>
+				Reads a user input string from the standard input (usually the terminal).
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows. Non-blocking reads are not currently supported on any platform.
 			</description>
 		</method>
 		<method name="request_permission">
@@ -587,11 +628,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="VIDEO_DRIVER_VULKAN" value="0" enum="VideoDriver">
-			The Vulkan rendering backend. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
+		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver">
+			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
 		</constant>
-		<constant name="VIDEO_DRIVER_OPENGL_3" value="1" enum="VideoDriver">
-			The OpenGL 3 rendering backend. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
+		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
+			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.

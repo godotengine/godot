@@ -51,6 +51,7 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL2RC(bool, _recognize_path, String, StringName)
 	GDVIRTUAL1RC(bool, _handles_type, StringName)
 	GDVIRTUAL1RC(String, _get_resource_type, String)
 	GDVIRTUAL1RC(ResourceUID::ID, _get_resource_uid, String)
