@@ -32,12 +32,13 @@
 #define EDITOR_NODE_H
 
 #include "core/templates/safe_refcount.h"
+#include "editor/editor_data.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
+#include "editor/editor_plugin.h"
 #include "editor/editor_run.h"
 #include "editor/editor_title_bar.h"
 #include "editor/export/editor_export.h"
-#include "editor/inspector_dock.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -46,8 +47,8 @@ typedef bool (*EditorBuildCallback)();
 class AcceptDialog;
 class AudioStreamPreviewGenerator;
 class BackgroundProgress;
-class Button;
 class CenterContainer;
+class CheckBox;
 class ColorPicker;
 class ConfirmationDialog;
 class Control;
@@ -59,18 +60,19 @@ class EditorCommandPalette;
 class EditorExport;
 class EditorExtensionManager;
 class EditorFeatureProfileManager;
+class EditorFileDialog;
 class EditorFileServer;
 class EditorFolding;
 class EditorInspector;
 class EditorLayoutsDialog;
 class EditorLog;
-class EditorPlugin;
 class EditorPluginList;
 class EditorQuickOpen;
 class EditorResourcePreview;
 class EditorResourceConversionPlugin;
 class EditorRun;
 class EditorRunNative;
+class EditorSelectionHistory;
 class EditorSettingsDialog;
 class EditorToaster;
 class EditorUndoRedoManager;
@@ -84,6 +86,7 @@ class LinkButton;
 class MenuBar;
 class MenuButton;
 class NodeDock;
+class OptionButton;
 class OrphanResourcesDialog;
 class Panel;
 class PanelContainer;
@@ -98,7 +101,9 @@ class ScriptCreateDialog;
 class SubViewport;
 class TabBar;
 class TabContainer;
+class TextureRect;
 class TextureProgressBar;
+class Tree;
 class VSplitContainer;
 class Window;
 class EditorBuildProfileManager;
@@ -713,9 +718,6 @@ public:
 
 	bool call_build();
 
-	static void register_editor_types();
-	static void unregister_editor_types();
-
 	static EditorNode *get_singleton() { return singleton; }
 
 	static EditorLog *get_log() { return singleton->log; }
@@ -749,6 +751,8 @@ public:
 
 	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"));
 
+	static void cleanup();
+
 	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
@@ -776,7 +780,7 @@ public:
 	bool is_movie_maker_enabled() const;
 
 	void edit_node(Node *p_node);
-	void edit_resource(const Ref<Resource> &p_resource) { InspectorDock::get_singleton()->edit_resource(p_resource); };
+	void edit_resource(const Ref<Resource> &p_resource);
 
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
@@ -816,7 +820,7 @@ public:
 
 	void setup_color_picker(ColorPicker *picker);
 
-	void request_instance_scene(const String &p_path);
+	void request_instantiate_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
 
 	void set_convert_old_scene(bool p_old) { convert_old = p_old; }

@@ -91,6 +91,10 @@ private:
 	int light_mask = 1;
 	uint32_t visibility_layer = 1;
 
+	int z_index = 0;
+	bool z_relative = true;
+	bool y_sort_enabled = false;
+
 	Window *window = nullptr;
 	bool visible = true;
 	bool parent_visible_in_tree = false;
@@ -229,6 +233,17 @@ public:
 
 	void set_visibility_layer_bit(uint32_t p_visibility_layer, bool p_enable);
 	bool get_visibility_layer_bit(uint32_t p_visibility_layer) const;
+
+	/* ORDERING */
+
+	void set_z_index(int p_z);
+	int get_z_index() const;
+
+	void set_z_as_relative(bool p_enabled);
+	bool is_z_relative() const;
+
+	virtual void set_y_sort_enabled(bool p_enabled);
+	virtual bool is_y_sort_enabled() const;
 
 	/* DRAWING API */
 

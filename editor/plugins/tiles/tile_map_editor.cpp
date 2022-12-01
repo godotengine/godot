@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 
@@ -272,6 +273,7 @@ void TileMapEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<InputEven
 	if (ED_IS_SHORTCUT("tiles_editor/paste", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
 		select_last_pattern = true;
 		int new_pattern_index = tile_set->get_patterns_count();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Add TileSet pattern"));
 		undo_redo->add_do_method(*tile_set, "add_pattern", tile_map_clipboard, new_pattern_index);
 		undo_redo->add_undo_method(*tile_set, "remove_pattern", new_pattern_index);
@@ -281,6 +283,7 @@ void TileMapEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<InputEven
 
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
 		Vector<int> selected = patterns_item_list->get_selected_items();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Remove TileSet patterns"));
 		for (int i = 0; i < selected.size(); i++) {
 			int pattern_index = selected[i];
@@ -511,6 +514,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 		if (ED_IS_SHORTCUT("tiles_editor/cut", p_event)) {
 			// Delete selected tiles.
 			if (!tile_map_selection.is_empty()) {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Delete tiles"));
 				for (const Vector2i &E : tile_map_selection) {
 					undo_redo->add_do_method(tile_map, "set_cell", tile_map_layer, E, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
@@ -542,6 +546,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event)) {
 		// Delete selected tiles.
 		if (!tile_map_selection.is_empty()) {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Delete tiles"));
 			for (const Vector2i &E : tile_map_selection) {
 				undo_redo->add_do_method(tile_map, "set_cell", tile_map_layer, E, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
@@ -1233,6 +1238,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
 	Vector2 mpos = xform.affine_inverse().xform(CanvasItemEditor::get_singleton()->get_viewport_control()->get_local_mouse_position());
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (drag_type) {
 		case DRAG_TYPE_SELECT: {
 			undo_redo->create_action(TTR("Change selection"));
@@ -2012,8 +2018,6 @@ void TileMapEditorTilesPlugin::_bind_methods() {
 }
 
 TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	CanvasItemEditor::get_singleton()
 			->get_viewport_control()
 			->connect("mouse_exited", callable_mp(this, &TileMapEditorTilesPlugin::_mouse_exited_viewport));
@@ -2267,6 +2271,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_text(TTR("Drag and drop or paste a TileMap selection here to store a pattern."));
+	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 	patterns_item_list->add_child(patterns_help_label);
 
@@ -2633,6 +2638,7 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
 	Vector2 mpos = xform.affine_inverse().xform(CanvasItemEditor::get_singleton()->get_viewport_control()->get_local_mouse_position());
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (drag_type) {
 		case DRAG_TYPE_PICK: {
 			Vector2i coords = tile_map->local_to_map(mpos);
@@ -3303,8 +3309,6 @@ void TileMapEditorTerrainsPlugin::edit(ObjectID p_tile_map_id, int p_tile_map_la
 }
 
 TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	main_vbox_container = memnew(VBoxContainer);
 	main_vbox_container->connect("tree_entered", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
 	main_vbox_container->connect("theme_changed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
@@ -3478,6 +3482,7 @@ void TileMapEditor::_advanced_menu_button_id_pressed(int p_id) {
 	}
 
 	if (p_id == 0) { // Replace Tile Proxies
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Replace Tiles with Proxies"));
 		for (int layer_index = 0; layer_index < tile_map->get_layers_count(); layer_index++) {
 			TypedArray<Vector2i> used_cells = tile_map->get_used_cells(layer_index);
@@ -3951,8 +3956,6 @@ void TileMapEditor::edit(TileMap *p_tile_map) {
 }
 
 TileMapEditor::TileMapEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	set_process_internal(true);
 
 	// Shortcuts.

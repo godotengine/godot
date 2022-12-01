@@ -2274,7 +2274,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			p_output.append(");\n");
 
 			// Generate Callable trampoline for the delegate
-			p_output << MEMBER_BEGIN "private static unsafe void " << p_isignal.proxy_name << "Trampoline"
+			p_output << MEMBER_BEGIN "private static void " << p_isignal.proxy_name << "Trampoline"
 					 << "(object delegateObj, NativeVariantPtrArgs args, out godot_variant ret)\n"
 					 << INDENT1 "{\n"
 					 << INDENT2 "Callable.ThrowIfArgCountMismatch(args, " << itos(p_isignal.arguments.size()) << ");\n"
@@ -2289,9 +2289,8 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 					p_output << ",";
 				}
 
-				// TODO: We don't need to use VariantConversionCallbacks. We have the type information so we can use [cs_variant_to_managed] and [cs_managed_to_variant].
-				p_output << "\n" INDENT3 "VariantConversionCallbacks.GetToManagedCallback<"
-						 << arg_type->cs_type << ">()(args[" << itos(idx) << "])";
+				p_output << sformat(arg_type->cs_variant_to_managed,
+						"args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name);
 
 				idx++;
 			}
@@ -2543,14 +2542,12 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 					 << INDENT2 "int total_length = " << real_argc_str << " + vararg_length;\n";
 
 			r_output << INDENT2 "Span<godot_variant.movable> varargs_span = vararg_length <= VarArgsSpanThreshold ?\n"
-					 << INDENT3 "stackalloc godot_variant.movable[VarArgsSpanThreshold].Cleared() :\n"
+					 << INDENT3 "stackalloc godot_variant.movable[VarArgsSpanThreshold] :\n"
 					 << INDENT3 "new godot_variant.movable[vararg_length];\n";
 
 			r_output << INDENT2 "Span<IntPtr> " C_LOCAL_PTRCALL_ARGS "_span = total_length <= VarArgsSpanThreshold ?\n"
 					 << INDENT3 "stackalloc IntPtr[VarArgsSpanThreshold] :\n"
 					 << INDENT3 "new IntPtr[total_length];\n";
-
-			r_output << INDENT2 "using var variantSpanDisposer = new VariantSpanDisposer(varargs_span);\n";
 
 			r_output << INDENT2 "fixed (godot_variant.movable* varargs = &MemoryMarshal.GetReference(varargs_span))\n"
 					 << INDENT2 "fixed (IntPtr* " C_LOCAL_PTRCALL_ARGS " = "

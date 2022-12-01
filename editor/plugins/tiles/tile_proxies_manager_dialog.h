@@ -36,14 +36,14 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 
+class EditorUndoRedoManager;
+
 class TileProxiesManagerDialog : public ConfirmationDialog {
 	GDCLASS(TileProxiesManagerDialog, ConfirmationDialog);
 
 private:
 	int commited_actions_count = 0;
 	Ref<TileSet> tile_set;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	TileMapCell from;
 	TileMapCell to;

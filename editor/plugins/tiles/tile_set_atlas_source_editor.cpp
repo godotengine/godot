@@ -35,10 +35,10 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/progress_dialog.h"
 
-#include "editor/editor_node.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
@@ -152,7 +152,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 
 	// ID and size related properties.
 	if (tiles.size() == 1) {
-		const Vector2i &coords = tiles.front()->get().tile;
+		const Vector2i coords = tiles.front()->get().tile;
 		const int &alternative = tiles.front()->get().alternative;
 
 		if (alternative == 0) {
@@ -543,11 +543,13 @@ void TileSetAtlasSourceEditor::_update_source_inspector() {
 
 void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
 	// Fix selected.
-	for (RBSet<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
+	for (RBSet<TileSelection>::Element *E = selection.front(); E;) {
+		RBSet<TileSelection>::Element *N = E->next();
 		TileSelection selected = E->get();
 		if (!tile_set_atlas_source->has_tile(selected.tile) || !tile_set_atlas_source->has_alternative_tile(selected.tile, selected.alternative)) {
 			selection.erase(E);
 		}
+		E = N;
 	}
 
 	// Fix hovered.
@@ -737,18 +739,29 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	// --- Custom Data ---
 	ADD_TILE_DATA_EDITOR_GROUP("Custom Data");
 	for (int i = 0; i < tile_set->get_custom_data_layers_count(); i++) {
-		if (tile_set->get_custom_data_layer_name(i).is_empty()) {
-			ADD_TILE_DATA_EDITOR(group, vformat("Custom Data %d", i), vformat("custom_data_%d", i));
+		String editor_name = vformat("custom_data_%d", i);
+		String prop_name = tile_set->get_custom_data_layer_name(i);
+		Variant::Type prop_type = tile_set->get_custom_data_layer_type(i);
+
+		if (prop_name.is_empty()) {
+			ADD_TILE_DATA_EDITOR(group, vformat("Custom Data %d", i), editor_name);
 		} else {
-			ADD_TILE_DATA_EDITOR(group, tile_set->get_custom_data_layer_name(i), vformat("custom_data_%d", i));
+			ADD_TILE_DATA_EDITOR(group, prop_name, editor_name);
 		}
-		if (!tile_data_editors.has(vformat("custom_data_%d", i))) {
+
+		// If the type of the edited property has been changed, delete the
+		// editor and create a new one.
+		if (tile_data_editors.has(editor_name) && ((TileDataDefaultEditor *)tile_data_editors[editor_name])->get_property_type() != prop_type) {
+			tile_data_editors[vformat("custom_data_%d", i)]->queue_free();
+			tile_data_editors.erase(vformat("custom_data_%d", i));
+		}
+		if (!tile_data_editors.has(editor_name)) {
 			TileDataDefaultEditor *tile_data_custom_data_editor = memnew(TileDataDefaultEditor());
 			tile_data_custom_data_editor->hide();
-			tile_data_custom_data_editor->setup_property_editor(tile_set->get_custom_data_layer_type(i), vformat("custom_data_%d", i), tile_set->get_custom_data_layer_name(i));
+			tile_data_custom_data_editor->setup_property_editor(prop_type, editor_name, prop_name);
 			tile_data_custom_data_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
 			tile_data_custom_data_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
-			tile_data_editors[vformat("custom_data_%d", i)] = tile_data_custom_data_editor;
+			tile_data_editors[editor_name] = tile_data_custom_data_editor;
 		}
 	}
 	for (int i = tile_set->get_custom_data_layers_count(); tile_data_editors.has(vformat("custom_data_%d", i)); i++) {

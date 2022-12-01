@@ -30,10 +30,13 @@
 
 #include "tiles_editor_plugin.h"
 
+#include "tile_set_editor.h"
+
 #include "core/os/mutex.h"
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 
 #include "scene/2d/tile_map.h"
@@ -42,8 +45,6 @@
 #include "scene/gui/control.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/tile_set.h"
-
-#include "tile_set_editor.h"
 
 TilesEditorPlugin *TilesEditorPlugin::singleton = nullptr;
 

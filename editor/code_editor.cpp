@@ -91,10 +91,10 @@ void FindReplaceBar::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
 			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
-			hide_button->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			hide_button->set_texture_normal(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_hover(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_pressed(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -377,10 +377,12 @@ void FindReplaceBar::_update_results_count() {
 
 			if (is_whole_words()) {
 				if (col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
-					break;
+					col_pos += searched.length();
+					continue;
 				}
-				if (col_pos + line_text.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
-					break;
+				if (col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
+					col_pos += searched.length();
+					continue;
 				}
 			}
 
@@ -2000,23 +2002,14 @@ void CodeTextEditor::goto_next_bookmark() {
 		return;
 	}
 
-	text_editor->remove_secondary_carets();
-	int line = text_editor->get_caret_line();
-	if (line >= (int)bmarks[bmarks.size() - 1]) {
-		text_editor->unfold_line(bmarks[0]);
-		text_editor->set_caret_line(bmarks[0]);
-		text_editor->center_viewport_to_caret();
-	} else {
-		for (int i = 0; i < bmarks.size(); i++) {
-			int bmark_line = bmarks[i];
-			if (bmark_line > line) {
-				text_editor->unfold_line(bmark_line);
-				text_editor->set_caret_line(bmark_line);
-				text_editor->center_viewport_to_caret();
-				return;
-			}
+	int current_line = text_editor->get_caret_line();
+	int bmark_idx = 0;
+	if (current_line < (int)bmarks[bmarks.size() - 1]) {
+		while (bmark_idx < bmarks.size() && bmarks[bmark_idx] <= current_line) {
+			bmark_idx++;
 		}
 	}
+	goto_line_centered(bmarks[bmark_idx]);
 }
 
 void CodeTextEditor::goto_prev_bookmark() {
@@ -2025,23 +2018,14 @@ void CodeTextEditor::goto_prev_bookmark() {
 		return;
 	}
 
-	text_editor->remove_secondary_carets();
-	int line = text_editor->get_caret_line();
-	if (line <= (int)bmarks[0]) {
-		text_editor->unfold_line(bmarks[bmarks.size() - 1]);
-		text_editor->set_caret_line(bmarks[bmarks.size() - 1]);
-		text_editor->center_viewport_to_caret();
-	} else {
-		for (int i = bmarks.size() - 1; i >= 0; i--) {
-			int bmark_line = bmarks[i];
-			if (bmark_line < line) {
-				text_editor->unfold_line(bmark_line);
-				text_editor->set_caret_line(bmark_line);
-				text_editor->center_viewport_to_caret();
-				return;
-			}
+	int current_line = text_editor->get_caret_line();
+	int bmark_idx = bmarks.size() - 1;
+	if (current_line > (int)bmarks[0]) {
+		while (bmark_idx >= 0 && bmarks[bmark_idx] >= current_line) {
+			bmark_idx--;
 		}
 	}
+	goto_line_centered(bmarks[bmark_idx]);
 }
 
 void CodeTextEditor::remove_all_bookmarks() {

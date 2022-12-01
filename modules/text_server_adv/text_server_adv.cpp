@@ -4750,7 +4750,10 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 			i += (sd_glyphs[i].count - 1);
 		}
 	}
-	ERR_FAIL_COND_V_MSG(sd_shift != sd->break_inserts, false, "Invalid break insert count!");
+	if (sd_shift < sd->break_inserts) {
+		// Note: should not happen with a normal text, but might be a case with special fonts that substitute a long string (with breaks opportunities in it) with a single glyph (like Font Awesome).
+		glyphs_new.resize(sd->glyphs.size() + sd_shift);
+	}
 
 	if (sd->break_inserts > 0) {
 		sd->glyphs = glyphs_new;

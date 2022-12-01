@@ -35,17 +35,44 @@
 
 #include "core/os/os.h"
 
+class MultiplayerSynchronizer;
+
 class MultiplayerDebugger {
 public:
 	struct RPCNodeInfo {
 		ObjectID node;
 		String node_path;
 		int incoming_rpc = 0;
+		int incoming_size = 0;
 		int outgoing_rpc = 0;
+		int outgoing_size = 0;
 	};
 
 	struct RPCFrame {
 		Vector<RPCNodeInfo> infos;
+
+		Array serialize();
+		bool deserialize(const Array &p_arr);
+	};
+
+	struct SyncInfo {
+		ObjectID synchronizer;
+		ObjectID config;
+		ObjectID root_node;
+		int incoming_syncs = 0;
+		int incoming_size = 0;
+		int outgoing_syncs = 0;
+		int outgoing_size = 0;
+
+		void write_to_array(Array &r_arr) const;
+		bool read_from_array(const Array &p_arr, int p_offset);
+
+		SyncInfo() {}
+		SyncInfo(MultiplayerSynchronizer *p_sync);
+	};
+
+	struct ReplicationFrame {
+		HashMap<ObjectID, SyncInfo> infos;
 
 		Array serialize();
 		bool deserialize(const Array &p_arr);
@@ -74,7 +101,6 @@ private:
 	};
 
 	class RPCProfiler : public EngineProfiler {
-	public:
 	private:
 		HashMap<ObjectID, RPCNodeInfo> rpc_node_data;
 		uint64_t last_profile_time = 0;
@@ -86,6 +112,19 @@ private:
 		void add(const Array &p_data);
 		void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time);
 	};
+
+	class ReplicationProfiler : public EngineProfiler {
+	private:
+		HashMap<ObjectID, SyncInfo> sync_data;
+		uint64_t last_profile_time = 0;
+
+	public:
+		void toggle(bool p_enable, const Array &p_opts);
+		void add(const Array &p_data);
+		void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time);
+	};
+
+	static Error _capture(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 
 public:
 	static void initialize();

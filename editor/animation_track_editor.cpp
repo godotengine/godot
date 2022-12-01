@@ -35,10 +35,13 @@
 #include "editor/animation_bezier_editor.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/tween.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
@@ -133,6 +136,7 @@ public:
 			int existing = animation->track_find_key(track, new_time, true);
 
 			setting = true;
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Anim Change Keyframe Time"), UndoRedo::MERGE_ENDS);
 
 			Variant val = animation->track_get_key_value(track, key);
@@ -160,6 +164,7 @@ public:
 			float val = p_value;
 			float prev_val = animation->track_get_key_transition(track, key);
 			setting = true;
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Anim Change Transition"), UndoRedo::MERGE_ENDS);
 			undo_redo->add_do_method(animation.ptr(), "track_set_key_transition", track, key, val);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_key_transition", track, key, prev_val);
@@ -171,6 +176,7 @@ public:
 			return true;
 		}
 
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		switch (animation->track_get_type(track)) {
 			case Animation::TYPE_POSITION_3D:
 			case Animation::TYPE_ROTATION_3D:
@@ -685,7 +691,6 @@ public:
 		}
 	}
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	Ref<Animation> animation;
 	int track = -1;
 	float key_ofs = 0;
@@ -810,6 +815,7 @@ public:
 
 					int existing = animation->track_find_key(track, new_time, true);
 
+					Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 					if (!setting) {
 						setting = true;
 						undo_redo->create_action(TTR("Anim Multi Change Keyframe Time"), UndoRedo::MERGE_ENDS);
@@ -834,6 +840,7 @@ public:
 					float val = p_value;
 					float prev_val = animation->track_get_key_transition(track, key);
 
+					Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 					if (!setting) {
 						setting = true;
 						undo_redo->create_action(TTR("Anim Multi Change Transition"), UndoRedo::MERGE_ENDS);
@@ -843,6 +850,7 @@ public:
 					update_obj = true;
 				}
 
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				switch (animation->track_get_type(track)) {
 					case Animation::TYPE_POSITION_3D:
 					case Animation::TYPE_ROTATION_3D:
@@ -1053,6 +1061,7 @@ public:
 			}
 		}
 
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		if (setting) {
 			if (update_obj) {
 				undo_redo->add_do_method(this, "_update_obj", animation);
@@ -1376,8 +1385,6 @@ public:
 
 	bool use_fps = false;
 
-	Ref<EditorUndoRedoManager> undo_redo;
-
 	void notify_change() {
 		notify_property_list_changed();
 	}
@@ -1419,6 +1426,7 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 	}
 
 	editing = true;
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Change Animation Length"));
 	undo_redo->add_do_method(animation.ptr(), "set_length", p_new_len);
 	undo_redo->add_undo_method(animation.ptr(), "set_length", animation->get_length());
@@ -1431,6 +1439,7 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 
 void AnimationTimelineEdit::_anim_loop_pressed() {
 	if (!read_only) {
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Change Animation Loop"));
 		switch (animation->get_loop_mode()) {
 			case Animation::LOOP_NONE: {
@@ -1678,6 +1687,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			}
 
 			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
+			update_values();
 		} break;
 	}
 }
@@ -1700,7 +1710,6 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 		play_position->hide();
 	}
 	queue_redraw();
-	update_values();
 }
 
 Size2 AnimationTimelineEdit::get_minimum_size() const {
@@ -1710,10 +1719,6 @@ Size2 AnimationTimelineEdit::get_minimum_size() const {
 	ms.height = MAX(ms.height, font->get_height(font_size));
 	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_theme_icon(SNAME("Hsize"), SNAME("EditorIcons"))->get_width() + 2;
 	return ms;
-}
-
-void AnimationTimelineEdit::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
 }
 
 void AnimationTimelineEdit::set_zoom(Range *p_zoom) {
@@ -1749,6 +1754,9 @@ void AnimationTimelineEdit::update_values() {
 		length->set_step(1);
 		length->set_tooltip_text(TTR("Animation length (frames)"));
 		time_icon->set_tooltip_text(TTR("Animation length (frames)"));
+		if (track_edit) {
+			track_edit->editor->_update_key_edit();
+		}
 	} else {
 		length->set_value(animation->get_length());
 		length->set_step(0.001);
@@ -1893,7 +1901,6 @@ void AnimationTimelineEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origi
 
 void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
 	use_fps = p_use_fps;
-	update_values();
 	queue_redraw();
 }
 
@@ -2514,14 +2521,6 @@ Size2 AnimationTrackEdit::get_minimum_size() const {
 	return Vector2(1, max_h + separation);
 }
 
-void AnimationTrackEdit::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
-}
-
-Ref<EditorUndoRedoManager> AnimationTrackEdit::get_undo_redo() const {
-	return undo_redo;
-}
-
 void AnimationTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
 	timeline->set_track_edit(this);
@@ -2568,6 +2567,7 @@ void AnimationTrackEdit::_zoom_changed() {
 }
 
 void AnimationTrackEdit::_path_submitted(const String &p_text) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Change Track Path"));
 	undo_redo->add_do_method(animation.ptr(), "track_set_path", track, p_text);
 	undo_redo->add_undo_method(animation.ptr(), "track_set_path", track, animation->track_get_path(track));
@@ -2805,6 +2805,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (!read_only) {
 			if (check_rect.has_point(pos)) {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Toggle Track Enabled"));
 				undo_redo->add_do_method(animation.ptr(), "track_set_enabled", track, !animation->track_is_enabled(track));
 				undo_redo->add_undo_method(animation.ptr(), "track_set_enabled", track, animation->track_is_enabled(track));
@@ -3196,6 +3197,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_CALL_MODE_TRIGGER:
 		case MENU_CALL_MODE_CAPTURE: {
 			Animation::UpdateMode update_mode = Animation::UpdateMode(p_index);
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Change Animation Update Mode"));
 			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", track, update_mode);
 			undo_redo->add_undo_method(animation.ptr(), "value_track_set_update_mode", track, animation->value_track_get_update_mode(track));
@@ -3209,6 +3211,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_INTERPOLATION_LINEAR_ANGLE:
 		case MENU_INTERPOLATION_CUBIC_ANGLE: {
 			Animation::InterpolationType interp_mode = Animation::InterpolationType(p_index - MENU_INTERPOLATION_NEAREST);
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Change Animation Interpolation Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_type", track, animation->track_get_interpolation_type(track));
@@ -3218,6 +3221,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_LOOP_WRAP:
 		case MENU_LOOP_CLAMP: {
 			bool loop_wrap = p_index == MENU_LOOP_WRAP;
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Change Animation Loop Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, loop_wrap);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, animation->track_get_interpolation_loop_wrap(track));
@@ -3446,8 +3450,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		track_edits[_get_track_selected()]->release_focus();
 	}
 	if (animation.is_valid()) {
-		animation->disconnect("tracks_changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
-		animation->disconnect("changed", callable_mp(this, &AnimationTrackEditor::_sync_animation_change));
+		animation->disconnect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
 		_clear_selection();
 	}
 	animation = p_anim;
@@ -3458,8 +3461,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 	_update_tracks();
 
 	if (animation.is_valid()) {
-		animation->connect("tracks_changed", callable_mp(this, &AnimationTrackEditor::_animation_changed), CONNECT_DEFERRED);
-		animation->connect("changed", callable_mp(this, &AnimationTrackEditor::_sync_animation_change), CONNECT_DEFERRED);
+		animation->connect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
 
 		hscroll->show();
 		edit->set_disabled(read_only);
@@ -3613,6 +3615,7 @@ void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Anim
 	}
 	int idx = p_track;
 	if (idx >= 0 && idx < p_from_animation->get_track_count()) {
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Remove Anim Track"), UndoRedo::MERGE_DISABLE, p_from_animation.ptr());
 
 		// Remove corresponding reset tracks if they are no longer needed.
@@ -3813,6 +3816,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 }
 
 void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_beziers) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Anim Insert"));
 
 	Ref<Animation> reset_anim;
@@ -3850,7 +3854,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	}
 
 	// Let's build a node path.
-	String path = root->get_path_to(p_node);
+	String path = root->get_path_to(p_node, true);
 	if (!p_sub.is_empty()) {
 		path += ":" + p_sub;
 	}
@@ -3890,7 +3894,7 @@ bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const 
 	}
 
 	// Let's build a node path.
-	String path = root->get_path_to(p_node);
+	String path = root->get_path_to(p_node, true);
 	if (!p_sub.is_empty()) {
 		path += ":" + p_sub;
 	}
@@ -3938,11 +3942,10 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 
 void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists) {
 	ERR_FAIL_COND(!root);
+
 	// Let's build a node path.
-
 	Node *node = p_node;
-
-	String path = root->get_path_to(node);
+	String path = root->get_path_to(node, true);
 
 	if (Object::cast_to<AnimationPlayer>(node) && p_property == "current_animation") {
 		if (node == AnimationPlayerEditor::get_singleton()->get_player()) {
@@ -4036,14 +4039,13 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
 
 	ERR_FAIL_COND(!root);
-	// Let's build a node path.
 	ERR_FAIL_COND(history->get_path_size() == 0);
 	Object *obj = ObjectDB::get_instance(history->get_path_object(0));
 	ERR_FAIL_COND(!Object::cast_to<Node>(obj));
 
+	// Let's build a node path.
 	Node *node = Object::cast_to<Node>(obj);
-
-	String path = root->get_path_to(node);
+	String path = root->get_path_to(node, true);
 
 	if (Object::cast_to<AnimationPlayer>(node) && p_property == "current_animation") {
 		if (node == AnimationPlayerEditor::get_singleton()->get_player()) {
@@ -4143,6 +4145,7 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 		Ref<Animation> reset_anim;
 		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->add_do_method(al.ptr(), "add_animation", SceneStringNames::get_singleton()->RESET, reset_anim);
 		undo_redo->add_do_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
 		undo_redo->add_undo_method(al.ptr(), "remove_animation", SceneStringNames::get_singleton()->RESET);
@@ -4152,6 +4155,7 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 }
 
 void AnimationTrackEditor::_confirm_insert_list() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Anim Create & Insert"));
 
 	bool create_reset = insert_confirm_reset->is_visible() && insert_confirm_reset->is_pressed();
@@ -4325,6 +4329,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		}
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (create_normal_track) {
 		if (p_create_beziers) {
 			bool valid;
@@ -4609,7 +4614,6 @@ void AnimationTrackEditor::_update_tracks() {
 			track_vbox->add_child(track_edit);
 		}
 
-		track_edit->set_undo_redo(undo_redo);
 		track_edit->set_timeline(timeline);
 		track_edit->set_root(root);
 		track_edit->set_animation_and_track(animation, i, file_read_only);
@@ -4650,29 +4654,25 @@ void AnimationTrackEditor::_redraw_groups() {
 	}
 }
 
-void AnimationTrackEditor::_sync_animation_change() {
-	bezier_edit->queue_redraw();
-}
-
 void AnimationTrackEditor::_animation_changed() {
 	if (animation_changing_awaiting_update) {
 		return; // All will be updated, don't bother with anything.
 	}
 
 	if (key_edit) {
-		_update_key_edit();
-	}
-
-	if (key_edit && key_edit->setting) {
-		// If editing a key, just redraw the edited track, makes refresh less costly.
-		if (key_edit->track < track_edits.size()) {
-			if (animation->track_get_type(key_edit->track) == Animation::TYPE_BEZIER) {
-				bezier_edit->queue_redraw();
-			} else {
-				track_edits[key_edit->track]->queue_redraw();
+		if (key_edit->setting) {
+			// If editing a key, just redraw the edited track, makes refresh less costly.
+			if (key_edit->track < track_edits.size()) {
+				if (animation->track_get_type(key_edit->track) == Animation::TYPE_BEZIER) {
+					bezier_edit->queue_redraw();
+				} else {
+					track_edits[key_edit->track]->queue_redraw();
+				}
 			}
+			return;
+		} else {
+			_update_key_edit();
 		}
-		return;
 	}
 
 	animation_changing_awaiting_update = true;
@@ -4787,12 +4787,14 @@ void AnimationTrackEditor::_update_scroll(double) {
 }
 
 void AnimationTrackEditor::_update_step(double p_new_step) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Change Animation Step"));
 	float step_value = p_new_step;
 	if (timeline->is_using_fps()) {
 		if (step_value != 0.0) {
 			step_value = 1.0 / step_value;
 		}
+		timeline->queue_redraw();
 	}
 	undo_redo->add_do_method(animation.ptr(), "set_step", step_value);
 	undo_redo->add_undo_method(animation.ptr(), "set_step", animation->get_step());
@@ -4812,6 +4814,7 @@ void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
 	}
 
 	_clear_selection(true);
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Rearrange Tracks"));
 	undo_redo->add_do_method(animation.ptr(), "track_move_to", p_from_track, p_to_track);
 	// Take into account that the position of the tracks that come after the one removed will change.
@@ -4826,7 +4829,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	ERR_FAIL_COND(!root);
 	Node *node = get_node(p_path);
 	ERR_FAIL_COND(!node);
-	NodePath path_to = root->get_path_to(node);
+	NodePath path_to = root->get_path_to(node, true);
 
 	if (adding_track_type == Animation::TYPE_BLEND_SHAPE && !node->is_class("MeshInstance3D")) {
 		EditorNode::get_singleton()->show_warning(TTR("Blend Shape tracks only apply to MeshInstance3D nodes."));
@@ -4855,6 +4858,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 		case Animation::TYPE_ROTATION_3D:
 		case Animation::TYPE_SCALE_3D:
 		case Animation::TYPE_METHOD: {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add Track"));
 			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
 			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
@@ -4883,6 +4887,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 				return;
 			}
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add Track"));
 			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
 			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
@@ -4901,6 +4906,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 				return;
 			}
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add Track"));
 			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
 			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
@@ -4925,6 +4931,7 @@ void AnimationTrackEditor::_add_track(int p_type) {
 void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 	String full_path = String(adding_track_path) + ":" + p_name;
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (adding_track_type == Animation::TYPE_VALUE) {
 		Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
 		{
@@ -5019,6 +5026,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 		p_ofs += 0.001;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (animation->track_get_type(p_track)) {
 		case Animation::TYPE_POSITION_3D: {
 			if (!root->has_node(animation->track_get_path(p_track))) {
@@ -5174,6 +5182,7 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 			}
 			d["args"] = params;
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add Method Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", insert_key_from_track_call_track, insert_key_from_track_call_ofs, d);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", insert_key_from_track_call_track, insert_key_from_track_call_ofs);
@@ -5283,13 +5292,17 @@ void AnimationTrackEditor::_update_key_edit() {
 		key_edit->track = selection.front()->key().track;
 		key_edit->use_fps = timeline->is_using_fps();
 
-		float ofs = animation->track_get_key_time(key_edit->track, selection.front()->key().key);
+		int key_id = selection.front()->key().key;
+		if (key_id >= animation->track_get_key_count(key_edit->track)) {
+			_clear_key_edit();
+			return; // Probably in the process of rearranging the keys.
+		}
+		float ofs = animation->track_get_key_time(key_edit->track, key_id);
 		key_edit->key_ofs = ofs;
 		key_edit->root_path = root;
 
 		NodePath np;
 		key_edit->hint = _find_hint_for_track(key_edit->track, np);
-		key_edit->undo_redo = undo_redo;
 		key_edit->base = np;
 
 		EditorNode::get_singleton()->push_item(key_edit);
@@ -5312,17 +5325,18 @@ void AnimationTrackEditor::_update_key_edit() {
 				base_map[track] = NodePath();
 			}
 
+			int key_id = E.key.key;
+			if (key_id >= animation->track_get_key_count(track)) {
+				_clear_key_edit();
+				return; // Probably in the process of rearranging the keys.
+			}
 			key_ofs_map[track].push_back(animation->track_get_key_time(track, E.key.key));
 		}
 		multi_key_edit->key_ofs_map = key_ofs_map;
 		multi_key_edit->base_map = base_map;
 		multi_key_edit->hint = _find_hint_for_track(first_track, base_map[first_track]);
-
 		multi_key_edit->use_fps = timeline->is_using_fps();
-
 		multi_key_edit->root_path = root;
-
-		multi_key_edit->undo_redo = undo_redo;
 
 		EditorNode::get_singleton()->push_item(multi_key_edit);
 	}
@@ -5351,9 +5365,11 @@ void AnimationTrackEditor::_select_at_anim(const Ref<Animation> &p_anim, int p_t
 	ki.pos = p_pos;
 
 	selection.insert(sk, ki);
+	_update_key_edit();
 }
 
 void AnimationTrackEditor::_move_selection_commit() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Anim Move Keys"));
 
 	List<_AnimMoveRestore> to_restore;
@@ -5426,7 +5442,6 @@ void AnimationTrackEditor::_move_selection_commit() {
 	undo_redo->add_do_method(this, "_redraw_tracks");
 	undo_redo->add_undo_method(this, "_redraw_tracks");
 	undo_redo->commit_action();
-	_update_key_edit();
 }
 
 void AnimationTrackEditor::_move_selection_cancel() {
@@ -5606,6 +5621,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 
 		int start_track = transpose ? _get_track_selected() : top_track;
 
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Anim Duplicate Keys"));
 
 		List<Pair<int, float>> new_selection_values;
@@ -5656,7 +5672,6 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 		undo_redo->add_do_method(this, "_redraw_tracks");
 		undo_redo->add_undo_method(this, "_redraw_tracks");
 		undo_redo->commit_action();
-		_update_key_edit();
 	}
 }
 
@@ -5836,6 +5851,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 
 			int base_track = animation->get_track_count();
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Paste Tracks"));
 			for (int i = 0; i < track_clipboard.size(); i++) {
 				undo_redo->add_do_method(animation.ptr(), "add_track", track_clipboard[i].track_type);
@@ -5903,10 +5919,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 
 			float s = scale->get_value();
-			if (s == 0) {
-				ERR_PRINT("Can't scale to 0");
-			}
+			ERR_FAIL_COND_MSG(s == 0, "Can't scale to 0.");
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Anim Scale Keys"));
 
 			List<_AnimMoveRestore> to_restore;
@@ -5980,14 +5995,13 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			undo_redo->add_do_method(this, "_redraw_tracks");
 			undo_redo->add_undo_method(this, "_redraw_tracks");
 			undo_redo->commit_action();
-			_update_key_edit();
-
 		} break;
 
 		case EDIT_EASE_SELECTION: {
 			ease_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
 		case EDIT_EASE_CONFIRM: {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Make Easing Keys"));
 
 			Tween::TransitionType transition_type = static_cast<Tween::TransitionType>(transition_selection->get_selected_id());
@@ -6094,6 +6108,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			_anim_duplicate_keys(true);
 		} break;
 		case EDIT_ADD_RESET_KEY: {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Anim Add RESET Keys"));
 
 			Ref<Animation> reset = _create_and_get_reset_animation();
@@ -6154,6 +6169,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 
 			if (selection.size()) {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Anim Delete Keys"));
 
 				for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
@@ -6184,6 +6200,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			bake_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
 		case EDIT_BAKE_ANIMATION_CONFIRM: {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Bake Animation as Linear keys."));
 
 			int track_len = animation->get_track_count();
@@ -6304,6 +6321,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			animation->optimize(optimize_velocity_error->get_value(), optimize_angular_error->get_value(), optimize_precision_error->get_value());
 			_redraw_tracks();
 			_update_key_edit();
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->clear_history(true, undo_redo->get_history_id_for_object(animation.ptr()));
 			undo_redo->clear_history(true, undo_redo->get_history_id_for_object(this));
 
@@ -6373,6 +6391,7 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 		}
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->clear_history(true, undo_redo->get_history_id_for_object(animation.ptr()));
 	undo_redo->clear_history(true, undo_redo->get_history_id_for_object(this));
 	_update_tracks();
@@ -6538,8 +6557,6 @@ void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie)
 }
 
 AnimationTrackEditor::AnimationTrackEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	main_panel = memnew(PanelContainer);
 	main_panel->set_focus_mode(FOCUS_ALL); // Allow panel to have focus so that shortcuts work as expected.
 	add_child(main_panel);
@@ -6564,7 +6581,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	main_panel->add_child(info_message);
 
 	timeline = memnew(AnimationTimelineEdit);
-	timeline->set_undo_redo(undo_redo);
 	timeline_vbox->add_child(timeline);
 	timeline->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
 	timeline->connect("name_limit_changed", callable_mp(this, &AnimationTrackEditor::_name_limit_changed));
@@ -6587,7 +6603,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	bezier_edit = memnew(AnimationBezierTrackEdit);
 	timeline_vbox->add_child(bezier_edit);
-	bezier_edit->set_undo_redo(undo_redo);
 	bezier_edit->set_editor(this);
 	bezier_edit->set_timeline(timeline);
 	bezier_edit->hide();

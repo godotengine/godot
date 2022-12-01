@@ -103,7 +103,8 @@ void RootMotionView::_notification(int p_what) {
 						set_physics_process_internal(false);
 					}
 
-					transform = tree->get_root_motion_transform();
+					transform.origin = tree->get_root_motion_position();
+					transform.basis = tree->get_root_motion_rotation(); // Scale is meaningless.
 				}
 			}
 
@@ -113,9 +114,8 @@ void RootMotionView::_notification(int p_what) {
 
 			first = false;
 
-			transform.orthonormalize(); //don't want scale, too imprecise
-
-			accumulated = accumulated * transform;
+			accumulated.origin += transform.origin;
+			accumulated.basis *= transform.basis;
 			accumulated.origin.x = Math::fposmod(accumulated.origin.x, cell_size);
 			if (zero_y) {
 				accumulated.origin.y = 0;

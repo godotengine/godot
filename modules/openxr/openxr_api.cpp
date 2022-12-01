@@ -51,7 +51,7 @@
 #define XR_USE_GRAPHICS_API_VULKAN
 #endif
 #ifdef GLES3_ENABLED
-#ifdef ANDROID
+#ifdef ANDROID_ENABLED
 #define XR_USE_GRAPHICS_API_OPENGL_ES
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -59,14 +59,13 @@
 #include <GLES3/gl3ext.h>
 #else
 #define XR_USE_GRAPHICS_API_OPENGL
-#endif // ANDROID
+#endif // ANDROID_ENABLED
 #ifdef X11_ENABLED
 #include OPENGL_INCLUDE_H
 #define GL_GLEXT_PROTOTYPES 1
 #define GL3_PROTOTYPES 1
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/glx.h>
+#include "thirdparty/glad/glad/gl.h"
+#include "thirdparty/glad/glad/glx.h"
 #include <X11/Xlib.h>
 #endif // X11_ENABLED
 #endif // GLES_ENABLED
@@ -299,9 +298,17 @@ bool OpenXRAPI::create_instance() {
 		XR_CURRENT_API_VERSION // apiVersion
 	};
 
+	void *next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		void *np = wrapper->set_instance_create_info_and_get_next_pointer(next_pointer);
+		if (np != nullptr) {
+			next_pointer = np;
+		}
+	}
+
 	XrInstanceCreateInfo instance_create_info = {
 		XR_TYPE_INSTANCE_CREATE_INFO, // type
-		nullptr, // next
+		next_pointer, // next
 		0, // createFlags
 		application_info, // applicationInfo
 		0, // enabledApiLayerCount, need to find out if we need support for this?

@@ -181,7 +181,7 @@ public:
 	void restore_editor_global_states();
 
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
-	Variant instance_custom_type(const String &p_type, const String &p_inherits);
+	Variant instantiate_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
 	const HashMap<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
 	const CustomType *get_custom_type_by_name(const String &p_name) const;

@@ -256,7 +256,7 @@ void EditorResourcePicker::_update_menu_items() {
 
 				paste_valid = ClassDB::is_parent_class(res_type, base) || EditorNode::get_editor_data().script_class_is_parent(res_type, base);
 
-				if (!paste_valid) {
+				if (paste_valid) {
 					break;
 				}
 			}
@@ -438,7 +438,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			}
 
 			if (!obj) {
-				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+				obj = EditorNode::get_editor_data().instantiate_custom_type(intype, "Resource");
 			}
 
 			Resource *resp = Object::cast_to<Resource>(obj);

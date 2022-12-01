@@ -44,7 +44,6 @@ class CheckBox;
 class ProgressBar;
 class EditorFileDialog;
 class EditorProperty;
-class EditorUndoRedoManager;
 class MenuButton;
 class PanelContainer;
 
@@ -62,8 +61,6 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	AcceptDialog *filter_dialog = nullptr;
 	Tree *filters = nullptr;

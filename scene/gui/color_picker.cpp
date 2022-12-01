@@ -959,7 +959,7 @@ void ColorPicker::_sample_draw() {
 		// Draw both old and new colors for easier comparison (only if spawned from a ColorPickerButton).
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 
-		if (display_old_color && old_color.a < 1.0) {
+		if (old_color.a < 1.0) {
 			sample->draw_texture_rect(get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), rect_old, true);
 		}
 
@@ -1088,7 +1088,9 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 	} else if (p_which == 1) {
 		if (actual_shape == SHAPE_HSV_RECTANGLE) {
 			Ref<Texture2D> hue = get_theme_icon(SNAME("color_hue"), SNAME("ColorPicker"));
-			c->draw_texture_rect(hue, Rect2(Point2(), c->get_size()));
+			c->draw_set_transform(Point2(), -Math_PI / 2, Size2(c->get_size().x, -c->get_size().y));
+			c->draw_texture_rect(hue, Rect2(Point2(), Size2(1, 1)));
+			c->draw_set_transform(Point2(), 0, Size2(1, 1));
 			int y = c->get_size().y - c->get_size().y * (1.0 - h);
 			Color col;
 			col.set_hsv(h, 1, 1);

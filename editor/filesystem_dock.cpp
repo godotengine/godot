@@ -1852,8 +1852,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_INSTANCE: {
-			// Instance all selected scenes.
+		case FILE_INSTANTIATE: {
+			// Instantiate all selected scenes.
 			Vector<String> paths;
 			for (int i = 0; i < p_selected.size(); i++) {
 				String fpath = p_selected[i];
@@ -1862,7 +1862,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				}
 			}
 			if (!paths.is_empty()) {
-				emit_signal(SNAME("instance"), paths);
+				emit_signal(SNAME("instantiate"), paths);
 			}
 		} break;
 
@@ -2077,7 +2077,7 @@ void FileSystemDock::_resource_created() {
 		return;
 	}
 
-	Variant c = new_resource_dialog->instance_selected();
+	Variant c = new_resource_dialog->instantiate_selected();
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);
@@ -2540,7 +2540,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			} else {
 				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scenes"), FILE_OPEN);
 			}
-			p_popup->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instance"), FILE_INSTANCE);
+			p_popup->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instantiate"), FILE_INSTANTIATE);
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
 			p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
@@ -2994,7 +2994,7 @@ void FileSystemDock::_file_sort_popup(int p_id) {
 MenuButton *FileSystemDock::_create_file_menu_button() {
 	MenuButton *button = memnew(MenuButton);
 	button->set_flat(true);
-	button->set_tooltip_text(TTR("Sort files"));
+	button->set_tooltip_text(TTR("Sort Files"));
 
 	PopupMenu *p = button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_sort_popup));
@@ -3023,7 +3023,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
 
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
-	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
+	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 
 	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
@@ -3057,14 +3057,14 @@ FileSystemDock::FileSystemDock() {
 	button_hist_prev->set_flat(true);
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_NONE);
-	button_hist_prev->set_tooltip_text(TTR("Previous Folder/File"));
+	button_hist_prev->set_tooltip_text(TTR("Go to previous selected folder/file."));
 	toolbar_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(Button);
 	button_hist_next->set_flat(true);
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_NONE);
-	button_hist_next->set_tooltip_text(TTR("Next Folder/File"));
+	button_hist_next->set_tooltip_text(TTR("Go to next selected folder/file."));
 	toolbar_hbc->add_child(button_hist_next);
 
 	current_path = memnew(LineEdit);

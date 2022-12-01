@@ -612,7 +612,7 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 	}
 
 	//full barrier here, we need raster, transfer and compute and it depends from the previous work
-	RD::get_singleton()->barrier(RD::BARRIER_MASK_ALL, RD::BARRIER_MASK_ALL);
+	RD::get_singleton()->barrier(RD::BARRIER_MASK_ALL_BARRIERS, RD::BARRIER_MASK_ALL_BARRIERS);
 
 	bool using_shadows = true;
 
@@ -796,6 +796,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				draw_sky = true;
 			} break;
 			case RS::ENV_BG_CANVAS: {
+				if (rb.is_valid()) {
+					RID dest_framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_ONE_PASS);
+					RID texture = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(rb->get_render_target());
+					copy_effects->copy_to_fb_rect(texture, dest_framebuffer, Rect2i(), false, false, false, false, RID(), false, false, true);
+				}
 				keep_color = true;
 			} break;
 			case RS::ENV_BG_KEEP: {
@@ -960,7 +965,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 		if (!using_subpass_transparent) {
 			// We're done with our subpasses so end our container pass
-			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
+			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL_BARRIERS);
 
 			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
 		}
@@ -1012,7 +1017,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
 
-			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
+			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL_BARRIERS);
 		} else {
 			RENDER_TIMESTAMP("Render Transparent");
 
@@ -1032,12 +1037,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
 				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
-				RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
+				RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL_BARRIERS);
 			} else {
 				//single threaded
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
-				RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
+				RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL_BARRIERS);
 			}
 
 			RD::get_singleton()->draw_command_end_label(); // Render Transparent Subpass
@@ -1363,6 +1368,8 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	scene_data.material_uv2_mode = false;
 	scene_data.opaque_prepass_threshold = 0.0f;
 	scene_data.emissive_exposure_normalization = p_exposure_normalization;
+	scene_data.time = time;
+	scene_data.time_step = time_step;
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;
@@ -1486,6 +1493,8 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	scene_data.z_far = p_cam_projection.get_z_far();
 	scene_data.dual_paraboloid_side = 0;
 	scene_data.opaque_prepass_threshold = 0.0;
+	scene_data.time = time;
+	scene_data.time_step = time_step;
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;

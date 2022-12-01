@@ -31,7 +31,7 @@
 #ifndef GLTF_DOCUMENT_H
 #define GLTF_DOCUMENT_H
 
-#include "gltf_defines.h"
+#include "extensions/gltf_document_extension.h"
 #include "structures/gltf_animation.h"
 
 #include "scene/3d/bone_attachment_3d.h"
@@ -44,13 +44,13 @@
 
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);
-	TypedArray<GLTFDocumentExtension> document_extensions;
+	static Vector<Ref<GLTFDocumentExtension>> all_document_extensions;
+	Vector<Ref<GLTFDocumentExtension>> document_extensions;
 
 private:
 	const float BAKE_FPS = 30.0f;
 
 public:
-	GLTFDocument();
 	const int32_t JOINT_GROUP_SIZE = 4;
 
 	enum {
@@ -76,8 +76,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_extensions(TypedArray<GLTFDocumentExtension> p_extensions);
-	TypedArray<GLTFDocumentExtension> get_extensions() const;
+	static void register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority = false);
+	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
+	static void unregister_all_gltf_document_extensions();
 
 private:
 	void _build_parent_hierachy(Ref<GLTFState> state);
@@ -291,17 +292,17 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
-	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30, String p_base_path = String());
-	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
-	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
+	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, String p_base_path = String());
+	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0);
+	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0);
 
 public:
-	Node *generate_scene(Ref<GLTFState> state, int32_t p_bake_fps = 30.0f);
+	Node *generate_scene(Ref<GLTFState> state, float p_bake_fps = 30.0f, bool p_trimming = false);
 	PackedByteArray generate_buffer(Ref<GLTFState> state);
 	Error write_to_filesystem(Ref<GLTFState> state, const String &p_path);
 
 public:
-	Error _parse_gltf_state(Ref<GLTFState> state, const String &p_search_path, float p_bake_fps);
+	Error _parse_gltf_state(Ref<GLTFState> state, const String &p_search_path);
 	Error _parse_gltf_extensions(Ref<GLTFState> state);
 	void _process_mesh_instances(Ref<GLTFState> state, Node *scene_root);
 	void _generate_scene_node(Ref<GLTFState> state, Node *scene_parent,
@@ -309,7 +310,7 @@ public:
 			const GLTFNodeIndex node_index);
 	void _generate_skeleton_bone_node(Ref<GLTFState> state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index);
 	void _import_animation(Ref<GLTFState> state, AnimationPlayer *ap,
-			const GLTFAnimationIndex index, const int bake_fps);
+			const GLTFAnimationIndex index, const float bake_fps, const bool trimming);
 	void _convert_mesh_instances(Ref<GLTFState> state);
 	GLTFCameraIndex _convert_camera(Ref<GLTFState> state, Camera3D *p_camera);
 	void _convert_light_to_gltf(Light3D *light, Ref<GLTFState> state, Ref<GLTFNode> gltf_node);
@@ -367,7 +368,7 @@ public:
 	void _convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			String p_animation_track_name);
 	Error _serialize(Ref<GLTFState> state, const String &p_path);
-	Error _parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f, int p_bake_fps);
+	Error _parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f);
 };
 
 #endif // GLTF_DOCUMENT_H

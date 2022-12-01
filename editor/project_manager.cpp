@@ -49,6 +49,7 @@
 #include "editor/editor_vcs_interface.h"
 #include "main/main.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
@@ -435,17 +436,17 @@ private:
 				return;
 			}
 
-			ProjectSettings *current = memnew(ProjectSettings);
-
-			int err = current->setup(dir2, "");
+			// Load project.godot as ConfigFile to set the new name.
+			ConfigFile cfg;
+			String project_godot = dir2.path_join("project.godot");
+			Error err = cfg.load(project_godot);
 			if (err != OK) {
-				set_message(vformat(TTR("Couldn't load project.godot in project path (error %d). It may be missing or corrupted."), err), MESSAGE_ERROR);
+				set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
 			} else {
-				ProjectSettings::CustomMap edited_settings;
-				edited_settings["application/config/name"] = project_name->get_text().strip_edges();
-
-				if (current->save_custom(dir2.path_join("project.godot"), edited_settings, Vector<String>(), true) != OK) {
-					set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
+				cfg.set_value("application", "config/name", project_name->get_text().strip_edges());
+				err = cfg.save(project_godot);
+				if (err != OK) {
+					set_message(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err), MESSAGE_ERROR);
 				}
 			}
 
@@ -693,18 +694,19 @@ public:
 			default_files_container->hide();
 			get_ok_button()->set_disabled(false);
 
-			ProjectSettings *current = memnew(ProjectSettings);
-
-			int err = current->setup(project_path->get_text(), "");
+			// Fetch current name from project.godot to prefill the text input.
+			ConfigFile cfg;
+			String project_godot = project_path->get_text().path_join("project.godot");
+			Error err = cfg.load(project_godot);
 			if (err != OK) {
-				set_message(vformat(TTR("Couldn't load project.godot in project path (error %d). It may be missing or corrupted."), err), MESSAGE_ERROR);
+				set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
 				status_rect->show();
 				msg->show();
 				get_ok_button()->set_disabled(true);
-			} else if (current->has_setting("application/config/name")) {
-				String proj = current->get("application/config/name");
-				project_name->set_text(proj);
-				_text_changed(proj);
+			} else {
+				String cur_name = cfg.get_value("application", "config/name", "");
+				project_name->set_text(cur_name);
+				_text_changed(cur_name);
 			}
 
 			project_name->call_deferred(SNAME("grab_focus"));
@@ -1251,7 +1253,6 @@ void ProjectList::migrate_config() {
 	if (FileAccess::exists(_config_path)) {
 		return;
 	}
-	print_line("Migrating legacy project list");
 
 	List<PropertyInfo> properties;
 	EditorSettings::get_singleton()->get_property_list(&properties);
@@ -1264,6 +1265,8 @@ void ProjectList::migrate_config() {
 		}
 
 		String path = EDITOR_GET(property_key);
+		print_line("Migrating legacy project '" + path + "'.");
+
 		String favoriteKey = "favorite_projects/" + property_key.get_slice("/", 1);
 		bool favorite = EditorSettings::get_singleton()->has_setting(favoriteKey);
 		add_project(path, favorite);
@@ -1376,7 +1379,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	favorite_box->set_name("FavoriteBox");
 	TextureButton *favorite = memnew(TextureButton);
 	favorite->set_name("FavoriteButton");
-	favorite->set_normal_texture(favorite_icon);
+	favorite->set_texture_normal(favorite_icon);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));

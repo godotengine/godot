@@ -175,6 +175,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	public GodotIO io;
 	public GodotNetUtils netUtils;
 	public GodotTTS tts;
+	DirectoryAccessHandler directoryAccessHandler;
 
 	public interface ResultCallback {
 		void callback(int requestCode, int resultCode, Intent data);
@@ -299,7 +300,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 				plugin.onRegisterPluginWithGodotNative();
 			}
-			setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
+			setKeepScreenOn(Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
 		});
 
 		// Include the returned non-null views in the Godot view hierarchy.
@@ -488,7 +489,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		netUtils = new GodotNetUtils(activity);
 		tts = new GodotTTS(activity);
 		Context context = getContext();
-		DirectoryAccessHandler directoryAccessHandler = new DirectoryAccessHandler(context);
+		directoryAccessHandler = new DirectoryAccessHandler(context);
 		FileAccessHandler fileAccessHandler = new FileAccessHandler(context);
 		mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);

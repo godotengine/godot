@@ -1615,6 +1615,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Vector2, cubic_interpolate_in_time, sarray("b", "pre_a", "post_b", "weight", "b_t", "pre_a_t", "post_b_t"), varray());
 	bind_method(Vector2, bezier_interpolate, sarray("control_1", "control_2", "end", "t"), varray());
+	bind_method(Vector2, bezier_derivative, sarray("control_1", "control_2", "end", "t"), varray());
 	bind_method(Vector2, max_axis_index, sarray(), varray());
 	bind_method(Vector2, min_axis_index, sarray(), varray());
 	bind_method(Vector2, move_toward, sarray("to", "delta"), varray());
@@ -1646,6 +1647,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
 	bind_method(Vector2i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector2i, snapped, sarray("step"), varray());
 
 	/* Rect2 */
 
@@ -1707,6 +1709,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Vector3, cubic_interpolate_in_time, sarray("b", "pre_a", "post_b", "weight", "b_t", "pre_a_t", "post_b_t"), varray());
 	bind_method(Vector3, bezier_interpolate, sarray("control_1", "control_2", "end", "t"), varray());
+	bind_method(Vector3, bezier_derivative, sarray("control_1", "control_2", "end", "t"), varray());
 	bind_method(Vector3, move_toward, sarray("to", "delta"), varray());
 	bind_method(Vector3, dot, sarray("with"), varray());
 	bind_method(Vector3, cross, sarray("with"), varray());
@@ -1734,6 +1737,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3i, sign, sarray(), varray());
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector3i, snapped, sarray("step"), varray());
 
 	/* Vector4 */
 
@@ -1773,6 +1777,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4i, sign, sarray(), varray());
 	bind_method(Vector4i, abs, sarray(), varray());
 	bind_method(Vector4i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4i, snapped, sarray("step"), varray());
 
 	/* Plane */
 
@@ -2053,7 +2058,6 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, pick_random, sarray(), varray());
 	bind_method(Array, find, sarray("what", "from"), varray(0));
 	bind_method(Array, rfind, sarray("what", "from"), varray(-1));
-	bind_method(Array, find_last, sarray("value"), varray());
 	bind_method(Array, count, sarray("value"), varray());
 	bind_method(Array, has, sarray("value"), varray());
 	bind_method(Array, pop_back, sarray(), varray());

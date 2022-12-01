@@ -37,7 +37,6 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/io/stream_peer_tls.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
@@ -47,10 +46,7 @@
 #include "core/string/translation.h"
 #include "core/version.h"
 #include "main/main.h"
-#include "scene/3d/importer_mesh_instance_3d.h"
-#include "scene/gui/center_container.h"
 #include "scene/gui/color_picker.h"
-#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/link_button.h"
@@ -61,18 +57,13 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
-#include "scene/gui/texture_progress_bar.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
-#include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
-#include "servers/rendering/rendering_device.h"
 
-#include "editor/animation_track_editor.h"
 #include "editor/audio_stream_preview.h"
-#include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/dependency_editor.h"
 #include "editor/editor_about.h"
@@ -82,7 +73,6 @@
 #include "editor/editor_data.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_file_dialog.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
@@ -93,15 +83,12 @@
 #include "editor/editor_properties.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_quick_open.h"
-#include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
 #include "editor/editor_run_native.h"
-#include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_settings_dialog.h"
-#include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/editor_toaster.h"
 #include "editor/editor_translation_parser.h"
@@ -114,7 +101,6 @@
 #include "editor/import/audio_stream_import_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/import/editor_import_collada.h"
-#include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_bmfont.h"
 #include "editor/import/resource_importer_csv_translation.h"
@@ -123,88 +109,32 @@
 #include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_obj.h"
-#include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_shader_file.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
 #include "editor/import/scene_import_settings.h"
 #include "editor/import_dock.h"
+#include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
 #include "editor/plugin_config_dialog.h"
-#include "editor/plugins/animation_blend_space_1d_editor.h"
-#include "editor/plugins/animation_blend_space_2d_editor.h"
-#include "editor/plugins/animation_blend_tree_editor_plugin.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
-#include "editor/plugins/animation_state_machine_editor.h"
-#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
-#include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
-#include "editor/plugins/bit_map_editor_plugin.h"
-#include "editor/plugins/bone_map_editor_plugin.h"
-#include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/cast_2d_editor_plugin.h"
-#include "editor/plugins/collision_polygon_2d_editor_plugin.h"
-#include "editor/plugins/collision_shape_2d_editor_plugin.h"
-#include "editor/plugins/control_editor_plugin.h"
-#include "editor/plugins/cpu_particles_2d_editor_plugin.h"
-#include "editor/plugins/cpu_particles_3d_editor_plugin.h"
-#include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/debugger_editor_plugin.h"
-#include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
-#include "editor/plugins/font_config_plugin.h"
 #include "editor/plugins/gdextension_export_plugin.h"
-#include "editor/plugins/gpu_particles_2d_editor_plugin.h"
-#include "editor/plugins/gpu_particles_3d_editor_plugin.h"
-#include "editor/plugins/gpu_particles_collision_sdf_editor_plugin.h"
-#include "editor/plugins/gradient_editor_plugin.h"
-#include "editor/plugins/gradient_texture_2d_editor_plugin.h"
-#include "editor/plugins/input_event_editor_plugin.h"
-#include "editor/plugins/light_occluder_2d_editor_plugin.h"
-#include "editor/plugins/lightmap_gi_editor_plugin.h"
-#include "editor/plugins/line_2d_editor_plugin.h"
 #include "editor/plugins/material_editor_plugin.h"
-#include "editor/plugins/mesh_editor_plugin.h"
-#include "editor/plugins/mesh_instance_3d_editor_plugin.h"
 #include "editor/plugins/mesh_library_editor_plugin.h"
-#include "editor/plugins/multimesh_editor_plugin.h"
-#include "editor/plugins/navigation_link_2d_editor_plugin.h"
-#include "editor/plugins/navigation_polygon_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "editor/plugins/occluder_instance_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
-#include "editor/plugins/path_2d_editor_plugin.h"
-#include "editor/plugins/path_3d_editor_plugin.h"
-#include "editor/plugins/physical_bone_3d_editor_plugin.h"
-#include "editor/plugins/polygon_2d_editor_plugin.h"
-#include "editor/plugins/polygon_3d_editor_plugin.h"
-#include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
 #include "editor/plugins/script_text_editor.h"
-#include "editor/plugins/shader_editor_plugin.h"
-#include "editor/plugins/shader_file_editor_plugin.h"
-#include "editor/plugins/skeleton_2d_editor_plugin.h"
-#include "editor/plugins/skeleton_3d_editor_plugin.h"
-#include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
-#include "editor/plugins/sprite_2d_editor_plugin.h"
-#include "editor/plugins/sprite_frames_editor_plugin.h"
-#include "editor/plugins/style_box_editor_plugin.h"
-#include "editor/plugins/sub_viewport_preview_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
-#include "editor/plugins/texture_3d_editor_plugin.h"
-#include "editor/plugins/texture_editor_plugin.h"
-#include "editor/plugins/texture_layered_editor_plugin.h"
-#include "editor/plugins/texture_region_editor_plugin.h"
-#include "editor/plugins/theme_editor_plugin.h"
-#include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
-#include "editor/plugins/voxel_gi_editor_plugin.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_settings_editor.h"
 #include "editor/register_exporters.h"
@@ -1264,6 +1194,10 @@ void EditorNode::edit_node(Node *p_node) {
 	push_item(p_node);
 }
 
+void EditorNode::edit_resource(const Ref<Resource> &p_resource) {
+	InspectorDock::get_singleton()->edit_resource(p_resource);
+}
+
 void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path) {
 	editor_data.apply_changes_in_editors();
 	int flg = 0;
@@ -1764,7 +1698,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	}
 
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
-		show_accept(TTR("This scene can't be saved because there is a cyclic instancing inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
+		show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
 		return;
 	}
 
@@ -2332,7 +2266,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		if (get_edited_scene() && !get_edited_scene()->get_scene_file_path().is_empty()) {
 			String source_scene = get_edited_scene()->get_scene_file_path();
 			if (FileAccess::exists(source_scene + ".import")) {
-				editable_info = TTR("This scene was imported, so changes to it won't be kept.\nInstancing it or inheriting will allow making changes to it.\nPlease read the documentation relevant to importing scenes to better understand this workflow.");
+				editable_info = TTR("This scene was imported, so changes to it won't be kept.\nInstantiating or inheriting it will allow you to make changes to it.\nPlease read the documentation relevant to importing scenes to better understand this workflow.");
 				info_is_warning = true;
 			}
 		}
@@ -2340,7 +2274,9 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	} else {
 		Node *selected_node = nullptr;
 
-		if (current_obj->is_class("MultiNodeEdit")) {
+		if (current_obj->is_class("EditorDebuggerRemoteObject")) {
+			disable_folding = true;
+		} else if (current_obj->is_class("MultiNodeEdit")) {
 			Node *scene = get_edited_scene();
 			if (scene) {
 				MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(current_obj);
@@ -3422,7 +3358,9 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 
 void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 	if (p_editor->has_main_screen()) {
-		for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
+		// Remove the main editor button and update the bindings of
+		// all buttons behind it to point to the correct main window.
+		for (int i = singleton->main_editor_buttons.size() - 1; i >= 0; i--) {
 			if (p_editor->get_name() == singleton->main_editor_buttons[i]->get_text()) {
 				if (singleton->main_editor_buttons[i]->is_pressed()) {
 					singleton->editor_select(EDITOR_SCRIPT);
@@ -3432,6 +3370,9 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 				singleton->main_editor_buttons.remove_at(i);
 
 				break;
+			} else {
+				singleton->main_editor_buttons[i]->disconnect("pressed", callable_mp(singleton, &EditorNode::editor_select));
+				singleton->main_editor_buttons[i]->connect("pressed", callable_mp(singleton, &EditorNode::editor_select).bind(i - 1));
 			}
 		}
 
@@ -3993,7 +3934,7 @@ bool EditorNode::is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_
 	return false;
 }
 
-void EditorNode::request_instance_scene(const String &p_path) {
+void EditorNode::request_instantiate_scene(const String &p_path) {
 	SceneTreeDock::get_singleton()->instantiate(p_path);
 }
 
@@ -4127,63 +4068,6 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 		return _find_scene_in_use(es, p_path);
 	}
 	return false;
-}
-
-void EditorNode::register_editor_types() {
-	ResourceLoader::set_timestamp_on_load(true);
-	ResourceSaver::set_timestamp_on_save(true);
-
-	GDREGISTER_CLASS(EditorPaths);
-	GDREGISTER_CLASS(EditorPlugin);
-	GDREGISTER_CLASS(EditorTranslationParserPlugin);
-	GDREGISTER_CLASS(EditorImportPlugin);
-	GDREGISTER_CLASS(EditorScript);
-	GDREGISTER_CLASS(EditorSelection);
-	GDREGISTER_CLASS(EditorFileDialog);
-	GDREGISTER_ABSTRACT_CLASS(EditorSettings);
-	GDREGISTER_CLASS(EditorNode3DGizmo);
-	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
-	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
-	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
-	GDREGISTER_ABSTRACT_CLASS(EditorFileSystem);
-	GDREGISTER_CLASS(EditorFileSystemDirectory);
-	GDREGISTER_CLASS(EditorVCSInterface);
-	GDREGISTER_ABSTRACT_CLASS(ScriptEditor);
-	GDREGISTER_ABSTRACT_CLASS(ScriptEditorBase);
-	GDREGISTER_CLASS(EditorSyntaxHighlighter);
-	GDREGISTER_ABSTRACT_CLASS(EditorInterface);
-	GDREGISTER_CLASS(EditorExportPlugin);
-	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatform);
-	GDREGISTER_CLASS(EditorResourceConversionPlugin);
-	GDREGISTER_CLASS(EditorSceneFormatImporter);
-	GDREGISTER_CLASS(EditorScenePostImportPlugin);
-	GDREGISTER_CLASS(EditorInspector);
-	GDREGISTER_CLASS(EditorInspectorPlugin);
-	GDREGISTER_CLASS(EditorProperty);
-	GDREGISTER_CLASS(AnimationTrackEditPlugin);
-	GDREGISTER_CLASS(ScriptCreateDialog);
-	GDREGISTER_CLASS(EditorFeatureProfile);
-	GDREGISTER_CLASS(EditorSpinSlider);
-	GDREGISTER_CLASS(EditorResourcePicker);
-	GDREGISTER_CLASS(EditorScriptPicker);
-	GDREGISTER_ABSTRACT_CLASS(EditorUndoRedoManager);
-
-	GDREGISTER_ABSTRACT_CLASS(FileSystemDock);
-	GDREGISTER_VIRTUAL_CLASS(EditorFileSystemImportFormatSupportQuery);
-
-	GDREGISTER_CLASS(EditorScenePostImport);
-	GDREGISTER_CLASS(EditorCommandPalette);
-	GDREGISTER_CLASS(EditorDebuggerPlugin);
-	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
-}
-
-void EditorNode::unregister_editor_types() {
-	_init_callbacks.clear();
-	if (EditorPaths::get_singleton()) {
-		EditorPaths::free();
-	}
-
-	EditorResourcePicker::clear_caches();
 }
 
 void EditorNode::stop_child_process(OS::ProcessID p_pid) {
@@ -4558,6 +4442,7 @@ void EditorNode::_dock_floating_close_request(Control *p_control) {
 	dock_slot[window_slot]->add_child(p_control);
 	dock_slot[window_slot]->move_child(p_control, MIN((int)window->get_meta("dock_index"), dock_slot[window_slot]->get_tab_count()));
 	dock_slot[window_slot]->set_current_tab(window->get_meta("dock_index"));
+	dock_slot[window_slot]->set_tab_title(dock_slot[window_slot]->get_tab_idx_from_control(p_control), TTRGET(p_control->get_name()));
 
 	window->queue_free();
 
@@ -4581,7 +4466,7 @@ void EditorNode::_dock_make_float() {
 	dock_slot[dock_popup_selected_idx]->remove_child(dock);
 
 	Window *window = memnew(Window);
-	window->set_title(dock->get_name());
+	window->set_title(TTRGET(dock->get_name()));
 	Panel *p = memnew(Panel);
 	p->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("PanelForeground"), SNAME("EditorStyles")));
 	p->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
@@ -5003,7 +4888,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 
 		Vector<String> names = String(p_layout->get_value(p_section, "dock_" + itos(i + 1))).split(",");
 
-		for (int j = 0; j < names.size(); j++) {
+		for (int j = names.size() - 1; j >= 0; j--) {
 			String name = names[j];
 			// FIXME: Find it, in a horribly inefficient way.
 			int atidx = -1;
@@ -5024,7 +4909,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			}
 
 			if (atidx == i) {
-				node->move_to_front();
+				dock_slot[i]->move_child(node, 0);
 				continue;
 			}
 
@@ -5034,6 +4919,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 				dock_slot[atidx]->hide();
 			}
 			dock_slot[i]->add_child(node);
+			dock_slot[i]->move_child(node, 0);
 			dock_slot[i]->show();
 		}
 	}
@@ -5233,6 +5119,10 @@ bool EditorNode::immediate_confirmation_dialog(const String &p_text, const Strin
 
 	memdelete(cd);
 	return singleton->immediate_dialog_confirmed;
+}
+
+void EditorNode::cleanup() {
+	_init_callbacks.clear();
 }
 
 int EditorNode::get_current_tab() {
@@ -5994,10 +5884,6 @@ void EditorNode::_feature_profile_changed() {
 		node_tabs->set_tab_hidden(node_tabs->get_tab_idx_from_control(NodeDock::get_singleton()), false);
 		fs_tabs->set_tab_hidden(fs_tabs->get_tab_idx_from_control(FileSystemDock::get_singleton()), false);
 		history_tabs->set_tab_hidden(history_tabs->get_tab_idx_from_control(history_dock), false);
-		history_dock->set_visible(true);
-		ImportDock::get_singleton()->set_visible(true);
-		NodeDock::get_singleton()->set_visible(true);
-		FileSystemDock::get_singleton()->set_visible(true);
 		main_editor_buttons[EDITOR_3D]->set_visible(true);
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(true);
 		if (AssetLibraryEditorPlugin::is_available()) {
@@ -7102,7 +6988,7 @@ EditorNode::EditorNode() {
 
 	FileSystemDock *filesystem_dock = memnew(FileSystemDock);
 	filesystem_dock->connect("inherit", callable_mp(this, &EditorNode::_inherit_request));
-	filesystem_dock->connect("instance", callable_mp(this, &EditorNode::_instantiate_request));
+	filesystem_dock->connect("instantiate", callable_mp(this, &EditorNode::_instantiate_request));
 	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_docks));
 	get_project_settings()->connect_filesystem_dock_signals(filesystem_dock);
 
@@ -7152,7 +7038,7 @@ EditorNode::EditorNode() {
 	// Dock numbers are based on DockSlot enum value + 1.
 	default_layout->set_value(docks_section, "dock_3", "Scene,Import");
 	default_layout->set_value(docks_section, "dock_4", "FileSystem");
-	default_layout->set_value(docks_section, "dock_5", "Inspector,Node");
+	default_layout->set_value(docks_section, "dock_5", "Inspector,Node,History");
 
 	for (int i = 0; i < vsplits.size(); i++) {
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
@@ -7325,7 +7211,6 @@ EditorNode::EditorNode() {
 	add_child(audio_preview_gen);
 
 	add_editor_plugin(memnew(DebuggerEditorPlugin(debug_menu)));
-	add_editor_plugin(memnew(DebugAdapterServer()));
 
 	disk_changed = memnew(ConfirmationDialog);
 	{
@@ -7375,63 +7260,7 @@ EditorNode::EditorNode() {
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
-
-	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
-	add_editor_plugin(memnew(AnimationTreeEditorPlugin));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
-	add_editor_plugin(memnew(AudioStreamRandomizerEditorPlugin));
-	add_editor_plugin(memnew(BitMapEditorPlugin));
-	add_editor_plugin(memnew(BoneMapEditorPlugin));
-	add_editor_plugin(memnew(Camera3DEditorPlugin));
-	add_editor_plugin(memnew(ControlEditorPlugin));
-	add_editor_plugin(memnew(CPUParticles3DEditorPlugin));
-	add_editor_plugin(memnew(CurveEditorPlugin));
-	add_editor_plugin(memnew(FontEditorPlugin));
-	add_editor_plugin(memnew(GPUParticles3DEditorPlugin));
-	add_editor_plugin(memnew(GPUParticlesCollisionSDF3DEditorPlugin));
-	add_editor_plugin(memnew(GradientEditorPlugin));
-	add_editor_plugin(memnew(GradientTexture2DEditorPlugin));
-	add_editor_plugin(memnew(InputEventEditorPlugin));
-	add_editor_plugin(memnew(LightmapGIEditorPlugin));
-	add_editor_plugin(memnew(MaterialEditorPlugin));
-	add_editor_plugin(memnew(MeshEditorPlugin));
-	add_editor_plugin(memnew(MeshInstance3DEditorPlugin));
-	add_editor_plugin(memnew(MeshLibraryEditorPlugin));
-	add_editor_plugin(memnew(MultiMeshEditorPlugin));
-	add_editor_plugin(memnew(OccluderInstance3DEditorPlugin));
-	add_editor_plugin(memnew(Path3DEditorPlugin));
-	add_editor_plugin(memnew(PhysicalBone3DEditorPlugin));
-	add_editor_plugin(memnew(Polygon3DEditorPlugin));
-	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin));
-	add_editor_plugin(memnew(ShaderEditorPlugin));
-	add_editor_plugin(memnew(ShaderFileEditorPlugin));
-	add_editor_plugin(memnew(Skeleton3DEditorPlugin));
-	add_editor_plugin(memnew(SkeletonIK3DEditorPlugin));
-	add_editor_plugin(memnew(SpriteFramesEditorPlugin));
-	add_editor_plugin(memnew(StyleBoxEditorPlugin));
-	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin));
-	add_editor_plugin(memnew(Texture3DEditorPlugin));
-	add_editor_plugin(memnew(TextureEditorPlugin));
-	add_editor_plugin(memnew(TextureLayeredEditorPlugin));
-	add_editor_plugin(memnew(TextureRegionEditorPlugin));
-	add_editor_plugin(memnew(ThemeEditorPlugin));
-	add_editor_plugin(memnew(VoxelGIEditorPlugin));
-
-	// 2D
-	add_editor_plugin(memnew(CollisionPolygon2DEditorPlugin));
-	add_editor_plugin(memnew(CollisionShape2DEditorPlugin));
-	add_editor_plugin(memnew(CPUParticles2DEditorPlugin));
-	add_editor_plugin(memnew(GPUParticles2DEditorPlugin));
-	add_editor_plugin(memnew(LightOccluder2DEditorPlugin));
-	add_editor_plugin(memnew(Line2DEditorPlugin));
-	add_editor_plugin(memnew(NavigationLink2DEditorPlugin));
-	add_editor_plugin(memnew(NavigationPolygonEditorPlugin));
-	add_editor_plugin(memnew(Path2DEditorPlugin));
-	add_editor_plugin(memnew(Polygon2DEditorPlugin));
-	add_editor_plugin(memnew(Cast2DEditorPlugin));
-	add_editor_plugin(memnew(Skeleton2DEditorPlugin));
-	add_editor_plugin(memnew(Sprite2DEditorPlugin));
-	add_editor_plugin(memnew(TilesEditorPlugin));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i));

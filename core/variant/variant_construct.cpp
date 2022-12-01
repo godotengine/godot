@@ -68,11 +68,13 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<int64_t, int64_t>>(sarray("from"));
 	add_constructor<VariantConstructor<int64_t, double>>(sarray("from"));
 	add_constructor<VariantConstructor<int64_t, bool>>(sarray("from"));
+	add_constructor<VariantConstructorFromString<int64_t>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<double>>(sarray());
 	add_constructor<VariantConstructor<double, double>>(sarray("from"));
 	add_constructor<VariantConstructor<double, int64_t>>(sarray("from"));
 	add_constructor<VariantConstructor<double, bool>>(sarray("from"));
+	add_constructor<VariantConstructorFromString<double>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<String>>(sarray());
 	add_constructor<VariantConstructor<String, String>>(sarray("from"));

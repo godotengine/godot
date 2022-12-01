@@ -43,7 +43,7 @@ namespace Godot
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
         public int r8
         {
-            get
+            readonly get
             {
                 return (int)Math.Round(r * 255.0f);
             }
@@ -59,7 +59,7 @@ namespace Godot
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
         public int g8
         {
-            get
+            readonly get
             {
                 return (int)Math.Round(g * 255.0f);
             }
@@ -75,7 +75,7 @@ namespace Godot
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
         public int b8
         {
-            get
+            readonly get
             {
                 return (int)Math.Round(b * 255.0f);
             }
@@ -91,7 +91,7 @@ namespace Godot
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
         public int a8
         {
-            get
+            readonly get
             {
                 return (int)Math.Round(a * 255.0f);
             }
@@ -107,7 +107,7 @@ namespace Godot
         /// <value>Getting is a long process, refer to the source code for details. Setting uses <see cref="FromHSV"/>.</value>
         public float h
         {
-            get
+            readonly get
             {
                 float max = Math.Max(r, Math.Max(g, b));
                 float min = Math.Min(r, Math.Min(g, b));
@@ -155,7 +155,7 @@ namespace Godot
         /// <value>Getting is equivalent to the ratio between the min and max RGB value. Setting uses <see cref="FromHSV"/>.</value>
         public float s
         {
-            get
+            readonly get
             {
                 float max = Math.Max(r, Math.Max(g, b));
                 float min = Math.Min(r, Math.Min(g, b));
@@ -176,7 +176,7 @@ namespace Godot
         /// <value>Getting is equivalent to using <see cref="Math.Max(float, float)"/> on the RGB components. Setting uses <see cref="FromHSV"/>.</value>
         public float v
         {
-            get
+            readonly get
             {
                 return Math.Max(r, Math.Max(g, b));
             }
@@ -197,7 +197,7 @@ namespace Godot
         /// </value>
         public float this[int index]
         {
-            get
+            readonly get
             {
                 switch (index)
                 {
@@ -242,7 +242,7 @@ namespace Godot
         /// </summary>
         /// <param name="over">The color to blend over.</param>
         /// <returns>This color blended over <paramref name="over"/>.</returns>
-        public Color Blend(Color over)
+        public readonly Color Blend(Color over)
         {
             Color res;
 
@@ -269,7 +269,7 @@ namespace Godot
         /// <param name="min">The color with minimum allowed values.</param>
         /// <param name="max">The color with maximum allowed values.</param>
         /// <returns>The color with all components clamped.</returns>
-        public Color Clamp(Color? min = null, Color? max = null)
+        public readonly Color Clamp(Color? min = null, Color? max = null)
         {
             Color minimum = min ?? new Color(0, 0, 0, 0);
             Color maximum = max ?? new Color(1, 1, 1, 1);
@@ -288,7 +288,7 @@ namespace Godot
         /// </summary>
         /// <param name="amount">The ratio to darken by.</param>
         /// <returns>The darkened color.</returns>
-        public Color Darkened(float amount)
+        public readonly Color Darkened(float amount)
         {
             Color res = this;
             res.r *= 1.0f - amount;
@@ -301,7 +301,7 @@ namespace Godot
         /// Returns the inverted color: <c>(1 - r, 1 - g, 1 - b, a)</c>.
         /// </summary>
         /// <returns>The inverted color.</returns>
-        public Color Inverted()
+        public readonly Color Inverted()
         {
             return new Color(
                 1.0f - r,
@@ -317,7 +317,7 @@ namespace Godot
         /// </summary>
         /// <param name="amount">The ratio to lighten by.</param>
         /// <returns>The darkened color.</returns>
-        public Color Lightened(float amount)
+        public readonly Color Lightened(float amount)
         {
             Color res = this;
             res.r += (1.0f - res.r) * amount;
@@ -333,7 +333,7 @@ namespace Godot
         /// <param name="to">The destination color for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting color of the interpolation.</returns>
-        public Color Lerp(Color to, real_t weight)
+        public readonly Color Lerp(Color to, real_t weight)
         {
             return new Color
             (
@@ -351,7 +351,7 @@ namespace Godot
         /// <param name="to">The destination color for interpolation.</param>
         /// <param name="weight">A color with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting color of the interpolation.</returns>
-        public Color Lerp(Color to, Color weight)
+        public readonly Color Lerp(Color to, Color weight)
         {
             return new Color
             (
@@ -368,7 +368,7 @@ namespace Godot
         /// ABGR is the reversed version of the default format.
         /// </summary>
         /// <returns>A <see langword="uint"/> representing this color in ABGR32 format.</returns>
-        public uint ToAbgr32()
+        public readonly uint ToAbgr32()
         {
             uint c = (byte)Math.Round(a * 255);
             c <<= 8;
@@ -387,7 +387,7 @@ namespace Godot
         /// ABGR is the reversed version of the default format.
         /// </summary>
         /// <returns>A <see langword="ulong"/> representing this color in ABGR64 format.</returns>
-        public ulong ToAbgr64()
+        public readonly ulong ToAbgr64()
         {
             ulong c = (ushort)Math.Round(a * 65535);
             c <<= 16;
@@ -406,7 +406,7 @@ namespace Godot
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
         /// <returns>A <see langword="uint"/> representing this color in ARGB32 format.</returns>
-        public uint ToArgb32()
+        public readonly uint ToArgb32()
         {
             uint c = (byte)Math.Round(a * 255);
             c <<= 8;
@@ -425,7 +425,7 @@ namespace Godot
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
         /// <returns>A <see langword="ulong"/> representing this color in ARGB64 format.</returns>
-        public ulong ToArgb64()
+        public readonly ulong ToArgb64()
         {
             ulong c = (ushort)Math.Round(a * 65535);
             c <<= 16;
@@ -444,7 +444,7 @@ namespace Godot
         /// RGBA is Godot's default and recommended format.
         /// </summary>
         /// <returns>A <see langword="uint"/> representing this color in RGBA32 format.</returns>
-        public uint ToRgba32()
+        public readonly uint ToRgba32()
         {
             uint c = (byte)Math.Round(r * 255);
             c <<= 8;
@@ -463,7 +463,7 @@ namespace Godot
         /// RGBA is Godot's default and recommended format.
         /// </summary>
         /// <returns>A <see langword="ulong"/> representing this color in RGBA64 format.</returns>
-        public ulong ToRgba64()
+        public readonly ulong ToRgba64()
         {
             ulong c = (ushort)Math.Round(r * 65535);
             c <<= 16;
@@ -483,7 +483,7 @@ namespace Godot
         /// Whether or not to include alpha. If <see langword="false"/>, the color is RGB instead of RGBA.
         /// </param>
         /// <returns>A string for the HTML hexadecimal representation of this color.</returns>
-        public string ToHTML(bool includeAlpha = true)
+        public readonly string ToHTML(bool includeAlpha = true)
         {
             string txt = string.Empty;
 
@@ -777,7 +777,7 @@ namespace Godot
         /// <param name="hue">Output parameter for the HSV hue.</param>
         /// <param name="saturation">Output parameter for the HSV saturation.</param>
         /// <param name="value">Output parameter for the HSV value.</param>
-        public void ToHSV(out float hue, out float saturation, out float value)
+        public readonly void ToHSV(out float hue, out float saturation, out float value)
         {
             float max = (float)Mathf.Max(r, Mathf.Max(g, b));
             float min = (float)Mathf.Min(r, Mathf.Min(g, b));
@@ -1149,7 +1149,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the color and the other object are equal.</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Color other && Equals(other);
         }
@@ -1161,7 +1161,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other color.</param>
         /// <returns>Whether or not the colors are equal.</returns>
-        public bool Equals(Color other)
+        public readonly bool Equals(Color other)
         {
             return r == other.r && g == other.g && b == other.b && a == other.a;
         }
@@ -1172,7 +1172,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other color to compare.</param>
         /// <returns>Whether or not the colors are approximately equal.</returns>
-        public bool IsEqualApprox(Color other)
+        public readonly bool IsEqualApprox(Color other)
         {
             return Mathf.IsEqualApprox(r, other.r) && Mathf.IsEqualApprox(g, other.g) && Mathf.IsEqualApprox(b, other.b) && Mathf.IsEqualApprox(a, other.a);
         }
@@ -1181,7 +1181,7 @@ namespace Godot
         /// Serves as the hash function for <see cref="Color"/>.
         /// </summary>
         /// <returns>A hash code for this color.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return r.GetHashCode() ^ g.GetHashCode() ^ b.GetHashCode() ^ a.GetHashCode();
         }
@@ -1190,7 +1190,7 @@ namespace Godot
         /// Converts this <see cref="Color"/> to a string.
         /// </summary>
         /// <returns>A string representation of this color.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"({r}, {g}, {b}, {a})";
         }
@@ -1199,7 +1199,7 @@ namespace Godot
         /// Converts this <see cref="Color"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this color.</returns>
-        public string ToString(string format)
+        public readonly string ToString(string format)
         {
             return $"({r.ToString(format)}, {g.ToString(format)}, {b.ToString(format)}, {a.ToString(format)})";
         }

@@ -541,7 +541,7 @@ void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
 
 	for (int i = 0; i < bone_size; i++) {
 		if (i != p_bone) {
-			ERR_FAIL_COND(bones[i].name == p_name);
+			ERR_FAIL_COND_MSG(bones[i].name == p_name, "Skeleton3D: '" + get_name() + "', bone name:  '" + p_name + "' is already exist.");
 		}
 	}
 

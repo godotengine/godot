@@ -256,6 +256,15 @@
 	}
 }
 
+- (void)windowDidChangeScreen:(NSNotification *)notification {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return;
+	}
+
+	ds->reparent_check(window_id);
+}
+
 - (void)windowDidMove:(NSNotification *)notification {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {

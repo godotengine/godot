@@ -796,7 +796,6 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					RenderingServerDefault::redraw_request(); // active particles means redraw request
 
-					bool local_coords = true;
 					int dpc = particles_storage->particles_get_draw_passes(pt->particles);
 					if (dpc == 0) {
 						break; //nothing to draw
@@ -818,12 +817,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					if (particles_storage->particles_has_collision(pt->particles) && texture_storage->render_target_is_sdf_enabled(p_render_target)) {
 						//pass collision information
-						Transform2D xform;
-						if (local_coords) {
-							xform = p_item->final_transform;
-						} else {
-							xform = p_canvas_transform_inverse;
-						}
+						Transform2D xform = p_item->final_transform;
 
 						RID sdf_texture = texture_storage->render_target_get_sdf_texture(p_render_target);
 
@@ -2681,16 +2675,6 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		primitive_arrays.index_array[3] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 6);
 	}
 
-	{ //default skeleton buffer
-
-		shader.default_skeleton_uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SkeletonUniform));
-		SkeletonUniform su;
-		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_inverse);
-		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_transform);
-		RD::get_singleton()->buffer_update(shader.default_skeleton_uniform_buffer, 0, sizeof(SkeletonUniform), &su);
-
-		shader.default_skeleton_texture_buffer = RD::get_singleton()->texture_buffer_create(32, RD::DATA_FORMAT_R32G32B32A32_SFLOAT);
-	}
 	{
 		//default shadow texture to keep uniform set happy
 		RD::TextureFormat tf;
@@ -2834,8 +2818,6 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 
 		memdelete_arr(state.light_uniforms);
 		RD::get_singleton()->free(state.lights_uniform_buffer);
-		RD::get_singleton()->free(shader.default_skeleton_uniform_buffer);
-		RD::get_singleton()->free(shader.default_skeleton_texture_buffer);
 	}
 
 	//shadow rendering

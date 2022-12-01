@@ -30,9 +30,7 @@
 
 #include "editor_inspector.h"
 
-#include "array_property_edit.h"
 #include "core/os/keyboard.h"
-#include "dictionary_property_edit.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
@@ -40,9 +38,11 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "multi_node_edit.h"
-#include "scene/gui/center_container.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
@@ -660,6 +660,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (keying_rect.has_point(mpos)) {
+			accept_event();
 			emit_signal(SNAME("property_keyed"), property, use_keying_next());
 
 			if (use_keying_next()) {
@@ -683,10 +684,12 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 		if (delete_rect.has_point(mpos)) {
+			accept_event();
 			emit_signal(SNAME("property_deleted"), property);
 		}
 
 		if (revert_rect.has_point(mpos)) {
+			accept_event();
 			bool is_valid_revert = false;
 			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
 			ERR_FAIL_COND(!is_valid_revert);
@@ -695,11 +698,13 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (check_rect.has_point(mpos)) {
+			accept_event();
 			checked = !checked;
 			queue_redraw();
 			emit_signal(SNAME("property_checked"), property, checked);
 		}
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		accept_event();
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
 		menu->reset_size();
@@ -1482,6 +1487,8 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
+		accept_event();
+
 		bool should_unfold = !object->editor_is_section_unfolded(section);
 		if (should_unfold) {
 			unfold();
@@ -1680,6 +1687,7 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		if (movable && mb->get_button_index() == MouseButton::RIGHT) {
+			array_elements[p_index].panel->accept_event();
 			popup_array_index_pressed = begin_array_index + p_index;
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
@@ -3114,11 +3122,24 @@ void EditorInspector::update_tree() {
 			// Build the doc hint, to use as tooltip.
 
 			// Get the class name.
-			StringName classname = doc_name == "" ? object->get_class_name() : doc_name;
+			StringName classname = doc_name;
 			if (!object_class.is_empty()) {
 				classname = object_class;
 			} else if (Object::cast_to<MultiNodeEdit>(object)) {
 				classname = Object::cast_to<MultiNodeEdit>(object)->get_edited_class_name();
+			} else if (classname == "") {
+				classname = object->get_class_name();
+				Resource *res = Object::cast_to<Resource>(object);
+				if (res && !res->get_script().is_null()) {
+					// Grab the script of this resource to get the evaluated script class.
+					Ref<Script> scr = res->get_script();
+					if (scr.is_valid()) {
+						Vector<DocData::ClassDoc> docs = scr->get_documentation();
+						if (!docs.is_empty()) {
+							classname = docs[0].name;
+						}
+					}
+				}
 			}
 
 			StringName propname = property_prefix + p.name;

@@ -32,15 +32,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
-#include "core/string/print_string.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_toaster.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/editor_zoom_widget.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
@@ -55,6 +54,7 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/canvas_layer.h"
@@ -5596,7 +5596,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	// make visible for certain node type
 	if (Object::cast_to<Control>(child)) {
 		Size2 texture_size = texture->get_size();
-		undo_redo->add_do_property(child, "rect_size", texture_size);
+		undo_redo->add_do_property(child, "size", texture_size);
 	} else if (Object::cast_to<Polygon2D>(child)) {
 		Size2 texture_size = texture->get_size();
 		Vector<Vector2> list = {
@@ -5612,6 +5612,11 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	Transform2D xform = canvas_item_editor->get_canvas_transform();
 	Point2 target_position = xform.affine_inverse().xform(p_point);
 
+	// Adjust position for Control and TouchScreenButton
+	if (Object::cast_to<Control>(child) || Object::cast_to<TouchScreenButton>(child)) {
+		target_position -= texture->get_size() / 2;
+	}
+
 	// there's nothing to be used as source position so snapping will work as absolute if enabled
 	target_position = canvas_item_editor->snap_point(target_position);
 	undo_redo->add_do_method(child, "set_global_position", target_position);
@@ -5624,13 +5629,13 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 	}
 
 	Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
-	if (!instantiated_scene) { // error on instancing
+	if (!instantiated_scene) { // Error on instantiation.
 		return false;
 	}
 
 	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 
-	if (!edited_scene->get_scene_file_path().is_empty()) { // cyclical instancing
+	if (!edited_scene->get_scene_file_path().is_empty()) { // Cyclic instantiation.
 		if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
@@ -5647,7 +5652,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	undo_redo->add_do_method(ed, "live_debug_instance_node", edited_scene->get_path_to(parent), path, new_name);
+	undo_redo->add_do_method(ed, "live_debug_instantiate_node", edited_scene->get_path_to(parent), path, new_name);
 	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)) + "/" + new_name));
 
 	CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instantiated_scene);
@@ -5720,7 +5725,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			files_str += error_files[i].get_file().get_basename() + ",";
 		}
 		files_str = files_str.substr(0, files_str.length() - 1);
-		accept->set_text(vformat(TTR("Error instancing scene from %s"), files_str.get_data()));
+		accept->set_text(vformat(TTR("Error instantiating scene from %s"), files_str.get_data()));
 		accept->popup_centered();
 	}
 }

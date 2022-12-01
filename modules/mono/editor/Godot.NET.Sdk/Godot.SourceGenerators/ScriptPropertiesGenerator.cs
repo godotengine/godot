@@ -66,13 +66,13 @@ namespace Godot.SourceGenerators
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedName() :
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
 
-            string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                                 + "_ScriptProperties.generated";
 
             var source = new StringBuilder();
@@ -124,14 +124,14 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-            source.Append($"    public new class PropertyName : {symbol.BaseType.FullQualifiedName()}.PropertyName {{\n");
+            source.Append($"    public new class PropertyName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.PropertyName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
             foreach (var property in godotClassProperties)
             {
                 string propertyName = property.PropertySymbol.Name;
-                source.Append("        public new static readonly StringName ");
+                source.Append("        public new static readonly global::Godot.StringName ");
                 source.Append(propertyName);
                 source.Append(" = \"");
                 source.Append(propertyName);
@@ -141,7 +141,7 @@ namespace Godot.SourceGenerators
             foreach (var field in godotClassFields)
             {
                 string fieldName = field.FieldSymbol.Name;
-                source.Append("        public new static readonly StringName ");
+                source.Append("        public new static readonly global::Godot.StringName ");
                 source.Append(fieldName);
                 source.Append(" = \"");
                 source.Append(fieldName);
@@ -216,7 +216,7 @@ namespace Godot.SourceGenerators
 
                 // Generate GetGodotPropertyList
 
-                string dictionaryType = "System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
+                string dictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    internal new static ")
                     .Append(dictionaryType)
@@ -292,7 +292,7 @@ namespace Godot.SourceGenerators
             source.Append("if (name == PropertyName.")
                 .Append(propertyMemberName)
                 .Append(") {\n")
-                .Append("            ")
+                .Append("            this.")
                 .Append(propertyMemberName)
                 .Append(" = ")
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
@@ -317,7 +317,7 @@ namespace Godot.SourceGenerators
                 .Append(propertyMemberName)
                 .Append(") {\n")
                 .Append("            value = ")
-                .AppendManagedToNativeVariantExpr(propertyMemberName, propertyMarshalType)
+                .AppendManagedToNativeVariantExpr("this." + propertyMemberName, propertyMarshalType)
                 .Append(";\n")
                 .Append("            return true;\n")
                 .Append("        }\n");
@@ -340,15 +340,15 @@ namespace Godot.SourceGenerators
 
         private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
-            source.Append("        properties.Add(new(type: (Godot.Variant.Type)")
+            source.Append("        properties.Add(new(type: (global::Godot.Variant.Type)")
                 .Append((int)propertyInfo.Type)
                 .Append(", name: PropertyName.")
                 .Append(propertyInfo.Name)
-                .Append(", hint: (Godot.PropertyHint)")
+                .Append(", hint: (global::Godot.PropertyHint)")
                 .Append((int)propertyInfo.Hint)
                 .Append(", hintString: \"")
                 .Append(propertyInfo.HintString)
-                .Append("\", usage: (Godot.PropertyUsageFlags)")
+                .Append("\", usage: (global::Godot.PropertyUsageFlags)")
                 .Append((int)propertyInfo.Usage)
                 .Append(", exported: ")
                 .Append(propertyInfo.Exported ? "true" : "false")

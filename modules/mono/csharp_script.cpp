@@ -46,6 +46,7 @@
 #include "editor/editor_internal_calls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/script_templates/templates.gen.h"
 #endif
@@ -707,6 +708,12 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 
 void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	if (!gdmono->is_runtime_initialized()) {
+		return;
+	}
+
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		// We disable collectible assemblies in the game player, because the limitations cause
+		// issues with mocking libraries. As such, we can only reload assemblies in the editor.
 		return;
 	}
 

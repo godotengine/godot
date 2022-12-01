@@ -51,20 +51,11 @@ namespace embree
     __forceinline void reportIntersection1(IntersectFunctionNArguments* args, const RTCFilterFunctionNArguments* filter_args)
     {
 #if defined(EMBREE_FILTER_FUNCTION)
-      IntersectContext* MAYBE_UNUSED context = args->internal_context;
-      const Geometry* const geometry = args->geometry;
-      if (geometry->intersectionFilterN) {
-        assert(context->scene->hasGeometryFilterFunction());
-        geometry->intersectionFilterN(filter_args);
-      }
+      if (args->geometry->intersectionFilterN)
+        args->geometry->intersectionFilterN(filter_args);
       
-      //if (args->valid[0] == 0)
-      //  return;
-
-      if (context->user->filter) {
-        assert(context->scene->hasContextFilterFunction());
-        context->user->filter(filter_args);
-      }
+      if (args->context->filter)
+        args->context->filter(filter_args);
 #endif
     }
     
@@ -105,20 +96,11 @@ namespace embree
     __forceinline void reportOcclusion1(OccludedFunctionNArguments* args, const RTCFilterFunctionNArguments* filter_args)
     {
 #if defined(EMBREE_FILTER_FUNCTION)
-      IntersectContext* MAYBE_UNUSED context = args->internal_context;
-      const Geometry* const geometry = args->geometry;
-      if (geometry->occlusionFilterN) {
-        assert(context->scene->hasGeometryFilterFunction());
-        geometry->occlusionFilterN(filter_args);
-      }
+      if (args->geometry->occlusionFilterN)
+        args->geometry->occlusionFilterN(filter_args);
       
-      //if (args->valid[0] == 0)
-      //  return false;
-      
-      if (context->user->filter) {
-        assert(context->scene->hasContextFilterFunction());
-        context->user->filter(filter_args);
-      }
+      if (args->context->filter)
+        args->context->filter(filter_args);
 #endif
     }
 

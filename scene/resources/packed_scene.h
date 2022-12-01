@@ -108,7 +108,7 @@ protected:
 public:
 	enum {
 		FLAG_ID_IS_PATH = (1 << 30),
-		TYPE_INSTANCED = 0x7FFFFFFF,
+		TYPE_INSTANTIATED = 0x7FFFFFFF,
 		FLAG_INSTANCE_IS_PLACEHOLDER = (1 << 30),
 		FLAG_PATH_PROPERTY_IS_NODE = (1 << 30),
 		FLAG_PROP_NAME_MASK = FLAG_PATH_PROPERTY_IS_NODE - 1,
@@ -143,6 +143,7 @@ public:
 	String get_path() const;
 
 	void clear();
+	Error copy_from(const Ref<SceneState> &p_scene_state);
 
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state) const;
@@ -234,6 +235,8 @@ public:
 
 	void recreate_state();
 	void replace_state(Ref<SceneState> p_by);
+
+	virtual void reload_from_file() override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 #ifdef TOOLS_ENABLED

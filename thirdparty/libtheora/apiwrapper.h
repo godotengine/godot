@@ -21,7 +21,7 @@
 # include <theora/theora.h>
 # include "theora/theoradec.h"
 # include "theora/theoraenc.h"
-# include "internal.h"
+# include "state.h"
 
 typedef struct th_api_wrapper th_api_wrapper;
 typedef struct th_api_info    th_api_info;

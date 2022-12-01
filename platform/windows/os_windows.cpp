@@ -849,7 +849,19 @@ String OS_Windows::get_system_font_path(const String &p_font_name, bool p_bold, 
 		if (FAILED(hr)) {
 			continue;
 		}
-		return String::utf16((const char16_t *)&file_path[0]);
+		String fpath = String::utf16((const char16_t *)&file_path[0]);
+
+		WIN32_FIND_DATAW d;
+		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
+		if (fnd != INVALID_HANDLE_VALUE) {
+			String fname = String::utf16((const char16_t *)d.cFileName);
+			if (!fname.is_empty()) {
+				fpath = fpath.get_base_dir().path_join(fname);
+			}
+			FindClose(fnd);
+		}
+
+		return fpath;
 	}
 	return String();
 }

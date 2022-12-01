@@ -486,6 +486,9 @@ public:
 	void set_physics_ticks_per_second(int p_ips);
 	int get_physics_ticks_per_second() const;
 
+	void set_max_physics_steps_per_frame(int p_max_physics_steps);
+	int get_max_physics_steps_per_frame() const;
+
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
 	double get_physics_interpolation_fraction() const;

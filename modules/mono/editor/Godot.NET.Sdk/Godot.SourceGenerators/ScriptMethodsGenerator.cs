@@ -80,13 +80,13 @@ namespace Godot.SourceGenerators
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedName() :
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
 
-            string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                                 + "_ScriptMethods.generated";
 
             var source = new StringBuilder();
@@ -135,7 +135,7 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-            source.Append($"    public new class MethodName : {symbol.BaseType.FullQualifiedName()}.MethodName {{\n");
+            source.Append($"    public new class MethodName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -146,7 +146,7 @@ namespace Godot.SourceGenerators
 
             foreach (string methodName in distinctMethodNames)
             {
-                source.Append("        public new static readonly StringName ");
+                source.Append("        public new static readonly global::Godot.StringName ");
                 source.Append(methodName);
                 source.Append(" = \"");
                 source.Append(methodName);
@@ -159,7 +159,7 @@ namespace Godot.SourceGenerators
 
             if (godotClassMethods.Length > 0)
             {
-                const string listType = "System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
+                const string listType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
 
                 source.Append("    internal new static ")
                     .Append(listType)
@@ -248,7 +248,7 @@ namespace Godot.SourceGenerators
 
             AppendPropertyInfo(source, methodInfo.ReturnVal);
 
-            source.Append(", flags: (Godot.MethodFlags)")
+            source.Append(", flags: (global::Godot.MethodFlags)")
                 .Append((int)methodInfo.Flags)
                 .Append(", arguments: ");
 
@@ -276,15 +276,15 @@ namespace Godot.SourceGenerators
 
         private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
-            source.Append("new(type: (Godot.Variant.Type)")
+            source.Append("new(type: (global::Godot.Variant.Type)")
                 .Append((int)propertyInfo.Type)
                 .Append(", name: \"")
                 .Append(propertyInfo.Name)
-                .Append("\", hint: (Godot.PropertyHint)")
+                .Append("\", hint: (global::Godot.PropertyHint)")
                 .Append((int)propertyInfo.Hint)
                 .Append(", hintString: \"")
                 .Append(propertyInfo.HintString)
-                .Append("\", usage: (Godot.PropertyUsageFlags)")
+                .Append("\", usage: (global::Godot.PropertyUsageFlags)")
                 .Append((int)propertyInfo.Usage)
                 .Append(", exported: ")
                 .Append(propertyInfo.Exported ? "true" : "false")

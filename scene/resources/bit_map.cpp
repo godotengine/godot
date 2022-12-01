@@ -169,7 +169,7 @@ Dictionary BitMap::_get_data() const {
 	return d;
 }
 
-Vector<Vector2> BitMap::_march_square(const Rect2i &p_rect, const Point2i &p_start) const {
+Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2i &p_start) const {
 	int stepx = 0;
 	int stepy = 0;
 	int prevx = 0;
@@ -179,9 +179,17 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &p_rect, const Point2i &p_sta
 	int curx = startx;
 	int cury = starty;
 	unsigned int count = 0;
-	HashSet<Point2i> case9s;
-	HashSet<Point2i> case6s;
+
+	HashMap<Point2i, int> cross_map;
+
 	Vector<Vector2> _points;
+	int points_size = 0;
+
+	Vector<Vector<Vector2>> ret;
+
+	// Add starting entry at start of return.
+	ret.resize(1);
+
 	do {
 		int sv = 0;
 		{ // Square value
@@ -202,7 +210,7 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &p_rect, const Point2i &p_sta
 			sv += (p_rect.has_point(bl) && get_bitv(bl)) ? 4 : 0;
 			Point2i br = Point2i(curx, cury);
 			sv += (p_rect.has_point(br) && get_bitv(br)) ? 8 : 0;
-			ERR_FAIL_COND_V(sv == 0 || sv == 15, Vector<Vector2>());
+			ERR_FAIL_COND_V(sv == 0 || sv == 15, Vector<Vector<Vector2>>());
 		}
 
 		switch (sv) {
@@ -266,70 +274,95 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &p_rect, const Point2i &p_sta
 				stepy = 0;
 				break;
 			case 9:
-				/*
+				/* Going DOWN if coming from the LEFT, otherwise go UP.
+				9
 				+---+---+
 				| 1 |   |
 				+---+---+
 				|   | 8 |
 				+---+---+
-				this should normally go UP, but if we already been here, we go down
 				*/
-				if (case9s.has(Point2i(curx, cury))) {
-					//found, so we go down, and delete from case9s;
+
+				if (prevx == 1) {
 					stepx = 0;
 					stepy = 1;
-					case9s.erase(Point2i(curx, cury));
 				} else {
-					//not found, we go up, and add to case9s;
 					stepx = 0;
 					stepy = -1;
-					case9s.insert(Point2i(curx, cury));
 				}
 				break;
 			case 6:
-				/*
+				/* Going RIGHT if coming from BELOW, otherwise go LEFT.
 				6
 				+---+---+
 				|   | 2 |
 				+---+---+
 				| 4 |   |
 				+---+---+
-				this normally go RIGHT, but if it's coming from RIGHT, it should go LEFT
 				*/
-				if (case6s.has(Point2i(curx, cury))) {
-					//found, so we go left, and delete from case6s;
-					stepx = -1;
-					stepy = 0;
-					case6s.erase(Point2i(curx, cury));
-				} else {
-					//not found, we go right, and add to case6s;
+
+				if (prevy == -1) {
 					stepx = 1;
 					stepy = 0;
-					case6s.insert(Point2i(curx, cury));
+				} else {
+					stepx = -1;
+					stepy = 0;
 				}
 				break;
 			default:
 				ERR_PRINT("this shouldn't happen.");
 		}
+
+		// Handle crossing points.
+		if (sv == 6 || sv == 9) {
+			const Point2i cur_pos(curx, cury);
+
+			// Find if this point has occured before.
+			if (HashMap<Point2i, int>::Iterator found = cross_map.find(cur_pos)) {
+				// Add points after the previous crossing to the result.
+				ret.push_back(_points.slice(found->value + 1, points_size));
+
+				// Remove points after crossing point.
+				points_size = found->value + 1;
+
+				// Erase trailing map elements.
+				while (cross_map.last() != found) {
+					cross_map.remove(cross_map.last());
+				}
+
+				cross_map.erase(cur_pos);
+			} else {
+				// Add crossing point to map.
+				cross_map.insert(cur_pos, points_size - 1);
+			}
+		}
+
 		// Small optimization:
 		// If the previous direction is same as the current direction,
 		// then we should modify the last vector to current.
 		curx += stepx;
 		cury += stepy;
 		if (stepx == prevx && stepy == prevy) {
-			_points.write[_points.size() - 1].x = (float)(curx - p_rect.position.x);
-			_points.write[_points.size() - 1].y = (float)(cury + p_rect.position.y);
+			_points.set(points_size - 1, Vector2(curx, cury) - p_rect.position);
 		} else {
-			_points.push_back(Vector2((float)(curx - p_rect.position.x), (float)(cury + p_rect.position.y)));
+			_points.resize(MAX(points_size + 1, _points.size()));
+			_points.set(points_size, Vector2(curx, cury) - p_rect.position);
+			points_size++;
 		}
 
 		count++;
 		prevx = stepx;
 		prevy = stepy;
 
-		ERR_FAIL_COND_V((int)count > width * height, _points);
+		ERR_FAIL_COND_V((int)count > width * height, Vector<Vector<Vector2>>());
 	} while (curx != startx || cury != starty);
-	return _points;
+
+	// Add remaining points to result.
+	_points.resize(points_size);
+
+	ret.set(0, _points);
+
+	return ret;
 }
 
 static float perpendicular_distance(const Vector2 &i, const Vector2 &start, const Vector2 &end) {
@@ -442,7 +475,7 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 			for (int j = next_j; j <= pos.y + 1; j++) {
 				if (popped) {
 					// The next loop over j must start normally.
-					next_j = pos.y;
+					next_j = pos.y - 1;
 					popped = false;
 					// Skip because an iteration was already executed with current counter values.
 					continue;
@@ -486,13 +519,10 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 			}
 		}
 	} while (reenter || popped);
-
-	print_verbose("BitMap: Max stack size: " + itos(stack.size()));
 }
 
 Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon) const {
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
-	print_verbose("BitMap: Rect: " + r);
 
 	Point2i from;
 	Ref<BitMap> fill;
@@ -505,17 +535,16 @@ Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, fl
 			if (!fill->get_bit(j, i) && get_bit(j, i)) {
 				fill_bits(this, fill, Point2i(j, i), r);
 
-				Vector<Vector2> polygon = _march_square(r, Point2i(j, i));
-				print_verbose("BitMap: Pre reduce: " + itos(polygon.size()));
-				polygon = reduce(polygon, r, p_epsilon);
-				print_verbose("BitMap: Post reduce: " + itos(polygon.size()));
+				for (Vector<Vector2> polygon : _march_square(r, Point2i(j, i))) {
+					polygon = reduce(polygon, r, p_epsilon);
 
-				if (polygon.size() < 3) {
-					print_verbose("Invalid polygon, skipped");
-					continue;
+					if (polygon.size() < 3) {
+						print_verbose("Invalid polygon, skipped");
+						continue;
+					}
+
+					polygons.push_back(polygon);
 				}
-
-				polygons.push_back(polygon);
 			}
 		}
 	}

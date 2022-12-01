@@ -167,11 +167,12 @@ RID XRInterface::get_vrs_texture() {
 	// Default logic will return a standard VRS image based on our target size and default projections.
 	// Note that this only gets called if VRS is supported on the hardware.
 
-	Size2 texel_size = Size2(16.0, 16.0); // For now we assume we always use 16x16 texels, seems to be the standard.
+	int32_t texel_width = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_WIDTH);
+	int32_t texel_height = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_HEIGHT);
 	int view_count = get_view_count();
 	Size2 target_size = get_render_target_size();
 	real_t aspect = target_size.x / target_size.y; // is this y/x ?
-	Size2 vrs_size = Size2(round(0.5 + target_size.x / texel_size.x), round(0.5 + target_size.y / texel_size.y));
+	Size2 vrs_size = Size2(round(0.5 + target_size.x / texel_width), round(0.5 + target_size.y / texel_height));
 	real_t radius = vrs_size.length() * 0.5;
 	Size2 vrs_sizei = vrs_size;
 
@@ -179,6 +180,8 @@ RID XRInterface::get_vrs_texture() {
 		const uint8_t densities[] = {
 			0, // 1x1
 			1, // 1x2
+			// 2, // 1x4 - not supported
+			// 3, // 1x8 - not supported
 			// 4, // 2x1
 			5, // 2x2
 			6, // 2x4

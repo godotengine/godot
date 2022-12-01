@@ -101,9 +101,8 @@
     <Compile Include="Core\NativeInterop\InteropUtils.cs" />
     <Compile Include="Core\NativeInterop\NativeFuncs.extended.cs" />
     <Compile Include="Core\NativeInterop\NativeVariantPtrArgs.cs" />
-    <Compile Include="Core\NativeInterop\VariantConversionCallbacks.cs" />
-    <Compile Include="Core\NativeInterop\VariantSpanHelpers.cs" />
     <Compile Include="Core\NativeInterop\VariantUtils.cs" />
+    <Compile Include="Core\NativeInterop\VariantUtils.generic.cs" />
     <Compile Include="Core\NodePath.cs" />
     <Compile Include="Core\Object.base.cs" />
     <Compile Include="Core\Object.exceptions.cs" />
@@ -123,6 +122,7 @@
     <Compile Include="Core\StringName.cs" />
     <Compile Include="Core\Transform2D.cs" />
     <Compile Include="Core\Transform3D.cs" />
+    <Compile Include="Core\Variant.cs" />
     <Compile Include="Core\Vector2.cs" />
     <Compile Include="Core\Vector2i.cs" />
     <Compile Include="Core\Vector3.cs" />
@@ -131,7 +131,6 @@
     <Compile Include="Core\Vector4i.cs" />
     <Compile Include="GlobalUsings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Variant.cs" />
   </ItemGroup>
   <!--
   We import a props file with auto-generated includes. This works well with Rider.

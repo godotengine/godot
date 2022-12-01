@@ -29,7 +29,7 @@
 			<return type="void" />
 			<param index="0" name="from_position" type="float" default="0.0" />
 			<description>
-				Plays the audio from the given position [param from_position], in seconds.
+				Queues the audio to play on the next physics frame, from the given position [param from_position], in seconds.
 			</description>
 		</method>
 		<method name="seek">
@@ -94,7 +94,7 @@
 			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing" default="false">
-			If [code]true[/code], audio is playing.
+			If [code]true[/code], audio is playing or is queued to be played (see [method play]).
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 			The [AudioStream] resource to be played.
