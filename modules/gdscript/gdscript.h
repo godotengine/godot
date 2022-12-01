@@ -240,6 +240,7 @@ public:
 	virtual Error reload(bool p_keep_state = false) override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	String get_script_path() const;
 	Error load_source_code(const String &p_path);
 	Error load_byte_code(const String &p_path);
 
@@ -432,7 +433,7 @@ public:
 			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
 			if (_call_stack[i].function) {
 				csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
-				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
+				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_script_path();
 			}
 		}
 		return csi;

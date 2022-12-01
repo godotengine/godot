@@ -545,9 +545,9 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 						} else if (Ref<Script>(member.constant->initializer->reduced_value).is_valid()) {
 							Ref<GDScript> gdscript = member.constant->initializer->reduced_value;
 							if (gdscript.is_valid()) {
-								Ref<GDScriptParserRef> ref = get_parser_for(gdscript->get_path());
+								Ref<GDScriptParserRef> ref = get_parser_for(gdscript->get_script_path());
 								if (ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED) != OK) {
-									push_error(vformat(R"(Could not parse script from "%s".)", gdscript->get_path()), p_type);
+									push_error(vformat(R"(Could not parse script from "%s".)", gdscript->get_script_path()), p_type);
 									return GDScriptParser::DataType();
 								}
 								result = ref->get_parser()->head->get_datatype();
@@ -3136,9 +3136,9 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 					Variant constant = GDScriptLanguage::get_singleton()->get_named_globals_map()[name];
 					Node *node = Object::cast_to<Node>(constant);
 					if (node != nullptr) {
-						Ref<Script> scr = node->get_script();
+						Ref<GDScript> scr = node->get_script();
 						if (scr.is_valid()) {
-							Ref<GDScriptParserRef> singl_parser = get_parser_for(scr->get_path());
+							Ref<GDScriptParserRef> singl_parser = get_parser_for(scr->get_script_path());
 							if (singl_parser.is_valid()) {
 								Error err = singl_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 								if (err == OK) {
@@ -3341,7 +3341,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			Ref<GDScript> gdscr = Ref<GDScript>(p_subscript->base->reduced_value);
 			if (!valid && gdscr.is_valid()) {
 				Error err = OK;
-				GDScriptCache::get_full_script(gdscr->get_path(), err);
+				GDScriptCache::get_full_script(gdscr->get_script_path(), err);
 				if (err == OK) {
 					value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
 				}

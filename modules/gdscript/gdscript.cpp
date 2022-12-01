@@ -478,7 +478,7 @@ void GDScript::_clear_doc() {
 void GDScript::_update_doc() {
 	_clear_doc();
 
-	doc.script_path = "\"" + get_path().get_slice("://", 1) + "\"";
+	doc.script_path = vformat(R"("%s")", get_script_path().get_slice("://", 1));
 	if (!name.is_empty()) {
 		doc.name = name;
 	} else {
@@ -801,9 +801,9 @@ void GDScript::update_exports() {
 
 String GDScript::_get_debug_path() const {
 	if (is_built_in() && !get_name().is_empty()) {
-		return get_name() + " (" + get_path() + ")";
+		return vformat("%s(%s)", get_name(), get_script_path());
 	} else {
-		return get_path();
+		return get_script_path();
 	}
 }
 
@@ -904,7 +904,7 @@ Error GDScript::reload(bool p_keep_state) {
 	for (const GDScriptWarning &warning : parser.get_warnings()) {
 		if (EngineDebugger::is_active()) {
 			Vector<ScriptLanguage::StackInfo> si;
-			EngineDebugger::get_script_debugger()->send_error("", get_path(), warning.start_line, warning.get_name(), warning.get_message(), false, ERR_HANDLER_WARNING, si);
+			EngineDebugger::get_script_debugger()->send_error("", get_script_path(), warning.start_line, warning.get_name(), warning.get_message(), false, ERR_HANDLER_WARNING, si);
 		}
 	}
 #endif
@@ -1025,6 +1025,10 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
 		kv.value->set_path(p_path, p_take_over);
 	}
+}
+
+String GDScript::get_script_path() const {
+	return path;
 }
 
 Error GDScript::load_source_code(const String &p_path) {
@@ -2164,7 +2168,8 @@ void GDScriptLanguage::reload_all_scripts() {
 
 		SelfList<GDScript> *elem = script_list.first();
 		while (elem) {
-			if (elem->self()->get_path().is_resource_file()) {
+			// Scripts will reload all subclasses, so only reload root scripts.
+			if (elem->self()->is_root_script() && elem->self()->get_path().is_resource_file()) {
 				print_verbose("GDScript: Found: " + elem->self()->get_path());
 				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
 			}
@@ -2193,7 +2198,8 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 		SelfList<GDScript> *elem = script_list.first();
 		while (elem) {
-			if (elem->self()->get_path().is_resource_file()) {
+			// Scripts will reload all subclasses, so only reload root scripts.
+			if (elem->self()->is_root_script() && elem->self()->get_path().is_resource_file()) {
 				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
 			}
 			elem = elem->next();
