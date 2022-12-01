@@ -307,7 +307,8 @@ namespace Godot.SourceGenerators
                     source.Append("        values.Add(PropertyName.");
                     source.Append(exportedMember.Name);
                     source.Append(", ");
-                    source.AppendManagedToVariantExpr(defaultValueLocalName, exportedMember.Type);
+                    source.AppendManagedToVariantExpr(defaultValueLocalName,
+                        exportedMember.TypeSymbol, exportedMember.Type);
                     source.Append(");\n");
                 }
 

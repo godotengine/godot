@@ -209,7 +209,7 @@ class BindingsGenerator {
 		String name;
 		StringName cname;
 
-		int type_parameter_count;
+		int type_parameter_count = 0;
 
 		/**
 		 * Identifier name of the base class.
@@ -514,7 +514,12 @@ class BindingsGenerator {
 
 		static void postsetup_enum_type(TypeInterface &r_enum_itype);
 
-		TypeInterface() {}
+		TypeInterface() {
+			static String default_cs_variant_to_managed = "VariantUtils.ConvertTo<%1>(%0)";
+			static String default_cs_managed_to_variant = "VariantUtils.CreateFrom<%1>(%0)";
+			cs_variant_to_managed = default_cs_variant_to_managed;
+			cs_managed_to_variant = default_cs_managed_to_variant;
+		}
 	};
 
 	struct InternalCall {

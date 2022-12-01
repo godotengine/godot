@@ -162,7 +162,8 @@ namespace Godot.SourceGenerators
                 source.Append("        info.AddProperty(PropertyName.")
                     .Append(propertyName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.", propertyName), property.Type)
+                    .AppendManagedToVariantExpr(string.Concat("this.", propertyName),
+                        property.PropertySymbol.Type, property.Type)
                     .Append(");\n");
             }
 
@@ -175,7 +176,8 @@ namespace Godot.SourceGenerators
                 source.Append("        info.AddProperty(PropertyName.")
                     .Append(fieldName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.", fieldName), field.Type)
+                    .AppendManagedToVariantExpr(string.Concat("this.", fieldName),
+                        field.FieldSymbol.Type, field.Type)
                     .Append(");\n");
             }
 
