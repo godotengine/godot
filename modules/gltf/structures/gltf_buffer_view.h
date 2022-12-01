@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_accessor.h                                                      */
+/*  gltf_buffer_view.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,77 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_ACCESSOR_H
-#define GLTF_ACCESSOR_H
+#ifndef GLTF_BUFFER_VIEW_H
+#define GLTF_BUFFER_VIEW_H
 
+#include "../gltf_defines.h"
 #include "core/resource.h"
-#include "gltf_defines.h"
 
-struct GLTFAccessor : public Resource {
-	GDCLASS(GLTFAccessor, Resource);
+class GLTFBufferView : public Resource {
+	GDCLASS(GLTFBufferView, Resource);
 	friend class GLTFDocument;
 
 private:
-	GLTFBufferViewIndex buffer_view = 0;
+	GLTFBufferIndex buffer = -1;
 	int byte_offset = 0;
-	int component_type = 0;
-	bool normalized = false;
-	int count = 0;
-	GLTFType type = GLTFType::TYPE_SCALAR;
-	PoolVector<float> min;
-	PoolVector<float> max;
-	int sparse_count = 0;
-	int sparse_indices_buffer_view = 0;
-	int sparse_indices_byte_offset = 0;
-	int sparse_indices_component_type = 0;
-	int sparse_values_buffer_view = 0;
-	int sparse_values_byte_offset = 0;
+	int byte_length = 0;
+	int byte_stride = -1;
+	bool indices = false;
 
 protected:
 	static void _bind_methods();
 
 public:
-	GLTFBufferViewIndex get_buffer_view();
-	void set_buffer_view(GLTFBufferViewIndex p_buffer_view);
+	GLTFBufferIndex get_buffer();
+	void set_buffer(GLTFBufferIndex p_buffer);
 
 	int get_byte_offset();
 	void set_byte_offset(int p_byte_offset);
 
-	int get_component_type();
-	void set_component_type(int p_component_type);
+	int get_byte_length();
+	void set_byte_length(int p_byte_length);
 
-	bool get_normalized();
-	void set_normalized(bool p_normalized);
+	int get_byte_stride();
+	void set_byte_stride(int p_byte_stride);
 
-	int get_count();
-	void set_count(int p_count);
-
-	int get_type();
-	void set_type(int p_type);
-
-	PoolVector<float> get_min();
-	void set_min(PoolVector<float> p_min);
-
-	PoolVector<float> get_max();
-	void set_max(PoolVector<float> p_max);
-
-	int get_sparse_count();
-	void set_sparse_count(int p_sparse_count);
-
-	int get_sparse_indices_buffer_view();
-	void set_sparse_indices_buffer_view(int p_sparse_indices_buffer_view);
-
-	int get_sparse_indices_byte_offset();
-	void set_sparse_indices_byte_offset(int p_sparse_indices_byte_offset);
-
-	int get_sparse_indices_component_type();
-	void set_sparse_indices_component_type(int p_sparse_indices_component_type);
-
-	int get_sparse_values_buffer_view();
-	void set_sparse_values_buffer_view(int p_sparse_values_buffer_view);
-
-	int get_sparse_values_byte_offset();
-	void set_sparse_values_byte_offset(int p_sparse_values_byte_offset);
+	bool get_indices();
+	void set_indices(bool p_indices);
+	// matrices need to be transformed to this
 };
 
-#endif // GLTF_ACCESSOR_H
+#endif // GLTF_BUFFER_VIEW_H

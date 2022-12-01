@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_spec_gloss.h                                                    */
+/*  gltf_accessor.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,41 +28,77 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_SPEC_GLOSS_H
-#define GLTF_SPEC_GLOSS_H
+#ifndef GLTF_ACCESSOR_H
+#define GLTF_ACCESSOR_H
 
-#include "core/image.h"
+#include "../gltf_defines.h"
 #include "core/resource.h"
 
-class GLTFSpecGloss : public Resource {
-	GDCLASS(GLTFSpecGloss, Resource);
+struct GLTFAccessor : public Resource {
+	GDCLASS(GLTFAccessor, Resource);
 	friend class GLTFDocument;
 
 private:
-	Ref<Image> diffuse_img = nullptr;
-	Color diffuse_factor = Color(1.0f, 1.0f, 1.0f);
-	float gloss_factor = 1.0f;
-	Color specular_factor = Color(1.0f, 1.0f, 1.0f);
-	Ref<Image> spec_gloss_img = nullptr;
+	GLTFBufferViewIndex buffer_view = 0;
+	int byte_offset = 0;
+	int component_type = 0;
+	bool normalized = false;
+	int count = 0;
+	GLTFType type = GLTFType::TYPE_SCALAR;
+	PoolVector<float> min;
+	PoolVector<float> max;
+	int sparse_count = 0;
+	int sparse_indices_buffer_view = 0;
+	int sparse_indices_byte_offset = 0;
+	int sparse_indices_component_type = 0;
+	int sparse_values_buffer_view = 0;
+	int sparse_values_byte_offset = 0;
 
 protected:
 	static void _bind_methods();
 
 public:
-	Ref<Image> get_diffuse_img();
-	void set_diffuse_img(Ref<Image> p_diffuse_img);
+	GLTFBufferViewIndex get_buffer_view();
+	void set_buffer_view(GLTFBufferViewIndex p_buffer_view);
 
-	Color get_diffuse_factor();
-	void set_diffuse_factor(Color p_diffuse_factor);
+	int get_byte_offset();
+	void set_byte_offset(int p_byte_offset);
 
-	float get_gloss_factor();
-	void set_gloss_factor(float p_gloss_factor);
+	int get_component_type();
+	void set_component_type(int p_component_type);
 
-	Color get_specular_factor();
-	void set_specular_factor(Color p_specular_factor);
+	bool get_normalized();
+	void set_normalized(bool p_normalized);
 
-	Ref<Image> get_spec_gloss_img();
-	void set_spec_gloss_img(Ref<Image> p_spec_gloss_img);
+	int get_count();
+	void set_count(int p_count);
+
+	int get_type();
+	void set_type(int p_type);
+
+	PoolVector<float> get_min();
+	void set_min(PoolVector<float> p_min);
+
+	PoolVector<float> get_max();
+	void set_max(PoolVector<float> p_max);
+
+	int get_sparse_count();
+	void set_sparse_count(int p_sparse_count);
+
+	int get_sparse_indices_buffer_view();
+	void set_sparse_indices_buffer_view(int p_sparse_indices_buffer_view);
+
+	int get_sparse_indices_byte_offset();
+	void set_sparse_indices_byte_offset(int p_sparse_indices_byte_offset);
+
+	int get_sparse_indices_component_type();
+	void set_sparse_indices_component_type(int p_sparse_indices_component_type);
+
+	int get_sparse_values_buffer_view();
+	void set_sparse_values_buffer_view(int p_sparse_values_buffer_view);
+
+	int get_sparse_values_byte_offset();
+	void set_sparse_values_byte_offset(int p_sparse_values_byte_offset);
 };
 
-#endif // GLTF_SPEC_GLOSS_H
+#endif // GLTF_ACCESSOR_H
