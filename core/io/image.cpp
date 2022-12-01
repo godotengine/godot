@@ -3798,6 +3798,19 @@ void Image::convert_ra_rgba8_to_rg() {
 	}
 }
 
+void Image::convert_rgba8_to_bgra8() {
+	ERR_FAIL_COND(format != FORMAT_RGBA8);
+	ERR_FAIL_COND(!data.size());
+
+	int s = data.size();
+	uint8_t *w = data.ptrw();
+	for (int i = 0; i < s; i += 4) {
+		uint8_t r = w[i];
+		w[i] = w[i + 2]; // Swap R to B
+		w[i + 2] = r; // Swap B to R
+	}
+}
+
 Error Image::_load_from_buffer(const Vector<uint8_t> &p_array, ImageMemLoadFunc p_loader) {
 	int buffer_size = p_array.size();
 
