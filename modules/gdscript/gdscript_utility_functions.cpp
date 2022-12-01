@@ -294,6 +294,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 
 				GDScript *p = base.ptr();
+				String path = p->get_script_path();
 				Vector<StringName> sname;
 
 				while (p->_owner) {
@@ -302,7 +303,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				sname.reverse();
 
-				if (!p->path.is_resource_file()) {
+				if (!path.is_resource_file()) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = 0;
 					r_error.expected = Variant::DICTIONARY;
@@ -317,7 +318,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 				Dictionary d;
 				d["@subpath"] = cp;
-				d["@path"] = p->get_path();
+				d["@path"] = path;
 
 				for (const KeyValue<StringName, GDScript::MemberInfo> &E : base->member_indices) {
 					if (!d.has(E.key)) {

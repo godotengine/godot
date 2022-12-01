@@ -2083,8 +2083,8 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	if (EngineDebugger::is_active()) {
 		String signature;
 		// Path.
-		if (!p_script->get_path().is_empty()) {
-			signature += p_script->get_path();
+		if (!p_script->get_script_path().is_empty()) {
+			signature += p_script->get_script_path();
 		}
 		// Location.
 		if (p_func) {
