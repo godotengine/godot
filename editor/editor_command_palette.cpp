@@ -38,6 +38,9 @@
 
 EditorCommandPalette *EditorCommandPalette::singleton = nullptr;
 
+static Rect2i prev_rect = Rect2i();
+static bool was_showed = false;
+
 float EditorCommandPalette::_score_path(const String &p_search, const String &p_path) {
 	float score = 0.9f + .1f * (p_search.length() / (float)p_path.length());
 
@@ -145,6 +148,17 @@ void EditorCommandPalette::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_command", "key_name"), &EditorCommandPalette::remove_command);
 }
 
+void EditorCommandPalette::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				prev_rect = Rect2i(get_position(), get_size());
+				was_showed = true;
+			}
+		} break;
+	}
+}
+
 void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid()) {
@@ -171,12 +185,10 @@ void EditorCommandPalette::_confirmed() {
 }
 
 void EditorCommandPalette::open_popup() {
-	static bool was_showed = false;
-	if (!was_showed) {
-		was_showed = true;
-		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
+	if (was_showed) {
+		popup(prev_rect);
 	} else {
-		show();
+		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
 	}
 
 	command_search_box->clear();
