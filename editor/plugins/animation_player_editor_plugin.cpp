@@ -1091,9 +1091,30 @@ void AnimationPlayerEditor::_animation_duplicate() {
 		return;
 	}
 
-	String new_name = current;
-	while (player->has_animation(new_name)) {
-		new_name = new_name + " (copy)";
+	int index_digits = 0;
+	for (int i = current.length() - 1; i >= 0; i--) {
+		if (is_digit(current[i])) {
+			index_digits++;
+		} else {
+			break;
+		}
+	}
+	int64_t count = 2;
+	if (index_digits) {
+		count = current.right(index_digits).to_int();
+	}
+	String new_name = (index_digits) ? current.left(-index_digits) : current + "_";
+	while (true) {
+		String attempt = new_name;
+		if (count > 1) {
+			attempt += itos(count);
+		}
+		if (player->has_animation(attempt)) {
+			count++;
+			continue;
+		}
+		new_name = attempt;
+		break;
 	}
 
 	if (new_name.contains("/")) {
