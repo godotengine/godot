@@ -2079,7 +2079,6 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, max, sarray(), varray());
 	bind_method(Array, min, sarray(), varray());
 	bind_method(Array, typed_assign, sarray("array"), varray());
-	bind_method(Array, set_typed, sarray("type", "class_name", "script"), varray());
 	bind_method(Array, is_typed, sarray(), varray());
 	bind_method(Array, get_typed_builtin, sarray(), varray());
 	bind_method(Array, get_typed_class_name, sarray(), varray());

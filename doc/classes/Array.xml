@@ -58,7 +58,8 @@
 			<param index="2" name="class_name" type="StringName" />
 			<param index="3" name="script" type="Variant" />
 			<description>
-				Creates a typed array from the [param base] array. The base array can't be already typed. See [method set_typed] for more details.
+				Creates a typed array from the [param base] array. The base array can't be already typed.Makes the [Array] typed.
+				The [param type] should be one of the [enum Variant.Type] constants. [param class_name] is optional and can only be provided for [constant TYPE_OBJECT]. [param script] can only be provided if [param class_name] is not empty.
 			</description>
 		</constructor>
 		<constructor name="Array">
@@ -527,16 +528,6 @@
 			<param index="0" name="enable" type="bool" />
 			<description>
 				Makes the [Array] read-only, i.e. disabled modifying of the array's elements. Does not apply to nested content, e.g. content of nested arrays.
-			</description>
-		</method>
-		<method name="set_typed">
-			<return type="void" />
-			<param index="0" name="type" type="int" />
-			<param index="1" name="class_name" type="StringName" />
-			<param index="2" name="script" type="Variant" />
-			<description>
-				Makes the [Array] typed. The [param type] should be one of the [enum Variant.Type] constants. [param class_name] is optional and can only be provided for [constant TYPE_OBJECT]. [param script] can only be provided if [param class_name] is not empty.
-				The method fails if an array is already typed.
 			</description>
 		</method>
 		<method name="shuffle">
