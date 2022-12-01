@@ -37,38 +37,21 @@
 #include "tests/test_macros.h"
 
 #define INPUT_EVENT_TYPES InputEventWithModifiers, \
-	InputEventKey, \
-	InputEventMouse, \
-	InputEventMouseButton, \
-	InputEventMouseMotion, \
-	InputEventJoypadMotion, \
-	InputEventJoypadButton, \
-	InputEventScreenTouch, \
-	InputEventScreenDrag, \
-	InputEventAction, \
-	InputEventGesture, \
-	InputEventPanGesture, \
-	InputEventMIDI, \
-	InputEventShortcut
+						  InputEventKey,           \
+						  InputEventMouse,         \
+						  InputEventMouseButton,   \
+						  InputEventMouseMotion,   \
+						  InputEventJoypadMotion,  \
+						  InputEventJoypadButton,  \
+						  InputEventScreenTouch,   \
+						  InputEventScreenDrag,    \
+						  InputEventAction,        \
+						  InputEventGesture,       \
+						  InputEventPanGesture,    \
+						  InputEventMIDI,          \
+						  InputEventShortcut
 
 namespace TestInputEvent {
-
-/*typedef std::tuple<
-	InputEventWithModifiers,
-	InputEventKey,
-	InputEventMouse,
-	InputEventMouseButton,
-	InputEventMouseMotion,
-	InputEventJoypadMotion,
-	InputEventJoypadButton,
-	InputEventScreenTouch,
-	InputEventScreenDrag,
-	InputEventAction,
-	InputEventGesture,
-	InputEventPanGesture,
-	InputEventMIDI,
-	InputEventShortcut
-	> InputEventTypes;*/
 
 TEST_CASE_TEMPLATE_DEFINE("[InputEvent] Event correctly changes and returns device", T, test_device) {
 	T event = T();
