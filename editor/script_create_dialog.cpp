@@ -128,8 +128,8 @@ void ScriptCreateDialog::_notification(int p_what) {
 			} else {
 				language_menu->select(default_language);
 			}
-			if (EditorSettings::get_singleton()->has_meta("script_setup/use_script_templates")) {
-				is_using_templates = bool(EditorSettings::get_singleton()->get_meta("script_setup/use_script_templates"));
+			if (EditorSettings::get_singleton()->has_meta("script_setup_use_script_templates")) {
+				is_using_templates = bool(EditorSettings::get_singleton()->get_meta("script_setup_use_script_templates"));
 				use_templates->set_pressed(is_using_templates);
 			}
 
@@ -332,13 +332,13 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 			dic_templates_project[parent_name->get_text()] = sinfo.get_hash();
 			EditorSettings::get_singleton()->set_project_metadata("script_setup", "templates_dictionary", dic_templates_project);
 		} else {
-			// Save template into to editor dictionary (not a project template).
+			// Save template info to editor dictionary (not a project template).
 			Dictionary dic_templates;
-			if (EditorSettings::get_singleton()->has_meta("script_setup/templates_dictionary")) {
-				dic_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup/templates_dictionary");
+			if (EditorSettings::get_singleton()->has_meta("script_setup_templates_dictionary")) {
+				dic_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup_templates_dictionary");
 			}
 			dic_templates[parent_name->get_text()] = sinfo.get_hash();
-			EditorSettings::get_singleton()->set_meta("script_setup/templates_dictionary", dic_templates);
+			EditorSettings::get_singleton()->set_meta("script_setup_templates_dictionary", dic_templates);
 			// Remove template from project dictionary as we last used an editor level template.
 			Dictionary dic_templates_project = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
 			if (dic_templates_project.has(parent_name->get_text())) {
@@ -487,7 +487,7 @@ void ScriptCreateDialog::_built_in_pressed() {
 
 void ScriptCreateDialog::_use_template_pressed() {
 	is_using_templates = use_templates->is_pressed();
-	EditorSettings::get_singleton()->set_meta("script_setup/use_script_templates", is_using_templates);
+	EditorSettings::get_singleton()->set_meta("script_setup_use_script_templates", is_using_templates);
 	_update_dialog();
 }
 
@@ -606,8 +606,8 @@ void ScriptCreateDialog::_update_template_menu() {
 		// Get the latest templates used for each type of node from project settings then global settings.
 		Dictionary last_local_templates = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
 		Dictionary last_global_templates;
-		if (EditorSettings::get_singleton()->has_meta("script_setup/templates_dictionary")) {
-			last_global_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup/templates_dictionary");
+		if (EditorSettings::get_singleton()->has_meta("script_setup_templates_dictionary")) {
+			last_global_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup_templates_dictionary");
 		}
 		String inherits_base_type = parent_name->get_text();
 
