@@ -715,7 +715,7 @@ private:
 
 	Node3D *selected = nullptr;
 
-	void _request_gizmo(Object *p_obj);
+	void _request_gizmo(ObjectID p_object);
 	void _set_subgizmo_selection(Object *p_obj, Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
 	void _clear_subgizmo_selection(Object *p_obj = nullptr);
 

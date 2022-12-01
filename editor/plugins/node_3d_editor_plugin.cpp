@@ -7598,8 +7598,8 @@ void Node3DEditor::move_control_to_right_panel(Control *p_control) {
 	add_control_to_right_panel(p_control);
 }
 
-void Node3DEditor::_request_gizmo(Object *p_obj) {
-	Node3D *sp = Object::cast_to<Node3D>(p_obj);
+void Node3DEditor::_request_gizmo(ObjectID p_object) {
+	Node3D *sp = Object::cast_to<Node3D>(ObjectDB::get_instance(p_object));
 	if (!sp) {
 		return;
 	}
