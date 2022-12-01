@@ -94,6 +94,7 @@
 			[b]Note:[/b] This returns a copy of the [PoolVector2Array] rather than a reference.
 		</member>
 		<member name="polygons" type="Array" setter="set_polygons" getter="get_polygons" default="[  ]">
+			The list of polygons, in case more than one is being represented. Every individual polygon is stored as a [PoolIntArray] where each [int] is an index to a point in [member polygon]. If empty, this property will be ignored, and the resulting single polygon will be composed of all points in [member polygon], using the order they are stored in.
 		</member>
 		<member name="skeleton" type="NodePath" setter="set_skeleton" getter="get_skeleton" default="NodePath(&quot;&quot;)">
 		</member>

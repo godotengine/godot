@@ -338,6 +338,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
 	_initial_set("interface/editor/quit_confirmation", true);
+	_initial_set("interface/editor/accept_dialog_cancel_ok_buttons", 0);
+	hints["interface/editor/accept_dialog_cancel_ok_buttons"] = PropertyInfo(Variant::INT, "interface/editor/accept_dialog_cancel_ok_buttons", PROPERTY_HINT_ENUM, vformat("Auto (%s),Cancel First,OK First", OS::get_singleton()->get_swap_ok_cancel() ? "OK First" : "Cancel First"), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	// Inspector
 	_initial_set("interface/inspector/max_array_dictionary_items_per_page", 20);
