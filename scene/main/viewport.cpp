@@ -1880,9 +1880,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	Ref<InputEventScreenTouch> touch_event = p_event;
 	if (touch_event.is_valid()) {
 		Size2 pos = touch_event->get_position();
+		const int touch_index = touch_event->get_index();
 		if (touch_event->is_pressed()) {
 			Control *over = gui_find_control(pos);
 			if (over) {
+				gui.touch_focus[touch_index] = over->get_instance_id();
 				bool stopped = false;
 				if (over->can_process()) {
 					touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
@@ -1899,17 +1901,25 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 				return;
 			}
-		} else if (touch_event->get_index() == 0 && gui.last_mouse_focus) {
+		} else {
 			bool stopped = false;
-			if (gui.last_mouse_focus->can_process()) {
+			ObjectID control_id = gui.touch_focus[touch_index];
+			Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
+			if (over && over->can_process()) {
 				touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
-				touch_event->set_position(gui.focus_inv_xform.xform(pos));
+				if (over == gui.last_mouse_focus) {
+					pos = gui.focus_inv_xform.xform(pos);
+				} else {
+					pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
+				}
+				touch_event->set_position(pos);
 
-				stopped = _gui_call_input(gui.last_mouse_focus, touch_event);
+				stopped = _gui_call_input(over, touch_event);
 			}
 			if (stopped) {
 				set_input_as_handled();
 			}
+			gui.touch_focus.erase(touch_index);
 			return;
 		}
 	}
@@ -1944,7 +1954,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 	Ref<InputEventScreenDrag> drag_event = p_event;
 	if (drag_event.is_valid()) {
-		Control *over = gui.mouse_focus;
+		const int drag_event_index = drag_event->get_index();
+		ObjectID control_id = gui.touch_focus[drag_event_index];
+		Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
 		if (!over) {
 			over = gui_find_control(drag_event->get_position());
 		}
