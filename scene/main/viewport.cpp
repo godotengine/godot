@@ -34,6 +34,7 @@
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "scene/2d/camera_2d.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/2d/listener_2d.h"
 #include "scene/3d/camera.h"
@@ -966,6 +967,10 @@ bool Viewport::_camera_add(Camera *p_camera) {
 	return cameras.size() == 1;
 }
 
+void Viewport::_camera_2d_set(Camera2D *p_camera_2d) {
+	camera_2d = p_camera_2d;
+}
+
 void Viewport::_camera_remove(Camera *p_camera) {
 	cameras.erase(p_camera);
 	if (camera == p_camera) {
@@ -1183,6 +1188,10 @@ Listener *Viewport::get_listener() const {
 
 Camera *Viewport::get_camera() const {
 	return camera;
+}
+
+Camera2D *Viewport::get_camera_2d() const {
+	return camera_2d;
 }
 
 void Viewport::enable_camera_override(bool p_enable) {
@@ -3310,6 +3319,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_using_own_world"), &Viewport::is_using_own_world);
 
 	ClassDB::bind_method(D_METHOD("get_camera"), &Viewport::get_camera);
+	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);
 
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener", "enable"), &Viewport::set_as_audio_listener);
 	ClassDB::bind_method(D_METHOD("is_audio_listener"), &Viewport::is_audio_listener);

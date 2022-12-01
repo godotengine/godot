@@ -181,6 +181,7 @@ private:
 	} camera_override;
 
 	Camera *camera;
+	Camera2D *camera_2d = nullptr;
 	Set<Camera *> cameras;
 	Listener2D *listener_2d = nullptr;
 	Set<CanvasLayer *> canvas_layers;
@@ -408,6 +409,9 @@ private:
 	void _camera_remove(Camera *p_camera);
 	void _camera_make_next_current(Camera *p_exclude);
 
+	friend class Camera2D;
+	void _camera_2d_set(Camera2D *p_camera_2d);
+
 	friend class Listener2D;
 	void _listener_2d_set(Listener2D *p_listener);
 	void _listener_2d_remove(Listener2D *p_listener);
@@ -433,6 +437,7 @@ protected:
 public:
 	Listener *get_listener() const;
 	Camera *get_camera() const;
+	Camera2D *get_camera_2d() const;
 
 	void enable_camera_override(bool p_enable);
 	bool is_camera_override_enabled() const;

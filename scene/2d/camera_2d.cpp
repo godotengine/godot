@@ -246,6 +246,11 @@ void Camera2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!is_inside_tree());
+
+			if (is_current()) {
+				viewport->_camera_2d_set(this);
+			}
+
 			canvas = get_canvas();
 
 			_setup_viewport();
@@ -255,7 +260,6 @@ void Camera2D::_notification(int p_what) {
 			// it should take over as the current camera, and mark
 			// all other cameras as non current
 			first = true;
-			_set_current(current);
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -263,6 +267,7 @@ void Camera2D::_notification(int p_what) {
 			if (is_current()) {
 				if (viewport && viewport_valid) {
 					viewport->set_canvas_transform(Transform2D());
+					clear_current();
 				}
 			}
 			if (viewport && viewport_valid) {
@@ -399,18 +404,29 @@ Camera2D::Camera2DProcessMode Camera2D::get_process_mode() const {
 void Camera2D::_make_current(Object *p_which) {
 	if (p_which == this) {
 		current = true;
+		if (is_inside_tree()) {
+			get_viewport()->_camera_2d_set(this);
+			update();
+		}
 	} else {
 		current = false;
+		if (is_inside_tree()) {
+			if (get_viewport()->get_camera_2d() == this) {
+				get_viewport()->_camera_2d_set(nullptr);
+			}
+			update();
+		}
 	}
 }
 
 void Camera2D::_set_current(bool p_current) {
 	if (p_current) {
 		make_current();
+	} else {
+		if (current) {
+			clear_current();
+		}
 	}
-
-	current = p_current;
-	update();
 }
 
 bool Camera2D::is_current() const {
@@ -418,18 +434,19 @@ bool Camera2D::is_current() const {
 }
 
 void Camera2D::make_current() {
-	if (!is_inside_tree()) {
-		current = true;
-	} else {
+	if (is_inside_tree()) {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_make_current", this);
+	} else {
+		current = true;
 	}
 	_update_scroll();
 }
 
 void Camera2D::clear_current() {
-	current = false;
 	if (is_inside_tree()) {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_make_current", (Object *)nullptr);
+	} else {
+		current = false;
 	}
 }
 
