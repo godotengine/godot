@@ -1630,7 +1630,7 @@ void AnimationTree::_process_graph(double p_delta) {
 					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
 					if (t->root_motion) {
-						root_motion_position = root_motion_rotation.xform_inv(t->loc);
+						root_motion_position = t->loc;
 						root_motion_rotation = t->rot;
 						root_motion_scale = t->scale - Vector3(1, 1, 1);
 
