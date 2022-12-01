@@ -2227,7 +2227,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 #ifdef DEBUG_ENABLED
 					gdfs->state.function_name = name;
-					gdfs->state.script_path = _script->get_path();
+					gdfs->state.script_path = _script->get_script_path();
 #endif
 					gdfs->state.defarg = defarg;
 					gdfs->function = this;
