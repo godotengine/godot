@@ -83,7 +83,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	int current_language;
 	int default_language;
 	bool re_check_path = false;
-	Dictionary templates_dictionary;
 
 	Control *path_controls[2];
 	Control *name_controls[2];
