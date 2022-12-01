@@ -198,8 +198,31 @@ void OS_IOS::finalize() {
 
 // MARK: Dynamic Libraries
 
+_FORCE_INLINE_ String OS_IOS::get_framework_executable(const String &p_path) {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	// Read framework bundle to get executable name.
+	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
+	NSBundle *bundle = [NSBundle bundleWithURL:url];
+	if (bundle) {
+		String exe_path = String::utf8([[bundle executablePath] UTF8String]);
+		if (da->file_exists(exe_path)) {
+			return exe_path;
+		}
+	}
+
+	// Try default executable name (invalid framework).
+	if (da->dir_exists(p_path) && da->file_exists(p_path.path_join(p_path.get_file().get_basename()))) {
+		return p_path.path_join(p_path.get_file().get_basename());
+	}
+
+	// Not a framework, try loading as .dylib.
+	return p_path;
+}
+
 Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	if (p_path.length() == 0) {
+		// Static xcframework.
 		p_library_handle = RTLD_SELF;
 
 		if (r_resolved_path != nullptr) {
@@ -208,7 +231,27 @@ Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle,
 
 		return OK;
 	}
-	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path, r_resolved_path);
+
+	String path = get_framework_executable(p_path);
+
+	if (!FileAccess::exists(path)) {
+		// Load .dylib or framework from within the executable path.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join(p_path.get_file()));
+	}
+
+	if (!FileAccess::exists(path)) {
+		// Load .dylib or framework from a standard iOS location.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file()));
+	}
+
+	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
+	}
+
+	return OK;
 }
 
 Error OS_IOS::close_dynamic_library(void *p_library_handle) {

@@ -45,16 +45,6 @@
 #include <os/log.h>
 #include <sys/sysctl.h>
 
-_FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
-	// Append framework executable name, or return as is if p_path is not a framework.
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (da->dir_exists(p_path) && da->file_exists(p_path.path_join(p_path.get_file().get_basename()))) {
-		return p_path.path_join(p_path.get_file().get_basename());
-	} else {
-		return p_path;
-	}
-}
-
 void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
 	// Prevent main loop from sleeping and redraw window during modal popup display.
 	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
@@ -160,6 +150,28 @@ void OS_MacOS::alert(const String &p_alert, const String &p_title) {
 	if (key_window) {
 		[key_window makeKeyAndOrderFront:nil];
 	}
+}
+
+_FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	// Read framework bundle to get executable name.
+	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
+	NSBundle *bundle = [NSBundle bundleWithURL:url];
+	if (bundle) {
+		String exe_path = String::utf8([[bundle executablePath] UTF8String]);
+		if (da->file_exists(exe_path)) {
+			return exe_path;
+		}
+	}
+
+	// Try default executable name (invalid framework).
+	if (da->dir_exists(p_path) && da->file_exists(p_path.path_join(p_path.get_file().get_basename()))) {
+		return p_path.path_join(p_path.get_file().get_basename());
+	}
+
+	// Not a framework, try loading as .dylib.
+	return p_path;
 }
 
 Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {

@@ -30,6 +30,119 @@
 
 #include "plist.h"
 
+PList::PLNodeType PListNode::get_type() const {
+	return data_type;
+}
+
+Variant PListNode::get_value() const {
+	switch (data_type) {
+		case PList::PL_NODE_TYPE_NIL: {
+			return Variant();
+		} break;
+		case PList::PL_NODE_TYPE_STRING: {
+			return String::utf8(data_string.get_data());
+		} break;
+		case PList::PL_NODE_TYPE_ARRAY: {
+			Array arr;
+			for (const Ref<PListNode> &E : data_array) {
+				arr.push_back(E);
+			}
+			return arr;
+		} break;
+		case PList::PL_NODE_TYPE_DICT: {
+			Dictionary dict;
+			for (const KeyValue<String, Ref<PListNode>> &E : data_dict) {
+				dict[E.key] = E.value;
+			}
+			return dict;
+		} break;
+		case PList::PL_NODE_TYPE_BOOLEAN: {
+			return data_bool;
+		} break;
+		case PList::PL_NODE_TYPE_INTEGER: {
+			return data_int;
+		} break;
+		case PList::PL_NODE_TYPE_REAL: {
+			return data_real;
+		} break;
+		case PList::PL_NODE_TYPE_DATA: {
+			int strlen = data_string.length();
+
+			size_t arr_len = 0;
+			Vector<uint8_t> buf;
+			{
+				buf.resize(strlen / 4 * 3 + 1);
+				uint8_t *w = buf.ptrw();
+
+				ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &arr_len, (unsigned char *)data_string.get_data(), strlen) != OK, Vector<uint8_t>());
+			}
+			buf.resize(arr_len);
+			return buf;
+		} break;
+		case PList::PL_NODE_TYPE_DATE: {
+			return String(data_string.get_data());
+		} break;
+	}
+	return Variant();
+}
+
+Ref<PListNode> PListNode::new_node(const Variant &p_value) {
+	Ref<PListNode> node;
+	node.instantiate();
+
+	switch (p_value.get_type()) {
+		case Variant::NIL: {
+			node->data_type = PList::PL_NODE_TYPE_NIL;
+		} break;
+		case Variant::BOOL: {
+			node->data_type = PList::PL_NODE_TYPE_BOOLEAN;
+			node->data_bool = p_value;
+		} break;
+		case Variant::INT: {
+			node->data_type = PList::PL_NODE_TYPE_INTEGER;
+			node->data_int = p_value;
+		} break;
+		case Variant::FLOAT: {
+			node->data_type = PList::PL_NODE_TYPE_REAL;
+			node->data_real = p_value;
+		} break;
+		case Variant::STRING_NAME:
+		case Variant::STRING: {
+			node->data_type = PList::PL_NODE_TYPE_STRING;
+			node->data_string = p_value.operator String().utf8();
+		} break;
+		case Variant::DICTIONARY: {
+			node->data_type = PList::PL_NODE_TYPE_DICT;
+			Dictionary dict = p_value;
+			const Variant *next = dict.next(nullptr);
+			while (next) {
+				Ref<PListNode> sub_node = dict[*next];
+				ERR_FAIL_COND_V_MSG(sub_node.is_null(), Ref<PListNode>(), "Invalid dictionary element, should be PListNode.");
+				node->data_dict[*next] = sub_node;
+				next = dict.next(next);
+			}
+		} break;
+		case Variant::ARRAY: {
+			node->data_type = PList::PL_NODE_TYPE_ARRAY;
+			Array ar = p_value;
+			for (int i = 0; i < ar.size(); i++) {
+				Ref<PListNode> sub_node = ar[i];
+				ERR_FAIL_COND_V_MSG(sub_node.is_null(), Ref<PListNode>(), "Invalid array element, should be PListNode.");
+				node->data_array.push_back(sub_node);
+			}
+		} break;
+		case Variant::PACKED_BYTE_ARRAY: {
+			node->data_type = PList::PL_NODE_TYPE_DATA;
+			PackedByteArray buf = p_value;
+			node->data_string = CryptoCore::b64_encode_str(buf.ptr(), buf.size()).utf8();
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(Ref<PListNode>(), "Unsupported data type.");
+		} break;
+	}
+	return node;
+}
+
 Ref<PListNode> PListNode::new_array() {
 	Ref<PListNode> node = memnew(PListNode());
 	ERR_FAIL_COND_V(node.is_null(), Ref<PListNode>());
@@ -65,6 +178,7 @@ Ref<PListNode> PListNode::new_date(const String &p_string) {
 	ERR_FAIL_COND_V(node.is_null(), Ref<PListNode>());
 	node->data_type = PList::PLNodeType::PL_NODE_TYPE_DATE;
 	node->data_string = p_string.utf8();
+	node->data_real = (double)Time::get_singleton()->get_unix_time_from_datetime_string(p_string) - 978307200.0;
 	return node;
 }
 
@@ -76,7 +190,7 @@ Ref<PListNode> PListNode::new_bool(bool p_bool) {
 	return node;
 }
 
-Ref<PListNode> PListNode::new_int(int32_t p_int) {
+Ref<PListNode> PListNode::new_int(int64_t p_int) {
 	Ref<PListNode> node = memnew(PListNode());
 	ERR_FAIL_COND_V(node.is_null(), Ref<PListNode>());
 	node->data_type = PList::PLNodeType::PL_NODE_TYPE_INTEGER;
@@ -84,7 +198,7 @@ Ref<PListNode> PListNode::new_int(int32_t p_int) {
 	return node;
 }
 
-Ref<PListNode> PListNode::new_real(float p_real) {
+Ref<PListNode> PListNode::new_real(double p_real) {
 	Ref<PListNode> node = memnew(PListNode());
 	ERR_FAIL_COND_V(node.is_null(), Ref<PListNode>());
 	node->data_type = PList::PLNodeType::PL_NODE_TYPE_REAL;
@@ -337,6 +451,168 @@ PList::PList(const String &p_string) {
 	load_string(p_string);
 }
 
+uint64_t PList::read_bplist_var_size_int(Ref<FileAccess> p_file, uint8_t p_size) {
+	uint64_t pos = p_file->get_position();
+	uint64_t ret = 0;
+	switch (p_size) {
+		case 1: {
+			ret = p_file->get_8();
+		} break;
+		case 2: {
+			ret = BSWAP16(p_file->get_16());
+		} break;
+		case 3: {
+			ret = BSWAP32(p_file->get_32() & 0x00FFFFFF);
+		} break;
+		case 4: {
+			ret = BSWAP32(p_file->get_32());
+		} break;
+		case 5: {
+			ret = BSWAP64(p_file->get_64() & 0x000000FFFFFFFFFF);
+		} break;
+		case 6: {
+			ret = BSWAP64(p_file->get_64() & 0x0000FFFFFFFFFFFF);
+		} break;
+		case 7: {
+			ret = BSWAP64(p_file->get_64() & 0x00FFFFFFFFFFFFFF);
+		} break;
+		case 8: {
+			ret = BSWAP64(p_file->get_64());
+		} break;
+		default: {
+			ret = 0;
+		}
+	}
+	p_file->seek(pos + p_size);
+
+	return ret;
+}
+
+Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_idx) {
+	Ref<PListNode> node;
+	node.instantiate();
+
+	uint64_t ot_off = trailer.offset_table_start + p_offset_idx * trailer.offset_size;
+	p_file->seek(ot_off);
+	uint64_t marker_off = read_bplist_var_size_int(p_file, trailer.offset_size);
+	ERR_FAIL_COND_V_MSG(marker_off == 0, Ref<PListNode>(), "Invalid marker size.");
+
+	p_file->seek(marker_off);
+	uint8_t marker = p_file->get_8();
+	uint8_t marker_type = marker & 0xF0;
+	uint64_t marker_size = marker & 0x0F;
+
+	switch (marker_type) {
+		case 0x00: {
+			if (marker_size == 0x00) {
+				node->data_type = PL_NODE_TYPE_NIL;
+			} else if (marker_size == 0x08) {
+				node->data_type = PL_NODE_TYPE_BOOLEAN;
+				node->data_bool = false;
+			} else if (marker_size == 0x09) {
+				node->data_type = PL_NODE_TYPE_BOOLEAN;
+				node->data_bool = true;
+			} else {
+				ERR_FAIL_V_MSG(Ref<PListNode>(), "Invalid nil/bool marker value.");
+			}
+		} break;
+		case 0x10: {
+			node->data_type = PL_NODE_TYPE_INTEGER;
+			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, pow(2, marker_size)));
+		} break;
+		case 0x20: {
+			node->data_type = PL_NODE_TYPE_REAL;
+			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, pow(2, marker_size)));
+		} break;
+		case 0x30: {
+			node->data_type = PL_NODE_TYPE_DATE;
+			node->data_int = BSWAP64(p_file->get_64());
+			node->data_string = Time::get_singleton()->get_datetime_string_from_unix_time(node->data_real + 978307200.0).utf8();
+		} break;
+		case 0x40: {
+			if (marker_size == 0x0F) {
+				uint8_t ext = p_file->get_8() & 0xF;
+				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+			}
+			node->data_type = PL_NODE_TYPE_DATA;
+			PackedByteArray buf;
+			buf.resize(marker_size + 1);
+			p_file->get_buffer(reinterpret_cast<uint8_t *>(buf.ptrw()), marker_size);
+			node->data_string = CryptoCore::b64_encode_str(buf.ptr(), buf.size()).utf8();
+		} break;
+		case 0x50: {
+			if (marker_size == 0x0F) {
+				uint8_t ext = p_file->get_8() & 0xF;
+				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+			}
+			node->data_type = PL_NODE_TYPE_STRING;
+			node->data_string.resize(marker_size + 1);
+			p_file->get_buffer(reinterpret_cast<uint8_t *>(node->data_string.ptrw()), marker_size);
+		} break;
+		case 0x60: {
+			if (marker_size == 0x0F) {
+				uint8_t ext = p_file->get_8() & 0xF;
+				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+			}
+			Char16String cs16;
+			cs16.resize(marker_size + 1);
+			for (uint64_t i = 0; i < marker_size; i++) {
+				cs16[i] = BSWAP16(p_file->get_16());
+			}
+			node->data_type = PL_NODE_TYPE_STRING;
+			node->data_string = String::utf16(cs16.ptr(), cs16.length()).utf8();
+		} break;
+		case 0x80: {
+			node->data_type = PL_NODE_TYPE_INTEGER;
+			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, marker_size + 1));
+		} break;
+		case 0xA0:
+		case 0xC0: {
+			if (marker_size == 0x0F) {
+				uint8_t ext = p_file->get_8() & 0xF;
+				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+			}
+			uint64_t pos = p_file->get_position();
+
+			node->data_type = PL_NODE_TYPE_ARRAY;
+			for (uint64_t i = 0; i < marker_size; i++) {
+				p_file->seek(pos + trailer.ref_size * i);
+				uint64_t ref = read_bplist_var_size_int(p_file, trailer.ref_size);
+
+				Ref<PListNode> element = read_bplist_obj(p_file, ref);
+				ERR_FAIL_COND_V(element.is_null(), Ref<PListNode>());
+				node->data_array.push_back(element);
+			}
+		} break;
+		case 0xD0: {
+			if (marker_size == 0x0F) {
+				uint8_t ext = p_file->get_8() & 0xF;
+				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+			}
+			uint64_t pos = p_file->get_position();
+
+			node->data_type = PL_NODE_TYPE_DICT;
+			for (uint64_t i = 0; i < marker_size; i++) {
+				p_file->seek(pos + trailer.ref_size * i);
+				uint64_t key_ref = read_bplist_var_size_int(p_file, trailer.ref_size);
+
+				p_file->seek(pos + trailer.ref_size * (i + marker_size));
+				uint64_t obj_ref = read_bplist_var_size_int(p_file, trailer.ref_size);
+
+				Ref<PListNode> element_key = read_bplist_obj(p_file, key_ref);
+				ERR_FAIL_COND_V(element_key.is_null() || element_key->data_type != PL_NODE_TYPE_STRING, Ref<PListNode>());
+				Ref<PListNode> element = read_bplist_obj(p_file, obj_ref);
+				ERR_FAIL_COND_V(element.is_null(), Ref<PListNode>());
+				node->data_dict[String::utf8(element_key->data_string.ptr(), element_key->data_string.length())] = element;
+			}
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(Ref<PListNode>(), "Invalid marker type.");
+		}
+	}
+	return node;
+}
+
 bool PList::load_file(const String &p_filename) {
 	root = Ref<PListNode>();
 
@@ -349,7 +625,15 @@ bool PList::load_file(const String &p_filename) {
 	fb->get_buffer(magic, 8);
 
 	if (String((const char *)magic, 8) == "bplist00") {
-		ERR_FAIL_V_MSG(false, "PList: Binary property lists are not supported.");
+		fb->seek_end(-26);
+		trailer.offset_size = fb->get_8();
+		trailer.ref_size = fb->get_8();
+		trailer.object_num = BSWAP64(fb->get_64());
+		trailer.root_offset_idx = BSWAP64(fb->get_64());
+		trailer.offset_table_start = BSWAP64(fb->get_64());
+		root = read_bplist_obj(fb, trailer.root_offset_idx);
+
+		return root.is_valid();
 	} else {
 		// Load text plist.
 		Error err;
