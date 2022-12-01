@@ -391,6 +391,7 @@ public:
 
 	void convert_rg_to_ra_rgba8();
 	void convert_ra_rgba8_to_rg();
+	void convert_rgba8_to_bgra8();
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);
