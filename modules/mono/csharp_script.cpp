@@ -391,10 +391,10 @@ bool CSharpLanguage::supports_builtin_mode() const {
 #ifdef TOOLS_ENABLED
 static String variant_type_to_managed_name(const String &p_var_type_name) {
 	if (p_var_type_name.is_empty()) {
-		return "object";
+		return "Variant";
 	}
 
-	if (!ClassDB::class_exists(p_var_type_name)) {
+	if (ClassDB::class_exists(p_var_type_name)) {
 		return p_var_type_name;
 	}
 
@@ -402,12 +402,12 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		return "Godot.Object";
 	}
 
+	if (p_var_type_name == Variant::get_type_name(Variant::INT)) {
+		return "long";
+	}
+
 	if (p_var_type_name == Variant::get_type_name(Variant::FLOAT)) {
-#ifdef REAL_T_IS_DOUBLE
 		return "double";
-#else
-		return "float";
-#endif
 	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::STRING)) {
@@ -485,7 +485,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		}
 	}
 
-	return "object";
+	return "Variant";
 }
 
 String CSharpLanguage::make_function(const String &, const String &p_name, const PackedStringArray &p_args) const {
