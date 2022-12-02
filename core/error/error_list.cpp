@@ -79,7 +79,6 @@ const char *error_names[] = {
 	"Skip", // ERR_SKIP
 	"Help", // ERR_HELP
 	"Bug", // ERR_BUG
-	"Printer on fire", // ERR_PRINTER_ON_FIRE
 };
 
 static_assert(sizeof(error_names) / sizeof(*error_names) == ERR_MAX);

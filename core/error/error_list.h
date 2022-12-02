@@ -92,7 +92,6 @@ enum Error {
 	ERR_SKIP, // (45)
 	ERR_HELP, ///< user requested help!!
 	ERR_BUG, ///< a bug in the software certainly happened, due to a double check failing or unexpected behavior.
-	ERR_PRINTER_ON_FIRE, /// the parallel port printer is engulfed in flames
 	ERR_MAX, // Not being returned, value represents the number of errors
 };
 

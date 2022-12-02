@@ -2704,9 +2704,6 @@
 			Bug error, caused by an implementation issue in the method.
 			[b]Note:[/b] If a built-in method returns this code, please open an issue on [url=https://github.com/godotengine/godot/issues]the GitHub Issue Tracker[/url].
 		</constant>
-		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
-			Printer on fire error (This is an easter egg, no built-in methods return this error code).
-		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
 			The property has no hint for the editor.
 		</constant>
