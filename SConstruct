@@ -544,6 +544,12 @@ if selected_platform in platform_list:
                 env.Append(CCFLAGS=["-g3"])
             else:
                 env.Append(CCFLAGS=["-g2"])
+        else:
+            if methods.using_clang(env) and not methods.is_vanilla_clang(env):
+                # Apple Clang, its linker doesn't like -s.
+                env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
+            else:
+                env.Append(LINKFLAGS=["-s"])
 
         if env["optimize"] == "speed":
             env.Append(CCFLAGS=["-O3"])
