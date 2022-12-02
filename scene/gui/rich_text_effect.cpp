@@ -88,6 +88,9 @@ void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_glyph_index"), &CharFXTransform::get_glyph_index);
 	ClassDB::bind_method(D_METHOD("set_glyph_index", "glyph_index"), &CharFXTransform::set_glyph_index);
 
+	ClassDB::bind_method(D_METHOD("get_relative_index"), &CharFXTransform::get_relative_index);
+	ClassDB::bind_method(D_METHOD("set_relative_index", "relative_index"), &CharFXTransform::set_relative_index);
+
 	ClassDB::bind_method(D_METHOD("get_glyph_count"), &CharFXTransform::get_glyph_count);
 	ClassDB::bind_method(D_METHOD("set_glyph_count", "glyph_count"), &CharFXTransform::set_glyph_count);
 
@@ -107,5 +110,6 @@ void CharFXTransform::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_index"), "set_glyph_index", "get_glyph_index");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_count"), "set_glyph_count", "get_glyph_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_flags"), "set_glyph_flags", "get_glyph_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "relative_index"), "set_relative_index", "get_relative_index");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "font"), "set_font", "get_font");
 }
