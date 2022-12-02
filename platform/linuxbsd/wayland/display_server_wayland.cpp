@@ -914,6 +914,8 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 
 	DEBUG_LOG_WAYLAND("Pointing window.");
 
+	ss->window_pointed = true;
+
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_ENTER;
@@ -927,6 +929,8 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 
 	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
+
+	ss->window_pointed = false;
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
@@ -1869,6 +1873,15 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 	}
 
 	MutexLock mutex_lock(wls.mutex);
+
+	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool previously_shown = (wls.mouse_mode == MOUSE_MODE_VISIBLE || wls.mouse_mode == MOUSE_MODE_CONFINED);
+
+	// If the cursor is being shown while it's focusing the window we must send a
+	// mouse enter event.
+	if (wls.current_seat && wls.current_seat->window_pointed && show_cursor && !previously_shown) {
+		_send_window_event(WINDOW_EVENT_MOUSE_ENTER);
+	}
 
 	wls.mouse_mode = p_mode;
 
