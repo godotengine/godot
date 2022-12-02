@@ -987,12 +987,12 @@ void main() {
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
 		float lod, blend;
-		blend = modf(roughness * MAX_ROUGHNESS_LOD, lod);
+		blend = modf(sqrt(roughness) * MAX_ROUGHNESS_LOD, lod);
 		specular_light = texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod)).rgb;
 		specular_light = mix(specular_light, texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod + 1)).rgb, blend);
 
 #else // USE_RADIANCE_CUBEMAP_ARRAY
-		specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, roughness * MAX_ROUGHNESS_LOD).rgb;
+		specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb;
 
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
 		specular_light *= sc_luminance_multiplier;
@@ -1042,7 +1042,7 @@ void main() {
 
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
-		float roughness_lod = mix(0.001, 0.1, clearcoat_roughness) * MAX_ROUGHNESS_LOD;
+		float roughness_lod = mix(0.001, 0.1, sqrt(clearcoat_roughness)) * MAX_ROUGHNESS_LOD;
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
 		float lod, blend;
