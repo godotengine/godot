@@ -433,10 +433,10 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	if (current_curve.is_valid()) {
 		fade_blend = current_curve->sample(fade_blend);
 	}
-	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, fade_blend, AnimationNode::FILTER_IGNORE, true);
+	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, MAX(CMP_EPSILON, fade_blend), AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
 	if (fading_from != StringName()) {
-		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, true);
+		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, MAX(CMP_EPSILON, 1.0 - fade_blend), AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 	}
 
 	//guess playback position
@@ -599,13 +599,11 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 
 			current = next;
 
+			len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, CMP_EPSILON, AnimationNode::FILTER_IGNORE, true); // Process next node's first key in here.
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 				pos_current = MIN(pos_current, len_current);
 				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
-
 			} else {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 				pos_current = 0;
 			}
 
