@@ -41,14 +41,17 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
+#include "editor/editor_quick_open.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/reparent_dialog.h"
 #include "editor/shader_create_dialog.h"
 #include "scene/main/window.h"
 #include "scene/property_utils.h"
@@ -1153,11 +1156,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (TOOL_CREATE_FAVORITE == p_tool) {
 				String name = selected_favorite_root.get_slicec(' ', 0);
 				if (ScriptServer::is_global_class(name)) {
-					new_node = Object::cast_to<Node>(ClassDB::instantiate(ScriptServer::get_global_class_native_base(name)));
 					Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(name), "Script");
-					if (new_node && scr.is_valid()) {
-						new_node->set_script(scr);
-						new_node->set_name(name);
+					if (scr.is_valid()) {
+						new_node = Object::cast_to<Node>(ClassDB::instantiate(scr->get_instance_base_type()));
+						if (new_node) {
+							new_node->set_script(scr);
+							new_node->set_name(name);
+						}
 					}
 				} else {
 					new_node = Object::cast_to<Node>(ClassDB::instantiate(selected_favorite_root));

@@ -665,7 +665,6 @@ public:
 
 	virtual void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) override;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) override;
-	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform3D &p_world_transform);
 	virtual int skeleton_get_bone_count(RID p_skeleton) const override;
 	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) override;
 	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const override;

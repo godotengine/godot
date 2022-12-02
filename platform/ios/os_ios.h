@@ -71,9 +71,6 @@ private:
 
 	virtual void finalize() override;
 
-	String user_data_dir;
-	String cache_dir;
-
 	bool is_focused = false;
 
 	void deinitialize_modules();
@@ -81,7 +78,7 @@ private:
 public:
 	static OS_IOS *get_singleton();
 
-	OS_IOS(String p_data_dir, String p_cache_dir);
+	OS_IOS();
 	~OS_IOS();
 
 	void initialize_modules();
@@ -106,7 +103,6 @@ public:
 
 	virtual Error shell_open(String p_uri) override;
 
-	void set_user_data_dir(String p_dir);
 	virtual String get_user_data_dir() const override;
 
 	virtual String get_cache_path() const override;

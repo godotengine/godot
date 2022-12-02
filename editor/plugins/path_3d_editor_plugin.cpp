@@ -37,6 +37,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "node_3d_editor_plugin.h"
+#include "scene/gui/menu_button.h"
 #include "scene/resources/curve.h"
 
 static bool _is_in_handle(int p_id, int p_num_points) {

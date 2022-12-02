@@ -547,7 +547,7 @@
 			<return type="void" />
 			<param index="0" name="icon_path" type="String" />
 			<description>
-				Add a custom icon to the current script. After loading an icon at [param icon_path], the icon is displayed in the Scene dock for every node that the script is attached to. For named classes, the icon is also displayed in various editor dialogs.
+				Add a custom icon to the current script. The script must be registered as a global class using the [code]class_name[/code] keyword for this to have a visible effect. The icon specified at [param icon_path] is displayed in the Scene dock for every node of that class, as well as in various editor dialogs.
 				[codeblock]
 				@icon("res://path/to/class/icon.svg")
 				[/codeblock]
