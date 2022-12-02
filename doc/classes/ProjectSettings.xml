@@ -188,6 +188,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="animation/animation_player/warnings/ignore_invalid_paths" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [AnimationPlayer] silences the error of no matching object of the track path in the scene.
+		</member>
+		<member name="animation/animation_tree/warnings/ignore_invalid_paths" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [AnimationTree] silences the error of no matching object of the track path in the scene.
+		</member>
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color(0.14, 0.14, 0.14, 1)">
 			Background color for the boot splash.
 		</member>

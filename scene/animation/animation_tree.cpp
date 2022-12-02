@@ -32,6 +32,7 @@
 
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
@@ -528,6 +529,9 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 		set_active(false);
 		return false;
 	}
+
+	bool check_path = !(bool)GLOBAL_GET("animation/animation_tree/warnings/ignore_invalid_paths");
+
 	Node *parent = player->get_node(player->get_root());
 
 	List<StringName> sname;
@@ -565,12 +569,13 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 			if (!track) {
 				Ref<Resource> resource;
 				Vector<StringName> leftover_path;
-				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
-				if (!child) {
-					ERR_PRINT("AnimationTree: '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'");
+				if (check_path) {
+					ERR_CONTINUE_EDMSG(!parent->has_node(path), "AnimationTree: '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'");
+				} else if (!parent->has_node(path)) {
 					continue;
 				}
+				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
 				if (!child->is_connected("tree_exited", callable_mp(this, &AnimationTree::_node_removed))) {
 					child->connect("tree_exited", callable_mp(this, &AnimationTree::_node_removed).bind(child));
@@ -1035,7 +1040,6 @@ void AnimationTree::_process_graph(double p_delta) {
 					continue; // No path, but avoid error spamming.
 				}
 				TrackCache *track = track_cache[path];
-
 				ERR_CONTINUE(!state.track_map.has(path));
 				int blend_idx = state.track_map[path];
 				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);

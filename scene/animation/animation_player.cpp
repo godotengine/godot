@@ -31,6 +31,7 @@
 #include "animation_player.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/object/message_queue.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
@@ -271,6 +272,8 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		return;
 	}
 
+	bool check_path = !(bool)GLOBAL_GET("animation/animation_player/warnings/ignore_invalid_paths");
+
 	Node *parent = p_root_override ? p_root_override : get_node(root);
 
 	ERR_FAIL_COND(!parent);
@@ -290,8 +293,14 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 
 		Ref<Resource> resource;
 		Vector<StringName> leftover_path;
+
+		if (check_path) {
+			ERR_CONTINUE_EDMSG(!parent->has_node(a->track_get_path(i)), "On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'."); // Couldn't find the child node.
+		} else if (!parent->has_node(a->track_get_path(i))) {
+			continue;
+		}
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
-		ERR_CONTINUE_MSG(!child, "On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'."); // couldn't find the child node
+
 		ObjectID id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 		int blend_shape_idx = -1;
@@ -486,15 +495,15 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 		TrackNodeCache *nc = p_anim->node_cache[i];
 
 		if (!nc) {
-			continue; // no node cache for this track, skip it
+			continue; // No node cache for this track, skip it.
 		}
 
 		if (!a->track_is_enabled(i)) {
-			continue; // do nothing if the track is disabled
+			continue; // Do nothing if the track is disabled.
 		}
 
 		if (a->track_get_key_count(i) == 0) {
-			continue; // do nothing if track is empty
+			continue; // Do nothing if track is empty.
 		}
 
 		switch (a->track_get_type(i)) {
@@ -1095,7 +1104,6 @@ void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 
 void AnimationPlayer::_animation_update_transforms() {
 	{
-		Transform3D t;
 		for (int i = 0; i < cache_update_size; i++) {
 			TrackNodeCache *nc = cache_update[i];
 
