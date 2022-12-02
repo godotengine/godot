@@ -48,6 +48,13 @@ Vector3i Vector3i::clamp(const Vector3i &p_min, const Vector3i &p_max) const {
 			CLAMP(z, p_min.z, p_max.z));
 }
 
+Vector3i Vector3i::snapped(const Vector3i &p_step) const {
+	return Vector3i(
+			Math::snapped(x, p_step.x),
+			Math::snapped(y, p_step.y),
+			Math::snapped(z, p_step.z));
+}
+
 Vector3i::operator String() const {
 	return "(" + itos(x) + ", " + itos(y) + ", " + itos(z) + ")";
 }

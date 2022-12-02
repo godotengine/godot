@@ -71,7 +71,7 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 
 		Vector2i in_parent_pos = get_transform().xform(mm->get_position());
 		if (!sc->vertical && is_layout_rtl()) {
-			sc->split_offset = drag_ofs - ((sc->vertical ? in_parent_pos.y : in_parent_pos.x) - drag_from);
+			sc->split_offset = drag_ofs - (in_parent_pos.x - drag_from);
 		} else {
 			sc->split_offset = drag_ofs + ((sc->vertical ? in_parent_pos.y : in_parent_pos.x) - drag_from);
 		}
@@ -194,7 +194,6 @@ void SplitContainer::_compute_middle_sep(bool p_clamp) {
 	// Clamp the split_offset if requested.
 	if (p_clamp) {
 		split_offset -= wished_middle_sep - middle_sep;
-		p_clamp = false;
 	}
 }
 

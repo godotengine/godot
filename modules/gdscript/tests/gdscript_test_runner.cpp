@@ -71,27 +71,38 @@ void init_autoloads() {
 			continue;
 		}
 
-		Ref<Resource> res = ResourceLoader::load(info.path);
-		ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 		Node *n = nullptr;
-		Ref<PackedScene> scn = res;
-		Ref<Script> script = res;
-		if (scn.is_valid()) {
-			n = scn->instantiate();
-		} else if (script.is_valid()) {
-			StringName ibt = script->get_instance_base_type();
-			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + info.path);
+		if (ResourceLoader::get_resource_type(info.path) == "PackedScene") {
+			// Cache the scene reference before loading it (for cyclic references)
+			Ref<PackedScene> scn;
+			scn.instantiate();
+			scn->set_path(info.path);
+			scn->reload_from_file();
+			ERR_CONTINUE_MSG(!scn.is_valid(), vformat("Can't autoload: %s.", info.path));
 
-			Object *obj = ClassDB::instantiate(ibt);
+			if (scn.is_valid()) {
+				n = scn->instantiate();
+			}
+		} else {
+			Ref<Resource> res = ResourceLoader::load(info.path);
+			ERR_CONTINUE_MSG(res.is_null(), vformat("Can't autoload: %s.", info.path));
 
-			ERR_CONTINUE_MSG(!obj, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
+			Ref<Script> scr = res;
+			if (scr.is_valid()) {
+				StringName ibt = scr->get_instance_base_type();
+				bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+				ERR_CONTINUE_MSG(!valid_type, vformat("Script does not inherit from Node: %s.", info.path));
 
-			n = Object::cast_to<Node>(obj);
-			n->set_script(script);
+				Object *obj = ClassDB::instantiate(ibt);
+
+				ERR_CONTINUE_MSG(!obj, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
+
+				n = Object::cast_to<Node>(obj);
+				n->set_script(scr);
+			}
 		}
 
-		ERR_CONTINUE_MSG(!n, "Path in autoload not a node or script: " + info.path);
+		ERR_CONTINUE_MSG(!n, vformat("Path in autoload not a node or script: %s.", info.path));
 		n->set_name(info.name);
 
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {

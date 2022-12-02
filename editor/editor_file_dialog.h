@@ -32,17 +32,14 @@
 #define EDITOR_FILE_DIALOG_H
 
 #include "core/io/dir_access.h"
-#include "editor/plugins/editor_preview_plugins.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/texture_rect.h"
 
 class DependencyRemoveDialog;
+class HSplitContainer;
+class ItemList;
+class OptionButton;
+class PopupMenu;
+class TextureRect;
 
 class EditorFileDialog : public ConfirmationDialog {
 	GDCLASS(EditorFileDialog, ConfirmationDialog);

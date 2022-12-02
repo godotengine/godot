@@ -34,14 +34,19 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
 
+class CodeEdit;
 class CurveEditor;
 class GraphEdit;
 class GraphNode;
+class MenuButton;
+class PopupPanel;
+class RichTextLabel;
+class Tree;
 
 class VisualShaderEditor;
-class EditorUndoRedoManager;
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);
@@ -185,7 +190,6 @@ class VisualShaderEditor : public VBoxContainer {
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	Point2 saved_node_pos;
 	bool saved_node_pos_dirty = false;
 

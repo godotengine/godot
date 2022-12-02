@@ -72,8 +72,8 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
-	HashMap<Ref<BaseMaterial3D>, GLTFMaterialIndex> material_cache;
-	Vector<Ref<BaseMaterial3D>> materials;
+	HashMap<Ref<Material>, GLTFMaterialIndex> material_cache;
+	Vector<Ref<Material>> materials;
 
 	String scene_name;
 	Vector<int> root_nodes;
@@ -138,8 +138,8 @@ public:
 	TypedArray<GLTFMesh> get_meshes();
 	void set_meshes(TypedArray<GLTFMesh> p_meshes);
 
-	TypedArray<BaseMaterial3D> get_materials();
-	void set_materials(TypedArray<BaseMaterial3D> p_materials);
+	TypedArray<Material> get_materials();
+	void set_materials(TypedArray<Material> p_materials);
 
 	String get_scene_name();
 	void set_scene_name(String p_scene_name);

@@ -31,24 +31,22 @@
 #ifndef SCRIPT_EDITOR_PLUGIN_H
 #define SCRIPT_EDITOR_PLUGIN_H
 
-#include "core/object/script_language.h"
-#include "editor/code_editor.h"
-#include "editor/editor_help.h"
-#include "editor/editor_help_search.h"
 #include "editor/editor_plugin.h"
-#include "editor/script_create_dialog.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/tree.h"
-#include "scene/main/timer.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/panel_container.h"
+#include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
 
 class EditorFileDialog;
+class EditorHelpSearch;
+class FindReplaceBar;
+class HSplitContainer;
+class ItemList;
+class MenuButton;
+class TabContainer;
 class TextureRect;
+class Tree;
+class VSplitContainer;
 
 class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)

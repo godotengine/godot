@@ -35,12 +35,10 @@
 #include "scene/2d/navigation_link_2d.h"
 
 class CanvasItemEditor;
-class EditorUndoRedoManager;
 
 class NavigationLink2DEditor : public Control {
 	GDCLASS(NavigationLink2DEditor, Control);
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	NavigationLink2D *node = nullptr;
 
@@ -58,8 +56,6 @@ public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(NavigationLink2D *p_node);
-
-	NavigationLink2DEditor();
 };
 
 class NavigationLink2DEditorPlugin : public EditorPlugin {

@@ -29,6 +29,7 @@
 			The background of the area to the left of the grabber.
 		</theme_item>
 		<theme_item name="grabber_area_highlight" data_type="style" type="StyleBox">
+			The background of the area to the left of the grabber that displays when it's being hovered or focused.
 		</theme_item>
 		<theme_item name="slider" data_type="style" type="StyleBox">
 			The background for the whole slider. Determines the height of the [code]grabber_area[/code].

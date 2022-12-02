@@ -260,7 +260,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	Ref<GDScript> script;
 	r_error = OK;
 	if (singleton->full_gdscript_cache.has(p_path)) {
-		script = Ref<GDScript>(singleton->full_gdscript_cache[p_path]);
+		script = singleton->full_gdscript_cache[p_path];
 		if (!p_update_from_disk) {
 			return script;
 		}
@@ -342,7 +342,12 @@ Ref<PackedScene> GDScriptCache::get_packed_scene(const String &p_path, Error &r_
 		return singleton->packed_scene_cache[p_path];
 	}
 
-	Ref<PackedScene> scene;
+	Ref<PackedScene> scene = ResourceCache::get_ref(p_path);
+	if (scene.is_valid()) {
+		singleton->packed_scene_cache[p_path] = scene;
+		singleton->packed_scene_dependencies[p_path].insert(p_owner);
+		return scene;
+	}
 	scene.instantiate();
 
 	r_error = OK;
@@ -355,7 +360,6 @@ Ref<PackedScene> GDScriptCache::get_packed_scene(const String &p_path, Error &r_
 	singleton->packed_scene_cache[p_path] = scene;
 	singleton->packed_scene_dependencies[p_path].insert(p_owner);
 
-	scene->recreate_state();
 	scene->reload_from_file();
 	return scene;
 }

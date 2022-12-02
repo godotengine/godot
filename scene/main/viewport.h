@@ -354,6 +354,7 @@ private:
 		bool forced_mouse_focus = false; //used for menu buttons
 		bool mouse_in_viewport = true;
 		bool key_event_accepted = false;
+		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
 		Control *last_mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
@@ -456,8 +457,6 @@ private:
 
 	void _update_canvas_items(Node *p_node);
 
-	void _gui_set_root_order_dirty();
-
 	friend class Window;
 
 	void _sub_window_update_order();
@@ -513,6 +512,8 @@ public:
 	Transform2D get_global_canvas_transform() const;
 
 	Transform2D get_final_transform() const;
+
+	void gui_set_root_order_dirty();
 
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;

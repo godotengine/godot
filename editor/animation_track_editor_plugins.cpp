@@ -31,6 +31,7 @@
 #include "animation_track_editor_plugins.h"
 
 #include "editor/audio_stream_preview.h"
+#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -1021,10 +1022,11 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 				ofs += 0.001;
 			}
 
-			get_undo_redo()->create_action(TTR("Add Audio Track Clip"));
-			get_undo_redo()->add_do_method(get_animation().ptr(), "audio_track_insert_key", get_track(), ofs, stream);
-			get_undo_redo()->add_undo_method(get_animation().ptr(), "track_remove_key_at_time", get_track(), ofs);
-			get_undo_redo()->commit_action();
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			undo_redo->create_action(TTR("Add Audio Track Clip"));
+			undo_redo->add_do_method(get_animation().ptr(), "audio_track_insert_key", get_track(), ofs, stream);
+			undo_redo->add_undo_method(get_animation().ptr(), "track_remove_key_at_time", get_track(), ofs);
+			undo_redo->commit_action();
 
 			queue_redraw();
 			return;
@@ -1102,21 +1104,22 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (len_resizing && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
 		if (len_resizing_start) {
 			float prev_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), len_resizing_index);
-			get_undo_redo()->create_action(TTR("Change Audio Track Clip Start Offset"));
-			get_undo_redo()->add_do_method(get_animation().ptr(), "audio_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs + ofs_local);
-			get_undo_redo()->add_undo_method(get_animation().ptr(), "audio_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs);
-			get_undo_redo()->commit_action();
+			undo_redo->create_action(TTR("Change Audio Track Clip Start Offset"));
+			undo_redo->add_do_method(get_animation().ptr(), "audio_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs + ofs_local);
+			undo_redo->add_undo_method(get_animation().ptr(), "audio_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs);
+			undo_redo->commit_action();
 
 		} else {
 			float prev_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), len_resizing_index);
-			get_undo_redo()->create_action(TTR("Change Audio Track Clip End Offset"));
-			get_undo_redo()->add_do_method(get_animation().ptr(), "audio_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs + ofs_local);
-			get_undo_redo()->add_undo_method(get_animation().ptr(), "audio_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs);
-			get_undo_redo()->commit_action();
+			undo_redo->create_action(TTR("Change Audio Track Clip End Offset"));
+			undo_redo->add_do_method(get_animation().ptr(), "audio_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs + ofs_local);
+			undo_redo->add_undo_method(get_animation().ptr(), "audio_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs);
+			undo_redo->commit_action();
 		}
 
 		len_resizing_index = -1;

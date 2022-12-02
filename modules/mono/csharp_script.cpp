@@ -46,6 +46,7 @@
 #include "editor/editor_internal_calls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/script_templates/templates.gen.h"
 #endif
@@ -390,10 +391,10 @@ bool CSharpLanguage::supports_builtin_mode() const {
 #ifdef TOOLS_ENABLED
 static String variant_type_to_managed_name(const String &p_var_type_name) {
 	if (p_var_type_name.is_empty()) {
-		return "object";
+		return "Variant";
 	}
 
-	if (!ClassDB::class_exists(p_var_type_name)) {
+	if (ClassDB::class_exists(p_var_type_name)) {
 		return p_var_type_name;
 	}
 
@@ -401,12 +402,12 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		return "Godot.Object";
 	}
 
+	if (p_var_type_name == Variant::get_type_name(Variant::INT)) {
+		return "long";
+	}
+
 	if (p_var_type_name == Variant::get_type_name(Variant::FLOAT)) {
-#ifdef REAL_T_IS_DOUBLE
 		return "double";
-#else
-		return "float";
-#endif
 	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::STRING)) {
@@ -484,7 +485,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		}
 	}
 
-	return "object";
+	return "Variant";
 }
 
 String CSharpLanguage::make_function(const String &, const String &p_name, const PackedStringArray &p_args) const {
@@ -707,6 +708,12 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 
 void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	if (!gdmono->is_runtime_initialized()) {
+		return;
+	}
+
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		// We disable collectible assemblies in the game player, because the limitations cause
+		// issues with mocking libraries. As such, we can only reload assemblies in the editor.
 		return;
 	}
 

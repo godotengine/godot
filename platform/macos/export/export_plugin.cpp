@@ -34,6 +34,7 @@
 #include "lipo.h"
 #include "macho.h"
 
+#include "core/io/image_loader.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -1269,8 +1270,10 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 						icon->get_buffer(&data.write[0], icon->get_length());
 					}
 				} else {
-					Ref<Image> icon = Image::load_from_file(iconpath);
-					if (icon.is_valid() && !icon->is_empty()) {
+					Ref<Image> icon;
+					icon.instantiate();
+					err = ImageLoader::load_image(iconpath, icon);
+					if (err == OK && !icon->is_empty()) {
 						_make_icon(p_preset, icon, data);
 					}
 				}
@@ -1831,8 +1834,8 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 				if (p_preset->get("notarization/apple_id_name") != "") {
 					if (p_preset->get("notarization/apple_id_password") == "") {
 						err += TTR("Notarization: Apple ID password not specified.") + "\n";
+						valid = false;
 					}
-					valid = false;
 				}
 				if (p_preset->get("notarization/api_uuid") != "") {
 					if (p_preset->get("notarization/api_key") == "") {

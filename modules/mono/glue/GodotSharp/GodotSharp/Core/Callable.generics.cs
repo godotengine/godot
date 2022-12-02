@@ -54,7 +54,7 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 1);
 
             ((Action<T0>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0])
+                VariantUtils.ConvertTo<T0>(args[0])
             );
 
             ret = default;
@@ -73,8 +73,8 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 2);
 
             ((Action<T0, T1>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1])
             );
 
             ret = default;
@@ -93,9 +93,9 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 3);
 
             ((Action<T0, T1, T2>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2])
             );
 
             ret = default;
@@ -114,10 +114,10 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 4);
 
             ((Action<T0, T1, T2, T3>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3])
             );
 
             ret = default;
@@ -136,11 +136,11 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 5);
 
             ((Action<T0, T1, T2, T3, T4>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4])
             );
 
             ret = default;
@@ -159,12 +159,12 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 6);
 
             ((Action<T0, T1, T2, T3, T4, T5>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4]),
-                VariantConversionCallbacks.GetToManagedCallback<T5>()(args[5])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4]),
+                VariantUtils.ConvertTo<T5>(args[5])
             );
 
             ret = default;
@@ -183,13 +183,13 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 7);
 
             ((Action<T0, T1, T2, T3, T4, T5, T6>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4]),
-                VariantConversionCallbacks.GetToManagedCallback<T5>()(args[5]),
-                VariantConversionCallbacks.GetToManagedCallback<T6>()(args[6])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4]),
+                VariantUtils.ConvertTo<T5>(args[5]),
+                VariantUtils.ConvertTo<T6>(args[6])
             );
 
             ret = default;
@@ -208,14 +208,14 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 8);
 
             ((Action<T0, T1, T2, T3, T4, T5, T6, T7>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4]),
-                VariantConversionCallbacks.GetToManagedCallback<T5>()(args[5]),
-                VariantConversionCallbacks.GetToManagedCallback<T6>()(args[6]),
-                VariantConversionCallbacks.GetToManagedCallback<T7>()(args[7])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4]),
+                VariantUtils.ConvertTo<T5>(args[5]),
+                VariantUtils.ConvertTo<T6>(args[6]),
+                VariantUtils.ConvertTo<T7>(args[7])
             );
 
             ret = default;
@@ -234,15 +234,15 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 9);
 
             ((Action<T0, T1, T2, T3, T4, T5, T6, T7, T8>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4]),
-                VariantConversionCallbacks.GetToManagedCallback<T5>()(args[5]),
-                VariantConversionCallbacks.GetToManagedCallback<T6>()(args[6]),
-                VariantConversionCallbacks.GetToManagedCallback<T7>()(args[7]),
-                VariantConversionCallbacks.GetToManagedCallback<T8>()(args[8])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4]),
+                VariantUtils.ConvertTo<T5>(args[5]),
+                VariantUtils.ConvertTo<T6>(args[6]),
+                VariantUtils.ConvertTo<T7>(args[7]),
+                VariantUtils.ConvertTo<T8>(args[8])
             );
 
             ret = default;
@@ -265,7 +265,7 @@ public readonly partial struct Callable
 
             TResult res = ((Func<TResult>)delegateObj)();
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);
@@ -281,10 +281,10 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 1);
 
             TResult res = ((Func<T0, TResult>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0])
+                VariantUtils.ConvertTo<T0>(args[0])
             );
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);
@@ -300,11 +300,11 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 2);
 
             TResult res = ((Func<T0, T1, TResult>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1])
             );
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);
@@ -320,12 +320,12 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 3);
 
             TResult res = ((Func<T0, T1, T2, TResult>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2])
             );
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);
@@ -341,13 +341,13 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 4);
 
             TResult res = ((Func<T0, T1, T2, T3, TResult>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3])
             );
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);
@@ -363,14 +363,14 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 5);
 
             TResult res = ((Func<T0, T1, T2, T3, T4, TResult>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4])
             );
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);
@@ -386,15 +386,15 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 6);
 
             TResult res = ((Func<T0, T1, T2, T3, T4, T5, TResult>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4]),
-                VariantConversionCallbacks.GetToManagedCallback<T5>()(args[5])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4]),
+                VariantUtils.ConvertTo<T5>(args[5])
             );
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);
@@ -410,16 +410,16 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 7);
 
             TResult res = ((Func<T0, T1, T2, T3, T4, T5, T6, TResult>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4]),
-                VariantConversionCallbacks.GetToManagedCallback<T5>()(args[5]),
-                VariantConversionCallbacks.GetToManagedCallback<T6>()(args[6])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4]),
+                VariantUtils.ConvertTo<T5>(args[5]),
+                VariantUtils.ConvertTo<T6>(args[6])
             );
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);
@@ -435,17 +435,17 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 8);
 
             TResult res = ((Func<T0, T1, T2, T3, T4, T5, T6, T7, TResult>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4]),
-                VariantConversionCallbacks.GetToManagedCallback<T5>()(args[5]),
-                VariantConversionCallbacks.GetToManagedCallback<T6>()(args[6]),
-                VariantConversionCallbacks.GetToManagedCallback<T7>()(args[7])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4]),
+                VariantUtils.ConvertTo<T5>(args[5]),
+                VariantUtils.ConvertTo<T6>(args[6]),
+                VariantUtils.ConvertTo<T7>(args[7])
             );
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);
@@ -461,18 +461,18 @@ public readonly partial struct Callable
             ThrowIfArgCountMismatch(args, 9);
 
             TResult res = ((Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, TResult>)delegateObj)(
-                VariantConversionCallbacks.GetToManagedCallback<T0>()(args[0]),
-                VariantConversionCallbacks.GetToManagedCallback<T1>()(args[1]),
-                VariantConversionCallbacks.GetToManagedCallback<T2>()(args[2]),
-                VariantConversionCallbacks.GetToManagedCallback<T3>()(args[3]),
-                VariantConversionCallbacks.GetToManagedCallback<T4>()(args[4]),
-                VariantConversionCallbacks.GetToManagedCallback<T5>()(args[5]),
-                VariantConversionCallbacks.GetToManagedCallback<T6>()(args[6]),
-                VariantConversionCallbacks.GetToManagedCallback<T7>()(args[7]),
-                VariantConversionCallbacks.GetToManagedCallback<T8>()(args[8])
+                VariantUtils.ConvertTo<T0>(args[0]),
+                VariantUtils.ConvertTo<T1>(args[1]),
+                VariantUtils.ConvertTo<T2>(args[2]),
+                VariantUtils.ConvertTo<T3>(args[3]),
+                VariantUtils.ConvertTo<T4>(args[4]),
+                VariantUtils.ConvertTo<T5>(args[5]),
+                VariantUtils.ConvertTo<T6>(args[6]),
+                VariantUtils.ConvertTo<T7>(args[7]),
+                VariantUtils.ConvertTo<T8>(args[8])
             );
 
-            ret = VariantConversionCallbacks.GetToVariantCallback<TResult>()(res);
+            ret = VariantUtils.CreateFrom(res);
         }
 
         return CreateWithUnsafeTrampoline(func, &Trampoline);

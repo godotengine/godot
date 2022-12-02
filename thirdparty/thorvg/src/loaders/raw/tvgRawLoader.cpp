@@ -78,9 +78,9 @@ unique_ptr<Surface> RawLoader::bitmap()
 
     auto surface = static_cast<Surface*>(malloc(sizeof(Surface)));
     surface->buffer = (uint32_t*)(content);
-    surface->stride = w;
-    surface->w = w;
-    surface->h = h;
+    surface->stride = (uint32_t)w;
+    surface->w = (uint32_t)w;
+    surface->h = (uint32_t)h;
     surface->cs = SwCanvas::ARGB8888;
 
     return unique_ptr<Surface>(surface);

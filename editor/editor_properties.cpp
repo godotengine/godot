@@ -31,16 +31,23 @@
 #include "editor_properties.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
+#include "editor/create_dialog.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
-#include "editor/editor_resource_preview.h"
+#include "editor/editor_resource_picker.h"
 #include "editor/editor_scale.h"
-#include "editor/filesystem_dock.h"
+#include "editor/editor_settings.h"
+#include "editor/inspector_dock.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
+#include "editor/property_selector.h"
+#include "editor/scene_tree_editor.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
+#include "scene/gui/color_picker.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
@@ -3844,8 +3851,11 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
 	// Make visual script the correct type.
 	Ref<Script> s = p_resource;
+
+	// The bool is_script applies only to an object's main script.
+	// Changing the value of Script-type exported variables of the main script should not trigger saving/reloading properties.
 	bool is_script = false;
-	if (get_edited_object() && s.is_valid()) {
+	if (get_edited_object() && s.is_valid() && get_edited_property() == CoreStringNames::get_singleton()->_script) {
 		is_script = true;
 		InspectorDock::get_singleton()->store_script_properties(get_edited_object());
 		s->call("set_instance_base_type", get_edited_object()->get_class());

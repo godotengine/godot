@@ -30,6 +30,8 @@
 
 #include "texture_editor_plugin.h"
 #include "editor/editor_scale.h"
+#include "scene/gui/label.h"
+#include "scene/gui/texture_rect.h"
 
 TextureRect *TexturePreview::get_texture_display() {
 	return texture_display;

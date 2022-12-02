@@ -531,8 +531,8 @@ private:
 
 		float base_scale = 1.0;
 
-		int hseparation = 0;
-		int vseparation = 0;
+		int h_separation = 0;
+		int v_separation = 0;
 		int item_margin = 0;
 		int button_margin = 0;
 		Point2 offset;

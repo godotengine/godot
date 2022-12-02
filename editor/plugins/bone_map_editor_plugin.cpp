@@ -31,10 +31,14 @@
 #include "bone_map_editor_plugin.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/import/post_import_plugin_skeleton_renamer.h"
 #include "editor/import/post_import_plugin_skeleton_rest_fixer.h"
 #include "editor/import/post_import_plugin_skeleton_track_organizer.h"
 #include "editor/import/scene_import_settings.h"
+#include "scene/gui/aspect_ratio_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {
@@ -742,7 +746,6 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		} else {
 			p_bone_map->_set_skeleton_bone_name("LeftEye", skeleton->get_bone_name(bone_idx));
 		}
-		bone_idx = -1;
 
 		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, neck_or_head);
 		if (bone_idx == -1) {
@@ -750,7 +753,6 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		} else {
 			p_bone_map->_set_skeleton_bone_name("RightEye", skeleton->get_bone_name(bone_idx));
 		}
-		bone_idx = -1;
 		picklist.clear();
 
 		// 4-2. Guess Jaw

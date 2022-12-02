@@ -32,10 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/message_queue.h"
-#include "core/string/print_string.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"

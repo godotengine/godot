@@ -38,7 +38,9 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/texture.h"
 
@@ -298,6 +300,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-handle_offset, 0)
 	};
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
@@ -1065,7 +1068,6 @@ TextureRegionEditor::TextureRegionEditor() {
 	node_ninepatch = nullptr;
 	obj_styleBox = Ref<StyleBoxTexture>(nullptr);
 	atlas_tex = Ref<AtlasTexture>(nullptr);
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	preview_tex = Ref<CanvasTexture>(memnew(CanvasTexture));
 

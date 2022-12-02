@@ -438,9 +438,7 @@ void AudioStreamOggVorbis::maybe_update_info() {
 		}
 		if (i == 0) {
 			packet->b_o_s = 1;
-		}
 
-		if (i == 0) {
 			ERR_FAIL_COND(!vorbis_synthesis_idheader(packet));
 		}
 

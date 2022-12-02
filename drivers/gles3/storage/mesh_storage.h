@@ -33,6 +33,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "../shaders/skeleton.glsl.gen.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -102,7 +103,13 @@ struct Mesh {
 
 		Vector<AABB> bone_aabbs;
 
-		GLuint blend_shape_buffer = 0;
+		struct BlendShape {
+			GLuint vertex_buffer = 0;
+			GLuint vertex_array = 0;
+		};
+
+		BlendShape *blend_shapes = nullptr;
+		GLuint skeleton_vertex_array = 0;
 
 		RID material;
 	};
@@ -136,7 +143,14 @@ struct MeshInstance {
 	Mesh *mesh = nullptr;
 	RID skeleton;
 	struct Surface {
+		GLuint vertex_buffers[2] = { 0, 0 };
+		GLuint vertex_arrays[2] = { 0, 0 };
 		GLuint vertex_buffer = 0;
+		int vertex_stride_cache = 0;
+		int vertex_size_cache = 0;
+		int vertex_normal_offset_cache = 0;
+		int vertex_tangent_offset_cache = 0;
+		uint32_t format_cache = 0;
 
 		Mesh::Surface::Version *versions = nullptr; //allocated on demand
 		uint32_t version_count = 0;
@@ -144,7 +158,6 @@ struct MeshInstance {
 	LocalVector<Surface> surfaces;
 	LocalVector<float> blend_weights;
 
-	GLuint blend_weights_buffer = 0;
 	List<MeshInstance *>::Element *I = nullptr; //used to erase itself
 	uint64_t skeleton_version = 0;
 	bool dirty = false;
@@ -186,12 +199,14 @@ struct MultiMesh {
 struct Skeleton {
 	bool use_2d = false;
 	int size = 0;
+	int height = 0;
 	Vector<float> data;
-	GLuint buffer = 0;
 
 	bool dirty = false;
 	Skeleton *dirty_list = nullptr;
 	Transform2D base_transform_2d;
+
+	GLuint transforms_texture = 0;
 
 	uint64_t version = 1;
 
@@ -201,6 +216,11 @@ struct Skeleton {
 class MeshStorage : public RendererMeshStorage {
 private:
 	static MeshStorage *singleton;
+
+	struct {
+		SkeletonShaderGLES3 shader;
+		RID shader_version;
+	} skeleton_shader;
 
 	/* Mesh */
 
@@ -214,6 +234,7 @@ private:
 
 	void _mesh_instance_clear(MeshInstance *mi);
 	void _mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface);
+	void _blend_shape_bind_mesh_instance_buffer(MeshInstance *p_mi, uint32_t p_surface);
 	SelfList<MeshInstance>::List dirty_mesh_instance_weights;
 	SelfList<MeshInstance>::List dirty_mesh_instance_arrays;
 
@@ -232,9 +253,10 @@ private:
 
 	mutable RID_Owner<Skeleton, true> skeleton_owner;
 
-	Skeleton *skeleton_dirty_list = nullptr;
-
 	_FORCE_INLINE_ void _skeleton_make_dirty(Skeleton *skeleton);
+	void _compute_skeleton(MeshInstance *p_mi, Skeleton *p_sk, uint32_t p_surface);
+
+	Skeleton *skeleton_dirty_list = nullptr;
 
 public:
 	static MeshStorage *get_singleton();
@@ -534,9 +556,11 @@ public:
 
 	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override;
 
-	/* OCCLUDER */
+	void _update_dirty_skeletons();
 
-	void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices);
+	_FORCE_INLINE_ bool skeleton_is_valid(RID p_skeleton) {
+		return skeleton_owner.get_or_null(p_skeleton) != nullptr;
+	}
 };
 
 } // namespace GLES3
