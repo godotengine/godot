@@ -111,6 +111,8 @@ public:
 		return singleton->destructing;
 	};
 
+	static void clear();
+
 	GDScriptCache();
 	~GDScriptCache();
 };
