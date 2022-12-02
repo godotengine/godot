@@ -1005,6 +1005,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!custom_effect.is_null()) {
 						charfx->elapsed_time = item_custom->elapsed_time;
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
+						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
 						charfx->visibility = txt_visible;
 						charfx->outline = true;
 						charfx->font = frid;
@@ -1222,6 +1223,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!custom_effect.is_null()) {
 						charfx->elapsed_time = item_custom->elapsed_time;
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
+						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
 						charfx->visibility = txt_visible;
 						charfx->outline = false;
 						charfx->font = frid;

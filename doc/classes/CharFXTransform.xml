@@ -46,6 +46,9 @@
 		<member name="range" type="Vector2i" setter="set_range" getter="get_range" default="Vector2i(0, 0)">
 			Absolute character range in the string, corresponding to the glyph. Setting this property won't affect drawing.
 		</member>
+		<member name="relative_index" type="int" setter="set_relative_index" getter="get_relative_index" default="0">
+			The character offset of the glyph, relative to the current [RichTextEffect] custom block. Setting this property won't affect drawing.
+		</member>
 		<member name="visible" type="bool" setter="set_visibility" getter="is_visible" default="true">
 			If [code]true[/code], the character will be drawn. If [code]false[/code], the character will be hidden. Characters around hidden characters will reflow to take the space of hidden characters. If this is not desired, set their [member color] to [code]Color(1, 1, 1, 0)[/code] instead.
 		</member>
