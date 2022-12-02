@@ -1,3 +1,4 @@
+using Godot;
 using Godot.NativeInterop;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -8,30 +9,31 @@ namespace GodotTools.Internals
     {
         public static float EditorScale => Internal.godot_icall_Globals_EditorScale();
 
-        public static unsafe object GlobalDef(string setting, object defaultValue, bool restartIfChanged = false)
+        // ReSharper disable once UnusedMethodReturnValue.Global
+        public static Variant GlobalDef(string setting, Variant defaultValue, bool restartIfChanged = false)
         {
             using godot_string settingIn = Marshaling.ConvertStringToNative(setting);
-            using godot_variant defaultValueIn = Marshaling.ConvertManagedObjectToVariant(defaultValue);
-            Internal.godot_icall_Globals_GlobalDef(settingIn, defaultValueIn, restartIfChanged, out godot_variant result);
-            using (result)
-                return Marshaling.ConvertVariantToManagedObject(result);
+            using godot_variant defaultValueIn = defaultValue.CopyNativeVariant();
+            Internal.godot_icall_Globals_GlobalDef(settingIn, defaultValueIn, restartIfChanged,
+                out godot_variant result);
+            return Variant.CreateTakingOwnershipOfDisposableValue(result);
         }
 
-        public static unsafe object EditorDef(string setting, object defaultValue, bool restartIfChanged = false)
+        // ReSharper disable once UnusedMethodReturnValue.Global
+        public static Variant EditorDef(string setting, Variant defaultValue, bool restartIfChanged = false)
         {
             using godot_string settingIn = Marshaling.ConvertStringToNative(setting);
-            using godot_variant defaultValueIn = Marshaling.ConvertManagedObjectToVariant(defaultValue);
-            Internal.godot_icall_Globals_EditorDef(settingIn, defaultValueIn, restartIfChanged, out godot_variant result);
-            using (result)
-                return Marshaling.ConvertVariantToManagedObject(result);
+            using godot_variant defaultValueIn = defaultValue.CopyNativeVariant();
+            Internal.godot_icall_Globals_EditorDef(settingIn, defaultValueIn, restartIfChanged,
+                out godot_variant result);
+            return Variant.CreateTakingOwnershipOfDisposableValue(result);
         }
 
-        public static object EditorShortcut(string setting)
+        public static Variant EditorShortcut(string setting)
         {
             using godot_string settingIn = Marshaling.ConvertStringToNative(setting);
             Internal.godot_icall_Globals_EditorShortcut(settingIn, out godot_variant result);
-            using (result)
-                return Marshaling.ConvertVariantToManagedObject(result);
+            return Variant.CreateTakingOwnershipOfDisposableValue(result);
         }
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]
