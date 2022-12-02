@@ -52,11 +52,13 @@ Error AnimationLibrary::add_animation(const StringName &p_name, const Ref<Animat
 	ERR_FAIL_COND_V(p_animation.is_null(), ERR_INVALID_PARAMETER);
 
 	if (animations.has(p_name)) {
+		animations.get(p_name)->disconnect(SNAME("changed"), callable_mp(this, &AnimationLibrary::_animation_changed));
 		animations.erase(p_name);
 		emit_signal(SNAME("animation_removed"), p_name);
 	}
 
 	animations.insert(p_name, p_animation);
+	animations.get(p_name)->connect(SNAME("changed"), callable_mp(this, &AnimationLibrary::_animation_changed).bind(p_name));
 	emit_signal(SNAME("animation_added"), p_name);
 	notify_property_list_changed();
 	return OK;
@@ -65,6 +67,7 @@ Error AnimationLibrary::add_animation(const StringName &p_name, const Ref<Animat
 void AnimationLibrary::remove_animation(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!animations.has(p_name), vformat("Animation not found: %s.", p_name));
 
+	animations.get(p_name)->disconnect(SNAME("changed"), callable_mp(this, &AnimationLibrary::_animation_changed));
 	animations.erase(p_name);
 	emit_signal(SNAME("animation_removed"), p_name);
 	notify_property_list_changed();
@@ -75,6 +78,8 @@ void AnimationLibrary::rename_animation(const StringName &p_name, const StringNa
 	ERR_FAIL_COND_MSG(!is_valid_animation_name(p_new_name), "Invalid animation name: '" + String(p_new_name) + "'.");
 	ERR_FAIL_COND_MSG(animations.has(p_new_name), vformat("Animation name \"%s\" already exists in library.", p_new_name));
 
+	animations.get(p_name)->disconnect(SNAME("changed"), callable_mp(this, &AnimationLibrary::_animation_changed));
+	animations.get(p_name)->connect(SNAME("changed"), callable_mp(this, &AnimationLibrary::_animation_changed).bind(p_new_name));
 	animations.insert(p_new_name, animations[p_name]);
 	animations.erase(p_name);
 	emit_signal(SNAME("animation_renamed"), p_name, p_new_name);
@@ -100,6 +105,10 @@ TypedArray<StringName> AnimationLibrary::_get_animation_list() const {
 	return ret;
 }
 
+void AnimationLibrary::_animation_changed(const StringName &p_name) {
+	emit_signal(SNAME("animation_changed"), p_name);
+}
+
 void AnimationLibrary::get_animation_list(List<StringName> *p_animations) const {
 	List<StringName> anims;
 
@@ -115,6 +124,9 @@ void AnimationLibrary::get_animation_list(List<StringName> *p_animations) const 
 }
 
 void AnimationLibrary::_set_data(const Dictionary &p_data) {
+	for (KeyValue<StringName, Ref<Animation>> &K : animations) {
+		K.value->disconnect(SNAME("changed"), callable_mp(this, &AnimationLibrary::_animation_changed));
+	}
 	animations.clear();
 	List<Variant> keys;
 	p_data.get_key_list(&keys);
@@ -146,6 +158,7 @@ void AnimationLibrary::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_added", PropertyInfo(Variant::STRING_NAME, "name")));
 	ADD_SIGNAL(MethodInfo("animation_removed", PropertyInfo(Variant::STRING_NAME, "name")));
 	ADD_SIGNAL(MethodInfo("animation_renamed", PropertyInfo(Variant::STRING_NAME, "name"), PropertyInfo(Variant::STRING_NAME, "to_name")));
+	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "name")));
 }
 AnimationLibrary::AnimationLibrary() {
 }
