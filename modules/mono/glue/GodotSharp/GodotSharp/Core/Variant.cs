@@ -114,11 +114,7 @@ public partial struct Variant : IDisposable
         {
             Type.Bool => AsBool(),
             Type.Int => AsInt64(),
-#if REAL_T_IS_DOUBLE
             Type.Float => AsDouble(),
-#else
-            Type.Float => AsSingle(),
-#endif
             Type.String => AsString(),
             Type.Vector2 => AsVector2(),
             Type.Vector2i => AsVector2i(),
