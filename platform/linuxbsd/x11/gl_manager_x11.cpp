@@ -321,8 +321,8 @@ void GLManager_X11::swap_buffers() {
 	glXSwapBuffers(_x_windisp.x11_display, _x_windisp.x11_window);
 }
 
-Error GLManager_X11::initialize() {
-	if (!gladLoaderLoadGLX(nullptr, 0)) {
+Error GLManager_X11::initialize(Display *p_display) {
+	if (!gladLoaderLoadGLX(p_display, XScreenNumberOfScreen(XDefaultScreenOfDisplay(p_display)))) {
 		return ERR_CANT_CREATE;
 	}
 

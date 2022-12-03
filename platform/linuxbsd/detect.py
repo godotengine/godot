@@ -185,13 +185,14 @@ def configure(env: "Environment"):
     ## Dependencies
 
     if env["x11"]:
-        env.ParseConfig("pkg-config x11 --cflags --libs")
-        env.ParseConfig("pkg-config xcursor --cflags --libs")
-        env.ParseConfig("pkg-config xinerama --cflags --libs")
-        env.ParseConfig("pkg-config xext --cflags --libs")
-        env.ParseConfig("pkg-config xrandr --cflags --libs")
-        env.ParseConfig("pkg-config xrender --cflags --libs")
-        env.ParseConfig("pkg-config xi --cflags --libs")
+        # Only cflags, we dlopen the libraries.
+        env.ParseConfig("pkg-config x11 --cflags")
+        env.ParseConfig("pkg-config xcursor --cflags")
+        env.ParseConfig("pkg-config xinerama --cflags")
+        env.ParseConfig("pkg-config xext --cflags")
+        env.ParseConfig("pkg-config xrandr --cflags")
+        env.ParseConfig("pkg-config xrender --cflags")
+        env.ParseConfig("pkg-config xi --cflags")
 
     if env["wayland"]:
         env.ParseConfig("pkg-config wayland-client --cflags")  # Only cflags, we dlopen the library.

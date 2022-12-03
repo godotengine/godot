@@ -76,20 +76,20 @@ public:
 	}
 #endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		Variant ret;
 		GDExtensionClassInstancePtr extension_instance = is_static() ? nullptr : p_object->_get_extension_instance();
 		GDNativeCallError ce{ GDNATIVE_CALL_OK, 0, 0 };
-		call_func(method_userdata, extension_instance, (const GDNativeVariantPtr *)p_args, p_arg_count, (GDNativeVariantPtr)&ret, &ce);
+		call_func(method_userdata, extension_instance, reinterpret_cast<GDNativeConstVariantPtr *>(p_args), p_arg_count, (GDNativeVariantPtr)&ret, &ce);
 		r_error.error = Callable::CallError::Error(ce.error);
 		r_error.argument = ce.argument;
 		r_error.expected = ce.expected;
 		return ret;
 	}
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 		ERR_FAIL_COND_MSG(vararg, "Vararg methods don't have ptrcall support. This is most likely an engine bug.");
 		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
-		ptrcall_func(method_userdata, extension_instance, (const GDNativeTypePtr *)p_args, (GDNativeTypePtr)r_ret);
+		ptrcall_func(method_userdata, extension_instance, reinterpret_cast<GDNativeConstTypePtr *>(p_args), (GDNativeTypePtr)r_ret);
 	}
 
 	virtual bool is_vararg() const override {
@@ -135,11 +135,11 @@ public:
 
 static GDNativeInterface gdnative_interface;
 
-void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringNamePtr p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs) {
-	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+void NativeExtension::_register_extension_class(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs) {
+	NativeExtension *self = reinterpret_cast<NativeExtension *>(p_library);
 
-	StringName class_name = *reinterpret_cast<StringName *>(p_class_name);
-	StringName parent_class_name = *reinterpret_cast<StringName *>(p_parent_class_name);
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	StringName parent_class_name = *reinterpret_cast<const StringName *>(p_parent_class_name);
 	ERR_FAIL_COND_MSG(!String(class_name).is_valid_identifier(), "Attempt to register extension class '" + class_name + "', which is not a valid class identifier.");
 	ERR_FAIL_COND_MSG(ClassDB::class_exists(class_name), "Attempt to register extension class '" + class_name + "', which appears to be already registered.");
 
@@ -190,8 +190,8 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 
 	ClassDB::register_extension_class(&extension->native_extension);
 }
-void NativeExtension::_register_extension_class_method(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info) {
-	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+void NativeExtension::_register_extension_class_method(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info) {
+	NativeExtension *self = reinterpret_cast<NativeExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
 	StringName method_name = *reinterpret_cast<const StringName *>(p_method_info->name);
@@ -204,8 +204,8 @@ void NativeExtension::_register_extension_class_method(const GDNativeExtensionCl
 
 	ClassDB::bind_method_custom(class_name, method);
 }
-void NativeExtension::_register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringNamePtr p_enum_name, const GDNativeStringNamePtr p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield) {
-	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+void NativeExtension::_register_extension_class_integer_constant(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_enum_name, GDNativeConstStringNamePtr p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield) {
+	NativeExtension *self = reinterpret_cast<NativeExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
 	StringName enum_name = *reinterpret_cast<const StringName *>(p_enum_name);
@@ -215,8 +215,8 @@ void NativeExtension::_register_extension_class_integer_constant(const GDNativeE
 	ClassDB::bind_integer_constant(class_name, enum_name, constant_name, p_constant_value, p_is_bitfield);
 }
 
-void NativeExtension::_register_extension_class_property(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativePropertyInfo *p_info, const GDNativeStringNamePtr p_setter, const GDNativeStringNamePtr p_getter) {
-	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+void NativeExtension::_register_extension_class_property(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, const GDNativePropertyInfo *p_info, GDNativeConstStringNamePtr p_setter, GDNativeConstStringNamePtr p_getter) {
+	NativeExtension *self = reinterpret_cast<NativeExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
 	StringName setter = *reinterpret_cast<const StringName *>(p_setter);
@@ -230,8 +230,8 @@ void NativeExtension::_register_extension_class_property(const GDNativeExtension
 	ClassDB::add_property(class_name, pinfo, setter, getter);
 }
 
-void NativeExtension::_register_extension_class_property_group(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringPtr p_group_name, const GDNativeStringPtr p_prefix) {
-	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+void NativeExtension::_register_extension_class_property_group(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringPtr p_group_name, GDNativeConstStringPtr p_prefix) {
+	NativeExtension *self = reinterpret_cast<NativeExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
 	String group_name = *reinterpret_cast<const String *>(p_group_name);
@@ -241,8 +241,8 @@ void NativeExtension::_register_extension_class_property_group(const GDNativeExt
 	ClassDB::add_property_group(class_name, group_name, prefix);
 }
 
-void NativeExtension::_register_extension_class_property_subgroup(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringPtr p_subgroup_name, const GDNativeStringPtr p_prefix) {
-	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+void NativeExtension::_register_extension_class_property_subgroup(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringPtr p_subgroup_name, GDNativeConstStringPtr p_prefix) {
+	NativeExtension *self = reinterpret_cast<NativeExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
 	String subgroup_name = *reinterpret_cast<const String *>(p_subgroup_name);
@@ -252,8 +252,8 @@ void NativeExtension::_register_extension_class_property_subgroup(const GDNative
 	ClassDB::add_property_subgroup(class_name, subgroup_name, prefix);
 }
 
-void NativeExtension::_register_extension_class_signal(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name, const GDNativeStringNamePtr p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count) {
-	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+void NativeExtension::_register_extension_class_signal(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count) {
+	NativeExtension *self = reinterpret_cast<NativeExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
 	StringName signal_name = *reinterpret_cast<const StringName *>(p_signal_name);
@@ -268,8 +268,8 @@ void NativeExtension::_register_extension_class_signal(const GDNativeExtensionCl
 	ClassDB::add_signal(class_name, s);
 }
 
-void NativeExtension::_unregister_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const GDNativeStringNamePtr p_class_name) {
-	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+void NativeExtension::_unregister_extension_class(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name) {
+	NativeExtension *self = reinterpret_cast<NativeExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to unregister unexisting extension class '" + class_name + "'.");
@@ -283,8 +283,8 @@ void NativeExtension::_unregister_extension_class(const GDNativeExtensionClassLi
 	self->extension_classes.erase(class_name);
 }
 
-void NativeExtension::_get_library_path(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path) {
-	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+void NativeExtension::_get_library_path(GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path) {
+	NativeExtension *self = reinterpret_cast<NativeExtension *>(p_library);
 
 	*(String *)r_path = self->library_path;
 }

@@ -94,7 +94,7 @@ def generate_version(argcount, const=False, returns=False):
         argtext += ", "
         callsiargs = "Variant vargs[" + str(argcount) + "]={"
         callsiargptrs = "\t\tconst Variant *vargptrs[" + str(argcount) + "]={"
-        callptrargsptr = "\t\tconst GDNativeTypePtr argptrs[" + str(argcount) + "]={"
+        callptrargsptr = "\t\tGDNativeConstTypePtr argptrs[" + str(argcount) + "]={"
     callptrargs = ""
     for i in range(argcount):
         if i > 0:
@@ -121,7 +121,7 @@ def generate_version(argcount, const=False, returns=False):
         s = s.replace("$CALLSIARGPASS", "(const Variant **)vargptrs," + str(argcount))
         callptrargsptr += "};\\\n"
         s = s.replace("$CALLPTRARGS", callptrargs + callptrargsptr)
-        s = s.replace("$CALLPTRARGPASS", "(const GDNativeTypePtr*)argptrs")
+        s = s.replace("$CALLPTRARGPASS", "reinterpret_cast<GDNativeConstTypePtr*>(argptrs)")
     else:
         s = s.replace("$CALLSIARGS", "")
         s = s.replace("$CALLSIARGPASS", "nullptr, 0")

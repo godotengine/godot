@@ -41,8 +41,7 @@
 #include "thirdparty/glad/glad/gl.h"
 #include "thirdparty/glad/glad/glx.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include "dynwrappers/xlib-so_wrap.h"
 
 #include <cstring>
 
@@ -89,6 +88,10 @@ void create_context() {
 		None
 	};
 
+	if (gladLoaderLoadGLX(x11_display, XScreenNumberOfScreen(XDefaultScreenOfDisplay(x11_display))) == 0) {
+		print_verbose("Unable to load GLX, GPU detection skipped.");
+		quick_exit(1);
+	}
 	int fbcount;
 	GLXFBConfig fbconfig = nullptr;
 	XVisualInfo *vi = nullptr;
@@ -187,11 +190,6 @@ int detect_prime() {
 
 			if (i) {
 				setenv("DRI_PRIME", "1", 1);
-			}
-
-			if (gladLoaderLoadGLX(NULL, 0) == 0) {
-				print_verbose("Unable to load GLX, GPU detection skipped.");
-				quick_exit(1);
 			}
 
 			create_context();
