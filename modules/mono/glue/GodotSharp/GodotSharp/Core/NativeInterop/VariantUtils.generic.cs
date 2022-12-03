@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop;
 
+#nullable enable
+
 public partial class VariantUtils
 {
     private static Exception UnsupportedType<T>() => new InvalidOperationException(

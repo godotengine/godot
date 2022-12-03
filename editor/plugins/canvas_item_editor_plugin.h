@@ -32,22 +32,21 @@
 #define CANVAS_ITEM_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "editor/editor_zoom_widget.h"
+#include "scene/gui/base_button.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/label.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/main/canvas_item.h"
 
 class AcceptDialog;
+class CanvasItemEditorViewport;
 class ConfirmationDialog;
 class EditorData;
-class CanvasItemEditorViewport;
+class EditorZoomWidget;
+class HScrollBar;
+class HSplitContainer;
 class MenuButton;
+class PanelContainer;
 class ViewPanner;
+class VScrollBar;
+class VSplitContainer;
 
 class CanvasItemEditorSelectedItem : public Object {
 	GDCLASS(CanvasItemEditorSelectedItem, Object);

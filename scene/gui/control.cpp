@@ -220,6 +220,10 @@ PackedStringArray Control::get_configuration_warnings() const {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 
+	if (get_z_index() != 0) {
+		warnings.push_back(RTR("Changing the Z index of a control only affects the drawing order, not the input event handling order."));
+	}
+
 	return warnings;
 }
 
@@ -481,10 +485,10 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		}
 	} else if (Object::cast_to<Container>(parent_node)) {
 		// If the parent is a container, display only container-related properties.
-		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset" ||
-				p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
-			p_property.usage ^= PROPERTY_USAGE_EDITOR;
-
+		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset") {
+			p_property.usage ^= PROPERTY_USAGE_DEFAULT;
+		} else if (p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
 		} else if (p_property.name == "layout_mode") {
 			// Set the layout mode to be disabled with the proper value.
 			p_property.hint_string = "Position,Anchors,Container,Uncontrolled";
@@ -2935,7 +2939,7 @@ void Control::_notification(int p_notification) {
 			queue_redraw();
 
 			if (data.RI) {
-				get_viewport()->_gui_set_root_order_dirty();
+				get_viewport()->gui_set_root_order_dirty();
 			}
 		} break;
 

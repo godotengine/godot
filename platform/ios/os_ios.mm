@@ -90,7 +90,7 @@ OS_IOS *OS_IOS::get_singleton() {
 	return (OS_IOS *)OS::get_singleton();
 }
 
-OS_IOS::OS_IOS(String p_data_dir, String p_cache_dir) {
+OS_IOS::OS_IOS() {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -100,11 +100,6 @@ OS_IOS::OS_IOS(String p_data_dir, String p_cache_dir) {
 	ios_init_callbacks_capacity = 0;
 
 	main_loop = nullptr;
-
-	// can't call set_data_dir from here, since it requires DirAccess
-	// which is initialized in initialize_core
-	user_data_dir = p_data_dir;
-	cache_dir = p_cache_dir;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(SyslogLogger));
@@ -130,8 +125,6 @@ void OS_IOS::alert(const String &p_alert, const String &p_title) {
 
 void OS_IOS::initialize_core() {
 	OS_Unix::initialize_core();
-
-	set_user_data_dir(user_data_dir);
 }
 
 void OS_IOS::initialize() {
@@ -273,18 +266,26 @@ Error OS_IOS::shell_open(String p_uri) {
 	return OK;
 }
 
-void OS_IOS::set_user_data_dir(String p_dir) {
-	Ref<DirAccess> da = DirAccess::open(p_dir);
-	user_data_dir = da->get_current_dir();
-	printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), p_dir.utf8().get_data());
-}
-
 String OS_IOS::get_user_data_dir() const {
-	return user_data_dir;
+	static String ret;
+	if (ret.is_empty()) {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+		if (paths && [paths count] >= 1) {
+			ret.parse_utf8([[paths firstObject] UTF8String]);
+		}
+	}
+	return ret;
 }
 
 String OS_IOS::get_cache_path() const {
-	return cache_dir;
+	static String ret;
+	if (ret.is_empty()) {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+		if (paths && [paths count] >= 1) {
+			ret.parse_utf8([[paths firstObject] UTF8String]);
+		}
+	}
+	return ret;
 }
 
 String OS_IOS::get_locale() const {

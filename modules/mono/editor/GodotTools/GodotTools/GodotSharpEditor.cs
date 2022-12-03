@@ -57,24 +57,22 @@ namespace GodotTools
             {
                 pr.Step("Generating C# project...".TTR());
 
-                string resourceDir = ProjectSettings.GlobalizePath("res://");
-
-                string path = resourceDir;
+                string csprojDir = Path.GetDirectoryName(GodotSharpDirs.ProjectCsProjPath);
+                string slnDir = Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath);
                 string name = GodotSharpDirs.ProjectAssemblyName;
-
-                string guid = CsProjOperations.GenerateGameProject(path, name);
+                string guid = CsProjOperations.GenerateGameProject(csprojDir, name);
 
                 if (guid.Length > 0)
                 {
                     var solution = new DotNetSolution(name)
                     {
-                        DirectoryPath = path
+                        DirectoryPath = slnDir
                     };
 
                     var projectInfo = new DotNetSolution.ProjectInfo
                     {
                         Guid = guid,
-                        PathRelativeToSolution = name + ".csproj",
+                        PathRelativeToSolution = Path.GetRelativePath(slnDir, GodotSharpDirs.ProjectCsProjPath),
                         Configs = new List<string> { "Debug", "ExportDebug", "ExportRelease" }
                     };
 
@@ -375,6 +373,8 @@ namespace GodotTools
         {
             base._EnablePlugin();
 
+            ProjectSettingsChanged += GodotSharpDirs.DetermineProjectLocation;
+
             if (Instance != null)
                 throw new InvalidOperationException();
             Instance = this;
@@ -455,7 +455,7 @@ namespace GodotTools
             _menuPopup.IdPressed += _MenuOptionPressed;
 
             // External editor settings
-            EditorDef("mono/editor/external_editor", ExternalEditorId.None);
+            EditorDef("mono/editor/external_editor", Variant.From(ExternalEditorId.None));
 
             string settingsHintStr = "Disabled";
 

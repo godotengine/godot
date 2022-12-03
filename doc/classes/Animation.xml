@@ -251,15 +251,6 @@
 				Returns the amount of tracks in the animation.
 			</description>
 		</method>
-		<method name="method_track_get_key_indices" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="time_sec" type="float" />
-			<param index="2" name="delta" type="float" />
-			<description>
-				Returns all the key indices of a method track, given a position and delta time.
-			</description>
-		</method>
 		<method name="method_track_get_name" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="track_idx" type="int" />
@@ -523,15 +514,6 @@
 				Swaps the track [param track_idx]'s index position with the track [param with_idx].
 			</description>
 		</method>
-		<method name="value_track_get_key_indices" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="time_sec" type="float" />
-			<param index="2" name="delta" type="float" />
-			<description>
-				Returns all the key indices of a value track, given a position and delta time.
-			</description>
-		</method>
 		<method name="value_track_get_update_mode" qualifiers="const">
 			<return type="int" enum="Animation.UpdateMode" />
 			<param index="0" name="track_idx" type="int" />
@@ -633,6 +615,15 @@
 		</constant>
 		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
 			Repeats playback and reverse playback at both ends of the animation.
+		</constant>
+		<constant name="LOOPED_FLAG_NONE" value="0" enum="LoopedFlag">
+			This flag indicates that the animation proceeds without any looping.
+		</constant>
+		<constant name="LOOPED_FLAG_END" value="1" enum="LoopedFlag">
+			This flag indicates that the animation has reached the end of the animation and just after loop processed.
+		</constant>
+		<constant name="LOOPED_FLAG_START" value="2" enum="LoopedFlag">
+			This flag indicates that the animation has reached the start of the animation and just after loop processed.
 		</constant>
 	</constants>
 </class>

@@ -148,10 +148,8 @@ bool EditorExportPlugin::_begin_customize_resources(const Ref<EditorExportPlatfo
 
 Ref<Resource> EditorExportPlugin::_customize_resource(const Ref<Resource> &p_resource, const String &p_path) {
 	Ref<Resource> ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_customize_resource, p_resource, p_path, ret)) {
-		return ret;
-	}
-	return Ref<Resource>();
+	GDVIRTUAL_REQUIRED_CALL(_customize_resource, p_resource, p_path, ret);
+	return ret;
 }
 
 bool EditorExportPlugin::_begin_customize_scenes(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) const {
@@ -162,18 +160,14 @@ bool EditorExportPlugin::_begin_customize_scenes(const Ref<EditorExportPlatform>
 
 Node *EditorExportPlugin::_customize_scene(Node *p_root, const String &p_path) {
 	Node *ret = nullptr;
-	if (GDVIRTUAL_REQUIRED_CALL(_customize_scene, p_root, p_path, ret)) {
-		return ret;
-	}
-	return nullptr;
+	GDVIRTUAL_REQUIRED_CALL(_customize_scene, p_root, p_path, ret);
+	return ret;
 }
 
 uint64_t EditorExportPlugin::_get_customization_configuration_hash() const {
 	uint64_t ret = 0;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_customization_configuration_hash, ret)) {
-		return ret;
-	}
-	return 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_customization_configuration_hash, ret);
+	return ret;
 }
 
 void EditorExportPlugin::_end_customize_scenes() {
@@ -186,10 +180,8 @@ void EditorExportPlugin::_end_customize_resources() {
 
 String EditorExportPlugin::_get_name() const {
 	String ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_name, ret)) {
-		return ret;
-	}
-	return "";
+	GDVIRTUAL_REQUIRED_CALL(_get_name, ret);
+	return ret;
 }
 
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {

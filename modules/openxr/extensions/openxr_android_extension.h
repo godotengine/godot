@@ -48,6 +48,7 @@ public:
 private:
 	static OpenXRAndroidExtension *singleton;
 
+	bool loader_init_extension_available = false;
 	bool create_instance_extension_available = false;
 
 	// Initialize the loader

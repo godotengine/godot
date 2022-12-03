@@ -52,34 +52,26 @@ MovieWriter *MovieWriter::find_writer_for_file(const String &p_file) {
 }
 
 uint32_t MovieWriter::get_audio_mix_rate() const {
-	uint32_t ret = 0;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_audio_mix_rate, ret)) {
-		return ret;
-	}
-	return 48000;
+	uint32_t ret = 48000;
+	GDVIRTUAL_REQUIRED_CALL(_get_audio_mix_rate, ret);
+	return ret;
 }
 AudioServer::SpeakerMode MovieWriter::get_audio_speaker_mode() const {
 	AudioServer::SpeakerMode ret = AudioServer::SPEAKER_MODE_STEREO;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_audio_speaker_mode, ret)) {
-		return ret;
-	}
-	return AudioServer::SPEAKER_MODE_STEREO;
+	GDVIRTUAL_REQUIRED_CALL(_get_audio_speaker_mode, ret);
+	return ret;
 }
 
 Error MovieWriter::write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
-	Error ret = OK;
-	if (GDVIRTUAL_REQUIRED_CALL(_write_begin, p_movie_size, p_fps, p_base_path, ret)) {
-		return ret;
-	}
-	return ERR_UNCONFIGURED;
+	Error ret = ERR_UNCONFIGURED;
+	GDVIRTUAL_REQUIRED_CALL(_write_begin, p_movie_size, p_fps, p_base_path, ret);
+	return ret;
 }
 
 Error MovieWriter::write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) {
-	Error ret = OK;
-	if (GDVIRTUAL_REQUIRED_CALL(_write_frame, p_image, p_audio_data, ret)) {
-		return ret;
-	}
-	return ERR_UNCONFIGURED;
+	Error ret = ERR_UNCONFIGURED;
+	GDVIRTUAL_REQUIRED_CALL(_write_frame, p_image, p_audio_data, ret);
+	return ret;
 }
 
 void MovieWriter::write_end() {
@@ -88,18 +80,15 @@ void MovieWriter::write_end() {
 
 bool MovieWriter::handles_file(const String &p_path) const {
 	bool ret = false;
-	if (GDVIRTUAL_REQUIRED_CALL(_handles_file, p_path, ret)) {
-		return ret;
-	}
-	return false;
+	GDVIRTUAL_REQUIRED_CALL(_handles_file, p_path, ret);
+	return ret;
 }
 
 void MovieWriter::get_supported_extensions(List<String> *r_extensions) const {
 	Vector<String> exts;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_supported_extensions, exts)) {
-		for (int i = 0; i < exts.size(); i++) {
-			r_extensions->push_back(exts[i]);
-		}
+	GDVIRTUAL_REQUIRED_CALL(_get_supported_extensions, exts);
+	for (int i = 0; i < exts.size(); i++) {
+		r_extensions->push_back(exts[i]);
 	}
 }
 

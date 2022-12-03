@@ -45,6 +45,9 @@ class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
 class Button;
+class Tree;
+class TreeItem;
+class VSeparator;
 
 class BoneTransformEditor : public VBoxContainer {
 	GDCLASS(BoneTransformEditor, VBoxContainer);

@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 
