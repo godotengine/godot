@@ -52,11 +52,22 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_name.operator String().begins_with("surface_material_override/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
-		if (idx >= surface_override_materials.size() || idx < 0) {
+
+		// This is a bit of a hack to ensure compatibility with older material
+		// overrides that start indexing at 0.
+		// We assume that idx 0 is always read first, if its not, this won't work.
+		if (idx == 0) {
+			old_surface_index = true;
+		}
+		if (old_surface_index) {
+			idx++;
+		}
+
+		if (idx > surface_override_materials.size() || idx < 0) {
 			return false;
 		}
 
-		set_surface_override_material(idx, p_value);
+		set_surface_override_material(idx - 1, p_value);
 		return true;
 	}
 
@@ -75,7 +86,7 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 
 	if (p_name.operator String().begins_with("surface_material_override/")) {
-		int idx = p_name.operator String().get_slicec('/', 1).to_int();
+		int idx = p_name.operator String().get_slicec('/', 1).to_int() - 1;
 		if (idx >= surface_override_materials.size() || idx < 0) {
 			return false;
 		}
@@ -98,7 +109,7 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	if (mesh.is_valid()) {
-		for (int i = 0; i < mesh->get_surface_count(); i++) {
+		for (int i = 1; i <= mesh->get_surface_count(); i++) {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("%s/%d", PNAME("surface_material_override"), i), PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
 		}
 	}
