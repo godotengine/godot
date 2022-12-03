@@ -37,7 +37,10 @@
 #include "scene/gui/split_container.h"
 #include "scene/resources/tile_set.h"
 
+class Popup;
 class TileSet;
+class Tree;
+class VSeparator;
 
 class TileSetAtlasSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetAtlasSourceEditor, HBoxContainer);

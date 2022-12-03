@@ -38,7 +38,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/separator.h"
 
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
@@ -851,6 +856,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 void TileDataDefaultEditor::_property_value_changed(StringName p_property, Variant p_value, StringName p_field) {
 	ERR_FAIL_COND(!dummy_object);
 	dummy_object->set(p_property, p_value);
+	emit_signal(SNAME("needs_redraw"));
 }
 
 Variant TileDataDefaultEditor::_get_painted_value() {

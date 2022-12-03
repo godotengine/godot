@@ -494,8 +494,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				result = ref->get_parser()->head->get_datatype();
 			} else {
 				result.kind = GDScriptParser::DataType::SCRIPT;
-				result.native_type = ScriptServer::get_global_class_native_base(first);
 				result.script_type = ResourceLoader::load(path, "Script");
+				result.native_type = result.script_type->get_instance_base_type();
 				result.script_path = path;
 				result.is_constant = true;
 				result.is_meta_type = false;
@@ -1162,6 +1162,8 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			if (p_function->parameters[i]->default_value->is_constant) {
 				p_function->default_arg_values.push_back(p_function->parameters[i]->default_value->reduced_value);
+			} else {
+				p_function->default_arg_values.push_back(Variant()); // Prevent shift.
 			}
 		}
 #endif // TOOLS_ENABLED
@@ -1214,11 +1216,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			if (!valid) {
 				// Compute parent signature as a string to show in the error message.
-				String parent_signature = parent_return_type.is_hard_type() ? parent_return_type.to_string() : "Variant";
-				if (parent_signature == "null") {
-					parent_signature = "void";
-				}
-				parent_signature += " " + p_function->identifier->name.operator String() + "(";
+				String parent_signature = p_function->identifier->name.operator String() + "(";
 				int j = 0;
 				for (const GDScriptParser::DataType &par_type : parameters_types) {
 					if (j > 0) {
@@ -1235,7 +1233,15 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 					j++;
 				}
-				parent_signature += ")";
+				parent_signature += ") -> ";
+
+				const String return_type = parent_return_type.is_hard_type() ? parent_return_type.to_string() : "Variant";
+				if (return_type == "null") {
+					parent_signature += "void";
+				} else {
+					parent_signature += return_type;
+				}
+
 				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
 			}
 		}
@@ -2733,21 +2739,13 @@ GDScriptParser::DataType GDScriptAnalyzer::make_global_class_meta_type(const Str
 			return type;
 		}
 
-		type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-		type.kind = GDScriptParser::DataType::CLASS;
-		type.builtin_type = Variant::OBJECT;
-		type.native_type = ScriptServer::get_global_class_native_base(p_class_name);
-		type.class_type = ref->get_parser()->head;
-		type.script_path = ref->get_parser()->script_path;
-		type.is_constant = true;
-		type.is_meta_type = true;
-		return type;
+		return ref->get_parser()->head->get_datatype();
 	} else {
 		type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 		type.kind = GDScriptParser::DataType::SCRIPT;
 		type.builtin_type = Variant::OBJECT;
-		type.native_type = ScriptServer::get_global_class_native_base(p_class_name);
 		type.script_type = ResourceLoader::load(path, "Script");
+		type.native_type = type.script_type->get_instance_base_type();
 		type.script_path = path;
 		type.is_constant = true;
 		type.is_meta_type = true;

@@ -1,4 +1,4 @@
-VERSION=0.8.2
+VERSION=0.8.3
 rm -rf AUTHORS inc LICENSE src *.zip
 curl -L -O https://github.com/Samsung/thorvg/archive/v$VERSION.zip
 bsdtar --strip-components=1 -xvf *.zip
@@ -26,3 +26,6 @@ cat << EOF > inc/config.h
 #define THORVG_VERSION_STRING "$VERSION"
 #endif
 EOF
+for source in $(find ./ -type f \( -iname \*.h -o -iname \*.cpp \)); do
+    sed -i -e '$a\' $source
+done

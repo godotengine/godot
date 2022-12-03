@@ -176,7 +176,8 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-            source.Append($"    public new class SignalName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.SignalName {{\n");
+            source.Append(
+                $"    public new class SignalName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.SignalName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -236,7 +237,8 @@ namespace Godot.SourceGenerators
                     .Append(signalName)
                     .Append(";\n");
 
-                source.Append($"    /// <inheritdoc cref=\"{signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal()}\"/>\n");
+                source.Append(
+                    $"    /// <inheritdoc cref=\"{signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal()}\"/>\n");
 
                 source.Append("    public event ")
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
@@ -351,7 +353,7 @@ namespace Godot.SourceGenerators
 
             if (invokeMethodData.RetType != null)
             {
-                returnVal = DeterminePropertyInfo(invokeMethodData.RetType.Value, name: string.Empty);
+                returnVal = DeterminePropertyInfo(invokeMethodData.RetType.Value.MarshalType, name: string.Empty);
             }
             else
             {
