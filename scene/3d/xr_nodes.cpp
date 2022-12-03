@@ -627,7 +627,9 @@ void XROrigin3D::set_world_scale(real_t p_world_scale) {
 	xr_server->set_world_scale(p_world_scale);
 }
 
-void XROrigin3D::set_current(bool p_enabled) {
+void XROrigin3D::_set_current(bool p_enabled, bool p_update_others) {
+	// We run this logic even if current already equals p_enabled as we may have set this previously before we entered our tree.
+	// This is then called a second time on NOTIFICATION_ENTER_TREE where we actually process activating this origin node.
 	current = p_enabled;
 
 	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
@@ -638,28 +640,36 @@ void XROrigin3D::set_current(bool p_enabled) {
 	set_notify_local_transform(current);
 	set_notify_transform(current);
 
+	// update XRServer with our current position
 	if (current) {
-		for (int i = 0; i < origin_nodes.size(); i++) {
-			if (origin_nodes[i] != this) {
-				origin_nodes[i]->set_current(false);
-			}
-		}
-
-		// update XRServer with our current position
 		XRServer *xr_server = XRServer::get_singleton();
 		ERR_FAIL_NULL(xr_server);
 
 		xr_server->set_world_origin(get_global_transform());
-	} else {
-		bool found = false;
-		// We no longer have a current origin so find the first one we can make current
-		for (int i = 0; !found && i < origin_nodes.size(); i++) {
-			if (origin_nodes[i] != this) {
-				origin_nodes[i]->set_current(true);
-				found = true;
+	}
+
+	// Check if we need to update our other origin nodes accordingly
+	if (p_update_others) {
+		if (current) {
+			for (int i = 0; i < origin_nodes.size(); i++) {
+				if (origin_nodes[i] != this && origin_nodes[i]->current) {
+					origin_nodes[i]->_set_current(false, false);
+				}
+			}
+		} else {
+			// We no longer have a current origin so find the first one we can make current
+			for (int i = 0; i < origin_nodes.size(); i++) {
+				if (origin_nodes[i] != this) {
+					origin_nodes[i]->_set_current(true, false);
+					return; // we are done.
+				}
 			}
 		}
 	}
+}
+
+void XROrigin3D::set_current(bool p_enabled) {
+	_set_current(p_enabled, true);
 }
 
 bool XROrigin3D::is_current() const {
