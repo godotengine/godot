@@ -137,7 +137,7 @@ public:
 
 			setting = true;
 			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-			undo_redo->create_action(TTR("Anim Change Keyframe Time"), UndoRedo::MERGE_ENDS);
+			undo_redo->create_action(TTR("Anim Change Keyframe Time"));
 
 			Variant val = animation->track_get_key_value(track, key);
 			float trans = animation->track_get_key_transition(track, key);
@@ -572,9 +572,9 @@ public:
 
 		if (use_fps && animation->get_step() > 0) {
 			float max_frame = animation->get_length() / animation->get_step();
-			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("frame"), PROPERTY_HINT_RANGE, "0," + rtos(max_frame) + ",1"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("frame"), PROPERTY_HINT_RANGE, "0," + rtos(max_frame) + ",1,hide_grabber"));
 		} else {
-			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("time"), PROPERTY_HINT_RANGE, "0," + rtos(animation->get_length()) + ",0.01"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("time"), PROPERTY_HINT_RANGE, "0," + rtos(animation->get_length()) + ",0.01,hide_grabber"));
 		}
 
 		switch (animation->track_get_type(track)) {
@@ -1955,7 +1955,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_step(0.001);
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
-	length->set_hide_slider(true);
+	length->set_hide_mode(EditorSpinSlider::HIDE_MODE_SLIDER);
 	length->set_tooltip_text(TTR("Animation length (seconds)"));
 	length->connect("value_changed", callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
 	len_hb->add_child(length);
@@ -6674,7 +6674,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_min(0);
 	step->set_max(1000000);
 	step->set_step(0.001);
-	step->set_hide_slider(true);
+	step->set_hide_mode(EditorSpinSlider::HIDE_MODE_SLIDER);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip_text(TTR("Animation step value."));
 	bottom_hb->add_child(step);

@@ -38,6 +38,14 @@
 class EditorSpinSlider : public Range {
 	GDCLASS(EditorSpinSlider, Range);
 
+public:
+	enum HideMode {
+		HIDE_MODE_NONE,
+		HIDE_MODE_SLIDER,
+		HIDE_MODE_GRABBER,
+	};
+
+private:
 	String label;
 	String suffix;
 	int updown_offset = -1;
@@ -68,7 +76,7 @@ class EditorSpinSlider : public Range {
 	bool value_input_just_closed = false;
 	bool value_input_dirty = false;
 
-	bool hide_slider = false;
+	HideMode hide_mode = HIDE_MODE_NONE;
 	bool flat = false;
 
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
@@ -101,8 +109,8 @@ public:
 	void set_suffix(const String &p_suffix);
 	String get_suffix() const;
 
-	void set_hide_slider(bool p_hide);
-	bool is_hiding_slider() const;
+	void set_hide_mode(HideMode p_hide);
+	HideMode get_hide_mode() const;
 
 	void set_read_only(bool p_enable);
 	bool is_read_only() const;
@@ -118,5 +126,7 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	EditorSpinSlider();
 };
+
+VARIANT_ENUM_CAST(EditorSpinSlider::HideMode);
 
 #endif // EDITOR_SPIN_SLIDER_H

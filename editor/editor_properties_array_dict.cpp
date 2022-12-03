@@ -919,13 +919,13 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::INT: {
 					EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-					editor->setup(-100000, 100000, 1, true, true);
+					editor->setup(-100000, 100000, 1, EditorSpinSlider::HIDE_MODE_NONE, true, true);
 					prop = editor;
 
 				} break;
 				case Variant::FLOAT: {
 					EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
-					editor->setup(-100000, 100000, default_float_step, true, false, true, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER, false, true, true);
 					prop = editor;
 				} break;
 				case Variant::STRING: {
@@ -936,91 +936,91 @@ void EditorPropertyDictionary::update_property() {
 				// Math types.
 				case Variant::VECTOR2: {
 					EditorPropertyVector2 *editor = memnew(EditorPropertyVector2);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR2I: {
 					EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i);
-					editor->setup(-100000, 100000, true);
+					editor->setup(-100000, 100000);
 					prop = editor;
 
 				} break;
 				case Variant::RECT2: {
 					EditorPropertyRect2 *editor = memnew(EditorPropertyRect2);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::RECT2I: {
 					EditorPropertyRect2i *editor = memnew(EditorPropertyRect2i);
-					editor->setup(-100000, 100000, true);
+					editor->setup(-100000, 100000);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR3: {
 					EditorPropertyVector3 *editor = memnew(EditorPropertyVector3);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR3I: {
 					EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i);
-					editor->setup(-100000, 100000, true);
+					editor->setup(-100000, 100000);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR4: {
 					EditorPropertyVector4 *editor = memnew(EditorPropertyVector4);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR4I: {
 					EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
-					editor->setup(-100000, 100000, true);
+					editor->setup(-100000, 100000);
 					prop = editor;
 
 				} break;
 				case Variant::TRANSFORM2D: {
 					EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::PLANE: {
 					EditorPropertyPlane *editor = memnew(EditorPropertyPlane);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::QUATERNION: {
 					EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::AABB: {
 					EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::BASIS: {
 					EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::TRANSFORM3D: {
 					EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;
 				case Variant::PROJECTION: {
 					EditorPropertyProjection *editor = memnew(EditorPropertyProjection);
-					editor->setup(-100000, 100000, default_float_step, true);
+					editor->setup(-100000, 100000, default_float_step, EditorSpinSlider::HIDE_MODE_SLIDER);
 					prop = editor;
 
 				} break;

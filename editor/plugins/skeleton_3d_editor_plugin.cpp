@@ -64,7 +64,7 @@ void BoneTransformEditor::create_editors() {
 
 	// Position property.
 	position_property = memnew(EditorPropertyVector3());
-	position_property->setup(-10000, 10000, 0.001f, true);
+	position_property->setup(-10000, 10000, 0.001f, EditorSpinSlider::HIDE_MODE_SLIDER);
 	position_property->set_label("Position");
 	position_property->set_selectable(false);
 	position_property->connect("property_changed", callable_mp(this, &BoneTransformEditor::_value_changed));
@@ -73,7 +73,7 @@ void BoneTransformEditor::create_editors() {
 
 	// Rotation property.
 	rotation_property = memnew(EditorPropertyQuaternion());
-	rotation_property->setup(-10000, 10000, 0.001f, true);
+	rotation_property->setup(-10000, 10000, 0.001f, EditorSpinSlider::HIDE_MODE_SLIDER);
 	rotation_property->set_label("Rotation");
 	rotation_property->set_selectable(false);
 	rotation_property->connect("property_changed", callable_mp(this, &BoneTransformEditor::_value_changed));
@@ -82,7 +82,7 @@ void BoneTransformEditor::create_editors() {
 
 	// Scale property.
 	scale_property = memnew(EditorPropertyVector3());
-	scale_property->setup(-10000, 10000, 0.001f, true);
+	scale_property->setup(-10000, 10000, 0.001f, EditorSpinSlider::HIDE_MODE_SLIDER);
 	scale_property->set_label("Scale");
 	scale_property->set_selectable(false);
 	scale_property->connect("property_changed", callable_mp(this, &BoneTransformEditor::_value_changed));
@@ -96,7 +96,7 @@ void BoneTransformEditor::create_editors() {
 
 	// Transform/Matrix property.
 	rest_matrix = memnew(EditorPropertyTransform3D());
-	rest_matrix->setup(-10000, 10000, 0.001f, true);
+	rest_matrix->setup(-10000, 10000, 0.001f, EditorSpinSlider::HIDE_MODE_SLIDER);
 	rest_matrix->set_label("Transform");
 	rest_matrix->set_selectable(false);
 	rest_section->get_vbox()->add_child(rest_matrix);

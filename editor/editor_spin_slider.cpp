@@ -60,46 +60,50 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MouseButton::LEFT) {
-			if (mb->is_pressed()) {
-				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
-					//there is an updown, so use it.
-					if (mb->get_position().y < get_size().height / 2) {
-						set_value(get_value() + get_step());
+		if (hide_mode != HIDE_MODE_GRABBER) {
+			if (mb->get_button_index() == MouseButton::LEFT) {
+				if (mb->is_pressed()) {
+					if (updown_offset != -1 && mb->get_position().x > updown_offset) {
+						//there is an updown, so use it.
+						if (mb->get_position().y < get_size().height / 2) {
+							set_value(get_value() + get_step());
+						} else {
+							set_value(get_value() - get_step());
+						}
+						return;
 					} else {
-						set_value(get_value() - get_step());
+						grabbing_spinner_attempt = true;
+						grabbing_spinner_dist_cache = 0;
+						pre_grab_value = get_value();
+						grabbing_spinner = false;
+						grabbing_spinner_mouse_pos = get_global_mouse_position();
 					}
-					return;
 				} else {
-					grabbing_spinner_attempt = true;
-					grabbing_spinner_dist_cache = 0;
-					pre_grab_value = get_value();
-					grabbing_spinner = false;
-					grabbing_spinner_mouse_pos = get_global_mouse_position();
-				}
-			} else {
-				if (grabbing_spinner_attempt) {
-					if (grabbing_spinner) {
-						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-						Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
-						queue_redraw();
-					} else {
-						_focus_entered();
-					}
+					if (grabbing_spinner_attempt) {
+						if (grabbing_spinner) {
+							Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+							Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
+							queue_redraw();
+						} else {
+							_focus_entered();
+						}
 
-					grabbing_spinner = false;
-					grabbing_spinner_attempt = false;
+						grabbing_spinner = false;
+						grabbing_spinner_attempt = false;
+					}
+				}
+			} else if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+				if (grabber->is_visible()) {
+					call_deferred(SNAME("queue_redraw"));
 				}
 			}
-		} else if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-			if (grabber->is_visible()) {
-				call_deferred(SNAME("queue_redraw"));
-			}
+		} else if (mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
+			_focus_entered();
 		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid()) {
+	if (mm.is_valid() && hide_mode != HIDE_MODE_GRABBER) {
 		if (grabbing_spinner_attempt) {
 			double diff_x = mm->get_relative().x;
 			if (mm->is_shift_pressed() && grabbing_spinner) {
@@ -149,7 +153,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
-	if (read_only) {
+	if (read_only || hide_mode == HIDE_MODE_GRABBER) {
 		return;
 	}
 
@@ -199,6 +203,10 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
+	if (hide_mode == HIDE_MODE_GRABBER) {
+		return;
+	}
+
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !is_read_only()) {
 		double step = get_step();
@@ -359,6 +367,10 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 	TS->free_rid(num_rid);
 
+	if (hide_mode != HIDE_MODE_NONE) {
+		return;
+	}
+
 	if (get_step() == 1) {
 		Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 		int updown_vofs = (size.height - updown2->get_height()) / 2;
@@ -375,7 +387,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 		if (grabber->is_visible()) {
 			grabber->hide();
 		}
-	} else if (!hide_slider) {
+	} else {
 		const int grabber_w = 4 * EDSCALE;
 		const int width = size.width - sb->get_minimum_size().width - grabber_w;
 		const int ofs = sb->get_offset().x;
@@ -500,13 +512,13 @@ Size2 EditorSpinSlider::get_minimum_size() const {
 	return ms;
 }
 
-void EditorSpinSlider::set_hide_slider(bool p_hide) {
-	hide_slider = p_hide;
+void EditorSpinSlider::set_hide_mode(HideMode p_hide_mode) {
+	hide_mode = p_hide_mode;
 	queue_redraw();
 }
 
-bool EditorSpinSlider::is_hiding_slider() const {
-	return hide_slider;
+EditorSpinSlider::HideMode EditorSpinSlider::get_hide_mode() const {
+	return hide_mode;
 }
 
 void EditorSpinSlider::set_label(const String &p_label) {
@@ -641,14 +653,18 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flat", "flat"), &EditorSpinSlider::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &EditorSpinSlider::is_flat);
 
-	ClassDB::bind_method(D_METHOD("set_hide_slider", "hide_slider"), &EditorSpinSlider::set_hide_slider);
-	ClassDB::bind_method(D_METHOD("is_hiding_slider"), &EditorSpinSlider::is_hiding_slider);
+	ClassDB::bind_method(D_METHOD("set_hide_mode", "hide_mode"), &EditorSpinSlider::set_hide_mode);
+	ClassDB::bind_method(D_METHOD("get_hide_mode"), &EditorSpinSlider::get_hide_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hide_mode", PROPERTY_HINT_ENUM, "None,Slider,Grabber"), "set_hide_mode", "get_hide_mode");
+
+	BIND_ENUM_CONSTANT(HIDE_MODE_NONE);
+	BIND_ENUM_CONSTANT(HIDE_MODE_SLIDER);
+	BIND_ENUM_CONSTANT(HIDE_MODE_GRABBER);
 }
 
 void EditorSpinSlider::_ensure_input_popup() {
