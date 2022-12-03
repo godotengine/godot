@@ -1485,7 +1485,7 @@ void fragment_shader(in SceneData scene_data) {
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
 		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
 
-		specular_light *= env.x * f0 + env.y * clamp(50.0 * f0.g, 0.0, 1.0);
+		specular_light *= env.x * f0 + env.y * clamp(50.0 * f0.g, metallic, 1.0);
 #endif
 	}
 
