@@ -288,11 +288,9 @@ vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 lig
 
 #endif
 
-#define SHADOW_TEST(m_uv)                              \
-	{                                                  \
-		highp float sd = SHADOW_DEPTH(m_uv);           \
-		shadow += step(sd, shadow_uv.z / shadow_uv.w); \
-	}
+/* clang-format off */
+#define SHADOW_TEST(m_uv) { highp float sd = SHADOW_DEPTH(m_uv); shadow += step(sd, shadow_uv.z / shadow_uv.w); }
+/* clang-format on */
 
 //float distance = length(shadow_pos);
 vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
@@ -332,7 +330,7 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 		shadow /= 13.0;
 	}
 
-	vec4 shadow_color = unpackUnorm4x8(light_array[light_base].shadow_color);
+	vec4 shadow_color = godot_unpackUnorm4x8(light_array[light_base].shadow_color);
 #ifdef LIGHT_CODE_USED
 	shadow_color.rgb *= shadow_modulate;
 #endif
@@ -499,7 +497,7 @@ void main() {
 
 	if (specular_shininess_used || (using_light && normal_used && bool(draw_data[draw_data_instance].flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
 		specular_shininess = texture(specular_texture, uv);
-		specular_shininess *= unpackUnorm4x8(draw_data[draw_data_instance].specular_shininess);
+		specular_shininess *= godot_unpackUnorm4x8(draw_data[draw_data_instance].specular_shininess);
 		specular_shininess_used = true;
 	} else {
 		specular_shininess = vec4(1.0);
