@@ -280,6 +280,8 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("debug");
 	presets.insert("release");
 	presets.insert("template");
+	presets.insert("double");
+	presets.insert("single");
 	presets.insert("32");
 	presets.insert("64");
 	presets.insert("movie");
