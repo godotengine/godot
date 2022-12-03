@@ -1018,7 +1018,7 @@ void TreeItem::set_as_cursor(int p_column) {
 	if (tree->select_mode != Tree::SELECT_MULTI) {
 		return;
 	}
-	if (tree->selected_col == p_column) {
+	if (tree->selected_item == this && tree->selected_col == p_column) {
 		return;
 	}
 	tree->selected_item = this;
