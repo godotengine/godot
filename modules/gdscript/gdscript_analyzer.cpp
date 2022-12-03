@@ -196,8 +196,11 @@ Error GDScriptAnalyzer::check_class_member_name_conflict(const GDScriptParser::C
 	while (current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::CLASS) {
 		GDScriptParser::ClassNode *current_class_node = current_data_type->class_type;
 		if (has_member_name_conflict_in_script_class(p_member_name, current_class_node, p_member_node)) {
-			push_error(vformat(R"(The member "%s" already exists in parent class %s.)", p_member_name, current_class_node->identifier->name),
-					p_member_node);
+			String parent_class_name = current_class_node->fqcn;
+			if (current_class_node->identifier != nullptr) {
+				parent_class_name = current_class_node->identifier->name;
+			}
+			push_error(vformat(R"(The member "%s" already exists in parent class %s.)", p_member_name, parent_class_name), p_member_node);
 			return ERR_PARSE_ERROR;
 		}
 		current_data_type = &current_class_node->base_type;
