@@ -931,6 +931,7 @@ class ViewportNavigationControl : public Control {
 	SpatialEditorViewport *viewport = nullptr;
 	Vector2i focused_mouse_start;
 	Vector2 focused_pos;
+	bool hovered = false;
 	int focused_index = -1;
 	SpatialEditorViewport::NavigationMode nav_mode = SpatialEditorViewport::NavigationMode::NAVIGATION_NONE;
 
@@ -941,6 +942,7 @@ protected:
 	void _notification(int p_what);
 	void _gui_input(Ref<InputEvent> p_event);
 	void _draw();
+	void _on_mouse_entered();
 	void _on_mouse_exited();
 	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
 	void _process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position);
