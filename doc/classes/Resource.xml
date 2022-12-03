@@ -82,6 +82,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="resource_dedicated_server_export_type" type="int" setter="set_dedicated_server_export_type" getter="get_dedicated_server_export_type" enum="Resource.DedicatedServerExportType" default="0">
+			Controls how this resource should be handled in a dedicated server export.
+		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" default="false">
 			If [code]true[/code], the resource is duplicated for each instance of all scenes using it. At run-time, the resource can be modified in one scene without affecting other instances (see [method PackedScene.instantiate]).
 			[b]Note:[/b] Changing this property at run-time has no effect on already created duplicate resources.
@@ -107,4 +110,12 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="DEDICATED_SERVER_EXPORT_STRIP" value="0" enum="DedicatedServerExportType">
+			Replace this resource with a placeholder (if available) in a dedicated server export.
+		</constant>
+		<constant name="DEDICATED_SERVER_EXPORT_KEEP" value="1" enum="DedicatedServerExportType">
+			Keep this resource in a dedicated server export.
+		</constant>
+	</constants>
 </class>

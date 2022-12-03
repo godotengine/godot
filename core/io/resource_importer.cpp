@@ -62,6 +62,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 
 	int lines = 0;
 	String error_text;
+	String section;
 	bool path_found = false; //first match must have priority
 	while (true) {
 		assign = Variant();
@@ -76,7 +77,14 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			return err;
 		}
 
-		if (!assign.is_empty()) {
+		if (assign.is_empty()) {
+			if (!next_tag.name.is_empty()) {
+				section = next_tag.name;
+			}
+			continue;
+		}
+
+		if (section == "remap") {
 			if (!path_found && assign.begins_with("path.") && r_path_and_type.path.is_empty()) {
 				String feature = assign.get_slicec('.', 1);
 				if (OS::get_singleton()->has_feature(feature)) {
@@ -103,8 +111,15 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 				}
 			}
 
-		} else if (next_tag.name != "remap") {
+		} else {
+#ifdef TOOLS_ENABLED
+			if (section == "params" && assign == "dedicated_server/server_export_type") {
+				r_path_and_type.dedicated_server_export_type = (Resource::DedicatedServerExportType)(int)value;
+				break;
+			}
+#else
 			break;
+#endif // TOOLS_ENABLED
 		}
 	}
 
@@ -141,6 +156,7 @@ Ref<Resource> ResourceFormatImporter::load(const String &p_path, const String &p
 	if (res.is_valid()) {
 		res->set_import_last_modified_time(res->get_last_modified_time()); //pass this, if used
 		res->set_import_path(pat.path);
+		res->set_dedicated_server_export_type(pat.dedicated_server_export_type);
 	}
 #endif
 
@@ -475,6 +491,15 @@ void ResourceImporter::_bind_methods() {
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
 }
+
+#ifdef TOOLS_ENABLED
+void ResourceImporter::get_editor_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) {
+	get_import_options(p_path, r_options, p_preset);
+
+	// Add default editor options.
+	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "dedicated_server/server_export_type", PROPERTY_HINT_ENUM, "Strip,Keep"), 0));
+}
+#endif
 
 void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(p_importer.is_null());

@@ -659,6 +659,9 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 		return p_path; // do none
 	}
 
+	String import_path = p_path + ".import";
+	bool import_exists = FileAccess::exists(import_path);
+
 	// Check if a cache exists
 	if (export_cache.has(p_path)) {
 		FileExportCache &fec = export_cache[p_path];
@@ -667,20 +670,22 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 			// Destination file exists (was not erased) or not needed
 
 			uint64_t mod_time = FileAccess::get_modified_time(p_path);
-			if (fec.source_modified_time == mod_time) {
+			uint64_t import_mod_time = import_exists ? FileAccess::get_modified_time(import_path) : 0;
+			if (fec.source_modified_time == mod_time && fec.import_modified_time == import_mod_time) {
 				// Cached (modified time matches).
 				fec.used = true;
 				return fec.saved_path.is_empty() ? p_path : fec.saved_path;
 			}
 
 			String md5 = FileAccess::get_md5(p_path);
-			if (FileAccess::exists(p_path + ".import")) {
+			if (import_exists) {
 				// Also consider the import file in the string
-				md5 += FileAccess::get_md5(p_path + ".import");
+				md5 += FileAccess::get_md5(import_path);
 			}
 			if (fec.source_md5 == md5) {
 				// Cached (md5 matches).
 				fec.source_modified_time = mod_time;
+				fec.import_modified_time = import_mod_time;
 				fec.used = true;
 				return fec.saved_path.is_empty() ? p_path : fec.saved_path;
 			}
@@ -690,11 +695,12 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 	FileExportCache fec;
 	fec.used = true;
 	fec.source_modified_time = FileAccess::get_modified_time(p_path);
+	fec.import_modified_time = import_exists ? FileAccess::get_modified_time(import_path) : 0;
 
 	String md5 = FileAccess::get_md5(p_path);
-	if (FileAccess::exists(p_path + ".import")) {
+	if (import_exists) {
 		// Also consider the import file in the string
-		md5 += FileAccess::get_md5(p_path + ".import");
+		md5 += FileAccess::get_md5(import_path);
 	}
 
 	fec.source_md5 = md5;
@@ -963,12 +969,20 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			String l = f->get_line();
 			while (l != String()) {
 				Vector<String> fields = l.split("::");
-				if (fields.size() == 4) {
+				if (fields.size() >= 4) {
 					FileExportCache fec;
 					String path = fields[0];
 					fec.source_md5 = fields[1].strip_edges();
 					fec.source_modified_time = fields[2].strip_edges().to_int();
-					fec.saved_path = fields[3];
+					if (fields.size() == 5) {
+						fec.import_modified_time = fields[3].strip_edges().to_int();
+						fec.saved_path = fields[4];
+					} else {
+						// Handle file_cache files from older versions that only
+						// have 4 fields (no import_modified_time).
+						fec.import_modified_time = 0;
+						fec.saved_path = fields[3];
+					}
 					fec.used = false; // Assume unused until used.
 					export_cache[path] = fec;
 				}
@@ -1184,7 +1198,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		if (f.is_valid()) {
 			for (const KeyValue<String, FileExportCache> &E : export_cache) {
 				if (E.value.used) { // May be old, unused
-					String l = E.key + "::" + E.value.source_md5 + "::" + itos(E.value.source_modified_time) + "::" + E.value.saved_path;
+					String l = E.key + "::" + E.value.source_md5 + "::" + itos(E.value.source_modified_time) + "::" + itos(E.value.import_modified_time) + "::" + E.value.saved_path;
 					f->store_line(l);
 				}
 			}
@@ -1213,6 +1227,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				custom_list.push_back(f);
 			}
 		}
+	}
+	for (int i = 0; i < export_plugins.size(); i++) {
+		custom_list.append_array(export_plugins[i]->_get_export_features(Ref<EditorExportPlatform>(this), p_debug));
 	}
 
 	ProjectSettings::CustomMap custom_map;

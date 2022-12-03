@@ -438,6 +438,15 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("set_dedicated_server_export_type", "server_export_type"), &Resource::set_dedicated_server_export_type);
+	ClassDB::bind_method(D_METHOD("get_dedicated_server_export_type"), &Resource::get_dedicated_server_export_type);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "resource_dedicated_server_export_type", PROPERTY_HINT_ENUM, "Strip,Keep"), "set_dedicated_server_export_type", "get_dedicated_server_export_type");
+
+	BIND_ENUM_CONSTANT(DEDICATED_SERVER_EXPORT_STRIP);
+	BIND_ENUM_CONSTANT(DEDICATED_SERVER_EXPORT_KEEP);
+#endif
+
 	MethodInfo get_rid_bind("_get_rid");
 	get_rid_bind.return_val.type = Variant::RID;
 

@@ -103,6 +103,7 @@ private:
 
 	struct FileExportCache {
 		uint64_t source_modified_time = 0;
+		uint64_t import_modified_time = 0;
 		String source_md5;
 		String saved_path;
 		bool used = false;

@@ -43,6 +43,9 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		String group_file;
 		Variant metadata;
 		uint64_t uid = ResourceUID::INVALID_ID;
+#ifdef TOOLS_ENABLED
+		Resource::DedicatedServerExportType dedicated_server_export_type;
+#endif
 	};
 
 	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid = nullptr) const;
@@ -145,6 +148,10 @@ public:
 	virtual Error import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
+
+#ifdef TOOLS_ENABLED
+	void get_editor_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0);
+#endif
 };
 
 VARIANT_ENUM_CAST(ResourceImporter::ImportOrder);

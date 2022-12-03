@@ -1351,6 +1351,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	ResourceUID::get_singleton()->load_from_cache(); // load UUIDs from cache.
 
+	if (ProjectSettings::get_singleton()->has_custom_feature("dedicated_server")) {
+		audio_driver = "Dummy";
+		display_driver = "headless";
+	}
+
 	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/multithreaded_server/rid_pool_prealloc",
 			PropertyInfo(Variant::INT,
 					"memory/limits/multithreaded_server/rid_pool_prealloc",

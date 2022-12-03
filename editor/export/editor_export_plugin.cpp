@@ -184,6 +184,12 @@ String EditorExportPlugin::_get_name() const {
 	return ret;
 }
 
+PackedStringArray EditorExportPlugin::_get_export_features(const Ref<EditorExportPlatform> &p_platform, bool p_debug) const {
+	PackedStringArray ret;
+	GDVIRTUAL_CALL(_get_export_features, p_platform, p_debug, ret);
+	return ret;
+}
+
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
 }
 

@@ -31,6 +31,7 @@
 #include "editor_export_platform_pc.h"
 
 #include "core/config/project_settings.h"
+#include "editor/plugins/dedicated_server_export_plugin.h"
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	if (p_preset->get("texture_format/s3tc")) {
@@ -61,6 +62,8 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/no_bptc_fallbacks"), true));
+
+	DedicatedServerExportPlugin::add_export_options(r_options);
 }
 
 String EditorExportPlatformPC::get_name() const {

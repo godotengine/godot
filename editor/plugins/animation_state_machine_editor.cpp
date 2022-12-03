@@ -2144,7 +2144,7 @@ void EditorAnimationMultiTransitionEdit::_get_property_list(List<PropertyInfo> *
 		p_list->push_back(prop_transition_path);
 
 		for (List<PropertyInfo>::Element *F = plist.front(); F; F = F->next()) {
-			if (F->get().name == "script" || F->get().name == "resource_name" || F->get().name == "resource_path" || F->get().name == "resource_local_to_scene") {
+			if (F->get().name == "script" || F->get().name == "resource_name" || F->get().name == "resource_path" || F->get().name == "resource_local_to_scene" || F->get().name == "resource_dedicated_server_export_type") {
 				continue;
 			}
 

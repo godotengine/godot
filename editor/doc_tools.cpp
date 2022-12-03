@@ -432,7 +432,7 @@ void DocTools::generate(bool p_basic_types) {
 				Variant default_value;
 
 				if (name == "EditorSettings") {
-					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
+					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "resource_dedicated_server_export_type" || E.name == "script") {
 						// Don't include spurious properties in the generated EditorSettings class reference.
 						continue;
 					}
