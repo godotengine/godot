@@ -8408,7 +8408,7 @@ Node3DEditor::Node3DEditor() {
 	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity", 0.9);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT, "editors/3d/manipulator_gizmo_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"));
 	EDITOR_DEF_RST("editors/3d/navigation/show_viewport_rotation_gizmo", true);
-	EDITOR_DEF_RST("editors/3d/navigation/show_viewport_navigation_gizmo", DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_TOUCHSCREEN));
+	EDITOR_DEF_RST("editors/3d/navigation/show_viewport_navigation_gizmo", DisplayServer::get_singleton()->screen_is_touchscreen());
 
 	current_hover_gizmo_handle = -1;
 	current_hover_gizmo_handle_secondary = false;
