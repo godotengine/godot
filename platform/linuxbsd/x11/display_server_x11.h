@@ -64,11 +64,19 @@
 #include "../freedesktop_screensaver.h"
 #endif
 
-#include <X11/Xcursor/Xcursor.h>
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xrandr.h>
+#include <X11/Xutil.h>
 #include <X11/keysym.h>
+
+#include "dynwrappers/xlib-so_wrap.h"
+
+#include "dynwrappers/xcursor-so_wrap.h"
+#include "dynwrappers/xext-so_wrap.h"
+#include "dynwrappers/xinerama-so_wrap.h"
+#include "dynwrappers/xinput2-so_wrap.h"
+#include "dynwrappers/xrandr-so_wrap.h"
+#include "dynwrappers/xrender-so_wrap.h"
 
 typedef struct _xrr_monitor_info {
 	Atom name;
