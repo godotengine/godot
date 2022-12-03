@@ -374,6 +374,16 @@ bool OS::has_feature(const String &p_feature) {
 #endif // DEBUG_ENABLED
 #endif // TOOLS_ENABLED
 
+#ifdef REAL_T_IS_DOUBLE
+	if (p_feature == "double") {
+		return true;
+	}
+#else
+	if (p_feature == "single") {
+		return true;
+	}
+#endif // REAL_T_IS_DOUBLE
+
 	if (sizeof(void *) == 8 && p_feature == "64") {
 		return true;
 	}
