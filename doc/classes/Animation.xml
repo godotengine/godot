@@ -596,15 +596,12 @@
 			[b]Note:[/b] The result value is always normalized and may not match the key value.
 		</constant>
 		<constant name="UPDATE_CONTINUOUS" value="0" enum="UpdateMode">
-			Update between keyframes.
+			Update between keyframes and hold the value.
 		</constant>
 		<constant name="UPDATE_DISCRETE" value="1" enum="UpdateMode">
-			Update at the keyframes and hold the value.
-		</constant>
-		<constant name="UPDATE_TRIGGER" value="2" enum="UpdateMode">
 			Update at the keyframes.
 		</constant>
-		<constant name="UPDATE_CAPTURE" value="3" enum="UpdateMode">
+		<constant name="UPDATE_CAPTURE" value="2" enum="UpdateMode">
 			Same as linear interpolation, but also interpolates from the current value (i.e. dynamically at runtime) if the first key isn't at 0 seconds.
 		</constant>
 		<constant name="LOOP_NONE" value="0" enum="LoopMode">

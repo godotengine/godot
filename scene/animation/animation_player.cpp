@@ -664,7 +664,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					}
 				}
 
-				if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE || (p_delta == 0 && update_mode == Animation::UPDATE_DISCRETE)) { //delta == 0 means seek
+				if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) {
 					Variant value = a->value_track_interpolate(i, p_time);
 
 					if (value == Variant()) {
@@ -681,15 +681,23 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						pa->value_accum = Animation::interpolate_variant(pa->value_accum, value, p_interp);
 					}
 
-				} else if (p_is_current && p_delta != 0) {
+				} else {
 					List<int> indices;
-					if (p_started) {
-						int first_key = a->track_find_key(i, p_prev_time, true);
-						if (first_key >= 0) {
-							indices.push_back(first_key);
+
+					if (p_seeked) {
+						int found_key = a->track_find_key(i, p_time);
+						if (found_key >= 0) {
+							indices.push_back(found_key);
 						}
+					} else {
+						if (p_started) {
+							int first_key = a->track_find_key(i, p_prev_time, true);
+							if (first_key >= 0) {
+								indices.push_back(first_key);
+							}
+						}
+						a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 					}
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 
 					for (int &F : indices) {
 						Variant value = a->track_get_key_value(i, F);
@@ -740,21 +748,26 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				if (!nc->node) {
 					continue;
 				}
-				if (p_delta == 0) {
-					continue;
-				}
 				if (!p_is_current) {
 					break;
 				}
 
 				List<int> indices;
-				if (p_started) {
-					int first_key = a->track_find_key(i, p_prev_time, true);
-					if (first_key >= 0) {
-						indices.push_back(first_key);
+
+				if (p_seeked) {
+					int found_key = a->track_find_key(i, p_time);
+					if (found_key >= 0) {
+						indices.push_back(found_key);
 					}
+				} else {
+					if (p_started) {
+						int first_key = a->track_find_key(i, p_prev_time, true);
+						if (first_key >= 0) {
+							indices.push_back(first_key);
+						}
+					}
+					a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 				}
-				a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 
 				for (int &E : indices) {
 					StringName method = a->method_track_get_name(i, E);
@@ -796,9 +809,6 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 			} break;
 			case Animation::TYPE_AUDIO: {
 				if (!nc->node) {
-					continue;
-				}
-				if (p_delta == 0) {
 					continue;
 				}
 
@@ -910,7 +920,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					continue;
 				}
 
-				if (p_delta == 0 || p_seeked) {
+				if (p_seeked) {
 					//seek
 					int idx = a->track_find_key(i, p_time);
 					if (idx < 0) {
@@ -1056,7 +1066,7 @@ void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 
 	accum_pass++;
 
-	_animation_process_data(c.current, p_delta, 1.0f, c.seeked && p_delta != 0, p_started);
+	_animation_process_data(c.current, p_delta, 1.0f, c.seeked, p_started);
 	if (p_delta != 0) {
 		c.seeked = false;
 	}
@@ -2135,7 +2145,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationPlayer::advance);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER), "set_current_animation", "get_current_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR), "set_current_animation", "get_current_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "assigned_animation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_assigned_animation", "get_assigned_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");

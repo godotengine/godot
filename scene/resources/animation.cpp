@@ -2709,7 +2709,7 @@ void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND(t->type != TYPE_VALUE);
-	ERR_FAIL_INDEX((int)p_mode, 4);
+	ERR_FAIL_INDEX((int)p_mode, 3);
 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	vt->update_mode = p_mode;
@@ -3896,7 +3896,6 @@ void Animation::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(UPDATE_CONTINUOUS);
 	BIND_ENUM_CONSTANT(UPDATE_DISCRETE);
-	BIND_ENUM_CONSTANT(UPDATE_TRIGGER);
 	BIND_ENUM_CONSTANT(UPDATE_CAPTURE);
 
 	BIND_ENUM_CONSTANT(LOOP_NONE);
