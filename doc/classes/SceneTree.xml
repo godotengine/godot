@@ -375,6 +375,7 @@
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
 			Call a group only once even if the call is executed many times.
+			[b]Note:[/b] Arguments are not taken into account when deciding whether the call is unique or not. Therefore when the same method is called with different arguments, only the first call will be performed.
 		</constant>
 		<constant name="STRETCH_MODE_DISABLED" value="0" enum="StretchMode">
 			No stretching.
