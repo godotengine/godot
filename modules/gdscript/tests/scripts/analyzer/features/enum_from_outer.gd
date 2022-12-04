@@ -1,5 +1,3 @@
-extends Node
-
 enum Named { VALUE_A, VALUE_B, VALUE_C = 42 }
 
 class Test:

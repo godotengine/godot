@@ -1299,15 +1299,17 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 			EnumNode::Value item;
 			GDScriptParser::IdentifierNode *identifier = parse_identifier();
 #ifdef DEBUG_ENABLED
-			for (MethodInfo &info : gdscript_funcs) {
-				if (info.name == identifier->name) {
-					push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "enum member", identifier->name, "built-in function");
+			if (!named) { // Named enum identifiers do not shadow anything since you can only access them with NamedEnum.ENUM_VALUE
+				for (MethodInfo &info : gdscript_funcs) {
+					if (info.name == identifier->name) {
+						push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "enum member", identifier->name, "built-in function");
+					}
 				}
-			}
-			if (Variant::has_utility_function(identifier->name)) {
-				push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "enum member", identifier->name, "built-in function");
-			} else if (ClassDB::class_exists(identifier->name)) {
-				push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "enum member", identifier->name, "global class");
+				if (Variant::has_utility_function(identifier->name)) {
+					push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "enum member", identifier->name, "built-in function");
+				} else if (ClassDB::class_exists(identifier->name)) {
+					push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "enum member", identifier->name, "global class");
+				}
 			}
 #endif
 			item.identifier = identifier;
@@ -4087,8 +4089,11 @@ String GDScriptParser::DataType::to_string() const {
 			}
 			return native_type.operator String();
 		}
-		case ENUM:
-			return enum_type.operator String() + " (enum)";
+		case ENUM: {
+			// native_type contains either the native class defining the enum
+			// or the fully qualified class name of the script defining the enum
+			return String(native_type).get_file(); // Remove path, keep filename
+		}
 		case RESOLVING:
 		case UNRESOLVED:
 			return "<unresolved type>";

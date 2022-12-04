@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Value of type "enum_local_var_assign_outer_with_wrong_enum_type.gd::InnerClass::MyEnum" cannot be assigned to a variable of type "enum_local_var_assign_outer_with_wrong_enum_type.gd::MyEnum".
