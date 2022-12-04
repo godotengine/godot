@@ -67,6 +67,7 @@ Node *PackedSceneGLTF::import_scene(const String &p_path, uint32_t p_flags,
 	r_state->use_legacy_names =
 			p_flags & EditorSceneImporter::IMPORT_USE_LEGACY_NAMES;
 	r_state->compress_flags = p_compress_flags;
+	r_state->set_create_animations(p_flags & EditorSceneImporter::IMPORT_ANIMATION);
 
 	Ref<GLTFDocument> gltf_document;
 	gltf_document.instance();
@@ -84,7 +85,7 @@ Node *PackedSceneGLTF::import_scene(const String &p_path, uint32_t p_flags,
 		gltf_document->_generate_scene_node(r_state, root, root, r_state->root_nodes[root_i]);
 	}
 	gltf_document->_process_mesh_instances(r_state, root);
-	if (r_state->animations.size()) {
+	if (r_state->get_create_animations() && r_state->animations.size()) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		root->add_child(ap);
 		ap->set_owner(root);

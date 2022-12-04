@@ -81,6 +81,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skeletons", "skeletons"), &GLTFState::set_skeletons);
 	ClassDB::bind_method(D_METHOD("get_skeleton_to_node"), &GLTFState::get_skeleton_to_node);
 	ClassDB::bind_method(D_METHOD("set_skeleton_to_node", "skeleton_to_node"), &GLTFState::set_skeleton_to_node);
+	ClassDB::bind_method(D_METHOD("get_create_animations"), &GLTFState::get_create_animations);
+	ClassDB::bind_method(D_METHOD("set_create_animations", "create_animations"), &GLTFState::set_create_animations);
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations);
 	ClassDB::bind_method(D_METHOD("get_scene_node", "idx"), &GLTFState::get_scene_node);
@@ -108,6 +110,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "unique_animation_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_unique_animation_names", "get_unique_animation_names"); // Set<String>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "skeletons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeletons", "get_skeletons"); // Vector<Ref<GLTFSkeleton>>
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "skeleton_to_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeleton_to_node", "get_skeleton_to_node"); // Map<GLTFSkeletonIndex,
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
 }
 
@@ -293,6 +296,14 @@ Dictionary GLTFState::get_skeleton_to_node() {
 
 void GLTFState::set_skeleton_to_node(Dictionary p_skeleton_to_node) {
 	GLTFTemplateConvert::set_from_dict(skeleton_to_node, p_skeleton_to_node);
+}
+
+bool GLTFState::get_create_animations() {
+	return create_animations;
+}
+
+void GLTFState::set_create_animations(bool p_create_animations) {
+	create_animations = p_create_animations;
 }
 
 Array GLTFState::get_animations() {

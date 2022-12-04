@@ -353,6 +353,7 @@
 		<method name="sort">
 			<description>
 				Sorts the array.
+				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort].
 				[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:
 				[codeblock]
 				var strings = ["string1", "string2", "string10", "string11"]
@@ -367,7 +368,8 @@
 			<description>
 				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
 				For two elements [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], element [code]b[/code] will be after element [code]a[/code] in the array.
-				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
+				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort_custom].
+				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Randomizing the return value will result in unexpected behavior.
 				[codeblock]
 				class MyCustomSorter:
 				    static func sort_ascending(a, b):
