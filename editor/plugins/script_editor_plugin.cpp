@@ -2528,7 +2528,7 @@ void ScriptEditor::reload_scripts(bool p_refresh_only) {
 			}
 
 			Ref<Script> scr = edited_res;
-			if (scr != nullptr) {
+			if (scr.is_valid()) {
 				Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 				ERR_CONTINUE(!rel_scr.is_valid());
 				scr->set_source_code(rel_scr->get_source_code());
@@ -2537,12 +2537,8 @@ void ScriptEditor::reload_scripts(bool p_refresh_only) {
 			}
 
 			Ref<TextFile> text_file = edited_res;
-			if (text_file != nullptr) {
-				Error err;
-				Ref<TextFile> rel_text_file = _load_text_file(text_file->get_path(), &err);
-				ERR_CONTINUE(!rel_text_file.is_valid());
-				text_file->set_text(rel_text_file->get_text());
-				text_file->set_last_modified_time(rel_text_file->get_last_modified_time());
+			if (text_file.is_valid()) {
+				text_file->reload_from_file();
 			}
 		}
 
