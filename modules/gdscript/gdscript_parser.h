@@ -185,8 +185,8 @@ public:
 				case BUILTIN:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
-				case ENUM:
-					return native_type == p_other.native_type && enum_type == p_other.enum_type;
+				case ENUM: // Enums use native_type to identify the enum and its base class.
+					return native_type == p_other.native_type;
 				case SCRIPT:
 					return script_type == p_other.script_type;
 				case CLASS:

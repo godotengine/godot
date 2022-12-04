@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Invalid argument for "enum_func()" function: argument 1 should be "enum_function_parameter_wrong_type.gd::MyEnum" but is "enum_function_parameter_wrong_type.gd::MyOtherEnum".
