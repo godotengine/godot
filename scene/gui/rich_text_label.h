@@ -657,6 +657,8 @@ public:
 	int get_content_height() const;
 	int get_content_width() const;
 
+	void scroll_to_selection();
+
 	VScrollBar *get_v_scroll_bar() { return vscroll; }
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;

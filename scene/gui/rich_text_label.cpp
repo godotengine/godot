@@ -4528,6 +4528,30 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 	}
 }
 
+void RichTextLabel::scroll_to_selection() {
+	if (selection.active && selection.from_frame && selection.from_line >= 0 && selection.from_line < (int)selection.from_frame->lines.size()) {
+		// Selected frame paragraph offset.
+		float line_offset = selection.from_frame->lines[selection.from_line].offset.y;
+
+		// Add wrapped line offset.
+		for (int i = 0; i < selection.from_frame->lines[selection.from_line].text_buf->get_line_count(); i++) {
+			Vector2i range = selection.from_frame->lines[selection.from_line].text_buf->get_line_range(i);
+			if (range.x <= selection.from_char && range.y >= selection.from_char) {
+				break;
+			}
+			line_offset += selection.from_frame->lines[selection.from_line].text_buf->get_line_size(i).y + theme_cache.line_separation;
+		}
+
+		// Add nested frame (e.g. table cell) offset.
+		ItemFrame *it = selection.from_frame;
+		while (it->parent_frame != nullptr) {
+			line_offset += it->parent_frame->lines[it->line].offset.y;
+			it = it->parent_frame;
+		}
+		vscroll->set_value(line_offset);
+	}
+}
+
 void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
 	_validate_line_caches();
 
@@ -4772,7 +4796,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 		char_idx = p_search_previous ? selection.from_char - 1 : selection.to_char;
 		if (!(p_search_previous && char_idx < 0) &&
 				_search_line(selection.from_frame, selection.from_line, p_string, char_idx, p_search_previous)) {
-			scroll_to_line(selection.from_frame->line + selection.from_line);
+			scroll_to_selection();
 			queue_redraw();
 			return true;
 		}
@@ -4797,7 +4821,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 
 				// Search for next element
 				if (_search_table(parent_table, parent_element, p_string, p_search_previous)) {
-					scroll_to_line(selection.from_frame->line + selection.from_line);
+					scroll_to_selection();
 					queue_redraw();
 					return true;
 				}
@@ -4821,7 +4845,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 		}
 
 		if (_search_line(main, current_line, p_string, char_idx, p_search_previous)) {
-			scroll_to_line(current_line);
+			scroll_to_selection();
 			queue_redraw();
 			return true;
 		}
@@ -5309,6 +5333,7 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("scroll_to_line", "line"), &RichTextLabel::scroll_to_line);
 	ClassDB::bind_method(D_METHOD("scroll_to_paragraph", "paragraph"), &RichTextLabel::scroll_to_paragraph);
+	ClassDB::bind_method(D_METHOD("scroll_to_selection"), &RichTextLabel::scroll_to_selection);
 
 	ClassDB::bind_method(D_METHOD("set_tab_size", "spaces"), &RichTextLabel::set_tab_size);
 	ClassDB::bind_method(D_METHOD("get_tab_size"), &RichTextLabel::get_tab_size);
