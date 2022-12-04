@@ -3714,7 +3714,13 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 	result.builtin_type = p_value.get_type();
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT; // Constant has explicit type.
 
-	if (p_value.get_type() == Variant::OBJECT) {
+	if (p_value.get_type() == Variant::NIL) {
+		// A null value is a variant, not void.
+		result.kind = GDScriptParser::DataType::VARIANT;
+	} else if (p_value.get_type() == Variant::OBJECT) {
+		// Object is treated as a native type, not a builtin type.
+		result.kind = GDScriptParser::DataType::NATIVE;
+
 		Object *obj = p_value;
 		if (!obj) {
 			return GDScriptParser::DataType();
