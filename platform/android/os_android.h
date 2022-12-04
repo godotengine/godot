@@ -62,9 +62,26 @@ private:
 
 	MainLoop *main_loop = nullptr;
 
+	struct FontInfo {
+		String font_name;
+		HashSet<String> lang;
+		HashSet<String> script;
+		int weight = 400;
+		int stretch = 100;
+		bool italic = false;
+		int priority = 0;
+		String filename;
+	};
+
+	HashMap<String, String> font_aliases;
+	List<FontInfo> fonts;
+	HashSet<String> font_names;
+	bool font_config_loaded = false;
+
 	GodotJavaWrapper *godot_java = nullptr;
 	GodotIOJavaWrapper *godot_io_java = nullptr;
 
+	void _load_system_font_config();
 	String get_system_property(const char *key) const;
 
 public:
@@ -114,6 +131,10 @@ public:
 	ANativeWindow *get_native_window() const;
 
 	virtual Error shell_open(String p_uri) override;
+
+	virtual Vector<String> get_system_fonts() const override;
+	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
+	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir() const override;
 	virtual String get_data_path() const override;

@@ -690,7 +690,7 @@ void FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
 	_store_buffer(buff);
 }
 
-Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_error) {
+Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_error) {
 	Ref<FileAccess> f = FileAccess::open(p_path, READ, r_error);
 	if (f.is_null()) {
 		if (r_error) { // if error requested, do not throw error
@@ -706,7 +706,7 @@ Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_err
 
 String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 	Error err;
-	Vector<uint8_t> array = get_file_as_array(p_path, &err);
+	Vector<uint8_t> array = get_file_as_bytes(p_path, &err);
 	if (r_error) {
 		*r_error = err;
 	}
@@ -809,6 +809,9 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted_with_pass", "path", "mode_flags", "pass"), &FileAccess::open_encrypted_pass);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &FileAccess::open_compressed, DEFVAL(0));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_open_error"), &FileAccess::get_open_error);
+
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_bytes", "path"), &FileAccess::_get_file_as_bytes);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_string", "path"), &FileAccess::_get_file_as_string);
 
 	ClassDB::bind_method(D_METHOD("flush"), &FileAccess::flush);
 	ClassDB::bind_method(D_METHOD("get_path"), &FileAccess::get_path);
