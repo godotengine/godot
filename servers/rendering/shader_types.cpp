@@ -100,6 +100,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["NODE_POSITION_WORLD"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CAMERA_POSITION_WORLD"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CAMERA_DIRECTION_WORLD"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CAMERA_VISIBLE_LAYERS"] = ShaderLanguage::TYPE_UINT;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["NODE_POSITION_VIEW"] = ShaderLanguage::TYPE_VEC3;
 
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_INDEX"] = constt(ShaderLanguage::TYPE_INT);
@@ -147,6 +148,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["NODE_POSITION_WORLD"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CAMERA_POSITION_WORLD"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CAMERA_DIRECTION_WORLD"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CAMERA_VISIBLE_LAYERS"] = ShaderLanguage::TYPE_UINT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["NODE_POSITION_VIEW"] = ShaderLanguage::TYPE_VEC3;
 
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_INDEX"] = constt(ShaderLanguage::TYPE_INT);
