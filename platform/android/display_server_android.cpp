@@ -316,9 +316,6 @@ DisplayServer::WindowID DisplayServerAndroid::get_window_at_screen_position(cons
 int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
 	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, 0);
 	switch (p_handle_type) {
-		case DISPLAY_HANDLE: {
-			return 0; // Not supported.
-		}
 		case WINDOW_HANDLE: {
 			return reinterpret_cast<int64_t>(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
 		}
@@ -326,8 +323,17 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 			return 0; // Not supported.
 		}
 #ifdef GLES3_ENABLED
+		case DISPLAY_HANDLE: {
+			if (rendering_driver == "opengl3") {
+				return reinterpret_cast<int64_t>(eglGetCurrentDisplay());
+			}
+			return 0;
+		}
 		case OPENGL_CONTEXT: {
-			return reinterpret_cast<int64_t>(eglGetCurrentContext());
+			if (rendering_driver == "opengl3") {
+				return reinterpret_cast<int64_t>(eglGetCurrentContext());
+			}
+			return 0;
 		}
 #endif
 		default: {
