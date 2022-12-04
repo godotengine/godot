@@ -222,8 +222,8 @@ void JoypadLinux::monitor_joypads() {
 			}
 		}
 		closedir(input_directory);
+		usleep(1000000); // 1s
 	}
-	usleep(1000000); // 1s
 }
 
 void JoypadLinux::close_joypads() {
