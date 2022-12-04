@@ -219,6 +219,22 @@ Error GDScriptAnalyzer::check_class_member_name_conflict(const GDScriptParser::C
 	return OK;
 }
 
+void GDScriptAnalyzer::get_class_node_current_scope_classes(GDScriptParser::ClassNode *p_node, List<GDScriptParser::ClassNode *> *p_list) {
+	if (p_list->find(p_node) != nullptr) {
+		return;
+	}
+	p_list->push_back(p_node);
+
+	// Prioritize node base type over its outer class
+	if (p_node->base_type.class_type != nullptr) {
+		get_class_node_current_scope_classes(p_node->base_type.class_type, p_list);
+	}
+
+	if (p_node->outer != nullptr) {
+		get_class_node_current_scope_classes(p_node->outer, p_list);
+	}
+}
+
 Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive) {
 	if (p_class->base_type.is_set()) {
 		// Already resolved
@@ -327,9 +343,10 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 				base.native_type = name;
 			} else {
 				// Look for other classes in script.
-				GDScriptParser::ClassNode *look_class = p_class;
 				bool found = false;
-				while (look_class != nullptr) {
+				List<GDScriptParser::ClassNode *> script_classes;
+				get_class_node_current_scope_classes(p_class, &script_classes);
+				for (GDScriptParser::ClassNode *look_class : script_classes) {
 					if (look_class->identifier && look_class->identifier->name == name) {
 						if (!look_class->get_datatype().is_set()) {
 							Error err = resolve_inheritance(look_class, false);
@@ -353,7 +370,6 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 						found = true;
 						break;
 					}
-					look_class = look_class->outer;
 				}
 
 				if (!found) {
@@ -517,12 +533,11 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		result = make_native_enum_type(parser->current_class->base_type.native_type, first);
 	} else {
 		// Classes in current scope.
-		GDScriptParser::ClassNode *script_class = parser->current_class;
-		bool found = false;
-		while (!found && script_class != nullptr) {
+		List<GDScriptParser::ClassNode *> script_classes;
+		get_class_node_current_scope_classes(parser->current_class, &script_classes);
+		for (GDScriptParser::ClassNode *script_class : script_classes) {
 			if (script_class->identifier && script_class->identifier->name == first) {
 				result = script_class->get_datatype();
-				found = true;
 				break;
 			}
 			if (script_class->members_indices.has(first)) {
@@ -530,17 +545,14 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				switch (member.type) {
 					case GDScriptParser::ClassNode::Member::CLASS:
 						result = member.m_class->get_datatype();
-						found = true;
 						break;
 					case GDScriptParser::ClassNode::Member::ENUM:
 						result = member.m_enum->get_datatype();
-						found = true;
 						break;
 					case GDScriptParser::ClassNode::Member::CONSTANT:
 						if (member.constant->get_datatype().is_meta_type) {
 							result = member.constant->get_datatype();
 							result.is_meta_type = false;
-							found = true;
 							break;
 						} else if (Ref<Script>(member.constant->initializer->reduced_value).is_valid()) {
 							Ref<GDScript> gdscript = member.constant->initializer->reduced_value;
@@ -569,7 +581,6 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 						return GDScriptParser::DataType();
 				}
 			}
-			script_class = script_class->outer;
 		}
 	}
 	if (!result.is_set()) {
@@ -2891,41 +2902,43 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		}
 		// Check outer constants.
 		// TODO: Allow outer static functions.
-		GDScriptParser::ClassNode *outer = base_class->outer;
-		while (outer != nullptr) {
-			if (outer->has_member(name)) {
-				const GDScriptParser::ClassNode::Member &member = outer->get_member(name);
-				switch (member.type) {
-					case GDScriptParser::ClassNode::Member::CONSTANT: {
-						// TODO: Make sure loops won't cause problem. And make special error message for those.
-						// For out-of-order resolution:
-						reduce_expression(member.constant->initializer);
-						p_identifier->set_datatype(member.get_datatype());
-						p_identifier->is_constant = true;
-						p_identifier->reduced_value = member.constant->initializer->reduced_value;
-						return;
-					} break;
-					case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
-						p_identifier->set_datatype(member.get_datatype());
-						p_identifier->is_constant = true;
-						p_identifier->reduced_value = member.enum_value.value;
-						return;
-					} break;
-					case GDScriptParser::ClassNode::Member::ENUM: {
-						p_identifier->set_datatype(member.get_datatype());
-						p_identifier->is_constant = false;
-						return;
-					} break;
-					case GDScriptParser::ClassNode::Member::CLASS: {
-						resolve_class_interface(member.m_class);
-						p_identifier->set_datatype(member.m_class->get_datatype());
-						return;
-					} break;
-					default:
-						break;
+		if (base_class->outer != nullptr) {
+			List<GDScriptParser::ClassNode *> script_classes;
+			get_class_node_current_scope_classes(parser->current_class, &script_classes);
+			for (GDScriptParser::ClassNode *script_class : script_classes) {
+				if (script_class->has_member(name)) {
+					const GDScriptParser::ClassNode::Member &member = script_class->get_member(name);
+					switch (member.type) {
+						case GDScriptParser::ClassNode::Member::CONSTANT: {
+							// TODO: Make sure loops won't cause problem. And make special error message for those.
+							// For out-of-order resolution:
+							reduce_expression(member.constant->initializer);
+							p_identifier->set_datatype(member.get_datatype());
+							p_identifier->is_constant = true;
+							p_identifier->reduced_value = member.constant->initializer->reduced_value;
+							return;
+						} break;
+						case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
+							p_identifier->set_datatype(member.get_datatype());
+							p_identifier->is_constant = true;
+							p_identifier->reduced_value = member.enum_value.value;
+							return;
+						} break;
+						case GDScriptParser::ClassNode::Member::ENUM: {
+							p_identifier->set_datatype(member.get_datatype());
+							p_identifier->is_constant = false;
+							return;
+						} break;
+						case GDScriptParser::ClassNode::Member::CLASS: {
+							resolve_class_interface(member.m_class);
+							p_identifier->set_datatype(member.m_class->get_datatype());
+							return;
+						} break;
+						default:
+							break;
+					}
 				}
 			}
-			outer = outer->outer;
 		}
 
 		base_class = base_class->base_type.class_type;
