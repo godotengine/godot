@@ -322,6 +322,11 @@ void MeshInstance3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_resolve_skeleton_path();
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (mesh.is_valid()) {
+				mesh->notification(NOTIFICATION_TRANSLATION_CHANGED);
+			}
+		} break;
 	}
 }
 
