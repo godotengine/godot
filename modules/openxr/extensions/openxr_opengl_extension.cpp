@@ -126,6 +126,10 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 
 	DisplayServer *display_server = DisplayServer::get_singleton();
 
+#ifdef WAYLAND_ENABLED
+	ERR_FAIL_COND_V_MSG(display_server->get_name() == "Wayland", p_next_pointer, "OpenXR is not yet supported on OpenGL Wayland.");
+#endif
+
 #ifdef WIN32
 	graphics_binding_gl.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
 	graphics_binding_gl.next = p_next_pointer;
