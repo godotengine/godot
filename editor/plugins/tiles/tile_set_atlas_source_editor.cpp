@@ -2345,6 +2345,15 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				tile_set_changed_needs_update = false;
 			}
 		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			for (KeyValue<String, TileDataEditor *> &E : tile_data_editors) {
+				Control *toolbar = E.value->get_toolbar();
+				if (toolbar->get_parent() == tool_settings_tile_data_toolbar_container) {
+					tool_settings_tile_data_toolbar_container->remove_child(toolbar);
+				}
+			}
+		} break;
 	}
 }
 
