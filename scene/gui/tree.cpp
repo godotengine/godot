@@ -430,14 +430,14 @@ void TreeItem::remove_child(TreeItem *p_item) {
 			*c = (*c)->next;
 
 			aux->parent = nullptr;
+
+			if (tree) {
+				tree->update();
+			}
 			return;
 		}
 
 		c = &(*c)->next;
-	}
-
-	if (tree) {
-		tree->update();
 	}
 
 	ERR_FAIL();
