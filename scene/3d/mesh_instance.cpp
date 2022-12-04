@@ -664,6 +664,12 @@ void MeshInstance::_notification(int p_what) {
 		_resolve_skeleton_path();
 	}
 
+	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		if (mesh.is_valid()) {
+			mesh->notification(NOTIFICATION_TRANSLATION_CHANGED);
+		}
+	}
+
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (skin_ref.is_valid() && mesh.is_valid() && _is_software_skinning_enabled()) {
 			ERR_FAIL_COND(!skin_ref->get_skeleton_node());
