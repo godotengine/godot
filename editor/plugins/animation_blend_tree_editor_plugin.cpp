@@ -376,11 +376,11 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	undo_redo->commit_action();
 }
 
-void AnimationNodeBlendTreeEditor::_popup(bool p_has_input_ports, const Vector2 &p_popup_position, const Vector2 &p_node_position) {
+void AnimationNodeBlendTreeEditor::_popup(bool p_has_input_ports, const Vector2 &p_node_position) {
 	_update_options_menu(p_has_input_ports);
 	use_position_from_popup_menu = true;
 	position_from_popup_menu = p_node_position;
-	add_node->get_popup()->set_position(p_popup_position);
+	add_node->get_popup()->set_position(graph->get_screen_position() + graph->get_local_mouse_position());
 	add_node->get_popup()->reset_size();
 	add_node->get_popup()->popup();
 }
@@ -390,7 +390,7 @@ void AnimationNodeBlendTreeEditor::_popup_request(const Vector2 &p_position) {
 		return;
 	}
 
-	_popup(false, graph->get_screen_position() + graph->get_local_mouse_position(), p_position);
+	_popup(false, p_position);
 }
 
 void AnimationNodeBlendTreeEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
@@ -401,7 +401,7 @@ void AnimationNodeBlendTreeEditor::_connection_to_empty(const String &p_from, in
 	Ref<AnimationNode> node = blend_tree->get_node(p_from);
 	if (node.is_valid()) {
 		from_node = p_from;
-		_popup(true, p_release_position, graph->get_global_mouse_position());
+		_popup(true, p_release_position);
 	}
 }
 
@@ -414,7 +414,7 @@ void AnimationNodeBlendTreeEditor::_connection_from_empty(const String &p_to, in
 	if (node.is_valid()) {
 		to_node = p_to;
 		to_slot = p_to_slot;
-		_popup(false, p_release_position, graph->get_global_mouse_position());
+		_popup(false, p_release_position);
 	}
 }
 

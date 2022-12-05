@@ -117,7 +117,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _filter_toggled();
 	Ref<AnimationNode> _filter_edit;
 
-	void _popup(bool p_has_input_ports, const Vector2 &p_popup_position, const Vector2 &p_node_position);
+	void _popup(bool p_has_input_ports, const Vector2 &p_node_position);
 	void _popup_request(const Vector2 &p_position);
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
