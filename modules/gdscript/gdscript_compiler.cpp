@@ -535,7 +535,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				gen->write_call_utility(result, call->function_name, arguments);
 			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptUtilityFunctions::function_exists(call->function_name)) {
 				// GDScript utility function.
-				gen->write_call_gdscript_utility(result, GDScriptUtilityFunctions::get_function(call->function_name), arguments);
+				gen->write_call_gdscript_utility(result, call->function_name, GDScriptUtilityFunctions::get_function(call->function_name), arguments);
 			} else {
 				// Regular function.
 				const GDScriptParser::ExpressionNode *callee = call->callee;
@@ -1378,7 +1378,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			GDScriptCodeGenerator::Address value_length_addr = codegen.add_temporary(temp_type);
 			Vector<GDScriptCodeGenerator::Address> len_args;
 			len_args.push_back(p_value_addr);
-			codegen.generator->write_call_gdscript_utility(value_length_addr, GDScriptUtilityFunctions::get_function("len"), len_args);
+			codegen.generator->write_call_gdscript_utility(value_length_addr, SNAME("len"), GDScriptUtilityFunctions::get_function("len"), len_args);
 
 			// Test length compatibility.
 			temp_type.builtin_type = Variant::BOOL;
@@ -1476,7 +1476,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			GDScriptCodeGenerator::Address value_length_addr = codegen.add_temporary(temp_type);
 			Vector<GDScriptCodeGenerator::Address> func_args;
 			func_args.push_back(p_value_addr);
-			codegen.generator->write_call_gdscript_utility(value_length_addr, GDScriptUtilityFunctions::get_function("len"), func_args);
+			codegen.generator->write_call_gdscript_utility(value_length_addr, SNAME("len"), GDScriptUtilityFunctions::get_function("len"), func_args);
 
 			// Test length compatibility.
 			temp_type.builtin_type = Variant::BOOL;

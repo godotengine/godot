@@ -952,7 +952,7 @@ void GDScriptByteCodeGenerator::write_call_async(const Address &p_target, const 
 	append(p_function_name);
 }
 
-void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_target, GDScriptUtilityFunctions::FunctionPtr p_function, const Vector<Address> &p_arguments) {
+void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_target, const StringName &p_function_name, GDScriptUtilityFunctions::FunctionPtr p_function, const Vector<Address> &p_arguments) {
 	append(GDScriptFunction::OPCODE_CALL_GDSCRIPT_UTILITY, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
@@ -960,16 +960,17 @@ void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_tar
 	append(p_target);
 	append(p_arguments.size());
 	append(p_function);
+	append(p_function_name);
 }
 
-void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) {
+void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	bool is_validated = true;
-	if (Variant::is_utility_function_vararg(p_function)) {
+	if (Variant::is_utility_function_vararg(p_function_name)) {
 		is_validated = true; // Vararg works fine with any argument, since they can be any type.
-	} else if (p_arguments.size() == Variant::get_utility_function_argument_count(p_function)) {
+	} else if (p_arguments.size() == Variant::get_utility_function_argument_count(p_function_name)) {
 		bool all_types_exact = true;
 		for (int i = 0; i < p_arguments.size(); i++) {
-			if (!IS_BUILTIN_TYPE(p_arguments[i], Variant::get_utility_function_argument_type(p_function, i))) {
+			if (!IS_BUILTIN_TYPE(p_arguments[i], Variant::get_utility_function_argument_type(p_function_name, i))) {
 				all_types_exact = false;
 				break;
 			}
@@ -985,7 +986,7 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 		}
 		append(p_target);
 		append(p_arguments.size());
-		append(Variant::get_validated_utility_function(p_function));
+		append(Variant::get_validated_utility_function(p_function_name));
 	} else {
 		append(GDScriptFunction::OPCODE_CALL_UTILITY, 1 + p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
@@ -993,7 +994,7 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 		}
 		append(p_target);
 		append(p_arguments.size());
-		append(p_function);
+		append(p_function_name);
 	}
 }
 
