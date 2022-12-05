@@ -51,6 +51,9 @@ class OS_LinuxBSD : public OS_Unix {
 	bool font_config_initialized = false;
 	FcConfig *config = nullptr;
 	FcObjectSet *object_set = nullptr;
+
+	int _weight_to_fc(int p_weight) const;
+	int _stretch_to_fc(int p_stretch) const;
 #endif
 
 #ifdef JOYDEV_ENABLED
@@ -72,9 +75,6 @@ class OS_LinuxBSD : public OS_Unix {
 	CrashHandler crash_handler;
 
 	MainLoop *main_loop = nullptr;
-
-	int _weight_to_fc(int p_weight) const;
-	int _stretch_to_fc(int p_stretch) const;
 
 	String get_systemd_os_release_info_value(const String &key) const;
 
