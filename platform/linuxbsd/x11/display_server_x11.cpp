@@ -3403,7 +3403,7 @@ void DisplayServerX11::popup_close(WindowID p_window) {
 	}
 }
 
-bool DisplayServerX11::mouse_process_popups() {
+bool DisplayServerX11::mouse_process_popups(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	if (popup_list.is_empty()) {
@@ -3440,6 +3440,18 @@ bool DisplayServerX11::mouse_process_popups() {
 						} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
 							break;
 						} else {
+							WindowID transient_root = E->get();
+							while (true) {
+								WindowID parent = windows[transient_root].transient_parent;
+								if (parent == INVALID_WINDOW_ID) {
+									break;
+								} else {
+									transient_root = parent;
+								}
+							}
+							if (transient_root != p_window) {
+								break;
+							}
 							C = E;
 							E = E->prev();
 						}
@@ -3463,8 +3475,6 @@ void DisplayServerX11::process_events() {
 	static int frame = 0;
 	++frame;
 #endif
-
-	bool ignore_events = mouse_process_popups();
 
 	if (app_focused) {
 		//verify that one of the windows has focus, else send focus out notification
@@ -3514,11 +3524,6 @@ void DisplayServerX11::process_events() {
 
 	for (uint32_t event_index = 0; event_index < events.size(); ++event_index) {
 		XEvent &event = events[event_index];
-		if (ignore_events) {
-			XFreeEventData(x11_display, &event.xcookie);
-			continue;
-		}
-
 		WindowID window_id = MAIN_WINDOW_ID;
 
 		// Assign the event to the relevant window
@@ -3527,6 +3532,12 @@ void DisplayServerX11::process_events() {
 				window_id = E.key;
 				break;
 			}
+		}
+
+		bool ignore_events = mouse_process_popups(window_id);
+		if (ignore_events) {
+			XFreeEventData(x11_display, &event.xcookie);
+			continue;
 		}
 
 		if (XGetEventData(x11_display, &event.xcookie)) {
