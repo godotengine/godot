@@ -3985,28 +3985,40 @@ void DisplayServerX11::process_events() {
 				} else {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
 
-					if (!wd.focused) {
+					WindowID window_id_other = INVALID_WINDOW_ID;
+					Window wd_other_x11_window;
+					if (wd.focused) {
+						// Handle cases where an unfocused popup is open that needs to receive button-up events.
+						WindowID popup_id = _get_focused_window_or_popup();
+						if (popup_id != INVALID_WINDOW_ID && popup_id != window_id) {
+							window_id_other = popup_id;
+							wd_other_x11_window = windows[popup_id].x11_window;
+						}
+					} else {
 						// Propagate the event to the focused window,
 						// because it's received only on the topmost window.
 						// Note: This is needed for drag & drop to work between windows,
 						// because the engine expects events to keep being processed
 						// on the same window dragging started.
 						for (const KeyValue<WindowID, WindowData> &E : windows) {
-							const WindowData &wd_other = E.value;
-							WindowID window_id_other = E.key;
-							if (wd_other.focused) {
-								if (window_id_other != window_id) {
-									int x, y;
-									Window child;
-									XTranslateCoordinates(x11_display, wd.x11_window, wd_other.x11_window, event.xbutton.x, event.xbutton.y, &x, &y, &child);
-
-									mb->set_window_id(window_id_other);
-									mb->set_position(Vector2(x, y));
-									mb->set_global_position(mb->get_position());
+							if (E.value.focused) {
+								if (E.key != window_id) {
+									window_id_other = E.key;
+									wd_other_x11_window = E.value.x11_window;
 								}
 								break;
 							}
 						}
+					}
+
+					if (window_id_other != INVALID_WINDOW_ID) {
+						int x, y;
+						Window child;
+						XTranslateCoordinates(x11_display, wd.x11_window, wd_other_x11_window, event.xbutton.x, event.xbutton.y, &x, &y, &child);
+
+						mb->set_window_id(window_id_other);
+						mb->set_position(Vector2(x, y));
+						mb->set_global_position(mb->get_position());
 					}
 				}
 
