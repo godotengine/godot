@@ -31,6 +31,7 @@
 #include "resource_importer.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/config_file.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
@@ -483,4 +484,19 @@ void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importe
 	} else {
 		importers.push_back(p_importer);
 	}
+}
+
+/////
+
+Error ResourceFormatImporterSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	Error err = cf->load(p_path + ".import");
+	if (err != OK) {
+		return err;
+	}
+	cf->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(p_uid));
+	cf->save(p_path + ".import");
+
+	return OK;
 }

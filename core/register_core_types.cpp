@@ -84,6 +84,7 @@
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
 static Ref<ResourceFormatImporter> resource_format_importer;
+static Ref<ResourceFormatImporterSaver> resource_format_importer_saver;
 static Ref<ResourceFormatLoaderImage> resource_format_image;
 static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
@@ -143,6 +144,9 @@ void register_core_types() {
 
 	resource_format_importer.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_importer);
+
+	resource_format_importer_saver.instantiate();
+	ResourceSaver::add_resource_format_saver(resource_format_importer_saver);
 
 	resource_format_image.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_image);
@@ -388,6 +392,9 @@ void unregister_core_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_format_importer);
 	resource_format_importer.unref();
+
+	ResourceSaver::remove_resource_format_saver(resource_format_importer_saver);
+	resource_format_importer_saver.unref();
 
 	ResourceLoader::remove_resource_format_loader(resource_format_po);
 	resource_format_po.unref();

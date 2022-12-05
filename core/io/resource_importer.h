@@ -32,6 +32,7 @@
 #define RESOURCE_IMPORTER_H
 
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 
 class ResourceImporter;
 
@@ -148,5 +149,12 @@ public:
 };
 
 VARIANT_ENUM_CAST(ResourceImporter::ImportOrder);
+
+class ResourceFormatImporterSaver : public ResourceFormatSaver {
+	GDCLASS(ResourceFormatImporterSaver, ResourceFormatSaver)
+
+public:
+	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
+};
 
 #endif // RESOURCE_IMPORTER_H

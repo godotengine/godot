@@ -42,12 +42,14 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL3R(int64_t, _save, Ref<Resource>, String, uint32_t)
+	GDVIRTUAL2R(Error, _set_uid, String, ResourceUID::ID)
 	GDVIRTUAL1RC(bool, _recognize, Ref<Resource>)
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)
 	GDVIRTUAL2RC(bool, _recognize_path, Ref<Resource>, String)
 
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
+	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize_path(const Ref<Resource> &p_resource, const String &p_path) const;
@@ -87,6 +89,8 @@ public:
 	static void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions);
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
+
+	static Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 
 	static void set_timestamp_on_save(bool p_timestamp) { timestamp_on_save = p_timestamp; }
 	static bool get_timestamp_on_save() { return timestamp_on_save; }

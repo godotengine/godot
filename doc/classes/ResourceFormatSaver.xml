@@ -43,5 +43,13 @@
 				Returns [constant OK] on success, or an [enum Error] constant in case of failure.
 			</description>
 		</method>
+		<method name="_set_uid" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="uid" type="int" />
+			<description>
+				Sets a new UID for the resource at the given [param path]. Returns [constant OK] on success, or an [enum Error] constant in case of failure.
+			</description>
+		</method>
 	</methods>
 </class>
