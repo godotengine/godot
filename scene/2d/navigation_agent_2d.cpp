@@ -211,9 +211,9 @@ NavigationAgent2D::~NavigationAgent2D() {
 void NavigationAgent2D::set_avoidance_enabled(bool p_enabled) {
 	avoidance_enabled = p_enabled;
 	if (avoidance_enabled) {
-		Navigation2DServer::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+		Navigation2DServer::get_singleton()->agent_set_callback(agent, get_instance_id(), "_avoidance_done");
 	} else {
-		Navigation2DServer::get_singleton()->agent_set_callback(agent, nullptr, "_avoidance_done");
+		Navigation2DServer::get_singleton()->agent_set_callback(agent, ObjectID(), "_avoidance_done");
 	}
 }
 
@@ -223,7 +223,7 @@ bool NavigationAgent2D::get_avoidance_enabled() const {
 
 void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
-	Navigation2DServer::get_singleton()->agent_set_callback(agent, nullptr, "_avoidance_done");
+	Navigation2DServer::get_singleton()->agent_set_callback(agent, ObjectID(), "_avoidance_done");
 	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
 		// place agent on navigation map first or else the RVO agent callback creation fails silently later
 		agent_parent = Object::cast_to<Node2D>(p_agent_parent);

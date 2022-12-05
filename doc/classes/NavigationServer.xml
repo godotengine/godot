@@ -40,12 +40,12 @@
 		<method name="agent_set_callback" qualifiers="const">
 			<return type="void" />
 			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="receiver" type="Object" />
+			<argument index="1" name="object_id" type="int" />
 			<argument index="2" name="method" type="String" />
 			<argument index="3" name="userdata" type="Variant" default="null" />
 			<description>
-				Callback called at the end of the RVO process. If a callback is created manually and the agent is placed on a navigation map it will calculate avoidance for the agent and dispatch the calculated [code]safe_velocity[/code] to the [code]receiver[/code] object with a signal to the chosen [code]method[/code] name.
-				[b]Note:[/b] Created callbacks are always processed independently of the SceneTree state as long as the agent is on a navigation map and not freed. To disable the dispatch of a callback from an agent use [method agent_set_callback] again with a [code]null[/code] object as the [code]receiver[/code].
+				Sets the callback [code]object_id[/code] and [code]method[/code] that gets called after each avoidance processing step for the [code]agent[/code]. The calculated [code]safe_velocity[/code] will be dispatched with a signal to the object just before the physics calculations.
+				[b]Note:[/b] Created callbacks are always processed independently of the SceneTree state as long as the agent is on a navigation map and not freed. To disable the dispatch of a callback from an agent use [method agent_set_callback] again with a [code]0[/code] ObjectID as the [code]object_id[/code].
 			</description>
 		</method>
 		<method name="agent_set_map" qualifiers="const">
