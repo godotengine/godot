@@ -524,7 +524,8 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		globals.wl_data_device_manager_name = name;
 
 		for (SeatState &ss : wls->seats) {
-			if (!ss.wl_data_device) {
+			// Initialize the data device for all current seats.
+			if (!ss.wl_data_device && globals.wl_data_device_manager) {
 				ss.wl_data_device = wl_data_device_manager_get_data_device(wls->globals.wl_data_device_manager, ss.wl_seat);
 				wl_data_device_add_listener(ss.wl_data_device, &wl_data_device_listener, &ss);
 			}
@@ -536,7 +537,8 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		globals.wp_primary_selection_device_manager = (struct zwp_primary_selection_device_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_primary_selection_device_manager_v1_interface, 1);
 
 		for (SeatState &ss : wls->seats) {
-			if (!ss.wp_primary_selection_device) {
+			if (!ss.wp_primary_selection_device && globals.wp_primary_selection_device_manager) {
+				// Initialize the primary selection device for all current seats.
 				ss.wp_primary_selection_device = zwp_primary_selection_device_manager_v1_get_device(wls->globals.wp_primary_selection_device_manager, ss.wl_seat);
 				zwp_primary_selection_device_v1_add_listener(ss.wp_primary_selection_device, &wp_primary_selection_device_listener, &ss);
 			}
@@ -567,11 +569,13 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		ss->wl_seat_name = name;
 
 		if (!ss->wl_data_device && globals.wl_data_device_manager) {
+			// Initialize the data device for this new seat.
 			ss->wl_data_device = wl_data_device_manager_get_data_device(globals.wl_data_device_manager, ss->wl_seat);
 			wl_data_device_add_listener(ss->wl_data_device, &wl_data_device_listener, ss);
 		}
 
 		if (!ss->wp_primary_selection_device && globals.wp_primary_selection_device_manager) {
+			// Initialize the primary selection device for this new seat.
 			ss->wp_primary_selection_device = zwp_primary_selection_device_manager_v1_get_device(wls->globals.wp_primary_selection_device_manager, ss->wl_seat);
 			zwp_primary_selection_device_v1_add_listener(ss->wp_primary_selection_device, &wp_primary_selection_device_listener, ss);
 		}
@@ -1946,7 +1950,7 @@ void DisplayServerWayland::clipboard_set(const String &p_text) {
 
 	SeatState &ss = *wls.current_seat;
 
-	if (!wls.current_seat->wl_data_source_selection) {
+	if (!wls.current_seat->wl_data_source_selection && wls.globals.wl_data_device_manager) {
 		ss.wl_data_source_selection = wl_data_device_manager_create_data_source(wls.globals.wl_data_device_manager);
 		wl_data_source_add_listener(ss.wl_data_source_selection, &wl_data_source_listener, wls.current_seat);
 		wl_data_source_offer(ss.wl_data_source_selection, "text/plain");
@@ -1981,7 +1985,7 @@ void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
 
 	SeatState &ss = *wls.current_seat;
 
-	if (!wls.current_seat->wp_primary_selection_source) {
+	if (!wls.current_seat->wp_primary_selection_source && wls.globals.wp_primary_selection_device_manager) {
 		ss.wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(wls.globals.wp_primary_selection_device_manager);
 		zwp_primary_selection_source_v1_add_listener(ss.wp_primary_selection_source, &wp_primary_selection_source_listener, wls.current_seat);
 		zwp_primary_selection_source_v1_offer(ss.wp_primary_selection_source, "text/plain");
