@@ -890,10 +890,12 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 		*r_ret = do_mod(a, &r_valid);
-		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), nullptr);
+		bool valid = true;
+		String result = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), &valid);
+		ERR_FAIL_COND_MSG(!valid, result);
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), nullptr), r_ret);
@@ -913,10 +915,12 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 		*r_ret = do_mod(a, *VariantGetInternalPtr<Array>::get_ptr(&p_right), &r_valid);
-		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right), nullptr);
+		bool valid = true;
+		String result = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right), &valid);
+		ERR_FAIL_COND_MSG(!valid, result);
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<Array>::convert(right), nullptr), r_ret);
@@ -939,10 +943,12 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 		*r_ret = do_mod(a, p_right.get_validated_object(), &r_valid);
-		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), right->get_validated_object(), nullptr);
+		bool valid = true;
+		String result = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), right->get_validated_object(), &valid);
+		ERR_FAIL_COND_MSG(!valid, result);
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<Object *>::convert(right), nullptr), r_ret);
@@ -965,10 +971,12 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 		*r_ret = do_mod(a, *VariantGetInternalPtr<T>::get_ptr(&p_right), &r_valid);
-		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<T>::get_ptr(right), nullptr);
+		bool valid = true;
+		String result = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<T>::get_ptr(right), &valid);
+		ERR_FAIL_COND_MSG(!valid, result);
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<T>::convert(right), nullptr), r_ret);
