@@ -69,28 +69,12 @@ static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
 class ShaderGlobalsEditorInterface : public Object {
 	GDCLASS(ShaderGlobalsEditorInterface, Object)
 
-	void _var_changed() {
-		emit_signal(SNAME("var_changed"));
-	}
-
-protected:
-	static void _bind_methods() {
-		ClassDB::bind_method("_var_changed", &ShaderGlobalsEditorInterface::_var_changed);
-		ADD_SIGNAL(MethodInfo("var_changed"));
-	}
-
-	bool _set(const StringName &p_name, const Variant &p_value) {
-		Variant existing = RS::get_singleton()->global_shader_parameter_get(p_name);
-
-		if (existing.get_type() == Variant::NIL) {
-			return false;
-		}
-
+	void _set_var(const StringName &p_name, const Variant &p_value, const Variant &p_prev_value) {
 		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 
 		undo_redo->create_action(TTR("Set Shader Global Variable"));
 		undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_value);
-		undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_set", p_name, existing);
+		undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_prev_value);
 		RS::GlobalShaderParameterType type = RS::get_singleton()->global_shader_parameter_get_type(p_name);
 		Dictionary gv;
 		gv["type"] = global_var_type_names[type];
@@ -111,8 +95,29 @@ protected:
 		undo_redo->add_do_method(this, "_var_changed");
 		undo_redo->add_undo_method(this, "_var_changed");
 		block_update = true;
-		undo_redo->commit_action(false);
+		undo_redo->commit_action();
 		block_update = false;
+	}
+
+	void _var_changed() {
+		emit_signal(SNAME("var_changed"));
+	}
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method("_set_var", &ShaderGlobalsEditorInterface::_set_var);
+		ClassDB::bind_method("_var_changed", &ShaderGlobalsEditorInterface::_var_changed);
+		ADD_SIGNAL(MethodInfo("var_changed"));
+	}
+
+	bool _set(const StringName &p_name, const Variant &p_value) {
+		Variant existing = RS::get_singleton()->global_shader_parameter_get(p_name);
+
+		if (existing.get_type() == Variant::NIL) {
+			return false;
+		}
+
+		call_deferred("_set_var", p_name, p_value, existing);
 
 		return true;
 	}
