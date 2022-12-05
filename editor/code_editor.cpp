@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
+#include "core/templates/pair.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -1290,90 +1291,98 @@ void CodeTextEditor::convert_case(CaseStyle p_case) {
 void CodeTextEditor::move_lines_up() {
 	text_editor->begin_complex_operation();
 
-	Vector<int> carets_to_remove;
-
 	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+
+	// Lists of carets representing each group
+	Vector<Vector<int>> caret_groups;
+	Vector<Pair<int, int>> group_borders;
+
+	// Search for groups of carets and their selections residing on the same lines
 	for (int i = 0; i < caret_edit_order.size(); i++) {
 		int c = caret_edit_order[i];
-		int cl = text_editor->get_caret_line(c);
 
-		bool swaped_caret = false;
-		for (int j = i + 1; j < caret_edit_order.size(); j++) {
-			if (text_editor->has_selection(caret_edit_order[j])) {
-				if (text_editor->get_selection_from_line() == cl) {
-					carets_to_remove.push_back(caret_edit_order[j]);
-					continue;
-				}
-
-				if (text_editor->get_selection_to_line() == cl) {
-					if (text_editor->has_selection(c)) {
-						if (text_editor->get_selection_to_line(c) != cl) {
-							text_editor->select(cl + 1, 0, text_editor->get_selection_to_line(c), text_editor->get_selection_to_column(c), c);
-							break;
-						}
-					}
-
-					carets_to_remove.push_back(c);
-					i = j - 1;
-					swaped_caret = true;
-					break;
-				}
-				break;
-			}
-
-			if (text_editor->get_caret_line(caret_edit_order[j]) == cl) {
-				carets_to_remove.push_back(caret_edit_order[j]);
-				i = j;
-				continue;
-			}
-			break;
+		Vector<int> new_group{ c };
+		Pair<int, int> group_border;
+		if (text_editor->has_selection(c)) {
+			group_border.first = text_editor->get_selection_from_line(c);
+			group_border.second = text_editor->get_selection_to_line(c);
+		} else {
+			group_border.first = text_editor->get_caret_line(c);
+			group_border.second = text_editor->get_caret_line(c);
 		}
 
-		if (swaped_caret) {
+		for (int j = i; j < caret_edit_order.size() - 1; j++) {
+			int c_current = caret_edit_order[j];
+			int c_next = caret_edit_order[j + 1];
+
+			int next_start_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_from_line(c_next) : text_editor->get_caret_line(c_next);
+			int next_end_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_to_line(c_next) : text_editor->get_caret_line(c_next);
+
+			int current_start_pos = text_editor->has_selection(c_current) ? text_editor->get_selection_from_line(c_current) : text_editor->get_caret_line(c_current);
+
+			i = j;
+			if (next_end_pos != current_start_pos && next_end_pos + 1 != current_start_pos) {
+				break;
+			}
+			group_border.first = next_start_pos;
+			new_group.push_back(c_next);
+			// If the last caret is added to the current group there is no need to process it again
+			if (j + 1 == caret_edit_order.size() - 1) {
+				i++;
+			}
+		}
+		group_borders.push_back(group_border);
+		caret_groups.push_back(new_group);
+	}
+
+	for (int i = group_borders.size() - 1; i >= 0; i--) {
+		if (group_borders[i].first - 1 < 0) {
 			continue;
 		}
 
-		if (text_editor->has_selection(c)) {
+		// If the group starts overlapping with the upper group don't move it
+		if (i < group_borders.size() - 1 && group_borders[i].first - 1 <= group_borders[i + 1].second) {
+			continue;
+		}
+
+		// We have to remember caret positions and selections prior to line swapping
+		Vector<Vector<int>> caret_group_parameters;
+
+		for (int j = 0; j < caret_groups[i].size(); j++) {
+			int c = caret_groups[i][j];
+			int cursor_line = text_editor->get_caret_line(c);
+			int cursor_column = text_editor->get_caret_column(c);
+
+			if (!text_editor->has_selection(c)) {
+				caret_group_parameters.push_back(Vector<int>{ -1, -1, -1, -1, cursor_line, cursor_column });
+				continue;
+			}
 			int from_line = text_editor->get_selection_from_line(c);
 			int from_col = text_editor->get_selection_from_column(c);
 			int to_line = text_editor->get_selection_to_line(c);
 			int to_column = text_editor->get_selection_to_column(c);
-			int cursor_line = text_editor->get_caret_line(c);
+			caret_group_parameters.push_back(Vector<int>{ from_line, from_col, to_line, to_column, cursor_line, cursor_column });
+		}
 
-			for (int j = from_line; j <= to_line; j++) {
-				int line_id = j;
-				int next_id = j - 1;
-
-				if (line_id == 0 || next_id < 0) {
-					return;
-				}
-
-				text_editor->unfold_line(line_id);
-				text_editor->unfold_line(next_id);
-
-				text_editor->swap_lines(line_id, next_id);
-				text_editor->set_caret_line(next_id, c == 0, true, 0, c);
-			}
-			int from_line_up = from_line > 0 ? from_line - 1 : from_line;
-			int to_line_up = to_line > 0 ? to_line - 1 : to_line;
-			int cursor_line_up = cursor_line > 0 ? cursor_line - 1 : cursor_line;
-			text_editor->select(from_line_up, from_col, to_line_up, to_column, c);
-			text_editor->set_caret_line(cursor_line_up, c == 0, true, 0, c);
-		} else {
-			int line_id = text_editor->get_caret_line(c);
-			int next_id = line_id - 1;
-
-			if (line_id == 0 || next_id < 0) {
-				return;
-			}
-
+		for (int line_id = group_borders[i].first; line_id <= group_borders[i].second; line_id++) {
 			text_editor->unfold_line(line_id);
-			text_editor->unfold_line(next_id);
+			text_editor->unfold_line(line_id - 1);
 
-			text_editor->swap_lines(line_id, next_id);
-			text_editor->set_caret_line(next_id, c == 0, true, 0, c);
+			text_editor->swap_lines(line_id - 1, line_id);
+		}
+
+		for (int j = 0; j < caret_groups[i].size(); j++) {
+			int c = caret_groups[i][j];
+			Vector<int> caret_parameters = caret_group_parameters[j];
+			text_editor->set_caret_line(caret_parameters[4] - 1, c == 0, true, 0, c);
+			text_editor->set_caret_column(caret_parameters[5], c == 0, c);
+
+			if (caret_parameters[0] >= 0) {
+				text_editor->select(caret_parameters[0] - 1, caret_parameters[1], caret_parameters[2] - 1, caret_parameters[3], c);
+			}
 		}
 	}
+
 	text_editor->end_complex_operation();
 	text_editor->merge_overlapping_carets();
 	text_editor->queue_redraw();
@@ -1382,95 +1391,97 @@ void CodeTextEditor::move_lines_up() {
 void CodeTextEditor::move_lines_down() {
 	text_editor->begin_complex_operation();
 
-	Vector<int> carets_to_remove;
-
 	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+
+	// Lists of carets representing each group
+	Vector<Vector<int>> caret_groups;
+	Vector<Pair<int, int>> group_borders;
+
+	// Search for groups of carets and their selections residing on the same lines
 	for (int i = 0; i < caret_edit_order.size(); i++) {
 		int c = caret_edit_order[i];
-		int cl = text_editor->get_caret_line(c);
 
-		bool swaped_caret = false;
-		for (int j = i + 1; j < caret_edit_order.size(); j++) {
-			if (text_editor->has_selection(caret_edit_order[j])) {
-				if (text_editor->get_selection_from_line() == cl) {
-					carets_to_remove.push_back(caret_edit_order[j]);
-					continue;
-				}
-
-				if (text_editor->get_selection_to_line() == cl) {
-					if (text_editor->has_selection(c)) {
-						if (text_editor->get_selection_to_line(c) != cl) {
-							text_editor->select(cl + 1, 0, text_editor->get_selection_to_line(c), text_editor->get_selection_to_column(c), c);
-							break;
-						}
-					}
-
-					carets_to_remove.push_back(c);
-					i = j - 1;
-					swaped_caret = true;
-					break;
-				}
-				break;
-			}
-
-			if (text_editor->get_caret_line(caret_edit_order[j]) == cl) {
-				carets_to_remove.push_back(caret_edit_order[j]);
-				i = j;
-				continue;
-			}
-			break;
+		Vector<int> new_group{ c };
+		Pair<int, int> group_border;
+		if (text_editor->has_selection(c)) {
+			group_border.first = text_editor->get_selection_from_line(c);
+			group_border.second = text_editor->get_selection_to_line(c);
+		} else {
+			group_border.first = text_editor->get_caret_line(c);
+			group_border.second = text_editor->get_caret_line(c);
 		}
 
-		if (swaped_caret) {
+		for (int j = i; j < caret_edit_order.size() - 1; j++) {
+			int c_current = caret_edit_order[j];
+			int c_next = caret_edit_order[j + 1];
+
+			int next_start_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_from_line(c_next) : text_editor->get_caret_line(c_next);
+			int next_end_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_to_line(c_next) : text_editor->get_caret_line(c_next);
+
+			int current_start_pos = text_editor->has_selection(c_current) ? text_editor->get_selection_from_line(c_current) : text_editor->get_caret_line(c_current);
+
+			i = j;
+			if (next_end_pos == current_start_pos || next_end_pos + 1 == current_start_pos) {
+				group_border.first = next_start_pos;
+				new_group.push_back(c_next);
+				// If the last caret is added to the current group there is no need to process it again
+				if (j + 1 == caret_edit_order.size() - 1) {
+					i++;
+				}
+			} else {
+				break;
+			}
+		}
+		group_borders.push_back(group_border);
+		caret_groups.push_back(new_group);
+	}
+
+	for (int i = 0; i < group_borders.size(); i++) {
+		if (group_borders[i].second + 1 > text_editor->get_line_count() - 1) {
 			continue;
 		}
 
-		if (text_editor->has_selection(c)) {
-			int from_line = text_editor->get_selection_from_line(c);
-			int from_col = text_editor->get_selection_from_column(c);
-			int to_line = text_editor->get_selection_to_line(c);
-			int to_column = text_editor->get_selection_to_column(c);
-			int cursor_line = text_editor->get_caret_line(c);
-
-			for (int l = to_line; l >= from_line; l--) {
-				int line_id = l;
-				int next_id = l + 1;
-
-				if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count()) {
-					continue;
-				}
-
-				text_editor->unfold_line(line_id);
-				text_editor->unfold_line(next_id);
-
-				text_editor->swap_lines(line_id, next_id);
-				text_editor->set_caret_line(next_id, c == 0, true, 0, c);
-			}
-			int from_line_down = from_line < text_editor->get_line_count() ? from_line + 1 : from_line;
-			int to_line_down = to_line < text_editor->get_line_count() ? to_line + 1 : to_line;
-			int cursor_line_down = cursor_line < text_editor->get_line_count() ? cursor_line + 1 : cursor_line;
-			text_editor->select(from_line_down, from_col, to_line_down, to_column, c);
-			text_editor->set_caret_line(cursor_line_down, c == 0, true, 0, c);
-		} else {
-			int line_id = text_editor->get_caret_line(c);
-			int next_id = line_id + 1;
-
-			if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count()) {
-				continue;
-			}
-
-			text_editor->unfold_line(line_id);
-			text_editor->unfold_line(next_id);
-
-			text_editor->swap_lines(line_id, next_id);
-			text_editor->set_caret_line(next_id, c == 0, true, 0, c);
+		// If the group starts overlapping with the upper group don't move it
+		if (i > 0 && group_borders[i].second + 1 >= group_borders[i - 1].first) {
+			continue;
 		}
-	}
 
-	// Sort and remove backwards to preserve indexes.
-	carets_to_remove.sort();
-	for (int i = carets_to_remove.size() - 1; i >= 0; i--) {
-		text_editor->remove_caret(carets_to_remove[i]);
+		// We have to remember caret positions and selections prior to line swapping
+		Vector<Vector<int>> caret_group_parameters;
+
+		for (int j = 0; j < caret_groups[i].size(); j++) {
+			int c = caret_groups[i][j];
+			int cursor_line = text_editor->get_caret_line(c);
+			int cursor_column = text_editor->get_caret_column(c);
+
+			if (text_editor->has_selection(c)) {
+				int from_line = text_editor->get_selection_from_line(c);
+				int from_col = text_editor->get_selection_from_column(c);
+				int to_line = text_editor->get_selection_to_line(c);
+				int to_column = text_editor->get_selection_to_column(c);
+				caret_group_parameters.push_back(Vector<int>{ from_line, from_col, to_line, to_column, cursor_line, cursor_column });
+			} else {
+				caret_group_parameters.push_back(Vector<int>{ -1, -1, -1, -1, cursor_line, cursor_column });
+			}
+		}
+
+		for (int line_id = group_borders[i].second; line_id >= group_borders[i].first; line_id--) {
+			text_editor->unfold_line(line_id);
+			text_editor->unfold_line(line_id + 1);
+
+			text_editor->swap_lines(line_id + 1, line_id);
+		}
+
+		for (int j = 0; j < caret_groups[i].size(); j++) {
+			int c = caret_groups[i][j];
+			Vector<int> caret_parameters = caret_group_parameters[j];
+			text_editor->set_caret_line(caret_parameters[4] + 1, c == 0, true, 0, c);
+			text_editor->set_caret_column(caret_parameters[5], c == 0, c);
+
+			if (caret_parameters[0] >= 0) {
+				text_editor->select(caret_parameters[0] + 1, caret_parameters[1], caret_parameters[2] + 1, caret_parameters[3], c);
+			}
+		}
 	}
 
 	text_editor->merge_overlapping_carets();
