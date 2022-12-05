@@ -2857,8 +2857,9 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 	DisplayServer *ds = memnew(DisplayServerWayland(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
 		ERR_PRINT("Can't create the Wayland display server.");
-
 		memdelete(ds);
+
+		return nullptr;
 	}
 	return ds;
 }
