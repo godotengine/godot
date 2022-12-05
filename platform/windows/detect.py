@@ -188,6 +188,7 @@ def get_opts():
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
+        BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
     ]
 
 
@@ -339,7 +340,7 @@ def configure_msvc(env, vcvars_msvc_config):
 
     ## Compile/link flags
 
-    if env["optimize"] in ["debug", "none"]:
+    if env["debug_crt"]:
         # Always use dynamic runtime, static debug CRT breaks thread_local.
         env.AppendUnique(CCFLAGS=["/MDd"])
     else:
