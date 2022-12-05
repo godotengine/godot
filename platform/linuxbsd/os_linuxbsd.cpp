@@ -616,6 +616,7 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 #endif
 }
 
+#ifdef FONTCONFIG_ENABLED
 int OS_LinuxBSD::_weight_to_fc(int p_weight) const {
 	if (p_weight < 150) {
 		return FC_WEIGHT_THIN;
@@ -665,6 +666,7 @@ int OS_LinuxBSD::_stretch_to_fc(int p_stretch) const {
 		return FC_WIDTH_ULTRAEXPANDED;
 	}
 }
+#endif // FONTCONFIG_ENABLED
 
 Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
 #ifdef FONTCONFIG_ENABLED
