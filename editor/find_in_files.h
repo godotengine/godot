@@ -45,6 +45,7 @@ public:
 	void set_search_text(String p_pattern);
 	void set_whole_words(bool p_whole_word);
 	void set_match_case(bool p_match_case);
+	void set_ignore_comments(bool p_ignore_comments);
 	void set_folder(String folder);
 	void set_filter(const HashSet<String> &exts);
 
@@ -52,6 +53,7 @@ public:
 
 	bool is_whole_words() const { return _whole_words; }
 	bool is_match_case() const { return _match_case; }
+	bool is_ignoring_comments() const { return _ignore_comments; }
 
 	void start();
 	void stop();
@@ -76,6 +78,7 @@ private:
 	String _root_dir;
 	bool _whole_words = true;
 	bool _match_case = true;
+	bool _ignore_comments = true;
 
 	// State
 	bool _searching = false;
@@ -113,6 +116,7 @@ public:
 	String get_search_text() const;
 	String get_replace_text() const;
 	bool is_match_case() const;
+	bool is_ignoring_comments() const;
 	bool is_whole_words() const;
 	String get_folder() const;
 	HashSet<String> get_filter() const;
@@ -139,6 +143,7 @@ private:
 
 	LineEdit *_folder_line_edit = nullptr;
 	CheckBox *_match_case_checkbox = nullptr;
+	CheckBox *_ignore_comments_checkbox = nullptr;
 	CheckBox *_whole_words_checkbox = nullptr;
 	Button *_find_button = nullptr;
 	Button *_replace_button = nullptr;

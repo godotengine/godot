@@ -1311,6 +1311,9 @@
 		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
 		</constant>
+		<constant name="SEARCH_IGNORE_COMMENTS" value="8" enum="SearchFlags">
+			Ignore all comments.
+		</constant>
 		<constant name="CARET_TYPE_LINE" value="0" enum="CaretType">
 			Vertical line caret.
 		</constant>

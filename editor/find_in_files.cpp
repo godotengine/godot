@@ -54,8 +54,14 @@ inline void pop_back(T &container) {
 	container.resize(container.size() - 1);
 }
 
-static bool find_next(const String &line, String pattern, int from, bool match_case, bool whole_words, int &out_begin, int &out_end) {
+static bool find_next(const String &line, String pattern, int from, bool match_case, bool ignore_comments, bool whole_words, int &out_begin, int &out_end) {
 	int end = from;
+
+	if (ignore_comments) {
+		if (line.begins_with("#")) {
+			return false;
+		}
+	}
 
 	while (true) {
 		int begin = match_case ? line.find(pattern, end) : line.findn(pattern, end);
@@ -93,6 +99,10 @@ void FindInFiles::set_whole_words(bool p_whole_word) {
 
 void FindInFiles::set_match_case(bool p_match_case) {
 	_match_case = p_match_case;
+}
+
+void FindInFiles::set_ignore_comments(bool p_ignore_comments) {
+	_ignore_comments = p_ignore_comments;
 }
 
 void FindInFiles::set_folder(String folder) {
@@ -270,7 +280,7 @@ void FindInFiles::_scan_file(String fpath) {
 
 		String line = f->get_line();
 
-		while (find_next(line, _pattern, end, _match_case, _whole_words, begin, end)) {
+		while (find_next(line, _pattern, end, _match_case, _ignore_comments, _whole_words, begin, end)) {
 			emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, line);
 		}
 	}
@@ -339,6 +349,10 @@ FindInFilesDialog::FindInFilesDialog() {
 		_match_case_checkbox = memnew(CheckBox);
 		_match_case_checkbox->set_text(TTR("Match Case"));
 		hbc->add_child(_match_case_checkbox);
+
+		_ignore_comments_checkbox = memnew(CheckBox);
+		_ignore_comments_checkbox->set_text(TTR("Ignore Comments"));
+		hbc->add_child(_ignore_comments_checkbox);
 
 		gc->add_child(hbc);
 	}
@@ -427,6 +441,10 @@ String FindInFilesDialog::get_search_text() const {
 
 String FindInFilesDialog::get_replace_text() const {
 	return _replace_text_line_edit->get_text();
+}
+
+bool FindInFilesDialog::is_ignoring_comments() const {
+	return _ignore_comments_checkbox->is_pressed();
 }
 
 bool FindInFilesDialog::is_match_case() const {
@@ -732,6 +750,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 	// Trim result item line.
 	int old_text_size = text.size();
 	text = text.strip_edges(true, false);
+
 	int chars_removed = old_text_size - text.size();
 	String start = vformat("%3s: ", line_number);
 
@@ -935,7 +954,7 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 		int repl_end = locations[i].end + offset;
 
 		int _;
-		if (!find_next(line, search_text, repl_begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
+		if (!find_next(line, search_text, repl_begin, _finder->is_match_case(), _finder->is_ignoring_comments(), _finder->is_whole_words(), _, _)) {
 			// Make sure the replace is still valid in case the file was tampered with.
 			print_verbose(String("Occurrence no longer matches, replace will be ignored in {0}: line {1}, col {2}").format(varray(fpath, repl_line_number, repl_begin)));
 			continue;

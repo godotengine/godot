@@ -1130,7 +1130,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					if (!clipped && highlight_all_occurrences && !only_whitespaces_highlighted && !highlighted_text.is_empty()) { // Highlight
-						int highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
+						int highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS | SEARCH_IGNORE_COMMENTS, 0);
 						while (highlighted_text_col != -1) {
 							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_text_col + start, highlighted_text_col + highlighted_text.length() + start);
 							for (int j = 0; j < sel.size(); j++) {
@@ -1147,13 +1147,13 @@ void TextEdit::_notification(int p_what) {
 								draw_rect(rect, word_highlighted_color);
 							}
 
-							highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_text_col + 1);
+							highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS | SEARCH_IGNORE_COMMENTS, highlighted_text_col + 1);
 						}
 					}
 
 					if (!clipped && lookup_symbol_word.length() != 0) { // Highlight word
 						if (is_ascii_char(lookup_symbol_word[0]) || lookup_symbol_word[0] == '_' || lookup_symbol_word[0] == '.') {
-							int highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
+							int highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS | SEARCH_IGNORE_COMMENTS, 0);
 							while (highlighted_word_col != -1) {
 								Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_word_col + start, highlighted_word_col + lookup_symbol_word.length() + start);
 								for (int j = 0; j < sel.size(); j++) {
@@ -1172,7 +1172,7 @@ void TextEdit::_notification(int p_what) {
 									draw_rect(rect, color);
 								}
 
-								highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_word_col + 1);
+								highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS | SEARCH_IGNORE_COMMENTS, highlighted_word_col + 1);
 							}
 						}
 					}
@@ -4096,6 +4096,11 @@ Point2i TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_fro
 		int last_pos = -1;
 
 		while (true) {
+			if (p_search_flags & SEARCH_IGNORE_COMMENTS) {
+				if (text_line.begins_with("#")) {
+					break;
+				}
+			}
 			if (p_search_flags & SEARCH_BACKWARDS) {
 				while ((last_pos = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.rfind(p_key, pos_from) : text_line.rfindn(p_key, pos_from)) != -1) {
 					if (last_pos <= from_column) {
@@ -6095,6 +6100,7 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(SEARCH_MATCH_CASE);
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
 	BIND_ENUM_CONSTANT(SEARCH_BACKWARDS);
+	BIND_ENUM_CONSTANT(SEARCH_IGNORE_COMMENTS);
 
 	ClassDB::bind_method(D_METHOD("set_search_text", "search_text"), &TextEdit::set_search_text);
 	ClassDB::bind_method(D_METHOD("set_search_flags", "flags"), &TextEdit::set_search_flags);
@@ -6874,6 +6880,10 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 	if (p_key.length() > 0 && p_search.length() > 0) {
 		if (p_from_column < 0 || p_from_column > p_search.length()) {
 			p_from_column = 0;
+		}
+
+		if (p_search_flags & SEARCH_IGNORE_COMMENTS) {
+			return col;
 		}
 
 		while (col == -1 && p_from_column <= p_search.length()) {

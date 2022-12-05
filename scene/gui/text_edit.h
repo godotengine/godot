@@ -116,7 +116,8 @@ public:
 	enum SearchFlags {
 		SEARCH_MATCH_CASE = 1,
 		SEARCH_WHOLE_WORDS = 2,
-		SEARCH_BACKWARDS = 4
+		SEARCH_BACKWARDS = 4,
+		SEARCH_IGNORE_COMMENTS = 8
 	};
 
 private:
