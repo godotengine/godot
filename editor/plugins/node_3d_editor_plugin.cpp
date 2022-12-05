@@ -92,6 +92,9 @@ void ViewportNavigationControl::_notification(int p_what) {
 			if (!is_connected("mouse_exited", callable_mp(this, &ViewportNavigationControl::_on_mouse_exited))) {
 				connect("mouse_exited", callable_mp(this, &ViewportNavigationControl::_on_mouse_exited));
 			}
+			if (!is_connected("mouse_entered", callable_mp(this, &ViewportNavigationControl::_on_mouse_entered))) {
+				connect("mouse_entered", callable_mp(this, &ViewportNavigationControl::_on_mouse_entered));
+			}
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -112,7 +115,7 @@ void ViewportNavigationControl::_draw() {
 	float radius = get_size().x / 2.0;
 
 	const bool focused = focused_index != -1;
-	draw_circle(center, radius, Color(0.5, 0.5, 0.5, focused ? 0.25 : 0.05));
+	draw_circle(center, radius, Color(0.5, 0.5, 0.5, focused || hovered ? 0.35 : 0.15));
 
 	const Color c = focused ? Color(0.9, 0.9, 0.9, 0.9) : Color(0.5, 0.5, 0.5, 0.25);
 
@@ -123,6 +126,9 @@ void ViewportNavigationControl::_draw() {
 }
 
 void ViewportNavigationControl::_process_click(int p_index, Vector2 p_position, bool p_pressed) {
+	hovered = false;
+	queue_redraw();
+
 	if (focused_index != -1 && focused_index != p_index) {
 		return;
 	}
@@ -233,7 +239,13 @@ void ViewportNavigationControl::_update_navigation() {
 	}
 }
 
+void ViewportNavigationControl::_on_mouse_entered() {
+	hovered = true;
+	queue_redraw();
+}
+
 void ViewportNavigationControl::_on_mouse_exited() {
+	hovered = false;
 	queue_redraw();
 }
 
@@ -5133,7 +5145,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	// Prevent visible spacing between frame time labels.
 	top_right_vbox->add_theme_constant_override("separation", 0);
 
-	const int navigation_control_size = 200;
+	const int navigation_control_size = 150;
 
 	position_control = memnew(ViewportNavigationControl);
 	position_control->set_navigation_mode(Node3DEditorViewport::NAVIGATION_MOVE);
