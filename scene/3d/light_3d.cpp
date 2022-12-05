@@ -461,7 +461,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_PANCAKE_SIZE, 20.0);
 	set_param(PARAM_SHADOW_OPACITY, 1.0);
 	set_param(PARAM_SHADOW_BLUR, 1.0);
-	set_param(PARAM_SHADOW_BIAS, 0.03);
+	set_param(PARAM_SHADOW_BIAS, 0.1);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
 	set_param(PARAM_SHADOW_FADE_START, 1);
@@ -571,8 +571,8 @@ DirectionalLight3D::DirectionalLight3D() :
 		Light3D(RenderingServer::LIGHT_DIRECTIONAL) {
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
-	// Increase the default shadow bias to better suit most scenes.
-	set_param(PARAM_SHADOW_BIAS, 0.1);
+	// Increase the default shadow normal bias to better suit most scenes.
+	set_param(PARAM_SHADOW_NORMAL_BIAS, 2.0);
 	set_param(PARAM_INTENSITY, 100000.0); // Specified in Lux, approximate mid-day sun.
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
@@ -614,8 +614,6 @@ void OmniLight3D::_bind_methods() {
 OmniLight3D::OmniLight3D() :
 		Light3D(RenderingServer::LIGHT_OMNI) {
 	set_shadow_mode(SHADOW_CUBE);
-	// Increase the default shadow biases to better suit most scenes.
-	set_param(PARAM_SHADOW_BIAS, 0.2);
 }
 
 PackedStringArray SpotLight3D::get_configuration_warnings() const {
@@ -638,4 +636,10 @@ void SpotLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_angle", PROPERTY_HINT_RANGE, "0,180,0.01,degrees"), "set_param", "get_param", PARAM_SPOT_ANGLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_angle_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_SPOT_ATTENUATION);
+}
+
+SpotLight3D::SpotLight3D() :
+		Light3D(RenderingServer::LIGHT_SPOT) {
+	// Decrease the default shadow bias to better suit most scenes.
+	set_param(PARAM_SHADOW_BIAS, 0.03);
 }
