@@ -2453,9 +2453,12 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 	Node *copy = base->duplicate_from_editor(duplimap);
 
 	if (copy) {
+		// Handle Unique Nodes.
 		for (int i = 0; i < copy->get_child_count(false); i++) {
 			_set_node_owner_recursive(copy->get_child(i, false), copy);
 		}
+		// Root node cannot ever be unique name in its own Scene!
+		copy->set_unique_name_in_owner(false);
 
 		Ref<PackedScene> sdata = memnew(PackedScene);
 		Error err = sdata->pack(copy);
