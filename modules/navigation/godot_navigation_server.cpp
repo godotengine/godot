@@ -537,14 +537,14 @@ bool GodotNavigationServer::agent_is_map_changed(RID p_agent) const {
 	return agent->is_map_changed();
 }
 
-COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata) {
+COMMAND_4(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
-	agent->set_callback(p_receiver == nullptr ? 0 : p_receiver->get_instance_id(), p_method, p_udata);
+	agent->set_callback(p_object_id, p_method, p_udata);
 
 	if (agent->get_map()) {
-		if (p_receiver == nullptr) {
+		if (p_object_id == ObjectID()) {
 			agent->get_map()->remove_agent_as_controlled(agent);
 		} else {
 			agent->get_map()->set_agent_as_controlled(agent);

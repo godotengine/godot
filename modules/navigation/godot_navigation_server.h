@@ -147,7 +147,7 @@ public:
 	COMMAND_2(agent_set_position, RID, p_agent, Vector3, p_position);
 	COMMAND_2(agent_set_ignore_y, RID, p_agent, bool, p_ignore);
 	virtual bool agent_is_map_changed(RID p_agent) const;
-	COMMAND_4_DEF(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata, Variant());
+	COMMAND_4_DEF(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata, Variant());
 
 	COMMAND_1(free, RID, p_object);
 
