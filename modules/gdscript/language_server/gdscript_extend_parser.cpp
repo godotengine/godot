@@ -844,8 +844,9 @@ Error ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
 	lines = p_code.split("\n");
 
 	Error err = GDScriptParser::parse(p_code, p_path, false);
+	GDScriptAnalyzer analyzer(this);
+
 	if (err == OK) {
-		GDScriptAnalyzer analyzer(this);
 		err = analyzer.analyze();
 	}
 	update_diagnostics();
