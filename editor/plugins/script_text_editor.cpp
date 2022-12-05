@@ -1223,7 +1223,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			tx->toggle_foldable_line(tx->get_caret_line());
+			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
+				tx->toggle_foldable_line(tx->get_caret_line(caret_idx));
+			}
 			tx->queue_redraw();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
@@ -1291,28 +1293,28 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_EVALUATE: {
 			Expression expression;
-			Vector<String> lines = code_editor->get_text_editor()->get_selected_text().split("\n");
-			PackedStringArray results;
+			tx->begin_complex_operation();
+			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
+				Vector<String> lines = tx->get_selected_text(caret_idx).split("\n");
+				PackedStringArray results;
 
-			for (int i = 0; i < lines.size(); i++) {
-				String line = lines[i];
-				String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); //extract the whitespace at the beginning
-
-				if (expression.parse(line) == OK) {
-					Variant result = expression.execute(Array(), Variant(), false, true);
-					if (expression.get_error_text().is_empty()) {
-						results.push_back(whitespace + result.get_construct_string());
+				for (int i = 0; i < lines.size(); i++) {
+					String line = lines[i];
+					String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); // Extract the whitespace at the beginning.
+					if (expression.parse(line) == OK) {
+						Variant result = expression.execute(Array(), Variant(), false, true);
+						if (expression.get_error_text().is_empty()) {
+							results.push_back(whitespace + result.get_construct_string());
+						} else {
+							results.push_back(line);
+						}
 					} else {
 						results.push_back(line);
 					}
-				} else {
-					results.push_back(line);
 				}
+				tx->insert_text_at_caret(String("\n").join(results), caret_idx);
 			}
-
-			code_editor->get_text_editor()->begin_complex_operation(); //prevents creating a two-step undo
-			code_editor->get_text_editor()->insert_text_at_caret(String("\n").join(results));
-			code_editor->get_text_editor()->end_complex_operation();
+			tx->end_complex_operation();
 		} break;
 		case SEARCH_FIND: {
 			code_editor->get_find_replace_bar()->popup_search();
@@ -1327,14 +1329,14 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
 		case SEARCH_IN_FILES: {
-			String selected_text = code_editor->get_text_editor()->get_selected_text();
+			String selected_text = tx->get_selected_text();
 
 			// Yep, because it doesn't make sense to instance this dialog for every single script open...
 			// So this will be delegated to the ScriptEditor.
 			emit_signal(SNAME("search_in_files_requested"), selected_text);
 		} break;
 		case REPLACE_IN_FILES: {
-			String selected_text = code_editor->get_text_editor()->get_selected_text();
+			String selected_text = tx->get_selected_text();
 
 			emit_signal(SNAME("replace_in_files_requested"), selected_text);
 		} break;
@@ -1358,10 +1360,12 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->remove_all_bookmarks();
 		} break;
 		case DEBUG_TOGGLE_BREAKPOINT: {
-			int line = tx->get_caret_line();
-			bool dobreak = !tx->is_line_breakpointed(line);
-			tx->set_line_as_breakpoint(line, dobreak);
-			EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
+			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
+				int line = tx->get_caret_line(caret_idx);
+				bool dobreak = !tx->is_line_breakpointed(line);
+				tx->set_line_as_breakpoint(line, dobreak);
+				EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
+			}
 		} break;
 		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
@@ -1379,26 +1383,14 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				return;
 			}
 
-			tx->remove_secondary_carets();
-			int line = tx->get_caret_line();
-
-			// wrap around
-			if (line >= (int)bpoints[bpoints.size() - 1]) {
-				tx->unfold_line(bpoints[0]);
-				tx->set_caret_line(bpoints[0]);
-				tx->center_viewport_to_caret();
-			} else {
-				for (int i = 0; i < bpoints.size(); i++) {
-					int bline = bpoints[i];
-					if (bline > line) {
-						tx->unfold_line(bline);
-						tx->set_caret_line(bline);
-						tx->center_viewport_to_caret();
-						return;
-					}
+			int current_line = tx->get_caret_line();
+			int bpoint_idx = 0;
+			if (current_line < (int)bpoints[bpoints.size() - 1]) {
+				while (bpoint_idx < bpoints.size() && bpoints[bpoint_idx] <= current_line) {
+					bpoint_idx++;
 				}
 			}
-
+			code_editor->goto_line_centered(bpoints[bpoint_idx]);
 		} break;
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
@@ -1406,25 +1398,14 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				return;
 			}
 
-			tx->remove_secondary_carets();
-			int line = tx->get_caret_line();
-			// wrap around
-			if (line <= (int)bpoints[0]) {
-				tx->unfold_line(bpoints[bpoints.size() - 1]);
-				tx->set_caret_line(bpoints[bpoints.size() - 1]);
-				tx->center_viewport_to_caret();
-			} else {
-				for (int i = bpoints.size() - 1; i >= 0; i--) {
-					int bline = bpoints[i];
-					if (bline < line) {
-						tx->unfold_line(bline);
-						tx->set_caret_line(bline);
-						tx->center_viewport_to_caret();
-						return;
-					}
+			int current_line = tx->get_caret_line();
+			int bpoint_idx = bpoints.size() - 1;
+			if (current_line > (int)bpoints[0]) {
+				while (bpoint_idx >= 0 && bpoints[bpoint_idx] >= current_line) {
+					bpoint_idx--;
 				}
 			}
-
+			code_editor->goto_line_centered(bpoints[bpoint_idx]);
 		} break;
 		case HELP_CONTEXTUAL: {
 			String text = tx->get_selected_text(0);
@@ -1835,7 +1816,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				base = _find_node_for_script(base, base, script);
 			}
 			ScriptLanguage::LookupResult result;
-			if (script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, result) == OK) {
+			if (script->get_language()->lookup_code(tx->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, result) == OK) {
 				open_docs = true;
 			}
 		}
