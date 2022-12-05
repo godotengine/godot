@@ -67,14 +67,18 @@ int SpriteFramesEditor::_sheet_preview_position_to_frame_index(const Point2 &p_p
 	const Size2i block_size = frame_size + separation;
 	const Point2i position = p_position / sheet_zoom - offset;
 
-	if (position.x % block_size.x > frame_size.x || position.y % block_size.y > frame_size.y) {
+	if (position.x < 0 || position.y < 0) {
+		return -1; // Out of bounds.
+	}
+
+	if (position.x % block_size.x >= frame_size.x || position.y % block_size.y >= frame_size.y) {
 		return -1; // Gap between frames.
 	}
 
 	const Point2i frame = position / block_size;
 	const Size2i frame_count = _get_frame_count();
-	if (frame.x < 0 || frame.y < 0 || frame.x >= frame_count.x || frame.y >= frame_count.y) {
-		return -1; // Out of bound.
+	if (frame.x >= frame_count.x || frame.y >= frame_count.y) {
+		return -1; // Out of bounds.
 	}
 
 	return frame_count.x * frame.y + frame.x;

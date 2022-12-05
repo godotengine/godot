@@ -3674,20 +3674,41 @@ void SpatialEditorViewport::assign_pending_data_pointers(Spatial *p_preview_node
 
 Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const {
 	const float MAX_DISTANCE = 50.0;
+	const float FALLBACK_DISTANCE = 5.0;
 
 	Vector3 world_ray = _get_ray(p_pos);
 	Vector3 world_pos = _get_ray_pos(p_pos);
 
-	Vector3 point = world_pos + world_ray * MAX_DISTANCE;
-
 	PhysicsDirectSpaceState *ss = get_tree()->get_root()->get_world()->get_direct_space_state();
 	PhysicsDirectSpaceState::RayResult result;
 
-	if (ss->intersect_ray(world_pos, world_pos + world_ray * MAX_DISTANCE, result)) {
-		point = result.position;
+	if (ss->intersect_ray(world_pos, world_pos + world_ray * camera->get_zfar(), result)) {
+		return result.position;
 	}
 
-	return point;
+	const bool is_orthogonal = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
+
+	// The XZ plane.
+	Vector3 intersection;
+	Plane plane(Vector3(0, 1, 0), 0);
+	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
+		if (is_orthogonal || world_pos.distance_to(intersection) <= MAX_DISTANCE) {
+			return intersection;
+		}
+	}
+
+	// Plane facing the camera using fallback distance.
+	if (is_orthogonal) {
+		plane = Plane(cursor.pos - world_ray * (cursor.distance - FALLBACK_DISTANCE), world_ray);
+	} else {
+		plane = Plane(world_pos + world_ray * FALLBACK_DISTANCE, world_ray);
+	}
+	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
+		return intersection;
+	}
+
+	// Not likely, but just in case...
+	return world_pos + world_ray * FALLBACK_DISTANCE;
 }
 
 AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, bool p_exclude_toplevel_transform) {
@@ -3924,7 +3945,8 @@ bool SpatialEditorViewport::can_drop_data_fw(const Point2 &p_point, const Varian
 			ResourceLoader::get_recognized_extensions_for_type("Mesh", &mesh_extensions);
 
 			for (int i = 0; i < files.size(); i++) {
-				if (mesh_extensions.find(files[i].get_extension()) || scene_extensions.find(files[i].get_extension())) {
+				String extension = files[i].get_extension().to_lower();
+				if (mesh_extensions.find(extension) || scene_extensions.find(extension)) {
 					RES res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;
@@ -3959,7 +3981,7 @@ bool SpatialEditorViewport::can_drop_data_fw(const Point2 &p_point, const Varian
 	}
 
 	if (can_instance) {
-		Transform global_transform = Transform(Basis(), _get_instance_position(p_point));
+		Transform global_transform = Transform(Basis(), spatial_editor->snap_point(_get_instance_position(p_point)));
 		preview_node->set_global_transform(global_transform);
 	}
 
@@ -6051,6 +6073,20 @@ bool SpatialEditor::is_any_freelook_active() const {
 	return false;
 }
 
+void SpatialEditor::_selection_changed() {
+	_refresh_menu_icons();
+
+	if (selected && editor_selection->get_selected_node_list().size() != 1) {
+		Ref<EditorSpatialGizmo> gizmo = selected->get_gizmo();
+		if (gizmo.is_valid()) {
+			gizmo->set_selected(false);
+			selected->update_gizmo();
+		}
+		selected = nullptr;
+		over_gizmo_handle = -1;
+	}
+}
+
 void SpatialEditor::_refresh_menu_icons() {
 	bool all_locked = true;
 	bool all_grouped = true;
@@ -6275,7 +6311,7 @@ void SpatialEditor::_notification(int p_what) {
 
 		get_tree()->connect("node_removed", this, "_node_removed");
 		EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect("node_changed", this, "_refresh_menu_icons");
-		editor_selection->connect("selection_changed", this, "_refresh_menu_icons");
+		editor_selection->connect("selection_changed", this, "_selection_changed");
 
 		editor->connect("stop_pressed", this, "_update_camera_override_button", make_binds(false));
 		editor->connect("play_pressed", this, "_update_camera_override_button", make_binds(true));
@@ -6513,6 +6549,7 @@ void SpatialEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &SpatialEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &SpatialEditor::_request_gizmo);
 	ClassDB::bind_method("_toggle_maximize_view", &SpatialEditor::_toggle_maximize_view);
+	ClassDB::bind_method("_selection_changed", &SpatialEditor::_selection_changed);
 	ClassDB::bind_method("_refresh_menu_icons", &SpatialEditor::_refresh_menu_icons);
 	ClassDB::bind_method("_update_camera_override_button", &SpatialEditor::_update_camera_override_button);
 	ClassDB::bind_method("_update_camera_override_viewport", &SpatialEditor::_update_camera_override_viewport);
@@ -6974,7 +7011,13 @@ void SpatialEditorPlugin::edit(Object *p_object) {
 }
 
 bool SpatialEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Spatial");
+	if (p_object->is_class("Spatial")) {
+		return true;
+	} else {
+		// This ensures that gizmos are cleared when selecting a non-Spatial node.
+		const_cast<SpatialEditorPlugin *>(this)->edit((Object *)nullptr);
+		return false;
+	}
 }
 
 Dictionary SpatialEditorPlugin::get_state() const {

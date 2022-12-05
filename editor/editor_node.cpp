@@ -3840,7 +3840,7 @@ void EditorNode::_quick_opened() {
 		List<String> scene_extensions;
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
 
-		if (open_scene_dialog || scene_extensions.find(files[i].get_extension())) {
+		if (open_scene_dialog || scene_extensions.find(files[i].get_extension().to_lower())) {
 			open_request(res_path);
 		} else {
 			load_resource(res_path);
@@ -5630,6 +5630,8 @@ void EditorNode::_project_settings_changed() {
 	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
 	tree->set_debug_navigation_color(GLOBAL_GET("debug/shapes/navigation/geometry_color"));
 	tree->set_debug_navigation_disabled_color(GLOBAL_GET("debug/shapes/navigation/disabled_geometry_color"));
+
+	_update_title();
 }
 
 void EditorNode::_feature_profile_changed() {

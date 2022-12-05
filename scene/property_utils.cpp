@@ -167,8 +167,10 @@ static bool _collect_inheritance_chain(const Ref<SceneState> &p_state, const Nod
 		state = state->get_base_scene_state();
 	}
 
-	for (int i = inheritance_states.size() - 1; i >= 0; --i) {
-		r_states_stack.push_back(inheritance_states[i]);
+	if (inheritance_states.size() > 0) {
+		for (int i = inheritance_states.size() - 1; i >= 0; --i) {
+			r_states_stack.push_back(inheritance_states[i]);
+		}
 	}
 
 	return found;
@@ -212,10 +214,12 @@ Vector<SceneState::PackState> PropertyUtils::get_node_states_stack(const Node *p
 	{
 		states_stack_ret.resize(states_stack.size());
 		_FastPackState *ps = states_stack.ptr();
-		for (int i = states_stack.size() - 1; i >= 0; --i) {
-			states_stack_ret.write[i].state.reference_ptr(ps->state);
-			states_stack_ret.write[i].node = ps->node;
-			++ps;
+		if (states_stack.size() > 0) {
+			for (int i = states_stack.size() - 1; i >= 0; --i) {
+				states_stack_ret.write[i].state.reference_ptr(ps->state);
+				states_stack_ret.write[i].node = ps->node;
+				++ps;
+			}
 		}
 	}
 	return states_stack_ret;

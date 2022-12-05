@@ -140,8 +140,9 @@ bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 	} else if (what == "bound_children") {
 		Array children;
 
-		for (const List<uint32_t>::Element *E = bones[which].nodes_bound.front(); E; E = E->next()) {
-			Object *obj = ObjectDB::get_instance(E->get());
+		const LocalVectori<uint32_t> &nodes = bones[which].nodes_bound;
+		for (int i = 0; i < nodes.size(); i++) {
+			Object *obj = ObjectDB::get_instance(nodes[i]);
 			ERR_CONTINUE(!obj);
 			Node *node = Object::cast_to<Node>(obj);
 			ERR_CONTINUE(!node);
@@ -290,8 +291,9 @@ void Skeleton::_notification(int p_what) {
 					b.global_pose_override_amount = 0.0;
 				}
 
-				for (List<uint32_t>::Element *E = b.nodes_bound.front(); E; E = E->next()) {
-					Object *obj = ObjectDB::get_instance(E->get());
+				const LocalVectori<uint32_t> &nodes = b.nodes_bound;
+				for (int j = 0; j < nodes.size(); j++) {
+					Object *obj = ObjectDB::get_instance(nodes[j]);
 					ERR_CONTINUE(!obj);
 					Spatial *sp = Object::cast_to<Spatial>(obj);
 					ERR_CONTINUE(!sp);
@@ -525,10 +527,8 @@ void Skeleton::bind_child_node_to_bone(int p_bone, Node *p_node) {
 
 	uint32_t id = p_node->get_instance_id();
 
-	for (const List<uint32_t>::Element *E = bones[p_bone].nodes_bound.front(); E; E = E->next()) {
-		if (E->get() == id) {
-			return; // already here
-		}
+	if (bones[p_bone].nodes_bound.find(id) != -1) {
+		return; // Already here.
 	}
 
 	bones.write[p_bone].nodes_bound.push_back(id);
@@ -538,13 +538,20 @@ void Skeleton::unbind_child_node_from_bone(int p_bone, Node *p_node) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
 	uint32_t id = p_node->get_instance_id();
-	bones.write[p_bone].nodes_bound.erase(id);
+
+	int index = bones[p_bone].nodes_bound.find(id);
+	if (index == -1) {
+		return; // Doesn't exist in the first place.
+	}
+
+	bones.write[p_bone].nodes_bound.remove(index);
 }
 void Skeleton::get_bound_child_nodes_to_bone(int p_bone, List<Node *> *p_bound) const {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
-	for (const List<uint32_t>::Element *E = bones[p_bone].nodes_bound.front(); E; E = E->next()) {
-		Object *obj = ObjectDB::get_instance(E->get());
+	const LocalVectori<uint32_t> &nodes = bones[p_bone].nodes_bound;
+	for (int i = 0; i < nodes.size(); i++) {
+		Object *obj = ObjectDB::get_instance(nodes[i]);
 		ERR_CONTINUE(!obj);
 		p_bound->push_back(Object::cast_to<Node>(obj));
 	}
@@ -700,10 +707,14 @@ void _pb_start_simulation(const Skeleton *p_skeleton, Node *p_node, const Vector
 	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
 	if (pb) {
 		bool sim = false;
-		for (int i = p_sim_bones.size() - 1; 0 <= i; --i) {
-			if (p_sim_bones[i] == pb->get_bone_id() || p_skeleton->is_bone_parent_of(pb->get_bone_id(), p_sim_bones[i])) {
-				sim = true;
-				break;
+		if (p_sim_bones.empty()) { // If no bones is specified, activate ragdoll on full body.
+			sim = true;
+		} else {
+			for (int i = p_sim_bones.size() - 1; 0 <= i; --i) {
+				if (p_sim_bones[i] == pb->get_bone_id() || p_skeleton->is_bone_parent_of(pb->get_bone_id(), p_sim_bones[i])) {
+					sim = true;
+					break;
+				}
 			}
 		}
 
@@ -718,9 +729,7 @@ void _pb_start_simulation(const Skeleton *p_skeleton, Node *p_node, const Vector
 
 void Skeleton::physical_bones_start_simulation_on(const Array &p_bones) {
 	Vector<int> sim_bones;
-	if (p_bones.size() <= 0) {
-		sim_bones.push_back(0); // if no bones is specified, activate ragdoll on full body
-	} else {
+	if (p_bones.size() > 0) {
 		sim_bones.resize(p_bones.size());
 		int c = 0;
 		for (int i = sim_bones.size() - 1; 0 <= i; --i) {

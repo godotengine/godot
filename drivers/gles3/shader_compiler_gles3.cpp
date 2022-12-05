@@ -114,6 +114,8 @@ static int _get_datatype_size(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_STRUCT:
 			return 0;
+		default: {
+		}
 	}
 
 	ERR_FAIL_V(0);
@@ -185,6 +187,8 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_STRUCT:
 			return 0;
+		default: {
+		}
 	}
 
 	ERR_FAIL_V(0);

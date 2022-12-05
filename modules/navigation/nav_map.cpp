@@ -141,20 +141,17 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 	// This is an implementation of the A* algorithm.
 	int least_cost_id = 0;
+	int prev_least_cost_id = -1;
 	bool found_route = false;
 
 	const gd::Polygon *reachable_end = nullptr;
 	float reachable_d = 1e30;
 	bool is_reachable = true;
 
-	gd::NavigationPoly *prev_least_cost_poly = nullptr;
-
 	while (true) {
 		// Takes the current least_cost_poly neighbors (iterating over its edges) and compute the traveled_distance.
 		for (size_t i = 0; i < navigation_polys[least_cost_id].poly->edges.size(); i++) {
-			gd::NavigationPoly *least_cost_poly = &navigation_polys[least_cost_id];
-
-			const gd::Edge &edge = least_cost_poly->poly->edges[i];
+			const gd::Edge &edge = navigation_polys[least_cost_id].poly->edges[i];
 
 			// Iterate over connections in this edge, then compute the new optimized travel distance assigned to this polygon.
 			for (int connection_index = 0; connection_index < edge.connections.size(); connection_index++) {
@@ -165,17 +162,18 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					continue;
 				}
 
+				const gd::NavigationPoly &least_cost_poly = navigation_polys[least_cost_id];
 				float region_enter_cost = 0.0;
-				float region_travel_cost = least_cost_poly->poly->owner->get_travel_cost();
+				float region_travel_cost = least_cost_poly.poly->owner->get_travel_cost();
 
-				if (prev_least_cost_poly != nullptr && !(prev_least_cost_poly->poly->owner->get_self() == least_cost_poly->poly->owner->get_self())) {
-					region_enter_cost = least_cost_poly->poly->owner->get_enter_cost();
+				if (prev_least_cost_id != -1 && !(navigation_polys[prev_least_cost_id].poly->owner->get_self() == least_cost_poly.poly->owner->get_self())) {
+					region_enter_cost = least_cost_poly.poly->owner->get_enter_cost();
 				}
-				prev_least_cost_poly = least_cost_poly;
+				prev_least_cost_id = least_cost_id;
 
 				Vector3 pathway[2] = { connection.pathway_start, connection.pathway_end };
-				const Vector3 new_entry = Geometry::get_closest_point_to_segment(least_cost_poly->entry, pathway);
-				const float new_distance = (least_cost_poly->entry.distance_to(new_entry) * region_travel_cost) + region_enter_cost + least_cost_poly->traveled_distance;
+				const Vector3 new_entry = Geometry::get_closest_point_to_segment(least_cost_poly.entry, pathway);
+				const float new_distance = (least_cost_poly.entry.distance_to(new_entry) * region_travel_cost) + region_enter_cost + least_cost_poly.traveled_distance;
 
 				int64_t already_visited_polygon_index = navigation_polys.find(gd::NavigationPoly(connection.polygon));
 
@@ -241,6 +239,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			to_visit.clear();
 			to_visit.push_back(0);
 			least_cost_id = 0;
+			prev_least_cost_id = -1;
 
 			reachable_end = nullptr;
 
@@ -690,6 +689,7 @@ void NavMap::compute_single_step(uint32_t index, RvoAgent **agent) {
 void NavMap::step(real_t p_deltatime) {
 	deltatime = p_deltatime;
 	if (controlled_agents.size() > 0) {
+#ifndef NO_THREADS
 		if (step_work_pool.get_thread_count() == 0) {
 			step_work_pool.init();
 		}
@@ -698,6 +698,12 @@ void NavMap::step(real_t p_deltatime) {
 				this,
 				&NavMap::compute_single_step,
 				controlled_agents.ptr());
+#else
+		for (int i(0); i < static_cast<int>(controlled_agents.size()); i++) {
+			controlled_agents[i]->get_agent()->computeNeighbors(&rvo);
+			controlled_agents[i]->get_agent()->computeNewVelocity(deltatime);
+		}
+#endif // NO_THREADS
 	}
 }
 
@@ -743,5 +749,7 @@ NavMap::NavMap() {
 }
 
 NavMap::~NavMap() {
+#ifndef NO_THREADS
 	step_work_pool.finish();
+#endif // !NO_THREADS
 }

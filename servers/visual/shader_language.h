@@ -210,6 +210,7 @@ public:
 		TYPE_SAMPLERCUBE,
 		TYPE_SAMPLEREXT,
 		TYPE_STRUCT,
+		TYPE_MAX,
 	};
 
 	enum DataPrecision {

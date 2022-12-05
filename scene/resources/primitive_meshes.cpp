@@ -774,6 +774,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 
 	thisrow = 0;
 	prevrow = 0;
+	const real_t side_normal_y = (bottom_radius - top_radius) / height;
 	for (j = 0; j <= (rings + 1); j++) {
 		v = j;
 		v /= (rings + 1);
@@ -792,7 +793,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
-			normals.push_back(Vector3(x, 0.0, z));
+			normals.push_back(Vector3(x, side_normal_y, z).normalized());
 			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v * 0.5));
 			point++;
@@ -1858,24 +1859,25 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		if ((c & 0xfffffc00) == 0xdc00) { // skip trail surrogate.
 			continue;
 		}
+		if (utf32_char >= 0x20) {
+			_generate_glyph_mesh_data(utf32_char, font, c, n);
+			GlyphMeshData &gl_data = cache[utf32_char];
 
-		_generate_glyph_mesh_data(utf32_char, font, c, n);
-		GlyphMeshData &gl_data = cache[utf32_char];
+			p_size += gl_data.triangles.size() * ((has_depth) ? 2 : 1);
+			i_size += gl_data.triangles.size() * ((has_depth) ? 2 : 1);
 
-		p_size += gl_data.triangles.size() * ((has_depth) ? 2 : 1);
-		i_size += gl_data.triangles.size() * ((has_depth) ? 2 : 1);
-
-		if (has_depth) {
-			for (int j = 0; j < gl_data.contours.size(); j++) {
-				p_size += gl_data.contours[j].size() * 4;
-				i_size += gl_data.contours[j].size() * 6;
+			if (has_depth) {
+				for (int j = 0; j < gl_data.contours.size(); j++) {
+					p_size += gl_data.contours[j].size() * 4;
+					i_size += gl_data.contours[j].size() * 6;
+				}
 			}
-		}
 
-		min_p.x = MIN(gl_data.min_p.x + offset_pre.x, min_p.x);
-		min_p.y = MIN(gl_data.min_p.y + offset_pre.y, min_p.y);
-		max_p.x = MAX(gl_data.max_p.x + offset_pre.x, max_p.x);
-		max_p.y = MAX(gl_data.max_p.y + offset_pre.y, max_p.y);
+			min_p.x = MIN(gl_data.min_p.x + offset_pre.x, min_p.x);
+			min_p.y = MIN(gl_data.min_p.y + offset_pre.y, min_p.y);
+			max_p.x = MAX(gl_data.max_p.x + offset_pre.x, max_p.x);
+			max_p.y = MAX(gl_data.max_p.y + offset_pre.y, max_p.y);
+		}
 
 		offset_pre.x += font->get_char_size(c, n).x * pixel_size;
 	}
@@ -1912,97 +1914,99 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		if ((c & 0xfffffc00) == 0xdc00) { // skip trail surrogate.
 			continue;
 		}
-		_generate_glyph_mesh_data(utf32_char, font, c, n);
-		GlyphMeshData &gl_data = cache[utf32_char];
+		if (utf32_char >= 0x20) {
+			_generate_glyph_mesh_data(utf32_char, font, c, n);
+			GlyphMeshData &gl_data = cache[utf32_char];
 
-		int64_t ts = gl_data.triangles.size();
-		const Vector2 *ts_ptr = gl_data.triangles.ptr();
+			int64_t ts = gl_data.triangles.size();
+			const Vector2 *ts_ptr = gl_data.triangles.ptr();
 
-		for (int k = 0; k < ts; k += 3) {
-			// Add front face.
-			for (int l = 0; l < 3; l++) {
-				Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, depth / 2.0);
-				vertices_ptr[p_idx] = point;
-				normals_ptr[p_idx] = Vector3(0.0, 0.0, 1.0);
-				if (has_depth) {
-					uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -min_p.y, -max_p.y, real_t(0.0), real_t(0.4)));
-				} else {
-					uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -min_p.y, -max_p.y, real_t(0.0), real_t(1.0)));
-				}
-				tangents_ptr[p_idx * 4 + 0] = 1.0;
-				tangents_ptr[p_idx * 4 + 1] = 0.0;
-				tangents_ptr[p_idx * 4 + 2] = 0.0;
-				tangents_ptr[p_idx * 4 + 3] = 1.0;
-				indices_ptr[i_idx++] = p_idx;
-				p_idx++;
-			}
-			if (has_depth) {
-				// Add back face.
-				for (int l = 2; l >= 0; l--) {
-					Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, -depth / 2.0);
+			for (int k = 0; k < ts; k += 3) {
+				// Add front face.
+				for (int l = 0; l < 3; l++) {
+					Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, depth / 2.0);
 					vertices_ptr[p_idx] = point;
-					normals_ptr[p_idx] = Vector3(0.0, 0.0, -1.0);
-					uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -min_p.y, -max_p.y, real_t(0.4), real_t(0.8)));
-					tangents_ptr[p_idx * 4 + 0] = -1.0;
+					normals_ptr[p_idx] = Vector3(0.0, 0.0, 1.0);
+					if (has_depth) {
+						uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -min_p.y, -max_p.y, real_t(0.0), real_t(0.4)));
+					} else {
+						uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -min_p.y, -max_p.y, real_t(0.0), real_t(1.0)));
+					}
+					tangents_ptr[p_idx * 4 + 0] = 1.0;
 					tangents_ptr[p_idx * 4 + 1] = 0.0;
 					tangents_ptr[p_idx * 4 + 2] = 0.0;
 					tangents_ptr[p_idx * 4 + 3] = 1.0;
 					indices_ptr[i_idx++] = p_idx;
 					p_idx++;
 				}
+				if (has_depth) {
+					// Add back face.
+					for (int l = 2; l >= 0; l--) {
+						Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, -depth / 2.0);
+						vertices_ptr[p_idx] = point;
+						normals_ptr[p_idx] = Vector3(0.0, 0.0, -1.0);
+						uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -min_p.y, -max_p.y, real_t(0.4), real_t(0.8)));
+						tangents_ptr[p_idx * 4 + 0] = -1.0;
+						tangents_ptr[p_idx * 4 + 1] = 0.0;
+						tangents_ptr[p_idx * 4 + 2] = 0.0;
+						tangents_ptr[p_idx * 4 + 3] = 1.0;
+						indices_ptr[i_idx++] = p_idx;
+						p_idx++;
+					}
+				}
 			}
-		}
-		// Add sides.
-		if (has_depth) {
-			for (int k = 0; k < gl_data.contours.size(); k++) {
-				int64_t ps = gl_data.contours[k].size();
-				const ContourPoint *ps_ptr = gl_data.contours[k].ptr();
-				const ContourInfo &ps_info = gl_data.contours_info[k];
-				real_t length = 0.0;
-				for (int l = 0; l < ps; l++) {
-					int prev = (l == 0) ? (ps - 1) : (l - 1);
-					int next = (l + 1 == ps) ? 0 : (l + 1);
-					Vector2 d1;
-					Vector2 d2 = (ps_ptr[next].point - ps_ptr[l].point).normalized();
-					if (ps_ptr[l].sharp) {
-						d1 = d2;
-					} else {
-						d1 = (ps_ptr[l].point - ps_ptr[prev].point).normalized();
-					}
-					real_t seg_len = (ps_ptr[next].point - ps_ptr[l].point).length();
-
-					Vector3 quad_faces[4] = {
-						Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, -depth / 2.0),
-						Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, -depth / 2.0),
-						Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, depth / 2.0),
-						Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, depth / 2.0),
-					};
-					for (int m = 0; m < 4; m++) {
-						const Vector2 &d = ((m % 2) == 0) ? d1 : d2;
-						real_t u_pos = ((m % 2) == 0) ? length : length + seg_len;
-						vertices_ptr[p_idx + m] = quad_faces[m];
-						normals_ptr[p_idx + m] = Vector3(d.y, d.x, 0.0);
-						if (m < 2) {
-							uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.8 : 0.9);
+			// Add sides.
+			if (has_depth) {
+				for (int k = 0; k < gl_data.contours.size(); k++) {
+					int64_t ps = gl_data.contours[k].size();
+					const ContourPoint *ps_ptr = gl_data.contours[k].ptr();
+					const ContourInfo &ps_info = gl_data.contours_info[k];
+					real_t length = 0.0;
+					for (int l = 0; l < ps; l++) {
+						int prev = (l == 0) ? (ps - 1) : (l - 1);
+						int next = (l + 1 == ps) ? 0 : (l + 1);
+						Vector2 d1;
+						Vector2 d2 = (ps_ptr[next].point - ps_ptr[l].point).normalized();
+						if (ps_ptr[l].sharp) {
+							d1 = d2;
 						} else {
-							uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.9 : 1.0);
+							d1 = (ps_ptr[l].point - ps_ptr[prev].point).normalized();
 						}
-						tangents_ptr[(p_idx + m) * 4 + 0] = d.x;
-						tangents_ptr[(p_idx + m) * 4 + 1] = -d.y;
-						tangents_ptr[(p_idx + m) * 4 + 2] = 0.0;
-						tangents_ptr[(p_idx + m) * 4 + 3] = 1.0;
+						real_t seg_len = (ps_ptr[next].point - ps_ptr[l].point).length();
+
+						Vector3 quad_faces[4] = {
+							Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, -depth / 2.0),
+							Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, -depth / 2.0),
+							Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, depth / 2.0),
+							Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, depth / 2.0),
+						};
+						for (int m = 0; m < 4; m++) {
+							const Vector2 &d = ((m % 2) == 0) ? d1 : d2;
+							real_t u_pos = ((m % 2) == 0) ? length : length + seg_len;
+							vertices_ptr[p_idx + m] = quad_faces[m];
+							normals_ptr[p_idx + m] = Vector3(d.y, d.x, 0.0);
+							if (m < 2) {
+								uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.8 : 0.9);
+							} else {
+								uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.9 : 1.0);
+							}
+							tangents_ptr[(p_idx + m) * 4 + 0] = d.x;
+							tangents_ptr[(p_idx + m) * 4 + 1] = -d.y;
+							tangents_ptr[(p_idx + m) * 4 + 2] = 0.0;
+							tangents_ptr[(p_idx + m) * 4 + 3] = 1.0;
+						}
+
+						indices_ptr[i_idx++] = p_idx;
+						indices_ptr[i_idx++] = p_idx + 1;
+						indices_ptr[i_idx++] = p_idx + 2;
+
+						indices_ptr[i_idx++] = p_idx + 1;
+						indices_ptr[i_idx++] = p_idx + 3;
+						indices_ptr[i_idx++] = p_idx + 2;
+
+						length += seg_len;
+						p_idx += 4;
 					}
-
-					indices_ptr[i_idx++] = p_idx;
-					indices_ptr[i_idx++] = p_idx + 1;
-					indices_ptr[i_idx++] = p_idx + 2;
-
-					indices_ptr[i_idx++] = p_idx + 1;
-					indices_ptr[i_idx++] = p_idx + 3;
-					indices_ptr[i_idx++] = p_idx + 2;
-
-					length += seg_len;
-					p_idx += 4;
 				}
 			}
 		}

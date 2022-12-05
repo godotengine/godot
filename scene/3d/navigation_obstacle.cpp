@@ -140,7 +140,7 @@ NavigationObstacle::~NavigationObstacle() {
 }
 
 void NavigationObstacle::set_navigation(Navigation *p_nav) {
-	if (navigation == p_nav) {
+	if (navigation == p_nav && navigation != nullptr) {
 		return; // Pointless
 	}
 
@@ -216,12 +216,11 @@ real_t NavigationObstacle::estimate_agent_radius() const {
 		}
 		Vector3 s = parent_spatial->get_global_transform().basis.get_scale();
 		radius *= MAX(s.x, MAX(s.y, s.z));
-	}
 
-	if (radius > 0.0) {
-		return radius;
+		if (radius > 0.0) {
+			return radius;
+		}
 	}
-
 	return 1.0; // Never a 0 radius
 }
 
