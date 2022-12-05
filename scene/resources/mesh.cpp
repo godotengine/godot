@@ -189,6 +189,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			if (primitive == PRIMITIVE_TRIANGLES) {
 				for (int j = 0; j < ic; j++) {
 					int index = ir[j];
+					ERR_FAIL_COND_V(index >= vc, Ref<TriangleMesh>());
 					facesw[widx++] = vr[index];
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
