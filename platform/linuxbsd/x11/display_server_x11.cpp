@@ -3947,7 +3947,6 @@ void DisplayServerX11::process_events() {
 									mb->set_window_id(window_id_other);
 									mb->set_position(Vector2(x, y));
 									mb->set_global_position(mb->get_position());
-									Input::get_singleton()->parse_input_event(mb);
 								}
 								break;
 							}
