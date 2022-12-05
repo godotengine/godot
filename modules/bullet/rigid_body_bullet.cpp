@@ -1015,10 +1015,15 @@ void RigidBodyBullet::reload_space_override_modificator() {
 		newAngularDamp += space->get_angular_damp();
 	}
 
-	btVector3 newBtGravity;
-	G_TO_B(newGravity * gravity_scale, newBtGravity);
+	if (omit_forces_integration) {
+		// Custom behaviour.
+		btBody->setGravity(btVector3(0, 0, 0));
+	} else {
+		btVector3 newBtGravity;
+		G_TO_B(newGravity * gravity_scale, newBtGravity);
+		btBody->setGravity(newBtGravity);
+	}
 
-	btBody->setGravity(newBtGravity);
 	btBody->setDamping(newLinearDamp, newAngularDamp);
 }
 

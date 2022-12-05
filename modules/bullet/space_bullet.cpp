@@ -573,10 +573,6 @@ void SpaceBullet::remove_all_collision_objects() {
 	}
 }
 
-void onBulletPreTickCallback(btDynamicsWorld *p_dynamicsWorld, btScalar timeStep) {
-	static_cast<SpaceBullet *>(p_dynamicsWorld->getWorldUserInfo())->flush_queries();
-}
-
 void onBulletTickCallback(btDynamicsWorld *p_dynamicsWorld, btScalar timeStep) {
 	const btCollisionObjectArray &colObjArray = p_dynamicsWorld->getCollisionObjectArray();
 
@@ -644,7 +640,6 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 
 	dynamicsWorld->setWorldUserInfo(this);
 
-	dynamicsWorld->setInternalTickCallback(onBulletPreTickCallback, this, true);
 	dynamicsWorld->setInternalTickCallback(onBulletTickCallback, this, false);
 	dynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(ghostPairCallback); // Setup ghost check
 	dynamicsWorld->getPairCache()->setOverlapFilterCallback(godotFilterCallback);
