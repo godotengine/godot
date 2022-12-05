@@ -216,8 +216,8 @@ void AnimationPlayerEditor::_play_from_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->play(current);
 		player->seek(time);
+		player->play(current);
 	}
 
 	//unstop
@@ -254,8 +254,8 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->play(current, -1, -1, true);
 		player->seek(time);
+		player->play(current, -1, -1, true);
 	}
 
 	//unstop

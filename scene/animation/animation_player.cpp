@@ -955,7 +955,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 							break;
 					}
 
-					if (player->is_playing() || p_seeked) {
+					if (player->is_playing()) {
 						player->play(anim_name);
 						player->seek(at_anim_pos);
 						nc->animation_playing = true;
