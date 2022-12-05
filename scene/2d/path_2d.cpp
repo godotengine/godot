@@ -177,7 +177,7 @@ void PathFollow2D::_update_transform() {
 	}
 
 	if (rotates) {
-		Transform2D xform = c->sample_baked_with_rotation(progress, cubic, loop, lookahead);
+		Transform2D xform = c->sample_baked_with_rotation(progress, cubic);
 		xform.translate_local(v_offset, h_offset);
 		set_rotation(xform[1].angle());
 		set_position(xform[2]);
