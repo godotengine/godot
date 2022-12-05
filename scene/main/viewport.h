@@ -374,7 +374,6 @@ private:
 		ObjectID drag_preview_id;
 		Ref<SceneTreeTimer> tooltip_timer;
 		double tooltip_delay = 0.0;
-		Transform2D focus_inv_xform;
 		bool roots_order_dirty = false;
 		List<Control *> roots;
 		int canvas_sort_index = 0; //for sorting items with canvas as root
@@ -403,7 +402,7 @@ private:
 	void _gui_call_notification(Control *p_control, int p_what);
 
 	void _gui_sort_roots();
-	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform);
+	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform);
 
 	void _gui_input_event(Ref<InputEvent> p_event);
 	void _perform_drop(Control *p_control = nullptr, Point2 p_pos = Point2());
