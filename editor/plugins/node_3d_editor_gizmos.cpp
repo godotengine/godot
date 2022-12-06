@@ -5057,8 +5057,8 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Vector3 up_vector = NavigationServer3D::get_singleton()->map_get_up(nav_map);
 	Vector3::Axis up_axis = up_vector.max_axis_index();
 
-	Vector3 start_location = link->get_start_location();
-	Vector3 end_location = link->get_end_location();
+	Vector3 start_position = link->get_start_position();
+	Vector3 end_position = link->get_end_position();
 
 	Ref<Material> link_material = get_material("navigation_link_material", p_gizmo);
 	Ref<Material> link_material_disabled = get_material("navigation_link_material_disabled", p_gizmo);
@@ -5068,10 +5068,10 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	// Draw line between the points.
 	Vector<Vector3> lines;
-	lines.append(start_location);
-	lines.append(end_location);
+	lines.append(start_position);
+	lines.append(end_position);
 
-	// Draw start location search radius
+	// Draw start position search radius
 	for (int i = 0; i < 30; i++) {
 		// Create a circle
 		const float ra = Math::deg_to_rad((float)(i * 12));
@@ -5082,21 +5082,21 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		// Draw axis-aligned circle
 		switch (up_axis) {
 			case Vector3::AXIS_X:
-				lines.append(start_location + Vector3(0, a.x, a.y));
-				lines.append(start_location + Vector3(0, b.x, b.y));
+				lines.append(start_position + Vector3(0, a.x, a.y));
+				lines.append(start_position + Vector3(0, b.x, b.y));
 				break;
 			case Vector3::AXIS_Y:
-				lines.append(start_location + Vector3(a.x, 0, a.y));
-				lines.append(start_location + Vector3(b.x, 0, b.y));
+				lines.append(start_position + Vector3(a.x, 0, a.y));
+				lines.append(start_position + Vector3(b.x, 0, b.y));
 				break;
 			case Vector3::AXIS_Z:
-				lines.append(start_location + Vector3(a.x, a.y, 0));
-				lines.append(start_location + Vector3(b.x, b.y, 0));
+				lines.append(start_position + Vector3(a.x, a.y, 0));
+				lines.append(start_position + Vector3(b.x, b.y, 0));
 				break;
 		}
 	}
 
-	// Draw end location search radius
+	// Draw end position search radius
 	for (int i = 0; i < 30; i++) {
 		// Create a circle
 		const float ra = Math::deg_to_rad((float)(i * 12));
@@ -5107,16 +5107,16 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		// Draw axis-aligned circle
 		switch (up_axis) {
 			case Vector3::AXIS_X:
-				lines.append(end_location + Vector3(0, a.x, a.y));
-				lines.append(end_location + Vector3(0, b.x, b.y));
+				lines.append(end_position + Vector3(0, a.x, a.y));
+				lines.append(end_position + Vector3(0, b.x, b.y));
 				break;
 			case Vector3::AXIS_Y:
-				lines.append(end_location + Vector3(a.x, 0, a.y));
-				lines.append(end_location + Vector3(b.x, 0, b.y));
+				lines.append(end_position + Vector3(a.x, 0, a.y));
+				lines.append(end_position + Vector3(b.x, 0, b.y));
 				break;
 			case Vector3::AXIS_Z:
-				lines.append(end_location + Vector3(a.x, a.y, 0));
-				lines.append(end_location + Vector3(b.x, b.y, 0));
+				lines.append(end_position + Vector3(a.x, a.y, 0));
+				lines.append(end_position + Vector3(b.x, b.y, 0));
 				break;
 		}
 	}
@@ -5125,8 +5125,8 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_collision_segments(lines);
 
 	Vector<Vector3> handles;
-	handles.append(start_location);
-	handles.append(end_location);
+	handles.append(start_position);
+	handles.append(end_position);
 	p_gizmo->add_handles(handles, handles_material);
 }
 
@@ -5136,7 +5136,7 @@ String NavigationLink3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 
 Variant NavigationLink3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_node_3d());
-	return p_id == 0 ? link->get_start_location() : link->get_end_location();
+	return p_id == 0 ? link->get_start_position() : link->get_end_position();
 }
 
 void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -5151,8 +5151,8 @@ void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
-	Vector3 location = p_id == 0 ? link->get_start_location() : link->get_end_location();
-	Plane move_plane = Plane(cam_dir, gt.xform(location));
+	Vector3 position = p_id == 0 ? link->get_start_position() : link->get_end_position();
+	Plane move_plane = Plane(cam_dir, gt.xform(position));
 
 	Vector3 intersection;
 	if (!move_plane.intersects_ray(ray_from, ray_dir, &intersection)) {
@@ -5164,11 +5164,11 @@ void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 		intersection.snap(Vector3(snap, snap, snap));
 	}
 
-	location = gi.xform(intersection);
+	position = gi.xform(intersection);
 	if (p_id == 0) {
-		link->set_start_location(location);
+		link->set_start_position(position);
 	} else if (p_id == 1) {
-		link->set_end_location(location);
+		link->set_end_position(position);
 	}
 }
 
@@ -5177,22 +5177,22 @@ void NavigationLink3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 
 	if (p_cancel) {
 		if (p_id == 0) {
-			link->set_start_location(p_restore);
+			link->set_start_position(p_restore);
 		} else {
-			link->set_end_location(p_restore);
+			link->set_end_position(p_restore);
 		}
 		return;
 	}
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	if (p_id == 0) {
-		ur->create_action(TTR("Change Start Location"));
-		ur->add_do_method(link, "set_start_location", link->get_start_location());
-		ur->add_undo_method(link, "set_start_location", p_restore);
+		ur->create_action(TTR("Change Start Position"));
+		ur->add_do_method(link, "set_start_position", link->get_start_position());
+		ur->add_undo_method(link, "set_start_position", p_restore);
 	} else {
-		ur->create_action(TTR("Change End Location"));
-		ur->add_do_method(link, "set_end_location", link->get_end_location());
-		ur->add_undo_method(link, "set_end_location", p_restore);
+		ur->create_action(TTR("Change End Position"));
+		ur->add_do_method(link, "set_end_position", link->get_end_position());
+		ur->add_undo_method(link, "set_end_position", p_restore);
 	}
 
 	ur->commit_action();

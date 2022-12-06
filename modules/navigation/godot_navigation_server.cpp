@@ -535,32 +535,32 @@ uint32_t GodotNavigationServer::link_get_navigation_layers(const RID p_link) con
 	return link->get_navigation_layers();
 }
 
-COMMAND_2(link_set_start_location, RID, p_link, Vector3, p_location) {
+COMMAND_2(link_set_start_position, RID, p_link, Vector3, p_position) {
 	NavLink *link = link_owner.get_or_null(p_link);
 	ERR_FAIL_COND(link == nullptr);
 
-	link->set_start_location(p_location);
+	link->set_start_position(p_position);
 }
 
-Vector3 GodotNavigationServer::link_get_start_location(RID p_link) const {
+Vector3 GodotNavigationServer::link_get_start_position(RID p_link) const {
 	const NavLink *link = link_owner.get_or_null(p_link);
 	ERR_FAIL_COND_V(link == nullptr, Vector3());
 
-	return link->get_start_location();
+	return link->get_start_position();
 }
 
-COMMAND_2(link_set_end_location, RID, p_link, Vector3, p_location) {
+COMMAND_2(link_set_end_position, RID, p_link, Vector3, p_position) {
 	NavLink *link = link_owner.get_or_null(p_link);
 	ERR_FAIL_COND(link == nullptr);
 
-	link->set_end_location(p_location);
+	link->set_end_position(p_position);
 }
 
-Vector3 GodotNavigationServer::link_get_end_location(RID p_link) const {
+Vector3 GodotNavigationServer::link_get_end_position(RID p_link) const {
 	const NavLink *link = link_owner.get_or_null(p_link);
 	ERR_FAIL_COND_V(link == nullptr, Vector3());
 
-	return link->get_end_location();
+	return link->get_end_position();
 }
 
 COMMAND_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost) {
