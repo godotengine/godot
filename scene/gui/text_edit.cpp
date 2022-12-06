@@ -1108,8 +1108,9 @@ void TextEdit::_notification(int p_what) {
 					int start = TS->shaped_text_get_range(rid).x;
 					if (!clipped && !search_text.is_empty()) { // Search highhlight
 						int search_text_col = _get_column_pos_of_word(search_text, str, search_flags, 0);
+						int search_text_len = search_text.length();
 						while (search_text_col != -1) {
-							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, search_text_col + start, search_text_col + search_text.length() + start);
+							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, search_text_col + start, search_text_col + search_text_len + start);
 							for (int j = 0; j < sel.size(); j++) {
 								Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y, sel[j].y - sel[j].x, row_height);
 								if (rect.position.x + rect.size.x <= xmargin_beg || rect.position.x > xmargin_end) {
@@ -1125,14 +1126,15 @@ void TextEdit::_notification(int p_what) {
 								draw_rect(rect, search_result_border_color, false);
 							}
 
-							search_text_col = _get_column_pos_of_word(search_text, str, search_flags, search_text_col + 1);
+							search_text_col = _get_column_pos_of_word(search_text, str, search_flags, search_text_col + search_text_len);
 						}
 					}
 
 					if (!clipped && highlight_all_occurrences && !only_whitespaces_highlighted && !highlighted_text.is_empty()) { // Highlight
 						int highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
+						int highlighted_text_len = highlighted_text.length();
 						while (highlighted_text_col != -1) {
-							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_text_col + start, highlighted_text_col + highlighted_text.length() + start);
+							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_text_col + start, highlighted_text_col + highlighted_text_len + start);
 							for (int j = 0; j < sel.size(); j++) {
 								Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y, sel[j].y - sel[j].x, row_height);
 								if (rect.position.x + rect.size.x <= xmargin_beg || rect.position.x > xmargin_end) {
@@ -1147,15 +1149,16 @@ void TextEdit::_notification(int p_what) {
 								draw_rect(rect, word_highlighted_color);
 							}
 
-							highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_text_col + 1);
+							highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_text_col + highlighted_text_len);
 						}
 					}
 
 					if (!clipped && lookup_symbol_word.length() != 0) { // Highlight word
 						if (is_ascii_char(lookup_symbol_word[0]) || lookup_symbol_word[0] == '_' || lookup_symbol_word[0] == '.') {
-							int highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
-							while (highlighted_word_col != -1) {
-								Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_word_col + start, highlighted_word_col + lookup_symbol_word.length() + start);
+							int lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
+							int lookup_symbol_word_len = lookup_symbol_word.length();
+							while (lookup_symbol_word_col != -1) {
+								Vector<Vector2> sel = TS->shaped_text_get_selection(rid, lookup_symbol_word_col + start, lookup_symbol_word_col + lookup_symbol_word_len + start);
 								for (int j = 0; j < sel.size(); j++) {
 									Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y + (line_spacing / 2), sel[j].y - sel[j].x, row_height);
 									if (rect.position.x + rect.size.x <= xmargin_beg || rect.position.x > xmargin_end) {
@@ -1172,7 +1175,7 @@ void TextEdit::_notification(int p_what) {
 									draw_rect(rect, color);
 								}
 
-								highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_word_col + 1);
+								lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, lookup_symbol_word_col + lookup_symbol_word_len);
 							}
 						}
 					}
