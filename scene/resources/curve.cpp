@@ -941,7 +941,7 @@ Transform2D Curve2D::_sample_posture(Interval p_interval) const {
 	const Vector2 forward = forward_begin.slerp(forward_end, frac).normalized();
 	const Vector2 side = Vector2(-forward.y, forward.x);
 
-	return Transform2D(forward, side, Vector2(0.0, 0.0));
+	return Transform2D(side, forward, Vector2(0.0, 0.0));
 }
 
 Vector2 Curve2D::sample_baked(real_t p_offset, bool p_cubic) const {
