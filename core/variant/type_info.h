@@ -290,6 +290,7 @@ public:
 	_FORCE_INLINE_ void set_flag(T p_flag) { value |= p_flag; }
 	_FORCE_INLINE_ bool has_flag(T p_flag) const { return value & p_flag; }
 	_FORCE_INLINE_ void clear_flag(T p_flag) { return value &= ~p_flag; }
+	_FORCE_INLINE_ BitField() = default;
 	_FORCE_INLINE_ BitField(int64_t p_value) { value = p_value; }
 	_FORCE_INLINE_ operator int64_t() const { return value; }
 	_FORCE_INLINE_ operator Variant() const { return value; }
