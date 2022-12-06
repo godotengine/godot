@@ -1908,7 +1908,7 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 	}
 
 	// Cylinder B end caps.
-	if (!separator.test_axis(cylinder_A_axis.normalized())) {
+	if (!separator.test_axis(cylinder_B_axis.normalized())) {
 		return;
 	}
 
