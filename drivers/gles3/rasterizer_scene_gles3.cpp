@@ -1902,7 +1902,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glColorMask(0, 0, 0, 0);
 		glClearDepth(1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		uint32_t spec_constant = SceneShaderGLES3::DISABLE_FOG | SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL |
+		uint64_t spec_constant = SceneShaderGLES3::DISABLE_FOG | SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL |
 				SceneShaderGLES3::DISABLE_LIGHTMAP | SceneShaderGLES3::DISABLE_LIGHT_OMNI |
 				SceneShaderGLES3::DISABLE_LIGHT_SPOT;
 
@@ -1943,7 +1943,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
 	}
 	RENDER_TIMESTAMP("Render Opaque Pass");
-	uint32_t spec_constant_base_flags = 0;
+	uint64_t spec_constant_base_flags = 0;
 
 	{
 		// Specialization Constants that apply for entire rendering pass.
@@ -2014,8 +2014,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 	GeometryInstanceGLES3 *prev_inst = nullptr;
 	SceneShaderGLES3::ShaderVariant prev_variant = SceneShaderGLES3::ShaderVariant::MODE_COLOR;
 	SceneShaderGLES3::ShaderVariant shader_variant = SceneShaderGLES3::MODE_COLOR; // Assigned to silence wrong -Wmaybe-initialized
+	uint64_t prev_spec_constants = 0;
 
-	uint32_t base_spec_constants = p_params->spec_constant_base_flags;
+	// Specializations constants used by all instances in the scene.
+	uint64_t base_spec_constants = p_params->spec_constant_base_flags;
 
 	if (p_render_data->view_count > 1) {
 		base_spec_constants |= SceneShaderGLES3::USE_MULTIVIEW;
@@ -2235,8 +2237,18 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			instance_variant = SceneShaderGLES3::ShaderVariant(1 + int(shader_variant));
 		}
 
-		if (prev_shader != shader || prev_variant != instance_variant) {
-			bool success = material_storage->shaders.scene_shader.version_bind_shader(shader->version, instance_variant, base_spec_constants);
+		uint64_t spec_constants = base_spec_constants;
+
+		if (inst->omni_light_count == 0) {
+			spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
+		}
+
+		if (inst->spot_light_count == 0) {
+			spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
+		}
+
+		if (prev_shader != shader || prev_variant != instance_variant || spec_constants != prev_spec_constants) {
+			bool success = material_storage->shaders.scene_shader.version_bind_shader(shader->version, instance_variant, spec_constants);
 			if (!success) {
 				continue;
 			}
@@ -2248,29 +2260,30 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				opaque_prepass_threshold = 0.1;
 			}
 
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, instance_variant, base_spec_constants);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, instance_variant, spec_constants);
 
 			prev_shader = shader;
 			prev_variant = instance_variant;
+			prev_spec_constants = spec_constants;
 		}
 
 		if (prev_inst != inst || prev_shader != shader || prev_variant != instance_variant) {
 			// Rebind the light indices.
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_count, shader->version, instance_variant, base_spec_constants);
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_count, shader->version, instance_variant, base_spec_constants);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_count, shader->version, instance_variant, spec_constants);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_count, shader->version, instance_variant, spec_constants);
 
 			if (inst->omni_light_count) {
-				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::OMNI_LIGHT_INDICES, shader->version, instance_variant, base_spec_constants), inst->omni_light_count, inst->omni_light_gl_cache.ptr());
+				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::OMNI_LIGHT_INDICES, shader->version, instance_variant, spec_constants), inst->omni_light_count, inst->omni_light_gl_cache.ptr());
 			}
 
 			if (inst->spot_light_count) {
-				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::SPOT_LIGHT_INDICES, shader->version, instance_variant, base_spec_constants), inst->spot_light_count, inst->spot_light_gl_cache.ptr());
+				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::SPOT_LIGHT_INDICES, shader->version, instance_variant, spec_constants), inst->spot_light_count, inst->spot_light_gl_cache.ptr());
 			}
 
 			prev_inst = inst;
 		}
 
-		material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, instance_variant, base_spec_constants);
+		material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, instance_variant, spec_constants);
 		if (inst->instance_count > 0) {
 			// Using MultiMesh or Particles.
 			// Bind instance buffers.
