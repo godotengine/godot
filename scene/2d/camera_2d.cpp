@@ -41,8 +41,11 @@ void Camera2D::_update_scroll() {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		update(); //will just be drawn
-		return;
+		update();
+		// Only set viewport transform when not bound to the main viewport.
+		if (get_viewport() == get_tree()->get_edited_scene_root()->get_viewport()) {
+			return;
+		}
 	}
 
 	if (!viewport) {
