@@ -1062,6 +1062,12 @@
 				Appends [param right] at the end of this [String], also known as a string concatenation.
 			</description>
 		</operator>
+		<operator name="operator +">
+			<return type="String" />
+			<param index="0" name="right" type="StringName" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="String" />

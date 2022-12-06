@@ -33,10 +33,813 @@
 		</constructor>
 	</constructors>
 	<methods>
+		<method name="begins_with" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Returns [code]true[/code] if the string begins with the given string.
+			</description>
+		</method>
+		<method name="bigrams" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array containing the bigrams (pairs of consecutive letters) of this string.
+				[codeblock]
+				print("Bigrams".bigrams()) # Prints "[Bi, ig, gr, ra, am, ms]"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="bin_to_int" qualifiers="const">
+			<return type="int" />
+			<description>
+				Converts a string containing a binary number into an integer. Binary strings can either be prefixed with [code]0b[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
+				[codeblocks]
+				[gdscript]
+				print("0b101".bin_to_int()) # Prints "5".
+				print("101".bin_to_int()) # Prints "5".
+				[/gdscript]
+				[csharp]
+				GD.Print("0b101".BinToInt()); // Prints "5".
+				GD.Print("101".BinToInt()); // Prints "5".
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="c_escape" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a copy of the string with special characters escaped using the C language standard.
+			</description>
+		</method>
+		<method name="c_unescape" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
+				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
+			</description>
+		</method>
+		<method name="capitalize" qualifiers="const">
+			<return type="String" />
+			<description>
+				Changes the case of some letters. Replaces underscores with spaces, adds spaces before in-word uppercase characters, converts all letters to lowercase, then capitalizes the first letter and every letter following a space character. For [code]capitalize camelCase mixed_with_underscores[/code], it will return [code]Capitalize Camel Case Mixed With Underscores[/code].
+			</description>
+		</method>
+		<method name="casecmp_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="String" />
+			<description>
+				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [param to] string or [code]-1[/code] if the "base" string is shorter than the [param to] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [param to] string is empty or [code]0[/code] if both strings are empty.
+				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method naturalnocasecmp_to].
+			</description>
+		</method>
+		<method name="contains" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="what" type="String" />
+			<description>
+				Returns [code]true[/code] if the string contains the given string.
+			</description>
+		</method>
+		<method name="count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="0" />
+			<param index="2" name="to" type="int" default="0" />
+			<description>
+				Returns the number of occurrences of substring [param what] between [param from] and [param to] positions. If [param from] and [param to] equals 0 the whole string will be used. If only [param to] equals 0 the remained substring will be used.
+			</description>
+		</method>
+		<method name="countn" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="0" />
+			<param index="2" name="to" type="int" default="0" />
+			<description>
+				Returns the number of occurrences of substring [param what] (ignoring case) between [param from] and [param to] positions. If [param from] and [param to] equals 0 the whole string will be used. If only [param to] equals 0 the remained substring will be used.
+			</description>
+		</method>
+		<method name="dedent" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a copy of the string with indentation (leading tabs and spaces) removed. See also [method indent] to add indentation.
+			</description>
+		</method>
+		<method name="ends_with" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Returns [code]true[/code] if the string ends with the given string.
+			</description>
+		</method>
+		<method name="find" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Returns the index of the [b]first[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
+				[b]Note:[/b] If you just want to know whether a string contains a substring, use the [code]in[/code] operator as follows:
+				[codeblocks]
+				[gdscript]
+				print("i" in "team") # Will print `false`.
+				[/gdscript]
+				[csharp]
+				// C# has no in operator, but we can use `Contains()`.
+				GD.Print("team".Contains("i")); // Will print `false`.
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="findn" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Returns the index of the [b]first[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
+			</description>
+		</method>
+		<method name="format" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="values" type="Variant" />
+			<param index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
+			<description>
+				Formats the string by replacing all occurrences of [param placeholder] with the elements of [param values].
+				[param values] can be a [Dictionary] or an [Array]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
+				[codeblock]
+				# Prints: Waiting for Godot is a play by Samuel Beckett, and Godot Engine is named after it.
+				var use_array_values = "Waiting for {0} is a play by {1}, and {0} Engine is named after it."
+				print(use_array_values.format(["Godot", "Samuel Beckett"]))
+
+				# Prints: User 42 is Godot.
+				print("User {id} is {name}.".format({"id": 42, "name": "Godot"}))
+				[/codeblock]
+				Some additional handling is performed when [param values] is an array. If [param placeholder] does not contain an underscore, the elements of the array will be used to replace one occurrence of the placeholder in turn; If an array element is another 2-element array, it'll be interpreted as a key-value pair.
+				[codeblock]
+				# Prints: User 42 is Godot.
+				print("User {} is {}.".format([42, "Godot"], "{}"))
+				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_base_dir" qualifiers="const">
+			<return type="String" />
+			<description>
+				If the string is a valid file path, returns the base directory name.
+			</description>
+		</method>
+		<method name="get_basename" qualifiers="const">
+			<return type="String" />
+			<description>
+				If the string is a valid file path, returns the full file path without the extension.
+			</description>
+		</method>
+		<method name="get_extension" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the extension without the leading period character ([code].[/code]) if the string is a valid file name or path. If the string does not contain an extension, returns an empty string instead.
+				[codeblock]
+				print("/path/to/file.txt".get_extension())  # "txt"
+				print("file.txt".get_extension())  # "txt"
+				print("file.sample.txt".get_extension())  # "txt"
+				print(".txt".get_extension())  # "txt"
+				print("file.txt.".get_extension())  # "" (empty string)
+				print("file.txt..".get_extension())  # "" (empty string)
+				print("txt".get_extension())  # "" (empty string)
+				print("".get_extension())  # "" (empty string)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_file" qualifiers="const">
+			<return type="String" />
+			<description>
+				If the string is a valid file path, returns the filename.
+			</description>
+		</method>
+		<method name="get_slice" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="delimiter" type="String" />
+			<param index="1" name="slice" type="int" />
+			<description>
+				Splits a string using a [param delimiter] and returns a substring at index [param slice]. Returns an empty string if the index doesn't exist.
+				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
+				[b]Example:[/b]
+				[codeblock]
+				print("i/am/example/string".get_slice("/", 2)) # Prints 'example'.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_slice_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="delimiter" type="String" />
+			<description>
+				Splits a string using a [param delimiter] and returns a number of slices.
+			</description>
+		</method>
+		<method name="get_slicec" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="delimiter" type="int" />
+			<param index="1" name="slice" type="int" />
+			<description>
+				Splits a string using a Unicode character with code [param delimiter] and returns a substring at index [param slice]. Returns an empty string if the index doesn't exist.
+				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
+			</description>
+		</method>
 		<method name="hash" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the 32-bit hash value representing the [StringName]'s contents.
+			</description>
+		</method>
+		<method name="hex_to_int" qualifiers="const">
+			<return type="int" />
+			<description>
+				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings can either be prefixed with [code]0x[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
+				[codeblocks]
+				[gdscript]
+				print("0xff".hex_to_int()) # Prints "255".
+				print("ab".hex_to_int()) # Prints "171".
+				[/gdscript]
+				[csharp]
+				GD.Print("0xff".HexToInt()); // Prints "255".
+				GD.Print("ab".HexToInt()); // Prints "171".
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="indent" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="prefix" type="String" />
+			<description>
+				Returns a copy of the string with lines indented with [param prefix].
+				For example, the string can be indented with two tabs using [code]"\t\t"[/code], or four spaces using [code]"    "[/code]. The prefix can be any string so it can also be used to comment out strings with e.g. [code]"# "[/code]. See also [method dedent] to remove indentation.
+				[b]Note:[/b] Empty lines are kept empty.
+			</description>
+		</method>
+		<method name="insert" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="position" type="int" />
+			<param index="1" name="what" type="String" />
+			<description>
+				Returns a copy of the string with the substring [param what] inserted at the given [param position].
+			</description>
+		</method>
+		<method name="is_absolute_path" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is explicitly defined. This includes [code]res://[/code], [code]user://[/code], [code]C:\[/code], [code]/[/code], etc.
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the length of the string equals [code]0[/code].
+			</description>
+		</method>
+		<method name="is_relative_path" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is implicitly defined within the context it is being used. The starting point may refer to the current directory ([code]./[/code]), or the current [Node].
+			</description>
+		</method>
+		<method name="is_subsequence_of" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Returns [code]true[/code] if this string is a subsequence of the given string.
+			</description>
+		</method>
+		<method name="is_subsequence_ofn" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Returns [code]true[/code] if this string is a subsequence of the given string, without considering case.
+			</description>
+		</method>
+		<method name="is_valid_filename" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string is free from characters that aren't allowed in file names, those being:
+				[code]: / \ ? * " | % &lt; &gt;[/code]
+			</description>
+		</method>
+		<method name="is_valid_float" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string contains a valid float. This is inclusive of integers, and also supports exponents:
+				[codeblock]
+				print("1.7".is_valid_float()) # Prints "true"
+				print("24".is_valid_float()) # Prints "true"
+				print("7e3".is_valid_float()) # Prints "true"
+				print("Hello".is_valid_float()) # Prints "false"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="is_valid_hex_number" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="with_prefix" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [param with_prefix] is [code]true[/code], then a validity of the hexadecimal number is determined by the [code]0x[/code] prefix, for example: [code]0xDEADC0DE[/code].
+			</description>
+		</method>
+		<method name="is_valid_html_color" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string contains a valid color in hexadecimal HTML notation. Other HTML notations such as named colors or [code]hsl()[/code] colors aren't considered valid by this method and will return [code]false[/code].
+			</description>
+		</method>
+		<method name="is_valid_identifier" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
+				[codeblock]
+				print("good_ident_1".is_valid_identifier()) # Prints "true"
+				print("1st_bad_ident".is_valid_identifier()) # Prints "false"
+				print("bad_ident_#2".is_valid_identifier()) # Prints "false"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="is_valid_int" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string contains a valid integer.
+				[codeblock]
+				print("7".is_valid_int()) # Prints "true"
+				print("14.6".is_valid_int()) # Prints "false"
+				print("L".is_valid_int()) # Prints "false"
+				print("+3".is_valid_int()) # Prints "true"
+				print("-12".is_valid_int()) # Prints "true"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="is_valid_ip_address" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string contains only a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]0.0.0.0[/code] as valid.
+			</description>
+		</method>
+		<method name="join" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="parts" type="PackedStringArray" />
+			<description>
+				Returns a [String] which is the concatenation of the [param parts]. The separator between elements is the string providing this method.
+				[b]Example:[/b]
+				[codeblocks]
+				[gdscript]
+				print(", ".join(["One", "Two", "Three", "Four"]))
+				[/gdscript]
+				[csharp]
+				GD.Print(String.Join(",", new string[] {"One", "Two", "Three", "Four"}));
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="json_escape" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a copy of the string with special characters escaped using the JSON standard.
+			</description>
+		</method>
+		<method name="left" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="length" type="int" />
+			<description>
+				Returns a number of characters from the left of the string. If negative [param length] is used, the characters are counted downwards from [String]'s length.
+				[b]Example:[/b]
+				[codeblock]
+				print("sample text".left(3)) #prints "sam"
+				print("sample text".left(-3)) #prints "sample t"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="length" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of characters in the string.
+			</description>
+		</method>
+		<method name="lpad" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="min_length" type="int" />
+			<param index="1" name="character" type="String" default="&quot; &quot;" />
+			<description>
+				Formats a string to be at least [param min_length] long by adding [param character]s to the left of the string.
+			</description>
+		</method>
+		<method name="lstrip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="chars" type="String" />
+			<description>
+				Returns a copy of the string with characters removed from the left. The [param chars] argument is a string specifying the set of characters to be removed.
+				[b]Note:[/b] The [param chars] is not a prefix. See [method trim_prefix] method that will remove a single prefix string rather than a set of characters.
+			</description>
+		</method>
+		<method name="match" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="expr" type="String" />
+			<description>
+				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]). An empty string or empty expression always evaluates to [code]false[/code].
+			</description>
+		</method>
+		<method name="matchn" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="expr" type="String" />
+			<description>
+				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]). An empty string or empty expression always evaluates to [code]false[/code].
+			</description>
+		</method>
+		<method name="md5_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns the MD5 hash of the string as an array of bytes.
+			</description>
+		</method>
+		<method name="md5_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the MD5 hash of the string as a string.
+			</description>
+		</method>
+		<method name="naturalnocasecmp_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="String" />
+			<description>
+				Performs a case-insensitive [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				When used for sorting, natural order comparison will order suites of numbers as expected by most people. If you sort the numbers from 1 to 10 using natural order, you will get [code][1, 2, 3, ...][/code] instead of [code][1, 10, 2, 3, ...][/code].
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [param to] string or [code]-1[/code] if the "base" string is shorter than the [param to] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [param to] string is empty or [code]0[/code] if both strings are empty.
+				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method casecmp_to].
+			</description>
+		</method>
+		<method name="nocasecmp_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="String" />
+			<description>
+				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [param to] string or [code]-1[/code] if the "base" string is shorter than the [param to] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [param to] string is empty or [code]0[/code] if both strings are empty.
+				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to] and [method naturalnocasecmp_to].
+			</description>
+		</method>
+		<method name="pad_decimals" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="digits" type="int" />
+			<description>
+				Formats a number to have an exact number of [param digits] after the decimal point.
+			</description>
+		</method>
+		<method name="pad_zeros" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="digits" type="int" />
+			<description>
+				Formats a number to have an exact number of [param digits] before the decimal point.
+			</description>
+		</method>
+		<method name="path_join" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="file" type="String" />
+			<description>
+				If the string is a path, this concatenates [param file] at the end of the string as a subpath. E.g. [code]"this/is".path_join("path") == "this/is/path"[/code].
+			</description>
+		</method>
+		<method name="repeat" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="count" type="int" />
+			<description>
+				Returns original string repeated a number of times. The number of repetitions is given by the argument.
+			</description>
+		</method>
+		<method name="replace" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="forwhat" type="String" />
+			<description>
+				Replaces occurrences of a case-sensitive substring with the given one inside the string.
+			</description>
+		</method>
+		<method name="replacen" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="forwhat" type="String" />
+			<description>
+				Replaces occurrences of a case-insensitive substring with the given one inside the string.
+			</description>
+		</method>
+		<method name="rfind" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Returns the index of the [b]last[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
+			</description>
+		</method>
+		<method name="rfindn" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Returns the index of the [b]last[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
+			</description>
+		</method>
+		<method name="right" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="length" type="int" />
+			<description>
+				Returns a number of characters from the right of the string. If negative [param length] is used, the characters are counted downwards from [String]'s length.
+				[b]Example:[/b]
+				[codeblock]
+				print("sample text".right(3)) #prints "ext"
+				print("sample text".right(-3)) #prints "ple text"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="rpad" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="min_length" type="int" />
+			<param index="1" name="character" type="String" default="&quot; &quot;" />
+			<description>
+				Formats a string to be at least [param min_length] long by adding [param character]s to the right of the string.
+			</description>
+		</method>
+		<method name="rsplit" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="delimiter" type="String" default="&quot;&quot;" />
+			<param index="1" name="allow_empty" type="bool" default="true" />
+			<param index="2" name="maxsplit" type="int" default="0" />
+			<description>
+				Splits the string by a [param delimiter] string and returns an array of the substrings, starting from right. If [param delimiter] is an empty string, each substring will be a single character.
+				The splits in the returned array are sorted in the same order as the original string, from left to right.
+				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
+				If [param maxsplit] is specified, it defines the number of splits to do from the right up to [param maxsplit]. The default value of 0 means that all items are split, thus giving the same result as [method split].
+				[b]Example:[/b]
+				[codeblocks]
+				[gdscript]
+				var some_string = "One,Two,Three,Four"
+				var some_array = some_string.rsplit(",", true, 1)
+				print(some_array.size()) # Prints 2
+				print(some_array[0]) # Prints "One,Two,Three"
+				print(some_array[1]) # Prints "Four"
+				[/gdscript]
+				[csharp]
+				// There is no Rsplit.
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="rstrip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="chars" type="String" />
+			<description>
+				Returns a copy of the string with characters removed from the right. The [param chars] argument is a string specifying the set of characters to be removed.
+				[b]Note:[/b] The [param chars] is not a suffix. See [method trim_suffix] method that will remove a single suffix string rather than a set of characters.
+			</description>
+		</method>
+		<method name="sha1_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns the SHA-1 hash of the string as an array of bytes.
+			</description>
+		</method>
+		<method name="sha1_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the SHA-1 hash of the string as a string.
+			</description>
+		</method>
+		<method name="sha256_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns the SHA-256 hash of the string as an array of bytes.
+			</description>
+		</method>
+		<method name="sha256_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the SHA-256 hash of the string as a string.
+			</description>
+		</method>
+		<method name="similarity" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) of this string compared to another. A result of 1.0 means totally similar, while 0.0 means totally dissimilar.
+				[codeblock]
+				print("ABC123".similarity("ABC123")) # Prints "1"
+				print("ABC123".similarity("XYZ456")) # Prints "0"
+				print("ABC123".similarity("123ABC")) # Prints "0.8"
+				print("ABC123".similarity("abc123")) # Prints "0.4"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="simplify_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a simplified canonical path.
+			</description>
+		</method>
+		<method name="split" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="delimiter" type="String" default="&quot;&quot;" />
+			<param index="1" name="allow_empty" type="bool" default="true" />
+			<param index="2" name="maxsplit" type="int" default="0" />
+			<description>
+				Splits the string by a [param delimiter] string and returns an array of the substrings. The [param delimiter] can be of any length. If [param delimiter] is an empty string, each substring will be a single character.
+				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
+				If [param maxsplit] is specified, it defines the number of splits to do from the left up to [param maxsplit]. The default value of [code]0[/code] means that all items are split.
+				If you need only one element from the array at a specific index, [method get_slice] is a more performant option.
+				[b]Example:[/b]
+				[codeblocks]
+				[gdscript]
+				var some_string = "One,Two,Three,Four"
+				var some_array = some_string.split(",", true, 1)
+				print(some_array.size()) # Prints 2
+				print(some_array[0]) # Prints "Four"
+				print(some_array[1]) # Prints "Three,Two,One"
+				[/gdscript]
+				[csharp]
+				var someString = "One,Two,Three,Four";
+				var someArray = someString.Split(",", true); // This is as close as it gets to Godots API.
+				GD.Print(someArray[0]); // Prints "Four"
+				GD.Print(someArray[1]); // Prints "Three,Two,One"
+				[/csharp]
+				[/codeblocks]
+				If you need to split strings with more complex rules, use the [RegEx] class instead.
+			</description>
+		</method>
+		<method name="split_floats" qualifiers="const">
+			<return type="PackedFloat64Array" />
+			<param index="0" name="delimiter" type="String" />
+			<param index="1" name="allow_empty" type="bool" default="true" />
+			<description>
+				Splits the string in floats by using a delimiter string and returns an array of the substrings.
+				For example, [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
+				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
+			</description>
+		</method>
+		<method name="strip_edges" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="left" type="bool" default="true" />
+			<param index="1" name="right" type="bool" default="true" />
+			<description>
+				Returns a copy of the string stripped of any non-printable character (including tabulations, spaces and line breaks) at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
+			</description>
+		</method>
+		<method name="strip_escapes" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a copy of the string stripped of any escape character. These include all non-printable control characters of the first page of the ASCII table (&lt; 32), such as tabulation ([code]\t[/code] in C) and newline ([code]\n[/code] and [code]\r[/code]) characters, but not spaces.
+			</description>
+		</method>
+		<method name="substr" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="from" type="int" />
+			<param index="1" name="len" type="int" default="-1" />
+			<description>
+				Returns part of the string from the position [param from] with length [param len]. Argument [param len] is optional and using [code]-1[/code] will return remaining characters from given position.
+			</description>
+		</method>
+		<method name="to_ascii_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Converts the String (which is a character array) to ASCII/Latin-1 encoded [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8_buffer], as this method assumes that all the characters in the String are ASCII/Latin-1 characters, unsupported characters are replaced with spaces.
+			</description>
+		</method>
+		<method name="to_camel_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]camelCase[/code].
+			</description>
+		</method>
+		<method name="to_float" qualifiers="const">
+			<return type="float" />
+			<description>
+				Converts a string containing a decimal number into a [code]float[/code]. The method will stop on the first non-number character except the first [code].[/code] (decimal point), and [code]e[/code] which is used for exponential.
+				[codeblock]
+				print("12.3".to_float()) # 12.3
+				print("1.2.3".to_float()) # 1.2
+				print("12ab3".to_float()) # 12
+				print("1e3".to_float()) # 1000
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_int" qualifiers="const">
+			<return type="int" />
+			<description>
+				Converts a string containing an integer number into an [code]int[/code]. The method will remove any non-number character and stop if it encounters a [code].[/code].
+				[codeblock]
+				print("123".to_int()) # 123
+				print("a1b2c3".to_int()) # 123
+				print("1.2.3".to_int()) # 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_lower" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to lowercase.
+			</description>
+		</method>
+		<method name="to_pascal_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]PascalCase[/code].
+			</description>
+		</method>
+		<method name="to_snake_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]snake_case[/code].
+			</description>
+		</method>
+		<method name="to_upper" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to uppercase.
+			</description>
+		</method>
+		<method name="to_utf16_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Converts the String (which is an array of characters) to UTF-16 encoded [PackedByteArray] (which is an array of bytes).
+			</description>
+		</method>
+		<method name="to_utf32_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Converts the String (which is an array of characters) to UTF-32 encoded [PackedByteArray] (which is an array of bytes).
+			</description>
+		</method>
+		<method name="to_utf8_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Converts the String (which is an array of characters) to UTF-8 encode [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii_buffer], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii_buffer].
+			</description>
+		</method>
+		<method name="trim_prefix" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="prefix" type="String" />
+			<description>
+				Removes a given string from the start if it starts with it or leaves the string unchanged.
+			</description>
+		</method>
+		<method name="trim_suffix" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="suffix" type="String" />
+			<description>
+				Removes a given string from the end if it ends with it or leaves the string unchanged.
+			</description>
+		</method>
+		<method name="unicode_at" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="at" type="int" />
+			<description>
+				Returns the character code at position [param at].
+			</description>
+		</method>
+		<method name="uri_decode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Decodes a string in URL encoded format. This is meant to decode parameters in a URL when receiving an HTTP request.
+				[codeblocks]
+				[gdscript]
+				print("https://example.org/?escaped=" + "Godot%20Engine%3A%27docs%27".uri_decode())
+				[/gdscript]
+				[csharp]
+				GD.Print("https://example.org/?escaped=" + "Godot%20Engine%3a%27Docs%27".URIDecode());
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="uri_encode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Encodes a string to URL friendly format. This is meant to encode parameters in a URL when sending an HTTP request.
+				[codeblocks]
+				[gdscript]
+				print("https://example.org/?escaped=" + "Godot Engine:'docs'".uri_encode())
+				[/gdscript]
+				[csharp]
+				GD.Print("https://example.org/?escaped=" + "Godot Engine:'docs'".URIEncode());
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="validate_node_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Removes any characters from the string that are prohibited in [Node] names ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code]).
+			</description>
+		</method>
+		<method name="xml_escape" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="escape_quotes" type="bool" default="false" />
+			<description>
+				Returns a copy of the string with special characters escaped using the XML standard. If [param escape_quotes] is [code]true[/code], the single quote ([code]'[/code]) and double quote ([code]"[/code]) characters are also escaped.
+			</description>
+		</method>
+		<method name="xml_unescape" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a copy of the string with escaped characters replaced by their meanings according to the XML standard.
 			</description>
 		</method>
 	</methods>
@@ -53,6 +856,24 @@
 			<param index="0" name="right" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the [StringName] and [param right] do not refer to the same name. Comparisons between [StringName]s are much faster than regular [String] comparisons.
+			</description>
+		</operator>
+		<operator name="operator %">
+			<return type="String" />
+			<param index="0" name="right" type="Variant" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="String" />
+			<param index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="String" />
+			<param index="0" name="right" type="StringName" />
+			<description>
 			</description>
 		</operator>
 		<operator name="operator &lt;">
