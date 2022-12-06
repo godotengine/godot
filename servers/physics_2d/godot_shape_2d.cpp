@@ -369,8 +369,9 @@ void GodotCapsuleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_suppo
 	Vector2 n = p_normal;
 
 	real_t d = n.y;
+	real_t h = height * 0.5 - radius; // half-height of the rectangle part
 
-	if (Math::abs(d) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
+	if (h > 0 && Math::abs(d) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
 		// make it flat
 		n.y = 0.0;
 		n.normalize();
@@ -378,13 +379,10 @@ void GodotCapsuleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_suppo
 
 		r_amount = 2;
 		r_supports[0] = n;
-		r_supports[0].y += height * 0.5 - radius;
+		r_supports[0].y += h;
 		r_supports[1] = n;
-		r_supports[1].y -= height * 0.5 - radius;
-
+		r_supports[1].y -= h;
 	} else {
-		real_t h = height * 0.5 - radius;
-
 		n *= radius;
 		n.y += (d > 0) ? h : -h;
 		r_amount = 1;
