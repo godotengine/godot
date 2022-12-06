@@ -1661,7 +1661,7 @@ void SkyRD::update_res_buffers(RID p_env, uint32_t p_view_count, const Projectio
 		projections = &camera;
 	}
 
-	sky_transform = p_transform.basis * sky_transform;
+	sky_transform = sky_transform * p_transform.basis;
 
 	if (shader_data->uses_quarter_res) {
 		PipelineCacheRD *pipeline = &shader_data->pipelines[view_count > 1 ? SKY_VERSION_QUARTER_RES_MULTIVIEW : SKY_VERSION_QUARTER_RES];
@@ -1754,7 +1754,7 @@ void SkyRD::draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_vie
 		projections = &camera;
 	}
 
-	sky_transform = p_transform.basis * sky_transform;
+	sky_transform = sky_transform * p_transform.basis;
 
 	PipelineCacheRD *pipeline = &shader_data->pipelines[view_count > 1 ? SKY_VERSION_BACKGROUND_MULTIVIEW : SKY_VERSION_BACKGROUND];
 
