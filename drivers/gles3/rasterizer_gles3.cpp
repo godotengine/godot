@@ -209,11 +209,15 @@ void RasterizerGLES3::finalize() {
 RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
 #ifdef EGL_ENABLED
-	if (!gladLoadGL((GLADloadfunc)eglGetProcAddress)) {
+	// There should be a more flexible system for getting the GL pointer, as
+	// different DiplayServers can have different ways. We can just use the GLAD
+	// version global to see if it loaded for now though, otherwise we fallback to
+	// the generic loader below.
+	if (GLAD_EGL_VERSION_1_5 && !gladLoadGL((GLADloadfunc)eglGetProcAddress)) {
 		ERR_PRINT("Error initializing GLAD");
 		return;
 	}
-#else
+#endif // EGL_ENABLED
 	if (!gladLoaderLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
 		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
@@ -221,7 +225,6 @@ RasterizerGLES3::RasterizerGLES3() {
 		// or we need to actually test for this situation before constructing this.
 		return;
 	}
-#endif // EGL_ENABLED
 #endif // GLAD_ENABLED
 
 #ifdef GLAD_ENABLED
