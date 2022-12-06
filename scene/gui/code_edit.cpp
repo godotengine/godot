@@ -914,6 +914,10 @@ void CodeEdit::do_unindent() {
 		int cl = get_caret_line(c);
 		const String &line = get_line(cl);
 
+		if ((cc - 1) >= line.size()) {
+			continue;
+		}
+
 		if (line[cc - 1] == '\t') {
 			remove_text(cl, cc - 1, cl, cc);
 			set_caret_column(MAX(0, cc - 1), c == 0, c);
