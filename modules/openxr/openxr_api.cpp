@@ -796,7 +796,7 @@ bool OpenXRAPI::create_swapchains() {
 			depth_views[i].type = XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR;
 			depth_views[i].next = nullptr;
 			depth_views[i].subImage.swapchain = swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain;
-			depth_views[i].subImage.imageArrayIndex = 0;
+			depth_views[i].subImage.imageArrayIndex = i;
 			depth_views[i].subImage.imageRect.offset.x = 0;
 			depth_views[i].subImage.imageRect.offset.y = 0;
 			depth_views[i].subImage.imageRect.extent.width = recommended_size.width;
