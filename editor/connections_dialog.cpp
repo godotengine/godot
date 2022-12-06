@@ -788,23 +788,7 @@ bool ConnectionsDock::_is_item_signal(TreeItem &p_item) {
 }
 
 bool ConnectionsDock::_is_connection_inherited(Connection &p_connection) {
-	Node *scene_root = EditorNode::get_singleton()->get_edited_scene();
-	Ref<PackedScene> scn = ResourceLoader::load(scene_root->get_scene_file_path());
-	ERR_FAIL_NULL_V(scn, false);
-
-	Ref<SceneState> state = scn->get_state();
-	ERR_FAIL_NULL_V(state, false);
-
-	Node *source = Object::cast_to<Node>(p_connection.signal.get_object());
-	Node *target = Object::cast_to<Node>(p_connection.callable.get_object());
-
-	const NodePath source_path = scene_root->get_path_to(source);
-	const NodePath target_path = scene_root->get_path_to(target);
-	const StringName signal_name = p_connection.signal.get_name();
-	const StringName method_name = p_connection.callable.get_method();
-
-	// If it cannot be found in PackedScene, this connection was inherited.
-	return !state->has_connection(source_path, signal_name, target_path, method_name, true);
+	return bool(p_connection.flags & CONNECT_INHERITED);
 }
 
 /*
