@@ -34,23 +34,24 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
-void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dontclear) {
+static Rect2i prev_rect = Rect2i();
+static bool was_showed = false;
+
+void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dont_clear) {
 	base_type = p_base;
 	allow_multi_select = p_enable_multi;
 	search_options->set_select_mode(allow_multi_select ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
 
-	static bool was_showed = false;
-	if (!was_showed) {
-		was_showed = true;
-		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
+	if (was_showed) {
+		popup(prev_rect);
 	} else {
-		show();
+		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
 	}
 
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem();
 	_build_search_cache(efsd);
 
-	if (p_dontclear) {
+	if (p_dont_clear) {
 		search_box->select_all();
 		_update_search();
 	} else {
@@ -249,6 +250,13 @@ void EditorQuickOpen::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				prev_rect = Rect2i(get_position(), get_size());
+				was_showed = true;
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
