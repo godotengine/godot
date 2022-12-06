@@ -220,8 +220,12 @@ void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
 	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
 	ERR_FAIL_COND(!node);
 
+#ifdef TOOLS_ENABLED
 	HashMap<const Node *, Node *> duplimap;
 	Node *copy = node->duplicate_from_editor(duplimap);
+#else
+	Node *copy = node->duplicate();
+#endif
 
 	// Handle Unique Nodes.
 	for (int i = 0; i < copy->get_child_count(false); i++) {
