@@ -42,13 +42,13 @@ void NavLink::set_bidirectional(bool p_bidirectional) {
 	link_dirty = true;
 }
 
-void NavLink::set_start_location(const Vector3 p_location) {
-	start_location = p_location;
+void NavLink::set_start_position(const Vector3 p_position) {
+	start_position = p_position;
 	link_dirty = true;
 }
 
-void NavLink::set_end_location(const Vector3 p_location) {
-	end_location = p_location;
+void NavLink::set_end_position(const Vector3 p_position) {
+	end_position = p_position;
 	link_dirty = true;
 }
 
