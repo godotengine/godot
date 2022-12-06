@@ -36,7 +36,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/separator.h"
 
-void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list, MouseButton p_mouse_button_index) {
+void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index, Object *p_item_list) {
 	if (p_mouse_button_index != MouseButton::RIGHT) {
 		return;
 	}
