@@ -36,6 +36,11 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
+static String _mkid(const String &p_id) {
+	String id = "m_" + p_id.replace("__", "_dus_");
+	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
+}
+
 void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 	Vector<String> lines = String(p_code).split("\n");
 
@@ -425,7 +430,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	}
 	// textures
 	for (int i = 0; i < p_version->texture_uniforms.size(); i++) {
-		String native_uniform_name = p_version->texture_uniforms[i];
+		String native_uniform_name = _mkid(p_version->texture_uniforms[i]);
 		GLint location = glGetUniformLocation(spec.id, (native_uniform_name).ascii().get_data());
 		glUniform1i(location, i + base_texture_index);
 	}
