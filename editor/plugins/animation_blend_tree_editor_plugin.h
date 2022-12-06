@@ -128,6 +128,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _update_editor_settings();
 	void _update_theme();
 
+	void _setup_add_options();
+
 	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
@@ -142,11 +144,11 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	void add_custom_type(const String &p_name, const Ref<Script> &p_script) override;
+	void remove_custom_type(const Ref<Script> &p_script) override;
+
 public:
 	static AnimationNodeBlendTreeEditor *get_singleton() { return singleton; }
-
-	void add_custom_type(const String &p_name, const Ref<Script> &p_script);
-	void remove_custom_type(const Ref<Script> &p_script);
 
 	virtual Size2 get_minimum_size() const override;
 

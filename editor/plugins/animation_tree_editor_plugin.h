@@ -37,6 +37,7 @@
 #include "scene/gui/graph_edit.h"
 
 class EditorFileDialog;
+class AnimationTreeEditor;
 
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
@@ -44,6 +45,19 @@ class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
 	virtual void edit(const Ref<AnimationNode> &p_node) = 0;
+
+	static bool add_custom_type_static(const String &p_name, const Ref<Script> &p_script);
+	static bool remove_custom_type_static(const Ref<Script> &p_script);
+
+protected:
+	friend class AnimationTreeEditor;
+	virtual void add_custom_type(const String &p_name, const Ref<Script> &p_script) {}
+	virtual void remove_custom_type(const Ref<Script> &p_script) {}
+
+	void add_custom_type_for_menu(PopupMenu *p_menu, bool animation_root_node_only = true);
+
+private:
+	static HashMap<String, Ref<Script>> custom_types;
 };
 
 class AnimationTreeEditor : public VBoxContainer {
@@ -79,6 +93,9 @@ public:
 	AnimationTree *get_animation_tree() { return tree; }
 	void add_plugin(AnimationTreeNodeEditorPlugin *p_editor);
 	void remove_plugin(AnimationTreeNodeEditorPlugin *p_editor);
+
+	void add_custom_type(const String &p_name, const Ref<Script> &p_script);
+	void remove_custom_type(const Ref<Script> &p_script);
 
 	String get_base_path();
 

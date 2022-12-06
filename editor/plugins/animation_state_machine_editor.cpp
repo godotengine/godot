@@ -776,6 +776,8 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 		menu->add_item(vformat(TTR("Add %s"), name), idx);
 		menu->set_item_metadata(idx, E->get());
 	}
+	add_custom_type_for_menu(menu);
+
 	Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
 
 	if (clipb.is_valid()) {
@@ -1015,15 +1017,34 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 		node = EditorSettings::get_singleton()->get_resource_clipboard();
 
 	} else {
-		String type = menu->get_item_metadata(p_index);
+		Variant type = menu->get_item_metadata(p_index);
+		if (type.get_type() == Variant::STRING) {
+			Object *obj = ClassDB::instantiate(type);
+			ERR_FAIL_COND(!obj);
+			AnimationNode *an = Object::cast_to<AnimationNode>(obj);
+			ERR_FAIL_COND(!an);
 
-		Object *obj = ClassDB::instantiate(type);
-		ERR_FAIL_COND(!obj);
-		AnimationNode *an = Object::cast_to<AnimationNode>(obj);
-		ERR_FAIL_COND(!an);
+			node = Ref<AnimationNode>(an);
+			base_name = type.operator String().replace_first("AnimationNode", "");
+		} else if (type.get_type() == Variant::DICTIONARY) {
+			auto dict = type.operator Dictionary();
+			auto keys = dict.keys();
+			ERR_FAIL_COND(keys.size() != 1 || keys[0].get_type() != Variant::STRING);
+			String name = keys[0];
+			Ref<Script> custom_type_script = cast_to<Script>(dict[name]);
 
-		node = Ref<AnimationNode>(an);
-		base_name = type.replace_first("AnimationNode", "");
+			ERR_FAIL_COND(custom_type_script.is_null());
+			ERR_FAIL_COND(!custom_type_script->can_instantiate());
+			AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate("AnimationRootNode"));
+			ERR_FAIL_COND(!an);
+
+			node = Ref<AnimationNode>(an);
+			node->set_script(custom_type_script);
+
+			base_name = name;
+		} else {
+			ERR_FAIL();
+		}
 	}
 
 	if (!node.is_valid()) {
@@ -2234,7 +2255,7 @@ void EditorAnimationMultiTransitionEdit::_get_property_list(List<PropertyInfo> *
 		p_list->push_back(prop_transition_path);
 
 		for (List<PropertyInfo>::Element *F = plist.front(); F; F = F->next()) {
-			if (F->get().name == "script" || F->get().name == "resource_name" || F->get().name == "resource_path" || F->get().name == "resource_local_to_scene") {
+			if (F->get().name == "custom_type_script" || F->get().name == "resource_name" || F->get().name == "resource_path" || F->get().name == "resource_local_to_scene") {
 				continue;
 			}
 

@@ -49,6 +49,40 @@
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
+HashMap<String, Ref<Script>> AnimationTreeNodeEditorPlugin::custom_types = {};
+bool AnimationTreeNodeEditorPlugin::add_custom_type_static(const String &p_name, const Ref<Script> &p_script) {
+	ERR_FAIL_COND_V(!p_script->can_instantiate(), false);
+	ERR_FAIL_COND_V(p_script.is_null(), false);
+
+	for (auto &&element : custom_types) {
+		ERR_FAIL_COND_V(element.value == p_script, false);
+	}
+	custom_types.insert(p_name, p_script);
+	return true;
+}
+bool AnimationTreeNodeEditorPlugin::remove_custom_type_static(const Ref<Script> &p_script) {
+	for (auto &&it : custom_types) {
+		if (it.value == p_script) {
+			custom_types.erase(it.key);
+			return true;
+		}
+	}
+	return false;
+}
+
+void AnimationTreeNodeEditorPlugin::add_custom_type_for_menu(PopupMenu *p_menu, bool animation_root_node_only) {
+	for (auto &&kv : custom_types) {
+		if (animation_root_node_only && kv.value->get_instance_base_type() != StringName("AnimationRootNode")) {
+			continue;
+		}
+		int idx = p_menu->get_item_count();
+		p_menu->add_item(vformat(TTR("Add %s"), kv.key), idx);
+		Dictionary dict;
+		dict[kv.key] = kv.value;
+		p_menu->set_item_metadata(idx, dict);
+	}
+}
+
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	if (p_tree && !p_tree->is_connected("animation_player_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed))) {
 		p_tree->connect("animation_player_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed), CONNECT_DEFERRED);
@@ -226,6 +260,26 @@ void AnimationTreeEditor::remove_plugin(AnimationTreeNodeEditorPlugin *p_editor)
 	ERR_FAIL_COND(p_editor->get_parent() != editor_base);
 	editor_base->remove_child(p_editor);
 	editors.erase(p_editor);
+}
+
+void AnimationTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
+	const String script_instance_base_type = p_script->get_instance_base_type();
+	const String animation_node = "AnimationNode";
+	if (script_instance_base_type == animation_node || ClassDB::is_parent_class(script_instance_base_type, animation_node)) {
+		if (AnimationTreeNodeEditorPlugin ::add_custom_type_static(p_name, p_script)) {
+			for (int i = 0; i < editors.size(); i++) {
+				editors[i]->add_custom_type(p_name, p_script);
+			}
+		}
+	}
+}
+
+void AnimationTreeEditor::remove_custom_type(const Ref<Script> &p_script) {
+	if (AnimationTreeNodeEditorPlugin ::remove_custom_type_static(p_script)) {
+		for (int i = 0; i < editors.size(); i++) {
+			editors[i]->remove_custom_type(p_script);
+		}
+	}
 }
 
 String AnimationTreeEditor::get_base_path() {

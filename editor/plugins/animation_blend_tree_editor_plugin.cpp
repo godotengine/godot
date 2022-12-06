@@ -50,15 +50,25 @@
 #include "scene/main/window.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
+	ERR_FAIL_COND(!p_script->can_instantiate());
+	ERR_FAIL_COND(p_script.is_null());
+
 	for (int i = 0; i < add_options.size(); i++) {
 		ERR_FAIL_COND(add_options[i].script == p_script);
 	}
+	// Create temperary object to get input count;
+	StringName base_type = p_script->get_instance_base_type();
+	AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(base_type));
+	ERR_FAIL_COND(!an);
+	Ref<AnimationNode> tmp = Ref<AnimationNode>(an);
+	tmp->set_script(p_script);
 
 	AddOption ao;
 	ao.name = p_name;
 	ao.script = p_script;
-	add_options.push_back(ao);
+	ao.input_port_count = tmp->get_input_count();
 
+	add_options.push_back(ao);
 	_update_options_menu();
 }
 
@@ -1067,6 +1077,74 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 	graph->set_arrange_nodes_button_hidden(read_only);
 }
 
+void AnimationNodeBlendTreeEditor::_setup_add_options() {
+	List<AddOption> script_options;
+	for (int i = 0; i < script_options.size(); i++) {
+		if (script_options[i].script.is_valid()) {
+			script_options.push_back(script_options[i]);
+		}
+	}
+
+	add_options.clear();
+
+	const String animation_root_node = "AnimationRootNode";
+	const String animation_node = "AnimationNode";
+	// Collect `AnimationRootNode` classes
+	List<StringName> animation_root_node_classes;
+	ClassDB::get_inheriters_from_class(animation_root_node, &animation_root_node_classes);
+	animation_root_node_classes.sort_custom<StringName::AlphCompare>();
+	// Collect `AnimationNode` classes
+	List<StringName> animation_node_classes;
+	ClassDB::get_inheriters_from_class(animation_node, &animation_node_classes);
+	animation_node_classes.sort_custom<StringName::AlphCompare>();
+
+	// Add `AnimationNodeAnimation` first.
+	add_options.push_back(AddOption("Animation", "AnimationNodeAnimation"));
+	// Add classes which inherit from `AnimationNode` directly.
+	for (List<StringName>::Element *E = animation_node_classes.front(); E; E = E->next()) {
+		String class_name = E->get();
+		if (class_name == animation_root_node || animation_root_node_classes.find(class_name)) {
+			// Not inherit from `AnimationNode` directly.
+			continue;
+		}
+		String name = String(class_name).replace_first("AnimationNode", "");
+		if (name == "Sync") {
+			// Already be added or should not be added.
+			continue;
+		}
+		// To get it's input count using a temporary object.
+		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(class_name));
+		ERR_CONTINUE(!an);
+		Ref<AnimationNode> tmp = Ref<AnimationNode>(an);
+		int input_count = tmp->get_input_count();
+		// Add.
+		add_options.push_back(AddOption(name, class_name, input_count));
+	}
+	// Add `AnimationRootNode` at last.
+	for (List<StringName>::Element *E = animation_root_node_classes.front(); E; E = E->next()) {
+		String class_name = E->get();
+		String name = String(class_name).replace_first("AnimationNode", "");
+		if (name == "Animation" || name == "StartState" || name == "EndState") {
+			// Already be added or should not be added.
+			continue;
+		}
+		// To get it's input count using a temporary object.
+		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(class_name));
+		ERR_CONTINUE(!an);
+		Ref<AnimationNode> tmp = Ref<AnimationNode>(an);
+		int input_count = tmp->get_input_count();
+		// Add.
+		add_options.push_back(AddOption(name, class_name, input_count));
+	}
+
+	// Add script Options.
+	for (List<AddOption>::Element *E = script_options.front(); E; E = E->next()) {
+		add_options.push_back(E->get());
+	}
+
+	_update_options_menu();
+}
+
 AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	singleton = this;
 	updating = false;
@@ -1103,20 +1181,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_node->connect("about_to_popup", callable_mp(this, &AnimationNodeBlendTreeEditor::_update_options_menu).bind(false));
 	add_node->set_disabled(read_only);
 
-	add_options.push_back(AddOption("Animation", "AnimationNodeAnimation"));
-	add_options.push_back(AddOption("OneShot", "AnimationNodeOneShot", 2));
-	add_options.push_back(AddOption("Add2", "AnimationNodeAdd2", 2));
-	add_options.push_back(AddOption("Add3", "AnimationNodeAdd3", 3));
-	add_options.push_back(AddOption("Blend2", "AnimationNodeBlend2", 2));
-	add_options.push_back(AddOption("Blend3", "AnimationNodeBlend3", 3));
-	add_options.push_back(AddOption("TimeSeek", "AnimationNodeTimeSeek", 1));
-	add_options.push_back(AddOption("TimeScale", "AnimationNodeTimeScale", 1));
-	add_options.push_back(AddOption("Transition", "AnimationNodeTransition"));
-	add_options.push_back(AddOption("BlendTree", "AnimationNodeBlendTree"));
-	add_options.push_back(AddOption("BlendSpace1D", "AnimationNodeBlendSpace1D"));
-	add_options.push_back(AddOption("BlendSpace2D", "AnimationNodeBlendSpace2D"));
-	add_options.push_back(AddOption("StateMachine", "AnimationNodeStateMachine"));
-	_update_options_menu();
+	_setup_add_options();
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
