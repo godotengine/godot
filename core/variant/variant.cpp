@@ -3491,6 +3491,19 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 	}
 }
 
+bool StringLikeVariantComparator::compare(const Variant &p_lhs, const Variant &p_rhs) {
+	if (p_lhs.hash_compare(p_rhs)) {
+		return true;
+	}
+	if (p_lhs.get_type() == Variant::STRING && p_rhs.get_type() == Variant::STRING_NAME) {
+		return *VariantInternal::get_string(&p_lhs) == *VariantInternal::get_string_name(&p_rhs);
+	}
+	if (p_lhs.get_type() == Variant::STRING_NAME && p_rhs.get_type() == Variant::STRING) {
+		return *VariantInternal::get_string_name(&p_lhs) == *VariantInternal::get_string(&p_rhs);
+	}
+	return false;
+}
+
 bool Variant::is_ref_counted() const {
 	return type == OBJECT && _get_obj().id.is_ref_counted();
 }

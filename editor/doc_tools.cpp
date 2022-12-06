@@ -701,7 +701,7 @@ void DocTools::generate(bool p_basic_types) {
 				if (rt != Variant::NIL) { // Has operator.
 					// Skip String % operator as it's registered separately for each Variant arg type,
 					// we'll add it manually below.
-					if (i == Variant::STRING && Variant::Operator(j) == Variant::OP_MODULE) {
+					if ((i == Variant::STRING || i == Variant::STRING_NAME) && Variant::Operator(j) == Variant::OP_MODULE) {
 						continue;
 					}
 					MethodInfo mi;
@@ -718,7 +718,7 @@ void DocTools::generate(bool p_basic_types) {
 			}
 		}
 
-		if (i == Variant::STRING) {
+		if (i == Variant::STRING || i == Variant::STRING_NAME) {
 			// We skipped % operator above, and we register it manually once for Variant arg type here.
 			MethodInfo mi;
 			mi.name = "operator %";

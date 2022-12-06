@@ -64,6 +64,19 @@ TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 	map["World!"] = 4;
 	CHECK(int(map["World!"]) == 4);
 
+	map[StringName("HelloName")] = 6;
+	CHECK(int(map[StringName("HelloName")]) == 6);
+	// Check that StringName key is converted to String.
+	CHECK(int(map.find_key(6).get_type()) == Variant::STRING);
+	map[StringName("HelloName")] = 7;
+	CHECK(int(map[StringName("HelloName")]) == 7);
+
+	// Test String and StringName are equivalent.
+	map[StringName("Hello")] = 8;
+	CHECK(int(map["Hello"]) == 8);
+	map["Hello"] = 9;
+	CHECK(int(map[StringName("Hello")]) == 9);
+
 	// Test non-string keys, since keys can be of any Variant type.
 	map[12345] = -5;
 	CHECK(int(map[12345]) == -5);
