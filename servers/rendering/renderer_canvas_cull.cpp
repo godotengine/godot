@@ -1075,18 +1075,36 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
 	ERR_FAIL_COND(p_points.size() < 2);
-	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
-	ERR_FAIL_COND(!pline);
+	// TODO: `canvas_item_add_line`(`multiline`, `polyline`) share logic, should factor out.
+	if (p_width <= 1) {
+		Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+		ERR_FAIL_COND(!canvas_item);
 
-	if (true || p_width <= 1) {
-#define TODO make thick lines possible
-
+		Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline);
 		pline->primitive = RS::PRIMITIVE_LINES;
 		pline->polygon.create(Vector<int>(), p_points, p_colors);
 	} else {
+		if (p_colors.size() == 1) {
+			Color color = p_colors[0];
+			for (int i = 0; i < p_points.size() >> 1; i++) {
+				Vector2 from = p_points[i * 2 + 0];
+				Vector2 to = p_points[i * 2 + 1];
+
+				canvas_item_add_line(p_item, from, to, color, p_width);
+			}
+		} else if (p_colors.size() == p_points.size() >> 1) {
+			for (int i = 0; i < p_points.size() >> 1; i++) {
+				Color color = p_colors[i];
+				Vector2 from = p_points[i * 2 + 0];
+				Vector2 to = p_points[i * 2 + 1];
+
+				canvas_item_add_line(p_item, from, to, color, p_width);
+			}
+		} else {
+			ERR_FAIL_MSG("Length of p_colors is invalid.");
+		}
 	}
 }
 
