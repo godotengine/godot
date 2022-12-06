@@ -1565,7 +1565,7 @@ def format_text_block(
         escape_post = False
 
         # Tag is a reference to a class.
-        if tag_text in state.classes:
+        if tag_text in state.classes and not inside_code:
             if tag_text == state.current_class:
                 # Don't create a link to the same class, format it as strong emphasis.
                 tag_text = f"**{tag_text}**"
