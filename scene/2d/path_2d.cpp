@@ -120,7 +120,7 @@ void Path2D::_notification(int p_what) {
 					Transform2D *w = frames.ptrw();
 
 					for (int i = 0; i < sample_count; i++) {
-						w[i] = curve->sample_baked_with_rotation(i * interval, true, true);
+						w[i] = curve->sample_baked_with_rotation(i * interval, true);
 					}
 				}
 
