@@ -873,6 +873,10 @@ void CodeTextEditor::_reset_zoom() {
 }
 
 void CodeTextEditor::_line_col_changed() {
+	if (!code_complete_timer->is_stopped() && code_complete_timer_line != text_editor->get_caret_line()) {
+		code_complete_timer->stop();
+	}
+
 	String line = text_editor->get_line(text_editor->get_caret_line());
 
 	int positional_column = 0;
@@ -902,6 +906,7 @@ void CodeTextEditor::_line_col_changed() {
 
 void CodeTextEditor::_text_changed() {
 	if (text_editor->is_insert_text_operation()) {
+		code_complete_timer_line = text_editor->get_caret_line();
 		code_complete_timer->start();
 	}
 
