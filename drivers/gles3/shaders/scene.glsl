@@ -779,7 +779,7 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 	nd *= nd; // nd^2
 	return nd * pow(max(distance, 0.0001), -decay);
 }
-
+#ifndef DISABLE_LIGHT_OMNI
 void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo, inout float alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
@@ -821,7 +821,9 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 			diffuse_light,
 			specular_light);
 }
+#endif // !DISABLE_LIGHT_OMNI
 
+#ifndef DISABLE_LIGHT_SPOT
 void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo, inout float alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
@@ -869,6 +871,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 #endif
 			diffuse_light, specular_light);
 }
+#endif // !DISABLE_LIGHT_SPOT
 #endif // !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) && !defined(DISABLE_LIGHT_SPOT)
 
 #ifndef MODE_RENDER_DEPTH
