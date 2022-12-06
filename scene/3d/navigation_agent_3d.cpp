@@ -174,7 +174,7 @@ void NavigationAgent3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (agent_parent) {
+			if (agent_parent && target_position_submitted) {
 				if (avoidance_enabled) {
 					// agent_position on NavigationServer is avoidance only and has nothing to do with pathfinding
 					// no point in flooding NavigationServer queue with agent position updates that get send to the void if avoidance is not used
@@ -345,6 +345,7 @@ real_t NavigationAgent3D::get_path_max_distance() {
 
 void NavigationAgent3D::set_target_location(Vector3 p_location) {
 	target_location = p_location;
+	target_position_submitted = true;
 	_request_repath();
 }
 
@@ -426,6 +427,9 @@ void NavigationAgent3D::update_navigation() {
 		return;
 	}
 	if (!agent_parent->is_inside_tree()) {
+		return;
+	}
+	if (!target_position_submitted) {
 		return;
 	}
 	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) {
@@ -536,6 +540,7 @@ void NavigationAgent3D::update_navigation() {
 				_check_distance_to_target();
 				navigation_path_index -= 1;
 				navigation_finished = true;
+				target_position_submitted = false;
 				emit_signal(SNAME("navigation_finished"));
 				break;
 			}
