@@ -514,6 +514,13 @@ void godotsharp_callable_call_deferred(Callable *p_callable, const Variant **p_a
 	p_callable->call_deferredp(p_args, p_arg_count);
 }
 
+godot_color godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
+	godot_color ret;
+	Color *dest = (Color *)&ret;
+	memnew_placement(dest, Color(Color::from_ok_hsl(p_h, p_s, p_l, p_alpha)));
+	return ret;
+}
+
 // GDNative functions
 
 // gdnative.h
@@ -1345,6 +1352,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_callable_get_data_for_marshalling,
 	(void *)godotsharp_callable_call,
 	(void *)godotsharp_callable_call_deferred,
+	(void *)godotsharp_color_from_ok_hsl,
 	(void *)godotsharp_method_bind_ptrcall,
 	(void *)godotsharp_method_bind_call,
 	(void *)godotsharp_variant_new_string_name,
