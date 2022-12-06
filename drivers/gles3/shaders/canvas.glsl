@@ -41,8 +41,6 @@ layout(std140) uniform MaterialUniforms{ //ubo:4
 #include "canvas_uniforms_inc.glsl"
 #include "stdlib_inc.glsl"
 
-uniform sampler2D transforms_texture; //texunit:-1
-
 out vec2 uv_interp;
 out vec4 color_interp;
 out vec2 vertex_interp;
