@@ -178,13 +178,13 @@ public:
 	}
 
 	template <class T>
-	static void register_class(bool p_virtual = false) {
+	static void register_class(bool p_virtual = false, bool p_exposed = true) {
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->creation_func = &creator<T>;
-		t->exposed = true;
+		t->exposed = p_exposed;
 		t->is_virtual = p_virtual;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
@@ -192,15 +192,43 @@ public:
 	}
 
 	template <class T>
-	static void register_abstract_class() {
+	static void register_abstract_class(bool p_exposed = true) {
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
-		t->exposed = true;
+		t->exposed = p_exposed;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
 		//nothing
+	}
+
+	template <class T>
+	static void register_virtual_class(bool p_exposed = true) {
+		GLOBAL_LOCK_FUNCTION;
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_COND(!t);
+		t->creation_func = &creator<T>;
+		t->exposed = p_exposed;
+		t->is_virtual = true;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		T::register_custom_data_to_otdb();
+	}
+
+	template <class T>
+	static void register_internal_class(bool p_virtual = false) {
+		GLOBAL_LOCK_FUNCTION;
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_COND(!t);
+		t->creation_func = &creator<T>;
+		t->exposed = false;
+		t->is_virtual = false;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		T::register_custom_data_to_otdb();
 	}
 
 	static void register_extension_class(ObjectNativeExtension *p_extension);

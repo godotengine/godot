@@ -172,6 +172,7 @@ void NativeExtension::_register_extension_class(GDNativeExtensionClassLibraryPtr
 	extension->native_extension.editor_class = self->level_initialized == INITIALIZATION_LEVEL_EDITOR;
 	extension->native_extension.is_virtual = p_extension_funcs->is_virtual;
 	extension->native_extension.is_abstract = p_extension_funcs->is_abstract;
+	extension->native_extension.is_exposed = p_extension_funcs->is_exposed;
 	extension->native_extension.set = p_extension_funcs->set_func;
 	extension->native_extension.get = p_extension_funcs->get_func;
 	extension->native_extension.get_property_list = p_extension_funcs->get_property_list_func;

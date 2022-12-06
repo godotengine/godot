@@ -1541,7 +1541,11 @@ void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
 	c.inherits = parent->name;
 	c.class_ptr = parent->class_ptr;
 	c.inherits_ptr = parent;
-	c.exposed = true;
+	c.exposed = p_extension->is_exposed;
+	if (c.exposed) {
+		// The parent classes should be exposed if has a exposed child class.
+		parent->exposed = true;
+	}
 
 	classes[p_extension->class_name] = c;
 }

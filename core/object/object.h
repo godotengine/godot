@@ -312,6 +312,7 @@ struct ObjectNativeExtension {
 	bool editor_class = false;
 	bool is_virtual = false;
 	bool is_abstract = false;
+	bool is_exposed = true;
 	GDNativeExtensionClassSet set;
 	GDNativeExtensionClassGet get;
 	GDNativeExtensionClassGetPropertyList get_property_list;

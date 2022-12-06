@@ -248,6 +248,7 @@ typedef GDNativeExtensionClassCallVirtual (*GDNativeExtensionClassGetVirtual)(vo
 typedef struct {
 	GDNativeBool is_virtual;
 	GDNativeBool is_abstract;
+	GDNativeBool is_exposed;
 	GDNativeExtensionClassSet set_func;
 	GDNativeExtensionClassGet get_func;
 	GDNativeExtensionClassGetPropertyList get_property_list_func;
