@@ -381,15 +381,15 @@ void GDScriptCache::clear_unreferenced_packed_scenes() {
 	}
 }
 
-GDScriptCache::GDScriptCache() {
-	singleton = this;
-}
+void GDScriptCache::clear() {
+	if (singleton == nullptr) {
+		return;
+	}
 
-GDScriptCache::~GDScriptCache() {
-	destructing = true;
+	MutexLock lock(singleton->mutex);
 
 	RBSet<Ref<GDScriptParserRef>> parser_map_refs;
-	for (KeyValue<String, GDScriptParserRef *> &E : parser_map) {
+	for (KeyValue<String, GDScriptParserRef *> &E : singleton->parser_map) {
 		parser_map_refs.insert(E.value);
 	}
 
@@ -399,12 +399,20 @@ GDScriptCache::~GDScriptCache() {
 	}
 
 	parser_map_refs.clear();
-	parser_map.clear();
-	shallow_gdscript_cache.clear();
-	full_gdscript_cache.clear();
+	singleton->parser_map.clear();
+	singleton->shallow_gdscript_cache.clear();
+	singleton->full_gdscript_cache.clear();
 
-	packed_scene_cache.clear();
-	packed_scene_dependencies.clear();
+	singleton->packed_scene_cache.clear();
+	singleton->packed_scene_dependencies.clear();
+}
 
+GDScriptCache::GDScriptCache() {
+	singleton = this;
+}
+
+GDScriptCache::~GDScriptCache() {
+	destructing = true;
+	clear();
 	singleton = nullptr;
 }
