@@ -83,10 +83,10 @@ jobs:
           sudo apt-get update
           # The actual dependencies
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-              libxinerama-dev libgl1-mesa-dev libglu-dev libegl-dev libasound2-dev \
-              libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxkbcommon-dev \
-              libxrandr-dev libwayland-dev yasm xvfb wget unzip llvm libspeechd-dev \
-              speech-dispatcher fontconfig libfontconfig-dev
+              libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
+              libdbus-1-dev libudev-dev libxi-dev libxkbcommon-dev libxrandr-dev \
+              libwayland-dev yasm xvfb wget unzip llvm libspeechd-dev speech-dispatcher \
+              fontconfig libfontconfig-dev
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
