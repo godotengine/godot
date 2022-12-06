@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RenderingDevice" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Abstraction for working with modern low-level graphics APIs.
 	</brief_description>
 	<description>
+		[RenderingDevice] is an abstraction for working with modern low-level graphics APIs such as Vulkan.
+		On startup, Godot creates a global [RenderingDevice] which can be retrieved using [method RenderingServer.get_rendering_device]. This global RenderingDevice performs drawing to the screen.
+		Internally, [RenderingDevice] is used in Godot to provide support for several modern low-level graphics APIs while reducing the amount of code duplication required.
+		[b]Local RenderingDevices:[/b] Using [method RenderingServer.create_local_rendering_device], you can create "secondary" rendering devices to perform drawing and GPU compute operations on separate threads.
+		[b]Note:[/b] [RenderingDevice] is not available when running in headless mode or when using the OpenGL renderer.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -1162,20 +1168,28 @@
 		<constant name="BARRIER_MASK_NO_BARRIER" value="8" enum="BarrierMask" is_bitfield="true">
 		</constant>
 		<constant name="TEXTURE_TYPE_1D" value="0" enum="TextureType">
+			1-dimensional texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_2D" value="1" enum="TextureType">
+			2-dimensional texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_3D" value="2" enum="TextureType">
+			3-dimensional texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_CUBE" value="3" enum="TextureType">
+			[Cubemap] texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_1D_ARRAY" value="4" enum="TextureType">
+			Array of 1-dimensional textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_2D_ARRAY" value="5" enum="TextureType">
+			Array of 2-dimensional textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_CUBE_ARRAY" value="6" enum="TextureType">
+			Array of [Cubemap] textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_MAX" value="7" enum="TextureType">
+			Represents the size of the [enum TextureType] enum.
 		</constant>
 		<constant name="TEXTURE_SAMPLES_1" value="0" enum="TextureSamples">
 		</constant>
@@ -1192,6 +1206,7 @@
 		<constant name="TEXTURE_SAMPLES_64" value="6" enum="TextureSamples">
 		</constant>
 		<constant name="TEXTURE_SAMPLES_MAX" value="7" enum="TextureSamples">
+			Represents the size of the [enum TextureSamples] enum.
 		</constant>
 		<constant name="TEXTURE_USAGE_SAMPLING_BIT" value="1" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
@@ -1236,8 +1251,10 @@
 		<constant name="TEXTURE_SLICE_3D" value="2" enum="TextureSliceType">
 		</constant>
 		<constant name="SAMPLER_FILTER_NEAREST" value="0" enum="SamplerFilter">
+			Nearest-neighbor sampler filtering. Sampling at higher resolutions than the source will result in a pixelated look.
 		</constant>
 		<constant name="SAMPLER_FILTER_LINEAR" value="1" enum="SamplerFilter">
+			Bilinear sampler filtering. Sampling at higher resolutions than the source will result in a blurry look.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_REPEAT" value="0" enum="SamplerRepeatMode">
 		</constant>
@@ -1298,8 +1315,10 @@
 		<constant name="UNIFORM_TYPE_MAX" value="10" enum="UniformType">
 		</constant>
 		<constant name="RENDER_PRIMITIVE_POINTS" value="0" enum="RenderPrimitive">
+			Point rendering primitive (with constant size, regardless of distance from camera).
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINES" value="1" enum="RenderPrimitive">
+			Line rendering primitive.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINES_WITH_ADJACENCY" value="2" enum="RenderPrimitive">
 		</constant>
@@ -1380,6 +1399,7 @@
 		<constant name="LOGIC_OP_NO_OP" value="5" enum="LogicOperation">
 		</constant>
 		<constant name="LOGIC_OP_XOR" value="6" enum="LogicOperation">
+			Exclusive or (XOR) logic operation.
 		</constant>
 		<constant name="LOGIC_OP_OR" value="7" enum="LogicOperation">
 		</constant>
@@ -1442,16 +1462,22 @@
 		<constant name="BLEND_FACTOR_MAX" value="19" enum="BlendFactor">
 		</constant>
 		<constant name="BLEND_OP_ADD" value="0" enum="BlendOperation">
+			Additive blending operation ([code]source + destination[/code]).
 		</constant>
 		<constant name="BLEND_OP_SUBTRACT" value="1" enum="BlendOperation">
+			Subtractive blending operation ([code]source - destination[/code]).
 		</constant>
 		<constant name="BLEND_OP_REVERSE_SUBTRACT" value="2" enum="BlendOperation">
+			Reverse subtractive blending operation ([code]destination - source[/code]).
 		</constant>
 		<constant name="BLEND_OP_MINIMUM" value="3" enum="BlendOperation">
+			Minimum blending operation (keep the lowest value of the two).
 		</constant>
 		<constant name="BLEND_OP_MAXIMUM" value="4" enum="BlendOperation">
+			Maximum blending operation (keep the highest value of the two).
 		</constant>
 		<constant name="BLEND_OP_MAX" value="5" enum="BlendOperation">
+			Represents the size of the [enum BlendOperation] enum.
 		</constant>
 		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags">
 		</constant>
@@ -1544,12 +1570,16 @@
 		<constant name="LIMIT_MAX_TEXTURE_ARRAY_LAYERS" value="10" enum="Limit">
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_1D" value="11" enum="Limit">
+			Maximum supported 1-dimensional texture size (in pixels on a single axis).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_2D" value="12" enum="Limit">
+			Maximum supported 2-dimensional texture size (in pixels on a single axis).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_3D" value="13" enum="Limit">
+			Maximum supported 3-dimensional texture size (in pixels on a single axis).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_CUBE" value="14" enum="Limit">
+			Maximum supported cubemap texture size (in pixels on a single axis of a single face).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURES_PER_SHADER_STAGE" value="15" enum="Limit">
 		</constant>
@@ -1596,14 +1626,19 @@
 		<constant name="LIMIT_MAX_VIEWPORT_DIMENSIONS_Y" value="36" enum="Limit">
 		</constant>
 		<constant name="MEMORY_TEXTURES" value="0" enum="MemoryType">
+			Memory taken by textures.
 		</constant>
 		<constant name="MEMORY_BUFFERS" value="1" enum="MemoryType">
+			Memory taken by buffers.
 		</constant>
 		<constant name="MEMORY_TOTAL" value="2" enum="MemoryType">
+			Total memory taken. This is greater than the sum of [constant MEMORY_TEXTURES] and [constant MEMORY_BUFFERS], as it also includes miscellaneous memory usage.
 		</constant>
 		<constant name="INVALID_ID" value="-1">
+			Returned by functions that return an ID if a value is invalid.
 		</constant>
 		<constant name="INVALID_FORMAT_ID" value="-1">
+			Returned by functions that return a format ID if a value is invalid.
 		</constant>
 	</constants>
 </class>
