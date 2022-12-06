@@ -521,8 +521,9 @@ void GodotCapsuleShape3D::get_supports(const Vector3 &p_normal, int p_max, Vecto
 	Vector3 n = p_normal;
 
 	real_t d = n.y;
+	real_t h = height * 0.5 - radius; // half-height of the cylinder part
 
-	if (Math::abs(d) < edge_support_threshold) {
+	if (h > 0 && Math::abs(d) < edge_support_threshold) {
 		// make it flat
 		n.y = 0.0;
 		n.normalize();
@@ -531,13 +532,10 @@ void GodotCapsuleShape3D::get_supports(const Vector3 &p_normal, int p_max, Vecto
 		r_amount = 2;
 		r_type = FEATURE_EDGE;
 		r_supports[0] = n;
-		r_supports[0].y += height * 0.5 - radius;
+		r_supports[0].y += h;
 		r_supports[1] = n;
-		r_supports[1].y -= height * 0.5 - radius;
-
+		r_supports[1].y -= h;
 	} else {
-		real_t h = height * 0.5 - radius;
-
 		n *= radius;
 		n.y += (d > 0) ? h : -h;
 		r_amount = 1;
