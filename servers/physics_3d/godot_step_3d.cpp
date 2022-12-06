@@ -111,7 +111,7 @@ void GodotStep3D::_populate_island_soft_body(GodotSoftBody3D *p_soft_body, Local
 	}
 }
 
-void GodotStep3D::_setup_contraint(uint32_t p_constraint_index, void *p_userdata) {
+void GodotStep3D::_setup_constraint(uint32_t p_constraint_index, void *p_userdata) {
 	GodotConstraint3D *constraint = all_constraints[p_constraint_index];
 	constraint->setup(delta);
 }
@@ -342,8 +342,8 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 
 	/* SETUP CONSTRAINTS / PROCESS COLLISIONS */
 
-	uint32_t total_contraint_count = all_constraints.size();
-	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep3D::_setup_contraint, nullptr, total_contraint_count, -1, true, SNAME("Physics3DConstraintSetup"));
+	uint32_t total_constraint_count = all_constraints.size();
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep3D::_setup_constraint, nullptr, total_constraint_count, -1, true, SNAME("Physics3DConstraintSetup"));
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	{ //profile

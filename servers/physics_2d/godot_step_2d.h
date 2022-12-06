@@ -47,7 +47,7 @@ class GodotStep2D {
 	LocalVector<GodotConstraint2D *> all_constraints;
 
 	void _populate_island(GodotBody2D *p_body, LocalVector<GodotBody2D *> &p_body_island, LocalVector<GodotConstraint2D *> &p_constraint_island);
-	void _setup_contraint(uint32_t p_constraint_index, void *p_userdata = nullptr);
+	void _setup_constraint(uint32_t p_constraint_index, void *p_userdata = nullptr);
 	void _pre_solve_island(LocalVector<GodotConstraint2D *> &p_constraint_island) const;
 	void _solve_island(uint32_t p_island_index, void *p_userdata = nullptr) const;
 	void _check_suspend(LocalVector<GodotBody2D *> &p_body_island) const;
