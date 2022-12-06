@@ -39,17 +39,19 @@ Error ZIPPacker::open(String p_path, ZipAppend p_append) {
 	}
 
 	zlib_filefunc_def io = zipio_create_io(&fa);
-	zf = zipOpen2(p_path.utf8().get_data(), p_append, NULL, &io);
-	return zf != NULL ? OK : FAILED;
+	zf = zipOpen2(p_path.utf8().get_data(), p_append, nullptr, &io);
+	return zf != nullptr ? OK : FAILED;
 }
 
 Error ZIPPacker::close() {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker cannot be closed because it is not open.");
 
-	Error err = zipClose(zf, NULL) == ZIP_OK ? OK : FAILED;
+	Error err = zipClose(zf, nullptr) == ZIP_OK ? OK : FAILED;
 	if (err == OK) {
-		zf = NULL;
+		DEV_ASSERT(fa == nullptr);
+		zf = nullptr;
 	}
+
 	return err;
 }
 
@@ -60,18 +62,18 @@ Error ZIPPacker::start_file(String p_path) {
 
 	OS::DateTime time = OS::get_singleton()->get_datetime();
 
+	zipfi.tmz_date.tm_sec = time.second;
+	zipfi.tmz_date.tm_min = time.minute;
 	zipfi.tmz_date.tm_hour = time.hour;
 	zipfi.tmz_date.tm_mday = time.day;
-	zipfi.tmz_date.tm_min = time.minute;
 	zipfi.tmz_date.tm_mon = time.month - 1;
-	zipfi.tmz_date.tm_sec = time.second;
 	zipfi.tmz_date.tm_year = time.year;
 	zipfi.dosDate = 0;
-	zipfi.external_fa = 0;
 	zipfi.internal_fa = 0;
+	zipfi.external_fa = 0;
 
-	int ret = zipOpenNewFileInZip(zf, p_path.utf8().get_data(), &zipfi, NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
-	return ret == ZIP_OK ? OK : FAILED;
+	int err = zipOpenNewFileInZip(zf, p_path.utf8().get_data(), &zipfi, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+	return err == ZIP_OK ? OK : FAILED;
 }
 
 Error ZIPPacker::write_file(Vector<uint8_t> p_data) {
