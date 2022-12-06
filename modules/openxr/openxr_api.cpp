@@ -740,9 +740,10 @@ bool OpenXRAPI::create_swapchains() {
 	ERR_FAIL_NULL_V_MSG(projection_views, false, "OpenXR Couldn't allocate memory for projection views");
 
 	// We create our depth swapchain if:
+	// - we've enabled submitting depth buffer
 	// - we support our depth layer extension
 	// - we have our spacewarp extension (not yet implemented)
-	if (OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
+	if (submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
 		// Build a vector with swapchain formats we want to use, from best fit to worst
 		Vector<int64_t> usable_swapchain_formats;
 		int64_t swapchain_format_to_use = 0;
@@ -790,7 +791,7 @@ bool OpenXRAPI::create_swapchains() {
 		projection_views[i].subImage.imageRect.extent.width = recommended_size.width;
 		projection_views[i].subImage.imageRect.extent.height = recommended_size.height;
 
-		if (OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && depth_views) {
+		if (submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && depth_views) {
 			projection_views[i].next = &depth_views[i];
 
 			depth_views[i].type = XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR;
@@ -1064,6 +1065,30 @@ bool OpenXRAPI::on_state_exiting() {
 	// TODO need to look into the correct action here, read up on the spec but we may need to signal Godot to exit (if it's not already exiting)
 
 	return true;
+}
+
+void OpenXRAPI::set_form_factor(XrFormFactor p_form_factor) {
+	ERR_FAIL_COND(is_initialized());
+
+	form_factor = p_form_factor;
+}
+
+void OpenXRAPI::set_view_configuration(XrViewConfigurationType p_view_configuration) {
+	ERR_FAIL_COND(is_initialized());
+
+	view_configuration = p_view_configuration;
+}
+
+void OpenXRAPI::set_reference_space(XrReferenceSpaceType p_reference_space) {
+	ERR_FAIL_COND(is_initialized());
+
+	reference_space = p_reference_space;
+}
+
+void OpenXRAPI::set_submit_depth_buffer(bool p_submit_depth_buffer) {
+	ERR_FAIL_COND(is_initialized());
+
+	submit_depth_buffer = p_submit_depth_buffer;
 }
 
 bool OpenXRAPI::is_initialized() {
@@ -1684,7 +1709,7 @@ RID OpenXRAPI::get_color_texture() {
 }
 
 RID OpenXRAPI::get_depth_texture() {
-	if (swapchains[OPENXR_SWAPCHAIN_DEPTH].image_acquired) {
+	if (submit_depth_buffer && swapchains[OPENXR_SWAPCHAIN_DEPTH].image_acquired) {
 		return graphics_extension->get_texture(swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data, swapchains[OPENXR_SWAPCHAIN_DEPTH].image_index);
 	} else {
 		return RID();
@@ -1862,6 +1887,8 @@ OpenXRAPI::OpenXRAPI() {
 			default:
 				break;
 		}
+
+		submit_depth_buffer = GLOBAL_GET("xr/openxr/submit_depth_buffer");
 	}
 
 	// reset a few things that can't be done in our class definition

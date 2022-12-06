@@ -104,6 +104,7 @@ private:
 	XrViewConfigurationType view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 	XrReferenceSpaceType reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
 	// XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+	bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 
 	// state
 	XrInstance instance = XR_NULL_HANDLE;
@@ -311,6 +312,18 @@ public:
 
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
 	void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
+
+	void set_form_factor(XrFormFactor p_form_factor);
+	XrFormFactor get_form_factor() const { return form_factor; }
+
+	void set_view_configuration(XrViewConfigurationType p_view_configuration);
+	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
+
+	void set_reference_space(XrReferenceSpaceType p_reference_space);
+	XrReferenceSpaceType get_reference_space() const { return reference_space; }
+
+	void set_submit_depth_buffer(bool p_submit_depth_buffer);
+	bool get_submit_depth_buffer() const { return submit_depth_buffer; }
 
 	bool is_initialized();
 	bool is_running();
