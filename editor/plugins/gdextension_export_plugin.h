@@ -54,58 +54,36 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 
 	String entry_symbol = config->get_value("configuration", "entry_symbol");
 
-	List<String> libraries;
+	PackedStringArray tags;
+	String library_path = NativeExtension::find_extension_library(
+			p_path, config, [p_features](String p_feature) { return p_features.has(p_feature); }, &tags);
+	if (!library_path.is_empty()) {
+		add_shared_object(library_path, tags);
 
-	config->get_section_keys("libraries", &libraries);
+		if (p_features.has("iOS") && (library_path.ends_with(".a") || library_path.ends_with(".xcframework"))) {
+			String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
+									 "extern void add_ios_init_callback(void (*cb)());\n"
+									 "\n"
+									 "extern \"C\" void $ENTRY();\n"
+									 "void $ENTRY_init() {\n"
+									 "  if (&$ENTRY) register_dynamic_symbol((char *)\"$ENTRY\", (void *)$ENTRY);\n"
+									 "}\n"
+									 "struct $ENTRY_struct {\n"
+									 "  $ENTRY_struct() {\n"
+									 "    add_ios_init_callback($ENTRY_init);\n"
+									 "  }\n"
+									 "};\n"
+									 "$ENTRY_struct $ENTRY_struct_instance;\n\n";
+			additional_code = additional_code.replace("$ENTRY", entry_symbol);
+			add_ios_cpp_code(additional_code);
 
-	bool could_export = false;
-	for (const String &E : libraries) {
-		Vector<String> tags = E.split(".");
-		bool all_tags_met = true;
-		for (int i = 0; i < tags.size(); i++) {
-			String tag = tags[i].strip_edges();
-			if (!p_features.has(tag)) {
-				all_tags_met = false;
-				break;
-			}
+			String linker_flags = "-Wl,-U,_" + entry_symbol;
+			add_ios_linker_flags(linker_flags);
 		}
-
-		if (all_tags_met) {
-			String library_path = config->get_value("libraries", E);
-			if (!library_path.begins_with("res://")) {
-				print_line("Skipping export of out-of-project library " + library_path);
-				continue;
-			}
-			add_shared_object(library_path, tags);
-
-			if (p_features.has("iOS") && (library_path.ends_with(".a") || library_path.ends_with(".xcframework"))) {
-				String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
-										 "extern void add_ios_init_callback(void (*cb)());\n"
-										 "\n"
-										 "extern \"C\" void $ENTRY();\n"
-										 "void $ENTRY_init() {\n"
-										 "  if (&$ENTRY) register_dynamic_symbol((char *)\"$ENTRY\", (void *)$ENTRY);\n"
-										 "}\n"
-										 "struct $ENTRY_struct {\n"
-										 "  $ENTRY_struct() {\n"
-										 "    add_ios_init_callback($ENTRY_init);\n"
-										 "  }\n"
-										 "};\n"
-										 "$ENTRY_struct $ENTRY_struct_instance;\n\n";
-				additional_code = additional_code.replace("$ENTRY", entry_symbol);
-				add_ios_cpp_code(additional_code);
-
-				String linker_flags = "-Wl,-U,_" + entry_symbol;
-				add_ios_linker_flags(linker_flags);
-			}
-			could_export = true;
-			break;
-		}
-	}
-	if (!could_export) {
-		Vector<String> tags;
+	} else {
+		Vector<String> features_vector;
 		for (const String &E : p_features) {
-			tags.append(E);
+			features_vector.append(E);
 		}
 		ERR_FAIL_MSG(vformat("No suitable library found. The libraries' tags referred to an invalid feature flag. Possible feature flags for your platform: %s", p_path, String(", ").join(tags)));
 	}
@@ -115,11 +93,11 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		config->get_section_keys("dependencies", &dependencies);
 	}
 
-	for (const String &E : libraries) {
-		Vector<String> tags = E.split(".");
+	for (const String &E : dependencies) {
+		Vector<String> dependency_tags = E.split(".");
 		bool all_tags_met = true;
-		for (int i = 0; i < tags.size(); i++) {
-			String tag = tags[i].strip_edges();
+		for (int i = 0; i < dependency_tags.size(); i++) {
+			String tag = dependency_tags[i].strip_edges();
 			if (!p_features.has(tag)) {
 				all_tags_met = false;
 				break;
@@ -129,13 +107,12 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		if (all_tags_met) {
 			Dictionary dependency = config->get_value("dependencies", E);
 			for (const Variant *key = dependency.next(nullptr); key; key = dependency.next(key)) {
-				String library_path = *key;
+				String dependency_path = *key;
 				String target_path = dependency[*key];
-				if (!library_path.begins_with("res://")) {
-					print_line("Skipping export of out-of-project library " + library_path);
-					continue;
+				if (dependency_path.is_relative_path()) {
+					dependency_path = p_path.get_base_dir().path_join(dependency_path);
 				}
-				add_shared_object(library_path, tags, target_path);
+				add_shared_object(dependency_path, dependency_tags, target_path);
 			}
 			break;
 		}
