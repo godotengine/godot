@@ -717,7 +717,7 @@ public:
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_window) const override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;

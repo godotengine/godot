@@ -2181,6 +2181,7 @@ void DisplayServerWayland::_show_window() {
 			wd.wl_egl_window = wl_egl_window_create(wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
 			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
+			window_set_vsync_mode(wd.vsync_mode, MAIN_WINDOW_ID);
 		}
 #endif
 		wd.visible = true;
@@ -2480,15 +2481,39 @@ void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, Display
 	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_position pos %s window %d", p_pos, p_window));
 }
 
+// NOTE: While Wayland is supposed to be tear-free, wayland-protocols version
+// 1.30 added a protocol for allowing async flips which is supposed to be
+// handled by drivers such as Vulkan. We can then just ask to disable v-sync and
+// hope for the best. See: https://gitlab.freedesktop.org/wayland/wayland-protocols/-/commit/6394f0b4f3be151076f10a845a2fb131eeb56706
 void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, DisplayServer::WindowID p_window) {
-	// Right now Wayland doesn't support anything more than full VSync.
-	// See: https://gitlab.freedesktop.org/wayland/wayland-protocols/-/merge_requests/65
+	MutexLock mutex_lock(wls.mutex);
+
+#ifdef VULKAN_ENABLED
+	if (context_vulkan) {
+		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	}
+#endif // VULKAN_ENABLED
+
+#ifdef GLES3_ENABLED
+	if (egl_manager) {
+		egl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+#endif // GLES3_ENABLED
 }
 
-DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServer::WindowID p_vsync_mode) const {
-	// TODO: Figure out whether it is possible to disable VSync with Wayland
-	// (doubt it) or handle any other mode.
-	return VSYNC_ENABLED;
+DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServer::WindowID p_window) const {
+#ifdef VULKAN_ENABLED
+	if (context_vulkan) {
+		return context_vulkan->get_vsync_mode(p_window);
+	}
+#endif //VULKAN_ENABLED
+
+#ifdef GLES3_ENABLED
+	if (egl_manager) {
+		return egl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	}
+#endif //GLES3_ENABLED
+	return DisplayServer::VSYNC_ENABLED;
 }
 
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
