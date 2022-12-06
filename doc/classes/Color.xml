@@ -205,11 +205,18 @@
 			<description>
 				Returns the [Color] associated with the provided [param hex] integer in 32-bit ARGB format (8 bits per channel, alpha channel first).
 				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var red = Color.hex(0xffff0000)
 				var dark_cyan = Color.hex(0xff008b8b)
 				var my_color = Color.hex(0xa4bbefd2)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var red = new Color(0xffff0000);
+				var dark_cyan = new Color(0xff008b8b);
+				var my_color = new Color(0xa4bbefd2);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="hex64" qualifiers="static">
@@ -234,9 +241,9 @@
 				var col = Color.html("663399cc") # col is Color(0.4, 0.2, 0.6, 0.8)
 				[/gdscript]
 				[csharp]
-				var blue = new Color("#0000ff"); // blue is Color(0.0, 0.0, 1.0, 1.0)
-				var green = new Color("#0F0");   // green is Color(0.0, 1.0, 0.0, 1.0)
-				var col = new Color("663399cc"); // col is Color(0.4, 0.2, 0.6, 0.8)
+				var blue = Color.FromHtml("#0000ff"); // blue is Color(0.0, 0.0, 1.0, 1.0)
+				var green = Color.FromHtml("#0F0");   // green is Color(0.0, 1.0, 0.0, 1.0)
+				var col = Color.FromHtml("663399cc"); // col is Color(0.4, 0.2, 0.6, 0.8)
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -257,14 +264,13 @@
 				Color.html_is_valid("#55aaFF5")  # Returns false
 				[/gdscript]
 				[csharp]
-				// This method is not available in C#. Use `StringExtensions.IsValidHtmlColor()`, instead.
-				"#55AAFF".IsValidHtmlColor();   // Returns true
-				"#55AAFF20".IsValidHtmlColor(); // Returns true
-				"55AAFF".IsValidHtmlColor();    // Returns true
-				"#F2C".IsValidHtmlColor();      // Returns true
+				Color.IsHtmlValid("#55AAFF");   // Returns true
+				Color.IsHtmlValid("#55AAFF20"); // Returns true
+				Color.IsHtmlValid("55AAFF");    // Returns true
+				Color.IsHtmlValid("#F2C");      // Returns true
 
-				"#AABBC".IsValidHtmlColor();    // Returns false
-				"#55aaFF5".IsValidHtmlColor();  // Returns false
+				Color.IsHtmlValid("#AABBC");    // Returns false
+				Color.IsHtmlValid("#55aaFF5");  // Returns false
 				[/csharp]
 				[/codeblocks]
 			</description>
