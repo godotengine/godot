@@ -62,6 +62,7 @@ class NavigationAgent3D : public Node {
 	real_t path_max_distance = 3.0;
 
 	Vector3 target_location;
+	bool target_position_submitted = false;
 	Ref<NavigationPathQueryParameters3D> navigation_query;
 	Ref<NavigationPathQueryResult3D> navigation_result;
 	int nav_path_index = 0;
