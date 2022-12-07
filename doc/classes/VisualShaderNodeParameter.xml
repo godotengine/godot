@@ -13,14 +13,18 @@
 			Name of the parameter, by which it can be accessed through the [ShaderMaterial] properties.
 		</member>
 		<member name="qualifier" type="int" setter="set_qualifier" getter="get_qualifier" enum="VisualShaderNodeParameter.Qualifier" default="0">
+			Defines the scope of the parameter.
 		</member>
 	</members>
 	<constants>
 		<constant name="QUAL_NONE" value="0" enum="Qualifier">
+			The parameter will be tied to the [ShaderMaterial] using this shader.
 		</constant>
 		<constant name="QUAL_GLOBAL" value="1" enum="Qualifier">
+			The parameter will use a global value, defined in Project Settings.
 		</constant>
 		<constant name="QUAL_INSTANCE" value="2" enum="Qualifier">
+			The parameter will be tied to the node with attached [ShaderMaterial] using this shader.
 		</constant>
 		<constant name="QUAL_MAX" value="3" enum="Qualifier">
 			Represents the size of the [enum Qualifier] enum.

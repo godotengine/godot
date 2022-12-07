@@ -4,6 +4,7 @@
 		Contains functions to modify texture coordinates ([code]uv[/code]) to be used within the visual shader graph.
 	</brief_description>
 	<description>
+		UV functions are similar to [Vector2] functions, but the input port of this node uses the shader's UV value by default.
 	</description>
 	<tutorials>
 	</tutorials>

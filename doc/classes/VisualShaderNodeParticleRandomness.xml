@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeParticleRandomness" inherits="VisualShaderNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Visual shader node for randomizing particle values.
 	</brief_description>
 	<description>
+		Randomness node will output pseudo-random values of the given type based on the specified minimum and maximum values.
 	</description>
 	<tutorials>
 	</tutorials>

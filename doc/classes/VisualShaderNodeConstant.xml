@@ -4,6 +4,7 @@
 		A base type for the constants within the visual shader graph.
 	</brief_description>
 	<description>
+		This is an abstract class. See the derived types for descriptions of the possible values.
 	</description>
 	<tutorials>
 	</tutorials>

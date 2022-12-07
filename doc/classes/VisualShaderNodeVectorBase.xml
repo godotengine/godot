@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVectorBase" inherits="VisualShaderNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A base type for the nodes using different vector types within the visual shader graph.
+		A base type for the nodes that perform vector operations within the visual shader graph.
 	</brief_description>
 	<description>
+		This is an abstract class. See the derived types for descriptions of the possible operations.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeVectorBase.OpType" default="1">
-			A base type.
+			A vector type that this operation is performed on.
 		</member>
 	</members>
 	<constants>
