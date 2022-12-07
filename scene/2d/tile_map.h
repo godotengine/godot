@@ -400,7 +400,7 @@ public:
 	void force_update(int p_layer = -1);
 
 	// Helpers?
-	TypedArray<Vector2i> get_surrounding_tiles(Vector2i coords);
+	TypedArray<Vector2i> get_surrounding_cells(Vector2i coords);
 	void draw_cells_outline(Control *p_control, RBSet<Vector2i> p_cells, Color p_color, Transform2D p_transform = Transform2D());
 
 	// Virtual function to modify the TileData at runtime
