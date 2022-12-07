@@ -186,6 +186,14 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_egl_window *wl_egl_window = nullptr;
 #endif
 
+		// These are true by default as it isn't guaranteed that we'll find an
+		// xdg-shell implementation with wm_capabilities available. If and once we
+		// receive a wm_capabilities event these will get reset and updated with
+		// whatever the compositor says.
+		bool can_maximize = true;
+		bool can_fullscreen = true;
+		bool can_minimize = true;
+
 		bool visible = false;
 
 		WindowMode mode;

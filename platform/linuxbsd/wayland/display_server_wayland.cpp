@@ -424,6 +424,11 @@ void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_
 		} break;
 
 		case WINDOW_MODE_MINIMIZED: {
+			if (!p_wd.can_minimize) {
+				// We can't minimize, ignore.
+				break;
+			}
+
 			xdg_toplevel_set_minimized(p_wd.xdg_toplevel);
 
 			// We have no way to actually detect this state, so we'll have to report it
@@ -433,13 +438,26 @@ void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_
 		} break;
 
 		case WINDOW_MODE_MAXIMIZED: {
+			if (!p_wd.can_maximize) {
+				// We can't maximize, ignore.
+				break;
+			}
+
 			xdg_toplevel_set_maximized(p_wd.xdg_toplevel);
 		} break;
 
 		case WINDOW_MODE_FULLSCREEN:
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN: {
+			if (!p_wd.can_fullscreen) {
+				// We can't set fullscreen, ignore.
+				break;
+			}
+
 			xdg_toplevel_set_fullscreen(p_wd.xdg_toplevel, nullptr);
 		}
+
+		default: {
+		} break;
 	}
 }
 
@@ -585,7 +603,7 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	}
 
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, 2);
+		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, MAX(2, MIN(5, (int)version)));
 		globals.xdg_wm_base_name = name;
 		return;
 	}
@@ -1611,6 +1629,31 @@ void DisplayServerWayland::_xdg_toplevel_on_configure_bounds(void *data, struct 
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_wm_capabilities(void *data, struct xdg_toplevel *xdg_toplevel, struct wl_array *capabilities) {
+	WindowData *wd = (WindowData *)data;
+	ERR_FAIL_NULL(wd);
+
+	wd->can_maximize = false;
+	wd->can_fullscreen = false;
+	wd->can_minimize = false;
+
+	uint32_t *capability = nullptr;
+	wl_array_for_each(capability, capabilities) {
+		switch (*capability) {
+			case XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE: {
+				wd->can_maximize = true;
+			}; break;
+			case XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN: {
+				wd->can_fullscreen = true;
+			}; break;
+
+			case XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE: {
+				wd->can_minimize = true;
+			}; break;
+
+			default: {
+			}; break;
+		}
+	}
 }
 
 void DisplayServerWayland::_xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode) {
@@ -2408,9 +2451,9 @@ DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::W
 }
 
 bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_window) const {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_is_maximize_allowed, returning false"));
-	return false;
+	MutexLock mutex_lock(wls.mutex);
+
+	return wls.main_window.can_maximize;
 }
 
 void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, DisplayServer::WindowID p_window) {
