@@ -28,7 +28,7 @@ namespace GodotTools.Build
 
             string launchMessage = startInfo.GetCommandLineDisplay(new StringBuilder("Running: ")).ToString();
             stdOutHandler?.Invoke(launchMessage);
-            if (Godot.OS.IsStdoutVerbose())
+            if (Godot.OS.IsStdOutVerbose())
                 Console.WriteLine(launchMessage);
 
             startInfo.RedirectStandardOutput = true;
@@ -89,7 +89,7 @@ namespace GodotTools.Build
 
             string launchMessage = startInfo.GetCommandLineDisplay(new StringBuilder("Running: ")).ToString();
             stdOutHandler?.Invoke(launchMessage);
-            if (Godot.OS.IsStdoutVerbose())
+            if (Godot.OS.IsStdOutVerbose())
                 Console.WriteLine(launchMessage);
 
             startInfo.RedirectStandardOutput = true;

@@ -650,7 +650,7 @@ namespace Godot.Bridge
                             continue;
 
                         var rpcAttr = method.GetCustomAttributes(inherit: false)
-                            .OfType<RPCAttribute>().FirstOrDefault();
+                            .OfType<RpcAttribute>().FirstOrDefault();
 
                         if (rpcAttr == null)
                             continue;

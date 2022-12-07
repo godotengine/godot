@@ -23,7 +23,7 @@ namespace GodotTools.Build
         public Godot.Collections.Array CustomProperties { get; private set; } = new();
 
         public string LogsDirPath =>
-            Path.Combine(GodotSharpDirs.BuildLogsDirs, $"{Solution.MD5Text()}_{Configuration}");
+            Path.Combine(GodotSharpDirs.BuildLogsDirs, $"{Solution.Md5Text()}_{Configuration}");
 
         public override bool Equals(object? obj)
         {

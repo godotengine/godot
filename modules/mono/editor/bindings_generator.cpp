@@ -38,10 +38,10 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
-#include "core/string/ucaps.h"
 #include "main/main.h"
 
 #include "../godotsharp_defs.h"
+#include "../utils/naming_utils.h"
 #include "../utils/path_utils.h"
 #include "../utils/string_utils.h"
 
@@ -144,74 +144,6 @@ static String fix_doc_description(const String &p_bbcode) {
 			.replace("\t", "")
 			.replace("\r", "")
 			.strip_edges();
-}
-
-static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_upper = false) {
-	String ret;
-	Vector<String> parts = p_identifier.split("_", true);
-
-	for (int i = 0; i < parts.size(); i++) {
-		String part = parts[i];
-
-		if (part.length()) {
-			part[0] = _find_upper(part[0]);
-			if (p_input_is_upper) {
-				for (int j = 1; j < part.length(); j++) {
-					part[j] = _find_lower(part[j]);
-				}
-			}
-			ret += part;
-		} else {
-			if (i == 0 || i == (parts.size() - 1)) {
-				// Preserve underscores at the beginning and end
-				ret += "_";
-			} else {
-				// Preserve contiguous underscores
-				if (parts[i - 1].length()) {
-					ret += "__";
-				} else {
-					ret += "_";
-				}
-			}
-		}
-	}
-
-	return ret;
-}
-
-static String snake_to_camel_case(const String &p_identifier, bool p_input_is_upper = false) {
-	String ret;
-	Vector<String> parts = p_identifier.split("_", true);
-
-	for (int i = 0; i < parts.size(); i++) {
-		String part = parts[i];
-
-		if (part.length()) {
-			if (i != 0) {
-				part[0] = _find_upper(part[0]);
-			}
-			if (p_input_is_upper) {
-				for (int j = i != 0 ? 1 : 0; j < part.length(); j++) {
-					part[j] = _find_lower(part[j]);
-				}
-			}
-			ret += part;
-		} else {
-			if (i == 0 || i == (parts.size() - 1)) {
-				// Preserve underscores at the beginning and end
-				ret += "_";
-			} else {
-				// Preserve contiguous underscores
-				if (parts[i - 1].length()) {
-					ret += "__";
-				} else {
-					ret += "_";
-				}
-			}
-		}
-	}
-
-	return ret;
 }
 
 String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype) {
@@ -967,11 +899,11 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	ARRAY_ALL(string);
 	ARRAY_ALL(Color);
 	ARRAY_ALL(Vector2);
-	ARRAY_ALL(Vector2i);
+	ARRAY_ALL(Vector2I);
 	ARRAY_ALL(Vector3);
-	ARRAY_ALL(Vector3i);
+	ARRAY_ALL(Vector3I);
 	ARRAY_ALL(Vector4);
-	ARRAY_ALL(Vector4i);
+	ARRAY_ALL(Vector4I);
 
 #undef ARRAY_ALL
 #undef ARRAY_IS_EMPTY
@@ -1041,7 +973,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			_log("Declaring global enum '%s' inside struct '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
 			p_output.append("\npublic partial struct ");
-			p_output.append(enum_class_name);
+			p_output.append(pascal_to_pascal_case(enum_class_name));
 			p_output.append("\n" OPEN_BLOCK);
 		}
 
@@ -1050,7 +982,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 		}
 
 		p_output.append("\npublic enum ");
-		p_output.append(enum_proxy_name);
+		p_output.append(pascal_to_pascal_case(enum_proxy_name));
 		p_output.append(" : long");
 		p_output.append("\n" OPEN_BLOCK);
 
@@ -1502,7 +1434,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		output.append(MEMBER_BEGIN "public enum ");
-		output.append(ienum.cname.operator String());
+		output.append(pascal_to_pascal_case(ienum.cname.operator String()));
 		output.append(" : long");
 		output.append(MEMBER_BEGIN OPEN_BLOCK);
 
@@ -2896,7 +2828,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(type_cname);
 
-		TypeInterface itype = TypeInterface::create_object_type(type_cname, api_type);
+		TypeInterface itype = TypeInterface::create_object_type(type_cname, pascal_to_pascal_case(type_cname), api_type);
 
 		itype.base_name = ClassDB::get_parent_class(type_cname);
 		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
@@ -3241,7 +3173,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &E : enum_map) {
 			StringName enum_proxy_cname = E.key;
-			String enum_proxy_name = enum_proxy_cname.operator String();
+			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.operator String());
 			if (itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
 				// In case the enum name conflicts with other PascalCase members,
 				// we append 'Enum' to the enum name in those cases.
@@ -3369,7 +3301,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		} break;
 		case Variant::AABB: {
 			AABB aabb = p_val.operator ::AABB();
-			r_iarg.default_argument = "new AABB(new Vector3" + aabb.position.operator String() + ", new Vector3" + aabb.size.operator String() + ")";
+			r_iarg.default_argument = "new Aabb(new Vector3" + aabb.position.operator String() + ", new Vector3" + aabb.size.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2: {
@@ -3379,7 +3311,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		} break;
 		case Variant::RECT2I: {
 			Rect2i rect = p_val.operator Rect2i();
-			r_iarg.default_argument = "new Rect2i(new Vector2i" + rect.position.operator String() + ", new Vector2i" + rect.size.operator String() + ")";
+			r_iarg.default_argument = "new Rect2I(new Vector2I" + rect.position.operator String() + ", new Vector2I" + rect.size.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::COLOR:
@@ -3513,32 +3445,30 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	TypeInterface itype;
 
-#define INSERT_STRUCT_TYPE(m_type)                                 \
-	{                                                              \
-		itype = TypeInterface::create_value_type(String(#m_type)); \
-		itype.c_type_in = #m_type "*";                             \
-		itype.c_type_out = itype.cs_type;                          \
-		itype.cs_in_expr = "&%0";                                  \
-		itype.cs_in_expr_is_unsafe = true;                         \
-		builtin_types.insert(itype.cname, itype);                  \
+#define INSERT_STRUCT_TYPE(m_type, m_proxy_name)                                          \
+	{                                                                                     \
+		itype = TypeInterface::create_value_type(String(#m_type), String(#m_proxy_name)); \
+		itype.cs_in_expr = "&%0";                                                         \
+		itype.cs_in_expr_is_unsafe = true;                                                \
+		builtin_types.insert(itype.cname, itype);                                         \
 	}
 
-	INSERT_STRUCT_TYPE(Vector2)
-	INSERT_STRUCT_TYPE(Vector2i)
-	INSERT_STRUCT_TYPE(Rect2)
-	INSERT_STRUCT_TYPE(Rect2i)
-	INSERT_STRUCT_TYPE(Transform2D)
-	INSERT_STRUCT_TYPE(Vector3)
-	INSERT_STRUCT_TYPE(Vector3i)
-	INSERT_STRUCT_TYPE(Basis)
-	INSERT_STRUCT_TYPE(Quaternion)
-	INSERT_STRUCT_TYPE(Transform3D)
-	INSERT_STRUCT_TYPE(AABB)
-	INSERT_STRUCT_TYPE(Color)
-	INSERT_STRUCT_TYPE(Plane)
-	INSERT_STRUCT_TYPE(Vector4)
-	INSERT_STRUCT_TYPE(Vector4i)
-	INSERT_STRUCT_TYPE(Projection)
+	INSERT_STRUCT_TYPE(Vector2, Vector2)
+	INSERT_STRUCT_TYPE(Vector2i, Vector2I)
+	INSERT_STRUCT_TYPE(Rect2, Rect2)
+	INSERT_STRUCT_TYPE(Rect2i, Rect2I)
+	INSERT_STRUCT_TYPE(Transform2D, Transform2D)
+	INSERT_STRUCT_TYPE(Vector3, Vector3)
+	INSERT_STRUCT_TYPE(Vector3i, Vector3I)
+	INSERT_STRUCT_TYPE(Basis, Basis)
+	INSERT_STRUCT_TYPE(Quaternion, Quaternion)
+	INSERT_STRUCT_TYPE(Transform3D, Transform3D)
+	INSERT_STRUCT_TYPE(AABB, Aabb)
+	INSERT_STRUCT_TYPE(Color, Color)
+	INSERT_STRUCT_TYPE(Plane, Plane)
+	INSERT_STRUCT_TYPE(Vector4, Vector4)
+	INSERT_STRUCT_TYPE(Vector4i, Vector4I)
+	INSERT_STRUCT_TYPE(Projection, Projection)
 
 #undef INSERT_STRUCT_TYPE
 
@@ -3677,7 +3607,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface();
 	itype.name = "RID";
 	itype.cname = itype.name;
-	itype.proxy_name = "RID";
+	itype.proxy_name = "Rid";
 	itype.cs_type = itype.proxy_name;
 	itype.c_arg_in = "&%s";
 	itype.c_type = itype.cs_type;
@@ -3891,7 +3821,7 @@ void BindingsGenerator::_populate_global_constants() {
 			enum_itype.is_enum = true;
 			enum_itype.name = ienum.cname.operator String();
 			enum_itype.cname = ienum.cname;
-			enum_itype.proxy_name = enum_itype.name;
+			enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
 			TypeInterface::postsetup_enum_type(enum_itype);
 			enum_types.insert(enum_itype.cname, enum_itype);
 
@@ -3913,9 +3843,9 @@ void BindingsGenerator::_populate_global_constants() {
 	// HARDCODED
 	List<StringName> hardcoded_enums;
 	hardcoded_enums.push_back("Vector2.Axis");
-	hardcoded_enums.push_back("Vector2i.Axis");
+	hardcoded_enums.push_back("Vector2I.Axis");
 	hardcoded_enums.push_back("Vector3.Axis");
-	hardcoded_enums.push_back("Vector3i.Axis");
+	hardcoded_enums.push_back("Vector3I.Axis");
 	for (const StringName &enum_cname : hardcoded_enums) {
 		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
 		// Here, we assume core types do not begin with underscore
@@ -3923,7 +3853,7 @@ void BindingsGenerator::_populate_global_constants() {
 		enum_itype.is_enum = true;
 		enum_itype.name = enum_cname.operator String();
 		enum_itype.cname = enum_cname;
-		enum_itype.proxy_name = enum_itype.name;
+		enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
 		TypeInterface::postsetup_enum_type(enum_itype);
 		enum_types.insert(enum_itype.cname, enum_itype);
 	}
