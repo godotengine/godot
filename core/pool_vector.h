@@ -581,6 +581,7 @@ Error PoolVector<T>::resize(int p_size) {
 		MemoryPool::allocs_used++;
 
 		//cleanup the alloc
+		alloc->lock.set(0);
 		alloc->size = 0;
 		alloc->refcount.init();
 		alloc->pool_id = POOL_ALLOCATOR_INVALID_ID;
