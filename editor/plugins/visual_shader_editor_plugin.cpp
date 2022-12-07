@@ -269,6 +269,19 @@ void VisualShaderGraphPlugin::set_expression(VisualShader::Type p_type, int p_no
 	links[p_node_id].expression_edit->set_text(p_expression);
 }
 
+Ref<Script> VisualShaderGraphPlugin::get_node_script(int p_node_id) const {
+	if (!links.has(p_node_id)) {
+		return Ref<Script>();
+	}
+
+	Ref<VisualShaderNodeCustom> custom = Ref<VisualShaderNodeCustom>(links[p_node_id].visual_node);
+	if (custom.is_valid()) {
+		return custom->get_script();
+	}
+
+	return Ref<Script>();
+}
+
 void VisualShaderGraphPlugin::update_node_size(int p_node_id) {
 	if (!links.has(p_node_id)) {
 		return;
@@ -1137,10 +1150,6 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	}
 }
 
-void VisualShaderEditor::update_nodes() {
-	_update_nodes();
-}
-
 void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
 	if (plugins.has(p_plugin)) {
 		return;
@@ -1202,6 +1211,228 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 	add_options.push_back(ao);
 }
 
+Dictionary VisualShaderEditor::get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node) {
+	Dictionary dict;
+	dict["script"] = p_custom_node->get_script();
+
+	String name;
+	if (p_custom_node->has_method("_get_name")) {
+		name = (String)p_custom_node->call("_get_name");
+	} else {
+		name = "Unnamed";
+	}
+	dict["name"] = name;
+
+	String description = "";
+	if (p_custom_node->has_method("_get_description")) {
+		description = (String)p_custom_node->call("_get_description");
+	}
+	dict["description"] = description;
+
+	int return_icon_type = -1;
+	if (p_custom_node->has_method("_get_return_icon_type")) {
+		return_icon_type = (int)p_custom_node->call("_get_return_icon_type");
+	}
+	dict["return_icon_type"] = return_icon_type;
+
+	String category = "";
+	if (p_custom_node->has_method("_get_category")) {
+		category = (String)p_custom_node->call("_get_category");
+	}
+	category = category.rstrip("/");
+	category = category.lstrip("/");
+	category = "Addons/" + category;
+
+	String subcategory = "";
+	if (p_custom_node->has_method("_get_subcategory")) {
+		subcategory = (String)p_custom_node->call("_get_subcategory");
+	}
+	if (!subcategory.is_empty()) {
+		category += "/" + subcategory;
+	}
+	dict["category"] = category;
+
+	bool highend = false;
+	if (p_custom_node->has_method("_is_highend")) {
+		highend = (bool)p_custom_node->call("_is_highend");
+	}
+	dict["highend"] = highend;
+
+	return dict;
+}
+
+void VisualShaderEditor::update_custom_type(const Ref<Resource> &p_resource) {
+	Ref<Script> scr = Ref<Script>(p_resource.ptr());
+	if (scr.is_null() || scr->get_instance_base_type() != String("VisualShaderNodeCustom")) {
+		return;
+	}
+
+	Ref<VisualShaderNodeCustom> ref;
+	ref.instantiate();
+	ref->set_script(scr);
+	if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
+		for (int i = 0; i < add_options.size(); i++) {
+			if (add_options[i].is_custom && add_options[i].script == scr) {
+				add_options.remove_at(i);
+				_update_options_menu();
+				// TODO: Make indication for the existed custom nodes with that script on graph to be disabled.
+				break;
+			}
+		}
+		return;
+	}
+	Dictionary dict = get_custom_node_data(ref);
+
+	bool found_type = false;
+	bool need_rebuild = false;
+
+	for (int i = 0; i < add_options.size(); i++) {
+		if (add_options[i].is_custom && add_options[i].script == scr) {
+			found_type = true;
+
+			add_options.write[i].name = dict["name"];
+			add_options.write[i].return_type = dict["return_icon_type"];
+			add_options.write[i].description = dict["description"];
+			add_options.write[i].category = dict["category"];
+			add_options.write[i].highend = dict["highend"];
+
+			int max_type = 0;
+			int type_offset = 0;
+			switch (visual_shader->get_mode()) {
+				case Shader::MODE_CANVAS_ITEM:
+				case Shader::MODE_SPATIAL: {
+					max_type = 3;
+				} break;
+				case Shader::MODE_PARTICLES: {
+					max_type = 5;
+					type_offset = 3;
+				} break;
+				case Shader::MODE_SKY: {
+					max_type = 1;
+					type_offset = 8;
+				} break;
+				case Shader::MODE_FOG: {
+					max_type = 1;
+					type_offset = 9;
+				} break;
+				default: {
+				} break;
+			}
+			max_type = type_offset + max_type;
+
+			for (int t = type_offset; t < max_type; t++) {
+				VisualShader::Type type = (VisualShader::Type)t;
+				Vector<int> nodes = visual_shader->get_node_list(type);
+
+				List<VisualShader::Connection> node_connections;
+				visual_shader->get_node_connections(type, &node_connections);
+
+				List<VisualShader::Connection> custom_node_input_connections;
+				List<VisualShader::Connection> custom_node_output_connections;
+				for (const VisualShader::Connection &E : node_connections) {
+					int from = E.from_node;
+					int from_idx = E.from_port;
+					int to = E.to_node;
+					int to_idx = E.to_port;
+
+					if (graph_plugin->get_node_script(from) == scr) {
+						custom_node_output_connections.push_back({ from, from_idx, to, to_idx });
+					} else if (graph_plugin->get_node_script(to) == scr) {
+						custom_node_input_connections.push_back({ from, from_idx, to, to_idx });
+					}
+				}
+
+				for (int j = 0; j < nodes.size(); j++) {
+					int node_id = nodes[j];
+
+					Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, node_id);
+					if (vsnode.is_null()) {
+						continue;
+					}
+					Ref<VisualShaderNodeCustom> custom_node = Ref<VisualShaderNodeCustom>(vsnode.ptr());
+					if (custom_node.is_null() || custom_node->get_script() != scr) {
+						continue;
+					}
+					need_rebuild = true;
+
+					// Removes invalid connections.
+					{
+						int prev_input_port_count = custom_node->get_input_port_count();
+						int prev_output_port_count = custom_node->get_output_port_count();
+
+						custom_node->update_ports();
+
+						int input_port_count = custom_node->get_input_port_count();
+						int output_port_count = custom_node->get_output_port_count();
+
+						if (output_port_count != prev_output_port_count) {
+							for (const VisualShader::Connection &E : custom_node_output_connections) {
+								int from = E.from_node;
+								int from_idx = E.from_port;
+								int to = E.to_node;
+								int to_idx = E.to_port;
+
+								if (from_idx >= output_port_count) {
+									visual_shader->disconnect_nodes(type, from, from_idx, to, to_idx);
+									graph_plugin->disconnect_nodes(type, from, from_idx, to, to_idx);
+								}
+							}
+						}
+						if (input_port_count != prev_input_port_count) {
+							for (const VisualShader::Connection &E : custom_node_input_connections) {
+								int from = E.from_node;
+								int from_idx = E.from_port;
+								int to = E.to_node;
+								int to_idx = E.to_port;
+
+								if (to_idx >= input_port_count) {
+									visual_shader->disconnect_nodes(type, from, from_idx, to, to_idx);
+									graph_plugin->disconnect_nodes(type, from, from_idx, to, to_idx);
+								}
+							}
+						}
+					}
+
+					graph_plugin->update_node(type, node_id);
+				}
+			}
+			break;
+		}
+	}
+
+	if (!found_type) {
+		add_custom_type(dict["name"], dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
+	}
+
+	// To prevent updating options multiple times when multiple scripts are saved.
+	if (!_block_update_options_menu) {
+		_block_update_options_menu = true;
+
+		call_deferred(SNAME("_update_options_menu_deferred"));
+	}
+
+	// To prevent rebuilding the shader multiple times when multiple scripts are saved.
+	if (need_rebuild && !_block_rebuild_shader) {
+		_block_rebuild_shader = true;
+
+		call_deferred(SNAME("_rebuild_shader_deferred"));
+	}
+}
+
+void VisualShaderEditor::_update_options_menu_deferred() {
+	_update_options_menu();
+
+	_block_update_options_menu = false;
+}
+
+void VisualShaderEditor::_rebuild_shader_deferred() {
+	if (visual_shader.is_valid()) {
+		visual_shader->rebuild();
+	}
+
+	_block_rebuild_shader = false;
+}
+
 bool VisualShaderEditor::_is_available(int p_mode) {
 	int current_mode = edit_type->get_selected();
 
@@ -1243,57 +1474,10 @@ void VisualShaderEditor::_update_nodes() {
 			if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
 				continue;
 			}
-
-			String name;
-			if (ref->has_method("_get_name")) {
-				name = (String)ref->call("_get_name");
-			} else {
-				name = "Unnamed";
-			}
-
-			String description = "";
-			if (ref->has_method("_get_description")) {
-				description = (String)ref->call("_get_description");
-			}
-
-			int return_icon_type = -1;
-			if (ref->has_method("_get_return_icon_type")) {
-				return_icon_type = (int)ref->call("_get_return_icon_type");
-			}
-
-			String category = "";
-			if (ref->has_method("_get_category")) {
-				category = (String)ref->call("_get_category");
-			}
-
-			String subcategory = "";
-			if (ref->has_method("_get_subcategory")) {
-				subcategory = (String)ref->call("_get_subcategory");
-			}
-
-			bool highend = false;
-			if (ref->has_method("_is_highend")) {
-				highend = (bool)ref->call("_is_highend");
-			}
-
-			Dictionary dict;
-			dict["name"] = name;
-			dict["script"] = scr;
-			dict["description"] = description;
-			dict["return_icon_type"] = return_icon_type;
-
-			category = category.rstrip("/");
-			category = category.lstrip("/");
-			category = "Addons/" + category;
-			if (!subcategory.is_empty()) {
-				category += "/" + subcategory;
-			}
-
-			dict["category"] = category;
-			dict["highend"] = highend;
+			Dictionary dict = get_custom_node_data(ref);
 
 			String key;
-			key = category + "/" + name;
+			key = String(dict["category"]) + "/" + String(dict["name"]);
 
 			added[key] = dict;
 		}
@@ -4694,6 +4878,8 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_constant", &VisualShaderEditor::_update_constant);
 	ClassDB::bind_method("_update_parameter", &VisualShaderEditor::_update_parameter);
 	ClassDB::bind_method("_expand_output_port", &VisualShaderEditor::_expand_output_port);
+	ClassDB::bind_method("_update_options_menu_deferred", &VisualShaderEditor::_update_options_menu_deferred);
+	ClassDB::bind_method("_rebuild_shader_deferred", &VisualShaderEditor::_rebuild_shader_deferred);
 
 	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
@@ -4704,6 +4890,7 @@ void VisualShaderEditor::_bind_methods() {
 
 VisualShaderEditor::VisualShaderEditor() {
 	ShaderLanguage::get_keyword_list(&keyword_list);
+	EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &VisualShaderEditor::update_custom_type));
 
 	graph = memnew(GraphEdit);
 	graph->get_zoom_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);
