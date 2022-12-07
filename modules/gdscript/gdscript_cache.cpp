@@ -398,6 +398,11 @@ void GDScriptCache::clear() {
 			E->clear();
 	}
 
+	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
+		singleton->packed_scene_dependencies.erase(E.key);
+		singleton->packed_scene_cache.erase(E.key);
+	}
+
 	parser_map_refs.clear();
 	singleton->parser_map.clear();
 	singleton->shallow_gdscript_cache.clear();
