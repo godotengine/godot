@@ -1938,7 +1938,9 @@ void TextureStorage::update_decal_atlas() {
 			DecalAtlas::SortItem &si = itemsv.write[idx];
 
 			Texture *src_tex = get_texture(E.key);
-
+			if (!src_tex){
+				src_tex = new Texture();
+			}
 			si.size.width = (src_tex->width / border) + 1;
 			si.size.height = (src_tex->height / border) + 1;
 			si.pixel_size = Size2i(src_tex->width, src_tex->height);
@@ -2018,11 +2020,13 @@ void TextureStorage::update_decal_atlas() {
 
 		for (int i = 0; i < item_count; i++) {
 			DecalAtlas::Texture *t = decal_atlas.textures.getptr(items[i].texture);
-			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
-			t->uv_rect.size = items[i].pixel_size;
+			if (t){
+				t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+				t->uv_rect.size = items[i].pixel_size;
 
-			t->uv_rect.position /= Size2(decal_atlas.size);
-			t->uv_rect.size /= Size2(decal_atlas.size);
+				t->uv_rect.position /= Size2(decal_atlas.size);
+				t->uv_rect.size /= Size2(decal_atlas.size);
+			}
 		}
 	} else {
 		//use border as size, so it at least has enough mipmaps
@@ -2086,7 +2090,9 @@ void TextureStorage::update_decal_atlas() {
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					Texture *src_tex = get_texture(E.key);
-					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+					if (src_tex && t){
+						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+					}
 				}
 
 				RD::get_singleton()->draw_list_end();
