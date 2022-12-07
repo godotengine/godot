@@ -65,7 +65,7 @@ namespace GodotPlugins
         }
 
         private static readonly List<AssemblyName> SharedAssemblies = new();
-        private static readonly Assembly CoreApiAssembly = typeof(Godot.Object).Assembly;
+        private static readonly Assembly CoreApiAssembly = typeof(global::Godot.GodotObject).Assembly;
         private static Assembly? _editorApiAssembly;
         private static PluginLoadContextWrapper? _projectLoadContext;
         private static bool _editorHint = false;

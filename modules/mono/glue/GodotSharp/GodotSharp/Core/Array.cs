@@ -120,7 +120,7 @@ namespace Godot.Collections
         // fine as long as the array is not mutated. However, Span does this type checking at
         // instantiation, so it's not possible to use it even when not mutating anything.
         // ReSharper disable once RedundantNameQualifier
-        public Array(ReadOnlySpan<Godot.Object> array) : this()
+        public Array(ReadOnlySpan<GodotObject> array) : this()
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));

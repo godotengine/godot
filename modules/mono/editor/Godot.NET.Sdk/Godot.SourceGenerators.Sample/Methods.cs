@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Godot.SourceGenerators.Sample;
 
 [SuppressMessage("ReSharper", "RedundantNameQualifier")]
-public partial class Methods : Godot.Object
+public partial class Methods : GodotObject
 {
     private void MethodWithOverload()
     {

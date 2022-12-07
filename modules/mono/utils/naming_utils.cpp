@@ -45,6 +45,7 @@ HashMap<String, String> _create_hashmap_from_vector(Vector<Pair<String, String>>
 const HashMap<String, String> pascal_case_name_overrides = _create_hashmap_from_vector({
 		{ "BitMap", "Bitmap" },
 		{ "JSONRPC", "JsonRpc" },
+		{ "Object", "GodotObject" },
 		{ "OpenXRIPBinding", "OpenXRIPBinding" },
 		{ "SkeletonModification2DCCDIK", "SkeletonModification2DCcdik" },
 		{ "SkeletonModification2DFABRIK", "SkeletonModification2DFabrik" },

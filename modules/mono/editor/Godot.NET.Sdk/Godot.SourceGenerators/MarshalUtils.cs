@@ -19,7 +19,7 @@ namespace Godot.SourceGenerators
                            throw new InvalidOperationException($"Type not found: '{fullyQualifiedMetadataName}'.");
                 }
 
-                GodotObjectType = GetTypeByMetadataNameOrThrow("Godot.Object");
+                GodotObjectType = GetTypeByMetadataNameOrThrow(GodotClasses.GodotObject);
             }
         }
 

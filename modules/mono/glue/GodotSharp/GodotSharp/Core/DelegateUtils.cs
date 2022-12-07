@@ -126,7 +126,7 @@ namespace Godot
                     }
                 }
                 // ReSharper disable once RedundantNameQualifier
-                case Godot.Object godotObject:
+                case GodotObject godotObject:
                 {
                     using (var stream = new MemoryStream())
                     using (var writer = new BinaryWriter(stream))
@@ -399,7 +399,7 @@ namespace Godot
                     {
                         ulong objectId = reader.ReadUInt64();
                         // ReSharper disable once RedundantNameQualifier
-                        Godot.Object godotObject = Godot.Object.InstanceFromId(objectId);
+                        GodotObject godotObject = GodotObject.InstanceFromId(objectId);
                         if (godotObject == null)
                             return false;
 
@@ -641,7 +641,7 @@ namespace Godot
                         return VariantUtils.CreateFrom(nodePathArray);
                     case Rid[] ridArray:
                         return VariantUtils.CreateFrom(ridArray);
-                    case Godot.Object[] godotObjectArray:
+                    case GodotObject[] godotObjectArray:
                         return VariantUtils.CreateFrom(godotObjectArray);
                     case StringName stringName:
                         return VariantUtils.CreateFrom(stringName);
@@ -655,7 +655,7 @@ namespace Godot
                         return VariantUtils.CreateFrom(godotArray);
                     case Variant variant:
                         return VariantUtils.CreateFrom(variant);
-                    case Godot.Object godotObject:
+                    case GodotObject godotObject:
                         return VariantUtils.CreateFrom(godotObject);
                     case Enum @enum:
                         return VariantUtils.CreateFrom(Convert.ToInt64(@enum));
@@ -736,18 +736,18 @@ namespace Godot
                 if (ToSystemObjectFuncByType.TryGetValue(type, out var func))
                     return func(variant);
 
-                if (typeof(Godot.Object).IsAssignableFrom(type))
-                    return Convert.ChangeType(VariantUtils.ConvertTo<Godot.Object>(variant), type);
+                if (typeof(GodotObject).IsAssignableFrom(type))
+                    return Convert.ChangeType(VariantUtils.ConvertTo<GodotObject>(variant), type);
 
-                if (typeof(Godot.Object[]).IsAssignableFrom(type))
+                if (typeof(GodotObject[]).IsAssignableFrom(type))
                 {
-                    static Godot.Object[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
+                    static GodotObject[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
                     {
                         var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
                             NativeFuncs.godotsharp_array_new_copy(nativeArray));
 
                         int length = array.Count;
-                        var ret = (Godot.Object[])Activator.CreateInstance(type, length)!;
+                        var ret = (GodotObject[])Activator.CreateInstance(type, length)!;
 
                         for (int i = 0; i < length; i++)
                             ret[i] = array[i].AsGodotObject();

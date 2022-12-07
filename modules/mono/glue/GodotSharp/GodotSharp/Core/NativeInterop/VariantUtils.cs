@@ -241,7 +241,7 @@ namespace Godot.NativeInterop
             => CreateFromArray(new Collections.Array(from));
 
         // ReSharper disable once RedundantNameQualifier
-        public static godot_variant CreateFromSystemArrayOfGodotObject(Godot.Object[]? from)
+        public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
         {
             if (from == null)
                 return default; // Nil
@@ -307,8 +307,8 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // ReSharper disable once RedundantNameQualifier
-        public static godot_variant CreateFromGodotObject(Godot.Object? from)
-            => from != null ? CreateFromGodotObjectPtr(Object.GetPtr(from)) : default;
+        public static godot_variant CreateFromGodotObject(GodotObject? from)
+            => from != null ? CreateFromGodotObjectPtr(GodotObject.GetPtr(from)) : default;
 
         // We avoid the internal call if the stored type is the same we want.
 
@@ -460,7 +460,7 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // ReSharper disable once RedundantNameQualifier
-        public static Godot.Object ConvertToGodotObject(in godot_variant p_var)
+        public static GodotObject ConvertToGodotObject(in godot_variant p_var)
             => InteropUtils.UnmanagedGetManaged(ConvertToGodotObjectPtr(p_var));
 
         public static string ConvertToString(in godot_variant p_var)
@@ -616,7 +616,7 @@ namespace Godot.NativeInterop
 
         public static T[] ConvertToSystemArrayOfGodotObject<T>(in godot_variant p_var)
             // ReSharper disable once RedundantNameQualifier
-            where T : Godot.Object
+            where T : GodotObject
         {
             using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
             return Marshaling.ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(godotArray);

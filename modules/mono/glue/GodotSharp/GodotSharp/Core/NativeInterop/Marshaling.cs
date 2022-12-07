@@ -143,12 +143,12 @@ namespace Godot.NativeInterop
                         if (type == typeof(Rid[]))
                             return Variant.Type.Array;
 
-                        if (typeof(Godot.Object[]).IsAssignableFrom(type))
+                        if (typeof(GodotObject[]).IsAssignableFrom(type))
                             return Variant.Type.Array;
                     }
                     else if (type.IsGenericType)
                     {
-                        if (typeof(Godot.Object).IsAssignableFrom(type))
+                        if (typeof(GodotObject).IsAssignableFrom(type))
                             return Variant.Type.Object;
 
                         // We use `IsAssignableFrom` with our helper interfaces to detect generic Godot collections
@@ -167,7 +167,7 @@ namespace Godot.NativeInterop
                     }
                     else
                     {
-                        if (typeof(Godot.Object).IsAssignableFrom(type))
+                        if (typeof(GodotObject).IsAssignableFrom(type))
                             return Variant.Type.Object;
 
                         if (typeof(StringName) == type)
@@ -232,7 +232,7 @@ namespace Godot.NativeInterop
                 var gcHandle = CustomGCHandle.AllocStrong(p_managed_callable.Delegate);
 
                 IntPtr objectPtr = p_managed_callable.Target != null ?
-                    Object.GetPtr(p_managed_callable.Target) :
+                    GodotObject.GetPtr(p_managed_callable.Target) :
                     IntPtr.Zero;
 
                 unsafe
@@ -310,7 +310,7 @@ namespace Godot.NativeInterop
 
         public static Signal ConvertSignalToManaged(in godot_signal p_signal)
         {
-            var owner = Godot.Object.InstanceFromId(p_signal.ObjectId);
+            var owner = GodotObject.InstanceFromId(p_signal.ObjectId);
             var name = StringName.CreateTakingOwnershipOfDisposableValue(
                 NativeFuncs.godotsharp_string_name_new_copy(p_signal.Name));
             return new Signal(owner, name);
@@ -319,7 +319,7 @@ namespace Godot.NativeInterop
         // Array
 
         internal static T[] ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(in godot_array p_array)
-            where T : Godot.Object
+            where T : GodotObject
         {
             var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
                 NativeFuncs.godotsharp_array_new_copy(p_array));

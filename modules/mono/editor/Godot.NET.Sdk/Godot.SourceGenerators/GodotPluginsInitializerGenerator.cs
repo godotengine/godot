@@ -34,7 +34,7 @@ namespace GodotPlugins.Game
             {
                 DllImportResolver dllImportResolver = new GodotDllImportResolver(godotDllHandle).OnResolveDllImport;
 
-                var coreApiAssembly = typeof(Godot.Object).Assembly;
+                var coreApiAssembly = typeof(global::Godot.GodotObject).Assembly;
 
                 NativeLibrary.SetDllImportResolver(coreApiAssembly, dllImportResolver);
 
@@ -42,7 +42,7 @@ namespace GodotPlugins.Game
 
                 ManagedCallbacks.Create(outManagedCallbacks);
 
-                ScriptManagerBridge.LookupScriptsInAssembly(typeof(GodotPlugins.Game.Main).Assembly);
+                ScriptManagerBridge.LookupScriptsInAssembly(typeof(global::GodotPlugins.Game.Main).Assembly);
 
                 return godot_bool.True;
             }
