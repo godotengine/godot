@@ -221,7 +221,7 @@ float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
 	return godot_io_java->get_screen_refresh_rate(SCREEN_REFRESH_RATE_FALLBACK);
 }
 
-bool DisplayServerAndroid::screen_is_touchscreen(int p_screen) const {
+bool DisplayServerAndroid::is_touchscreen_available() const {
 	return true;
 }
 
@@ -316,9 +316,6 @@ DisplayServer::WindowID DisplayServerAndroid::get_window_at_screen_position(cons
 int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
 	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, 0);
 	switch (p_handle_type) {
-		case DISPLAY_HANDLE: {
-			return 0; // Not supported.
-		}
 		case WINDOW_HANDLE: {
 			return reinterpret_cast<int64_t>(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
 		}
@@ -326,8 +323,17 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 			return 0; // Not supported.
 		}
 #ifdef GLES3_ENABLED
+		case DISPLAY_HANDLE: {
+			if (rendering_driver == "opengl3") {
+				return reinterpret_cast<int64_t>(eglGetCurrentDisplay());
+			}
+			return 0;
+		}
 		case OPENGL_CONTEXT: {
-			return reinterpret_cast<int64_t>(eglGetCurrentContext());
+			if (rendering_driver == "opengl3") {
+				return reinterpret_cast<int64_t>(eglGetCurrentContext());
+			}
+			return 0;
 		}
 #endif
 		default: {
@@ -357,6 +363,10 @@ void DisplayServerAndroid::window_set_current_screen(int p_screen, DisplayServer
 }
 
 Point2i DisplayServerAndroid::window_get_position(DisplayServer::WindowID p_window) const {
+	return Point2i();
+}
+
+Point2i DisplayServerAndroid::window_get_position_with_decorations(DisplayServer::WindowID p_window) const {
 	return Point2i();
 }
 
@@ -392,7 +402,7 @@ Size2i DisplayServerAndroid::window_get_size(DisplayServer::WindowID p_window) c
 	return OS_Android::get_singleton()->get_display_size();
 }
 
-Size2i DisplayServerAndroid::window_get_real_size(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerAndroid::window_get_size_with_decorations(DisplayServer::WindowID p_window) const {
 	return OS_Android::get_singleton()->get_display_size();
 }
 

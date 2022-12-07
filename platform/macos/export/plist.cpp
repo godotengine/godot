@@ -353,7 +353,7 @@ bool PList::load_file(const String &p_filename) {
 	} else {
 		// Load text plist.
 		Error err;
-		Vector<uint8_t> array = FileAccess::get_file_as_array(p_filename, &err);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_filename, &err);
 		ERR_FAIL_COND_V(err != OK, false);
 
 		String ret;

@@ -198,7 +198,8 @@ public:
 	Size2i get_size() const;
 	void reset_size();
 
-	Size2i get_real_size() const;
+	Point2i get_position_with_decorations() const;
+	Size2i get_size_with_decorations() const;
 
 	void set_max_size(const Size2i &p_max_size);
 	Size2i get_max_size() const;

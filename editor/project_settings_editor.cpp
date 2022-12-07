@@ -274,10 +274,12 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("s3tc");
 	presets.insert("etc");
 	presets.insert("etc2");
+	presets.insert("editor");
+	presets.insert("template_debug");
+	presets.insert("template_release");
 	presets.insert("debug");
 	presets.insert("release");
-	presets.insert("editor");
-	presets.insert("standalone");
+	presets.insert("template");
 	presets.insert("32");
 	presets.insert("64");
 	presets.insert("movie");

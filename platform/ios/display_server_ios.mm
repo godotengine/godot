@@ -496,6 +496,10 @@ Point2i DisplayServerIOS::window_get_position(WindowID p_window) const {
 	return Point2i();
 }
 
+Point2i DisplayServerIOS::window_get_position_with_decorations(WindowID p_window) const {
+	return Point2i();
+}
+
 void DisplayServerIOS::window_set_position(const Point2i &p_position, WindowID p_window) {
 	// Probably not supported for single window iOS app
 }
@@ -529,7 +533,7 @@ Size2i DisplayServerIOS::window_get_size(WindowID p_window) const {
 	return Size2i(screenBounds.size.width, screenBounds.size.height) * screen_get_max_scale();
 }
 
-Size2i DisplayServerIOS::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerIOS::window_get_size_with_decorations(WindowID p_window) const {
 	return window_get_size(p_window);
 }
 
@@ -581,7 +585,7 @@ bool DisplayServerIOS::can_any_window_draw() const {
 	return true;
 }
 
-bool DisplayServerIOS::screen_is_touchscreen(int p_screen) const {
+bool DisplayServerIOS::is_touchscreen_available() const {
 	return true;
 }
 

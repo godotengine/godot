@@ -156,7 +156,7 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 
 		// Common to all type of sources.
 		if (!source->get_name().is_empty()) {
-			item_text = vformat(TTR("%s (id:%d)"), source->get_name(), source_id);
+			item_text = vformat(TTR("%s (ID: %d)"), source->get_name(), source_id);
 		}
 
 		// Atlas source.
@@ -165,7 +165,7 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 			texture = atlas_source->get_texture();
 			if (item_text.is_empty()) {
 				if (texture.is_valid()) {
-					item_text = vformat("%s (ID: %d)", texture->get_path().get_file(), source_id);
+					item_text = vformat(TTR("%s (ID: %d)"), texture->get_path().get_file(), source_id);
 				} else {
 					item_text = vformat(TTR("No Texture Atlas Source (ID: %d)"), source_id);
 				}
@@ -1164,7 +1164,7 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vecto
 						}
 
 						// Get surrounding tiles (handles different tile shapes).
-						TypedArray<Vector2i> around = tile_map->get_surrounding_tiles(coords);
+						TypedArray<Vector2i> around = tile_map->get_surrounding_cells(coords);
 						for (int i = 0; i < around.size(); i++) {
 							to_check.push_back(around[i]);
 						}
@@ -2547,7 +2547,7 @@ RBSet<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i
 					output.insert(coords);
 
 					// Get surrounding tiles (handles different tile shapes).
-					TypedArray<Vector2i> around = tile_map->get_surrounding_tiles(coords);
+					TypedArray<Vector2i> around = tile_map->get_surrounding_cells(coords);
 					for (int i = 0; i < around.size(); i++) {
 						to_check.push_back(around[i]);
 					}

@@ -2448,7 +2448,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	Vector<Vector<uint8_t>> mesh_lightmap_caches;
 
 	{
-		src_lightmap_cache = FileAccess::get_file_as_array(p_source_file + ".unwrap_cache", &err);
+		src_lightmap_cache = FileAccess::get_file_as_bytes(p_source_file + ".unwrap_cache", &err);
 		if (err != OK) {
 			src_lightmap_cache.clear();
 		}

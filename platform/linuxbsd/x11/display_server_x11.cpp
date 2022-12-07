@@ -1397,8 +1397,8 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 			XRectangle rect;
 			rect.x = 0;
 			rect.y = 0;
-			rect.width = window_get_real_size(p_window).x;
-			rect.height = window_get_real_size(p_window).y;
+			rect.width = window_get_size_with_decorations(p_window).x;
+			rect.height = window_get_size_with_decorations(p_window).y;
 			XUnionRectWithRegion(&rect, region, region);
 		} else {
 			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * p_region.size());
@@ -1582,7 +1582,7 @@ void DisplayServerX11::_update_size_hints(WindowID p_window) {
 	xsh->width = wd.size.width;
 	xsh->height = wd.size.height;
 
-	if (window_mode == WINDOW_MODE_FULLSCREEN) {
+	if (window_mode == WINDOW_MODE_FULLSCREEN || window_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		// Do not set any other hints to prevent the window manager from ignoring the fullscreen flags
 	} else if (window_get_flag(WINDOW_FLAG_RESIZE_DISABLED, p_window)) {
 		// If resizing is disabled, use the forced size
@@ -1616,6 +1616,40 @@ Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 	const WindowData &wd = windows[p_window];
 
 	return wd.position;
+}
+
+Point2i DisplayServerX11::window_get_position_with_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
+	const WindowData &wd = windows[p_window];
+
+	if (wd.fullscreen) {
+		return wd.position;
+	}
+
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+	int x = wd.position.x;
+	int y = wd.position.y;
+	Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+	if (prop != None) {
+		Atom type;
+		int format;
+		unsigned long len;
+		unsigned long remaining;
+		unsigned char *data = nullptr;
+		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+			if (format == 32 && len == 4 && data) {
+				long *extents = (long *)data;
+				x -= extents[0]; // left
+				y -= extents[2]; // top
+			}
+			XFree(data);
+		}
+	}
+	return Size2i(x, y);
 }
 
 void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p_window) {
@@ -1762,11 +1796,15 @@ Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
 	return wd.size;
 }
 
-Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerX11::window_get_size_with_decorations(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
+
+	if (wd.fullscreen) {
+		return wd.size;
+	}
 
 	XWindowAttributes xwa;
 	XSync(x11_display, False);
@@ -1949,7 +1987,7 @@ void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
 	// Check if we applied any window modes that didn't take effect while unmapped
 	const WindowData &wd = windows[p_window];
 	if (wd.fullscreen && !_window_fullscreen_check(p_window)) {
-		_set_wm_fullscreen(p_window, true);
+		_set_wm_fullscreen(p_window, true, wd.exclusive_fullscreen);
 	} else if (wd.maximized && !_window_maximize_check(p_window, "_NET_WM_STATE")) {
 		_set_wm_maximized(p_window, true);
 	} else if (wd.minimized && !_window_minimize_check(p_window)) {
@@ -2024,7 +2062,7 @@ void DisplayServerX11::_set_wm_minimized(WindowID p_window, bool p_enabled) {
 	wd.minimized = p_enabled;
 }
 
-void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
+void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, bool p_exclusive) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -2063,7 +2101,14 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 
 	// set bypass compositor hint
 	Atom bypass_compositor = XInternAtom(x11_display, "_NET_WM_BYPASS_COMPOSITOR", False);
-	unsigned long compositing_disable_on = p_enabled ? 1 : 0;
+	unsigned long compositing_disable_on = 0; // Use default.
+	if (p_enabled) {
+		if (p_exclusive) {
+			compositing_disable_on = 1; // Force composition OFF to reduce overhead.
+		} else {
+			compositing_disable_on = 2; // Force composition ON to allow popup windows.
+		}
+	}
 	if (bypass_compositor != None) {
 		XChangeProperty(x11_display, wd.x11_window, bypass_compositor, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&compositing_disable_on, 1);
 	}
@@ -2109,8 +2154,9 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		case WINDOW_MODE_FULLSCREEN: {
 			//Remove full-screen
 			wd.fullscreen = false;
+			wd.exclusive_fullscreen = false;
 
-			_set_wm_fullscreen(p_window, false);
+			_set_wm_fullscreen(p_window, false, false);
 
 			//un-maximize required for always on top
 			bool on_top = window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window);
@@ -2143,7 +2189,13 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			}
 
 			wd.fullscreen = true;
-			_set_wm_fullscreen(p_window, true);
+			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				wd.exclusive_fullscreen = true;
+				_set_wm_fullscreen(p_window, true, true);
+			} else {
+				wd.exclusive_fullscreen = false;
+				_set_wm_fullscreen(p_window, true, false);
+			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			_set_wm_maximized(p_window, true);
@@ -2158,7 +2210,11 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) { //if fullscreen, it's not in another mode
-		return WINDOW_MODE_FULLSCREEN;
+		if (wd.exclusive_fullscreen) {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		} else {
+			return WINDOW_MODE_FULLSCREEN;
+		}
 	}
 
 	// Test maximized.
@@ -3947,7 +4003,6 @@ void DisplayServerX11::process_events() {
 									mb->set_window_id(window_id_other);
 									mb->set_position(Vector2(x, y));
 									mb->set_global_position(mb->get_position());
-									Input::get_singleton()->parse_input_event(mb);
 								}
 								break;
 							}

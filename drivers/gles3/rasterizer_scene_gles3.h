@@ -93,6 +93,7 @@ struct RenderDataGLES3 {
 	Transform3D inv_cam_transform;
 	Projection cam_projection;
 	bool cam_orthogonal = false;
+	uint32_t camera_visible_layers = 0xFFFFFFFF;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
@@ -333,6 +334,10 @@ private:
 
 			float fog_light_color[3];
 			float fog_sun_scatter;
+			uint32_t camera_visible_layers;
+			uint32_t pad1;
+			uint32_t pad2;
+			uint32_t pad3;
 		};
 		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");
 
@@ -387,10 +392,10 @@ private:
 		GeometryInstanceSurface **elements = nullptr;
 		int element_count = 0;
 		bool reverse_cull = false;
-		uint32_t spec_constant_base_flags = 0;
+		uint64_t spec_constant_base_flags = 0;
 		bool force_wireframe = false;
 
-		RenderListParameters(GeometryInstanceSurface **p_elements, int p_element_count, bool p_reverse_cull, uint32_t p_spec_constant_base_flags, bool p_force_wireframe = false) {
+		RenderListParameters(GeometryInstanceSurface **p_elements, int p_element_count, bool p_reverse_cull, uint64_t p_spec_constant_base_flags, bool p_force_wireframe = false) {
 			elements = p_elements;
 			element_count = p_element_count;
 			reverse_cull = p_reverse_cull;

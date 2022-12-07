@@ -664,7 +664,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					}
 				}
 
-				if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE || (p_delta == 0 && update_mode == Animation::UPDATE_DISCRETE)) { //delta == 0 means seek
+				if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) {
 					Variant value = a->value_track_interpolate(i, p_time);
 
 					if (value == Variant()) {
@@ -681,15 +681,23 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						pa->value_accum = Animation::interpolate_variant(pa->value_accum, value, p_interp);
 					}
 
-				} else if (p_is_current && p_delta != 0) {
+				} else {
 					List<int> indices;
-					if (p_started) {
-						int first_key = a->track_find_key(i, p_prev_time, true);
-						if (first_key >= 0) {
-							indices.push_back(first_key);
+
+					if (p_seeked) {
+						int found_key = a->track_find_key(i, p_time);
+						if (found_key >= 0) {
+							indices.push_back(found_key);
 						}
+					} else {
+						if (p_started) {
+							int first_key = a->track_find_key(i, p_prev_time, true);
+							if (first_key >= 0) {
+								indices.push_back(first_key);
+							}
+						}
+						a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 					}
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 
 					for (int &F : indices) {
 						Variant value = a->track_get_key_value(i, F);
@@ -740,21 +748,26 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				if (!nc->node) {
 					continue;
 				}
-				if (p_delta == 0) {
-					continue;
-				}
 				if (!p_is_current) {
 					break;
 				}
 
 				List<int> indices;
-				if (p_started) {
-					int first_key = a->track_find_key(i, p_prev_time, true);
-					if (first_key >= 0) {
-						indices.push_back(first_key);
+
+				if (p_seeked) {
+					int found_key = a->track_find_key(i, p_time);
+					if (found_key >= 0) {
+						indices.push_back(found_key);
 					}
+				} else {
+					if (p_started) {
+						int first_key = a->track_find_key(i, p_prev_time, true);
+						if (first_key >= 0) {
+							indices.push_back(first_key);
+						}
+					}
+					a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 				}
-				a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_looped_flag);
 
 				for (int &E : indices) {
 					StringName method = a->method_track_get_name(i, E);
@@ -796,9 +809,6 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 			} break;
 			case Animation::TYPE_AUDIO: {
 				if (!nc->node) {
-					continue;
-				}
-				if (p_delta == 0) {
 					continue;
 				}
 
@@ -910,7 +920,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					continue;
 				}
 
-				if (p_delta == 0 || p_seeked) {
+				if (p_seeked) {
 					//seek
 					int idx = a->track_find_key(i, p_time);
 					if (idx < 0) {
@@ -945,7 +955,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 							break;
 					}
 
-					if (player->is_playing() || p_seeked) {
+					if (player->is_playing()) {
 						player->play(anim_name);
 						player->seek(at_anim_pos);
 						nc->animation_playing = true;
@@ -991,6 +1001,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started) {
 	double delta = p_delta * speed_scale * cd.speed_scale;
 	double next_pos = cd.pos + delta;
+	bool backwards = signbit(delta); // Negative zero means playing backwards too.
 
 	real_t len = cd.from->animation->get_length();
 	Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
@@ -1002,23 +1013,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 			} else if (next_pos > len) {
 				next_pos = len;
 			}
-
-			bool backwards = signbit(delta); // Negative zero means playing backwards too
-			delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here)
-
-			if (&cd == &playback.current) {
-				if (!backwards && cd.pos <= len && next_pos == len) {
-					//playback finished
-					end_reached = true;
-					end_notify = cd.pos < len; // Notify only if not already at the end
-				}
-
-				if (backwards && cd.pos >= 0 && next_pos == 0) {
-					//playback finished
-					end_reached = true;
-					end_notify = cd.pos > 0; // Notify only if not already at the beginning
-				}
-			}
+			delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here).
 		} break;
 
 		case Animation::LOOP_LINEAR: {
@@ -1047,8 +1042,28 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 			break;
 	}
 
-	_animation_process_animation(cd.from, cd.pos, next_pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started, looped_flag);
+	double prev_pos = cd.pos; // The animation may be changed during process, so it is safer that the state is changed before process.
 	cd.pos = next_pos;
+	_animation_process_animation(cd.from, prev_pos, cd.pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started, looped_flag);
+
+	if (is_just_played) {
+		return; // Animation has been changed in the process (may be caused by method track), abort process.
+	}
+
+	if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
+		if (&cd == &playback.current) {
+			if (!backwards && prev_pos <= len && next_pos == len) {
+				// Playback finished.
+				end_reached = true;
+				end_notify = prev_pos < len; // Notify only if not already at the end.
+			}
+			if (backwards && prev_pos >= 0 && next_pos == 0) {
+				// Playback finished.
+				end_reached = true;
+				end_notify = prev_pos > 0; // Notify only if not already at the beginning.
+			}
+		}
+	}
 }
 
 void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
@@ -1056,23 +1071,25 @@ void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 
 	accum_pass++;
 
-	_animation_process_data(c.current, p_delta, 1.0f, c.seeked && p_delta != 0, p_started);
+	bool seeked = c.seeked; // The animation may be changed during process, so it is safer that the state is changed before process.
 	if (p_delta != 0) {
 		c.seeked = false;
 	}
+
+	_animation_process_data(c.current, p_delta, 1.0f, seeked, p_started);
 
 	List<Blend>::Element *prev = nullptr;
 	for (List<Blend>::Element *E = c.blend.back(); E; E = prev) {
 		Blend &b = E->get();
 		float blend = b.blend_left / b.blend_time;
-		_animation_process_data(b.data, p_delta, blend, false, false);
-
 		b.blend_left -= Math::absf(speed_scale * p_delta);
-
 		prev = E->prev();
 		if (b.blend_left < 0) {
 			c.blend.erase(E);
 		}
+		// The effect of animation changes during blending is unknown...
+		// In that case, we recommends to use method call mode "deferred", not "immediate".
+		_animation_process_data(b.data, p_delta, blend, false, false);
 	}
 }
 
@@ -1192,13 +1209,24 @@ void AnimationPlayer::_animation_process(double p_delta) {
 	if (playback.current.from) {
 		end_reached = false;
 		end_notify = false;
-		_animation_process2(p_delta, playback.started);
+		is_just_played = false;
 
+		bool started = playback.started; // The animation may be changed during process, so it is safer that the state is changed before process.
 		if (playback.started) {
 			playback.started = false;
 		}
 
+		_animation_process2(p_delta, started);
+
+		if (is_just_played) {
+			cache_update_size = 0;
+			cache_update_prop_size = 0;
+			cache_update_bezier_size = 0;
+			return; // Animation has been changed in the process (may be caused by method track), clear update caches and abort process.
+		}
+
 		_animation_update_transforms();
+
 		if (end_reached) {
 			if (queued.size()) {
 				String old = playback.assigned;
@@ -1647,6 +1675,7 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	c.assigned = name;
 	c.seeked = false;
 	c.started = true;
+	is_just_played = true;
 
 	if (!end_reached) {
 		queued.clear();
@@ -2135,7 +2164,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationPlayer::advance);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER), "set_current_animation", "get_current_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR), "set_current_animation", "get_current_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "assigned_animation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_assigned_animation", "get_assigned_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");

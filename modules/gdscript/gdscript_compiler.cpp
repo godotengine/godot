@@ -43,7 +43,7 @@ bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringN
 		return false;
 	}
 
-	if (codegen.parameters.has(p_name) || codegen.locals.has(p_name)) {
+	if (_is_local_or_parameter(codegen, p_name)) {
 		return false; //shadowed
 	}
 
@@ -63,6 +63,10 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 	ERR_FAIL_COND_V(!nc, false);
 
 	return ClassDB::has_property(nc->get_name(), p_name);
+}
+
+bool GDScriptCompiler::_is_local_or_parameter(CodeGen &codegen, const StringName &p_name) {
+	return codegen.parameters.has(p_name) || codegen.locals.has(p_name);
 }
 
 void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::Node *p_node) {
@@ -920,7 +924,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								StringName var_name = identifier->name;
 								if (_is_class_member_property(codegen, var_name)) {
 									assign_class_member_property = var_name;
-								} else if (!codegen.locals.has(var_name) && codegen.script->member_indices.has(var_name)) {
+								} else if (!_is_local_or_parameter(codegen, var_name) && codegen.script->member_indices.has(var_name)) {
 									is_member_property = true;
 									member_property_setter_function = codegen.script->member_indices[var_name].setter;
 									member_property_has_setter = member_property_setter_function != StringName();
@@ -1131,7 +1135,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				bool is_in_setter = false;
 				StringName setter_function;
 				StringName var_name = static_cast<const GDScriptParser::IdentifierNode *>(assignment->assignee)->name;
-				if (!codegen.locals.has(var_name) && codegen.script->member_indices.has(var_name)) {
+				if (!_is_local_or_parameter(codegen, var_name) && codegen.script->member_indices.has(var_name)) {
 					is_member = true;
 					setter_function = codegen.script->member_indices[var_name].setter;
 					has_setter = setter_function != StringName();

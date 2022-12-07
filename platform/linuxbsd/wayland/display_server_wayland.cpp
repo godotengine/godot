@@ -2265,12 +2265,16 @@ void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer
 Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	if (wls.main_window.xdg_toplevel) {
-		// We can't know the position of toplevels with the standard protocol.
-		return Point2i();
-	} else {
-		return wls.main_window.rect.position;
-	}
+	// We can't know the position of toplevels with the standard protocol.
+	return Point2i();
+}
+
+Point2i DisplayServerWayland::window_get_position_with_decorations(DisplayServer::WindowID p_window) const {
+	MutexLock mutex_lock(wls.mutex);
+
+	// We can't know the position of toplevels with the standard protocol, nor can
+	// we get information about the decorations, at least with SSDs.
+	return Point2i();
 }
 
 void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window) {
@@ -2378,12 +2382,12 @@ Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) c
 	return wls.main_window.rect.size;
 }
 
-Size2i DisplayServerWayland::window_get_real_size(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	// I don't think there's a way of actually knowing the window size in wayland,
-	// other than the one requested by the compositor, which happens to be
-	// the one the windows always uses anyway.
+	// I don't think there's a way of actually knowing the size of the window
+	// decoration in Wayland, at least in the case of SSDs, nor that it would be
+	// that useful in this case. We'll just return the main window's size.
 	return wls.main_window.rect.size;
 }
 

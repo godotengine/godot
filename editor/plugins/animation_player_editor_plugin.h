@@ -212,6 +212,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _start_onion_skinning();
 	void _stop_onion_skinning();
 
+	bool _validate_tracks(const Ref<Animation> p_anim);
+
 	void _pin_pressed();
 	String _get_current() const;
 

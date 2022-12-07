@@ -106,9 +106,16 @@ void Window::reset_size() {
 	set_size(Size2i());
 }
 
-Size2i Window::get_real_size() const {
+Point2i Window::get_position_with_decorations() const {
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		return DisplayServer::get_singleton()->window_get_real_size(window_id);
+		return DisplayServer::get_singleton()->window_get_position_with_decorations(window_id);
+	}
+	return position;
+}
+
+Size2i Window::get_size_with_decorations() const {
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_get_size_with_decorations(window_id);
 	}
 	return size;
 }
@@ -1655,7 +1662,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
 	ClassDB::bind_method(D_METHOD("reset_size"), &Window::reset_size);
 
-	ClassDB::bind_method(D_METHOD("get_real_size"), &Window::get_real_size);
+	ClassDB::bind_method(D_METHOD("get_position_with_decorations"), &Window::get_position_with_decorations);
+	ClassDB::bind_method(D_METHOD("get_size_with_decorations"), &Window::get_size_with_decorations);
 
 	ClassDB::bind_method(D_METHOD("set_max_size", "max_size"), &Window::set_max_size);
 	ClassDB::bind_method(D_METHOD("get_max_size"), &Window::get_max_size);
