@@ -454,7 +454,7 @@ void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_
 			}
 
 			xdg_toplevel_set_fullscreen(p_wd.xdg_toplevel, nullptr);
-		}
+		} break;
 
 		default: {
 		} break;
