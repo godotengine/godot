@@ -2624,7 +2624,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			}
 		}
 
-		if (p_context.base != nullptr && subscript->is_attribute) {
+		if (subscript->is_attribute) {
 			bool found_type = _get_subscript_type(p_context, subscript, base_type, &base);
 
 			if (!found_type) {
@@ -3288,6 +3288,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	parser.parse(p_code, p_path, true);
 
 	GDScriptParser::CompletionContext context = parser.get_completion_context();
+	context.base = p_owner;
 
 	// Allows class functions with the names like built-ins to be handled properly.
 	if (context.type != GDScriptParser::COMPLETION_ATTRIBUTE) {
@@ -3460,7 +3461,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				break;
 			}
 			GDScriptCompletionIdentifier base;
-			if (!_guess_expression_type(context, subscript->base, base)) {
+
+			bool found_type = _get_subscript_type(context, subscript, base.type);
+			if (!found_type && !_guess_expression_type(context, subscript->base, base)) {
 				break;
 			}
 
