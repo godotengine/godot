@@ -221,7 +221,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 
 	Rect2 safe_area = this_rect;
 	safe_area.position.y += items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2;
-	safe_area.size.y = items[p_over]._height_cache;
+	safe_area.size.y = items[p_over]._height_cache + theme_cache.v_separation;
 	DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
 
 	// Make the position of the parent popup relative to submenu popup.
