@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Godot
 {
-    public partial class Object
+    public partial class GodotObject
     {
         public class NativeMemberNotFoundException : Exception
         {

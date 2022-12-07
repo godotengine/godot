@@ -192,8 +192,8 @@ public partial class VariantUtils
 
         // `typeof(X).IsAssignableFrom(typeof(T))` is optimized away
 
-        if (typeof(Godot.Object).IsAssignableFrom(typeof(T)))
-            return CreateFromGodotObject(UnsafeAs<Godot.Object>(from));
+        if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
+            return CreateFromGodotObject(UnsafeAs<GodotObject>(from));
 
         // `typeof(T).IsValueType` is optimized away
         // `typeof(T).IsEnum` is NOT optimized away: https://github.com/dotnet/runtime/issues/67113
@@ -381,7 +381,7 @@ public partial class VariantUtils
 
         // `typeof(X).IsAssignableFrom(typeof(T))` is optimized away
 
-        if (typeof(Godot.Object).IsAssignableFrom(typeof(T)))
+        if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
             return (T)(object)ConvertToGodotObject(variant);
 
         // `typeof(T).IsValueType` is optimized away

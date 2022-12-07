@@ -10,7 +10,7 @@ namespace Godot.SourceGenerators.Sample
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     [SuppressMessage("ReSharper", "ArrangeObjectCreationWhenTypeEvident")]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public partial class ExportedProperties : Godot.Object
+    public partial class ExportedProperties : GodotObject
     {
         // Do not generate default value
         private String _notGenerate_Property_String = new string("not generate");
@@ -168,7 +168,7 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Vector2[] property_Vector2Array { get; set; } = { Vector2.Up, Vector2.Down, Vector2.Left, Vector2.Right };
         [Export] private Vector3[] property_Vector3Array { get; set; } = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right };
         [Export] private Color[] property_ColorArray { get; set; } = { Colors.Aqua, Colors.Aquamarine, Colors.Azure, Colors.Beige };
-        [Export] private Godot.Object[] property_GodotObjectOrDerivedArray { get; set; } = { null };
+        [Export] private GodotObject[] property_GodotObjectOrDerivedArray { get; set; } = { null };
         [Export] private StringName[] field_StringNameArray { get; set; } = { "foo", "bar" };
         [Export] private NodePath[] field_NodePathArray { get; set; } = { "foo", "bar" };
         [Export] private Rid[] field_RidArray { get; set; } = { default, default, default };
@@ -177,7 +177,7 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Variant property_Variant { get; set; } = "foo";
 
         // Classes
-        [Export] private Godot.Object property_GodotObjectOrDerived { get; set; }
+        [Export] private GodotObject property_GodotObjectOrDerived { get; set; }
         [Export] private Godot.Texture property_GodotResourceTexture { get; set; }
         [Export] private StringName property_StringName { get; set; } = new StringName("foo");
         [Export] private NodePath property_NodePath { get; set; } = new NodePath("foo");

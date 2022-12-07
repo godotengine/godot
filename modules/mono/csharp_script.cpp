@@ -410,7 +410,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::OBJECT)) {
-		return "Godot.Object";
+		return "GodotObject";
 	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::INT)) {

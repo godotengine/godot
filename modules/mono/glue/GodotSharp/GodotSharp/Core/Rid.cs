@@ -24,7 +24,7 @@ namespace Godot
         /// <summary>
         /// Constructs a new <see cref="Rid"/> for the given <see cref="GodotObject"/> <paramref name="from"/>.
         /// </summary>
-        public Rid(Godot.Object from)
+        public Rid(GodotObject from)
             => _id = from is Resource res ? res.GetRid()._id : default;
 
         /// <summary>

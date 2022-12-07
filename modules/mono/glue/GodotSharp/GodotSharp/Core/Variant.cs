@@ -324,7 +324,7 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T[] AsGodotObjectArray<T>()
-        where T : Godot.Object =>
+        where T : GodotObject =>
         VariantUtils.ConvertToSystemArrayOfGodotObject<T>((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -348,7 +348,7 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertToSystemArrayOfRid((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Godot.Object AsGodotObject() =>
+    public GodotObject AsGodotObject() =>
         VariantUtils.ConvertToGodotObject((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -503,7 +503,7 @@ public partial struct Variant : IDisposable
     public static explicit operator Rid[](Variant from) => from.AsSystemArrayOfRid();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Godot.Object(Variant from) => from.AsGodotObject();
+    public static explicit operator GodotObject(Variant from) => from.AsGodotObject();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator StringName(Variant from) => from.AsStringName();
@@ -644,7 +644,7 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Span<Color> from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(Godot.Object[] from) => from;
+    public static Variant CreateFrom(GodotObject[] from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom<[MustBeVariant] TKey, [MustBeVariant] TValue>(Collections.Dictionary<TKey, TValue> from) =>
@@ -664,7 +664,7 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Span<Rid> from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(Godot.Object from) => from;
+    public static Variant CreateFrom(GodotObject from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(StringName from) => from;
@@ -844,7 +844,7 @@ public partial struct Variant : IDisposable
         (Variant)from.AsSpan();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Godot.Object[] from) =>
+    public static implicit operator Variant(GodotObject[] from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfGodotObject(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -908,7 +908,7 @@ public partial struct Variant : IDisposable
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfRid(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Godot.Object from) =>
+    public static implicit operator Variant(GodotObject from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromGodotObject(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

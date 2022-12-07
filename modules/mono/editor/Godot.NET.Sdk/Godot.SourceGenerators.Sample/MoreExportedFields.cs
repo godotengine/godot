@@ -11,7 +11,7 @@ namespace Godot.SourceGenerators.Sample
     [SuppressMessage("ReSharper", "ArrangeObjectCreationWhenTypeEvident")]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     // We split the definition of ExportedFields to verify properties work across multiple files.
-    public partial class ExportedFields : Godot.Object
+    public partial class ExportedFields : GodotObject
     {
         // Note we use Array and not System.Array. This tests the generated namespace qualification.
         [Export] private Int64[] field_empty_Int64Array = Array.Empty<Int64>();
