@@ -1530,7 +1530,10 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 				VariableNode *variable = static_cast<VariableNode *>(statement);
 				const SuiteNode::Local &local = current_suite->get_local(variable->identifier->name);
 				if (local.type != SuiteNode::Local::UNDEFINED) {
-					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), variable->identifier->name));
+					Node *errLoc = alloc_node<PassNode>();
+					errLoc->start_line = current_suite->end_line;
+					errLoc->leftmost_column = local.start_column;
+					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), variable->identifier->name), errLoc);
 				}
 				current_suite->add_local(variable, current_function);
 				break;
