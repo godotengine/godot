@@ -909,6 +909,24 @@ Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
 	return Point2i(point.x, point.y);
 }
 
+Point2i DisplayServerWindows::window_get_position_with_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
+	const WindowData &wd = windows[p_window];
+
+	if (wd.minimized) {
+		return wd.last_pos;
+	}
+
+	RECT r;
+	if (GetWindowRect(wd.hWnd, &r)) {
+		return Point2i(r.left, r.top);
+	}
+
+	return Point2i();
+}
+
 void DisplayServerWindows::_update_real_mouse_position(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
@@ -1124,7 +1142,7 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 	return Size2();
 }
 
-Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -2414,7 +2432,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_GETMINMAXINFO: {
 			if (windows[window_id].resizable && !windows[window_id].fullscreen) {
 				// Size of window decorations.
-				Size2 decor = window_get_real_size(window_id) - window_get_size(window_id);
+				Size2 decor = window_get_size_with_decorations(window_id) - window_get_size(window_id);
 
 				MINMAXINFO *min_max_info = (MINMAXINFO *)lParam;
 				if (windows[window_id].min_size != Size2()) {
