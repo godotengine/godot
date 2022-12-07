@@ -1373,10 +1373,20 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 				surfaces_tools[surface]->add_tangent(t);
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_BONES) {
-				surfaces_tools[surface]->add_bones(v.bones);
+				Vector<int> bones;
+				bones.resize(v.num_bones);
+				for (int n = 0; n < v.num_bones; n++) {
+					bones.set(n, v.bones[n]);
+				}
+				surfaces_tools[surface]->add_bones(bones);
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_WEIGHTS) {
-				surfaces_tools[surface]->add_weights(v.weights);
+				Vector<float> weights;
+				weights.resize(v.num_bones);
+				for (int n = 0; n < v.num_bones; n++) {
+					weights.set(n, v.weights[n]);
+				}
+				surfaces_tools[surface]->add_weights(weights);
 			}
 
 			Vector2 uv2(gen_uvs[gen_indices[i + j] * 2 + 0], gen_uvs[gen_indices[i + j] * 2 + 1]);
