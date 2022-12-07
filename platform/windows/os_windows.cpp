@@ -272,7 +272,7 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .dll files from within the executable path
+		//this code exists so gdextension can load .dll files from within the executable path
 		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
 	}
 

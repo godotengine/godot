@@ -31,7 +31,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include "core/extension/gdnative_interface.h"
+#include "core/extension/gdextension_interface.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
 #include "core/os/rw_lock.h"
@@ -191,7 +191,7 @@ struct PropertyInfo {
 			type(Variant::OBJECT),
 			class_name(p_class_name) {}
 
-	explicit PropertyInfo(const GDNativePropertyInfo &pinfo) :
+	explicit PropertyInfo(const GDExtensionPropertyInfo &pinfo) :
 			type((Variant::Type)pinfo.type),
 			name(*reinterpret_cast<StringName *>(pinfo.name)),
 			class_name(*reinterpret_cast<StringName *>(pinfo.class_name)),
@@ -243,7 +243,7 @@ struct MethodInfo {
 
 	MethodInfo() {}
 
-	explicit MethodInfo(const GDNativeMethodInfo &pinfo) :
+	explicit MethodInfo(const GDExtensionMethodInfo &pinfo) :
 			name(*reinterpret_cast<StringName *>(pinfo.name)),
 			return_val(PropertyInfo(pinfo.return_value)),
 			flags(pinfo.flags),
@@ -301,31 +301,31 @@ struct MethodInfo {
 	}
 };
 
-// API used to extend in GDNative and other C compatible compiled languages.
+// API used to extend in GDExtension and other C compatible compiled languages.
 class MethodBind;
 
-struct ObjectNativeExtension {
-	ObjectNativeExtension *parent = nullptr;
-	List<ObjectNativeExtension *> children;
+struct ObjectGDExtension {
+	ObjectGDExtension *parent = nullptr;
+	List<ObjectGDExtension *> children;
 	StringName parent_class_name;
 	StringName class_name;
 	bool editor_class = false;
 	bool is_virtual = false;
 	bool is_abstract = false;
-	GDNativeExtensionClassSet set;
-	GDNativeExtensionClassGet get;
-	GDNativeExtensionClassGetPropertyList get_property_list;
-	GDNativeExtensionClassFreePropertyList free_property_list;
-	GDNativeExtensionClassPropertyCanRevert property_can_revert;
-	GDNativeExtensionClassPropertyGetRevert property_get_revert;
-	GDNativeExtensionClassNotification notification;
-	GDNativeExtensionClassToString to_string;
-	GDNativeExtensionClassReference reference;
-	GDNativeExtensionClassReference unreference;
-	GDNativeExtensionClassGetRID get_rid;
+	GDExtensionClassSet set;
+	GDExtensionClassGet get;
+	GDExtensionClassGetPropertyList get_property_list;
+	GDExtensionClassFreePropertyList free_property_list;
+	GDExtensionClassPropertyCanRevert property_can_revert;
+	GDExtensionClassPropertyGetRevert property_get_revert;
+	GDExtensionClassNotification notification;
+	GDExtensionClassToString to_string;
+	GDExtensionClassReference reference;
+	GDExtensionClassReference unreference;
+	GDExtensionClassGetRID get_rid;
 
 	_FORCE_INLINE_ bool is_class(const String &p_class) const {
-		const ObjectNativeExtension *e = this;
+		const ObjectGDExtension *e = this;
 		while (e) {
 			if (p_class == e->class_name.operator String()) {
 				return true;
@@ -336,9 +336,9 @@ struct ObjectNativeExtension {
 	}
 	void *class_userdata = nullptr;
 
-	GDNativeExtensionClassCreateInstance create_instance;
-	GDNativeExtensionClassFreeInstance free_instance;
-	GDNativeExtensionClassGetVirtual get_virtual;
+	GDExtensionClassCreateInstance create_instance;
+	GDExtensionClassFreeInstance free_instance;
+	GDExtensionClassGetVirtual get_virtual;
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call<false>(__VA_ARGS__)
@@ -579,7 +579,7 @@ private:
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);
 
-	ObjectNativeExtension *_extension = nullptr;
+	ObjectGDExtension *_extension = nullptr;
 	GDExtensionClassInstancePtr _extension_instance = nullptr;
 
 	struct SignalData {
@@ -637,8 +637,8 @@ private:
 	struct InstanceBinding {
 		void *binding = nullptr;
 		void *token = nullptr;
-		GDNativeInstanceBindingFreeCallback free_callback = nullptr;
-		GDNativeInstanceBindingReferenceCallback reference_callback = nullptr;
+		GDExtensionInstanceBindingFreeCallback free_callback = nullptr;
+		GDExtensionInstanceBindingReferenceCallback reference_callback = nullptr;
 	};
 	InstanceBinding *_instance_bindings = nullptr;
 	uint32_t _instance_binding_count = 0;
@@ -662,8 +662,8 @@ protected:
 		return can_die;
 	}
 
-	friend class NativeExtensionMethodBind;
-	_ALWAYS_INLINE_ const ObjectNativeExtension *_get_extension() const { return _extension; }
+	friend class GDExtensionMethodBind;
+	_ALWAYS_INLINE_ const ObjectGDExtension *_get_extension() const { return _extension; }
 	_ALWAYS_INLINE_ GDExtensionClassInstancePtr _get_extension_instance() const { return _extension_instance; }
 	virtual void _initialize_classv() { initialize_class(); }
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; };
@@ -917,9 +917,9 @@ public:
 #endif
 
 	// Used by script languages to store binding data.
-	void *get_instance_binding(void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks);
+	void *get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks);
 	// Used on creation by binding only.
-	void set_instance_binding(void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks);
+	void set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks);
 	bool has_instance_binding(void *p_token);
 
 	void clear_internal_resource_paths();
