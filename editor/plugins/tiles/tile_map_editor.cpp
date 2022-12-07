@@ -156,7 +156,7 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 
 		// Common to all type of sources.
 		if (!source->get_name().is_empty()) {
-			item_text = vformat(TTR("%s (id:%d)"), source->get_name(), source_id);
+			item_text = vformat(TTR("%s (ID: %d)"), source->get_name(), source_id);
 		}
 
 		// Atlas source.
@@ -165,7 +165,7 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 			texture = atlas_source->get_texture();
 			if (item_text.is_empty()) {
 				if (texture.is_valid()) {
-					item_text = vformat("%s (ID: %d)", texture->get_path().get_file(), source_id);
+					item_text = vformat(TTR("%s (ID: %d)"), texture->get_path().get_file(), source_id);
 				} else {
 					item_text = vformat(TTR("No Texture Atlas Source (ID: %d)"), source_id);
 				}
