@@ -454,7 +454,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 					update_skeletons = false;
 				}
 				// Canvas group begins here, render until before this item
-				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, starting_index, false);
+				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, starting_index, r_sdf_used);
 				item_count = 0;
 
 				if (ci->canvas_group_owner->canvas_group->mode != RS::CANVAS_GROUP_MODE_TRANSPARENT) {
@@ -485,7 +485,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				mesh_storage->update_mesh_instances();
 				update_skeletons = false;
 			}
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, starting_index, true);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, starting_index, r_sdf_used, true);
 			item_count = 0;
 
 			if (ci->canvas_group->blur_mipmaps) {
@@ -504,7 +504,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 			}
 			//render anything pending, including clearing if no items
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, starting_index, false);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, starting_index, r_sdf_used);
 			item_count = 0;
 
 			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
@@ -530,7 +530,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				mesh_storage->update_mesh_instances();
 				update_skeletons = false;
 			}
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, starting_index, false);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, starting_index, r_sdf_used);
 			//then reset
 			item_count = 0;
 		}
@@ -549,7 +549,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 	state.current_buffer = (state.current_buffer + 1) % state.canvas_instance_data_buffers.size();
 }
 
-void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, uint32_t &r_last_index, bool p_to_backbuffer) {
+void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, uint32_t &r_last_index, bool &r_sdf_used, bool p_to_backbuffer) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
 	canvas_begin(p_to_render_target, p_to_backbuffer);
@@ -617,7 +617,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 
 		GLES3::CanvasShaderData::BlendMode blend_mode = shader_data_cache ? shader_data_cache->blend_mode : GLES3::CanvasShaderData::BLEND_MODE_MIX;
 
-		_record_item_commands(ci, p_to_render_target, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken);
+		_record_item_commands(ci, p_to_render_target, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken, r_sdf_used);
 	}
 
 	if (index == 0) {
@@ -749,7 +749,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	r_last_index += index;
 }
 
-void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_batch_broken) {
+void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used) {
 	RenderingServer::CanvasItemTextureFilter texture_filter = p_item->texture_filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? state.default_filter : p_item->texture_filter;
 
 	if (texture_filter != state.canvas_instance_batches[state.current_batch_index].filter) {
@@ -1145,6 +1145,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					} else {
 						particles_storage->particles_set_canvas_sdf_collision(pt->particles, false, Transform2D(), Rect2(), 0);
 					}
+					r_sdf_used |= particles_storage->particles_has_collision(particles);
 				}
 
 				state.canvas_instance_batches[state.current_batch_index].command = c;
