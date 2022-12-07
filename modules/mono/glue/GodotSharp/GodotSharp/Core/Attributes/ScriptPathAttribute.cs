@@ -8,6 +8,9 @@ namespace Godot
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ScriptPathAttribute : Attribute
     {
+        /// <summary>
+        /// File path to the script.
+        /// </summary>
         public string Path { get; }
 
         /// <summary>
