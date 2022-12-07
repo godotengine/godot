@@ -940,7 +940,7 @@ bool Variant::is_zero() const {
 			return reinterpret_cast<const Signal *>(_data._mem)->is_null();
 		}
 		case STRING_NAME: {
-			return *reinterpret_cast<const StringName *>(_data._mem) != StringName();
+			return *reinterpret_cast<const StringName *>(_data._mem) == StringName();
 		}
 		case NODE_PATH: {
 			return reinterpret_cast<const NodePath *>(_data._mem)->is_empty();
