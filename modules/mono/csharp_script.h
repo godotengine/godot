@@ -352,9 +352,9 @@ class CSharpLanguage : public ScriptLanguage {
 
 	static void *_instance_binding_create_callback(void *p_token, void *p_instance);
 	static void _instance_binding_free_callback(void *p_token, void *p_instance, void *p_binding);
-	static GDNativeBool _instance_binding_reference_callback(void *p_token, void *p_binding, GDNativeBool p_reference);
+	static GDExtensionBool _instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference);
 
-	static GDNativeInstanceBindingCallbacks _instance_binding_callbacks;
+	static GDExtensionInstanceBindingCallbacks _instance_binding_callbacks;
 
 public:
 	static void *get_instance_binding(Object *p_object);

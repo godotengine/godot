@@ -6,17 +6,17 @@ def run(target, source, env):
 
     g.write(
         """/* THIS FILE IS GENERATED DO NOT EDIT */
-#ifndef GDNATIVE_INTERFACE_DUMP_H
-#define GDNATIVE_INTERFACE_DUMP_H
+#ifndef GDEXTENSION_INTERFACE_DUMP_H
+#define GDEXTENSION_INTERFACE_DUMP_H
 
 #ifdef TOOLS_ENABLED
 
 #include "core/io/file_access.h"
 #include "core/string/ustring.h"
 
-class GDNativeInterfaceDump {
+class GDExtensionInterfaceDump {
 	private:
-        static constexpr char const *gdnative_interface_dump ="""
+        static constexpr char const *gdextension_interface_dump ="""
     )
     for line in f:
         g.write('"' + line.rstrip().replace('"', '\\"') + '\\n"\n')
@@ -25,16 +25,16 @@ class GDNativeInterfaceDump {
     g.write(
         """
     public:
-        static void generate_gdnative_interface_file(const String &p_path) {
+        static void generate_gdextension_interface_file(const String &p_path) {
             Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
-            CharString cs(gdnative_interface_dump);
+            CharString cs(gdextension_interface_dump);
             fa->store_buffer((const uint8_t *)cs.ptr(), cs.length());
         };
 };
 
 #endif // TOOLS_ENABLED
 
-#endif // GDNATIVE_INTERFACE_DUMP_H
+#endif // GDEXTENSION_INTERFACE_DUMP_H
 """
     )
     g.close()

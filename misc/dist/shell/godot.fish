@@ -107,7 +107,7 @@ complete -c godot -l validate-conversion-3to4 -d "Shows what elements will be re
 complete -c godot -l doctool -d "Dump the engine API reference to the given path in XML format, merging if existing files are found" -r
 complete -c godot -l no-docbase -d "Disallow dumping the base types (used with --doctool)"
 complete -c godot -l build-solutions -d "Build the scripting solutions (e.g. for C# projects)"
-complete -c godot -l dump-gdextension-interface -d "Generate GDExtension header file 'gdnative_interface.h' in the current folder. This file is the base file required to implement a GDExtension"
+complete -c godot -l dump-gdextension-interface -d "Generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension"
 complete -c godot -l dump-extension-api -d "Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder"
 complete -c godot -l startup-benchmark -d "Benchmark the startup time and print it to console"
 complete -c godot -l startup-benchmark-file -d "Benchmark the startup time and save it to a given file in JSON format" -x

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  native_extension_manager.h                                           */
+/*  gdextension_manager.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,20 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NATIVE_EXTENSION_MANAGER_H
-#define NATIVE_EXTENSION_MANAGER_H
+#ifndef GDEXTENSION_MANAGER_H
+#define GDEXTENSION_MANAGER_H
 
-#include "core/extension/native_extension.h"
+#include "core/extension/gdextension.h"
 
-class NativeExtensionManager : public Object {
-	GDCLASS(NativeExtensionManager, Object);
+class GDExtensionManager : public Object {
+	GDCLASS(GDExtensionManager, Object);
 
 	int32_t level = -1;
-	HashMap<String, Ref<NativeExtension>> native_extension_map;
+	HashMap<String, Ref<GDExtension>> gdextension_map;
 
 	static void _bind_methods();
 
-	static NativeExtensionManager *singleton;
+	static GDExtensionManager *singleton;
 
 public:
 	enum LoadStatus {
@@ -57,18 +57,18 @@ public:
 	LoadStatus unload_extension(const String &p_path);
 	bool is_extension_loaded(const String &p_path) const;
 	Vector<String> get_loaded_extensions() const;
-	Ref<NativeExtension> get_extension(const String &p_path);
+	Ref<GDExtension> get_extension(const String &p_path);
 
-	void initialize_extensions(NativeExtension::InitializationLevel p_level);
-	void deinitialize_extensions(NativeExtension::InitializationLevel p_level);
+	void initialize_extensions(GDExtension::InitializationLevel p_level);
+	void deinitialize_extensions(GDExtension::InitializationLevel p_level);
 
-	static NativeExtensionManager *get_singleton();
+	static GDExtensionManager *get_singleton();
 
 	void load_extensions();
 
-	NativeExtensionManager();
+	GDExtensionManager();
 };
 
-VARIANT_ENUM_CAST(NativeExtensionManager::LoadStatus)
+VARIANT_ENUM_CAST(GDExtensionManager::LoadStatus)
 
-#endif // NATIVE_EXTENSION_MANAGER_H
+#endif // GDEXTENSION_MANAGER_H

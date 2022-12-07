@@ -1517,7 +1517,7 @@ struct VariantTypeAdjust<Object *> {
 	}
 };
 
-// GDNative extension helpers.
+// GDExtension helpers.
 
 template <class T>
 struct VariantTypeConstructor {

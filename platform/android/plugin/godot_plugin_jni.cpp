@@ -128,21 +128,21 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 	singleton->emit_signalp(StringName(signal_name), args, count);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jclass clazz, jobjectArray gdnlib_paths) {
-	int gdnlib_count = env->GetArrayLength(gdnlib_paths);
-	if (gdnlib_count == 0) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDExtensionLibraries(JNIEnv *env, jclass clazz, jobjectArray gdextension_paths) {
+	int gdextension_count = env->GetArrayLength(gdextension_paths);
+	if (gdextension_count == 0) {
 		return;
 	}
 
-	// Retrieve the current list of gdnative libraries.
+	// Retrieve the current list of gdextension libraries.
 	Array singletons;
-	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
-		singletons = GLOBAL_GET("gdnative/singletons");
+	if (ProjectSettings::get_singleton()->has_setting("gdextension/singletons")) {
+		singletons = GLOBAL_GET("gdextension/singletons");
 	}
 
 	// Insert the libraries provided by the plugin
-	for (int i = 0; i < gdnlib_count; i++) {
-		jstring relative_path = (jstring)env->GetObjectArrayElement(gdnlib_paths, i);
+	for (int i = 0; i < gdextension_count; i++) {
+		jstring relative_path = (jstring)env->GetObjectArrayElement(gdextension_paths, i);
 
 		String path = "res://" + jstring_to_string(relative_path, env);
 		if (!singletons.has(path)) {
@@ -152,6 +152,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	}
 
 	// Insert the updated list back into project settings.
-	ProjectSettings::get_singleton()->set("gdnative/singletons", singletons);
+	ProjectSettings::get_singleton()->set("gdextension/singletons", singletons);
 }
 }

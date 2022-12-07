@@ -36,90 +36,90 @@
 #include "core/variant/type_info.h"
 
 template <class T>
-struct GDNativeConstPtr {
+struct GDExtensionConstPtr {
 	const T *data = nullptr;
-	GDNativeConstPtr(const T *p_assign) { data = p_assign; }
+	GDExtensionConstPtr(const T *p_assign) { data = p_assign; }
 	static const char *get_name() { return "const void"; }
 	operator const T *() const { return data; }
 	operator Variant() const { return uint64_t(data); }
 };
 
 template <class T>
-struct GDNativePtr {
+struct GDExtensionPtr {
 	T *data = nullptr;
-	GDNativePtr(T *p_assign) { data = p_assign; }
+	GDExtensionPtr(T *p_assign) { data = p_assign; }
 	static const char *get_name() { return "void"; }
 	operator T *() const { return data; }
 	operator Variant() const { return uint64_t(data); }
 };
 
-#define GDVIRTUAL_NATIVE_PTR(m_type)                                                              \
-	template <>                                                                                   \
-	struct GDNativeConstPtr<const m_type> {                                                       \
-		const m_type *data = nullptr;                                                             \
-		GDNativeConstPtr() {}                                                                     \
-		GDNativeConstPtr(const m_type *p_assign) { data = p_assign; }                             \
-		static const char *get_name() { return "const " #m_type; }                                \
-		operator const m_type *() const { return data; }                                          \
-		operator Variant() const { return uint64_t(data); }                                       \
-	};                                                                                            \
-	template <>                                                                                   \
-	struct VariantCaster<GDNativeConstPtr<const m_type>> {                                        \
-		static _FORCE_INLINE_ GDNativeConstPtr<const m_type> cast(const Variant &p_variant) {     \
-			return GDNativeConstPtr<const m_type>((const m_type *)p_variant.operator uint64_t()); \
-		}                                                                                         \
-	};                                                                                            \
-	template <>                                                                                   \
-	struct GDNativePtr<m_type> {                                                                  \
-		m_type *data = nullptr;                                                                   \
-		GDNativePtr() {}                                                                          \
-		GDNativePtr(m_type *p_assign) { data = p_assign; }                                        \
-		static const char *get_name() { return #m_type; }                                         \
-		operator m_type *() const { return data; }                                                \
-		operator Variant() const { return uint64_t(data); }                                       \
-	};                                                                                            \
-	template <>                                                                                   \
-	struct VariantCaster<GDNativePtr<m_type>> {                                                   \
-		static _FORCE_INLINE_ GDNativePtr<m_type> cast(const Variant &p_variant) {                \
-			return GDNativePtr<m_type>((m_type *)p_variant.operator uint64_t());                  \
-		}                                                                                         \
+#define GDVIRTUAL_NATIVE_PTR(m_type)                                                                 \
+	template <>                                                                                      \
+	struct GDExtensionConstPtr<const m_type> {                                                       \
+		const m_type *data = nullptr;                                                                \
+		GDExtensionConstPtr() {}                                                                     \
+		GDExtensionConstPtr(const m_type *p_assign) { data = p_assign; }                             \
+		static const char *get_name() { return "const " #m_type; }                                   \
+		operator const m_type *() const { return data; }                                             \
+		operator Variant() const { return uint64_t(data); }                                          \
+	};                                                                                               \
+	template <>                                                                                      \
+	struct VariantCaster<GDExtensionConstPtr<const m_type>> {                                        \
+		static _FORCE_INLINE_ GDExtensionConstPtr<const m_type> cast(const Variant &p_variant) {     \
+			return GDExtensionConstPtr<const m_type>((const m_type *)p_variant.operator uint64_t()); \
+		}                                                                                            \
+	};                                                                                               \
+	template <>                                                                                      \
+	struct GDExtensionPtr<m_type> {                                                                  \
+		m_type *data = nullptr;                                                                      \
+		GDExtensionPtr() {}                                                                          \
+		GDExtensionPtr(m_type *p_assign) { data = p_assign; }                                        \
+		static const char *get_name() { return #m_type; }                                            \
+		operator m_type *() const { return data; }                                                   \
+		operator Variant() const { return uint64_t(data); }                                          \
+	};                                                                                               \
+	template <>                                                                                      \
+	struct VariantCaster<GDExtensionPtr<m_type>> {                                                   \
+		static _FORCE_INLINE_ GDExtensionPtr<m_type> cast(const Variant &p_variant) {                \
+			return GDExtensionPtr<m_type>((m_type *)p_variant.operator uint64_t());                  \
+		}                                                                                            \
 	};
 
 template <class T>
-struct GetTypeInfo<GDNativeConstPtr<T>> {
+struct GetTypeInfo<GDExtensionConstPtr<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::NIL;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_INT_IS_POINTER, GDNativeConstPtr<T>::get_name());
+		return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_INT_IS_POINTER, GDExtensionConstPtr<T>::get_name());
 	}
 };
 
 template <class T>
-struct GetTypeInfo<GDNativePtr<T>> {
+struct GetTypeInfo<GDExtensionPtr<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::NIL;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_INT_IS_POINTER, GDNativePtr<T>::get_name());
+		return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_INT_IS_POINTER, GDExtensionPtr<T>::get_name());
 	}
 };
 
 template <class T>
-struct PtrToArg<GDNativeConstPtr<T>> {
-	_FORCE_INLINE_ static GDNativeConstPtr<T> convert(const void *p_ptr) {
-		return GDNativeConstPtr<T>(reinterpret_cast<const T *>(p_ptr));
+struct PtrToArg<GDExtensionConstPtr<T>> {
+	_FORCE_INLINE_ static GDExtensionConstPtr<T> convert(const void *p_ptr) {
+		return GDExtensionConstPtr<T>(reinterpret_cast<const T *>(p_ptr));
 	}
 	typedef const T *EncodeT;
-	_FORCE_INLINE_ static void encode(GDNativeConstPtr<T> p_val, void *p_ptr) {
+	_FORCE_INLINE_ static void encode(GDExtensionConstPtr<T> p_val, void *p_ptr) {
 		*((const T **)p_ptr) = p_val.data;
 	}
 };
 template <class T>
-struct PtrToArg<GDNativePtr<T>> {
-	_FORCE_INLINE_ static GDNativePtr<T> convert(const void *p_ptr) {
-		return GDNativePtr<T>(reinterpret_cast<const T *>(p_ptr));
+struct PtrToArg<GDExtensionPtr<T>> {
+	_FORCE_INLINE_ static GDExtensionPtr<T> convert(const void *p_ptr) {
+		return GDExtensionPtr<T>(reinterpret_cast<const T *>(p_ptr));
 	}
 	typedef T *EncodeT;
-	_FORCE_INLINE_ static void encode(GDNativePtr<T> p_val, void *p_ptr) {
+	_FORCE_INLINE_ static void encode(GDExtensionPtr<T> p_val, void *p_ptr) {
 		*((T **)p_ptr) = p_val.data;
 	}
 };

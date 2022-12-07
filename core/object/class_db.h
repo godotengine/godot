@@ -100,7 +100,7 @@ public:
 		ClassInfo *inherits_ptr = nullptr;
 		void *class_ptr = nullptr;
 
-		ObjectNativeExtension *native_extension = nullptr;
+		ObjectGDExtension *gdextension = nullptr;
 
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, int64_t> constant_map;
@@ -203,7 +203,7 @@ public:
 		//nothing
 	}
 
-	static void register_extension_class(ObjectNativeExtension *p_extension);
+	static void register_extension_class(ObjectGDExtension *p_extension);
 	static void unregister_extension_class(const StringName &p_class);
 
 	template <class T>

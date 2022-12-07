@@ -127,7 +127,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 * @ignore
 		 * @type {Array.<string>}
 		 */
-		gdnativeLibs: [],
+		gdextensionLibs: [],
 		/**
 		 * @ignore
 		 * @type {Array.<string>}
@@ -257,7 +257,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.experimentalVK = parse('experimentalVK', this.experimentalVK);
 		this.focusCanvas = parse('focusCanvas', this.focusCanvas);
 		this.serviceWorker = parse('serviceWorker', this.serviceWorker);
-		this.gdnativeLibs = parse('gdnativeLibs', this.gdnativeLibs);
+		this.gdextensionLibs = parse('gdextensionLibs', this.gdextensionLibs);
 		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.args = parse('args', this.args);
 		this.onExecute = parse('onExecute', this.onExecute);

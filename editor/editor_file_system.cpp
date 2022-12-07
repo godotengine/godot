@@ -31,7 +31,7 @@
 #include "editor_file_system.h"
 
 #include "core/config/project_settings.h"
-#include "core/extension/native_extension_manager.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
@@ -2335,7 +2335,7 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 static void _scan_extensions_dir(EditorFileSystemDirectory *d, HashSet<String> &extensions) {
 	int fc = d->get_file_count();
 	for (int i = 0; i < fc; i++) {
-		if (d->get_file_type(i) == SNAME("NativeExtension")) {
+		if (d->get_file_type(i) == SNAME("GDExtension")) {
 			extensions.insert(d->get_file_path(i));
 		}
 	}
@@ -2356,19 +2356,19 @@ bool EditorFileSystem::_scan_extensions() {
 	Vector<String> extensions_removed;
 
 	for (const String &E : extensions) {
-		if (!NativeExtensionManager::get_singleton()->is_extension_loaded(E)) {
+		if (!GDExtensionManager::get_singleton()->is_extension_loaded(E)) {
 			extensions_added.push_back(E);
 		}
 	}
 
-	Vector<String> loaded_extensions = NativeExtensionManager::get_singleton()->get_loaded_extensions();
+	Vector<String> loaded_extensions = GDExtensionManager::get_singleton()->get_loaded_extensions();
 	for (int i = 0; i < loaded_extensions.size(); i++) {
 		if (!extensions.has(loaded_extensions[i])) {
 			extensions_removed.push_back(loaded_extensions[i]);
 		}
 	}
 
-	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
+	String extension_list_config_file = GDExtension::get_extension_list_config_file();
 	if (extensions.size()) {
 		if (extensions_added.size() || extensions_removed.size()) { //extensions were added or removed
 			Ref<FileAccess> f = FileAccess::open(extension_list_config_file, FileAccess::WRITE);
@@ -2385,18 +2385,18 @@ bool EditorFileSystem::_scan_extensions() {
 
 	bool needs_restart = false;
 	for (int i = 0; i < extensions_added.size(); i++) {
-		NativeExtensionManager::LoadStatus st = NativeExtensionManager::get_singleton()->load_extension(extensions_added[i]);
-		if (st == NativeExtensionManager::LOAD_STATUS_FAILED) {
+		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->load_extension(extensions_added[i]);
+		if (st == GDExtensionManager::LOAD_STATUS_FAILED) {
 			EditorNode::get_singleton()->add_io_error("Error loading extension: " + extensions_added[i]);
-		} else if (st == NativeExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+		} else if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
 	}
 	for (int i = 0; i < extensions_removed.size(); i++) {
-		NativeExtensionManager::LoadStatus st = NativeExtensionManager::get_singleton()->unload_extension(extensions_removed[i]);
-		if (st == NativeExtensionManager::LOAD_STATUS_FAILED) {
+		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->unload_extension(extensions_removed[i]);
+		if (st == GDExtensionManager::LOAD_STATUS_FAILED) {
 			EditorNode::get_singleton()->add_io_error("Error removing extension: " + extensions_added[i]);
-		} else if (st == NativeExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+		} else if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
 	}

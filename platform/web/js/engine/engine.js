@@ -162,9 +162,9 @@ const Engine = (function () {
 					// Godot configuration.
 					me.rtenv['initConfig'](config);
 
-					// Preload GDNative libraries.
+					// Preload GDExtension libraries.
 					const libs = [];
-					me.config.gdnativeLibs.forEach(function (lib) {
+					me.config.gdextensionLibs.forEach(function (lib) {
 						libs.push(me.rtenv['loadDynamicLibrary'](lib, { 'loadAsync': true }));
 					});
 					return Promise.all(libs).then(function () {

@@ -54,12 +54,12 @@ public interface GodotPluginInfoProvider {
 	}
 
 	/**
-	 * Returns the paths for the plugin's gdnative libraries (if any).
+	 * Returns the paths for the plugin's gdextension libraries (if any).
 	 *
-	 * The paths must be relative to the 'assets' directory and point to a '*.gdnlib' file.
+	 * The paths must be relative to the 'assets' directory and point to a '*.gdextension' file.
 	 */
 	@NonNull
-	default Set<String> getPluginGDNativeLibrariesPaths() {
+	default Set<String> getPluginGDExtensionLibrariesPaths() {
 		return Collections.emptySet();
 	}
 

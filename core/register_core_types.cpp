@@ -38,8 +38,8 @@
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
 #include "core/debugger/engine_profiler.h"
-#include "core/extension/native_extension.h"
-#include "core/extension/native_extension_manager.h"
+#include "core/extension/gdextension.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
@@ -88,7 +88,7 @@ static Ref<ResourceFormatLoaderImage> resource_format_image;
 static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
-static Ref<NativeExtensionResourceLoader> resource_loader_native_extension;
+static Ref<GDExtensionResourceLoader> resource_loader_gdextension;
 static Ref<ResourceFormatSaverJSON> resource_saver_json;
 static Ref<ResourceFormatLoaderJSON> resource_loader_json;
 
@@ -109,7 +109,7 @@ static WorkerThreadPool *worker_thread_pool = nullptr;
 
 extern Mutex _global_mutex;
 
-static NativeExtensionManager *native_extension_manager = nullptr;
+static GDExtensionManager *gdextension_manager = nullptr;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
@@ -256,9 +256,9 @@ void register_core_types() {
 	GDREGISTER_CLASS(ImageFormatLoaderExtension);
 	GDREGISTER_ABSTRACT_CLASS(ResourceImporter);
 
-	GDREGISTER_CLASS(NativeExtension);
+	GDREGISTER_CLASS(GDExtension);
 
-	GDREGISTER_ABSTRACT_CLASS(NativeExtensionManager);
+	GDREGISTER_ABSTRACT_CLASS(GDExtensionManager);
 
 	GDREGISTER_ABSTRACT_CLASS(ResourceUID);
 
@@ -266,10 +266,10 @@ void register_core_types() {
 
 	resource_uid = memnew(ResourceUID);
 
-	native_extension_manager = memnew(NativeExtensionManager);
+	gdextension_manager = memnew(GDExtensionManager);
 
-	resource_loader_native_extension.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_native_extension);
+	resource_loader_gdextension.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
 
 	ip = IP::create();
 
@@ -344,27 +344,27 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", core_bind::EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GDExtensionManager", GDExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
 }
 
 void register_core_extensions() {
 	// Hardcoded for now.
-	NativeExtension::initialize_native_extensions();
-	native_extension_manager->load_extensions();
-	native_extension_manager->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+	GDExtension::initialize_gdextensions();
+	gdextension_manager->load_extensions();
+	gdextension_manager->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	_is_core_extensions_registered = true;
 }
 
 void unregister_core_extensions() {
 	if (_is_core_extensions_registered) {
-		native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+		gdextension_manager->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	}
 }
 
 void unregister_core_types() {
-	memdelete(native_extension_manager);
+	memdelete(gdextension_manager);
 
 	memdelete(resource_uid);
 	memdelete(_resource_loader);
@@ -410,8 +410,8 @@ void unregister_core_types() {
 		memdelete(ip);
 	}
 
-	ResourceLoader::remove_resource_format_loader(resource_loader_native_extension);
-	resource_loader_native_extension.unref();
+	ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
+	resource_loader_gdextension.unref();
 
 	ResourceLoader::finalize();
 

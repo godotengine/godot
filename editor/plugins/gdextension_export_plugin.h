@@ -40,7 +40,7 @@ protected:
 };
 
 void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
-	if (p_type != "NativeExtension") {
+	if (p_type != "GDExtension") {
 		return;
 	}
 
@@ -55,7 +55,7 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 	String entry_symbol = config->get_value("configuration", "entry_symbol");
 
 	PackedStringArray tags;
-	String library_path = NativeExtension::find_extension_library(
+	String library_path = GDExtension::find_extension_library(
 			p_path, config, [p_features](String p_feature) { return p_features.has(p_feature); }, &tags);
 	if (!library_path.is_empty()) {
 		add_shared_object(library_path, tags);

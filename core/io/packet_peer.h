@@ -86,10 +86,10 @@ protected:
 
 public:
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
-	GDVIRTUAL2R(Error, _get_packet, GDNativeConstPtr<const uint8_t *>, GDNativePtr<int>);
+	GDVIRTUAL2R(Error, _get_packet, GDExtensionConstPtr<const uint8_t *>, GDExtensionPtr<int>);
 
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	GDVIRTUAL2R(Error, _put_packet, GDNativeConstPtr<const uint8_t>, int);
+	GDVIRTUAL2R(Error, _put_packet, GDExtensionConstPtr<const uint8_t>, int);
 
 	EXBIND0RC(int, get_available_packet_count);
 	EXBIND0RC(int, get_max_packet_size);

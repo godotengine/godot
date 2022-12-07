@@ -82,7 +82,7 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 	return get_builtin_or_variant_type_name(p_info.type);
 }
 
-Dictionary NativeExtensionAPIDump::generate_extension_api() {
+Dictionary GDExtensionAPIDump::generate_extension_api() {
 	Dictionary api_dump;
 
 	{
@@ -177,8 +177,8 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		};
 
 		// Validate sizes at compile time for the current build configuration.
-		static_assert(type_size_array[Variant::BOOL][sizeof(void *)] == sizeof(GDNativeBool), "Size of bool mismatch");
-		static_assert(type_size_array[Variant::INT][sizeof(void *)] == sizeof(GDNativeInt), "Size of int mismatch");
+		static_assert(type_size_array[Variant::BOOL][sizeof(void *)] == sizeof(GDExtensionBool), "Size of bool mismatch");
+		static_assert(type_size_array[Variant::INT][sizeof(void *)] == sizeof(GDExtensionInt), "Size of int mismatch");
 		static_assert(type_size_array[Variant::FLOAT][sizeof(void *)] == sizeof(double), "Size of float mismatch");
 		static_assert(type_size_array[Variant::STRING][sizeof(void *)] == sizeof(String), "Size of String mismatch");
 		static_assert(type_size_array[Variant::VECTOR2][sizeof(void *)] == sizeof(Vector2), "Size of Vector2 mismatch");
@@ -943,7 +943,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	return api_dump;
 }
 
-void NativeExtensionAPIDump::generate_extension_json_file(const String &p_path) {
+void GDExtensionAPIDump::generate_extension_json_file(const String &p_path) {
 	Dictionary api = generate_extension_api();
 	Ref<JSON> json;
 	json.instantiate();

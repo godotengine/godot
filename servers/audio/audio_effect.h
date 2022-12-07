@@ -41,7 +41,7 @@ class AudioEffectInstance : public RefCounted {
 	GDCLASS(AudioEffectInstance, RefCounted);
 
 protected:
-	GDVIRTUAL3(_process, GDNativeConstPtr<AudioFrame>, GDNativePtr<AudioFrame>, int)
+	GDVIRTUAL3(_process, GDExtensionConstPtr<AudioFrame>, GDExtensionPtr<AudioFrame>, int)
 	GDVIRTUAL0RC(bool, _process_silence)
 	static void _bind_methods();
 
