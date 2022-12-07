@@ -33,6 +33,7 @@
 #include "core/io/resource.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
@@ -58,6 +59,10 @@ UndoRedo *EditorUndoRedoManager::get_history_undo_redo(int p_idx) const {
 
 int EditorUndoRedoManager::get_history_id_for_object(Object *p_object) const {
 	int history_id = INVALID_HISTORY;
+
+	if (Object::cast_to<EditorDebuggerRemoteObject>(p_object)) {
+		return REMOTE_HISTORY;
+	}
 
 	if (Node *node = Object::cast_to<Node>(p_object)) {
 		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
@@ -278,6 +283,14 @@ bool EditorUndoRedoManager::undo() {
 	}
 
 	{
+		History &history = get_or_create_history(REMOTE_HISTORY);
+		if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
+			selected_history = history.id;
+			global_timestamp = history.undo_stack.back()->get().timestamp;
+		}
+	}
+
+	{
 		History &history = get_or_create_history(EditorNode::get_editor_data().get_current_edited_scene_history_id());
 		if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
 			selected_history = history.id;
@@ -317,6 +330,14 @@ bool EditorUndoRedoManager::redo() {
 	{
 		History &history = get_or_create_history(GLOBAL_HISTORY);
 		if (!history.redo_stack.is_empty()) {
+			selected_history = history.id;
+			global_timestamp = history.redo_stack.back()->get().timestamp;
+		}
+	}
+
+	{
+		History &history = get_or_create_history(REMOTE_HISTORY);
+		if (!history.redo_stack.is_empty() && history.redo_stack.back()->get().timestamp < global_timestamp) {
 			selected_history = history.id;
 			global_timestamp = history.redo_stack.back()->get().timestamp;
 		}
@@ -367,7 +388,7 @@ bool EditorUndoRedoManager::is_history_unsaved(int p_id) {
 
 bool EditorUndoRedoManager::has_undo() {
 	for (const KeyValue<int, History> &E : history_map) {
-		if ((E.key == GLOBAL_HISTORY || E.key == EditorNode::get_editor_data().get_current_edited_scene_history_id()) && !E.value.undo_stack.is_empty()) {
+		if ((E.key == GLOBAL_HISTORY || E.key == REMOTE_HISTORY || E.key == EditorNode::get_editor_data().get_current_edited_scene_history_id()) && !E.value.undo_stack.is_empty()) {
 			return true;
 		}
 	}
@@ -376,7 +397,7 @@ bool EditorUndoRedoManager::has_undo() {
 
 bool EditorUndoRedoManager::has_redo() {
 	for (const KeyValue<int, History> &E : history_map) {
-		if ((E.key == GLOBAL_HISTORY || E.key == EditorNode::get_editor_data().get_current_edited_scene_history_id()) && !E.value.redo_stack.is_empty()) {
+		if ((E.key == GLOBAL_HISTORY || E.key == REMOTE_HISTORY || E.key == EditorNode::get_editor_data().get_current_edited_scene_history_id()) && !E.value.redo_stack.is_empty()) {
 			return true;
 		}
 	}
@@ -385,7 +406,11 @@ bool EditorUndoRedoManager::has_redo() {
 
 void EditorUndoRedoManager::clear_history(bool p_increase_version, int p_idx) {
 	if (p_idx != INVALID_HISTORY) {
-		get_or_create_history(p_idx).undo_redo->clear_history(p_increase_version);
+		History &history = get_or_create_history(p_idx);
+		history.undo_redo->clear_history(p_increase_version);
+		history.undo_stack.clear();
+		history.redo_stack.clear();
+
 		if (!p_increase_version) {
 			set_history_as_saved(p_idx);
 		}
@@ -409,6 +434,14 @@ String EditorUndoRedoManager::get_current_action_name() {
 		{
 			History &history = get_or_create_history(GLOBAL_HISTORY);
 			if (!history.undo_stack.is_empty()) {
+				selected_history = &history;
+				global_timestamp = history.undo_stack.back()->get().timestamp;
+			}
+		}
+
+		{
+			History &history = get_or_create_history(REMOTE_HISTORY);
+			if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
 				selected_history = &history;
 				global_timestamp = history.undo_stack.back()->get().timestamp;
 			}
@@ -477,6 +510,7 @@ void EditorUndoRedoManager::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("version_changed"));
 
 	BIND_ENUM_CONSTANT(GLOBAL_HISTORY);
+	BIND_ENUM_CONSTANT(REMOTE_HISTORY);
 	BIND_ENUM_CONSTANT(INVALID_HISTORY);
 }
 

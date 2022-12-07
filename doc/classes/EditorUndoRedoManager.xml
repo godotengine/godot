@@ -123,6 +123,9 @@
 		<constant name="GLOBAL_HISTORY" value="0" enum="SpecialHistory">
 			Global history not associated with any scene, but with external resources etc.
 		</constant>
+		<constant name="REMOTE_HISTORY" value="-9" enum="SpecialHistory">
+			History associated with remote inspector. Used when live editing a running project.
+		</constant>
 		<constant name="INVALID_HISTORY" value="-99" enum="SpecialHistory">
 			Invalid "null" history. It's a special value, not associated with any object.
 		</constant>
