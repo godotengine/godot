@@ -106,6 +106,7 @@
 			<param index="0" name="instance" type="Object" />
 			<description>
 				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
+				[b]Note:[/b] Cannot be used to serialize objects with built-in scripts attached or objects allocated within built-in scripts.
 				[codeblock]
 				var foo = "bar"
 				func _ready():
