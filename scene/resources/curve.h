@@ -178,6 +178,7 @@ class Curve2D : public Resource {
 
 	void mark_dirty();
 
+	static Vector2 _calculate_tangent(const Vector2 &p_begin, const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t);
 	void _bake() const;
 
 	real_t bake_interval = 5.0;
@@ -261,6 +262,7 @@ class Curve3D : public Resource {
 
 	void mark_dirty();
 
+	static Vector3 _calculate_tangent(const Vector3 &p_begin, const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t);
 	void _bake() const;
 
 	struct Interval {

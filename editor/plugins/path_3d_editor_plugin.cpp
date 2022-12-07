@@ -274,13 +274,10 @@ void Path3DGizmo::redraw() {
 
 			// Fish Bone.
 			v3p.push_back(p1);
-			v3p.push_back(p1 + (side - forward) * 0.06);
+			v3p.push_back(p1 + (side - forward + up * 0.3) * 0.06);
 
 			v3p.push_back(p1);
-			v3p.push_back(p1 + (-side - forward) * 0.06);
-
-			v3p.push_back(p1);
-			v3p.push_back(p1 + up * 0.03);
+			v3p.push_back(p1 + (-side - forward + up * 0.3) * 0.06);
 		}
 
 		add_lines(v3p, path_material);
