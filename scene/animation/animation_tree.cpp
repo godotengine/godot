@@ -1031,7 +1031,9 @@ void AnimationTree::_process_graph(double p_delta) {
 				}
 
 				NodePath path = a->track_get_path(i);
-				ERR_CONTINUE(!track_cache.has(path));
+				if (!track_cache.has(path)) {
+					continue; // No path, but avoid error spamming.
+				}
 				TrackCache *track = track_cache[path];
 
 				ERR_CONTINUE(!state.track_map.has(path));
