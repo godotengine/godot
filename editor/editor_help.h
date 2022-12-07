@@ -44,6 +44,8 @@
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 
+class HTTPRequest;
+
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);
 
@@ -83,6 +85,40 @@ public:
 	FindBar();
 };
 
+class EditorHelpImageDownloader : public Control {
+	GDCLASS(EditorHelpImageDownloader, Control);
+
+	RichTextLabel *rtl = nullptr;
+
+	struct ThemeCache {
+		Ref<Texture2D> progress[8]{};
+		Ref<Texture2D> progress_fill[8]{};
+		Ref<Texture2D> progress_error;
+	} theme_cache;
+
+	struct RequestData {
+		HTTPRequest *rq = nullptr;
+		String url;
+	};
+
+	HashMap<String, RequestData> image_load_requests;
+	int progress_wheel_index = 0;
+	float progress_wheel_timeout = 0.0f;
+
+	void _image_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, HTTPRequest *p_rq);
+
+protected:
+	virtual void _update_theme_item_cache() override;
+
+	void _notification(int p_what);
+	static void _bind_methods(){};
+
+public:
+	void set_rich_text_label(RichTextLabel *p_rich_text_label);
+	void download_url(const String &p_name, const String &p_url, int64_t p_unix_time_val);
+	void cancel();
+};
+
 class EditorHelp : public VBoxContainer {
 	GDCLASS(EditorHelp, VBoxContainer);
 
@@ -113,6 +149,7 @@ class EditorHelp : public VBoxContainer {
 	HashMap<String, HashMap<String, int>> enum_values_line;
 	int description_line = 0;
 
+	EditorHelpImageDownloader *img_downloader = nullptr;
 	RichTextLabel *class_desc = nullptr;
 	HSplitContainer *h_split = nullptr;
 	static DocTools *doc;
@@ -235,6 +272,7 @@ public:
 class EditorHelpBit : public MarginContainer {
 	GDCLASS(EditorHelpBit, MarginContainer);
 
+	EditorHelpImageDownloader *img_downloader = nullptr;
 	RichTextLabel *rich_text = nullptr;
 	void _go_to_help(String p_what);
 	void _meta_clicked(String p_select);
@@ -248,6 +286,7 @@ protected:
 public:
 	RichTextLabel *get_rich_text() { return rich_text; }
 	void set_text(const String &p_text);
+
 	EditorHelpBit();
 };
 

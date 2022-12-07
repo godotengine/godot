@@ -32,8 +32,10 @@
 
 #include "core/core_constants.h"
 #include "core/input/input.h"
+#include "core/io/dir_access.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/os/time.h"
 #include "core/version.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
@@ -42,6 +44,8 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/line_edit.h"
+#include "scene/main/http_request.h"
+#include "scene/resources/image_texture.h"
 
 #define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
 
@@ -129,6 +133,209 @@ static String _contextualize_class_specifier(const String &p_class_specifier, co
 
 	// Remove class specifier prefix
 	return p_class_specifier.substr(p_edited_class.length() + 1);
+}
+
+void EditorHelpImageDownloader::_image_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, HTTPRequest *p_rq) {
+	String name = p_rq->get_download_file();
+	if (image_load_requests.has(name)) {
+		Ref<Texture2D> texture;
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (p_status == HTTPRequest::RESULT_SUCCESS && (p_code == 304 || p_code == 200)) {
+			if (da->file_exists(name)) {
+				Ref<Image> img = Image::load_from_file(name);
+				if (img.is_valid()) {
+					texture = ImageTexture::create_from_image(img);
+				} else {
+					da->remove(name); // Delete temp file.
+				}
+			}
+		} else {
+			da->remove(name); // Delete temp file.
+		}
+		bool pad = false;
+		String tooltip = vformat(TTR("URL: %s"), image_load_requests[name].url);
+		if (texture.is_null()) {
+			texture = theme_cache.progress_error;
+
+			String status;
+			switch (p_status) {
+				case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
+					status = TTR("Chunked body size mismatch.");
+					break;
+				case HTTPRequest::RESULT_CANT_CONNECT:
+					status = TTR("Can't connect.");
+					break;
+				case HTTPRequest::RESULT_CANT_RESOLVE:
+					status = TTR("Can't resolve.");
+					break;
+				case HTTPRequest::RESULT_CONNECTION_ERROR:
+					status = TTR("Connection error.");
+					break;
+				case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
+					status = TTR("TLS handshake error.");
+					break;
+				case HTTPRequest::RESULT_NO_RESPONSE:
+					status = TTR("No response.");
+					break;
+				case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+					status = TTR("Body size limit exceeded.");
+					break;
+				case HTTPRequest::RESULT_BODY_DECOMPRESS_FAILED:
+					status = TTR("Body decompression failed.");
+					break;
+				case HTTPRequest::RESULT_REQUEST_FAILED:
+					status = TTR("Request failed.");
+					break;
+				case HTTPRequest::RESULT_DOWNLOAD_FILE_CANT_OPEN:
+					status = vformat(TTR("Can't open image file: \"%s\"."), name);
+					break;
+				case HTTPRequest::RESULT_DOWNLOAD_FILE_WRITE_ERROR:
+					status = vformat(TTR("Can't write image file: \"%s\"."), name);
+					break;
+				case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED:
+					status = TTR("Redirect limit reached.");
+					break;
+				case HTTPRequest::RESULT_TIMEOUT:
+					status = TTR("Timeout.");
+					break;
+				default:
+					if ((p_code == 304 || p_code == 200)) {
+						status = vformat(TTR("Can't load image file: \"%s\"."), name);
+					} else {
+						status = vformat(TTR("Error %d."), p_code);
+					}
+					break;
+			}
+			tooltip = vformat("%s\n%s", tooltip, status);
+			pad = true;
+		}
+		if (rtl) {
+			rtl->update_image(name, RichTextLabel::UPDATE_TEXTURE | RichTextLabel::UPDATE_TOOLTIP | RichTextLabel::UPDATE_PAD, texture, 0, 0, Color(), INLINE_ALIGNMENT_CENTER, Rect2(), pad, tooltip);
+		}
+
+		image_load_requests.erase(name);
+		p_rq->queue_free();
+	}
+}
+
+void EditorHelpImageDownloader::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	theme_cache.progress[0] = get_theme_icon("Progress1", SNAME("EditorIcons"));
+	theme_cache.progress[1] = get_theme_icon("Progress2", SNAME("EditorIcons"));
+	theme_cache.progress[2] = get_theme_icon("Progress3", SNAME("EditorIcons"));
+	theme_cache.progress[3] = get_theme_icon("Progress4", SNAME("EditorIcons"));
+	theme_cache.progress[4] = get_theme_icon("Progress5", SNAME("EditorIcons"));
+	theme_cache.progress[5] = get_theme_icon("Progress6", SNAME("EditorIcons"));
+	theme_cache.progress[6] = get_theme_icon("Progress7", SNAME("EditorIcons"));
+	theme_cache.progress[7] = get_theme_icon("Progress8", SNAME("EditorIcons"));
+
+	theme_cache.progress_fill[0] = get_theme_icon("ProgressFill1", SNAME("EditorIcons"));
+	theme_cache.progress_fill[1] = get_theme_icon("ProgressFill2", SNAME("EditorIcons"));
+	theme_cache.progress_fill[2] = get_theme_icon("ProgressFill3", SNAME("EditorIcons"));
+	theme_cache.progress_fill[3] = get_theme_icon("ProgressFill4", SNAME("EditorIcons"));
+	theme_cache.progress_fill[4] = get_theme_icon("ProgressFill5", SNAME("EditorIcons"));
+	theme_cache.progress_fill[5] = get_theme_icon("ProgressFill6", SNAME("EditorIcons"));
+	theme_cache.progress_fill[6] = get_theme_icon("ProgressFill7", SNAME("EditorIcons"));
+	theme_cache.progress_fill[7] = get_theme_icon("ProgressFill8", SNAME("EditorIcons"));
+
+	theme_cache.progress_error = get_theme_icon(SNAME("FileDead"), SNAME("EditorIcons"));
+}
+
+void EditorHelpImageDownloader::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (rtl) {
+				progress_wheel_timeout -= get_process_delta_time();
+				if (progress_wheel_timeout <= 0) {
+					progress_wheel_index++;
+					if (progress_wheel_index >= 8) {
+						progress_wheel_index = 0;
+					}
+
+					for (const KeyValue<String, RequestData> &rq : image_load_requests) {
+						String name = rq.value.rq->get_download_file();
+						switch (rq.value.rq->get_http_client_status()) {
+							case HTTPClient::STATUS_RESOLVING:
+							case HTTPClient::STATUS_CONNECTING:
+							case HTTPClient::STATUS_REQUESTING: {
+								rtl->update_image(name, RichTextLabel::UPDATE_TEXTURE | RichTextLabel::UPDATE_TOOLTIP, theme_cache.progress[progress_wheel_index], 0, 0, Color(), INLINE_ALIGNMENT_CENTER, Rect2(), true, vformat("URL: %s", rq.value.url));
+							} break;
+							case HTTPClient::STATUS_BODY: {
+								int dw_bytes = rq.value.rq->get_downloaded_bytes();
+								int total_bytes = rq.value.rq->get_body_size();
+								if (total_bytes <= 0) {
+									rtl->update_image(name, RichTextLabel::UPDATE_TEXTURE | RichTextLabel::UPDATE_TOOLTIP, theme_cache.progress[progress_wheel_index], 0, 0, Color(), INLINE_ALIGNMENT_CENTER, Rect2(), true, vformat("URL: %s", rq.value.url));
+								} else {
+									int progress_fill_index = CLAMP(7 * dw_bytes / total_bytes, 0, 7);
+									rtl->update_image(name, RichTextLabel::UPDATE_TEXTURE | RichTextLabel::UPDATE_TOOLTIP, theme_cache.progress_fill[progress_fill_index], 0, 0, Color(), INLINE_ALIGNMENT_CENTER, Rect2(), true, vformat("URL: %s", rq.value.url));
+								}
+							} break;
+							default:
+								break;
+						}
+					}
+					progress_wheel_timeout = 0.1;
+				}
+			}
+			if (image_load_requests.is_empty()) {
+				set_process_internal(false);
+			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			cancel();
+		} break;
+	}
+}
+
+void EditorHelpImageDownloader::download_url(const String &p_name, const String &p_url, int64_t p_unix_time_val) {
+	if (image_load_requests.has(p_name) && EditorNode::get_singleton()) {
+		return;
+	}
+
+	const String day_names[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+	const String mon_names[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+	Vector<String> headers;
+	if (p_unix_time_val > 0) {
+		Dictionary mod_time = Time::get_singleton()->get_datetime_dict_from_unix_time(p_unix_time_val);
+		String if_mod = "If-Modified-Since: ";
+		if_mod += vformat("%s, %02d %s %04d ", day_names[mod_time["weekday"].operator int()], mod_time["day"], mon_names[mod_time["month"].operator int() - 1], mod_time["year"]);
+		if_mod += vformat("%02d:%02d:%02d GMT ", mod_time["hour"], mod_time["minute"], mod_time["second"]);
+		headers.push_back(if_mod);
+	}
+
+	HTTPRequest *download_rq = memnew(HTTPRequest);
+	EditorNode::get_singleton()->add_child(download_rq);
+
+	RequestData rq_data;
+	rq_data.rq = download_rq;
+	rq_data.url = p_url;
+	image_load_requests[p_name] = rq_data;
+
+	download_rq->connect("request_completed", callable_mp(this, &EditorHelpImageDownloader::_image_download_completed).bind(download_rq), CONNECT_ONE_SHOT);
+	download_rq->set_download_file(p_name);
+	download_rq->set_use_threads(true);
+	const String proxy_host = EDITOR_GET("network/http_proxy/host");
+	const int proxy_port = EDITOR_GET("network/http_proxy/port");
+	download_rq->set_http_proxy(proxy_host, proxy_port);
+	download_rq->set_https_proxy(proxy_host, proxy_port);
+	download_rq->request(p_url, headers);
+
+	set_process_internal(true);
+}
+
+void EditorHelpImageDownloader::cancel() {
+	set_process_internal(false);
+	for (const KeyValue<String, RequestData> &rq : image_load_requests) {
+		rq.value.rq->disconnect("request_completed", callable_mp(this, &EditorHelpImageDownloader::_image_download_completed));
+		rq.value.rq->queue_free();
+	}
+	image_load_requests.clear();
+}
+
+void EditorHelpImageDownloader::set_rich_text_label(RichTextLabel *p_rich_text_label) {
+	rtl = p_rich_text_label;
 }
 
 void EditorHelp::_update_theme_item_cache() {
@@ -724,6 +931,8 @@ void EditorHelp::_update_doc() {
 	}
 
 	scroll_locked = true;
+
+	img_downloader->cancel();
 
 	class_desc->clear();
 	method_line.clear();
@@ -1945,9 +2154,11 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 }
 
-static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node, const String &p_class = "") {
+static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node, const String &p_class = "", EditorHelpImageDownloader *p_img_downloader = nullptr) {
 	DocTools *doc = EditorHelp::get_doc_data();
 	String base_path;
+
+	Ref<Texture2D> progress_start = p_owner_node->get_theme_icon("Progress0", SNAME("EditorIcons"));
 
 	Ref<Font> doc_font = p_owner_node->get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
 	Ref<Font> doc_bold_font = p_owner_node->get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
@@ -2255,20 +2466,63 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
-		} else if (tag == "img") {
+		} else if (tag.begins_with("img")) {
+			int width = 0;
+			int height = 0;
+			bool size_in_percent = false;
+			if (tag.length() > 4) {
+				Vector<String> subtags = tag.substr(4, tag.length()).split(" ");
+				HashMap<String, String> bbcode_options;
+				for (int i = 0; i < subtags.size(); i++) {
+					const String &expr = subtags[i];
+					int value_pos = expr.find("=");
+					if (value_pos > -1) {
+						bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1).unquote();
+					}
+				}
+				HashMap<String, String>::Iterator width_option = bbcode_options.find("width");
+				if (width_option) {
+					width = width_option->value.to_int();
+					if (width_option->value.ends_with("%")) {
+						size_in_percent = true;
+					}
+				}
+
+				HashMap<String, String>::Iterator height_option = bbcode_options.find("height");
+				if (height_option) {
+					height = height_option->value.to_int();
+					if (height_option->value.ends_with("%")) {
+						size_in_percent = true;
+					}
+				}
+			}
 			int end = bbcode.find("[", brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			Ref<Texture2D> texture = ResourceLoader::load(base_path.path_join(image), "Texture2D");
-			if (texture.is_valid()) {
-				p_rt->add_image(texture);
+			if (image.begins_with("http://") || image.begins_with("https://")) {
+				Ref<Texture2D> texture;
+				String image_cache_name = EditorPaths::get_singleton()->get_cache_dir().path_join(image.uri_encode());
+
+				// Try loading from cache.
+				if (p_img_downloader) {
+					Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+					if (da->file_exists(image_cache_name)) {
+						callable_mp(p_img_downloader, &EditorHelpImageDownloader::download_url).call_deferred(image_cache_name, image, FileAccess::get_modified_time(image_cache_name));
+					} else {
+						callable_mp(p_img_downloader, &EditorHelpImageDownloader::download_url).call_deferred(image_cache_name, image, 0);
+					}
+				}
+				texture = progress_start;
+				p_rt->add_image(texture, width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(0, 0, 0, 0), image_cache_name, true, vformat("URL: %s", image), size_in_percent);
+			} else {
+				p_rt->add_image(ResourceLoader::load(base_path.path_join(image), "Texture2D"), width, height);
 			}
 
 			pos = end;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("img");
 		} else if (tag.begins_with("color=")) {
 			String col = tag.substr(6, tag.length());
 			Color color = Color::from_string(col, Color());
@@ -2298,7 +2552,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 }
 
 void EditorHelp::_add_text(const String &p_bbcode) {
-	_add_text_to_rt(p_bbcode, class_desc, this, edited_class);
+	_add_text_to_rt(p_bbcode, class_desc, this, edited_class, img_downloader);
 }
 
 Thread EditorHelp::thread;
@@ -2517,6 +2771,10 @@ EditorHelp::EditorHelp() {
 	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
 	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
 
+	img_downloader = memnew(EditorHelpImageDownloader);
+	img_downloader->set_rich_text_label(class_desc);
+	add_child(img_downloader);
+
 	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);
 	add_child(find_bar);
@@ -2588,9 +2846,10 @@ void EditorHelpBit::_bind_methods() {
 void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			img_downloader->cancel();
 			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
 			rich_text->clear();
-			_add_text_to_rt(text, rich_text, this);
+			_add_text_to_rt(text, rich_text, this, "", img_downloader);
 			rich_text->reset_size(); // Force recalculating size after parsing bbcode.
 		} break;
 	}
@@ -2598,8 +2857,9 @@ void EditorHelpBit::_notification(int p_what) {
 
 void EditorHelpBit::set_text(const String &p_text) {
 	text = p_text;
+	img_downloader->cancel();
 	rich_text->clear();
-	_add_text_to_rt(text, rich_text, this);
+	_add_text_to_rt(text, rich_text, this, "", img_downloader);
 }
 
 EditorHelpBit::EditorHelpBit() {
@@ -2607,6 +2867,11 @@ EditorHelpBit::EditorHelpBit() {
 	add_child(rich_text);
 	rich_text->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
 	rich_text->set_fit_content(true);
+
+	img_downloader = memnew(EditorHelpImageDownloader);
+	img_downloader->set_rich_text_label(rich_text);
+	add_child(img_downloader);
+
 	set_custom_minimum_size(Size2(0, 50 * EDSCALE));
 }
 

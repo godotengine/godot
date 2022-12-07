@@ -443,3 +443,11 @@ Validate extension JSON: API was removed: classes/SystemFont/properties/fallback
 
 The property was moved to their common base class Font.
 The setters and getters were already in Font, so this shouldn't affect compatibility.
+
+
+GH-69751
+--------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments': size changed value in new API, from 6 to 10.
+Validate extension JSON: Error: Hash changed for 'classes/RichTextLabel/methods/add_image', from C770CDFC to 89BDE201. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
