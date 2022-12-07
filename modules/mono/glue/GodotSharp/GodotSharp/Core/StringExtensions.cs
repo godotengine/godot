@@ -675,15 +675,15 @@ namespace Godot
 
         /// <summary>
         /// Converts ASCII encoded array to string.
-        /// Fast alternative to <see cref="GetStringFromUTF8"/> if the
+        /// Fast alternative to <see cref="GetStringFromUtf8"/> if the
         /// content is ASCII-only. Unlike the UTF-8 function this function
         /// maps every byte to a character in the array. Multibyte sequences
         /// will not be interpreted correctly. For parsing user input always
-        /// use <see cref="GetStringFromUTF8"/>.
+        /// use <see cref="GetStringFromUtf8"/>.
         /// </summary>
         /// <param name="bytes">A byte array of ASCII characters (on the range of 0-127).</param>
         /// <returns>A string created from the bytes.</returns>
-        public static string GetStringFromASCII(this byte[] bytes)
+        public static string GetStringFromAscii(this byte[] bytes)
         {
             return Encoding.ASCII.GetString(bytes);
         }
@@ -693,7 +693,7 @@ namespace Godot
         /// </summary>
         /// <param name="bytes">A byte array of UTF-16 characters.</param>
         /// <returns>A string created from the bytes.</returns>
-        public static string GetStringFromUTF16(this byte[] bytes)
+        public static string GetStringFromUtf16(this byte[] bytes)
         {
             return Encoding.Unicode.GetString(bytes);
         }
@@ -703,14 +703,14 @@ namespace Godot
         /// </summary>
         /// <param name="bytes">A byte array of UTF-32 characters.</param>
         /// <returns>A string created from the bytes.</returns>
-        public static string GetStringFromUTF32(this byte[] bytes)
+        public static string GetStringFromUtf32(this byte[] bytes)
         {
             return Encoding.UTF32.GetString(bytes);
         }
 
         /// <summary>
         /// Converts UTF-8 encoded array to string.
-        /// Slower than <see cref="GetStringFromASCII"/> but supports UTF-8
+        /// Slower than <see cref="GetStringFromAscii"/> but supports UTF-8
         /// encoded data. Use this function if you are unsure about the
         /// source of the data. For user input this function
         /// should always be preferred.
@@ -719,7 +719,7 @@ namespace Godot
         /// A byte array of UTF-8 characters (a character may take up multiple bytes).
         /// </param>
         /// <returns>A string created from the bytes.</returns>
-        public static string GetStringFromUTF8(this byte[] bytes)
+        public static string GetStringFromUtf8(this byte[] bytes)
         {
             return Encoding.UTF8.GetString(bytes);
         }
@@ -1287,10 +1287,10 @@ namespace Godot
         /// <summary>
         /// Returns the MD5 hash of the string as an array of bytes.
         /// </summary>
-        /// <seealso cref="MD5Text(string)"/>
+        /// <seealso cref="Md5Text(string)"/>
         /// <param name="instance">The string to hash.</param>
         /// <returns>The MD5 hash of the string.</returns>
-        public static byte[] MD5Buffer(this string instance)
+        public static byte[] Md5Buffer(this string instance)
         {
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
             return MD5.HashData(Encoding.UTF8.GetBytes(instance));
@@ -1300,12 +1300,12 @@ namespace Godot
         /// <summary>
         /// Returns the MD5 hash of the string as a string.
         /// </summary>
-        /// <seealso cref="MD5Buffer(string)"/>
+        /// <seealso cref="Md5Buffer(string)"/>
         /// <param name="instance">The string to hash.</param>
         /// <returns>The MD5 hash of the string.</returns>
-        public static string MD5Text(this string instance)
+        public static string Md5Text(this string instance)
         {
-            return instance.MD5Buffer().HexEncode();
+            return instance.Md5Buffer().HexEncode();
         }
 
         /// <summary>
@@ -1523,10 +1523,10 @@ namespace Godot
         /// <summary>
         /// Returns the SHA-1 hash of the string as an array of bytes.
         /// </summary>
-        /// <seealso cref="SHA1Text(string)"/>
+        /// <seealso cref="Sha1Text(string)"/>
         /// <param name="instance">The string to hash.</param>
         /// <returns>The SHA-1 hash of the string.</returns>
-        public static byte[] SHA1Buffer(this string instance)
+        public static byte[] Sha1Buffer(this string instance)
         {
 #pragma warning disable CA5350 // Do Not Use Weak Cryptographic Algorithms
             return SHA1.HashData(Encoding.UTF8.GetBytes(instance));
@@ -1536,21 +1536,21 @@ namespace Godot
         /// <summary>
         /// Returns the SHA-1 hash of the string as a string.
         /// </summary>
-        /// <seealso cref="SHA1Buffer(string)"/>
+        /// <seealso cref="Sha1Buffer(string)"/>
         /// <param name="instance">The string to hash.</param>
         /// <returns>The SHA-1 hash of the string.</returns>
-        public static string SHA1Text(this string instance)
+        public static string Sha1Text(this string instance)
         {
-            return instance.SHA1Buffer().HexEncode();
+            return instance.Sha1Buffer().HexEncode();
         }
 
         /// <summary>
         /// Returns the SHA-256 hash of the string as an array of bytes.
         /// </summary>
-        /// <seealso cref="SHA256Text(string)"/>
+        /// <seealso cref="Sha256Text(string)"/>
         /// <param name="instance">The string to hash.</param>
         /// <returns>The SHA-256 hash of the string.</returns>
-        public static byte[] SHA256Buffer(this string instance)
+        public static byte[] Sha256Buffer(this string instance)
         {
             return SHA256.HashData(Encoding.UTF8.GetBytes(instance));
         }
@@ -1558,12 +1558,12 @@ namespace Godot
         /// <summary>
         /// Returns the SHA-256 hash of the string as a string.
         /// </summary>
-        /// <seealso cref="SHA256Buffer(string)"/>
+        /// <seealso cref="Sha256Buffer(string)"/>
         /// <param name="instance">The string to hash.</param>
         /// <returns>The SHA-256 hash of the string.</returns>
-        public static string SHA256Text(this string instance)
+        public static string Sha256Text(this string instance)
         {
-            return instance.SHA256Buffer().HexEncode();
+            return instance.Sha256Buffer().HexEncode();
         }
 
         /// <summary>
@@ -1745,15 +1745,15 @@ namespace Godot
 
         /// <summary>
         /// Converts the String (which is a character array) to PackedByteArray (which is an array of bytes).
-        /// The conversion is faster compared to <see cref="ToUTF8Buffer(string)"/>,
+        /// The conversion is faster compared to <see cref="ToUtf8Buffer(string)"/>,
         /// as this method assumes that all the characters in the String are ASCII characters.
         /// </summary>
-        /// <seealso cref="ToUTF8Buffer(string)"/>
-        /// <seealso cref="ToUTF16Buffer(string)"/>
-        /// <seealso cref="ToUTF32Buffer(string)"/>
+        /// <seealso cref="ToUtf8Buffer(string)"/>
+        /// <seealso cref="ToUtf16Buffer(string)"/>
+        /// <seealso cref="ToUtf32Buffer(string)"/>
         /// <param name="instance">The string to convert.</param>
         /// <returns>The string as ASCII encoded bytes.</returns>
-        public static byte[] ToASCIIBuffer(this string instance)
+        public static byte[] ToAsciiBuffer(this string instance)
         {
             return Encoding.ASCII.GetBytes(instance);
         }
@@ -1783,12 +1783,12 @@ namespace Godot
         /// <summary>
         /// Converts the string (which is an array of characters) to an UTF-16 encoded array of bytes.
         /// </summary>
-        /// <seealso cref="ToASCIIBuffer(string)"/>
-        /// <seealso cref="ToUTF32Buffer(string)"/>
-        /// <seealso cref="ToUTF8Buffer(string)"/>
+        /// <seealso cref="ToAsciiBuffer(string)"/>
+        /// <seealso cref="ToUtf32Buffer(string)"/>
+        /// <seealso cref="ToUtf8Buffer(string)"/>
         /// <param name="instance">The string to convert.</param>
         /// <returns>The string as UTF-16 encoded bytes.</returns>
-        public static byte[] ToUTF16Buffer(this string instance)
+        public static byte[] ToUtf16Buffer(this string instance)
         {
             return Encoding.Unicode.GetBytes(instance);
         }
@@ -1796,28 +1796,28 @@ namespace Godot
         /// <summary>
         /// Converts the string (which is an array of characters) to an UTF-32 encoded array of bytes.
         /// </summary>
-        /// <seealso cref="ToASCIIBuffer(string)"/>
-        /// <seealso cref="ToUTF16Buffer(string)"/>
-        /// <seealso cref="ToUTF8Buffer(string)"/>
+        /// <seealso cref="ToAsciiBuffer(string)"/>
+        /// <seealso cref="ToUtf16Buffer(string)"/>
+        /// <seealso cref="ToUtf8Buffer(string)"/>
         /// <param name="instance">The string to convert.</param>
         /// <returns>The string as UTF-32 encoded bytes.</returns>
-        public static byte[] ToUTF32Buffer(this string instance)
+        public static byte[] ToUtf32Buffer(this string instance)
         {
             return Encoding.UTF32.GetBytes(instance);
         }
 
         /// <summary>
         /// Converts the string (which is an array of characters) to an UTF-8 encoded array of bytes.
-        /// The conversion is a bit slower than <see cref="ToASCIIBuffer(string)"/>,
+        /// The conversion is a bit slower than <see cref="ToAsciiBuffer(string)"/>,
         /// but supports all UTF-8 characters. Therefore, you should prefer this function
-        /// over <see cref="ToASCIIBuffer(string)"/>.
+        /// over <see cref="ToAsciiBuffer(string)"/>.
         /// </summary>
-        /// <seealso cref="ToASCIIBuffer(string)"/>
-        /// <seealso cref="ToUTF16Buffer(string)"/>
-        /// <seealso cref="ToUTF32Buffer(string)"/>
+        /// <seealso cref="ToAsciiBuffer(string)"/>
+        /// <seealso cref="ToUtf16Buffer(string)"/>
+        /// <seealso cref="ToUtf32Buffer(string)"/>
         /// <param name="instance">The string to convert.</param>
         /// <returns>The string as UTF-8 encoded bytes.</returns>
-        public static byte[] ToUTF8Buffer(this string instance)
+        public static byte[] ToUtf8Buffer(this string instance)
         {
             return Encoding.UTF8.GetBytes(instance);
         }

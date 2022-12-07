@@ -28,7 +28,7 @@ namespace Godot
 
             try
             {
-                isStdoutVerbose = OS.IsStdoutVerbose();
+                isStdoutVerbose = OS.IsStdOutVerbose();
             }
             catch (ObjectDisposedException)
             {

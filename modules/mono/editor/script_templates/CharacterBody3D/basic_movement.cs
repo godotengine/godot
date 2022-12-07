@@ -17,25 +17,25 @@ public partial class _CLASS_ : _BASE_
 
         // Add the gravity.
         if (!IsOnFloor())
-            velocity.y -= gravity * (float)delta;
+            velocity.Y -= gravity * (float)delta;
 
         // Handle Jump.
         if (Input.IsActionJustPressed("ui_accept") && IsOnFloor())
-            velocity.y = JumpVelocity;
+            velocity.Y = JumpVelocity;
 
         // Get the input direction and handle the movement/deceleration.
         // As good practice, you should replace UI actions with custom gameplay actions.
         Vector2 inputDir = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-        Vector3 direction = (Transform.basis * new Vector3(inputDir.x, 0, inputDir.y)).Normalized();
+        Vector3 direction = (Transform.Basis * new Vector3(inputDir.X, 0, inputDir.Y)).Normalized();
         if (direction != Vector3.Zero)
         {
-            velocity.x = direction.x * Speed;
-            velocity.z = direction.z * Speed;
+            velocity.X = direction.X * Speed;
+            velocity.Z = direction.Z * Speed;
         }
         else
         {
-            velocity.x = Mathf.MoveToward(Velocity.x, 0, Speed);
-            velocity.z = Mathf.MoveToward(Velocity.z, 0, Speed);
+            velocity.X = Mathf.MoveToward(Velocity.X, 0, Speed);
+            velocity.Z = Mathf.MoveToward(Velocity.Z, 0, Speed);
         }
 
         Velocity = velocity;

@@ -184,7 +184,7 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_variant_new_projection(out godot_variant r_dest, in Projection p_proj);
 
-        public static partial void godotsharp_variant_new_aabb(out godot_variant r_dest, in AABB p_aabb);
+        public static partial void godotsharp_variant_new_aabb(out godot_variant r_dest, in Aabb p_aabb);
 
         public static partial void godotsharp_variant_new_dictionary(out godot_variant r_dest,
             in godot_dictionary p_dict);
@@ -228,27 +228,27 @@ namespace Godot.NativeInterop
 
         public static partial Vector2 godotsharp_variant_as_vector2(in godot_variant p_self);
 
-        public static partial Vector2i godotsharp_variant_as_vector2i(in godot_variant p_self);
+        public static partial Vector2I godotsharp_variant_as_vector2i(in godot_variant p_self);
 
         public static partial Rect2 godotsharp_variant_as_rect2(in godot_variant p_self);
 
-        public static partial Rect2i godotsharp_variant_as_rect2i(in godot_variant p_self);
+        public static partial Rect2I godotsharp_variant_as_rect2i(in godot_variant p_self);
 
         public static partial Vector3 godotsharp_variant_as_vector3(in godot_variant p_self);
 
-        public static partial Vector3i godotsharp_variant_as_vector3i(in godot_variant p_self);
+        public static partial Vector3I godotsharp_variant_as_vector3i(in godot_variant p_self);
 
         public static partial Transform2D godotsharp_variant_as_transform2d(in godot_variant p_self);
 
         public static partial Vector4 godotsharp_variant_as_vector4(in godot_variant p_self);
 
-        public static partial Vector4i godotsharp_variant_as_vector4i(in godot_variant p_self);
+        public static partial Vector4I godotsharp_variant_as_vector4i(in godot_variant p_self);
 
         public static partial Plane godotsharp_variant_as_plane(in godot_variant p_self);
 
         public static partial Quaternion godotsharp_variant_as_quaternion(in godot_variant p_self);
 
-        public static partial AABB godotsharp_variant_as_aabb(in godot_variant p_self);
+        public static partial Aabb godotsharp_variant_as_aabb(in godot_variant p_self);
 
         public static partial Basis godotsharp_variant_as_basis(in godot_variant p_self);
 
@@ -262,7 +262,7 @@ namespace Godot.NativeInterop
 
         public static partial godot_node_path godotsharp_variant_as_node_path(in godot_variant p_self);
 
-        public static partial RID godotsharp_variant_as_rid(in godot_variant p_self);
+        public static partial Rid godotsharp_variant_as_rid(in godot_variant p_self);
 
         public static partial godot_callable godotsharp_variant_as_callable(in godot_variant p_self);
 

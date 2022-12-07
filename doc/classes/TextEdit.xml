@@ -770,12 +770,12 @@
 				    var column_number = result.x
 				[/gdscript]
 				[csharp]
-				Vector2i result = Search("print", (uint)TextEdit.SearchFlags.WholeWords, 0, 0);
-				if (result.Length &gt; 0)
+				Vector2I result = Search("print", (uint)TextEdit.SearchFlags.WholeWords, 0, 0);
+				if (result.X != -1)
 				{
 				    // Result found.
-				    int lineNumber = result.y;
-				    int columnNumber = result.x;
+				    int lineNumber = result.Y;
+				    int columnNumber = result.X;
 				}
 				[/csharp]
 				[/codeblocks]

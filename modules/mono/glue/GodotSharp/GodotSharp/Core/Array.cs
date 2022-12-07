@@ -99,7 +99,7 @@ namespace Godot.Collections
                 this[i] = array[i];
         }
 
-        public Array(Span<RID> array) : this()
+        public Array(Span<Rid> array) : this()
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));

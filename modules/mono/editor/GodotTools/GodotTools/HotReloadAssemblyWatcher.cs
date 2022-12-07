@@ -11,7 +11,7 @@ namespace GodotTools
 
         public override void _Notification(long what)
         {
-            if (what == Node.NotificationWmWindowFocusIn)
+            if (what == Node.NotificationWMWindowFocusIn)
             {
                 RestartTimer();
 
