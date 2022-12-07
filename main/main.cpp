@@ -2233,13 +2233,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) &&
 				!(editor || project_manager)) {
-			bool found_touchscreen = false;
-			for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
-				if (DisplayServer::get_singleton()->screen_is_touchscreen(i)) {
-					found_touchscreen = true;
-				}
-			}
-			if (!found_touchscreen) {
+			if (!DisplayServer::get_singleton()->is_touchscreen_available()) {
 				//only if no touchscreen ui hint, set emulation
 				id->set_emulate_touch_from_mouse(true);
 			}
