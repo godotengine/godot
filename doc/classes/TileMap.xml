@@ -174,7 +174,7 @@
 				Creates a new [TileMapPattern] from the given layer and set of cells.
 			</description>
 		</method>
-		<method name="get_surrounding_tiles">
+		<method name="get_surrounding_cells">
 			<return type="Vector2i[]" />
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
