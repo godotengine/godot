@@ -1044,24 +1044,24 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 
 	double prev_pos = cd.pos; // The animation may be changed during process, so it is safer that the state is changed before process.
 	cd.pos = next_pos;
+
+	AnimationData *prev_from = cd.from;
 	_animation_process_animation(cd.from, prev_pos, cd.pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started, looped_flag);
 
-	if (is_just_played) {
-		return; // Animation has been changed in the process (may be caused by method track), abort process.
-	}
-
+	// End detection.
 	if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
-		if (&cd == &playback.current) {
-			if (!backwards && prev_pos <= len && next_pos == len) {
-				// Playback finished.
-				end_reached = true;
-				end_notify = prev_pos < len; // Notify only if not already at the end.
-			}
-			if (backwards && prev_pos >= 0 && next_pos == 0) {
-				// Playback finished.
-				end_reached = true;
-				end_notify = prev_pos > 0; // Notify only if not already at the beginning.
-			}
+		if (prev_from != playback.current.from) {
+			return; // Animation has been changed in the process (may be caused by method track), abort process.
+		}
+		if (!backwards && prev_pos <= len && next_pos == len) {
+			// Playback finished.
+			end_reached = true;
+			end_notify = prev_pos < len; // Notify only if not already at the end.
+		}
+		if (backwards && prev_pos >= 0 && next_pos == 0) {
+			// Playback finished.
+			end_reached = true;
+			end_notify = prev_pos > 0; // Notify only if not already at the beginning.
 		}
 	}
 }
@@ -1130,8 +1130,6 @@ void AnimationPlayer::_animation_update_transforms() {
 		}
 	}
 
-	cache_update_size = 0;
-
 	for (int i = 0; i < cache_update_prop_size; i++) {
 		TrackNodeCache::PropertyAnim *pa = cache_update_prop[i];
 
@@ -1193,38 +1191,33 @@ void AnimationPlayer::_animation_update_transforms() {
 		}
 	}
 
-	cache_update_prop_size = 0;
-
 	for (int i = 0; i < cache_update_bezier_size; i++) {
 		TrackNodeCache::BezierAnim *ba = cache_update_bezier[i];
 
 		ERR_CONTINUE(ba->accum_pass != accum_pass);
 		ba->object->set_indexed(ba->bezier_property, ba->bezier_accum);
 	}
-
-	cache_update_bezier_size = 0;
 }
 
 void AnimationPlayer::_animation_process(double p_delta) {
 	if (playback.current.from) {
 		end_reached = false;
 		end_notify = false;
-		is_just_played = false;
 
 		bool started = playback.started; // The animation may be changed during process, so it is safer that the state is changed before process.
 		if (playback.started) {
 			playback.started = false;
 		}
 
+		cache_update_size = 0;
+		cache_update_prop_size = 0;
+		cache_update_bezier_size = 0;
+
+		AnimationData *prev_from = playback.current.from;
 		_animation_process2(p_delta, started);
-
-		if (is_just_played) {
-			cache_update_size = 0;
-			cache_update_prop_size = 0;
-			cache_update_bezier_size = 0;
-			return; // Animation has been changed in the process (may be caused by method track), clear update caches and abort process.
+		if (prev_from != playback.current.from) {
+			return; // Animation has been changed in the process (may be caused by method track), abort process.
 		}
-
 		_animation_update_transforms();
 
 		if (end_reached) {
@@ -1675,7 +1668,6 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	c.assigned = name;
 	c.seeked = false;
 	c.started = true;
-	is_just_played = true;
 
 	if (!end_reached) {
 		queued.clear();
