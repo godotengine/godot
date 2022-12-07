@@ -1001,6 +1001,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started) {
 	double delta = p_delta * speed_scale * cd.speed_scale;
 	double next_pos = cd.pos + delta;
+	bool backwards = signbit(delta); // Negative zero means playing backwards too.
 
 	real_t len = cd.from->animation->get_length();
 	Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
@@ -1012,23 +1013,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 			} else if (next_pos > len) {
 				next_pos = len;
 			}
-
-			bool backwards = signbit(delta); // Negative zero means playing backwards too
-			delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here)
-
-			if (&cd == &playback.current) {
-				if (!backwards && cd.pos <= len && next_pos == len) {
-					//playback finished
-					end_reached = true;
-					end_notify = cd.pos < len; // Notify only if not already at the end
-				}
-
-				if (backwards && cd.pos >= 0 && next_pos == 0) {
-					//playback finished
-					end_reached = true;
-					end_notify = cd.pos > 0; // Notify only if not already at the beginning
-				}
-			}
+			delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here).
 		} break;
 
 		case Animation::LOOP_LINEAR: {
@@ -1057,8 +1042,28 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 			break;
 	}
 
-	_animation_process_animation(cd.from, cd.pos, next_pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started, looped_flag);
+	double prev_pos = cd.pos; // The animation may be changed during process, so it is safer that the state is changed before process.
 	cd.pos = next_pos;
+	_animation_process_animation(cd.from, prev_pos, cd.pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started, looped_flag);
+
+	if (is_just_played) {
+		return; // Animation has been changed in the process (may be caused by method track), abort process.
+	}
+
+	if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
+		if (&cd == &playback.current) {
+			if (!backwards && prev_pos <= len && next_pos == len) {
+				// Playback finished.
+				end_reached = true;
+				end_notify = prev_pos < len; // Notify only if not already at the end.
+			}
+			if (backwards && prev_pos >= 0 && next_pos == 0) {
+				// Playback finished.
+				end_reached = true;
+				end_notify = prev_pos > 0; // Notify only if not already at the beginning.
+			}
+		}
+	}
 }
 
 void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
@@ -1066,23 +1071,25 @@ void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 
 	accum_pass++;
 
-	_animation_process_data(c.current, p_delta, 1.0f, c.seeked, p_started);
+	bool seeked = c.seeked; // The animation may be changed during process, so it is safer that the state is changed before process.
 	if (p_delta != 0) {
 		c.seeked = false;
 	}
+
+	_animation_process_data(c.current, p_delta, 1.0f, seeked, p_started);
 
 	List<Blend>::Element *prev = nullptr;
 	for (List<Blend>::Element *E = c.blend.back(); E; E = prev) {
 		Blend &b = E->get();
 		float blend = b.blend_left / b.blend_time;
-		_animation_process_data(b.data, p_delta, blend, false, false);
-
 		b.blend_left -= Math::absf(speed_scale * p_delta);
-
 		prev = E->prev();
 		if (b.blend_left < 0) {
 			c.blend.erase(E);
 		}
+		// The effect of animation changes during blending is unknown...
+		// In that case, we recommends to use method call mode "deferred", not "immediate".
+		_animation_process_data(b.data, p_delta, blend, false, false);
 	}
 }
 
@@ -1202,13 +1209,24 @@ void AnimationPlayer::_animation_process(double p_delta) {
 	if (playback.current.from) {
 		end_reached = false;
 		end_notify = false;
-		_animation_process2(p_delta, playback.started);
+		is_just_played = false;
 
+		bool started = playback.started; // The animation may be changed during process, so it is safer that the state is changed before process.
 		if (playback.started) {
 			playback.started = false;
 		}
 
+		_animation_process2(p_delta, started);
+
+		if (is_just_played) {
+			cache_update_size = 0;
+			cache_update_prop_size = 0;
+			cache_update_bezier_size = 0;
+			return; // Animation has been changed in the process (may be caused by method track), clear update caches and abort process.
+		}
+
 		_animation_update_transforms();
+
 		if (end_reached) {
 			if (queued.size()) {
 				String old = playback.assigned;
@@ -1657,6 +1675,7 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	c.assigned = name;
 	c.seeked = false;
 	c.started = true;
+	is_just_played = true;
 
 	if (!end_reached) {
 		queued.clear();

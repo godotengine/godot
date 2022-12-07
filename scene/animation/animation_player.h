@@ -255,6 +255,7 @@ private:
 
 	List<StringName> queued;
 
+	bool is_just_played = false;
 	bool end_reached = false;
 	bool end_notify = false;
 
