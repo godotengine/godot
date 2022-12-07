@@ -8,7 +8,10 @@ namespace Godot
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public sealed class ExportCategoryAttribute : Attribute
     {
-        private string name;
+        /// <summary>
+        /// Name of the category.
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
         /// Define a new category for the following exported properties.
@@ -16,7 +19,7 @@ namespace Godot
         /// <param name="name">The name of the category.</param>
         public ExportCategoryAttribute(string name)
         {
-            this.name = name;
+            Name = name;
         }
     }
 }

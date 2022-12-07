@@ -19,17 +19,17 @@ namespace Godot
         /// <summary>
         /// If the method will also be called locally; otherwise, it is only called remotely.
         /// </summary>
-        public bool CallLocal { get; set; } = false;
+        public bool CallLocal { get; init; } = false;
 
         /// <summary>
         /// Transfer mode for the annotated method.
         /// </summary>
-        public MultiplayerPeer.TransferModeEnum TransferMode { get; set; } = MultiplayerPeer.TransferModeEnum.Reliable;
+        public MultiplayerPeer.TransferModeEnum TransferMode { get; init; } = MultiplayerPeer.TransferModeEnum.Reliable;
 
         /// <summary>
         /// Transfer channel for the annotated mode.
         /// </summary>
-        public int TransferChannel { get; set; } = 0;
+        public int TransferChannel { get; init; } = 0;
 
         /// <summary>
         /// Constructs a <see cref="RPCAttribute"/> instance.

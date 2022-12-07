@@ -1,5 +1,7 @@
 using System;
 
+#nullable enable
+
 namespace Godot
 {
     /// <summary>
@@ -8,8 +10,15 @@ namespace Godot
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public sealed class ExportSubgroupAttribute : Attribute
     {
-        private string name;
-        private string prefix;
+        /// <summary>
+        /// Name of the subgroup.
+        /// </summary>
+        public string Name { get; }
+
+        /// <summary>
+        /// If provided, the prefix that all properties must have to be considered part of the subgroup.
+        /// </summary>
+        public string? Prefix { get; }
 
         /// <summary>
         /// Define a new subgroup for the following exported properties. This helps to organize properties in the Inspector dock.
@@ -18,8 +27,8 @@ namespace Godot
         /// <param name="prefix">If provided, the subgroup would make group to only consider properties that have this prefix.</param>
         public ExportSubgroupAttribute(string name, string prefix = "")
         {
-            this.name = name;
-            this.prefix = prefix;
+            Name = name;
+            Prefix = prefix;
         }
     }
 }
