@@ -43,7 +43,7 @@ class ScriptExtension : public Script {
 protected:
 	EXBIND0R(bool, editor_can_reload_from_file)
 
-	GDVIRTUAL1(_placeholder_erased, GDNativePtr<void>)
+	GDVIRTUAL1(_placeholder_erased, GDExtensionPtr<void>)
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override {
 		GDVIRTUAL_CALL(_placeholder_erased, p_placeholder);
 	}
@@ -56,15 +56,15 @@ public:
 	EXBIND1RC(bool, inherits_script, const Ref<Script> &)
 	EXBIND0RC(StringName, get_instance_base_type)
 
-	GDVIRTUAL1RC(GDNativePtr<void>, _instance_create, Object *)
+	GDVIRTUAL1RC(GDExtensionPtr<void>, _instance_create, Object *)
 	virtual ScriptInstance *instance_create(Object *p_this) override {
-		GDNativePtr<void> ret = nullptr;
+		GDExtensionPtr<void> ret = nullptr;
 		GDVIRTUAL_REQUIRED_CALL(_instance_create, p_this, ret);
 		return reinterpret_cast<ScriptInstance *>(ret.operator void *());
 	}
-	GDVIRTUAL1RC(GDNativePtr<void>, _placeholder_instance_create, Object *)
+	GDVIRTUAL1RC(GDExtensionPtr<void>, _placeholder_instance_create, Object *)
 	PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override {
-		GDNativePtr<void> ret = nullptr;
+		GDExtensionPtr<void> ret = nullptr;
 		GDVIRTUAL_REQUIRED_CALL(_placeholder_instance_create, p_this, ret);
 		return reinterpret_cast<PlaceHolderScriptInstance *>(ret.operator void *());
 	}
@@ -482,10 +482,10 @@ public:
 			}
 		}
 	}
-	GDVIRTUAL1R(GDNativePtr<void>, _debug_get_stack_level_instance, int)
+	GDVIRTUAL1R(GDExtensionPtr<void>, _debug_get_stack_level_instance, int)
 
 	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) override {
-		GDNativePtr<void> ret = nullptr;
+		GDExtensionPtr<void> ret = nullptr;
 		GDVIRTUAL_REQUIRED_CALL(_debug_get_stack_level_instance, p_level, ret);
 		return reinterpret_cast<ScriptInstance *>(ret.operator void *());
 	}
@@ -578,7 +578,7 @@ public:
 	EXBIND0(profiling_start)
 	EXBIND0(profiling_stop)
 
-	GDVIRTUAL2R(int, _profiling_get_accumulated_data, GDNativePtr<ScriptLanguageExtensionProfilingInfo>, int)
+	GDVIRTUAL2R(int, _profiling_get_accumulated_data, GDExtensionPtr<ScriptLanguageExtensionProfilingInfo>, int)
 
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override {
 		int ret = 0;
@@ -586,7 +586,7 @@ public:
 		return ret;
 	}
 
-	GDVIRTUAL2R(int, _profiling_get_frame_data, GDNativePtr<ScriptLanguageExtensionProfilingInfo>, int)
+	GDVIRTUAL2R(int, _profiling_get_frame_data, GDExtensionPtr<ScriptLanguageExtensionProfilingInfo>, int)
 
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override {
 		int ret = 0;
@@ -594,15 +594,15 @@ public:
 		return ret;
 	}
 
-	GDVIRTUAL1R(GDNativePtr<void>, _alloc_instance_binding_data, Object *)
+	GDVIRTUAL1R(GDExtensionPtr<void>, _alloc_instance_binding_data, Object *)
 
 	virtual void *alloc_instance_binding_data(Object *p_object) override {
-		GDNativePtr<void> ret = nullptr;
+		GDExtensionPtr<void> ret = nullptr;
 		GDVIRTUAL_REQUIRED_CALL(_alloc_instance_binding_data, p_object, ret);
 		return ret.operator void *();
 	}
 
-	GDVIRTUAL1(_free_instance_binding_data, GDNativePtr<void>)
+	GDVIRTUAL1(_free_instance_binding_data, GDExtensionPtr<void>)
 
 	virtual void free_instance_binding_data(void *p_data) override {
 		GDVIRTUAL_REQUIRED_CALL(_free_instance_binding_data, p_data);
@@ -639,8 +639,8 @@ VARIANT_ENUM_CAST(ScriptLanguageExtension::CodeCompletionLocation)
 
 class ScriptInstanceExtension : public ScriptInstance {
 public:
-	const GDNativeExtensionScriptInstanceInfo *native_info;
-	GDNativeExtensionScriptInstanceDataPtr instance = nullptr;
+	const GDExtensionScriptInstanceInfo *native_info;
+	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
 // There should not be warnings on explicit casts.
 #if defined(__GNUC__) && !defined(__clang__)
@@ -650,20 +650,20 @@ public:
 
 	virtual bool set(const StringName &p_name, const Variant &p_value) override {
 		if (native_info->set_func) {
-			return native_info->set_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeConstVariantPtr)&p_value);
+			return native_info->set_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionConstVariantPtr)&p_value);
 		}
 		return false;
 	}
 	virtual bool get(const StringName &p_name, Variant &r_ret) const override {
 		if (native_info->get_func) {
-			return native_info->get_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeVariantPtr)&r_ret);
+			return native_info->get_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&r_ret);
 		}
 		return false;
 	}
 	virtual void get_property_list(List<PropertyInfo> *p_list) const override {
 		if (native_info->get_property_list_func) {
 			uint32_t pcount;
-			const GDNativePropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
+			const GDExtensionPropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
 
 #ifdef TOOLS_ENABLED
 			Ref<Script> script = get_script();
@@ -682,8 +682,8 @@ public:
 	}
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override {
 		if (native_info->get_property_type_func) {
-			GDNativeBool is_valid = 0;
-			GDNativeVariantType type = native_info->get_property_type_func(instance, (GDNativeConstStringNamePtr)&p_name, &is_valid);
+			GDExtensionBool is_valid = 0;
+			GDExtensionVariantType type = native_info->get_property_type_func(instance, (GDExtensionConstStringNamePtr)&p_name, &is_valid);
 			if (r_is_valid) {
 				*r_is_valid = is_valid != 0;
 			}
@@ -694,13 +694,13 @@ public:
 
 	virtual bool property_can_revert(const StringName &p_name) const override {
 		if (native_info->property_can_revert_func) {
-			return native_info->property_can_revert_func(instance, (GDNativeConstStringNamePtr)&p_name);
+			return native_info->property_can_revert_func(instance, (GDExtensionConstStringNamePtr)&p_name);
 		}
 		return false;
 	}
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
 		if (native_info->property_get_revert_func) {
-			return native_info->property_get_revert_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeVariantPtr)&r_ret);
+			return native_info->property_get_revert_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&r_ret);
 		}
 		return false;
 	}
@@ -711,7 +711,7 @@ public:
 		}
 		return nullptr;
 	}
-	static void _add_property_with_state(GDNativeConstStringNamePtr p_name, GDNativeConstVariantPtr p_value, void *p_userdata) {
+	static void _add_property_with_state(GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value, void *p_userdata) {
 		List<Pair<StringName, Variant>> *state = (List<Pair<StringName, Variant>> *)p_userdata;
 		state->push_back(Pair<StringName, Variant>(*(const StringName *)p_name, *(const Variant *)p_value));
 	}
@@ -724,7 +724,7 @@ public:
 	virtual void get_method_list(List<MethodInfo> *p_list) const override {
 		if (native_info->get_method_list_func) {
 			uint32_t mcount;
-			const GDNativeMethodInfo *minfo = native_info->get_method_list_func(instance, &mcount);
+			const GDExtensionMethodInfo *minfo = native_info->get_method_list_func(instance, &mcount);
 			for (uint32_t i = 0; i < mcount; i++) {
 				p_list->push_back(MethodInfo(minfo[i]));
 			}
@@ -735,7 +735,7 @@ public:
 	}
 	virtual bool has_method(const StringName &p_method) const override {
 		if (native_info->has_method_func) {
-			return native_info->has_method_func(instance, (GDNativeStringNamePtr)&p_method);
+			return native_info->has_method_func(instance, (GDExtensionStringNamePtr)&p_method);
 		}
 		return false;
 	}
@@ -743,8 +743,8 @@ public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		Variant ret;
 		if (native_info->call_func) {
-			GDNativeCallError ce;
-			native_info->call_func(instance, (GDNativeConstStringNamePtr)&p_method, (GDNativeConstVariantPtr *)p_args, p_argcount, (GDNativeVariantPtr)&ret, &ce);
+			GDExtensionCallError ce;
+			native_info->call_func(instance, (GDExtensionConstStringNamePtr)&p_method, (GDExtensionConstVariantPtr *)p_args, p_argcount, (GDExtensionVariantPtr)&ret, &ce);
 			r_error.error = Callable::CallError::Error(ce.error);
 			r_error.argument = ce.argument;
 			r_error.expected = ce.expected;
@@ -759,9 +759,9 @@ public:
 	}
 	virtual String to_string(bool *r_valid) override {
 		if (native_info->to_string_func) {
-			GDNativeBool valid;
+			GDExtensionBool valid;
 			String ret;
-			native_info->to_string_func(instance, &valid, reinterpret_cast<GDNativeStringPtr>(&ret));
+			native_info->to_string_func(instance, &valid, reinterpret_cast<GDExtensionStringPtr>(&ret));
 			if (r_valid) {
 				*r_valid = valid != 0;
 			}
@@ -784,7 +784,7 @@ public:
 
 	virtual Ref<Script> get_script() const override {
 		if (native_info->get_script_func) {
-			GDNativeObjectPtr script = native_info->get_script_func(instance);
+			GDExtensionObjectPtr script = native_info->get_script_func(instance);
 			return Ref<Script>(reinterpret_cast<Script *>(script));
 		}
 		return Ref<Script>();
@@ -799,7 +799,7 @@ public:
 
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) override {
 		if (native_info->set_fallback_func) {
-			bool ret = native_info->set_fallback_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeConstVariantPtr)&p_value);
+			bool ret = native_info->set_fallback_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionConstVariantPtr)&p_value);
 			if (r_valid) {
 				*r_valid = ret;
 			}
@@ -808,7 +808,7 @@ public:
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid) override {
 		Variant ret;
 		if (native_info->get_fallback_func) {
-			bool valid = native_info->get_fallback_func(instance, (GDNativeConstStringNamePtr)&p_name, (GDNativeVariantPtr)&ret);
+			bool valid = native_info->get_fallback_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&ret);
 			if (r_valid) {
 				*r_valid = valid;
 			}
@@ -818,7 +818,7 @@ public:
 
 	virtual ScriptLanguage *get_language() override {
 		if (native_info->get_language_func) {
-			GDNativeExtensionScriptLanguagePtr lang = native_info->get_language_func(instance);
+			GDExtensionScriptLanguagePtr lang = native_info->get_language_func(instance);
 			return reinterpret_cast<ScriptLanguage *>(lang);
 		}
 		return nullptr;

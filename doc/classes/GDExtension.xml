@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NativeExtension" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GDExtension" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -13,13 +13,13 @@
 			</description>
 		</method>
 		<method name="get_minimum_library_initialization_level" qualifiers="const">
-			<return type="int" enum="NativeExtension.InitializationLevel" />
+			<return type="int" enum="GDExtension.InitializationLevel" />
 			<description>
 			</description>
 		</method>
 		<method name="initialize_library">
 			<return type="void" />
-			<param index="0" name="level" type="int" enum="NativeExtension.InitializationLevel" />
+			<param index="0" name="level" type="int" enum="GDExtension.InitializationLevel" />
 			<description>
 			</description>
 		</method>

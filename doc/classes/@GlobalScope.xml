@@ -1319,6 +1319,9 @@
 		<member name="EngineDebugger" type="EngineDebugger" setter="" getter="">
 			The [EngineDebugger] singleton.
 		</member>
+		<member name="GDExtensionManager" type="GDExtensionManager" setter="" getter="">
+			The [GDExtensionManager] singleton.
+		</member>
 		<member name="Geometry2D" type="Geometry2D" setter="" getter="">
 			The [Geometry2D] singleton.
 		</member>
@@ -1347,9 +1350,6 @@
 		</member>
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
-		</member>
-		<member name="NativeExtensionManager" type="NativeExtensionManager" setter="" getter="">
-			The [NativeExtensionManager] singleton.
 		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.

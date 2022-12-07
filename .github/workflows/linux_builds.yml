@@ -211,7 +211,7 @@ jobs:
         if: ${{ matrix.godot-cpp-test }}
         run: |
           cp -f extension_api.json godot-cpp/godot-headers/
-          cp -f core/extension/gdnative_interface.h godot-cpp/godot-headers/godot/
+          cp -f core/extension/gdextension_interface.h godot-cpp/godot-headers/godot/
 
       # Build godot-cpp test extension
       - name: Build godot-cpp test extension
