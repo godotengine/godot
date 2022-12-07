@@ -85,7 +85,7 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		for (const String &E : p_features) {
 			features_vector.append(E);
 		}
-		ERR_FAIL_MSG(vformat("No suitable library found. The libraries' tags referred to an invalid feature flag. Possible feature flags for your platform: %s", p_path, String(", ").join(tags)));
+		ERR_FAIL_MSG(vformat("No suitable library found for GDExtension: %s. Possible feature flags for your platform: %s", p_path, String(", ").join(features_vector)));
 	}
 
 	List<String> dependencies;
