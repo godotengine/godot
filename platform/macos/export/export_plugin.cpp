@@ -91,11 +91,14 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 					return false;
 				}
 			} break;
-			case 2: { // "altool"
+			case 2: { // "notarytool"
+				// All options are visible.
+			} break;
+			case 3: { // "altool"
 				// All options are visible.
 			} break;
 			default: { // disabled
-				if (p_option == "notarization/apple_id_name" || p_option == "notarization/apple_id_password" || p_option == "notarization/apple_team_id" || p_option == "notarization/api_uuid" || p_option == "notarization/api_key") {
+				if (p_option == "notarization/apple_id_name" || p_option == "notarization/apple_id_password" || p_option == "notarization/apple_team_id" || p_option == "notarization/api_uuid" || p_option == "notarization/api_key" || p_option == "notarization/api_key_id") {
 					return false;
 				}
 			} break;
@@ -129,9 +132,9 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), false));
 
 #ifdef MACOS_ENABLED
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),PyOxidizer rcodesign,Xcode codesign"), 3, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),rcodesign,Xcode codesign"), 3, true));
 #else
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),PyOxidizer rcodesign"), 1, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),rcodesign"), 1, true));
 #endif
 	// "codesign" only options:
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
@@ -165,17 +168,18 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 #ifdef MACOS_ENABLED
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,PyOxidizer rcodesign,Xcode altool"), 0, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,rcodesign,Xcode notarytool,Xcode altool (deprecated)"), 0, true));
 #else
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,PyOxidizer rcodesign"), 0, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,rcodesign"), 0, true));
 #endif
-	// "altool" only options:
+	// "altool" and "notarytool" only options:
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple ID email"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_password", PROPERTY_HINT_PASSWORD, "Enable two-factor authentication and provide app-specific password"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_team_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide team ID if your Apple ID belongs to multiple teams"), ""));
-	// "altool" and "rcodesign" only options:
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_uuid", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect issuer ID"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_key", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect API key ID"), ""));
+	// "altool", "notarytool" and "rcodesign" only options:
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_uuid", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect issuer ID UUID"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_key", PROPERTY_HINT_GLOBAL_FILE, "*.p8"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_key_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect API key ID"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/microphone_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
@@ -498,7 +502,12 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			args.push_back(p_preset->get("notarization/api_uuid"));
 
 			args.push_back("--api-key");
-			args.push_back(p_preset->get("notarization/api_key"));
+			args.push_back(p_preset->get("notarization/api_key_id"));
+
+			if (!p_preset->get("notarization/api_key").operator String().is_empty()) {
+				args.push_back("--api-key-path");
+				args.push_back(p_preset->get("notarization/api_key"));
+			}
 
 			args.push_back(p_path);
 
@@ -519,7 +528,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			} else {
 				print_verbose("rcodesign (" + p_path + "):\n" + str);
 				int next_nl = str.find("\n", rq_offset);
-				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 14, -1) : str.substr(rq_offset + 14, next_nl - rq_offset - 14);
+				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 23, -1) : str.substr(rq_offset + 23, next_nl - rq_offset - 23);
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
@@ -529,7 +538,91 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			}
 		} break;
 #ifdef MACOS_ENABLED
-		case 2: { // "altool"
+		case 2: { // "notarytool"
+			print_verbose("using notarytool notarization...");
+
+			if (!FileAccess::exists("/usr/bin/xcrun") && !FileAccess::exists("/bin/xcrun")) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Xcode command line tools are not installed."));
+				return Error::FAILED;
+			}
+
+			List<String> args;
+
+			args.push_back("notarytool");
+			args.push_back("submit");
+
+			args.push_back(p_path);
+
+			if (p_preset->get("notarization/apple_id_name") == "" && p_preset->get("notarization/api_uuid") == "") {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Neither Apple ID name nor App Store Connect issuer ID name not specified."));
+				return Error::FAILED;
+			}
+			if (p_preset->get("notarization/apple_id_name") != "" && p_preset->get("notarization/api_uuid") != "") {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Both Apple ID name and App Store Connect issuer ID name are specified, only one should be set at the same time."));
+				return Error::FAILED;
+			}
+
+			if (p_preset->get("notarization/apple_id_name") != "") {
+				if (p_preset->get("notarization/apple_id_password") == "") {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Apple ID password not specified."));
+					return Error::FAILED;
+				}
+				args.push_back("--apple-id");
+				args.push_back(p_preset->get("notarization/apple_id_name"));
+
+				args.push_back("--password");
+				args.push_back(p_preset->get("notarization/apple_id_password"));
+			} else {
+				if (p_preset->get("notarization/api_key_id") == "") {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect API key ID not specified."));
+					return Error::FAILED;
+				}
+				args.push_back("--issuer");
+				args.push_back(p_preset->get("notarization/api_uuid"));
+
+				if (!p_preset->get("notarization/api_key").operator String().is_empty()) {
+					args.push_back("--key");
+					args.push_back(p_preset->get("notarization/api_key"));
+				}
+
+				args.push_back("--key-id");
+				args.push_back(p_preset->get("notarization/api_key_id"));
+			}
+
+			args.push_back("--no-progress");
+
+			if (p_preset->get("notarization/apple_team_id")) {
+				args.push_back("--team-id");
+				args.push_back(p_preset->get("notarization/apple_team_id"));
+			}
+
+			String str;
+			int exitcode = 0;
+			Error err = OS::get_singleton()->execute("xcrun", args, &str, &exitcode, true);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Could not start xcrun executable."));
+				return err;
+			}
+
+			int rq_offset = str.find("id:");
+			if (exitcode != 0 || rq_offset == -1) {
+				print_line("notarytool (" + p_path + "):\n" + str);
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed, see editor log for details."));
+				return Error::FAILED;
+			} else {
+				print_verbose("notarytool (" + p_path + "):\n" + str);
+				int next_nl = str.find("\n", rq_offset);
+				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 4, -1) : str.substr(rq_offset + 4, next_nl - rq_offset - 4);
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request uuid> --issuer <api uuid> --key-id <api key id> --key <api key path>\" or");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request uuid> --apple-id <your email> --password <app-specific pwd>>\"");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
+			}
+		} break;
+		case 3: { // "altool"
 			print_verbose("using altool notarization...");
 
 			if (!FileAccess::exists("/usr/bin/xcrun") && !FileAccess::exists("/bin/xcrun")) {
@@ -573,7 +666,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				args.push_back(p_preset->get("notarization/api_uuid"));
 
 				args.push_back("--apiKey");
-				args.push_back(p_preset->get("notarization/api_key"));
+				args.push_back(p_preset->get("notarization/api_key_id"));
 			}
 
 			args.push_back("--type");
@@ -595,7 +688,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				return err;
 			}
 
-			int rq_offset = str.find("RequestUUID");
+			int rq_offset = str.find("RequestUUID:");
 			if (exitcode != 0 || rq_offset == -1) {
 				print_line("xcrun altool (" + p_path + "):\n" + str);
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed, see editor log for details."));
@@ -603,7 +696,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			} else {
 				print_verbose("xcrun altool (" + p_path + "):\n" + str);
 				int next_nl = str.find("\n", rq_offset);
-				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 14, -1) : str.substr(rq_offset + 14, next_nl - rq_offset - 14);
+				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 13, -1) : str.substr(rq_offset + 13, next_nl - rq_offset - 13);
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour. When the process is completed, you'll receive an email."));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
@@ -1819,7 +1912,7 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 			err += TTR("Notarization: Code signing is required for notarization.") + "\n";
 			valid = false;
 		}
-		if (notary_tool == 2) {
+		if (notary_tool == 2 || notary_tool == 3) {
 			if (!FileAccess::exists("/usr/bin/xcrun") && !FileAccess::exists("/bin/xcrun")) {
 				err += TTR("Notarization: Xcode command line tools are not installed.") + "\n";
 				valid = false;
@@ -1838,7 +1931,7 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 					}
 				}
 				if (p_preset->get("notarization/api_uuid") != "") {
-					if (p_preset->get("notarization/api_key") == "") {
+					if (p_preset->get("notarization/api_key_id") == "") {
 						err += TTR("Notarization: App Store Connect API key ID not specified.") + "\n";
 						valid = false;
 					}
@@ -1849,7 +1942,7 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 				err += TTR("Notarization: App Store Connect issuer ID name not specified.") + "\n";
 				valid = false;
 			}
-			if (p_preset->get("notarization/api_key") == "") {
+			if (p_preset->get("notarization/api_key_id") == "") {
 				err += TTR("Notarization: App Store Connect API key ID not specified.") + "\n";
 				valid = false;
 			}
