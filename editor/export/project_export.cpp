@@ -37,9 +37,16 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
 void ProjectExportDialog::_theme_changed() {
@@ -1015,9 +1022,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(mc);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
-#ifndef _MSC_VER
-#warning must reimplement drag forward
-#endif
+	// TODO: Must reimplement drag forwarding.
 	//presets->set_drag_forwarding(this);
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
@@ -1292,7 +1297,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	// If no default set, use project name
 	if (default_filename.is_empty()) {
 		// If no project name defined, use a sane default
-		default_filename = ProjectSettings::get_singleton()->get("application/config/name");
+		default_filename = GLOBAL_GET("application/config/name");
 		if (default_filename.is_empty()) {
 			default_filename = "UnnamedProject";
 		}

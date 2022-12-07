@@ -31,16 +31,20 @@
 #include "bone_map_editor_plugin.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/import/post_import_plugin_skeleton_renamer.h"
 #include "editor/import/post_import_plugin_skeleton_rest_fixer.h"
 #include "editor/import/post_import_plugin_skeleton_track_organizer.h"
 #include "editor/import/scene_import_settings.h"
+#include "scene/gui/aspect_ratio_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {
-		set_normal_texture(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
+		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
 	} else {
-		set_normal_texture(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
+		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
 	}
 	set_offset(SIDE_LEFT, 0);
 	set_offset(SIDE_RIGHT, 0);
@@ -63,16 +67,16 @@ StringName BoneMapperButton::get_profile_bone_name() const {
 void BoneMapperButton::set_state(BoneMapState p_state) {
 	switch (p_state) {
 		case BONE_MAP_STATE_UNSET: {
-			circle->set_modulate(EditorSettings::get_singleton()->get("editors/bone_mapper/handle_colors/unset"));
+			circle->set_modulate(EDITOR_GET("editors/bone_mapper/handle_colors/unset"));
 		} break;
 		case BONE_MAP_STATE_SET: {
-			circle->set_modulate(EditorSettings::get_singleton()->get("editors/bone_mapper/handle_colors/set"));
+			circle->set_modulate(EDITOR_GET("editors/bone_mapper/handle_colors/set"));
 		} break;
 		case BONE_MAP_STATE_MISSING: {
-			circle->set_modulate(EditorSettings::get_singleton()->get("editors/bone_mapper/handle_colors/missing"));
+			circle->set_modulate(EDITOR_GET("editors/bone_mapper/handle_colors/missing"));
 		} break;
 		case BONE_MAP_STATE_ERROR: {
-			circle->set_modulate(EditorSettings::get_singleton()->get("editors/bone_mapper/handle_colors/error"));
+			circle->set_modulate(EDITOR_GET("editors/bone_mapper/handle_colors/error"));
 		} break;
 		default: {
 		} break;
@@ -742,7 +746,6 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		} else {
 			p_bone_map->_set_skeleton_bone_name("LeftEye", skeleton->get_bone_name(bone_idx));
 		}
-		bone_idx = -1;
 
 		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, neck_or_head);
 		if (bone_idx == -1) {
@@ -750,7 +753,6 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		} else {
 			p_bone_map->_set_skeleton_bone_name("RightEye", skeleton->get_bone_name(bone_idx));
 		}
-		bone_idx = -1;
 		picklist.clear();
 
 		// 4-2. Guess Jaw

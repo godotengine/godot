@@ -30,7 +30,7 @@
 		<member name="name" type="StringName" setter="set_name" getter="get_name" default="&amp;&quot;&quot;">
 			The name of this pose. Pose names are often driven by an action map setup by the user. Godot does suggest a number of pose names that it expects [XRInterface]s to implement:
 			- [code]root[/code] defines a root location, often used for tracked objects that do not have further nodes.
-			- [code]aim[/code] defines the tip of a controller with the orientation pointing outwards, for instance: add your raycasts to this.
+			- [code]aim[/code] defines the tip of a controller with the orientation pointing outwards, for example: add your raycasts to this.
 			- [code]grip[/code] defines the location where the user grips the controller
 			- [code]skeleton[/code] defines the root location a hand mesh should be placed when using hand tracking and the animated skeleton supplied by the XR runtime.
 		</member>
@@ -46,7 +46,7 @@
 			No tracking information is available for this pose.
 		</constant>
 		<constant name="XR_TRACKING_CONFIDENCE_LOW" value="1" enum="TrackingConfidence">
-			Tracking information may be inaccurate or estimated. For instance with inside out tracking this would indicate a controller may be (partially) obscured.
+			Tracking information may be inaccurate or estimated. For example, with inside out tracking this would indicate a controller may be (partially) obscured.
 		</constant>
 		<constant name="XR_TRACKING_CONFIDENCE_HIGH" value="2" enum="TrackingConfidence">
 			Tracking information is deemed accurate and up to date.

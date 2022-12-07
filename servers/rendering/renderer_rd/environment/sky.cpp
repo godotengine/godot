@@ -361,7 +361,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 	uint32_t w = p_size, h = p_size;
 
 	EffectsRD *effects = RendererCompositorRD::singleton->get_effects();
-	ERR_FAIL_NULL_MSG(effects, "Effects haven't been initialised");
+	ERR_FAIL_NULL_MSG(effects, "Effects haven't been initialized");
 	bool prefer_raster_effects = effects->get_prefer_raster_effects();
 
 	if (p_use_array) {
@@ -465,7 +465,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 
 void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
-	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialised");
+	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialized");
 	bool prefer_raster_effects = copy_effects->get_prefer_raster_effects();
 
 	if (prefer_raster_effects) {
@@ -523,7 +523,7 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 
 void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_arrays, int p_cube_side, int p_base_layer, uint32_t p_sky_ggx_samples_quality) {
 	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
-	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialised");
+	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialized");
 	bool prefer_raster_effects = copy_effects->get_prefer_raster_effects();
 
 	if (prefer_raster_effects) {
@@ -592,7 +592,7 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 
 void SkyRD::ReflectionData::update_reflection_mipmaps(int p_start, int p_end) {
 	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
-	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialised");
+	ERR_FAIL_NULL_MSG(copy_effects, "Effects haven't been initialized");
 	bool prefer_raster_effects = copy_effects->get_prefer_raster_effects();
 
 	RD::get_singleton()->draw_command_begin_label("Update Radiance Cubemap Array Mipmaps");
@@ -772,9 +772,7 @@ Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, con
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rad_tex, 0);
 		RD::get_singleton()->free(rad_tex);
 
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
+		Ref<Image> img = Image::create_from_data(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
 		for (int i = 0; i < p_size.width; i++) {
 			for (int j = 0; j < p_size.height; j++) {
 				Color c = img->get_pixel(i, j);
@@ -1663,7 +1661,7 @@ void SkyRD::update_res_buffers(RID p_env, uint32_t p_view_count, const Projectio
 		projections = &camera;
 	}
 
-	sky_transform = p_transform.basis * sky_transform;
+	sky_transform = sky_transform * p_transform.basis;
 
 	if (shader_data->uses_quarter_res) {
 		PipelineCacheRD *pipeline = &shader_data->pipelines[view_count > 1 ? SKY_VERSION_QUARTER_RES_MULTIVIEW : SKY_VERSION_QUARTER_RES];
@@ -1756,7 +1754,7 @@ void SkyRD::draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_vie
 		projections = &camera;
 	}
 
-	sky_transform = p_transform.basis * sky_transform;
+	sky_transform = sky_transform * p_transform.basis;
 
 	PipelineCacheRD *pipeline = &shader_data->pipelines[view_count > 1 ? SKY_VERSION_BACKGROUND_MULTIVIEW : SKY_VERSION_BACKGROUND];
 

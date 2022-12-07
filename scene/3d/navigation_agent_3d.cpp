@@ -79,6 +79,7 @@ void NavigationAgent3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_target_location", "location"), &NavigationAgent3D::set_target_location);
 	ClassDB::bind_method(D_METHOD("get_target_location"), &NavigationAgent3D::get_target_location);
+
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent3D::get_next_location);
 	ClassDB::bind_method(D_METHOD("distance_to_target"), &NavigationAgent3D::distance_to_target);
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &NavigationAgent3D::set_velocity);
@@ -92,6 +93,7 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_avoidance_done", "new_velocity"), &NavigationAgent3D::_avoidance_done);
 
 	ADD_GROUP("Pathfinding", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_location", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_target_location", "get_target_location");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:m"), "set_path_desired_distance", "get_path_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:m"), "set_target_desired_distance", "get_target_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_height_offset", PROPERTY_HINT_RANGE, "-100.0,100,0.01,suffix:m"), "set_agent_height_offset", "get_agent_height_offset");
@@ -495,8 +497,8 @@ void NavigationAgent3D::_request_repath() {
 void NavigationAgent3D::_check_distance_to_target() {
 	if (!target_reached) {
 		if (distance_to_target() < target_desired_distance) {
-			emit_signal(SNAME("target_reached"));
 			target_reached = true;
+			emit_signal(SNAME("target_reached"));
 		}
 	}
 }

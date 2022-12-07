@@ -176,9 +176,7 @@ Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradi
 	int width = p_image->get_width();
 	int height = p_image->get_height();
 
-	Ref<Image> new_image;
-	new_image.instantiate();
-	new_image->create(width, height, false, Image::FORMAT_RGBA8);
+	Ref<Image> new_image = Image::create_empty(width, height, false, Image::FORMAT_RGBA8);
 
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {

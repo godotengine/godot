@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef VULKAN_ENABLED
+
 #include "vulkan_context_ios.h"
 #ifdef USE_VOLK
 #include <volk.h>
@@ -57,3 +59,5 @@ Error VulkanContextIOS::window_create(DisplayServer::WindowID p_window_id, Displ
 VulkanContextIOS::VulkanContextIOS() {}
 
 VulkanContextIOS::~VulkanContextIOS() {}
+
+#endif // VULKAN_ENABLED

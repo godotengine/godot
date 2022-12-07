@@ -18,13 +18,11 @@
 			<param index="2" name="b8" type="int" />
 			<param index="3" name="a8" type="int" default="255" />
 			<description>
-				Returns a color constructed from integer red, green, blue, and alpha channels. Each channel should have 8 bits of information ranging from 0 to 255.
-				[code]r8[/code] red channel
-				[code]g8[/code] green channel
-				[code]b8[/code] blue channel
-				[code]a8[/code] alpha channel
+				Returns a [Color] constructed from red ([param r8]), green ([param g8]), blue ([param b8]), and optionally alpha ([param a8]) integer channels, each divided by [code]255.0[/code] for their final value.
 				[codeblock]
-				red = Color8(255, 0, 0)
+				var red = Color8(255, 0, 0)             # Same as Color(1, 0, 0)
+				var dark_blue = Color8(0, 0, 51)        # Same as Color(0, 0, 0.2).
+				var my_color = Color8(306, 255, 0, 102) # Same as Color(1.2, 1, 0, 0.4).
 				[/codeblock]
 			</description>
 		</method>
@@ -33,9 +31,9 @@
 			<param index="0" name="condition" type="bool" />
 			<param index="1" name="message" type="String" default="&quot;&quot;" />
 			<description>
-				Asserts that the [code]condition[/code] is [code]true[/code]. If the [code]condition[/code] is [code]false[/code], an error is generated. When running from the editor, the running project will also be paused until you resume it. This can be used as a stronger form of [method @GlobalScope.push_error] for reporting errors to project developers or add-on users.
-				[b]Note:[/b] For performance reasons, the code inside [method assert] is only executed in debug builds or when running the project from the editor. Don't include code that has side effects in an [method assert] call. Otherwise, the project will behave differently when exported in release mode.
-				The optional [code]message[/code] argument, if given, is shown in addition to the generic "Assertion failed" message. It must be a static string, so format strings can't be used. You can use this to provide additional details about why the assertion failed.
+				Asserts that the [param condition] is [code]true[/code]. If the [param condition] is [code]false[/code], an error is generated. When running from the editor, the running project will also be paused until you resume it. This can be used as a stronger form of [method @GlobalScope.push_error] for reporting errors to project developers or add-on users.
+				An optional [param message] can be shown in addition to the generic "Assertion failed" message. You can use this to provide additional details about why the assertion failed.
+				[b]Warning:[/b] For performance reasons, the code inside [method assert] is only executed in debug builds or when running the project from the editor. Don't include code that has side effects in an [method assert] call. Otherwise, the project will behave differently when exported in release mode.
 				[codeblock]
 				# Imagine we always want speed to be between 0 and 20.
 				var speed = -10
@@ -50,7 +48,7 @@
 			<return type="String" />
 			<param index="0" name="char" type="int" />
 			<description>
-				Returns a character as a String of the given Unicode code point (which is compatible with ASCII code).
+				Returns a single character (as a [String]) of the given Unicode code point (which is compatible with ASCII code).
 				[codeblock]
 				a = char(65)      # a is "A"
 				a = char(65 + 32) # a is "a"
@@ -63,14 +61,14 @@
 			<param index="0" name="what" type="Variant" />
 			<param index="1" name="type" type="int" />
 			<description>
-				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the [enum Variant.Type] values.
+				Converts [param what] to [param type] in the best way possible. The [param type] uses the [enum Variant.Type] values.
 				[codeblock]
-				a = Vector2(1, 0)
-				# Prints 1
-				print(a.length())
-				a = convert(a, TYPE_STRING)
-				# Prints 6 as "(1, 0)" is 6 characters
-				print(a.length())
+				var a = [4, 2.5, 1.2]
+				print(a is Array) # Prints true
+
+				var b = convert(a, TYPE_PACKED_BYTE_ARRAY)
+				print(b)          # Prints [4, 2, 1]
+				print(b is Array) # Prints false
 				[/codeblock]
 			</description>
 		</method>
@@ -78,7 +76,7 @@
 			<return type="Object" />
 			<param index="0" name="dictionary" type="Dictionary" />
 			<description>
-				Converts a [param dictionary] (previously created with [method inst_to_dict]) back to an Object instance. Useful for deserializing.
+				Converts a [param dictionary] (created with [method inst_to_dict]) back to an Object instance. Can be useful for deserializing.
 			</description>
 		</method>
 		<method name="get_stack">
@@ -95,19 +93,19 @@
 				func bar():
 				    print(get_stack())
 				[/codeblock]
-				would print
+				Starting from [code]_ready()[/code], [code]bar()[/code] would print:
 				[codeblock]
 				[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]
 				[/codeblock]
-				[b]Note:[/b] [method get_stack] only works if the running instance is connected to a debugging server (i.e. an editor instance). [method get_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
-				[b]Note:[/b] Not supported for calling from threads. Instead, this will return an empty array.
+				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method get_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
+				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will return an empty array.
 			</description>
 		</method>
 		<method name="inst_to_dict">
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
 			<description>
-				Returns the passed [param instance] converted to a Dictionary (useful for serializing).
+				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
 				[codeblock]
 				var foo = "bar"
 				func _ready():
@@ -126,11 +124,13 @@
 			<return type="int" />
 			<param index="0" name="var" type="Variant" />
 			<description>
-				Returns length of Variant [code]var[/code]. Length is the character count of String, element count of Array, size of Dictionary, etc.
-				[b]Note:[/b] Generates a fatal error if Variant can not provide a length.
+				Returns the length of the given Variant [param var]. The length can be the character count of a [String], the element count of any array type or the size of a [Dictionary]. For every other Variant type, a run-time error is generated and execution is stopped.
 				[codeblock]
 				a = [1, 2, 3, 4]
 				len(a) # Returns 4
+
+				b = "Hello!"
+				len(b) # Returns 6
 				[/codeblock]
 			</description>
 		</method>
@@ -138,25 +138,25 @@
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Loads a resource from the filesystem located at [code]path[/code]. The resource is loaded on the method call (unless it's referenced already elsewhere, e.g. in another script or in the scene), which might cause slight delay, especially when loading scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload].
+				Returns a [Resource] from the filesystem located at the absolute [param path]. Unless it's already referenced elsewhere (such as in another script or in the scene), the resource is loaded from disk on function call, which might cause a slight delay, especially when loading large scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload].
 				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
 				[codeblock]
-				# Load a scene called main located in the root of the project directory and cache it in a variable.
+				# Load a scene called "main" located in the root of the project directory and cache it in a variable.
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
 				[/codeblock]
-				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
-				This method is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
-				[b]Note:[/b] You have to import the files into the engine first to load them using [method load]. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
+				[b]Important:[/b] The path must be absolute. A relative path will always return [code]null[/code].
+				This function is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
+				[b]Note:[/b] Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
 			</description>
 		</method>
 		<method name="preload">
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a [Resource] from the filesystem located at [code]path[/code]. The resource is loaded during script parsing, i.e. is loaded with the script and [method preload] effectively acts as a reference to that resource. Note that the method requires a constant path. If you want to load a resource from a dynamic/variable path, use [method load].
+				Returns a [Resource] from the filesystem located at [param path]. During run-time, the resource is loaded when the script is being parsed. This function effectively acts as a reference to that resource. Note that this function requires [param path] to be a constant [String]. If you want to load a resource from a dynamic/variable path, use [method load].
 				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
 				[codeblock]
-				# Instance a scene.
+				# Create instance of a scene.
 				var diamond = preload("res://diamond.tscn").instantiate()
 				[/codeblock]
 			</description>
@@ -165,24 +165,24 @@
 			<return type="void" />
 			<description>
 				Like [method @GlobalScope.print], but includes the current stack frame when running with the debugger turned on.
-				Output in the console would look something like this:
+				The output in the console may look like the following:
 				[codeblock]
 				Test print
-				   At: res://test.gd:15:_process()
+				At: res://test.gd:15:_process()
 				[/codeblock]
-				[b]Note:[/b] Not supported for calling from threads. Instead of the stack frame, this will print the thread ID.
+				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
 			</description>
 		</method>
 		<method name="print_stack">
 			<return type="void" />
 			<description>
 				Prints a stack trace at the current code location. See also [method get_stack].
-				Output in the console would look something like this:
+				The output in the console may look like the following:
 				[codeblock]
 				Frame 0 - res://test.gd:16 in function '_process'
 				[/codeblock]
-				[b]Note:[/b] [method print_stack] only works if the running instance is connected to a debugging server (i.e. an editor instance). [method print_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
-				[b]Note:[/b] Not supported for calling from threads. Instead of the stack trace, this will print the thread ID.
+				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method print_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
+				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
 			</description>
 		</method>
 		<method name="range" qualifiers="vararg">
@@ -229,7 +229,7 @@
 		<method name="str" qualifiers="vararg">
 			<return type="String" />
 			<description>
-				Converts one or more arguments to string in the best way possible.
+				Converts one or more arguments to a [String] in the best way possible.
 				[codeblock]
 				var a = [10, 20, 30]
 				var b = str(a);
@@ -242,7 +242,7 @@
 			<return type="bool" />
 			<param index="0" name="type" type="StringName" />
 			<description>
-				Returns whether the given [Object]-derived class exists in [ClassDB]. Note that [Variant] data types are not registered in [ClassDB].
+				Returns [code]true[/code] if the given [Object]-derived class exists in [ClassDB]. Note that [Variant] data types are not registered in [ClassDB].
 				[codeblock]
 				type_exists("Sprite2D") # Returns true
 				type_exists("NonExistentClass") # Returns false
@@ -259,11 +259,11 @@
 		</constant>
 		<constant name="INF" value="inf">
 			Positive floating-point infinity. This is the result of floating-point division when the divisor is [code]0.0[/code]. For negative infinity, use [code]-INF[/code]. Dividing by [code]-0.0[/code] will result in negative infinity if the numerator is positive, so dividing by [code]0.0[/code] is not the same as dividing by [code]-0.0[/code] (despite [code]0.0 == -0.0[/code] returning [code]true[/code]).
-			[b]Note:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
+			[b]Warning:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
 		</constant>
 		<constant name="NAN" value="nan">
 			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that it is not equal to itself ([code]NAN == NAN[/code] returns [code]false[/code]). It is output by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
-			[b]Note:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
+			[b]Warning:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
 		</constant>
 	</constants>
 	<annotations>
@@ -294,7 +294,7 @@
 		<annotation name="@export_color_no_alpha">
 			<return type="void" />
 			<description>
-				Export a [Color] property without an alpha (fixed as [code]1.0[/code]).
+				Export a [Color] property without transparency (its alpha fixed as [code]1.0[/code]).
 				See also [constant PROPERTY_HINT_COLOR_NO_ALPHA].
 				[codeblock]
 				@export_color_no_alpha var modulate_color: Color
@@ -320,7 +320,7 @@
 				[codeblock]
 				@export_enum("Rebecca", "Mary", "Leah") var character_name: String
 				@export_enum("Warrior", "Magician", "Thief") var character_class: int
-				@export_enum("Walking:30", "Running:60", "Riding:200") var character_speed: int
+				@export_enum("Slow:30", "Average:60", "Very Fast:200") var character_speed: int
 				[/codeblock]
 			</description>
 		</annotation>
@@ -451,7 +451,7 @@
 			<description>
 				Define a new group for the following exported properties. This helps to organize properties in the Inspector dock. Groups can be added with an optional [param prefix], which would make group to only consider properties that have this prefix. The grouping will break on the first property that doesn't have a prefix. The prefix is also removed from the property's name in the Inspector dock.
 				If no [param prefix] is provided, the every following property is added to the group. The group ends when then next group or category is defined. You can also force end a group by using this annotation with empty strings for parameters, [code]@export_group("", "")[/code].
-				Groups cannot be nested, use [annotation @export_subgroup] to add subgroups to your groups.
+				Groups cannot be nested, use [annotation @export_subgroup] to add subgroups within groups.
 				See also [constant PROPERTY_USAGE_GROUP].
 				[codeblock]
 				@export_group("My Properties")
@@ -473,7 +473,7 @@
 				Export a [String] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
 				See also [constant PROPERTY_HINT_MULTILINE_TEXT].
 				[codeblock]
-				@export_multiline var character_bio
+				@export_multiline var character_biography
 				[/codeblock]
 			</description>
 		</annotation>
@@ -547,11 +547,11 @@
 			<return type="void" />
 			<param index="0" name="icon_path" type="String" />
 			<description>
-				Add a custom icon to the current script. The icon is displayed in the Scene dock for every node that the script is attached to. For named classes the icon is also displayed in various editor dialogs.
+				Add a custom icon to the current script. The script must be registered as a global class using the [code]class_name[/code] keyword for this to have a visible effect. The icon specified at [param icon_path] is displayed in the Scene dock for every node of that class, as well as in various editor dialogs.
 				[codeblock]
 				@icon("res://path/to/class/icon.svg")
 				[/codeblock]
-				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported yet.
+				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
 			</description>
 		</annotation>
 		<annotation name="@onready">
@@ -590,7 +590,7 @@
 			<return type="void" />
 			<param index="0" name="warning" type="String" />
 			<description>
-				Mark the following statement to ignore the specified warning. See [url=$DOCS_URL/tutorials/scripting/gdscript/warning_system.html]GDScript warning system[/url].
+				Mark the following statement to ignore the specified [param warning]. See [url=$DOCS_URL/tutorials/scripting/gdscript/warning_system.html]GDScript warning system[/url].
 				[codeblock]
 				func test():
 				    print("hello")

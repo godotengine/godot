@@ -82,9 +82,9 @@
 				var rect2 = rect.expand(Vector2(0, -1))
 				[/gdscript]
 				[csharp]
-				# position (-3, 2), size (1, 1)
+				// position (-3, 2), size (1, 1)
 				var rect = new Rect2(new Vector2(-3, 2), new Vector2(1, 1));
-				# position (-3, -1), size (3, 4), so we fit both rect and Vector2(0, -1)
+				// position (-3, -1), size (3, 4), so we fit both rect and Vector2(0, -1)
 				var rect2 = rect.Expand(new Vector2(0, -1));
 				[/csharp]
 				[/codeblocks]
@@ -163,6 +163,12 @@
 			<param index="0" name="rect" type="Rect2" />
 			<description>
 				Returns [code]true[/code] if this [Rect2] and [param rect] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Rect2] is finite, by calling [method @GlobalScope.is_finite] on each component.
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">

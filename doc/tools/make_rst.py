@@ -29,6 +29,12 @@ MARKUP_ALLOWED_SUBSEQUENT = " -.,:;!?\\/'\")]}>"
 # write in this script (check `translate()` uses), and also hardcoded in
 # `doc/translations/extract.py` to include them in the source POT file.
 BASE_STRINGS = [
+    "All classes",
+    "Globals",
+    "Nodes",
+    "Resources",
+    "Other objects",
+    "Variant types",
     "Description",
     "Tutorials",
     "Properties",
@@ -62,6 +68,19 @@ BASE_STRINGS = [
 strings_l10n: Dict[str, str] = {}
 
 STYLES: Dict[str, str] = {}
+
+CLASS_GROUPS: Dict[str, str] = {
+    "global": "Globals",
+    "node": "Nodes",
+    "resource": "Resources",
+    "object": "Other objects",
+    "variant": "Variant types",
+}
+CLASS_GROUPS_BASE: Dict[str, str] = {
+    "node": "Node",
+    "resource": "Resource",
+    "object": "Object",
+}
 
 
 class State:
@@ -221,7 +240,7 @@ class State:
                         enum_def = class_def.enums[enum]
 
                     else:
-                        enum_def = EnumDef(enum, is_bitfield)
+                        enum_def = EnumDef(enum, TypeName("int", enum), is_bitfield)
                         class_def.enums[enum] = enum_def
 
                     enum_def.values[constant_name] = constant_def
@@ -329,7 +348,7 @@ class State:
         return cast
 
     def sort_classes(self) -> None:
-        self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0]))
+        self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0].lower()))
 
 
 class TypeName:
@@ -439,9 +458,10 @@ class ConstantDef(DefinitionBase):
 
 
 class EnumDef(DefinitionBase):
-    def __init__(self, name: str, bitfield: bool) -> None:
+    def __init__(self, name: str, type_name: TypeName, bitfield: bool) -> None:
         super().__init__("enum", name)
 
+        self.type_name = type_name
         self.values: OrderedDict[str, ConstantDef] = OrderedDict()
         self.is_bitfield = bitfield
 
@@ -601,11 +621,24 @@ def main() -> None:
 
     print("Generating the RST class reference...")
 
+    grouped_classes: Dict[str, List[str]] = {}
+
     for class_name, class_def in state.classes.items():
         if args.filter and not pattern.search(class_def.filepath):
             continue
         state.current_class = class_name
         make_rst_class(class_def, state, args.dry_run, args.output)
+
+        group_name = get_class_group(class_def, state)
+
+        if group_name not in grouped_classes:
+            grouped_classes[group_name] = []
+        grouped_classes[group_name].append(class_name)
+
+    print("")
+    print("Generating the index file...")
+
+    make_rst_index(grouped_classes, args.dry_run, args.output)
 
     print("")
 
@@ -655,6 +688,42 @@ def translate(string: str) -> str:
     return strings_l10n.get(string, string)
 
 
+def get_git_branch() -> str:
+    if hasattr(version, "docs") and version.docs != "latest":
+        return version.docs
+
+    return "master"
+
+
+def get_class_group(class_def: ClassDef, state: State) -> str:
+    group_name = "variant"
+    class_name = class_def.name
+
+    if class_name.startswith("@"):
+        group_name = "global"
+    elif class_def.inherits:
+        inherits = class_def.inherits.strip()
+
+        while inherits in state.classes:
+            if inherits == "Node":
+                group_name = "node"
+                break
+            if inherits == "Resource":
+                group_name = "resource"
+                break
+            if inherits == "Object":
+                group_name = "object"
+                break
+
+            inode = state.classes[inherits].inherits
+            if inode:
+                inherits = inode.strip()
+            else:
+                break
+
+    return group_name
+
+
 # Generator methods.
 
 
@@ -672,10 +741,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
     # Warn contributors not to edit this file directly.
     # Also provide links to the source files for reference.
 
-    git_branch = "master"
-    if hasattr(version, "docs") and version.docs != "latest":
-        git_branch = version.docs
-
+    git_branch = get_git_branch()
     source_xml_path = os.path.relpath(class_def.filepath, root_directory).replace("\\", "/")
     source_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/{source_xml_path}"
     generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
@@ -689,7 +755,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
     f.write(f".. _class_{class_name}:\n\n")
     f.write(make_heading(class_name, "=", False))
 
-    # Inheritance tree
+    ### INHERITANCE TREE ###
+
     # Ascendants
     if class_def.inherits:
         inherits = class_def.inherits.strip()
@@ -723,25 +790,52 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write(make_type(child, state))
         f.write("\n\n")
 
+    ### INTRODUCTION ###
+
+    has_description = False
+
     # Brief description
-    if class_def.brief_description is not None:
+    if class_def.brief_description is not None and class_def.brief_description.strip() != "":
+        has_description = True
+
         f.write(f"{format_text_block(class_def.brief_description.strip(), class_def, state)}\n\n")
 
     # Class description
     if class_def.description is not None and class_def.description.strip() != "":
+        has_description = True
+
+        f.write(".. rst-class:: classref-introduction-group\n\n")
         f.write(make_heading("Description", "-"))
+
         f.write(f"{format_text_block(class_def.description.strip(), class_def, state)}\n\n")
+
+    if not has_description:
+        f.write(".. container:: contribute\n\n\t")
+        f.write(
+            translate(
+                "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+            )
+            + "\n\n"
+        )
 
     # Online tutorials
     if len(class_def.tutorials) > 0:
+        f.write(".. rst-class:: classref-introduction-group\n\n")
         f.write(make_heading("Tutorials", "-"))
+
         for url, title in class_def.tutorials:
             f.write(f"- {make_link(url, title)}\n\n")
 
-    # Properties overview
+    ### REFERENCE TABLES ###
+
+    # Reused container for reference tables.
     ml: List[Tuple[Optional[str], ...]] = []
+
+    # Properties reference table
     if len(class_def.properties) > 0:
+        f.write(".. rst-class:: classref-reftable-group\n\n")
         f.write(make_heading("Properties", "-"))
+
         ml = []
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
@@ -753,76 +847,108 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             else:
                 ref = f":ref:`{property_def.name}<class_{class_name}_property_{property_def.name}>`"
                 ml.append((type_rst, ref, default))
+
         format_table(f, ml, True)
 
-    # Constructors, Methods, Operators overview
+    # Constructors, Methods, Operators reference tables
     if len(class_def.constructors) > 0:
+        f.write(".. rst-class:: classref-reftable-group\n\n")
         f.write(make_heading("Constructors", "-"))
+
         ml = []
         for method_list in class_def.constructors.values():
             for m in method_list:
                 ml.append(make_method_signature(class_def, m, "constructor", state))
+
         format_table(f, ml)
 
     if len(class_def.methods) > 0:
+        f.write(".. rst-class:: classref-reftable-group\n\n")
         f.write(make_heading("Methods", "-"))
+
         ml = []
         for method_list in class_def.methods.values():
             for m in method_list:
                 ml.append(make_method_signature(class_def, m, "method", state))
+
         format_table(f, ml)
 
     if len(class_def.operators) > 0:
+        f.write(".. rst-class:: classref-reftable-group\n\n")
         f.write(make_heading("Operators", "-"))
+
         ml = []
         for method_list in class_def.operators.values():
             for m in method_list:
                 ml.append(make_method_signature(class_def, m, "operator", state))
+
         format_table(f, ml)
 
-    # Theme properties
+    # Theme properties reference table
     if len(class_def.theme_items) > 0:
+        f.write(".. rst-class:: classref-reftable-group\n\n")
         f.write(make_heading("Theme Properties", "-"))
-        pl: List[Tuple[Optional[str], ...]] = []
+
+        ml = []
         for theme_item_def in class_def.theme_items.values():
             ref = f":ref:`{theme_item_def.name}<class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}>`"
-            pl.append((theme_item_def.type_name.to_rst(state), ref, theme_item_def.default_value))
-        format_table(f, pl, True)
+            ml.append((theme_item_def.type_name.to_rst(state), ref, theme_item_def.default_value))
 
-    # Signals
+        format_table(f, ml, True)
+
+    ### DETAILED DESCRIPTIONS ###
+
+    # Signal descriptions
     if len(class_def.signals) > 0:
+        f.write(make_separator(True))
+        f.write(".. rst-class:: classref-descriptions-group\n\n")
         f.write(make_heading("Signals", "-"))
+
         index = 0
 
         for signal in class_def.signals.values():
             if index != 0:
-                f.write("----\n\n")
+                f.write(make_separator())
+
+            # Create signal signature and anchor point.
 
             f.write(f".. _class_{class_name}_signal_{signal.name}:\n\n")
+            f.write(".. rst-class:: classref-signal\n\n")
+
             _, signature = make_method_signature(class_def, signal, "", state)
-            f.write(f"- {signature}\n\n")
+            f.write(f"{signature}\n\n")
+
+            # Add signal description, or a call to action if it's missing.
 
             if signal.description is not None and signal.description.strip() != "":
                 f.write(f"{format_text_block(signal.description.strip(), signal, state)}\n\n")
+            else:
+                f.write(".. container:: contribute\n\n\t")
+                f.write(
+                    translate(
+                        "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                    )
+                    + "\n\n"
+                )
 
             index += 1
 
-    # Enums
+    # Enumeration descriptions
     if len(class_def.enums) > 0:
+        f.write(make_separator(True))
+        f.write(".. rst-class:: classref-descriptions-group\n\n")
         f.write(make_heading("Enumerations", "-"))
+
         index = 0
 
         for e in class_def.enums.values():
             if index != 0:
-                f.write("----\n\n")
+                f.write(make_separator())
+
+            # Create enumeration signature and anchor point.
 
             f.write(f".. _enum_{class_name}_{e.name}:\n\n")
-            # Sphinx seems to divide the bullet list into individual <ul> tags if we weave the labels into it.
-            # As such I'll put them all above the list. Won't be perfect but better than making the list visually broken.
-            # As to why I'm not modifying the reference parser to directly link to the _enum label:
-            # If somebody gets annoyed enough to fix it, all existing references will magically improve.
-            for value in e.values.values():
-                f.write(f".. _class_{class_name}_constant_{value.name}:\n\n")
+            f.write(".. rst-class:: classref-enumeration\n\n")
 
             if e.is_bitfield:
                 f.write(f"flags **{e.name}**:\n\n")
@@ -830,54 +956,86 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 f.write(f"enum **{e.name}**:\n\n")
 
             for value in e.values.values():
-                f.write(f"- **{value.name}** = **{value.value}**")
+                # Also create signature and anchor point for each enum constant.
+
+                f.write(f".. _class_{class_name}_constant_{value.name}:\n\n")
+                f.write(".. rst-class:: classref-enumeration-constant\n\n")
+
+                f.write(f"{e.type_name.to_rst(state)} **{value.name}** = ``{value.value}``\n\n")
+
+                # Add enum constant description.
+
                 if value.text is not None and value.text.strip() != "":
-                    # If value.text contains a bullet point list, each entry needs additional indentation
-                    f.write(f" --- {indent_bullets(format_text_block(value.text.strip(), value, state))}")
+                    f.write(f"{format_text_block(value.text.strip(), value, state)}")
 
                 f.write("\n\n")
 
             index += 1
 
-    # Constants
+    # Constant descriptions
     if len(class_def.constants) > 0:
+        f.write(make_separator(True))
+        f.write(".. rst-class:: classref-descriptions-group\n\n")
         f.write(make_heading("Constants", "-"))
-        # Sphinx seems to divide the bullet list into individual <ul> tags if we weave the labels into it.
-        # As such I'll put them all above the list. Won't be perfect but better than making the list visually broken.
-        for constant in class_def.constants.values():
-            f.write(f".. _class_{class_name}_constant_{constant.name}:\n\n")
 
         for constant in class_def.constants.values():
-            f.write(f"- **{constant.name}** = **{constant.value}**")
+            # Create constant signature and anchor point.
+
+            f.write(f".. _class_{class_name}_constant_{constant.name}:\n\n")
+            f.write(".. rst-class:: classref-constant\n\n")
+
+            f.write(f"**{constant.name}** = ``{constant.value}``\n\n")
+
+            # Add enum constant description.
+
             if constant.text is not None and constant.text.strip() != "":
-                f.write(f" --- {format_text_block(constant.text.strip(), constant, state)}")
+                f.write(f"{format_text_block(constant.text.strip(), constant, state)}")
 
             f.write("\n\n")
 
-    # Annotations
+    # Annotation descriptions
     if len(class_def.annotations) > 0:
+        f.write(make_separator(True))
         f.write(make_heading("Annotations", "-"))
+
         index = 0
 
         for method_list in class_def.annotations.values():  # type: ignore
             for i, m in enumerate(method_list):
                 if index != 0:
-                    f.write("----\n\n")
+                    f.write(make_separator())
+
+                # Create annotation signature and anchor point.
 
                 if i == 0:
                     f.write(f".. _class_{class_name}_annotation_{m.name}:\n\n")
 
+                f.write(".. rst-class:: classref-annotation\n\n")
+
                 _, signature = make_method_signature(class_def, m, "", state)
-                f.write(f"- {signature}\n\n")
+                f.write(f"{signature}\n\n")
+
+                # Add annotation description, or a call to action if it's missing.
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                else:
+                    f.write(".. container:: contribute\n\n\t")
+                    f.write(
+                        translate(
+                            "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                        )
+                        + "\n\n"
+                    )
 
                 index += 1
 
     # Property descriptions
     if any(not p.overrides for p in class_def.properties.values()) > 0:
+        f.write(make_separator(True))
+        f.write(".. rst-class:: classref-descriptions-group\n\n")
         f.write(make_heading("Property Descriptions", "-"))
+
         index = 0
 
         for property_def in class_def.properties.values():
@@ -885,113 +1043,199 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 continue
 
             if index != 0:
-                f.write("----\n\n")
+                f.write(make_separator())
+
+            # Create property signature and anchor point.
 
             f.write(f".. _class_{class_name}_property_{property_def.name}:\n\n")
-            f.write(f"- {property_def.type_name.to_rst(state)} **{property_def.name}**\n\n")
+            f.write(".. rst-class:: classref-property\n\n")
 
-            info: List[Tuple[Optional[str], ...]] = []
-            # Not using translate() for now as it breaks table formatting.
+            property_default = ""
             if property_def.default_value is not None:
-                info.append(("*Default*", property_def.default_value))
-            if property_def.setter is not None and not property_def.setter.startswith("_"):
-                info.append(("*Setter*", f"{property_def.setter}(value)"))
-            if property_def.getter is not None and not property_def.getter.startswith("_"):
-                info.append(("*Getter*", f"{property_def.getter}()"))
+                property_default = f" = {property_def.default_value}"
+            f.write(f"{property_def.type_name.to_rst(state)} **{property_def.name}**{property_default}\n\n")
 
-            if len(info) > 0:
-                format_table(f, info)
+            # Create property setter and getter records.
+
+            property_setget = ""
+
+            if property_def.setter is not None and not property_def.setter.startswith("_"):
+                property_setter = make_setter_signature(class_def, property_def, state)
+                property_setget += f"- {property_setter}\n"
+
+            if property_def.getter is not None and not property_def.getter.startswith("_"):
+                property_getter = make_getter_signature(class_def, property_def, state)
+                property_setget += f"- {property_getter}\n"
+
+            if property_setget != "":
+                f.write(".. rst-class:: classref-property-setget\n\n")
+                f.write(property_setget)
+                f.write("\n")
+
+            # Add property description, or a call to action if it's missing.
 
             if property_def.text is not None and property_def.text.strip() != "":
                 f.write(f"{format_text_block(property_def.text.strip(), property_def, state)}\n\n")
+            else:
+                f.write(".. container:: contribute\n\n\t")
+                f.write(
+                    translate(
+                        "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                    )
+                    + "\n\n"
+                )
 
             index += 1
 
     # Constructor, Method, Operator descriptions
     if len(class_def.constructors) > 0:
+        f.write(make_separator(True))
+        f.write(".. rst-class:: classref-descriptions-group\n\n")
         f.write(make_heading("Constructor Descriptions", "-"))
+
         index = 0
 
         for method_list in class_def.constructors.values():
             for i, m in enumerate(method_list):
                 if index != 0:
-                    f.write("----\n\n")
+                    f.write(make_separator())
+
+                # Create constructor signature and anchor point.
 
                 if i == 0:
                     f.write(f".. _class_{class_name}_constructor_{m.name}:\n\n")
 
+                f.write(".. rst-class:: classref-constructor\n\n")
+
                 ret_type, signature = make_method_signature(class_def, m, "", state)
-                f.write(f"- {ret_type} {signature}\n\n")
+                f.write(f"{ret_type} {signature}\n\n")
+
+                # Add constructor description, or a call to action if it's missing.
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                else:
+                    f.write(".. container:: contribute\n\n\t")
+                    f.write(
+                        translate(
+                            "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                        )
+                        + "\n\n"
+                    )
 
                 index += 1
 
     if len(class_def.methods) > 0:
+        f.write(make_separator(True))
+        f.write(".. rst-class:: classref-descriptions-group\n\n")
         f.write(make_heading("Method Descriptions", "-"))
+
         index = 0
 
         for method_list in class_def.methods.values():
             for i, m in enumerate(method_list):
                 if index != 0:
-                    f.write("----\n\n")
+                    f.write(make_separator())
+
+                # Create method signature and anchor point.
 
                 if i == 0:
                     f.write(f".. _class_{class_name}_method_{m.name}:\n\n")
 
+                f.write(".. rst-class:: classref-method\n\n")
+
                 ret_type, signature = make_method_signature(class_def, m, "", state)
-                f.write(f"- {ret_type} {signature}\n\n")
+                f.write(f"{ret_type} {signature}\n\n")
+
+                # Add method description, or a call to action if it's missing.
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                else:
+                    f.write(".. container:: contribute\n\n\t")
+                    f.write(
+                        translate(
+                            "There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                        )
+                        + "\n\n"
+                    )
 
                 index += 1
 
     if len(class_def.operators) > 0:
+        f.write(make_separator(True))
+        f.write(".. rst-class:: classref-descriptions-group\n\n")
         f.write(make_heading("Operator Descriptions", "-"))
+
         index = 0
 
         for method_list in class_def.operators.values():
             for i, m in enumerate(method_list):
                 if index != 0:
-                    f.write("----\n\n")
+                    f.write(make_separator())
 
-                if i == 0:
-                    f.write(
-                        f".. _class_{class_name}_operator_{sanitize_operator_name(m.name, state)}_{m.return_type.type_name}:\n\n"
-                    )
+                # Create operator signature and anchor point.
+
+                operator_anchor = f".. _class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
+                for parameter in m.parameters:
+                    operator_anchor += f"_{parameter.type_name.type_name}"
+                operator_anchor += f":\n\n"
+                f.write(operator_anchor)
+
+                f.write(".. rst-class:: classref-operator\n\n")
 
                 ret_type, signature = make_method_signature(class_def, m, "", state)
-                f.write(f"- {ret_type} {signature}\n\n")
+                f.write(f"{ret_type} {signature}\n\n")
+
+                # Add operator description, or a call to action if it's missing.
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                else:
+                    f.write(".. container:: contribute\n\n\t")
+                    f.write(
+                        translate(
+                            "There is currently no description for this operator. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                        )
+                        + "\n\n"
+                    )
 
                 index += 1
 
     # Theme property descriptions
     if len(class_def.theme_items) > 0:
+        f.write(make_separator(True))
+        f.write(".. rst-class:: classref-descriptions-group\n\n")
         f.write(make_heading("Theme Property Descriptions", "-"))
+
         index = 0
 
         for theme_item_def in class_def.theme_items.values():
             if index != 0:
-                f.write("----\n\n")
+                f.write(make_separator())
+
+            # Create theme property signature and anchor point.
 
             f.write(f".. _class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}:\n\n")
-            f.write(f"- {theme_item_def.type_name.to_rst(state)} **{theme_item_def.name}**\n\n")
+            f.write(".. rst-class:: classref-themeproperty\n\n")
 
-            info = []
+            theme_item_default = ""
             if theme_item_def.default_value is not None:
-                # Not using translate() for now as it breaks table formatting.
-                info.append(("*Default*", theme_item_def.default_value))
+                theme_item_default = f" = {theme_item_def.default_value}"
+            f.write(f"{theme_item_def.type_name.to_rst(state)} **{theme_item_def.name}**{theme_item_default}\n\n")
 
-            if len(info) > 0:
-                format_table(f, info)
+            # Add theme property description, or a call to action if it's missing.
 
             if theme_item_def.text is not None and theme_item_def.text.strip() != "":
                 f.write(f"{format_text_block(theme_item_def.text.strip(), theme_item_def, state)}\n\n")
+            else:
+                f.write(".. container:: contribute\n\n\t")
+                f.write(
+                    translate(
+                        "There is currently no description for this theme property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                    )
+                    + "\n\n"
+                )
 
             index += 1
 
@@ -1051,7 +1295,10 @@ def make_method_signature(
     if isinstance(definition, MethodDef) and ref_type != "":
         if ref_type == "operator":
             op_name = definition.name.replace("<", "\\<")  # So operator "<" gets correctly displayed.
-            out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}_{definition.return_type.type_name}>` "
+            out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
+            for parameter in definition.parameters:
+                out += f"_{parameter.type_name.type_name}"
+            out += f">` "
         else:
             out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type}_{definition.name}>` "
     else:
@@ -1086,6 +1333,39 @@ def make_method_signature(
     return ret_type, out
 
 
+def make_setter_signature(class_def: ClassDef, property_def: PropertyDef, state: State) -> str:
+    if property_def.setter is None:
+        return ""
+
+    # If setter is a method available as a method definition, we use that.
+    if property_def.setter in class_def.methods:
+        setter = class_def.methods[property_def.setter][0]
+    # Otherwise we fake it with the information we have available.
+    else:
+        setter_params: List[ParameterDef] = []
+        setter_params.append(ParameterDef("value", property_def.type_name, None))
+        setter = MethodDef(property_def.setter, TypeName("void"), setter_params, None, None)
+
+    ret_type, signature = make_method_signature(class_def, setter, "", state)
+    return f"{ret_type} {signature}"
+
+
+def make_getter_signature(class_def: ClassDef, property_def: PropertyDef, state: State) -> str:
+    if property_def.getter is None:
+        return ""
+
+    # If getter is a method available as a method definition, we use that.
+    if property_def.getter in class_def.methods:
+        getter = class_def.methods[property_def.getter][0]
+    # Otherwise we fake it with the information we have available.
+    else:
+        getter_params: List[ParameterDef] = []
+        getter = MethodDef(property_def.getter, property_def.type_name, getter_params, None, None)
+
+    ret_type, signature = make_method_signature(class_def, getter, "", state)
+    return f"{ret_type} {signature}"
+
+
 def make_heading(title: str, underline: str, l10n: bool = True) -> str:
     if l10n:
         new_title = translate(title)
@@ -1117,6 +1397,14 @@ def make_footer() -> str:
     )
 
 
+def make_separator(section_level: bool = False) -> str:
+    separator_class = "item"
+    if section_level:
+        separator_class = "section"
+
+    return f".. rst-class:: classref-{separator_class}-separator\n\n----\n\n"
+
+
 def make_link(url: str, title: str) -> str:
     match = GODOT_DOCS_PATTERN.search(url)
     if match:
@@ -1140,6 +1428,53 @@ def make_link(url: str, title: str) -> str:
     if title != "":
         return f"`{title} <{url}>`__"
     return f"`{url} <{url}>`__"
+
+
+def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
+
+    if dry_run:
+        f = open(os.devnull, "w", encoding="utf-8")
+    else:
+        f = open(os.path.join(output_dir, "index.rst"), "w", encoding="utf-8")
+
+    # Remove the "Edit on Github" button from the online docs page.
+    f.write(":github_url: hide\n\n")
+
+    # Warn contributors not to edit this file directly.
+    # Also provide links to the source files for reference.
+
+    git_branch = get_git_branch()
+    generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
+
+    f.write(".. DO NOT EDIT THIS FILE!!!\n")
+    f.write(".. Generated automatically from Godot engine sources.\n")
+    f.write(f".. Generator: {generator_github_url}.\n\n")
+
+    f.write(".. _doc_class_reference:\n\n")
+
+    main_title = translate("All classes")
+    f.write(f"{main_title}\n")
+    f.write(f"{'=' * len(main_title)}\n\n")
+
+    for group_name in CLASS_GROUPS:
+        if group_name in grouped_classes:
+            group_title = translate(CLASS_GROUPS[group_name])
+
+            f.write(f"{group_title}\n")
+            f.write(f"{'=' * len(group_title)}\n\n")
+
+            f.write(".. toctree::\n")
+            f.write("    :maxdepth: 1\n")
+            f.write(f"    :name: toc-class-ref-{group_name}s\n")
+            f.write("\n")
+
+            if group_name in CLASS_GROUPS_BASE:
+                f.write(f"    class_{CLASS_GROUPS_BASE[group_name].lower()}\n")
+
+            for class_name in grouped_classes[group_name]:
+                f.write(f"    class_{class_name.lower()}\n")
+
+            f.write("\n")
 
 
 # Formatting helpers.
@@ -1230,10 +1565,10 @@ def format_text_block(
         escape_post = False
 
         # Tag is a reference to a class.
-        if tag_text in state.classes:
+        if tag_text in state.classes and not inside_code:
             if tag_text == state.current_class:
-                # Don't create a link to the same class, format it as inline code.
-                tag_text = f"``{tag_text}``"
+                # Don't create a link to the same class, format it as strong emphasis.
+                tag_text = f"**{tag_text}**"
             else:
                 tag_text = make_type(tag_text, state)
             escape_pre = True
@@ -1695,6 +2030,11 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
     if len(data) == 0:
         return
 
+    f.write(".. table::\n")
+    f.write("   :widths: auto\n\n")
+
+    # Calculate the width of each column first, we will use this information
+    # to properly format RST-style tables.
     column_sizes = [0] * len(data[0])
     for row in data:
         for i, text in enumerate(row):
@@ -1702,14 +2042,21 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
             if text_length > column_sizes[i]:
                 column_sizes[i] = text_length
 
+    # Each table row is wrapped in two separators, consecutive rows share the same separator.
+    # All separators, or rather borders, have the same shape and content. We compose it once,
+    # then reuse it.
+
     sep = ""
     for size in column_sizes:
         if size == 0 and remove_empty_columns:
             continue
-        sep += "+" + "-" * (size + 2)
+        sep += "+" + "-" * (size + 2)  # Content of each cell is padded by 1 on each side.
     sep += "+\n"
-    f.write(sep)
 
+    # Draw the first separator.
+    f.write(f"   {sep}")
+
+    # Draw each row and close it with a separator.
     for row in data:
         row_text = "|"
         for i, text in enumerate(row):
@@ -1717,8 +2064,10 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
                 continue
             row_text += f' {(text or "").ljust(column_sizes[i])} |'
         row_text += "\n"
-        f.write(row_text)
-        f.write(sep)
+
+        f.write(f"   {row_text}")
+        f.write(f"   {sep}")
+
     f.write("\n")
 
 
@@ -1778,25 +2127,6 @@ def sanitize_operator_name(dirty_name: str, state: State) -> str:
         print_error(f'Unsupported operator type "{dirty_name}", please add the missing rule.', state)
 
     return clear_name
-
-
-def indent_bullets(text: str) -> str:
-    # Take the text and check each line for a bullet point represented by "-".
-    # Where found, indent the given line by a further "\t".
-    # Used to properly indent bullet points contained in the description for enum values.
-    # Ignore the first line - text will be prepended to it so bullet points wouldn't work anyway.
-    bullet_points = "-"
-
-    lines = text.splitlines(keepends=True)
-    for line_index, line in enumerate(lines[1:], start=1):
-        pos = 0
-        while pos < len(line) and line[pos] == "\t":
-            pos += 1
-
-        if pos < len(line) and line[pos] in bullet_points:
-            lines[line_index] = f"{line[:pos]}\t{line[pos:]}"
-
-    return "".join(lines)
 
 
 if __name__ == "__main__":

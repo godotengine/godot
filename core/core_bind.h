@@ -124,9 +124,9 @@ protected:
 	static OS *singleton;
 
 public:
-	enum VideoDriver {
-		VIDEO_DRIVER_VULKAN,
-		VIDEO_DRIVER_OPENGL_3,
+	enum RenderingDriver {
+		RENDERING_DRIVER_VULKAN,
+		RENDERING_DRIVER_OPENGL3,
 	};
 
 	enum Weekday {
@@ -170,7 +170,8 @@ public:
 	void crash(const String &p_message);
 
 	Vector<String> get_system_fonts() const;
-	String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const;
+	String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
+	Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
 	String get_executable_path() const;
 	String read_string_from_stdin(bool p_block = true);
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
@@ -196,6 +197,8 @@ public:
 	String get_version() const;
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
+
+	Vector<String> get_video_adapter_driver_info() const;
 
 	String get_locale() const;
 	String get_locale_language() const;
@@ -485,6 +488,9 @@ public:
 	void set_physics_ticks_per_second(int p_ips);
 	int get_physics_ticks_per_second() const;
 
+	void set_max_physics_steps_per_frame(int p_max_physics_steps);
+	int get_max_physics_steps_per_frame() const;
+
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
 	double get_physics_interpolation_fraction() const;
@@ -577,7 +583,7 @@ VARIANT_ENUM_CAST(core_bind::ResourceLoader::CacheMode);
 
 VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 
-VARIANT_ENUM_CAST(core_bind::OS::VideoDriver);
+VARIANT_ENUM_CAST(core_bind::OS::RenderingDriver);
 VARIANT_ENUM_CAST(core_bind::OS::Weekday);
 VARIANT_ENUM_CAST(core_bind::OS::Month);
 VARIANT_ENUM_CAST(core_bind::OS::SystemDir);

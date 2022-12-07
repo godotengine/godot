@@ -372,6 +372,11 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				selection.drag_attempt = false;
 			}
 
+			if (pending_select_all_on_focus) {
+				select_all();
+				pending_select_all_on_focus = false;
+			}
+
 			show_virtual_keyboard();
 		}
 
@@ -763,18 +768,18 @@ void LineEdit::_notification(int p_what) {
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			window_has_focus = true;
-			draw_caret = true;
+			_validate_caret_can_draw();
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			window_has_focus = false;
-			draw_caret = false;
+			_validate_caret_can_draw();
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (caret_blinking) {
+			if (caret_blink_enabled && caret_can_draw) {
 				caret_blink_timer += get_process_delta_time();
 
 				if (caret_blink_timer >= caret_blink_interval) {
@@ -785,10 +790,6 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if ((!has_focus() && !(menu && menu->has_focus()) && !caret_force_displayed) || !window_has_focus) {
-				draw_caret = false;
-			}
-
 			int width, height;
 			bool rtl = is_layout_rtl();
 
@@ -801,7 +802,6 @@ void LineEdit::_notification(int p_what) {
 			Ref<StyleBox> style = theme_cache.normal;
 			if (!is_editable()) {
 				style = theme_cache.read_only;
-				draw_caret = false;
 			}
 			Ref<Font> font = theme_cache.font;
 
@@ -948,24 +948,37 @@ void LineEdit::_notification(int p_what) {
 
 			// Draw carets.
 			ofs.x = x_ofs + scroll_offset;
-			if (draw_caret || drag_caret_force_displayed) {
+			if ((caret_can_draw && draw_caret) || drag_caret_force_displayed) {
 				// Prevent carets from disappearing at theme scales below 1.0 (if the caret width is 1).
 				const int caret_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
 
 				if (ime_text.length() == 0) {
 					// Normal caret.
 					CaretInfo caret = TS->shaped_text_get_carets(text_rid, caret_column);
-
-					if (caret.l_caret == Rect2() && caret.t_caret == Rect2()) {
+					if (using_placeholder || (caret.l_caret == Rect2() && caret.t_caret == Rect2())) {
 						// No carets, add one at the start.
 						int h = theme_cache.font->get_height(theme_cache.font_size);
 						int y = style->get_offset().y + (y_area - h) / 2;
-						if (rtl) {
-							caret.l_dir = TextServer::DIRECTION_RTL;
-							caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
-						} else {
-							caret.l_dir = TextServer::DIRECTION_LTR;
-							caret.l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
+						caret.l_dir = (rtl) ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR;
+						switch (alignment) {
+							case HORIZONTAL_ALIGNMENT_FILL:
+							case HORIZONTAL_ALIGNMENT_LEFT: {
+								if (rtl) {
+									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
+								} else {
+									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+								}
+							} break;
+							case HORIZONTAL_ALIGNMENT_CENTER: {
+								caret.l_caret = Rect2(Vector2(size.x / 2, y), Size2(caret_width, h));
+							} break;
+							case HORIZONTAL_ALIGNMENT_RIGHT: {
+								if (rtl) {
+									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+								} else {
+									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
+								}
+							} break;
 						}
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
 					} else {
@@ -1045,14 +1058,14 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			if (!caret_force_displayed) {
-				if (caret_blink_enabled) {
-					if (!caret_blinking) {
-						caret_blinking = true;
-						caret_blink_timer = 0.0;
-					}
+			_validate_caret_can_draw();
+
+			if (select_all_on_focus) {
+				if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
+					// Select all when the mouse button is up.
+					pending_select_all_on_focus = true;
 				} else {
-					draw_caret = true;
+					select_all();
 				}
 			}
 
@@ -1066,9 +1079,7 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
-			if (caret_blink_enabled && !caret_force_displayed) {
-				caret_blinking = false;
-			}
+			_validate_caret_can_draw();
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
@@ -1374,21 +1385,18 @@ bool LineEdit::is_caret_blink_enabled() const {
 }
 
 void LineEdit::set_caret_blink_enabled(const bool p_enabled) {
+	if (caret_blink_enabled == p_enabled) {
+		return;
+	}
+
 	caret_blink_enabled = p_enabled;
 	set_process_internal(p_enabled);
 
-	if (has_focus() || caret_force_displayed) {
-		if (p_enabled) {
-			if (!caret_blinking) {
-				caret_blinking = true;
-				caret_blink_timer = 0.0;
-			}
-		} else {
-			caret_blinking = false;
-		}
+	draw_caret = !caret_blink_enabled;
+	if (caret_blink_enabled) {
+		caret_blink_timer = 0.0;
 	}
-
-	draw_caret = true;
+	queue_redraw();
 
 	notify_property_list_changed();
 }
@@ -1398,8 +1406,13 @@ bool LineEdit::is_caret_force_displayed() const {
 }
 
 void LineEdit::set_caret_force_displayed(const bool p_enabled) {
+	if (caret_force_displayed == p_enabled) {
+		return;
+	}
+
 	caret_force_displayed = p_enabled;
-	set_caret_blink_enabled(caret_blink_enabled);
+	_validate_caret_can_draw();
+
 	queue_redraw();
 }
 
@@ -1415,7 +1428,7 @@ void LineEdit::set_caret_blink_interval(const float p_interval) {
 void LineEdit::_reset_caret_blink_timer() {
 	if (caret_blink_enabled) {
 		draw_caret = true;
-		if (has_focus()) {
+		if (caret_can_draw) {
 			caret_blink_timer = 0.0;
 			queue_redraw();
 		}
@@ -1424,9 +1437,17 @@ void LineEdit::_reset_caret_blink_timer() {
 
 void LineEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible_in_tree() && ((has_focus() && window_has_focus) || caret_force_displayed)) {
+	if (is_visible_in_tree() && caret_can_draw) {
 		queue_redraw();
 	}
+}
+
+void LineEdit::_validate_caret_can_draw() {
+	if (caret_blink_enabled) {
+		draw_caret = true;
+		caret_blink_timer = 0.0;
+	}
+	caret_can_draw = editable && (window_has_focus || (menu && menu->has_focus())) && (has_focus() || caret_force_displayed);
 }
 
 void LineEdit::delete_char() {
@@ -1819,6 +1840,7 @@ void LineEdit::set_editable(bool p_editable) {
 	}
 
 	editable = p_editable;
+	_validate_caret_can_draw();
 
 	update_minimum_size();
 	queue_redraw();
@@ -2164,6 +2186,18 @@ bool LineEdit::is_flat() const {
 	return flat;
 }
 
+void LineEdit::set_select_all_on_focus(bool p_enabled) {
+	select_all_on_focus = p_enabled;
+}
+
+bool LineEdit::is_select_all_on_focus() const {
+	return select_all_on_focus;
+}
+
+void LineEdit::clear_pending_select_all_on_focus() {
+	pending_select_all_on_focus = false;
+}
+
 void LineEdit::_text_changed() {
 	_emit_text_change();
 	_clear_redo();
@@ -2175,6 +2209,12 @@ void LineEdit::_emit_text_change() {
 }
 
 void LineEdit::_shape() {
+	const Ref<Font> &font = theme_cache.font;
+	int font_size = theme_cache.font_size;
+	if (font.is_null()) {
+		return;
+	}
+
 	Size2 old_size = TS->shaped_text_get_size(text_rid);
 	TS->shaped_text_clear(text_rid);
 
@@ -2197,9 +2237,6 @@ void LineEdit::_shape() {
 	}
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
-	const Ref<Font> &font = theme_cache.font;
-	int font_size = theme_cache.font_size;
-	ERR_FAIL_COND(font.is_null());
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
@@ -2364,6 +2401,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &LineEdit::is_flat);
+	ClassDB::bind_method(D_METHOD("set_select_all_on_focus", "enabled"), &LineEdit::set_select_all_on_focus);
+	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &LineEdit::is_select_all_on_focus);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
@@ -2427,6 +2466,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
@@ -2478,6 +2518,8 @@ void LineEdit::_ensure_menu() {
 		menu->add_child(menu_ctl, false, INTERNAL_MODE_FRONT);
 
 		menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+		menu->connect(SNAME("focus_entered"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+		menu->connect(SNAME("focus_exited"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
 		menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 		menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 	}

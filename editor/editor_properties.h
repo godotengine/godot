@@ -31,15 +31,19 @@
 #ifndef EDITOR_PROPERTIES_H
 #define EDITOR_PROPERTIES_H
 
-#include "editor/create_dialog.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_locale_dialog.h"
-#include "editor/editor_resource_picker.h"
-#include "editor/editor_spin_slider.h"
-#include "editor/property_selector.h"
-#include "editor/scene_tree_editor.h"
-#include "scene/gui/color_picker.h"
-#include "scene/gui/line_edit.h"
+
+class CheckBox;
+class ColorPickerButton;
+class CreateDialog;
+class EditorFileDialog;
+class EditorLocaleDialog;
+class EditorResourcePicker;
+class EditorSpinSlider;
+class PropertySelector;
+class SceneTreeDialog;
+class TextEdit;
+class TextureButton;
 
 class EditorPropertyNil : public EditorProperty {
 	GDCLASS(EditorPropertyNil, EditorProperty);
@@ -357,6 +361,7 @@ protected:
 public:
 	void setup(LayerType p_layer_type);
 	void set_layer_name(int p_index, const String &p_name);
+	String get_layer_name(int p_index) const;
 	virtual void update_property() override;
 	EditorPropertyLayers();
 };
@@ -638,7 +643,7 @@ class EditorPropertyQuaternion : public EditorProperty {
 	EditorSpinSlider *euler[3];
 	Button *edit_button = nullptr;
 
-	Vector3 edit_euler = Vector3();
+	Vector3 edit_euler;
 
 	void _value_changed(double p_val, const String &p_name);
 	void _edit_custom_value();

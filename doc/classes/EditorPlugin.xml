@@ -100,7 +100,8 @@
 			<param index="0" name="viewport_camera" type="Camera3D" />
 			<param index="1" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 3D viewport. The return value decides whether the [InputEvent] is consumed or forwarded to other [EditorPlugin]s. See [enum AfterGUIInput] for options. Example:
+				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 3D viewport. The return value decides whether the [InputEvent] is consumed or forwarded to other [EditorPlugin]s. See [enum AfterGUIInput] for options.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent from reaching other Editor classes.
@@ -115,7 +116,8 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return EditorPlugin.AFTER_GUI_INPUT_PASS[/code] in order to forward the [InputEvent] to other Editor classes. Example:
+				Must [code]return EditorPlugin.AFTER_GUI_INPUT_PASS[/code] in order to forward the [InputEvent] to other Editor classes.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
@@ -182,7 +184,8 @@
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes. Example:
+				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent from reaching other Editor classes.
@@ -197,7 +200,8 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
+				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes.
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
@@ -411,7 +415,7 @@
 		</method>
 		<method name="add_debugger_plugin">
 			<return type="void" />
-			<param index="0" name="script" type="Script" />
+			<param index="0" name="script" type="EditorDebuggerPlugin" />
 			<description>
 				Adds a [Script] as debugger plugin to the Debugger. The script must extend [EditorDebuggerPlugin].
 			</description>
@@ -595,7 +599,7 @@
 		</method>
 		<method name="remove_debugger_plugin">
 			<return type="void" />
-			<param index="0" name="script" type="Script" />
+			<param index="0" name="script" type="EditorDebuggerPlugin" />
 			<description>
 				Removes the debugger plugin with given script from the Debugger.
 			</description>
@@ -691,11 +695,13 @@
 		</signal>
 		<signal name="project_settings_changed">
 			<description>
+				Emitted when any project setting has changed.
 			</description>
 		</signal>
 		<signal name="resource_saved">
 			<param index="0" name="resource" type="Resource" />
 			<description>
+				Emitted when the given [param resource] was saved on disc.
 			</description>
 		</signal>
 		<signal name="scene_changed">
@@ -713,44 +719,64 @@
 	</signals>
 	<constants>
 		<constant name="CONTAINER_TOOLBAR" value="0" enum="CustomControlContainer">
+			Main editor toolbar, next to play buttons.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_MENU" value="1" enum="CustomControlContainer">
+			The toolbar that appears when 3D editor is active.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE_LEFT" value="2" enum="CustomControlContainer">
+			Left sidebar of the 3D editor.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT" value="3" enum="CustomControlContainer">
+			Right sidebar of the 3D editor.
 		</constant>
 		<constant name="CONTAINER_SPATIAL_EDITOR_BOTTOM" value="4" enum="CustomControlContainer">
+			Bottom panel of the 3D editor.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_MENU" value="5" enum="CustomControlContainer">
+			The toolbar that appears when 2D editor is active.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_SIDE_LEFT" value="6" enum="CustomControlContainer">
+			Left sidebar of the 2D editor.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_SIDE_RIGHT" value="7" enum="CustomControlContainer">
+			Right sidebar of the 2D editor.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_BOTTOM" value="8" enum="CustomControlContainer">
+			Bottom panel of the 2D editor.
 		</constant>
 		<constant name="CONTAINER_INSPECTOR_BOTTOM" value="9" enum="CustomControlContainer">
+			Bottom section of the inspector.
 		</constant>
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_LEFT" value="10" enum="CustomControlContainer">
+			Tab of Project Settings dialog, to the left of other tabs.
 		</constant>
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_RIGHT" value="11" enum="CustomControlContainer">
+			Tab of Project Settings dialog, to the right of other tabs.
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
+			Dock slot, left side, upper-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_BL" value="1" enum="DockSlot">
+			Dock slot, left side, bottom-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_UR" value="2" enum="DockSlot">
+			Dock slot, left side, upper-right (in default layout includes Scene and Import docks).
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_BR" value="3" enum="DockSlot">
+			Dock slot, left side, bottom-right (in default layout includes FileSystem dock).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UL" value="4" enum="DockSlot">
+			Dock slot, right side, upper-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BL" value="5" enum="DockSlot">
+			Dock slot, right side, bottom-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UR" value="6" enum="DockSlot">
+			Dock slot, right side, upper-right (in default layout includes Inspector, Node and History docks).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
+			Dock slot, right side, bottom-right (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_MAX" value="8" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.

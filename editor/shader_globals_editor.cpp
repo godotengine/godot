@@ -69,28 +69,12 @@ static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
 class ShaderGlobalsEditorInterface : public Object {
 	GDCLASS(ShaderGlobalsEditorInterface, Object)
 
-	void _var_changed() {
-		emit_signal(SNAME("var_changed"));
-	}
-
-protected:
-	static void _bind_methods() {
-		ClassDB::bind_method("_var_changed", &ShaderGlobalsEditorInterface::_var_changed);
-		ADD_SIGNAL(MethodInfo("var_changed"));
-	}
-
-	bool _set(const StringName &p_name, const Variant &p_value) {
-		Variant existing = RS::get_singleton()->global_shader_parameter_get(p_name);
-
-		if (existing.get_type() == Variant::NIL) {
-			return false;
-		}
-
-		Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
+	void _set_var(const StringName &p_name, const Variant &p_value, const Variant &p_prev_value) {
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 
 		undo_redo->create_action(TTR("Set Shader Global Variable"));
 		undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_value);
-		undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_set", p_name, existing);
+		undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_prev_value);
 		RS::GlobalShaderParameterType type = RS::get_singleton()->global_shader_parameter_get_type(p_name);
 		Dictionary gv;
 		gv["type"] = global_var_type_names[type];
@@ -107,12 +91,33 @@ protected:
 
 		String path = "shader_globals/" + String(p_name);
 		undo_redo->add_do_property(ProjectSettings::get_singleton(), path, gv);
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), path, ProjectSettings::get_singleton()->get(path));
+		undo_redo->add_undo_property(ProjectSettings::get_singleton(), path, GLOBAL_GET(path));
 		undo_redo->add_do_method(this, "_var_changed");
 		undo_redo->add_undo_method(this, "_var_changed");
 		block_update = true;
 		undo_redo->commit_action();
 		block_update = false;
+	}
+
+	void _var_changed() {
+		emit_signal(SNAME("var_changed"));
+	}
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method("_set_var", &ShaderGlobalsEditorInterface::_set_var);
+		ClassDB::bind_method("_var_changed", &ShaderGlobalsEditorInterface::_var_changed);
+		ADD_SIGNAL(MethodInfo("var_changed"));
+	}
+
+	bool _set(const StringName &p_name, const Variant &p_value) {
+		Variant existing = RS::get_singleton()->global_shader_parameter_get(p_name);
+
+		if (existing.get_type() == Variant::NIL) {
+			return false;
+		}
+
+		call_deferred("_set_var", p_name, p_value, existing);
 
 		return true;
 	}
@@ -394,7 +399,7 @@ void ShaderGlobalsEditor::_variable_added() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	Variant value = create_var(RS::GlobalShaderParameterType(variable_type->get_selected()));
 
@@ -413,14 +418,14 @@ void ShaderGlobalsEditor::_variable_added() {
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
-	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	undo_redo->create_action(TTR("Add Shader Global Parameter"));
 	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_remove", p_variable);
 	undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_add", p_variable, RS::get_singleton()->global_shader_parameter_get_type(p_variable), RS::get_singleton()->global_shader_parameter_get(p_variable));
 
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "shader_globals/" + p_variable, Variant());
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "shader_globals/" + p_variable, ProjectSettings::get_singleton()->get("shader_globals/" + p_variable));
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "shader_globals/" + p_variable, GLOBAL_GET("shader_globals/" + p_variable));
 	undo_redo->add_do_method(this, "_changed");
 	undo_redo->add_undo_method(this, "_changed");
 	undo_redo->commit_action();

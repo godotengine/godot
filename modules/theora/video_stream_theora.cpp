@@ -336,9 +336,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		size.x = w;
 		size.y = h;
 
-		Ref<Image> img;
-		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGBA8);
+		Ref<Image> img = Image::create_empty(w, h, false, Image::FORMAT_RGBA8);
 		texture->set_image(img);
 
 	} else {
@@ -551,7 +549,7 @@ void VideoStreamPlaybackTheora::play() {
 	}
 
 	playing = true;
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video/video_delay_compensation_ms");
+	delay_compensation = GLOBAL_GET("audio/video/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 }
 

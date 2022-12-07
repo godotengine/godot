@@ -64,7 +64,7 @@ TEST_CASE("[Geometry2D] Point in triangle") {
 
 	// This tests points on the edge of the triangle. They are treated as being outside the triangle.
 	// In `is_point_in_circle` and `is_point_in_polygon` they are treated as being inside, so in order the make
-	// the behaviour consistent this may change in the future (see issue #44717 and PR #44274).
+	// the behavior consistent this may change in the future (see issue #44717 and PR #44274).
 	CHECK_FALSE(Geometry2D::is_point_in_triangle(Vector2(1, 1), Vector2(-1, 1), Vector2(0, -1), Vector2(1, 1)));
 	CHECK_FALSE(Geometry2D::is_point_in_triangle(Vector2(0, 1), Vector2(-1, 1), Vector2(0, -1), Vector2(1, 1)));
 }
@@ -171,43 +171,43 @@ TEST_CASE("[Geometry2D] Segment intersection with circle") {
 	real_t one = 1.0;
 
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(0, 0), Vector2(4, 0), Vector2(0, 0), 1.0), one_quarter),
+			Geometry2D::segment_intersects_circle(Vector2(0, 0), Vector2(4, 0), Vector2(0, 0), 1.0) == doctest::Approx(one_quarter),
 			"Segment from inside to outside of circle should intersect it.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(4, 0), Vector2(0, 0), Vector2(0, 0), 1.0), three_quarters),
+			Geometry2D::segment_intersects_circle(Vector2(4, 0), Vector2(0, 0), Vector2(0, 0), 1.0) == doctest::Approx(three_quarters),
 			"Segment from outside to inside of circle should intersect it.");
 
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(-2, 0), Vector2(2, 0), Vector2(0, 0), 1.0), one_quarter),
+			Geometry2D::segment_intersects_circle(Vector2(-2, 0), Vector2(2, 0), Vector2(0, 0), 1.0) == doctest::Approx(one_quarter),
 			"Segment running through circle should intersect it.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(2, 0), Vector2(-2, 0), Vector2(0, 0), 1.0), one_quarter),
+			Geometry2D::segment_intersects_circle(Vector2(2, 0), Vector2(-2, 0), Vector2(0, 0), 1.0) == doctest::Approx(one_quarter),
 			"Segment running through circle should intersect it.");
 
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(0, 0), Vector2(1, 0), Vector2(0, 0), 1.0), one),
+			Geometry2D::segment_intersects_circle(Vector2(0, 0), Vector2(1, 0), Vector2(0, 0), 1.0) == doctest::Approx(one),
 			"Segment starting inside the circle and ending on the circle should intersect it");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(1, 0), Vector2(0, 0), Vector2(0, 0), 1.0), zero),
+			Geometry2D::segment_intersects_circle(Vector2(1, 0), Vector2(0, 0), Vector2(0, 0), 1.0) == doctest::Approx(zero),
 			"Segment starting on the circle and going inwards should intersect it");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(1, 0), Vector2(2, 0), Vector2(0, 0), 1.0), zero),
+			Geometry2D::segment_intersects_circle(Vector2(1, 0), Vector2(2, 0), Vector2(0, 0), 1.0) == doctest::Approx(zero),
 			"Segment starting on the circle and going outwards should intersect it");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(2, 0), Vector2(1, 0), Vector2(0, 0), 1.0), one),
+			Geometry2D::segment_intersects_circle(Vector2(2, 0), Vector2(1, 0), Vector2(0, 0), 1.0) == doctest::Approx(one),
 			"Segment starting outside the circle and ending on the circle intersect it");
 
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(-1, 0), Vector2(1, 0), Vector2(0, 0), 2.0), minus_one),
+			Geometry2D::segment_intersects_circle(Vector2(-1, 0), Vector2(1, 0), Vector2(0, 0), 2.0) == doctest::Approx(minus_one),
 			"Segment completely within the circle should not intersect it");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(1, 0), Vector2(-1, 0), Vector2(0, 0), 2.0), minus_one),
+			Geometry2D::segment_intersects_circle(Vector2(1, 0), Vector2(-1, 0), Vector2(0, 0), 2.0) == doctest::Approx(minus_one),
 			"Segment completely within the circle should not intersect it");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(2, 0), Vector2(3, 0), Vector2(0, 0), 1.0), minus_one),
+			Geometry2D::segment_intersects_circle(Vector2(2, 0), Vector2(3, 0), Vector2(0, 0), 1.0) == doctest::Approx(minus_one),
 			"Segment completely outside the circle should not intersect it");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(3, 0), Vector2(2, 0), Vector2(0, 0), 1.0), minus_one),
+			Geometry2D::segment_intersects_circle(Vector2(3, 0), Vector2(2, 0), Vector2(0, 0), 1.0) == doctest::Approx(minus_one),
 			"Segment completely outside the circle should not intersect it");
 }
 

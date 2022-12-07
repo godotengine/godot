@@ -63,6 +63,8 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_font_name"), &Font::get_font_name);
 	ClassDB::bind_method(D_METHOD("get_font_style_name"), &Font::get_font_style_name);
 	ClassDB::bind_method(D_METHOD("get_font_style"), &Font::get_font_style);
+	ClassDB::bind_method(D_METHOD("get_font_weight"), &Font::get_font_weight);
+	ClassDB::bind_method(D_METHOD("get_font_stretch"), &Font::get_font_stretch);
 
 	ClassDB::bind_method(D_METHOD("get_spacing", "spacing"), &Font::get_spacing);
 	ClassDB::bind_method(D_METHOD("get_opentype_features"), &Font::get_opentype_features);
@@ -247,6 +249,14 @@ String Font::get_font_style_name() const {
 
 BitField<TextServer::FontStyle> Font::get_font_style() const {
 	return TS->font_get_style(_get_rid());
+}
+
+int Font::get_font_weight() const {
+	return TS->font_get_weight(_get_rid());
+}
+
+int Font::get_font_stretch() const {
+	return TS->font_get_stretch(_get_rid());
 }
 
 Dictionary Font::get_opentype_features() const {
@@ -590,6 +600,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index) const {
 		TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
 		TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
 		TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
+		TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
 		TS->font_set_hinting(cache[p_cache_index], hinting);
 		TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
 		TS->font_set_oversampling(cache[p_cache_index], oversampling);
@@ -881,6 +892,8 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font_name", "name"), &FontFile::set_font_name);
 	ClassDB::bind_method(D_METHOD("set_font_style_name", "name"), &FontFile::set_font_style_name);
 	ClassDB::bind_method(D_METHOD("set_font_style", "style"), &FontFile::set_font_style);
+	ClassDB::bind_method(D_METHOD("set_font_weight", "weight"), &FontFile::set_font_weight);
+	ClassDB::bind_method(D_METHOD("set_font_stretch", "stretch"), &FontFile::set_font_stretch);
 
 	ClassDB::bind_method(D_METHOD("set_antialiasing", "antialiasing"), &FontFile::set_antialiasing);
 	ClassDB::bind_method(D_METHOD("get_antialiasing"), &FontFile::get_antialiasing);
@@ -899,6 +912,9 @@ void FontFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_fixed_size", "fixed_size"), &FontFile::set_fixed_size);
 	ClassDB::bind_method(D_METHOD("get_fixed_size"), &FontFile::get_fixed_size);
+
+	ClassDB::bind_method(D_METHOD("set_allow_system_fallback", "allow_system_fallback"), &FontFile::set_allow_system_fallback);
+	ClassDB::bind_method(D_METHOD("is_allow_system_fallback"), &FontFile::is_allow_system_fallback);
 
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &FontFile::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &FontFile::is_force_autohinter);
@@ -1003,20 +1019,24 @@ void FontFile::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD sub-pixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_name", "get_font_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style_name", "get_font_style_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_FLAGS, "Bold,Italic,Fixed Size", PROPERTY_USAGE_STORAGE), "set_font_style", "get_font_style");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_STORAGE), "set_subpixel_positioning", "get_subpixel_positioning");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_weight", PROPERTY_HINT_RANGE, "100,999,25", PROPERTY_USAGE_STORAGE), "set_font_weight", "get_font_weight");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_stretch", PROPERTY_HINT_RANGE, "50,200,25", PROPERTY_USAGE_STORAGE), "set_font_stretch", "get_font_stretch");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel", PROPERTY_USAGE_STORAGE), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_size", "get_msdf_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_STORAGE), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size", "get_fixed_size");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_opentype_feature_overrides", "get_opentype_feature_overrides");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Font"), PROPERTY_USAGE_STORAGE), "set_fallbacks", "get_fallbacks");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font"), PROPERTY_USAGE_STORAGE), "set_fallbacks", "get_fallbacks");
 }
 
 bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
@@ -1329,6 +1349,7 @@ void FontFile::reset_state() {
 	mipmaps = false;
 	msdf = false;
 	force_autohinter = false;
+	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	msdf_pixel_range = 14;
@@ -1341,6 +1362,19 @@ void FontFile::reset_state() {
 
 /*************************************************************************/
 
+// OEM encoding mapping for 0x80..0xFF range.
+static const char32_t _oem_to_unicode[][129] = {
+	U"\u20ac\ufffe\u201a\ufffe\u201e\u2026\u2020\u2021\ufffe\u2030\u0160\u2039\u015a\u0164\u017d\u0179\ufffe\u2018\u2019\u201c\u201d\u2022\u2013\u2014\ufffe\u2122\u0161\u203a\u015b\u0165\u017e\u017a\xa0\u02c7\u02d8\u0141\xa4\u0104\xa6\xa7\xa8\xa9\u015e\xab\xac\xad\xae\u017b\xb0\xb1\u02db\u0142\xb4\xb5\xb6\xb7\xb8\u0105\u015f\xbb\u013d\u02dd\u013e\u017c\u0154\xc1\xc2\u0102\xc4\u0139\u0106\xc7\u010c\xc9\u0118\xcb\u011a\xcd\xce\u010e\u0110\u0143\u0147\xd3\xd4\u0150\xd6\xd7\u0158\u016e\xda\u0170\xdc\xdd\u0162\xdf\u0155\xe1\xe2\u0103\xe4\u013a\u0107\xe7\u010d\xe9\u0119\xeb\u011b\xed\xee\u010f\u0111\u0144\u0148\xf3\xf4\u0151\xf6\xf7\u0159\u016f\xfa\u0171\xfc\xfd\u0163\u02d9", // 1250 - Latin 2
+	U"\u0402\u0403\u201a\u0453\u201e\u2026\u2020\u2021\u20ac\u2030\u0409\u2039\u040a\u040c\u040b\u040f\u0452\u2018\u2019\u201c\u201d\u2022\u2013\u2014\ufffe\u2122\u0459\u203a\u045a\u045c\u045b\u045f\xa0\u040e\u045e\u0408\xa4\u0490\xa6\xa7\u0401\xa9\u0404\xab\xac\xad\xae\u0407\xb0\xb1\u0406\u0456\u0491\xb5\xb6\xb7\u0451\u2116\u0454\xbb\u0458\u0405\u0455\u0457\u0410\u0411\u0412\u0413\u0414\u0415\u0416\u0417\u0418\u0419\u041a\u041b\u041c\u041d\u041e\u041f\u0420\u0421\u0422\u0423\u0424\u0425\u0426\u0427\u0428\u0429\u042a\u042b\u042c\u042d\u042e\u042f\u0430\u0431\u0432\u0433\u0434\u0435\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f", // 1251 - Cyrillic
+	U"\u20ac\ufffe\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0160\u2039\u0152\ufffe\u017d\ufffe\ufffe\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u02dc\u2122\u0161\u203a\u0153\ufffe\u017e\u0178\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff", // 1252 - Latin 1
+	U"\u20ac\ufffe\u201a\u0192\u201e\u2026\u2020\u2021\ufffe\u2030\ufffe\u2039\ufffe\ufffe\ufffe\ufffe\ufffe\u2018\u2019\u201c\u201d\u2022\u2013\u2014\ufffe\u2122\ufffe\u203a\ufffe\ufffe\ufffe\ufffe\xa0\u0385\u0386\xa3\xa4\xa5\xa6\xa7\xa8\xa9\ufffe\xab\xac\xad\xae\u2015\xb0\xb1\xb2\xb3\u0384\xb5\xb6\xb7\u0388\u0389\u038a\xbb\u038c\xbd\u038e\u038f\u0390\u0391\u0392\u0393\u0394\u0395\u0396\u0397\u0398\u0399\u039a\u039b\u039c\u039d\u039e\u039f\u03a0\u03a1\ufffe\u03a3\u03a4\u03a5\u03a6\u03a7\u03a8\u03a9\u03aa\u03ab\u03ac\u03ad\u03ae\u03af\u03b0\u03b1\u03b2\u03b3\u03b4\u03b5\u03b6\u03b7\u03b8\u03b9\u03ba\u03bb\u03bc\u03bd\u03be\u03bf\u03c0\u03c1\u03c2\u03c3\u03c4\u03c5\u03c6\u03c7\u03c8\u03c9\u03ca\u03cb\u03cc\u03cd\u03ce\ufffe", // 1253 - Greek
+	U"\u20ac\ufffe\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0160\u2039\u0152\ufffe\ufffe\ufffe\ufffe\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u02dc\u2122\u0161\u203a\u0153\ufffe\ufffe\u0178\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\u011e\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\u0130\u015e\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\u011f\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\u0131\u015f\xff", // 1254 - Turkish
+	U"\u20ac\ufffe\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\ufffe\u2039\ufffe\ufffe\ufffe\ufffe\ufffe\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u02dc\u2122\ufffe\u203a\ufffe\ufffe\ufffe\ufffe\xa0\xa1\xa2\xa3\u20aa\xa5\xa6\xa7\xa8\xa9\xd7\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xf7\xbb\xbc\xbd\xbe\xbf\u05b0\u05b1\u05b2\u05b3\u05b4\u05b5\u05b6\u05b7\u05b8\u05b9\ufffe\u05bb\u05bc\u05bd\u05be\u05bf\u05c0\u05c1\u05c2\u05c3\u05f0\u05f1\u05f2\u05f3\u05f4\ufffe\ufffe\ufffe\ufffe\ufffe\ufffe\ufffe\u05d0\u05d1\u05d2\u05d3\u05d4\u05d5\u05d6\u05d7\u05d8\u05d9\u05da\u05db\u05dc\u05dd\u05de\u05df\u05e0\u05e1\u05e2\u05e3\u05e4\u05e5\u05e6\u05e7\u05e8\u05e9\u05ea\ufffe\ufffe\u200e\u200f\ufffe", // 1255 - Hebrew
+	U"\u20ac\u067e\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0679\u2039\u0152\u0686\u0698\u0688\u06af\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u06a9\u2122\u0691\u203a\u0153\u200c\u200d\u06ba\xa0\u060c\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\u06be\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\u061b\xbb\xbc\xbd\xbe\u061f\u06c1\u0621\u0622\u0623\u0624\u0625\u0626\u0627\u0628\u0629\u062a\u062b\u062c\u062d\u062e\u062f\u0630\u0631\u0632\u0633\u0634\u0635\u0636\xd7\u0637\u0638\u0639\u063a\u0640\u0641\u0642\u0643\xe0\u0644\xe2\u0645\u0646\u0647\u0648\xe7\xe8\xe9\xea\xeb\u0649\u064a\xee\xef\u064b\u064c\u064d\u064e\xf4\u064f\u0650\xf7\u0651\xf9\u0652\xfb\xfc\u200e\u200f\u06d2", // 1256 - Arabic
+	U"\u20ac\ufffe\u201a\ufffe\u201e\u2026\u2020\u2021\ufffe\u2030\ufffe\u2039\ufffe\xa8\u02c7\xb8\ufffe\u2018\u2019\u201c\u201d\u2022\u2013\u2014\ufffe\u2122\ufffe\u203a\ufffe\xaf\u02db\ufffe\xa0\ufffe\xa2\xa3\xa4\ufffe\xa6\xa7\xd8\xa9\u0156\xab\xac\xad\xae\xc6\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xf8\xb9\u0157\xbb\xbc\xbd\xbe\xe6\u0104\u012e\u0100\u0106\xc4\xc5\u0118\u0112\u010c\xc9\u0179\u0116\u0122\u0136\u012a\u013b\u0160\u0143\u0145\xd3\u014c\xd5\xd6\xd7\u0172\u0141\u015a\u016a\xdc\u017b\u017d\xdf\u0105\u012f\u0101\u0107\xe4\xe5\u0119\u0113\u010d\xe9\u017a\u0117\u0123\u0137\u012b\u013c\u0161\u0144\u0146\xf3\u014d\xf5\xf6\xf7\u0173\u0142\u015b\u016b\xfc\u017c\u017e\u02d9", // 1257 - Baltic
+	U"\u20ac\ufffe\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\ufffe\u2039\u0152\ufffe\ufffe\ufffe\ufffe\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u02dc\u2122\ufffe\u203a\u0153\ufffe\ufffe\u0178\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\u0102\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\u0300\xcd\xce\xcf\u0110\xd1\u0309\xd3\xd4\u01a0\xd6\xd7\xd8\xd9\xda\xdb\xdc\u01af\u0303\xdf\xe0\xe1\xe2\u0103\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\u0301\xed\xee\xef\u0111\xf1\u0323\xf3\xf4\u01a1\xf6\xf7\xf8\xf9\xfa\xfb\xfc\u01b0\u20ab\xff", // 1258 - Vietnamese
+};
+
 Error FontFile::load_bitmap_font(const String &p_path) {
 	reset_state();
 
@@ -1348,6 +1382,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 	mipmaps = false;
 	msdf = false;
 	force_autohinter = false;
+	allow_system_fallback = true;
 	hinting = TextServer::HINTING_NONE;
 	oversampling = 1.0f;
 
@@ -1371,25 +1406,64 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 	f->get_buffer((unsigned char *)&magic, 4);
 	if (magic[0] == 'B' && magic[1] == 'M' && magic[2] == 'F') {
 		// Binary BMFont file.
-		ERR_FAIL_COND_V_MSG(magic[3] != 3, ERR_CANT_CREATE, vformat(RTR("Version %d of BMFont is not supported."), (int)magic[3]));
+		ERR_FAIL_COND_V_MSG(magic[3] != 3, ERR_CANT_CREATE, vformat(RTR("Version %d of BMFont is not supported (should be 3)."), (int)magic[3]));
 
 		uint8_t block_type = f->get_8();
 		uint32_t block_size = f->get_32();
+		bool unicode = false;
+		uint8_t encoding = 9;
 		while (!f->eof_reached()) {
 			uint64_t off = f->get_position();
 			switch (block_type) {
 				case 1: /* info */ {
 					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, RTR("Invalid BMFont info block size."));
 					base_size = f->get_16();
+					if (base_size <= 0) {
+						base_size = 16;
+					}
 					uint8_t flags = f->get_8();
-					ERR_FAIL_COND_V_MSG(flags & 0x02, ERR_CANT_CREATE, RTR("Non-unicode version of BMFont is not supported."));
 					if (flags & (1 << 3)) {
 						st_flags.set_flag(TextServer::FONT_BOLD);
 					}
 					if (flags & (1 << 2)) {
 						st_flags.set_flag(TextServer::FONT_ITALIC);
 					}
-					f->get_8(); // non-unicode charset, skip
+					unicode = (flags & 0x02);
+					uint8_t encoding_id = f->get_8(); // non-unicode charset
+					if (!unicode) {
+						switch (encoding_id) {
+							case 0x00: {
+								encoding = 2;
+							} break;
+							case 0xB2: {
+								encoding = 6;
+							} break;
+							case 0xBA: {
+								encoding = 7;
+							} break;
+							case 0xEE: {
+								encoding = 0;
+							} break;
+							case 0xA1: {
+								encoding = 3;
+							} break;
+							case 0xB1: {
+								encoding = 5;
+							} break;
+							case 0xCC: {
+								encoding = 1;
+							} break;
+							case 0xA2: {
+								encoding = 4;
+							} break;
+							case 0xA3: {
+								encoding = 8;
+							} break;
+							default: {
+								WARN_PRINT(vformat("Unknown BMFont OEM encoding %x, parsing as Unicode (should be 0x00 - Latin 1, 0xB2 - Arabic, 0xBA - Baltic, 0xEE - Latin 2, 0xA1 - Greek, 0xB1 - Hebrew, 0xCC - Cyrillic, 0xA2 - Turkish, 0xA3 - Vietnamese).", encoding_id));
+							} break;
+						};
+					}
 					f->get_16(); // stretch_h, skip
 					f->get_8(); // aa, skip
 					f->get_32(); // padding, skip
@@ -1492,6 +1566,14 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						Rect2 uv_rect;
 
 						char32_t idx = f->get_32();
+						if (!unicode && encoding < 9) {
+							if (idx >= 0x80 && idx <= 0xFF) {
+								idx = _oem_to_unicode[encoding][idx - 0x80];
+							} else if (idx > 0xFF) {
+								WARN_PRINT(vformat("Invalid BMFont OEM character %x (should be 0x00-0xFF).", idx));
+								idx = 0x00;
+							}
+						}
 						uv_rect.position.x = (int16_t)f->get_16();
 						uv_rect.position.y = (int16_t)f->get_16();
 						uv_rect.size.width = (int16_t)f->get_16();
@@ -1508,24 +1590,25 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						int texture_idx = f->get_8();
 						uint8_t channel = f->get_8();
 
-						ERR_FAIL_COND_V_MSG(!packed && channel != 15, ERR_CANT_CREATE, RTR("Invalid glyph channel."));
 						int ch_off = 0;
-						switch (channel) {
-							case 1:
-								ch_off = 2;
-								break; // B
-							case 2:
-								ch_off = 1;
-								break; // G
-							case 4:
-								ch_off = 0;
-								break; // R
-							case 8:
-								ch_off = 3;
-								break; // A
-							default:
-								ch_off = 0;
-								break;
+						if (packed) {
+							switch (channel) {
+								case 1:
+									ch_off = 2;
+									break; // B
+								case 2:
+									ch_off = 1;
+									break; // G
+								case 4:
+									ch_off = 0;
+									break; // R
+								case 8:
+									ch_off = 3;
+									break; // A
+								default:
+									ch_off = 0;
+									break;
+							}
 						}
 						set_glyph_advance(0, base_size, idx, advance);
 						set_glyph_offset(0, Vector2i(base_size, 0), idx, offset);
@@ -1546,6 +1629,20 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						Vector2i kpk;
 						kpk.x = f->get_32();
 						kpk.y = f->get_32();
+						if (!unicode && encoding < 9) {
+							if (kpk.x >= 0x80 && kpk.x <= 0xFF) {
+								kpk.x = _oem_to_unicode[encoding][kpk.x - 0x80];
+							} else if (kpk.x > 0xFF) {
+								WARN_PRINT(vformat("Invalid BMFont OEM character %x (should be 0x00-0xFF).", kpk.x));
+								kpk.x = 0x00;
+							}
+							if (kpk.y >= 0x80 && kpk.y <= 0xFF) {
+								kpk.y = _oem_to_unicode[encoding][kpk.y - 0x80];
+							} else if (kpk.y > 0xFF) {
+								WARN_PRINT(vformat("Invalid BMFont OEM character %x (should be 0x00-0xFF).", kpk.y));
+								kpk.y = 0x00;
+							}
+						}
 						set_kerning(0, base_size, kpk, Vector2((int16_t)f->get_16(), 0));
 					}
 				} break;
@@ -1561,6 +1658,8 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 	} else {
 		// Text BMFont file.
 		f->seek(0);
+		bool unicode = false;
+		uint8_t encoding = 9;
 		while (true) {
 			String line = f->get_line();
 
@@ -1607,7 +1706,6 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 			if (type == "info") {
 				if (keys.has("size")) {
 					base_size = keys["size"].to_int();
-					set_fixed_size(base_size);
 				}
 				if (keys.has("outline")) {
 					outline = keys["outline"].to_int();
@@ -1625,7 +1723,38 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 				if (keys.has("face")) {
 					font_name = keys["face"];
 				}
-				ERR_FAIL_COND_V_MSG((!keys.has("unicode") || keys["unicode"].to_int() != 1), ERR_CANT_CREATE, RTR("Non-unicode version of BMFont is not supported."));
+				if (keys.has("unicode")) {
+					unicode = keys["unicode"].to_int();
+				}
+				if (!unicode) {
+					if (keys.has("charset")) {
+						String encoding_name = keys["charset"].to_upper();
+						if (encoding_name == "" || encoding_name == "ASCII" || encoding_name == "ANSI") {
+							encoding = 2;
+						} else if (encoding_name == "ARABIC") {
+							encoding = 6;
+						} else if (encoding_name == "BALTIC") {
+							encoding = 7;
+						} else if (encoding_name == "EASTEUROPE") {
+							encoding = 0;
+						} else if (encoding_name == "GREEK") {
+							encoding = 3;
+						} else if (encoding_name == "HEBREW") {
+							encoding = 5;
+						} else if (encoding_name == "RUSSIAN") {
+							encoding = 1;
+						} else if (encoding_name == "TURKISH") {
+							encoding = 4;
+						} else if (encoding_name == "VIETNAMESE") {
+							encoding = 8;
+						} else {
+							WARN_PRINT(vformat("Unknown BMFont OEM encoding %s, parsing as Unicode (should be ANSI, ASCII, ARABIC, BALTIC, EASTEUROPE, GREEK, HEBREW, RUSSIAN, TURKISH or VIETNAMESE).", encoding_name));
+						}
+					} else {
+						encoding = 2;
+					}
+				}
+				set_fixed_size(base_size);
 			} else if (type == "common") {
 				if (keys.has("lineHeight")) {
 					height = keys["lineHeight"].to_int();
@@ -1684,7 +1813,10 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 								ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
 							}
 						} else {
-							if ((ch[0] == 0) && (ch[1] == 0) && (ch[2] == 0) && (ch[3] == 0)) { // RGBA8 color, no outline
+							if ((ch[3] == 0) && (ch[0] == 4) && (ch[1] == 4) && (ch[2] == 4) && img->get_format() == Image::FORMAT_RGBA8) { // might be RGBA8 color, no outline (color part of the image should be sold white, but some apps designed for Godot 3 generate color fonts with this config)
+								outline = 0;
+								set_texture_image(0, Vector2i(base_size, 0), page, img);
+							} else if ((ch[0] == 0) && (ch[1] == 0) && (ch[2] == 0) && (ch[3] == 0)) { // RGBA8 color, no outline
 								outline = 0;
 								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 								set_texture_image(0, Vector2i(base_size, 0), page, img);
@@ -1719,6 +1851,14 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 
 				if (keys.has("id")) {
 					idx = keys["id"].to_int();
+					if (!unicode && encoding < 9) {
+						if (idx >= 0x80 && idx <= 0xFF) {
+							idx = _oem_to_unicode[encoding][idx - 0x80];
+						} else if (idx > 0xFF) {
+							WARN_PRINT(vformat("Invalid BMFont OEM character %x (should be 0x00-0xFF).", idx));
+							idx = 0x00;
+						}
+					}
 				}
 				if (keys.has("x")) {
 					uv_rect.position.x = keys["x"].to_int();
@@ -1753,24 +1893,25 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 					channel = keys["chnl"].to_int();
 				}
 
-				ERR_FAIL_COND_V_MSG(!packed && channel != 15, ERR_CANT_CREATE, RTR("Invalid glyph channel."));
 				int ch_off = 0;
-				switch (channel) {
-					case 1:
-						ch_off = 2;
-						break; // B
-					case 2:
-						ch_off = 1;
-						break; // G
-					case 4:
-						ch_off = 0;
-						break; // R
-					case 8:
-						ch_off = 3;
-						break; // A
-					default:
-						ch_off = 0;
-						break;
+				if (packed) {
+					switch (channel) {
+						case 1:
+							ch_off = 2;
+							break; // B
+						case 2:
+							ch_off = 1;
+							break; // G
+						case 4:
+							ch_off = 0;
+							break; // R
+						case 8:
+							ch_off = 3;
+							break; // A
+						default:
+							ch_off = 0;
+							break;
+					}
 				}
 				set_glyph_advance(0, base_size, idx, advance);
 				set_glyph_offset(0, Vector2i(base_size, 0), idx, offset);
@@ -1791,6 +1932,20 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 				if (keys.has("second")) {
 					kpk.y = keys["second"].to_int();
 				}
+				if (!unicode && encoding < 9) {
+					if (kpk.x >= 0x80 && kpk.x <= 0xFF) {
+						kpk.x = _oem_to_unicode[encoding][kpk.x - 0x80];
+					} else if (kpk.x > 0xFF) {
+						WARN_PRINT(vformat("Invalid BMFont OEM character %x (should be 0x00-0xFF).", kpk.x));
+						kpk.x = 0x00;
+					}
+					if (kpk.y >= 0x80 && kpk.y <= 0xFF) {
+						kpk.y = _oem_to_unicode[encoding][kpk.y - 0x80];
+					} else if (kpk.y > 0xFF) {
+						WARN_PRINT(vformat("Invalid BMFont OEM character %x (should be 0x00-0xFF).", kpk.x));
+						kpk.y = 0x00;
+					}
+				}
 				if (keys.has("amount")) {
 					set_kerning(0, base_size, kpk, Vector2(keys["amount"].to_int(), 0));
 				}
@@ -1804,6 +1959,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 
 	set_font_name(font_name);
 	set_font_style(st_flags);
+	if (st_flags & TextServer::FONT_BOLD) {
+		set_font_weight(700);
+	}
 	set_cache_ascent(0, base_size, ascent);
 	set_cache_descent(0, base_size, height - ascent);
 
@@ -1813,7 +1971,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 Error FontFile::load_dynamic_font(const String &p_path) {
 	reset_state();
 
-	Vector<uint8_t> font_data = FileAccess::get_file_as_array(p_path);
+	Vector<uint8_t> font_data = FileAccess::get_file_as_bytes(p_path);
 	set_data(font_data);
 
 	return OK;
@@ -1865,6 +2023,16 @@ void FontFile::set_font_style_name(const String &p_name) {
 void FontFile::set_font_style(BitField<TextServer::FontStyle> p_style) {
 	_ensure_rid(0);
 	TS->font_set_style(cache[0], p_style);
+}
+
+void FontFile::set_font_weight(int p_weight) {
+	_ensure_rid(0);
+	TS->font_set_weight(cache[0], p_weight);
+}
+
+void FontFile::set_font_stretch(int p_stretch) {
+	_ensure_rid(0);
+	TS->font_set_stretch(cache[0], p_stretch);
 }
 
 void FontFile::set_antialiasing(TextServer::FontAntialiasing p_antialiasing) {
@@ -1955,6 +2123,21 @@ void FontFile::set_fixed_size(int p_fixed_size) {
 
 int FontFile::get_fixed_size() const {
 	return fixed_size;
+}
+
+void FontFile::set_allow_system_fallback(bool p_allow_system_fallback) {
+	if (allow_system_fallback != p_allow_system_fallback) {
+		allow_system_fallback = p_allow_system_fallback;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_allow_system_fallback(cache[i], allow_system_fallback);
+		}
+		emit_changed();
+	}
+}
+
+bool FontFile::is_allow_system_fallback() const {
+	return allow_system_fallback;
 }
 
 void FontFile::set_force_autohinter(bool p_force_autohinter) {
@@ -2470,18 +2653,18 @@ void FontVariation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spacing", "spacing", "value"), &FontVariation::set_spacing);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_base_font", "get_base_font");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Font")), "set_fallbacks", "get_fallbacks");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 
-	ADD_GROUP("Variation", "variation");
+	ADD_GROUP("Variation", "variation_");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "variation_opentype"), "set_variation_opentype", "get_variation_opentype");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "variation_face_index"), "set_variation_face_index", "get_variation_face_index");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "variation_embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), "set_variation_embolden", "get_variation_embolden");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "variation_transform", PROPERTY_HINT_NONE, "suffix:px"), "set_variation_transform", "get_variation_transform");
 
-	ADD_GROUP("OpenType Features", "opentype");
+	ADD_GROUP("OpenType Features", "opentype_");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "opentype_features"), "set_opentype_features", "get_opentype_features");
 
-	ADD_GROUP("Extra Spacing", "spacing");
+	ADD_GROUP("Extra Spacing", "spacing_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_glyph", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_GLYPH);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_space", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_SPACE);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_top", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_TOP);
@@ -2706,6 +2889,9 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "generate_mipmaps"), &SystemFont::set_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("get_generate_mipmaps"), &SystemFont::get_generate_mipmaps);
 
+	ClassDB::bind_method(D_METHOD("set_allow_system_fallback", "allow_system_fallback"), &SystemFont::set_allow_system_fallback);
+	ClassDB::bind_method(D_METHOD("is_allow_system_fallback"), &SystemFont::is_allow_system_fallback);
+
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &SystemFont::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &SystemFont::is_force_autohinter);
 
@@ -2724,18 +2910,24 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_font_names"), &SystemFont::get_font_names);
 	ClassDB::bind_method(D_METHOD("set_font_names", "names"), &SystemFont::set_font_names);
 
-	ClassDB::bind_method(D_METHOD("set_font_style", "style"), &SystemFont::set_font_style);
+	ClassDB::bind_method(D_METHOD("get_font_italic"), &SystemFont::get_font_italic);
+	ClassDB::bind_method(D_METHOD("set_font_italic", "italic"), &SystemFont::set_font_italic);
+	ClassDB::bind_method(D_METHOD("set_font_weight", "weight"), &SystemFont::set_font_weight);
+	ClassDB::bind_method(D_METHOD("set_font_stretch", "stretch"), &SystemFont::set_font_stretch);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "font_names"), "set_font_names", "get_font_names");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_FLAGS, "Bold,Italic"), "set_font_style", "get_font_style");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD sub-pixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "font_italic"), "set_font_italic", "get_font_italic");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_weight", PROPERTY_HINT_RANGE, "100,999,25"), "set_font_weight", "get_font_weight");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_stretch", PROPERTY_HINT_RANGE, "50,200,25"), "set_font_stretch", "get_font_stretch");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "get_generate_mipmaps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback"), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field"), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), "set_oversampling", "get_oversampling");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Font")), "set_fallbacks", "get_fallbacks");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 }
 
 void SystemFont::_update_rids() const {
@@ -2766,13 +2958,14 @@ void SystemFont::_update_base_font() {
 
 	face_indeces.clear();
 	ftr_weight = 0;
+	ftr_stretch = 0;
 	ftr_italic = 0;
 	for (const String &E : names) {
 		if (E.is_empty()) {
 			continue;
 		}
 
-		String path = OS::get_singleton()->get_system_font_path(E, style & TextServer::FONT_BOLD, style & TextServer::FONT_ITALIC);
+		String path = OS::get_singleton()->get_system_font_path(E, weight, stretch, italic);
 		if (path.is_empty()) {
 			continue;
 		}
@@ -2784,9 +2977,22 @@ void SystemFont::_update_base_font() {
 		}
 
 		// If it's a font collection check all faces to match requested style.
+		int best_score = 0;
 		for (int i = 0; i < file->get_face_count(); i++) {
 			file->set_face_index(0, i);
-			if (((file->get_font_style() & TextServer::FONT_BOLD) == (style & TextServer::FONT_BOLD)) && ((file->get_font_style() & TextServer::FONT_ITALIC) == (style & TextServer::FONT_ITALIC))) {
+			BitField<TextServer::FontStyle> style = file->get_font_style();
+			int font_weight = file->get_font_weight();
+			int font_stretch = file->get_font_stretch();
+			int score = (20 - Math::abs(font_weight - weight) / 50);
+			score += (20 - Math::abs(font_stretch - stretch) / 10);
+			if (bool(style & TextServer::FONT_ITALIC) == italic) {
+				score += 30;
+			}
+			if (score > best_score) {
+				face_indeces.clear();
+			}
+			if (score >= best_score) {
+				best_score = score;
 				face_indeces.push_back(i);
 			}
 		}
@@ -2795,19 +3001,25 @@ void SystemFont::_update_base_font() {
 		}
 		file->set_face_index(0, face_indeces[0]);
 
-		// If it's a variable font, apply weight and italic coordinates to match requested style.
-		Dictionary ftr = file->get_supported_variation_list();
-		if ((style & TextServer::FONT_BOLD) && ftr.has(TS->name_to_tag("weight"))) {
-			ftr_weight = 700;
-		}
-		if ((style & TextServer::FONT_ITALIC) && ftr.has(TS->name_to_tag("italic"))) {
-			ftr_italic = 1;
+		// If it's a variable font, apply weight, stretch and italic coordinates to match requested style.
+		if (best_score != 50) {
+			Dictionary ftr = file->get_supported_variation_list();
+			if (ftr.has(TS->name_to_tag("width"))) {
+				ftr_stretch = stretch;
+			}
+			if (ftr.has(TS->name_to_tag("weight"))) {
+				ftr_weight = weight;
+			}
+			if (italic && ftr.has(TS->name_to_tag("italic"))) {
+				ftr_italic = 1;
+			}
 		}
 
 		// Apply font rendering settings.
 		file->set_antialiasing(antialiasing);
 		file->set_generate_mipmaps(mipmaps);
 		file->set_force_autohinter(force_autohinter);
+		file->set_allow_system_fallback(allow_system_fallback);
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
 		file->set_multichannel_signed_distance_field(msdf);
@@ -2840,11 +3052,15 @@ void SystemFont::reset_state() {
 	names.clear();
 	face_indeces.clear();
 	ftr_weight = 0;
+	ftr_stretch = 0;
 	ftr_italic = 0;
-	style = 0;
+	italic = false;
+	weight = 400;
+	stretch = 100;
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	mipmaps = false;
 	force_autohinter = false;
+	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	oversampling = 0.f;
@@ -2936,6 +3152,20 @@ bool SystemFont::get_generate_mipmaps() const {
 	return mipmaps;
 }
 
+void SystemFont::set_allow_system_fallback(bool p_allow_system_fallback) {
+	if (allow_system_fallback != p_allow_system_fallback) {
+		allow_system_fallback = p_allow_system_fallback;
+		if (base_font.is_valid()) {
+			base_font->set_allow_system_fallback(allow_system_fallback);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::is_allow_system_fallback() const {
+	return allow_system_fallback;
+}
+
 void SystemFont::set_force_autohinter(bool p_force_autohinter) {
 	if (force_autohinter != p_force_autohinter) {
 		force_autohinter = p_force_autohinter;
@@ -3017,15 +3247,37 @@ PackedStringArray SystemFont::get_font_names() const {
 	return names;
 }
 
-void SystemFont::set_font_style(BitField<TextServer::FontStyle> p_style) {
-	if (style != p_style) {
-		style = p_style;
+void SystemFont::set_font_italic(bool p_italic) {
+	if (italic != p_italic) {
+		italic = p_italic;
 		_update_base_font();
 	}
 }
 
-BitField<TextServer::FontStyle> SystemFont::get_font_style() const {
-	return style;
+bool SystemFont::get_font_italic() const {
+	return italic;
+}
+
+void SystemFont::set_font_weight(int p_weight) {
+	if (weight != p_weight) {
+		weight = CLAMP(p_weight, 100, 999);
+		_update_base_font();
+	}
+}
+
+int SystemFont::get_font_weight() const {
+	return weight;
+}
+
+void SystemFont::set_font_stretch(int p_stretch) {
+	if (stretch != p_stretch) {
+		stretch = CLAMP(p_stretch, 50, 200);
+		_update_base_font();
+	}
+}
+
+int SystemFont::get_font_stretch() const {
+	return stretch;
 }
 
 int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
@@ -3042,6 +3294,9 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 		Dictionary var = p_variation_coordinates;
 		if (ftr_weight > 0 && !var.has(TS->name_to_tag("weight"))) {
 			var[TS->name_to_tag("weight")] = ftr_weight;
+		}
+		if (ftr_stretch > 0 && !var.has(TS->name_to_tag("width"))) {
+			var[TS->name_to_tag("width")] = ftr_stretch;
 		}
 		if (ftr_italic > 0 && !var.has(TS->name_to_tag("italic"))) {
 			var[TS->name_to_tag("italic")] = ftr_italic;
@@ -3064,6 +3319,9 @@ RID SystemFont::_get_rid() const {
 			Dictionary var;
 			if (ftr_weight > 0) {
 				var[TS->name_to_tag("weight")] = ftr_weight;
+			}
+			if (ftr_stretch > 0) {
+				var[TS->name_to_tag("width")] = ftr_stretch;
 			}
 			if (ftr_italic > 0) {
 				var[TS->name_to_tag("italic")] = ftr_italic;

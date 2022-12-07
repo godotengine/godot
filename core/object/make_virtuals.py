@@ -16,7 +16,8 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 		}    \\
 	}\\
     if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
-        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, #m_name) : (GDNativeExtensionClassCallVirtual) nullptr;\\
+        /* TODO: C-style cast because GDNativeStringNamePtr's const qualifier is broken (see https://github.com/godotengine/godot/pull/67751) */\\
+        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, (GDNativeStringNamePtr)&_gdvirtual_##m_name##_sn) : (GDNativeExtensionClassCallVirtual) nullptr;\\
         _gdvirtual_##m_name##_initialized = true;\\
     }\\
 	if (_gdvirtual_##m_name) {\\
@@ -40,7 +41,8 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_overridden() const { \\
 	    return _script_instance->has_method(_gdvirtual_##m_name##_sn);\\
 	}\\
     if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
-        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, #m_name) : (GDNativeExtensionClassCallVirtual) nullptr;\\
+        /* TODO: C-style cast because GDNativeStringNamePtr's const qualifier is broken (see https://github.com/godotengine/godot/pull/67751) */\\
+        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, (GDNativeStringNamePtr)&_gdvirtual_##m_name##_sn) : (GDNativeExtensionClassCallVirtual) nullptr;\\
         _gdvirtual_##m_name##_initialized = true;\\
     }\\
 	if (_gdvirtual_##m_name) {\\
@@ -92,7 +94,7 @@ def generate_version(argcount, const=False, returns=False):
         argtext += ", "
         callsiargs = "Variant vargs[" + str(argcount) + "]={"
         callsiargptrs = "\t\tconst Variant *vargptrs[" + str(argcount) + "]={"
-        callptrargsptr = "\t\tconst GDNativeTypePtr argptrs[" + str(argcount) + "]={"
+        callptrargsptr = "\t\tGDNativeConstTypePtr argptrs[" + str(argcount) + "]={"
     callptrargs = ""
     for i in range(argcount):
         if i > 0:
@@ -119,7 +121,7 @@ def generate_version(argcount, const=False, returns=False):
         s = s.replace("$CALLSIARGPASS", "(const Variant **)vargptrs," + str(argcount))
         callptrargsptr += "};\\\n"
         s = s.replace("$CALLPTRARGS", callptrargs + callptrargsptr)
-        s = s.replace("$CALLPTRARGPASS", "(const GDNativeTypePtr*)argptrs")
+        s = s.replace("$CALLPTRARGPASS", "reinterpret_cast<GDNativeConstTypePtr*>(argptrs)")
     else:
         s = s.replace("$CALLSIARGS", "")
         s = s.replace("$CALLSIARGPASS", "nullptr, 0")

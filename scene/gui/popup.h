@@ -59,6 +59,7 @@ protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void _parent_focused();
 

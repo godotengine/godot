@@ -72,8 +72,8 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
-	HashMap<Ref<BaseMaterial3D>, GLTFMaterialIndex> material_cache;
-	Vector<Ref<BaseMaterial3D>> materials;
+	HashMap<Ref<Material>, GLTFMaterialIndex> material_cache;
+	Vector<Ref<Material>> materials;
 
 	String scene_name;
 	Vector<int> root_nodes;
@@ -97,6 +97,7 @@ class GLTFState : public Resource {
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
+	Dictionary additional_data;
 
 protected:
 	static void _bind_methods();
@@ -137,8 +138,8 @@ public:
 	TypedArray<GLTFMesh> get_meshes();
 	void set_meshes(TypedArray<GLTFMesh> p_meshes);
 
-	TypedArray<BaseMaterial3D> get_materials();
-	void set_materials(TypedArray<BaseMaterial3D> p_materials);
+	TypedArray<Material> get_materials();
+	void set_materials(TypedArray<Material> p_materials);
 
 	String get_scene_name();
 	void set_scene_name(String p_scene_name);
@@ -190,6 +191,9 @@ public:
 	int get_animation_players_count(int idx);
 
 	AnimationPlayer *get_animation_player(int idx);
+
+	Variant get_additional_data(const StringName &p_extension_name);
+	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 
 	//void set_scene_nodes(RBMap<GLTFNodeIndex, Node *> p_scene_nodes) {
 	//	this->scene_nodes = p_scene_nodes;

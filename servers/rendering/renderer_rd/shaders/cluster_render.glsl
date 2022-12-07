@@ -64,7 +64,7 @@ void main() {
 #version 450
 
 #VERSION_DEFINES
-
+#ifndef MOLTENVK_USED // Metal will corrupt GPU state otherwise
 #if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic) && defined(has_GL_KHR_shader_subgroup_vote)
 
 #extension GL_KHR_shader_subgroup_ballot : enable
@@ -72,6 +72,7 @@ void main() {
 #extension GL_KHR_shader_subgroup_vote : enable
 
 #define USE_SUBGROUPS
+#endif
 #endif
 
 layout(location = 0) in float depth_interp;
@@ -141,7 +142,11 @@ void main() {
 		}
 	}
 #else
-	if (!gl_HelperInvocation) {
+// MoltenVK/Metal fails to compile shaders using gl_HelperInvocation for some GPUs
+#ifndef MOLTENVK_USED
+	if (!gl_HelperInvocation)
+#endif
+	{
 		atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
 	}
 #endif
@@ -161,7 +166,11 @@ void main() {
 		}
 	}
 #else
-	if (!gl_HelperInvocation) {
+// MoltenVK/Metal fails to compile shaders using gl_HelperInvocation for some GPUs
+#ifndef MOLTENVK_USED
+	if (!gl_HelperInvocation)
+#endif
+	{
 		atomicOr(cluster_render.data[z_write_offset], z_write_bit);
 	}
 #endif

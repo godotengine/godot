@@ -157,6 +157,8 @@ public:
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
+	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const = 0;
+
 	/* SHADER API */
 
 	enum ShaderMode {
@@ -807,6 +809,7 @@ public:
 	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
+	virtual void viewport_set_canvas_cull_mask(RID p_viewport, uint32_t p_canvas_cull_mask) = 0;
 
 	virtual void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) = 0;
 	virtual void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable) = 0;
@@ -1320,6 +1323,7 @@ public:
 	virtual void canvas_item_set_custom_rect(RID p_item, bool p_custom_rect, const Rect2 &p_rect = Rect2()) = 0;
 	virtual void canvas_item_set_modulate(RID p_item, const Color &p_color) = 0;
 	virtual void canvas_item_set_self_modulate(RID p_item, const Color &p_color) = 0;
+	virtual void canvas_item_set_visibility_layer(RID p_item, uint32_t p_visibility_layer) = 0;
 
 	virtual void canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) = 0;
 
@@ -1367,7 +1371,8 @@ public:
 
 	enum CanvasGroupMode {
 		CANVAS_GROUP_MODE_DISABLED,
-		CANVAS_GROUP_MODE_OPAQUE,
+		CANVAS_GROUP_MODE_CLIP_ONLY,
+		CANVAS_GROUP_MODE_CLIP_AND_DRAW,
 		CANVAS_GROUP_MODE_TRANSPARENT,
 	};
 
@@ -1573,6 +1578,8 @@ public:
 	virtual bool is_low_end() const = 0;
 
 	virtual void set_print_gpu_profile(bool p_enable) = 0;
+
+	virtual Size2i get_maximum_viewport_size() const = 0;
 
 	RenderingDevice *get_rendering_device() const;
 	RenderingDevice *create_local_rendering_device() const;

@@ -31,7 +31,10 @@
 #ifndef NATIVE_EXTENSION_H
 #define NATIVE_EXTENSION_H
 
+#include <functional>
+
 #include "core/extension/gdnative_interface.h"
+#include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
 
@@ -47,15 +50,15 @@ class NativeExtension : public Resource {
 
 	HashMap<StringName, Extension> extension_classes;
 
-	static void _register_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
-	static void _register_extension_class_method(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
-	static void _register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield);
-	static void _register_extension_class_property(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter);
-	static void _register_extension_class_property_group(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_group_name, const char *p_prefix);
-	static void _register_extension_class_property_subgroup(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix);
-	static void _register_extension_class_signal(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
-	static void _unregister_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name);
-	static void _get_library_path(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path);
+	static void _register_extension_class(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
+	static void _register_extension_class_method(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
+	static void _register_extension_class_integer_constant(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_enum_name, GDNativeConstStringNamePtr p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield);
+	static void _register_extension_class_property(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, const GDNativePropertyInfo *p_info, GDNativeConstStringNamePtr p_setter, GDNativeConstStringNamePtr p_getter);
+	static void _register_extension_class_property_group(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_group_name, GDNativeConstStringNamePtr p_prefix);
+	static void _register_extension_class_property_subgroup(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_subgroup_name, GDNativeConstStringNamePtr p_prefix);
+	static void _register_extension_class_signal(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
+	static void _unregister_extension_class(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name);
+	static void _get_library_path(GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path);
 
 	GDNativeInitialization initialization;
 	int32_t level_initialized = -1;
@@ -65,6 +68,7 @@ protected:
 
 public:
 	static String get_extension_list_config_file();
+	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
 
 	Error open_library(const String &p_path, const String &p_entry_symbol);
 	void close_library();

@@ -52,34 +52,26 @@ MovieWriter *MovieWriter::find_writer_for_file(const String &p_file) {
 }
 
 uint32_t MovieWriter::get_audio_mix_rate() const {
-	uint32_t ret = 0;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_audio_mix_rate, ret)) {
-		return ret;
-	}
-	return 48000;
+	uint32_t ret = 48000;
+	GDVIRTUAL_REQUIRED_CALL(_get_audio_mix_rate, ret);
+	return ret;
 }
 AudioServer::SpeakerMode MovieWriter::get_audio_speaker_mode() const {
 	AudioServer::SpeakerMode ret = AudioServer::SPEAKER_MODE_STEREO;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_audio_speaker_mode, ret)) {
-		return ret;
-	}
-	return AudioServer::SPEAKER_MODE_STEREO;
+	GDVIRTUAL_REQUIRED_CALL(_get_audio_speaker_mode, ret);
+	return ret;
 }
 
 Error MovieWriter::write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
-	Error ret = OK;
-	if (GDVIRTUAL_REQUIRED_CALL(_write_begin, p_movie_size, p_fps, p_base_path, ret)) {
-		return ret;
-	}
-	return ERR_UNCONFIGURED;
+	Error ret = ERR_UNCONFIGURED;
+	GDVIRTUAL_REQUIRED_CALL(_write_begin, p_movie_size, p_fps, p_base_path, ret);
+	return ret;
 }
 
 Error MovieWriter::write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) {
-	Error ret = OK;
-	if (GDVIRTUAL_REQUIRED_CALL(_write_frame, p_image, p_audio_data, ret)) {
-		return ret;
-	}
-	return ERR_UNCONFIGURED;
+	Error ret = ERR_UNCONFIGURED;
+	GDVIRTUAL_REQUIRED_CALL(_write_frame, p_image, p_audio_data, ret);
+	return ret;
 }
 
 void MovieWriter::write_end() {
@@ -88,23 +80,35 @@ void MovieWriter::write_end() {
 
 bool MovieWriter::handles_file(const String &p_path) const {
 	bool ret = false;
-	if (GDVIRTUAL_REQUIRED_CALL(_handles_file, p_path, ret)) {
-		return ret;
-	}
-	return false;
+	GDVIRTUAL_REQUIRED_CALL(_handles_file, p_path, ret);
+	return ret;
 }
 
 void MovieWriter::get_supported_extensions(List<String> *r_extensions) const {
 	Vector<String> exts;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_supported_extensions, exts)) {
-		for (int i = 0; i < exts.size(); i++) {
-			r_extensions->push_back(exts[i]);
-		}
+	GDVIRTUAL_REQUIRED_CALL(_get_supported_extensions, exts);
+	for (int i = 0; i < exts.size(); i++) {
+		r_extensions->push_back(exts[i]);
 	}
 }
 
 void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
 	project_name = GLOBAL_GET("application/config/name");
+
+	print_line(vformat("Movie Maker mode enabled, recording movie at %d FPS...", p_fps));
+
+	// Check for available disk space and warn the user if needed.
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String path = p_base_path.get_basename();
+	if (path.is_relative_path()) {
+		path = "res://" + path;
+	}
+	dir->open(path);
+	if (dir->get_space_left() < 10 * Math::pow(1024.0, 3.0)) {
+		// Less than 10 GiB available.
+		WARN_PRINT(vformat("Current available space on disk is low (%s). MovieWriter will fail during movie recording if the disk runs out of available space.", String::humanize_size(dir->get_space_left())));
+	}
+
 	mix_rate = get_audio_mix_rate();
 	AudioDriverDummy::get_dummy_singleton()->set_mix_rate(mix_rate);
 	AudioDriverDummy::get_dummy_singleton()->set_speaker_mode(AudioDriver::SpeakerMode(get_audio_speaker_mode()));

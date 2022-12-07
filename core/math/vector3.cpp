@@ -139,6 +139,10 @@ bool Vector3::is_zero_approx() const {
 	return Math::is_zero_approx(x) && Math::is_zero_approx(y) && Math::is_zero_approx(z);
 }
 
+bool Vector3::is_finite() const {
+	return Math::is_finite(x) && Math::is_finite(y) && Math::is_finite(z);
+}
+
 Vector3::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ")";
 }

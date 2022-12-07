@@ -32,23 +32,21 @@
 #define VISUAL_SHADER_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
+#include "editor/editor_properties.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
 
-class Button;
 class CodeEdit;
-class CodeHighlighter;
 class CurveEditor;
 class GraphEdit;
 class GraphNode;
-class PopupMenu;
+class MenuButton;
 class PopupPanel;
 class RichTextLabel;
-class TextEdit;
 class Tree;
 
 class VisualShaderEditor;
-class EditorUndoRedoManager;
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);
@@ -172,8 +170,7 @@ class VisualShaderEditor : public VBoxContainer {
 	Ref<VisualShader> visual_shader;
 	GraphEdit *graph = nullptr;
 	Button *add_node = nullptr;
-	Button *varying_button = nullptr;
-	PopupMenu *varying_options = nullptr;
+	MenuButton *varying_button = nullptr;
 	Button *preview_shader = nullptr;
 
 	OptionButton *edit_type = nullptr;
@@ -193,7 +190,6 @@ class VisualShaderEditor : public VBoxContainer {
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	Point2 saved_node_pos;
 	bool saved_node_pos_dirty = false;
 
@@ -290,7 +286,6 @@ class VisualShaderEditor : public VBoxContainer {
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos, VisualShaderNode::PortType p_input_port_type = VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PortType p_output_port_type = VisualShaderNode::PORT_TYPE_MAX);
 
-	void _show_varying_menu();
 	void _varying_menu_id_pressed(int p_idx);
 	void _show_add_varying_dialog();
 	void _show_remove_varying_dialog();

@@ -526,13 +526,14 @@
 		<signal name="id_focused">
 			<param index="0" name="id" type="int" />
 			<description>
-				Emitted when user navigated to an item of some [param id] using [code]ui_up[/code] or [code]ui_down[/code] action.
+				Emitted when the user navigated to an item of some [param id] using the [member ProjectSettings.input/ui_up] or [member ProjectSettings.input/ui_down] input action.
 			</description>
 		</signal>
 		<signal name="id_pressed">
 			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when an item of some [param id] is pressed or its accelerator is activated.
+				[b]Note:[/b] If [param id] is negative (either explicitly or due to overflow), this will return the corresponding index instead.
 			</description>
 		</signal>
 		<signal name="index_pressed">
@@ -543,6 +544,7 @@
 		</signal>
 		<signal name="menu_changed">
 			<description>
+				Emitted when any item is added, modified or removed.
 			</description>
 		</signal>
 	</signals>
@@ -575,8 +577,10 @@
 			Width of the single indentation level.
 		</theme_item>
 		<theme_item name="item_end_padding" data_type="constant" type="int" default="2">
+			Horizontal padding to the right of the items (or left, in RTL layout).
 		</theme_item>
 		<theme_item name="item_start_padding" data_type="constant" type="int" default="2">
+			Horizontal padding to the left of the items (or right, in RTL layout).
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.

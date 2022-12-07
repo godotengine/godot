@@ -55,12 +55,18 @@
 #include <stdio.h>
 
 #define WIN32_LEAN_AND_MEAN
+#include <dwrite.h>
+#include <dwrite_2.h>
 #include <windows.h>
 #include <windowsx.h>
 
 #ifdef DEBUG_ENABLED
 // forward error messages to OutputDebugString
 #define WINDOWS_DEBUG_OUTPUT_ENABLED
+#endif
+
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif
 
 template <class T>
@@ -75,6 +81,9 @@ public:
 	_FORCE_INLINE_ bool is_valid() const { return reference != nullptr; }
 	_FORCE_INLINE_ bool is_null() const { return reference == nullptr; }
 	ComAutoreleaseRef() {}
+	ComAutoreleaseRef(T *p_ref) {
+		reference = p_ref;
+	}
 	~ComAutoreleaseRef() {
 		if (reference != nullptr) {
 			reference->Release();
@@ -84,13 +93,10 @@ public:
 };
 
 class JoypadWindows;
-class OS_Windows : public OS {
-#ifdef STDOUT_FILE
-	FILE *stdo = nullptr;
-#endif
 
-	uint64_t ticks_start;
-	uint64_t ticks_per_second;
+class OS_Windows : public OS {
+	uint64_t ticks_start = 0;
+	uint64_t ticks_per_second = 0;
 
 	HINSTANCE hInstance;
 	MainLoop *main_loop = nullptr;
@@ -113,6 +119,18 @@ class OS_Windows : public OS {
 
 	HWND main_window;
 
+	IDWriteFactory *dwrite_factory = nullptr;
+	IDWriteFactory2 *dwrite_factory2 = nullptr;
+	IDWriteFontCollection *font_collection = nullptr;
+	IDWriteFontFallback *system_font_fallback = nullptr;
+
+	bool dwrite_init = false;
+	bool dwrite2_init = false;
+
+	String _get_default_fontname(const String &p_font_name) const;
+	DWRITE_FONT_WEIGHT _weight_to_dw(int p_weight) const;
+	DWRITE_FONT_STRETCH _stretch_to_dw(int p_stretch) const;
+
 	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual void initialize() override;
@@ -130,7 +148,7 @@ protected:
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
 	};
-	HashMap<ProcessID, ProcessInfo> *process_map;
+	HashMap<ProcessID, ProcessInfo> *process_map = nullptr;
 
 public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
@@ -146,6 +164,8 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+
+	virtual Vector<String> get_video_adapter_driver_info() const override;
 
 	virtual void initialize_joypads() override {}
 
@@ -169,7 +189,8 @@ public:
 	virtual bool set_environment(const String &p_var, const String &p_value) const override;
 
 	virtual Vector<String> get_system_fonts() const override;
-	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
+	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
+	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 
 	virtual String get_executable_path() const override;
 

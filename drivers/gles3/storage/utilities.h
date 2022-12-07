@@ -79,62 +79,35 @@ public:
 
 	/* TIMING */
 
-	struct Info {
-		uint64_t texture_mem = 0;
-		uint64_t vertex_mem = 0;
+#define MAX_QUERIES 256
+#define FRAME_COUNT 3
 
-		struct Render {
-			uint32_t object_count;
-			uint32_t draw_call_count;
-			uint32_t material_switch_count;
-			uint32_t surface_switch_count;
-			uint32_t shader_rebind_count;
-			uint32_t vertices_count;
-			uint32_t _2d_item_count;
-			uint32_t _2d_draw_call_count;
+	struct Frame {
+		GLuint queries[MAX_QUERIES];
+		TightLocalVector<String> timestamp_names;
+		TightLocalVector<uint64_t> timestamp_cpu_values;
+		uint32_t timestamp_count = 0;
+		TightLocalVector<String> timestamp_result_names;
+		TightLocalVector<uint64_t> timestamp_cpu_result_values;
+		TightLocalVector<uint64_t> timestamp_result_values;
+		uint32_t timestamp_result_count = 0;
+		uint64_t index = 0;
+	};
 
-			void reset() {
-				object_count = 0;
-				draw_call_count = 0;
-				material_switch_count = 0;
-				surface_switch_count = 0;
-				shader_rebind_count = 0;
-				vertices_count = 0;
-				_2d_item_count = 0;
-				_2d_draw_call_count = 0;
-			}
-		} render, render_final, snap;
+	const uint32_t max_timestamp_query_elements = MAX_QUERIES;
 
-		Info() {
-			render.reset();
-			render_final.reset();
-		}
+	Frame frames[FRAME_COUNT]; // Frames for capturing timestamps. We use 3 so we don't need to wait for commands to complete
+	uint32_t frame = 0;
 
-	} info;
-
-	virtual void capture_timestamps_begin() override {}
-	virtual void capture_timestamp(const String &p_name) override {}
-	virtual uint32_t get_captured_timestamps_count() const override {
-		return 0;
-	}
-	virtual uint64_t get_captured_timestamps_frame() const override {
-		return 0;
-	}
-	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const override {
-		return 0;
-	}
-	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const override {
-		return 0;
-	}
-	virtual String get_captured_timestamp_name(uint32_t p_index) const override {
-		return String();
-	}
-
-	//	void render_info_begin_capture() override;
-	//	void render_info_end_capture() override;
-	//	int get_captured_render_info(RS::RenderInfo p_info) override;
-
-	//	int get_render_info(RS::RenderInfo p_info) override;
+	virtual void capture_timestamps_begin() override;
+	virtual void capture_timestamp(const String &p_name) override;
+	virtual uint32_t get_captured_timestamps_count() const override;
+	virtual uint64_t get_captured_timestamps_frame() const override;
+	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const override;
+	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const override;
+	virtual String get_captured_timestamp_name(uint32_t p_index) const override;
+	void _capture_timestamps_begin();
+	void capture_timestamps_end();
 
 	/* MISC */
 
@@ -150,6 +123,8 @@ public:
 	virtual String get_video_adapter_vendor() const override;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
 	virtual String get_video_adapter_api_version() const override;
+
+	virtual Size2i get_maximum_viewport_size() const override;
 };
 
 } // namespace GLES3

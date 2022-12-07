@@ -4,7 +4,8 @@
 		Operating System functions.
 	</brief_description>
 	<description>
-		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, delays, environment variables, execution of binaries, command line, etc.
+		Operating System functions. [OS] wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, delays, environment variables, execution of binaries, command line, etc.
+		[b]Note:[/b] In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.
 	</description>
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
@@ -133,7 +134,7 @@
 		<method name="get_cache_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
+				Returns the [i]global[/i] cache data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -181,17 +182,19 @@
 		<method name="get_cmdline_user_args">
 			<return type="PackedStringArray" />
 			<description>
-				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] argument). These are left untouched by Godot for the user.
+				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] or double plus [code]++[/code] argument). These are left untouched by Godot for the user. [code]++[/code] can be used in situations where [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				For example, in the command line below, [code]--fullscreen[/code] will not be returned in [method get_cmdline_user_args] and [code]--level 1[/code] will only be returned in [method get_cmdline_user_args]:
 				[codeblock]
 				godot --fullscreen -- --level 1
+				# Or:
+				godot --fullscreen ++ --level 1
 				[/codeblock]
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
+				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -199,14 +202,14 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns an array of MIDI device names.
-				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
+				The returned array will be empty if the system MIDI driver has not previously been initialized with [method open_midi_inputs].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
+				Returns the [i]global[/i] user data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -391,18 +394,38 @@
 		<method name="get_system_font_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="font_name" type="String" />
-			<param index="1" name="bold" type="bool" default="false" />
-			<param index="2" name="italic" type="bool" default="false" />
+			<param index="1" name="weight" type="int" default="400" />
+			<param index="2" name="stretch" type="int" default="100" />
+			<param index="3" name="italic" type="bool" default="false" />
 			<description>
-				Returns path to the system font file with [param font_name] and style. Return empty string if no matching fonts found.
-				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+				Returns path to the system font file with [param font_name] and style. Returns empty string if no matching fonts found.
+				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
+				[b]Note:[/b] Returned font might have different style if the requested style is not available.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_system_font_path_for_text" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="font_name" type="String" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="locale" type="String" default="&quot;&quot;" />
+			<param index="3" name="script" type="String" default="&quot;&quot;" />
+			<param index="4" name="weight" type="int" default="400" />
+			<param index="5" name="stretch" type="int" default="100" />
+			<param index="6" name="italic" type="bool" default="false" />
+			<description>
+				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
+				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
+				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts is suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
+				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_system_fonts" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 				Returns list of font family names available.
-				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
@@ -445,6 +468,15 @@
 				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
 			</description>
 		</method>
+		<method name="get_video_adapter_driver_info" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the video adapter driver name and version for the user's currently active graphics card.
+				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
+				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
+				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows when not running in headless mode. It returns an empty array on other platforms.
+			</description>
+		</method>
 		<method name="has_environment" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="variable" type="String" />
@@ -457,7 +489,7 @@
 			<return type="bool" />
 			<param index="0" name="tag_name" type="String" />
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>
@@ -625,11 +657,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="VIDEO_DRIVER_VULKAN" value="0" enum="VideoDriver">
-			The Vulkan rendering backend. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
+		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver">
+			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
 		</constant>
-		<constant name="VIDEO_DRIVER_OPENGL_3" value="1" enum="VideoDriver">
-			The OpenGL 3 rendering backend. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
+		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
+			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.

@@ -41,11 +41,13 @@
 #include "scene/resources/immediate_mesh.h"
 
 class EditorInspectorPluginSkeleton;
-class EditorUndoRedoManager;
 class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
 class Button;
+class Tree;
+class TreeItem;
+class VSeparator;
 
 class BoneTransformEditor : public VBoxContainer {
 	GDCLASS(BoneTransformEditor, VBoxContainer);
@@ -64,8 +66,6 @@ class BoneTransformEditor : public VBoxContainer {
 
 	Skeleton3D *skeleton = nullptr;
 	// String property;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool toggle_enabled = false;
 	bool updating = false;

@@ -40,6 +40,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "filesystem_dock.h"
+#include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 #include "servers/audio_server.h"
 
@@ -338,7 +339,7 @@ float EditorAudioBus::_normalized_volume_to_scaled_db(float normalized) {
 	 * values to relative decibal values.
 	 * One formula is an exponential graph which intends to counteract
 	 * the logarithmic nature of human hearing. This is an approximation
-	 * of the behaviour of a 'logarithmic potentiometer' found on most
+	 * of the behavior of a 'logarithmic potentiometer' found on most
 	 * musical instruments and also emulated in popular software.
 	 * The other two equations are hand-tuned linear tapers that intend to
 	 * try to ease the exponential equation in areas where it makes sense.*/
@@ -1036,7 +1037,7 @@ void EditorAudioBuses::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			if (drop_end) {
-				drop_end->queue_delete();
+				drop_end->queue_free();
 				drop_end = nullptr;
 			}
 		} break;
@@ -1208,7 +1209,7 @@ void EditorAudioBuses::_load_layout() {
 }
 
 void EditorAudioBuses::_load_default_layout() {
-	String layout_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
+	String layout_path = GLOBAL_GET("audio/buses/default_bus_layout");
 
 	Ref<AudioBusLayout> state = ResourceLoader::load(layout_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (state.is_null()) {
@@ -1273,7 +1274,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	add_child(top_hb);
 
 	file = memnew(Label);
-	String layout_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
+	String layout_path = GLOBAL_GET("audio/buses/default_bus_layout");
 	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
 	file->set_clip_text(true);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1328,7 +1329,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
-	edited_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
+	edited_path = GLOBAL_GET("audio/buses/default_bus_layout");
 
 	file_dialog = memnew(EditorFileDialog);
 	List<String> ext;

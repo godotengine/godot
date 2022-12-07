@@ -28,6 +28,13 @@
 		</constructor>
 		<constructor name="float">
 			<return type="float" />
+			<param index="0" name="from" type="String" />
+			<description>
+				Converts a [String] to a [float], following the same rules as [method String.to_float].
+			</description>
+		</constructor>
+		<constructor name="float">
+			<return type="float" />
 			<param index="0" name="from" type="bool" />
 			<description>
 				Cast a [bool] value to a floating-point value, [code]float(true)[/code] will be equal to 1.0 and [code]float(false)[/code] will be equal to 0.0.
@@ -114,12 +121,17 @@
 			<return type="Vector4" />
 			<param index="0" name="right" type="Vector4" />
 			<description>
+				Multiplies each component of the [Vector4] by the given [float].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector4" />
 			<param index="0" name="right" type="Vector4i" />
 			<description>
+				Multiplies each component of the [Vector4i] by the given [float]. Returns a [Vector4].
+				[codeblock]
+				print(0.9 * Vector4i(10, 15, 20, -10)) # Prints "(9, 13.5, 18, -9)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -140,12 +152,20 @@
 			<return type="float" />
 			<param index="0" name="right" type="float" />
 			<description>
+				Raises a [float] to a power of a [float].
+				[codeblock]
+				print(39.0625**0.25) # 2.5
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator **">
 			<return type="float" />
 			<param index="0" name="right" type="int" />
 			<description>
+				Raises a [float] to a power of an [int]. The result is a [float].
+				[codeblock]
+				print(0.9**3) # 0.729
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator +">
@@ -194,7 +214,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left float is less than the right one.
+				Returns [code]true[/code] if the left float is less than the right one.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
@@ -208,7 +228,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left integer is less than or equal to the right one.
+				Returns [code]true[/code] if the left float is less than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
@@ -237,7 +257,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left float is greater than the right one.
+				Returns [code]true[/code] if the left float is greater than the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
@@ -251,7 +271,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left float is greater than or equal to the right one.
+				Returns [code]true[/code] if the left float is greater than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">

@@ -32,10 +32,14 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/text_shader_editor.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/shader_create_dialog.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/texture_rect.h"
 
 void ShaderEditorPlugin::_update_shader_list() {
 	shader_list->clear();
@@ -225,7 +229,7 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	memdelete(c);
 	edited_shaders.remove_at(p_index);
 	_update_shader_list();
-	EditorNode::get_singleton()->get_undo_redo()->clear_history(); // To prevent undo on deleted graphs.
+	EditorNode::get_undo_redo()->clear_history(); // To prevent undo on deleted graphs.
 }
 
 void ShaderEditorPlugin::_resource_saved(Object *obj) {

@@ -485,6 +485,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	}
 	html.resize(f->get_length());
 	f->get_buffer(html.ptrw(), html.size());
+	f.unref(); // close file.
 
 	// Generate HTML file with replaced strings.
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);

@@ -138,7 +138,7 @@ void CodeEdit::_notification(int p_what) {
 				code_completion_scroll_rect.position = code_completion_rect.position + Vector2(code_completion_rect.size.width, 0);
 				code_completion_scroll_rect.size = Vector2(scroll_width, code_completion_rect.size.height);
 
-				code_completion_line_ofs = CLAMP(code_completion_current_selected - lines / 2, 0, code_completion_options_count - lines);
+				code_completion_line_ofs = CLAMP((code_completion_force_item_center < 0 ? code_completion_current_selected : code_completion_force_item_center) - lines / 2, 0, code_completion_options_count - lines);
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), code_completion_selected_color);
 
 				for (int i = 0; i < lines; i++) {
@@ -281,16 +281,22 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				case MouseButton::WHEEL_UP: {
 					if (code_completion_current_selected > 0) {
 						code_completion_current_selected--;
+						code_completion_force_item_center = -1;
 						queue_redraw();
 					}
 				} break;
 				case MouseButton::WHEEL_DOWN: {
 					if (code_completion_current_selected < code_completion_options.size() - 1) {
 						code_completion_current_selected++;
+						code_completion_force_item_center = -1;
 						queue_redraw();
 					}
 				} break;
 				case MouseButton::LEFT: {
+					if (code_completion_force_item_center == -1) {
+						code_completion_force_item_center = code_completion_current_selected;
+					}
+
 					code_completion_current_selected = CLAMP(code_completion_line_ofs + (mb->get_position().y - code_completion_rect.position.y) / get_line_height(), 0, code_completion_options.size() - 1);
 					if (mb->is_double_click()) {
 						confirm_code_completion();
@@ -300,6 +306,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				default:
 					break;
 			}
+
 			return;
 		} else if (code_completion_active && code_completion_scroll_rect.has_point(mb->get_position())) {
 			if (mb->get_button_index() != MouseButton::LEFT) {
@@ -371,12 +378,13 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (symbol_lookup_on_click_enabled) {
-			if (mm->is_command_or_control_pressed() && mm->get_button_mask() == MouseButton::NONE && !is_dragging_cursor()) {
+			if (mm->is_command_or_control_pressed() && mm->get_button_mask() == MouseButton::NONE) {
+				symbol_lookup_pos = get_line_column_at_pos(mpos);
 				symbol_lookup_new_word = get_word_at_pos(mpos);
 				if (symbol_lookup_new_word != symbol_lookup_word) {
 					emit_signal(SNAME("symbol_validate"), symbol_lookup_new_word);
 				}
-			} else {
+			} else if (!mm->is_command_or_control_pressed() || (mm->get_button_mask() != MouseButton::NONE && symbol_lookup_pos != get_line_column_at_pos(mpos))) {
 				set_symbol_lookup_word_as_valid(false);
 			}
 		}
@@ -448,6 +456,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			} else {
 				code_completion_current_selected = code_completion_options.size() - 1;
 			}
+			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
 			return;
@@ -458,30 +467,35 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			} else {
 				code_completion_current_selected = 0;
 			}
+			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
 			return;
 		}
 		if (k->is_action("ui_page_up", true)) {
 			code_completion_current_selected = MAX(0, code_completion_current_selected - code_completion_max_lines);
+			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
 			return;
 		}
 		if (k->is_action("ui_page_down", true)) {
 			code_completion_current_selected = MIN(code_completion_options.size() - 1, code_completion_current_selected + code_completion_max_lines);
+			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
 			return;
 		}
 		if (k->is_action("ui_home", true)) {
 			code_completion_current_selected = 0;
+			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
 			return;
 		}
 		if (k->is_action("ui_end", true)) {
 			code_completion_current_selected = code_completion_options.size() - 1;
+			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
 			return;
@@ -681,8 +695,8 @@ void CodeEdit::_backspace_internal(int p_caret) {
 		return;
 	}
 
-	if (has_selection()) {
-		delete_selection();
+	if (has_selection(p_caret)) {
+		delete_selection(p_caret);
 		return;
 	}
 
@@ -1248,37 +1262,41 @@ bool CodeEdit::is_drawing_executing_lines_gutter() const {
 }
 
 void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
-	bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
-
 	if (draw_breakpoints && breakpoint_icon.is_valid()) {
-		bool hovering = p_region.has_point(get_local_mouse_pos());
 		bool breakpointed = is_line_breakpointed(p_line);
+		bool hovering = p_region.has_point(get_local_mouse_pos());
+		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
 		if (breakpointed || (hovering && !is_dragging_cursor() && !shift_pressed)) {
 			int padding = p_region.size.x / 6;
+
+			Color use_color = breakpoint_color;
+			if (hovering && !shift_pressed) {
+				use_color = breakpointed ? use_color.lightened(0.3) : use_color.darkened(0.5);
+			}
 			Rect2 icon_region = p_region;
 			icon_region.position += Point2(padding, padding);
 			icon_region.size -= Point2(padding, padding) * 2;
-
-			// Darken icon when hovering, shift not pressed & not yet breakpointed.
-			Color use_color = hovering && !breakpointed && !shift_pressed ? breakpoint_color.darkened(0.4) : breakpoint_color;
 			breakpoint_icon->draw_rect(get_canvas_item(), icon_region, false, use_color);
 		}
 	}
 
 	if (draw_bookmarks && bookmark_icon.is_valid()) {
-		bool hovering = p_region.has_point(get_local_mouse_pos());
 		bool bookmarked = is_line_bookmarked(p_line);
+		bool hovering = p_region.has_point(get_local_mouse_pos());
+		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
 		if (bookmarked || (hovering && !is_dragging_cursor() && shift_pressed)) {
 			int horizontal_padding = p_region.size.x / 2;
 			int vertical_padding = p_region.size.y / 4;
+
+			Color use_color = bookmark_color;
+			if (hovering && shift_pressed) {
+				use_color = bookmarked ? use_color.lightened(0.3) : use_color.darkened(0.5);
+			}
 			Rect2 icon_region = p_region;
 			icon_region.position += Point2(horizontal_padding, 0);
 			icon_region.size -= Point2(horizontal_padding * 1.1, vertical_padding);
-
-			// Darken icon when hovering, shift pressed & not yet bookmarked.
-			Color use_color = hovering && !bookmarked && shift_pressed ? bookmark_color.darkened(0.4) : bookmark_color;
 			bookmark_icon->draw_rect(get_canvas_item(), icon_region, false, use_color);
 		}
 	}
@@ -1287,10 +1305,10 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 		int horizontal_padding = p_region.size.x / 10;
 		int vertical_padding = p_region.size.y / 4;
 
-		Rect2 executing_line_region = p_region;
-		executing_line_region.position += Point2(horizontal_padding, vertical_padding);
-		executing_line_region.size -= Point2(horizontal_padding, vertical_padding) * 2;
-		executing_line_icon->draw_rect(get_canvas_item(), executing_line_region, false, executing_line_color);
+		Rect2 icon_region = p_region;
+		icon_region.position += Point2(horizontal_padding, vertical_padding);
+		icon_region.size -= Point2(horizontal_padding, vertical_padding) * 2;
+		executing_line_icon->draw_rect(get_canvas_item(), icon_region, false, executing_line_color);
 	}
 }
 
@@ -1408,7 +1426,10 @@ bool CodeEdit::is_line_numbers_zero_padded() const {
 }
 
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
-	String fc = TS->format_number(String::num(p_line + 1).lpad(line_number_digits, line_number_padding));
+	String fc = String::num(p_line + 1).lpad(line_number_digits, line_number_padding);
+	if (is_localizing_numeral_system()) {
+		fc = TS->format_number(fc);
+	}
 	Ref<TextLine> tl;
 	tl.instantiate();
 	tl->add_string(fc, font, font_size);
@@ -1974,6 +1995,7 @@ void CodeEdit::set_code_completion_selected_index(int p_index) {
 	}
 	ERR_FAIL_INDEX(p_index, code_completion_options.size());
 	code_completion_current_selected = p_index;
+	code_completion_force_item_center = -1;
 	queue_redraw();
 }
 
@@ -2804,6 +2826,7 @@ void CodeEdit::_update_scroll_selected_line(float p_mouse_y) {
 	percent = CLAMP(percent, 0.0f, 1.0f);
 
 	code_completion_current_selected = (int)(percent * (code_completion_options.size() - 1));
+	code_completion_force_item_center = -1;
 }
 
 void CodeEdit::_filter_code_completion_candidates_impl() {
@@ -2855,12 +2878,15 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				offset = line_height;
 			}
 
-			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			if (font.is_valid()) {
+				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			}
 			code_completion_options.push_back(option);
 		}
 
 		code_completion_longest_line = MIN(max_width, code_completion_max_width * font_size);
 		code_completion_current_selected = 0;
+		code_completion_force_item_center = -1;
 		code_completion_active = true;
 		queue_redraw();
 		return;
@@ -2966,7 +2992,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 		if (string_to_complete.length() == 0) {
 			code_completion_options.push_back(option);
-			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			if (font.is_valid()) {
+				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			}
 			continue;
 		}
 
@@ -3072,7 +3100,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				option.matches.append_array(ssq_matches);
 				completion_options_subseq.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			if (font.is_valid()) {
+				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			}
 		} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower.
 			option.matches.clear();
 
@@ -3089,7 +3119,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				option.matches.append_array(ssq_lower_matches);
 				completion_options_subseq_casei.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			if (font.is_valid()) {
+				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			}
 		}
 	}
 
@@ -3111,6 +3143,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 	code_completion_longest_line = MIN(max_width, code_completion_max_width * font_size);
 	code_completion_current_selected = 0;
+	code_completion_force_item_center = -1;
 	code_completion_active = true;
 	queue_redraw();
 }

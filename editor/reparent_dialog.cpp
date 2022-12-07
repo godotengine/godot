@@ -33,6 +33,7 @@
 #include "core/string/print_string.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/tree.h"
 
 void ReparentDialog::_notification(int p_what) {
 	switch (p_what) {

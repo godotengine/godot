@@ -32,7 +32,10 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/texture_rect.h"
 
 #include "modules/noise/noise.h"
 #include "modules/noise/noise_texture_2d.h"

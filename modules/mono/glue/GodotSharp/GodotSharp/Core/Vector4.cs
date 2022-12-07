@@ -68,7 +68,7 @@ namespace Godot
         /// </value>
         public real_t this[int index]
         {
-            get
+            readonly get
             {
                 switch (index)
                 {
@@ -109,7 +109,7 @@ namespace Godot
         /// <summary>
         /// Helper method for deconstruction into a tuple.
         /// </summary>
-        public void Deconstruct(out real_t x, out real_t y, out real_t z, out real_t w)
+        public readonly void Deconstruct(out real_t x, out real_t y, out real_t z, out real_t w)
         {
             x = this.x;
             y = this.y;
@@ -139,7 +139,7 @@ namespace Godot
         /// Returns a new vector with all components in absolute values (i.e. positive).
         /// </summary>
         /// <returns>A vector with <see cref="Mathf.Abs(real_t)"/> called on each component.</returns>
-        public Vector4 Abs()
+        public readonly Vector4 Abs()
         {
             return new Vector4(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z), Mathf.Abs(w));
         }
@@ -148,7 +148,7 @@ namespace Godot
         /// Returns a new vector with all components rounded up (towards positive infinity).
         /// </summary>
         /// <returns>A vector with <see cref="Mathf.Ceil"/> called on each component.</returns>
-        public Vector4 Ceil()
+        public readonly Vector4 Ceil()
         {
             return new Vector4(Mathf.Ceil(x), Mathf.Ceil(y), Mathf.Ceil(z), Mathf.Ceil(w));
         }
@@ -161,7 +161,7 @@ namespace Godot
         /// <param name="min">The vector with minimum allowed values.</param>
         /// <param name="max">The vector with maximum allowed values.</param>
         /// <returns>The vector with all components clamped.</returns>
-        public Vector4 Clamp(Vector4 min, Vector4 max)
+        public readonly Vector4 Clamp(Vector4 min, Vector4 max)
         {
             return new Vector4
             (
@@ -181,7 +181,7 @@ namespace Godot
         /// <param name="postB">A vector after <paramref name="b"/>.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated vector.</returns>
-        public Vector4 CubicInterpolate(Vector4 b, Vector4 preA, Vector4 postB, real_t weight)
+        public readonly Vector4 CubicInterpolate(Vector4 b, Vector4 preA, Vector4 postB, real_t weight)
         {
             return new Vector4
             (
@@ -206,7 +206,7 @@ namespace Godot
         /// <param name="preAT"></param>
         /// <param name="postBT"></param>
         /// <returns>The interpolated vector.</returns>
-        public Vector4 CubicInterpolateInTime(Vector4 b, Vector4 preA, Vector4 postB, real_t weight, real_t t, real_t preAT, real_t postBT)
+        public readonly Vector4 CubicInterpolateInTime(Vector4 b, Vector4 preA, Vector4 postB, real_t weight, real_t t, real_t preAT, real_t postBT)
         {
             return new Vector4
             (
@@ -222,7 +222,7 @@ namespace Godot
         /// </summary>
         /// <param name="to">The other vector to point towards.</param>
         /// <returns>The direction from this vector to <paramref name="to"/>.</returns>
-        public Vector4 DirectionTo(Vector4 to)
+        public readonly Vector4 DirectionTo(Vector4 to)
         {
             Vector4 ret = new Vector4(to.x - x, to.y - y, to.z - z, to.w - w);
             ret.Normalize();
@@ -236,7 +236,7 @@ namespace Godot
         /// </summary>
         /// <param name="to">The other vector to use.</param>
         /// <returns>The squared distance between the two vectors.</returns>
-        public real_t DistanceSquaredTo(Vector4 to)
+        public readonly real_t DistanceSquaredTo(Vector4 to)
         {
             return (to - this).LengthSquared();
         }
@@ -246,7 +246,7 @@ namespace Godot
         /// </summary>
         /// <param name="to">The other vector to use.</param>
         /// <returns>The distance between the two vectors.</returns>
-        public real_t DistanceTo(Vector4 to)
+        public readonly real_t DistanceTo(Vector4 to)
         {
             return (to - this).Length();
         }
@@ -256,7 +256,7 @@ namespace Godot
         /// </summary>
         /// <param name="with">The other vector to use.</param>
         /// <returns>The dot product of the two vectors.</returns>
-        public real_t Dot(Vector4 with)
+        public readonly real_t Dot(Vector4 with)
         {
             return (x * with.x) + (y * with.y) + (z * with.z) + (w * with.w);
         }
@@ -265,7 +265,7 @@ namespace Godot
         /// Returns a new vector with all components rounded down (towards negative infinity).
         /// </summary>
         /// <returns>A vector with <see cref="Mathf.Floor"/> called on each component.</returns>
-        public Vector4 Floor()
+        public readonly Vector4 Floor()
         {
             return new Vector4(Mathf.Floor(x), Mathf.Floor(y), Mathf.Floor(z), Mathf.Floor(w));
         }
@@ -274,7 +274,7 @@ namespace Godot
         /// Returns the inverse of this vector. This is the same as <c>new Vector4(1 / v.x, 1 / v.y, 1 / v.z, 1 / v.w)</c>.
         /// </summary>
         /// <returns>The inverse of this vector.</returns>
-        public Vector4 Inverse()
+        public readonly Vector4 Inverse()
         {
             return new Vector4(1 / x, 1 / y, 1 / z, 1 / w);
         }
@@ -283,7 +283,7 @@ namespace Godot
         /// Returns <see langword="true"/> if the vector is normalized, and <see langword="false"/> otherwise.
         /// </summary>
         /// <returns>A <see langword="bool"/> indicating whether or not the vector is normalized.</returns>
-        public bool IsNormalized()
+        public readonly bool IsNormalized()
         {
             return Mathf.Abs(LengthSquared() - 1.0f) < Mathf.Epsilon;
         }
@@ -293,7 +293,7 @@ namespace Godot
         /// </summary>
         /// <seealso cref="LengthSquared"/>
         /// <returns>The length of this vector.</returns>
-        public real_t Length()
+        public readonly real_t Length()
         {
             real_t x2 = x * x;
             real_t y2 = y * y;
@@ -309,7 +309,7 @@ namespace Godot
         /// you need to compare vectors or need the squared length for some formula.
         /// </summary>
         /// <returns>The squared length of this vector.</returns>
-        public real_t LengthSquared()
+        public readonly real_t LengthSquared()
         {
             real_t x2 = x * x;
             real_t y2 = y * y;
@@ -326,7 +326,7 @@ namespace Godot
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting vector of the interpolation.</returns>
-        public Vector4 Lerp(Vector4 to, real_t weight)
+        public readonly Vector4 Lerp(Vector4 to, real_t weight)
         {
             return new Vector4
             (
@@ -342,7 +342,7 @@ namespace Godot
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
         /// <returns>The index of the highest axis.</returns>
-        public Axis MaxAxisIndex()
+        public readonly Axis MaxAxisIndex()
         {
             int max_index = 0;
             real_t max_value = x;
@@ -362,7 +362,7 @@ namespace Godot
         /// If all components are equal, this method returns <see cref="Axis.W"/>.
         /// </summary>
         /// <returns>The index of the lowest axis.</returns>
-        public Axis MinAxisIndex()
+        public readonly Axis MinAxisIndex()
         {
             int min_index = 0;
             real_t min_value = x;
@@ -381,7 +381,7 @@ namespace Godot
         /// Returns the vector scaled to unit length. Equivalent to <c>v / v.Length()</c>.
         /// </summary>
         /// <returns>A normalized version of the vector.</returns>
-        public Vector4 Normalized()
+        public readonly Vector4 Normalized()
         {
             Vector4 v = this;
             v.Normalize();
@@ -396,7 +396,7 @@ namespace Godot
         /// <returns>
         /// A vector with each component <see cref="Mathf.PosMod(real_t, real_t)"/> by <paramref name="mod"/>.
         /// </returns>
-        public Vector4 PosMod(real_t mod)
+        public readonly Vector4 PosMod(real_t mod)
         {
             return new Vector4(
                 Mathf.PosMod(x, mod),
@@ -414,7 +414,7 @@ namespace Godot
         /// <returns>
         /// A vector with each component <see cref="Mathf.PosMod(real_t, real_t)"/> by <paramref name="modv"/>'s components.
         /// </returns>
-        public Vector4 PosMod(Vector4 modv)
+        public readonly Vector4 PosMod(Vector4 modv)
         {
             return new Vector4(
                 Mathf.PosMod(x, modv.x),
@@ -429,7 +429,7 @@ namespace Godot
         /// with halfway cases rounded towards the nearest multiple of two.
         /// </summary>
         /// <returns>The rounded vector.</returns>
-        public Vector4 Round()
+        public readonly Vector4 Round()
         {
             return new Vector4(Mathf.Round(x), Mathf.Round(y), Mathf.Round(z), Mathf.Round(w));
         }
@@ -440,7 +440,7 @@ namespace Godot
         /// by calling <see cref="Mathf.Sign(real_t)"/> on each component.
         /// </summary>
         /// <returns>A vector with all components as either <c>1</c>, <c>-1</c>, or <c>0</c>.</returns>
-        public Vector4 Sign()
+        public readonly Vector4 Sign()
         {
             Vector4 v;
             v.x = Mathf.Sign(x);
@@ -456,7 +456,7 @@ namespace Godot
         /// </summary>
         /// <param name="step">A vector value representing the step size to snap to.</param>
         /// <returns>The snapped vector.</returns>
-        public Vector4 Snapped(Vector4 step)
+        public readonly Vector4 Snapped(Vector4 step)
         {
             return new Vector4(
                 Mathf.Snapped(x, step.x),
@@ -828,7 +828,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Vector4 other && Equals(other);
         }
@@ -840,7 +840,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other vector.</param>
         /// <returns>Whether or not the vectors are exactly equal.</returns>
-        public bool Equals(Vector4 other)
+        public readonly bool Equals(Vector4 other)
         {
             return x == other.x && y == other.y && z == other.z && w == other.w;
         }
@@ -851,7 +851,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other vector to compare.</param>
         /// <returns>Whether or not the vectors are approximately equal.</returns>
-        public bool IsEqualApprox(Vector4 other)
+        public readonly bool IsEqualApprox(Vector4 other)
         {
             return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z) && Mathf.IsEqualApprox(w, other.w);
         }
@@ -860,7 +860,7 @@ namespace Godot
         /// Serves as the hash function for <see cref="Vector4"/>.
         /// </summary>
         /// <returns>A hash code for this vector.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
         }
@@ -878,7 +878,7 @@ namespace Godot
         /// Converts this <see cref="Vector4"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public string ToString(string format)
+        public readonly string ToString(string format)
         {
             return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)}, {w.ToString(format)})";
         }

@@ -17,6 +17,8 @@ namespace GodotTools.Export
 {
     public partial class ExportPlugin : EditorExportPlugin
     {
+        private List<string> _tempFolders = new List<string>();
+
         public void RegisterExportSettings()
         {
             // TODO: These would be better as export preset options, but that doesn't seem to be supported yet
@@ -111,62 +113,78 @@ namespace GodotTools.Export
 
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
-            // TODO: This works for now, as we only implemented support for x86 family desktop so far, but it needs to be fixed
-            string arch = features.Contains("x86_64") ? "x86_64" : "x86";
-
-            string ridOS = DetermineRuntimeIdentifierOS(platform);
-            string ridArch = DetermineRuntimeIdentifierArch(arch);
-            string runtimeIdentifier = $"{ridOS}-{ridArch}";
-
-            // Create temporary publish output directory
-
-            string publishOutputTempDir = Path.Combine(Path.GetTempPath(), "godot-publish-dotnet",
-                $"{Process.GetCurrentProcess().Id}-{buildConfig}-{runtimeIdentifier}");
-
-            if (!Directory.Exists(publishOutputTempDir))
-                Directory.CreateDirectory(publishOutputTempDir);
-
-            // Execute dotnet publish
-
-            if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
-                    runtimeIdentifier, publishOutputTempDir))
+            var archs = new List<string>();
+            if (features.Contains("x86_64"))
             {
-                throw new InvalidOperationException("Failed to build project.");
+                archs.Add("x86_64");
+            }
+            else if (features.Contains("x86_32"))
+            {
+                archs.Add("x86_32");
+            }
+            else if (features.Contains("arm64"))
+            {
+                archs.Add("arm64");
+            }
+            else if (features.Contains("universal"))
+            {
+                if (platform == OS.Platforms.MacOS)
+                {
+                    archs.Add("x86_64");
+                    archs.Add("arm64");
+                }
             }
 
-            string soExt = ridOS switch
+            foreach (var arch in archs)
             {
-                OS.DotNetOS.Win or OS.DotNetOS.Win10 => "dll",
-                OS.DotNetOS.OSX or OS.DotNetOS.iOS => "dylib",
-                _ => "so"
-            };
+                string ridOS = DetermineRuntimeIdentifierOS(platform);
+                string ridArch = DetermineRuntimeIdentifierArch(arch);
+                string runtimeIdentifier = $"{ridOS}-{ridArch}";
+                string projectDataDirName = $"{DetermineDataDirNameForProject()}_{arch}";
+                if (platform == OS.Platforms.MacOS)
+                {
+                    projectDataDirName = Path.Combine("Contents", "Resources", projectDataDirName);
+                }
 
-            if (!File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpDirs.ProjectAssemblyName}.dll"))
-                // NativeAOT shared library output
-                && !File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpDirs.ProjectAssemblyName}.{soExt}")))
-            {
-                throw new NotSupportedException(
-                    "Publish succeeded but project assembly not found in the output directory");
-            }
+                // Create temporary publish output directory
 
-            // Copy all files from the dotnet publish output directory to
-            // a data directory next to the Godot output executable.
+                string publishOutputTempDir = Path.Combine(Path.GetTempPath(), "godot-publish-dotnet",
+                    $"{Process.GetCurrentProcess().Id}-{buildConfig}-{runtimeIdentifier}");
 
-            string outputDataDir = Path.Combine(outputDir, DetermineDataDirNameForProject());
+                _tempFolders.Add(publishOutputTempDir);
 
-            if (Directory.Exists(outputDataDir))
-                Directory.Delete(outputDataDir, recursive: true); // Clean first
+                if (!Directory.Exists(publishOutputTempDir))
+                    Directory.CreateDirectory(publishOutputTempDir);
 
-            Directory.CreateDirectory(outputDataDir);
+                // Execute dotnet publish
 
-            foreach (string dir in Directory.GetDirectories(publishOutputTempDir, "*", SearchOption.AllDirectories))
-            {
-                Directory.CreateDirectory(Path.Combine(outputDataDir, dir.Substring(publishOutputTempDir.Length + 1)));
-            }
+                if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
+                        runtimeIdentifier, publishOutputTempDir))
+                {
+                    throw new InvalidOperationException("Failed to build project.");
+                }
 
-            foreach (string file in Directory.GetFiles(publishOutputTempDir, "*", SearchOption.AllDirectories))
-            {
-                File.Copy(file, Path.Combine(outputDataDir, file.Substring(publishOutputTempDir.Length + 1)));
+                string soExt = ridOS switch
+                {
+                    OS.DotNetOS.Win or OS.DotNetOS.Win10 => "dll",
+                    OS.DotNetOS.OSX or OS.DotNetOS.iOS => "dylib",
+                    _ => "so"
+                };
+
+                if (!File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpDirs.ProjectAssemblyName}.dll"))
+                    // NativeAOT shared library output
+                    && !File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpDirs.ProjectAssemblyName}.{soExt}")))
+                {
+                    throw new NotSupportedException(
+                        "Publish succeeded but project assembly not found in the output directory");
+                }
+
+                // Add to the exported project shared object list.
+
+                foreach (string file in Directory.GetFiles(publishOutputTempDir, "*", SearchOption.AllDirectories))
+                {
+                    AddSharedObject(file, tags: null, projectDataDirName);
+                }
             }
         }
 
@@ -197,6 +215,12 @@ namespace GodotTools.Export
 
             if (Directory.Exists(aotTempDir))
                 Directory.Delete(aotTempDir, recursive: true);
+
+            foreach (string folder in _tempFolders)
+            {
+                Directory.Delete(folder, recursive: true);
+            }
+            _tempFolders.Clear();
 
             // TODO: The following is just a workaround until the export plugins can be made to abort with errors
 

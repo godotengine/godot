@@ -159,6 +159,7 @@ private:
 		}
 	};
 
+	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		// Global relations.
 
@@ -200,7 +201,7 @@ private:
 		int h_size_flags = SIZE_FILL;
 		int v_size_flags = SIZE_FILL;
 		real_t expand = 1.0;
-		Point2i custom_minimum_size;
+		Point2 custom_minimum_size;
 
 		// Input events and rendering.
 
@@ -217,6 +218,8 @@ private:
 		NodePath focus_neighbor[4];
 		NodePath focus_next;
 		NodePath focus_prev;
+
+		ObjectID shortcut_context;
 
 		// Theming.
 
@@ -246,6 +249,7 @@ private:
 		bool is_rtl = false;
 
 		bool auto_translate = true;
+		bool localize_numeral_system = true;
 
 		// Extra properties.
 
@@ -442,7 +446,6 @@ public:
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_screen_rect() const;
-	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the rendering server
 	Rect2 get_anchorable_rect() const override;
 
 	void set_scale(const Vector2 &p_scale);
@@ -460,8 +463,8 @@ public:
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 
-	void set_custom_minimum_size(const Size2i &p_custom);
-	Size2i get_custom_minimum_size() const;
+	void set_custom_minimum_size(const Size2 &p_custom);
+	Size2 get_custom_minimum_size() const;
 
 	// Container sizing.
 
@@ -486,6 +489,10 @@ public:
 	bool is_force_pass_scroll_events() const;
 
 	void warp_mouse(const Point2 &p_position);
+
+	bool is_focus_owner_in_shortcut_context() const;
+	void set_shortcut_context(const Node *p_node);
+	Node *get_shortcut_context() const;
 
 	// Drag and drop handling.
 
@@ -588,6 +595,9 @@ public:
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	virtual bool is_layout_rtl() const;
+
+	void set_localize_numeral_system(bool p_enable);
+	bool is_localizing_numeral_system() const;
 
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;

@@ -38,6 +38,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/separator.h"
 
 #define CHECK_PLUGIN_INITIALIZED() \
@@ -430,7 +431,7 @@ void VersionControlEditorPlugin::_discard_file(String p_file_path, EditorVCSInte
 		CHECK_PLUGIN_INITIALIZED();
 		EditorVCSInterface::get_singleton()->discard_file(p_file_path);
 	}
-	// FIXIT: The project.godot file shows weird behaviour
+	// FIXIT: The project.godot file shows weird behavior
 	EditorFileSystem::get_singleton()->update_file(p_file_path);
 }
 
@@ -987,7 +988,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	metadata_dialog->set_title(TTR("Create Version Control Metadata"));
 	metadata_dialog->set_min_size(Size2(200, 40));
 	metadata_dialog->get_ok_button()->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_create_vcs_metadata_files));
-	version_control_actions->add_child(metadata_dialog);
+	add_child(metadata_dialog);
 
 	VBoxContainer *metadata_vb = memnew(VBoxContainer);
 	metadata_dialog->add_child(metadata_vb);
@@ -1016,7 +1017,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_dialog->set_min_size(Size2(600, 100));
 	set_up_dialog->add_cancel_button("Cancel");
 	set_up_dialog->set_hide_on_ok(true);
-	version_control_actions->add_child(set_up_dialog);
+	add_child(set_up_dialog);
 
 	Button *set_up_apply_button = set_up_dialog->get_ok_button();
 	set_up_apply_button->set_text(TTR("Apply"));

@@ -82,13 +82,13 @@ TEST_CASE("[Vector4i] Length methods") {
 			vector1.length_squared() == 400,
 			"Vector4i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector1.length(), 20),
+			vector1.length() == doctest::Approx(20),
 			"Vector4i length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 5400,
 			"Vector4i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(vector2.length(), 73.4846922835),
+			vector2.length() == doctest::Approx(73.4846922835),
 			"Vector4i length should work as expected.");
 }
 
@@ -128,6 +128,14 @@ TEST_CASE("[Vector4i] Operators") {
 	CHECK_MESSAGE(
 			Vector4i(Vector4(1.1, 2.9, 3.9, 100.5)) == Vector4i(1, 2, 3, 100),
 			"Vector4i constructed from Vector4 should work as expected.");
+}
+
+TEST_CASE("[Vector3i] Other methods") {
+	const Vector4i vector = Vector4i(1, 3, -7, 13);
+
+	CHECK_MESSAGE(
+			vector.snapped(Vector4i(4, 2, 5, 8)) == Vector4i(0, 4, -5, 16),
+			"Vector4i snapped should work as expected.");
 }
 
 TEST_CASE("[Vector4i] Abs and sign methods") {

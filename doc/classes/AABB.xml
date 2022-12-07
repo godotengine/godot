@@ -188,6 +188,7 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="dir" type="Vector3" />
 			<description>
+				Returns [code]true[/code] if the given ray intersects with this [AABB]. Ray length is infinite.
 			</description>
 		</method>
 		<method name="intersects_segment" qualifiers="const">
@@ -203,6 +204,12 @@
 			<param index="0" name="aabb" type="AABB" />
 			<description>
 				Returns [code]true[/code] if this [AABB] and [param aabb] are approximately equal, by calling [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [AABB] is finite, by calling [method @GlobalScope.is_finite] on each component.
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">

@@ -70,15 +70,20 @@ protected:
 		bool default_value = false;
 	};
 
+	struct Feedback {
+		const char *name;
+		uint64_t specialization;
+	};
+
 private:
 	//versions
 	CharString general_defines;
 
 	// A version is a high-level construct which is a combination of built-in and user-defined shader code, Each user-created Shader makes one version
-	// Variants use #ifdefs to toggle behaviour on and off to change behaviour of the shader
+	// Variants use #ifdefs to toggle behavior on and off to change behavior of the shader
 	// All variants are compiled each time a new version is created
-	// Specializations use #ifdefs to toggle behaviour on and off for performance, on supporting hardware, they will compile a version with everything enabled, and then compile more copies to improve performance
-	// Use specializations to enable and disabled advanced features, use variants to toggle behaviour when different data may be used (e.g. using a samplerArray vs a sampler, or doing a depth prepass vs a color pass)
+	// Specializations use #ifdefs to toggle behavior on and off for performance, on supporting hardware, they will compile a version with everything enabled, and then compile more copies to improve performance
+	// Use specializations to enable and disabled advanced features, use variants to toggle behavior when different data may be used (e.g. using a samplerArray vs a sampler, or doing a depth prepass vs a color pass)
 	struct Version {
 		Vector<StringName> texture_uniforms;
 		CharString uniforms;
@@ -153,7 +158,7 @@ private:
 
 	StageTemplate stage_templates[STAGE_TYPE_MAX];
 
-	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template, uint64_t p_specialization);
+	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization);
 
 	void _add_stage(const char *p_code, StageType p_stage_type);
 
@@ -165,6 +170,8 @@ private:
 	int uniform_count = 0;
 	const UBOPair *ubo_pairs = nullptr;
 	int ubo_count = 0;
+	const Feedback *feedbacks;
+	int feedback_count = 0;
 	const TexUnitPair *texunit_pairs = nullptr;
 	int texunit_pair_count = 0;
 	int specialization_count = 0;
@@ -178,13 +185,13 @@ private:
 
 protected:
 	ShaderGLES3();
-	void _setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants);
+	void _setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_feedback_count, const Feedback *p_feedback, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants);
 
-	_FORCE_INLINE_ void _version_bind_shader(RID p_version, int p_variant, uint64_t p_specialization) {
-		ERR_FAIL_INDEX(p_variant, variant_count);
+	_FORCE_INLINE_ bool _version_bind_shader(RID p_version, int p_variant, uint64_t p_specialization) {
+		ERR_FAIL_INDEX_V(p_variant, variant_count, false);
 
 		Version *version = version_owner.get_or_null(p_version);
-		ERR_FAIL_COND(!version);
+		ERR_FAIL_COND_V(!version, false);
 
 		if (version->variants.size() == 0) {
 			_initialize_version(version); //may lack initialization
@@ -208,11 +215,14 @@ protected:
 			spec = version->variants[p_variant].lookup_ptr(specialization_default_mask);
 		}
 
-		ERR_FAIL_COND(!spec); // Should never happen
-		ERR_FAIL_COND(!spec->ok); // Should never happen
+		if (!spec || !spec->ok) {
+			WARN_PRINT_ONCE("shader failed to compile, unable to bind shader.");
+			return false;
+		}
 
 		glUseProgram(spec->id);
 		current_shader = spec;
+		return true;
 	}
 
 	_FORCE_INLINE_ int _version_get_uniform(int p_which, RID p_version, int p_variant, uint64_t p_specialization) {

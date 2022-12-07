@@ -443,9 +443,9 @@ private:
 	bool deselect_on_focus_loss_enabled = true;
 	bool drag_and_drop_selection_enabled = true;
 
-	Color font_selected_color = Color(1, 1, 1);
+	Color font_selected_color = Color(0, 0, 0, 0);
 	Color selection_color = Color(1, 1, 1);
-	bool override_selected_font_color = false;
+	bool use_selected_font_color = false;
 
 	bool selection_drag_attempt = false;
 	bool dragging_selection = false;
@@ -597,6 +597,10 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _move_caret_document_start(bool p_select);
 	void _move_caret_document_end(bool p_select);
+	bool _clear_carets_and_selection();
+
+	// Used in add_caret_at_carets
+	void _get_above_below_caret_line_column(int p_old_line, int p_old_wrap_index, int p_old_column, bool p_below, int &p_new_line, int &p_new_column, int p_last_fit_x = -1) const;
 
 protected:
 	void _notification(int p_what);
@@ -816,6 +820,7 @@ public:
 	void remove_secondary_carets();
 	void merge_overlapping_carets();
 	int get_caret_count() const;
+	void add_caret_at_carets(bool p_below);
 
 	Vector<int> get_caret_index_edit_order();
 	void adjust_carets_after_edit(int p_caret, int p_from_line, int p_from_col, int p_to_line, int p_to_col);
@@ -851,6 +856,7 @@ public:
 
 	void select_all();
 	void select_word_under_caret(int p_caret = -1);
+	void add_selection_for_next_occurrence();
 	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column, int p_caret = 0);
 
 	bool has_selection(int p_caret = -1) const;
@@ -885,6 +891,9 @@ public:
 
 	void set_scroll_past_end_of_file_enabled(const bool p_enabled);
 	bool is_scroll_past_end_of_file_enabled() const;
+
+	VScrollBar *get_v_scroll_bar() const;
+	HScrollBar *get_h_scroll_bar() const;
 
 	void set_v_scroll(double p_scroll);
 	double get_v_scroll() const;

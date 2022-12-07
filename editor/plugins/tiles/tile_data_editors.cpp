@@ -38,7 +38,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/separator.h"
 
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
@@ -128,7 +133,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
-	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
 	const Ref<Texture2D> add_handle = get_theme_icon(SNAME("EditorHandleAdd"), SNAME("EditorIcons"));
 	const Ref<StyleBox> focus_stylebox = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"));
@@ -153,7 +158,14 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw the background.
 	if (background_texture.is_valid()) {
-		base_control->draw_texture_rect_region(background_texture, Rect2(-background_region.size / 2 - background_offset, background_region.size), background_region, background_modulate, background_transpose);
+		Size2 region_size = background_region.size;
+		if (background_h_flip) {
+			region_size.x = -region_size.x;
+		}
+		if (background_v_flip) {
+			region_size.y = -region_size.y;
+		}
+		base_control->draw_texture_rect_region(background_texture, Rect2(-background_region.size / 2 - background_offset, region_size), background_region, background_modulate, background_transpose);
 	}
 
 	// Draw the polygons.
@@ -255,7 +267,7 @@ void GenericTilePolygonEditor::_zoom_changed() {
 void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 	Ref<EditorUndoRedoManager> undo_redo;
 	if (use_undo_redo) {
-		undo_redo = editor_undo_redo;
+		undo_redo = EditorNode::get_undo_redo();
 	} else {
 		// This nice hack allows for discarding undo actions without making code too complex.
 		undo_redo.instantiate();
@@ -420,7 +432,7 @@ void GenericTilePolygonEditor::_snap_to_half_pixel(Point2 &r_point) {
 void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) {
 	Ref<EditorUndoRedoManager> undo_redo;
 	if (use_undo_redo) {
-		undo_redo = editor_undo_redo;
+		undo_redo = EditorNode::get_undo_redo();
 	} else {
 		// This nice hack allows for discarding undo actions without making code too complex.
 		undo_redo.instantiate();
@@ -756,8 +768,6 @@ void GenericTilePolygonEditor::_bind_methods() {
 }
 
 GenericTilePolygonEditor::GenericTilePolygonEditor() {
-	editor_undo_redo = EditorNode::get_undo_redo();
-
 	toolbar = memnew(HBoxContainer);
 	add_child(toolbar);
 
@@ -831,6 +841,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	editor_zoom_widget = memnew(EditorZoomWidget);
 	editor_zoom_widget->set_position(Vector2(5, 5));
 	editor_zoom_widget->connect("zoom_changed", callable_mp(this, &GenericTilePolygonEditor::_zoom_changed).unbind(1));
+	editor_zoom_widget->set_shortcut_context(this);
 	root->add_child(editor_zoom_widget);
 
 	button_center_view = memnew(Button);
@@ -845,6 +856,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 void TileDataDefaultEditor::_property_value_changed(StringName p_property, Variant p_value, StringName p_field) {
 	ERR_FAIL_COND(!dummy_object);
 	dummy_object->set(p_property, p_value);
+	emit_signal(SNAME("needs_redraw"));
 }
 
 Variant TileDataDefaultEditor::_get_painted_value() {
@@ -875,6 +887,7 @@ Variant TileDataDefaultEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_s
 }
 
 void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/%s", coords.x, coords.y, E.key.alternative_tile, property), E.value);
@@ -884,7 +897,7 @@ void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_s
 
 void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
 	if (drag_type == DRAG_TYPE_PAINT_RECT) {
-		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 
 		p_canvas_item->draw_set_transform_matrix(p_transform);
@@ -943,6 +956,7 @@ void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_ti
 		}
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
@@ -1066,6 +1080,7 @@ void TileDataDefaultEditor::forward_painting_alternatives_gui_input(TileAtlasVie
 					drag_last_pos = mb->get_position();
 				}
 			} else {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Painting Tiles Property"));
 				_setup_undo_redo_action(p_tile_set_atlas_source, drag_modified, drag_painted_value);
 				undo_redo->commit_action(false);
@@ -1116,7 +1131,7 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 
 		Color color = Color(1, 1, 1);
 		if (p_selected) {
-			Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 			selection_color.set_v(0.9);
 			color = selection_color;
@@ -1137,10 +1152,11 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p_property, String p_label, Variant p_default_value) {
 	ERR_FAIL_COND_MSG(!property.is_empty(), "Cannot setup TileDataDefaultEditor twice");
 	property = p_property;
+	property_type = p_type;
 
 	// Update everything.
 	if (property_editor) {
-		property_editor->queue_delete();
+		property_editor->queue_free();
 	}
 
 	// Update the dummy object.
@@ -1181,9 +1197,11 @@ void TileDataDefaultEditor::_notification(int p_what) {
 	}
 }
 
-TileDataDefaultEditor::TileDataDefaultEditor() {
-	undo_redo = EditorNode::get_undo_redo();
+Variant::Type TileDataDefaultEditor::get_property_type() {
+	return property_type;
+}
 
+TileDataDefaultEditor::TileDataDefaultEditor() {
 	label = memnew(Label);
 	label->set_text(TTR("Painting:"));
 	label->set_theme_type_variation("HeaderSmall");
@@ -1199,7 +1217,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 }
 
 TileDataDefaultEditor::~TileDataDefaultEditor() {
-	toolbar->queue_delete();
+	toolbar->queue_free();
 	memdelete(dummy_object);
 }
 
@@ -1210,7 +1228,7 @@ void TileDataTextureOffsetEditor::draw_over_tile(CanvasItem *p_canvas_item, Tran
 	Vector2i tile_set_tile_size = tile_set->get_tile_size();
 	Color color = Color(1.0, 0.0, 0.0);
 	if (p_selected) {
-		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		color = selection_color;
 	}
@@ -1232,7 +1250,7 @@ void TileDataPositionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 
 	Color color = Color(1.0, 1.0, 1.0);
 	if (p_selected) {
-		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		color = selection_color;
 	}
@@ -1246,7 +1264,7 @@ void TileDataYSortEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D 
 
 	Color color = Color(1.0, 1.0, 1.0);
 	if (p_selected) {
-		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		color = selection_color;
 	}
@@ -1258,7 +1276,7 @@ void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 	TileData *tile_data = _get_tile_data(p_cell);
 	ERR_FAIL_COND(!tile_data);
 
-	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	Color color = grid_color.darkened(0.2);
 	if (p_selected) {
@@ -1314,6 +1332,7 @@ Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_
 }
 
 void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/occlusion_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, occlusion_layer), E.value);
@@ -1334,8 +1353,6 @@ void TileDataOcclusionShapeEditor::_notification(int p_what) {
 }
 
 TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	add_child(polygon_editor);
 }
@@ -1402,11 +1419,11 @@ void TileDataCollisionEditor::_polygons_changed() {
 		dummy_object->remove_dummy_property(vformat("polygon_%d_one_way_margin", i));
 	}
 	for (int i = polygon_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way", i)); i++) {
-		property_editors[vformat("polygon_%d_one_way", i)]->queue_delete();
+		property_editors[vformat("polygon_%d_one_way", i)]->queue_free();
 		property_editors.erase(vformat("polygon_%d_one_way", i));
 	}
 	for (int i = polygon_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way_margin", i)); i++) {
-		property_editors[vformat("polygon_%d_one_way_margin", i)]->queue_delete();
+		property_editors[vformat("polygon_%d_one_way_margin", i)]->queue_free();
 		property_editors.erase(vformat("polygon_%d_one_way_margin", i));
 	}
 }
@@ -1495,6 +1512,7 @@ Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas
 
 void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
 	Array new_array = p_new_value;
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Array old_array = E.value;
 
@@ -1531,8 +1549,6 @@ void TileDataCollisionEditor::_notification(int p_what) {
 }
 
 TileDataCollisionEditor::TileDataCollisionEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	polygon_editor->set_multiple_polygon_mode(true);
 	polygon_editor->connect("polygons_changed", callable_mp(this, &TileDataCollisionEditor::_polygons_changed));
@@ -1577,7 +1593,7 @@ void TileDataCollisionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfor
 	// Draw all shapes.
 	Vector<Color> color;
 	if (p_selected) {
-		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		selection_color.a = 0.7;
 		color.push_back(selection_color);
@@ -1750,7 +1766,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 
 	if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET_RECT) {
 		// Draw selection rectangle.
-		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 
 		p_canvas_item->draw_set_transform_matrix(p_transform);
@@ -2179,6 +2195,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					}
 				}
 			} else {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET_RECT) {
 					Rect2i rect;
 					rect.set_position(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_start_pos));
@@ -2475,9 +2492,6 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 
 						if (terrain_set == -1 || !tile_data || tile_data->get_terrain_set() != terrain_set) {
 							// Paint terrain sets.
-							if (mb->get_button_index() == MouseButton::RIGHT) {
-								terrain_set = -1;
-							}
 							drag_type = DRAG_TYPE_PAINT_TERRAIN_SET;
 							drag_modified.clear();
 							drag_painted_value = int(dummy_object->get("terrain_set"));
@@ -2554,6 +2568,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 					}
 				}
 			} else {
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET) {
 					undo_redo->create_action(TTR("Painting Tiles Property"));
 					for (KeyValue<TileMapCell, Variant> &E : drag_modified) {
@@ -2619,8 +2634,6 @@ void TileDataTerrainsEditor::_notification(int p_what) {
 }
 
 TileDataTerrainsEditor::TileDataTerrainsEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	label = memnew(Label);
 	label->set_text(TTR("Painting:"));
 	label->set_theme_type_variation("HeaderSmall");
@@ -2657,7 +2670,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 }
 
 TileDataTerrainsEditor::~TileDataTerrainsEditor() {
-	toolbar->queue_delete();
+	toolbar->queue_free();
 	memdelete(dummy_object);
 }
 
@@ -2704,6 +2717,7 @@ Variant TileDataNavigationEditor::_get_value(TileSetAtlasSource *p_tile_set_atla
 }
 
 void TileDataNavigationEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/navigation_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, navigation_layer), E.value);
@@ -2726,8 +2740,6 @@ void TileDataNavigationEditor::_notification(int p_what) {
 }
 
 TileDataNavigationEditor::TileDataNavigationEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	polygon_editor->set_multiple_polygon_mode(true);
 	add_child(polygon_editor);
@@ -2752,7 +2764,7 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 		color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
 #endif // DEBUG_ENABLED
 		if (p_selected) {
-			Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 			selection_color.a = 0.7;
 			color = selection_color;

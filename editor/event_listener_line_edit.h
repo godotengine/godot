@@ -44,7 +44,7 @@ class EventListenerLineEdit : public LineEdit {
 	GDCLASS(EventListenerLineEdit, LineEdit)
 
 	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
-	bool ignore = true;
+	bool ignore_next_event = true;
 	bool share_keycodes = false;
 	Ref<InputEvent> event;
 
@@ -61,11 +61,16 @@ protected:
 	static void _bind_methods();
 
 public:
+	static String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device);
+	static String get_device_string(int p_device);
+
 	Ref<InputEvent> get_event() const;
 	void clear_event();
 
 	void set_allowed_input_types(int input_types);
 	int get_allowed_input_types() const;
+
+	void grab_focus();
 
 public:
 	EventListenerLineEdit();

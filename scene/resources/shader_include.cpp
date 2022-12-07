@@ -81,7 +81,7 @@ Ref<Resource> ResourceFormatLoaderShaderInclude::load(const String &p_path, cons
 	Ref<ShaderInclude> shader_inc;
 	shader_inc.instantiate();
 
-	Vector<uint8_t> buffer = FileAccess::get_file_as_array(p_path);
+	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path);
 
 	String str;
 	str.parse_utf8((const char *)buffer.ptr(), buffer.size());

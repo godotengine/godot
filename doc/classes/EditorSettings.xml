@@ -196,10 +196,10 @@
 			The thumbnail size to use in the FileSystem dock (in pixels). See also [member filesystem/file_dialog/thumbnail_size].
 		</member>
 		<member name="docks/property_editor/auto_refresh_interval" type="float" setter="" getter="">
-			The refresh interval to use for the inspector dock's properties. The effect of this setting is mainly noticeable when adjusting gizmos in the 2D/3D editor and looking at the inspector at the same time. Lower values make the inspector more often, but take up more CPU time.
+			The refresh interval to use for the Inspector dock's properties. The effect of this setting is mainly noticeable when adjusting gizmos in the 2D/3D editor and looking at the inspector at the same time. Lower values make the inspector more often, but take up more CPU time.
 		</member>
 		<member name="docks/property_editor/subresource_hue_tint" type="float" setter="" getter="">
-			The tint intensity to use for the subresources background in the inspector dock. The tint is used to distinguish between different subresources in the inspector. Higher values result in a more noticeable background color difference.
+			The tint intensity to use for the subresources background in the Inspector dock. The tint is used to distinguish between different subresources in the inspector. Higher values result in a more noticeable background color difference.
 		</member>
 		<member name="docks/scene_tree/auto_expand_to_selected" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will automatically unfold nodes when a node that has folded parents is selected.
@@ -363,7 +363,7 @@
 			The color to use for the selection box that surrounds selected nodes in the 3D editor viewport. The color's alpha channel influences the selection box's opacity.
 		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/instantiated" type="Color" setter="" getter="">
-			The color override to use for 3D editor gizmos if the [Node3D] in question is part of an instanced scene file (from the perspective of the current scene).
+			The color override to use for 3D editor gizmos if the [Node3D] in question is part of an instantiated scene file (from the perspective of the current scene).
 		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/joint" type="Color" setter="" getter="">
 			The 3D editor gizmo color for [Joint3D]s and [PhysicalBone3D]s.
@@ -457,6 +457,12 @@
 			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
 			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
 		</member>
+		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
+			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
+			- [b]Auto[/b] follows the platform convention: Cancel first on macOS and Linux, OK first on Windows.
+			- [b]Cancel First[/b] forces the ordering Cancel/OK.
+			- [b]OK First[/b] forces the ordering OK/Cancel.
+		</member>
 		<member name="interface/editor/automatically_open_screenshots" type="bool" setter="" getter="">
 			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
 		</member>
@@ -510,7 +516,7 @@
 			If set to [b]Auto[/b], the font hinting mode will be set to match the current operating system in use. This means the [b]Light[/b] hinting mode will be used on Windows and Linux, and the [b]None[/b] hinting mode will be used on macOS.
 		</member>
 		<member name="interface/editor/font_subpixel_positioning" type="int" setter="" getter="">
-			The subpixel positioning mode to use when rendering editor font glyphs. This affects both the main and code fonts. [b]Disabled[/b] is the fastest to render and uses the least memory. [b]Auto[/b] only uses subpixel positioning for small font sizes (where the benefit is the most noticeable). [b]One half of a pixel[/b] and [b]One quarter of a pixel[/b] force the same subpixel positioning mode for all editor fonts, regardless of their size (with [b]One quarter of a pixel[/b] being the highest-quality option).
+			The subpixel positioning mode to use when rendering editor font glyphs. This affects both the main and code fonts. [b]Disabled[/b] is the fastest to render and uses the least memory. [b]Auto[/b] only uses subpixel positioning for small font sizes (where the benefit is the most noticeable). [b]One Half of a Pixel[/b] and [b]One Quarter of a Pixel[/b] force the same subpixel positioning mode for all editor fonts, regardless of their size (with [b]One Quarter of a Pixel[/b] being the highest-quality option).
 		</member>
 		<member name="interface/editor/low_processor_mode_sleep_usec" type="float" setter="" getter="">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
@@ -585,6 +591,9 @@
 		</member>
 		<member name="interface/theme/custom_theme" type="String" setter="" getter="">
 			The custom theme resource to use for the editor. Must be a Godot theme resource in [code].tres[/code] or [code].res[/code] format.
+		</member>
+		<member name="interface/theme/draw_extra_borders" type="bool" setter="" getter="">
+			If [code]true[/code], draws additional borders around interactive UI elements in the editor. This is automatically enabled when using the [b]Black (OLED)[/b] theme preset, as this theme preset uses a fully black background.
 		</member>
 		<member name="interface/theme/icon_and_font_color" type="int" setter="" getter="">
 			The icon and font color scheme to use in the editor.
@@ -671,19 +680,19 @@
 			If [code]true[/code], displays line length guidelines to help you keep line lengths in check. See also [member text_editor/appearance/guidelines/line_length_guideline_soft_column] and [member text_editor/appearance/guidelines/line_length_guideline_hard_column].
 		</member>
 		<member name="text_editor/appearance/gutters/highlight_type_safe_lines" type="bool" setter="" getter="">
-			If [code]true[/code], highlights type-safe lines by displaying their line number color with [member text_editor/theme/highlighting/safe_line_number_color] instead of [member text_editor/theme/highlighting/line_number_color]. Type-safe lines are lines of code where the type of all variables is known at compile-time. These type-safe lines will run faster in Godot 4.0 and later thanks to typed instructions.
+			If [code]true[/code], highlights type-safe lines by displaying their line number color with [member text_editor/theme/highlighting/safe_line_number_color] instead of [member text_editor/theme/highlighting/line_number_color]. Type-safe lines are lines of code where the type of all variables is known at compile-time. These type-safe lines may run faster thanks to typed instructions.
 		</member>
 		<member name="text_editor/appearance/gutters/line_numbers_zero_padded" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers with zero padding (e.g. [code]007[/code] instead of [code]7[/code]).
 		</member>
 		<member name="text_editor/appearance/gutters/show_bookmark_gutter" type="bool" setter="" getter="">
-			If [code]true[/code], displays a gutter at the left containing icons for bookmarks.
+			If [code]true[/code], displays icons for bookmarks in a gutter at the left. Bookmarks remain functional when this setting is disabled.
 		</member>
 		<member name="text_editor/appearance/gutters/show_info_gutter" type="bool" setter="" getter="">
 			If [code]true[/code], displays a gutter at the left containing icons for methods with signal connections.
 		</member>
 		<member name="text_editor/appearance/gutters/show_line_numbers" type="bool" setter="" getter="">
-			If [code]true[/code], displays line numbers in the gutter at the left.
+			If [code]true[/code], displays line numbers in a gutter at the left.
 		</member>
 		<member name="text_editor/appearance/lines/code_folding" type="bool" setter="" getter="">
 			If [code]true[/code], displays the folding arrows next to indented code sections and allows code folding. If [code]false[/code], hides the folding arrows next to indented code sections and disallows code folding.
@@ -752,7 +761,7 @@
 			[b]Note:[/b] You can hold down [kbd]Alt[/kbd] while using the mouse wheel to temporarily scroll 5 times faster.
 		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
-			If [code]true[/code], adds static typing hints such as [code]-&gt; void[/code] and [code]: int[/code] when performing method definition autocompletion.
+			If [code]true[/code], adds static typing hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key.
 		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
 			If [code]true[/code], automatically completes braces when making use of code completion.
@@ -803,7 +812,7 @@
 			The script editor's background color. If set to a translucent color, the editor theme's base color will be visible behind.
 		</member>
 		<member name="text_editor/theme/highlighting/base_type_color" type="Color" setter="" getter="">
-			The script editor's base type color (used for types like [Vector2], [Vector3], ...).
+			The script editor's base type color (used for types like [Vector2], [Vector3], [Color], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/bookmark_color" type="Color" setter="" getter="">
 			The script editor's bookmark icon color (displayed in the gutter).
@@ -863,10 +872,10 @@
 			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
-			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], some built-in methods, ...).
+			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/line_length_guideline_color" type="Color" setter="" getter="">
-			The script editor's color for the line length guideline. The "hard" line length guideline will be drawn with this color, whereas the "soft" line length guideline will be drawn with an opacity twice as low.
+			The script editor's color for the line length guideline. The "hard" line length guideline will be drawn with this color, whereas the "soft" line length guideline will be drawn with half of its opacity.
 		</member>
 		<member name="text_editor/theme/highlighting/line_number_color" type="Color" setter="" getter="">
 			The script editor's color for line numbers. See also [member text_editor/theme/highlighting/safe_line_number_color].
@@ -907,7 +916,7 @@
 			The script editor's background color for text. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/current_line_color].
 		</member>
 		<member name="text_editor/theme/highlighting/user_type_color" type="Color" setter="" getter="">
-			The script editor's color for user-defined types (using [code]@class_name[/code]).
+			The script editor's color for user-defined types (using [code]class_name[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].

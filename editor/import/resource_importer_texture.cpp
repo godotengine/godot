@@ -192,7 +192,7 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_path, const 
 		if (compress_mode < COMPRESS_VRAM_COMPRESSED) {
 			return false;
 		}
-		if (!ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc")) {
+		if (!GLOBAL_GET("rendering/textures/vram_compression/import_bptc")) {
 			return false;
 		}
 	}
@@ -233,7 +233,8 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
 
-	if (p_path.get_extension() == "svg") {
+	// Do path based customization only if a path was passed.
+	if (p_path.is_empty() || p_path.get_extension() == "svg") {
 		r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
 
 		// Editor use only, applies to SVG.
@@ -245,7 +246,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
-			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/textures/lossless_compression/force_png") ||
+			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") ||
 					!Image::_webp_mem_loader_func; // WebP module disabled.
 			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit
 			f->store_32(use_webp ? CompressedTexture2D::DATA_FORMAT_WEBP : CompressedTexture2D::DATA_FORMAT_PNG);
@@ -598,8 +599,8 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 		const bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
 		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGB565);
-		const bool can_bptc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc");
-		const bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
+		const bool can_bptc = GLOBAL_GET("rendering/textures/vram_compression/import_bptc");
+		const bool can_s3tc = GLOBAL_GET("rendering/textures/vram_compression/import_s3tc");
 
 		if (can_bptc) {
 			// Add to the list anyway.
@@ -644,13 +645,13 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			formats_imported.push_back("s3tc");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2")) {
+		if (GLOBAL_GET("rendering/textures/vram_compression/import_etc2")) {
 			_save_ctex(image, p_save_path + ".etc2.ctex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("etc2");
 			formats_imported.push_back("etc2");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc")) {
+		if (GLOBAL_GET("rendering/textures/vram_compression/import_etc")) {
 			_save_ctex(image, p_save_path + ".etc.ctex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("etc");
 			formats_imported.push_back("etc");
@@ -703,7 +704,7 @@ String ResourceImporterTexture::get_import_settings_string() const {
 	int index = 0;
 	while (compression_formats[index]) {
 		String setting_path = "rendering/textures/vram_compression/import_" + String(compression_formats[index]);
-		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		bool test = GLOBAL_GET(setting_path);
 		if (test) {
 			s += String(compression_formats[index]);
 		}
@@ -744,7 +745,7 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 	bool valid = true;
 	while (compression_formats[index]) {
 		String setting_path = "rendering/textures/vram_compression/import_" + String(compression_formats[index]);
-		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		bool test = GLOBAL_GET(setting_path);
 		if (test) {
 			if (!formats_imported.has(compression_formats[index])) {
 				valid = false;

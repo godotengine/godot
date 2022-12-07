@@ -78,6 +78,10 @@ bool MultiplayerPeer::is_refusing_new_connections() const {
 	return refuse_connections;
 }
 
+bool MultiplayerPeer::is_server_relay_supported() const {
+	return false;
+}
+
 void MultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transfer_channel", "channel"), &MultiplayerPeer::set_transfer_channel);
 	ClassDB::bind_method(D_METHOD("get_transfer_channel"), &MultiplayerPeer::get_transfer_channel);
@@ -86,8 +90,12 @@ void MultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_peer", "id"), &MultiplayerPeer::set_target_peer);
 
 	ClassDB::bind_method(D_METHOD("get_packet_peer"), &MultiplayerPeer::get_packet_peer);
+	ClassDB::bind_method(D_METHOD("get_packet_channel"), &MultiplayerPeer::get_packet_channel);
+	ClassDB::bind_method(D_METHOD("get_packet_mode"), &MultiplayerPeer::get_packet_mode);
 
 	ClassDB::bind_method(D_METHOD("poll"), &MultiplayerPeer::poll);
+	ClassDB::bind_method(D_METHOD("close"), &MultiplayerPeer::close);
+	ClassDB::bind_method(D_METHOD("disconnect_peer", "peer", "force"), &MultiplayerPeer::disconnect_peer, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_connection_status"), &MultiplayerPeer::get_connection_status);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &MultiplayerPeer::get_unique_id);
@@ -95,6 +103,8 @@ void MultiplayerPeer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "enable"), &MultiplayerPeer::set_refuse_new_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &MultiplayerPeer::is_refusing_new_connections);
+
+	ClassDB::bind_method(D_METHOD("is_server_relay_supported"), &MultiplayerPeer::is_server_relay_supported);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_mode", PROPERTY_HINT_ENUM, "Unreliable,Unreliable Ordered,Reliable"), "set_transfer_mode", "get_transfer_mode");
@@ -113,9 +123,6 @@ void MultiplayerPeer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("server_disconnected"));
-	ADD_SIGNAL(MethodInfo("connection_succeeded"));
-	ADD_SIGNAL(MethodInfo("connection_failed"));
 }
 
 /*************/
@@ -177,6 +184,14 @@ bool MultiplayerPeerExtension::is_refusing_new_connections() const {
 	return MultiplayerPeer::is_refusing_new_connections();
 }
 
+bool MultiplayerPeerExtension::is_server_relay_supported() const {
+	bool can_relay;
+	if (GDVIRTUAL_CALL(_is_server_relay_supported, can_relay)) {
+		return can_relay;
+	}
+	return MultiplayerPeer::is_server_relay_supported();
+}
+
 void MultiplayerPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_packet, "r_buffer", "r_buffer_size");
 	GDVIRTUAL_BIND(_put_packet, "p_buffer", "p_buffer_size");
@@ -197,6 +212,8 @@ void MultiplayerPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_packet_peer);
 	GDVIRTUAL_BIND(_is_server);
 	GDVIRTUAL_BIND(_poll);
+	GDVIRTUAL_BIND(_close);
+	GDVIRTUAL_BIND(_disconnect_peer, "p_peer", "p_force");
 	GDVIRTUAL_BIND(_get_unique_id);
 	GDVIRTUAL_BIND(_set_refuse_new_connections, "p_enable");
 	GDVIRTUAL_BIND(_is_refusing_new_connections);

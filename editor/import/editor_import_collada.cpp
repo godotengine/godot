@@ -65,7 +65,7 @@ struct ColladaImport {
 	bool force_make_tangents = false;
 	bool apply_mesh_xform_to_vertices = true;
 	bool use_mesh_builtin_materials = false;
-	float bake_fps = 15;
+	float bake_fps = 30;
 
 	HashMap<String, NodeMap> node_map; //map from collada node to engine node
 	HashMap<String, String> node_name_map; //map from collada node to engine node
@@ -1090,6 +1090,12 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 						c->set_point_tilt(i, tilts->array[i]);
 					}
 				}
+				if (cd.closed && pc > 1) {
+					Vector3 pos = c->get_point_position(0);
+					Vector3 in = c->get_point_in(0);
+					Vector3 out = c->get_point_out(0);
+					c->add_point(pos, in, out, -1);
+				}
 
 				curve_cache[ng->source] = c;
 				path->set_curve(c);
@@ -1754,7 +1760,7 @@ void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions
 	r_extensions->push_back("dae");
 }
 
-Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
 	if (r_err) {
 		*r_err = OK;
 	}
@@ -1765,7 +1771,7 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 	}
 
 	state.use_mesh_builtin_materials = true;
-	state.bake_fps = p_bake_fps;
+	state.bake_fps = (float)p_options["animation/fps"];
 
 	Error err = state.load(p_path, flags, p_flags & EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, false);
 

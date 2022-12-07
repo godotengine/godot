@@ -230,7 +230,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 		h = MAX(h / 2, 1);
 	}
 
-	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
 void image_decompress_cvtt(Image *p_image) {
@@ -339,5 +339,5 @@ void image_decompress_cvtt(Image *p_image) {
 		w >>= 1;
 		h >>= 1;
 	}
-	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }

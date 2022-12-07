@@ -70,6 +70,7 @@
 			<param index="0" name="euler" type="Vector3" />
 			<param index="1" name="order" type="int" default="2" />
 			<description>
+				Constructs a pure rotation Basis matrix from Euler angles in the specified Euler rotation order. By default, use YXZ order (most common). See the [enum EulerOrder] enum for possible values.
 			</description>
 		</method>
 		<method name="from_scale" qualifiers="static">
@@ -110,6 +111,12 @@
 			<param index="0" name="b" type="Basis" />
 			<description>
 				Returns [code]true[/code] if this basis and [param b] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this basis is finite, by calling [method @GlobalScope.is_finite] on each component.
 			</description>
 		</method>
 		<method name="looking_at" qualifiers="static">
@@ -190,18 +197,6 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="EULER_ORDER_XYZ" value="0">
-		</constant>
-		<constant name="EULER_ORDER_XZY" value="1">
-		</constant>
-		<constant name="EULER_ORDER_YXZ" value="2">
-		</constant>
-		<constant name="EULER_ORDER_YZX" value="3">
-		</constant>
-		<constant name="EULER_ORDER_ZXY" value="4">
-		</constant>
-		<constant name="EULER_ORDER_ZYX" value="5">
-		</constant>
 		<constant name="IDENTITY" value="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
 			The identity basis, with no rotation or scaling applied.
 			This is identical to calling [code]Basis()[/code] without any parameters. This constant can be used to make your code clearer, and for consistency with C#.

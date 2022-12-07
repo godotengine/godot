@@ -102,16 +102,16 @@ TEST_CASE("[Rect2] Basic setters") {
 
 TEST_CASE("[Rect2] Area getters") {
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2(0, 100, 1280, 720).get_area(), 921'600),
+			Rect2(0, 100, 1280, 720).get_area() == doctest::Approx(921'600),
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2(0, 100, -1280, -720).get_area(), 921'600),
+			Rect2(0, 100, -1280, -720).get_area() == doctest::Approx(921'600),
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2(0, 100, 1280, -720).get_area(), -921'600),
+			Rect2(0, 100, 1280, -720).get_area() == doctest::Approx(-921'600),
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2(0, 100, -1280, 720).get_area(), -921'600),
+			Rect2(0, 100, -1280, 720).get_area() == doctest::Approx(-921'600),
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
 			Math::is_zero_approx(Rect2(0, 100, 0, 720).get_area()),
@@ -300,6 +300,27 @@ TEST_CASE("[Rect2] Merging") {
 			Rect2(0, 100, 1280, 720).merge(Rect2(-4000, -4000, 100, 100)).is_equal_approx(Rect2(-4000, -4000, 5280, 4820)),
 			"merge() with non-enclosed Rect2 should return the expected result.");
 }
+
+TEST_CASE("[Rect2] Finite number checks") {
+	const Vector2 x(0, 1);
+	const Vector2 infinite(NAN, NAN);
+
+	CHECK_MESSAGE(
+			Rect2(x, x).is_finite(),
+			"Rect2 with all components finite should be finite");
+
+	CHECK_FALSE_MESSAGE(
+			Rect2(infinite, x).is_finite(),
+			"Rect2 with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Rect2(x, infinite).is_finite(),
+			"Rect2 with one component infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			Rect2(infinite, infinite).is_finite(),
+			"Rect2 with two components infinite should not be finite.");
+}
+
 } // namespace TestRect2
 
 #endif // TEST_RECT2_H

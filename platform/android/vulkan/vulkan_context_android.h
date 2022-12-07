@@ -31,6 +31,8 @@
 #ifndef VULKAN_CONTEXT_ANDROID_H
 #define VULKAN_CONTEXT_ANDROID_H
 
+#ifdef VULKAN_ENABLED
+
 #include "drivers/vulkan/vulkan_context.h"
 
 struct ANativeWindow;
@@ -47,5 +49,7 @@ public:
 protected:
 	bool _use_validation_layers() override;
 };
+
+#endif // VULKAN_ENABLED
 
 #endif // VULKAN_CONTEXT_ANDROID_H

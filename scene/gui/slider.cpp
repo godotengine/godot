@@ -138,10 +138,10 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_home") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_home", true) && p_event->is_pressed()) {
 			set_value(get_min());
 			accept_event();
-		} else if (p_event->is_action("ui_end") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_end", true) && p_event->is_pressed()) {
 			set_value(get_max());
 			accept_event();
 		}

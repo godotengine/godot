@@ -101,8 +101,7 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	scene->set_time(time_total, frame_step);
 
 	GLES3::Utilities *utils = GLES3::Utilities::get_singleton();
-	utils->info.render_final = utils->info.render;
-	utils->info.render.reset();
+	utils->_capture_timestamps_begin();
 
 	//scene->iteration();
 }
@@ -200,7 +199,7 @@ void RasterizerGLES3::finalize() {
 
 RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
-	if (!gladLoadGL()) {
+	if (!gladLoaderLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
 		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
 		// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
@@ -272,17 +271,49 @@ RasterizerGLES3::~RasterizerGLES3() {
 }
 
 void RasterizerGLES3::prepare_for_blitting_render_targets() {
+	// This is a hack, but this function is called one time after all viewports have been updated.
+	// So it marks the end of the frame for all viewports
+	// In the OpenGL renderer we have to call end_frame for each viewport so we can swap the
+	// buffers for each window before proceeding to the next.
+	// This allows us to only increment the frame after all viewports are done.
+	GLES3::Utilities *utils = GLES3::Utilities::get_singleton();
+	utils->capture_timestamps_end();
 }
 
-void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect) {
+void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer) {
 	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_render_target);
+
 	ERR_FAIL_COND(!rt);
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+	// We normally render to the render target upside down, so flip Y when blitting to the screen.
+	bool flip_y = true;
+	if (rt->overridden.color.is_valid()) {
+		// If we've overridden the render target's color texture, that means we
+		// didn't render upside down, so we don't need to flip it.
+		// We're probably rendering directly to an XR device.
+		flip_y = false;
+	}
+
+	GLuint read_fbo = 0;
+	if (rt->view_count > 1) {
+		glGenFramebuffers(1, &read_fbo);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, read_fbo);
+		glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, p_layer);
+	} else {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+	}
+
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-	// Flip content upside down to correct for coordinates.
-	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y, 0, p_screen_rect.size.y, p_screen_rect.size.x, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	Vector2i screen_rect_end = p_screen_rect.get_end();
+	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
+			p_screen_rect.position.x, flip_y ? screen_rect_end.y : p_screen_rect.position.y, screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y,
+			GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	if (read_fbo != 0) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glDeleteFramebuffers(1, &read_fbo);
+	}
 }
 
 // is this p_screen useless in a multi window environment?
@@ -293,7 +324,7 @@ void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_sc
 		RID rid_rt = blit.render_target;
 
 		Rect2 dst_rect = blit.dst_rect;
-		_blit_render_target_to_screen(rid_rt, p_screen, dst_rect);
+		_blit_render_target_to_screen(rid_rt, p_screen, dst_rect, blit.multi_view.use_layer ? blit.multi_view.layer : 0);
 	}
 }
 

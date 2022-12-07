@@ -227,6 +227,18 @@ void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void SubViewportContainer::add_child_notify(Node *p_child) {
+	if (Object::cast_to<SubViewport>(p_child)) {
+		queue_redraw();
+	}
+}
+
+void SubViewportContainer::remove_child_notify(Node *p_child) {
+	if (Object::cast_to<SubViewport>(p_child)) {
+		queue_redraw();
+	}
+}
+
 PackedStringArray SubViewportContainer::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 

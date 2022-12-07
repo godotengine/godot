@@ -130,16 +130,22 @@ Run a script.
 \fB\-\-check\-only\fR
 Only parse for errors and quit (use with --script).
 .TP
-\fB\-\-export\fR <preset> <path>
-Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.
+\fB\-\-export\-release\fR <preset> <path>
+Export the project in release mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.
 .br
-<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.
+<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').
+.br
+The target directory must exist.
 .TP
 \fB\-\-export\-debug\fR <preset> <path>
-Same as \-\-export, but using the debug template.
+Export the project in debug mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.
+.br
+<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').
+.br
+The target directory must exist.
 .TP
 \fB\-\-export\-pack\fR <preset> <path>
-Same as \-\-export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.
+Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.
 .TP
 \fB\-\-doctool\fR <path>
 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.
@@ -149,6 +155,12 @@ Disallow dumping the base types (used with \fB\-\-doctool\fR).
 .TP
 \fB\-\-build\-solutions\fR
 Build the scripting solutions (e.g. for C# projects). Implies \-\-editor and requires a valid project to edit.
+.TP
+\fB\-\-dump\-gdextension\-interface\fR
+Generate GDExtension header file 'gdnative_interface.h' in the current folder. This file is the base file required to implement a GDExtension.
+.TP
+\fB\-\-dump\-extension\-api\fR
+Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.
 .TP
 \fB\-\-test\fR <test>
 Run a unit test ('string', 'math', 'physics', 'physics_2d', 'render', 'oa_hash_map', 'gui', 'shaderlang', 'gd_tokenizer', 'gd_parser', 'gd_compiler', 'gd_bytecode', 'ordered_hash_map', 'astar').

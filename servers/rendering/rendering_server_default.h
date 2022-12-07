@@ -212,6 +212,7 @@ public:
 	FUNC1(texture_debug_usage, List<TextureInfo> *)
 
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
+	FUNC2RC(RID, texture_get_rd_texture_rid, RID, bool)
 
 	/* SHADER API */
 
@@ -610,6 +611,8 @@ public:
 	FUNC2(viewport_set_disable_environment, RID, bool)
 	FUNC2(viewport_set_disable_3d, RID, bool)
 
+	FUNC2(viewport_set_canvas_cull_mask, RID, uint32_t)
+
 	FUNC2(viewport_attach_camera, RID, RID)
 	FUNC2(viewport_set_scenario, RID, RID)
 	FUNC2(viewport_attach_canvas, RID, RID)
@@ -828,6 +831,8 @@ public:
 	FUNC2(canvas_item_set_visible, RID, bool)
 	FUNC2(canvas_item_set_light_mask, RID, int)
 
+	FUNC2(canvas_item_set_visibility_layer, RID, uint32_t)
+
 	FUNC2(canvas_item_set_update_when_visible, RID, bool)
 
 	FUNC2(canvas_item_set_transform, RID, const Transform2D &)
@@ -993,6 +998,8 @@ public:
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override;
 
 	virtual void set_print_gpu_profile(bool p_enable) override;
+
+	virtual Size2i get_maximum_viewport_size() const override;
 
 	RenderingServerDefault(bool p_create_thread = false);
 	~RenderingServerDefault();

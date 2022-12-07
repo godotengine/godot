@@ -44,6 +44,7 @@
 #include "node.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/gui/control.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
@@ -484,7 +485,7 @@ bool SceneTree::process(double p_time) {
 #ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
-		String env_path = ProjectSettings::get_singleton()->get(SNAME("rendering/environment/defaults/default_environment"));
+		String env_path = GLOBAL_GET(SNAME("rendering/environment/defaults/default_environment"));
 		env_path = env_path.strip_edges(); //user may have added a space or two
 		String cpath;
 		Ref<Environment> fallback = get_root()->get_world_3d()->get_fallback_environment();
@@ -895,6 +896,8 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 
 	call_lock++;
 
+	Vector<ObjectID> no_context_node_ids; // Nodes may be deleted due to this shortcut input.
+
 	for (int i = gr_node_count - 1; i >= 0; i--) {
 		if (p_viewport->is_input_handled()) {
 			break;
@@ -913,15 +916,35 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 			case CALL_INPUT_TYPE_INPUT:
 				n->_call_input(p_input);
 				break;
-			case CALL_INPUT_TYPE_SHORTCUT_INPUT:
+			case CALL_INPUT_TYPE_SHORTCUT_INPUT: {
+				const Control *c = Object::cast_to<Control>(n);
+				if (c) {
+					// If calling shortcut input on a control, ensure it respects the shortcut context.
+					// Shortcut context (based on focus) only makes sense for controls (UI), so don't need to worry about it for nodes
+					if (c->get_shortcut_context() == nullptr) {
+						no_context_node_ids.append(n->get_instance_id());
+						continue;
+					}
+					if (!c->is_focus_owner_in_shortcut_context()) {
+						continue;
+					}
+				}
 				n->_call_shortcut_input(p_input);
 				break;
+			}
 			case CALL_INPUT_TYPE_UNHANDLED_INPUT:
 				n->_call_unhandled_input(p_input);
 				break;
 			case CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT:
 				n->_call_unhandled_key_input(p_input);
 				break;
+		}
+	}
+
+	for (const ObjectID &id : no_context_node_ids) {
+		Node *n = Object::cast_to<Node>(ObjectDB::get_instance(id));
+		if (n) {
+			n->_call_shortcut_input(p_input);
 		}
 	}
 
@@ -1367,7 +1390,7 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
 	root->set_name("root");
-	root->set_title(ProjectSettings::get_singleton()->get("application/config/name"));
+	root->set_title(GLOBAL_GET("application/config/name"));
 
 #ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {
@@ -1389,6 +1412,9 @@ SceneTree::SceneTree() {
 	const int msaa_mode_3d = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/msaa_3d", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa_3d", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
 	root->set_msaa_3d(Viewport::MSAA(msaa_mode_3d));
+
+	const bool transparent_background = GLOBAL_DEF("rendering/transparent_background", false);
+	root->set_transparent_background(transparent_background);
 
 	const int ssaa_mode = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/screen_space_aa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/screen_space_aa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
@@ -1421,7 +1447,7 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vrs/texture",
 			PropertyInfo(Variant::STRING,
 					"rendering/vrs/texture",
-					PROPERTY_HINT_FILE, "*.png"));
+					PROPERTY_HINT_FILE, "*.bmp,*.png,*.tga,*.webp"));
 	if (vrs_mode == 1 && !vrs_texture_path.is_empty()) {
 		Ref<Image> vrs_image;
 		vrs_image.instantiate();

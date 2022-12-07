@@ -16,7 +16,7 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Returns the absolute value of a [Variant] parameter [param x] (i.e. non-negative value). Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				Returns the absolute value of a [Variant] parameter [param x] (i.e. non-negative value). Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var a = abs(-1)
 				# a is 1
@@ -36,6 +36,7 @@
 				var f = abs(Vector3i(-7, -8, -9))
 				# f is (7, 8, 9)
 				[/codeblock]
+				[b]Note:[/b] For better type safety, use [method absf], [method absi], [method Vector2.abs], [method Vector2i.abs], [method Vector3.abs], [method Vector3i.abs], [method Vector4.abs], or [method Vector4i.abs].
 			</description>
 		</method>
 		<method name="absf">
@@ -106,6 +107,17 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="bezier_derivative">
+			<return type="float" />
+			<param index="0" name="start" type="float" />
+			<param index="1" name="control_1" type="float" />
+			<param index="2" name="control_2" type="float" />
+			<param index="3" name="end" type="float" />
+			<param index="4" name="t" type="float" />
+			<description>
+				Returns the derivative at the given [param t] on a one-dimensional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bézier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
+			</description>
+		</method>
 		<method name="bezier_interpolate">
 			<return type="float" />
 			<param index="0" name="start" type="float" />
@@ -114,7 +126,7 @@
 			<param index="3" name="end" type="float" />
 			<param index="4" name="t" type="float" />
 			<description>
-				Returns the point at the given [param t] on a one-dimnesional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
+				Returns the point at the given [param t] on a one-dimensional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bézier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
 			</description>
 		</method>
 		<method name="bytes_to_var">
@@ -143,7 +155,7 @@
 				i = ceil(1.001)    # i is 2.0
 				[/codeblock]
 				See also [method floor], [method round], and [method snapped].
-				[b]Note:[/b] For better type safety, you can use [method ceilf], [method ceili], [method Vector2.ceil], [method Vector3.ceil] or [method Vector4.ceil] instead.
+				[b]Note:[/b] For better type safety, use [method ceilf], [method ceili], [method Vector2.ceil], [method Vector3.ceil], or [method Vector4.ceil].
 			</description>
 		</method>
 		<method name="ceilf">
@@ -151,7 +163,7 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Rounds [param x] upward (towards positive infinity), returning the smallest whole number that is not less than [param x].
-				A type-safe version of [method ceil], specialzied in floats.
+				A type-safe version of [method ceil], returning a [float].
 			</description>
 		</method>
 		<method name="ceili">
@@ -159,7 +171,7 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Rounds [param x] upward (towards positive infinity), returning the smallest whole number that is not less than [param x].
-				A type-safe version of [method ceil] that returns integer.
+				A type-safe version of [method ceil], returning an [int].
 			</description>
 		</method>
 		<method name="clamp">
@@ -168,7 +180,7 @@
 			<param index="1" name="min" type="Variant" />
 			<param index="2" name="max" type="Variant" />
 			<description>
-				Clamps the [Variant] [param value] and returns a value not less than [param min] and not more than [param max]. Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				Clamps the [param value], returning a [Variant] not less than [param min] and not more than [param max]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var a = clamp(-10, -1, 5)
 				# a is -1
@@ -188,6 +200,7 @@
 				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
 				# f is (-4, -5, -6)
 				[/codeblock]
+				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], or [method Vector4i.clamp].
 			</description>
 		</method>
 		<method name="clampf">
@@ -196,15 +209,13 @@
 			<param index="1" name="min" type="float" />
 			<param index="2" name="max" type="float" />
 			<description>
-				Clamps the float [param value] and returns a value not less than [param min] and not more than [param max].
+				Clamps the [param value], returning a [float] not less than [param min] and not more than [param max].
 				[codeblock]
 				var speed = 42.1
-				# a is 20.0
-				var a = clampf(speed, 1.0, 20.0)
+				var a = clampf(speed, 1.0, 20.5) # a is 20.5
 
 				speed = -10.0
-				# a is -1.0
-				a = clampf(speed, -1.0, 1.0)
+				var b = clampf(speed, -1.0, 1.0) # b is -1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -214,15 +225,13 @@
 			<param index="1" name="min" type="int" />
 			<param index="2" name="max" type="int" />
 			<description>
-				Clamps the integer [param value] and returns a value not less than [param min] and not more than [param max].
+				Clamps the [param value], returning an [int] not less than [param min] and not more than [param max].
 				[codeblock]
 				var speed = 42
-				# a is 20
-				var a = clampi(speed, 1, 20)
+				var a = clampi(speed, 1, 20) # a is 20
 
 				speed = -10
-				# a is -1
-				a = clampi(speed, -1, 1)
+				var b = clampi(speed, -1, 1) # b is -1
 				[/codeblock]
 			</description>
 		</method>
@@ -244,8 +253,7 @@
 			<description>
 				Returns the hyperbolic cosine of [param x] in radians.
 				[codeblock]
-				# Prints 1.543081
-				print(cosh(1))
+				print(cosh(1)) # Prints 1.543081
 				[/codeblock]
 			</description>
 		</method>
@@ -257,7 +265,7 @@
 			<param index="3" name="post" type="float" />
 			<param index="4" name="weight" type="float" />
 			<description>
-				Cubic interpolates between two values by the factor defined in [param weight] with pre and post values.
+				Cubic interpolates between two values by the factor defined in [param weight] with [param pre] and [param post] values.
 			</description>
 		</method>
 		<method name="cubic_interpolate_angle">
@@ -268,7 +276,7 @@
 			<param index="3" name="post" type="float" />
 			<param index="4" name="weight" type="float" />
 			<description>
-				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with pre and post values. See also [method lerp_angle].
+				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre] and [param post] values. See also [method lerp_angle].
 			</description>
 		</method>
 		<method name="cubic_interpolate_angle_in_time">
@@ -282,7 +290,7 @@
 			<param index="6" name="pre_t" type="float" />
 			<param index="7" name="post_t" type="float" />
 			<description>
-				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with pre and post values. See also [method lerp_angle].
+				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre] and [param post] values. See also [method lerp_angle].
 				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
 			</description>
 		</method>
@@ -297,8 +305,8 @@
 			<param index="6" name="pre_t" type="float" />
 			<param index="7" name="post_t" type="float" />
 			<description>
-				Cubic interpolates between two values by the factor defined in [param weight] with pre and post values.
-				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+				Cubic interpolates between two values by the factor defined in [param weight] with [param pre] and [param post] values.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
 			</description>
 		</method>
 		<method name="db_to_linear">
@@ -314,8 +322,7 @@
 			<description>
 				Converts an angle expressed in degrees to radians.
 				[codeblock]
-				# r is 3.141593
-				var r = deg_to_rad(180)
+				var r = deg_to_rad(180) # r is 3.141593
 				[/codeblock]
 			</description>
 		</method>
@@ -342,7 +349,13 @@
 			<return type="String" />
 			<param index="0" name="error" type="int" />
 			<description>
-				Returns a human-readable name for the given error code.
+				Returns a human-readable name for the given [enum Error] code.
+				[codeblock]
+				print(OK)                              # Prints 0
+				print(error_string(OK))                # Prints OK
+				print(error_string(ERR_BUSY))          # Prints Busy
+				print(error_string(ERR_OUT_OF_MEMORY)) # Prints Out of memory
+				[/codeblock]
 			</description>
 		</method>
 		<method name="exp">
@@ -363,13 +376,11 @@
 			<description>
 				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x]. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
 				[codeblock]
-				# a is 2.0
-				var a = floor(2.99)
-				# a is -3.0
-				a = floor(-2.99)
+				var a = floor(2.99) # a is 2.0
+				a = floor(-2.99)    # a is -3.0
 				[/codeblock]
 				See also [method ceil], [method round], and [method snapped].
-				[b]Note:[/b] For better type safety, you can use [method floorf], [method floori], [method Vector2.floor], [method Vector3.floor] or [method Vector4.floor] instead.
+				[b]Note:[/b] For better type safety, use [method floorf], [method floori], [method Vector2.floor], [method Vector3.floor], or [method Vector4.floor].
 			</description>
 		</method>
 		<method name="floorf">
@@ -377,7 +388,7 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x].
-				A type-safe version of [method floor], specialzied in floats.
+				A type-safe version of [method floor], returning a [float].
 			</description>
 		</method>
 		<method name="floori">
@@ -385,7 +396,8 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x].
-				Equivalent of doing [code]int(x)[/code].
+				A type-safe version of [method floor], returning an [int].
+				[b]Note:[/b] This function is [i]not[/i] the same as [code]int(x)[/code], which rounds towards 0.
 			</description>
 		</method>
 		<method name="fmod">
@@ -393,10 +405,9 @@
 			<param index="0" name="x" type="float" />
 			<param index="1" name="y" type="float" />
 			<description>
-				Returns the floating-point remainder of [code]x/y[/code], keeping the sign of [param x].
+				Returns the floating-point remainder of [param x] divided by [param y], keeping the sign of [param x].
 				[codeblock]
-				# Remainder is 1.5
-				var remainder = fmod(7, 5.5)
+				var remainder = fmod(7, 5.5) # remainder is 1.5
 				[/codeblock]
 				For the integer remainder operation, use the [code]%[/code] operator.
 			</description>
@@ -406,21 +417,23 @@
 			<param index="0" name="x" type="float" />
 			<param index="1" name="y" type="float" />
 			<description>
-				Returns the floating-point modulus of [code]x/y[/code] that wraps equally in positive and negative.
+				Returns the floating-point modulus of [param x] divided by [param y], wrapping equally in positive and negative.
 				[codeblock]
+				print(" (x)  (fmod(x, 1.5))   (fposmod(x, 1.5))")
 				for i in 7:
-				    var x = 0.5 * i - 1.5
-				    print("%4.1f %4.1f %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
+				    var x = i * 0.5 - 1.5
+				    print("%4.1f           %4.1f  | %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
 				[/codeblock]
 				Produces:
 				[codeblock]
-				-1.5 -0.0  0.0
-				-1.0 -1.0  0.5
-				-0.5 -0.5  1.0
-				 0.0  0.0  0.0
-				 0.5  0.5  0.5
-				 1.0  1.0  1.0
-				 1.5  0.0  0.0
+				 (x)  (fmod(x, 1.5))   (fposmod(x, 1.5))
+				-1.5           -0.0  |  0.0
+				-1.0           -1.0  |  0.5
+				-0.5           -0.5  |  1.0
+				 0.0            0.0  |  0.0
+				 0.5            0.5  |  0.5
+				 1.0            1.0  |  1.0
+				 1.5            0.0  |  0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -428,7 +441,7 @@
 			<return type="int" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Returns the integer hash of the variable passed.
+				Returns the integer hash of the passed [param variable].
 				[codeblock]
 				print(hash("a")) # Prints 177670
 				[/codeblock]
@@ -438,7 +451,7 @@
 			<return type="Object" />
 			<param index="0" name="instance_id" type="int" />
 			<description>
-				Returns the Object that corresponds to [param instance_id]. All Objects have a unique instance ID.
+				Returns the [Object] that corresponds to [param instance_id]. All Objects have a unique instance ID. See also [method Object.get_instance_id].
 				[codeblock]
 				var foo = "bar"
 				func _ready():
@@ -458,12 +471,13 @@
 				[codeblock]
 				# The interpolation ratio in the `lerp()` call below is 0.75.
 				var middle = lerp(20, 30, 0.75)
-				# `middle` is now 27.5.
+				# middle is now 27.5.
+
 				# Now, we pretend to have forgotten the original ratio and want to get it back.
 				var ratio = inverse_lerp(20, 30, 27.5)
-				# `ratio` is now 0.75.
+				# ratio is now 0.75.
 				[/codeblock]
-				See also [method lerp] which performs the reverse of this operation, and [method remap] to map a continuous series of values to another.
+				See also [method lerp], which performs the reverse of this operation, and [method remap] to map a continuous series of values to another.
 			</description>
 		</method>
 		<method name="is_equal_approx">
@@ -472,15 +486,22 @@
 			<param index="1" name="b" type="float" />
 			<description>
 				Returns [code]true[/code] if [param a] and [param b] are approximately equal to each other.
-				Here, approximately equal means that [param a] and [param b] are within a small internal epsilon of each other, which scales with the magnitude of the numbers.
+				Here, "approximately equal" means that [param a] and [param b] are within a small internal epsilon of each other, which scales with the magnitude of the numbers.
 				Infinity values of the same sign are considered equal.
+			</description>
+		</method>
+		<method name="is_finite">
+			<return type="bool" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns whether [code]x[/code] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
 			</description>
 		</method>
 		<method name="is_inf">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns whether [param x] is an infinity value (either positive infinity or negative infinity).
+				Returns [code]true[/code] if [param x] is either positive infinity or negative infinity.
 			</description>
 		</method>
 		<method name="is_instance_id_valid">
@@ -494,14 +515,14 @@
 			<return type="bool" />
 			<param index="0" name="instance" type="Variant" />
 			<description>
-				Returns whether [param instance] is a valid object (e.g. has not been deleted from memory).
+				Returns [code]true[/code] if [param instance] is a valid Object (e.g. has not been deleted from memory).
 			</description>
 		</method>
 		<method name="is_nan">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns whether [param x] is a NaN ("Not a Number" or invalid) value.
+				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value.
 			</description>
 		</method>
 		<method name="is_zero_approx">
@@ -509,7 +530,7 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Returns [code]true[/code] if [param x] is zero or almost zero.
-				This method is faster than using [method is_equal_approx] with one value as zero.
+				This function is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
 		<method name="lerp">
@@ -518,13 +539,13 @@
 			<param index="1" name="to" type="Variant" />
 			<param index="2" name="weight" type="Variant" />
 			<description>
-				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. Use [method clamp] on the result of [method lerp] if this is not desired.
-				Both [param from] and [param to] must have matching types. Supported types: [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
+				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clamp] on the result of this function.
+				Both [param from] and [param to] must be the same type. Supported types: [int], [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
 				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep]. See also [method remap] to map a continuous series of values to another.
-				[b]Note:[/b] For better type safety, you can use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp] instead.
+				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp].
 			</description>
 		</method>
 		<method name="lerp_angle">
@@ -533,7 +554,7 @@
 			<param index="1" name="to" type="float" />
 			<param index="2" name="weight" type="float" />
 			<description>
-				Linearly interpolates between two angles (in radians) by a normalized value.
+				Linearly interpolates between two angles (in radians) by a [param weight] value between 0.0 and 1.0.
 				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU]. To perform eased interpolation with [method lerp_angle], combine it with [method ease] or [method smoothstep].
 				[codeblock]
 				extends Sprite
@@ -544,7 +565,7 @@
 				    rotation = lerp_angle(min_angle, max_angle, elapsed)
 				    elapsed += delta
 				[/codeblock]
-				[b]Note:[/b] This method lerps through the shortest path between [param from] and [param to]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
+				[b]Note:[/b] This function lerps through the shortest path between [param from] and [param to]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
 			</description>
 		</method>
 		<method name="lerpf">
@@ -553,7 +574,7 @@
 			<param index="1" name="to" type="float" />
 			<param index="2" name="weight" type="float" />
 			<description>
-				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i].
+				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clampf] on the result of this function.
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
@@ -564,7 +585,8 @@
 			<return type="float" />
 			<param index="0" name="lin" type="float" />
 			<description>
-				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear). Example:
+				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear).
+				[b]Example:[/b]
 				[codeblock]
 				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
 				# Its range must be configured to go from 0 to 1.
@@ -577,7 +599,7 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Natural logarithm. The amount of time needed to reach a certain level of continuous growth.
+				Returns the natural logarithm of [param x]. This is the amount of time needed to reach a certain level of continuous growth.
 				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm.
 				[codeblock]
 				log(10) # Returns 2.302585
@@ -588,7 +610,7 @@
 		<method name="max" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
-				Returns the maximum of the given values. This method can take any number of arguments.
+				Returns the maximum of the given values. This function can take any number of arguments.
 				[codeblock]
 				max(1, 7, 3, -6, 5) # Returns 7
 				[/codeblock]
@@ -599,9 +621,9 @@
 			<param index="0" name="a" type="float" />
 			<param index="1" name="b" type="float" />
 			<description>
-				Returns the maximum of two float values.
+				Returns the maximum of two [float] values.
 				[codeblock]
-				maxf(3.6, 24) # Returns 24.0
+				maxf(3.6, 24)   # Returns 24.0
 				maxf(-3.99, -4) # Returns -3.99
 				[/codeblock]
 			</description>
@@ -611,9 +633,9 @@
 			<param index="0" name="a" type="int" />
 			<param index="1" name="b" type="int" />
 			<description>
-				Returns the maximum of two int values.
+				Returns the maximum of two [int] values.
 				[codeblock]
-				maxi(1, 2) # Returns 2
+				maxi(1, 2)   # Returns 2
 				maxi(-3, -4) # Returns -3
 				[/codeblock]
 			</description>
@@ -621,7 +643,7 @@
 		<method name="min" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
-				Returns the minimum of the given values. This method can take any number of arguments.
+				Returns the minimum of the given values. This function can take any number of arguments.
 				[codeblock]
 				min(1, 7, 3, -6, 5) # Returns -6
 				[/codeblock]
@@ -632,9 +654,9 @@
 			<param index="0" name="a" type="float" />
 			<param index="1" name="b" type="float" />
 			<description>
-				Returns the minimum of two float values.
+				Returns the minimum of two [float] values.
 				[codeblock]
-				minf(3.6, 24) # Returns 3.6
+				minf(3.6, 24)   # Returns 3.6
 				minf(-3.99, -4) # Returns -4.0
 				[/codeblock]
 			</description>
@@ -644,9 +666,9 @@
 			<param index="0" name="a" type="int" />
 			<param index="1" name="b" type="int" />
 			<description>
-				Returns the minimum of two int values.
+				Returns the minimum of two [int] values.
 				[codeblock]
-				mini(1, 2) # Returns 1
+				mini(1, 2)   # Returns 1
 				mini(-3, -4) # Returns -4
 				[/codeblock]
 			</description>
@@ -660,8 +682,8 @@
 				Moves [param from] toward [param to] by the [param delta] value.
 				Use a negative [param delta] value to move away.
 				[codeblock]
-				move_toward(5, 10, 4) # Returns 9
-				move_toward(10, 5, 4) # Returns 6
+				move_toward(5, 10, 4)    # Returns 9
+				move_toward(10, 5, 4)    # Returns 6
 				move_toward(10, 5, -1.5) # Returns 11.5
 				[/codeblock]
 			</description>
@@ -670,17 +692,17 @@
 			<return type="int" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Returns the nearest equal or larger power of 2 for integer [param value].
+				Returns the nearest equal or larger power of 2 for the integer [param value].
 				In other words, returns the smallest value [code]a[/code] where [code]a = pow(2, n)[/code] such that [code]value &lt;= a[/code] for some non-negative integer [code]n[/code].
 				[codeblock]
 				nearest_po2(3) # Returns 4
 				nearest_po2(4) # Returns 4
 				nearest_po2(5) # Returns 8
 
-				nearest_po2(0) # Returns 0 (this may not be what you expect)
-				nearest_po2(-1) # Returns 0 (this may not be what you expect)
+				nearest_po2(0)  # Returns 0 (this may not be expected)
+				nearest_po2(-1) # Returns 0 (this may not be expected)
 				[/codeblock]
-				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [param value] (in reality, 1 is the smallest integer power of 2).
+				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for negative values of [param value] (in reality, 1 is the smallest integer power of 2).
 			</description>
 		</method>
 		<method name="pingpong">
@@ -688,18 +710,18 @@
 			<param index="0" name="value" type="float" />
 			<param index="1" name="length" type="float" />
 			<description>
-				Returns the [param value] wrapped between [code]0[/code] and the [param length]. If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [param length] side (like a triangle wave). If [param length] is less than zero, it becomes positive.
+				Wraps [param value] between [code]0[/code] and the [param length]. If the limit is reached, the next value the function returns is decreased to the [code]0[/code] side or increased to the [param length] side (like a triangle wave). If [param length] is less than zero, it becomes positive.
 				[codeblock]
-				pingpong(-3.0, 3.0) # Returns 3
-				pingpong(-2.0, 3.0) # Returns 2
-				pingpong(-1.0, 3.0) # Returns 1
-				pingpong(0.0, 3.0) # Returns 0
-				pingpong(1.0, 3.0) # Returns 1
-				pingpong(2.0, 3.0) # Returns 2
-				pingpong(3.0, 3.0) # Returns 3
-				pingpong(4.0, 3.0) # Returns 2
-				pingpong(5.0, 3.0) # Returns 1
-				pingpong(6.0, 3.0) # Returns 0
+				pingpong(-3.0, 3.0) # Returns 3.0
+				pingpong(-2.0, 3.0) # Returns 2.0
+				pingpong(-1.0, 3.0) # Returns 1.0
+				pingpong(0.0, 3.0)  # Returns 0.0
+				pingpong(1.0, 3.0)  # Returns 1.0
+				pingpong(2.0, 3.0)  # Returns 2.0
+				pingpong(3.0, 3.0)  # Returns 3.0
+				pingpong(4.0, 3.0)  # Returns 2.0
+				pingpong(5.0, 3.0)  # Returns 1.0
+				pingpong(6.0, 3.0)  # Returns 0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -708,20 +730,22 @@
 			<param index="0" name="x" type="int" />
 			<param index="1" name="y" type="int" />
 			<description>
-				Returns the integer modulus of [code]x/y[/code] that wraps equally in positive and negative.
+				Returns the integer modulus of [param x] divided by [param y] that wraps equally in positive and negative.
 				[codeblock]
+				print("#(i)  (i % 3)   (posmod(i, 3))")
 				for i in range(-3, 4):
-				    print("%2d %2d %2d" % [i, i % 3, posmod(i, 3)])
+				    print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
 				Produces:
 				[codeblock]
-				-3  0  0
-				-2 -2  1
-				-1 -1  2
-				0  0  0
-				1  1  1
-				2  2  2
-				3  0  0
+				(i)  (i % 3)   (posmod(i, 3))
+				-3        0  |  0
+				-2       -2  |  1
+				-1       -1  |  2
+				 0        0  |  0
+				 1        1  |  1
+				 2        2  |  2
+				 3        0  |  0
 				[/codeblock]
 			</description>
 		</method>
@@ -731,6 +755,7 @@
 			<param index="1" name="exp" type="float" />
 			<description>
 				Returns the result of [param base] raised to the power of [param exp].
+				In GDScript, this is the equivalent of the [code]**[/code] operator.
 				[codeblock]
 				pow(2, 5) # Returns 32
 				[/codeblock]
@@ -743,7 +768,7 @@
 				var a = [1, 2, 3]
 				print("a", "b", a) # Prints ab[1, 2, 3]
 				[/codeblock]
-				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
 		<method name="print_rich" qualifiers="vararg">
@@ -771,13 +796,13 @@
 		</method>
 		<method name="printraw" qualifiers="vararg">
 			<description>
-				Prints one or more arguments to strings in the best way possible to console. No newline is added at the end.
+				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
 				[codeblock]
 				printraw("A")
 				printraw("B")
-				# Prints AB
+				printraw("C")
+				# Prints ABC to terminal
 				[/codeblock]
-				[b]Note:[/b] Due to limitations with Godot's built-in console, this only prints to the terminal. If you need to print in the editor, use another method, such as [method print].
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
@@ -802,7 +827,7 @@
 				[codeblock]
 				push_error("test error") # Prints "test error" to debugger and terminal as error call
 				[/codeblock]
-				[b]Note:[/b] Errors printed this way will not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
+				[b]Note:[/b] This function does not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
 			</description>
 		</method>
 		<method name="push_warning" qualifiers="vararg">
@@ -820,6 +845,8 @@
 				Converts an angle expressed in radians to degrees.
 				[codeblock]
 				rad_to_deg(0.523599) # Returns 30
+				rad_to_deg(PI)       # Returns 180
+				rad_to_deg(PI * 2)   # Returns 360
 				[/codeblock]
 			</description>
 		</method>
@@ -827,7 +854,14 @@
 			<return type="PackedInt64Array" />
 			<param index="0" name="seed" type="int" />
 			<description>
-				Random from seed: pass a [param seed], and an array with both number and new seed is returned. "Seed" here refers to the internal state of the pseudo random number generator. The internal state of the current implementation is 64 bits.
+				Given a [param seed], returns a [PackedInt64Array] of size [code]2[/code], where its first element is the randomized [int] value, and the second element is the same as [param seed]. Passing the same [param seed] consistently returns the same array.
+				[b]Note:[/b] "Seed" here refers to the internal state of the pseudo random number generator, currently implemented as a 64 bit integer.
+				[codeblock]
+				var a = rand_from_seed(4)
+
+				print(a[0])	# Prints 2879024997
+				print(a[1])	# Prints 4
+				[/codeblock]
 			</description>
 		</method>
 		<method name="randf">
@@ -844,9 +878,10 @@
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
 			<description>
-				Returns a random floating point value on the interval between [param from] and [param to] (inclusive).
+				Returns a random floating point value between [param from] and [param to] (inclusive).
 				[codeblock]
-				prints(randf_range(-10, 10), randf_range(-10, 10)) # Prints e.g. -3.844535 7.45315
+				randf_range(0, 20.5) # Returns e.g. 7.45315
+				randf_range(-10, 10) # Returns e.g. -3.844535
 				[/codeblock]
 			</description>
 		</method>
@@ -877,15 +912,15 @@
 			<description>
 				Returns a random signed 32-bit integer between [param from] and [param to] (inclusive). If [param to] is lesser than [param from], they are swapped.
 				[codeblock]
-				print(randi_range(0, 1)) # Prints 0 or 1
-				print(randi_range(-10, 1000)) # Prints any number from -10 to 1000
+				randi_range(0, 1)      # Returns either 0 or 1
+				randi_range(-10, 1000) # Returns random integer between -10 and 1000
 				[/codeblock]
 			</description>
 		</method>
 		<method name="randomize">
 			<description>
-				Randomizes the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
-				[b]Note:[/b] This method is called automatically when the project is run. If you need to fix the seed to have reproducible results, use [method seed] to initialize the random number generator.
+				Randomizes the seed (or the internal state) of the random number generator. The current implementation uses a number based on the device's time.
+				[b]Note:[/b] This function is called automatically when the project is run. If you need to fix the seed to have consistent, reproducible results, use [method seed] to initialize the random number generator.
 			</description>
 		</method>
 		<method name="remap">
@@ -896,63 +931,67 @@
 			<param index="3" name="ostart" type="float" />
 			<param index="4" name="ostop" type="float" />
 			<description>
-				Maps a [param value] from range [code][istart, istop][/code] to [code][ostart, ostop][/code]. See also [method lerp] and [method inverse_lerp]. If [param value] is outside [code][istart, istop][/code], then the resulting value will also be outside [code][ostart, ostop][/code]. Use [method clamp] on the result of [method remap] if this is not desired.
+				Maps a [param value] from range [code][istart, istop][/code] to [code][ostart, ostop][/code]. See also [method lerp] and [method inverse_lerp]. If [param value] is outside [code][istart, istop][/code], then the resulting value will also be outside [code][ostart, ostop][/code]. If this is not desired, use [method clamp] on the result of this function.
 				[codeblock]
 				remap(75, 0, 100, -1, 1) # Returns 0.5
 				[/codeblock]
-				For complex use cases where you need multiple ranges, consider using [Curve] or [Gradient] instead.
+				For complex use cases where multiple ranges are needed, consider using [Curve] or [Gradient] instead.
 			</description>
 		</method>
 		<method name="rid_allocate_id">
 			<return type="int" />
 			<description>
-				Allocate a unique ID which can be used by the implementation to construct a RID. This is used mainly from native extensions to implement servers.
+				Allocates a unique ID which can be used by the implementation to construct a RID. This is used mainly from native extensions to implement servers.
 			</description>
 		</method>
 		<method name="rid_from_int64">
 			<return type="RID" />
 			<param index="0" name="base" type="int" />
 			<description>
-				Create a RID from an int64. This is used mainly from native extensions to build servers.
+				Creates a RID from a [param base]. This is used mainly from native extensions to build servers.
 			</description>
 		</method>
 		<method name="round">
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] to the nearest whole number, with halfway cases rounded away from zero. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
 				[codeblock]
 				round(2.4) # Returns 2
 				round(2.5) # Returns 3
 				round(2.6) # Returns 3
 				[/codeblock]
 				See also [method floor], [method ceil], and [method snapped].
-				[b]Note:[/b] For better type safety, you can use [method roundf], [method roundi], [method Vector2.round], [method Vector3.round] or [method Vector4.round] instead.
+				[b]Note:[/b] For better type safety, use [method roundf], [method roundi], [method Vector2.round], [method Vector3.round], or [method Vector4.round].
 			</description>
 		</method>
 		<method name="roundf">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Rounds [param x] to the nearest whole number, with halfway cases rounded away from zero.
-				A type-safe version of [method round], specialzied in floats.
+				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0.
+				A type-safe version of [method round], returning a [float].
 			</description>
 		</method>
 		<method name="roundi">
 			<return type="int" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Rounds [param x] to the nearest whole number, with halfway cases rounded away from zero.
-				A type-safe version of [method round] that returns integer.
+				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0.
+				A type-safe version of [method round], returning an [int].
 			</description>
 		</method>
 		<method name="seed">
 			<param index="0" name="base" type="int" />
 			<description>
-				Sets seed for the random number generator.
+				Sets the seed for the random number generator to [param base]. Setting the seed manually can ensure consistent, repeatable results for most random functions.
 				[codeblock]
-				var my_seed = "Godot Rocks"
-				seed(my_seed.hash())
+				var my_seed = "Godot Rocks".hash()
+				seed(my_seed)
+				var a = randf() + randi()
+				seed(my_seed)
+				var b = randf() + randi()
+				# a and b are now identical
 				[/codeblock]
 			</description>
 		</method>
@@ -960,25 +999,26 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Returns the sign of [param x] as same type of [Variant] as [param x] with each component being -1, 0 and 1 for each negative, zero and positive values respectivelu. Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				Returns the same type of [Variant] as [param x], with [code]-1[/code] for negative values, [code]1[/code] for positive values, and [code]0[/code] for zeros. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				sign(-6.0) # Returns -1
 				sign(0.0)  # Returns 0
 				sign(6.0)  # Returns 1
 
-				sign(Vector3(-6.0, 0.0, 6.0) # Returns (-1, 0, 1)
+				sign(Vector3(-6.0, 0.0, 6.0)) # Returns (-1, 0, 1)
 				[/codeblock]
+				[b]Note:[/b] For better type safety, use [method signf], [method signi], [method Vector2.sign], [method Vector2i.sign], [method Vector3.sign], [method Vector3i.sign], [method Vector4.sign], or [method Vector4i.sign].
 			</description>
 		</method>
 		<method name="signf">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns the sign of [param x] as a float: -1.0 or 1.0. Returns 0.0 if [param x] is 0.
+				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if if [param x] is zero.
 				[codeblock]
-				sign(-6.0) # Returns -1.0
+				sign(-6.5) # Returns -1.0
 				sign(0.0)  # Returns 0.0
-				sign(6.0)  # Returns 1.0
+				sign(6.5)  # Returns 1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -986,7 +1026,7 @@
 			<return type="int" />
 			<param index="0" name="x" type="int" />
 			<description>
-				Returns the sign of [param x] as an integer: -1 or 1. Returns 0 if [param x] is 0.
+				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if if [param x] is zero.
 				[codeblock]
 				sign(-6) # Returns -1
 				sign(0)  # Returns 0
@@ -1036,16 +1076,46 @@
 			</description>
 		</method>
 		<method name="snapped">
+			<return type="Variant" />
+			<param index="0" name="x" type="Variant" />
+			<param index="1" name="step" type="Variant" />
+			<description>
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				The returned value is the same type of [Variant] as [param step]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
+				[codeblock]
+				snapped(100, 32)  # Returns 96
+				snapped(3.14159, 0.01)  # Returns 3.14
+
+				snapped(Vector2(34, 70), Vector2(8, 8))  # Returns (32, 72)
+				[/codeblock]
+				See also [method ceil], [method floor], and [method round].
+				[b]Note:[/b] For better type safety, use [method snappedf], [method snappedi], [method Vector2.snapped], [method Vector2i.snapped], [method Vector3.snapped], [method Vector3i.snapped], [method Vector4.snapped], or [method Vector4i.snapped].
+			</description>
+		</method>
+		<method name="snappedf">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<param index="1" name="step" type="float" />
 			<description>
-				Snaps float value [param x] to a given [param step]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				A type-safe version of [method snapped], returning a [float].
 				[codeblock]
-				snapped(100, 32) # Returns 96
-				snapped(3.14159, 0.01) # Returns 3.14
+				snapped(32.0, 2.5)  # Returns 32.5
+				snapped(3.14159, 0.01)  # Returns 3.14
 				[/codeblock]
-				See also [method ceil], [method floor], and [method round].
+			</description>
+		</method>
+		<method name="snappedi">
+			<return type="int" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="step" type="int" />
+			<description>
+				Returns the multiple of [param step] that is the closest to [param x].
+				A type-safe version of [method snapped], returning an [int].
+				[codeblock]
+				snapped(53, 16)  # Returns 48
+				snapped(4096, 100)  # Returns 4100
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sqrt">
@@ -1054,9 +1124,11 @@
 			<description>
 				Returns the square root of [param x], where [param x] is a non-negative number.
 				[codeblock]
-				sqrt(9) # Returns 3
+				sqrt(9)     # Returns 3
+				sqrt(10.24) # Returns 3.2
+				sqrt(-1)    # Returns NaN
 				[/codeblock]
-				[b]Note:[/b] Negative values of [param x] return NaN. If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
+				[b]Note:[/b] Negative values of [param x] return NaN ("Not a Number"). in C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].
 			</description>
 		</method>
 		<method name="step_decimals">
@@ -1065,30 +1137,27 @@
 			<description>
 				Returns the position of the first non-zero digit, after the decimal point. Note that the maximum return value is 10, which is a design decision in the implementation.
 				[codeblock]
-				# n is 0
-				var n = step_decimals(5)
-				# n is 4
-				n = step_decimals(1.0005)
-				# n is 9
-				n = step_decimals(0.000000005)
+				var n = step_decimals(5)       # n is 0
+				n = step_decimals(1.0005)      # n is 4
+				n = step_decimals(0.000000005) # n is 9
 				[/codeblock]
 			</description>
 		</method>
 		<method name="str" qualifiers="vararg">
 			<return type="String" />
 			<description>
-				Converts one or more arguments of any type to string in the best way possible.
+				Converts one or more arguments of any [Variant] type to [String] in the best way possible.
 			</description>
 		</method>
 		<method name="str_to_var">
 			<return type="Variant" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Converts a formatted [param string] that was returned by [method var_to_str] to the original value.
+				Converts a formatted [param string] that was returned by [method var_to_str] to the original [Variant].
 				[codeblock]
-				var a = '{ "a": 1, "b": 2 }'
-				var b = str_to_var(a)
-				print(b["a"]) # Prints 1
+				var a = '{ "a": 1, "b": 2 }' # a is a String
+				var b = str_to_var(a)        # b is a Dictionary
+				print(b["a"])                # Prints 1
 				[/codeblock]
 			</description>
 		</method>
@@ -1109,7 +1178,7 @@
 				Returns the hyperbolic tangent of [param x].
 				[codeblock]
 				var a = log(2.0) # Returns 0.693147
-				tanh(a)      # Returns 0.6
+				tanh(a)          # Returns 0.6
 				[/codeblock]
 			</description>
 		</method>
@@ -1117,7 +1186,7 @@
 			<return type="int" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Returns the internal type of the given Variant object, using the [enum Variant.Type] values.
+				Returns the internal type of the given [param variable], using the [enum Variant.Type] values.
 				[codeblock]
 				var json = JSON.new()
 				json.parse('["a", "b", "c"]')
@@ -1141,19 +1210,19 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include code). Deserialization can be done with [method bytes_to_var_with_objects].
+				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include executable code). Deserialization can be done with [method bytes_to_var_with_objects].
 			</description>
 		</method>
 		<method name="var_to_str">
 			<return type="String" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Converts a Variant [param variable] to a formatted string that can later be parsed using [method str_to_var].
+				Converts a [Variant] [param variable] to a formatted [String] that can then be parsed using [method str_to_var].
 				[codeblock]
 				a = { "a": 1, "b": 2 }
 				print(var_to_str(a))
 				[/codeblock]
-				prints
+				Prints:
 				[codeblock]
 				{
 				"a": 1,
@@ -1166,7 +1235,7 @@
 			<return type="Variant" />
 			<param index="0" name="obj" type="Variant" />
 			<description>
-				Returns a weak reference to an object, or [code]null[/code] if the argument is invalid.
+				Returns a weak reference to an object, or [code]null[/code] if [param obj] is invalid.
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
@@ -1176,9 +1245,8 @@
 			<param index="1" name="min" type="Variant" />
 			<param index="2" name="max" type="Variant" />
 			<description>
-				Wraps the [Variant] [param value] between [param min] and [param max].
-				Usable for creating loop-alike behavior or infinite surfaces.
-				Variant types [int] and [float] (real) are supported. If any of the argument is [float] the result will be [float], otherwise it is [int].
+				Wraps the [Variant] [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
+				Variant types [int] and [float] are supported. If any of the arguments is [float] this function returns a [float], otherwise it returns an [int].
 				[codeblock]
 				var a = wrap(4, 5, 10)
 				# a is 9 (int)
@@ -1197,8 +1265,7 @@
 			<param index="1" name="min" type="float" />
 			<param index="2" name="max" type="float" />
 			<description>
-				Wraps float [param value] between [param min] and [param max].
-				Usable for creating loop-alike behavior or infinite surfaces.
+				Wraps the float [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
 				[codeblock]
 				# Infinite loop between 5.0 and 9.9
 				value = wrapf(value + 0.1, 5.0, 10.0)
@@ -1221,8 +1288,7 @@
 			<param index="1" name="min" type="int" />
 			<param index="2" name="max" type="int" />
 			<description>
-				Wraps integer [param value] between [param min] and [param max].
-				Usable for creating loop-alike behavior or infinite surfaces.
+				Wraps the integer [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
 				[codeblock]
 				# Infinite loop between 5 and 9
 				frame = wrapi(frame + 1, 5, 10)
@@ -1283,6 +1349,7 @@
 			The [Marshalls] singleton.
 		</member>
 		<member name="NativeExtensionManager" type="NativeExtensionManager" setter="" getter="">
+			The [NativeExtensionManager] singleton.
 		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.
@@ -1377,8 +1444,10 @@
 			General horizontal alignment, usually used for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
 		<constant name="CLOCKWISE" value="0" enum="ClockDirection">
+			Clockwise rotation. Used by some methods (e.g. [method Image.rotate_90]).
 		</constant>
 		<constant name="COUNTERCLOCKWISE" value="1" enum="ClockDirection">
+			Counter-clockwise rotation. Used by some methods (e.g. [method Image.rotate_90]).
 		</constant>
 		<constant name="HORIZONTAL_ALIGNMENT_LEFT" value="0" enum="HorizontalAlignment">
 			Horizontal left alignment, usually for text-derived classes.
@@ -1439,6 +1508,24 @@
 		</constant>
 		<constant name="INLINE_ALIGNMENT_TEXT_MASK" value="12" enum="InlineAlignment">
 			A bit mask for [code]INLINE_ALIGNMENT_TO_*[/code] alignment constants.
+		</constant>
+		<constant name="EULER_ORDER_XYZ" value="0" enum="EulerOrder">
+			Specifies that Euler angles should be in XYZ order. When composing, the order is X, Y, Z. When decomposing, the order is reversed, first Z, then Y, and X last.
+		</constant>
+		<constant name="EULER_ORDER_XZY" value="1" enum="EulerOrder">
+			Specifies that Euler angles should be in XZY order. When composing, the order is X, Z, Y. When decomposing, the order is reversed, first Y, then Z, and X last.
+		</constant>
+		<constant name="EULER_ORDER_YXZ" value="2" enum="EulerOrder">
+			Specifies that Euler angles should be in YXZ order. When composing, the order is Y, X, Z. When decomposing, the order is reversed, first Z, then X, and Y last.
+		</constant>
+		<constant name="EULER_ORDER_YZX" value="3" enum="EulerOrder">
+			Specifies that Euler angles should be in YZX order. When composing, the order is Y, Z, X. When decomposing, the order is reversed, first X, then Z, and Y last.
+		</constant>
+		<constant name="EULER_ORDER_ZXY" value="4" enum="EulerOrder">
+			Specifies that Euler angles should be in ZXY order. When composing, the order is Z, X, Y. When decomposing, the order is reversed, first Y, then X, and Z last.
+		</constant>
+		<constant name="EULER_ORDER_ZYX" value="5" enum="EulerOrder">
+			Specifies that Euler angles should be in ZYX order. When composing, the order is Z, Y, X. When decomposing, the order is reversed, first X, then Y, and Z last.
 		</constant>
 		<constant name="KEY_NONE" value="0" enum="Key">
 			Enum value which doesn't correspond to any key. This is used to initialize [enum Key] properties with a generic state.
@@ -1873,34 +1960,34 @@
 			/ key.
 		</constant>
 		<constant name="KEY_0" value="48" enum="Key">
-			Number 0.
+			Number 0 key.
 		</constant>
 		<constant name="KEY_1" value="49" enum="Key">
-			Number 1.
+			Number 1 key.
 		</constant>
 		<constant name="KEY_2" value="50" enum="Key">
-			Number 2.
+			Number 2 key.
 		</constant>
 		<constant name="KEY_3" value="51" enum="Key">
-			Number 3.
+			Number 3 key.
 		</constant>
 		<constant name="KEY_4" value="52" enum="Key">
-			Number 4.
+			Number 4 key.
 		</constant>
 		<constant name="KEY_5" value="53" enum="Key">
-			Number 5.
+			Number 5 key.
 		</constant>
 		<constant name="KEY_6" value="54" enum="Key">
-			Number 6.
+			Number 6 key.
 		</constant>
 		<constant name="KEY_7" value="55" enum="Key">
-			Number 7.
+			Number 7 key.
 		</constant>
 		<constant name="KEY_8" value="56" enum="Key">
-			Number 8.
+			Number 8 key.
 		</constant>
 		<constant name="KEY_9" value="57" enum="Key">
-			Number 9.
+			Number 9 key.
 		</constant>
 		<constant name="KEY_COLON" value="58" enum="Key">
 			: key.
@@ -2260,10 +2347,10 @@
 			Enum value which doesn't correspond to any mouse button. This is used to initialize [enum MouseButton] properties with a generic state.
 		</constant>
 		<constant name="MOUSE_BUTTON_LEFT" value="1" enum="MouseButton">
-			Primary mouse button, usually the left button.
+			Primary mouse button, usually assigned to the left button.
 		</constant>
 		<constant name="MOUSE_BUTTON_RIGHT" value="2" enum="MouseButton">
-			Secondary mouse button, usually the right button.
+			Secondary mouse button, usually assigned to the right button.
 		</constant>
 		<constant name="MOUSE_BUTTON_MIDDLE" value="3" enum="MouseButton">
 			Middle mouse button.
@@ -2281,10 +2368,10 @@
 			Mouse wheel right button (only present on some mice).
 		</constant>
 		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="MouseButton">
-			Extra mouse button 1 (only present on some mice).
+			Extra mouse button 1. This is sometimes present, usually to the sides of the mouse.
 		</constant>
 		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
-			Extra mouse button 2 (only present on some mice).
+			Extra mouse button 2. This is sometimes present, usually to the sides of the mouse.
 		</constant>
 		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButton">
 			Primary mouse button mask, usually for the left button.
@@ -2350,7 +2437,7 @@
 			Game controller D-pad right button.
 		</constant>
 		<constant name="JOY_BUTTON_MISC1" value="15" enum="JoyButton">
-			Game controller SDL miscellaneous button. Corresponds to Xbox share button, PS5 microphone button, Nintendo capture button.
+			Game controller SDL miscellaneous button. Corresponds to Xbox share button, PS5 microphone button, Nintendo Switch capture button.
 		</constant>
 		<constant name="JOY_BUTTON_PADDLE1" value="16" enum="JoyButton">
 			Game controller SDL paddle 1 button.
@@ -2372,9 +2459,9 @@
 		</constant>
 		<constant name="JOY_BUTTON_MAX" value="128" enum="JoyButton">
 			The maximum number of game controller buttons supported by the engine. The actual limit may be lower on specific platforms:
-			- Android: Up to 36 buttons.
-			- Linux: Up to 80 buttons.
-			- Windows and macOS: Up to 128 buttons.
+			- [b]Android:[/b] Up to 36 buttons.
+			- [b]Linux:[/b] Up to 80 buttons.
+			- [b]Windows[/b] and [b]macOS:[/b] Up to 128 buttons.
 		</constant>
 		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
 			An invalid game controller axis.
@@ -2461,16 +2548,19 @@
 			MIDI system reset message. Reset all receivers in the system to power-up status. It should not be sent on power-up itself.
 		</constant>
 		<constant name="OK" value="0" enum="Error">
-			Methods that return [enum Error] return [constant OK] when no error occurred. Note that many functions don't return an error code but will print error messages to standard output.
-			Since [constant OK] has value 0, and all other failure codes are positive integers, it can also be used in boolean checks, e.g.:
+			Methods that return [enum Error] return [constant OK] when no error occurred.
+			Since [constant OK] has value 0, and all other error constants are positive integers, it can also be used in boolean checks.
+			[b]Example:[/b]
 			[codeblock]
-			var err = method_that_returns_error()
-			if err != OK:
-			    print("Failure!")
-			# Or, equivalent:
-			if err:
-			    print("Still failing!")
+			var error = method_that_returns_error()
+			if error != OK:
+			    printerr("Failure!")
+
+			# Or, alternatively:
+			if error:
+			    printerr("Still failing!")
 			[/codeblock]
+			[b]Note:[/b] Many functions do not return an error code, but will print error messages to standard output.
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
 			Generic error.
@@ -2608,162 +2698,159 @@
 			Skip error.
 		</constant>
 		<constant name="ERR_HELP" value="46" enum="Error">
-			Help error.
+			Help error. Used internally when passing [code]--version[/code] or [code]--help[/code] as executable options.
 		</constant>
 		<constant name="ERR_BUG" value="47" enum="Error">
-			Bug error.
+			Bug error, caused by an implementation issue in the method.
+			[b]Note:[/b] If a built-in method returns this code, please open an issue on [url=https://github.com/godotengine/godot/issues]the GitHub Issue Tracker[/url].
 		</constant>
 		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
-			Printer on fire error. (This is an easter egg, no engine methods return this error code.)
+			Printer on fire error (This is an easter egg, no built-in methods return this error code).
 		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
-			No hint for the edited property.
+			The property has no hint for the editor.
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
-			Hints that an integer or float property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_less"[/code].
+			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
+			[b]Example:[/b] [code]"-360,360,1,or_greater,or_less"[/code].
 			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians"[/code] for editing radian angles in degrees, [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
-			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string.
-			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
+			Hints that an [int], [float], or [String] property is an enumerated value to pick in a list specified via a hint string.
+			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="3" enum="PropertyHint">
-			Hints that a string property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
-			Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
+			Hints that a [String] property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Unlike [constant PROPERTY_HINT_ENUM], a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
-			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"positive_only"[/code] to exclude in/out easing and limit values to be greater than or equal to zero.
+			Hints that a [float] property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"positive_only"[/code] to exclude in/out easing and limit values to be greater than or equal to zero.
 		</constant>
 		<constant name="PROPERTY_HINT_LINK" value="5" enum="PropertyHint">
-			Hints that a vector property should allow linking values (e.g. to edit both [code]x[/code] and [code]y[/code] together).
+			Hints that a vector property should allow its components to be linked. For example, this allows [member Vector2.x] and [member Vector2.y] to be edited together.
 		</constant>
 		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
-			Hints that an integer property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
+			Hints that an [int] property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="7" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 2D render layers.
+			Hints that an [int] property is a bitmask using the optionally named 2D render layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="8" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 2D physics layers.
+			Hints that an [int] property is a bitmask using the optionally named 2D physics layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="9" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 2D navigation layers.
+			Hints that an [int] property is a bitmask using the optionally named 2D navigation layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="10" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 3D render layers.
+			Hints that an [int] property is a bitmask using the optionally named 3D render layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="11" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 3D physics layers.
+			Hints that an [int] property is a bitmask using the optionally named 3D physics layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="12" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 3D navigation layers.
+			Hints that an [int] property is a bitmask using the optionally named 3D navigation layers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
-			Hints that a string property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
-			Hints that a string property is a path to a directory. Editing it will show a file dialog for picking the path.
+			Hints that a [String] property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
-			Hints that a string property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards, like [code]"*.png,*.jpg"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
-			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
+			Hints that a [String] property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
 		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
 			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
-			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
+			Hints that a [String] property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
 		<constant name="PROPERTY_HINT_EXPRESSION" value="19" enum="PropertyHint">
-			Hints that a string property is an [Expression].
+			Hints that a [String] property is an [Expression].
 		</constant>
 		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="20" enum="PropertyHint">
-			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
+			Hints that a [String] property should show a placeholder text on its input field, if empty. The hint string is the placeholder text to use.
 		</constant>
 		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="21" enum="PropertyHint">
-			Hints that a color property should be edited without changing its alpha component, i.e. only R, G and B channels are edited.
+			Hints that a [Color] property should be edited without affecting its transparency ([member Color.a] is not editable).
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="22" enum="PropertyHint">
-			Hints that an image is compressed using lossy compression.
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="22" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="23" enum="PropertyHint">
-			Hints that an image is compressed using lossless compression.
-		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_ID" value="24" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_TYPE_STRING" value="25" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
 			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
 			[codeblock]
-			hint_string = "%s:" % [TYPE_INT] # Array of inteters.
+			hint_string = "%s:" % [TYPE_INT] # Array of integers.
 			hint_string = "%s:%s:" % [TYPE_ARRAY, TYPE_REAL] # Two-dimensional array of floats.
 			hint_string = "%s/%s:Resource" % [TYPE_OBJECT, TYPE_OBJECT] # Array of resources.
 			hint_string = "%s:%s/%s:Resource" % [TYPE_ARRAY, TYPE_OBJECT, TYPE_OBJECT] # Two-dimensional array of resources.
 			[/codeblock]
-			[b]Note:[/b] The final colon is required to specify for properly detecting built-in types.
+			[b]Note:[/b] The final colon is required for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="26" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="27" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="25" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="28" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="26" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="27" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="30" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="28" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="31" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="29" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="32" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="30" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="33" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="31" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="34" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="32" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="35" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="33" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="36" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="34" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_SAVE_FILE" value="37" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="35" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="36" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="39" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="37" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="38" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="40" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="43" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="41" enum="PropertyHint">
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_TYPE" value="44" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_TYPE" value="42" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="45" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="43" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
 		</constant>
-		<constant name="PROPERTY_HINT_PASSWORD" value="46" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PASSWORD" value="44" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="47" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
+			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags">
-			The property is shown in the editor inspector (default).
+			The property is shown in the [EditorInspector] (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags">
-			The property can be checked in the editor inspector.
+			The property can be checked in the [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKED" value="16" enum="PropertyUsageFlags">
-			The property is checked in the editor inspector.
+			The property is checked in the [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="32" enum="PropertyUsageFlags">
 			The property is a translatable string.
@@ -2790,38 +2877,39 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_ANIMATE_AS_TRIGGER" value="16384" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="32768" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="65536" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="131072" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="262144" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNAL" value="262144" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNAL" value="524288" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="524288" enum="PropertyUsageFlags">
+			If the property is a [Resource], a new copy of it is always created when calling [method Node.duplicate] or [method Resource.duplicate].
 		</constant>
-		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="1048576" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="1048576" enum="PropertyUsageFlags">
+			The property is only shown in the editor if modern renderers are supported (GLES3 is excluded).
 		</constant>
-		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="2097152" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="2097152" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="4194304" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="8388608" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="16777216" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="33554432" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="67108864" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_READ_ONLY" value="134217728" enum="PropertyUsageFlags">
+			The property is read-only in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags">
-			The property is read-only in the editor inspector.
-		</constant>
-		<constant name="PROPERTY_USAGE_ARRAY" value="536870912" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ARRAY" value="268435456" enum="PropertyUsageFlags">
+			The property is an array.
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags">
 			Default usage (storage, editor and network).
@@ -2845,14 +2933,16 @@
 			Flag for a virtual method.
 		</constant>
 		<constant name="METHOD_FLAG_VARARG" value="16" enum="MethodFlags">
+			Flag for a method with a variable number of arguments.
 		</constant>
 		<constant name="METHOD_FLAG_STATIC" value="32" enum="MethodFlags">
+			Flag for a static method.
 		</constant>
 		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags">
-			Used internally. Allows to not dump core virtuals such as [code]_notification[/code] to the JSON API.
+			Used internally. Allows to not dump core virtual methods (such as [method Object._notification]) to the JSON API.
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">
-			Default method flags.
+			Default method flags (normal).
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
 			Variable is [code]null[/code].
@@ -2864,7 +2954,7 @@
 			Variable is of type [int].
 		</constant>
 		<constant name="TYPE_FLOAT" value="3" enum="Variant.Type">
-			Variable is of type [float] (real).
+			Variable is of type [float].
 		</constant>
 		<constant name="TYPE_STRING" value="4" enum="Variant.Type">
 			Variable is of type [String].
@@ -2891,8 +2981,10 @@
 			Variable is of type [Transform2D].
 		</constant>
 		<constant name="TYPE_VECTOR4" value="12" enum="Variant.Type">
+			Variable is of type [Vector4].
 		</constant>
 		<constant name="TYPE_VECTOR4I" value="13" enum="Variant.Type">
+			Variable is of type [Vector4i].
 		</constant>
 		<constant name="TYPE_PLANE" value="14" enum="Variant.Type">
 			Variable is of type [Plane].
@@ -2910,6 +3002,7 @@
 			Variable is of type [Transform3D].
 		</constant>
 		<constant name="TYPE_PROJECTION" value="19" enum="Variant.Type">
+			Variable is of type [Projection].
 		</constant>
 		<constant name="TYPE_COLOR" value="20" enum="Variant.Type">
 			Variable is of type [Color].

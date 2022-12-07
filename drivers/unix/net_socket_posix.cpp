@@ -179,8 +179,8 @@ NetSocketPosix::~NetSocketPosix() {
 	close();
 }
 
-// Silent a warning reported in #27594
-
+// Silence a warning reported in GH-27594.
+// EAGAIN and EWOULDBLOCK have the same value on most platforms, but it's not guaranteed.
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlogical-op"

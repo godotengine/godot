@@ -28,11 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
 #include "plist.h"
-
-#ifdef MODULE_REGEX_ENABLED
 
 Ref<PListNode> PListNode::new_array() {
 	Ref<PListNode> node = memnew(PListNode());
@@ -357,7 +353,7 @@ bool PList::load_file(const String &p_filename) {
 	} else {
 		// Load text plist.
 		Error err;
-		Vector<uint8_t> array = FileAccess::get_file_as_array(p_filename, &err);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_filename, &err);
 		ERR_FAIL_COND_V(err != OK, false);
 
 		String ret;
@@ -566,5 +562,3 @@ String PList::save_text() const {
 Ref<PListNode> PList::get_root() {
 	return root;
 }
-
-#endif // MODULE_REGEX_ENABLED

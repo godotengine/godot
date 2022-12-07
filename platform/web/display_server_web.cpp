@@ -54,7 +54,15 @@ DisplayServerWeb *DisplayServerWeb::get_singleton() {
 
 // Window (canvas)
 bool DisplayServerWeb::check_size_force_redraw() {
-	return godot_js_display_size_update() != 0;
+	bool size_changed = godot_js_display_size_update() != 0;
+	if (size_changed && !rect_changed_callback.is_null()) {
+		Variant size = Rect2i(Point2i(), window_get_size()); // TODO use window_get_position if implemented.
+		Variant *vp = &size;
+		Variant ret;
+		Callable::CallError ce;
+		rect_changed_callback.callp((const Variant **)&vp, 1, ret, ce);
+	}
+	return size_changed;
 }
 
 void DisplayServerWeb::fullscreen_change_callback(int p_fullscreen) {
@@ -212,7 +220,7 @@ int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double 
 void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
 	MouseButton input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
-	// started inside the canvas; imitating desktop app behaviour.
+	// started inside the canvas; imitating desktop app behavior.
 	if (!get_singleton()->cursor_inside_canvas && input_mask == MouseButton::NONE) {
 		return;
 	}
@@ -738,11 +746,11 @@ void DisplayServerWeb::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	}
 }
 
-DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Size2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, Error &r_error) {
+	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
 }
 
-DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Size2i &p_resolution, Error &r_error) {
+DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
 	// Ensure the canvas ID.
@@ -758,10 +766,8 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	godot_js_os_request_quit_cb(request_quit_callback);
 
 #ifdef GLES3_ENABLED
-	// TODO "vulkan" defaults to webgl2 for now.
-	bool wants_webgl2 = p_rendering_driver == "opengl3" || p_rendering_driver == "vulkan";
-	bool webgl2_init_failed = wants_webgl2 && !godot_js_display_has_webgl(2);
-	if (wants_webgl2 && !webgl2_init_failed) {
+	bool webgl2_inited = false;
+	if (godot_js_display_has_webgl(2)) {
 		EmscriptenWebGLContextAttributes attributes;
 		emscripten_webgl_init_context_attributes(&attributes);
 		attributes.alpha = OS::get_singleton()->is_layered_allowed();
@@ -770,17 +776,17 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 		attributes.explicitSwapControl = true;
 
 		webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
-		if (emscripten_webgl_make_context_current(webgl_ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
-			webgl2_init_failed = true;
-		} else {
-			RasterizerGLES3::make_current();
-		}
+		webgl2_inited = webgl_ctx && emscripten_webgl_make_context_current(webgl_ctx) == EMSCRIPTEN_RESULT_SUCCESS;
 	}
-	if (webgl2_init_failed) {
+	if (webgl2_inited) {
+		if (!emscripten_webgl_enable_extension(webgl_ctx, "OVR_multiview2")) {
+			print_verbose("Failed to enable WebXR extension.");
+		}
+		RasterizerGLES3::make_current();
+
+	} else {
 		OS::get_singleton()->alert("Your browser does not seem to support WebGL2. Please update your browser version.",
 				"Unable to initialize video driver");
-	}
-	if (!wants_webgl2 || webgl2_init_failed) {
 		RasterizerDummy::make_current();
 	}
 #else
@@ -905,7 +911,7 @@ ObjectID DisplayServerWeb::window_get_attached_instance_id(WindowID p_window) co
 }
 
 void DisplayServerWeb::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
-	// Not supported.
+	rect_changed_callback = p_callable;
 }
 
 void DisplayServerWeb::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {

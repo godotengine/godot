@@ -31,8 +31,6 @@
 #include "gltf_document.h"
 
 #include "extensions/gltf_spec_gloss.h"
-#include "gltf_document_extension.h"
-#include "gltf_document_extension_convert_importer_mesh.h"
 #include "gltf_state.h"
 
 #include "core/crypto/crypto_core.h"
@@ -215,8 +213,7 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 		return Error::FAILED;
 	}
 
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		err = ext->export_post(state);
 		ERR_FAIL_COND_V(err != OK, err);
@@ -454,8 +451,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 			node["children"] = children;
 		}
 
-		for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-			Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 			ERR_CONTINUE(ext.is_null());
 			ERR_CONTINUE(!state->scene_nodes.find(i));
 			Error err = ext->export_node(state, gltf_node, node, state->scene_nodes[i]);
@@ -629,6 +625,11 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 					node->light = light;
 				}
 			}
+			for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+				ERR_CONTINUE(ext.is_null());
+				Error err = ext->parse_node_extensions(state, node, extensions);
+				ERR_CONTINUE_MSG(err != OK, "GLTF: Encountered error " + itos(err) + " when parsing node extensions for node " + node->get_name() + " in file " + state->filename + ". Continuing.");
+			}
 		}
 
 		if (n.has("children")) {
@@ -795,7 +796,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> state, const String &p_base_pa
 					ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 					uri = uri.uri_decode();
 					uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
-					buffer_data = FileAccess::get_file_as_array(uri);
+					buffer_data = FileAccess::get_file_as_bytes(uri);
 					ERR_FAIL_COND_V_MSG(buffer.size() == 0, ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
 				}
 
@@ -2483,12 +2484,12 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 			if (surface_i < instance_materials.size()) {
 				v = instance_materials.get(surface_i);
 			}
-			Ref<BaseMaterial3D> mat = v;
+			Ref<Material> mat = v;
 			if (!mat.is_valid()) {
 				mat = import_mesh->get_surface_material(surface_i);
 			}
 			if (mat.is_valid()) {
-				HashMap<Ref<BaseMaterial3D>, GLTFMaterialIndex>::Iterator material_cache_i = state->material_cache.find(mat);
+				HashMap<Ref<Material>, GLTFMaterialIndex>::Iterator material_cache_i = state->material_cache.find(mat);
 				if (material_cache_i && material_cache_i->value != -1) {
 					primitive["material"] = material_cache_i->value;
 				} else {
@@ -2590,10 +2591,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					Mesh::PRIMITIVE_TRIANGLES, // 4 TRIANGLES
 					Mesh::PRIMITIVE_TRIANGLE_STRIP, // 5 TRIANGLE_STRIP
 					Mesh::PRIMITIVE_TRIANGLES, // 6 TRIANGLE_FAN fan not supported, should be converted
-#ifndef _MSC_VER
-#warning line loop and triangle fan are not supported and need to be converted to lines and triangles
-#endif
-
+					// TODO: Line loop and triangle fan are not supported and need to be converted to lines and triangles.
 				};
 
 				primitive = primitives2[mode];
@@ -2939,16 +2937,18 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				}
 			}
 
-			Ref<BaseMaterial3D> mat;
+			Ref<Material> mat;
 			String mat_name;
 			if (!state->discard_meshes_and_materials) {
 				if (p.has("material")) {
 					const int material = p["material"];
 					ERR_FAIL_INDEX_V(material, state->materials.size(), ERR_FILE_CORRUPT);
-					Ref<BaseMaterial3D> mat3d = state->materials[material];
+					Ref<Material> mat3d = state->materials[material];
 					ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
-					if (has_vertex_color) {
-						mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+					Ref<BaseMaterial3D> base_material = mat3d;
+					if (has_vertex_color && base_material.is_valid()) {
+						base_material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 					}
 					mat = mat3d;
 
@@ -2956,7 +2956,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					Ref<StandardMaterial3D> mat3d;
 					mat3d.instantiate();
 					if (has_vertex_color) {
-						mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+						mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 					}
 					mat = mat3d;
 				}
@@ -3139,7 +3139,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 					// Fallback to loading as byte array.
 					// This enables us to support the spec's requirement that we honor mimetype
 					// regardless of file URI.
-					data = FileAccess::get_file_as_array(uri);
+					data = FileAccess::get_file_as_bytes(uri);
 					if (data.size() == 0) {
 						WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded as a buffer of MIME type '%s' from URI: %s. Skipping it.", i, mimetype, uri));
 						state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
@@ -3384,8 +3384,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 	Array materials;
 	for (int32_t i = 0; i < state->materials.size(); i++) {
 		Dictionary d;
-
-		Ref<BaseMaterial3D> material = state->materials[i];
+		Ref<Material> material = state->materials[i];
 		if (material.is_null()) {
 			materials.push_back(d);
 			continue;
@@ -3393,11 +3392,12 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 		if (!material->get_name().is_empty()) {
 			d["name"] = _gen_unique_name(state, material->get_name());
 		}
-		{
+		Ref<BaseMaterial3D> base_material = material;
+		if (base_material.is_valid()) {
 			Dictionary mr;
 			{
 				Array arr;
-				const Color c = material->get_albedo().srgb_to_linear();
+				const Color c = base_material->get_albedo().srgb_to_linear();
 				arr.push_back(c.r);
 				arr.push_back(c.g);
 				arr.push_back(c.b);
@@ -3406,167 +3406,169 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			}
 			{
 				Dictionary bct;
-				Ref<Texture2D> albedo_texture = material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
-				GLTFTextureIndex gltf_texture_index = -1;
+				if (base_material.is_valid()) {
+					Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+					GLTFTextureIndex gltf_texture_index = -1;
 
-				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
-					albedo_texture->set_name(material->get_name() + "_albedo");
-					gltf_texture_index = _set_texture(state, albedo_texture, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
-				}
-				if (gltf_texture_index != -1) {
-					bct["index"] = gltf_texture_index;
-					Dictionary extensions = _serialize_texture_transform_uv1(material);
-					if (!extensions.is_empty()) {
-						bct["extensions"] = extensions;
-						state->use_khr_texture_transform = true;
+					if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
+						albedo_texture->set_name(material->get_name() + "_albedo");
+						gltf_texture_index = _set_texture(state, albedo_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 					}
-					mr["baseColorTexture"] = bct;
+					if (gltf_texture_index != -1) {
+						bct["index"] = gltf_texture_index;
+						Dictionary extensions = _serialize_texture_transform_uv1(material);
+						if (!extensions.is_empty()) {
+							bct["extensions"] = extensions;
+							state->use_khr_texture_transform = true;
+						}
+						mr["baseColorTexture"] = bct;
+					}
 				}
 			}
-
-			mr["metallicFactor"] = material->get_metallic();
-			mr["roughnessFactor"] = material->get_roughness();
-			bool has_roughness = material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
-			bool has_ao = material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
-			bool has_metalness = material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_image().is_valid();
-			if (has_ao || has_roughness || has_metalness) {
-				Dictionary mrt;
-				Ref<Texture2D> roughness_texture = material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
-				BaseMaterial3D::TextureChannel roughness_channel = material->get_roughness_texture_channel();
-				Ref<Texture2D> metallic_texture = material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
-				BaseMaterial3D::TextureChannel metalness_channel = material->get_metallic_texture_channel();
-				Ref<Texture2D> ao_texture = material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION);
-				BaseMaterial3D::TextureChannel ao_channel = material->get_ao_texture_channel();
-				Ref<ImageTexture> orm_texture;
-				orm_texture.instantiate();
-				Ref<Image> orm_image;
-				orm_image.instantiate();
-				int32_t height = 0;
-				int32_t width = 0;
-				Ref<Image> ao_image;
-				if (has_ao) {
-					height = ao_texture->get_height();
-					width = ao_texture->get_width();
-					ao_image = ao_texture->get_image();
-					Ref<ImageTexture> img_tex = ao_image;
-					if (img_tex.is_valid()) {
-						ao_image = img_tex->get_image();
-					}
-					if (ao_image->is_compressed()) {
-						ao_image->decompress();
-					}
-				}
-				Ref<Image> roughness_image;
-				if (has_roughness) {
-					height = roughness_texture->get_height();
-					width = roughness_texture->get_width();
-					roughness_image = roughness_texture->get_image();
-					Ref<ImageTexture> img_tex = roughness_image;
-					if (img_tex.is_valid()) {
-						roughness_image = img_tex->get_image();
-					}
-					if (roughness_image->is_compressed()) {
-						roughness_image->decompress();
-					}
-				}
-				Ref<Image> metallness_image;
-				if (has_metalness) {
-					height = metallic_texture->get_height();
-					width = metallic_texture->get_width();
-					metallness_image = metallic_texture->get_image();
-					Ref<ImageTexture> img_tex = metallness_image;
-					if (img_tex.is_valid()) {
-						metallness_image = img_tex->get_image();
-					}
-					if (metallness_image->is_compressed()) {
-						metallness_image->decompress();
-					}
-				}
-				Ref<Texture2D> albedo_texture = material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
-				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
-					height = albedo_texture->get_height();
-					width = albedo_texture->get_width();
-				}
-				orm_image->create(width, height, false, Image::FORMAT_RGBA8);
-				if (ao_image.is_valid() && ao_image->get_size() != Vector2(width, height)) {
-					ao_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
-				}
-				if (roughness_image.is_valid() && roughness_image->get_size() != Vector2(width, height)) {
-					roughness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
-				}
-				if (metallness_image.is_valid() && metallness_image->get_size() != Vector2(width, height)) {
-					metallness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
-				}
-				for (int32_t h = 0; h < height; h++) {
-					for (int32_t w = 0; w < width; w++) {
-						Color c = Color(1.0f, 1.0f, 1.0f);
-						if (has_ao) {
-							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
-								c.r = ao_image->get_pixel(w, h).r;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
-								c.r = ao_image->get_pixel(w, h).g;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
-								c.r = ao_image->get_pixel(w, h).b;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
-								c.r = ao_image->get_pixel(w, h).a;
-							}
-						}
-						if (has_roughness) {
-							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
-								c.g = roughness_image->get_pixel(w, h).r;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
-								c.g = roughness_image->get_pixel(w, h).g;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
-								c.g = roughness_image->get_pixel(w, h).b;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
-								c.g = roughness_image->get_pixel(w, h).a;
-							}
-						}
-						if (has_metalness) {
-							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
-								c.b = metallness_image->get_pixel(w, h).r;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
-								c.b = metallness_image->get_pixel(w, h).g;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
-								c.b = metallness_image->get_pixel(w, h).b;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
-								c.b = metallness_image->get_pixel(w, h).a;
-							}
-						}
-						orm_image->set_pixel(w, h, c);
-					}
-				}
-				orm_image->generate_mipmaps();
-				orm_texture->set_image(orm_image);
-				GLTFTextureIndex orm_texture_index = -1;
+			if (base_material.is_valid()) {
+				mr["metallicFactor"] = base_material->get_metallic();
+				mr["roughnessFactor"] = base_material->get_roughness();
+				bool has_roughness = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
+				bool has_ao = base_material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
+				bool has_metalness = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_image().is_valid();
 				if (has_ao || has_roughness || has_metalness) {
-					orm_texture->set_name(material->get_name() + "_orm");
-					orm_texture_index = _set_texture(state, orm_texture, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
-				}
-				if (has_ao) {
-					Dictionary occt;
-					occt["index"] = orm_texture_index;
-					d["occlusionTexture"] = occt;
-				}
-				if (has_roughness || has_metalness) {
-					mrt["index"] = orm_texture_index;
-					Dictionary extensions = _serialize_texture_transform_uv1(material);
-					if (!extensions.is_empty()) {
-						mrt["extensions"] = extensions;
-						state->use_khr_texture_transform = true;
+					Dictionary mrt;
+					Ref<Texture2D> roughness_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
+					BaseMaterial3D::TextureChannel roughness_channel = base_material->get_roughness_texture_channel();
+					Ref<Texture2D> metallic_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
+					BaseMaterial3D::TextureChannel metalness_channel = base_material->get_metallic_texture_channel();
+					Ref<Texture2D> ao_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION);
+					BaseMaterial3D::TextureChannel ao_channel = base_material->get_ao_texture_channel();
+					Ref<ImageTexture> orm_texture;
+					orm_texture.instantiate();
+					Ref<Image> orm_image;
+					orm_image.instantiate();
+					int32_t height = 0;
+					int32_t width = 0;
+					Ref<Image> ao_image;
+					if (has_ao) {
+						height = ao_texture->get_height();
+						width = ao_texture->get_width();
+						ao_image = ao_texture->get_image();
+						Ref<ImageTexture> img_tex = ao_image;
+						if (img_tex.is_valid()) {
+							ao_image = img_tex->get_image();
+						}
+						if (ao_image->is_compressed()) {
+							ao_image->decompress();
+						}
 					}
-					mr["metallicRoughnessTexture"] = mrt;
+					Ref<Image> roughness_image;
+					if (has_roughness) {
+						height = roughness_texture->get_height();
+						width = roughness_texture->get_width();
+						roughness_image = roughness_texture->get_image();
+						Ref<ImageTexture> img_tex = roughness_image;
+						if (img_tex.is_valid()) {
+							roughness_image = img_tex->get_image();
+						}
+						if (roughness_image->is_compressed()) {
+							roughness_image->decompress();
+						}
+					}
+					Ref<Image> metallness_image;
+					if (has_metalness) {
+						height = metallic_texture->get_height();
+						width = metallic_texture->get_width();
+						metallness_image = metallic_texture->get_image();
+						Ref<ImageTexture> img_tex = metallness_image;
+						if (img_tex.is_valid()) {
+							metallness_image = img_tex->get_image();
+						}
+						if (metallness_image->is_compressed()) {
+							metallness_image->decompress();
+						}
+					}
+					Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+					if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
+						height = albedo_texture->get_height();
+						width = albedo_texture->get_width();
+					}
+					orm_image->initialize_data(width, height, false, Image::FORMAT_RGBA8);
+					if (ao_image.is_valid() && ao_image->get_size() != Vector2(width, height)) {
+						ao_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
+					}
+					if (roughness_image.is_valid() && roughness_image->get_size() != Vector2(width, height)) {
+						roughness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
+					}
+					if (metallness_image.is_valid() && metallness_image->get_size() != Vector2(width, height)) {
+						metallness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
+					}
+					for (int32_t h = 0; h < height; h++) {
+						for (int32_t w = 0; w < width; w++) {
+							Color c = Color(1.0f, 1.0f, 1.0f);
+							if (has_ao) {
+								if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
+									c.r = ao_image->get_pixel(w, h).r;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
+									c.r = ao_image->get_pixel(w, h).g;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
+									c.r = ao_image->get_pixel(w, h).b;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
+									c.r = ao_image->get_pixel(w, h).a;
+								}
+							}
+							if (has_roughness) {
+								if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
+									c.g = roughness_image->get_pixel(w, h).r;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
+									c.g = roughness_image->get_pixel(w, h).g;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
+									c.g = roughness_image->get_pixel(w, h).b;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
+									c.g = roughness_image->get_pixel(w, h).a;
+								}
+							}
+							if (has_metalness) {
+								if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
+									c.b = metallness_image->get_pixel(w, h).r;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
+									c.b = metallness_image->get_pixel(w, h).g;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
+									c.b = metallness_image->get_pixel(w, h).b;
+								} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
+									c.b = metallness_image->get_pixel(w, h).a;
+								}
+							}
+							orm_image->set_pixel(w, h, c);
+						}
+					}
+					orm_image->generate_mipmaps();
+					orm_texture->set_image(orm_image);
+					GLTFTextureIndex orm_texture_index = -1;
+					if (has_ao || has_roughness || has_metalness) {
+						orm_texture->set_name(material->get_name() + "_orm");
+						orm_texture_index = _set_texture(state, orm_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+					}
+					if (has_ao) {
+						Dictionary occt;
+						occt["index"] = orm_texture_index;
+						d["occlusionTexture"] = occt;
+					}
+					if (has_roughness || has_metalness) {
+						mrt["index"] = orm_texture_index;
+						Dictionary extensions = _serialize_texture_transform_uv1(material);
+						if (!extensions.is_empty()) {
+							mrt["extensions"] = extensions;
+							state->use_khr_texture_transform = true;
+						}
+						mr["metallicRoughnessTexture"] = mrt;
+					}
 				}
 			}
 			d["pbrMetallicRoughness"] = mr;
 		}
-
-		if (material->get_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING)) {
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING)) {
 			Dictionary nt;
 			Ref<ImageTexture> tex;
 			tex.instantiate();
 			{
-				Ref<Texture2D> normal_texture = material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
+				Ref<Texture2D> normal_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
 				if (normal_texture.is_valid()) {
 					// Code for uncompressing RG normal maps
 					Ref<Image> img = normal_texture->get_image();
@@ -3596,30 +3598,30 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (tex.is_valid() && tex->get_image().is_valid()) {
 				tex->set_name(material->get_name() + "_normal");
-				gltf_texture_index = _set_texture(state, tex, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+				gltf_texture_index = _set_texture(state, tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
-			nt["scale"] = material->get_normal_scale();
+			nt["scale"] = base_material->get_normal_scale();
 			if (gltf_texture_index != -1) {
 				nt["index"] = gltf_texture_index;
 				d["normalTexture"] = nt;
 			}
 		}
 
-		if (material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
-			const Color c = material->get_emission().linear_to_srgb();
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
+			const Color c = base_material->get_emission().linear_to_srgb();
 			Array arr;
 			arr.push_back(c.r);
 			arr.push_back(c.g);
 			arr.push_back(c.b);
 			d["emissiveFactor"] = arr;
 		}
-		if (material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			Dictionary et;
-			Ref<Texture2D> emission_texture = material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
+			Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (emission_texture.is_valid() && emission_texture->get_image().is_valid()) {
 				emission_texture->set_name(material->get_name() + "_emission");
-				gltf_texture_index = _set_texture(state, emission_texture, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+				gltf_texture_index = _set_texture(state, emission_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 
 			if (gltf_texture_index != -1) {
@@ -3627,14 +3629,14 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				d["emissiveTexture"] = et;
 			}
 		}
-		const bool ds = material->get_cull_mode() == BaseMaterial3D::CULL_DISABLED;
+		const bool ds = base_material->get_cull_mode() == BaseMaterial3D::CULL_DISABLED;
 		if (ds) {
 			d["doubleSided"] = ds;
 		}
-		if (material->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR) {
+		if (base_material->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR) {
 			d["alphaMode"] = "MASK";
-			d["alphaCutoff"] = material->get_alpha_scissor_threshold();
-		} else if (material->get_transparency() != BaseMaterial3D::TRANSPARENCY_DISABLED) {
+			d["alphaCutoff"] = base_material->get_alpha_scissor_threshold();
+		} else if (base_material->get_transparency() != BaseMaterial3D::TRANSPARENCY_DISABLED) {
 			d["alphaMode"] = "BLEND";
 		}
 		materials.push_back(d);
@@ -3840,36 +3842,42 @@ void GLTFDocument::_set_texture_transform_uv1(const Dictionary &d, Ref<BaseMater
 	if (d.has("extensions")) {
 		const Dictionary &extensions = d["extensions"];
 		if (extensions.has("KHR_texture_transform")) {
-			const Dictionary &texture_transform = extensions["KHR_texture_transform"];
-			const Array &offset_arr = texture_transform["offset"];
-			if (offset_arr.size() == 2) {
-				const Vector3 offset_vector3 = Vector3(offset_arr[0], offset_arr[1], 0.0f);
-				material->set_uv1_offset(offset_vector3);
-			}
+			if (material.is_valid()) {
+				const Dictionary &texture_transform = extensions["KHR_texture_transform"];
+				const Array &offset_arr = texture_transform["offset"];
+				if (offset_arr.size() == 2) {
+					const Vector3 offset_vector3 = Vector3(offset_arr[0], offset_arr[1], 0.0f);
+					material->set_uv1_offset(offset_vector3);
+				}
 
-			const Array &scale_arr = texture_transform["scale"];
-			if (scale_arr.size() == 2) {
-				const Vector3 scale_vector3 = Vector3(scale_arr[0], scale_arr[1], 1.0f);
-				material->set_uv1_scale(scale_vector3);
+				const Array &scale_arr = texture_transform["scale"];
+				if (scale_arr.size() == 2) {
+					const Vector3 scale_vector3 = Vector3(scale_arr[0], scale_arr[1], 1.0f);
+					material->set_uv1_scale(scale_vector3);
+				}
 			}
 		}
 	}
 }
 
 void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Ref<BaseMaterial3D> p_material) {
+	if (r_spec_gloss.is_null()) {
+		return;
+	}
 	if (r_spec_gloss->spec_gloss_img.is_null()) {
 		return;
 	}
 	if (r_spec_gloss->diffuse_img.is_null()) {
 		return;
 	}
-	Ref<Image> rm_img;
-	rm_img.instantiate();
+	if (p_material.is_null()) {
+		return;
+	}
 	bool has_roughness = false;
 	bool has_metal = false;
 	p_material->set_roughness(1.0f);
 	p_material->set_metallic(1.0f);
-	rm_img->create(r_spec_gloss->spec_gloss_img->get_width(), r_spec_gloss->spec_gloss_img->get_height(), false, Image::FORMAT_RGBA8);
+	Ref<Image> rm_img = Image::create_empty(r_spec_gloss->spec_gloss_img->get_width(), r_spec_gloss->spec_gloss_img->get_height(), false, Image::FORMAT_RGBA8);
 	r_spec_gloss->spec_gloss_img->decompress();
 	if (r_spec_gloss->diffuse_img.is_valid()) {
 		r_spec_gloss->diffuse_img->decompress();
@@ -5275,6 +5283,10 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, co
 		AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_current);
 		_convert_animation_player_to_gltf(animation_player, state, p_gltf_parent, p_gltf_root, gltf_node, p_current);
 	}
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		ext->convert_scene_node(state, gltf_node, p_current);
+	}
 	GLTFNodeIndex current_node_i = state->nodes.size();
 	GLTFNodeIndex gltf_root = p_gltf_root;
 	if (gltf_root == -1) {
@@ -5598,21 +5610,32 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 		// and attach it to the bone_attachment
 		scene_parent = bone_attachment;
 	}
-	if (gltf_node->mesh >= 0) {
-		current_node = _generate_mesh_instance(state, node_index);
-	} else if (gltf_node->camera >= 0) {
-		current_node = _generate_camera(state, node_index);
-	} else if (gltf_node->light >= 0) {
-		current_node = _generate_light(state, node_index);
+	// Check if any GLTFDocumentExtension classes want to generate a node for us.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		current_node = ext->generate_scene_node(state, gltf_node, scene_parent);
+		if (current_node) {
+			break;
+		}
 	}
-
-	// We still have not managed to make a node.
+	// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
 	if (!current_node) {
-		current_node = _generate_spatial(state, node_index);
+		if (gltf_node->mesh >= 0) {
+			current_node = _generate_mesh_instance(state, node_index);
+		} else if (gltf_node->camera >= 0) {
+			current_node = _generate_camera(state, node_index);
+		} else if (gltf_node->light >= 0) {
+			current_node = _generate_light(state, node_index);
+		} else {
+			current_node = _generate_spatial(state, node_index);
+		}
 	}
+	// Add the node we generated and set the owner to the scene root.
 	scene_parent->add_child(current_node, true);
 	if (current_node != scene_root) {
-		current_node->set_owner(scene_root);
+		Array args;
+		args.append(scene_root);
+		current_node->propagate_call(StringName("set_owner"), args);
 	}
 	current_node->set_transform(gltf_node->xform);
 	current_node->set_name(gltf_node->get_name());
@@ -5678,19 +5701,32 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 			// and attach it to the bone_attachment
 			scene_parent = bone_attachment;
 		}
-
-		// We still have not managed to make a node
-		if (gltf_node->mesh >= 0) {
-			current_node = _generate_mesh_instance(state, node_index);
-		} else if (gltf_node->camera >= 0) {
-			current_node = _generate_camera(state, node_index);
-		} else if (gltf_node->light >= 0) {
-			current_node = _generate_light(state, node_index);
+		// Check if any GLTFDocumentExtension classes want to generate a node for us.
+		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+			ERR_CONTINUE(ext.is_null());
+			current_node = ext->generate_scene_node(state, gltf_node, scene_parent);
+			if (current_node) {
+				break;
+			}
 		}
-
+		// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
+		if (!current_node) {
+			if (gltf_node->mesh >= 0) {
+				current_node = _generate_mesh_instance(state, node_index);
+			} else if (gltf_node->camera >= 0) {
+				current_node = _generate_camera(state, node_index);
+			} else if (gltf_node->light >= 0) {
+				current_node = _generate_light(state, node_index);
+			} else {
+				current_node = _generate_spatial(state, node_index);
+			}
+		}
+		// Add the node we generated and set the owner to the scene root.
 		scene_parent->add_child(current_node, true);
 		if (current_node != scene_root) {
-			current_node->set_owner(scene_root);
+			Array args;
+			args.append(scene_root);
+			current_node->propagate_call(StringName("set_owner"), args);
 		}
 		// Do not set transform here. Transform is already applied to our bone.
 		current_node->set_name(gltf_node->get_name());
@@ -5824,7 +5860,7 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 	ERR_FAIL_V(p_values[0]);
 }
 
-void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, const GLTFAnimationIndex index, const int bake_fps) {
+void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, const GLTFAnimationIndex index, const float bake_fps, const bool trimming) {
 	Ref<GLTFAnimation> anim = state->animations[index];
 
 	String anim_name = anim->get_name();
@@ -5841,7 +5877,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 		animation->set_loop_mode(Animation::LOOP_LINEAR);
 	}
 
-	float length = 0.0;
+	double anim_start = trimming ? INFINITY : 0.0;
+	double anim_end = 0.0;
 
 	for (const KeyValue<int, GLTFAnimation::Track> &track_i : anim->get_tracks()) {
 		const GLTFAnimation::Track &track = track_i.value;
@@ -5871,19 +5908,40 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			transform_node_path = node_path;
 		}
 
-		for (int i = 0; i < track.rotation_track.times.size(); i++) {
-			length = MAX(length, track.rotation_track.times[i]);
-		}
-		for (int i = 0; i < track.position_track.times.size(); i++) {
-			length = MAX(length, track.position_track.times[i]);
-		}
-		for (int i = 0; i < track.scale_track.times.size(); i++) {
-			length = MAX(length, track.scale_track.times[i]);
-		}
-
-		for (int i = 0; i < track.weight_tracks.size(); i++) {
-			for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
-				length = MAX(length, track.weight_tracks[i].times[j]);
+		if (trimming) {
+			for (int i = 0; i < track.rotation_track.times.size(); i++) {
+				anim_start = MIN(anim_start, track.rotation_track.times[i]);
+				anim_end = MAX(anim_end, track.rotation_track.times[i]);
+			}
+			for (int i = 0; i < track.position_track.times.size(); i++) {
+				anim_start = MIN(anim_start, track.position_track.times[i]);
+				anim_end = MAX(anim_end, track.position_track.times[i]);
+			}
+			for (int i = 0; i < track.scale_track.times.size(); i++) {
+				anim_start = MIN(anim_start, track.scale_track.times[i]);
+				anim_end = MAX(anim_end, track.scale_track.times[i]);
+			}
+			for (int i = 0; i < track.weight_tracks.size(); i++) {
+				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+					anim_start = MIN(anim_start, track.weight_tracks[i].times[j]);
+					anim_end = MAX(anim_end, track.weight_tracks[i].times[j]);
+				}
+			}
+		} else {
+			// If you don't use trimming and the first key time is not at 0.0, fake keys will be inserted.
+			for (int i = 0; i < track.rotation_track.times.size(); i++) {
+				anim_end = MAX(anim_end, track.rotation_track.times[i]);
+			}
+			for (int i = 0; i < track.position_track.times.size(); i++) {
+				anim_end = MAX(anim_end, track.position_track.times[i]);
+			}
+			for (int i = 0; i < track.scale_track.times.size(); i++) {
+				anim_end = MAX(anim_end, track.scale_track.times[i]);
+			}
+			for (int i = 0; i < track.weight_tracks.size(); i++) {
+				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+					anim_end = MAX(anim_end, track.weight_tracks[i].times[j]);
+				}
 			}
 		}
 
@@ -5952,10 +6010,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				}
 			}
 
-			//first determine animation length
-
 			const double increment = 1.0 / bake_fps;
-			double time = 0.0;
+			double time = anim_start;
 
 			Vector3 base_pos;
 			Quaternion base_rot;
@@ -5981,26 +6037,26 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 				if (position_idx >= 0) {
 					pos = _interpolate_track<Vector3>(track.position_track.times, track.position_track.values, time, track.position_track.interpolation);
-					animation->position_track_insert_key(position_idx, time, pos);
+					animation->position_track_insert_key(position_idx, time - anim_start, pos);
 				}
 
 				if (rotation_idx >= 0) {
 					rot = _interpolate_track<Quaternion>(track.rotation_track.times, track.rotation_track.values, time, track.rotation_track.interpolation);
-					animation->rotation_track_insert_key(rotation_idx, time, rot);
+					animation->rotation_track_insert_key(rotation_idx, time - anim_start, rot);
 				}
 
 				if (scale_idx >= 0) {
 					scale = _interpolate_track<Vector3>(track.scale_track.times, track.scale_track.values, time, track.scale_track.interpolation);
-					animation->scale_track_insert_key(scale_idx, time, scale);
+					animation->scale_track_insert_key(scale_idx, time - anim_start, scale);
 				}
 
 				if (last) {
 					break;
 				}
 				time += increment;
-				if (time >= length) {
+				if (time >= anim_end) {
 					last = true;
-					time = length;
+					time = anim_end;
 				}
 			}
 		}
@@ -6035,21 +6091,21 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				bool last = false;
 				while (true) {
 					real_t blend = _interpolate_track<real_t>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
-					animation->blend_shape_track_insert_key(track_idx, time, blend);
+					animation->blend_shape_track_insert_key(track_idx, time - anim_start, blend);
 					if (last) {
 						break;
 					}
 					time += increment;
-					if (time >= length) {
+					if (time >= anim_end) {
 						last = true;
-						time = length;
+						time = anim_end;
 					}
 				}
 			}
 		}
 	}
 
-	animation->set_length(length);
+	animation->set_length(anim_end - anim_start);
 
 	Ref<AnimationLibrary> library;
 	if (!ap->has_animation_library("")) {
@@ -6294,7 +6350,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
 				Vector3 rotation_radian = p_animation->track_get_key_value(p_track_i, key_i);
-				p_track.rotation_track.values.write[key_i] = Quaternion(rotation_radian);
+				p_track.rotation_track.values.write[key_i] = Quaternion::from_euler(rotation_radian);
 			}
 		} else if (path.contains(":scale")) {
 			p_track.scale_track.times = times;
@@ -6549,7 +6605,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 	}
 }
 
-Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f, int p_bake_fps) {
+Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f) {
 	Error err;
 	if (f.is_null()) {
 		return FAILED;
@@ -6591,14 +6647,16 @@ Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> 
 	state->major_version = version.get_slice(".", 0).to_int();
 	state->minor_version = version.get_slice(".", 1).to_int();
 
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+	document_extensions.clear();
+	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		err = ext->import_preflight(state);
-		ERR_FAIL_COND_V(err != OK, err);
+		err = ext->import_preflight(state, state->json["extensionsUsed"]);
+		if (err == OK) {
+			document_extensions.push_back(ext);
+		}
 	}
 
-	err = _parse_gltf_state(state, p_path, p_bake_fps);
+	err = _parse_gltf_state(state, p_path);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	return OK;
@@ -6631,21 +6689,17 @@ Dictionary _serialize_texture_transform_uv(Vector2 p_offset, Vector2 p_scale) {
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material) {
-	if (p_material.is_valid()) {
-		Vector3 offset = p_material->get_uv1_offset();
-		Vector3 scale = p_material->get_uv1_scale();
-		return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
-	}
-	return Dictionary();
+	ERR_FAIL_NULL_V(p_material, Dictionary());
+	Vector3 offset = p_material->get_uv1_offset();
+	Vector3 scale = p_material->get_uv1_scale();
+	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material) {
-	if (p_material.is_valid()) {
-		Vector3 offset = p_material->get_uv2_offset();
-		Vector3 scale = p_material->get_uv2_scale();
-		return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
-	}
-	return Dictionary();
+	ERR_FAIL_NULL_V(p_material, Dictionary());
+	Vector3 offset = p_material->get_uv2_offset();
+	Vector3 scale = p_material->get_uv2_scale();
+	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 }
 
 Error GLTFDocument::_serialize_version(Ref<GLTFState> state) {
@@ -6720,27 +6774,23 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 }
 
 void GLTFDocument::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "bake_fps", "base_path"),
-			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(30), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("append_from_buffer", "bytes", "base_path", "state", "flags", "bake_fps"),
-			&GLTFDocument::append_from_buffer, DEFVAL(0), DEFVAL(30));
-	ClassDB::bind_method(D_METHOD("append_from_scene", "node", "state", "flags", "bake_fps"),
-			&GLTFDocument::append_from_scene, DEFVAL(0), DEFVAL(30));
-	ClassDB::bind_method(D_METHOD("generate_scene", "state", "bake_fps"),
-			&GLTFDocument::generate_scene, DEFVAL(30));
+	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "base_path"),
+			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("append_from_buffer", "bytes", "base_path", "state", "flags"),
+			&GLTFDocument::append_from_buffer, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("append_from_scene", "node", "state", "flags"),
+			&GLTFDocument::append_from_scene, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("generate_scene", "state", "bake_fps", "trimming"),
+			&GLTFDocument::generate_scene, DEFVAL(30), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("generate_buffer", "state"),
 			&GLTFDocument::generate_buffer);
 	ClassDB::bind_method(D_METHOD("write_to_filesystem", "state", "path"),
 			&GLTFDocument::write_to_filesystem);
 
-	ClassDB::bind_method(D_METHOD("set_extensions", "extensions"),
-			&GLTFDocument::set_extensions);
-	ClassDB::bind_method(D_METHOD("get_extensions"),
-			&GLTFDocument::get_extensions);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "extensions", PROPERTY_HINT_ARRAY_TYPE,
-						 vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "GLTFDocumentExtension"),
-						 PROPERTY_USAGE_DEFAULT),
-			"set_extensions", "get_extensions");
+	ClassDB::bind_static_method("GLTFDocument", D_METHOD("register_gltf_document_extension", "extension", "first_priority"),
+			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));
+	ClassDB::bind_static_method("GLTFDocument", D_METHOD("unregister_gltf_document_extension", "extension"),
+			&GLTFDocument::unregister_gltf_document_extension);
 }
 
 void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> state) {
@@ -6757,22 +6807,24 @@ void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> state) {
 	}
 }
 
-void GLTFDocument::set_extensions(TypedArray<GLTFDocumentExtension> p_extensions) {
-	document_extensions = p_extensions;
-}
+Vector<Ref<GLTFDocumentExtension>> GLTFDocument::all_document_extensions;
 
-TypedArray<GLTFDocumentExtension> GLTFDocument::get_extensions() const {
-	return document_extensions;
-}
-
-GLTFDocument::GLTFDocument() {
-	bool is_editor = ::Engine::get_singleton()->is_editor_hint();
-	if (is_editor) {
-		return;
+void GLTFDocument::register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority) {
+	if (all_document_extensions.find(p_extension) == -1) {
+		if (p_first_priority) {
+			all_document_extensions.insert(0, p_extension);
+		} else {
+			all_document_extensions.push_back(p_extension);
+		}
 	}
-	Ref<GLTFDocumentExtensionConvertImporterMesh> extension_editor;
-	extension_editor.instantiate();
-	document_extensions.push_back(extension_editor);
+}
+
+void GLTFDocument::unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension) {
+	all_document_extensions.erase(p_extension);
+}
+
+void GLTFDocument::unregister_all_gltf_document_extensions() {
+	all_document_extensions.clear();
 }
 
 PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> state, Error *r_err) {
@@ -6838,7 +6890,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> state, const String &p_pa
 	return OK;
 }
 
-Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
+Node *GLTFDocument::generate_scene(Ref<GLTFState> state, float p_bake_fps, bool p_trimming) {
 	ERR_FAIL_NULL_V(state, nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
 	Error err = OK;
@@ -6852,13 +6904,12 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 		root->add_child(ap, true);
 		ap->set_owner(root);
 		for (int i = 0; i < state->animations.size(); i++) {
-			_import_animation(state, ap, i, p_bake_fps);
+			_import_animation(state, ap, i, p_bake_fps, p_trimming);
 		}
 	}
 	for (KeyValue<GLTFNodeIndex, Node *> E : state->scene_nodes) {
 		ERR_CONTINUE(!E.value);
-		for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-			Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 			ERR_CONTINUE(ext.is_null());
 			ERR_CONTINUE(!state->json.has("nodes"));
 			Array nodes = state->json["nodes"];
@@ -6870,8 +6921,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 			ERR_CONTINUE(err != OK);
 		}
 	}
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		err = ext->import_post(state, root);
 		ERR_CONTINUE(err != OK);
@@ -6880,16 +6930,18 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 	return root;
 }
 
-Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
+Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32_t p_flags) {
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+	document_extensions.clear();
+	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		Error err = ext->export_preflight(p_node);
-		ERR_FAIL_COND_V(err != OK, FAILED);
+		if (err == OK) {
+			document_extensions.push_back(ext);
+		}
 	}
 	_convert_scene_node(state, p_node, -1, -1);
 	if (!state->buffers.size()) {
@@ -6898,7 +6950,7 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32
 	return OK;
 }
 
-Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
+Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> state, uint32_t p_flags) {
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
@@ -6909,10 +6961,9 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
 	state->base_path = p_base_path.get_base_dir();
-	err = _parse(state, state->base_path, file_access, p_bake_fps);
+	err = _parse(state, state->base_path, file_access);
 	ERR_FAIL_COND_V(err != OK, err);
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		err = ext->import_post_parse(state);
 		ERR_FAIL_COND_V(err != OK, err);
@@ -6920,7 +6971,7 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	return OK;
 }
 
-Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_search_path, float p_bake_fps) {
+Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_search_path) {
 	Error err;
 
 	/* PARSE EXTENSIONS */
@@ -7016,7 +7067,7 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_sear
 	return OK;
 }
 
-Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags, int32_t p_bake_fps, String p_base_path) {
+Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags, String p_base_path) {
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	if (r_state == Ref<GLTFState>()) {
 		r_state.instantiate();
@@ -7033,10 +7084,9 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 		base_path = p_path.get_base_dir();
 	}
 	r_state->base_path = base_path;
-	err = _parse(r_state, base_path, f, p_bake_fps);
+	err = _parse(r_state, base_path, f);
 	ERR_FAIL_COND_V(err != OK, err);
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		err = ext->import_post_parse(r_state);
 		ERR_FAIL_COND_V(err != OK, err);
@@ -7058,8 +7108,7 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> state) {
 	supported_extensions.insert("KHR_lights_punctual");
 	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
 	supported_extensions.insert("KHR_texture_transform");
-	for (int ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
 		for (int i = 0; i < ext_supported_extensions.size(); ++i) {

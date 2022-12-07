@@ -14,7 +14,6 @@
 		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
 		[b]Note:[/b] A glyph is a bitmap or shape used to draw a one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
 		[b]Note:[/b] If a none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
-
 		[codeblocks]
 		[gdscript]
 		var f = load("res://BarlowCondensed-Bold.ttf")
@@ -262,7 +261,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="texture_index" type="int" />
 			<description>
-				Returns a copy of the array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
+				Returns a copy of the array containing glyph packing data.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
@@ -522,7 +521,7 @@
 			<param index="2" name="texture_index" type="int" />
 			<param index="3" name="offset" type="PackedInt32Array" />
 			<description>
-				Sets array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty (for the fonts without dynamic glyph generation support).
+				Sets array containing glyph packing data.
 			</description>
 		</method>
 		<method name="set_transform">
@@ -543,6 +542,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="allow_system_fallback" type="bool" setter="set_allow_system_fallback" getter="is_allow_system_fallback" default="true">
+			If set to [code]true[/code], system fonts can be automatically used as fallbacks.
+		</member>
 		<member name="antialiasing" type="int" setter="set_antialiasing" getter="get_antialiasing" enum="TextServer.FontAntialiasing" default="1">
 			Font anti-aliasing mode.
 		</member>
@@ -558,8 +560,14 @@
 		<member name="font_name" type="String" setter="set_font_name" getter="get_font_name" default="&quot;&quot;">
 			Font family name.
 		</member>
+		<member name="font_stretch" type="int" setter="set_font_stretch" getter="get_font_stretch" default="100">
+			Font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+		</member>
 		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" default="0">
 			Font style flags, see [enum TextServer.FontStyle].
+		</member>
+		<member name="font_weight" type="int" setter="set_font_weight" getter="get_font_weight" default="400">
+			Weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
 		</member>
 		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="is_force_autohinter" default="false">
 			If set to [code]true[/code], auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
@@ -589,7 +597,7 @@
 			Font style name.
 		</member>
 		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
-			Font glyph sub-pixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
+			Font glyph subpixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
 		</member>
 	</members>
 </class>

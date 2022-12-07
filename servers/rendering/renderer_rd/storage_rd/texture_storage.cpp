@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "texture_storage.h"
+
 #include "../effects/copy_effects.h"
 #include "../framebuffer_cache_rd.h"
 #include "material_storage.h"
@@ -559,6 +560,7 @@ void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS:
 void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
 	ERR_FAIL_NULL(ct);
+
 	ct->texture_repeat = p_repeat;
 	ct->clear_sets();
 }
@@ -1123,9 +1125,7 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	texture_2d_initialize(p_texture, image);
@@ -1134,9 +1134,7 @@ void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, RS::TextureLayeredType p_layered_type) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
@@ -1155,9 +1153,7 @@ void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, RS
 void TextureStorage::texture_3d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
@@ -1180,9 +1176,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 #endif
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image;
-	image.instantiate();
-	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	Ref<Image> image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (tex->format != tex->validated_format) {
 		image->convert(tex->format);
@@ -1203,9 +1197,7 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, p_layer);
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image;
-	image.instantiate();
-	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	Ref<Image> image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (tex->format != tex->validated_format) {
 		image->convert(tex->format);
@@ -1231,9 +1223,7 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 		ERR_FAIL_COND_V(bs.offset + bs.buffer_size > (uint32_t)all_data.size(), Vector<Ref<Image>>());
 		Vector<uint8_t> sub_region = all_data.slice(bs.offset, bs.offset + bs.buffer_size);
 
-		Ref<Image> img;
-		img.instantiate();
-		img->create(bs.size.width, bs.size.height, false, tex->validated_format, sub_region);
+		Ref<Image> img = Image::create_from_data(bs.size.width, bs.size.height, false, tex->validated_format, sub_region);
 		ERR_FAIL_COND_V(img->is_empty(), Vector<Ref<Image>>());
 		if (tex->format != tex->validated_format) {
 			img->convert(tex->format);
@@ -1345,6 +1335,13 @@ void TextureStorage::texture_set_force_redraw_if_visible(RID p_texture, bool p_e
 
 Size2 TextureStorage::texture_size_with_proxy(RID p_proxy) {
 	return texture_2d_get_size(p_proxy);
+}
+
+RID TextureStorage::texture_get_rd_texture_rid(RID p_texture, bool p_srgb) const {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!tex, RID());
+
+	return (p_srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
 }
 
 Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
@@ -1496,9 +1493,7 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 		} break;
 		case Image::FORMAT_RGBE9995: {
 			r_format.format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
-#ifndef _MSC_VER
-#warning TODO need to make a function in Image to swap bits for this
-#endif
+			// TODO: Need to make a function in Image to swap bits for this.
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_IDENTITY;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_IDENTITY;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_IDENTITY;
@@ -2462,6 +2457,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			RD::TEXTURE_SAMPLES_8,
 		};
 		rd_color_multisample_format.samples = texture_samples[rt->msaa];
+		rd_color_multisample_format.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		RD::TextureView rd_view_multisample;
 		rd_color_multisample_format.is_resolve_buffer = false;
 		rt->color_multisample = RD::get_singleton()->texture_create(rd_color_multisample_format, rd_view_multisample);
@@ -2606,11 +2602,13 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	return rt->texture;
 }
 
-void TextureStorage::render_target_set_override_color(RID p_render_target, RID p_texture) {
+void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	rt->overridden.color = p_texture;
+	rt->overridden.color = p_color_texture;
+	rt->overridden.depth = p_depth_texture;
+	rt->overridden.velocity = p_velocity_texture;
 }
 
 RID TextureStorage::render_target_get_override_color(RID p_render_target) const {
@@ -2618,13 +2616,6 @@ RID TextureStorage::render_target_get_override_color(RID p_render_target) const 
 	ERR_FAIL_COND_V(!rt, RID());
 
 	return rt->overridden.color;
-}
-
-void TextureStorage::render_target_set_override_depth(RID p_render_target, RID p_texture) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-
-	rt->overridden.depth = p_texture;
 }
 
 RID TextureStorage::render_target_get_override_depth(RID p_render_target) const {
@@ -2651,13 +2642,6 @@ RID TextureStorage::render_target_get_override_depth_slice(RID p_render_target, 
 
 		return rt->overridden.cached_slices[key];
 	}
-}
-
-void TextureStorage::render_target_set_override_velocity(RID p_render_target, RID p_texture) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-
-	rt->overridden.velocity = p_texture;
 }
 
 RID TextureStorage::render_target_get_override_velocity(RID p_render_target) const {
@@ -3136,9 +3120,11 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 
 	// TODO figure out stereo support here
 
-	//single texture copy for backbuffer
-	//RD::get_singleton()->texture_copy(rt->color, rt->backbuffer_mipmap0, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
-	copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+		copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+	} else {
+		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, true);
+	}
 
 	if (!p_gen_mipmaps) {
 		return;
@@ -3147,6 +3133,8 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	//then mipmap blur
 	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
 
+	Size2i texture_size = rt->size;
+
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
@@ -3154,7 +3142,13 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 		region.size.y = MAX(1, region.size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
-		copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+		} else {
+			texture_size.x = MAX(1, texture_size.x >> 1);
+			texture_size.y = MAX(1, texture_size.y >> 1);
+			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
+		}
 		prev_texture = mipmap;
 	}
 	RD::get_singleton()->draw_command_end_label();
@@ -3182,7 +3176,11 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 	}
 
 	//single texture copy for backbuffer
-	copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+	} else {
+		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+	}
 }
 
 void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
@@ -3208,6 +3206,7 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps2");
 	//then mipmap blur
 	RID prev_texture = rt->backbuffer_mipmap0;
+	Size2i texture_size = rt->size;
 
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
@@ -3216,7 +3215,14 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 		region.size.y = MAX(1, region.size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
-		copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+
+		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+		} else {
+			texture_size.x = MAX(1, texture_size.x >> 1);
+			texture_size.y = MAX(1, texture_size.y >> 1);
+			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
+		}
 		prev_texture = mipmap;
 	}
 	RD::get_singleton()->draw_command_end_label();

@@ -869,12 +869,7 @@ void RendererSceneCull::instance_set_transform(RID p_instance, const Transform3D
 
 	for (int i = 0; i < 4; i++) {
 		const Vector3 &v = i < 3 ? p_transform.basis.rows[i] : p_transform.origin;
-		ERR_FAIL_COND(Math::is_inf(v.x));
-		ERR_FAIL_COND(Math::is_nan(v.x));
-		ERR_FAIL_COND(Math::is_inf(v.y));
-		ERR_FAIL_COND(Math::is_nan(v.y));
-		ERR_FAIL_COND(Math::is_inf(v.z));
-		ERR_FAIL_COND(Math::is_nan(v.z));
+		ERR_FAIL_COND(!v.is_finite());
 	}
 
 #endif
@@ -1454,8 +1449,23 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 	} else {
 		E->value.value = p_value;
 		if (E->value.index >= 0 && instance->instance_allocated_shader_uniforms) {
+			int flags_count = 0;
+			if (E->value.info.hint == PROPERTY_HINT_FLAGS) {
+				// A small hack to detect boolean flags count and prevent overhead.
+				switch (E->value.info.hint_string.length()) {
+					case 3: // "x,y"
+						flags_count = 1;
+						break;
+					case 5: // "x,y,z"
+						flags_count = 2;
+						break;
+					case 7: // "x,y,z,w"
+						flags_count = 3;
+						break;
+				}
+			}
 			//update directly
-			RSG::material_storage->global_shader_parameters_instance_update(p_instance, E->value.index, p_value);
+			RSG::material_storage->global_shader_parameters_instance_update(p_instance, E->value.index, p_value, flags_count);
 		}
 	}
 }
@@ -2502,7 +2512,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 			} break;
 		}
 
-		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter);
+		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, camera->visible_layers);
 	} else {
 		// Setup our camera for our XR interface.
 		// We can support multiple views here each with their own camera
@@ -2510,7 +2520,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		Projection projections[RendererSceneRender::MAX_RENDER_VIEWS];
 
 		uint32_t view_count = p_xr_interface->get_view_count();
-		ERR_FAIL_COND_MSG(view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
+		ERR_FAIL_COND_MSG(view_count == 0 || view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
 
 		float aspect = p_viewport_size.width / (float)p_viewport_size.height;
 
@@ -2524,7 +2534,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		}
 
 		if (view_count == 1) {
-			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter);
+			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter, camera->visible_layers);
 		} else if (view_count == 2) {
 			camera_data.set_multiview_camera(view_count, transforms, projections, false, camera->vaspect);
 		} else {
@@ -3309,7 +3319,7 @@ void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_rend
 	RendererSceneRender::CameraData camera_data;
 	camera_data.set_camera(Transform3D(), Projection(), true, false);
 
-	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), RID(), RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
+	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
 #endif
 }
 
@@ -3889,7 +3899,22 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 					for (const KeyValue<StringName, Instance::InstanceShaderParameter> &E : p_instance->instance_shader_uniforms) {
 						if (E.value.value.get_type() != Variant::NIL) {
-							RSG::material_storage->global_shader_parameters_instance_update(p_instance->self, E.value.index, E.value.value);
+							int flags_count = 0;
+							if (E.value.info.hint == PROPERTY_HINT_FLAGS) {
+								// A small hack to detect boolean flags count and prevent overhead.
+								switch (E.value.info.hint_string.length()) {
+									case 3: // "x,y"
+										flags_count = 1;
+										break;
+									case 5: // "x,y,z"
+										flags_count = 2;
+										break;
+									case 7: // "x,y,z,w"
+										flags_count = 3;
+										break;
+								}
+							}
+							RSG::material_storage->global_shader_parameters_instance_update(p_instance->self, E.value.index, E.value.value, flags_count);
 						}
 					}
 				} else {

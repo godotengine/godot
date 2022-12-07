@@ -43,12 +43,6 @@
 		</constructor>
 		<constructor name="Quaternion">
 			<return type="Quaternion" />
-			<param index="0" name="euler_yxz" type="Vector3" />
-			<description>
-			</description>
-		</constructor>
-		<constructor name="Quaternion">
-			<return type="Quaternion" />
 			<param index="0" name="from" type="Basis" />
 			<description>
 				Constructs a quaternion from the given [Basis].
@@ -86,6 +80,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="from_euler" qualifiers="static">
+			<return type="Quaternion" />
+			<param index="0" name="euler" type="Vector3" />
+			<description>
+				Constructs a Quaternion from Euler angles in YXZ rotation order.
+			</description>
+		</method>
 		<method name="get_angle" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -98,8 +99,9 @@
 		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
+			<param index="0" name="order" type="int" default="2" />
 			<description>
-				Returns Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
+				Returns the quaternion's rotation in the form of Euler angles. The Euler order depends on the [param order] parameter, for example using the YXZ convention: since this method decomposes, first Z, then X, and Y last. See the [enum EulerOrder] enum for possible values. The returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
@@ -113,6 +115,12 @@
 			<param index="0" name="to" type="Quaternion" />
 			<description>
 				Returns [code]true[/code] if this quaternion and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this quaternion is finite, by calling [method @GlobalScope.is_finite] on each component.
 			</description>
 		</method>
 		<method name="is_normalized" qualifiers="const">

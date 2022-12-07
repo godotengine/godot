@@ -35,9 +35,6 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access.h"
-#include "modules/modules_enabled.gen.h" // For regex.
-
-#ifdef MODULE_REGEX_ENABLED
 
 class PListNode;
 
@@ -110,7 +107,5 @@ public:
 	PListNode() {}
 	~PListNode() {}
 };
-
-#endif // MODULE_REGEX_ENABLED
 
 #endif // MACOS_PLIST_H

@@ -54,11 +54,9 @@ bool AudioStreamPlayback::is_playing() const {
 }
 
 int AudioStreamPlayback::get_loop_count() const {
-	int ret;
-	if (GDVIRTUAL_CALL(_get_loop_count, ret)) {
-		return ret;
-	}
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_loop_count, ret);
+	return ret;
 }
 
 double AudioStreamPlayback::get_playback_position() const {
@@ -69,18 +67,13 @@ double AudioStreamPlayback::get_playback_position() const {
 	ERR_FAIL_V_MSG(0, "AudioStreamPlayback::get_playback_position unimplemented!");
 }
 void AudioStreamPlayback::seek(double p_time) {
-	if (GDVIRTUAL_CALL(_seek, p_time)) {
-		return;
-	}
+	GDVIRTUAL_CALL(_seek, p_time);
 }
 
 int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret)) {
-		return ret;
-	}
-
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
+	return ret;
 }
 
 void AudioStreamPlayback::tag_used_streams() {
@@ -111,20 +104,14 @@ void AudioStreamPlaybackResampled::begin_resample() {
 }
 
 int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret)) {
-		return ret;
-	}
-
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret);
+	return ret;
 }
 float AudioStreamPlaybackResampled::get_stream_sampling_rate() {
-	float ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret)) {
-		return ret;
-	}
-
-	return 0;
+	float ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret);
+	return ret;
 }
 
 void AudioStreamPlaybackResampled::_bind_methods() {
@@ -201,58 +188,44 @@ Ref<AudioStreamPlayback> AudioStream::instantiate_playback() {
 }
 String AudioStream::get_stream_name() const {
 	String ret;
-	if (GDVIRTUAL_CALL(_get_stream_name, ret)) {
-		return ret;
-	}
-	return String();
+	GDVIRTUAL_CALL(_get_stream_name, ret);
+	return ret;
 }
 
 double AudioStream::get_length() const {
-	double ret;
-	if (GDVIRTUAL_CALL(_get_length, ret)) {
-		return ret;
-	}
-	return 0;
+	double ret = 0;
+	GDVIRTUAL_CALL(_get_length, ret);
+	return ret;
 }
 
 bool AudioStream::is_monophonic() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_is_monophonic, ret)) {
-		return ret;
-	}
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_is_monophonic, ret);
+	return ret;
 }
 
 double AudioStream::get_bpm() const {
 	double ret = 0;
-	if (GDVIRTUAL_CALL(_get_bpm, ret)) {
-		return ret;
-	}
-	return 0;
+	GDVIRTUAL_CALL(_get_bpm, ret);
+	return ret;
 }
 
 bool AudioStream::has_loop() const {
 	bool ret = 0;
-	if (GDVIRTUAL_CALL(_has_loop, ret)) {
-		return ret;
-	}
-	return 0;
+	GDVIRTUAL_CALL(_has_loop, ret);
+	return ret;
 }
 
 int AudioStream::get_bar_beats() const {
 	int ret = 0;
-	if (GDVIRTUAL_CALL(_get_bar_beats, ret)) {
-		return ret;
-	}
-	return 0;
+	GDVIRTUAL_CALL(_get_bar_beats, ret);
+	return ret;
 }
 
 int AudioStream::get_beat_count() const {
 	int ret = 0;
-	if (GDVIRTUAL_CALL(_get_beat_count, ret)) {
-		return ret;
-	}
-	return 0;
+	GDVIRTUAL_CALL(_get_beat_count, ret);
+	return ret;
 }
 
 void AudioStream::tag_used(float p_offset) {

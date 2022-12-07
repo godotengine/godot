@@ -33,8 +33,8 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include "thirdparty/jpeg-compressor/jpgd.h"
-#include "thirdparty/jpeg-compressor/jpge.h"
+#include <jpgd.h>
+#include <jpge.h>
 #include <string.h>
 
 Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
@@ -99,7 +99,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 		fmt = Image::FORMAT_RGB8;
 	}
 
-	p_image->create(image_width, image_height, false, fmt, data);
+	p_image->set_data(image_width, image_height, false, fmt, data);
 
 	return OK;
 }
@@ -132,10 +132,6 @@ static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 	return img;
 }
 
-static Error _jpgd_save_func(const String &p_path, const Ref<Image> &p_img, float p_quality) {
-	return OK;
-}
-
 class ImageLoaderJPGOSFile : public jpge::output_stream {
 public:
 	Ref<FileAccess> f;
@@ -157,21 +153,18 @@ public:
 	}
 };
 
-static Vector<uint8_t> _jpgd_buffer_save_func(const Ref<Image> &p_img, float p_quality) {
-	ERR_FAIL_COND_V(p_img.is_null() || p_img->is_empty(), Vector<uint8_t>());
+static Error _jpgd_save_to_output_stream(jpge::output_stream *p_output_stream, const Ref<Image> &p_img, float p_quality) {
+	ERR_FAIL_COND_V(p_img.is_null() || p_img->is_empty(), ERR_INVALID_PARAMETER);
 	Ref<Image> image = p_img;
 	if (image->get_format() != Image::FORMAT_RGB8) {
-		image->convert(Image::FORMAT_ETC2_RGB8);
+		image->convert(Image::FORMAT_RGB8);
 	}
 
 	jpge::params p;
 	p.m_quality = CLAMP(p_quality * 100, 1, 100);
-	Vector<uint8_t> output;
-	ImageLoaderJPGOSBuffer ob;
-	ob.buffer = &output;
 
 	jpge::jpeg_encoder enc;
-	enc.init(&ob, image->get_width(), image->get_height(), 3, p);
+	enc.init(p_output_stream, image->get_width(), image->get_height(), 3, p);
 
 	const uint8_t *src_data = image->get_data().ptr();
 	for (int i = 0; i < image->get_height(); i++) {
@@ -180,7 +173,26 @@ static Vector<uint8_t> _jpgd_buffer_save_func(const Ref<Image> &p_img, float p_q
 
 	enc.process_scanline(nullptr);
 
+	return OK;
+}
+
+static Vector<uint8_t> _jpgd_buffer_save_func(const Ref<Image> &p_img, float p_quality) {
+	Vector<uint8_t> output;
+	ImageLoaderJPGOSBuffer ob;
+	ob.buffer = &output;
+	if (_jpgd_save_to_output_stream(&ob, p_img, p_quality) != OK) {
+		return Vector<uint8_t>();
+	}
 	return output;
+}
+
+static Error _jpgd_save_func(const String &p_path, const Ref<Image> &p_img, float p_quality) {
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save JPG at path: '%s'.", p_path));
+	ImageLoaderJPGOSFile ob;
+	ob.f = file;
+	return _jpgd_save_to_output_stream(&ob, p_img, p_quality);
 }
 
 ImageLoaderJPG::ImageLoaderJPG() {

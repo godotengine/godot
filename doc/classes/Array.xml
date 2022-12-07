@@ -58,6 +58,7 @@
 			<param index="2" name="class_name" type="StringName" />
 			<param index="3" name="script" type="Variant" />
 			<description>
+				Creates a typed array from the [param base] array. The base array can't be already typed. See [method set_typed] for more details.
 			</description>
 		</constructor>
 		<constructor name="Array">
@@ -271,6 +272,7 @@
 				array.Fill(0); // Initialize the 10 elements to 0.
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] If [param value] is of a reference type ([Object]-derived, [Array], [Dictionary], etc.) then the array is filled with the references to the same object, i.e. no duplicates are created.
 			</description>
 		</method>
 		<method name="filter" qualifiers="const">
@@ -298,13 +300,6 @@
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
-		<method name="find_last" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="value" type="Variant" />
-			<description>
-				Searches the array in reverse order for a value and returns its index or [code]-1[/code] if not found.
-			</description>
-		</method>
 		<method name="front" qualifiers="const">
 			<return type="Variant" />
 			<description>
@@ -315,16 +310,19 @@
 		<method name="get_typed_builtin" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the [enum Variant.Type] constant for a typed array. If the [Array] is not typed, returns [constant TYPE_NIL].
 			</description>
 		</method>
 		<method name="get_typed_class_name" qualifiers="const">
 			<return type="StringName" />
 			<description>
+				Returns a class name of a typed [Array] of type [constant TYPE_OBJECT].
 			</description>
 		</method>
 		<method name="get_typed_script" qualifiers="const">
 			<return type="Variant" />
 			<description>
+				Returns the script associated with a typed array tied to a class name.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -348,7 +346,6 @@
 				GD.Print(arr.Contains("7")); // False
 				[/csharp]
 				[/codeblocks]
-
 				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
 				[codeblocks]
 				[gdscript]
@@ -393,11 +390,13 @@
 		<method name="is_read_only" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the array is read-only. See [method set_read_only]. Arrays are automatically read-only if declared with [code]const[/code] keyword.
 			</description>
 		</method>
 		<method name="is_typed" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the array is typed. Typed arrays can only store elements of their associated type and provide type safety for the [code][][/code] operator. Methods of typed array still return [Variant].
 			</description>
 		</method>
 		<method name="map" qualifiers="const">
@@ -427,6 +426,16 @@
 			<return type="Variant" />
 			<description>
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+			</description>
+		</method>
+		<method name="pick_random" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a random value from the target array.
+				[codeblock]
+				var array: Array[int] = [1, 2, 3, 4]
+				print(array.pick_random())  # Prints either of the four numbers.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="pop_at">
@@ -517,6 +526,7 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
+				Makes the [Array] read-only, i.e. disabled modifying of the array's elements. Does not apply to nested content, e.g. content of nested arrays.
 			</description>
 		</method>
 		<method name="set_typed">
@@ -525,6 +535,8 @@
 			<param index="1" name="class_name" type="StringName" />
 			<param index="2" name="script" type="Variant" />
 			<description>
+				Makes the [Array] typed. The [param type] should be one of the [enum Variant.Type] constants. [param class_name] is optional and can only be provided for [constant TYPE_OBJECT]. [param script] can only be provided if [param class_name] is not empty.
+				The method fails if an array is already typed.
 			</description>
 		</method>
 		<method name="shuffle">
@@ -557,6 +569,7 @@
 			<return type="void" />
 			<description>
 				Sorts the array.
+				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort].
 				[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:
 				[codeblocks]
 				[gdscript]
@@ -581,7 +594,8 @@
 			<param index="0" name="func" type="Callable" />
 			<description>
 				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code]. For two elements [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], element [code]b[/code] will be after element [code]a[/code] in the array.
-				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
+				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort_custom].
+				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Randomizing the return value will result in unexpected behavior.
 				[codeblocks]
 				[gdscript]
 				func sort_ascending(a, b):
@@ -608,6 +622,7 @@
 			<return type="bool" />
 			<param index="0" name="array" type="Array" />
 			<description>
+				Assigns a different [Array] to this array reference. It the array is typed, the new array's type must be compatible and its elements will be automatically converted.
 			</description>
 		</method>
 	</methods>

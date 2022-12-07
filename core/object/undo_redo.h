@@ -120,6 +120,7 @@ public:
 	bool redo();
 	bool undo();
 	String get_current_action_name() const;
+	int get_action_level() const;
 
 	int get_history_count();
 	int get_current_action();

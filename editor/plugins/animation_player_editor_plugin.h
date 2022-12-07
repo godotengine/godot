@@ -41,7 +41,6 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
 
-class EditorUndoRedoManager;
 class AnimationPlayerEditorPlugin;
 
 class AnimationPlayerEditor : public VBoxContainer {
@@ -101,7 +100,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 	LineEdit *name = nullptr;
 	OptionButton *library = nullptr;
 	Label *name_title = nullptr;
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	Ref<Texture2D> autoplay_icon;
 	Ref<Texture2D> reset_icon;
@@ -195,6 +193,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _blend_edited();
 
 	void _animation_player_changed(Object *p_pl);
+	void _animation_libraries_updated();
 
 	void _animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);
@@ -212,6 +211,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _prepare_onion_layers_2();
 	void _start_onion_skinning();
 	void _stop_onion_skinning();
+
+	bool _validate_tracks(const Ref<Animation> p_anim);
 
 	void _pin_pressed();
 	String _get_current() const;
@@ -236,7 +237,6 @@ public:
 
 	void ensure_visibility();
 
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void edit(AnimationPlayer *p_player);
 	void forward_force_draw_over_viewport(Control *p_overlay);
 

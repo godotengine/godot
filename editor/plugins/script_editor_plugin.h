@@ -31,23 +31,22 @@
 #ifndef SCRIPT_EDITOR_PLUGIN_H
 #define SCRIPT_EDITOR_PLUGIN_H
 
-#include "core/object/script_language.h"
-#include "editor/code_editor.h"
-#include "editor/editor_help.h"
-#include "editor/editor_help_search.h"
 #include "editor/editor_plugin.h"
-#include "editor/script_create_dialog.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/tree.h"
-#include "scene/main/timer.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/panel_container.h"
+#include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
 
 class EditorFileDialog;
+class EditorHelpSearch;
+class FindReplaceBar;
+class HSplitContainer;
+class ItemList;
+class MenuButton;
+class TabContainer;
+class TextureRect;
+class Tree;
+class VSplitContainer;
 
 class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
@@ -139,7 +138,7 @@ public:
 	virtual Ref<Resource> get_edited_resource() const = 0;
 	virtual Vector<String> get_functions() = 0;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) = 0;
-	virtual void enable_editor() = 0;
+	virtual void enable_editor(Control *p_shortcut_context = nullptr) = 0;
 	virtual void reload_text() = 0;
 	virtual String get_name() = 0;
 	virtual Ref<Texture2D> get_theme_icon() = 0;

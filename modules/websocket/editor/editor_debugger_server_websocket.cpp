@@ -38,18 +38,31 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 
-void EditorDebuggerServerWebSocket::_peer_connected(int p_id, String _protocol) {
-	pending_peers.push_back(p_id);
-}
-
-void EditorDebuggerServerWebSocket::_peer_disconnected(int p_id, bool p_was_clean) {
-	if (pending_peers.find(p_id)) {
-		pending_peers.erase(p_id);
-	}
-}
-
 void EditorDebuggerServerWebSocket::poll() {
-	server->poll();
+	if (pending_peer.is_null() && tcp_server->is_connection_available()) {
+		Ref<WebSocketPeer> peer = Ref<WebSocketPeer>(WebSocketPeer::create());
+		ERR_FAIL_COND(peer.is_null()); // Bug.
+
+		Vector<String> ws_protocols;
+		ws_protocols.push_back("binary"); // Compatibility for emscripten TCP-to-WebSocket.
+		peer->set_supported_protocols(ws_protocols);
+
+		Error err = peer->accept_stream(tcp_server->take_connection());
+		if (err == OK) {
+			pending_timer = OS::get_singleton()->get_ticks_msec();
+			pending_peer = peer;
+		}
+	}
+	if (pending_peer.is_valid() && pending_peer->get_ready_state() != WebSocketPeer::STATE_OPEN) {
+		pending_peer->poll();
+		WebSocketPeer::State ready_state = pending_peer->get_ready_state();
+		if (ready_state != WebSocketPeer::STATE_CONNECTING && ready_state != WebSocketPeer::STATE_OPEN) {
+			pending_peer.unref(); // Failed.
+		}
+		if (ready_state == WebSocketPeer::STATE_CONNECTING && OS::get_singleton()->get_ticks_msec() - pending_timer > 3000) {
+			pending_peer.unref(); // Timeout.
+		}
+	}
 }
 
 String EditorDebuggerServerWebSocket::get_uri() const {
@@ -58,8 +71,8 @@ String EditorDebuggerServerWebSocket::get_uri() const {
 
 Error EditorDebuggerServerWebSocket::start(const String &p_uri) {
 	// Default host and port
-	String bind_host = (String)EditorSettings::get_singleton()->get("network/debug/remote_host");
-	int bind_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	String bind_host = (String)EDITOR_GET("network/debug/remote_host");
+	int bind_port = (int)EDITOR_GET("network/debug/remote_port");
 
 	// Optionally override
 	if (!p_uri.is_empty() && p_uri != "ws://") {
@@ -69,15 +82,10 @@ Error EditorDebuggerServerWebSocket::start(const String &p_uri) {
 		ERR_FAIL_COND_V(!bind_host.is_valid_ip_address() && bind_host != "*", ERR_INVALID_PARAMETER);
 	}
 
-	// Set up the server
-	server->set_bind_ip(bind_host);
-	Vector<String> compatible_protocols;
-	compatible_protocols.push_back("binary"); // compatibility with EMSCRIPTEN TCP-to-WebSocket layer.
-
 	// Try listening on ports
 	const int max_attempts = 5;
 	for (int attempt = 1;; ++attempt) {
-		const Error err = server->listen(bind_port, compatible_protocols);
+		const Error err = tcp_server->listen(bind_port, bind_host);
 		if (err == OK) {
 			break;
 		}
@@ -96,31 +104,27 @@ Error EditorDebuggerServerWebSocket::start(const String &p_uri) {
 }
 
 void EditorDebuggerServerWebSocket::stop() {
-	server->stop();
-	pending_peers.clear();
+	pending_peer.unref();
+	tcp_server->stop();
 }
 
 bool EditorDebuggerServerWebSocket::is_active() const {
-	return server->is_listening();
+	return tcp_server->is_listening();
 }
 
 bool EditorDebuggerServerWebSocket::is_connection_available() const {
-	return pending_peers.size() > 0;
+	return pending_peer.is_valid() && pending_peer->get_ready_state() == WebSocketPeer::STATE_OPEN;
 }
 
 Ref<RemoteDebuggerPeer> EditorDebuggerServerWebSocket::take_connection() {
 	ERR_FAIL_COND_V(!is_connection_available(), Ref<RemoteDebuggerPeer>());
-	RemoteDebuggerPeer *peer = memnew(RemoteDebuggerPeerWebSocket(server->get_peer(pending_peers[0])));
-	pending_peers.pop_front();
+	RemoteDebuggerPeer *peer = memnew(RemoteDebuggerPeerWebSocket(pending_peer));
+	pending_peer.unref();
 	return peer;
 }
 
 EditorDebuggerServerWebSocket::EditorDebuggerServerWebSocket() {
-	server = Ref<WebSocketServer>(WebSocketServer::create());
-	int max_pkts = (int)GLOBAL_GET("network/limits/debugger/max_queued_messages");
-	server->set_buffers(8192, max_pkts, 8192, max_pkts);
-	server->connect("client_connected", callable_mp(this, &EditorDebuggerServerWebSocket::_peer_connected));
-	server->connect("client_disconnected", callable_mp(this, &EditorDebuggerServerWebSocket::_peer_disconnected));
+	tcp_server.instantiate();
 }
 
 EditorDebuggerServerWebSocket::~EditorDebuggerServerWebSocket() {

@@ -151,7 +151,9 @@ void SectionedInspector::_section_selected() {
 
 void SectionedInspector::set_current_section(const String &p_section) {
 	if (section_map.has(p_section)) {
-		section_map[p_section]->select(0);
+		TreeItem *item = section_map[p_section];
+		item->select(0);
+		sections->scroll_to_item(item);
 	}
 }
 
@@ -310,7 +312,9 @@ void SectionedInspector::_search_changed(const String &p_what) {
 void SectionedInspector::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+				inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+			}
 		} break;
 	}
 }

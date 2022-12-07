@@ -141,11 +141,11 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_packed_string_array_add(ref godot_packed_string_array r_dest,
             in godot_string p_element);
 
-        public static partial void godotsharp_callable_new_with_delegate(IntPtr p_delegate_handle, IntPtr p_object,
-            out godot_callable r_callable);
+        public static partial void godotsharp_callable_new_with_delegate(IntPtr p_delegate_handle, IntPtr p_trampoline,
+            IntPtr p_object, out godot_callable r_callable);
 
         internal static partial godot_bool godotsharp_callable_get_data_for_marshalling(in godot_callable p_callable,
-            out IntPtr r_delegate_handle, out IntPtr r_object, out godot_string_name r_name);
+            out IntPtr r_delegate_handle, out IntPtr r_trampoline, out IntPtr r_object, out godot_string_name r_name);
 
         internal static partial godot_variant godotsharp_callable_call(in godot_callable p_callable,
             godot_variant** p_args, int p_arg_count, out godot_variant_call_error p_call_error);
@@ -374,7 +374,7 @@ namespace Godot.NativeInterop
 
         public static partial Error godotsharp_array_resize(ref godot_array p_self, int p_new_size);
 
-        public static partial Error godotsharp_array_shuffle(ref godot_array p_self);
+        public static partial void godotsharp_array_shuffle(ref godot_array p_self);
 
         public static partial void godotsharp_array_to_string(ref godot_array p_self, out godot_string r_str);
 
@@ -413,21 +413,6 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_dictionary_to_string(ref godot_dictionary p_self, out godot_string r_str);
 
         // StringExtensions
-
-        public static partial void godotsharp_string_md5_buffer(in godot_string p_self,
-            out godot_packed_byte_array r_md5_buffer);
-
-        public static partial void godotsharp_string_md5_text(in godot_string p_self, out godot_string r_md5_text);
-
-        public static partial int godotsharp_string_rfind(in godot_string p_self, in godot_string p_what, int p_from);
-
-        public static partial int godotsharp_string_rfindn(in godot_string p_self, in godot_string p_what, int p_from);
-
-        public static partial void godotsharp_string_sha256_buffer(in godot_string p_self,
-            out godot_packed_byte_array r_sha256_buffer);
-
-        public static partial void godotsharp_string_sha256_text(in godot_string p_self,
-            out godot_string r_sha256_text);
 
         public static partial void godotsharp_string_simplify_path(in godot_string p_self,
             out godot_string r_simplified_path);

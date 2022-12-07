@@ -30,10 +30,13 @@
 
 #include "tiles_editor_plugin.h"
 
+#include "tile_set_editor.h"
+
 #include "core/os/mutex.h"
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 
 #include "scene/2d/tile_map.h"
@@ -42,8 +45,6 @@
 #include "scene/gui/control.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/tile_set.h"
-
-#include "tile_set_editor.h"
 
 TilesEditorPlugin *TilesEditorPlugin::singleton = nullptr;
 
@@ -66,12 +67,14 @@ void TilesEditorPlugin::_thread() {
 		pattern_preview_sem.wait();
 
 		pattern_preview_mutex.lock();
-		if (pattern_preview_queue.size()) {
+		if (pattern_preview_queue.size() == 0) {
+			pattern_preview_mutex.unlock();
+		} else {
 			QueueItem item = pattern_preview_queue.front()->get();
 			pattern_preview_queue.pop_front();
 			pattern_preview_mutex.unlock();
 
-			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size *= EDSCALE;
 			Vector2 thumbnail_size2 = Vector2(thumbnail_size, thumbnail_size);
 
@@ -90,7 +93,7 @@ void TilesEditorPlugin::_thread() {
 
 				TypedArray<Vector2i> used_cells = tile_map->get_used_cells(0);
 
-				Rect2 encompassing_rect = Rect2();
+				Rect2 encompassing_rect;
 				encompassing_rect.set_position(tile_map->map_to_local(used_cells[0]));
 				for (int i = 0; i < used_cells.size(); i++) {
 					Vector2i cell = used_cells[i];
@@ -129,9 +132,7 @@ void TilesEditorPlugin::_thread() {
 				Callable::CallError error;
 				item.callback.callp(args_ptr, 2, r, error);
 
-				viewport->queue_delete();
-			} else {
-				pattern_preview_mutex.unlock();
+				viewport->queue_free();
 			}
 		}
 	}
@@ -268,8 +269,8 @@ List<int> TilesEditorPlugin::get_sorted_sources(const Ref<TileSet> p_tile_set) c
 	SourceNameComparator::tile_set = p_tile_set;
 	List<int> source_ids;
 
-	for (int i = 0; i < tile_set->get_source_count(); i++) {
-		source_ids.push_back(tile_set->get_source_id(i));
+	for (int i = 0; i < p_tile_set->get_source_count(); i++) {
+		source_ids.push_back(p_tile_set->get_source_id(i));
 	}
 
 	switch (source_sort) {

@@ -37,6 +37,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/particle_process_material.h"
 
@@ -160,6 +161,7 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 		particles->set_emitting(false);
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Generate Visibility Rect"));
 	undo_redo->add_do_method(particles, "set_visibility_rect", rect);
 	undo_redo->add_undo_method(particles, "set_visibility_rect", particles->get_visibility_rect());
@@ -299,7 +301,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 
 	img.instantiate();
-	img->create(w, h, false, Image::FORMAT_RGF, texdata);
+	img->set_data(w, h, false, Image::FORMAT_RGF, texdata);
 	pm->set_emission_point_texture(ImageTexture::create_from_image(img));
 	pm->set_emission_point_count(vpc);
 
@@ -315,7 +317,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		}
 
 		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGBA8, colordata);
+		img->set_data(w, h, false, Image::FORMAT_RGBA8, colordata);
 		pm->set_emission_color_texture(ImageTexture::create_from_image(img));
 	}
 
@@ -335,7 +337,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		}
 
 		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGF, normdata);
+		img->set_data(w, h, false, Image::FORMAT_RGF, normdata);
 		pm->set_emission_normal_texture(ImageTexture::create_from_image(img));
 
 	} else {
@@ -359,7 +361,6 @@ void GPUParticles2DEditorPlugin::_bind_methods() {
 
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);

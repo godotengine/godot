@@ -145,6 +145,10 @@ void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
+Vector<String> OS_Unix::get_video_adapter_driver_info() const {
+	return Vector<String>();
+}
+
 String OS_Unix::get_stdin_string(bool p_block) {
 	if (p_block) {
 		char buff[1024];
@@ -501,11 +505,11 @@ bool OS_Unix::set_environment(const String &p_var, const String &p_value) const 
 }
 
 String OS_Unix::get_user_data_dir() const {
-	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
+	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
 	if (!appname.is_empty()) {
-		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
+		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
-			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
+			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
 			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
@@ -561,7 +565,7 @@ String OS_Unix::get_executable_path() const {
 		WARN_PRINT("MAXPATHLEN is too small");
 	}
 
-	String path(resolved_path);
+	String path = String::utf8(resolved_path);
 	delete[] resolved_path;
 
 	return path;

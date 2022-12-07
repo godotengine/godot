@@ -2,6 +2,20 @@
 
 Import("env")
 
+# The HTTP server "targets". Run with "scons p=web serve", or "scons p=web run"
+if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
+    from serve import serve
+    import os
+
+    port = os.environ.get("GODOT_WEB_TEST_PORT", 8060)
+    try:
+        port = int(port)
+    except Exception:
+        print("GODOT_WEB_TEST_PORT must be a valid integer")
+        sys.exit(255)
+    serve(env.Dir("#bin/.web_zip").abspath, port, "run" in COMMAND_LINE_TARGETS)
+    sys.exit(0)
+
 web_files = [
     "audio_driver_web.cpp",
     "display_server_web.cpp",
@@ -21,6 +35,12 @@ sys_env.AddJSLibraries(
         "js/libs/library_godot_os.js",
         "js/libs/library_godot_runtime.js",
         "js/libs/library_godot_input.js",
+        "js/libs/library_godot_webgl2.js",
+    ]
+)
+sys_env.AddJSExterns(
+    [
+        "js/libs/library_godot_webgl2.externs.js",
     ]
 )
 
@@ -29,9 +49,9 @@ if env["javascript_eval"]:
 
 for lib in sys_env["JS_LIBS"]:
     sys_env.Append(LINKFLAGS=["--js-library", lib.abspath])
-for js in env["JS_PRE"]:
+for js in sys_env["JS_PRE"]:
     sys_env.Append(LINKFLAGS=["--pre-js", js.abspath])
-for ext in env["JS_EXTERNS"]:
+for ext in sys_env["JS_EXTERNS"]:
     sys_env["ENV"]["EMCC_CLOSURE_ARGS"] += " --externs " + ext.abspath
 
 build = []

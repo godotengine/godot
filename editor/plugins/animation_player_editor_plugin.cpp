@@ -39,9 +39,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "editor/scene_tree_dock.h"
+#include "scene/gui/separator.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
@@ -128,14 +131,11 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			{
 				Ref<Image> autoplay_img = autoplay_icon->get_image();
 				Ref<Image> reset_img = reset_icon->get_image();
-				Ref<Image> autoplay_reset_img;
 				Size2 icon_size = autoplay_img->get_size();
-				autoplay_reset_img.instantiate();
-				autoplay_reset_img->create(icon_size.x * 2, icon_size.y, false, autoplay_img->get_format());
+				Ref<Image> autoplay_reset_img = Image::create_empty(icon_size.x * 2, icon_size.y, false, autoplay_img->get_format());
 				autoplay_reset_img->blit_rect(autoplay_img, Rect2i(Point2i(), icon_size), Point2i());
 				autoplay_reset_img->blit_rect(reset_img, Rect2i(Point2i(), icon_size), Point2i(icon_size.x, 0));
-				autoplay_reset_icon.instantiate();
-				autoplay_reset_icon->set_image(autoplay_reset_img);
+				autoplay_reset_icon = ImageTexture::create_from_image(autoplay_reset_img);
 			}
 			stop->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 
@@ -170,6 +170,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	String current = animation->get_item_text(animation->get_selected());
 	if (player->get_autoplay() == current) {
 		//unset
@@ -198,6 +199,7 @@ void AnimationPlayerEditor::_play_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->play(current);
 	}
 
@@ -210,13 +212,12 @@ void AnimationPlayerEditor::_play_from_pressed() {
 
 	if (!current.is_empty()) {
 		float time = player->get_current_animation_position();
-
 		if (current == player->get_assigned_animation() && player->is_playing()) {
 			player->stop(); //so it won't blend with itself
 		}
-
-		player->play(current);
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek(time);
+		player->play(current);
 	}
 
 	//unstop
@@ -236,6 +237,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->play(current, -1, -1, true);
 	}
 
@@ -251,9 +253,9 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
-
-		player->play(current, -1, -1, true);
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek(time);
+		player->play(current, -1, -1, true);
 	}
 
 	//unstop
@@ -302,6 +304,8 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 	_animation_key_editor_seek(timeline_position, false);
+
+	emit_signal("animation_selected", current);
 }
 
 void AnimationPlayerEditor::_animation_new() {
@@ -384,6 +388,7 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	if (current.contains("/")) {
 		current = current.get_slice("/", 1);
 	}
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
 		undo_redo->add_do_method(player, "set_autoplay", "");
@@ -459,6 +464,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (name_dialog_op) {
 		case TOOL_RENAME_ANIM: {
 			String current = animation->get_item_text(animation->get_selected());
@@ -593,6 +599,7 @@ void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 
 	String current = animation->get_item_text(animation->get_selected());
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Blend Next Changed"));
 	undo_redo->add_do_method(player, "animation_set_next", current, blend_editor.next->get_item_text(p_idx));
 	undo_redo->add_undo_method(player, "animation_set_next", current, player->animation_get_next(current));
@@ -679,6 +686,7 @@ void AnimationPlayerEditor::_blend_edited() {
 	float blend_time = selected->get_range(1);
 	float prev_blend_time = player->get_blend_time(current, to);
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Change Blend Time"));
 	undo_redo->add_do_method(player, "set_blend_time", current, to, blend_time);
 	undo_redo->add_undo_method(player, "set_blend_time", current, to, prev_blend_time);
@@ -720,7 +728,18 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 	if (p_state.has("player")) {
 		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
 		if (Object::cast_to<AnimationPlayer>(n) && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
+			if (player) {
+				if (player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+					player->disconnect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+				}
+			}
 			player = Object::cast_to<AnimationPlayer>(n);
+			if (player) {
+				if (!player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+					player->connect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+				}
+			}
+
 			_update_player();
 			EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 			set_process(true);
@@ -934,7 +953,7 @@ void AnimationPlayerEditor::_update_animation_list_icons() {
 }
 
 void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
-	StringName current_library_name = StringName();
+	StringName current_library_name;
 	if (animation->has_selectable_items()) {
 		String current_animation_name = animation->get_item_text(animation->get_selected());
 		Ref<Animation> current_animation = player->get_animation(current_animation_name);
@@ -974,17 +993,22 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 	}
 }
 
-void AnimationPlayerEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
-}
-
 void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 	if (player && pin->is_pressed()) {
 		return; // Ignore, pinned.
 	}
+
+	if (player) {
+		if (player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+			player->disconnect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+		}
+	}
 	player = p_player;
 
 	if (player) {
+		if (!player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+			player->connect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+		}
 		_update_player();
 
 		if (onion.enabled) {
@@ -1149,6 +1173,10 @@ void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 			library_editor->update_tree();
 		}
 	}
+}
+
+void AnimationPlayerEditor::_animation_libraries_updated() {
+	_animation_player_changed(player);
 }
 
 void AnimationPlayerEditor::_list_changed() {
@@ -1537,6 +1565,53 @@ void AnimationPlayerEditor::_pin_pressed() {
 	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
 }
 
+bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
+	bool is_valid = true;
+	if (!p_anim.is_valid()) {
+		return true; // There is a problem outside of the animation track.
+	}
+	int len = p_anim->get_track_count();
+	for (int i = 0; i < len; i++) {
+		Animation::TrackType ttype = p_anim->track_get_type(i);
+		if (ttype == Animation::TYPE_ROTATION_3D) {
+			int key_len = p_anim->track_get_key_count(i);
+			for (int j = 0; j < key_len; j++) {
+				Quaternion q;
+				p_anim->rotation_track_get_key(i, j, &q);
+				ERR_BREAK_EDMSG(!q.is_normalized(), "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', rotation track:  '" + p_anim->track_get_path(i) + "' contains unnormalized Quaternion key.");
+			}
+		} else if (ttype == Animation::TYPE_VALUE) {
+			int key_len = p_anim->track_get_key_count(i);
+			if (key_len == 0) {
+				continue;
+			}
+			switch (p_anim->track_get_key_value(i, 0).get_type()) {
+				case Variant::QUATERNION: {
+					for (int j = 0; j < key_len; j++) {
+						Quaternion q = Quaternion(p_anim->track_get_key_value(i, j));
+						if (!q.is_normalized()) {
+							is_valid = false;
+							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', value track:  '" + p_anim->track_get_path(i) + "' contains unnormalized Quaternion key.");
+						}
+					}
+				} break;
+				case Variant::TRANSFORM3D: {
+					for (int j = 0; j < key_len; j++) {
+						Transform3D t = Transform3D(p_anim->track_get_key_value(i, j));
+						if (!t.basis.orthonormalized().is_rotation()) {
+							is_valid = false;
+							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', value track:  '" + p_anim->track_get_path(i) + "' contains corrupted basis (some axes are too close other axis or scaled by zero) Transform3D key.");
+						}
+					}
+				} break;
+				default: {
+				} break;
+			}
+		}
+	}
+	return is_valid;
+}
+
 void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_new"), &AnimationPlayerEditor::_animation_new);
 	ClassDB::bind_method(D_METHOD("_animation_rename"), &AnimationPlayerEditor::_animation_rename);
@@ -1545,6 +1620,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_edit"), &AnimationPlayerEditor::_animation_edit);
 	ClassDB::bind_method(D_METHOD("_animation_resource_edit"), &AnimationPlayerEditor::_animation_resource_edit);
 	ClassDB::bind_method(D_METHOD("_animation_player_changed"), &AnimationPlayerEditor::_animation_player_changed);
+	ClassDB::bind_method(D_METHOD("_animation_libraries_updated"), &AnimationPlayerEditor::_animation_libraries_updated);
 	ClassDB::bind_method(D_METHOD("_list_changed"), &AnimationPlayerEditor::_list_changed);
 	ClassDB::bind_method(D_METHOD("_animation_duplicate"), &AnimationPlayerEditor::_animation_duplicate);
 
@@ -1552,6 +1628,8 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_prepare_onion_layers_2"), &AnimationPlayerEditor::_prepare_onion_layers_2);
 	ClassDB::bind_method(D_METHOD("_start_onion_skinning"), &AnimationPlayerEditor::_start_onion_skinning);
 	ClassDB::bind_method(D_METHOD("_stop_onion_skinning"), &AnimationPlayerEditor::_stop_onion_skinning);
+
+	ADD_SIGNAL(MethodInfo("animation_selected", PropertyInfo(Variant::STRING, "name")));
 }
 
 AnimationPlayerEditor *AnimationPlayerEditor::singleton = nullptr;
@@ -1868,7 +1946,6 @@ void AnimationPlayerEditorPlugin::_update_keying() {
 }
 
 void AnimationPlayerEditorPlugin::edit(Object *p_object) {
-	anim_editor->set_undo_redo(get_undo_redo());
 	if (!p_object) {
 		return;
 	}
@@ -1889,7 +1966,6 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 	anim_editor = memnew(AnimationPlayerEditor(this));
-	anim_editor->set_undo_redo(EditorNode::get_undo_redo());
 	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Animation"), anim_editor);
 }
 

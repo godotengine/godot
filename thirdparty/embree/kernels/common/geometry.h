@@ -91,7 +91,7 @@ namespace embree
 
     size_t numFilterFunctions;       //!< number of geometries with filter functions enabled
     size_t numTriangles;             //!< number of enabled triangles
-    size_t numMBTriangles;           //!< number of enabled motion blured triangles
+    size_t numMBTriangles;           //!< number of enabled motion blurred triangles
     size_t numQuads;                 //!< number of enabled quads
     size_t numMBQuads;               //!< number of enabled motion blurred quads
     size_t numBezierCurves;          //!< number of enabled curves
@@ -99,7 +99,7 @@ namespace embree
     size_t numLineSegments;          //!< number of enabled line segments
     size_t numMBLineSegments;        //!< number of enabled line motion blurred segments
     size_t numSubdivPatches;         //!< number of enabled subdivision patches
-    size_t numMBSubdivPatches;       //!< number of enabled motion blured subdivision patches
+    size_t numMBSubdivPatches;       //!< number of enabled motion blurred subdivision patches
     size_t numUserGeometries;        //!< number of enabled user geometries
     size_t numMBUserGeometries;      //!< number of enabled motion blurred user geometries
     size_t numInstancesCheap;        //!< number of enabled cheap instances

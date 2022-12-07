@@ -74,6 +74,7 @@ enum SceneUniformLocation {
 	SCENE_OMNILIGHT_UNIFORM_LOCATION,
 	SCENE_SPOTLIGHT_UNIFORM_LOCATION,
 	SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
+	SCENE_MULTIVIEW_UNIFORM_LOCATION,
 };
 
 enum SkyUniformLocation {
@@ -84,22 +85,15 @@ enum SkyUniformLocation {
 	SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
 };
 
-enum {
-	SPEC_CONSTANT_DISABLE_LIGHTMAP = 0,
-	SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS = 1,
-	SPEC_CONSTANT_DISABLE_OMNI_LIGHTS = 2,
-	SPEC_CONSTANT_DISABLE_SPOT_LIGHTS = 3,
-	SPEC_CONSTANT_DISABLE_FOG = 4,
-};
-
 struct RenderDataGLES3 {
 	Ref<RenderSceneBuffersGLES3> render_buffers;
 	bool transparent_bg = false;
 
-	Transform3D cam_transform = Transform3D();
-	Transform3D inv_cam_transform = Transform3D();
-	Projection cam_projection = Projection();
+	Transform3D cam_transform;
+	Transform3D inv_cam_transform;
+	Projection cam_projection;
 	bool cam_orthogonal = false;
+	uint32_t camera_visible_layers = 0xFFFFFFFF;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
@@ -112,13 +106,12 @@ struct RenderDataGLES3 {
 	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
-	RID environment = RID();
-	RID camera_attributes = RID();
-	RID reflection_probe = RID();
+	RID environment;
+	RID camera_attributes;
+	RID reflection_probe;
 	int reflection_probe_pass = 0;
 
 	float lod_distance_multiplier = 0.0;
-	Plane lod_camera_plane = Plane();
 	float screen_mesh_lod_threshold = 0.0;
 
 	uint32_t directional_light_count = 0;
@@ -341,8 +334,19 @@ private:
 
 			float fog_light_color[3];
 			float fog_sun_scatter;
+			uint32_t camera_visible_layers;
+			uint32_t pad1;
+			uint32_t pad2;
+			uint32_t pad3;
 		};
 		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");
+
+		struct MultiviewUBO {
+			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
+		};
+		static_assert(sizeof(MultiviewUBO) % 16 == 0, "Multiview UBO size must be a multiple of 16 bytes");
 
 		struct TonemapUBO {
 			float exposure = 1.0;
@@ -354,6 +358,8 @@ private:
 
 		UBO ubo;
 		GLuint ubo_buffer = 0;
+		MultiviewUBO multiview_ubo;
+		GLuint multiview_buffer = 0;
 		GLuint tonemap_buffer = 0;
 
 		bool used_depth_prepass = false;
@@ -386,10 +392,10 @@ private:
 		GeometryInstanceSurface **elements = nullptr;
 		int element_count = 0;
 		bool reverse_cull = false;
-		uint32_t spec_constant_base_flags = 0;
+		uint64_t spec_constant_base_flags = 0;
 		bool force_wireframe = false;
 
-		RenderListParameters(GeometryInstanceSurface **p_elements, int p_element_count, bool p_reverse_cull, uint32_t p_spec_constant_base_flags, bool p_force_wireframe = false) {
+		RenderListParameters(GeometryInstanceSurface **p_elements, int p_element_count, bool p_reverse_cull, uint64_t p_spec_constant_base_flags, bool p_force_wireframe = false) {
 			elements = p_elements;
 			element_count = p_element_count;
 			reverse_cull = p_reverse_cull;

@@ -136,16 +136,16 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 }
 
 void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags) {
-	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	String host = EDITOR_GET("network/debug/remote_host");
+	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
 		host = "localhost";
 	}
 
 	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
-		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
+		int port = EDITOR_GET("filesystem/file_server/port");
+		String passwd = EDITOR_GET("filesystem/file_server/password");
 		r_flags.push_back("--remote-fs");
 		r_flags.push_back(host + ":" + itos(port));
 		if (!passwd.is_empty()) {
@@ -442,10 +442,11 @@ HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset>
 		result.insert(E);
 	}
 
+	result.insert("template");
 	if (p_debug) {
-		result.insert("debug");
+		result.insert("template_debug");
 	} else {
-		result.insert("release");
+		result.insert("template_release");
 	}
 
 	if (!p_preset->get_custom_features().is_empty()) {
@@ -813,7 +814,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				continue;
 			}
 
-			String autoload_path = ProjectSettings::get_singleton()->get(pi.name);
+			String autoload_path = GLOBAL_GET(pi.name);
 
 			if (autoload_path.begins_with("*")) {
 				autoload_path = autoload_path.substr(1);
@@ -1034,7 +1035,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					return err;
 				}
 				// Now actual remapped file:
-				sarr = FileAccess::get_file_as_array(export_path);
+				sarr = FileAccess::get_file_as_bytes(export_path);
 				err = p_func(p_udata, export_path, sarr, idx, total, enc_in_filters, enc_ex_filters, key);
 				if (err != OK) {
 					return err;
@@ -1053,7 +1054,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 				if (importer_type == "keep") {
 					//just keep file as-is
-					Vector<uint8_t> array = FileAccess::get_file_as_array(path);
+					Vector<uint8_t> array = FileAccess::get_file_as_bytes(path);
 					err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 
 					if (err != OK) {
@@ -1086,14 +1087,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					String remap = F;
 					if (remap == "path") {
 						String remapped_path = config->get_value("remap", remap);
-						Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
+						Vector<uint8_t> array = FileAccess::get_file_as_bytes(remapped_path);
 						err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 					} else if (remap.begins_with("path.")) {
 						String feature = remap.get_slice(".", 1);
 
 						if (remap_features.has(feature)) {
 							String remapped_path = config->get_value("remap", remap);
-							Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
+							Vector<uint8_t> array = FileAccess::get_file_as_bytes(remapped_path);
 							err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 						}
 					}
@@ -1104,7 +1105,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 
 				//also save the .import file
-				Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
+				Vector<uint8_t> array = FileAccess::get_file_as_bytes(path + ".import");
 				err = p_func(p_udata, path + ".import", array, idx, total, enc_in_filters, enc_ex_filters, key);
 
 				if (err != OK) {
@@ -1164,7 +1165,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					path_remaps.push_back(export_path);
 				}
 
-				Vector<uint8_t> array = FileAccess::get_file_as_array(export_path);
+				Vector<uint8_t> array = FileAccess::get_file_as_bytes(export_path);
 				err = p_func(p_udata, export_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 				if (err != OK) {
 					return err;
@@ -1241,17 +1242,17 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	// Store icon and splash images directly, they need to bypass the import system and be loaded as images
-	String icon = ProjectSettings::get_singleton()->get("application/config/icon");
-	String splash = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+	String icon = GLOBAL_GET("application/config/icon");
+	String splash = GLOBAL_GET("application/boot_splash/image");
 	if (!icon.is_empty() && FileAccess::exists(icon)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(icon);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(icon);
 		err = p_func(p_udata, icon, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}
 	}
 	if (!splash.is_empty() && FileAccess::exists(splash) && icon != splash) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(splash);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(splash);
 		err = p_func(p_udata, splash, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
@@ -1259,7 +1260,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 	String resource_cache_file = ResourceUID::get_cache_file();
 	if (FileAccess::exists(resource_cache_file)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(resource_cache_file);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(resource_cache_file);
 		err = p_func(p_udata, resource_cache_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
@@ -1268,7 +1269,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
 	if (FileAccess::exists(extension_list_config_file)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(extension_list_config_file);
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(extension_list_config_file);
 		err = p_func(p_udata, extension_list_config_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
@@ -1277,12 +1278,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	// Store text server data if it is supported.
 	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
-		bool use_data = ProjectSettings::get_singleton()->get("internationalization/locale/include_text_server_data");
+		bool use_data = GLOBAL_GET("internationalization/locale/include_text_server_data");
 		if (use_data) {
 			// Try using user provided data file.
 			String ts_data = "res://" + TS->get_support_data_filename();
 			if (FileAccess::exists(ts_data)) {
-				Vector<uint8_t> array = FileAccess::get_file_as_array(ts_data);
+				Vector<uint8_t> array = FileAccess::get_file_as_bytes(ts_data);
 				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
 				if (err != OK) {
 					return err;
@@ -1291,7 +1292,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				// Use default text server data.
 				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_icu_data");
 				TS->save_support_data(icu_data_file);
-				Vector<uint8_t> array = FileAccess::get_file_as_array(icu_data_file);
+				Vector<uint8_t> array = FileAccess::get_file_as_bytes(icu_data_file);
 				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
 				DirAccess::remove_file_or_error(icu_data_file);
 				if (err != OK) {
@@ -1304,7 +1305,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	String config_file = "project.binary";
 	String engine_cfb = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp" + config_file);
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
-	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(engine_cfb);
 	DirAccess::remove_file_or_error(engine_cfb);
 
 	return p_func(p_udata, "res://" + config_file, data, idx, total, enc_in_filters, enc_ex_filters, key);
@@ -1569,16 +1570,16 @@ Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, 
 }
 
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
-	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	String host = EDITOR_GET("network/debug/remote_host");
+	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
 		host = "localhost";
 	}
 
 	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
-		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
+		int port = EDITOR_GET("filesystem/file_server/port");
+		String passwd = EDITOR_GET("filesystem/file_server/password");
 		r_flags.push_back("--remote-fs");
 		r_flags.push_back(host + ":" + itos(port));
 		if (!passwd.is_empty()) {

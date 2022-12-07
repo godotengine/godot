@@ -447,15 +447,16 @@ void godotsharp_packed_string_array_add(PackedStringArray *r_dest, const String 
 	r_dest->append(*p_element);
 }
 
-void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, const Object *p_object, Callable *r_callable) {
+void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, void *p_trampoline,
+		const Object *p_object, Callable *r_callable) {
 	// TODO: Use pooling for ManagedCallable instances.
 	ObjectID objid = p_object ? p_object->get_instance_id() : ObjectID();
-	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle, objid));
+	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle, p_trampoline, objid));
 	memnew_placement(r_callable, Callable(managed_callable));
 }
 
 bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
-		GCHandleIntPtr *r_delegate_handle, Object **r_object, StringName *r_name) {
+		GCHandleIntPtr *r_delegate_handle, void **r_trampoline, Object **r_object, StringName *r_name) {
 	if (p_callable->is_custom()) {
 		CallableCustom *custom = p_callable->get_custom();
 		CallableCustom::CompareEqualFunc compare_equal_func = custom->get_compare_equal_func();
@@ -463,18 +464,21 @@ bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
 		if (compare_equal_func == ManagedCallable::compare_equal_func_ptr) {
 			ManagedCallable *managed_callable = static_cast<ManagedCallable *>(custom);
 			*r_delegate_handle = managed_callable->get_delegate();
+			*r_trampoline = managed_callable->get_trampoline();
 			*r_object = nullptr;
 			memnew_placement(r_name, StringName());
 			return true;
 		} else if (compare_equal_func == SignalAwaiterCallable::compare_equal_func_ptr) {
 			SignalAwaiterCallable *signal_awaiter_callable = static_cast<SignalAwaiterCallable *>(custom);
 			*r_delegate_handle = { nullptr };
+			*r_trampoline = nullptr;
 			*r_object = ObjectDB::get_instance(signal_awaiter_callable->get_object());
 			memnew_placement(r_name, StringName(signal_awaiter_callable->get_signal()));
 			return true;
 		} else if (compare_equal_func == EventSignalCallable::compare_equal_func_ptr) {
 			EventSignalCallable *event_signal_callable = static_cast<EventSignalCallable *>(custom);
 			*r_delegate_handle = { nullptr };
+			*r_trampoline = nullptr;
 			*r_object = ObjectDB::get_instance(event_signal_callable->get_object());
 			memnew_placement(r_name, StringName(event_signal_callable->get_signal()));
 			return true;
@@ -482,11 +486,13 @@ bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
 
 		// Some other CallableCustom. We only support ManagedCallable.
 		*r_delegate_handle = { nullptr };
+		*r_trampoline = nullptr;
 		*r_object = nullptr;
 		memnew_placement(r_name, StringName());
 		return false;
 	} else {
 		*r_delegate_handle = { nullptr };
+		*r_trampoline = nullptr;
 		*r_object = ObjectDB::get_instance(p_callable->get_object_id());
 		memnew_placement(r_name, StringName(p_callable->get_method()));
 		return true;
@@ -1061,30 +1067,6 @@ void godotsharp_dictionary_to_string(const Dictionary *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
 }
 
-void godotsharp_string_md5_buffer(const String *p_self, PackedByteArray *r_md5_buffer) {
-	memnew_placement(r_md5_buffer, PackedByteArray(p_self->md5_buffer()));
-}
-
-void godotsharp_string_md5_text(const String *p_self, String *r_md5_text) {
-	memnew_placement(r_md5_text, String(p_self->md5_text()));
-}
-
-int32_t godotsharp_string_rfind(const String *p_self, const String *p_what, int32_t p_from) {
-	return p_self->rfind(*p_what, p_from);
-}
-
-int32_t godotsharp_string_rfindn(const String *p_self, const String *p_what, int32_t p_from) {
-	return p_self->rfindn(*p_what, p_from);
-}
-
-void godotsharp_string_sha256_buffer(const String *p_self, PackedByteArray *r_sha256_buffer) {
-	memnew_placement(r_sha256_buffer, PackedByteArray(p_self->sha256_buffer()));
-}
-
-void godotsharp_string_sha256_text(const String *p_self, String *r_sha256_text) {
-	memnew_placement(r_sha256_text, String(p_self->sha256_text()));
-}
-
 void godotsharp_string_simplify_path(const String *p_self, String *r_simplified_path) {
 	memnew_placement(r_simplified_path, String(p_self->simplify_path()));
 }
@@ -1467,12 +1449,6 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_duplicate,
 	(void *)godotsharp_dictionary_remove_key,
 	(void *)godotsharp_dictionary_to_string,
-	(void *)godotsharp_string_md5_buffer,
-	(void *)godotsharp_string_md5_text,
-	(void *)godotsharp_string_rfind,
-	(void *)godotsharp_string_rfindn,
-	(void *)godotsharp_string_sha256_buffer,
-	(void *)godotsharp_string_sha256_text,
 	(void *)godotsharp_string_simplify_path,
 	(void *)godotsharp_string_to_camel_case,
 	(void *)godotsharp_string_to_pascal_case,

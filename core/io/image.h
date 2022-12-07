@@ -279,12 +279,12 @@ public:
 	void normalize(); //for normal maps
 
 	/**
-	 * Create a new image of a given size and format. Current image will be lost
+	 * Creates new internal image data of a given size and format. Current image will be lost.
 	 */
-	void create(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
-	void create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+	void initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
+	void initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+	void initialize_data(const char **p_xpm);
 
-	void create(const char **p_xpm);
 	/**
 	 * returns true when the image is empty (0,0) in size
 	 */
@@ -303,13 +303,9 @@ public:
 	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
 	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
 
-	void create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
-		create(p_width, p_height, p_use_mipmaps, p_format);
-	}
-
-	void create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
-		create(p_width, p_height, p_use_mipmaps, p_format, p_data);
-	}
+	static Ref<Image> create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
+	static Ref<Image> create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+	void set_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
 
 	/**
 	 * create an empty image
@@ -381,7 +377,7 @@ public:
 	void fill_rect(const Rect2i &p_rect, const Color &p_color);
 
 	Rect2i get_used_rect() const;
-	Ref<Image> get_rect(const Rect2i &p_area) const;
+	Ref<Image> get_region(const Rect2i &p_area) const;
 
 	static void set_compress_bc_func(void (*p_compress_func)(Image *, float, UsedChannels));
 	static void set_compress_bptc_func(void (*p_compress_func)(Image *, float, UsedChannels));
@@ -395,6 +391,7 @@ public:
 
 	void convert_rg_to_ra_rgba8();
 	void convert_ra_rgba8_to_rg();
+	void convert_rgba8_to_bgra8();
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);

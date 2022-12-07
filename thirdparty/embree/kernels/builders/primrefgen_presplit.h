@@ -266,7 +266,7 @@ namespace embree
       /* anything to split ? */
       if (center < numPrimitives)
       {
-        const size_t numPrimitivesToSplit = numPrimitives - center;
+        size_t numPrimitivesToSplit = numPrimitives - center;
         assert(presplitItem[center].priority >= 1.0f);
 
         /* sort presplit items in ascending order */
@@ -279,8 +279,8 @@ namespace embree
             });
           );
 
-        unsigned int *const primOffset0 = (unsigned int*)tmp_presplitItem;
-        unsigned int *const primOffset1 = (unsigned int*)tmp_presplitItem + numPrimitivesToSplit;
+        unsigned int* primOffset0 = (unsigned int*)tmp_presplitItem;
+        unsigned int* primOffset1 = (unsigned int*)tmp_presplitItem + numPrimitivesToSplit;
 
         /* compute actual number of sub-primitives generated within the [center;numPrimitives-1] range */
         const size_t totalNumSubPrims = parallel_reduce( size_t(center), numPrimitives, size_t(MIN_STEP_SIZE), size_t(0), [&](const range<size_t>& t) -> size_t {
@@ -317,11 +317,16 @@ namespace embree
             sum += numSubPrims;
           }
           new_center++;
+
+          primOffset0 += new_center - center;
+          numPrimitivesToSplit -= new_center - center;
           center = new_center;
+          assert(numPrimitivesToSplit == (numPrimitives - center));
         }
 
         /* parallel prefix sum to compute offsets for storing sub-primitives */
         const unsigned int offset = parallel_prefix_sum(primOffset0,primOffset1,numPrimitivesToSplit,(unsigned int)0,std::plus<unsigned int>());
+        assert(numPrimitives+offset <= alloc_numPrimitives);
 
         /* iterate over range, and split primitives into sub primitives and append them to prims array */		    
         parallel_for( size_t(center), numPrimitives, size_t(MIN_STEP_SIZE), [&](const range<size_t>& rn) -> void {
@@ -338,7 +343,7 @@ namespace embree
               unsigned int numSubPrims = 0;
               splitPrimitive(Splitter,prims[primrefID],geomID,primID,split_levels,grid_base,grid_scale,grid_extend,subPrims,numSubPrims);
               const size_t newID = numPrimitives + primOffset1[j-center];              
-              assert(newID+numSubPrims <= alloc_numPrimitives);
+              assert(newID+numSubPrims-1 <= alloc_numPrimitives);
               prims[primrefID] = subPrims[0];
               for (size_t i=1;i<numSubPrims;i++)
                 prims[newID+i-1] = subPrims[i];

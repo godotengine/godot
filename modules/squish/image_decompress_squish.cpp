@@ -70,7 +70,7 @@ void image_decompress_squish(Image *p_image) {
 		h >>= 1;
 	}
 
-	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 
 	if (p_image->get_format() == Image::FORMAT_DXT5_RA_AS_RG) {
 		p_image->convert_ra_rgba8_to_rg();

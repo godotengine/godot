@@ -250,9 +250,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 			panorama_color = ambient_color.lerp(panorama_color, ambient_color_sky_mix);
 		}
 
-		Ref<Image> panorama;
-		panorama.instantiate();
-		panorama->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
+		Ref<Image> panorama = Image::create_empty(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
 		panorama->fill(panorama_color);
 		return panorama;
 	}
@@ -1080,6 +1078,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		scene_data.cam_transform = p_camera_data->main_transform;
 		scene_data.cam_projection = p_camera_data->main_projection;
 		scene_data.cam_orthogonal = p_camera_data->is_orthogonal;
+		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
 
 		scene_data.view_count = p_camera_data->view_count;
@@ -1101,7 +1100,6 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 		// this should be the same for all cameras..
 		scene_data.lod_distance_multiplier = p_camera_data->main_projection.get_lod_multiplier();
-		scene_data.lod_camera_plane = Plane(-p_camera_data->main_transform.basis.get_column(Vector3::AXIS_Z), p_camera_data->main_transform.get_origin());
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 			scene_data.screen_mesh_lod_threshold = 0.0;
@@ -1306,36 +1304,28 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Typed
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(albedo_alpha_tex, 0);
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
+		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(albedo_alpha_tex);
 		ret.push_back(img);
 	}
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(normal_tex, 0);
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
+		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(normal_tex);
 		ret.push_back(img);
 	}
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(orm_tex, 0);
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
+		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(orm_tex);
 		ret.push_back(img);
 	}
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(emission_tex, 0);
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBAH, data);
+		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBAH, data);
 		RD::get_singleton()->free(emission_tex);
 		ret.push_back(img);
 	}

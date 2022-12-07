@@ -59,6 +59,18 @@ Vector<String> Translation::_get_message_list() const {
 	return msgs;
 }
 
+Vector<String> Translation::get_translated_message_list() const {
+	Vector<String> msgs;
+	msgs.resize(translation_map.size());
+	int idx = 0;
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		msgs.set(idx, E.value);
+		idx += 1;
+	}
+
+	return msgs;
+}
+
 void Translation::_set_messages(const Dictionary &p_messages) {
 	List<Variant> keys;
 	p_messages.get_key_list(&keys);
@@ -140,6 +152,7 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_message_list"), &Translation::_get_message_list);
+	ClassDB::bind_method(D_METHOD("get_translated_message_list"), &Translation::get_translated_message_list);
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
 	ClassDB::bind_method(D_METHOD("_set_messages", "messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
@@ -293,6 +306,10 @@ void TranslationServer::init_locale_info() {
 }
 
 String TranslationServer::standardize_locale(const String &p_locale) const {
+	return _standardize_locale(p_locale, false);
+}
+
+String TranslationServer::_standardize_locale(const String &p_locale, bool p_add_defaults) const {
 	// Replaces '-' with '_' for macOS style locales.
 	String univ_locale = p_locale.replace("-", "_");
 
@@ -354,24 +371,26 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 	}
 
 	// Add script code base on language and country codes for some ambiguous cases.
-	if (script_name.is_empty()) {
-		for (int i = 0; i < locale_script_info.size(); i++) {
-			const LocaleScriptInfo &info = locale_script_info[i];
-			if (info.name == lang_name) {
-				if (country_name.is_empty() || info.supported_countries.has(country_name)) {
-					script_name = info.script;
-					break;
+	if (p_add_defaults) {
+		if (script_name.is_empty()) {
+			for (int i = 0; i < locale_script_info.size(); i++) {
+				const LocaleScriptInfo &info = locale_script_info[i];
+				if (info.name == lang_name) {
+					if (country_name.is_empty() || info.supported_countries.has(country_name)) {
+						script_name = info.script;
+						break;
+					}
 				}
 			}
 		}
-	}
-	if (!script_name.is_empty() && country_name.is_empty()) {
-		// Add conntry code based on script for some ambiguous cases.
-		for (int i = 0; i < locale_script_info.size(); i++) {
-			const LocaleScriptInfo &info = locale_script_info[i];
-			if (info.name == lang_name && info.script == script_name) {
-				country_name = info.default_country;
-				break;
+		if (!script_name.is_empty() && country_name.is_empty()) {
+			// Add conntry code based on script for some ambiguous cases.
+			for (int i = 0; i < locale_script_info.size(); i++) {
+				const LocaleScriptInfo &info = locale_script_info[i];
+				if (info.name == lang_name && info.script == script_name) {
+					country_name = info.default_country;
+					break;
+				}
 			}
 		}
 	}
@@ -391,8 +410,8 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 }
 
 int TranslationServer::compare_locales(const String &p_locale_a, const String &p_locale_b) const {
-	String locale_a = standardize_locale(p_locale_a);
-	String locale_b = standardize_locale(p_locale_b);
+	String locale_a = _standardize_locale(p_locale_a, true);
+	String locale_b = _standardize_locale(p_locale_b, true);
 
 	if (locale_a == locale_b) {
 		// Exact match.
@@ -628,7 +647,7 @@ TranslationServer *TranslationServer::singleton = nullptr;
 
 bool TranslationServer::_load_translations(const String &p_from) {
 	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
-		const Vector<String> &translation_names = ProjectSettings::get_singleton()->get(p_from);
+		const Vector<String> &translation_names = GLOBAL_GET(p_from);
 
 		int tcount = translation_names.size();
 

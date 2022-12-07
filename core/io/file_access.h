@@ -192,8 +192,11 @@ public:
 	static String get_sha256(const String &p_file);
 	static String get_multiple_md5(const Vector<String> &p_file);
 
-	static Vector<uint8_t> get_file_as_array(const String &p_path, Error *r_error = nullptr);
+	static Vector<uint8_t> get_file_as_bytes(const String &p_path, Error *r_error = nullptr);
 	static String get_file_as_string(const String &p_path, Error *r_error = nullptr);
+
+	static PackedByteArray _get_file_as_bytes(const String &p_path) { return get_file_as_bytes(p_path); }
+	static String _get_file_as_string(const String &p_path) { return get_file_as_string(p_path); };
 
 	template <class T>
 	static void make_default(AccessType p_access) {

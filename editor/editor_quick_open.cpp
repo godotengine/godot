@@ -32,17 +32,26 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 
-void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_dontclear) {
+static Rect2i prev_rect = Rect2i();
+static bool was_showed = false;
+
+void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dont_clear) {
 	base_type = p_base;
 	allow_multi_select = p_enable_multi;
 	search_options->set_select_mode(allow_multi_select ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
-	popup_centered_clamped(Size2i(600, 440), 0.8f);
+
+	if (was_showed) {
+		popup(prev_rect);
+	} else {
+		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
+	}
 
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem();
 	_build_search_cache(efsd);
 
-	if (p_dontclear) {
+	if (p_dont_clear) {
 		search_box->select_all();
 		_update_search();
 	} else {
@@ -56,7 +65,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		_build_search_cache(p_efsd->get_subdir(i));
 	}
 
-	Vector<String> base_types = String(base_type).split(String(","));
+	Vector<String> base_types = base_type.split(",");
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file = p_efsd->get_file_path(i);
 		String engine_type = p_efsd->get_file_type(i);
@@ -80,7 +89,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 				// Store refs to used icons.
 				String ext = file.get_extension();
 				if (!icons.has(ext)) {
-					icons.insert(ext, get_theme_icon((has_theme_icon(actual_type, SNAME("EditorIcons")) ? actual_type : String("Object")), SNAME("EditorIcons")));
+					icons.insert(ext, get_theme_icon((has_theme_icon(actual_type, SNAME("EditorIcons")) ? actual_type : "Object"), SNAME("EditorIcons")));
 				}
 
 				// Stop testing base types as soon as we got a match.
@@ -231,7 +240,7 @@ Vector<String> EditorQuickOpen::get_selected_files() const {
 	return selected_files;
 }
 
-StringName EditorQuickOpen::get_base_type() const {
+String EditorQuickOpen::get_base_type() const {
 	return base_type;
 }
 
@@ -241,6 +250,13 @@ void EditorQuickOpen::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				prev_rect = Rect2i(get_position(), get_size());
+				was_showed = true;
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {

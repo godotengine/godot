@@ -92,33 +92,25 @@ void Material::inspect_native_shader_code() {
 
 RID Material::get_shader_rid() const {
 	RID ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_shader_rid, ret)) {
-		return ret;
-	}
-	return RID();
+	GDVIRTUAL_REQUIRED_CALL(_get_shader_rid, ret);
+	return ret;
 }
 Shader::Mode Material::get_shader_mode() const {
-	Shader::Mode ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_shader_mode, ret)) {
-		return ret;
-	}
-
-	return Shader::MODE_MAX;
+	Shader::Mode ret = Shader::MODE_MAX;
+	GDVIRTUAL_REQUIRED_CALL(_get_shader_mode, ret);
+	return ret;
 }
 
 bool Material::_can_do_next_pass() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_can_do_next_pass, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_do_next_pass, ret);
+	return ret;
 }
+
 bool Material::_can_use_render_priority() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_can_use_render_priority, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_use_render_priority, ret);
+	return ret;
 }
 
 void Material::_bind_methods() {
@@ -1260,15 +1252,16 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
+		// Use the slightly more expensive circular fade (distance to the object) instead of linear
+		// (Z distance), so that the fade is always the same regardless of the camera angle.
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
 			if (!RenderingServer::get_singleton()->is_low_end()) {
 				code += "	{\n";
 
 				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-					code += "		float fade_distance = abs((VIEW_MATRIX * MODEL_MATRIX[3]).z);\n";
-
+					code += "		float fade_distance = length((VIEW_MATRIX * MODEL_MATRIX[3]));\n";
 				} else {
-					code += "		float fade_distance = -VERTEX.z;\n";
+					code += "		float fade_distance = length(VERTEX);\n";
 				}
 				// Use interleaved gradient noise, which is fast but still looks good.
 				code += "		const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);";
@@ -1282,7 +1275,7 @@ void BaseMaterial3D::_update_shader() {
 			}
 
 		} else {
-			code += "	ALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
+			code += "	ALPHA *= clamp(smoothstep(distance_fade_min, distance_fade_max, length(VERTEX)), 0.0, 1.0);\n";
 		}
 	}
 
@@ -2348,7 +2341,7 @@ void BaseMaterial3D::set_on_top_of_alpha() {
 	set_flag(FLAG_DISABLE_DEPTH_TEST, true);
 }
 
-void BaseMaterial3D::set_proximity_fade(bool p_enable) {
+void BaseMaterial3D::set_proximity_fade_enabled(bool p_enable) {
 	proximity_fade_enabled = p_enable;
 	_queue_shader_change();
 	notify_property_list_changed();
@@ -2624,7 +2617,7 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_refraction_texture_channel", "channel"), &BaseMaterial3D::set_refraction_texture_channel);
 	ClassDB::bind_method(D_METHOD("get_refraction_texture_channel"), &BaseMaterial3D::get_refraction_texture_channel);
 
-	ClassDB::bind_method(D_METHOD("set_proximity_fade", "enabled"), &BaseMaterial3D::set_proximity_fade);
+	ClassDB::bind_method(D_METHOD("set_proximity_fade_enabled", "enabled"), &BaseMaterial3D::set_proximity_fade_enabled);
 	ClassDB::bind_method(D_METHOD("is_proximity_fade_enabled"), &BaseMaterial3D::is_proximity_fade_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_proximity_fade_distance", "distance"), &BaseMaterial3D::set_proximity_fade_distance);
@@ -2808,7 +2801,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1,suffix:px"), "set_point_size", "get_point_size");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_particle_trails"), "set_flag", "get_flag", FLAG_PARTICLE_TRAILS_MODE);
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enabled"), "set_proximity_fade_enabled", "is_proximity_fade_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("MSDF", "msdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");

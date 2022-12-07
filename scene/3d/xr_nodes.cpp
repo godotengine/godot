@@ -36,49 +36,37 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void XRCamera3D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			// need to find our XROrigin3D parent and let it know we're its camera!
-			XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-			if (origin != nullptr) {
-				origin->set_tracked_camera(this);
-			}
-		} break;
+void XRCamera3D::_bind_tracker() {
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL(xr_server);
 
-		case NOTIFICATION_EXIT_TREE: {
-			// need to find our XROrigin3D parent and let it know we're no longer its camera!
-			XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-			if (origin != nullptr && origin->get_tracked_camera() == this) {
-				origin->set_tracked_camera(nullptr);
-			}
-		} break;
+	tracker = xr_server->get_tracker(tracker_name);
+	if (tracker.is_valid()) {
+		tracker->connect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
+
+		Ref<XRPose> pose = tracker->get_pose(pose_name);
+		if (pose.is_valid()) {
+			set_transform(pose->get_adjusted_transform());
+		}
 	}
+}
+
+void XRCamera3D::_unbind_tracker() {
+	if (tracker.is_valid()) {
+		tracker->disconnect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
+	}
+	tracker.unref();
 }
 
 void XRCamera3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_type) {
 	if (p_tracker_name == tracker_name) {
-		XRServer *xr_server = XRServer::get_singleton();
-		ERR_FAIL_NULL(xr_server);
-
-		tracker = xr_server->get_tracker(p_tracker_name);
-		if (tracker.is_valid()) {
-			tracker->connect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
-
-			Ref<XRPose> pose = tracker->get_pose(pose_name);
-			if (pose.is_valid()) {
-				set_transform(pose->get_adjusted_transform());
-			}
-		}
+		_bind_tracker();
 	}
 }
 
 void XRCamera3D::_removed_tracker(const StringName p_tracker_name, int p_tracker_type) {
 	if (p_tracker_name == tracker_name) {
-		if (tracker.is_valid()) {
-			tracker->disconnect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
-		}
-		tracker.unref();
+		_unbind_tracker();
 	}
 }
 
@@ -213,6 +201,9 @@ XRCamera3D::XRCamera3D() {
 	xr_server->connect("tracker_added", callable_mp(this, &XRCamera3D::_changed_tracker));
 	xr_server->connect("tracker_updated", callable_mp(this, &XRCamera3D::_changed_tracker));
 	xr_server->connect("tracker_removed", callable_mp(this, &XRCamera3D::_removed_tracker));
+
+	// check if our tracker already exists and if so, bind it...
+	_bind_tracker();
 }
 
 XRCamera3D::~XRCamera3D() {
@@ -372,7 +363,7 @@ void XRNode3D::_unbind_tracker() {
 }
 
 void XRNode3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_type) {
-	if (p_tracker_name == p_tracker_name) {
+	if (tracker_name == p_tracker_name) {
 		// just in case unref our current tracker
 		_unbind_tracker();
 
@@ -382,7 +373,7 @@ void XRNode3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_t
 }
 
 void XRNode3D::_removed_tracker(const StringName p_tracker_name, int p_tracker_type) {
-	if (p_tracker_name == p_tracker_name) {
+	if (tracker_name == p_tracker_name) {
 		// unref our tracker, it's no longer available
 		_unbind_tracker();
 	}
@@ -582,11 +573,22 @@ Plane XRAnchor3D::get_plane() const {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+Vector<XROrigin3D *> XROrigin3D::origin_nodes;
+
 PackedStringArray XROrigin3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
-		if (tracked_camera == nullptr) {
+		bool has_camera = false;
+		for (int i = 0; !has_camera && i < get_child_count(); i++) {
+			XRCamera3D *camera = Object::cast_to<XRCamera3D>(get_child(i));
+			if (camera) {
+				// found it!
+				has_camera = true;
+			}
+		}
+
+		if (!has_camera) {
 			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
 		}
 	}
@@ -603,14 +605,10 @@ void XROrigin3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_scale", "world_scale"), &XROrigin3D::set_world_scale);
 	ClassDB::bind_method(D_METHOD("get_world_scale"), &XROrigin3D::get_world_scale);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
-}
 
-void XROrigin3D::set_tracked_camera(XRCamera3D *p_tracked_camera) {
-	tracked_camera = p_tracked_camera;
-}
-
-XRCamera3D *XROrigin3D::get_tracked_camera() const {
-	return tracked_camera;
+	ClassDB::bind_method(D_METHOD("set_current", "enabled"), &XROrigin3D::set_current);
+	ClassDB::bind_method(D_METHOD("is_current"), &XROrigin3D::is_current);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 }
 
 real_t XROrigin3D::get_world_scale() const {
@@ -629,6 +627,60 @@ void XROrigin3D::set_world_scale(real_t p_world_scale) {
 	xr_server->set_world_scale(p_world_scale);
 }
 
+void XROrigin3D::_set_current(bool p_enabled, bool p_update_others) {
+	// We run this logic even if current already equals p_enabled as we may have set this previously before we entered our tree.
+	// This is then called a second time on NOTIFICATION_ENTER_TREE where we actually process activating this origin node.
+	current = p_enabled;
+
+	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	// Notify us of any transform changes
+	set_notify_local_transform(current);
+	set_notify_transform(current);
+
+	// update XRServer with our current position
+	if (current) {
+		XRServer *xr_server = XRServer::get_singleton();
+		ERR_FAIL_NULL(xr_server);
+
+		xr_server->set_world_origin(get_global_transform());
+	}
+
+	// Check if we need to update our other origin nodes accordingly
+	if (p_update_others) {
+		if (current) {
+			for (int i = 0; i < origin_nodes.size(); i++) {
+				if (origin_nodes[i] != this && origin_nodes[i]->current) {
+					origin_nodes[i]->_set_current(false, false);
+				}
+			}
+		} else {
+			// We no longer have a current origin so find the first one we can make current
+			for (int i = 0; i < origin_nodes.size(); i++) {
+				if (origin_nodes[i] != this) {
+					origin_nodes[i]->_set_current(true, false);
+					return; // we are done.
+				}
+			}
+		}
+	}
+}
+
+void XROrigin3D::set_current(bool p_enabled) {
+	_set_current(p_enabled, true);
+}
+
+bool XROrigin3D::is_current() const {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// return as is
+		return current;
+	} else {
+		return current && is_inside_tree();
+	}
+}
+
 void XROrigin3D::_notification(int p_what) {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
@@ -636,34 +688,47 @@ void XROrigin3D::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			set_process_internal(true);
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				if (origin_nodes.is_empty()) {
+					// first entry always becomes current
+					current = true;
+				}
+
+				origin_nodes.push_back(this);
+
+				if (current) {
+					// set this again so we do whatever setup is needed.
+					set_current(true);
+				}
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			set_process_internal(false);
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				origin_nodes.erase(this);
+
+				if (current) {
+					// We are no longer current
+					set_current(false);
+				}
+			}
 		} break;
 
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			// set our world origin to our node transform
-			xr_server->set_world_origin(get_global_transform());
-
-			// check if we have a primary interface
-			Ref<XRInterface> xr_interface = xr_server->get_primary_interface();
-			if (xr_interface.is_valid() && tracked_camera != nullptr) {
-				// get our positioning transform for our headset
-				Transform3D t = xr_interface->get_camera_transform();
-
-				// now apply this to our camera
-				tracked_camera->set_transform(t);
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (current && !Engine::get_singleton()->is_editor_hint()) {
+				xr_server->set_world_origin(get_global_transform());
 			}
 		} break;
 	}
 
-	// send our notification to all active XE interfaces, they may need to react to it also
-	for (int i = 0; i < xr_server->get_interface_count(); i++) {
-		Ref<XRInterface> interface = xr_server->get_interface(i);
-		if (interface.is_valid() && interface->is_initialized()) {
-			interface->notification(p_what);
+	if (current) {
+		// send our notification to all active XE interfaces, they may need to react to it also
+		for (int i = 0; i < xr_server->get_interface_count(); i++) {
+			Ref<XRInterface> interface = xr_server->get_interface(i);
+			if (interface.is_valid() && interface->is_initialized()) {
+				interface->notification(p_what);
+			}
 		}
 	}
 }

@@ -1271,7 +1271,7 @@ hb_ot_layout_collect_lookups (hb_face_t      *face,
        hb_set_next (&feature_indexes, &feature_index);)
     g.get_feature (feature_index).add_lookup_indexes_to (lookup_indexes);
 
-  g.feature_variation_collect_lookups (&feature_indexes, lookup_indexes);
+  g.feature_variation_collect_lookups (&feature_indexes, nullptr, lookup_indexes);
 }
 
 
@@ -1709,6 +1709,8 @@ hb_ot_layout_get_size_params (hb_face_t       *face,
 
   return false;
 }
+
+
 /**
  * hb_ot_layout_feature_get_name_ids:
  * @face: #hb_face_t to work upon
@@ -2341,6 +2343,7 @@ struct hb_get_glyph_alternates_dispatch_t :
   ( _dispatch (obj, hb_prioritize, std::forward<Ts> (ds)...) )
 };
 
+#ifndef HB_NO_LAYOUT_RARELY_USED
 /**
  * hb_ot_layout_lookup_get_glyph_alternates:
  * @face: a face.
@@ -2372,5 +2375,73 @@ hb_ot_layout_lookup_get_glyph_alternates (hb_face_t      *face,
   if (!ret && alternate_count) *alternate_count = 0;
   return ret;
 }
+
+
+struct hb_position_single_dispatch_t :
+       hb_dispatch_context_t<hb_position_single_dispatch_t, bool>
+{
+  static return_t default_return_value () { return false; }
+  bool stop_sublookup_iteration (return_t r) const { return r; }
+
+  private:
+  template <typename T, typename ...Ts> auto
+  _dispatch (const T &obj, hb_priority<1>, Ts&&... ds) HB_AUTO_RETURN
+  ( obj.position_single (std::forward<Ts> (ds)...) )
+  template <typename T, typename ...Ts> auto
+  _dispatch (const T &obj, hb_priority<0>, Ts&&... ds) HB_AUTO_RETURN
+  ( default_return_value () )
+  public:
+  template <typename T, typename ...Ts> auto
+  dispatch (const T &obj, Ts&&... ds) HB_AUTO_RETURN
+  ( _dispatch (obj, hb_prioritize, std::forward<Ts> (ds)...) )
+};
+
+/**
+ * hb_ot_layout_lookup_get_optical_bound:
+ * @font: a font.
+ * @lookup_index: index of the feature lookup to query.
+ * @direction: edge of the glyph to query.
+ * @glyph: a glyph id.
+ *
+ * Fetches the optical bound of a glyph positioned at the margin of text.
+ * The direction identifies which edge of the glyph to query.
+ *
+ * Return value: Adjustment value. Negative values mean the glyph will stick out of the margin.
+ *
+ * Since: 5.3.0
+ **/
+hb_position_t
+hb_ot_layout_lookup_get_optical_bound (hb_font_t      *font,
+				       unsigned        lookup_index,
+				       hb_direction_t  direction,
+				       hb_codepoint_t  glyph)
+{
+  const OT::PosLookup &lookup = font->face->table.GPOS->table->get_lookup (lookup_index);
+  hb_glyph_position_t pos = {0};
+  hb_position_single_dispatch_t c;
+  lookup.dispatch (&c, font, direction, glyph, pos);
+  hb_position_t ret = 0;
+  switch (direction)
+  {
+    case HB_DIRECTION_LTR:
+      ret = pos.x_offset;
+      break;
+    case HB_DIRECTION_RTL:
+      ret = pos.x_advance - pos.x_offset;
+      break;
+    case HB_DIRECTION_TTB:
+      ret = pos.y_offset;
+      break;
+    case HB_DIRECTION_BTT:
+      ret = pos.y_advance - pos.y_offset;
+      break;
+    case HB_DIRECTION_INVALID:
+    default:
+      break;
+  }
+  return ret;
+}
+#endif
+
 
 #endif

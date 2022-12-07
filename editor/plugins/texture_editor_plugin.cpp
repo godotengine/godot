@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "texture_editor_plugin.h"
-
 #include "editor/editor_scale.h"
+#include "scene/gui/label.h"
+#include "scene/gui/texture_rect.h"
 
 TextureRect *TexturePreview::get_texture_display() {
 	return texture_display;
@@ -123,6 +124,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	add_child(checkerboard);
 
 	texture_display = memnew(TextureRect);
+	texture_display->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	texture_display->set_texture(p_texture);
 	texture_display->set_anchors_preset(TextureRect::PRESET_FULL_RECT);
 	texture_display->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
