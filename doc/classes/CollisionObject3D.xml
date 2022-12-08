@@ -130,7 +130,7 @@
 			<param index="0" name="owner_id" type="int" />
 			<param index="1" name="shape_id" type="int" />
 			<description>
-				Returns the [Shape3D] with the given id from the given shape owner.
+				Returns the [Shape3D] with the given ID from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape_count" qualifiers="const">
@@ -145,7 +145,7 @@
 			<param index="0" name="owner_id" type="int" />
 			<param index="1" name="shape_id" type="int" />
 			<description>
-				Returns the child index of the [Shape3D] with the given id from the given shape owner.
+				Returns the child index of the [Shape3D] with the given ID from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_transform" qualifiers="const">

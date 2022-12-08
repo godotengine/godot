@@ -78,7 +78,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="id" type="int" />
 			<description>
-				Returns the button index if there is a button with id [param id] in column [param column], otherwise returns -1.
+				Returns the button index if there is a button with ID [param id] in column [param column], otherwise returns -1.
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
@@ -93,7 +93,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="button_idx" type="int" />
 			<description>
-				Returns the id for the button at index [param button_idx] in column [param column].
+				Returns the ID for the button at index [param button_idx] in column [param column].
 			</description>
 		</method>
 		<method name="get_button_tooltip_text" qualifiers="const">

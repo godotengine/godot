@@ -206,7 +206,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the id of the item at the given [param index]. [code]id[/code] can be manually assigned, while index can not.
+				Returns the ID of the item at the given [param index]. [code]id[/code] can be manually assigned, while index can not.
 			</description>
 		</method>
 		<method name="get_item_indent" qualifiers="const">
