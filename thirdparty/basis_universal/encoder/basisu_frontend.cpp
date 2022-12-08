@@ -2328,8 +2328,6 @@ namespace basisu
 
 		m_optimized_cluster_selectors.resize(total_selector_clusters);
 		
-		uint32_t total_clusters_processed = 0;
-
 		// For each selector codebook entry, and for each of the 4x4 selectors, determine which selector minimizes the error across all the blocks that use that quantized selector.
 		const uint32_t N = 256;
 		for (uint32_t cluster_index_iter = 0; cluster_index_iter < total_selector_clusters; cluster_index_iter += N)
@@ -2338,7 +2336,7 @@ namespace basisu
 			const uint32_t last_index = minimum<uint32_t>((uint32_t)total_selector_clusters, cluster_index_iter + N);
 
 #ifndef __EMSCRIPTEN__			
-			m_params.m_pJob_pool->add_job([this, first_index, last_index, &total_clusters_processed, &total_selector_clusters] {
+			m_params.m_pJob_pool->add_job([this, first_index, last_index] {
 #endif
 
 				for (uint32_t cluster_index = first_index; cluster_index < last_index; cluster_index++)

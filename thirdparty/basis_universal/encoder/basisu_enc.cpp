@@ -187,6 +187,8 @@ namespace basisu
 			opencl_init(opencl_force_serialization);
 		}
 
+		interval_timer::init(); // make sure interval_timer globals are initialized from main thread to avoid TSAN reports
+
 		g_library_initialized = true;
 	}
 
@@ -227,7 +229,7 @@ namespace basisu
 	{
 		QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(pTicks));
 	}
-#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
 #include <sys/time.h>
 	inline void query_counter(timer_ticks* pTicks)
 	{

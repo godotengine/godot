@@ -20,7 +20,7 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (1531cfaf9ed5232248a0a45736686a849ca3befc, 2022)
+- Version: git (a91e94c8495d7f470d3df326a364d49324cfd4a3, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream source:

@@ -92,6 +92,8 @@ namespace basisu
 			m_best_etc1s_luma_709_psnr = 0.0f;
 			m_best_etc1s_luma_601_psnr = 0.0f;
 			m_best_etc1s_luma_709_ssim = 0.0f;
+
+			m_opencl_failed = false;
 		}
 
 		std::string m_filename;
@@ -119,6 +121,8 @@ namespace basisu
 		float m_best_etc1s_luma_709_psnr;
 		float m_best_etc1s_luma_601_psnr;
 		float m_best_etc1s_luma_709_ssim;
+
+		bool m_opencl_failed;
 	};
 
 	template<bool def>
@@ -255,6 +259,7 @@ namespace basisu
 			m_write_output_basis_files.clear();
 			m_compression_level.clear();
 			m_compute_stats.clear();
+			m_print_stats.clear();
 			m_check_for_alpha.clear();
 			m_force_alpha.clear();
 			m_multithreading.clear();
@@ -373,6 +378,9 @@ namespace basisu
 								
 		// Compute and display image metrics 
 		bool_param<false> m_compute_stats;
+
+		// Print stats to stdout, if m_compute_stats is true.
+		bool_param<true> m_print_stats;
 		
 		// Check to see if any input image has an alpha channel, if so then the output basis file will have alpha channels
 		bool_param<true> m_check_for_alpha;
@@ -583,11 +591,16 @@ namespace basisu
 		cFlagYFlip = 1 << 16,		// flip source image on Y axis before compression
 		
 		cFlagUASTC = 1 << 17,		// use UASTC compression vs. ETC1S
-		cFlagUASTCRDO = 1 << 18		// use RDO postprocessing when generating UASTC files (must set uastc_rdo_quality to the quality scalar)
+		cFlagUASTCRDO = 1 << 18,		// use RDO postprocessing when generating UASTC files (must set uastc_rdo_quality to the quality scalar)
+		
+		cFlagPrintStats = 1 << 19,	// print image stats to stdout
+		cFlagPrintStatus = 1 << 20	// print status to stdout
 	};
 
 	// This function accepts an array of source images. 
 	// If more than one image is provided, it's assumed the images form a mipmap pyramid and automatic mipmap generation is disabled.
+	// Returns a pointer to the compressed .basis or .ktx2 file data. *pSize is the size of the compressed data. The returned block must be freed using basis_free_data().
+	// basisu_encoder_init() MUST be called first!
 	void* basis_compress(
 		const basisu::vector<image> &source_images,
 		uint32_t flags_and_quality, float uastc_rdo_quality,
@@ -603,6 +616,12 @@ namespace basisu
 
 	// Frees the dynamically allocated file data returned by basis_compress().
 	void basis_free_data(void* p);
+
+	// Runs a short benchmark using synthetic image data to time OpenCL encoding vs. CPU encoding, with multithreading enabled.
+	// Returns true if opencl is worth using on this system, otherwise false.
+	// If pOpenCL_failed is not null, it will be set to true if OpenCL encoding failed *on this particular machine/driver/BasisU version* and the encoder falled back to CPU encoding.
+	// basisu_encoder_init() MUST be called first. If OpenCL support wasn't enabled this always returns false.
+	bool basis_benchmark_etc1s_opencl(bool *pOpenCL_failed = nullptr);
 
 	// Parallel compression API
 	struct parallel_results
