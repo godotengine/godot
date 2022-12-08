@@ -22,8 +22,8 @@
 		<method name="get_id" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the id assigned to this channel during creation (or auto-assigned during negotiation).
-				If the channel is not negotiated out-of-band the id will only be available after the connection is established (will return [code]65535[/code] until then).
+				Returns the ID assigned to this channel during creation (or auto-assigned during negotiation).
+				If the channel is not negotiated out-of-band the ID will only be available after the connection is established (will return [code]65535[/code] until then).
 			</description>
 		</method>
 		<method name="get_label" qualifiers="const">

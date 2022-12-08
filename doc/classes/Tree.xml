@@ -70,7 +70,7 @@
 			<return type="int" />
 			<param index="0" name="position" type="Vector2" />
 			<description>
-				Returns the button id at [param position], or -1 if no button is there.
+				Returns the button ID at [param position], or -1 if no button is there.
 			</description>
 		</method>
 		<method name="get_column_at_position" qualifiers="const">
