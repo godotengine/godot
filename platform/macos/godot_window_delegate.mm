@@ -70,24 +70,24 @@
 	ds->window_destroy(window_id);
 }
 
-- (NSArray<NSWindow *> *)customWindowsToEnterFullScreenForWindow:(NSWindow *)window {
+- (void)windowWillEnterFullScreen:(NSNotification *)notification {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
-		return nullptr;
+		return;
 	}
 
-	old_frame = [window frame];
-	old_style_mask = [window styleMask];
-
-	NSMutableArray<NSWindow *> *windows = [[NSMutableArray alloc] init];
-	[windows addObject:window];
-
-	return windows;
+	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	wd.fs_transition = true;
 }
 
-- (void)window:(NSWindow *)window startCustomAnimationToEnterFullScreenWithDuration:(NSTimeInterval)duration {
-	[(GodotWindow *)window setAnimDuration:duration];
-	[window setFrame:[[window screen] frame] display:YES animate:YES];
+- (void)windowDidFailToEnterFullScreen:(NSWindow *)window {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return;
+	}
+
+	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	wd.fs_transition = false;
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
@@ -98,29 +98,31 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	wd.fullscreen = true;
+	wd.fs_transition = false;
 
 	// Reset window size limits.
 	[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
 	[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
-	[(GodotWindow *)wd.window_object setAnimDuration:-1.0f];
 
 	// Reset custom window buttons.
 	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
 		ds->window_set_custom_window_buttons(wd, false);
 	}
 
-	// Force window resize event.
-	[self windowDidResize:notification];
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
+
+	// Force window resize event and redraw.
+	[self windowDidResize:notification];
 }
 
-- (NSArray<NSWindow *> *)customWindowsToExitFullScreenForWindow:(NSWindow *)window {
+- (void)windowWillExitFullScreen:(NSNotification *)notification {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
-		return nullptr;
+		return;
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	wd.fs_transition = true;
 
 	// Restore custom window buttons.
 	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
@@ -128,16 +130,22 @@
 	}
 
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
-
-	NSMutableArray<NSWindow *> *windows = [[NSMutableArray alloc] init];
-	[windows addObject:wd.window_object];
-	return windows;
 }
 
-- (void)window:(NSWindow *)window startCustomAnimationToExitFullScreenWithDuration:(NSTimeInterval)duration {
-	[(GodotWindow *)window setAnimDuration:duration];
-	[window setStyleMask:old_style_mask];
-	[window setFrame:old_frame display:YES animate:YES];
+- (void)windowDidFailToExitFullScreen:(NSWindow *)window {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return;
+	}
+
+	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	wd.fs_transition = false;
+
+	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
+		ds->window_set_custom_window_buttons(wd, false);
+	}
+
+	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
@@ -153,8 +161,7 @@
 
 	wd.fullscreen = false;
 	wd.exclusive_fullscreen = false;
-
-	[(GodotWindow *)wd.window_object setAnimDuration:-1.0f];
+	wd.fs_transition = false;
 
 	// Set window size limits.
 	const float scale = ds->screen_get_max_scale();
@@ -177,7 +184,7 @@
 		[wd.window_object setLevel:NSFloatingWindowLevel];
 	}
 
-	// Force window resize event.
+	// Force window resize event and redraw.
 	[self windowDidResize:notification];
 }
 
@@ -304,6 +311,8 @@
 	} else {
 		ds->update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 	}
+
+	[self windowDidResize:notification]; // Emit resize event, to ensure content is resized if the window was resized while it was hidden.
 
 	ds->set_last_focused_window(window_id);
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);

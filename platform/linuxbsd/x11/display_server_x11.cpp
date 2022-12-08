@@ -1235,10 +1235,10 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
+	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_screen);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -1257,6 +1257,8 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
 	XMapWindow(x11_display, wd.x11_window);
+	XSync(x11_display, False);
+	_validate_mode_on_map(p_id);
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
@@ -1505,16 +1507,24 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	// Check if screen is valid
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
+	if (window_get_current_screen(p_window) == p_screen) {
+		return;
+	}
+
 	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN) {
 		Point2i position = screen_get_position(p_screen);
 		Size2i size = screen_get_size(p_screen);
 
 		XMoveResizeWindow(x11_display, wd.x11_window, position.x, position.y, size.x, size.y);
 	} else {
-		if (p_screen != window_get_current_screen(p_window)) {
-			Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
-			window_set_position(ofs + screen_get_position(p_screen), p_window);
-		}
+		Rect2i srect = screen_get_usable_rect(p_screen);
+		Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
+		Size2i wsize = window_get_size(p_window);
+		wpos += srect.position;
+
+		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - wsize.width / 3);
+		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
+		window_set_position(wpos, p_window);
 	}
 }
 
@@ -4531,7 +4541,7 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 	return ds;
 }
 
-DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
 	//Create window
 
 	XVisualInfo visualInfo;
@@ -4607,8 +4617,38 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		valuemask |= CWOverrideRedirect | CWSaveUnder;
 	}
 
+	Rect2i win_rect = p_rect;
+	if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		Rect2i screen_rect = Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
+
+		win_rect = screen_rect;
+	} else {
+		int nearest_area = 0;
+		int pos_screen = -1;
+		for (int i = 0; i < get_screen_count(); i++) {
+			Rect2i r;
+			r.position = screen_get_position(i);
+			r.size = screen_get_size(i);
+			Rect2 inters = r.intersection(p_rect);
+
+			int area = inters.size.width * inters.size.height;
+			if (area > nearest_area) {
+				pos_screen = i;
+				nearest_area = area;
+			}
+		}
+
+		Rect2i srect = screen_get_usable_rect(p_screen);
+		Point2i wpos = p_rect.position - ((pos_screen >= 0) ? screen_get_position(pos_screen) : Vector2i());
+		wpos += srect.position;
+		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
+		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+
+		win_rect.position = wpos;
+	}
+
 	{
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), win_rect.position.x, win_rect.position.y, win_rect.size.width > 0 ? win_rect.size.width : 1, win_rect.size.height > 0 ? win_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
@@ -4729,13 +4769,13 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
 #ifdef GLES3_ENABLED
 		if (gl_manager) {
-			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
 			window_set_vsync_mode(p_vsync_mode, id);
 		}
@@ -5038,12 +5078,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	Point2i window_position(
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
+	window_position += screen_get_position(0);
 
 	if (p_position != nullptr) {
 		window_position = *p_position;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), 0);
 	if (main_window == INVALID_WINDOW_ID) {
 		r_error = ERR_CANT_CREATE;
 		return;
@@ -5054,8 +5095,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 	}
 	show_window(main_window);
-	XSync(x11_display, False);
-	_validate_mode_on_map(main_window);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {

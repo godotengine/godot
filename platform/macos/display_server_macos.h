@@ -99,6 +99,8 @@ public:
 		Callable drop_files_callback;
 
 		ObjectID instance_id;
+		bool fs_transition = false;
+		bool initial_size = true;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		bool exclusive = false;
@@ -189,7 +191,7 @@ private:
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);
 
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
+	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect, int p_screen);
 	void _update_window_style(WindowData p_wd);
 	void _set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
 
@@ -334,7 +336,7 @@ public:
 
 	virtual Vector<int> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), int p_screen = 0) override;
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 

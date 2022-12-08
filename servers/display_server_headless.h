@@ -66,7 +66,7 @@ public:
 
 	Vector<DisplayServer::WindowID> get_window_list() const override { return Vector<DisplayServer::WindowID>(); }
 
-	WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override { return 0; }
+	WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), int p_screen = 0) override { return 0; }
 	void show_window(WindowID p_id) override {}
 	void delete_sub_window(WindowID p_id) override {}
 
