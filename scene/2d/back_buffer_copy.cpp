@@ -71,9 +71,17 @@ Rect2 BackBufferCopy::get_rect() const {
 void BackBufferCopy::set_copy_mode(CopyMode p_mode) {
 	copy_mode = p_mode;
 	_update_copy_mode();
+	_change_notify();
 }
+
 BackBufferCopy::CopyMode BackBufferCopy::get_copy_mode() const {
 	return copy_mode;
+}
+
+void BackBufferCopy::_validate_property(PropertyInfo &p_property) const {
+	if (copy_mode != COPY_MODE_RECT && p_property.name == "rect") {
+		p_property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void BackBufferCopy::_bind_methods() {
