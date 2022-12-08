@@ -902,8 +902,6 @@ void _pb_start_simulation(const Skeleton3D *p_skeleton, Node *p_node, const Vect
 }
 
 void Skeleton3D::physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones) {
-	set_physics_process_internal(false);
-
 	Vector<int> sim_bones;
 	if (p_bones.size() > 0) {
 		sim_bones.resize(p_bones.size());
