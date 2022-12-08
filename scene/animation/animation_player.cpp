@@ -691,7 +691,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						}
 					} else {
 						if (p_started) {
-							int first_key = a->track_find_key(i, p_prev_time, true);
+							int first_key = a->track_find_key(i, p_prev_time, Animation::FIND_MODE_EXACT);
 							if (first_key >= 0) {
 								indices.push_back(first_key);
 							}
@@ -761,7 +761,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					}
 				} else {
 					if (p_started) {
-						int first_key = a->track_find_key(i, p_prev_time, true);
+						int first_key = a->track_find_key(i, p_prev_time, Animation::FIND_MODE_EXACT);
 						if (first_key >= 0) {
 							indices.push_back(first_key);
 						}
@@ -855,7 +855,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					//find stuff to play
 					List<int> to_play;
 					if (p_started) {
-						int first_key = a->track_find_key(i, p_prev_time, true);
+						int first_key = a->track_find_key(i, p_prev_time, Animation::FIND_MODE_EXACT);
 						if (first_key >= 0) {
 							to_play.push_back(first_key);
 						}
@@ -968,7 +968,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					//find stuff to play
 					List<int> to_play;
 					if (p_started) {
-						int first_key = a->track_find_key(i, p_prev_time, true);
+						int first_key = a->track_find_key(i, p_prev_time, Animation::FIND_MODE_EXACT);
 						if (first_key >= 0) {
 							to_play.push_back(first_key);
 						}
