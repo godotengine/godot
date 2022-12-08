@@ -235,7 +235,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="glyph" type="int" />
 			<description>
-				Returns resource id of the cache texture containing the glyph.
+				Returns resource ID of the cache texture containing the glyph.
 				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
 			</description>
 		</method>
