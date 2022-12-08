@@ -162,7 +162,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	} onion;
 
 	void _select_anim_by_name(const String &p_anim);
-	double _get_editor_step() const;
+	float _get_editor_step() const;
 	void _play_pressed();
 	void _play_from_pressed();
 	void _play_bw_pressed();
@@ -270,6 +270,32 @@ public:
 
 	AnimationPlayerEditorPlugin();
 	~AnimationPlayerEditorPlugin();
+};
+
+// AnimationTrackKeyEditEditorPlugin
+
+class EditorInspectorPluginAnimationTrackKeyEdit : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginAnimationTrackKeyEdit, EditorInspectorPlugin);
+
+	AnimationTrackKeyEditEditor *atk_editor = nullptr;
+
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
+};
+
+class AnimationTrackKeyEditEditorPlugin : public EditorPlugin {
+	GDCLASS(AnimationTrackKeyEditEditorPlugin, EditorPlugin);
+
+	EditorInspectorPluginAnimationTrackKeyEdit *atk_plugin = nullptr;
+
+public:
+	bool has_main_screen() const override { return false; }
+	virtual bool handles(Object *p_object) const override;
+
+	virtual String get_name() const override { return "AnimationTrackKeyEdit"; }
+
+	AnimationTrackKeyEditEditorPlugin();
 };
 
 #endif // ANIMATION_PLAYER_EDITOR_PLUGIN_H

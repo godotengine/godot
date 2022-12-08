@@ -50,8 +50,82 @@
 #include "scene/resources/animation.h"
 #include "scene_tree_editor.h"
 
+class AnimationTrackEditor;
 class AnimationTrackEdit;
 class ViewPanner;
+
+class AnimationTrackKeyEdit : public Object {
+	GDCLASS(AnimationTrackKeyEdit, Object);
+
+public:
+	bool setting = false;
+	bool animation_read_only = false;
+
+	Ref<Animation> animation;
+	int track = -1;
+	float key_ofs = 0;
+	Node *root_path = nullptr;
+
+	PropertyInfo hint;
+	NodePath base;
+	bool use_fps = false;
+
+	bool _hide_script_from_inspector() { return true; }
+	bool _hide_metadata_from_inspector() { return true; }
+	bool _dont_undo_redo() { return true; }
+
+	bool _is_read_only() { return animation_read_only; }
+
+	void notify_change();
+	Node *get_root_path();
+	void set_use_fps(bool p_enable);
+
+protected:
+	static void _bind_methods();
+	void _fix_node_path(Variant &value);
+	void _update_obj(const Ref<Animation> &p_anim);
+	void _key_ofs_changed(const Ref<Animation> &p_anim, float from, float to);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+};
+
+class AnimationMultiTrackKeyEdit : public Object {
+	GDCLASS(AnimationMultiTrackKeyEdit, Object);
+
+public:
+	bool setting = false;
+	bool animation_read_only = false;
+
+	Ref<Animation> animation;
+
+	RBMap<int, List<float>> key_ofs_map;
+	RBMap<int, NodePath> base_map;
+	PropertyInfo hint;
+
+	Node *root_path = nullptr;
+
+	bool use_fps = false;
+
+	bool _hide_script_from_inspector() { return true; }
+	bool _hide_metadata_from_inspector() { return true; }
+	bool _dont_undo_redo() { return true; }
+
+	bool _is_read_only() { return animation_read_only; }
+
+	void notify_change();
+	Node *get_root_path();
+	void set_use_fps(bool p_enable);
+
+protected:
+	static void _bind_methods();
+	void _fix_node_path(Variant &value, NodePath &base);
+	void _update_obj(const Ref<Animation> &p_anim);
+	void _key_ofs_changed(const Ref<Animation> &p_anim, float from, float to);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+};
 
 class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
@@ -128,8 +202,6 @@ public:
 
 	AnimationTimelineEdit();
 };
-
-class AnimationTrackEditor;
 
 class AnimationTrackEdit : public Control {
 	GDCLASS(AnimationTrackEdit, Control);
@@ -590,6 +662,32 @@ public:
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();
 	~AnimationTrackEditor();
+};
+
+// AnimationTrackKeyEditEditorPlugin
+
+class AnimationTrackKeyEditEditor : public EditorProperty {
+	GDCLASS(AnimationTrackKeyEditEditor, EditorProperty);
+
+	Ref<Animation> animation;
+	int track = -1;
+	real_t key_ofs = 0.0;
+	bool use_fps = false;
+
+	EditorSpinSlider *spinner = nullptr;
+
+	struct KeyDataCache {
+		real_t time = 0.0;
+		float transition = 0.0;
+		Variant value;
+	} key_data_cache;
+
+	void _time_edit_entered();
+	void _time_edit_exited();
+
+public:
+	AnimationTrackKeyEditEditor(Ref<Animation> p_animation, int p_track, real_t p_key_ofs, bool p_use_fps);
+	~AnimationTrackKeyEditEditor();
 };
 
 #endif // ANIMATION_TRACK_EDITOR_H
