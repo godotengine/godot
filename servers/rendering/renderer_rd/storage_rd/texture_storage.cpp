@@ -1938,7 +1938,7 @@ void TextureStorage::update_decal_atlas() {
 			DecalAtlas::SortItem &si = itemsv.write[idx];
 
 			Texture *src_tex = get_texture(E.key);
-			if (!src_tex){
+			if (!src_tex) {
 				src_tex = new Texture();
 			}
 			si.size.width = (src_tex->width / border) + 1;
@@ -2020,7 +2020,7 @@ void TextureStorage::update_decal_atlas() {
 
 		for (int i = 0; i < item_count; i++) {
 			DecalAtlas::Texture *t = decal_atlas.textures.getptr(items[i].texture);
-			if (t){
+			if (t) {
 				t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
 				t->uv_rect.size = items[i].pixel_size;
 
@@ -2090,7 +2090,7 @@ void TextureStorage::update_decal_atlas() {
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					Texture *src_tex = get_texture(E.key);
-					if (src_tex && t){
+					if (src_tex && t) {
 						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
 					}
 				}
