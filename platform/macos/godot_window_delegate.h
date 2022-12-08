@@ -38,8 +38,6 @@
 
 @interface GodotWindowDelegate : NSObject <NSWindowDelegate> {
 	DisplayServer::WindowID window_id;
-	NSRect old_frame;
-	NSWindowStyleMask old_style_mask;
 }
 
 - (void)setWindowID:(DisplayServer::WindowID)wid;

@@ -65,16 +65,28 @@
 	if (ds && ds->has_window(window_id)) {
 		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 		NSRect frameRect = [wd.window_object frame];
-		bool left = (wd.last_frame_rect.origin.x != frameRect.origin.x);
-		bool top = (wd.last_frame_rect.origin.y == frameRect.origin.y);
-		if (left && top) {
-			self.layerContentsPlacement = NSViewLayerContentsPlacementBottomRight;
-		} else if (left && !top) {
-			self.layerContentsPlacement = NSViewLayerContentsPlacementTopRight;
-		} else if (!left && top) {
-			self.layerContentsPlacement = NSViewLayerContentsPlacementBottomLeft;
+		if (wd.fs_transition || wd.initial_size) {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementScaleAxesIndependently;
+			wd.initial_size = false;
 		} else {
-			self.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
+			bool left = (wd.last_frame_rect.origin.x != frameRect.origin.x);
+			bool bottom = (wd.last_frame_rect.origin.y != frameRect.origin.y);
+			bool right = (wd.last_frame_rect.origin.x + wd.last_frame_rect.size.width != frameRect.origin.x + frameRect.size.width);
+			bool top = (wd.last_frame_rect.origin.y + wd.last_frame_rect.size.height != frameRect.origin.y + frameRect.size.height);
+
+			if (left && top) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementBottomRight;
+			} else if (left && bottom) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementTopRight;
+			} else if (left) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementRight;
+			} else if (right && top) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementBottomLeft;
+			} else if (right && bottom) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
+			} else if (right) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementLeft;
+			}
 		}
 		wd.last_frame_rect = frameRect;
 	}

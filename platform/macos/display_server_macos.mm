@@ -109,7 +109,7 @@ NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) {
 	return menu;
 }
 
-DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect) {
+DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect, int p_screen) {
 	WindowID id;
 	const float scale = screen_get_max_scale();
 	{
@@ -119,19 +119,36 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		ERR_FAIL_COND_V_MSG(wd.window_delegate == nil, INVALID_WINDOW_ID, "Can't create a window delegate");
 		[wd.window_delegate setWindowID:window_id_counter];
 
-		Point2i position = p_rect.position;
+		int nearest_area = 0;
+		int pos_screen = -1;
+		for (int i = 0; i < get_screen_count(); i++) {
+			Rect2i r = screen_get_usable_rect(i);
+			Rect2 inters = r.intersection(p_rect);
+			int area = inters.size.width * inters.size.height;
+			if (area > nearest_area && area > 0) {
+				pos_screen = i;
+				nearest_area = area;
+			}
+		}
+
+		Rect2i srect = screen_get_usable_rect(p_screen);
+		Point2i wpos = p_rect.position - ((pos_screen >= 0) ? screen_get_position(pos_screen) : Vector2i());
+		wpos += srect.position;
+		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
+		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
 		// OS X native y-coordinate relative to _get_screens_origin() is negative,
 		// Godot passes a positive value.
-		position.y *= -1;
-		position += _get_screens_origin();
+		wpos.y *= -1;
+		wpos += _get_screens_origin();
 
 		// initWithContentRect uses bottom-left corner of the window’s frame as origin.
 		wd.window_object = [[GodotWindow alloc]
-				initWithContentRect:NSMakeRect(position.x / scale, (position.y - p_rect.size.height) / scale, p_rect.size.width / scale, p_rect.size.height / scale)
+				initWithContentRect:NSMakeRect(0, 0, p_rect.size.width / scale, p_rect.size.height / scale)
 						  styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
 							backing:NSBackingStoreBuffered
 							  defer:NO];
 		ERR_FAIL_COND_V_MSG(wd.window_object == nil, INVALID_WINDOW_ID, "Can't create a window");
+		[wd.window_object setFrameTopLeftPoint:NSMakePoint(wpos.x / scale, wpos.y / scale)];
 		[wd.window_object setWindowID:window_id_counter];
 
 		wd.window_view = [[GodotContentView alloc] init];
@@ -2208,10 +2225,10 @@ Vector<DisplayServer::WindowID> DisplayServerMacOS::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
+	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect, p_screen);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -2328,8 +2345,14 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 		was_fullscreen = true;
 	}
 
+	Rect2i srect = screen_get_usable_rect(p_screen);
 	Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
-	window_set_position(wpos + screen_get_position(p_screen), p_window);
+	Size2i wsize = window_get_size(p_window);
+	wpos += srect.position;
+
+	wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - wsize.width / 3);
+	wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
+	window_set_position(wpos, p_window);
 
 	if (was_fullscreen) {
 		// Re-enter fullscreen mode.
@@ -3781,7 +3804,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		window_position = *p_position;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution), 0);
 	ERR_FAIL_COND(main_window == INVALID_WINDOW_ID);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
