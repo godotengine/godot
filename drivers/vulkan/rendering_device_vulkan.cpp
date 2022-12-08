@@ -4562,198 +4562,6 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 	}
 	return ret;
 }
-#if 0
-bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error) {
-	VkDescriptorSetLayoutBinding layout_binding;
-	UniformInfo info;
-
-	switch (reflection.getType()->getBasicType()) {
-		case glslang::EbtSampler: {
-			//print_line("DEBUG: IsSampler");
-			if (reflection.getType()->getSampler().dim == glslang::EsdBuffer) {
-				// Texture buffers.
-				if (reflection.getType()->getSampler().isCombined()) {
-					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-					info.type = UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER;
-					//print_line("DEBUG: SAMPLER: texel combined");
-				} else if (reflection.getType()->getSampler().isTexture()) {
-					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-					info.type = UNIFORM_TYPE_TEXTURE_BUFFER;
-					//print_line("DEBUG: SAMPLER: texel alone");
-				} else if (reflection.getType()->getSampler().isImage()) {
-					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-					info.type = UNIFORM_TYPE_IMAGE_BUFFER;
-					//print_line("DEBUG: SAMPLER: texel buffer");
-				} else {
-					if (r_error) {
-						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' is of unsupported buffer type.";
-					}
-					return false;
-				}
-			} else if (reflection.getType()->getSampler().isCombined()) {
-				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				info.type = UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-				//print_line("DEBUG: SAMPLER: combined");
-			} else if (reflection.getType()->getSampler().isPureSampler()) {
-				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-				info.type = UNIFORM_TYPE_SAMPLER;
-				//print_line("DEBUG: SAMPLER: sampler");
-			} else if (reflection.getType()->getSampler().isTexture()) {
-				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-				info.type = UNIFORM_TYPE_TEXTURE;
-				//print_line("DEBUG: SAMPLER: image");
-			} else if (reflection.getType()->getSampler().isImage()) {
-				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				info.type = UNIFORM_TYPE_IMAGE;
-				//print_line("DEBUG: SAMPLER: storage image");
-			} else {
-				//print_line("DEBUG: sampler unknown");
-				if (r_error) {
-					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' is of unsupported sampler type.";
-				}
-				return false;
-			}
-
-			if (reflection.getType()->isArray()) {
-				layout_binding.descriptorCount = reflection.getType()->getArraySizes()->getCumulativeSize();
-				//print_line("DEBUG: array of size: " + itos(layout_binding.descriptorCount));
-			} else {
-				layout_binding.descriptorCount = 1;
-			}
-
-			info.length = layout_binding.descriptorCount;
-
-		} break;
-		/*case glslang::EbtStruct: {
-			print_line("DEBUG: Struct");
-
-		} break;*/
-		case glslang::EbtBlock: {
-			//print_line("DEBUG: Block");
-			if (reflection.getType()->getQualifier().storage == glslang::EvqUniform) {
-				if (reflection.getType()->getQualifier().layoutPushConstant) {
-					uint32_t len = reflection.size;
-					if (push_constant.push_constant_size != 0 && push_constant.push_constant_size != len) {
-						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' push constants for different stages should all be the same size.";
-						return false;
-					}
-					push_constant.push_constant_size = len;
-					push_constant.push_constants_vk_stage |= shader_stage_masks[p_stage];
-					return true;
-				}
-				//print_line("DEBUG: Uniform buffer");
-				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				info.type = UNIFORM_TYPE_UNIFORM_BUFFER;
-			} else if (reflection.getType()->getQualifier().storage == glslang::EvqBuffer) {
-				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				info.type = UNIFORM_TYPE_STORAGE_BUFFER;
-				//print_line("DEBUG: Storage buffer");
-			} else {
-				if (r_error) {
-					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' is of unsupported block type: (" + itos(reflection.getType()->getQualifier().storage) + ").";
-				}
-				return false;
-			}
-
-			if (reflection.getType()->isArray()) {
-				layout_binding.descriptorCount = reflection.getType()->getArraySizes()->getCumulativeSize();
-				//print_line("DEBUG: array of size: " + itos(layout_binding.descriptorCount));
-			} else {
-				layout_binding.descriptorCount = 1;
-			}
-
-			info.length = reflection.size;
-
-		} break;
-		/*case glslang::EbtReference: {
-		} break;*/
-		/*case glslang::EbtAtomicUint: {
-		} break;*/
-		default: {
-			if (reflection.getType()->getQualifier().hasOffset() || reflection.name.find(".") != std::string::npos) {
-				// Member of uniform block?
-				return true;
-			}
-
-			if (r_error) {
-				*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' unsupported uniform type.";
-			}
-			return false;
-		}
-	}
-
-	if (!reflection.getType()->getQualifier().hasBinding()) {
-		if (r_error) {
-			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' lacks a binding number.";
-		}
-		return false;
-	}
-
-	uint32_t set = reflection.getType()->getQualifier().hasSet() ? reflection.getType()->getQualifier().layoutSet : 0;
-
-	if (set >= MAX_UNIFORM_SETS) {
-		if (r_error) {
-			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(MAX_UNIFORM_SETS) + ").";
-		}
-		return false;
-	}
-
-	if (set >= limits.maxBoundDescriptorSets) {
-		if (r_error) {
-			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' uses a set (" + itos(set) + ") index larger than what is supported by the hardware (" + itos(limits.maxBoundDescriptorSets) + ").";
-		}
-		return false;
-	}
-
-	uint32_t binding = reflection.getType()->getQualifier().layoutBinding;
-
-	if (set < (uint32_t)bindings.size()) {
-		// Check if this already exists.
-		for (int i = 0; i < bindings[set].size(); i++) {
-			if (bindings[set][i].binding == binding) {
-				// Already exists, verify that it's the same type.
-				if (bindings[set][i].descriptorType != layout_binding.descriptorType) {
-					if (r_error) {
-						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(binding) + " with different uniform type.";
-					}
-					return false;
-				}
-
-				// Also, verify that it's the same size.
-				if (bindings[set][i].descriptorCount != layout_binding.descriptorCount || uniform_infos[set][i].length != info.length) {
-					if (r_error) {
-						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(binding) + " with different uniform size.";
-					}
-					return false;
-				}
-
-				// Just append stage mask and return.
-				bindings.write[set].write[i].stageFlags |= shader_stage_masks[p_stage];
-				uniform_infos.write[set].write[i].stages |= 1 << p_stage;
-				return true;
-			}
-		}
-	}
-	layout_binding.binding = binding;
-	layout_binding.stageFlags = shader_stage_masks[p_stage];
-	layout_binding.pImmutableSamplers = nullptr; // No support for this yet.
-
-	info.stages = 1 << p_stage;
-	info.binding = binding;
-
-	if (set >= (uint32_t)bindings.size()) {
-		bindings.resize(set + 1);
-		uniform_infos.resize(set + 1);
-	}
-#if 0
-	print_line("stage: " + String(shader_stage_names[p_stage]) + " set: " + itos(set) + " binding: " + itos(info.binding) + " type:" + shader_uniform_names[info.type] + " length: " + itos(info.length));
-#endif
-	bindings.write[set].push_back(layout_binding);
-	uniform_infos.write[set].push_back(info);
-
-	return true;
-}
-#endif
 
 // Version 1: initial.
 // Version 2: Added shader name.
@@ -4786,30 +4594,19 @@ struct RenderingDeviceVulkanShaderBinarySpecializationConstant {
 
 struct RenderingDeviceVulkanShaderBinaryData {
 	uint32_t vertex_input_mask;
-	uint32_t fragment_outputs;
-	uint32_t specialization_constant_count;
+	uint32_t fragment_output_mask;
+	uint32_t specialization_constants_count;
 	uint32_t is_compute;
 	uint32_t compute_local_size[3];
 	uint32_t set_count;
 	uint32_t push_constant_size;
-	uint32_t push_constants_vk_stage;
+	uint32_t push_constant_vk_stages_mask;
 	uint32_t stage_count;
 	uint32_t shader_name_len;
 };
 
 Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
-	RenderingDeviceVulkanShaderBinaryData binary_data;
-	binary_data.vertex_input_mask = 0;
-	binary_data.fragment_outputs = 0;
-	binary_data.specialization_constant_count = 0;
-	binary_data.is_compute = 0;
-	binary_data.compute_local_size[0] = 0;
-	binary_data.compute_local_size[1] = 0;
-	binary_data.compute_local_size[2] = 0;
-	binary_data.set_count = 0;
-	binary_data.push_constant_size = 0;
-	binary_data.push_constants_vk_stage = 0;
-
+	RenderingDeviceVulkanShaderBinaryData binary_data{};
 	Vector<Vector<RenderingDeviceVulkanShaderBinaryDataBinding>> uniform_info; // Set bindings.
 	Vector<RenderingDeviceVulkanShaderBinarySpecializationConstant> specialization_constants;
 
@@ -5085,7 +4882,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 					for (uint32_t j = 0; j < ov_count; j++) {
 						const SpvReflectInterfaceVariable *refvar = output_vars[j];
 						if (refvar != nullptr && refvar->built_in != SpvBuiltInFragDepth) {
-							binary_data.fragment_outputs |= 1 << refvar->location;
+							binary_data.fragment_output_mask |= 1 << refvar->location;
 						}
 					}
 				}
@@ -5116,9 +4913,9 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "': Push constant block must be the same across shader stages.");
 
 				binary_data.push_constant_size = pconstants[0]->size;
-				binary_data.push_constants_vk_stage |= shader_stage_masks[stage];
+				binary_data.push_constant_vk_stages_mask |= shader_stage_masks[stage];
 
-				//print_line("Stage: " + String(shader_stage_names[stage]) + " push constant of size=" + itos(push_constant.push_constant_size));
+				//print_line("Stage: " + String(shader_stage_names[stage]) + " push constant of size=" + itos(push_constant.size));
 			}
 
 			// Destroy the reflection data when no longer required.
@@ -5167,7 +4964,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 		stages_binary_size += s;
 	}
 
-	binary_data.specialization_constant_count = specialization_constants.size();
+	binary_data.specialization_constants_count = specialization_constants.size();
 	binary_data.set_count = uniform_info.size();
 	binary_data.stage_count = p_spirv.size();
 
@@ -5273,12 +5070,12 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	const RenderingDeviceVulkanShaderBinaryData &binary_data = *(reinterpret_cast<const RenderingDeviceVulkanShaderBinaryData *>(binptr + 12));
 
 	Shader::PushConstant push_constant;
-	push_constant.push_constant_size = binary_data.push_constant_size;
-	push_constant.push_constants_vk_stage = binary_data.push_constants_vk_stage;
+	push_constant.size = binary_data.push_constant_size;
+	push_constant.vk_stages_mask = binary_data.push_constant_vk_stages_mask;
 
 	uint32_t vertex_input_mask = binary_data.vertex_input_mask;
 
-	uint32_t fragment_outputs = binary_data.fragment_outputs;
+	uint32_t fragment_output_mask = binary_data.fragment_output_mask;
 
 	bool is_compute = binary_data.is_compute;
 
@@ -5374,11 +5171,11 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		read_offset += set_size;
 	}
 
-	ERR_FAIL_COND_V(read_offset + binary_data.specialization_constant_count * sizeof(RenderingDeviceVulkanShaderBinarySpecializationConstant) >= binsize, RID());
+	ERR_FAIL_COND_V(read_offset + binary_data.specialization_constants_count * sizeof(RenderingDeviceVulkanShaderBinarySpecializationConstant) >= binsize, RID());
 
 	Vector<Shader::SpecializationConstant> specialization_constants;
 
-	for (uint32_t i = 0; i < binary_data.specialization_constant_count; i++) {
+	for (uint32_t i = 0; i < binary_data.specialization_constants_count; i++) {
 		const RenderingDeviceVulkanShaderBinarySpecializationConstant &src_sc = *(reinterpret_cast<const RenderingDeviceVulkanShaderBinarySpecializationConstant *>(binptr + read_offset));
 		Shader::SpecializationConstant sc;
 		sc.constant.int_value = src_sc.int_value;
@@ -5444,7 +5241,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	Shader shader;
 
 	shader.vertex_input_mask = vertex_input_mask;
-	shader.fragment_output_mask = fragment_outputs;
+	shader.fragment_output_mask = fragment_output_mask;
 	shader.push_constant = push_constant;
 	shader.is_compute = is_compute;
 	shader.compute_local_size[0] = compute_local_size[0];
@@ -5474,19 +5271,11 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 			break;
 		}
 
-		const VkShaderStageFlagBits shader_stage_bits[SHADER_STAGE_MAX] = {
-			VK_SHADER_STAGE_VERTEX_BIT,
-			VK_SHADER_STAGE_FRAGMENT_BIT,
-			VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-			VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
-			VK_SHADER_STAGE_COMPUTE_BIT,
-		};
-
 		VkPipelineShaderStageCreateInfo shader_stage;
 		shader_stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		shader_stage.pNext = nullptr;
 		shader_stage.flags = 0;
-		shader_stage.stage = shader_stage_bits[stage_type[i]];
+		shader_stage.stage = shader_stage_masks[stage_type[i]];
 		shader_stage.module = module;
 		shader_stage.pName = "main";
 		shader_stage.pSpecializationInfo = nullptr;
@@ -5558,10 +5347,10 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		// Needs to be declared in this outer scope, otherwise it may not outlive its assignment
 		// to pipeline_layout_create_info.
 		VkPushConstantRange push_constant_range;
-		if (push_constant.push_constant_size) {
-			push_constant_range.stageFlags = push_constant.push_constants_vk_stage;
+		if (push_constant.size) {
+			push_constant_range.stageFlags = push_constant.vk_stages_mask;
 			push_constant_range.offset = 0;
-			push_constant_range.size = push_constant.push_constant_size;
+			push_constant_range.size = push_constant.size;
 
 			pipeline_layout_create_info.pushConstantRangeCount = 1;
 			pipeline_layout_create_info.pPushConstantRanges = &push_constant_range;
@@ -6878,10 +6667,10 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
 
 	pipeline.set_formats = shader->set_formats;
-	pipeline.push_constant_stages = shader->push_constant.push_constants_vk_stage;
+	pipeline.push_constant_stages_mask = shader->push_constant.vk_stages_mask;
 	pipeline.pipeline_layout = shader->pipeline_layout;
 	pipeline.shader = p_shader;
-	pipeline.push_constant_size = shader->push_constant.push_constant_size;
+	pipeline.push_constant_size = shader->push_constant.size;
 
 #ifdef DEBUG_ENABLED
 	pipeline.validation.dynamic_state = p_dynamic_state_flags;
@@ -6993,10 +6782,10 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateComputePipelines failed with error " + itos(err) + ".");
 
 	pipeline.set_formats = shader->set_formats;
-	pipeline.push_constant_stages = shader->push_constant.push_constants_vk_stage;
+	pipeline.push_constant_stages_mask = shader->push_constant.vk_stages_mask;
 	pipeline.pipeline_layout = shader->pipeline_layout;
 	pipeline.shader = p_shader;
-	pipeline.push_constant_size = shader->push_constant.push_constant_size;
+	pipeline.push_constant_size = shader->push_constant.size;
 	pipeline.local_group_size[0] = shader->compute_local_size[0];
 	pipeline.local_group_size[1] = shader->compute_local_size[1];
 	pipeline.local_group_size[2] = shader->compute_local_size[2];
@@ -7638,7 +7427,7 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 		dl->state.set_count = pcount; // Update set count.
 
 		if (pipeline->push_constant_size) {
-			dl->state.pipeline_push_constant_stages = pipeline->push_constant_stages;
+			dl->state.pipeline_push_constant_stages = pipeline->push_constant_stages_mask;
 #ifdef DEBUG_ENABLED
 			dl->validation.pipeline_push_constant_supplied = false;
 #endif
@@ -8254,7 +8043,7 @@ void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_l
 		cl->state.set_count = pcount; // Update set count.
 
 		if (pipeline->push_constant_size) {
-			cl->state.pipeline_push_constant_stages = pipeline->push_constant_stages;
+			cl->state.pipeline_push_constant_stages = pipeline->push_constant_stages_mask;
 #ifdef DEBUG_ENABLED
 			cl->validation.pipeline_push_constant_supplied = false;
 #endif

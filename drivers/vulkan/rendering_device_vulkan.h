@@ -628,8 +628,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t fragment_output_mask = 0;
 
 		struct PushConstant {
-			uint32_t push_constant_size = 0;
-			uint32_t push_constants_vk_stage = 0;
+			uint32_t size = 0;
+			uint32_t vk_stages_mask = 0;
 		};
 
 		PushConstant push_constant;
@@ -791,7 +791,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // Not owned, needed for push constants.
 		VkPipeline pipeline = VK_NULL_HANDLE;
 		uint32_t push_constant_size = 0;
-		uint32_t push_constant_stages = 0;
+		uint32_t push_constant_stages_mask = 0;
 	};
 
 	RID_Owner<RenderPipeline, true> render_pipeline_owner;
@@ -802,7 +802,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // Not owned, needed for push constants.
 		VkPipeline pipeline = VK_NULL_HANDLE;
 		uint32_t push_constant_size = 0;
-		uint32_t push_constant_stages = 0;
+		uint32_t push_constant_stages_mask = 0;
 		uint32_t local_group_size[3] = { 0, 0, 0 };
 	};
 
