@@ -1539,8 +1539,6 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						}
 
-						real_t db = Math::linear_to_db(MAX(blend, 0.00001));
-						t->object->call(SNAME("set_volume_db"), db);
 					} break;
 					case Animation::TYPE_ANIMATION: {
 						TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
