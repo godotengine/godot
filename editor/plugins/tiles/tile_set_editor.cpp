@@ -346,6 +346,7 @@ void TileSetEditor::_notification(int p_what) {
 			source_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
+			_update_sources_list();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
