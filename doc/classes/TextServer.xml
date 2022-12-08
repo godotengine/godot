@@ -1097,6 +1097,7 @@
 			<param index="2" name="size" type="Vector2" />
 			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<param index="4" name="length" type="int" default="1" />
+			<param index="5" name="baseline" type="float" default="0.0" />
 			<description>
 				Adds inline object to the text buffer, [param key] must be unique. In the text, object is represented as [param length] object replacement characters.
 			</description>
@@ -1438,6 +1439,7 @@
 			<param index="1" name="key" type="Variant" />
 			<param index="2" name="size" type="Vector2" />
 			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="4" name="baseline" type="float" default="0.0" />
 			<description>
 				Sets new size and alignment of embedded object.
 			</description>

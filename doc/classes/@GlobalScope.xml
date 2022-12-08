@@ -1479,6 +1479,9 @@
 		<constant name="INLINE_ALIGNMENT_CENTER_TO" value="1" enum="InlineAlignment">
 			Aligns the center of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
 		</constant>
+		<constant name="INLINE_ALIGNMENT_BASELINE_TO" value="3" enum="InlineAlignment">
+			Aligns the baseline (user defined) of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
+		</constant>
 		<constant name="INLINE_ALIGNMENT_BOTTOM_TO" value="2" enum="InlineAlignment">
 			Aligns the bottom of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
 		</constant>

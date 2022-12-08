@@ -2917,7 +2917,7 @@ bool TextServerFallback::_shaped_text_add_string(const RID &p_shaped, const Stri
 	return true;
 }
 
-bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, int64_t p_length) {
+bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, int64_t p_length, float p_baseline) {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
@@ -2938,6 +2938,7 @@ bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Vari
 	obj.inline_align = p_inline_align;
 	obj.rect.size = p_size;
 	obj.pos = span.start;
+	obj.baseline = p_baseline;
 
 	sd->spans.push_back(span);
 	sd->text = sd->text + String::chr(0xfffc).repeat(p_length);
@@ -2948,7 +2949,7 @@ bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Vari
 	return true;
 }
 
-bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align) {
+bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
@@ -2956,6 +2957,7 @@ bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const V
 	ERR_FAIL_COND_V(!sd->objects.has(p_key), false);
 	sd->objects[p_key].rect.size = p_size;
 	sd->objects[p_key].inline_align = p_inline_align;
+	sd->objects[p_key].baseline = p_baseline;
 	if (sd->valid) {
 		// Recalc string metrics.
 		sd->ascent = 0;
@@ -3042,6 +3044,9 @@ void TextServerFallback::_realign(ShapedTextDataFallback *p_sd) const {
 					case INLINE_ALIGNMENT_CENTER_TO: {
 						E.value.rect.position.y -= E.value.rect.size.y / 2;
 					} break;
+					case INLINE_ALIGNMENT_BASELINE_TO: {
+						E.value.rect.position.y -= E.value.baseline;
+					} break;
 					case INLINE_ALIGNMENT_TOP_TO: {
 						// NOP
 					} break;
@@ -3069,6 +3074,9 @@ void TextServerFallback::_realign(ShapedTextDataFallback *p_sd) const {
 					} break;
 					case INLINE_ALIGNMENT_CENTER_TO: {
 						E.value.rect.position.x -= E.value.rect.size.x / 2;
+					} break;
+					case INLINE_ALIGNMENT_BASELINE_TO: {
+						E.value.rect.position.x -= E.value.baseline;
 					} break;
 					case INLINE_ALIGNMENT_TOP_TO: {
 						// NOP

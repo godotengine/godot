@@ -375,6 +375,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 				idx = 0;
 				table->total_height = 0;
 				table->rows.clear();
+				table->rows_baseline.clear();
 
 				Vector2 offset;
 				float row_height = 0.0;
@@ -388,6 +389,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 					offset.x += frame->padding.position.x;
 					float yofs = frame->padding.position.y;
 					float prev_h = 0;
+					float row_baseline = 0.0;
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
 						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
 						frame->lines[i].text_buf->set_width(table->columns[column].width);
@@ -409,6 +411,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 						prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation;
 
 						frame->lines[i].offset += offset;
+						row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
 					}
 					yofs += frame->padding.size.y;
 					offset.x += table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
@@ -420,11 +423,17 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 						table->total_height += row_height;
 						offset.y += row_height;
 						table->rows.push_back(row_height);
+						table->rows_baseline.push_back(table->total_height - row_height + row_baseline);
 						row_height = 0;
 					}
 					idx++;
 				}
-				l.text_buf->resize_object((uint64_t)it, Size2(table->total_width, table->total_height), table->inline_align);
+				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
+				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size() - 1) {
+					l.text_buf->resize_object((uint64_t)it, Size2(table->total_width, table->total_height), table->inline_align, Math::round(table->rows_baseline[row_idx]));
+				} else {
+					l.text_buf->resize_object((uint64_t)it, Size2(table->total_width, table->total_height), table->inline_align);
+				}
 			} break;
 			default:
 				break;
@@ -655,6 +664,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				idx = 0;
 				table->total_height = 0;
 				table->rows.clear();
+				table->rows_baseline.clear();
 
 				Vector2 offset;
 				float row_height = 0.0;
@@ -668,6 +678,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					offset.x += frame->padding.position.x;
 					float yofs = frame->padding.position.y;
 					float prev_h = 0;
+					float row_baseline = 0.0;
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
 						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
 
@@ -690,6 +701,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 						prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation;
 
 						frame->lines[i].offset += offset;
+						row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
 					}
 					yofs += frame->padding.size.y;
 					offset.x += table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
@@ -702,12 +714,17 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 						table->total_height += row_height;
 						offset.y += row_height;
 						table->rows.push_back(row_height);
+						table->rows_baseline.push_back(table->total_height - row_height + row_baseline);
 						row_height = 0;
 					}
 					idx++;
 				}
-
-				l.text_buf->add_object((uint64_t)it, Size2(table->total_width, table->total_height), table->inline_align, t_char_count);
+				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
+				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size() - 1) {
+					l.text_buf->add_object((uint64_t)it, Size2(table->total_width, table->total_height), table->inline_align, t_char_count, Math::round(table->rows_baseline[row_idx]));
+				} else {
+					l.text_buf->add_object((uint64_t)it, Size2(table->total_width, table->total_height), table->inline_align, t_char_count);
+				}
 				txt += String::chr(0xfffc).repeat(t_char_count);
 			} break;
 			default:
@@ -3313,7 +3330,7 @@ void RichTextLabel::push_hint(const String &p_string) {
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_table(int p_columns, InlineAlignment p_alignment) {
+void RichTextLabel::push_table(int p_columns, InlineAlignment p_alignment, int p_align_to_row) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3323,6 +3340,7 @@ void RichTextLabel::push_table(int p_columns, InlineAlignment p_alignment) {
 	item->columns.resize(p_columns);
 	item->total_width = 0;
 	item->inline_align = p_alignment;
+	item->align_to_row = p_align_to_row;
 	for (int i = 0; i < (int)item->columns.size(); i++) {
 		item->columns[i].expand = false;
 		item->columns[i].expand_ratio = 1;
@@ -3803,6 +3821,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					alignment = INLINE_ALIGNMENT_TOP_TO;
 				} else if (subtag[1] == "center" || subtag[1] == "c") {
 					alignment = INLINE_ALIGNMENT_CENTER_TO;
+				} else if (subtag[1] == "baseline" || subtag[1] == "l") {
+					alignment = INLINE_ALIGNMENT_BASELINE_TO;
 				} else if (subtag[1] == "bottom" || subtag[1] == "b") {
 					alignment = INLINE_ALIGNMENT_BOTTOM_TO;
 				}
@@ -3824,8 +3844,12 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					alignment = INLINE_ALIGNMENT_BOTTOM;
 				}
 			}
+			int row = -1;
+			if (subtag.size() > 3) {
+				row = subtag[3].to_int();
+			}
 
-			push_table(columns, (InlineAlignment)alignment);
+			push_table(columns, (InlineAlignment)alignment, row);
 			pos = brk_end + 1;
 			tag_stack.push_front("table");
 		} else if (tag == "cell") {
@@ -3876,6 +3900,11 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						if (subtag_b.size() == 1) {
 							Color color1 = Color::from_string(subtag_a[1], fallback_color);
 							set_cell_row_background_color(color1, color1);
+						}
+					} else if (subtag_a[0] == "padding") {
+						Vector<String> subtag_b = subtag_a[1].split(",");
+						if (subtag_b.size() == 4) {
+							set_cell_padding(Rect2(subtag_b[0].to_float(), subtag_b[1].to_float(), subtag_b[2].to_float(), subtag_b[3].to_float()));
 						}
 					}
 				}
@@ -5302,7 +5331,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
 	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);
 	ClassDB::bind_method(D_METHOD("push_strikethrough"), &RichTextLabel::push_strikethrough);
-	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGNMENT_TOP));
+	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align", "align_to_row"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGNMENT_TOP), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("push_dropcap", "string", "font", "size", "dropcap_margins", "color", "outline_size", "outline_color"), &RichTextLabel::push_dropcap, DEFVAL(Rect2()), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::set_table_column_expand);
 	ClassDB::bind_method(D_METHOD("set_cell_row_background_color", "odd_row_bg", "even_row_bg"), &RichTextLabel::set_cell_row_background_color);

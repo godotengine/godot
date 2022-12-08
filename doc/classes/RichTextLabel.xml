@@ -367,6 +367,7 @@
 			<return type="void" />
 			<param index="0" name="columns" type="int" />
 			<param index="1" name="inline_align" type="int" enum="InlineAlignment" default="0" />
+			<param index="2" name="align_to_row" type="int" default="-1" />
 			<description>
 				Adds a [code][table=columns,inline_align][/code] tag to the tag stack.
 			</description>
