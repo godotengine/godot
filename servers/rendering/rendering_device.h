@@ -1301,6 +1301,10 @@ public:
 	RenderingDevice();
 
 protected:
+	static const char *shader_stage_names[RenderingDevice::SHADER_STAGE_MAX];
+
+	static const uint32_t MAX_UNIFORM_SETS = 16;
+
 	//binders to script API
 	RID _texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data = Array());
 	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
@@ -1329,6 +1333,39 @@ protected:
 	void _draw_list_set_push_constant(DrawListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 	void _compute_list_set_push_constant(ComputeListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
+
+	struct SpirvReflectionData {
+		BitField<ShaderStage> stages_mask;
+		uint32_t vertex_input_mask;
+		uint32_t fragment_output_mask;
+		bool is_compute;
+		uint32_t compute_local_size[3];
+		uint32_t push_constant_size;
+		BitField<ShaderStage> push_constant_stages_mask;
+
+		struct Uniform {
+			UniformType type;
+			uint32_t binding;
+			BitField<ShaderStage> stages_mask;
+			uint32_t length; // Size of arrays (in total elements), or ubos (in bytes * total elements).
+			bool writable;
+		};
+		Vector<Vector<Uniform>> uniforms;
+
+		struct SpecializationConstant {
+			PipelineSpecializationConstantType type;
+			uint32_t constant_id;
+			union {
+				uint32_t int_value;
+				float float_value;
+				bool bool_value;
+			};
+			BitField<ShaderStage> stages_mask;
+		};
+		Vector<SpecializationConstant> specialization_constants;
+	};
+
+	Error _reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, SpirvReflectionData &r_reflection_data);
 };
 
 VARIANT_ENUM_CAST(RenderingDevice::DeviceType)

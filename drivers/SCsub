@@ -24,7 +24,6 @@ SConscript("winmidi/SCsub")
 
 # Graphics drivers
 if env["vulkan"]:
-    SConscript("spirv-reflect/SCsub")
     SConscript("vulkan/SCsub")
 if env["opengl3"]:
     SConscript("gl_context/SCsub")

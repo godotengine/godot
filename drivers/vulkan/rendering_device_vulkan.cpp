@@ -40,7 +40,6 @@
 #include "drivers/vulkan/vulkan_context.h"
 
 #include "thirdparty/misc/smolv.h"
-#include "thirdparty/spirv-reflect/spirv_reflect.h"
 
 //#define FORCE_FULL_BARRIER
 
@@ -4524,14 +4523,6 @@ RID RenderingDeviceVulkan::index_array_create(RID p_index_buffer, uint32_t p_ind
 /**** SHADER ****/
 /****************/
 
-static const char *shader_stage_names[RenderingDevice::SHADER_STAGE_MAX] = {
-	"Vertex",
-	"Fragment",
-	"TesselationControl",
-	"TesselationEvaluation",
-	"Compute"
-};
-
 static const char *shader_uniform_names[RenderingDevice::UNIFORM_TYPE_MAX] = {
 	"Sampler", "CombinedSampler", "Texture", "Image", "TextureBuffer", "SamplerTextureBuffer", "ImageBuffer", "UniformBuffer", "StorageBuffer", "InputAttachment"
 };
@@ -4606,323 +4597,56 @@ struct RenderingDeviceVulkanShaderBinaryData {
 };
 
 Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
-	RenderingDeviceVulkanShaderBinaryData binary_data{};
+	SpirvReflectionData spirv_data;
+	if (_reflect_spirv(p_spirv, spirv_data) != OK) {
+		return Vector<uint8_t>();
+	}
+
+	ERR_FAIL_COND_V_MSG((uint32_t)spirv_data.uniforms.size() > limits.maxBoundDescriptorSets, Vector<uint8_t>(),
+			"Number of uniform sets is larger than what is supported by the hardware (" + itos(limits.maxBoundDescriptorSets) + ").");
+
+	// Collect reflection data into binary data.
+	RenderingDeviceVulkanShaderBinaryData binary_data;
 	Vector<Vector<RenderingDeviceVulkanShaderBinaryDataBinding>> uniform_info; // Set bindings.
 	Vector<RenderingDeviceVulkanShaderBinarySpecializationConstant> specialization_constants;
-
-	uint32_t stages_processed = 0;
-
-	for (int i = 0; i < p_spirv.size(); i++) {
-		if (p_spirv[i].shader_stage == SHADER_STAGE_COMPUTE) {
-			binary_data.is_compute = true;
-			ERR_FAIL_COND_V_MSG(p_spirv.size() != 1, Vector<uint8_t>(),
-					"Compute shaders can only receive one stage, dedicated to compute.");
-		}
-		ERR_FAIL_COND_V_MSG(stages_processed & (1 << p_spirv[i].shader_stage), Vector<uint8_t>(),
-				"Stage " + String(shader_stage_names[p_spirv[i].shader_stage]) + " submitted more than once.");
-
-		{
-			SpvReflectShaderModule module;
-			const uint8_t *spirv = p_spirv[i].spir_v.ptr();
-			SpvReflectResult result = spvReflectCreateShaderModule(p_spirv[i].spir_v.size(), spirv, &module);
-			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed parsing shader.");
-
-			if (binary_data.is_compute) {
-				binary_data.compute_local_size[0] = module.entry_points->local_size.x;
-				binary_data.compute_local_size[1] = module.entry_points->local_size.y;
-				binary_data.compute_local_size[2] = module.entry_points->local_size.z;
+	{
+		binary_data.vertex_input_mask = spirv_data.vertex_input_mask;
+		binary_data.fragment_output_mask = spirv_data.fragment_output_mask;
+		binary_data.specialization_constants_count = spirv_data.specialization_constants.size();
+		binary_data.is_compute = spirv_data.is_compute;
+		binary_data.compute_local_size[0] = spirv_data.compute_local_size[0];
+		binary_data.compute_local_size[1] = spirv_data.compute_local_size[1];
+		binary_data.compute_local_size[2] = spirv_data.compute_local_size[2];
+		binary_data.set_count = spirv_data.uniforms.size();
+		binary_data.push_constant_size = spirv_data.push_constant_size;
+		for (uint32_t i = 0; i < SHADER_STAGE_MAX; i++) {
+			if (spirv_data.push_constant_stages_mask.has_flag((ShaderStage)(1 << i))) {
+				binary_data.push_constant_vk_stages_mask |= shader_stage_masks[i];
 			}
-			uint32_t binding_count = 0;
-			result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, nullptr);
-			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating descriptor bindings.");
-
-			uint32_t stage = p_spirv[i].shader_stage;
-
-			if (binding_count > 0) {
-				// Parse bindings.
-
-				Vector<SpvReflectDescriptorBinding *> bindings;
-				bindings.resize(binding_count);
-				result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, bindings.ptrw());
-
-				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed getting descriptor bindings.");
-
-				for (uint32_t j = 0; j < binding_count; j++) {
-					const SpvReflectDescriptorBinding &binding = *bindings[j];
-
-					RenderingDeviceVulkanShaderBinaryDataBinding info{};
-
-					bool need_array_dimensions = false;
-					bool need_block_size = false;
-					bool may_be_writable = false;
-
-					switch (binding.descriptor_type) {
-						case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER: {
-							info.type = UNIFORM_TYPE_SAMPLER;
-							need_array_dimensions = true;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: {
-							info.type = UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-							need_array_dimensions = true;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE: {
-							info.type = UNIFORM_TYPE_TEXTURE;
-							need_array_dimensions = true;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE: {
-							info.type = UNIFORM_TYPE_IMAGE;
-							need_array_dimensions = true;
-							may_be_writable = true;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER: {
-							info.type = UNIFORM_TYPE_TEXTURE_BUFFER;
-							need_array_dimensions = true;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER: {
-							info.type = UNIFORM_TYPE_IMAGE_BUFFER;
-							need_array_dimensions = true;
-							may_be_writable = true;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
-							info.type = UNIFORM_TYPE_UNIFORM_BUFFER;
-							need_block_size = true;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
-							info.type = UNIFORM_TYPE_STORAGE_BUFFER;
-							need_block_size = true;
-							may_be_writable = true;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
-							ERR_PRINT("Dynamic uniform buffer not supported.");
-							continue;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC: {
-							ERR_PRINT("Dynamic storage buffer not supported.");
-							continue;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT: {
-							info.type = UNIFORM_TYPE_INPUT_ATTACHMENT;
-							need_array_dimensions = true;
-						} break;
-						case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR: {
-							ERR_PRINT("Acceleration structure not supported.");
-							continue;
-						} break;
-					}
-
-					if (need_array_dimensions) {
-						if (binding.array.dims_count == 0) {
-							info.length = 1;
-						} else {
-							for (uint32_t k = 0; k < binding.array.dims_count; k++) {
-								if (k == 0) {
-									info.length = binding.array.dims[0];
-								} else {
-									info.length *= binding.array.dims[k];
-								}
-							}
-						}
-
-					} else if (need_block_size) {
-						info.length = binding.block.size;
-					} else {
-						info.length = 0;
-					}
-
-					if (may_be_writable) {
-						info.writable = !(binding.type_description->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
-					} else {
-						info.writable = false;
-					}
-
-					info.binding = binding.binding;
-					uint32_t set = binding.set;
-
-					ERR_FAIL_COND_V_MSG(set >= MAX_UNIFORM_SETS, Vector<uint8_t>(),
-							"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(MAX_UNIFORM_SETS) + ").");
-
-					ERR_FAIL_COND_V_MSG(set >= limits.maxBoundDescriptorSets, Vector<uint8_t>(),
-							"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' uses a set (" + itos(set) + ") index larger than what is supported by the hardware (" + itos(limits.maxBoundDescriptorSets) + ").");
-
-					if (set < (uint32_t)uniform_info.size()) {
-						// Check if this already exists.
-						bool exists = false;
-						for (int k = 0; k < uniform_info[set].size(); k++) {
-							if (uniform_info[set][k].binding == (uint32_t)info.binding) {
-								// Already exists, verify that it's the same type.
-								ERR_FAIL_COND_V_MSG(uniform_info[set][k].type != info.type, Vector<uint8_t>(),
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform type.");
-
-								// Also, verify that it's the same size.
-								ERR_FAIL_COND_V_MSG(uniform_info[set][k].length != info.length, Vector<uint8_t>(),
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
-
-								// Also, verify that it has the same writability.
-								ERR_FAIL_COND_V_MSG(uniform_info[set][k].writable != info.writable, Vector<uint8_t>(),
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
-
-								// Just append stage mask and return.
-								uniform_info.write[set].write[k].stages |= 1 << stage;
-								exists = true;
-								break;
-							}
-						}
-
-						if (exists) {
-							continue; // Merged.
-						}
-					}
-
-					info.stages = 1 << stage;
-
-					if (set >= (uint32_t)uniform_info.size()) {
-						uniform_info.resize(set + 1);
-					}
-
-					uniform_info.write[set].push_back(info);
-				}
-			}
-
-			{
-				// Specialization constants.
-
-				uint32_t sc_count = 0;
-				result = spvReflectEnumerateSpecializationConstants(&module, &sc_count, nullptr);
-				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating specialization constants.");
-
-				if (sc_count) {
-					Vector<SpvReflectSpecializationConstant *> spec_constants;
-					spec_constants.resize(sc_count);
-
-					result = spvReflectEnumerateSpecializationConstants(&module, &sc_count, spec_constants.ptrw());
-					ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining specialization constants.");
-
-					for (uint32_t j = 0; j < sc_count; j++) {
-						int32_t existing = -1;
-						RenderingDeviceVulkanShaderBinarySpecializationConstant sconst{};
-						SpvReflectSpecializationConstant *spc = spec_constants[j];
-
-						sconst.constant_id = spc->constant_id;
-						sconst.int_value = 0.0; // Clear previous value JIC.
-						switch (spc->constant_type) {
-							case SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL: {
-								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
-								sconst.bool_value = spc->default_value.int_bool_value != 0;
-							} break;
-							case SPV_REFLECT_SPECIALIZATION_CONSTANT_INT: {
-								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
-								sconst.int_value = spc->default_value.int_bool_value;
-							} break;
-							case SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT: {
-								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
-								sconst.float_value = spc->default_value.float_value;
-							} break;
-						}
-						sconst.stage_flags = 1 << p_spirv[i].shader_stage;
-
-						for (int k = 0; k < specialization_constants.size(); k++) {
-							if (specialization_constants[k].constant_id == sconst.constant_id) {
-								ERR_FAIL_COND_V_MSG(specialization_constants[k].type != sconst.type, Vector<uint8_t>(), "More than one specialization constant used for id (" + itos(sconst.constant_id) + "), but their types differ.");
-								ERR_FAIL_COND_V_MSG(specialization_constants[k].int_value != sconst.int_value, Vector<uint8_t>(), "More than one specialization constant used for id (" + itos(sconst.constant_id) + "), but their default values differ.");
-								existing = k;
-								break;
-							}
-						}
-
-						if (existing > 0) {
-							specialization_constants.write[existing].stage_flags |= sconst.stage_flags;
-						} else {
-							specialization_constants.push_back(sconst);
-						}
-					}
-				}
-			}
-
-			if (stage == SHADER_STAGE_VERTEX) {
-				uint32_t iv_count = 0;
-				result = spvReflectEnumerateInputVariables(&module, &iv_count, nullptr);
-				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating input variables.");
-
-				if (iv_count) {
-					Vector<SpvReflectInterfaceVariable *> input_vars;
-					input_vars.resize(iv_count);
-
-					result = spvReflectEnumerateInputVariables(&module, &iv_count, input_vars.ptrw());
-					ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining input variables.");
-
-					for (uint32_t j = 0; j < iv_count; j++) {
-						if (input_vars[j] && input_vars[j]->decoration_flags == 0) { // Regular input.
-							binary_data.vertex_input_mask |= (1 << uint32_t(input_vars[j]->location));
-						}
-					}
-				}
-			}
-
-			if (stage == SHADER_STAGE_FRAGMENT) {
-				uint32_t ov_count = 0;
-				result = spvReflectEnumerateOutputVariables(&module, &ov_count, nullptr);
-				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating output variables.");
-
-				if (ov_count) {
-					Vector<SpvReflectInterfaceVariable *> output_vars;
-					output_vars.resize(ov_count);
-
-					result = spvReflectEnumerateOutputVariables(&module, &ov_count, output_vars.ptrw());
-					ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining output variables.");
-
-					for (uint32_t j = 0; j < ov_count; j++) {
-						const SpvReflectInterfaceVariable *refvar = output_vars[j];
-						if (refvar != nullptr && refvar->built_in != SpvBuiltInFragDepth) {
-							binary_data.fragment_output_mask |= 1 << refvar->location;
-						}
-					}
-				}
-			}
-
-			uint32_t pc_count = 0;
-			result = spvReflectEnumeratePushConstantBlocks(&module, &pc_count, nullptr);
-			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating push constants.");
-
-			if (pc_count) {
-				ERR_FAIL_COND_V_MSG(pc_count > 1, Vector<uint8_t>(),
-						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "': Only one push constant is supported, which should be the same across shader stages.");
-
-				Vector<SpvReflectBlockVariable *> pconstants;
-				pconstants.resize(pc_count);
-				result = spvReflectEnumeratePushConstantBlocks(&module, &pc_count, pconstants.ptrw());
-				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining push constants.");
-#if 0
-				if (pconstants[0] == nullptr) {
-					Ref<FileAccess> f = FileAccess::open("res://popo.spv", FileAccess::WRITE);
-					f->store_buffer((const uint8_t *)&SpirV[0], SpirV.size() * sizeof(uint32_t));
-				}
-#endif
-
-				ERR_FAIL_COND_V_MSG(binary_data.push_constant_size && binary_data.push_constant_size != pconstants[0]->size, Vector<uint8_t>(),
-						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "': Push constant block must be the same across shader stages.");
-
-				binary_data.push_constant_size = pconstants[0]->size;
-				binary_data.push_constant_vk_stages_mask |= shader_stage_masks[stage];
-
-				//print_line("Stage: " + String(shader_stage_names[stage]) + " push constant of size=" + itos(push_constant.size));
-			}
-
-			// Destroy the reflection data when no longer required.
-			spvReflectDestroyShaderModule(&module);
 		}
 
-		stages_processed |= (1 << p_spirv[i].shader_stage);
+		for (const Vector<SpirvReflectionData::Uniform> &spirv_set : spirv_data.uniforms) {
+			Vector<RenderingDeviceVulkanShaderBinaryDataBinding> set_bindings;
+			for (const SpirvReflectionData::Uniform &spirv_uniform : spirv_set) {
+				RenderingDeviceVulkanShaderBinaryDataBinding binding{};
+				binding.type = (uint32_t)spirv_uniform.type;
+				binding.binding = spirv_uniform.binding;
+				binding.stages = (uint32_t)spirv_uniform.stages_mask;
+				binding.length = spirv_uniform.length;
+				binding.writable = (uint32_t)spirv_uniform.writable;
+				set_bindings.push_back(binding);
+			}
+			uniform_info.push_back(set_bindings);
+		}
+
+		for (const SpirvReflectionData::SpecializationConstant &spirv_sc : spirv_data.specialization_constants) {
+			RenderingDeviceVulkanShaderBinarySpecializationConstant spec_constant{};
+			spec_constant.type = (uint32_t)spirv_sc.type;
+			spec_constant.constant_id = spirv_sc.constant_id;
+			spec_constant.int_value = spirv_sc.int_value;
+			spec_constant.stage_flags = (uint32_t)spirv_sc.stages_mask;
+			specialization_constants.push_back(spec_constant);
+		}
 	}
 
 	Vector<Vector<uint8_t>> compressed_stages;
