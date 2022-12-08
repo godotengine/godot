@@ -66,6 +66,8 @@ private:
 
 	bool is_committing = false;
 
+	History *_get_newest_undo();
+
 protected:
 	static void _bind_methods();
 
@@ -127,6 +129,7 @@ public:
 	bool has_redo();
 
 	String get_current_action_name();
+	int get_current_action_history_id();
 
 	void discard_history(int p_idx, bool p_erase_from_map = true);
 	~EditorUndoRedoManager();
