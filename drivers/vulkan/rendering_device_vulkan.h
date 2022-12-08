@@ -543,10 +543,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// As a result, we need to figure out quickly when something is no longer "compatible".
 	// in order to avoid costly rebinds.
 
-	enum {
-		MAX_UNIFORM_SETS = 16
-	};
-
 	struct UniformInfo {
 		UniformType type = UniformType::UNIFORM_TYPE_MAX;
 		bool writable = false;
