@@ -28,4 +28,26 @@
 			The suffix to display after the value (in a faded color). This should generally be a plural word. You may have to use an abbreviation if the suffix is too long to be displayed.
 		</member>
 	</members>
+	<signals>
+		<signal name="grabbed">
+			<description>
+				Emitted when the spinner/slider is grabbed.
+			</description>
+		</signal>
+		<signal name="ungrabbed">
+			<description>
+				Emitted when the spinner/slider is ungrabbed.
+			</description>
+		</signal>
+		<signal name="value_focus_entered">
+			<description>
+				Emitted when the value form gains focus.
+			</description>
+		</signal>
+		<signal name="value_focus_exited">
+			<description>
+				Emitted when the value form loses focus.
+			</description>
+		</signal>
+	</signals>
 </class>

@@ -87,13 +87,13 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				}
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
-
 			} else if (!player->is_valid()) {
 				// Reset timeline when the player has been stopped externally
 				frame->set_value(0);
 			} else if (last_active) {
 				// Need the last frame after it stopped.
 				frame->set_value(player->get_current_animation_position());
+				track_editor->set_anim_pos(player->get_current_animation_position());
 			}
 
 			last_active = player->is_playing();
@@ -423,7 +423,7 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 	_animation_selected(idx);
 }
 
-double AnimationPlayerEditor::_get_editor_step() const {
+float AnimationPlayerEditor::_get_editor_step() const {
 	// Returns the effective snapping value depending on snapping modifiers, or 0 if snapping is disabled.
 	if (track_editor->is_snap_enabled()) {
 		const String current = player->get_assigned_animation();
@@ -434,7 +434,7 @@ double AnimationPlayerEditor::_get_editor_step() const {
 		return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 	}
 
-	return 0.0;
+	return 0.0f;
 }
 
 void AnimationPlayerEditor::_animation_name_edited() {
@@ -1972,4 +1972,27 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
+}
+
+// AnimationTrackKeyEditEditorPlugin
+
+bool EditorInspectorPluginAnimationTrackKeyEdit::can_handle(Object *p_object) {
+	return Object::cast_to<AnimationTrackKeyEdit>(p_object) != nullptr;
+}
+
+void EditorInspectorPluginAnimationTrackKeyEdit::parse_begin(Object *p_object) {
+	AnimationTrackKeyEdit *atk = Object::cast_to<AnimationTrackKeyEdit>(p_object);
+	ERR_FAIL_COND(!atk);
+
+	atk_editor = memnew(AnimationTrackKeyEditEditor(atk->animation, atk->track, atk->key_ofs, atk->use_fps));
+	add_custom_control(atk_editor);
+}
+
+AnimationTrackKeyEditEditorPlugin::AnimationTrackKeyEditEditorPlugin() {
+	atk_plugin = memnew(EditorInspectorPluginAnimationTrackKeyEdit);
+	EditorInspector::add_inspector_plugin(atk_plugin);
+}
+
+bool AnimationTrackKeyEditEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("AnimationTrackKeyEdit");
 }

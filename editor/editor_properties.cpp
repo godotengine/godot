@@ -1384,10 +1384,11 @@ void EditorPropertyInteger::update_property() {
 void EditorPropertyInteger::_bind_methods() {
 }
 
-void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix) {
+void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_hide_slider, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
+	spin->set_hide_slider(p_hide_slider);
 	spin->set_allow_greater(p_allow_greater);
 	spin->set_allow_lesser(p_allow_lesser);
 	spin->set_suffix(p_suffix);
@@ -2242,12 +2243,11 @@ void EditorPropertyVector2i::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_hide_slider, bool p_link, const String &p_suffix) {
+void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_link, const String &p_suffix) {
 	for (int i = 0; i < 2; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(1);
-		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -2352,12 +2352,11 @@ void EditorPropertyRect2i::_notification(int p_what) {
 void EditorPropertyRect2i::_bind_methods() {
 }
 
-void EditorPropertyRect2i::setup(int p_min, int p_max, bool p_hide_slider, const String &p_suffix) {
+void EditorPropertyRect2i::setup(int p_min, int p_max, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(1);
-		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -2496,12 +2495,12 @@ void EditorPropertyVector3i::_notification(int p_what) {
 void EditorPropertyVector3i::_bind_methods() {
 }
 
-void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_hide_slider, bool p_link, const String &p_suffix) {
+void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_link, const String &p_suffix) {
 	for (int i = 0; i < 3; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(1);
-		spin[i]->set_hide_slider(p_hide_slider);
+		spin[i]->set_hide_slider(false);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -3004,11 +3003,11 @@ void EditorPropertyVector4i::_notification(int p_what) {
 void EditorPropertyVector4i::_bind_methods() {
 }
 
-void EditorPropertyVector4i::setup(double p_min, double p_max, bool p_hide_slider, const String &p_suffix) {
+void EditorPropertyVector4i::setup(double p_min, double p_max, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
-		spin[i]->set_hide_slider(p_hide_slider);
+		spin[i]->set_step(1);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -4347,7 +4346,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-				editor->setup(hint.min, hint.max, hint.step, hint.or_greater, hint.or_less, hint.suffix);
+				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.or_greater, hint.or_less, hint.suffix);
 
 				return editor;
 			}
@@ -4475,7 +4474,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR2I: {
 			EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-			editor->setup(hint.min, hint.max, hint.hide_slider, p_hint == PROPERTY_HINT_LINK, hint.suffix);
+			editor->setup(hint.min, hint.max, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
 		} break;
@@ -4488,7 +4487,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::RECT2I: {
 			EditorPropertyRect2i *editor = memnew(EditorPropertyRect2i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.suffix);
 
 			return editor;
 		} break;
@@ -4502,7 +4501,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR3I: {
 			EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-			editor->setup(hint.min, hint.max, hint.hide_slider, p_hint == PROPERTY_HINT_LINK, hint.suffix);
+			editor->setup(hint.min, hint.max, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
 		} break;
@@ -4516,7 +4515,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR4I: {
 			EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.suffix);
 			return editor;
 
 		} break;

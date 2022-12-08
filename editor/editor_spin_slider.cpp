@@ -76,6 +76,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					pre_grab_value = get_value();
 					grabbing_spinner = false;
 					grabbing_spinner_mouse_pos = get_global_mouse_position();
+					emit_signal("grabbed");
 				}
 			} else {
 				if (grabbing_spinner_attempt) {
@@ -83,6 +84,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 						Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
 						queue_redraw();
+						emit_signal("ungrabbed");
 					} else {
 						_focus_entered();
 					}
@@ -178,9 +180,11 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 				grabbing_ratio = get_as_ratio();
 				grabbing_from = grabber->get_transform().xform(mb->get_position()).x;
 			}
+			emit_signal("grabbed");
 		} else {
 			grabbing_grabber = false;
 			mousewheel_over_grabber = false;
+			emit_signal("ungrabbed");
 		}
 	}
 
@@ -299,10 +303,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	Ref<Texture2D> updown = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 
-	if (get_step() == 1) {
-		number_width -= updown->get_width();
-	}
-
 	String numstr = get_text_value();
 
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
@@ -359,76 +359,79 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 	TS->free_rid(num_rid);
 
-	if (get_step() == 1) {
-		Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
-		int updown_vofs = (size.height - updown2->get_height()) / 2;
-		if (rtl) {
-			updown_offset = sb->get_margin(SIDE_LEFT);
-		} else {
-			updown_offset = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
-		}
-		Color c(1, 1, 1);
-		if (hover_updown) {
-			c *= Color(1.2, 1.2, 1.2);
-		}
-		draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
-		if (grabber->is_visible()) {
-			grabber->hide();
-		}
-	} else if (!hide_slider) {
-		const int grabber_w = 4 * EDSCALE;
-		const int width = size.width - sb->get_minimum_size().width - grabber_w;
-		const int ofs = sb->get_offset().x;
-		const int svofs = (size.height + vofs) / 2 - 1;
-		Color c = fc;
-
-		// Draw the horizontal slider's background.
-		c.a = 0.2;
-		draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
-
-		// Draw the horizontal slider's filled part on the left.
-		const int gofs = get_as_ratio() * width;
-		c.a = 0.45;
-		draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
-
-		// Draw the horizontal slider's grabber.
-		c.a = 0.9;
-		const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
-		draw_rect(grabber_rect, c);
-
-		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
-
-		bool display_grabber = (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
-		if (grabber->is_visible() != display_grabber) {
-			if (display_grabber) {
-				grabber->show();
+	if (!hide_slider) {
+		if (get_step() == 1) {
+			number_width -= updown->get_width();
+			Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
+			int updown_vofs = (size.height - updown2->get_height()) / 2;
+			if (rtl) {
+				updown_offset = sb->get_margin(SIDE_LEFT);
 			} else {
+				updown_offset = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
+			}
+			Color c(1, 1, 1);
+			if (hover_updown) {
+				c *= Color(1.2, 1.2, 1.2);
+			}
+			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
+			if (grabber->is_visible()) {
 				grabber->hide();
 			}
-		}
+		} else {
+			const int grabber_w = 4 * EDSCALE;
+			const int width = size.width - sb->get_minimum_size().width - grabber_w;
+			const int ofs = sb->get_offset().x;
+			const int svofs = (size.height + vofs) / 2 - 1;
+			Color c = fc;
 
-		if (display_grabber) {
-			Ref<Texture2D> grabber_tex;
-			if (mouse_over_grabber) {
-				grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
-			} else {
-				grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
+			// Draw the horizontal slider's background.
+			c.a = 0.2;
+			draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
+
+			// Draw the horizontal slider's filled part on the left.
+			const int gofs = get_as_ratio() * width;
+			c.a = 0.45;
+			draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
+
+			// Draw the horizontal slider's grabber.
+			c.a = 0.9;
+			const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
+			draw_rect(grabber_rect, c);
+
+			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
+
+			bool display_grabber = (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+			if (grabber->is_visible() != display_grabber) {
+				if (display_grabber) {
+					grabber->show();
+				} else {
+					grabber->hide();
+				}
 			}
 
-			if (grabber->get_texture() != grabber_tex) {
-				grabber->set_texture(grabber_tex);
+			if (display_grabber) {
+				Ref<Texture2D> grabber_tex;
+				if (mouse_over_grabber) {
+					grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
+				} else {
+					grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
+				}
+
+				if (grabber->get_texture() != grabber_tex) {
+					grabber->set_texture(grabber_tex);
+				}
+
+				Vector2 scale = get_global_transform_with_canvas().get_scale();
+				grabber->set_scale(scale);
+				grabber->reset_size();
+				grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
+
+				if (mousewheel_over_grabber) {
+					Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
+				}
+
+				grabber_range = width;
 			}
-
-			Vector2 scale = get_global_transform_with_canvas().get_scale();
-			grabber->set_scale(scale);
-			grabber->reset_size();
-			grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
-
-			if (mousewheel_over_grabber) {
-				Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
-			}
-
-			grabber_range = width;
 		}
 	}
 }
@@ -584,6 +587,8 @@ void EditorSpinSlider::_value_focus_exited() {
 		//enter, click, esc
 		grab_focus();
 	}
+
+	emit_signal("value_focus_exited");
 }
 
 void EditorSpinSlider::_grabber_mouse_entered() {
@@ -627,6 +632,7 @@ void EditorSpinSlider::_focus_entered() {
 	value_input->call_deferred(SNAME("select_all"));
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
 	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
+	emit_signal("value_focus_entered");
 }
 
 void EditorSpinSlider::_bind_methods() {
@@ -650,6 +656,11 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
+
+	ADD_SIGNAL(MethodInfo("grabbed"));
+	ADD_SIGNAL(MethodInfo("ungrabbed"));
+	ADD_SIGNAL(MethodInfo("value_focus_entered"));
+	ADD_SIGNAL(MethodInfo("value_focus_exited"));
 }
 
 void EditorSpinSlider::_ensure_input_popup() {

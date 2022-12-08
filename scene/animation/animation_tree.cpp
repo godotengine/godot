@@ -1383,7 +1383,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						} else {
 							if (seeked) {
-								int idx = a->track_find_key(i, time, !is_external_seeking);
+								int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 								if (idx < 0) {
 									continue;
 								}
@@ -1406,7 +1406,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
 						if (seeked) {
-							int idx = a->track_find_key(i, time, !is_external_seeking);
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							if (idx < 0) {
 								continue;
 							}
@@ -1440,7 +1440,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						if (seeked) {
 							//find whatever should be playing
-							int idx = a->track_find_key(i, time, !is_external_seeking);
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							if (idx < 0) {
 								continue;
 							}
@@ -1553,7 +1553,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						if (seeked) {
 							//seek
-							int idx = a->track_find_key(i, time, !is_external_seeking);
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							if (idx < 0) {
 								continue;
 							}

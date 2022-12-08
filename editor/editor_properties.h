@@ -378,7 +378,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix = String());
+	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_hide_slider, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix = String());
 	EditorPropertyInteger();
 };
 
@@ -566,7 +566,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(int p_min, int p_max, bool p_hide_slider, bool p_link = false, const String &p_suffix = String());
+	void setup(int p_min, int p_max, bool p_link = false, const String &p_suffix = String());
 	EditorPropertyVector2i(bool p_force_wide = false);
 };
 
@@ -583,7 +583,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(int p_min, int p_max, bool p_hide_slider, const String &p_suffix = String());
+	void setup(int p_min, int p_max, const String &p_suffix = String());
 	EditorPropertyRect2i(bool p_force_wide = false);
 };
 
@@ -608,7 +608,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(int p_min, int p_max, bool p_hide_slider, bool p_link = false, const String &p_suffix = String());
+	void setup(int p_min, int p_max, bool p_link = false, const String &p_suffix = String());
 	EditorPropertyVector3i(bool p_force_wide = false);
 };
 
@@ -693,7 +693,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, bool p_hide_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, const String &p_suffix = String());
 	EditorPropertyVector4i();
 };
 

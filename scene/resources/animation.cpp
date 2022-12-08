@@ -1319,7 +1319,7 @@ Error Animation::blend_shape_track_interpolate(int p_track, double p_time, float
 }
 
 void Animation::track_remove_key_at_time(int p_track, double p_time) {
-	int idx = track_find_key(p_track, p_time, true);
+	int idx = track_find_key(p_track, p_time, FIND_MODE_APPROX);
 	ERR_FAIL_COND(idx < 0);
 	track_remove_key(p_track, idx);
 }
@@ -1400,7 +1400,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 	emit_changed();
 }
 
-int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
+int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 
@@ -1416,7 +1416,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 				uint32_t key_index;
 				bool fetch_compressed_success = _fetch_compressed<3>(tt->compressed_track, p_time, key, time, key_next, time_next, &key_index);
 				ERR_FAIL_COND_V(!fetch_compressed_success, -1);
-				if (p_exact && time != p_time) {
+				if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(time, p_time)) || (p_find_mode == FIND_MODE_EXACT && time != p_time)) {
 					return -1;
 				}
 				return key_index;
@@ -1426,7 +1426,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 			if (k < 0 || k >= tt->positions.size()) {
 				return -1;
 			}
-			if (tt->positions[k].time != p_time && p_exact) {
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(tt->positions[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && tt->positions[k].time != p_time)) {
 				return -1;
 			}
 			return k;
@@ -1443,7 +1443,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 				uint32_t key_index;
 				bool fetch_compressed_success = _fetch_compressed<3>(rt->compressed_track, p_time, key, time, key_next, time_next, &key_index);
 				ERR_FAIL_COND_V(!fetch_compressed_success, -1);
-				if (p_exact && time != p_time) {
+				if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(time, p_time)) || (p_find_mode == FIND_MODE_EXACT && time != p_time)) {
 					return -1;
 				}
 				return key_index;
@@ -1453,7 +1453,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 			if (k < 0 || k >= rt->rotations.size()) {
 				return -1;
 			}
-			if (rt->rotations[k].time != p_time && p_exact) {
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(rt->rotations[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && rt->rotations[k].time != p_time)) {
 				return -1;
 			}
 			return k;
@@ -1470,7 +1470,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 				uint32_t key_index;
 				bool fetch_compressed_success = _fetch_compressed<3>(st->compressed_track, p_time, key, time, key_next, time_next, &key_index);
 				ERR_FAIL_COND_V(!fetch_compressed_success, -1);
-				if (p_exact && time != p_time) {
+				if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(time, p_time)) || (p_find_mode == FIND_MODE_EXACT && time != p_time)) {
 					return -1;
 				}
 				return key_index;
@@ -1480,7 +1480,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 			if (k < 0 || k >= st->scales.size()) {
 				return -1;
 			}
-			if (st->scales[k].time != p_time && p_exact) {
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(st->scales[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && st->scales[k].time != p_time)) {
 				return -1;
 			}
 			return k;
@@ -1497,7 +1497,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 				uint32_t key_index;
 				bool fetch_compressed_success = _fetch_compressed<1>(bst->compressed_track, p_time, key, time, key_next, time_next, &key_index);
 				ERR_FAIL_COND_V(!fetch_compressed_success, -1);
-				if (p_exact && time != p_time) {
+				if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(time, p_time)) || (p_find_mode == FIND_MODE_EXACT && time != p_time)) {
 					return -1;
 				}
 				return key_index;
@@ -1507,7 +1507,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 			if (k < 0 || k >= bst->blend_shapes.size()) {
 				return -1;
 			}
-			if (bst->blend_shapes[k].time != p_time && p_exact) {
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(bst->blend_shapes[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && bst->blend_shapes[k].time != p_time)) {
 				return -1;
 			}
 			return k;
@@ -1519,7 +1519,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 			if (k < 0 || k >= vt->values.size()) {
 				return -1;
 			}
-			if (vt->values[k].time != p_time && p_exact) {
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(vt->values[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && vt->values[k].time != p_time)) {
 				return -1;
 			}
 			return k;
@@ -1531,7 +1531,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 			if (k < 0 || k >= mt->methods.size()) {
 				return -1;
 			}
-			if (mt->methods[k].time != p_time && p_exact) {
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(mt->methods[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && mt->methods[k].time != p_time)) {
 				return -1;
 			}
 			return k;
@@ -1543,7 +1543,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 			if (k < 0 || k >= bt->values.size()) {
 				return -1;
 			}
-			if (bt->values[k].time != p_time && p_exact) {
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(bt->values[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && bt->values[k].time != p_time)) {
 				return -1;
 			}
 			return k;
@@ -1555,7 +1555,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 			if (k < 0 || k >= at->values.size()) {
 				return -1;
 			}
-			if (at->values[k].time != p_time && p_exact) {
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(at->values[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && at->values[k].time != p_time)) {
 				return -1;
 			}
 			return k;
@@ -1567,7 +1567,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 			if (k < 0 || k >= at->values.size()) {
 				return -1;
 			}
-			if (at->values[k].time != p_time && p_exact) {
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(at->values[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && at->values[k].time != p_time)) {
 				return -1;
 			}
 			return k;
@@ -2944,12 +2944,12 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 			// Not from_time > to_time but most recent of looping...
 			if (p_looped_flag != Animation::LOOPED_FLAG_NONE) {
 				if (!is_backward && Math::is_equal_approx(from_time, 0)) {
-					int edge = track_find_key(p_track, 0, true);
+					int edge = track_find_key(p_track, 0, FIND_MODE_EXACT);
 					if (edge >= 0) {
 						p_indices->push_back(edge);
 					}
 				} else if (is_backward && Math::is_equal_approx(to_time, length)) {
-					int edge = track_find_key(p_track, length, true);
+					int edge = track_find_key(p_track, length, FIND_MODE_EXACT);
 					if (edge >= 0) {
 						p_indices->push_back(edge);
 					}
@@ -2971,7 +2971,7 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 						const PositionTrack *tt = static_cast<const PositionTrack *>(t);
 						if (tt->compressed_track >= 0) {
 							_get_compressed_key_indices_in_range<3>(tt->compressed_track, 0, from_time, p_indices);
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, CMP_EPSILON, to_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, 0, to_time, p_indices);
 						} else {
 							_track_get_key_indices_in_range(tt->positions, 0, from_time, p_indices, true);
 							_track_get_key_indices_in_range(tt->positions, 0, to_time, p_indices, false);
@@ -2981,7 +2981,7 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 						const RotationTrack *rt = static_cast<const RotationTrack *>(t);
 						if (rt->compressed_track >= 0) {
 							_get_compressed_key_indices_in_range<3>(rt->compressed_track, 0, from_time, p_indices);
-							_get_compressed_key_indices_in_range<3>(rt->compressed_track, CMP_EPSILON, to_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(rt->compressed_track, 0, to_time, p_indices);
 						} else {
 							_track_get_key_indices_in_range(rt->rotations, 0, from_time, p_indices, true);
 							_track_get_key_indices_in_range(rt->rotations, 0, to_time, p_indices, false);
@@ -3072,7 +3072,7 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 						const BlendShapeTrack *bst = static_cast<const BlendShapeTrack *>(t);
 						if (bst->compressed_track >= 0) {
 							_get_compressed_key_indices_in_range<1>(bst->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<1>(bst->compressed_track, to_time, length - CMP_EPSILON, p_indices);
+							_get_compressed_key_indices_in_range<1>(bst->compressed_track, to_time, length, p_indices);
 						} else {
 							_track_get_key_indices_in_range(bst->blend_shapes, from_time, length, p_indices, false);
 							_track_get_key_indices_in_range(bst->blend_shapes, to_time, length, p_indices, true);
@@ -3109,9 +3109,9 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 
 			// The edge will be pingponged in the next frame and processed there, so let's ignore it now...
 			if (!is_backward && Math::is_equal_approx(to_time, length)) {
-				to_time = length - CMP_EPSILON;
+				to_time -= CMP_EPSILON;
 			} else if (is_backward && Math::is_equal_approx(from_time, 0)) {
-				from_time = CMP_EPSILON;
+				from_time += CMP_EPSILON;
 			}
 		} break;
 	}
@@ -3818,7 +3818,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_get_key_count", "track_idx"), &Animation::track_get_key_count);
 	ClassDB::bind_method(D_METHOD("track_get_key_value", "track_idx", "key_idx"), &Animation::track_get_key_value);
 	ClassDB::bind_method(D_METHOD("track_get_key_time", "track_idx", "key_idx"), &Animation::track_get_key_time);
-	ClassDB::bind_method(D_METHOD("track_find_key", "track_idx", "time", "exact"), &Animation::track_find_key, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("track_find_key", "track_idx", "time", "find_mode"), &Animation::track_find_key, DEFVAL(FIND_MODE_NEAREST));
 
 	ClassDB::bind_method(D_METHOD("track_set_interpolation_type", "track_idx", "interpolation"), &Animation::track_set_interpolation_type);
 	ClassDB::bind_method(D_METHOD("track_get_interpolation_type", "track_idx"), &Animation::track_get_interpolation_type);
@@ -3905,6 +3905,10 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOPED_FLAG_NONE);
 	BIND_ENUM_CONSTANT(LOOPED_FLAG_END);
 	BIND_ENUM_CONSTANT(LOOPED_FLAG_START);
+
+	BIND_ENUM_CONSTANT(FIND_MODE_NEAREST);
+	BIND_ENUM_CONSTANT(FIND_MODE_APPROX);
+	BIND_ENUM_CONSTANT(FIND_MODE_EXACT);
 }
 
 void Animation::clear() {
