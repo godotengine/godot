@@ -168,6 +168,9 @@ private:
 	real_t gravity_scale;
 	real_t linearDamp;
 	real_t angularDamp;
+	Vector3 total_gravity;
+	real_t total_linear_damp;
+	real_t total_angular_damp;
 	bool can_sleep;
 	bool omit_forces_integration;
 	bool can_integrate_forces;
