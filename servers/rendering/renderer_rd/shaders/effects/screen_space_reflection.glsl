@@ -212,6 +212,9 @@ void main() {
 		float grad = (steps_taken + 1.0) / float(params.num_steps);
 		float initial_fade = params.curve_fade_in == 0.0 ? 1.0 : pow(clamp(grad, 0.0, 1.0), params.curve_fade_in);
 		float fade = pow(clamp(1.0 - grad, 0.0, 1.0), params.distance_fade) * initial_fade;
+		// This is an ad-hoc term to fade out the SSR as roughness increases. Values used
+		// are meant to match the visual appearance of a ReflectionProbe.
+		float roughness_fade = smoothstep(0.4, 0.7, 1.0 - normal_roughness.w);
 		final_pos = pos;
 
 		vec4 final_color;
@@ -246,7 +249,7 @@ void main() {
 
 #endif // MODE_ROUGH
 
-		final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb, fade * margin_blend);
+		final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb, fade * margin_blend * roughness_fade);
 
 		// Schlick term.
 		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;
