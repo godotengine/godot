@@ -905,8 +905,6 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 
 	String base_path = local_path.get_base_dir();
 
-	uint64_t tag_end = f->get_position();
-
 	while (true) {
 		Error err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
 
@@ -921,8 +919,36 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 				return OK;
 			}
 
-			break;
+			// The position of the stream has moved, so the next_tag information needs to be saved to fw.
+			if (next_tag.name == "sub_resource") {
+				if (!next_tag.fields.has("id") || !next_tag.fields.has("type")) {
+					error = ERR_FILE_CORRUPT;
+					ERR_FAIL_V(error);
+				}
+				fw->store_line(String());
+				String id = next_tag.fields["id"];
+				String type = next_tag.fields["type"];
+				fw->store_line("[sub_resource type=\"" + type + "\" id=\"" + id + "\"]");
+			} else if (next_tag.name == "node") {
+				if (!next_tag.fields.has("name") || !next_tag.fields.has("type") || next_tag.fields.has("parent")) {
+					error = ERR_FILE_CORRUPT;
+					ERR_FAIL_V(error);
+				}
+				fw->store_line(String());
+				String name = next_tag.fields["name"];
+				String type = next_tag.fields["type"];
 
+				String s = "[node name=\"" + name + "\" type=\"" + type + "\"";
+				if (next_tag.fields.has("groups")) {
+					String groups = next_tag.fields["groups"];
+					s += " groups=" + groups;
+				}
+				s += "]";
+				fw->store_line(s);
+			} else {
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "The next tag name should be \"node\" or \"sub_resource\", but it's \"" + next_tag.name + "\".");
+			}
+			break;
 		} else {
 			if (fw.is_null()) {
 				fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
@@ -974,22 +1000,18 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 			}
 			s += " path=\"" + path + "\" id=\"" + id + "\"]";
 			fw->store_line(s); // Bundled.
-
-			tag_end = f->get_position();
 		}
 	}
 
-	f->seek(tag_end);
-
-	uint8_t c = f->get_8();
-	if (c == '\n' && !f->eof_reached()) {
+	char32_t c = stream.get_char();
+	if (c == '\n' && !stream.is_eof()) {
 		// Skip first newline character since we added one
-		c = f->get_8();
+		c = stream.get_char();
 	}
 
-	while (!f->eof_reached()) {
+	while (!stream.is_eof()) {
 		fw->store_8(c);
-		c = f->get_8();
+		c = stream.get_char();
 	}
 
 	bool all_ok = fw->get_error() == OK;
