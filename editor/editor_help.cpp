@@ -55,8 +55,6 @@ void EditorHelp::_update_theme() {
 	qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
 	type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 
-	class_desc->add_theme_style_override("normal", get_theme_stylebox(SNAME("background"), SNAME("EditorHelp")));
-	class_desc->add_theme_style_override("focus", get_theme_stylebox(SNAME("background"), SNAME("EditorHelp")));
 	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
@@ -196,10 +194,11 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	if (display_margin != new_display_margin || p_force_update_theme) {
 		display_margin = new_display_margin;
 
-		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
+		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("background"), SNAME("EditorHelp"))->duplicate();
 		class_desc_stylebox->set_default_margin(SIDE_LEFT, display_margin);
 		class_desc_stylebox->set_default_margin(SIDE_RIGHT, display_margin);
 		class_desc->add_theme_style_override("normal", class_desc_stylebox);
+		class_desc->add_theme_style_override("focused", class_desc_stylebox);
 	}
 }
 
