@@ -843,6 +843,16 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="split_ints" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="delimiter" type="String" />
+			<param index="1" name="allow_empty" type="bool" default="true" />
+			<description>
+				Splits the string in ints by using a delimiter string and returns an array of the substrings.
+				For example, [code]"1,2,3"[/code] will return [code][1,2,3][/code] if split by [code]","[/code].
+				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
+			</description>
+		</method>
 		<method name="strip_edges" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="left" type="bool" default="true" />
