@@ -1684,10 +1684,6 @@ Array TileSetAtlasSourceEditor::_get_selection_as_array() {
 }
 
 void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
-	// Colors.
-	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
-
 	// Draw the selected tile.
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		for (const TileSelection &E : selection) {
@@ -1695,12 +1691,9 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 			if (selected.alternative == 0) {
 				// Draw the rect.
 				for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(selected.tile); frame++) {
-					Color color = selection_color;
-					if (frame > 0) {
-						color.a *= 0.3;
-					}
+					Color color = Color(0.0, 1.0, 0.0, frame == 0 ? 1.0 : 0.3);
 					Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected.tile, frame);
-					tile_atlas_control->draw_rect(region, color, false);
+					TilesEditorPlugin::draw_selection_rect(tile_atlas_control, region, color);
 				}
 			}
 		}
@@ -1742,7 +1735,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		// Draw the tiles to be removed.
 		for (const Vector2i &E : drag_modified_tiles) {
 			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(E); frame++) {
-				tile_atlas_control->draw_rect(tile_set_atlas_source->get_tile_texture_region(E, frame), Color(0.0, 0.0, 0.0), false);
+				TilesEditorPlugin::draw_selection_rect(tile_atlas_control, tile_set_atlas_source->get_tile_texture_region(E, frame), Color(0.0, 0.0, 0.0));
 			}
 		}
 	} else if (drag_type == DRAG_TYPE_RECT_SELECT || drag_type == DRAG_TYPE_REMOVE_TILES_USING_RECT) {
@@ -1754,7 +1747,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 
 		Color color = Color(0.0, 0.0, 0.0);
 		if (drag_type == DRAG_TYPE_RECT_SELECT) {
-			color = selection_color.lightened(0.2);
+			color = Color(1.0, 1.0, 0.0);
 		}
 
 		RBSet<Vector2i> to_paint;
@@ -1769,7 +1762,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 
 		for (const Vector2i &E : to_paint) {
 			Vector2i coords = E;
-			tile_atlas_control->draw_rect(tile_set_atlas_source->get_tile_texture_region(coords), color, false);
+			TilesEditorPlugin::draw_selection_rect(tile_atlas_control, tile_set_atlas_source->get_tile_texture_region(coords), color);
 		}
 	} else if (drag_type == DRAG_TYPE_CREATE_TILES_USING_RECT) {
 		// Draw tiles to be created.
@@ -1786,7 +1779,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 				Vector2i coords = Vector2i(x, y);
 				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
 					Vector2i origin = margins + (coords * (tile_size + separation));
-					tile_atlas_control->draw_rect(Rect2i(origin, tile_size), Color(1.0, 1.0, 1.0), false);
+					TilesEditorPlugin::draw_selection_rect(tile_atlas_control, Rect2i(origin, tile_size));
 				}
 			}
 		}
@@ -1803,7 +1796,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i tile_size = tile_set_atlas_source->get_texture_region_size();
 		Vector2i origin = margins + (area.position * (tile_size + separation));
-		tile_atlas_control->draw_rect(Rect2i(origin, area.size * tile_size), Color(1.0, 1.0, 1.0), false);
+		TilesEditorPlugin::draw_selection_rect(tile_atlas_control, Rect2i(origin, area.size * tile_size));
 	} else {
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 		if (hovered_base_tile_coords.x >= 0 && hovered_base_tile_coords.y >= 0 && hovered_base_tile_coords.x < grid_size.x && hovered_base_tile_coords.y < grid_size.y) {
@@ -1811,11 +1804,8 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 			if (hovered_tile != TileSetSource::INVALID_ATLAS_COORDS) {
 				// Draw existing hovered tile.
 				for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(hovered_tile); frame++) {
-					Color color = Color(1.0, 1.0, 1.0);
-					if (frame > 0) {
-						color.a *= 0.3;
-					}
-					tile_atlas_control->draw_rect(tile_set_atlas_source->get_tile_texture_region(hovered_tile, frame), color, false);
+					Color color = Color(1.0, 0.8, 0.0, frame == 0 ? 0.6 : 0.3);
+					TilesEditorPlugin::draw_selection_rect(tile_atlas_control, tile_set_atlas_source->get_tile_texture_region(hovered_tile, frame), color);
 				}
 			} else {
 				// Draw empty tile, only in add/remove tiles mode.
@@ -1824,7 +1814,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 					Vector2i separation = tile_set_atlas_source->get_separation();
 					Vector2i tile_size = tile_set_atlas_source->get_texture_region_size();
 					Vector2i origin = margins + (hovered_base_tile_coords * (tile_size + separation));
-					tile_atlas_control->draw_rect(Rect2i(origin, tile_size), Color(1.0, 1.0, 1.0), false);
+					TilesEditorPlugin::draw_selection_rect(tile_atlas_control, Rect2i(origin, tile_size));
 				}
 			}
 		}
@@ -1976,9 +1966,6 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_mouse_exited() {
 }
 
 void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
-	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
-
 	// Update the hovered alternative tile.
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		// Draw hovered tile.
@@ -1986,7 +1973,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 		if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 			Rect2i rect = tile_atlas_view->get_alternative_tile_rect(coords, hovered_alternative_tile_coords.z);
 			if (rect != Rect2i()) {
-				alternative_tiles_control->draw_rect(rect, Color(1.0, 1.0, 1.0), false);
+				TilesEditorPlugin::draw_selection_rect(alternative_tiles_control, rect, Color(1.0, 0.8, 0.0, 0.5));
 			}
 		}
 
@@ -1996,7 +1983,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 			if (selected.alternative >= 1) {
 				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(selected.tile, selected.alternative);
 				if (rect != Rect2i()) {
-					alternative_tiles_control->draw_rect(rect, selection_color, false);
+					TilesEditorPlugin::draw_selection_rect(alternative_tiles_control, rect);
 				}
 			}
 		}
