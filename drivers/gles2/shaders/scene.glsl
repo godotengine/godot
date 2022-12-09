@@ -1499,9 +1499,12 @@ LIGHT_SHADER_CODE
 #endif
 
 #define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, SHADOW_DEPTH(texture2D(p_shadow, p_pos)))
-#define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, SHADOW_DEPTH(texture2DProj(p_shadow, p_pos)))
 
 float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
+	spos.xyz /= spos.w;
+	vec2 pos = spos.xy;
+	float depth = spos.z;
+
 #ifdef SHADOW_MODE_PCF_13
 
 	// Soft PCF filter adapted from three.js:
@@ -1509,9 +1512,6 @@ float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 	// This method actually uses 16 shadow samples. This soft filter isn't needed in GLES3
 	// as we can use hardware-based linear filtering instead of emulating it in the shader
 	// like we're doing here.
-	spos.xyz /= spos.w;
-	vec2 pos = spos.xy;
-	float depth = spos.z;
 	vec2 f = fract(pos * (1.0 / shadow_pixel_size) + 0.5);
 	pos -= f * shadow_pixel_size;
 
@@ -1549,10 +1549,6 @@ float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 
 #ifdef SHADOW_MODE_PCF_5
 
-	spos.xyz /= spos.w;
-	vec2 pos = spos.xy;
-	float depth = spos.z;
-
 	float avg = SAMPLE_SHADOW_TEXEL(shadow, pos, depth);
 	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, 0.0), depth);
 	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, 0.0), depth);
@@ -1562,9 +1558,9 @@ float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 
 #endif
 
-#if !defined(SHADOW_MODE_PCF_5) || !defined(SHADOW_MODE_PCF_13)
+#if !defined(SHADOW_MODE_PCF_5) && !defined(SHADOW_MODE_PCF_13)
 
-	return SAMPLE_SHADOW_TEXEL_PROJ(shadow, spos);
+	return SAMPLE_SHADOW_TEXEL(shadow, pos, depth);
 #endif
 }
 
