@@ -661,9 +661,10 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (keying_rect.has_point(mpos)) {
 			accept_event();
-			emit_signal(SNAME("property_keyed"), property, use_keying_next());
+			const bool l_keying_next = use_keying_next();
+			emit_signal(SNAME("property_keyed"), property, l_keying_next);
 
-			if (use_keying_next()) {
+			if (l_keying_next) {
 				if (property == "frame_coords" && (object->is_class("Sprite2D") || object->is_class("Sprite3D"))) {
 					Vector2i new_coords = object->get(property);
 					new_coords.x++;
@@ -2528,7 +2529,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 		if (ep) {
 			ep->object = object;
 			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(false));
-			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed), CONNECT_DEFERRED);
 			ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
 			ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
 			ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
