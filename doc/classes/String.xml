@@ -185,16 +185,16 @@
 				[gdscript]
 				print("Team".find("I")) # Prints -1
 
-				print("Potato".find("t"))     # Prints 2
-				print("Potato".find("t", 3))  # Prints 4
-				print("Potato".find("t", 5))  # Prints -1
+				print("Potato".find("t"))    # Prints 2
+				print("Potato".find("t", 3)) # Prints 4
+				print("Potato".find("t", 5)) # Prints -1
 				[/gdscript]
 				[csharp]
 				GD.Print("Team".Find("I")); // Prints -1
 
-				GD.Print("Potato".Find("t"));     // Prints 2
-				GD.print("Potato".Find("t", 3));  // Prints 4
-				GD.print("Potato".Find("t", 5));  // Prints -1
+				GD.Print("Potato".Find("t"));    // Prints 2
+				GD.print("Potato".Find("t", 3)); // Prints 4
+				GD.print("Potato".Find("t", 5)); // Prints -1
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
