@@ -1854,10 +1854,6 @@ void RichTextLabel::_notification(int p_what) {
 }
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
-	if (!underline_meta) {
-		return get_default_cursor_shape();
-	}
-
 	if (selection.click_item) {
 		return CURSOR_IBEAM;
 	}
