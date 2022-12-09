@@ -81,8 +81,8 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 
 	// Look for export templates (first official, and if defined custom templates).
 	String arch = p_preset->get("binary_format/architecture");
-	bool dvalid = exists_export_template(get_template_file_name("template_debug", arch), &err);
-	bool rvalid = exists_export_template(get_template_file_name("template_release", arch), &err);
+	bool dvalid = exists_export_template(get_template_file_name("debug", arch), &err);
+	bool rvalid = exists_export_template(get_template_file_name("release", arch), &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
