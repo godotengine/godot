@@ -450,7 +450,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			callable = callable.bindp(argptrs, binds.size());
 		}
 
-		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags);
+		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags | (p_edit_state == GEN_EDIT_STATE_MAIN ? 0 : CONNECT_INHERITED));
 	}
 
 	//Node *s = ret_nodes[0];
