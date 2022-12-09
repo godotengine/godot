@@ -555,8 +555,9 @@ Ref<AudioStreamPlayback> AudioStreamRandomizer::instance_playback_no_repeats() {
 		}
 	}
 	if (local_pool.is_empty()) {
+		// There is only one sound to choose from.
+		// Always play a random sound while allowing repeats (which always plays the same sound).
 		playback = instance_playback_random();
-		WARN_PRINT("Playback stream pool is too small to prevent repeats.");
 		return playback;
 	}
 
