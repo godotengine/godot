@@ -875,7 +875,33 @@ public:
 	static Variant::Type get_return_type() { return GetTypeInfo<Vector<T>>::VARIANT_TYPE; }
 };
 
-class OperatorEvaluatorStringModNil {
+template <class Left, class Right>
+class OperatorEvaluatorStringConcat {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const String a(*VariantGetInternalPtr<Left>::get_ptr(&p_left));
+		const String b(*VariantGetInternalPtr<Right>::get_ptr(&p_right));
+		*r_ret = a + b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const String a(*VariantGetInternalPtr<Left>::get_ptr(left));
+		const String b(*VariantGetInternalPtr<Right>::get_ptr(right));
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = a + b;
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		const String a(PtrToArg<Left>::convert(left));
+		const String b(PtrToArg<Right>::convert(right));
+		PtrToArg<String>::encode(a + b, r_ret);
+	}
+	static Variant::Type get_return_type() { return Variant::STRING; }
+};
+
+template <class S, class T>
+class OperatorEvaluatorStringFormat;
+
+template <class S>
+class OperatorEvaluatorStringFormat<S, void> {
 public:
 	_FORCE_INLINE_ static String do_mod(const String &s, bool *r_valid) {
 		Array values;
@@ -888,22 +914,22 @@ public:
 		return a;
 	}
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
-		*r_ret = do_mod(a, &r_valid);
+		*r_ret = do_mod(*VariantGetInternalPtr<S>::get_ptr(&p_left), &r_valid);
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		bool valid = true;
-		String result = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), &valid);
+		String result = do_mod(*VariantGetInternalPtr<S>::get_ptr(left), &valid);
 		ERR_FAIL_COND_MSG(!valid, result);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), nullptr), r_ret);
+		PtrToArg<String>::encode(do_mod(PtrToArg<S>::convert(left), nullptr), r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::STRING; }
 };
 
-class OperatorEvaluatorStringModArray {
+template <class S>
+class OperatorEvaluatorStringFormat<S, Array> {
 public:
 	_FORCE_INLINE_ static String do_mod(const String &s, const Array &p_values, bool *r_valid) {
 		String a = s.sprintf(p_values, r_valid);
@@ -913,22 +939,22 @@ public:
 		return a;
 	}
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
-		*r_ret = do_mod(a, *VariantGetInternalPtr<Array>::get_ptr(&p_right), &r_valid);
+		*r_ret = do_mod(*VariantGetInternalPtr<S>::get_ptr(&p_left), *VariantGetInternalPtr<Array>::get_ptr(&p_right), &r_valid);
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		bool valid = true;
-		String result = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right), &valid);
+		String result = do_mod(*VariantGetInternalPtr<S>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right), &valid);
 		ERR_FAIL_COND_MSG(!valid, result);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<Array>::convert(right), nullptr), r_ret);
+		PtrToArg<String>::encode(do_mod(PtrToArg<S>::convert(left), PtrToArg<Array>::convert(right), nullptr), r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::STRING; }
 };
 
-class OperatorEvaluatorStringModObject {
+template <class S>
+class OperatorEvaluatorStringFormat<S, Object> {
 public:
 	_FORCE_INLINE_ static String do_mod(const String &s, const Object *p_object, bool *r_valid) {
 		Array values;
@@ -941,23 +967,22 @@ public:
 		return a;
 	}
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
-		*r_ret = do_mod(a, p_right.get_validated_object(), &r_valid);
+		*r_ret = do_mod(*VariantGetInternalPtr<S>::get_ptr(&p_left), p_right.get_validated_object(), &r_valid);
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		bool valid = true;
-		String result = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), right->get_validated_object(), &valid);
+		String result = do_mod(*VariantGetInternalPtr<S>::get_ptr(left), right->get_validated_object(), &valid);
 		ERR_FAIL_COND_MSG(!valid, result);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<Object *>::convert(right), nullptr), r_ret);
+		PtrToArg<String>::encode(do_mod(PtrToArg<S>::convert(left), PtrToArg<Object *>::convert(right), nullptr), r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::STRING; }
 };
 
-template <class T>
-class OperatorEvaluatorStringModT {
+template <class S, class T>
+class OperatorEvaluatorStringFormat {
 public:
 	_FORCE_INLINE_ static String do_mod(const String &s, const T &p_value, bool *r_valid) {
 		Array values;
@@ -969,17 +994,16 @@ public:
 		return a;
 	}
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
-		*r_ret = do_mod(a, *VariantGetInternalPtr<T>::get_ptr(&p_right), &r_valid);
+		*r_ret = do_mod(*VariantGetInternalPtr<S>::get_ptr(&p_left), *VariantGetInternalPtr<T>::get_ptr(&p_right), &r_valid);
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		bool valid = true;
-		String result = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<T>::get_ptr(right), &valid);
+		String result = do_mod(*VariantGetInternalPtr<S>::get_ptr(left), *VariantGetInternalPtr<T>::get_ptr(right), &valid);
 		ERR_FAIL_COND_MSG(!valid, result);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = result;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<T>::convert(right), nullptr), r_ret);
+		PtrToArg<String>::encode(do_mod(PtrToArg<S>::convert(left), PtrToArg<T>::convert(right), nullptr), r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::STRING; }
 };
@@ -1288,8 +1312,11 @@ public:
 
 ////
 
+template <class Left, class Right>
+class OperatorEvaluatorInStringFind;
+
 template <class Left>
-class OperatorEvaluatorInStringFind {
+class OperatorEvaluatorInStringFind<Left, String> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const Left &str_a = *VariantGetInternalPtr<Left>::get_ptr(&p_left);
@@ -1310,7 +1337,7 @@ public:
 };
 
 template <class Left>
-class OperatorEvaluatorInStringNameFind {
+class OperatorEvaluatorInStringFind<Left, StringName> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const Left &str_a = *VariantGetInternalPtr<Left>::get_ptr(&p_left);
