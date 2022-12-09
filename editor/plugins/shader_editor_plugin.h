@@ -96,6 +96,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual String get_name() const override { return "Shader"; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
