@@ -107,6 +107,7 @@ class SceneImportSettings : public ConfirmationDialog {
 		HashMap<StringName, Variant> settings;
 	};
 	HashMap<String, MaterialData> material_map;
+	HashMap<Ref<Material>, String> unnamed_material_name_map;
 
 	struct MeshData {
 		bool has_import_id;
@@ -141,7 +142,6 @@ class SceneImportSettings : public ConfirmationDialog {
 	void _fill_scene(Node *p_node, TreeItem *p_parent_item);
 
 	HashSet<Ref<Mesh>> mesh_set;
-	HashSet<Ref<Material>> material_set;
 
 	String selected_type;
 	String selected_id;
