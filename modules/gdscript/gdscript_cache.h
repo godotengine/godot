@@ -87,7 +87,7 @@ class GDScriptCache {
 
 	static GDScriptCache *singleton;
 
-	bool destructing = false;
+	bool cleared = false;
 
 	Mutex mutex;
 
@@ -103,13 +103,6 @@ public:
 
 	static Ref<PackedScene> get_packed_scene(const String &p_path, Error &r_error, const String &p_owner = "");
 	static void clear_unreferenced_packed_scenes();
-
-	static bool is_destructing() {
-		if (singleton == nullptr) {
-			return true;
-		}
-		return singleton->destructing;
-	};
 
 	static void clear();
 
