@@ -66,6 +66,8 @@ protected:
 	void input_buffer_init(int driver_buffer_frames);
 	void input_buffer_write(int32_t sample);
 
+	int _get_configured_mix_rate();
+
 #ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
 	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks; }
@@ -136,7 +138,6 @@ class AudioDriverManager {
 		MAX_DRIVERS = 10
 	};
 
-	static const int DEFAULT_MIX_RATE = 44100;
 	static const int DEFAULT_OUTPUT_LATENCY = 15;
 
 	static AudioDriver *drivers[MAX_DRIVERS];
@@ -145,6 +146,8 @@ class AudioDriverManager {
 	static AudioDriverDummy dummy_driver;
 
 public:
+	static const int DEFAULT_MIX_RATE = 44100;
+
 	static void add_driver(AudioDriver *p_driver);
 	static void initialize(int p_driver);
 	static int get_driver_count();
