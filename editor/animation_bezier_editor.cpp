@@ -1592,7 +1592,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 	}
 
 	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-	undo_redo->create_action(TTR("Anim Duplicate Keys"));
+	undo_redo->create_action(TTR("Animation Duplicate Keys"));
 
 	List<Pair<int, real_t>> new_selection_values;
 
@@ -1638,7 +1638,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 void AnimationBezierTrackEdit::delete_selection() {
 	if (selection.size()) {
 		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-		undo_redo->create_action(TTR("Anim Delete Keys"));
+		undo_redo->create_action(TTR("Animation Delete Keys"));
 
 		for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 			undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->get().first, E->get().second);
