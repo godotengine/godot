@@ -2877,6 +2877,7 @@ void PhysicalBone3D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (parent_skeleton) {
 				if (-1 != bone_id) {
+					set_simulate_physics(false);
 					parent_skeleton->unbind_physical_bone_from_bone(bone_id);
 					bone_id = -1;
 				}
