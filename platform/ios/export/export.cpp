@@ -39,6 +39,11 @@ void register_ios_exporter_types() {
 }
 
 void register_ios_exporter() {
+#ifdef MACOS_ENABLED
+	EDITOR_DEF("export/ios/ios_deploy", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/ios/ios_deploy", PROPERTY_HINT_GLOBAL_FILE, "*"));
+#endif
+
 	Ref<EditorExportPlatformIOS> platform;
 	platform.instantiate();
 
