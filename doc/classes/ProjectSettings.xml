@@ -344,6 +344,9 @@
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="" default="27">
 			Largest size limit (in power of 2) allowed when compressing using long-distance matching with Zstandard. Higher values can result in better compression, but will require more memory when compressing and decompressing.
 		</member>
+		<member name="core/data/variant/force_string_in_dictionary" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [Dictionary] will automatically convert [StringName] keys to [String], both for read and write. Disabling it will improve performance of [StringName] keys, at the cost of usability.
+		</member>
 		<member name="debug/disable_touch" type="bool" setter="" getter="" default="false">
 			Disable touch input. Only has effect on iOS.
 		</member>

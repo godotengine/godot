@@ -46,6 +46,8 @@ class Dictionary {
 	void _unref() const;
 
 public:
+	static bool force_string_in_dictionary;
+
 	void get_key_list(List<Variant> *p_keys) const;
 	Variant get_key_at_index(int p_index) const;
 	Variant get_value_at_index(int p_index) const;

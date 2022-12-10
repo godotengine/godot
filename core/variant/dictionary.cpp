@@ -39,6 +39,8 @@
 #include "core/variant/type_info.h"
 #include "core/variant/variant_internal.h"
 
+bool Dictionary::force_string_in_dictionary = true;
+
 struct DictionaryPrivate {
 	SafeRefCount refcount;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
@@ -81,7 +83,7 @@ Variant Dictionary::get_value_at_index(int p_index) const {
 
 Variant &Dictionary::operator[](const Variant &p_key) {
 	if (unlikely(_p->read_only)) {
-		if (p_key.get_type() == Variant::STRING_NAME) {
+		if (force_string_in_dictionary && p_key.get_type() == Variant::STRING_NAME) {
 			const StringName *sn = VariantInternal::get_string_name(&p_key);
 			*_p->read_only = _p->variant_map[sn->operator String()];
 		} else {
@@ -90,7 +92,7 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 
 		return *_p->read_only;
 	} else {
-		if (p_key.get_type() == Variant::STRING_NAME) {
+		if (force_string_in_dictionary && p_key.get_type() == Variant::STRING_NAME) {
 			const StringName *sn = VariantInternal::get_string_name(&p_key);
 			return _p->variant_map[sn->operator String()];
 		} else {
