@@ -128,6 +128,10 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 
 	MutexLock lock(singleton->mutex);
 
+	if (singleton->cleared) {
+		return;
+	}
+
 	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
 		if (E.value.has(p_from)) {
 			E.value.insert(p_to);
@@ -157,6 +161,10 @@ void GDScriptCache::remove_script(const String &p_path) {
 	}
 
 	MutexLock lock(singleton->mutex);
+
+	if (singleton->cleared) {
+		return;
+	}
 
 	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
 		if (!E.value.has(p_path)) {
@@ -371,6 +379,10 @@ void GDScriptCache::clear_unreferenced_packed_scenes() {
 
 	MutexLock lock(singleton->mutex);
 
+	if (singleton->cleared) {
+		return;
+	}
+
 	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
 		if (E.value.size() > 0 || !ResourceLoader::is_imported(E.key)) {
 			continue;
@@ -387,6 +399,11 @@ void GDScriptCache::clear() {
 	}
 
 	MutexLock lock(singleton->mutex);
+
+	if (singleton->cleared) {
+		return;
+	}
+	singleton->cleared = true;
 
 	RBSet<Ref<GDScriptParserRef>> parser_map_refs;
 	for (KeyValue<String, GDScriptParserRef *> &E : singleton->parser_map) {
@@ -417,7 +434,8 @@ GDScriptCache::GDScriptCache() {
 }
 
 GDScriptCache::~GDScriptCache() {
-	destructing = true;
-	clear();
+	if (!cleared) {
+		clear();
+	}
 	singleton = nullptr;
 }
