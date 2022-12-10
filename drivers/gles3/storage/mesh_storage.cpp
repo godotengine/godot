@@ -1502,7 +1502,7 @@ void MeshStorage::multimesh_set_visible_instances(RID p_multimesh, int p_visible
 
 	if (multimesh->data_cache.size()) {
 		//there is a data cache..
-		_multimesh_mark_all_dirty(multimesh, false, true);
+		_multimesh_mark_all_dirty(multimesh, true, true);
 	}
 
 	multimesh->visible_instances = p_visible;
