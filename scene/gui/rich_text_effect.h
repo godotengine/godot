@@ -79,7 +79,7 @@ public:
 	uint32_t get_glyph_index() const { return glyph_index; };
 	void set_glyph_index(uint32_t p_glyph_index) { glyph_index = p_glyph_index; };
 
-	uint16_t get_glyph_flags() const { return glyph_index; };
+	uint16_t get_glyph_flags() const { return glyph_flags; };
 	void set_glyph_flags(uint16_t p_glyph_flags) { glyph_flags = p_glyph_flags; };
 
 	uint8_t get_glyph_count() const { return glyph_count; };
