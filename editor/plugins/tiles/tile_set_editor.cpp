@@ -120,7 +120,9 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 }
 
 void TileSetEditor::_update_sources_list(int force_selected_id) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	if (tile_set.is_null()) {
+		return;
+	}
 
 	// Get the previously selected id.
 	int old_selected = TileSet::INVALID_SOURCE;
