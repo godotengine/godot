@@ -115,8 +115,8 @@
 
 - (void)deleteText:(NSInteger)charactersToDelete {
 	for (int i = 0; i < charactersToDelete; i++) {
-		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, true);
-		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, false);
+		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, true);
+		DisplayServerIOS::get_singleton()->key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, false);
 	}
 }
 
@@ -134,20 +134,10 @@
 			key = Key::ENTER;
 		} else if (character == 0x2006) {
 			key = Key::SPACE;
-		} else if (character == U'¥') {
-			key = Key::YEN;
-		} else if (character == U'§') {
-			key = Key::SECTION;
-		} else if (character >= 0x20 && character <= 0x7E) { // ASCII.
-			if (character > 0x60 && character < 0x7B) { // Lowercase ASCII.
-				key = (Key)(character - 32);
-			} else {
-				key = (Key)character;
-			}
 		}
 
-		DisplayServerIOS::get_singleton()->key(key, character, true);
-		DisplayServerIOS::get_singleton()->key(key, character, false);
+		DisplayServerIOS::get_singleton()->key(key, character, key, Key::NONE, 0, true);
+		DisplayServerIOS::get_singleton()->key(key, character, key, Key::NONE, 0, false);
 	}
 }
 

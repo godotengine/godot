@@ -33,6 +33,7 @@
 #include "display_server_ios.h"
 #import "godot_view.h"
 #import "godot_view_renderer.h"
+#import "key_mapping_ios.h"
 #import "keyboard_input_view.h"
 #include "os_ios.h"
 
@@ -52,6 +53,64 @@
 
 - (GodotView *)godotView {
 	return (GodotView *)self.view;
+}
+
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+	[super pressesBegan:presses withEvent:event];
+
+	if (!DisplayServerIOS::get_singleton() || DisplayServerIOS::get_singleton()->is_keyboard_active()) {
+		return;
+	}
+	if (@available(iOS 13.4, *)) {
+		for (UIPress *press in presses) {
+			String u32lbl = String::utf8([press.key.charactersIgnoringModifiers UTF8String]);
+			String u32text = String::utf8([press.key.characters UTF8String]);
+			Key key = KeyMappingIOS::remap_key(press.key.keyCode);
+
+			if (press.key.keyCode == 0 && u32text.is_empty() && u32lbl.is_empty()) {
+				continue;
+			}
+
+			char32_t us = 0;
+			if (!u32lbl.is_empty() && !u32lbl.begins_with("UIKey")) {
+				us = u32lbl[0];
+			}
+
+			if (!u32text.is_empty() && !u32text.begins_with("UIKey")) {
+				for (int i = 0; i < u32text.length(); i++) {
+					const char32_t c = u32text[i];
+					DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), c, fix_key_label(us, key), key, press.key.modifierFlags, true);
+				}
+			} else {
+				DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), 0, fix_key_label(us, key), key, press.key.modifierFlags, true);
+			}
+		}
+	}
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+	[super pressesEnded:presses withEvent:event];
+
+	if (!DisplayServerIOS::get_singleton() || DisplayServerIOS::get_singleton()->is_keyboard_active()) {
+		return;
+	}
+	if (@available(iOS 13.4, *)) {
+		for (UIPress *press in presses) {
+			String u32lbl = String::utf8([press.key.charactersIgnoringModifiers UTF8String]);
+			Key key = KeyMappingIOS::remap_key(press.key.keyCode);
+
+			if (press.key.keyCode == 0 && u32lbl.is_empty()) {
+				continue;
+			}
+
+			char32_t us = 0;
+			if (!u32lbl.is_empty() && !u32lbl.begins_with("UIKey")) {
+				us = u32lbl[0];
+			}
+
+			DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), 0, fix_key_label(us, key), key, press.key.modifierFlags, false);
+		}
+	}
 }
 
 - (void)loadView {

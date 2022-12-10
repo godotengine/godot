@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_content_view.h                                                  */
+/*  key_mapping_ios.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,55 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_CONTENT_VIEW_H
-#define GODOT_CONTENT_VIEW_H
+#ifndef KEY_MAPPING_IOS_H
+#define KEY_MAPPING_IOS_H
 
-#include "servers/display_server.h"
+#include "core/os/keyboard.h"
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-#if defined(GLES3_ENABLED)
-#import <AppKit/NSOpenGLView.h>
-#define RootView NSOpenGLView
-#else
-#define RootView NSView
-#endif
+class KeyMappingIOS {
+	KeyMappingIOS() {}
 
-#import <QuartzCore/CAMetalLayer.h>
+public:
+	static void initialize();
+	static Key remap_key(CFIndex p_keycode);
+};
 
-@interface GodotContentLayerDelegate : NSObject <CALayerDelegate> {
-	DisplayServer::WindowID window_id;
-}
-
-- (void)setWindowID:(DisplayServer::WindowID)wid;
-
-@end
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
-
-@interface GodotContentView : RootView <NSTextInputClient> {
-	DisplayServer::WindowID window_id;
-	NSTrackingArea *tracking_area;
-	NSMutableAttributedString *marked_text;
-	bool ime_input_event_in_progress;
-	bool mouse_down_control;
-	bool ignore_momentum_scroll;
-	bool last_pen_inverted;
-	bool ime_suppress_next_keyup;
-	id layer_delegate;
-}
-
-- (void)processScrollEvent:(NSEvent *)event button:(MouseButton)button factor:(double)factor;
-- (void)processPanEvent:(NSEvent *)event dx:(double)dx dy:(double)dy;
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed;
-- (void)setWindowID:(DisplayServer::WindowID)wid;
-- (void)updateLayerDelegate;
-- (void)cancelComposition;
-
-@end
-
-#pragma clang diagnostic pop
-
-#endif // GODOT_CONTENT_VIEW_H
+#endif // KEY_MAPPING_IOS_H

@@ -32,9 +32,9 @@
 
 // See https://w3c.github.io/uievents-code/#code-value-tables
 Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
-#define DOM2GODOT(p_str, p_godot_code)                                         \
-	if (memcmp((const void *)p_str, (void *)p_code, strlen(p_str) + 1) == 0) { \
-		return Key::p_godot_code;                                              \
+#define DOM2GODOT(p_str, p_godot_code)                                                                \
+	if (memcmp((const void *)p_str, (void *)(p_physical ? p_key : p_code), strlen(p_str) + 1) == 0) { \
+		return Key::p_godot_code;                                                                     \
 	}
 
 	// Numpad section.
@@ -69,35 +69,6 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("NumpadParenRight", PARENRIGHT);
 	DOM2GODOT("NumpadStar", KP_MULTIPLY); // or ASTERISK ?
 	DOM2GODOT("NumpadSubtract", KP_SUBTRACT);
-
-	// Printable ASCII.
-	if (!p_physical) {
-		uint8_t b0 = (uint8_t)p_key[0];
-		uint8_t b1 = (uint8_t)p_key[1];
-		uint8_t b2 = (uint8_t)p_key[2];
-		if (b1 == 0 && b0 > 0x1F && b0 < 0x7F) { // ASCII.
-			if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
-				b0 -= 32;
-			}
-			return (Key)b0;
-		}
-
-#define _U_2BYTES_MASK 0xE0
-#define _U_2BYTES 0xC0
-		// Latin-1 codes.
-		if (b2 == 0 && (b0 & _U_2BYTES_MASK) == _U_2BYTES) { // 2-bytes utf8, only known latin.
-			uint32_t key = ((b0 & ~_U_2BYTES_MASK) << 6) | (b1 & 0x3F);
-			if (key >= 0xA0 && key <= 0xDF) {
-				return (Key)key;
-			}
-			if (key >= 0xE0 && key <= 0xFF) { // Lowercase known latin.
-				key -= 0x20;
-				return (Key)key;
-			}
-		}
-#undef _U_2BYTES_MASK
-#undef _U_2BYTES
-	}
 
 	// Alphanumeric section.
 	DOM2GODOT("Backquote", QUOTELEFT);
@@ -162,8 +133,8 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("ControlLeft", CTRL);
 	DOM2GODOT("ControlRight", CTRL);
 	DOM2GODOT("Enter", ENTER);
-	DOM2GODOT("MetaLeft", SUPER_L);
-	DOM2GODOT("MetaRight", SUPER_R);
+	DOM2GODOT("MetaLeft", META);
+	DOM2GODOT("MetaRight", META);
 	DOM2GODOT("ShiftLeft", SHIFT);
 	DOM2GODOT("ShiftRight", SHIFT);
 	DOM2GODOT("Space", SPACE);
@@ -227,6 +198,21 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("AudioVolumeMute", VOLUMEMUTE);
 	DOM2GODOT("AudioVolumeUp", VOLUMEUP);
 	//DOM2GODOT("WakeUp", UNKNOWN);
-	return Key::UNKNOWN;
+
+	// Printable ASCII.
+	uint8_t b0 = (uint8_t)p_key[0];
+	uint8_t b1 = (uint8_t)p_key[1];
+	if (b0 >= 0x20 && b0 < 0x7F) { // ASCII.
+		if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
+			b0 -= 32;
+		}
+		return (Key)b0;
+	} else if (b0 == 0xC2 && b1 == 0xA5) {
+		return Key::YEN;
+	} else if (b0 == 0xC2 && b1 == 0xA7) {
+		return Key::SECTION;
+	}
+
+	return Key::NONE;
 #undef DOM2GODOT
 }

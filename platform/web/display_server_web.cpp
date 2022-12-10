@@ -121,18 +121,25 @@ void DisplayServerWeb::key_callback(int p_pressed, int p_repeat, int p_modifiers
 	// Resume audio context after input in case autoplay was denied.
 	OS_Web::get_singleton()->resume_audio();
 
+	char32_t c = 0x00;
+	String unicode = String::utf8(key_event.key);
+	if (unicode.length() == 1) {
+		c = unicode[0];
+	}
+
+	Key keycode = dom_code2godot_scancode(key_event.code, key_event.key, false);
+	Key scancode = dom_code2godot_scancode(key_event.code, key_event.key, true);
+
 	Ref<InputEventKey> ev;
 	ev.instantiate();
 	ev->set_echo(p_repeat);
-	ev->set_keycode(dom_code2godot_scancode(key_event.code, key_event.key, false));
-	ev->set_physical_keycode(dom_code2godot_scancode(key_event.code, key_event.key, true));
+	ev->set_keycode(fix_keycode(c, keycode));
+	ev->set_physical_keycode(scancode);
+	ev->set_key_label(fix_key_label(c, keycode));
+	ev->set_unicode(fix_unicode(c));
 	ev->set_pressed(p_pressed);
 	dom2godot_mod(ev, p_modifiers);
 
-	String unicode = String::utf8(key_event.key);
-	if (unicode.length() == 1) {
-		ev->set_unicode(unicode[0]);
-	}
 	Input::get_singleton()->parse_input_event(ev);
 
 	// Make sure to flush all events so we can call restricted APIs inside the event.
