@@ -32,7 +32,6 @@
 #define GLTF_STATE_H
 
 #include "extensions/gltf_light.h"
-#include "gltf_template_convert.h"
 #include "structures/gltf_accessor.h"
 #include "structures/gltf_animation.h"
 #include "structures/gltf_buffer_view.h"
@@ -43,10 +42,6 @@
 #include "structures/gltf_skin.h"
 #include "structures/gltf_texture.h"
 #include "structures/gltf_texture_sampler.h"
-
-#include "core/templates/rb_map.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/texture.h"
 
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
@@ -194,21 +189,6 @@ public:
 
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-
-	//void set_scene_nodes(RBMap<GLTFNodeIndex, Node *> p_scene_nodes) {
-	//	this->scene_nodes = p_scene_nodes;
-	//}
-
-	//void set_animation_players(Vector<AnimationPlayer *> p_animation_players) {
-	//	this->animation_players = p_animation_players;
-	//}
-
-	//RBMap<Ref<Material>, GLTFMaterialIndex> get_material_cache() {
-	//	return this->material_cache;
-	//}
-	//void set_material_cache(RBMap<Ref<Material>, GLTFMaterialIndex> p_material_cache) {
-	//	this->material_cache = p_material_cache;
-	//}
 };
 
 #endif // GLTF_STATE_H
