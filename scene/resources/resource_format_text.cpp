@@ -930,18 +930,25 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 				String type = next_tag.fields["type"];
 				fw->store_line("[sub_resource type=\"" + type + "\" id=\"" + id + "\"]");
 			} else if (next_tag.name == "node") {
-				if (!next_tag.fields.has("name") || !next_tag.fields.has("type") || next_tag.fields.has("parent")) {
+				if (!next_tag.fields.has("name") || (next_tag.fields.has("type") == next_tag.fields.has("instance")) || next_tag.fields.has("parent")) {
 					error = ERR_FILE_CORRUPT;
 					ERR_FAIL_V(error);
 				}
 				fw->store_line(String());
 				String name = next_tag.fields["name"];
-				String type = next_tag.fields["type"];
-
-				String s = "[node name=\"" + name + "\" type=\"" + type + "\"";
+				String s = "[node name=\"" + name + "\"";
+				if (next_tag.fields.has("type")) {
+					String type = next_tag.fields["type"];
+					s += " type=\"" + type + "\"";
+				}
 				if (next_tag.fields.has("groups")) {
 					String groups = next_tag.fields["groups"];
 					s += " groups=" + groups;
+				}
+				if (next_tag.fields.has("instance")) {
+					Variant instance = next_tag.fields["instance"];
+					ERR_FAIL_COND_V_EDMSG(!instance.is_null(), ERR_PARSE_ERROR, instance);
+					s += " instance=" + stringify_variants(instance);
 				}
 				s += "]";
 				fw->store_line(s);
