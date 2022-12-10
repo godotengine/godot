@@ -2071,7 +2071,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 		old_values->restore();
 
 		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
-		ur->create_action(TTR("Anim Apply Reset"));
+		ur->create_action(TTR("Animation Apply Reset"));
 		ur->add_do_method(new_values.ptr(), "restore");
 		ur->add_undo_method(old_values.ptr(), "restore");
 		ur->commit_action();
