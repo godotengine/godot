@@ -10,6 +10,12 @@
 		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_modifiers_mask" qualifiers="const">
+			<return type="int" enum="KeyModifierMask" />
+			<description>
+				Returns the keycode combination of modifier keys.
+			</description>
+		</method>
 		<method name="is_command_or_control_pressed" qualifiers="const">
 			<return type="bool" />
 			<description>

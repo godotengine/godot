@@ -224,11 +224,18 @@
 				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices. Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
+		<method name="is_key_label_pressed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Returns [code]true[/code] if you are pressing the key with the [param keycode] printed on it. You can pass a [enum Key] constant or any Unicode character code.
+			</description>
+		</method>
 		<method name="is_key_pressed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
-				Returns [code]true[/code] if you are pressing the key in the current keyboard layout. You can pass a [enum Key] constant.
+				Returns [code]true[/code] if you are pressing the Latin key in the current keyboard layout. You can pass a [enum Key] constant.
 				[method is_key_pressed] is only recommended over [method is_physical_key_pressed] in non-game applications. This ensures that shortcut keys behave as expected depending on the user's keyboard layout, as keyboard shortcuts are generally dependent on the keyboard layout in non-game applications. If in doubt, use [method is_physical_key_pressed].
 				[b]Note:[/b] Due to keyboard ghosting, [method is_key_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>

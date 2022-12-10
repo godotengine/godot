@@ -36,6 +36,7 @@
 #import "device_metrics.h"
 #import "godot_view.h"
 #include "ios.h"
+#import "key_mapping_ios.h"
 #import "keyboard_input_view.h"
 #include "os_ios.h"
 #include "tts_ios.h"
@@ -50,6 +51,8 @@ DisplayServerIOS *DisplayServerIOS::get_singleton() {
 }
 
 DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	KeyMappingIOS::initialize();
+
 	rendering_driver = p_rendering_driver;
 
 	// Init TTS
@@ -231,14 +234,29 @@ void DisplayServerIOS::touches_canceled(int p_idx) {
 
 // MARK: Keyboard
 
-void DisplayServerIOS::key(Key p_key, char32_t p_char, bool p_pressed) {
+void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, NSInteger p_modifier, bool p_pressed) {
 	Ref<InputEventKey> ev;
 	ev.instantiate();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
-	ev->set_keycode(p_key);
-	ev->set_physical_keycode(p_key);
-	ev->set_unicode(p_char);
+	ev->set_keycode(fix_keycode(p_char, p_key));
+	if (@available(iOS 13.4, *)) {
+		if (p_key != Key::SHIFT) {
+			ev->set_shift_pressed(p_modifier & UIKeyModifierShift);
+		}
+		if (p_key != Key::CTRL) {
+			ev->set_ctrl_pressed(p_modifier & UIKeyModifierControl);
+		}
+		if (p_key != Key::ALT) {
+			ev->set_alt_pressed(p_modifier & UIKeyModifierAlternate);
+		}
+		if (p_key != Key::META) {
+			ev->set_meta_pressed(p_modifier & UIKeyModifierCommand);
+		}
+	}
+	ev->set_key_label(p_unshifted);
+	ev->set_physical_keycode(p_physical);
+	ev->set_unicode(fix_unicode(p_char));
 	perform_event(ev);
 }
 
@@ -614,6 +632,10 @@ void DisplayServerIOS::virtual_keyboard_show(const String &p_existing_text, cons
 			becomeFirstResponderWithString:existingString
 							   cursorStart:_convert_utf32_offset_to_utf16(p_existing_text, p_cursor_start)
 								 cursorEnd:_convert_utf32_offset_to_utf16(p_existing_text, p_cursor_end)];
+}
+
+bool DisplayServerIOS::is_keyboard_active() const {
+	return [AppDelegate.viewController.keyboardView isFirstResponder];
 }
 
 void DisplayServerIOS::virtual_keyboard_hide() {

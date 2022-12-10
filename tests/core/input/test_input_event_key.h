@@ -106,11 +106,11 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 
 	// Key is None without a physical key.
 	none_key.set_keycode(Key::NONE);
-	CHECK(none_key.as_text() == " (Physical)");
+	CHECK(none_key.as_text() == "(Unset)");
 
 	// Key is none and has modifiers.
 	none_key.set_ctrl_pressed(true);
-	CHECK(none_key.as_text() == "Ctrl+ (Physical)");
+	CHECK(none_key.as_text() == "Ctrl+(Unset)");
 
 	// Key is None WITH a physical key AND modifiers.
 	none_key.set_physical_keycode(Key::ENTER);
@@ -144,8 +144,7 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 TEST_CASE("[InputEventKey] Key correctly converts its state to a string representation") {
 	InputEventKey none_key;
 
-	// Set physical to true.
-	CHECK(none_key.to_string() == "InputEventKey: keycode=0 (), mods=none, physical=true, pressed=false, echo=false");
+	CHECK(none_key.to_string() == "InputEventKey: keycode=(Unset), mods=none, physical=false, pressed=false, echo=false");
 	// Set physical key to Escape.
 	none_key.set_physical_keycode(Key::ESCAPE);
 	CHECK(none_key.to_string() == "InputEventKey: keycode=4194305 (Escape), mods=none, physical=true, pressed=false, echo=false");

@@ -9,6 +9,7 @@ source_files = [
     "dynwrappers/xcursor-so_wrap.c",
     "dynwrappers/xinerama-so_wrap.c",
     "dynwrappers/xinput2-so_wrap.c",
+    "dynwrappers/xkbcommon-so_wrap.c",
     "dynwrappers/xrandr-so_wrap.c",
     "dynwrappers/xrender-so_wrap.c",
     "dynwrappers/xext-so_wrap.c",

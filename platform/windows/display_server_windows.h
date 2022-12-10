@@ -405,6 +405,9 @@ class DisplayServerWindows : public DisplayServer {
 		// IME
 		HIMC im_himc;
 		Vector2 im_position;
+		bool ime_active = false;
+		bool ime_in_progress = false;
+		bool ime_suppress_next_keyup = false;
 
 		bool layered_window = false;
 
@@ -591,6 +594,9 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
+
+	virtual Point2i ime_get_selection() const override;
+	virtual String ime_get_text() const override;
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;

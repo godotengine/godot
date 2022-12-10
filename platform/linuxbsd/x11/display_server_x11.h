@@ -75,6 +75,7 @@
 #include "dynwrappers/xext-so_wrap.h"
 #include "dynwrappers/xinerama-so_wrap.h"
 #include "dynwrappers/xinput2-so_wrap.h"
+#include "dynwrappers/xkbcommon-so_wrap.h"
 #include "dynwrappers/xrandr-so_wrap.h"
 #include "dynwrappers/xrender-so_wrap.h"
 
@@ -135,14 +136,16 @@ class DisplayServerX11 : public DisplayServer {
 
 	struct WindowData {
 		Window x11_window;
+		Window x11_xim_window;
 		::XIC xic;
+		bool ime_active = false;
+		bool ime_in_progress = false;
+		bool ime_suppress_next_keyup = false;
 
 		Size2i min_size;
 		Size2i max_size;
 		Point2i position;
 		Size2i size;
-		Point2i im_position;
-		bool im_active = false;
 		Callable rect_changed_callback;
 		Callable event_callback;
 		Callable input_event_callback;
@@ -178,6 +181,9 @@ class DisplayServerX11 : public DisplayServer {
 		unsigned int focus_order = 0;
 	};
 
+	Point2i im_selection;
+	String im_text;
+
 	HashMap<WindowID, WindowData> windows;
 
 	unsigned int last_mouse_monitor_mask = 0;
@@ -200,6 +206,15 @@ class DisplayServerX11 : public DisplayServer {
 	::Time last_keyrelease_time = 0;
 	::XIM xim;
 	::XIMStyle xim_style;
+
+	static int _xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
+			::XPointer call_data);
+	static void _xim_preedit_done_callback(::XIM xim, ::XPointer client_data,
+			::XPointer call_data);
+	static void _xim_preedit_draw_callback(::XIM xim, ::XPointer client_data,
+			::XIMPreeditDrawCallbackStruct *call_data);
+	static void _xim_preedit_caret_callback(::XIM xim, ::XPointer client_data,
+			::XIMPreeditCaretCallbackStruct *call_data);
 	static void _xim_destroy_callback(::XIM im, ::XPointer client_data,
 			::XPointer call_data);
 
@@ -432,6 +447,9 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
+
+	virtual Point2i ime_get_selection() const override;
+	virtual String ime_get_text() const override;
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
