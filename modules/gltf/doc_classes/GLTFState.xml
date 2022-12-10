@@ -8,9 +8,25 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_used_extension">
+			<return type="void" />
+			<argument index="0" name="extension_name" type="String" />
+			<argument index="1" name="required" type="bool" />
+			<description>
+				Appends an extension to the list of extensions used by this GLTF file during serialization. If [code]required[/code] is true, the extension will also be added to the list of required extensions. Do not run this in [method GLTFDocumentExtension._export_post], as that stage is too late to add extensions. The final list is sorted alphabetically.
+			</description>
+		</method>
 		<method name="get_accessors">
 			<return type="Array" />
 			<description>
+			</description>
+		</method>
+		<method name="get_additional_data">
+			<return type="Variant" />
+			<argument index="0" name="extension_name" type="String" />
+			<description>
+				Gets additional arbitrary data in this [GLTFState] instance. This can be used to keep per-file state data in [GLTFDocumentExtension] classes, which is important because they are stateless.
+				The argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the GLTF file), and the return value can be anything you set. If nothing was set, the return value is null.
 			</description>
 		</method>
 		<method name="get_animation_player">
@@ -111,6 +127,15 @@
 			<return type="void" />
 			<argument index="0" name="accessors" type="Array" />
 			<description>
+			</description>
+		</method>
+		<method name="set_additional_data">
+			<return type="void" />
+			<argument index="0" name="extension_name" type="String" />
+			<argument index="1" name="additional_data" type="Variant" />
+			<description>
+				Sets additional arbitrary data in this [GLTFState] instance. This can be used to keep per-file state data in [GLTFDocumentExtension] classes, which is important because they are stateless.
+				The first argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the GLTF file), and the second argument can be anything you want.
 			</description>
 		</method>
 		<method name="set_animations">

@@ -8,6 +8,28 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="register_gltf_document_extension">
+			<return type="void" />
+			<argument index="0" name="extension" type="GLTFDocumentExtension" />
+			<argument index="1" name="first_priority" type="bool" default="false" />
+			<description>
+				Registers the given [GLTFDocumentExtension] instance with GLTFDocument. If [code]first_priority[/code] is true, this extension will be run first. Otherwise, it will be run last.
+				[b]Note:[/b] Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly. If you need to store data, use the [code]set_additional_data[/code] and [code]get_additional_data[/code] methods in [GLTFState] or [GLTFNode].
+			</description>
+		</method>
+		<method name="unregister_all_gltf_document_extensions">
+			<return type="void" />
+			<description>
+				Unregisters all [GLTFDocumentExtension] instances.
+			</description>
+		</method>
+		<method name="unregister_gltf_document_extension">
+			<return type="void" />
+			<argument index="0" name="extension" type="GLTFDocumentExtension" />
+			<description>
+				Unregisters the given [GLTFDocumentExtension] instance.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
