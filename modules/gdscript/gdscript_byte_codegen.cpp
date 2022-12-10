@@ -164,7 +164,7 @@ void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName
 
 	function->name = p_function_name;
 	function->_script = p_script;
-	function->source = p_script->get_path();
+	function->source = p_script->get_script_path();
 
 #ifdef DEBUG_ENABLED
 	function->func_cname = (String(function->source) + " - " + String(p_function_name)).utf8();
