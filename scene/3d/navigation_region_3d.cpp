@@ -339,7 +339,9 @@ void NavigationRegion3D::_navigation_map_changed(RID p_map) {
 
 NavigationRegion3D::NavigationRegion3D() {
 	set_notify_transform(true);
+
 	region = NavigationServer3D::get_singleton()->region_create();
+	NavigationServer3D::get_singleton()->region_set_owner_id(region, get_instance_id());
 	NavigationServer3D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
 	NavigationServer3D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
 

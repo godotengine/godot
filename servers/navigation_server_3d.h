@@ -120,6 +120,10 @@ public:
 	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) const = 0;
 	virtual real_t region_get_travel_cost(RID p_region) const = 0;
 
+	/// Set the node which manages this region.
+	virtual void region_set_owner_id(RID p_region, ObjectID p_owner_id) const = 0;
+	virtual ObjectID region_get_owner_id(RID p_region) const = 0;
+
 	virtual bool region_owns_point(RID p_region, const Vector3 &p_point) const = 0;
 
 	/// Set the map of this region.
@@ -174,6 +178,10 @@ public:
 	/// Set the travel cost of the link.
 	virtual void link_set_travel_cost(RID p_link, real_t p_travel_cost) const = 0;
 	virtual real_t link_get_travel_cost(RID p_link) const = 0;
+
+	/// Set the node which manages this link.
+	virtual void link_set_owner_id(RID p_link, ObjectID p_owner_id) const = 0;
+	virtual ObjectID link_get_owner_id(RID p_link) const = 0;
 
 	/// Creates the agent.
 	virtual RID agent_create() const = 0;
