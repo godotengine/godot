@@ -3651,7 +3651,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "%0";
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_SIGNAL "(in %1);\n";
-	itype.c_out = "%5return " C_METHOD_MANAGED_FROM_SIGNAL "(&%1);\n";
+	itype.c_out = "%5return " C_METHOD_MANAGED_FROM_SIGNAL "(in %1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_signal";
 	itype.c_type_in = "in " + itype.cs_type;
