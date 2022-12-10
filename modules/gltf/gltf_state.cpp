@@ -33,6 +33,7 @@
 #include "scene/animation/animation_player.h"
 
 void GLTFState::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_used_extension", "extension_name", "required"), &GLTFState::add_used_extension);
 	ClassDB::bind_method(D_METHOD("get_json"), &GLTFState::get_json);
 	ClassDB::bind_method(D_METHOD("set_json", "json"), &GLTFState::set_json);
 	ClassDB::bind_method(D_METHOD("get_major_version"), &GLTFState::get_major_version);
@@ -86,6 +87,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations);
 	ClassDB::bind_method(D_METHOD("get_scene_node", "idx"), &GLTFState::get_scene_node);
+	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFState::get_additional_data);
+	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFState::set_additional_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "json"), "set_json", "get_json"); // Dictionary
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "major_version"), "set_major_version", "get_major_version"); // int
@@ -112,6 +115,17 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "skeleton_to_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeleton_to_node", "get_skeleton_to_node"); // Map<GLTFSkeletonIndex,
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
+}
+
+void GLTFState::add_used_extension(const String &p_extension_name, bool p_required) {
+	if (extensions_used.find(p_extension_name) == -1) {
+		extensions_used.push_back(p_extension_name);
+	}
+	if (p_required) {
+		if (extensions_required.find(p_extension_name) == -1) {
+			extensions_required.push_back(p_extension_name);
+		}
+	}
 }
 
 Dictionary GLTFState::get_json() {
@@ -328,4 +342,12 @@ int GLTFState::get_animation_players_count(int idx) {
 AnimationPlayer *GLTFState::get_animation_player(int idx) {
 	ERR_FAIL_INDEX_V(idx, animation_players.size(), nullptr);
 	return animation_players[idx];
+}
+
+Variant GLTFState::get_additional_data(const String &p_extension_name) {
+	return additional_data[p_extension_name];
+}
+
+void GLTFState::set_additional_data(const String &p_extension_name, Variant p_additional_data) {
+	additional_data[p_extension_name] = p_additional_data;
 }

@@ -50,6 +50,7 @@ class GLTFAnimation;
 class GLTFBufferView;
 class GLTFCamera;
 class GLTFDocument;
+class GLTFDocumentExtension;
 class GLTFLight;
 class GLTFMesh;
 class GLTFNode;

@@ -31,6 +31,7 @@
 #ifndef GLTF_DOCUMENT_H
 #define GLTF_DOCUMENT_H
 
+#include "extensions/gltf_document_extension.h"
 #include "gltf_defines.h"
 #include "structures/gltf_animation.h"
 
@@ -55,6 +56,8 @@ class GridMap;
 
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);
+	static Vector<Ref<GLTFDocumentExtension>> all_document_extensions;
+	Vector<Ref<GLTFDocumentExtension>> document_extensions;
 
 private:
 	const float BAKE_FPS = 30.0f;
@@ -80,6 +83,17 @@ public:
 		COMPONENT_TYPE_INT = 5125,
 		COMPONENT_TYPE_FLOAT = 5126,
 	};
+
+protected:
+	static void _bind_methods();
+
+public:
+	void _register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority = false);
+	void _unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
+	void _unregister_all_gltf_document_extensions();
+	static void register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority = false);
+	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
+	static void unregister_all_gltf_document_extensions();
 
 private:
 	double _filter_number(double p_float);
@@ -273,7 +287,7 @@ private:
 	Dictionary _serialize_texture_transform_uv2(Ref<SpatialMaterial> p_material);
 	Error _serialize_version(Ref<GLTFState> p_state);
 	Error _serialize_file(Ref<GLTFState> p_state, const String p_path);
-	Error _serialize_extensions(Ref<GLTFState> p_state) const;
+	Error _serialize_gltf_extensions(Ref<GLTFState> p_state) const;
 
 public:
 	// http://www.itu.int/rec/R-REC-BT.601
@@ -292,6 +306,8 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
+	void extension_generate_scene(Ref<GLTFState> p_state);
+
 	String _sanitize_scene_name(Ref<GLTFState> p_state, const String &p_name);
 	String _legacy_validate_node_name(const String &p_name);
 

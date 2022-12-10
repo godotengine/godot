@@ -93,6 +93,7 @@ Node *PackedSceneGLTF::import_scene(const String &p_path, uint32_t p_flags,
 			gltf_document->_import_animation(r_state, ap, i, p_bake_fps);
 		}
 	}
+	gltf_document->extension_generate_scene(r_state);
 
 	return cast_to<Spatial>(root);
 }
