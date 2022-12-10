@@ -7639,6 +7639,13 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 	}
 }
 
+void Node3DEditor::_request_gizmo_for_id(ObjectID p_id) {
+	Node3D *node = Object::cast_to<Node3D>(ObjectDB::get_instance(p_id));
+	if (node) {
+		_request_gizmo(node);
+	}
+}
+
 void Node3DEditor::_set_subgizmo_selection(Object *p_obj, Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform) {
 	if (p_id == -1) {
 		_clear_subgizmo_selection(p_obj);
@@ -7819,6 +7826,7 @@ void Node3DEditor::_register_all_gizmos() {
 void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &Node3DEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &Node3DEditor::_request_gizmo);
+	ClassDB::bind_method("_request_gizmo_for_id", &Node3DEditor::_request_gizmo_for_id);
 	ClassDB::bind_method("_set_subgizmo_selection", &Node3DEditor::_set_subgizmo_selection);
 	ClassDB::bind_method("_clear_subgizmo_selection", &Node3DEditor::_clear_subgizmo_selection);
 	ClassDB::bind_method("_refresh_menu_icons", &Node3DEditor::_refresh_menu_icons);
