@@ -58,12 +58,21 @@ bool VariantParser::StreamFile::is_utf8() const {
 	return true;
 }
 
+uint64_t VariantParser::StreamFile::get_position() const {
+	return buffer_read_end_position - _get_buffer_remaining_length();
+}
+
 uint32_t VariantParser::StreamFile::_read_buffer(char32_t *p_buffer, uint32_t p_num_chars) {
 	// The buffer is assumed to include at least one character (for null terminator)
 	ERR_FAIL_COND_V(!p_num_chars, 0);
 
 	uint8_t *temp = (uint8_t *)alloca(p_num_chars);
 	uint64_t num_read = f->get_buffer(temp, p_num_chars);
+	if (f->eof_reached()) {
+		buffer_read_end_position = f->get_length();
+	} else {
+		buffer_read_end_position = f->get_position();
+	}
 	ERR_FAIL_COND_V(num_read == UINT64_MAX, 0);
 
 	// translate to wchar

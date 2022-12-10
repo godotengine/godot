@@ -47,6 +47,7 @@ public:
 
 	protected:
 		virtual uint32_t _read_buffer(char32_t *p_buffer, uint32_t p_num_chars) = 0;
+		uint32_t _get_buffer_remaining_length() const { return eof ? 0 : readahead_filled - readahead_pointer; }
 
 	public:
 		char32_t saved = 0;
@@ -60,6 +61,9 @@ public:
 	};
 
 	struct StreamFile : public Stream {
+	private:
+		uint64_t buffer_read_end_position;
+
 	protected:
 		virtual uint32_t _read_buffer(char32_t *p_buffer, uint32_t p_num_chars) override;
 
@@ -67,6 +71,7 @@ public:
 		Ref<FileAccess> f;
 
 		virtual bool is_utf8() const override;
+		uint64_t get_position() const;
 
 		StreamFile() {}
 	};

@@ -905,7 +905,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 
 	String base_path = local_path.get_base_dir();
 
-	uint64_t tag_end = f->get_position();
+	uint64_t tag_end = stream.get_position();
 
 	while (true) {
 		Error err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
@@ -975,7 +975,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 			s += " path=\"" + path + "\" id=\"" + id + "\"]";
 			fw->store_line(s); // Bundled.
 
-			tag_end = f->get_position();
+			tag_end = stream.get_position();
 		}
 	}
 
