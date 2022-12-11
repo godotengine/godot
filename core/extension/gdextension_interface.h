@@ -154,6 +154,8 @@ typedef const void *GDExtensionMethodBindPtr;
 typedef int64_t GDExtensionInt;
 typedef uint8_t GDExtensionBool;
 typedef uint64_t GDObjectInstanceID;
+typedef void *GDExtensionRefPtr;
+typedef const void *GDExtensionConstRefPtr;
 
 /* VARIANT DATA I/O */
 
@@ -550,6 +552,11 @@ typedef struct {
 	GDExtensionObjectPtr (*object_cast_to)(GDExtensionConstObjectPtr p_object, void *p_class_tag);
 	GDExtensionObjectPtr (*object_get_instance_from_id)(GDObjectInstanceID p_instance_id);
 	GDObjectInstanceID (*object_get_instance_id)(GDExtensionConstObjectPtr p_object);
+
+	/* REFERENCE */
+
+	GDExtensionObjectPtr (*ref_get_object)(GDExtensionConstRefPtr p_ref);
+	void (*ref_set_object)(GDExtensionRefPtr p_ref, GDExtensionObjectPtr p_object);
 
 	/* SCRIPT INSTANCE */
 

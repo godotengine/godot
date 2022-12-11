@@ -879,6 +879,23 @@ static GDObjectInstanceID gdextension_object_get_instance_id(GDExtensionConstObj
 	return (GDObjectInstanceID)o->get_instance_id();
 }
 
+static GDExtensionObjectPtr gdextension_ref_get_object(GDExtensionConstRefPtr p_ref) {
+	const Ref<RefCounted> *ref = (const Ref<RefCounted> *)p_ref;
+	if (ref == nullptr || ref->is_null()) {
+		return (GDExtensionObjectPtr) nullptr;
+	} else {
+		return (GDExtensionObjectPtr)ref->ptr();
+	}
+}
+
+static void gdextension_ref_set_object(GDExtensionRefPtr p_ref, GDExtensionObjectPtr p_object) {
+	Ref<RefCounted> *ref = (Ref<RefCounted> *)p_ref;
+	ERR_FAIL_NULL(ref);
+
+	Object *o = (RefCounted *)p_object;
+	ref->reference_ptr(o);
+}
+
 static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
 	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
 	script_instance_extension->instance = p_instance_data;
@@ -1056,6 +1073,11 @@ void gdextension_setup_interface(GDExtensionInterface *p_interface) {
 	gde_interface.object_cast_to = gdextension_object_cast_to;
 	gde_interface.object_get_instance_from_id = gdextension_object_get_instance_from_id;
 	gde_interface.object_get_instance_id = gdextension_object_get_instance_id;
+
+	/* REFERENCE */
+
+	gde_interface.ref_get_object = gdextension_ref_get_object;
+	gde_interface.ref_set_object = gdextension_ref_set_object;
 
 	/* SCRIPT INSTANCE */
 
