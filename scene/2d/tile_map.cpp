@@ -4072,5 +4072,9 @@ TileMap::TileMap() {
 }
 
 TileMap::~TileMap() {
+	if (tile_set.is_valid()) {
+		tile_set->disconnect("changed", callable_mp(this, &TileMap::_tile_set_changed));
+	}
+
 	_clear_internals();
 }
