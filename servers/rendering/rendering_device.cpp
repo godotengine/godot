@@ -286,7 +286,7 @@ static Vector<RenderingDevice::PipelineSpecializationConstant> _get_spec_constan
 	return ret;
 }
 
-RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants) {
+RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants) {
 	PipelineRasterizationState rasterization_state;
 	if (p_rasterization_state.is_valid()) {
 		rasterization_state = p_rasterization_state->base;
@@ -906,13 +906,13 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_OP_MAXIMUM);
 	BIND_ENUM_CONSTANT(BLEND_OP_MAX);
 
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_LINE_WIDTH);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_DEPTH_BIAS);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_BLEND_CONSTANTS);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_DEPTH_BOUNDS);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_STENCIL_COMPARE_MASK);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_STENCIL_WRITE_MASK);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_STENCIL_REFERENCE);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_LINE_WIDTH);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_DEPTH_BIAS);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_BLEND_CONSTANTS);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_DEPTH_BOUNDS);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_STENCIL_COMPARE_MASK);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_STENCIL_WRITE_MASK);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_STENCIL_REFERENCE);
 
 	BIND_ENUM_CONSTANT(INITIAL_ACTION_CLEAR); //start rendering and clear the framebuffer (supply params)
 	BIND_ENUM_CONSTANT(INITIAL_ACTION_CLEAR_REGION); //start rendering and clear the framebuffer (supply params)
