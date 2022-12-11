@@ -30,11 +30,18 @@
 
 #include "gltf_camera.h"
 
+#include "scene/3d/camera.h"
+
 void GLTFCamera::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("to_node"), &GLTFCamera::to_node);
+	ClassDB::bind_method(D_METHOD("to_dictionary"), &GLTFCamera::to_dictionary);
+
 	ClassDB::bind_method(D_METHOD("get_perspective"), &GLTFCamera::get_perspective);
 	ClassDB::bind_method(D_METHOD("set_perspective", "perspective"), &GLTFCamera::set_perspective);
 	ClassDB::bind_method(D_METHOD("get_fov_size"), &GLTFCamera::get_fov_size);
 	ClassDB::bind_method(D_METHOD("set_fov_size", "fov_size"), &GLTFCamera::set_fov_size);
+	ClassDB::bind_method(D_METHOD("get_size_mag"), &GLTFCamera::get_size_mag);
+	ClassDB::bind_method(D_METHOD("set_size_mag", "size_mag"), &GLTFCamera::set_size_mag);
 	ClassDB::bind_method(D_METHOD("get_zfar"), &GLTFCamera::get_zfar);
 	ClassDB::bind_method(D_METHOD("set_zfar", "zfar"), &GLTFCamera::set_zfar);
 	ClassDB::bind_method(D_METHOD("get_znear"), &GLTFCamera::get_znear);
@@ -42,6 +49,83 @@ void GLTFCamera::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "perspective"), "set_perspective", "get_perspective"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fov_size"), "set_fov_size", "get_fov_size"); // float
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "size_mag"), "set_size_mag", "get_size_mag"); // float
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "zfar"), "set_zfar", "get_zfar"); // float
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "znear"), "set_znear", "get_znear"); // float
+}
+
+Ref<GLTFCamera> GLTFCamera::from_node(const Camera *p_camera) {
+	Ref<GLTFCamera> c;
+	c.instance();
+	ERR_FAIL_COND_V_MSG(!p_camera, c, "Tried to create a GLTFCamera from a Camera node, but the given node was null.");
+	c->set_perspective(p_camera->get_projection() == Camera::Projection::PROJECTION_PERSPECTIVE);
+	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
+	c->set_fov_size(Math::deg2rad(p_camera->get_fov()));
+	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
+	c->set_size_mag(p_camera->get_size() * 0.5f);
+	c->set_zfar(p_camera->get_zfar());
+	c->set_znear(p_camera->get_znear());
+	return c;
+}
+
+Camera *GLTFCamera::to_node() const {
+	Camera *camera = memnew(Camera);
+	camera->set_projection(perspective ? Camera::PROJECTION_PERSPECTIVE : Camera::PROJECTION_ORTHOGONAL);
+	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
+	camera->set_fov(Math::rad2deg(fov));
+	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
+	camera->set_size(size_mag * 2.0f);
+	camera->set_znear(znear);
+	camera->set_zfar(zfar);
+	return camera;
+}
+
+Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary p_dictionary) {
+	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFCamera>(), "Failed to parse GLTF camera, missing required field 'type'.");
+	Ref<GLTFCamera> camera;
+	camera.instance();
+	const String &type = p_dictionary["type"];
+	if (type == "perspective") {
+		camera->set_perspective(true);
+		if (p_dictionary.has("perspective")) {
+			const Dictionary &persp = p_dictionary["perspective"];
+			camera->set_fov_size(persp["yfov"]);
+			if (persp.has("zfar")) {
+				camera->set_zfar(persp["zfar"]);
+			}
+			camera->set_znear(persp["znear"]);
+		}
+	} else if (type == "orthographic") {
+		camera->set_perspective(false);
+		if (p_dictionary.has("orthographic")) {
+			const Dictionary &ortho = p_dictionary["orthographic"];
+			camera->set_size_mag(ortho["ymag"]);
+			camera->set_zfar(ortho["zfar"]);
+			camera->set_znear(ortho["znear"]);
+		}
+	} else {
+		ERR_PRINT("Error parsing GLTF camera: Camera type '" + type + "' is unknown, should be perspective or orthographic.");
+	}
+	return camera;
+}
+
+Dictionary GLTFCamera::to_dictionary() const {
+	Dictionary d;
+	if (perspective) {
+		Dictionary persp;
+		persp["yfov"] = fov;
+		persp["zfar"] = zfar;
+		persp["znear"] = znear;
+		d["perspective"] = persp;
+		d["type"] = "perspective";
+	} else {
+		Dictionary ortho;
+		ortho["ymag"] = size_mag;
+		ortho["xmag"] = size_mag;
+		ortho["zfar"] = zfar;
+		ortho["znear"] = znear;
+		d["orthographic"] = ortho;
+		d["type"] = "orthographic";
+	}
+	return d;
 }
