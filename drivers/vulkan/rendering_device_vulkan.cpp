@@ -6460,7 +6460,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 /**** RENDER PIPELINE ****/
 /*************************/
 
-RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass, const Vector<PipelineSpecializationConstant> &p_specialization_constants) {
+RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const Vector<PipelineSpecializationConstant> &p_specialization_constants) {
 	_THREAD_SAFE_METHOD_
 
 	// Needs a shader.
@@ -6746,31 +6746,31 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	dynamic_states.push_back(VK_DYNAMIC_STATE_VIEWPORT); // Viewport and scissor are always dynamic.
 	dynamic_states.push_back(VK_DYNAMIC_STATE_SCISSOR);
 
-	if (p_dynamic_state_flags & DYNAMIC_STATE_LINE_WIDTH) {
+	if (p_dynamic_state_flags.has_flag(DYNAMIC_STATE_LINE_WIDTH)) {
 		dynamic_states.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
 	}
 
-	if (p_dynamic_state_flags & DYNAMIC_STATE_DEPTH_BIAS) {
+	if (p_dynamic_state_flags.has_flag(DYNAMIC_STATE_DEPTH_BIAS)) {
 		dynamic_states.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
 	}
 
-	if (p_dynamic_state_flags & DYNAMIC_STATE_BLEND_CONSTANTS) {
+	if (p_dynamic_state_flags.has_flag(DYNAMIC_STATE_BLEND_CONSTANTS)) {
 		dynamic_states.push_back(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 	}
 
-	if (p_dynamic_state_flags & DYNAMIC_STATE_DEPTH_BOUNDS) {
+	if (p_dynamic_state_flags.has_flag(DYNAMIC_STATE_DEPTH_BOUNDS)) {
 		dynamic_states.push_back(VK_DYNAMIC_STATE_DEPTH_BOUNDS);
 	}
 
-	if (p_dynamic_state_flags & DYNAMIC_STATE_STENCIL_COMPARE_MASK) {
+	if (p_dynamic_state_flags.has_flag(DYNAMIC_STATE_STENCIL_COMPARE_MASK)) {
 		dynamic_states.push_back(VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK);
 	}
 
-	if (p_dynamic_state_flags & DYNAMIC_STATE_STENCIL_WRITE_MASK) {
+	if (p_dynamic_state_flags.has_flag(DYNAMIC_STATE_STENCIL_WRITE_MASK)) {
 		dynamic_states.push_back(VK_DYNAMIC_STATE_STENCIL_WRITE_MASK);
 	}
 
-	if (p_dynamic_state_flags & DYNAMIC_STATE_STENCIL_REFERENCE) {
+	if (p_dynamic_state_flags.has_flag(DYNAMIC_STATE_STENCIL_REFERENCE)) {
 		dynamic_states.push_back(VK_DYNAMIC_STATE_STENCIL_REFERENCE);
 	}
 
