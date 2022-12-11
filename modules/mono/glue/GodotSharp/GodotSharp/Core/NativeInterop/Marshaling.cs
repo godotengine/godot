@@ -333,22 +333,6 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        // TODO: This needs reflection. Look for an alternative.
-        internal static Godot.Object[] ConvertNativeGodotArrayToSystemArrayOfGodotObjectType(in godot_array p_array,
-            Type type)
-        {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
-                NativeFuncs.godotsharp_array_new_copy(p_array));
-
-            int length = array.Count;
-            var ret = (Godot.Object[])Activator.CreateInstance(type, length)!;
-
-            for (int i = 0; i < length; i++)
-                ret[i] = array[i].AsGodotObject();
-
-            return ret;
-        }
-
         internal static StringName[] ConvertNativeGodotArrayToSystemArrayOfStringName(in godot_array p_array)
         {
             var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(

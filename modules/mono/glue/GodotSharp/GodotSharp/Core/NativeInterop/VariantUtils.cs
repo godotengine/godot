@@ -594,12 +594,5 @@ namespace Godot.NativeInterop
             using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
             return Marshaling.ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(godotArray);
         }
-
-        // ReSharper disable once RedundantNameQualifier
-        public static Godot.Object[] ConvertToSystemArrayOfGodotObject(in godot_variant p_var, Type type)
-        {
-            using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
-            return Marshaling.ConvertNativeGodotArrayToSystemArrayOfGodotObjectType(godotArray, type);
-        }
     }
 }
