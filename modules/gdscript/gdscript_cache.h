@@ -65,6 +65,7 @@ public:
 	bool is_valid() const;
 	Status get_status() const;
 	GDScriptParser *get_parser() const;
+	GDScriptAnalyzer *get_analyzer();
 	Error raise_status(Status p_new_status);
 	void clear();
 

@@ -107,6 +107,7 @@ public:
 			CLASS, // GDScript.
 			ENUM, // Enumeration.
 			VARIANT, // Can be any type.
+			RESOLVING, // Currently resolving.
 			UNRESOLVED,
 		};
 		Kind kind = UNRESOLVED;
@@ -133,9 +134,10 @@ public:
 		MethodInfo method_info; // For callable/signals.
 		HashMap<StringName, int64_t> enum_values; // For enums.
 
-		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
+		_FORCE_INLINE_ bool is_set() const { return kind != RESOLVING && kind != UNRESOLVED; }
+		_FORCE_INLINE_ bool is_resolving() const { return kind == RESOLVING; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
-		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == UNRESOLVED; }
+		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == RESOLVING || kind == UNRESOLVED; }
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
 		String to_string() const;
 
@@ -188,6 +190,7 @@ public:
 					return script_type == p_other.script_type;
 				case CLASS:
 					return class_type == p_other.class_type;
+				case RESOLVING:
 				case UNRESOLVED:
 					break;
 			}
@@ -516,6 +519,32 @@ public:
 			};
 			EnumNode::Value enum_value;
 
+			String get_name() const {
+				switch (type) {
+					case UNDEFINED:
+						return "<undefined member>";
+					case CLASS:
+						// All class-type members have an id.
+						return m_class->identifier->name;
+					case CONSTANT:
+						return constant->identifier->name;
+					case FUNCTION:
+						return function->identifier->name;
+					case SIGNAL:
+						return signal->identifier->name;
+					case VARIABLE:
+						return variable->identifier->name;
+					case ENUM:
+						// All enum-type members have an id.
+						return m_enum->identifier->name;
+					case ENUM_VALUE:
+						return enum_value.identifier->name;
+					case GROUP:
+						return annotation->export_info.name;
+				}
+				return "";
+			}
+
 			String get_type_name() const {
 				switch (type) {
 					case UNDEFINED:
@@ -576,29 +605,40 @@ public:
 						return variable->get_datatype();
 					case ENUM:
 						return m_enum->get_datatype();
-					case ENUM_VALUE: {
-						// Always integer.
-						DataType out_type;
-						out_type.type_source = DataType::ANNOTATED_EXPLICIT;
-						out_type.kind = DataType::BUILTIN;
-						out_type.builtin_type = Variant::INT;
-						return out_type;
-					}
-					case SIGNAL: {
-						DataType out_type;
-						out_type.type_source = DataType::ANNOTATED_EXPLICIT;
-						out_type.kind = DataType::BUILTIN;
-						out_type.builtin_type = Variant::SIGNAL;
-						// TODO: Add parameter info.
-						return out_type;
-					}
-					case GROUP: {
+					case ENUM_VALUE:
+						return enum_value.identifier->get_datatype();
+					case SIGNAL:
+						return signal->get_datatype();
+					case GROUP:
 						return DataType();
-					}
 					case UNDEFINED:
 						return DataType();
 				}
 				ERR_FAIL_V_MSG(DataType(), "Reaching unhandled type.");
+			}
+
+			Node *get_source_node() const {
+				switch (type) {
+					case CLASS:
+						return m_class;
+					case CONSTANT:
+						return constant;
+					case FUNCTION:
+						return function;
+					case VARIABLE:
+						return variable;
+					case ENUM:
+						return m_enum;
+					case ENUM_VALUE:
+						return enum_value.identifier;
+					case SIGNAL:
+						return signal;
+					case GROUP:
+						return annotation;
+					case UNDEFINED:
+						return nullptr;
+				}
+				ERR_FAIL_V_MSG(nullptr, "Reaching unhandled type.");
 			}
 
 			Member() {}
@@ -1430,6 +1470,8 @@ public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
+	ClassNode *find_class(const String &p_qualified_name) const;
+	bool has_class(const GDScriptParser::ClassNode *p_class) const;
 	static Variant::Type get_builtin_type(const StringName &p_type);
 
 	CompletionContext get_completion_context() const { return completion_context; }
