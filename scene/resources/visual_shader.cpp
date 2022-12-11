@@ -2066,10 +2066,9 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 	}
 
 	if (!node_code.is_empty()) {
-		r_code += "\n";
+		r_code += "\n\n";
 	}
 
-	r_code += "\n"; //
 	r_processed.insert(p_node);
 
 	return OK;
@@ -2366,71 +2365,62 @@ void VisualShader::_update_shader() const {
 	String global_compute_code;
 
 	if (shader_mode == Shader::MODE_PARTICLES) {
-		bool has_start = !code_map[TYPE_START].is_empty();
 		bool has_start_custom = !code_map[TYPE_START_CUSTOM].is_empty();
 		bool has_process = !code_map[TYPE_PROCESS].is_empty();
 		bool has_process_custom = !code_map[TYPE_PROCESS_CUSTOM].is_empty();
 		bool has_collide = !code_map[TYPE_COLLIDE].is_empty();
 
 		shader_code += "void start() {\n";
-		if (has_start || has_start_custom) {
-			shader_code += "	uint __seed = __hash(NUMBER + uint(1) + RANDOM_SEED);\n";
-			shader_code += "	vec3 __diff = TRANSFORM[3].xyz - EMISSION_TRANSFORM[3].xyz;\n";
-			shader_code += "	float __radians;\n";
-			shader_code += "	vec3 __vec3_buff1;\n";
-			shader_code += "	vec3 __vec3_buff2;\n";
-			shader_code += "	float __scalar_buff1;\n";
-			shader_code += "	float __scalar_buff2;\n";
-			shader_code += "	int __scalar_ibuff;\n";
-			shader_code += "	vec4 __vec4_buff;\n";
-			shader_code += "	vec3 __ndiff = normalize(__diff);\n\n";
-		}
-		if (has_start) {
-			shader_code += "	{\n";
-			shader_code += code_map[TYPE_START].replace("\n	", "\n		");
-			shader_code += "	}\n";
-			if (has_start_custom) {
-				shader_code += "	\n";
-			}
-		}
+		shader_code += "	uint __seed = __hash(NUMBER + uint(1) + RANDOM_SEED);\n";
+		shader_code += "\n";
+		shader_code += "	{\n";
+		shader_code += code_map[TYPE_START].replace("\n	", "\n		");
+		shader_code += "	}\n";
 		if (has_start_custom) {
+			shader_code += "	\n";
 			shader_code += "	{\n";
 			shader_code += code_map[TYPE_START_CUSTOM].replace("\n	", "\n		");
 			shader_code += "	}\n";
 		}
 		shader_code += "}\n\n";
-		shader_code += "void process() {\n";
+
 		if (has_process || has_process_custom || has_collide) {
+			shader_code += "void process() {\n";
 			shader_code += "	uint __seed = __hash(NUMBER + uint(1) + RANDOM_SEED);\n";
-			shader_code += "	vec3 __vec3_buff1;\n";
-			shader_code += "	vec3 __diff = TRANSFORM[3].xyz - EMISSION_TRANSFORM[3].xyz;\n";
-			shader_code += "	vec3 __ndiff = normalize(__diff);\n\n";
-		}
-		shader_code += "	{\n";
-		String tab = "	";
-		if (has_collide) {
-			shader_code += "		if (COLLIDED) {\n\n";
-			shader_code += code_map[TYPE_COLLIDE].replace("\n	", "\n			");
-			if (has_process) {
-				shader_code += "		} else {\n\n";
-				tab += "	";
+			shader_code += "\n";
+			if (has_process || has_collide) {
+				shader_code += "	{\n";
 			}
-		}
-		if (has_process) {
-			shader_code += code_map[TYPE_PROCESS].replace("\n	", "\n	" + tab);
-		}
-		if (has_collide) {
-			shader_code += "		}\n";
-		}
-		shader_code += "	}\n";
+			String tab = "	";
+			if (has_collide) {
+				shader_code += "		if (COLLIDED) {\n\n";
+				shader_code += code_map[TYPE_COLLIDE].replace("\n	", "\n			");
+				if (has_process) {
+					shader_code += "		} else {\n\n";
+					tab += "	";
+				}
+			}
+			if (has_process) {
+				shader_code += code_map[TYPE_PROCESS].replace("\n	", "\n	" + tab);
+			}
+			if (has_collide) {
+				shader_code += "		}\n";
+			}
+			if (has_process || has_collide) {
+				shader_code += "	}\n";
+			}
 
-		if (has_process_custom) {
-			shader_code += "	{\n\n";
-			shader_code += code_map[TYPE_PROCESS_CUSTOM].replace("\n	", "\n		");
-			shader_code += "	}\n";
-		}
+			if (has_process_custom) {
+				if (has_process || has_collide) {
+					shader_code += "	\n";
+				}
+				shader_code += "	{\n";
+				shader_code += code_map[TYPE_PROCESS_CUSTOM].replace("\n	", "\n		");
+				shader_code += "	}\n";
+			}
 
-		shader_code += "}\n\n";
+			shader_code += "}\n\n";
+		}
 
 		global_compute_code += "float __rand_from_seed(inout uint seed) {\n";
 		global_compute_code += "	int k;\n";
