@@ -109,6 +109,10 @@ public:
 	bool is_valid() const { return _id != 0; }
 
 	uint32_t get_id() const { return _id ? _handle_data : 0; }
+
+	// This should not normally be used (as data pointer is somewhat random)
+	// but is added for some compatibility with the original RID.
+	uint64_t get_data() const { return _handle_data; }
 };
 
 class RID : public RID_Handle {

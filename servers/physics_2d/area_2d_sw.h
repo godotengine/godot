@@ -75,7 +75,7 @@ class Area2DSW : public CollisionObject2DSW {
 					return body_shape < p_key.body_shape;
 				}
 			} else {
-				return rid < p_key.rid;
+				return rid.get_data() < p_key.rid.get_data();
 			}
 		}
 
