@@ -1728,10 +1728,10 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 					q.navigation_regions[E_cell].resize(tile_set->get_navigation_layers_count());
 
 					for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
-						Ref<NavigationPolygon> navpoly;
-						navpoly = tile_data->get_navigation_polygon(layer_index);
+						Ref<NavigationPolygon> navigation_polygon;
+						navigation_polygon = tile_data->get_navigation_polygon(layer_index);
 
-						if (navpoly.is_valid()) {
+						if (navigation_polygon.is_valid()) {
 							Transform2D tile_transform;
 							tile_transform.set_origin(map_to_local(E_cell));
 
@@ -1739,7 +1739,7 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 							NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
 							NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
 							NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
-							NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
+							NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, navigation_polygon);
 							q.navigation_regions[E_cell].write[layer_index] = region;
 						}
 					}

@@ -62,7 +62,7 @@ class NavigationAgent2D : public Node {
 	Vector2 target_location;
 	Ref<NavigationPathQueryParameters2D> navigation_query;
 	Ref<NavigationPathQueryResult2D> navigation_result;
-	int nav_path_index = 0;
+	int navigation_path_index = 0;
 	bool velocity_submitted = false;
 	Vector2 prev_safe_velocity;
 	/// The submitted target velocity
@@ -141,10 +141,10 @@ public:
 
 	Vector2 get_next_location();
 
-	const Vector<Vector2> &get_nav_path() const;
+	const Vector<Vector2> &get_current_navigation_path() const;
 
-	int get_nav_path_index() const {
-		return nav_path_index;
+	int get_current_navigation_path_index() const {
+		return navigation_path_index;
 	}
 
 	real_t distance_to_target() const;

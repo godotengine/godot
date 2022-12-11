@@ -79,8 +79,8 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent2D::get_next_location);
 	ClassDB::bind_method(D_METHOD("distance_to_target"), &NavigationAgent2D::distance_to_target);
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &NavigationAgent2D::set_velocity);
-	ClassDB::bind_method(D_METHOD("get_nav_path"), &NavigationAgent2D::get_nav_path);
-	ClassDB::bind_method(D_METHOD("get_nav_path_index"), &NavigationAgent2D::get_nav_path_index);
+	ClassDB::bind_method(D_METHOD("get_current_navigation_path"), &NavigationAgent2D::get_current_navigation_path);
+	ClassDB::bind_method(D_METHOD("get_current_navigation_path_index"), &NavigationAgent2D::get_current_navigation_path_index);
 	ClassDB::bind_method(D_METHOD("is_target_reached"), &NavigationAgent2D::is_target_reached);
 	ClassDB::bind_method(D_METHOD("is_target_reachable"), &NavigationAgent2D::is_target_reachable);
 	ClassDB::bind_method(D_METHOD("is_navigation_finished"), &NavigationAgent2D::is_navigation_finished);
@@ -329,11 +329,11 @@ Vector2 NavigationAgent2D::get_next_location() {
 		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector2(), "The agent has no parent.");
 		return agent_parent->get_global_position();
 	} else {
-		return navigation_path[nav_path_index];
+		return navigation_path[navigation_path_index];
 	}
 }
 
-const Vector<Vector2> &NavigationAgent2D::get_nav_path() const {
+const Vector<Vector2> &NavigationAgent2D::get_current_navigation_path() const {
 	return navigation_result->get_path();
 }
 
@@ -418,12 +418,12 @@ void NavigationAgent2D::update_navigation() {
 		reload_path = true;
 	} else {
 		// Check if too far from the navigation path
-		if (nav_path_index > 0) {
+		if (navigation_path_index > 0) {
 			const Vector<Vector2> &navigation_path = navigation_result->get_path();
 
 			Vector2 segment[2];
-			segment[0] = navigation_path[nav_path_index - 1];
-			segment[1] = navigation_path[nav_path_index];
+			segment[0] = navigation_path[navigation_path_index - 1];
+			segment[1] = navigation_path[navigation_path_index];
 			Vector2 p = Geometry2D::get_closest_point_to_segment(origin, segment);
 			if (origin.distance_to(p) >= path_max_distance) {
 				// To faraway, reload path
@@ -445,7 +445,7 @@ void NavigationAgent2D::update_navigation() {
 
 		NavigationServer2D::get_singleton()->query_path(navigation_query, navigation_result);
 		navigation_finished = false;
-		nav_path_index = 0;
+		navigation_path_index = 0;
 		emit_signal(SNAME("path_changed"));
 	}
 
@@ -457,11 +457,11 @@ void NavigationAgent2D::update_navigation() {
 	if (navigation_finished == false) {
 		// Advances to the next far away location.
 		const Vector<Vector2> &navigation_path = navigation_result->get_path();
-		while (origin.distance_to(navigation_path[nav_path_index]) < path_desired_distance) {
-			nav_path_index += 1;
-			if (nav_path_index == navigation_path.size()) {
+		while (origin.distance_to(navigation_path[navigation_path_index]) < path_desired_distance) {
+			navigation_path_index += 1;
+			if (navigation_path_index == navigation_path.size()) {
 				_check_distance_to_target();
-				nav_path_index -= 1;
+				navigation_path_index -= 1;
 				navigation_finished = true;
 				emit_signal(SNAME("navigation_finished"));
 				break;

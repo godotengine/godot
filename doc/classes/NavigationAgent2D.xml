@@ -16,22 +16,22 @@
 				Returns the distance to the target location, using the agent's global position. The user must set [member target_location] in order for this to be accurate.
 			</description>
 		</method>
-		<method name="get_final_location">
-			<return type="Vector2" />
-			<description>
-				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
-			</description>
-		</method>
-		<method name="get_nav_path" qualifiers="const">
+		<method name="get_current_navigation_path" qualifiers="const">
 			<return type="PackedVector2Array" />
 			<description>
 				Returns this agent's current path from start to finish in global coordinates. The path only updates when the target location is changed or the agent requires a repath. The path array is not intended to be used in direct path movement as the agent has its own internal path logic that would get corrupted by changing the path array manually. Use the intended [method get_next_location] once every physics frame to receive the next path point for the agents movement as this function also updates the internal path logic.
 			</description>
 		</method>
-		<method name="get_nav_path_index" qualifiers="const">
+		<method name="get_current_navigation_path_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns which index the agent is currently on in the navigation path's [PackedVector2Array].
+			</description>
+		</method>
+		<method name="get_final_location">
+			<return type="Vector2" />
+			<description>
+				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
 			</description>
 		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">

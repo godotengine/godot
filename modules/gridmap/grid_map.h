@@ -95,10 +95,10 @@ class GridMap : public Node3D {
 	 * A GridMap can have multiple Octants.
 	 */
 	struct Octant {
-		struct NavMesh {
+		struct NavigationCell {
 			RID region;
 			Transform3D xform;
-			RID navmesh_debug_instance;
+			RID navigation_mesh_debug_instance;
 		};
 
 		struct MultimeshInstance {
@@ -124,7 +124,7 @@ class GridMap : public Node3D {
 
 		bool dirty = false;
 		RID static_body;
-		HashMap<IndexKey, NavMesh> navmesh_ids;
+		HashMap<IndexKey, NavigationCell> navigation_cell_ids;
 	};
 
 	union OctantKey {

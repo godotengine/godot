@@ -47,9 +47,9 @@ class NavigationPolygon : public Resource {
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty = true;
 
-	Mutex navmesh_generation;
+	Mutex navigation_mesh_generation;
 	// Navigation mesh
-	Ref<NavigationMesh> navmesh;
+	Ref<NavigationMesh> navigation_mesh;
 
 protected:
 	static void _bind_methods();
@@ -85,7 +85,7 @@ public:
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
 
-	Ref<NavigationMesh> get_mesh();
+	Ref<NavigationMesh> get_navigation_mesh();
 
 	NavigationPolygon() {}
 	~NavigationPolygon() {}

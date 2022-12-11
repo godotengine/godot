@@ -41,9 +41,9 @@ class NavigationRegion2D : public Node2D {
 	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
-	Ref<NavigationPolygon> navpoly;
+	Ref<NavigationPolygon> navigation_polygon;
 
-	void _navpoly_changed();
+	void _navigation_polygon_changed();
 	void _map_changed(RID p_RID);
 
 protected:
@@ -73,7 +73,7 @@ public:
 	void set_travel_cost(real_t p_travel_cost);
 	real_t get_travel_cost() const;
 
-	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
+	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navigation_polygon);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
 	PackedStringArray get_configuration_warnings() const override;
