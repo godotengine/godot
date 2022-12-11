@@ -154,7 +154,7 @@ static ObjectID id_to_id(const ObjectID &id) {
 
 static Ref<NavigationMesh> poly_to_mesh(Ref<NavigationPolygon> d) {
 	if (d.is_valid()) {
-		return d->get_mesh();
+		return d->get_navigation_mesh();
 	} else {
 		return Ref<NavigationMesh>();
 	}
@@ -258,7 +258,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_set_navigation_layers", "region", "navigation_layers"), &NavigationServer2D::region_set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("region_get_navigation_layers", "region"), &NavigationServer2D::region_get_navigation_layers);
 	ClassDB::bind_method(D_METHOD("region_set_transform", "region", "transform"), &NavigationServer2D::region_set_transform);
-	ClassDB::bind_method(D_METHOD("region_set_navpoly", "region", "nav_poly"), &NavigationServer2D::region_set_navpoly);
+	ClassDB::bind_method(D_METHOD("region_set_navigation_polygon", "region", "navigation_polygon"), &NavigationServer2D::region_set_navigation_polygon);
 	ClassDB::bind_method(D_METHOD("region_get_connections_count", "region"), &NavigationServer2D::region_get_connections_count);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_start", "region", "connection"), &NavigationServer2D::region_get_connection_pathway_start);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_end", "region", "connection"), &NavigationServer2D::region_get_connection_pathway_end);
@@ -361,8 +361,8 @@ void FORWARD_2_C(region_set_navigation_layers, RID, p_region, uint32_t, p_naviga
 uint32_t FORWARD_1_C(region_get_navigation_layers, RID, p_region, rid_to_rid);
 void FORWARD_2_C(region_set_transform, RID, p_region, Transform2D, p_transform, rid_to_rid, trf2_to_trf3);
 
-void NavigationServer2D::region_set_navpoly(RID p_region, Ref<NavigationPolygon> p_nav_mesh) const {
-	NavigationServer3D::get_singleton()->region_set_navmesh(p_region, poly_to_mesh(p_nav_mesh));
+void NavigationServer2D::region_set_navigation_polygon(RID p_region, Ref<NavigationPolygon> p_navigation_polygon) const {
+	NavigationServer3D::get_singleton()->region_set_navigation_mesh(p_region, poly_to_mesh(p_navigation_polygon));
 }
 
 int FORWARD_1_C(region_get_connections_count, RID, p_region, rid_to_rid);

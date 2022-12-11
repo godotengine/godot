@@ -81,8 +81,8 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 
 void NavigationPolygon::set_vertices(const Vector<Vector2> &p_vertices) {
 	{
-		MutexLock lock(navmesh_generation);
-		navmesh.unref();
+		MutexLock lock(navigation_mesh_generation);
+		navigation_mesh.unref();
 	}
 	vertices = p_vertices;
 	rect_cache_dirty = true;
@@ -94,8 +94,8 @@ Vector<Vector2> NavigationPolygon::get_vertices() const {
 
 void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array) {
 	{
-		MutexLock lock(navmesh_generation);
-		navmesh.unref();
+		MutexLock lock(navigation_mesh_generation);
+		navigation_mesh.unref();
 	}
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
@@ -136,8 +136,8 @@ void NavigationPolygon::add_polygon(const Vector<int> &p_polygon) {
 	polygon.indices = p_polygon;
 	polygons.push_back(polygon);
 	{
-		MutexLock lock(navmesh_generation);
-		navmesh.unref();
+		MutexLock lock(navigation_mesh_generation);
+		navigation_mesh.unref();
 	}
 }
 
@@ -158,16 +158,16 @@ Vector<int> NavigationPolygon::get_polygon(int p_idx) {
 void NavigationPolygon::clear_polygons() {
 	polygons.clear();
 	{
-		MutexLock lock(navmesh_generation);
-		navmesh.unref();
+		MutexLock lock(navigation_mesh_generation);
+		navigation_mesh.unref();
 	}
 }
 
-Ref<NavigationMesh> NavigationPolygon::get_mesh() {
-	MutexLock lock(navmesh_generation);
+Ref<NavigationMesh> NavigationPolygon::get_navigation_mesh() {
+	MutexLock lock(navigation_mesh_generation);
 
-	if (navmesh.is_null()) {
-		navmesh.instantiate();
+	if (navigation_mesh.is_null()) {
+		navigation_mesh.instantiate();
 		Vector<Vector3> verts;
 		{
 			verts.resize(get_vertices().size());
@@ -179,14 +179,14 @@ Ref<NavigationMesh> NavigationPolygon::get_mesh() {
 				w[i] = Vector3(r[i].x, 0.0, r[i].y);
 			}
 		}
-		navmesh->set_vertices(verts);
+		navigation_mesh->set_vertices(verts);
 
 		for (int i(0); i < get_polygon_count(); i++) {
-			navmesh->add_polygon(get_polygon(i));
+			navigation_mesh->add_polygon(get_polygon(i));
 		}
 	}
 
-	return navmesh;
+	return navigation_mesh;
 }
 
 void NavigationPolygon::add_outline(const Vector<Vector2> &p_outline) {
@@ -222,8 +222,8 @@ void NavigationPolygon::clear_outlines() {
 
 void NavigationPolygon::make_polygons_from_outlines() {
 	{
-		MutexLock lock(navmesh_generation);
-		navmesh.unref();
+		MutexLock lock(navigation_mesh_generation);
+		navigation_mesh.unref();
 	}
 	List<TPPLPoly> in_poly, out_poly;
 
@@ -331,7 +331,7 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_polygon_count"), &NavigationPolygon::get_polygon_count);
 	ClassDB::bind_method(D_METHOD("get_polygon", "idx"), &NavigationPolygon::get_polygon);
 	ClassDB::bind_method(D_METHOD("clear_polygons"), &NavigationPolygon::clear_polygons);
-	ClassDB::bind_method(D_METHOD("get_mesh"), &NavigationPolygon::get_mesh);
+	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationPolygon::get_navigation_mesh);
 
 	ClassDB::bind_method(D_METHOD("add_outline", "outline"), &NavigationPolygon::add_outline);
 	ClassDB::bind_method(D_METHOD("add_outline_at_index", "outline", "index"), &NavigationPolygon::add_outline_at_index);

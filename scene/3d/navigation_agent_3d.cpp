@@ -83,8 +83,8 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent3D::get_next_location);
 	ClassDB::bind_method(D_METHOD("distance_to_target"), &NavigationAgent3D::distance_to_target);
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &NavigationAgent3D::set_velocity);
-	ClassDB::bind_method(D_METHOD("get_nav_path"), &NavigationAgent3D::get_nav_path);
-	ClassDB::bind_method(D_METHOD("get_nav_path_index"), &NavigationAgent3D::get_nav_path_index);
+	ClassDB::bind_method(D_METHOD("get_current_navigation_path"), &NavigationAgent3D::get_current_navigation_path);
+	ClassDB::bind_method(D_METHOD("get_current_navigation_path_index"), &NavigationAgent3D::get_current_navigation_path_index);
 	ClassDB::bind_method(D_METHOD("is_target_reached"), &NavigationAgent3D::is_target_reached);
 	ClassDB::bind_method(D_METHOD("is_target_reachable"), &NavigationAgent3D::is_target_reachable);
 	ClassDB::bind_method(D_METHOD("is_navigation_finished"), &NavigationAgent3D::is_navigation_finished);
@@ -345,11 +345,11 @@ Vector3 NavigationAgent3D::get_next_location() {
 		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector3(), "The agent has no parent.");
 		return agent_parent->get_global_transform().origin;
 	} else {
-		return navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0);
+		return navigation_path[navigation_path_index] - Vector3(0, navigation_height_offset, 0);
 	}
 }
 
-const Vector<Vector3> &NavigationAgent3D::get_nav_path() const {
+const Vector<Vector3> &NavigationAgent3D::get_current_navigation_path() const {
 	return navigation_result->get_path();
 }
 
@@ -433,12 +433,12 @@ void NavigationAgent3D::update_navigation() {
 		reload_path = true;
 	} else {
 		// Check if too far from the navigation path
-		if (nav_path_index > 0) {
+		if (navigation_path_index > 0) {
 			const Vector<Vector3> &navigation_path = navigation_result->get_path();
 
 			Vector3 segment[2];
-			segment[0] = navigation_path[nav_path_index - 1];
-			segment[1] = navigation_path[nav_path_index];
+			segment[0] = navigation_path[navigation_path_index - 1];
+			segment[1] = navigation_path[navigation_path_index];
 			segment[0].y -= navigation_height_offset;
 			segment[1].y -= navigation_height_offset;
 			Vector3 p = Geometry3D::get_closest_point_to_segment(origin, segment);
@@ -462,7 +462,7 @@ void NavigationAgent3D::update_navigation() {
 
 		NavigationServer3D::get_singleton()->query_path(navigation_query, navigation_result);
 		navigation_finished = false;
-		nav_path_index = 0;
+		navigation_path_index = 0;
 		emit_signal(SNAME("path_changed"));
 	}
 
@@ -474,11 +474,11 @@ void NavigationAgent3D::update_navigation() {
 	if (navigation_finished == false) {
 		// Advances to the next far away location.
 		const Vector<Vector3> &navigation_path = navigation_result->get_path();
-		while (origin.distance_to(navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0)) < path_desired_distance) {
-			nav_path_index += 1;
-			if (nav_path_index == navigation_path.size()) {
+		while (origin.distance_to(navigation_path[navigation_path_index] - Vector3(0, navigation_height_offset, 0)) < path_desired_distance) {
+			navigation_path_index += 1;
+			if (navigation_path_index == navigation_path.size()) {
 				_check_distance_to_target();
-				nav_path_index -= 1;
+				navigation_path_index -= 1;
 				navigation_finished = true;
 				emit_signal(SNAME("navigation_finished"));
 				break;
