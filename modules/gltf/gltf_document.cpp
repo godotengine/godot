@@ -6930,7 +6930,7 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 	document_extensions.clear();
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		Error err = ext->export_preflight(p_node);
+		Error err = ext->export_preflight(p_state, p_node);
 		if (err == OK) {
 			document_extensions.push_back(ext);
 		}
