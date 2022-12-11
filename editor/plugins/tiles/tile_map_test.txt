@@ -1,0 +1,34 @@
+/*
+#include "tile_map_editor.h"
+
+#include "tiles_editor_plugin.h"
+
+#include "editor/editor_node.h"
+#include "editor/editor_resource_preview.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+
+#include "scene/2d/camera_2d.h"
+#include "scene/gui/center_container.h"
+#include "scene/gui/split_container.h"
+
+#include "core/input/input.h"
+#include "core/math/geometry_2d.h"
+#include "core/os/keyboard.h"
+
+void TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled(bool p_pressed) {
+	if(p_pressed == false){
+        try
+        {
+            Object::cast_to<CanvasItem>(tools_settings->get_child(6))->hide();
+            Object::cast_to<CanvasItem>(tools_settings->get_child(7))->hide();
+        }
+        catch(const std::exception& e)
+        {
+            assert(false);
+        }
+	}
+}
+*/

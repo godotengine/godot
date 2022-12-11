@@ -56,6 +56,12 @@ void TileMapEditorTilesPlugin::tile_set_changed() {
 
 void TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled(bool p_pressed) {
 	scatter_spinbox->set_editable(p_pressed);
+	//If we're making the spinbox uneditable, then we want to hide the Scatter Label and the Spinbox.
+	if(p_pressed == false){
+		//Index 6 and 7 represents the Scatter Label and Scatter Spinbox
+		Object::cast_to<CanvasItem>(tools_settings->get_child(6))->hide();
+		Object::cast_to<CanvasItem>(tools_settings->get_child(7))->hide();
+	}
 }
 
 void TileMapEditorTilesPlugin::_on_scattering_spinbox_changed(double p_value) {
