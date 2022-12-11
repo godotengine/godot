@@ -4636,27 +4636,8 @@ Error GLTFDocument::_serialize_lights(Ref<GLTFState> p_state) {
 	}
 	Array lights;
 	for (GLTFLightIndex i = 0; i < p_state->lights.size(); i++) {
-		Dictionary d;
 		Ref<GLTFLight> light = p_state->lights[i];
-		Array color;
-		color.resize(3);
-		color[0] = light->color.r;
-		color[1] = light->color.g;
-		color[2] = light->color.b;
-		d["color"] = color;
-		d["type"] = light->type;
-		if (light->type == "spot") {
-			Dictionary s;
-			float inner_cone_angle = light->inner_cone_angle;
-			s["innerConeAngle"] = inner_cone_angle;
-			float outer_cone_angle = light->outer_cone_angle;
-			s["outerConeAngle"] = outer_cone_angle;
-			d["spot"] = s;
-		}
-		float intensity = light->intensity;
-		d["intensity"] = intensity;
-		float range = light->range;
-		d["range"] = range;
+		Dictionary d = light->to_dictionary();
 		lights.push_back(d);
 	}
 
@@ -4679,27 +4660,8 @@ Error GLTFDocument::_serialize_cameras(Ref<GLTFState> p_state) {
 	Array cameras;
 	cameras.resize(p_state->cameras.size());
 	for (GLTFCameraIndex i = 0; i < p_state->cameras.size(); i++) {
-		Dictionary d;
-
 		Ref<GLTFCamera> camera = p_state->cameras[i];
-
-		if (camera->get_perspective() == false) {
-			Dictionary og;
-			og["ymag"] = Math::deg2rad(camera->get_fov_size());
-			og["xmag"] = Math::deg2rad(camera->get_fov_size());
-			og["zfar"] = camera->get_zfar();
-			og["znear"] = camera->get_znear();
-			d["orthographic"] = og;
-			d["type"] = "orthographic";
-		} else if (camera->get_perspective()) {
-			Dictionary ppt;
-			// GLTF spec is in radians, Godot's camera is in degrees.
-			ppt["yfov"] = Math::deg2rad(camera->get_fov_size());
-			ppt["zfar"] = camera->get_zfar();
-			ppt["znear"] = camera->get_znear();
-			d["perspective"] = ppt;
-			d["type"] = "perspective";
-		}
+		Dictionary d = camera->to_dictionary();
 		cameras[i] = d;
 	}
 
@@ -4730,35 +4692,10 @@ Error GLTFDocument::_parse_lights(Ref<GLTFState> p_state) {
 	const Array &lights = lights_punctual["lights"];
 
 	for (GLTFLightIndex light_i = 0; light_i < lights.size(); light_i++) {
-		const Dictionary &d = lights[light_i];
-
-		Ref<GLTFLight> light;
-		light.instance();
-		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
-		const String &type = d["type"];
-		light->type = type;
-
-		if (d.has("color")) {
-			const Array &arr = d["color"];
-			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
-			const Color c = Color(arr[0], arr[1], arr[2]).to_srgb();
-			light->color = c;
+		Ref<GLTFLight> light = GLTFLight::from_dictionary(lights[light_i]);
+		if (light.is_null()) {
+			return Error::ERR_PARSE_ERROR;
 		}
-		if (d.has("intensity")) {
-			light->intensity = d["intensity"];
-		}
-		if (d.has("range")) {
-			light->range = d["range"];
-		}
-		if (type == "spot") {
-			const Dictionary &spot = d["spot"];
-			light->inner_cone_angle = spot["innerConeAngle"];
-			light->outer_cone_angle = spot["outerConeAngle"];
-			ERR_CONTINUE_MSG(light->inner_cone_angle >= light->outer_cone_angle, "The inner angle must be smaller than the outer angle.");
-		} else if (type != "point" && type != "directional") {
-			ERR_CONTINUE_MSG(true, "Light type is unknown.");
-		}
-
 		p_state->lights.push_back(light);
 	}
 
@@ -4775,38 +4712,10 @@ Error GLTFDocument::_parse_cameras(Ref<GLTFState> p_state) {
 	const Array cameras = p_state->json["cameras"];
 
 	for (GLTFCameraIndex i = 0; i < cameras.size(); i++) {
-		const Dictionary &d = cameras[i];
-
-		Ref<GLTFCamera> camera;
-		camera.instance();
-		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
-		const String &type = d["type"];
-		if (type == "orthographic") {
-			camera->set_perspective(false);
-			if (d.has("orthographic")) {
-				const Dictionary &og = d["orthographic"];
-				// GLTF spec is in radians, Godot's camera is in degrees.
-				camera->set_fov_size(Math::rad2deg(real_t(og["ymag"])));
-				camera->set_zfar(og["zfar"]);
-				camera->set_znear(og["znear"]);
-			} else {
-				camera->set_fov_size(10);
-			}
-		} else if (type == "perspective") {
-			camera->set_perspective(true);
-			if (d.has("perspective")) {
-				const Dictionary &ppt = d["perspective"];
-				// GLTF spec is in radians, Godot's camera is in degrees.
-				camera->set_fov_size(Math::rad2deg(real_t(ppt["yfov"])));
-				camera->set_zfar(ppt["zfar"]);
-				camera->set_znear(ppt["znear"]);
-			} else {
-				camera->set_fov_size(10);
-			}
-		} else {
-			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "Camera should be in 'orthographic' or 'perspective'");
+		Ref<GLTFCamera> camera = GLTFCamera::from_dictionary(cameras[i]);
+		if (camera.is_null()) {
+			return Error::ERR_PARSE_ERROR;
 		}
-
 		p_state->cameras.push_back(camera);
 	}
 
@@ -5286,45 +5195,7 @@ Spatial *GLTFDocument::_generate_light(Ref<GLTFState> p_state, Node *p_scene_par
 	print_verbose("glTF: Creating light for: " + gltf_node->get_name());
 
 	Ref<GLTFLight> l = p_state->lights[gltf_node->light];
-
-	float intensity = l->intensity;
-	if (intensity > 10) {
-		// GLTF spec has the default around 1, but Blender defaults lights to 100.
-		// The only sane way to handle this is to check where it came from and
-		// handle it accordingly. If it's over 10, it probably came from Blender.
-		intensity /= 100;
-	}
-
-	if (l->type == "directional") {
-		DirectionalLight *light = memnew(DirectionalLight);
-		light->set_param(Light::PARAM_ENERGY, intensity);
-		light->set_color(l->color);
-		return light;
-	}
-
-	const float range = CLAMP(l->range, 0, 4096);
-	if (l->type == "point") {
-		OmniLight *light = memnew(OmniLight);
-		light->set_param(OmniLight::PARAM_ENERGY, intensity);
-		light->set_param(OmniLight::PARAM_RANGE, range);
-		light->set_color(l->color);
-		return light;
-	}
-	if (l->type == "spot") {
-		SpotLight *light = memnew(SpotLight);
-		light->set_param(SpotLight::PARAM_ENERGY, intensity);
-		light->set_param(SpotLight::PARAM_RANGE, range);
-		light->set_param(SpotLight::PARAM_SPOT_ANGLE, Math::rad2deg(l->outer_cone_angle));
-		light->set_color(l->color);
-
-		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
-		// The points in desmos are not exact, except for (1, infinity).
-		float angle_ratio = l->inner_cone_angle / l->outer_cone_angle;
-		float angle_attenuation = 0.2 / (1 - angle_ratio) - 0.1;
-		light->set_param(SpotLight::PARAM_SPOT_ATTENUATION, angle_attenuation);
-		return light;
-	}
-	return memnew(Spatial);
+	return l->to_node();
 }
 
 Camera *GLTFDocument::_generate_camera(Ref<GLTFState> p_state, Node *p_scene_parent, const GLTFNodeIndex p_node_index) {
@@ -5332,35 +5203,16 @@ Camera *GLTFDocument::_generate_camera(Ref<GLTFState> p_state, Node *p_scene_par
 
 	ERR_FAIL_INDEX_V(gltf_node->camera, p_state->cameras.size(), nullptr);
 
-	Camera *camera = memnew(Camera);
 	print_verbose("glTF: Creating camera for: " + gltf_node->get_name());
 
 	Ref<GLTFCamera> c = p_state->cameras[gltf_node->camera];
-	if (c->get_perspective()) {
-		camera->set_perspective(c->get_fov_size(), c->get_znear(), c->get_zfar());
-	} else {
-		camera->set_orthogonal(c->get_fov_size(), c->get_znear(), c->get_zfar());
-	}
-
-	return camera;
+	return c->to_node();
 }
 
 GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> p_state, Camera *p_camera) {
 	print_verbose("glTF: Converting camera: " + p_camera->get_name());
 
-	Ref<GLTFCamera> c;
-	c.instance();
-
-	if (p_camera->get_projection() == Camera::Projection::PROJECTION_PERSPECTIVE) {
-		c->set_perspective(true);
-		c->set_fov_size(p_camera->get_fov());
-		c->set_zfar(p_camera->get_zfar());
-		c->set_znear(p_camera->get_znear());
-	} else {
-		c->set_fov_size(p_camera->get_fov());
-		c->set_zfar(p_camera->get_zfar());
-		c->set_znear(p_camera->get_znear());
-	}
+	Ref<GLTFCamera> c = GLTFCamera::from_node(p_camera);
 	GLTFCameraIndex camera_index = p_state->cameras.size();
 	p_state->cameras.push_back(c);
 	return camera_index;
@@ -5369,31 +5221,7 @@ GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> p_state, Camera *p_
 GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> p_state, Light *p_light) {
 	print_verbose("glTF: Converting light: " + p_light->get_name());
 
-	Ref<GLTFLight> l;
-	l.instance();
-	l->color = p_light->get_color();
-	if (cast_to<DirectionalLight>(p_light)) {
-		l->type = "directional";
-		DirectionalLight *light = cast_to<DirectionalLight>(p_light);
-		l->intensity = light->get_param(DirectionalLight::PARAM_ENERGY);
-		l->range = FLT_MAX; // Range for directional lights is infinite in Godot.
-	} else if (cast_to<OmniLight>(p_light)) {
-		l->type = "point";
-		OmniLight *light = cast_to<OmniLight>(p_light);
-		l->range = light->get_param(OmniLight::PARAM_RANGE);
-		l->intensity = light->get_param(OmniLight::PARAM_ENERGY);
-	} else if (cast_to<SpotLight>(p_light)) {
-		l->type = "spot";
-		SpotLight *light = cast_to<SpotLight>(p_light);
-		l->range = light->get_param(SpotLight::PARAM_RANGE);
-		l->intensity = light->get_param(SpotLight::PARAM_ENERGY);
-		l->outer_cone_angle = Math::deg2rad(light->get_param(SpotLight::PARAM_SPOT_ANGLE));
-
-		// This equation is the inverse of the import equation (which has a desmos link).
-		float angle_ratio = 1 - (0.2 / (0.1 + light->get_param(SpotLight::PARAM_SPOT_ATTENUATION)));
-		angle_ratio = MAX(0, angle_ratio);
-		l->inner_cone_angle = l->outer_cone_angle * angle_ratio;
-	}
+	Ref<GLTFLight> l = GLTFLight::from_node(p_light);
 
 	GLTFLightIndex light_index = p_state->lights.size();
 	p_state->lights.push_back(l);
