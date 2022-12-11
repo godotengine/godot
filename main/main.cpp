@@ -3365,6 +3365,7 @@ void Main::cleanup(bool p_force) {
 	// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
 	finalize_navigation_server();
 	finalize_physics();
+	finalize_display();
 
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
@@ -3386,8 +3387,6 @@ void Main::cleanup(bool p_force) {
 	}
 
 	OS::get_singleton()->finalize();
-
-	finalize_display();
 
 	if (input) {
 		memdelete(input);
