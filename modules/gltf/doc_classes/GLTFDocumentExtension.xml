@@ -42,7 +42,8 @@
 		</method>
 		<method name="_export_preflight" qualifiers="virtual">
 			<return type="int" />
-			<param index="0" name="root" type="Node" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="root" type="Node" />
 			<description>
 				Part of the export process. This method is run first, before all other parts of the export process.
 				The return value is used to determine if this [GLTFDocumentExtension] instance should be used for exporting a given GLTF file. If [constant OK], the export will use this [GLTFDocumentExtension] instance. If not overridden, [constant OK] is returned.
