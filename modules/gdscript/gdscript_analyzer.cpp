@@ -3345,7 +3345,10 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		if (p_subscript->attribute == nullptr) {
 			return;
 		}
-		if (p_subscript->base->is_constant) {
+
+		GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
+		// If base is a class metatype, use the analyzer instead.
+		if (p_subscript->base->is_constant && !(base_type.is_meta_type && base_type.kind == GDScriptParser::DataType::CLASS)) {
 			// Just try to get it.
 			bool valid = false;
 			Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
@@ -3369,8 +3372,6 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				result_type = type_from_variant(value, p_subscript);
 			}
 		} else {
-			GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
-
 			if (base_type.is_variant() || !base_type.is_hard_type()) {
 				result_type.kind = GDScriptParser::DataType::VARIANT;
 				mark_node_unsafe(p_subscript);
