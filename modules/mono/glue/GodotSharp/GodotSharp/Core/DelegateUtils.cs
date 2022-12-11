@@ -739,6 +739,26 @@ namespace Godot
                 if (typeof(Godot.Object).IsAssignableFrom(type))
                     return Convert.ChangeType(VariantUtils.ConvertTo<Godot.Object>(variant), type);
 
+                if (typeof(Godot.Object[]).IsAssignableFrom(type))
+                {
+                    static Godot.Object[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
+                    {
+                        var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+                            NativeFuncs.godotsharp_array_new_copy(nativeArray));
+
+                        int length = array.Count;
+                        var ret = (Godot.Object[])Activator.CreateInstance(type, length)!;
+
+                        for (int i = 0; i < length; i++)
+                            ret[i] = array[i].AsGodotObject();
+
+                        return ret;
+                    }
+
+                    using var godotArray = NativeFuncs.godotsharp_variant_as_array(variant);
+                    return Convert.ChangeType(ConvertToSystemArrayOfGodotObject(godotArray, type), type);
+                }
+
                 if (type.IsEnum)
                 {
                     var enumUnderlyingType = type.GetEnumUnderlyingType();
