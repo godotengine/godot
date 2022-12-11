@@ -64,7 +64,7 @@ class NavigationAgent3D : public Node {
 	Vector3 target_location;
 	Ref<NavigationPathQueryParameters3D> navigation_query;
 	Ref<NavigationPathQueryResult3D> navigation_result;
-	int nav_path_index = 0;
+	int navigation_path_index = 0;
 	bool velocity_submitted = false;
 	Vector3 prev_safe_velocity;
 	/// The submitted target velocity
@@ -153,10 +153,10 @@ public:
 
 	Vector3 get_next_location();
 
-	const Vector<Vector3> &get_nav_path() const;
+	const Vector<Vector3> &get_current_navigation_path() const;
 
-	int get_nav_path_index() const {
-		return nav_path_index;
+	int get_current_navigation_path_index() const {
+		return navigation_path_index;
 	}
 
 	real_t distance_to_target() const;
