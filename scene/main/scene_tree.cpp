@@ -815,7 +815,9 @@ void SceneTree::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_WM_QUIT_REQUEST: {
 			get_root()->propagate_notification(p_notification);
-
+#ifdef USE_EXTERNAL_CYCLE_HOOKS
+			SceneTreeHook::dispatch_close();
+#endif
 			if (accept_quit) {
 				_quit = true;
 				break;

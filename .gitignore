@@ -366,3 +366,4 @@ $RECYCLE.BIN/
 
 build.cmd
 build_template.cmd
+clean-obj.bat

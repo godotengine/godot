@@ -7,8 +7,17 @@
 
 class SceneTreeHook {
 public:
-	static void dispatch_idle(const float& delta);
-	static void dispatch_physics(const float& delta);
+	static _ALWAYS_INLINE_ void dispatch_idle(const float& delta){
+		NodeDispatcher::get_singleton()->dispatch_idle();
+		InstancePool::get_singleton()->dispatch_idle(delta);
+	}
+	static _ALWAYS_INLINE_ void dispatch_physics(const float& delta){
+		NodeDispatcher::get_singleton()->dispatch_physics();
+		Sentrience::get_singleton()->poll(delta);
+	}
+	static _ALWAYS_INLINE_ void dispatch_close(){
+		Sentrience::get_singleton()->pre_close();
+	}
 
 	friend class SceneTree;
 };

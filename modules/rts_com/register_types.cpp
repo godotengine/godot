@@ -7,7 +7,7 @@ static Sentrience* RTSCombatServerPtr = nullptr;
 
 void register_rts_com_types(){
 #ifndef USE_THREAD_SAFE_API
-	ClassDB::register_class<SentrienceInstancesWatcher>();
+	ClassDB::register_class<SentrienceContext>();
 #endif
 	ClassDB::register_class<Sentrience>();
 	ClassDB::register_class<RCSChip>();

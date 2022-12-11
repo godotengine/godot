@@ -57,6 +57,14 @@ Sentrience* Sentrience::singleton = nullptr;
 	rdata->_set_combat_server(this);                                    \
 	all_rids.push_back(rid);                                            \
 	return rid
+#elif defined(USE_CIRCULAR_DEBUG_RECORD)
+#define RCSMakeRID(rid_owner, rdata)                                    \
+	RID_TYPE rid = rid_owner.make_rid(rdata);                           \
+	rdata->set_self(rid);                                               \
+	rdata->_set_combat_server(this);                                    \
+	if (!active_watcher.is_null()) active_watcher->add_rid(rid);        \
+	debug_record->fetch() = rid;                                        \
+	return rid
 #else
 #define RCSMakeRID(rid_owner, rdata)                                    \
 	RID_TYPE rid = rid_owner.make_rid(rdata);                           \
@@ -71,7 +79,10 @@ Sentrience* Sentrience::singleton = nullptr;
 	auto sim = target->simulation;                                      \
 	if (sim == nullptr) return RID_TYPE();                              \
 	return sim->get_self()
-#ifdef USE_SAFE_RID_COUNT
+
+#ifndef DEBUG_ENABLED
+#define FreeLog(component_name, rid) ((void)0)
+#elif defined( USE_SAFE_RID_COUNT)
 #define FreeLog(component_name, rid) \
 	log(std::string("Freeing ") + std::string(#component_name) + std::string(" with RID_TYPE ") + std::to_string(rid))
 #else
@@ -81,34 +92,75 @@ Sentrience* Sentrience::singleton = nullptr;
 #endif
 #define RIDSort(owner, type, rid)                                       \
 	if (owner.owns(rid)) return String(#type);
-#define OverweightAssert(container)                                     \
-	ERR_FAIL_COND(container.size() >= MAX_OBJECT_PER_CONTAINER)
-#define OverweightAssertReturn(container, re)                           \
-	ERR_FAIL_COND_V(container.size() >= MAX_OBJECT_PER_CONTAINER, re)
+// #define OverweightAssert(container)                                     \
+// 	ERR_FAIL_COND(container.size() >= MAX_OBJECT_PER_CONTAINER)
+// #define OverweightAssertReturn(container, re)                           \
+// 	ERR_FAIL_COND_V(container.size() >= MAX_OBJECT_PER_CONTAINER, re)
+
+#define OverweightAssert(container)
+#define OverweightAssertReturn(container, re)
+
+#ifdef USE_CIRCULAR_DEBUG_RECORD
+// #define EraseRID(rid) debug_record->async_erase(target)
+#define EraseRID(rid)                                                   \
+	debug_record->erase(rid)
+#else
+#define EraseRID(rid) ((void)0)
+#endif
 
 #define RCS_DEBUG
 
-void SentrienceInstancesWatcher::_bind_methods(){
-	ClassDB::bind_method(D_METHOD("flush_all"), &SentrienceInstancesWatcher::flush_all);
-	ClassDB::bind_method(D_METHOD("size"), &SentrienceInstancesWatcher::size);
-	ClassDB::bind_method(D_METHOD("get_rids"), &SentrienceInstancesWatcher::get_rids);
+RCSMemoryAllocation::~RCSMemoryAllocation(){
+	tracker_ptr = nullptr;
 }
 
-void SentrienceInstancesWatcher::flush_all(){
+void *operator new(size_t size){
+	RCSMemoryAllocation::tracker_ptr->add_allocated(size);
+	// print_verbose(String("{Sentrience:allocator] ") + String(p_description));
+	return malloc(size);
+}
+
+void operator delete(void* memory, size_t size){
+	RCSMemoryAllocation::tracker_ptr->add_deallocated(size);
+	free(memory);
+}
+
+void SentrienceContext::_bind_methods(){
+	ClassDB::bind_method(D_METHOD("flush_all"), &SentrienceContext::flush_all);
+	ClassDB::bind_method(D_METHOD("size"), &SentrienceContext::size);
+	ClassDB::bind_method(D_METHOD("get_rids"), &SentrienceContext::get_rids);
+}
+
+void SentrienceContext::flush_all(){
 #ifndef USE_THREAD_SAFE_API
-	Sentrience::get_singleton()->watcher_flush(Ref<SentrienceInstancesWatcher>(this));
+	Sentrience::get_singleton()->memcontext_flush(Ref<SentrienceContext>(this));
 #endif
 }
+
+#ifdef USE_CIRCULAR_DEBUG_RECORD
+void Sentrience::init_debug_record(){
+	TIMER_USEC();
+	debug_record = new SWContigousStack<RID_TYPE>(CIRC_RECORD_SIZE);
+	log(String("This debug_record started with max_size of ") + itos(debug_record->get_max_size()) 
+		+ String(" which takes up to ") + String::humanize_size(debug_record->estimate_size()) + String(" of heap memory."));
+}
+#endif
 
 Sentrience::Sentrience(){
 	ERR_FAIL_COND(singleton);
 	singleton = this;
 	// RCSMemoryAllocationPtr = rcsnew(RCSMemoryAllocation);
 	active = false;
+#ifdef USE_CIRCULAR_DEBUG_RECORD
+	init_debug_record();
+#endif
+
 #ifdef USE_THREAD_SAFE_API
 	gc_thread = new std::thread(&Sentrience::gc_worker, this);
 #endif
 }
+
+
 
 Sentrience::~Sentrience(){
 	// flush_instances_pool();
@@ -127,7 +179,26 @@ Sentrience::~Sentrience(){
 	}
 #else
 #endif
-	auto rcs_alloc = RCSMemoryAllocation::tracker_ptr->currently_allocated();
+#ifdef USE_CIRCULAR_DEBUG_RECORD
+	if (debug_record->get_usage() > 0){
+		log(String("There is currently ") + itos(debug_record->get_usage()) + String(" unfreed RID(s)."));
+#ifdef DEBUG_RECORD_AUTO_FREE
+		log("Attempting to free orphan RID(s)...");
+#endif
+		for (SWContigousStack<RID_TYPE>::Element* E = debug_record->iterate(); E; E = debug_record->iterate(E)){
+			auto rid = E->get();
+			if (rid.get_id() == 0) continue;
+			log(String("In use: ") + rid_sort(rid) + ":" + itos(rid.get_id()));
+#ifdef DEBUG_RECORD_AUTO_FREE
+			free_single_rid_internal(rid);
+#endif
+		}
+	} else {
+		log("All RIDs have been cleaned up by the time Sentrience exit");
+	}
+	delete debug_record;
+#endif
+    auto rcs_alloc = RCSMemoryAllocation::tracker_ptr->currently_allocated();
 	if (rcs_alloc > 0){
 		log(String("There is currently ") + String::humanize_size(rcs_alloc) + String(" of memory spawned by Sentrience that hasn\'t been freed."));
 	}
@@ -140,17 +211,17 @@ Sentrience::~Sentrience(){
 	// rcsdel(RCSMemoryAllocationPtr);
 }
 
-Ref<SentrienceInstancesWatcher> Sentrience::watcher_create(){
-	std::lock_guard<std::recursive_mutex> guadr(watcher_mutex);
-	Ref<SentrienceInstancesWatcher> watcher = memnew(SentrienceInstancesWatcher);
-	// if (active_watcher.is_valid()) watcher_flush(active_watcher);
+Ref<SentrienceContext> Sentrience::memcontext_create(){
+	std::lock_guard<std::recursive_mutex> guard(watcher_mutex);
+	Ref<SentrienceContext> watcher = memnew(SentrienceContext);
+	// if (active_watcher.is_valid()) memcontext_flush(active_watcher);
 	active_watcher = watcher;
 	return watcher;
 }
-void Sentrience::watcher_remove(){
-	std::lock_guard<std::recursive_mutex> guadr(watcher_mutex);
-	// if (active_watcher.is_valid()) watcher_flush(active_watcher);
-	active_watcher = Ref<SentrienceInstancesWatcher>();
+void Sentrience::memcontext_remove(){
+	std::lock_guard<std::recursive_mutex> guard(watcher_mutex);
+	// if (active_watcher.is_valid()) memcontext_flush(active_watcher);
+	active_watcher = Ref<SentrienceContext>();
 }
 
 void Sentrience::free_single_rid_internal(const RID_TYPE& target){
@@ -160,18 +231,21 @@ void Sentrience::free_single_rid_internal(const RID_TYPE& target){
 		auto stuff = simulation_owner.get(target);
 		simulation_set_active(target, false);
 		simulation_owner.free(target);
+		EraseRID(target);
 		rcsdel(stuff);
 	} else if(combatant_owner.owns(target)){
 		COMBATANTS_THREAD_SAFE;
 		FreeLog(RCSCombatant, target);
 		auto stuff = combatant_owner.get(target);
 		combatant_owner.free(target);
+		EraseRID(target);
 		rcsdel(stuff);
 	} else if(squad_owner.owns(target)){
 		SQUADS_THREAD_SAFE;
 		FreeLog(RCSSquad, target);
 		auto stuff = squad_owner.get(target);
 		squad_owner.free(target);
+		EraseRID(target);
 		rcsdel(stuff);
 	} else if (team_owner.owns(target)){
 		TEAMS_THREAD_SAFE;
@@ -179,11 +253,13 @@ void Sentrience::free_single_rid_internal(const RID_TYPE& target){
 		auto stuff = team_owner.get(target);
 		team_purge_links_multilateral(target);
 		team_owner.free(target);
+		EraseRID(target);
 		rcsdel(stuff);
 	} else if(radar_owner.owns(target)){
 		RADARS_THREAD_SAFE;
 		FreeLog(RCSRadar, target);
 		auto stuff = radar_owner.get(target);
+		EraseRID(target);
 		radar_owner.free(target);
 		rcsdel(stuff);
 	} else if(recording_owner.owns(target)){
@@ -191,6 +267,8 @@ void Sentrience::free_single_rid_internal(const RID_TYPE& target){
 		FreeLog(RCSRecording, target);
 		auto stuff = recording_owner.get(target);
 		recording_end(target);
+		recording_purge(target);
+		EraseRID(target);
 		recording_owner.free(target);
 		rcsdel(stuff);
 	} else return;
@@ -243,22 +321,19 @@ String Sentrience::rid_sort(const RID_TYPE& target){
 	else RIDSort(radar_owner, RCSRadar, target)
 	return String("<unknown>");
 }
-
-void Sentrience::log(const String& msg){
-	print_verbose(String("[Sentrience] ") + msg);
-}
-void Sentrience::log(const std::string& msg){
-	print_verbose(String("[Sentrience] ") + String(msg.c_str()));
-}
-
-void Sentrience::log(const char* msg){
-	print_verbose(String("[Sentrience] ") + String(msg));
+void Sentrience::pre_close(){
+	log("exitting...");
 }
 
 void Sentrience::_bind_methods(){
-	ClassDB::bind_method(D_METHOD("watcher_create"), &Sentrience::watcher_create);
-	ClassDB::bind_method(D_METHOD("watcher_remove"), &Sentrience::watcher_remove);
-	ClassDB::bind_method(D_METHOD("watcher_flush", "watcher"), &Sentrience::watcher_flush);
+	ClassDB::bind_method(D_METHOD("set_scatter", "s"), &Sentrience::set_scatter);
+	ClassDB::bind_method(D_METHOD("get_scatter"), &Sentrience::get_scatter);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "poll_scatter", PROPERTY_HINT_RANGE, "1,10,1"), "set_scatter", "get_scatter");
+
+	ClassDB::bind_method(D_METHOD("memcontext_create"), &Sentrience::memcontext_create);
+	ClassDB::bind_method(D_METHOD("memcontext_remove"), &Sentrience::memcontext_remove);
+	ClassDB::bind_method(D_METHOD("memcontext_flush", "watcher"), &Sentrience::memcontext_flush);
+
 	ClassDB::bind_method(D_METHOD("free_rid", "target"), &Sentrience::free_rid);
 	ClassDB::bind_method(D_METHOD("free_all_instances"), &Sentrience::free_all_instances);
 	ClassDB::bind_method(D_METHOD("get_memory_usage"), &Sentrience::get_memory_usage);
@@ -273,6 +348,7 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("recording_start", "r_rec"), &Sentrience::recording_start);
 	ClassDB::bind_method(D_METHOD("recording_end", "r_rec"), &Sentrience::recording_end);
 	ClassDB::bind_method(D_METHOD("recording_running", "r_rec"), &Sentrience::recording_running);
+	ClassDB::bind_method(D_METHOD("recording_purge", "r_rec"), &Sentrience::recording_purge);
 
 	ClassDB::bind_method(D_METHOD("simulation_create"), &Sentrience::simulation_create);
 	ClassDB::bind_method(D_METHOD("simulation_assert", "r_simul"), &Sentrience::simulation_assert);
@@ -339,6 +415,7 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("team_create_link", "from", "to"), &Sentrience::team_create_link);
 	ClassDB::bind_method(D_METHOD("team_create_link_bilateral", "from", "to"), &Sentrience::team_create_link_bilateral);
 	ClassDB::bind_method(D_METHOD("team_get_link", "from", "to"), &Sentrience::team_get_link);
+    ClassDB::bind_method(D_METHOD("team_has_link", "from", "to"), &Sentrience::team_has_link);
 	ClassDB::bind_method(D_METHOD("team_unlink", "from", "to"), &Sentrience::team_unlink);
 	ClassDB::bind_method(D_METHOD("team_unlink_bilateral", "from", "to"), &Sentrience::team_unlink_bilateral);
 	ClassDB::bind_method(D_METHOD("team_purge_links_multilateral", "from"), &Sentrience::team_purge_links_multilateral);
@@ -359,6 +436,7 @@ void Sentrience::_bind_methods(){
 
 void Sentrience::poll(const float& delta){
 	if (!active) return;
+	if (Engine::get_singleton()->get_physics_frames() % poll_scatter != 0) return;
 	
 	for (uint32_t i = 0; i < active_simulations.size(); i++){
 		auto space = active_simulations[i];
@@ -382,14 +460,15 @@ void Sentrience::free_all_instances(){
 	log("This method has been deprecated.");
 }
 
-void Sentrience::watcher_flush(Ref<SentrienceInstancesWatcher> watcher){
+void Sentrience::memcontext_flush(Ref<SentrienceContext> watcher){
 #ifndef USE_THREAD_SAFE_API
 	if (watcher.is_null()) return;
 	std::lock_guard<std::recursive_mutex> guard(watcher->lock);
 	for (auto E = watcher->get_rid_pool()->front(); E; E = E->next()){
 		free_single_rid_internal(E->get());
 	}
-	// watcher_remove();
+	watcher->get_rid_pool()->clear();
+	// memcontext_remove();
 #endif
 }
 #ifdef USE_SAFE_RID_COUNT
@@ -418,7 +497,7 @@ void Sentrience::flush_instances_pool(){
 	}
 	gc_queue_mutex.unlock();
 #else
-	// watcher_flush();
+	// memcontext_flush();
 	ERR_FAIL_MSG("This method is deprecated");
 #endif
 }
@@ -663,13 +742,13 @@ Transform Sentrience::combatant_get_space_transform(const RID_TYPE& r_com){
 	COMBATANTS_THREAD_SAFE;
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, Transform());
-	return combatant->get_st();
+	return combatant->get_global_transform();
 }
 Transform Sentrience::combatant_get_local_transform(const RID_TYPE& r_com){
 	COMBATANTS_THREAD_SAFE;
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, Transform());
-	return combatant->get_lt();
+	return combatant->get_local_transform();
 }
 
 Transform Sentrience::combatant_get_combined_transform(const RID_TYPE& r_com){
@@ -1013,15 +1092,15 @@ void Sentrience::radar_request_recheck_on(const RID_TYPE& r_rad, const RID_TYPE&
 	ERR_FAIL_COND(!simulation);
 	simulation->radar_request_recheck(new RadarRecheckTicket(radar, combatant));
 }
-Array Sentrience::radar_get_detected(const RID_TYPE& r_rad){
+Vector<RID_TYPE> Sentrience::radar_get_detected(const RID_TYPE& r_rad){
 	RADARS_THREAD_SAFE;
 	auto radar = radar_owner.get(r_rad);
-	ERR_FAIL_COND_V(!radar, Array());
+	ERR_FAIL_COND_V(!radar, Vector<RID_TYPE>());
 	return radar->get_detected();
 }
-Array Sentrience::radar_get_locked(const RID_TYPE& r_rad){
+Vector<RID_TYPE> Sentrience::radar_get_locked(const RID_TYPE& r_rad){
 	RADARS_THREAD_SAFE;
 	auto radar = radar_owner.get(r_rad);
-	ERR_FAIL_COND_V(!radar, Array());
+	ERR_FAIL_COND_V(!radar, Vector<RID_TYPE>());
 	return radar->get_locked();
 }

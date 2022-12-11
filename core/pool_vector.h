@@ -525,8 +525,9 @@ public:
 template <class T>
 PoolVector<T>::PoolVector(const Vector<T>& from_vec) {
 	auto size  = from_vec.size();
+	resize(size);
 	for (size_t i = 0; i < size; i++){
-		push_back(from_vec[i]);
+		set(i, from_vec[i]);
 	}
 }
 #endif

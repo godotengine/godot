@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 #include <chrono>
-#include <mutex>
+#include <mutex> 
 
 #include "core/hash_map.h"
 #include "core/object.h"
@@ -13,14 +13,21 @@
 #include "core/vector.h"
 #include "rcs_maincomp.h"
 
-#define MAX_OBJECT_PER_CONTAINER 1024
+//#define MAX_OBJECT_PER_CONTAINER 1024
 // #define USE_THREAD_SAFE_API
+#ifdef DEBUG_ENABLED
+#define USE_CIRCULAR_DEBUG_RECORD
+#endif
+#ifdef USE_CIRCULAR_DEBUG_RECORD
+#define CIRC_RECORD_SIZE 32'768
+#define DEBUG_RECORD_AUTO_FREE
+#endif
 
 class Sentrience;
-class SentrienceInstancesWatcher;
+class SentrienceContext;
 
-class SentrienceInstancesWatcher : public Reference {
-	GDCLASS(SentrienceInstancesWatcher, Reference);
+class SentrienceContext : public Reference {
+	GDCLASS(SentrienceContext, Reference);
 private:
 	List<RID_TYPE> rid_pool;
 	std::recursive_mutex lock;
@@ -38,8 +45,8 @@ private:
 protected:
 	static void _bind_methods();
 public:
-	SentrienceInstancesWatcher(){}
-	~SentrienceInstancesWatcher(){}
+	SentrienceContext(){}
+	~SentrienceContext(){}
 
 	void flush_all();
 	_FORCE_INLINE_ uint32_t size() const {
@@ -58,6 +65,7 @@ class Sentrience : public Object {
 	GDCLASS(Sentrience, Object);
 
 	bool active;
+	uint32_t poll_scatter = 1;
 #ifdef USE_THREAD_SAFE_API
 	uint64_t gc_interval_msec = 5;
 	bool gc_close = false;
@@ -72,8 +80,13 @@ class Sentrience : public Object {
 	List<RID_TYPE> rid_deletion_queue;
 	List<RID_TYPE> all_rids;
 #else
-	Ref<SentrienceInstancesWatcher> active_watcher;
+	Ref<SentrienceContext> active_watcher;
 	std::recursive_mutex watcher_mutex;
+#endif
+
+#ifdef USE_CIRCULAR_DEBUG_RECORD
+	SWContigousStack<RID_TYPE> *debug_record;
+	void init_debug_record();
 #endif
 
 	VECTOR<RCSSimulation*> active_simulations;
@@ -97,18 +110,24 @@ class Sentrience : public Object {
 	mutable RID_Owner<RCSRadar> radar_owner;
 #endif
 protected:
+	void pre_close();
+	virtual void poll(const float& delta);
 	static void _bind_methods();
 	static Sentrience* singleton;
 
-	static void log(const String& msg);
-	static void log(const std::string& msg);
-	static void log(const char *msg);
+	_ALWAYS_INLINE_ void set_scatter(const uint32_t& s){ poll_scatter = CLAMP(s, 1, 10); }
+	_ALWAYS_INLINE_ uint32_t get_scatter() const { return poll_scatter; }
+
+	static _ALWAYS_INLINE_ void log(const String& msg) { print_verbose(String("[Sentrience] ") + msg); }
+	static _ALWAYS_INLINE_ void log(const std::string& msg) { print_verbose(String("[Sentrience] ") + String(msg.c_str())); }
+	static _ALWAYS_INLINE_ void log(const char *msg) { print_verbose(String("[Sentrience] ") + String(msg)); }
 	
 	String rid_sort(const RID_TYPE& target);
 
 	void free_single_rid_internal(const RID_TYPE& target);
 	void free_rid_internal();
 	void gc_worker();
+	friend class SceneTreeHook;
 public:
 	Sentrience();
 	~Sentrience();
@@ -118,7 +137,6 @@ public:
 	// friend class std::thread;
 
 	static Sentrience* get_singleton() { return singleton; }
-	virtual void poll(const float& delta);
 
 	/* Core */
 	_FORCE_INLINE_ void set_active(const bool& is_active) { active = is_active;}
@@ -137,13 +155,13 @@ public:
 	void free_all_instances();
 	void flush_instances_pool();
 #ifndef USE_THREAD_SAFE_API
-	Ref<SentrienceInstancesWatcher> watcher_create();
-	void watcher_remove();
-	void watcher_flush(Ref<SentrienceInstancesWatcher> watcher);
+	Ref<SentrienceContext> memcontext_create();
+	void memcontext_remove();
+	void memcontext_flush(Ref<SentrienceContext> watcher);
 #else
-	_FORCE_INLINE_ uint8_t watcher_create() { return 0; }
-	_FORCE_INLINE_ void watcher_remove() {}
-	void watcher_flush(uint32_t& watcher) {}
+	_FORCE_INLINE_ uint8_t memcontext_create() { return 0; }
+	_FORCE_INLINE_ void memcontext_remove() {}
+	void memcontext_flush(uint32_t& watcher) {}
 #endif
 
 	/* Recording API */
@@ -239,8 +257,8 @@ public:
 	virtual void radar_set_profile(const RID_TYPE& r_rad, const Ref<RCSRadarProfile>& profile);
 	virtual Ref<RCSRadarProfile> radar_get_profile(const RID_TYPE& r_rad);
 	virtual void radar_request_recheck_on(const RID_TYPE& r_rad, const RID_TYPE& r_com);
-	virtual Array radar_get_detected(const RID_TYPE& r_rad);
-	virtual Array radar_get_locked(const RID_TYPE& r_rad);
+	virtual Vector<RID_TYPE> radar_get_detected(const RID_TYPE& r_rad);
+	virtual Vector<RID_TYPE> radar_get_locked(const RID_TYPE& r_rad);
 };
 
 #endif
