@@ -50,6 +50,13 @@ GDScriptParser *GDScriptParserRef::get_parser() const {
 	return parser;
 }
 
+GDScriptAnalyzer *GDScriptParserRef::get_analyzer() {
+	if (analyzer == nullptr) {
+		analyzer = memnew(GDScriptAnalyzer(parser));
+	}
+	return analyzer;
+}
+
 Error GDScriptParserRef::raise_status(Status p_new_status) {
 	ERR_FAIL_COND_V(parser == nullptr, ERR_INVALID_DATA);
 
@@ -64,23 +71,22 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 				result = parser->parse(GDScriptCache::get_source_code(path), path, false);
 				break;
 			case PARSED: {
-				analyzer = memnew(GDScriptAnalyzer(parser));
 				status = INHERITANCE_SOLVED;
-				Error inheritance_result = analyzer->resolve_inheritance();
+				Error inheritance_result = get_analyzer()->resolve_inheritance();
 				if (result == OK) {
 					result = inheritance_result;
 				}
 			} break;
 			case INHERITANCE_SOLVED: {
 				status = INTERFACE_SOLVED;
-				Error interface_result = analyzer->resolve_interface();
+				Error interface_result = get_analyzer()->resolve_interface();
 				if (result == OK) {
 					result = interface_result;
 				}
 			} break;
 			case INTERFACE_SOLVED: {
 				status = FULLY_SOLVED;
-				Error body_result = analyzer->resolve_body();
+				Error body_result = get_analyzer()->resolve_body();
 				if (result == OK) {
 					result = body_result;
 				}
