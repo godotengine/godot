@@ -227,10 +227,12 @@ NavigationLink3D::NavigationLink3D() {
 }
 
 NavigationLink3D::~NavigationLink3D() {
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	NavigationServer3D::get_singleton()->free(link);
 	link = RID();
 
 #ifdef DEBUG_ENABLED
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(debug_instance);
 	}

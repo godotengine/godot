@@ -157,6 +157,7 @@ VisualInstance3D::VisualInstance3D() {
 }
 
 VisualInstance3D::~VisualInstance3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(instance);
 }
 

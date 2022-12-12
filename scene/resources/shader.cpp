@@ -208,6 +208,7 @@ Shader::Shader() {
 }
 
 Shader::~Shader() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(shader);
 }
 

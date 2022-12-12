@@ -148,6 +148,7 @@ OccluderPolygon2D::OccluderPolygon2D() {
 }
 
 OccluderPolygon2D::~OccluderPolygon2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(occ_polygon);
 }
 
@@ -291,5 +292,7 @@ LightOccluder2D::LightOccluder2D() {
 }
 
 LightOccluder2D::~LightOccluder2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
 	RS::get_singleton()->free(occluder);
 }

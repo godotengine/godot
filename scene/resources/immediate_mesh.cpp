@@ -410,5 +410,6 @@ ImmediateMesh::ImmediateMesh() {
 	mesh = RS::get_singleton()->mesh_create();
 }
 ImmediateMesh::~ImmediateMesh() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(mesh);
 }

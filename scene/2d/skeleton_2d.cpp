@@ -529,6 +529,7 @@ Bone2D::Bone2D() {
 Bone2D::~Bone2D() {
 #ifdef TOOLS_ENABLED
 	if (!editor_gizmo_rid.is_null()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free(editor_gizmo_rid);
 	}
 #endif // TOOLS_ENABLED
@@ -803,5 +804,6 @@ Skeleton2D::Skeleton2D() {
 }
 
 Skeleton2D::~Skeleton2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(skeleton);
 }
