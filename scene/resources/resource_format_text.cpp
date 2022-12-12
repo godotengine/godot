@@ -629,7 +629,8 @@ void ResourceInteractiveLoaderText::set_translation_remapped(bool p_remapped) {
 	translation_remapped = p_remapped;
 }
 
-ResourceInteractiveLoaderText::ResourceInteractiveLoaderText() {
+ResourceInteractiveLoaderText::ResourceInteractiveLoaderText() :
+		stream(false) {
 	translation_remapped = false;
 }
 

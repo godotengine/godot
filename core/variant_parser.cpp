@@ -42,7 +42,7 @@ CharType VariantParser::Stream::get_char() {
 	}
 
 	// attempt to readahead
-	readahead_filled = _read_buffer(readahead_buffer, READAHEAD_SIZE);
+	readahead_filled = _read_buffer(readahead_buffer, readahead_enabled ? READAHEAD_SIZE : 1);
 	if (readahead_filled) {
 		readahead_pointer = 0;
 	} else {
@@ -52,6 +52,13 @@ CharType VariantParser::Stream::get_char() {
 		return 0;
 	}
 	return get_char();
+}
+
+bool VariantParser::Stream::is_eof() const {
+	if (readahead_enabled) {
+		return eof;
+	}
+	return _is_eof();
 }
 
 uint32_t VariantParser::StreamFile::_read_buffer(CharType *p_buffer, uint32_t p_num_chars) {
@@ -73,6 +80,10 @@ uint32_t VariantParser::StreamFile::_read_buffer(CharType *p_buffer, uint32_t p_
 
 bool VariantParser::StreamFile::is_utf8() const {
 	return true;
+}
+
+bool VariantParser::StreamFile::_is_eof() const {
+	return f->eof_reached();
 }
 
 uint32_t VariantParser::StreamString::_read_buffer(CharType *p_buffer, uint32_t p_num_chars) {
@@ -105,6 +116,10 @@ uint32_t VariantParser::StreamString::_read_buffer(CharType *p_buffer, uint32_t 
 
 bool VariantParser::StreamString::is_utf8() const {
 	return false;
+}
+
+bool VariantParser::StreamString::_is_eof() const {
+	return pos > s.length();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
