@@ -203,8 +203,8 @@ public:
 		//nothing
 	}
 
-	static void register_extension_class(ObjectNativeExtension *p_extension);
-	static void unregister_extension_class(const StringName &p_class);
+	static bool register_extension_class(ObjectNativeExtension *p_extension);
+	static bool unregister_extension_class(const StringName &p_class);
 
 	template <class T>
 	static Object *_create_ptr_func() {
@@ -297,18 +297,18 @@ public:
 		return bind;
 	}
 
-	static void bind_method_custom(const StringName &p_class, MethodBind *p_method);
+	static bool bind_method_custom(const StringName &p_class, MethodBind *p_method);
 
-	static void add_signal(const StringName &p_class, const MethodInfo &p_signal);
+	static bool add_signal(const StringName &p_class, const MethodInfo &p_signal);
 	static bool has_signal(const StringName &p_class, const StringName &p_signal, bool p_no_inheritance = false);
 	static bool get_signal(const StringName &p_class, const StringName &p_signal, MethodInfo *r_signal);
 	static void get_signal_list(const StringName &p_class, List<MethodInfo> *p_signals, bool p_no_inheritance = false);
 
-	static void add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix = "", int p_indent_depth = 0);
-	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "", int p_indent_depth = 0);
+	static bool add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix = "", int p_indent_depth = 0);
+	static bool add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "", int p_indent_depth = 0);
 	static void add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage = PROPERTY_USAGE_DEFAULT);
 	static void add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix);
-	static void add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
+	static bool add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
 	static void set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default);
 	static void add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property);
 	static void get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
@@ -332,7 +332,7 @@ public:
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 
-	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
+	static bool bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
 	static int64_t get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
 	static bool has_integer_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
