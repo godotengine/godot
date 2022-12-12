@@ -2372,10 +2372,8 @@ void DisplayServerWayland::_show_window() {
 		// Wait for the surface to be configured before continuing.
 		wl_display_roundtrip(wls.wl_display);
 
-		if (wd.xdg_toplevel) {
-			// Actually try to apply any mode the window has now that it's visible.
-			_window_data_set_mode(wd, wd.mode);
-		}
+		// Actually try to apply any mode the window has now that it's visible.
+		_window_data_set_mode(wd, wd.mode);
 
 #ifdef LIBDECOR_ENABLED
 		if (wd.libdecor_frame) {
