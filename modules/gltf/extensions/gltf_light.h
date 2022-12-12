@@ -34,6 +34,10 @@
 #include "../gltf_defines.h"
 #include "core/resource.h"
 
+class Light;
+
+// https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual
+
 class GLTFLight : public Resource {
 	GDCLASS(GLTFLight, Resource)
 	friend class GLTFDocument;
@@ -67,6 +71,12 @@ public:
 
 	float get_outer_cone_angle();
 	void set_outer_cone_angle(float p_outer_cone_angle);
+
+	static Ref<GLTFLight> from_node(const Light *p_light);
+	Light *to_node() const;
+
+	static Ref<GLTFLight> from_dictionary(const Dictionary p_dictionary);
+	Dictionary to_dictionary() const;
 };
 
 #endif // GLTF_LIGHT_H

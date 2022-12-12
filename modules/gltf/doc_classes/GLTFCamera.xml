@@ -1,22 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFCamera" inherits="Resource" version="3.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Represents a GLTF camera.
 	</brief_description>
 	<description>
+		Represents a camera as defined by the base GLTF spec.
 		[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF loading and saving is [i]not[/i] available in exported projects. References to [GLTFCamera] within a script will cause an error in an exported project.
 	</description>
 	<tutorials>
+		<link title="GLTF camera detailed specification">https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-camera</link>
+		<link title="GLTF camera spec and example file">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_015_SimpleCameras.md</link>
 	</tutorials>
 	<methods>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFCamera instance into a [Dictionary].
+			</description>
+		</method>
+		<method name="to_node" qualifiers="const">
+			<return type="Camera" />
+			<description>
+				Converts this GLTFCamera instance into a Godot [Camera] node.
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="fov_size" type="float" setter="set_fov_size" getter="get_fov_size" default="75.0">
+		<member name="fov_size" type="float" setter="set_fov_size" getter="get_fov_size" default="1.309">
+			The FOV of the camera. This class and GLTF define the camera FOV in radians, while Godot uses degrees. This maps to GLTF's [code]yfov[/code] property. This value is only used for perspective cameras, when [member perspective] is true.
 		</member>
 		<member name="perspective" type="bool" setter="set_perspective" getter="get_perspective" default="true">
+			Whether or not the camera is in perspective mode. If false, the camera is in orthographic/orthogonal mode. This maps to GLTF's camera [code]type[/code] property. See [member Camera.projection] and the GLTF spec for more information.
+		</member>
+		<member name="size_mag" type="float" setter="set_size_mag" getter="get_size_mag" default="0.5">
+			The size of the camera. This class and GLTF define the camera size magnitude as a radius in meters, while Godot defines it as a diameter in meters. This maps to GLTF's [code]ymag[/code] property. This value is only used for orthographic/orthogonal cameras, when [member perspective] is false.
 		</member>
 		<member name="zfar" type="float" setter="set_zfar" getter="get_zfar" default="4000.0">
+			The distance to the far culling boundary for this camera relative to its local Z axis, in meters. This maps to GLTF's [code]zfar[/code] property.
 		</member>
 		<member name="znear" type="float" setter="set_znear" getter="get_znear" default="0.05">
+			The distance to the near culling boundary for this camera relative to its local Z axis, in meters. This maps to GLTF's [code]znear[/code] property.
 		</member>
 	</members>
 	<constants>
