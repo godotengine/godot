@@ -46,14 +46,16 @@ public:
 		bool eof = false;
 
 	protected:
+		bool readahead_enabled = true;
 		virtual uint32_t _read_buffer(CharType *p_buffer, uint32_t p_num_chars) = 0;
+		virtual bool _is_eof() const = 0;
 
 	public:
 		CharType saved;
 
 		CharType get_char();
 		virtual bool is_utf8() const = 0;
-		bool is_eof() const { return eof; }
+		bool is_eof() const;
 
 		Stream() :
 				saved(0) {}
@@ -63,12 +65,16 @@ public:
 	struct StreamFile : public Stream {
 	protected:
 		virtual uint32_t _read_buffer(CharType *p_buffer, uint32_t p_num_chars);
+		virtual bool _is_eof() const;
 
 	public:
 		FileAccess *f;
 
 		virtual bool is_utf8() const;
-		StreamFile() { f = nullptr; }
+		StreamFile(bool p_readahead_enabled = true) {
+			f = nullptr;
+			readahead_enabled = p_readahead_enabled;
+		}
 	};
 
 	struct StreamString : public Stream {
@@ -77,12 +83,16 @@ public:
 
 	protected:
 		virtual uint32_t _read_buffer(CharType *p_buffer, uint32_t p_num_chars);
+		virtual bool _is_eof() const;
 
 	public:
 		String s;
 
 		virtual bool is_utf8() const;
-		StreamString() { pos = 0; }
+		StreamString(bool p_readahead_enabled = true) {
+			pos = 0;
+			readahead_enabled = p_readahead_enabled;
+		}
 	};
 
 	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
