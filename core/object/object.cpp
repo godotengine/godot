@@ -233,7 +233,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif
-		if (_extension->set(_extension_instance, (const GDNativeStringNamePtr)&p_name, (const GDNativeVariantPtr)&p_value)) {
+		if (_extension->set(_extension_instance, (const GDExtensionStringNamePtr)&p_name, (const GDExtensionVariantPtr)&p_value)) {
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -321,7 +321,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif
 
-		if (_extension->get(_extension_instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&ret)) {
+		if (_extension->get(_extension_instance, (const GDExtensionStringNamePtr)&p_name, (GDExtensionVariantPtr)&ret)) {
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -477,7 +477,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 
 	if (_extension) {
-		const ObjectNativeExtension *current_extension = _extension;
+		const ObjectGDExtension *current_extension = _extension;
 		while (current_extension) {
 			p_list->push_back(PropertyInfo(Variant::NIL, current_extension->class_name, PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 			ClassDB::get_property_list(current_extension->class_name, p_list, true, this);
@@ -487,7 +487,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	if (_extension && _extension->get_property_list) {
 		uint32_t pcount;
-		const GDNativePropertyInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
+		const GDExtensionPropertyInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
 		for (uint32_t i = 0; i < pcount; i++) {
 			p_list->push_back(PropertyInfo(pinfo[i]));
 		}
@@ -533,7 +533,7 @@ bool Object::property_can_revert(const StringName &p_name) const {
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif
 	if (_extension && _extension->property_can_revert) {
-		if (_extension->property_can_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name)) {
+		if (_extension->property_can_revert(_extension_instance, (const GDExtensionStringNamePtr)&p_name)) {
 			return true;
 		}
 	}
@@ -559,7 +559,7 @@ Variant Object::property_get_revert(const StringName &p_name) const {
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif
 	if (_extension && _extension->property_get_revert) {
-		if (_extension->property_get_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&ret)) {
+		if (_extension->property_get_revert(_extension_instance, (const GDExtensionStringNamePtr)&p_name, (GDExtensionVariantPtr)&ret)) {
 			return ret;
 		}
 	}
@@ -808,7 +808,7 @@ String Object::to_string() {
 	}
 	if (_extension && _extension->to_string) {
 		String ret;
-		GDNativeBool is_valid;
+		GDExtensionBool is_valid;
 		_extension->to_string(_extension_instance, &is_valid, &ret);
 		return ret;
 	}
@@ -1701,7 +1701,7 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
-void Object::set_instance_binding(void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks) {
+void Object::set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
 	// This is only meant to be used on creation by the binder.
 	ERR_FAIL_COND(_instance_bindings != nullptr);
 	_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
@@ -1712,7 +1712,7 @@ void Object::set_instance_binding(void *p_token, void *p_binding, const GDNative
 	_instance_binding_count = 1;
 }
 
-void *Object::get_instance_binding(void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks) {
+void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
 	void *binding = nullptr;
 	_instance_binding_mutex.lock();
 	for (uint32_t i = 0; i < _instance_binding_count; i++) {

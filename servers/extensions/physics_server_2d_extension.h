@@ -126,12 +126,12 @@ protected:
 	static void _bind_methods();
 	bool is_body_excluded_from_query(const RID &p_body) const;
 
-	GDVIRTUAL7R(bool, _intersect_ray, const Vector2 &, const Vector2 &, uint32_t, bool, bool, bool, GDNativePtr<PhysicsServer2DExtensionRayResult>)
-	GDVIRTUAL7R(int, _intersect_point, const Vector2 &, ObjectID, uint32_t, bool, bool, GDNativePtr<PhysicsServer2DExtensionShapeResult>, int)
-	GDVIRTUAL9R(int, _intersect_shape, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDNativePtr<PhysicsServer2DExtensionShapeResult>, int)
-	GDVIRTUAL9R(bool, _cast_motion, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDNativePtr<real_t>, GDNativePtr<real_t>)
-	GDVIRTUAL10R(bool, _collide_shape, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDNativePtr<Vector2>, int, GDNativePtr<int>)
-	GDVIRTUAL8R(bool, _rest_info, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDNativePtr<PhysicsServer2DExtensionShapeRestInfo>)
+	GDVIRTUAL7R(bool, _intersect_ray, const Vector2 &, const Vector2 &, uint32_t, bool, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionRayResult>)
+	GDVIRTUAL7R(int, _intersect_point, const Vector2 &, ObjectID, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeResult>, int)
+	GDVIRTUAL9R(int, _intersect_shape, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeResult>, int)
+	GDVIRTUAL9R(bool, _cast_motion, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<real_t>, GDExtensionPtr<real_t>)
+	GDVIRTUAL10R(bool, _collide_shape, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
+	GDVIRTUAL8R(bool, _rest_info, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeRestInfo>)
 
 public:
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override {
@@ -190,9 +190,9 @@ class PhysicsServer2DExtension : public PhysicsServer2D {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL9R(bool, _shape_collide, RID, const Transform2D &, const Vector2 &, RID, const Transform2D &, const Vector2 &, GDNativePtr<Vector2>, int, GDNativePtr<int>)
+	GDVIRTUAL9R(bool, _shape_collide, RID, const Transform2D &, const Vector2 &, RID, const Transform2D &, const Vector2 &, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
 
-	GDVIRTUAL8R(bool, _body_collide_shape, RID, int, RID, const Transform2D &, const Vector2 &, GDNativePtr<Vector2>, int, GDNativePtr<int>)
+	GDVIRTUAL8R(bool, _body_collide_shape, RID, int, RID, const Transform2D &, const Vector2 &, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
 
 public:
 	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
@@ -385,7 +385,7 @@ public:
 
 	EXBIND1R(PhysicsDirectBodyState2D *, body_get_direct_state, RID)
 
-	GDVIRTUAL7RC(bool, _body_test_motion, RID, const Transform2D &, const Vector2 &, real_t, bool, bool, GDNativePtr<PhysicsServer2DExtensionMotionResult>)
+	GDVIRTUAL7RC(bool, _body_test_motion, RID, const Transform2D &, const Vector2 &, real_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionMotionResult>)
 
 	thread_local static const HashSet<RID> *exclude_bodies;
 	thread_local static const HashSet<ObjectID> *exclude_objects;

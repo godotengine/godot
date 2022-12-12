@@ -73,7 +73,7 @@ static bool _create_project_solution_if_needed() {
 
 CSharpLanguage *CSharpLanguage::singleton = nullptr;
 
-GDNativeInstanceBindingCallbacks CSharpLanguage::_instance_binding_callbacks = {
+GDExtensionInstanceBindingCallbacks CSharpLanguage::_instance_binding_callbacks = {
 	&_instance_binding_create_callback,
 	&_instance_binding_free_callback,
 	&_instance_binding_reference_callback
@@ -1293,7 +1293,7 @@ void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_bin
 	}
 }
 
-GDNativeBool CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDNativeBool p_reference) {
+GDExtensionBool CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference) {
 	CRASH_COND(!p_binding);
 
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)p_binding)->get();
@@ -2202,7 +2202,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	bool tool = false;
 
-	// TODO: Use GDNative godot_dictionary
+	// TODO: Use GDExtension godot_dictionary
 	Array methods_array;
 	methods_array.~Array();
 	Dictionary rpc_functions_dict;

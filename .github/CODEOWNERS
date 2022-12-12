@@ -118,13 +118,12 @@ doc_classes/*                       @godotengine/documentation
 
 ## Text
 /modules/freetype/                  @godotengine/buildsystem
-/modules/gdnative/text/             @godotengine/gui-nodes
 /modules/text_server_adv/           @godotengine/gui-nodes
 /modules/text_server_fb/            @godotengine/gui-nodes
 
 ## XR
 /modules/camera/                    @godotengine/xr
-/modules/gdnative/xr/               @godotengine/xr
+/modules/gdextension/xr/            @godotengine/xr
 /modules/mobile_vr/                 @godotengine/xr
 /modules/webxr/                     @godotengine/xr
 

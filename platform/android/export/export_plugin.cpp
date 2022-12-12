@@ -205,7 +205,7 @@ static const char *LEGACY_BUILD_SPLASH_IMAGE_EXPORT_PATH = "res/drawable-nodpi-v
 static const char *SPLASH_BG_COLOR_PATH = "res/drawable-nodpi/splash_bg_color.png";
 static const char *LEGACY_BUILD_SPLASH_BG_COLOR_PATH = "res/drawable-nodpi-v4/splash_bg_color.png";
 static const char *SPLASH_CONFIG_PATH = "res://android/build/res/drawable/splash_drawable.xml";
-static const char *GDNATIVE_LIBS_PATH = "res://android/build/libs/gdnativelibs.json";
+static const char *GDEXTENSION_LIBS_PATH = "res://android/build/libs/gdextensionlibs.json";
 
 static const int icon_densities_count = 6;
 static const char *launcher_icon_option = PNAME("launcher_icons/main_192x192");
@@ -2509,7 +2509,7 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 void EditorExportPlatformAndroid::_remove_copied_libs() {
 	print_verbose("Removing previously installed libraries...");
 	Error error;
-	String libs_json = FileAccess::get_file_as_string(GDNATIVE_LIBS_PATH, &error);
+	String libs_json = FileAccess::get_file_as_string(GDEXTENSION_LIBS_PATH, &error);
 	if (error || libs_json.is_empty()) {
 		print_verbose("No previously installed libraries found");
 		return;
@@ -2525,7 +2525,7 @@ void EditorExportPlatformAndroid::_remove_copied_libs() {
 		print_verbose("Removing previously installed library " + libs[i]);
 		da->remove(libs[i]);
 	}
-	da->remove(GDNATIVE_LIBS_PATH);
+	da->remove(GDEXTENSION_LIBS_PATH);
 }
 
 String EditorExportPlatformAndroid::join_list(const List<String> &p_parts, const String &p_separator) {
@@ -2661,7 +2661,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return err;
 			}
 			if (user_data.libs.size() > 0) {
-				Ref<FileAccess> fa = FileAccess::open(GDNATIVE_LIBS_PATH, FileAccess::WRITE);
+				Ref<FileAccess> fa = FileAccess::open(GDEXTENSION_LIBS_PATH, FileAccess::WRITE);
 				fa->store_string(JSON::stringify(user_data.libs, "\t"));
 			}
 		} else {

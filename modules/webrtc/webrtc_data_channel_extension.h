@@ -70,8 +70,8 @@ public:
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
 	/** GDExtension **/
-	GDVIRTUAL2R(Error, _get_packet, GDNativeConstPtr<const uint8_t *>, GDNativePtr<int>);
-	GDVIRTUAL2R(Error, _put_packet, GDNativeConstPtr<const uint8_t>, int);
+	GDVIRTUAL2R(Error, _get_packet, GDExtensionConstPtr<const uint8_t *>, GDExtensionPtr<int>);
+	GDVIRTUAL2R(Error, _put_packet, GDExtensionConstPtr<const uint8_t>, int);
 
 	WebRTCDataChannelExtension() {}
 };
