@@ -911,15 +911,16 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
+		// Use the slightly more expensive circular fade (distance to the object) instead of linear
+		// (Z distance), so that the fade is always the same regardless of the camera angle.
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
 			if (!VisualServer::get_singleton()->is_low_end()) {
 				code += "\t{\n";
 
 				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-					code += "\t\tfloat fade_distance = abs((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).z);\n";
-
+					code += "\t\tfloat fade_distance = length((INV_CAMERA_MATRIX * WORLD_MATRIX[3]));\n";
 				} else {
-					code += "\t\tfloat fade_distance = -VERTEX.z;\n";
+					code += "\t\tfloat fade_distance = length(VERTEX);\n";
 				}
 				// Use interleaved gradient noise, which is fast but still looks good.
 				code += "\t\tconst vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);";
@@ -933,7 +934,7 @@ void SpatialMaterial::_update_shader() {
 			}
 
 		} else {
-			code += "\tALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
+			code += "\tALPHA *= clamp(smoothstep(distance_fade_min, distance_fade_max, length(VERTEX)), 0.0, 1.0);\n";
 		}
 	}
 
