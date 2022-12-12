@@ -6,7 +6,7 @@
 	<description>
 		This editor-only singleton returns OS-specific paths to various data folders and files. It can be used in editor plugins to ensure files are saved in the correct location on each operating system.
 		[b]Note:[/b] This singleton is not accessible in exported projects. Attempting to access it in an exported project will result in a script error as the singleton won't be declared. To prevent script errors in exported projects, use [method Engine.has_singleton] to check whether the singleton is available before using it.
-		[b]Note:[/b] Godot complies with the [url=https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html]XDG Base Directory Specification[/url] on [i]all[/i] platforms. You can override environment variables following the specification to change the editor and project data paths.
+		[b]Note:[/b] On the Linux/BSD platform, Godot complies with the [url=https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html]XDG Base Directory Specification[/url]. You can override environment variables following the specification to change the editor and project data paths.
 	</description>
 	<tutorials>
 		<link title="File paths in Godot projects">https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html</link>
