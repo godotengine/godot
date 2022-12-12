@@ -88,6 +88,7 @@ layout(push_constant, std430) uniform Params {
 }
 params;
 
+#ifndef MODE_SET_COLOR
 #ifdef MULTIVIEW
 layout(location = 0) in vec3 uv_interp;
 #else
@@ -106,6 +107,7 @@ layout(set = 0, binding = 0) uniform sampler2D source_color;
 layout(set = 1, binding = 0) uniform sampler2D source_color2;
 #endif /* MODE_TWO_SOURCES */
 #endif /* MULTIVIEW */
+#endif /* !SET_COLOR */
 
 layout(location = 0) out vec4 frag_color;
 
