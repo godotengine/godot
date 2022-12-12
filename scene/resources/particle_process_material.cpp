@@ -1433,10 +1433,6 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
 	if (!turbulence_enabled) {
 		if (p_property.name == "turbulence_noise_strength" ||
 				p_property.name == "turbulence_noise_scale" ||
