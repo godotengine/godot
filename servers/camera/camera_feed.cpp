@@ -165,6 +165,7 @@ CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 
 CameraFeed::~CameraFeed() {
 	// Free our textures
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_Y_IMAGE]);
 	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_CBCR_IMAGE]);
 }

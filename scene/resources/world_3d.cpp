@@ -157,6 +157,9 @@ World3D::World3D() {
 }
 
 World3D::~World3D() {
+	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	PhysicsServer3D::get_singleton()->free(space);
 	RenderingServer::get_singleton()->free(scenario);
 	NavigationServer3D::get_singleton()->free(navigation_map);

@@ -132,6 +132,7 @@ void FogMaterial::_bind_methods() {
 
 void FogMaterial::cleanup_shader() {
 	if (shader.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(shader);
 	}
 }

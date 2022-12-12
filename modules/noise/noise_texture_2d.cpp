@@ -40,6 +40,7 @@ NoiseTexture2D::NoiseTexture2D() {
 }
 
 NoiseTexture2D::~NoiseTexture2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}

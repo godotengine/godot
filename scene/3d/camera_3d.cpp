@@ -744,8 +744,10 @@ Camera3D::Camera3D() {
 }
 
 Camera3D::~Camera3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(camera);
 	if (pyramid_shape.is_valid()) {
+		ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
 		PhysicsServer3D::get_singleton()->free(pyramid_shape);
 	}
 }

@@ -375,12 +375,15 @@ NavigationRegion3D::~NavigationRegion3D() {
 	if (navigation_mesh.is_valid()) {
 		navigation_mesh->disconnect("changed", callable_mp(this, &NavigationRegion3D::_navigation_changed));
 	}
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	NavigationServer3D::get_singleton()->free(region);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &NavigationRegion3D::_navigation_map_changed));
 	NavigationServer3D::get_singleton_mut()->disconnect("navigation_debug_changed", callable_mp(this, &NavigationRegion3D::_update_debug_mesh));
 	NavigationServer3D::get_singleton_mut()->disconnect("navigation_debug_changed", callable_mp(this, &NavigationRegion3D::_update_debug_edge_connections_mesh));
+
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(debug_instance);
 	}

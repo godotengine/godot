@@ -100,6 +100,7 @@ bool EditorNode3DGizmo::is_editable() const {
 }
 
 void EditorNode3DGizmo::clear() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	for (int i = 0; i < instances.size(); i++) {
 		if (instances[i].instance.is_valid()) {
 			RS::get_singleton()->free(instances[i].instance);
@@ -809,6 +810,7 @@ void EditorNode3DGizmo::transform() {
 }
 
 void EditorNode3DGizmo::free() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	ERR_FAIL_COND(!spatial_node);
 	ERR_FAIL_COND(!valid);
 

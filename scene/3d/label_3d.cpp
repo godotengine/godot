@@ -966,6 +966,7 @@ Label3D::~Label3D() {
 
 	TS->free_rid(text_rid);
 
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(mesh);
 	for (KeyValue<SurfaceKey, SurfaceData> E : surfaces) {
 		RenderingServer::get_singleton()->free(E.value.material);

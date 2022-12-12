@@ -340,6 +340,7 @@ PrimitiveMesh::PrimitiveMesh() {
 }
 
 PrimitiveMesh::~PrimitiveMesh() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(mesh);
 }
 

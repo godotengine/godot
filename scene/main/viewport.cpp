@@ -80,6 +80,7 @@ void ViewportTexture::setup_local_to_scene() {
 
 	vp->viewport_textures.insert(this);
 
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (proxy_ph.is_valid()) {
 		RS::get_singleton()->texture_proxy_update(proxy, vp->texture_rid);
 		RS::get_singleton()->free(proxy_ph);
@@ -152,6 +153,8 @@ ViewportTexture::~ViewportTexture() {
 	if (vp) {
 		vp->viewport_textures.erase(this);
 	}
+
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
 	if (proxy_ph.is_valid()) {
 		RS::get_singleton()->free(proxy_ph);
@@ -300,6 +303,8 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 void Viewport::_sub_window_remove(Window *p_window) {
 	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
+
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
 	RS::get_singleton()->free(gui.sub_windows[index].canvas_item);
 	gui.sub_windows.remove_at(index);
@@ -4117,6 +4122,7 @@ Viewport::~Viewport() {
 	for (ViewportTexture *E : viewport_textures) {
 		E->vp = nullptr;
 	}
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(viewport);
 }
 

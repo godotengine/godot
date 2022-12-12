@@ -58,6 +58,7 @@ GPUParticlesCollision3D::GPUParticlesCollision3D(RS::ParticlesCollisionType p_ty
 }
 
 GPUParticlesCollision3D::~GPUParticlesCollision3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(collision);
 }
 
@@ -819,6 +820,7 @@ GPUParticlesAttractor3D::GPUParticlesAttractor3D(RS::ParticlesCollisionType p_ty
 	set_base(collision);
 }
 GPUParticlesAttractor3D::~GPUParticlesAttractor3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(collision);
 }
 

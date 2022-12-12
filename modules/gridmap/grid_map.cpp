@@ -796,6 +796,10 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 }
 
 void GridMap::_octant_exit_world(const OctantKey &p_key) {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
+
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant &g = *octant_map[p_key];
 	PhysicsServer3D::get_singleton()->body_set_state(g.static_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
@@ -834,6 +838,10 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 }
 
 void GridMap::_octant_clean_up(const OctantKey &p_key) {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
+
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant &g = *octant_map[p_key];
 
@@ -1186,6 +1194,7 @@ Vector3 GridMap::_get_offset() const {
 }
 
 void GridMap::clear_baked_meshes() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	for (int i = 0; i < baked_meshes.size(); i++) {
 		RS::get_singleton()->free(baked_meshes[i].instance);
 	}

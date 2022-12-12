@@ -1405,6 +1405,7 @@ GridMapEditor::GridMapEditor() {
 }
 
 GridMapEditor::~GridMapEditor() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	_clear_clipboard_data();
 
 	for (int i = 0; i < 3; i++) {

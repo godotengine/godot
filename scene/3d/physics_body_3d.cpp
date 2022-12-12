@@ -3358,6 +3358,7 @@ PhysicalBone3D::~PhysicalBone3D() {
 	if (joint_data) {
 		memdelete(joint_data);
 	}
+	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
 	PhysicsServer3D::get_singleton()->free(joint);
 }
 

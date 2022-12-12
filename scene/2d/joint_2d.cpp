@@ -246,6 +246,7 @@ Joint2D::Joint2D() {
 }
 
 Joint2D::~Joint2D() {
+	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
 	PhysicsServer2D::get_singleton()->free(joint);
 }
 

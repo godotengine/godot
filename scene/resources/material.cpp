@@ -141,6 +141,7 @@ Material::Material() {
 }
 
 Material::~Material() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(material);
 }
 
@@ -3005,6 +3006,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 }
 
 BaseMaterial3D::~BaseMaterial3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	MutexLock lock(material_mutex);
 
 	if (shader_map.has(current_key)) {

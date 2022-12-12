@@ -242,6 +242,7 @@ VoxelGIData::VoxelGIData() {
 }
 
 VoxelGIData::~VoxelGIData() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(probe);
 }
 
@@ -516,5 +517,6 @@ VoxelGI::VoxelGI() {
 }
 
 VoxelGI::~VoxelGI() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(voxel_gi);
 }

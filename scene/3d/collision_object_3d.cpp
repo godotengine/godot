@@ -352,6 +352,8 @@ void CollisionObject3D::_shape_changed(const Ref<Shape3D> &p_shape) {
 }
 
 void CollisionObject3D::_update_debug_shapes() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
 	if (!is_inside_tree()) {
 		debug_shapes_to_update.clear();
 		return;
@@ -393,6 +395,8 @@ void CollisionObject3D::_update_debug_shapes() {
 }
 
 void CollisionObject3D::_clear_debug_shapes() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ShapeData &shapedata = E.value;
 		ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
@@ -627,6 +631,7 @@ int CollisionObject3D::shape_owner_get_shape_index(uint32_t p_owner, int p_shape
 }
 
 void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	ERR_FAIL_COND(!shapes.has(p_owner));
 	ERR_FAIL_INDEX(p_shape, shapes[p_owner].shapes.size());
 
@@ -722,5 +727,6 @@ CollisionObject3D::CollisionObject3D() {
 }
 
 CollisionObject3D::~CollisionObject3D() {
+	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
 	PhysicsServer3D::get_singleton()->free(rid);
 }
