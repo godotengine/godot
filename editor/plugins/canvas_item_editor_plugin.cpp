@@ -32,15 +32,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
-#include "core/string/print_string.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_toaster.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/editor_zoom_widget.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
@@ -55,6 +54,7 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/canvas_layer.h"
@@ -412,7 +412,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 
 	// Other nodes sides
 	if ((is_snap_active && snap_other_nodes && (p_modes & SNAP_OTHER_NODES)) || (p_forced_modes & SNAP_OTHER_NODES)) {
-		Transform2D to_snap_transform = Transform2D();
+		Transform2D to_snap_transform;
 		List<const CanvasItem *> exceptions = List<const CanvasItem *>();
 		for (const CanvasItem *E : p_other_nodes_exceptions) {
 			exceptions.push_back(E);
@@ -813,7 +813,7 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
 
-	Vector2 output = Vector2();
+	Vector2 output;
 	if (p_control->is_layout_rtl()) {
 		output.x = (parent_rect.size.x == 0) ? 0.0 : (parent_rect.size.x - p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
 	} else {
@@ -928,9 +928,7 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 			[[fallthrough]];
 		}
 		case ADD_MOVE: {
-			if (p_result == ADD_MOVE) {
-				nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
-			}
+			nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
 			if (nodes_to_move.is_empty()) {
 				return;
 			}
@@ -1731,22 +1729,16 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 
 			drag_to = transform.affine_inverse().xform(m->get_position());
 
-			Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse();
+			Transform2D xform = ci->get_global_transform_with_canvas();
 
 			Point2 drag_to_snapped_begin;
 			Point2 drag_to_snapped_end;
 
-			// last call decides which snapping lines are drawn
-			if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP || drag_type == DRAG_TOP_LEFT) {
-				drag_to_snapped_end = snap_point(xform.affine_inverse().xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
-				drag_to_snapped_begin = snap_point(xform.affine_inverse().xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
-			} else {
-				drag_to_snapped_begin = snap_point(xform.affine_inverse().xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
-				drag_to_snapped_end = snap_point(xform.affine_inverse().xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
-			}
+			drag_to_snapped_end = snap_point(xform.xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
+			drag_to_snapped_begin = snap_point(xform.xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, ci);
 
-			Point2 drag_begin = xform.xform(drag_to_snapped_begin);
-			Point2 drag_end = xform.xform(drag_to_snapped_end);
+			Point2 drag_begin = xform.affine_inverse().xform(drag_to_snapped_begin);
+			Point2 drag_end = xform.affine_inverse().xform(drag_to_snapped_end);
 
 			// Horizontal resize
 			if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_BOTTOM_LEFT) {
@@ -2068,12 +2060,9 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			int index = 0;
 			for (CanvasItem *ci : drag_selection) {
 				Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse() * ci->get_transform();
-
 				ci->_edit_set_position(ci->_edit_get_position() + xform.xform(new_pos) - xform.xform(previous_pos));
-				index++;
 			}
 			return true;
 		}
@@ -2191,12 +2180,9 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				new_pos = previous_pos + (drag_to - drag_from);
 			}
 
-			int index = 0;
 			for (CanvasItem *ci : drag_selection) {
 				Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse() * ci->get_transform();
-
 				ci->_edit_set_position(ci->_edit_get_position() + xform.xform(new_pos) - xform.xform(previous_pos));
-				index++;
 			}
 		}
 		return true;
@@ -2282,7 +2268,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 						}
 					}
 
-					String suffix = String();
+					String suffix;
 					if (locked == 1) {
 						suffix = " (" + TTR("Locked") + ")";
 					} else if (locked == 2) {
@@ -2804,7 +2790,7 @@ void CanvasItemEditor::_draw_rulers() {
 	int font_size = get_theme_font_size(SNAME("rulers_size"), SNAME("EditorFonts"));
 
 	// The rule transform
-	Transform2D ruler_transform = Transform2D();
+	Transform2D ruler_transform;
 	if (grid_snap_active || _is_grid_visible()) {
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		if (snap_relative && selection.size() > 0) {
@@ -2830,11 +2816,11 @@ void CanvasItemEditor::_draw_rulers() {
 
 	// Subdivisions
 	int major_subdivision = 2;
-	Transform2D major_subdivide = Transform2D();
+	Transform2D major_subdivide;
 	major_subdivide.scale(Size2(1.0 / major_subdivision, 1.0 / major_subdivision));
 
 	int minor_subdivision = 5;
-	Transform2D minor_subdivide = Transform2D();
+	Transform2D minor_subdivide;
 	minor_subdivide.scale(Size2(1.0 / minor_subdivision, 1.0 / minor_subdivision));
 
 	// First and last graduations to draw (in the ruler space)
@@ -3046,7 +3032,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			viewport->draw_string_outline(font, text_pos2, TS->format_number(vformat("%.1f px", length_vector.y)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 			viewport->draw_string(font, text_pos2, TS->format_number(vformat("%.1f px", length_vector.y)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
 
-			Point2 v_angle_text_pos = Point2();
+			Point2 v_angle_text_pos;
 			v_angle_text_pos.x = CLAMP(begin.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
 			v_angle_text_pos.y = begin.y < end.y ? MIN(text_pos2.y - 2 * text_height, begin.y - text_height * 0.5) : MAX(text_pos2.y + text_height * 3, begin.y + text_height * 1.5);
 			viewport->draw_string_outline(font, v_angle_text_pos, TS->format_number(vformat(String::utf8("%d°"), vertical_angle)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
@@ -3057,7 +3043,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			viewport->draw_string_outline(font, text_pos2, TS->format_number(vformat("%.1f px", length_vector.x)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 			viewport->draw_string(font, text_pos2, TS->format_number(vformat("%.1f px", length_vector.x)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
 
-			Point2 h_angle_text_pos = Point2();
+			Point2 h_angle_text_pos;
 			h_angle_text_pos.x = CLAMP(end.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
 			if (begin.y < end.y) {
 				h_angle_text_pos.y = end.y + text_height * 1.5;
@@ -5518,6 +5504,11 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		if (texture != nullptr || scene != nullptr) {
+			bool root_node_selected = EditorNode::get_singleton()->get_editor_selection()->is_selected(EditorNode::get_singleton()->get_edited_scene());
+			String desc = TTR("Drag and drop to add as child of current scene's root node.") + "\n" + TTR("Hold Ctrl when dropping to add as child of selected node.");
+			if (!root_node_selected) {
+				desc += "\n" + TTR("Hold Shift when dropping to add as sibling of selected node.");
+			}
 			if (texture != nullptr) {
 				Sprite2D *sprite = memnew(Sprite2D);
 				sprite->set_texture(texture);
@@ -5525,14 +5516,15 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 				preview_node->add_child(sprite);
 				label->show();
 				label_desc->show();
-				label_desc->set_text(TTR("Drag and drop to add as child of current scene's root node.\nHold Ctrl when dropping to add as child of selected node.\nHold Shift when dropping to add as sibling of selected node.\nHold Alt when dropping to add as a different node type."));
+				desc += "\n" + TTR("Hold Alt when dropping to add as a different node type.");
+				label_desc->set_text(desc);
 			} else {
 				if (scene.is_valid()) {
 					Node *instance = scene->instantiate();
 					if (instance) {
 						preview_node->add_child(instance);
 						label_desc->show();
-						label_desc->set_text(TTR("Drag and drop to add as child of current scene's root node.\nHold Ctrl when dropping to add as child of selected node.\nHold Shift when dropping to add as sibling of selected node."));
+						label_desc->set_text(desc);
 					}
 				}
 			}
@@ -5610,7 +5602,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	// make visible for certain node type
 	if (Object::cast_to<Control>(child)) {
 		Size2 texture_size = texture->get_size();
-		undo_redo->add_do_property(child, "rect_size", texture_size);
+		undo_redo->add_do_property(child, "size", texture_size);
 	} else if (Object::cast_to<Polygon2D>(child)) {
 		Size2 texture_size = texture->get_size();
 		Vector<Vector2> list = {
@@ -5626,6 +5618,11 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	Transform2D xform = canvas_item_editor->get_canvas_transform();
 	Point2 target_position = xform.affine_inverse().xform(p_point);
 
+	// Adjust position for Control and TouchScreenButton
+	if (Object::cast_to<Control>(child) || Object::cast_to<TouchScreenButton>(child)) {
+		target_position -= texture->get_size() / 2;
+	}
+
 	// there's nothing to be used as source position so snapping will work as absolute if enabled
 	target_position = canvas_item_editor->snap_point(target_position);
 	undo_redo->add_do_method(child, "set_global_position", target_position);
@@ -5638,13 +5635,13 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 	}
 
 	Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
-	if (!instantiated_scene) { // error on instancing
+	if (!instantiated_scene) { // Error on instantiation.
 		return false;
 	}
 
 	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 
-	if (!edited_scene->get_scene_file_path().is_empty()) { // cyclical instancing
+	if (!edited_scene->get_scene_file_path().is_empty()) { // Cyclic instantiation.
 		if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
@@ -5661,7 +5658,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	undo_redo->add_do_method(ed, "live_debug_instance_node", edited_scene->get_path_to(parent), path, new_name);
+	undo_redo->add_do_method(ed, "live_debug_instantiate_node", edited_scene->get_path_to(parent), path, new_name);
 	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)) + "/" + new_name));
 
 	CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instantiated_scene);
@@ -5734,7 +5731,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			files_str += error_files[i].get_file().get_basename() + ",";
 		}
 		files_str = files_str.substr(0, files_str.length() - 1);
-		accept->set_text(vformat(TTR("Error instancing scene from %s"), files_str.get_data()));
+		accept->set_text(vformat(TTR("Error instantiating scene from %s"), files_str.get_data()));
 		accept->popup_centered();
 	}
 }

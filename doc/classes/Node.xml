@@ -384,8 +384,11 @@
 		<method name="get_path_to" qualifiers="const">
 			<return type="NodePath" />
 			<param index="0" name="node" type="Node" />
+			<param index="1" name="use_unique_path" type="bool" default="false" />
 			<description>
 				Returns the relative [NodePath] from this node to the specified [param node]. Both nodes must be in the same scene or the function will fail.
+				If [param use_unique_path] is [code]true[/code], returns the shortest path considering unique node.
+				[b]Note:[/b] If you get a relative path which starts from a unique node, the path may be longer than a normal relative path due to the addition of the unique node's name.
 			</description>
 		</method>
 		<method name="get_physics_process_delta_time" qualifiers="const">
@@ -535,7 +538,7 @@
 				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
-		<method name="print_orphan_nodes">
+		<method name="print_orphan_nodes" qualifiers="static">
 			<return type="void" />
 			<description>
 				Prints all orphan nodes (nodes outside the [SceneTree]). Used for debugging.
@@ -606,7 +609,7 @@
 			<return type="void" />
 			<param index="0" name="group" type="StringName" />
 			<description>
-				Removes a node from a group. See notes in the description, and the group methods in [SceneTree].
+				Removes a node from the [param group]. Does nothing if the node is not in the [param group]. See notes in the description, and the group methods in [SceneTree].
 			</description>
 		</method>
 		<method name="replace_by">
@@ -991,7 +994,7 @@
 		<constant name="DUPLICATE_SCRIPTS" value="4" enum="DuplicateFlags">
 			Duplicate the node's scripts.
 		</constant>
-		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
+		<constant name="DUPLICATE_USE_INSTANTIATION" value="8" enum="DuplicateFlags">
 			Duplicate using instancing.
 			An instance stays linked to the original so when the original changes, the instance changes too.
 		</constant>

@@ -1501,7 +1501,8 @@ namespace basisu
 
 				if (m_params.m_compute_stats)
 				{
-					printf("Slice: %u\n", slice_index);
+					if (m_params.m_print_stats)
+						printf("Slice: %u\n", slice_index);
 
 					image_stats& s = m_stats[slice_index];
 
@@ -1511,81 +1512,100 @@ namespace basisu
 
 					// ---- .basis stats
 					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 3);
-					em.print(".basis RGB Avg:          ");
+					if (m_params.m_print_stats)
+						em.print(".basis RGB Avg:          ");
 					s.m_basis_rgb_avg_psnr = em.m_psnr;
 
 					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 4);
-					em.print(".basis RGBA Avg:         ");
+					if (m_params.m_print_stats)
+						em.print(".basis RGBA Avg:         ");
 					s.m_basis_rgba_avg_psnr = em.m_psnr;
 
 					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 1);
-					em.print(".basis R   Avg:          ");
+					if (m_params.m_print_stats)
+						em.print(".basis R   Avg:          ");
 
 					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 1, 1);
-					em.print(".basis G   Avg:          ");
+					if (m_params.m_print_stats)
+						em.print(".basis G   Avg:          ");
 
 					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 2, 1);
-					em.print(".basis B   Avg:          ");
+					if (m_params.m_print_stats)
+						em.print(".basis B   Avg:          ");
 
 					if (m_params.m_uastc)
 					{
 						em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 3, 1);
-						em.print(".basis A   Avg:          ");
+						if (m_params.m_print_stats)
+							em.print(".basis A   Avg:          ");
 
 						s.m_basis_a_avg_psnr = em.m_psnr;
 					}
 
 					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 0);
-					em.print(".basis 709 Luma:         ");
+					if (m_params.m_print_stats)
+						em.print(".basis 709 Luma:         ");
 					s.m_basis_luma_709_psnr = static_cast<float>(em.m_psnr);
 					s.m_basis_luma_709_ssim = static_cast<float>(em.m_ssim);
 
 					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 0, true, true);
-					em.print(".basis 601 Luma:         ");
+					if (m_params.m_print_stats)
+						em.print(".basis 601 Luma:         ");
 					s.m_basis_luma_601_psnr = static_cast<float>(em.m_psnr);
 
 					if (m_slice_descs.size() == 1)
 					{
 						const uint32_t output_size = comp_size ? (uint32_t)comp_size : (uint32_t)comp_data.size();
-						debug_printf(".basis RGB PSNR per bit/texel*10000: %3.3f\n", 10000.0f * s.m_basis_rgb_avg_psnr / ((output_size * 8.0f) / (slice_desc.m_orig_width * slice_desc.m_orig_height)));
-						debug_printf(".basis Luma 709 PSNR per bit/texel*10000: %3.3f\n", 10000.0f * s.m_basis_luma_709_psnr / ((output_size * 8.0f) / (slice_desc.m_orig_width * slice_desc.m_orig_height)));
+						if (m_params.m_print_stats)
+						{
+							debug_printf(".basis RGB PSNR per bit/texel*10000: %3.3f\n", 10000.0f * s.m_basis_rgb_avg_psnr / ((output_size * 8.0f) / (slice_desc.m_orig_width * slice_desc.m_orig_height)));
+							debug_printf(".basis Luma 709 PSNR per bit/texel*10000: %3.3f\n", 10000.0f * s.m_basis_luma_709_psnr / ((output_size * 8.0f) / (slice_desc.m_orig_width * slice_desc.m_orig_height)));
+						}
 					}
 
 					if (m_decoded_output_textures_unpacked_bc7[slice_index].get_width())
 					{
 						// ---- BC7 stats
 						em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 3);
-						em.print("BC7 RGB Avg:             ");
+						if (m_params.m_print_stats)
+							em.print("BC7 RGB Avg:             ");
 						s.m_bc7_rgb_avg_psnr = em.m_psnr;
 
 						em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 4);
-						em.print("BC7 RGBA Avg:            ");
+						if (m_params.m_print_stats)
+							em.print("BC7 RGBA Avg:            ");
 						s.m_bc7_rgba_avg_psnr = em.m_psnr;
 
 						em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 1);
-						em.print("BC7 R   Avg:             ");
+						if (m_params.m_print_stats)
+							em.print("BC7 R   Avg:             ");
 
 						em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 1, 1);
-						em.print("BC7 G   Avg:             ");
+						if (m_params.m_print_stats)
+							em.print("BC7 G   Avg:             ");
 
 						em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 2, 1);
-						em.print("BC7 B   Avg:             ");
+						if (m_params.m_print_stats)
+							em.print("BC7 B   Avg:             ");
 
 						if (m_params.m_uastc)
 						{
 							em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 3, 1);
-							em.print("BC7 A   Avg:             ");
+							if (m_params.m_print_stats)
+								em.print("BC7 A   Avg:             ");
 
 							s.m_bc7_a_avg_psnr = em.m_psnr;
 						}
 
 						em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 0);
-						em.print("BC7 709 Luma:            ");
+						if (m_params.m_print_stats)
+							em.print("BC7 709 Luma:            ");
 						s.m_bc7_luma_709_psnr = static_cast<float>(em.m_psnr);
 						s.m_bc7_luma_709_ssim = static_cast<float>(em.m_ssim);
 
 						em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 0, true, true);
-						em.print("BC7 601 Luma:            ");
+						if (m_params.m_print_stats)
+							em.print("BC7 601 Luma:            ");
 						s.m_bc7_luma_601_psnr = static_cast<float>(em.m_psnr);
 					}
 
@@ -1593,16 +1613,19 @@ namespace basisu
 					{
 						// ---- Nearly best possible ETC1S stats
 						em.calc(m_slice_images[slice_index], m_best_etc1s_images_unpacked[slice_index], 0, 3);
-						em.print("Unquantized ETC1S RGB Avg:     ");
+						if (m_params.m_print_stats)
+							em.print("Unquantized ETC1S RGB Avg:     ");
 						s.m_best_etc1s_rgb_avg_psnr = static_cast<float>(em.m_psnr);
 
 						em.calc(m_slice_images[slice_index], m_best_etc1s_images_unpacked[slice_index], 0, 0);
-						em.print("Unquantized ETC1S 709 Luma:    ");
+						if (m_params.m_print_stats)
+							em.print("Unquantized ETC1S 709 Luma:    ");
 						s.m_best_etc1s_luma_709_psnr = static_cast<float>(em.m_psnr);
 						s.m_best_etc1s_luma_709_ssim = static_cast<float>(em.m_ssim);
 
 						em.calc(m_slice_images[slice_index], m_best_etc1s_images_unpacked[slice_index], 0, 0, true, true);
-						em.print("Unquantized ETC1S 601 Luma:    ");
+						if (m_params.m_print_stats)
+							em.print("Unquantized ETC1S 601 Luma:    ");
 						s.m_best_etc1s_luma_601_psnr = static_cast<float>(em.m_psnr);
 					}
 				}
@@ -2311,6 +2334,8 @@ namespace basisu
 		}
 
 		comp_params.m_compute_stats = (pStats != nullptr);
+		comp_params.m_print_stats = (flags_and_quality & cFlagPrintStats) != 0;
+		comp_params.m_status_output = (flags_and_quality & cFlagPrintStatus) != 0;
 
 		// Create the compressor, initialize it, and process the input
 		basis_compressor comp;
@@ -2326,6 +2351,11 @@ namespace basisu
 		{
 			error_printf("basis_compress: basis_compressor::process() failed with error code %u\n", (uint32_t)ec);
 			return nullptr;
+		}
+
+		if ((pStats) && (comp.get_opencl_failed()))
+		{
+			pStats->m_opencl_failed = true;
 		}
 
 		// Get the output file data and return it to the caller
@@ -2388,4 +2418,108 @@ namespace basisu
 		free(p);
 	}
 
+	bool basis_benchmark_etc1s_opencl(bool* pOpenCL_failed)
+	{
+		if (pOpenCL_failed)
+			*pOpenCL_failed = false;
+
+		if (!opencl_is_available())
+		{
+			error_printf("basis_benchmark_etc1s_opencl: OpenCL support must be enabled first!\n");
+			return false;
+		}
+
+		const uint32_t W = 1024, H = 1024;
+		basisu::vector<image> images;
+		image& img = images.enlarge(1)->resize(W, H);
+		
+		const uint32_t NUM_RAND_LETTERS = 6000;// 40000;
+
+		rand r;
+		r.seed(200);
+
+		for (uint32_t i = 0; i < NUM_RAND_LETTERS; i++)
+		{
+			uint32_t x = r.irand(0, W - 1), y = r.irand(0, H - 1);
+			uint32_t sx = r.irand(1, 4), sy = r.irand(1, 4);
+			color_rgba c(r.byte(), r.byte(), r.byte(), 255);
+
+			img.debug_text(x, y, sx, sy, c, nullptr, false, "%c", static_cast<char>(r.irand(32, 127)));
+		}
+
+		//save_png("test.png", img);
+
+		image_stats stats;
+
+		uint32_t flags_and_quality = cFlagSRGB | cFlagThreaded | 255;
+		size_t comp_size = 0;
+
+		double best_cpu_time = 1e+9f, best_gpu_time = 1e+9f;
+
+		const uint32_t TIMES_TO_ENCODE = 2;
+		interval_timer tm;
+
+		for (uint32_t i = 0; i < TIMES_TO_ENCODE; i++)
+		{
+			tm.start();
+			void* pComp_data = basis_compress(
+				images,
+				flags_and_quality, 1.0f,
+				&comp_size,
+				&stats);
+			double cpu_time = tm.get_elapsed_secs();
+			if (!pComp_data)
+			{
+				error_printf("basis_benchmark_etc1s_opencl: basis_compress() failed (CPU)!\n");
+				return false;
+			}
+			
+			best_cpu_time = minimum(best_cpu_time, cpu_time);
+
+			basis_free_data(pComp_data);
+		}
+
+		printf("Best CPU time: %3.3f\n", best_cpu_time);
+
+		for (uint32_t i = 0; i < TIMES_TO_ENCODE; i++)
+		{
+			tm.start();
+			void* pComp_data = basis_compress(
+				images,
+				flags_and_quality | cFlagUseOpenCL, 1.0f,
+				&comp_size,
+				&stats);
+
+			if (stats.m_opencl_failed)
+			{
+				error_printf("basis_benchmark_etc1s_opencl: OpenCL failed!\n");
+
+				basis_free_data(pComp_data);
+
+				if (pOpenCL_failed)
+					*pOpenCL_failed = true;
+
+				return false;
+			}
+
+			double gpu_time = tm.get_elapsed_secs();
+			if (!pComp_data)
+			{
+				error_printf("basis_benchmark_etc1s_opencl: basis_compress() failed (GPU)!\n");
+				return false;
+			}
+
+			best_gpu_time = minimum(best_gpu_time, gpu_time);
+
+			basis_free_data(pComp_data);
+		}
+
+		printf("Best GPU time: %3.3f\n", best_gpu_time);
+				
+		return best_gpu_time < best_cpu_time;
+	}
+
 } // namespace basisu
+
+
+

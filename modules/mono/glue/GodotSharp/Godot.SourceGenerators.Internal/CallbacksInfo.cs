@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Godot.SourceGenerators.Internal;
 
-internal struct CallbacksData
+internal readonly struct CallbacksData
 {
     public CallbacksData(INamedTypeSymbol nativeTypeSymbol, INamedTypeSymbol funcStructSymbol)
     {

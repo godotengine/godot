@@ -38,10 +38,10 @@
 
 #include <stdlib.h>
 
-#include <GL/gl.h>
-#include <GL/glx.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include "thirdparty/glad/glad/gl.h"
+#include "thirdparty/glad/glad/glx.h"
+
+#include "dynwrappers/xlib-so_wrap.h"
 
 #include <cstring>
 
@@ -77,8 +77,6 @@ void create_context() {
 	Window x11_window;
 	GLXContext glx_context;
 
-	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
-
 	static int visual_attribs[] = {
 		GLX_RENDER_TYPE, GLX_RGBA_BIT,
 		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
@@ -90,6 +88,10 @@ void create_context() {
 		None
 	};
 
+	if (gladLoaderLoadGLX(x11_display, XScreenNumberOfScreen(XDefaultScreenOfDisplay(x11_display))) == 0) {
+		print_verbose("Unable to load GLX, GPU detection skipped.");
+		quick_exit(1);
+	}
 	int fbcount;
 	GLXFBConfig fbconfig = nullptr;
 	XVisualInfo *vi = nullptr;
@@ -101,7 +103,7 @@ void create_context() {
 
 	GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
 	if (!fbc) {
-		exit(1);
+		quick_exit(1);
 	}
 
 	vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
@@ -122,7 +124,7 @@ void create_context() {
 	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, 10, 10, 0, vi->depth, InputOutput, vi->visual, valuemask, &swa);
 
 	if (!x11_window) {
-		exit(1);
+		quick_exit(1);
 	}
 
 	glXMakeCurrent(x11_display, x11_window, glx_context);
@@ -189,7 +191,14 @@ int detect_prime() {
 			if (i) {
 				setenv("DRI_PRIME", "1", 1);
 			}
+
 			create_context();
+
+			PFNGLGETSTRINGPROC glGetString = (PFNGLGETSTRINGPROC)glXGetProcAddressARB((GLubyte *)"glGetString");
+			if (!glGetString) {
+				print_verbose("Unable to get glGetString, GPU detection skipped.");
+				quick_exit(1);
+			}
 
 			const char *vendor = (const char *)glGetString(GL_VENDOR);
 			const char *renderer = (const char *)glGetString(GL_RENDERER);
@@ -208,7 +217,10 @@ int detect_prime() {
 				print_verbose("Couldn't write vendor/renderer string.");
 			}
 			close(fdset[1]);
-			exit(0);
+
+			// The function quick_exit() is used because exit() will call destructors on static objects copied by fork().
+			// These objects will be freed anyway when the process finishes execution.
+			quick_exit(0);
 		}
 	}
 

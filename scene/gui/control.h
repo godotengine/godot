@@ -228,12 +228,12 @@ private:
 		StringName theme_type_variation;
 
 		bool bulk_theme_override = false;
-		Theme::ThemeIconMap icon_override;
-		Theme::ThemeStyleMap style_override;
-		Theme::ThemeFontMap font_override;
-		Theme::ThemeFontSizeMap font_size_override;
-		Theme::ThemeColorMap color_override;
-		Theme::ThemeConstantMap constant_override;
+		Theme::ThemeIconMap theme_icon_override;
+		Theme::ThemeStyleMap theme_style_override;
+		Theme::ThemeFontMap theme_font_override;
+		Theme::ThemeFontSizeMap theme_font_size_override;
+		Theme::ThemeColorMap theme_color_override;
+		Theme::ThemeConstantMap theme_constant_override;
 
 		mutable HashMap<StringName, Theme::ThemeIconMap> theme_icon_cache;
 		mutable HashMap<StringName, Theme::ThemeStyleMap> theme_style_cache;
@@ -249,6 +249,7 @@ private:
 		bool is_rtl = false;
 
 		bool auto_translate = true;
+		bool localize_numeral_system = true;
 
 		// Extra properties.
 
@@ -594,6 +595,9 @@ public:
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	virtual bool is_layout_rtl() const;
+
+	void set_localize_numeral_system(bool p_enable);
+	bool is_localizing_numeral_system() const;
 
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;

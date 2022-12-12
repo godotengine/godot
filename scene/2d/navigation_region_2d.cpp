@@ -296,7 +296,9 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
-		ERR_PRINT("NavigationPolygon: Convex partition failed!");
+		ERR_PRINT("NavigationPolygon: Convex partition failed! Failed to convert outlines to a valid NavigationMesh."
+				  "\nNavigationPolygon outlines can not overlap vertices or edges inside same outline or with other outlines or have any intersections."
+				  "\nAdd the outmost and largest outline first. To add holes inside this outline add the smaller outlines with opposite winding order.");
 		return;
 	}
 
@@ -632,7 +634,9 @@ void NavigationRegion2D::_bind_methods() {
 
 NavigationRegion2D::NavigationRegion2D() {
 	set_notify_transform(true);
+
 	region = NavigationServer2D::get_singleton()->region_create();
+	NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
 	NavigationServer2D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
 	NavigationServer2D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
 

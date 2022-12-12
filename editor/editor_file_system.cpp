@@ -31,7 +31,7 @@
 #include "editor_file_system.h"
 
 #include "core/config/project_settings.h"
-#include "core/extension/native_extension_manager.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
@@ -39,6 +39,7 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
+#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
@@ -619,7 +620,12 @@ bool EditorFileSystem::_update_scan_actions() {
 				if (_test_for_reimport(full_path, false)) {
 					//must reimport
 					reimports.push_back(full_path);
-					reimports.append_array(_get_dependencies(full_path));
+					Vector<String> dependencies = _get_dependencies(full_path);
+					for (const String &dependency_path : dependencies) {
+						if (import_extensions.has(dependency_path.get_extension())) {
+							reimports.push_back(dependency_path);
+						}
+					}
 				} else {
 					//must not reimport, all was good
 					//update modified times, to avoid reimport
@@ -1636,6 +1642,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	String importer_name;
 
 	HashMap<String, HashMap<StringName, Variant>> source_file_options;
+	HashMap<String, ResourceUID::ID> uids;
 	HashMap<String, String> base_paths;
 	for (int i = 0; i < p_files.size(); i++) {
 		Ref<ConfigFile> config;
@@ -1650,6 +1657,15 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			EditorNode::get_singleton()->show_warning(vformat(TTR("There are multiple importers for different types pointing to file %s, import aborted"), p_group_file));
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		}
+
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
+
+		if (config->has_section_key("remap", "uid")) {
+			String uidt = config->get_value("remap", "uid");
+			uid = ResourceUID::get_singleton()->text_to_id(uidt);
+		}
+
+		uids[p_files[i]] = uid;
 
 		source_file_options[p_files[i]] = HashMap<StringName, Variant>();
 		importer_name = file_importer_name;
@@ -1695,6 +1711,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		const String &file = E.key;
 		String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(file);
 		Vector<String> dest_paths;
+		ResourceUID::ID uid = uids[file];
 		{
 			Ref<FileAccess> f = FileAccess::open(file + ".import", FileAccess::WRITE);
 			ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Cannot open import file '" + file + ".import'.");
@@ -1710,6 +1727,12 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			if (!importer->get_resource_type().is_empty()) {
 				f->store_line("type=\"" + importer->get_resource_type() + "\"");
 			}
+
+			if (uid == ResourceUID::INVALID_ID) {
+				uid = ResourceUID::get_singleton()->create_id();
+			}
+
+			f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
 
 			if (err == OK) {
 				String path = base_path + "." + importer->get_save_extension();
@@ -1776,11 +1799,18 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		fs->files[cpos]->modified_time = FileAccess::get_modified_time(file);
 		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(file + ".import");
 		fs->files[cpos]->deps = _get_dependencies(file);
+		fs->files[cpos]->uid = uid;
 		fs->files[cpos]->type = importer->get_resource_type();
 		if (fs->files[cpos]->type == "" && textfile_extensions.has(file.get_extension())) {
 			fs->files[cpos]->type = "TextFile";
 		}
 		fs->files[cpos]->import_valid = err == OK;
+
+		if (ResourceUID::get_singleton()->has_id(uid)) {
+			ResourceUID::get_singleton()->set_id(uid, file);
+		} else {
+			ResourceUID::get_singleton()->add_id(uid, file);
+		}
 
 		//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
 		//to reload properly
@@ -2068,6 +2098,8 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	importing = true;
 	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
 
+	Vector<String> reloads;
+
 	Vector<ImportFile> reimport_files;
 
 	HashSet<String> groups_to_reimport;
@@ -2083,22 +2115,26 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		String group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(file);
 
 		if (group_file_cache.has(file)) {
-			//maybe the file itself is a group!
+			// Maybe the file itself is a group!
 			groups_to_reimport.insert(file);
-			//groups do not belong to groups
+			// Groups do not belong to groups.
+			group_file = String();
+		} else if (groups_to_reimport.has(file)) {
+			// Groups do not belong to groups.
 			group_file = String();
 		} else if (!group_file.is_empty()) {
-			//it's a group file, add group to import and skip this file
+			// It's a group file, add group to import and skip this file.
 			groups_to_reimport.insert(group_file);
 		} else {
-			//it's a regular file
+			// It's a regular file.
 			ImportFile ifile;
 			ifile.path = file;
 			ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(file, ifile.order, ifile.threaded, ifile.importer);
+			reloads.push_back(file);
 			reimport_files.push_back(ifile);
 		}
 
-		//group may have changed, so also update group reference
+		// Group may have changed, so also update group reference.
 		EditorFileSystemDirectory *fs = nullptr;
 		int cpos = -1;
 		if (_find_file(file, &fs, cpos)) {
@@ -2112,10 +2148,14 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	int from = 0;
 	for (int i = 0; i < reimport_files.size(); i++) {
+		if (groups_to_reimport.has(reimport_files[i].path)) {
+			continue;
+		}
+
 		if (use_multiple_threads && reimport_files[i].threaded) {
 			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer) {
 				if (from - i == 0) {
-					//single file, do not use threads
+					// Single file, do not use threads.
 					pr.step(reimport_files[i].path.get_file(), i);
 					_reimport_file(reimport_files[i].path);
 				} else {
@@ -2153,20 +2193,25 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		}
 	}
 
-	//reimport groups
+	// Reimport groups.
+
+	from = reimport_files.size();
 
 	if (groups_to_reimport.size()) {
 		HashMap<String, Vector<String>> group_files;
 		_find_group_files(filesystem, group_files, groups_to_reimport);
 		for (const KeyValue<String, Vector<String>> &E : group_files) {
+			pr.step(E.key.get_file(), from++);
 			Error err = _reimport_group(E.key, E.value);
+			reloads.push_back(E.key);
+			reloads.append_array(E.value);
 			if (err == OK) {
 				_reimport_file(E.key);
 			}
 		}
 	}
 
-	ResourceUID::get_singleton()->update_cache(); //after reimporting, update the cache
+	ResourceUID::get_singleton()->update_cache(); // After reimporting, update the cache.
 
 	_save_filesystem_cache();
 	importing = false;
@@ -2174,7 +2219,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		emit_signal(SNAME("filesystem_changed"));
 	}
 
-	emit_signal(SNAME("resources_reimported"), p_files);
+	emit_signal(SNAME("resources_reimported"), reloads);
 }
 
 Error EditorFileSystem::_resource_import(const String &p_path) {
@@ -2290,7 +2335,7 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 static void _scan_extensions_dir(EditorFileSystemDirectory *d, HashSet<String> &extensions) {
 	int fc = d->get_file_count();
 	for (int i = 0; i < fc; i++) {
-		if (d->get_file_type(i) == SNAME("NativeExtension")) {
+		if (d->get_file_type(i) == SNAME("GDExtension")) {
 			extensions.insert(d->get_file_path(i));
 		}
 	}
@@ -2311,19 +2356,19 @@ bool EditorFileSystem::_scan_extensions() {
 	Vector<String> extensions_removed;
 
 	for (const String &E : extensions) {
-		if (!NativeExtensionManager::get_singleton()->is_extension_loaded(E)) {
+		if (!GDExtensionManager::get_singleton()->is_extension_loaded(E)) {
 			extensions_added.push_back(E);
 		}
 	}
 
-	Vector<String> loaded_extensions = NativeExtensionManager::get_singleton()->get_loaded_extensions();
+	Vector<String> loaded_extensions = GDExtensionManager::get_singleton()->get_loaded_extensions();
 	for (int i = 0; i < loaded_extensions.size(); i++) {
 		if (!extensions.has(loaded_extensions[i])) {
 			extensions_removed.push_back(loaded_extensions[i]);
 		}
 	}
 
-	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
+	String extension_list_config_file = GDExtension::get_extension_list_config_file();
 	if (extensions.size()) {
 		if (extensions_added.size() || extensions_removed.size()) { //extensions were added or removed
 			Ref<FileAccess> f = FileAccess::open(extension_list_config_file, FileAccess::WRITE);
@@ -2340,18 +2385,18 @@ bool EditorFileSystem::_scan_extensions() {
 
 	bool needs_restart = false;
 	for (int i = 0; i < extensions_added.size(); i++) {
-		NativeExtensionManager::LoadStatus st = NativeExtensionManager::get_singleton()->load_extension(extensions_added[i]);
-		if (st == NativeExtensionManager::LOAD_STATUS_FAILED) {
+		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->load_extension(extensions_added[i]);
+		if (st == GDExtensionManager::LOAD_STATUS_FAILED) {
 			EditorNode::get_singleton()->add_io_error("Error loading extension: " + extensions_added[i]);
-		} else if (st == NativeExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+		} else if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
 	}
 	for (int i = 0; i < extensions_removed.size(); i++) {
-		NativeExtensionManager::LoadStatus st = NativeExtensionManager::get_singleton()->unload_extension(extensions_removed[i]);
-		if (st == NativeExtensionManager::LOAD_STATUS_FAILED) {
+		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->unload_extension(extensions_removed[i]);
+		if (st == GDExtensionManager::LOAD_STATUS_FAILED) {
 			EditorNode::get_singleton()->add_io_error("Error removing extension: " + extensions_added[i]);
-		} else if (st == NativeExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+		} else if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
 	}

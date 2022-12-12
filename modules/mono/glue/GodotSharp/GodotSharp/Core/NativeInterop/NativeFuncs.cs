@@ -374,7 +374,7 @@ namespace Godot.NativeInterop
 
         public static partial Error godotsharp_array_resize(ref godot_array p_self, int p_new_size);
 
-        public static partial Error godotsharp_array_shuffle(ref godot_array p_self);
+        public static partial void godotsharp_array_shuffle(ref godot_array p_self);
 
         public static partial void godotsharp_array_to_string(ref godot_array p_self, out godot_string r_str);
 
@@ -413,21 +413,6 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_dictionary_to_string(ref godot_dictionary p_self, out godot_string r_str);
 
         // StringExtensions
-
-        public static partial void godotsharp_string_md5_buffer(in godot_string p_self,
-            out godot_packed_byte_array r_md5_buffer);
-
-        public static partial void godotsharp_string_md5_text(in godot_string p_self, out godot_string r_md5_text);
-
-        public static partial int godotsharp_string_rfind(in godot_string p_self, in godot_string p_what, int p_from);
-
-        public static partial int godotsharp_string_rfindn(in godot_string p_self, in godot_string p_what, int p_from);
-
-        public static partial void godotsharp_string_sha256_buffer(in godot_string p_self,
-            out godot_packed_byte_array r_sha256_buffer);
-
-        public static partial void godotsharp_string_sha256_text(in godot_string p_self,
-            out godot_string r_sha256_text);
 
         public static partial void godotsharp_string_simplify_path(in godot_string p_self,
             out godot_string r_simplified_path);

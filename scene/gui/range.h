@@ -59,7 +59,6 @@ class Range : public Control {
 
 	void _value_changed_notify();
 	void _changed_notify(const char *p_what = "");
-	void _validate_values();
 
 protected:
 	virtual void _value_changed(double p_value);
@@ -72,6 +71,7 @@ protected:
 
 public:
 	void set_value(double p_val);
+	void set_value_no_signal(double p_val);
 	void set_min(double p_min);
 	void set_max(double p_max);
 	void set_step(double p_step);

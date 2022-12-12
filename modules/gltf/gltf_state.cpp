@@ -30,6 +30,8 @@
 
 #include "gltf_state.h"
 
+#include "gltf_template_convert.h"
+
 void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_used_extension", "extension_name", "required"), &GLTFState::add_used_extension);
 	ClassDB::bind_method(D_METHOD("get_json"), &GLTFState::get_json);
@@ -209,11 +211,11 @@ void GLTFState::set_meshes(TypedArray<GLTFMesh> p_meshes) {
 	GLTFTemplateConvert::set_from_array(meshes, p_meshes);
 }
 
-TypedArray<BaseMaterial3D> GLTFState::get_materials() {
+TypedArray<Material> GLTFState::get_materials() {
 	return GLTFTemplateConvert::to_array(materials);
 }
 
-void GLTFState::set_materials(TypedArray<BaseMaterial3D> p_materials) {
+void GLTFState::set_materials(TypedArray<Material> p_materials) {
 	GLTFTemplateConvert::set_from_array(materials, p_materials);
 }
 

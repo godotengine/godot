@@ -335,7 +335,7 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	Variant default_value = Variant();
 	r_default_value_valid = false;
 
-	if (ClassDB::can_instantiate(p_class_name)) {
+	if (ClassDB::can_instantiate(p_class_name) && !ClassDB::is_virtual(p_class_name)) { // Keep this condition in sync with ClassDB::class_get_default_property_value.
 		default_value = ClassDB::class_get_default_property_value(p_class_name, p_property_name, &r_default_value_valid);
 	} else {
 		// Cannot get default value of classes that can't be instantiated
@@ -701,7 +701,7 @@ void DocTools::generate(bool p_basic_types) {
 				if (rt != Variant::NIL) { // Has operator.
 					// Skip String % operator as it's registered separately for each Variant arg type,
 					// we'll add it manually below.
-					if (i == Variant::STRING && Variant::Operator(j) == Variant::OP_MODULE) {
+					if ((i == Variant::STRING || i == Variant::STRING_NAME) && Variant::Operator(j) == Variant::OP_MODULE) {
 						continue;
 					}
 					MethodInfo mi;
@@ -718,7 +718,7 @@ void DocTools::generate(bool p_basic_types) {
 			}
 		}
 
-		if (i == Variant::STRING) {
+		if (i == Variant::STRING || i == Variant::STRING_NAME) {
 			// We skipped % operator above, and we register it manually once for Variant arg type here.
 			MethodInfo mi;
 			mi.name = "operator %";

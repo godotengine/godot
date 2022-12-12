@@ -210,8 +210,8 @@ public:
 class PhysicsServer3DRenderingServerHandler : public Object {
 	GDCLASS(PhysicsServer3DRenderingServerHandler, Object)
 protected:
-	GDVIRTUAL2(_set_vertex, int, GDNativeConstPtr<void>)
-	GDVIRTUAL2(_set_normal, int, GDNativeConstPtr<void>)
+	GDVIRTUAL2(_set_vertex, int, GDExtensionConstPtr<void>)
+	GDVIRTUAL2(_set_normal, int, GDExtensionConstPtr<void>)
 	GDVIRTUAL1(_set_aabb, const AABB &)
 
 	static void _bind_methods();
@@ -822,7 +822,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<PhysicsRayQueryParameters3D> create(Vector3 p_from, Vector3 p_to, uint32_t p_mask, const Vector<RID> &p_exclude);
+	static Ref<PhysicsRayQueryParameters3D> create(Vector3 p_from, Vector3 p_to, uint32_t p_mask, const TypedArray<RID> &p_exclude);
 	const PhysicsDirectSpaceState3D::RayParameters &get_parameters() const { return parameters; }
 
 	void set_from(const Vector3 &p_from) { parameters.from = p_from; }
@@ -846,8 +846,8 @@ public:
 	void set_hit_back_faces(bool p_enable) { parameters.hit_back_faces = p_enable; }
 	bool is_hit_back_faces_enabled() const { return parameters.hit_back_faces; }
 
-	void set_exclude(const Vector<RID> &p_exclude);
-	Vector<RID> get_exclude() const;
+	void set_exclude(const TypedArray<RID> &p_exclude);
+	TypedArray<RID> get_exclude() const;
 };
 
 class PhysicsPointQueryParameters3D : public RefCounted {
@@ -873,8 +873,8 @@ public:
 	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
 	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
 
-	void set_exclude(const Vector<RID> &p_exclude);
-	Vector<RID> get_exclude() const;
+	void set_exclude(const TypedArray<RID> &p_exclude);
+	TypedArray<RID> get_exclude() const;
 };
 
 class PhysicsShapeQueryParameters3D : public RefCounted {
@@ -914,8 +914,8 @@ public:
 	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
 	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
 
-	void set_exclude(const Vector<RID> &p_exclude);
-	Vector<RID> get_exclude() const;
+	void set_exclude(const TypedArray<RID> &p_exclude);
+	TypedArray<RID> get_exclude() const;
 };
 
 class PhysicsTestMotionParameters3D : public RefCounted {
@@ -944,11 +944,11 @@ public:
 	bool is_collide_separation_ray_enabled() const { return parameters.collide_separation_ray; }
 	void set_collide_separation_ray_enabled(bool p_enabled) { parameters.collide_separation_ray = p_enabled; }
 
-	Vector<RID> get_exclude_bodies() const;
-	void set_exclude_bodies(const Vector<RID> &p_exclude);
+	TypedArray<RID> get_exclude_bodies() const;
+	void set_exclude_bodies(const TypedArray<RID> &p_exclude);
 
-	Array get_exclude_objects() const;
-	void set_exclude_objects(const Array &p_exclude);
+	TypedArray<uint64_t> get_exclude_objects() const;
+	void set_exclude_objects(const TypedArray<uint64_t> &p_exclude);
 
 	bool is_recovery_as_collision_enabled() const { return parameters.recovery_as_collision; }
 	void set_recovery_as_collision_enabled(bool p_enabled) { parameters.recovery_as_collision = p_enabled; }

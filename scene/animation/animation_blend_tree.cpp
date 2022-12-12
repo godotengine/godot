@@ -64,7 +64,7 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 	}
 }
 
-double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	AnimationPlayer *ap = state->player;
 	ERR_FAIL_COND_V(!ap, 0);
 
@@ -87,40 +87,43 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_seek_r
 	double anim_size = (double)anim->get_length();
 	double step = 0.0;
 	double prev_time = cur_time;
-	int pingponged = 0;
-	bool current_backward = signbit(p_time);
+	Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
+	bool node_backward = play_mode == PLAY_MODE_BACKWARD;
 
 	if (p_seek) {
 		step = p_time - cur_time;
 		cur_time = p_time;
 	} else {
 		p_time *= backward ? -1.0 : 1.0;
-		if (!(cur_time == anim_size && !current_backward) && !(cur_time == 0 && current_backward)) {
-			cur_time = cur_time + p_time;
-			step = p_time;
-		}
+		cur_time = cur_time + p_time;
+		step = p_time;
 	}
 
 	if (anim->get_loop_mode() == Animation::LOOP_PINGPONG) {
 		if (!Math::is_zero_approx(anim_size)) {
-			if ((int)Math::floor(abs(cur_time - prev_time) / anim_size) % 2 == 0) {
-				if (prev_time >= 0 && cur_time < 0) {
-					backward = !backward;
-					pingponged = -1;
-				}
-				if (prev_time <= anim_size && cur_time > anim_size) {
-					backward = !backward;
-					pingponged = 1;
-				}
+			if (prev_time >= 0 && cur_time < 0) {
+				backward = !backward;
+				looped_flag = node_backward ? Animation::LOOPED_FLAG_END : Animation::LOOPED_FLAG_START;
+			}
+			if (prev_time <= anim_size && cur_time > anim_size) {
+				backward = !backward;
+				looped_flag = node_backward ? Animation::LOOPED_FLAG_START : Animation::LOOPED_FLAG_END;
 			}
 			cur_time = Math::pingpong(cur_time, anim_size);
 		}
-	} else {
-		if (anim->get_loop_mode() == Animation::LOOP_LINEAR) {
-			if (!Math::is_zero_approx(anim_size)) {
-				cur_time = Math::fposmod(cur_time, anim_size);
+	} else if (anim->get_loop_mode() == Animation::LOOP_LINEAR) {
+		if (!Math::is_zero_approx(anim_size)) {
+			if (prev_time >= 0 && cur_time < 0) {
+				looped_flag = node_backward ? Animation::LOOPED_FLAG_END : Animation::LOOPED_FLAG_START;
 			}
-		} else if (cur_time < 0) {
+			if (prev_time <= anim_size && cur_time > anim_size) {
+				looped_flag = node_backward ? Animation::LOOPED_FLAG_START : Animation::LOOPED_FLAG_END;
+			}
+			cur_time = Math::fposmod(cur_time, anim_size);
+		}
+		backward = false;
+	} else {
+		if (cur_time < 0) {
 			step += cur_time;
 			cur_time = 0;
 		} else if (cur_time > anim_size) {
@@ -128,12 +131,25 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_seek_r
 			cur_time = anim_size;
 		}
 		backward = false;
+
+		// If ended, don't progress animation. So set delta to 0.
+		if (p_time > 0) {
+			if (play_mode == PLAY_MODE_FORWARD) {
+				if (prev_time >= anim_size) {
+					step = 0;
+				}
+			} else {
+				if (prev_time <= 0) {
+					step = 0;
+				}
+			}
+		}
 	}
 
 	if (play_mode == PLAY_MODE_FORWARD) {
-		blend_animation(animation, cur_time, step, p_seek, p_seek_root, 1.0, pingponged);
+		blend_animation(animation, cur_time, step, p_seek, p_is_external_seeking, 1.0, looped_flag);
 	} else {
-		blend_animation(animation, anim_size - cur_time, -step, p_seek, p_seek_root, 1.0, pingponged);
+		blend_animation(animation, anim_size - cur_time, -step, p_seek, p_is_external_seeking, 1.0, looped_flag);
 	}
 	set_parameter(time, cur_time);
 
@@ -273,7 +289,7 @@ bool AnimationNodeOneShot::has_filter() const {
 	return true;
 }
 
-double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	bool cur_active = get_parameter(active);
 	bool cur_prev_active = get_parameter(prev_active);
 	double cur_time = get_parameter(time);
@@ -295,9 +311,7 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_seek_roo
 			set_parameter(time_to_restart, cur_time_to_restart);
 		}
 
-		if (!cur_active) {
-			return blend_input(0, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, sync);
-		}
+		return blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
 	}
 
 	bool os_seek = p_seek;
@@ -333,12 +347,11 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_seek_roo
 
 	double main_rem;
 	if (mix == MIX_MODE_ADD) {
-		main_rem = blend_input(0, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, sync);
+		main_rem = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
 	} else {
-		main_rem = blend_input(0, p_time, p_seek, p_seek_root, 1.0 - blend, FILTER_BLEND, sync);
+		main_rem = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0 - blend, FILTER_BLEND, sync); // Unlike below, processing this edge is a corner case.
 	}
-
-	double os_rem = blend_input(1, os_seek ? cur_time : p_time, os_seek, p_seek_root, blend, FILTER_PASS, true);
+	double os_rem = blend_input(1, os_seek ? cur_time : p_time, os_seek, p_is_external_seeking, MAX(CMP_EPSILON, blend), FILTER_PASS, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
 	if (do_start) {
 		cur_remaining = os_rem;
@@ -420,10 +433,10 @@ bool AnimationNodeAdd2::has_filter() const {
 	return true;
 }
 
-double AnimationNodeAdd2::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeAdd2::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	double amount = get_parameter(add_amount);
-	double rem0 = blend_input(0, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, sync);
-	blend_input(1, p_time, p_seek, p_seek_root, amount, FILTER_PASS, sync);
+	double rem0 = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
+	blend_input(1, p_time, p_seek, p_is_external_seeking, amount, FILTER_PASS, sync);
 
 	return rem0;
 }
@@ -454,11 +467,11 @@ bool AnimationNodeAdd3::has_filter() const {
 	return true;
 }
 
-double AnimationNodeAdd3::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeAdd3::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	double amount = get_parameter(add_amount);
-	blend_input(0, p_time, p_seek, p_seek_root, MAX(0, -amount), FILTER_PASS, sync);
-	double rem0 = blend_input(1, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, sync);
-	blend_input(2, p_time, p_seek, p_seek_root, MAX(0, amount), FILTER_PASS, sync);
+	blend_input(0, p_time, p_seek, p_is_external_seeking, MAX(0, -amount), FILTER_PASS, sync);
+	double rem0 = blend_input(1, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
+	blend_input(2, p_time, p_seek, p_is_external_seeking, MAX(0, amount), FILTER_PASS, sync);
 
 	return rem0;
 }
@@ -486,11 +499,11 @@ String AnimationNodeBlend2::get_caption() const {
 	return "Blend2";
 }
 
-double AnimationNodeBlend2::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeBlend2::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	double amount = get_parameter(blend_amount);
 
-	double rem0 = blend_input(0, p_time, p_seek, p_seek_root, 1.0 - amount, FILTER_BLEND, sync);
-	double rem1 = blend_input(1, p_time, p_seek, p_seek_root, amount, FILTER_PASS, sync);
+	double rem0 = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0 - amount, FILTER_BLEND, sync);
+	double rem1 = blend_input(1, p_time, p_seek, p_is_external_seeking, amount, FILTER_PASS, sync);
 
 	return amount > 0.5 ? rem1 : rem0; //hacky but good enough
 }
@@ -521,11 +534,11 @@ String AnimationNodeBlend3::get_caption() const {
 	return "Blend3";
 }
 
-double AnimationNodeBlend3::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeBlend3::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	double amount = get_parameter(blend_amount);
-	double rem0 = blend_input(0, p_time, p_seek, p_seek_root, MAX(0, -amount), FILTER_IGNORE, sync);
-	double rem1 = blend_input(1, p_time, p_seek, p_seek_root, 1.0 - ABS(amount), FILTER_IGNORE, sync);
-	double rem2 = blend_input(2, p_time, p_seek, p_seek_root, MAX(0, amount), FILTER_IGNORE, sync);
+	double rem0 = blend_input(0, p_time, p_seek, p_is_external_seeking, MAX(0, -amount), FILTER_IGNORE, sync);
+	double rem1 = blend_input(1, p_time, p_seek, p_is_external_seeking, 1.0 - ABS(amount), FILTER_IGNORE, sync);
+	double rem2 = blend_input(2, p_time, p_seek, p_is_external_seeking, MAX(0, amount), FILTER_IGNORE, sync);
 
 	return amount > 0.5 ? rem2 : (amount < -0.5 ? rem0 : rem1); //hacky but good enough
 }
@@ -553,12 +566,12 @@ String AnimationNodeTimeScale::get_caption() const {
 	return "TimeScale";
 }
 
-double AnimationNodeTimeScale::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeTimeScale::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	double cur_scale = get_parameter(scale);
 	if (p_seek) {
-		return blend_input(0, p_time, true, p_seek_root, 1.0, FILTER_IGNORE, true);
+		return blend_input(0, p_time, true, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 	} else {
-		return blend_input(0, p_time * cur_scale, false, p_seek_root, 1.0, FILTER_IGNORE, true);
+		return blend_input(0, p_time * cur_scale, false, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 	}
 }
 
@@ -583,16 +596,16 @@ String AnimationNodeTimeSeek::get_caption() const {
 	return "Seek";
 }
 
-double AnimationNodeTimeSeek::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeTimeSeek::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	double cur_seek_pos = get_parameter(seek_pos);
 	if (p_seek) {
-		return blend_input(0, p_time, true, p_seek_root, 1.0, FILTER_IGNORE, true);
+		return blend_input(0, p_time, true, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 	} else if (cur_seek_pos >= 0) {
 		double ret = blend_input(0, cur_seek_pos, true, true, 1.0, FILTER_IGNORE, true);
 		set_parameter(seek_pos, -1.0); //reset
 		return ret;
 	} else {
-		return blend_input(0, p_time, false, p_seek_root, 1.0, FILTER_IGNORE, true);
+		return blend_input(0, p_time, false, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 	}
 }
 
@@ -700,7 +713,7 @@ bool AnimationNodeTransition::is_from_start() const {
 	return from_start;
 }
 
-double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	int cur_current = get_parameter(current);
 	int cur_prev = get_parameter(prev);
 	int cur_prev_current = get_parameter(prev_current);
@@ -726,15 +739,17 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 
 	double rem = 0.0;
 
-	for (int i = 0; i < enabled_inputs; i++) {
-		if (i != cur_current && i != cur_prev) {
-			blend_input(i, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, sync);
+	if (sync) {
+		for (int i = 0; i < enabled_inputs; i++) {
+			if (i != cur_current && i != cur_prev) {
+				blend_input(i, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true);
+			}
 		}
 	}
 
 	if (cur_prev < 0) { // process current animation, check for transition
 
-		rem = blend_input(cur_current, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, true);
+		rem = blend_input(cur_current, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 
 		if (p_seek) {
 			cur_time = p_time;
@@ -753,18 +768,18 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 			blend = xfade_curve->sample(blend);
 		}
 
+		// Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 		if (from_start && !p_seek && switched) { //just switched, seek to start of current
-
-			rem = blend_input(cur_current, 0, true, p_seek_root, 1.0 - blend, FILTER_IGNORE, true);
+			rem = blend_input(cur_current, 0, true, p_is_external_seeking, MAX(CMP_EPSILON, 1.0 - blend), FILTER_IGNORE, true);
 		} else {
-			rem = blend_input(cur_current, p_time, p_seek, p_seek_root, 1.0 - blend, FILTER_IGNORE, true);
+			rem = blend_input(cur_current, p_time, p_seek, p_is_external_seeking, MAX(CMP_EPSILON, 1.0 - blend), FILTER_IGNORE, true);
 		}
 
 		if (p_seek) {
-			blend_input(cur_prev, p_time, true, p_seek_root, blend, FILTER_IGNORE, true);
+			blend_input(cur_prev, p_time, true, p_is_external_seeking, MAX(CMP_EPSILON, blend), FILTER_IGNORE, true);
 			cur_time = p_time;
 		} else {
-			blend_input(cur_prev, p_time, false, p_seek_root, blend, FILTER_IGNORE, true);
+			blend_input(cur_prev, p_time, false, p_is_external_seeking, MAX(CMP_EPSILON, blend), FILTER_IGNORE, true);
 			cur_time += p_time;
 			cur_prev_xfading -= p_time;
 			if (cur_prev_xfading < 0) {
@@ -833,8 +848,8 @@ String AnimationNodeOutput::get_caption() const {
 	return "Output";
 }
 
-double AnimationNodeOutput::process(double p_time, bool p_seek, bool p_seek_root) {
-	return blend_input(0, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, true);
+double AnimationNodeOutput::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	return blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 }
 
 AnimationNodeOutput::AnimationNodeOutput() {
@@ -1046,9 +1061,9 @@ String AnimationNodeBlendTree::get_caption() const {
 	return "BlendTree";
 }
 
-double AnimationNodeBlendTree::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeBlendTree::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	Ref<AnimationNodeOutput> output = nodes[SceneStringNames::get_singleton()->output].node;
-	return _blend_node("output", nodes[SceneStringNames::get_singleton()->output].connections, this, output, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, true);
+	return _blend_node("output", nodes[SceneStringNames::get_singleton()->output].connections, this, output, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 }
 
 void AnimationNodeBlendTree::get_node_list(List<StringName> *r_list) {

@@ -383,6 +383,20 @@ real_t GodotNavigationServer::region_get_travel_cost(RID p_region) const {
 	return region->get_travel_cost();
 }
 
+COMMAND_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id) {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND(region == nullptr);
+
+	region->set_owner_id(p_owner_id);
+}
+
+ObjectID GodotNavigationServer::region_get_owner_id(RID p_region) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, ObjectID());
+
+	return region->get_owner_id();
+}
+
 bool GodotNavigationServer::region_owns_point(RID p_region, const Vector3 &p_point) const {
 	const NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND_V(region == nullptr, false);
@@ -570,6 +584,20 @@ real_t GodotNavigationServer::link_get_travel_cost(const RID p_link) const {
 	return link->get_travel_cost();
 }
 
+COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_owner_id(p_owner_id);
+}
+
+ObjectID GodotNavigationServer::link_get_owner_id(RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, ObjectID());
+
+	return link->get_owner_id();
+}
+
 RID GodotNavigationServer::agent_create() const {
 	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
@@ -676,14 +704,14 @@ bool GodotNavigationServer::agent_is_map_changed(RID p_agent) const {
 	return agent->is_map_changed();
 }
 
-COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata) {
+COMMAND_4(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata) {
 	RvoAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
-	agent->set_callback(p_receiver == nullptr ? ObjectID() : p_receiver->get_instance_id(), p_method, p_udata);
+	agent->set_callback(p_object_id, p_method, p_udata);
 
 	if (agent->get_map()) {
-		if (p_receiver == nullptr) {
+		if (p_object_id == ObjectID()) {
 			agent->get_map()->remove_agent_as_controlled(agent);
 		} else {
 			agent->get_map()->set_agent_as_controlled(agent);

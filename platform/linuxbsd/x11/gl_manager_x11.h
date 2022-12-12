@@ -37,9 +37,10 @@
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "dynwrappers/xext-so_wrap.h"
+#include "dynwrappers/xlib-so_wrap.h"
+#include "dynwrappers/xrender-so_wrap.h"
 #include "servers/display_server.h"
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrender.h>
 
 struct GLManager_X11_Private;
 
@@ -111,10 +112,12 @@ public:
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
 
-	Error initialize();
+	Error initialize(Display *p_display);
 
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
+
+	void *get_glx_context(DisplayServer::WindowID p_window_id);
 
 	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);
 	~GLManager_X11();

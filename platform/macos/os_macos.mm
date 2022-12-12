@@ -190,14 +190,6 @@ MainLoop *OS_MacOS::get_main_loop() const {
 }
 
 String OS_MacOS::get_config_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
-	if (has_environment("XDG_CONFIG_HOME")) {
-		if (get_environment("XDG_CONFIG_HOME").is_absolute_path()) {
-			return get_environment("XDG_CONFIG_HOME");
-		} else {
-			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Library/Application Support` or `.` per the XDG Base Directory specification.");
-		}
-	}
 	if (has_environment("HOME")) {
 		return get_environment("HOME").path_join("Library/Application Support");
 	}
@@ -205,26 +197,10 @@ String OS_MacOS::get_config_path() const {
 }
 
 String OS_MacOS::get_data_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
-	if (has_environment("XDG_DATA_HOME")) {
-		if (get_environment("XDG_DATA_HOME").is_absolute_path()) {
-			return get_environment("XDG_DATA_HOME");
-		} else {
-			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `get_config_path()` per the XDG Base Directory specification.");
-		}
-	}
 	return get_config_path();
 }
 
 String OS_MacOS::get_cache_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
-	if (has_environment("XDG_CACHE_HOME")) {
-		if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
-			return get_environment("XDG_CACHE_HOME");
-		} else {
-			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Library/Caches` or `get_config_path()` per the XDG Base Directory specification.");
-		}
-	}
 	if (has_environment("HOME")) {
 		return get_environment("HOME").path_join("Library/Caches");
 	}
@@ -336,9 +312,7 @@ Vector<String> OS_MacOS::get_system_fonts() const {
 	return ret;
 }
 
-String OS_MacOS::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
-	String ret;
-
+String OS_MacOS::_get_default_fontname(const String &p_font_name) const {
 	String font_name = p_font_name;
 	if (font_name.to_lower() == "sans-serif") {
 		font_name = "Helvetica";
@@ -351,20 +325,152 @@ String OS_MacOS::get_system_font_path(const String &p_font_name, bool p_bold, bo
 	} else if (font_name.to_lower() == "cursive") {
 		font_name = "Apple Chancery";
 	};
+	return font_name;
+}
+
+CGFloat OS_MacOS::_weight_to_ct(int p_weight) const {
+	if (p_weight < 150) {
+		return -0.80;
+	} else if (p_weight < 250) {
+		return -0.60;
+	} else if (p_weight < 350) {
+		return -0.40;
+	} else if (p_weight < 450) {
+		return 0.0;
+	} else if (p_weight < 550) {
+		return 0.23;
+	} else if (p_weight < 650) {
+		return 0.30;
+	} else if (p_weight < 750) {
+		return 0.40;
+	} else if (p_weight < 850) {
+		return 0.56;
+	} else if (p_weight < 925) {
+		return 0.62;
+	} else {
+		return 1.00;
+	}
+}
+
+CGFloat OS_MacOS::_stretch_to_ct(int p_stretch) const {
+	if (p_stretch < 56) {
+		return -0.5;
+	} else if (p_stretch < 69) {
+		return -0.37;
+	} else if (p_stretch < 81) {
+		return -0.25;
+	} else if (p_stretch < 93) {
+		return -0.13;
+	} else if (p_stretch < 106) {
+		return 0.0;
+	} else if (p_stretch < 137) {
+		return 0.13;
+	} else if (p_stretch < 144) {
+		return 0.25;
+	} else if (p_stretch < 162) {
+		return 0.37;
+	} else {
+		return 0.5;
+	}
+}
+
+Vector<String> OS_MacOS::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
+	Vector<String> ret;
+	String font_name = _get_default_fontname(p_font_name);
 
 	CFStringRef name = CFStringCreateWithCString(kCFAllocatorDefault, font_name.utf8().get_data(), kCFStringEncodingUTF8);
-
 	CTFontSymbolicTraits traits = 0;
-	if (p_bold) {
+	if (p_weight >= 700) {
 		traits |= kCTFontBoldTrait;
 	}
 	if (p_italic) {
 		traits |= kCTFontItalicTrait;
 	}
+	if (p_stretch < 100) {
+		traits |= kCTFontCondensedTrait;
+	} else if (p_stretch > 100) {
+		traits |= kCTFontExpandedTrait;
+	}
 
 	CFNumberRef sym_traits = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &traits);
 	CFMutableDictionaryRef traits_dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
 	CFDictionaryAddValue(traits_dict, kCTFontSymbolicTrait, sym_traits);
+
+	CGFloat weight = _weight_to_ct(p_weight);
+	CFNumberRef font_weight = CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &weight);
+	CFDictionaryAddValue(traits_dict, kCTFontWeightTrait, font_weight);
+
+	CGFloat stretch = _stretch_to_ct(p_stretch);
+	CFNumberRef font_stretch = CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &stretch);
+	CFDictionaryAddValue(traits_dict, kCTFontWidthTrait, font_stretch);
+
+	CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
+	CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, name);
+	CFDictionaryAddValue(attributes, kCTFontTraitsAttribute, traits_dict);
+
+	CTFontDescriptorRef font = CTFontDescriptorCreateWithAttributes(attributes);
+	if (font) {
+		CTFontRef family = CTFontCreateWithFontDescriptor(font, 0, nullptr);
+		CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
+		CFRange range = CFRangeMake(0, CFStringGetLength(string));
+		CTFontRef fallback_family = CTFontCreateForString(family, string, range);
+		if (fallback_family) {
+			CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
+			if (fallback_font) {
+				CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
+				if (url) {
+					NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
+					ret.push_back(String::utf8([font_path UTF8String]));
+					CFRelease(url);
+				}
+				CFRelease(fallback_font);
+			}
+			CFRelease(fallback_family);
+		}
+		CFRelease(string);
+		CFRelease(font);
+	}
+
+	CFRelease(attributes);
+	CFRelease(traits_dict);
+	CFRelease(sym_traits);
+	CFRelease(font_stretch);
+	CFRelease(font_weight);
+	CFRelease(name);
+
+	return ret;
+}
+
+String OS_MacOS::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
+	String ret;
+	String font_name = _get_default_fontname(p_font_name);
+
+	CFStringRef name = CFStringCreateWithCString(kCFAllocatorDefault, font_name.utf8().get_data(), kCFStringEncodingUTF8);
+
+	CTFontSymbolicTraits traits = 0;
+	if (p_weight > 700) {
+		traits |= kCTFontBoldTrait;
+	}
+	if (p_italic) {
+		traits |= kCTFontItalicTrait;
+	}
+	if (p_stretch < 100) {
+		traits |= kCTFontCondensedTrait;
+	} else if (p_stretch > 100) {
+		traits |= kCTFontExpandedTrait;
+	}
+
+	CFNumberRef sym_traits = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &traits);
+	CFMutableDictionaryRef traits_dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
+	CFDictionaryAddValue(traits_dict, kCTFontSymbolicTrait, sym_traits);
+
+	CGFloat weight = _weight_to_ct(p_weight);
+	CFNumberRef font_weight = CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &weight);
+	CFDictionaryAddValue(traits_dict, kCTFontWeightTrait, font_weight);
+
+	CGFloat stretch = _stretch_to_ct(p_stretch);
+	CFNumberRef font_stretch = CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &stretch);
+	CFDictionaryAddValue(traits_dict, kCTFontWidthTrait, font_stretch);
 
 	CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
 	CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, name);
@@ -384,6 +490,8 @@ String OS_MacOS::get_system_font_path(const String &p_font_name, bool p_bold, bo
 	CFRelease(attributes);
 	CFRelease(traits_dict);
 	CFRelease(sym_traits);
+	CFRelease(font_stretch);
+	CFRelease(font_weight);
 	CFRelease(name);
 
 	return ret;

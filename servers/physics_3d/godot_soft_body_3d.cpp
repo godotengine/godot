@@ -1011,7 +1011,6 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 						} break;
 						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
 						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-							gravity = Vector3(0, 0, 0);
 							gravity = area_gravity;
 							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
 						} break;

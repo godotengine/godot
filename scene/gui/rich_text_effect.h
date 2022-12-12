@@ -52,6 +52,7 @@ public:
 	uint32_t glyph_index = 0;
 	uint16_t glyph_flags = 0;
 	uint8_t glyph_count = 0;
+	int32_t relative_index = 0;
 	RID font;
 
 	CharFXTransform();
@@ -78,11 +79,14 @@ public:
 	uint32_t get_glyph_index() const { return glyph_index; };
 	void set_glyph_index(uint32_t p_glyph_index) { glyph_index = p_glyph_index; };
 
-	uint16_t get_glyph_flags() const { return glyph_index; };
+	uint16_t get_glyph_flags() const { return glyph_flags; };
 	void set_glyph_flags(uint16_t p_glyph_flags) { glyph_flags = p_glyph_flags; };
 
 	uint8_t get_glyph_count() const { return glyph_count; };
 	void set_glyph_count(uint8_t p_glyph_count) { glyph_count = p_glyph_count; };
+
+	int32_t get_relative_index() const { return relative_index; };
+	void set_relative_index(int32_t p_relative_index) { relative_index = p_relative_index; };
 
 	RID get_font() const { return font; };
 	void set_font(RID p_font) { font = p_font; };

@@ -41,7 +41,7 @@ Ref<FontFile> load_external_font(const String &p_path, TextServer::Hinting p_hin
 	Ref<FontFile> font;
 	font.instantiate();
 
-	Vector<uint8_t> data = FileAccess::get_file_as_array(p_path);
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_path);
 
 	font->set_data(data);
 	font->set_multichannel_signed_distance_field(p_msdf);
@@ -335,7 +335,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 			}
 			mono_fc->set_opentype_features(ftrs);
 		} break;
-		default: { // Default.
+		default: { // Enabled.
 			Dictionary ftrs;
 			ftrs[TS->name_to_tag("calt")] = 1;
 			mono_fc->set_opentype_features(ftrs);

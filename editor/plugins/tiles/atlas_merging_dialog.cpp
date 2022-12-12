@@ -154,6 +154,7 @@ void AtlasMergingDialog::_merge_confirmed(String p_path) {
 	Ref<Texture2D> new_texture_resource = ResourceLoader::load(p_path, "Texture2D");
 	merged->set_texture(new_texture_resource);
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Merge TileSetAtlasSource"));
 	int next_id = tile_set->get_next_source_id();
 	undo_redo->add_do_method(*tile_set, "add_source", merged, next_id);
@@ -193,6 +194,7 @@ void AtlasMergingDialog::ok_pressed() {
 }
 
 void AtlasMergingDialog::cancel_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (int i = 0; i < commited_actions_count; i++) {
 		undo_redo->undo();
 	}
@@ -234,7 +236,7 @@ void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 		if (atlas_source.is_valid()) {
 			Ref<Texture2D> texture = atlas_source->get_texture();
 			if (texture.is_valid()) {
-				String item_text = vformat("%s (id:%d)", texture->get_path().get_file(), source_id);
+				String item_text = vformat(TTR("%s (ID: %d)"), texture->get_path().get_file(), source_id);
 				atlas_merging_atlases_list->add_item(item_text, texture);
 				atlas_merging_atlases_list->set_item_metadata(-1, source_id);
 			}
@@ -248,8 +250,6 @@ void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 }
 
 AtlasMergingDialog::AtlasMergingDialog() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
 	// Atlas merging window.
 	set_title(TTR("Atlas Merging"));
 	set_hide_on_ok(false);

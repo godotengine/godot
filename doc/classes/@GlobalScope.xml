@@ -16,7 +16,7 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Returns the absolute value of a [Variant] parameter [param x] (i.e. non-negative value). Variant types [int], [float], [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				Returns the absolute value of a [Variant] parameter [param x] (i.e. non-negative value). Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var a = abs(-1)
 				# a is 1
@@ -36,6 +36,7 @@
 				var f = abs(Vector3i(-7, -8, -9))
 				# f is (7, 8, 9)
 				[/codeblock]
+				[b]Note:[/b] For better type safety, use [method absf], [method absi], [method Vector2.abs], [method Vector2i.abs], [method Vector3.abs], [method Vector3i.abs], [method Vector4.abs], or [method Vector4i.abs].
 			</description>
 		</method>
 		<method name="absf">
@@ -106,6 +107,17 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="bezier_derivative">
+			<return type="float" />
+			<param index="0" name="start" type="float" />
+			<param index="1" name="control_1" type="float" />
+			<param index="2" name="control_2" type="float" />
+			<param index="3" name="end" type="float" />
+			<param index="4" name="t" type="float" />
+			<description>
+				Returns the derivative at the given [param t] on a one-dimensional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bézier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
+			</description>
+		</method>
 		<method name="bezier_interpolate">
 			<return type="float" />
 			<param index="0" name="start" type="float" />
@@ -114,7 +126,7 @@
 			<param index="3" name="end" type="float" />
 			<param index="4" name="t" type="float" />
 			<description>
-				Returns the point at the given [param t] on a one-dimensional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
+				Returns the point at the given [param t] on a one-dimensional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bézier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
 			</description>
 		</method>
 		<method name="bytes_to_var">
@@ -143,7 +155,7 @@
 				i = ceil(1.001)    # i is 2.0
 				[/codeblock]
 				See also [method floor], [method round], and [method snapped].
-				[b]Note:[/b] For better type safety, see [method ceilf], [method ceili], [method Vector2.ceil], [method Vector3.ceil] and [method Vector4.ceil].
+				[b]Note:[/b] For better type safety, use [method ceilf], [method ceili], [method Vector2.ceil], [method Vector3.ceil], or [method Vector4.ceil].
 			</description>
 		</method>
 		<method name="ceilf">
@@ -168,7 +180,7 @@
 			<param index="1" name="min" type="Variant" />
 			<param index="2" name="max" type="Variant" />
 			<description>
-				Clamps the [param value], returning a [Variant] not less than [param min] and not more than [param max]. Variant types [int], [float], [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				Clamps the [param value], returning a [Variant] not less than [param min] and not more than [param max]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var a = clamp(-10, -1, 5)
 				# a is -1
@@ -188,6 +200,7 @@
 				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
 				# f is (-4, -5, -6)
 				[/codeblock]
+				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], or [method Vector4i.clamp].
 			</description>
 		</method>
 		<method name="clampf">
@@ -367,7 +380,7 @@
 				a = floor(-2.99)    # a is -3.0
 				[/codeblock]
 				See also [method ceil], [method round], and [method snapped].
-				[b]Note:[/b] For better type safety, see [method floorf], [method floori], [method Vector2.floor], [method Vector3.floor] and [method Vector4.floor].
+				[b]Note:[/b] For better type safety, use [method floorf], [method floori], [method Vector2.floor], [method Vector3.floor], or [method Vector4.floor].
 			</description>
 		</method>
 		<method name="floorf">
@@ -527,7 +540,7 @@
 			<param index="2" name="weight" type="Variant" />
 			<description>
 				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clamp] on the result of this function.
-				Both [param from] and [param to] must be the same type. Supported types: [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
+				Both [param from] and [param to] must be the same type. Supported types: [int], [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
@@ -783,14 +796,13 @@
 		</method>
 		<method name="printraw" qualifiers="vararg">
 			<description>
-				Prints one or more arguments to strings in the best way possible to console. Unlike [method print], no newline is automatically added at the end.
+				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
 				[codeblock]
 				printraw("A")
 				printraw("B")
 				printraw("C")
-				# Prints ABC
+				# Prints ABC to terminal
 				[/codeblock]
-				[b]Note:[/b] Due to limitations with Godot's built-in console, this only prints to the terminal. If you need to print in the editor, use another method, such as [method print].
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
@@ -950,7 +962,7 @@
 				round(2.6) # Returns 3
 				[/codeblock]
 				See also [method floor], [method ceil], and [method snapped].
-				[b]Note:[/b] For better type safety, use [method roundf], [method roundi], [method Vector2.round], [method Vector3.round] or [method Vector4.round], instead.
+				[b]Note:[/b] For better type safety, use [method roundf], [method roundi], [method Vector2.round], [method Vector3.round], or [method Vector4.round].
 			</description>
 		</method>
 		<method name="roundf">
@@ -987,21 +999,22 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Returns the sign of [param x] as same type of [Variant] as [param x] with each component being -1, 0 and 1 for each negative, zero and positive values respectively. Variant types [int], [float], [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				Returns the same type of [Variant] as [param x], with [code]-1[/code] for negative values, [code]1[/code] for positive values, and [code]0[/code] for zeros. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				sign(-6.0) # Returns -1
 				sign(0.0)  # Returns 0
 				sign(6.0)  # Returns 1
 
-				sign(Vector3(-6.0, 0.0, 6.0) # Returns (-1, 0, 1)
+				sign(Vector3(-6.0, 0.0, 6.0)) # Returns (-1, 0, 1)
 				[/codeblock]
+				[b]Note:[/b] For better type safety, use [method signf], [method signi], [method Vector2.sign], [method Vector2i.sign], [method Vector3.sign], [method Vector3i.sign], [method Vector4.sign], or [method Vector4i.sign].
 			</description>
 		</method>
 		<method name="signf">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns the sign of [param x] as a [float]: -1.0 or 1.0. Returns 0.0 if [param x] is 0.0.
+				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if if [param x] is zero.
 				[codeblock]
 				sign(-6.5) # Returns -1.0
 				sign(0.0)  # Returns 0.0
@@ -1013,7 +1026,7 @@
 			<return type="int" />
 			<param index="0" name="x" type="int" />
 			<description>
-				Returns the sign of [param x] as an [int]: -1 or 1. Returns 0 if [param x] is 0.
+				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if if [param x] is zero.
 				[codeblock]
 				sign(-6) # Returns -1
 				sign(0)  # Returns 0
@@ -1063,16 +1076,46 @@
 			</description>
 		</method>
 		<method name="snapped">
+			<return type="Variant" />
+			<param index="0" name="x" type="Variant" />
+			<param index="1" name="step" type="Variant" />
+			<description>
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				The returned value is the same type of [Variant] as [param step]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
+				[codeblock]
+				snapped(100, 32)  # Returns 96
+				snapped(3.14159, 0.01)  # Returns 3.14
+
+				snapped(Vector2(34, 70), Vector2(8, 8))  # Returns (32, 72)
+				[/codeblock]
+				See also [method ceil], [method floor], and [method round].
+				[b]Note:[/b] For better type safety, use [method snappedf], [method snappedi], [method Vector2.snapped], [method Vector2i.snapped], [method Vector3.snapped], [method Vector3i.snapped], [method Vector4.snapped], or [method Vector4i.snapped].
+			</description>
+		</method>
+		<method name="snappedf">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<param index="1" name="step" type="float" />
 			<description>
-				Snaps the float value [param x] to a given [param step]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				A type-safe version of [method snapped], returning a [float].
 				[codeblock]
-				snapped(100, 32) # Returns 96
-				snapped(3.14159, 0.01) # Returns 3.14
+				snapped(32.0, 2.5)  # Returns 32.5
+				snapped(3.14159, 0.01)  # Returns 3.14
 				[/codeblock]
-				See also [method ceil], [method floor], and [method round].
+			</description>
+		</method>
+		<method name="snappedi">
+			<return type="int" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="step" type="int" />
+			<description>
+				Returns the multiple of [param step] that is the closest to [param x].
+				A type-safe version of [method snapped], returning an [int].
+				[codeblock]
+				snapped(53, 16)  # Returns 48
+				snapped(4096, 100)  # Returns 4100
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sqrt">
@@ -1276,6 +1319,9 @@
 		<member name="EngineDebugger" type="EngineDebugger" setter="" getter="">
 			The [EngineDebugger] singleton.
 		</member>
+		<member name="GDExtensionManager" type="GDExtensionManager" setter="" getter="">
+			The [GDExtensionManager] singleton.
+		</member>
 		<member name="Geometry2D" type="Geometry2D" setter="" getter="">
 			The [Geometry2D] singleton.
 		</member>
@@ -1304,9 +1350,6 @@
 		</member>
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
-		</member>
-		<member name="NativeExtensionManager" type="NativeExtensionManager" setter="" getter="">
-			The [NativeExtensionManager] singleton.
 		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.
@@ -2734,17 +2777,10 @@
 		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="21" enum="PropertyHint">
 			Hints that a [Color] property should be edited without affecting its transparency ([member Color.a] is not editable).
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="22" enum="PropertyHint">
-			Hints that an image is compressed using lossy compression. The editor does not internally use this property hint.
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="22" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="23" enum="PropertyHint">
-			Hints that an image is compressed using lossless compression. The editor does not internally use this property hint.
-		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_ID" value="24" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_TYPE_STRING" value="25" enum="PropertyHint">
-			Hints that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types.
-			[b]Example:[/b]
+		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
+			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
 			[codeblock]
 			hint_string = "%s:" % [TYPE_INT] # Array of integers.
 			hint_string = "%s:%s:" % [TYPE_ARRAY, TYPE_REAL] # Two-dimensional array of floats.
@@ -2753,56 +2789,53 @@
 			[/codeblock]
 			[b]Note:[/b] The final colon is required for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="26" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="27" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="25" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="28" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="26" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="27" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="30" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="28" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="31" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="29" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="32" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="30" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="33" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="31" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="34" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="32" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="35" enum="PropertyHint">
-			Hints that a property's size (in bytes) is too big to be displayed, when debugging a running project. The debugger uses this hint internally.
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="33" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="36" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="34" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_SAVE_FILE" value="37" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="35" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="36" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="39" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="37" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="38" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
-			Hints that a [String] property is a locale code. Editing it will show a locale dialog for picking language and country.
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="40" enum="PropertyHint">
+			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="43" enum="PropertyHint">
-			Hints that a [Dictionary] property is string translation map. Dictionary keys are locale codes and, values are translated strings.
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="41" enum="PropertyHint">
+			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_TYPE" value="44" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_TYPE" value="42" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="45" enum="PropertyHint">
-			Hints that a [Quaternion] property should disable the temporary euler editor.
+		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="43" enum="PropertyHint">
+			Hints that a quaternion property should disable the temporary euler editor.
 		</constant>
-		<constant name="PROPERTY_HINT_PASSWORD" value="46" enum="PropertyHint">
-			Hints that a [String] property is a password. Every character of the string is displayed as the secret character (typically [code]*[/code]).
-			An optional placeholder text can be shown on its input field, similarly to [constant PROPERTY_HINT_PLACEHOLDER_TEXT].
+		<constant name="PROPERTY_HINT_PASSWORD" value="44" enum="PropertyHint">
+			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="47" enum="PropertyHint">
-			Represents the size of the [enum PropertyHint] enum.
+		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
@@ -2844,40 +2877,38 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_ANIMATE_AS_TRIGGER" value="16384" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="32768" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="65536" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="131072" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="262144" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNAL" value="262144" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNAL" value="524288" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="1048576" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="524288" enum="PropertyUsageFlags">
 			If the property is a [Resource], a new copy of it is always created when calling [method Node.duplicate] or [method Resource.duplicate].
 		</constant>
-		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="2097152" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="1048576" enum="PropertyUsageFlags">
 			The property is only shown in the editor if modern renderers are supported (GLES3 is excluded).
 		</constant>
-		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="2097152" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="4194304" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="8388608" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="16777216" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="33554432" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="67108864" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_READ_ONLY" value="134217728" enum="PropertyUsageFlags">
 			The property is read-only in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_ARRAY" value="536870912" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ARRAY" value="268435456" enum="PropertyUsageFlags">
 			The property is an array.
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags">

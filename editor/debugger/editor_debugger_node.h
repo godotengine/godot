@@ -36,6 +36,7 @@
 
 class Button;
 class DebugAdapterParser;
+class EditorDebuggerPlugin;
 class EditorDebuggerTree;
 class EditorDebuggerRemoteObject;
 class MenuButton;
@@ -62,7 +63,6 @@ private:
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
-		DEBUG_KEEP_DEBUGGER_OPEN,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 	};
 
@@ -109,11 +109,13 @@ private:
 	float remote_scene_tree_timeout = 0.0;
 	bool auto_switch_remote_scene_tree = false;
 	bool debug_with_external_editor = false;
-	bool hide_on_stop = true;
+	bool keep_open = false;
+	String current_uri;
+
 	CameraOverride camera_override = OVERRIDE_NONE;
 	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
 
-	HashSet<Ref<Script>> debugger_plugins;
+	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
@@ -190,7 +192,7 @@ public:
 	void set_live_debugging(bool p_enabled);
 	void update_live_edit_root();
 	void live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name);
-	void live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name);
+	void live_debug_instantiate_node(const NodePath &p_parent, const String &p_path, const String &p_name);
 	void live_debug_remove_node(const NodePath &p_at);
 	void live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id);
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
@@ -202,11 +204,13 @@ public:
 
 	String get_server_uri() const;
 
+	void set_keep_open(bool p_keep_open);
 	Error start(const String &p_uri = "tcp://");
-	void stop();
+	void stop(bool p_force = false);
 
-	void add_debugger_plugin(const Ref<Script> &p_script);
-	void remove_debugger_plugin(const Ref<Script> &p_script);
+	bool plugins_capture(ScriptEditorDebugger *p_debugger, const String &p_message, const Array &p_data);
+	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 };
 
 #endif // EDITOR_DEBUGGER_NODE_H

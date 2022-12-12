@@ -31,7 +31,7 @@
 #include "register_scene_types.h"
 
 #include "core/config/project_settings.h"
-#include "core/extension/native_extension_manager.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/2d/animated_sprite_2d.h"
@@ -827,14 +827,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
 
-	ClassDB::register_class<SkeletonModificationStack3D>();
-	ClassDB::register_class<SkeletonModification3D>();
-	ClassDB::register_class<SkeletonModification3DLookAt>();
-	ClassDB::register_class<SkeletonModification3DCCDIK>();
-	ClassDB::register_class<SkeletonModification3DFABRIK>();
-	ClassDB::register_class<SkeletonModification3DJiggle>();
-	ClassDB::register_class<SkeletonModification3DTwoBoneIK>();
-	ClassDB::register_class<SkeletonModification3DStackHolder>();
+	GDREGISTER_CLASS(SkeletonModificationStack3D);
+	GDREGISTER_CLASS(SkeletonModification3D);
+	GDREGISTER_CLASS(SkeletonModification3DLookAt);
+	GDREGISTER_CLASS(SkeletonModification3DCCDIK);
+	GDREGISTER_CLASS(SkeletonModification3DFABRIK);
+	GDREGISTER_CLASS(SkeletonModification3DJiggle);
+	GDREGISTER_CLASS(SkeletonModification3DTwoBoneIK);
+	GDREGISTER_CLASS(SkeletonModification3DStackHolder);
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
@@ -960,6 +960,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
 	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 	ClassDB::add_compatibility_class("OpenSimplexNoise", "FastNoiseLite");
+	ClassDB::add_compatibility_class("ProximityGroup", "Node3D");
 	ClassDB::add_compatibility_class("ToolButton", "Button");
 	ClassDB::add_compatibility_class("YSort", "Node2D");
 	// Portal and room occlusion was replaced by raster occlusion (OccluderInstance3D node).

@@ -616,6 +616,7 @@
 		</constant>
 		<constant name="TILE_SHAPE_ISOMETRIC" value="1" enum="TileShape">
 			Diamond tile shape (for isometric look).
+			[b]Note:[/b] Isometric [TileSet] works best if [TileMap] and all its layers have Y-sort enabled.
 		</constant>
 		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
 			Rectangular tile shape with one row/column out of two offset by half a tile.

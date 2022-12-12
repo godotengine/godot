@@ -6,7 +6,7 @@
 #include "default.h"
 #include "instance_stack.h"
 
-// FIXME: if ray gets seperated into ray* and hit, uload4 needs to be adjusted
+// FIXME: if ray gets separated into ray* and hit, uload4 needs to be adjusted
 
 namespace embree
 {

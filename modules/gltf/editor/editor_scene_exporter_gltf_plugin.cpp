@@ -33,18 +33,10 @@
 #include "editor_scene_exporter_gltf_plugin.h"
 
 #include "../gltf_document.h"
-#include "../gltf_state.h"
 
-#include "core/config/project_settings.h"
-#include "core/error/error_list.h"
-#include "core/object/object.h"
-#include "core/templates/vector.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/check_box.h"
-#include "scene/main/node.h"
 
 String SceneExporterGLTFPlugin::get_name() const {
 	return "ConvertGLTF2";
@@ -85,7 +77,7 @@ void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
 	state.instantiate();
 	int32_t flags = 0;
 	flags |= EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
-	Error err = doc->append_from_scene(root, state, flags, 30.0f);
+	Error err = doc->append_from_scene(root, state, flags);
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
 	}

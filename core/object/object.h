@@ -31,7 +31,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include "core/extension/gdnative_interface.h"
+#include "core/extension/gdextension_interface.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
 #include "core/os/rw_lock.h"
@@ -71,8 +71,6 @@ enum PropertyHint {
 	PROPERTY_HINT_EXPRESSION, ///< used for string properties that can contain multiple lines
 	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
-	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
-	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
 	PROPERTY_HINT_OBJECT_ID,
 	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
 	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, ///< so something else can provide this (used in scripts)
@@ -115,22 +113,21 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_RESTART_IF_CHANGED = 1 << 11,
 	PROPERTY_USAGE_SCRIPT_VARIABLE = 1 << 12,
 	PROPERTY_USAGE_STORE_IF_NULL = 1 << 13,
-	PROPERTY_USAGE_ANIMATE_AS_TRIGGER = 1 << 14,
-	PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED = 1 << 15,
-	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 16,
-	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 17,
-	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 18,
-	PROPERTY_USAGE_INTERNAL = 1 << 19,
-	PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE = 1 << 20, // If the object is duplicated also this property will be duplicated.
-	PROPERTY_USAGE_HIGH_END_GFX = 1 << 21,
-	PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT = 1 << 22,
-	PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT = 1 << 23,
-	PROPERTY_USAGE_KEYING_INCREMENTS = 1 << 24, // Used in inspector to increment property when keyed in animation player.
-	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 25, // when loading, the resource for this property can be set at the end of loading.
-	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 26, // For Object properties, instantiate them when creating in editor.
-	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 27, //for project or editor settings, show when basic settings are selected.
-	PROPERTY_USAGE_READ_ONLY = 1 << 28, // Mark a property as read-only in the inspector.
-	PROPERTY_USAGE_ARRAY = 1 << 29, // Used in the inspector to group properties as elements of an array.
+	PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED = 1 << 14,
+	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 15,
+	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 16,
+	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 17,
+	PROPERTY_USAGE_INTERNAL = 1 << 18,
+	PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE = 1 << 19, // If the object is duplicated also this property will be duplicated.
+	PROPERTY_USAGE_HIGH_END_GFX = 1 << 20,
+	PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT = 1 << 21,
+	PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT = 1 << 22,
+	PROPERTY_USAGE_KEYING_INCREMENTS = 1 << 23, // Used in inspector to increment property when keyed in animation player.
+	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 24, // when loading, the resource for this property can be set at the end of loading.
+	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 25, // For Object properties, instantiate them when creating in editor.
+	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 26, //for project or editor settings, show when basic settings are selected.
+	PROPERTY_USAGE_READ_ONLY = 1 << 27, // Mark a property as read-only in the inspector.
+	PROPERTY_USAGE_ARRAY = 1 << 28, // Used in the inspector to group properties as elements of an array.
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
 	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNATIONALIZED,
@@ -150,6 +147,10 @@ enum PropertyUsageFlags {
 #define ADD_ARRAY_COUNT(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix)
 #define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix, m_property_usage_flags)
 #define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
+
+// Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
+// PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
+#define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
@@ -190,12 +191,12 @@ struct PropertyInfo {
 			type(Variant::OBJECT),
 			class_name(p_class_name) {}
 
-	explicit PropertyInfo(const GDNativePropertyInfo &pinfo) :
+	explicit PropertyInfo(const GDExtensionPropertyInfo &pinfo) :
 			type((Variant::Type)pinfo.type),
-			name(pinfo.name),
-			class_name(pinfo.class_name), // can be null
+			name(*reinterpret_cast<StringName *>(pinfo.name)),
+			class_name(*reinterpret_cast<StringName *>(pinfo.class_name)),
 			hint((PropertyHint)pinfo.hint),
-			hint_string(pinfo.hint_string), // can be null
+			hint_string(*reinterpret_cast<String *>(pinfo.hint_string)),
 			usage(pinfo.usage) {}
 
 	bool operator==(const PropertyInfo &p_info) const {
@@ -242,6 +243,20 @@ struct MethodInfo {
 
 	MethodInfo() {}
 
+	explicit MethodInfo(const GDExtensionMethodInfo &pinfo) :
+			name(*reinterpret_cast<StringName *>(pinfo.name)),
+			return_val(PropertyInfo(pinfo.return_value)),
+			flags(pinfo.flags),
+			id(pinfo.id) {
+		for (uint32_t j = 0; j < pinfo.argument_count; j++) {
+			arguments.push_back(PropertyInfo(pinfo.arguments[j]));
+		}
+		const Variant *def_values = (const Variant *)pinfo.default_arguments;
+		for (uint32_t j = 0; j < pinfo.default_argument_count; j++) {
+			default_arguments.push_back(def_values[j]);
+		}
+	}
+
 	void _push_params(const PropertyInfo &p_param) {
 		arguments.push_back(p_param);
 	}
@@ -286,31 +301,31 @@ struct MethodInfo {
 	}
 };
 
-// API used to extend in GDNative and other C compatible compiled languages.
+// API used to extend in GDExtension and other C compatible compiled languages.
 class MethodBind;
 
-struct ObjectNativeExtension {
-	ObjectNativeExtension *parent = nullptr;
-	List<ObjectNativeExtension *> children;
+struct ObjectGDExtension {
+	ObjectGDExtension *parent = nullptr;
+	List<ObjectGDExtension *> children;
 	StringName parent_class_name;
 	StringName class_name;
 	bool editor_class = false;
 	bool is_virtual = false;
 	bool is_abstract = false;
-	GDNativeExtensionClassSet set;
-	GDNativeExtensionClassGet get;
-	GDNativeExtensionClassGetPropertyList get_property_list;
-	GDNativeExtensionClassFreePropertyList free_property_list;
-	GDNativeExtensionClassPropertyCanRevert property_can_revert;
-	GDNativeExtensionClassPropertyGetRevert property_get_revert;
-	GDNativeExtensionClassNotification notification;
-	GDNativeExtensionClassToString to_string;
-	GDNativeExtensionClassReference reference;
-	GDNativeExtensionClassReference unreference;
-	GDNativeExtensionClassGetRID get_rid;
+	GDExtensionClassSet set;
+	GDExtensionClassGet get;
+	GDExtensionClassGetPropertyList get_property_list;
+	GDExtensionClassFreePropertyList free_property_list;
+	GDExtensionClassPropertyCanRevert property_can_revert;
+	GDExtensionClassPropertyGetRevert property_get_revert;
+	GDExtensionClassNotification notification;
+	GDExtensionClassToString to_string;
+	GDExtensionClassReference reference;
+	GDExtensionClassReference unreference;
+	GDExtensionClassGetRID get_rid;
 
 	_FORCE_INLINE_ bool is_class(const String &p_class) const {
-		const ObjectNativeExtension *e = this;
+		const ObjectGDExtension *e = this;
 		while (e) {
 			if (p_class == e->class_name.operator String()) {
 				return true;
@@ -321,9 +336,9 @@ struct ObjectNativeExtension {
 	}
 	void *class_userdata = nullptr;
 
-	GDNativeExtensionClassCreateInstance create_instance;
-	GDNativeExtensionClassFreeInstance free_instance;
-	GDNativeExtensionClassGetVirtual get_virtual;
+	GDExtensionClassCreateInstance create_instance;
+	GDExtensionClassFreeInstance free_instance;
+	GDExtensionClassGetVirtual get_virtual;
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call<false>(__VA_ARGS__)
@@ -541,6 +556,7 @@ public:
 		CONNECT_PERSIST = 2, // hint for scene to save this connection
 		CONNECT_ONE_SHOT = 4,
 		CONNECT_REFERENCE_COUNTED = 8,
+		CONNECT_INHERITED = 16, // Used in editor builds.
 	};
 
 	struct Connection {
@@ -563,7 +579,7 @@ private:
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);
 
-	ObjectNativeExtension *_extension = nullptr;
+	ObjectGDExtension *_extension = nullptr;
 	GDExtensionClassInstancePtr _extension_instance = nullptr;
 
 	struct SignalData {
@@ -621,8 +637,8 @@ private:
 	struct InstanceBinding {
 		void *binding = nullptr;
 		void *token = nullptr;
-		GDNativeInstanceBindingFreeCallback free_callback = nullptr;
-		GDNativeInstanceBindingReferenceCallback reference_callback = nullptr;
+		GDExtensionInstanceBindingFreeCallback free_callback = nullptr;
+		GDExtensionInstanceBindingReferenceCallback reference_callback = nullptr;
 	};
 	InstanceBinding *_instance_bindings = nullptr;
 	uint32_t _instance_binding_count = 0;
@@ -646,8 +662,8 @@ protected:
 		return can_die;
 	}
 
-	friend class NativeExtensionMethodBind;
-	_ALWAYS_INLINE_ const ObjectNativeExtension *_get_extension() const { return _extension; }
+	friend class GDExtensionMethodBind;
+	_ALWAYS_INLINE_ const ObjectGDExtension *_get_extension() const { return _extension; }
 	_ALWAYS_INLINE_ GDExtensionClassInstancePtr _get_extension_instance() const { return _extension_instance; }
 	virtual void _initialize_classv() { initialize_class(); }
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; };
@@ -901,9 +917,9 @@ public:
 #endif
 
 	// Used by script languages to store binding data.
-	void *get_instance_binding(void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks);
+	void *get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks);
 	// Used on creation by binding only.
-	void set_instance_binding(void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks);
+	void set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks);
 	bool has_instance_binding(void *p_token);
 
 	void clear_internal_resource_paths();

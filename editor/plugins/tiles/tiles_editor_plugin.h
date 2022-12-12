@@ -71,7 +71,7 @@ private:
 	// For synchronization.
 	int atlas_sources_lists_current = 0;
 	float atlas_view_zoom = 1.0;
-	Vector2 atlas_view_scroll = Vector2();
+	Vector2 atlas_view_scroll;
 
 	void _tile_map_changed();
 
@@ -127,6 +127,8 @@ public:
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
+
+	static void draw_selection_rect(CanvasItem *p_ci, const Rect2 &p_rect, const Color &p_color = Color(1.0, 1.0, 1.0));
 
 	TilesEditorPlugin();
 	~TilesEditorPlugin();

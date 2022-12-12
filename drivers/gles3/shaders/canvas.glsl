@@ -19,9 +19,6 @@ layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
-layout(location = 10) in uvec4 bone_attrib;
-layout(location = 11) in vec4 weight_attrib;
-
 #ifdef USE_INSTANCING
 
 layout(location = 1) in highp vec4 instance_xform0;
@@ -43,8 +40,6 @@ layout(std140) uniform MaterialUniforms{ //ubo:4
 /* clang-format on */
 #include "canvas_uniforms_inc.glsl"
 #include "stdlib_inc.glsl"
-
-uniform sampler2D transforms_texture; //texunit:-1
 
 out vec2 uv_interp;
 out vec4 color_interp;
@@ -81,8 +76,6 @@ void main() {
 		uv = draw_data[draw_data_instance].uv_c;
 		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_c_rg), unpackHalf2x16(draw_data[draw_data_instance].color_c_ba));
 	}
-	uvec4 bones = uvec4(0, 0, 0, 0);
-	vec4 bone_weights = vec4(0.0);
 
 #elif defined(USE_ATTRIBUTES)
 	draw_data_instance = gl_InstanceID;
@@ -92,9 +85,6 @@ void main() {
 	vec2 vertex = vertex_attrib;
 	vec4 color = color_attrib * draw_data[draw_data_instance].modulation;
 	vec2 uv = uv_attrib;
-
-	uvec4 bones = bone_attrib;
-	vec4 bone_weights = weight_attrib;
 
 #ifdef USE_INSTANCING
 	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
@@ -110,7 +100,6 @@ void main() {
 	vec2 uv = draw_data[draw_data_instance].src_rect.xy + abs(draw_data[draw_data_instance].src_rect.zw) * ((draw_data[draw_data_instance].flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
 	vec4 color = draw_data[draw_data_instance].modulation;
 	vec2 vertex = draw_data[draw_data_instance].dst_rect.xy + abs(draw_data[draw_data_instance].dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data[draw_data_instance].src_rect.zw, vec2(0.0, 0.0)));
-	uvec4 bones = uvec4(0, 0, 0, 0);
 
 #endif
 
@@ -152,48 +141,6 @@ void main() {
 		// offset uv by a small amount to avoid
 		uv += 1e-5;
 	}
-
-#ifdef USE_ATTRIBUTES
-#if 0
-	if (bool(draw_data[draw_data_instance].flags & FLAGS_USE_SKELETON) && bone_weights != vec4(0.0)) { //must be a valid bone
-		//skeleton transform
-		ivec4 bone_indicesi = ivec4(bone_indices);
-
-		uvec2 tex_ofs = bone_indicesi.x * 2;
-
-		mat2x4 m;
-		m = mat2x4(
-					texelFetch(skeleton_buffer, tex_ofs + 0),
-					texelFetch(skeleton_buffer, tex_ofs + 1)) *
-			bone_weights.x;
-
-		tex_ofs = bone_indicesi.y * 2;
-
-		m += mat2x4(
-					 texelFetch(skeleton_buffer, tex_ofs + 0),
-					 texelFetch(skeleton_buffer, tex_ofs + 1)) *
-			 bone_weights.y;
-
-		tex_ofs = bone_indicesi.z * 2;
-
-		m += mat2x4(
-					 texelFetch(skeleton_buffer, tex_ofs + 0),
-					 texelFetch(skeleton_buffer, tex_ofs + 1)) *
-			 bone_weights.z;
-
-		tex_ofs = bone_indicesi.w * 2;
-
-		m += mat2x4(
-					 texelFetch(skeleton_buffer, tex_ofs + 0),
-					 texelFetch(skeleton_buffer, tex_ofs + 1)) *
-			 bone_weights.w;
-
-		mat4 bone_matrix = skeleton_data.skeleton_transform * transpose(mat4(m[0], m[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))) * skeleton_data.skeleton_transform_inverse;
-
-		//outvec = bone_matrix * outvec;
-	}
-#endif
-#endif
 
 	vertex = (canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
 
@@ -339,11 +286,9 @@ vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 lig
 
 #endif
 
-#define SHADOW_TEST(m_uv)                              \
-	{                                                  \
-		highp float sd = SHADOW_DEPTH(m_uv);           \
-		shadow += step(sd, shadow_uv.z / shadow_uv.w); \
-	}
+/* clang-format off */
+#define SHADOW_TEST(m_uv) { highp float sd = SHADOW_DEPTH(m_uv); shadow += step(sd, shadow_uv.z / shadow_uv.w); }
+/* clang-format on */
 
 //float distance = length(shadow_pos);
 vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
@@ -383,7 +328,7 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 		shadow /= 13.0;
 	}
 
-	vec4 shadow_color = unpackUnorm4x8(light_array[light_base].shadow_color);
+	vec4 shadow_color = godot_unpackUnorm4x8(light_array[light_base].shadow_color);
 #ifdef LIGHT_CODE_USED
 	shadow_color.rgb *= shadow_modulate;
 #endif
@@ -550,7 +495,7 @@ void main() {
 
 	if (specular_shininess_used || (using_light && normal_used && bool(draw_data[draw_data_instance].flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
 		specular_shininess = texture(specular_texture, uv);
-		specular_shininess *= unpackUnorm4x8(draw_data[draw_data_instance].specular_shininess);
+		specular_shininess *= godot_unpackUnorm4x8(draw_data[draw_data_instance].specular_shininess);
 		specular_shininess_used = true;
 	} else {
 		specular_shininess = vec4(1.0);

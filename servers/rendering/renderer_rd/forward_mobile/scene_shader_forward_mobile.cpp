@@ -116,6 +116,9 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
 	actions.usage_flag_pointers["ALPHA_SCISSOR_THRESHOLD"] = &uses_alpha_clip;
+	// Use alpha clip pipeline for alpha hash/dither.
+	// This prevents sorting issues inherent to alpha blending and allows such materials to cast shadows.
+	actions.usage_flag_pointers["ALPHA_HASH_SCALE"] = &uses_alpha_clip;
 	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
 
 	// actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
@@ -150,6 +153,8 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	depth_draw = DepthDraw(depth_drawi);
 	depth_test = DepthTest(depth_testi);
+	uses_vertex_time = gen_code.uses_vertex_time;
+	uses_fragment_time = gen_code.uses_fragment_time;
 
 #if 0
 	print_line("**compiling shader:");
@@ -412,11 +417,15 @@ bool SceneShaderForwardMobile::ShaderData::is_parameter_texture(const StringName
 }
 
 bool SceneShaderForwardMobile::ShaderData::is_animated() const {
-	return false;
+	return (uses_fragment_time && uses_discard) || (uses_vertex_time && uses_vertex);
 }
 
 bool SceneShaderForwardMobile::ShaderData::casts_shadows() const {
-	return false;
+	bool has_read_screen_alpha = uses_screen_texture || uses_depth_texture || uses_normal_texture;
+	bool has_base_alpha = (uses_alpha && !uses_alpha_clip) || has_read_screen_alpha;
+	bool has_alpha = has_base_alpha || uses_blend_alpha;
+
+	return !has_alpha || (uses_depth_pre_pass && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
 }
 
 Variant SceneShaderForwardMobile::ShaderData::get_default_parameter(const StringName &p_parameter) const {
@@ -600,6 +609,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["NODE_POSITION_WORLD"] = "read_model_matrix[3].xyz";
 		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
 		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.view_matrix[3].xyz";
+		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(read_model_matrix * scene_data.view_matrix)[3].xyz";
 
 		actions.renames["VIEW_INDEX"] = "ViewIndex";

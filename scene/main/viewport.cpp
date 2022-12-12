@@ -362,6 +362,7 @@ void Viewport::_notification(int p_what) {
 
 			current_canvas = find_world_2d()->get_canvas();
 			RenderingServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
+			RenderingServer::get_singleton()->viewport_set_canvas_transform(viewport, current_canvas, canvas_transform);
 			RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
 			_update_audio_listener_2d();
 #ifndef _3D_DISABLED
@@ -491,6 +492,7 @@ void Viewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			_gui_cancel_tooltip();
 			_drop_physics_mouseover();
 			if (gui.mouse_focus && !gui.forced_mouse_focus) {
 				_drop_mouse_focus();
@@ -1561,44 +1563,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				set_input_as_handled();
 			}
 
-			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == MouseButton::LEFT) {
+			if (gui.dragging && mb->get_button_index() == MouseButton::LEFT) {
 				// Alternate drop use (when using force_drag(), as proposed by #5342).
-				gui.drag_successful = false;
-				if (gui.mouse_focus) {
-					gui.drag_successful = _gui_drop(gui.mouse_focus, pos, false);
-				}
-
-				gui.drag_data = Variant();
-				gui.dragging = false;
-
-				Control *drag_preview = _gui_get_drag_preview();
-				if (drag_preview) {
-					memdelete(drag_preview);
-					gui.drag_preview_id = ObjectID();
-				}
-				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
-				get_base_window()->update_mouse_cursor_shape();
+				_perform_drop(gui.mouse_focus, pos);
 			}
 
 			_gui_cancel_tooltip();
 		} else {
-			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == MouseButton::LEFT) {
-				gui.drag_successful = false;
-				if (gui.drag_mouse_over) {
-					gui.drag_successful = _gui_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos, false);
-				}
-
-				Control *drag_preview = _gui_get_drag_preview();
-				if (drag_preview) {
-					memdelete(drag_preview);
-					gui.drag_preview_id = ObjectID();
-				}
-
-				gui.drag_data = Variant();
-				gui.dragging = false;
-				gui.drag_mouse_over = nullptr;
-				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
-				get_base_window()->update_mouse_cursor_shape();
+			if (gui.dragging && mb->get_button_index() == MouseButton::LEFT) {
+				_perform_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos);
 			}
 
 			gui.mouse_focus_mask &= ~mouse_button_to_mask(mb->get_button_index()); // Remove from mask.
@@ -1652,7 +1625,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						Control *control = Object::cast_to<Control>(ci);
 						if (control) {
 							gui.dragging = true;
-							gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos) - gui.drag_accum);
+							gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos - gui.drag_accum));
 							if (gui.drag_data.get_type() != Variant::NIL) {
 								gui.mouse_focus = nullptr;
 								gui.forced_mouse_focus = false;
@@ -1682,7 +1655,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 
 				gui.drag_attempted = true;
-				if (gui.drag_data.get_type() != Variant::NIL) {
+				if (gui.dragging) {
 					_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
 				}
 			}
@@ -1698,6 +1671,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			_gui_cancel_tooltip();
 
 			if (over) {
+				if (!gui.mouse_over) {
+					_drop_physics_mouseover();
+				}
 				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
 				gui.mouse_over = over;
 			}
@@ -1795,7 +1771,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		if (gui.drag_data.get_type() != Variant::NIL) {
+		if (gui.dragging) {
 			// Handle drag & drop.
 
 			Control *drag_preview = _gui_get_drag_preview();
@@ -1904,9 +1880,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	Ref<InputEventScreenTouch> touch_event = p_event;
 	if (touch_event.is_valid()) {
 		Size2 pos = touch_event->get_position();
+		const int touch_index = touch_event->get_index();
 		if (touch_event->is_pressed()) {
 			Control *over = gui_find_control(pos);
 			if (over) {
+				gui.touch_focus[touch_index] = over->get_instance_id();
 				bool stopped = false;
 				if (over->can_process()) {
 					touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
@@ -1923,17 +1901,25 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 				return;
 			}
-		} else if (touch_event->get_index() == 0 && gui.last_mouse_focus) {
+		} else {
 			bool stopped = false;
-			if (gui.last_mouse_focus->can_process()) {
+			ObjectID control_id = gui.touch_focus[touch_index];
+			Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
+			if (over && over->can_process()) {
 				touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
-				touch_event->set_position(gui.focus_inv_xform.xform(pos));
+				if (over == gui.last_mouse_focus) {
+					pos = gui.focus_inv_xform.xform(pos);
+				} else {
+					pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
+				}
+				touch_event->set_position(pos);
 
-				stopped = _gui_call_input(gui.last_mouse_focus, touch_event);
+				stopped = _gui_call_input(over, touch_event);
 			}
 			if (stopped) {
 				set_input_as_handled();
 			}
+			gui.touch_focus.erase(touch_index);
 			return;
 		}
 	}
@@ -1968,7 +1954,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 	Ref<InputEventScreenDrag> drag_event = p_event;
 	if (drag_event.is_valid()) {
-		Control *over = gui.mouse_focus;
+		const int drag_event_index = drag_event->get_index();
+		ObjectID control_id = gui.touch_focus[drag_event_index];
+		Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
 		if (!over) {
 			over = gui_find_control(drag_event->get_position());
 		}
@@ -1997,6 +1985,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 
 	if (mm.is_null() && mb.is_null() && p_event->is_action_type()) {
+		if (gui.dragging && p_event->is_action_pressed("ui_cancel") && Input::get_singleton()->is_action_just_pressed("ui_cancel")) {
+			_perform_drop();
+			set_input_as_handled();
+			return;
+		}
+
 		if (gui.key_focus && !gui.key_focus->is_visible_in_tree()) {
 			gui.key_focus->release_focus();
 		}
@@ -2078,6 +2072,27 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 }
 
+void Viewport::_perform_drop(Control *p_control, Point2 p_pos) {
+	// Without any arguments, simply cancel Drag and Drop.
+	if (p_control) {
+		gui.drag_successful = _gui_drop(p_control, p_pos, false);
+	} else {
+		gui.drag_successful = false;
+	}
+
+	Control *drag_preview = _gui_get_drag_preview();
+	if (drag_preview) {
+		memdelete(drag_preview);
+		gui.drag_preview_id = ObjectID();
+	}
+
+	gui.drag_data = Variant();
+	gui.dragging = false;
+	gui.drag_mouse_over = nullptr;
+	_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
+	get_base_window()->update_mouse_cursor_shape();
+}
+
 void Viewport::_gui_cleanup_internal_state(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -2094,7 +2109,7 @@ List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 	return gui.roots.push_back(p_control);
 }
 
-void Viewport::_gui_set_root_order_dirty() {
+void Viewport::gui_set_root_order_dirty() {
 	gui.roots_order_dirty = true;
 }
 
@@ -2662,6 +2677,11 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				} else {
 					gui.subwindow_resize_mode = _sub_window_get_resize_margin(sw.window, mb->get_position());
 					if (gui.subwindow_resize_mode != SUB_WINDOW_RESIZE_DISABLED) {
+						if (gui.subwindow_focused != sw.window) {
+							// Refocus.
+							_sub_window_grab_focus(sw.window);
+						}
+
 						gui.subwindow_resize_from_rect = r;
 						gui.subwindow_drag_from = mb->get_position();
 						gui.subwindow_drag = SUB_WINDOW_DRAG_RESIZE;
@@ -3041,8 +3061,6 @@ bool Viewport::gui_is_drag_successful() const {
 }
 
 void Viewport::set_input_as_handled() {
-	_drop_physics_mouseover();
-
 	if (!handle_input_locally) {
 		ERR_FAIL_COND(!is_inside_tree());
 		Viewport *vp = this;
@@ -4161,7 +4179,7 @@ DisplayServer::WindowID SubViewport::get_window_id() const {
 }
 
 Transform2D SubViewport::_stretch_transform() {
-	Transform2D transform = Transform2D();
+	Transform2D transform;
 	Size2i view_size_2d_override = _get_size_2d_override();
 	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
 		Size2 scale = Size2(_get_size()) / Size2(view_size_2d_override);
@@ -4172,7 +4190,7 @@ Transform2D SubViewport::_stretch_transform() {
 }
 
 Transform2D SubViewport::get_screen_transform() const {
-	Transform2D container_transform = Transform2D();
+	Transform2D container_transform;
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (c) {
 		if (c->is_stretch_enabled()) {
@@ -4231,6 +4249,8 @@ void SubViewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
 }
 
-SubViewport::SubViewport() {}
+SubViewport::SubViewport() {
+	RS::get_singleton()->viewport_set_size(get_viewport_rid(), get_size().width, get_size().height);
+}
 
 SubViewport::~SubViewport() {}

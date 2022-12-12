@@ -39,6 +39,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "scene/gui/line_edit.h"
 
 #define CONTRIBUTE_URL vformat("%s/community/contributing/updating_the_class_reference.html", VERSION_DOCS_URL)
 
@@ -58,6 +59,8 @@ void EditorHelp::_update_theme() {
 	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("text_highlight_h_padding", get_theme_constant(SNAME("text_highlight_h_padding"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("text_highlight_v_padding", get_theme_constant(SNAME("text_highlight_v_padding"), SNAME("EditorHelp")));
 
 	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
 	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
@@ -191,21 +194,29 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	if (display_margin != new_display_margin || p_force_update_theme) {
 		display_margin = new_display_margin;
 
-		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
+		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("background"), SNAME("EditorHelp"))->duplicate();
 		class_desc_stylebox->set_default_margin(SIDE_LEFT, display_margin);
 		class_desc_stylebox->set_default_margin(SIDE_RIGHT, display_margin);
 		class_desc->add_theme_style_override("normal", class_desc_stylebox);
+		class_desc->add_theme_style_override("focused", class_desc_stylebox);
 	}
 }
 
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
-	String t = p_type;
-	if (t.is_empty()) {
-		t = "void";
+	if (p_type.is_empty() || p_type == "void") {
+		class_desc->push_color(Color(type_color, 0.5));
+		class_desc->push_hint(TTR("No return value."));
+		class_desc->add_text("void");
+		class_desc->pop();
+		class_desc->pop();
+		return;
 	}
-	bool can_ref = (t != "void" && !t.contains("*")) || !p_enum.is_empty();
 
-	if (!p_enum.is_empty()) {
+	bool is_enum_type = !p_enum.is_empty();
+	bool can_ref = !p_type.contains("*") || is_enum_type;
+
+	String t = p_type;
+	if (is_enum_type) {
 		if (p_enum.get_slice_count(".") > 1) {
 			t = p_enum.get_slice(".", 1);
 		} else {
@@ -219,21 +230,24 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 		if (t.ends_with("[]")) {
 			add_array = true;
 			t = t.replace("[]", "");
+
+			class_desc->push_meta("#Array"); //class
+			class_desc->add_text("Array");
+			class_desc->pop();
+			class_desc->add_text("[");
 		}
-		if (p_enum.is_empty()) {
-			class_desc->push_meta("#" + t); //class
-		} else {
+
+		if (is_enum_type) {
 			class_desc->push_meta("$" + p_enum); //class
+		} else {
+			class_desc->push_meta("#" + t); //class
 		}
 	}
 	class_desc->add_text(t);
 	if (can_ref) {
-		class_desc->pop();
+		class_desc->pop(); // Pushed meta above.
 		if (add_array) {
-			class_desc->add_text(" ");
-			class_desc->push_meta("#Array"); //class
-			class_desc->add_text("[]");
-			class_desc->pop();
+			class_desc->add_text("]");
 		}
 	}
 	class_desc->pop();
@@ -432,7 +446,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	return OK;
 }
 
-void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods, bool &r_method_descrpitons) {
+void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods) {
 	Ref<Font> font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	class_desc->pop(); // title font size
 	class_desc->pop(); // title font
@@ -480,10 +494,6 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 				class_desc->pop(); //cell
 				class_desc->push_cell();
 				class_desc->pop(); //cell
-			}
-
-			if (!m[i].description.strip_edges().is_empty() || m[i].errors_returned.size() > 0) {
-				r_method_descrpitons = true;
 			}
 
 			_add_method(m[i], true);
@@ -703,11 +713,15 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
+	bool has_description = false;
+
 	class_desc->add_newline();
 	class_desc->add_newline();
 
 	// Brief description
 	if (!cd.brief_description.strip_edges().is_empty()) {
+		has_description = true;
+
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_bold_font);
 		class_desc->push_indent(1);
@@ -722,6 +736,8 @@ void EditorHelp::_update_doc() {
 
 	// Class description
 	if (!cd.description.strip_edges().is_empty()) {
+		has_description = true;
+
 		section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_paragraph_count() - 2));
 		description_line = class_desc->get_paragraph_count() - 2;
 		class_desc->push_color(title_color);
@@ -742,6 +758,22 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
+		class_desc->add_newline();
+		class_desc->add_newline();
+	}
+
+	if (!has_description) {
+		class_desc->add_image(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+		class_desc->add_text(" ");
+		class_desc->push_color(comment_color);
+
+		if (cd.is_script_doc) {
+			class_desc->append_text(TTR("There is currently no description for this class."));
+		} else {
+			class_desc->append_text(TTR("There is currently no description for this class. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+		}
+
+		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -782,7 +814,6 @@ void EditorHelp::_update_doc() {
 
 	// Properties overview
 	HashSet<String> skip_methods;
-	bool property_descr = false;
 
 	bool has_properties = cd.properties.size() != 0;
 	if (cd.is_script_doc) {
@@ -860,7 +891,6 @@ void EditorHelp::_update_doc() {
 
 			if (describe) {
 				class_desc->pop();
-				property_descr = true;
 			}
 
 			class_desc->pop();
@@ -945,9 +975,6 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Methods overview
-	bool constructor_descriptions = false;
-	bool method_descriptions = false;
-	bool operator_descriptions = false;
 	bool sort_methods = EDITOR_GET("text_editor/help/sort_functions_alphabetically");
 
 	Vector<DocData::MethodDoc> methods;
@@ -975,19 +1002,20 @@ void EditorHelp::_update_doc() {
 		class_desc->push_font(doc_title_font);
 		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Constructors"));
-		_update_method_list(cd.constructors, constructor_descriptions);
+		_update_method_list(cd.constructors);
 	}
 
 	if (!methods.is_empty()) {
 		if (sort_methods) {
 			methods.sort();
 		}
+
 		section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Methods"));
-		_update_method_list(methods, method_descriptions);
+		_update_method_list(methods);
 	}
 
 	if (!cd.operators.is_empty()) {
@@ -1000,7 +1028,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_font(doc_title_font);
 		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Operators"));
-		_update_method_list(cd.operators, operator_descriptions);
+		_update_method_list(cd.operators);
 	}
 
 	// Theme properties
@@ -1335,7 +1363,7 @@ void EditorHelp::_update_doc() {
 
 				if (constants[i].value.begins_with("Color(") && constants[i].value.ends_with(")")) {
 					String stripped = constants[i].value.replace(" ", "").replace("Color(", "").replace(")", "");
-					Vector<float> color = stripped.split_floats(",");
+					PackedFloat64Array color = stripped.split_floats(",");
 					if (color.size() >= 3) {
 						class_desc->push_color(Color(color[0], color[1], color[2]));
 						_add_bulletpoint();
@@ -1493,7 +1521,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Property descriptions
-	if (property_descr) {
+	if (has_properties) {
 		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
@@ -1668,7 +1696,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Constructor descriptions
-	if (constructor_descriptions) {
+	if (!cd.constructors.is_empty()) {
 		section_line.push_back(Pair<String, int>(TTR("Constructor Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
@@ -1678,7 +1706,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Method descriptions
-	if (method_descriptions) {
+	if (!methods.is_empty()) {
 		section_line.push_back(Pair<String, int>(TTR("Method Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
@@ -1688,7 +1716,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Operator descriptions
-	if (operator_descriptions) {
+	if (!cd.operators.is_empty()) {
 		section_line.push_back(Pair<String, int>(TTR("Operator Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
@@ -1696,6 +1724,8 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Operator Descriptions"));
 		_update_method_descriptions(cd, cd.operators, "operator");
 	}
+
+	// Free the scroll.
 	scroll_locked = false;
 }
 
@@ -1786,9 +1816,19 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 	Ref<Font> doc_code_font = p_owner_node->get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	Ref<Font> doc_kbd_font = p_owner_node->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
 
-	Color link_color = p_owner_node->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
-	Color code_color = p_owner_node->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
-	Color kbd_color = p_owner_node->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
+	const Color type_color = p_owner_node->get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
+	const Color code_color = p_owner_node->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
+	const Color kbd_color = p_owner_node->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
+	const Color code_dark_color = Color(code_color, 0.8);
+
+	const Color link_color = p_owner_node->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
+	const Color link_method_color = p_owner_node->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	const Color link_property_color = link_color.lerp(p_owner_node->get_theme_color(SNAME("accent_color"), SNAME("Editor")), 0.25);
+	const Color link_annotation_color = link_color.lerp(p_owner_node->get_theme_color(SNAME("accent_color"), SNAME("Editor")), 0.5);
+
+	const Color code_bg_color = p_owner_node->get_theme_color(SNAME("code_bg_color"), SNAME("EditorHelp"));
+	const Color kbd_bg_color = p_owner_node->get_theme_color(SNAME("kbd_bg_color"), SNAME("EditorHelp"));
+	const Color param_bg_color = p_owner_node->get_theme_color(SNAME("param_bg_color"), SNAME("EditorHelp"));
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
@@ -1921,14 +1961,21 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
-			// Use monospace font with translucent colored background color to make clickable references
+			// Use monospace font to make clickable references
 			// easier to distinguish from inline code and other text.
 			p_rt->push_font(doc_code_font);
-			p_rt->push_color(link_color);
-			p_rt->push_bgcolor(code_color * Color(1, 1, 1, 0.15));
+
+			Color target_color = link_color;
+			if (link_tag == "method") {
+				target_color = link_method_color;
+			} else if (link_tag == "member" || link_tag == "signal" || link_tag == "theme property") {
+				target_color = link_property_color;
+			} else if (link_tag == "annotation") {
+				target_color = link_annotation_color;
+			}
+			p_rt->push_color(target_color);
 			p_rt->push_meta("@" + link_tag + " " + link_target);
-			p_rt->add_text(link_target + (tag.begins_with("method ") ? "()" : ""));
-			p_rt->pop();
+			p_rt->add_text(link_target + (link_tag == "method" ? "()" : ""));
 			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
@@ -1940,7 +1987,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			// Use monospace font with translucent background color to make code easier to distinguish from other text.
 			p_rt->push_font(doc_code_font);
-			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
+			p_rt->push_bgcolor(param_bg_color);
 			p_rt->push_color(code_color);
 			p_rt->add_text(param_name);
 			p_rt->pop();
@@ -1951,14 +1998,12 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 		} else if (doc->class_list.has(tag)) {
 			// Class reference tag such as [Node2D] or [SceneTree].
-			// Use monospace font with translucent colored background color to make clickable references
+			// Use monospace font to make clickable references
 			// easier to distinguish from inline code and other text.
 			p_rt->push_font(doc_code_font);
-			p_rt->push_color(link_color);
-			p_rt->push_bgcolor(code_color * Color(1, 1, 1, 0.15));
+			p_rt->push_color(type_color);
 			p_rt->push_meta("#" + tag);
 			p_rt->add_text(tag);
-			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
@@ -1975,30 +2020,30 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code") {
-			// Use monospace font with translucent background color to make code easier to distinguish from other text.
+			// Use monospace font with darkened background color to make code easier to distinguish from other text.
 			p_rt->push_font(doc_code_font);
-			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
-			p_rt->push_color(code_color);
+			p_rt->push_bgcolor(code_bg_color);
+			p_rt->push_color(code_color.lerp(p_owner_node->get_theme_color(SNAME("error_color"), SNAME("Editor")), 0.6));
 			code_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "codeblock") {
-			// Use monospace font with translucent background color to make code easier to distinguish from other text.
+			// Use monospace font with darkened background color to make code easier to distinguish from other text.
 			// Use a single-column table with cell row background color instead of `[bgcolor]`.
 			// This makes the background color highlight cover the entire block, rather than individual lines.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_table(1);
 			p_rt->push_cell();
-			p_rt->set_cell_row_background_color(Color(0.5, 0.5, 0.5, 0.15), Color(0.5, 0.5, 0.5, 0.15));
+			p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
 			p_rt->set_cell_padding(Rect2(10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE));
-			p_rt->push_color(code_color);
+			p_rt->push_color(code_dark_color);
 			codeblock_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "kbd") {
 			// Use keyboard font with custom color and background color.
 			p_rt->push_font(doc_kbd_font);
-			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
+			p_rt->push_bgcolor(kbd_bg_color);
 			p_rt->push_color(kbd_color);
 			code_tag = true; // Though not strictly a code tag, logic is similar.
 			pos = brk_end + 1;
@@ -2390,10 +2435,10 @@ void FindBar::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
 			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
-			hide_button->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			hide_button->set_texture_normal(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_hover(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_texture_pressed(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
 			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
 

@@ -36,14 +36,14 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 
+class EditorUndoRedoManager;
+
 class TileProxiesManagerDialog : public ConfirmationDialog {
 	GDCLASS(TileProxiesManagerDialog, ConfirmationDialog);
 
 private:
 	int commited_actions_count = 0;
 	Ref<TileSet> tile_set;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	TileMapCell from;
 	TileMapCell to;
@@ -61,7 +61,7 @@ private:
 	EditorPropertyInteger *alternative_to_property_editor = nullptr;
 
 	PopupMenu *popup_menu = nullptr;
-	void _right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list, MouseButton p_mouse_button_index);
+	void _right_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index, Object *p_item_list);
 	void _menu_id_pressed(int p_id);
 	void _delete_selected_bindings();
 	void _update_lists();

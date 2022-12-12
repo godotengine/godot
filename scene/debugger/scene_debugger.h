@@ -42,27 +42,8 @@ class Node;
 
 class SceneDebugger {
 public:
-	// RPC profiler
-	struct RPCNodeInfo {
-		ObjectID node;
-		String node_path;
-		int incoming_rpc = 0;
-		int outgoing_rpc = 0;
-	};
-
-	struct RPCProfilerFrame {
-		Vector<RPCNodeInfo> infos;
-
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-
 private:
-	class RPCProfiler;
-
 	static SceneDebugger *singleton;
-
-	Ref<RPCProfiler> rpc_profiler;
 
 	SceneDebugger();
 
@@ -75,6 +56,7 @@ public:
 #ifdef DEBUG_ENABLED
 private:
 	static void _save_node(ObjectID id, const String &p_path);
+	static void _set_node_owner_recursive(Node *p_node, Node *p_owner);
 	static void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value);
 	static void _send_object_id(ObjectID p_id, int p_max_size = 1 << 20);
 

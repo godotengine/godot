@@ -55,7 +55,12 @@
 #  define isa sse
 #  define ISA SSE
 #  define ISA_STR "SSE"
-#else 
+#elif defined(__ARM_NEON)
+// NOTE(LTE): Use sse2 for `isa` for the compatibility at the moment.
+#define isa sse2
+#define ISA NEON
+#define ISA_STR "NEON"
+#else
 #error Unknown ISA
 #endif
 
@@ -133,7 +138,9 @@ namespace embree
   static const int CPU_FEATURE_XMM_ENABLED = 1 << 25;
   static const int CPU_FEATURE_YMM_ENABLED = 1 << 26;
   static const int CPU_FEATURE_ZMM_ENABLED = 1 << 27;
- 
+  static const int CPU_FEATURE_NEON = 1 << 28;
+  static const int CPU_FEATURE_NEON_2X = 1 << 29;
+
   /*! get CPU features */
   int getCPUFeatures();
 
@@ -154,6 +161,8 @@ namespace embree
   static const int AVXI   = AVX | CPU_FEATURE_F16C | CPU_FEATURE_RDRAND;
   static const int AVX2   = AVXI | CPU_FEATURE_AVX2 | CPU_FEATURE_FMA3 | CPU_FEATURE_BMI1 | CPU_FEATURE_BMI2 | CPU_FEATURE_LZCNT;
   static const int AVX512 = AVX2 | CPU_FEATURE_AVX512F | CPU_FEATURE_AVX512DQ | CPU_FEATURE_AVX512CD | CPU_FEATURE_AVX512BW | CPU_FEATURE_AVX512VL | CPU_FEATURE_ZMM_ENABLED;
+  static const int NEON = CPU_FEATURE_NEON | CPU_FEATURE_SSE | CPU_FEATURE_SSE2;
+  static const int NEON_2X = CPU_FEATURE_NEON_2X | AVX2;
 
   /*! converts ISA bitvector into a string */
   std::string stringOfISA(int features);

@@ -66,6 +66,7 @@ class DisplayServerAndroid : public DisplayServer {
 	MouseMode mouse_mode = MouseMode::MOUSE_MODE_VISIBLE;
 
 	bool keep_screen_on;
+	bool swap_buffers_flag;
 
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
@@ -120,7 +121,7 @@ public:
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual bool is_touchscreen_available() const override;
 
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), VirtualKeyboardType p_type = KEYBOARD_TYPE_DEFAULT, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1) override;
 	virtual void virtual_keyboard_hide() override;
@@ -149,6 +150,7 @@ public:
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Point2i window_get_position_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
@@ -161,7 +163,7 @@ public:
 
 	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;
@@ -188,8 +190,10 @@ public:
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
 
+	void _cursor_set_shape_helper(CursorShape p_shape, bool force = false);
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
@@ -203,6 +207,13 @@ public:
 
 	virtual Point2i mouse_get_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
+
+	void reset_swap_buffers_flag();
+	bool should_swap_buffers() const;
+	virtual void swap_buffers() override;
+
+	virtual void set_native_icon(const String &p_filename) override;
+	virtual void set_icon(const Ref<Image> &p_icon) override;
 
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerAndroid();

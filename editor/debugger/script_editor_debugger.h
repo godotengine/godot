@@ -50,7 +50,6 @@ class ItemList;
 class EditorProfiler;
 class EditorFileDialog;
 class EditorVisualProfiler;
-class EditorNetworkProfiler;
 class EditorPerformanceProfiler;
 class SceneDebuggerTree;
 class EditorDebuggerPlugin;
@@ -72,7 +71,6 @@ private:
 	};
 
 	enum ProfilerType {
-		PROFILER_NETWORK,
 		PROFILER_VISUAL,
 		PROFILER_SCRIPTS_SERVERS
 	};
@@ -151,7 +149,6 @@ private:
 
 	EditorProfiler *profiler = nullptr;
 	EditorVisualProfiler *visual_profiler = nullptr;
-	EditorNetworkProfiler *network_profiler = nullptr;
 	EditorPerformanceProfiler *performance_profiler = nullptr;
 
 	OS::ProcessID remote_pid = 0;
@@ -162,10 +159,6 @@ private:
 	bool live_debug;
 
 	EditorDebuggerNode::CameraOverride camera_override;
-
-	HashMap<Ref<Script>, EditorDebuggerPlugin *> debugger_plugins;
-
-	HashMap<StringName, Callable> captures;
 
 	void _stack_dump_frame_selected();
 
@@ -266,7 +259,7 @@ public:
 	void set_live_debugging(bool p_enable);
 
 	void live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name);
-	void live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name);
+	void live_debug_instantiate_node(const NodePath &p_parent, const String &p_path, const String &p_name);
 	void live_debug_remove_node(const NodePath &p_at);
 	void live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id);
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
@@ -286,14 +279,11 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
-	void add_debugger_plugin(const Ref<Script> &p_script);
-	void remove_debugger_plugin(const Ref<Script> &p_script);
+	void add_debugger_tab(Control *p_control);
+	void remove_debugger_tab(Control *p_control);
 
 	void send_message(const String &p_message, const Array &p_args);
-
-	void register_message_capture(const StringName &p_name, const Callable &p_callable);
-	void unregister_message_capture(const StringName &p_name);
-	bool has_capture(const StringName &p_name);
+	void toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data);
 
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();

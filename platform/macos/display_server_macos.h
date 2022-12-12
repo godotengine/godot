@@ -106,6 +106,7 @@ public:
 
 		bool layered_window = false;
 		bool fullscreen = false;
+		bool exclusive_fullscreen = false;
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
@@ -232,6 +233,7 @@ public:
 	void popup_close(WindowID p_window);
 	void set_is_resizing(bool p_is_resizing);
 	bool get_is_resizing() const;
+	void reparent_check(WindowID p_window);
 
 	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);
@@ -353,6 +355,7 @@ public:
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Point2i window_get_position_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
@@ -366,7 +369,7 @@ public:
 
 	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;

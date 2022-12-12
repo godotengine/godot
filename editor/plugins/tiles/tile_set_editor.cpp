@@ -36,6 +36,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 
 #include "scene/gui/box_container.h"
@@ -66,6 +67,7 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				// Actually create the new source.
 				Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 				atlas_source->set_texture(resource);
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Add a new atlas source"));
 				undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
 				undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
@@ -118,7 +120,9 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 }
 
 void TileSetEditor::_update_sources_list(int force_selected_id) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	if (tile_set.is_null()) {
+		return;
+	}
 
 	// Get the previously selected id.
 	int old_selected = TileSet::INVALID_SOURCE;
@@ -149,7 +153,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 
 		// Common to all type of sources.
 		if (!source->get_name().is_empty()) {
-			item_text = vformat(TTR("%s (id:%d)"), source->get_name(), source_id);
+			item_text = vformat(TTR("%s (ID: %d)"), source->get_name(), source_id);
 		}
 
 		// Atlas source.
@@ -158,7 +162,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 			texture = atlas_source->get_texture();
 			if (item_text.is_empty()) {
 				if (texture.is_valid()) {
-					item_text = vformat("%s (ID: %d)", texture->get_path().get_file(), source_id);
+					item_text = vformat(TTR("%s (ID: %d)"), texture->get_path().get_file(), source_id);
 				} else {
 					item_text = vformat(TTR("No Texture Atlas Source (ID: %d)"), source_id);
 				}
@@ -256,6 +260,7 @@ void TileSetEditor::_source_delete_pressed() {
 	Ref<TileSetSource> source = tile_set->get_source(to_delete);
 
 	// Remove the source.
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Remove source"));
 	undo_redo->add_do_method(*tile_set, "remove_source", to_delete);
 	undo_redo->add_undo_method(*tile_set, "add_source", source, to_delete);
@@ -274,6 +279,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 
 			// Add a new source.
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add atlas source"));
 			undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
 			undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
@@ -288,6 +294,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			Ref<TileSetScenesCollectionSource> scene_collection_source = memnew(TileSetScenesCollectionSource);
 
 			// Add a new source.
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add atlas source"));
 			undo_redo->add_do_method(*tile_set, "add_source", scene_collection_source, source_id);
 			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
@@ -341,6 +348,7 @@ void TileSetEditor::_notification(int p_what) {
 			source_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
+			_update_sources_list();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -361,6 +369,7 @@ void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event
 
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
 		Vector<int> selected = patterns_item_list->get_selected_items();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Remove TileSet patterns"));
 		for (int i = 0; i < selected.size(); i++) {
 			int pattern_index = selected[i];
@@ -666,8 +675,6 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 TileSetEditor::TileSetEditor() {
 	singleton = this;
 
-	undo_redo = EditorNode::get_undo_redo();
-
 	set_process_internal(true);
 
 	// TabBar.
@@ -701,7 +708,7 @@ TileSetEditor::TileSetEditor() {
 
 	source_sort_button = memnew(MenuButton);
 	source_sort_button->set_flat(true);
-	source_sort_button->set_tooltip_text(TTR("Sort sources"));
+	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &TileSetEditor::_set_source_sort));
@@ -801,6 +808,7 @@ TileSetEditor::TileSetEditor() {
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_text(TTR("Add new patterns in the TileMap editing mode."));
+	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 	patterns_item_list->add_child(patterns_help_label);
 

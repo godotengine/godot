@@ -182,10 +182,12 @@
 		<method name="get_cmdline_user_args">
 			<return type="PackedStringArray" />
 			<description>
-				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] argument). These are left untouched by Godot for the user.
+				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] or double plus [code]++[/code] argument). These are left untouched by Godot for the user. [code]++[/code] can be used in situations where [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				For example, in the command line below, [code]--fullscreen[/code] will not be returned in [method get_cmdline_user_args] and [code]--level 1[/code] will only be returned in [method get_cmdline_user_args]:
 				[codeblock]
 				godot --fullscreen -- --level 1
+				# Or:
+				godot --fullscreen ++ --level 1
 				[/codeblock]
 			</description>
 		</method>
@@ -392,18 +394,38 @@
 		<method name="get_system_font_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="font_name" type="String" />
-			<param index="1" name="bold" type="bool" default="false" />
-			<param index="2" name="italic" type="bool" default="false" />
+			<param index="1" name="weight" type="int" default="400" />
+			<param index="2" name="stretch" type="int" default="100" />
+			<param index="3" name="italic" type="bool" default="false" />
 			<description>
-				Returns path to the system font file with [param font_name] and style. Return empty string if no matching fonts found.
-				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+				Returns path to the system font file with [param font_name] and style. Returns empty string if no matching fonts found.
+				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
+				[b]Note:[/b] Returned font might have different style if the requested style is not available.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_system_font_path_for_text" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="font_name" type="String" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="locale" type="String" default="&quot;&quot;" />
+			<param index="3" name="script" type="String" default="&quot;&quot;" />
+			<param index="4" name="weight" type="int" default="400" />
+			<param index="5" name="stretch" type="int" default="100" />
+			<param index="6" name="italic" type="bool" default="false" />
+			<description>
+				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
+				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
+				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts is suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
+				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_system_fonts" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 				Returns list of font family names available.
-				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
@@ -467,7 +489,7 @@
 			<return type="bool" />
 			<param index="0" name="tag_name" type="String" />
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>

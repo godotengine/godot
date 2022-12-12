@@ -366,6 +366,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_scancode", "get_keycode" }, // InputEventKey
 	{ "get_scancode_string", "get_keycode_string" }, // OS
 	{ "get_scancode_with_modifiers", "get_keycode_with_modifiers" }, // InputEventKey
+	{ "get_selected_path", "get_current_directory" }, // EditorInterface
 	{ "get_shift", "is_shift_pressed" }, // InputEventWithModifiers
 	{ "get_size_override", "get_size_2d_override" }, // SubViewport
 	{ "get_slide_count", "get_slide_collision_count" }, // CharacterBody2D, CharacterBody3D
@@ -464,6 +465,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "post_import", "_post_import" }, // EditorScenePostImport
 	{ "print_stray_nodes", "print_orphan_nodes" }, // Node
 	{ "property_list_changed_notify", "notify_property_list_changed" }, // Object
+	{ "raise", "move_to_front" }, // CanvasItem
 	{ "recognize", "_recognize" }, // ResourceFormatLoader
 	{ "regen_normalmaps", "regen_normal_maps" }, // ArrayMesh
 	{ "remove", "remove_at" }, // Array, broke Directory
@@ -591,6 +593,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "is_abs_path", "is_absolute_path" }, // String
 	{ "is_valid_integer", "is_valid_int" }, // String
 	{ "linear_interpolate", "lerp" }, // Color
+	{ "find_last", "rfind" }, // Array, String
 	{ "to_ascii", "to_ascii_buffer" }, // String
 	{ "to_utf8", "to_utf8_buffer" }, // String
 	{ "to_wchar", "to_utf32_buffer" }, // String // TODO - utf32 or utf16?
@@ -1395,7 +1398,7 @@ static const char *class_renames[][2] = {
 	// { "Physics2DDirectBodyStateSW", "GodotPhysicsDirectBodyState2D" }, // Class is not visible in ClassDB
 	// { "Physics2DShapeQueryResult", "PhysicsShapeQueryResult2D" }, // Class is not visible in ClassDB
 	// { "PhysicsShapeQueryResult", "PhysicsShapeQueryResult3D" }, // Class is not visible in ClassDB
-	// { "NativeScript","NativeExtension"}, ??
+	// { "NativeScript","GDExtension"}, ??
 	{ "ARVRAnchor", "XRAnchor3D" },
 	{ "ARVRCamera", "XRCamera3D" },
 	{ "ARVRController", "XRController3D" },
@@ -2170,7 +2173,7 @@ int ProjectConverter3To4::validate_conversion() {
 				lines.append(line);
 			}
 		}
-		print_line(vformat("Checking for conversion - %d/%d file - \"%s\" with size - %d KB"), i + 1, collected_files.size(), file_name.trim_prefix("res://"), file_size / 1024);
+		print_line(vformat("Checking for conversion - %d/%d file - \"%s\" with size - %d KB", i + 1, collected_files.size(), file_name.trim_prefix("res://"), file_size / 1024));
 
 		Vector<String> changed_elements;
 		Vector<String> reason;
@@ -2442,10 +2445,10 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_with_regex("\n\nmaster func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex("\n\nmastersync func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc(call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
 
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function\n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , ", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget  , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function \n	set(mod_value):\n		mod_value  # TODOConverter40  Non existent set function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , get_function", "var size : Vector2 = Vector2() : get = get_function, set = set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , ", "var size : Vector2 = Vector2() : set = set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function", "var size : Vector2 = Vector2() : set = set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget  , get_function", "var size : Vector2 = Vector2() : get = get_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid && test_conversion_gdscript_builtin("get_node(@", "get_node(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
@@ -2677,7 +2680,7 @@ bool ProjectConverter3To4::test_array_names() {
 
 		// List of excluded functions from builtin types and global namespace, because currently it is not possible to get list of functions from them.
 		// This will be available when https://github.com/godotengine/godot/pull/49053 or similar will be included into Godot.
-		static const char *builtin_types_excluded_functions[] = { "dict_to_inst", "inst_to_dict", "bytes_to_var", "bytes_to_var_with_objects", "db_to_linear", "deg_to_rad", "linear_to_db", "rad_to_deg", "randf_range", "snapped", "str_to_var", "var_to_str", "var_to_bytes", "var_to_bytes_with_objects", "move_toward", "uri_encode", "uri_decode", "remove_at", "get_rotation_quaternion", "clamp", "grow_side", "is_absolute_path", "is_valid_int", "lerp", "to_ascii_buffer", "to_utf8_buffer", "to_utf32_buffer", "snapped", "remap", nullptr };
+		static const char *builtin_types_excluded_functions[] = { "dict_to_inst", "inst_to_dict", "bytes_to_var", "bytes_to_var_with_objects", "db_to_linear", "deg_to_rad", "linear_to_db", "rad_to_deg", "randf_range", "snapped", "str_to_var", "var_to_str", "var_to_bytes", "var_to_bytes_with_objects", "move_toward", "uri_encode", "uri_decode", "remove_at", "get_rotation_quaternion", "clamp", "grow_side", "is_absolute_path", "is_valid_int", "lerp", "to_ascii_buffer", "to_utf8_buffer", "to_utf32_buffer", "snapped", "remap", "rfind", nullptr };
 		for (int current_index = 0; builtin_types_excluded_functions[current_index]; current_index++) {
 			all_functions.insert(builtin_types_excluded_functions[current_index]);
 		}
@@ -3141,17 +3144,17 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 
 	// Setget Setget
 	if (line.contains("setget")) {
-		line = reg_container.reg_setget_setget.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $4\n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
+		line = reg_container.reg_setget_setget.sub(line, "var $1$2: get = $4, set = $3", true);
 	}
 
 	// Setget set
 	if (line.contains("setget")) {
-		line = reg_container.reg_setget_set.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Non existent get function \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
+		line = reg_container.reg_setget_set.sub(line, "var $1$2: set = $3", true);
 	}
 
 	// Setget get
 	if (line.contains("setget")) {
-		line = reg_container.reg_setget_get.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $3 \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40  Non existent set function", true);
+		line = reg_container.reg_setget_get.sub(line, "var $1$2: get = $3", true);
 	}
 
 	// OS.window_fullscreen = a -> if a: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN) else: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)

@@ -30,15 +30,21 @@
 
 #include "editor_plugin.h"
 
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
 #include "editor/filesystem_dock.h"
+#include "editor/import/editor_import_plugin.h"
+#include "editor/import/resource_importer_scene.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
@@ -238,12 +244,16 @@ void EditorInterface::select_file(const String &p_file) {
 	FileSystemDock::get_singleton()->select_file(p_file);
 }
 
-String EditorInterface::get_selected_path() const {
-	return FileSystemDock::get_singleton()->get_selected_path();
+Vector<String> EditorInterface::get_selected_paths() const {
+	return FileSystemDock::get_singleton()->get_selected_paths();
 }
 
 String EditorInterface::get_current_path() const {
 	return FileSystemDock::get_singleton()->get_current_path();
+}
+
+String EditorInterface::get_current_directory() const {
+	return FileSystemDock::get_singleton()->get_current_directory();
 }
 
 void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property, bool p_inspector_only) {
@@ -363,8 +373,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_main_screen"), &EditorInterface::get_editor_main_screen);
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
-	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
+	ClassDB::bind_method(D_METHOD("get_selected_paths"), &EditorInterface::get_selected_paths);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
+	ClassDB::bind_method(D_METHOD("get_current_directory"), &EditorInterface::get_current_directory);
 	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
 	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
 	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
@@ -837,12 +848,12 @@ ScriptCreateDialog *EditorPlugin::get_script_create_dialog() {
 	return SceneTreeDock::get_singleton()->get_script_create_dialog();
 }
 
-void EditorPlugin::add_debugger_plugin(const Ref<Script> &p_script) {
-	EditorDebuggerNode::get_singleton()->add_debugger_plugin(p_script);
+void EditorPlugin::add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin) {
+	EditorDebuggerNode::get_singleton()->add_debugger_plugin(p_plugin);
 }
 
-void EditorPlugin::remove_debugger_plugin(const Ref<Script> &p_script) {
-	EditorDebuggerNode::get_singleton()->remove_debugger_plugin(p_script);
+void EditorPlugin::remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin) {
+	EditorDebuggerNode::get_singleton()->remove_debugger_plugin(p_plugin);
 }
 
 void EditorPlugin::_editor_project_settings_changed() {

@@ -37,7 +37,7 @@ namespace Godot
         /// </exception>
         public Vector3 this[int column]
         {
-            get
+            readonly get
             {
                 switch (column)
                 {
@@ -83,7 +83,7 @@ namespace Godot
         /// <param name="row">Which row, the matrix vertical position.</param>
         public real_t this[int column, int row]
         {
-            get
+            readonly get
             {
                 if (column == 3)
                 {
@@ -108,7 +108,7 @@ namespace Godot
         /// </summary>
         /// <seealso cref="Inverse"/>
         /// <returns>The inverse transformation matrix.</returns>
-        public Transform3D AffineInverse()
+        public readonly Transform3D AffineInverse()
         {
             Basis basisInv = basis.Inverse();
             return new Transform3D(basisInv, basisInv * -origin);
@@ -120,7 +120,7 @@ namespace Godot
         /// <param name="transform">The other transform.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated transform.</returns>
-        public Transform3D InterpolateWith(Transform3D transform, real_t weight)
+        public readonly Transform3D InterpolateWith(Transform3D transform, real_t weight)
         {
             Basis retBasis = basis.Lerp(transform.basis, weight);
             Vector3 retOrigin = origin.Lerp(transform.origin, weight);
@@ -133,7 +133,7 @@ namespace Godot
         /// (no scaling, use <see cref="AffineInverse"/> for transforms with scaling).
         /// </summary>
         /// <returns>The inverse matrix.</returns>
-        public Transform3D Inverse()
+        public readonly Transform3D Inverse()
         {
             Basis basisTr = basis.Transposed();
             return new Transform3D(basisTr, basisTr * -origin);
@@ -164,7 +164,7 @@ namespace Godot
         /// and normalized axis vectors (scale of 1 or -1).
         /// </summary>
         /// <returns>The orthonormalized transform.</returns>
-        public Transform3D Orthonormalized()
+        public readonly Transform3D Orthonormalized()
         {
             return new Transform3D(basis.Orthonormalized(), origin);
         }
@@ -192,7 +192,7 @@ namespace Godot
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform3D RotatedLocal(Vector3 axis, real_t angle)
+        public readonly Transform3D RotatedLocal(Vector3 axis, real_t angle)
         {
             Basis tmpBasis = new Basis(axis, angle);
             return new Transform3D(basis * tmpBasis, origin);
@@ -205,7 +205,7 @@ namespace Godot
         /// </summary>
         /// <param name="scale">The scale to introduce.</param>
         /// <returns>The scaled transformation matrix.</returns>
-        public Transform3D Scaled(Vector3 scale)
+        public readonly Transform3D Scaled(Vector3 scale)
         {
             return new Transform3D(basis.Scaled(scale), origin * scale);
         }
@@ -217,7 +217,7 @@ namespace Godot
         /// </summary>
         /// <param name="scale">The scale to introduce.</param>
         /// <returns>The scaled transformation matrix.</returns>
-        public Transform3D ScaledLocal(Vector3 scale)
+        public readonly Transform3D ScaledLocal(Vector3 scale)
         {
             Basis tmpBasis = Basis.FromScale(scale);
             return new Transform3D(basis * tmpBasis, origin);
@@ -230,7 +230,7 @@ namespace Godot
         /// <param name="transform">The other transform.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated transform.</returns>
-        public Transform3D SphericalInterpolateWith(Transform3D transform, real_t weight)
+        public readonly Transform3D SphericalInterpolateWith(Transform3D transform, real_t weight)
         {
             /* not sure if very "efficient" but good enough? */
 
@@ -281,7 +281,7 @@ namespace Godot
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
-        public Transform3D Translated(Vector3 offset)
+        public readonly Transform3D Translated(Vector3 offset)
         {
             return new Transform3D(basis, origin + offset);
         }
@@ -293,7 +293,7 @@ namespace Godot
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
-        public Transform3D TranslatedLocal(Vector3 offset)
+        public readonly Transform3D TranslatedLocal(Vector3 offset)
         {
             return new Transform3D(basis, new Vector3
             (
@@ -617,7 +617,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other transform to compare.</param>
         /// <returns>Whether or not the matrices are approximately equal.</returns>
-        public bool IsEqualApprox(Transform3D other)
+        public readonly bool IsEqualApprox(Transform3D other)
         {
             return basis.IsEqualApprox(other.basis) && origin.IsEqualApprox(other.origin);
         }
@@ -626,7 +626,7 @@ namespace Godot
         /// Serves as the hash function for <see cref="Transform3D"/>.
         /// </summary>
         /// <returns>A hash code for this transform.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return basis.GetHashCode() ^ origin.GetHashCode();
         }
@@ -635,7 +635,7 @@ namespace Godot
         /// Converts this <see cref="Transform3D"/> to a string.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"[X: {basis.x}, Y: {basis.y}, Z: {basis.z}, O: {origin}]";
         }
@@ -644,7 +644,7 @@ namespace Godot
         /// Converts this <see cref="Transform3D"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public string ToString(string format)
+        public readonly string ToString(string format)
         {
             return $"[X: {basis.x.ToString(format)}, Y: {basis.y.ToString(format)}, Z: {basis.z.ToString(format)}, O: {origin.ToString(format)}]";
         }

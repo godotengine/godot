@@ -61,6 +61,8 @@ class GDScript : public Script {
 	GDCLASS(GDScript, Script);
 	bool tool = false;
 	bool valid = false;
+	bool reloading = false;
+	bool skip_dependencies = false;
 
 	struct MemberInfo {
 		int index = 0;
@@ -124,6 +126,8 @@ class GDScript : public Script {
 
 	int subclass_count = 0;
 	RBSet<Object *> instances;
+	bool destructing = false;
+	bool clearing = false;
 	//exported members
 	String source;
 	String path;
@@ -137,7 +141,6 @@ class GDScript : public Script {
 	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
 
-	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
 	String _get_debug_path() const;
 
 #ifdef TOOLS_ENABLED
@@ -164,6 +167,9 @@ class GDScript : public Script {
 	// This method will map the class name from "RefCounted" to "MyClass.InnerClass".
 	static String _get_gdscript_reference_class_name(const GDScript *p_gdscript);
 
+	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
+	void _get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
+
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -174,10 +180,17 @@ protected:
 	static void _bind_methods();
 
 public:
+	void clear();
+
 	virtual bool is_valid() const override { return valid; }
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
+	GDScript *find_class(const String &p_qualified_name);
+	bool is_subclass(const GDScript *p_script);
+	GDScript *get_root_script();
+	bool is_root_script() const { return _owner == nullptr; }
+	String get_fully_qualified_name() const { return fully_qualified_name; }
 	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const HashMap<StringName, Variant> &get_constants() const { return constants; }
 	const HashSet<StringName> &get_members() const { return members; }
@@ -188,6 +201,10 @@ public:
 	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 	const String &get_script_class_name() const { return name; }
+
+	RBSet<GDScript *> get_dependencies();
+	RBSet<GDScript *> get_inverted_dependencies();
+	RBSet<GDScript *> get_must_clear_dependencies();
 
 	virtual bool has_script_signal(const StringName &p_signal) const override;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
@@ -223,7 +240,7 @@ public:
 	virtual Error reload(bool p_keep_state = false) override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
-	void set_script_path(const String &p_path) { path = p_path; } //because subclasses need a path too...
+	String get_script_path() const;
 	Error load_source_code(const String &p_path);
 	Error load_byte_code(const String &p_path);
 
@@ -267,6 +284,7 @@ class GDScriptInstance : public ScriptInstance {
 	friend class GDScriptLambdaCallable;
 	friend class GDScriptLambdaSelfCallable;
 	friend class GDScriptCompiler;
+	friend class GDScriptCache;
 	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	ObjectID owner_id;
@@ -415,7 +433,7 @@ public:
 			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
 			if (_call_stack[i].function) {
 				csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
-				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
+				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_script_path();
 			}
 		}
 		return csi;
@@ -514,6 +532,8 @@ public:
 
 	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
 	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
+
+	Ref<GDScript> get_script_by_fully_qualified_name(const String &p_name);
 
 	GDScriptLanguage();
 	~GDScriptLanguage();

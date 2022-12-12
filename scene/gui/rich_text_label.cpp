@@ -752,7 +752,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			prefix = _prefix;
 			break;
 		} else if (list_items[i]->list_type == LIST_NUMBERS) {
-			segment = TS->format_number(itos(list_index[i]), _find_language(l.from));
+			segment = itos(list_index[i]);
+			if (is_localizing_numeral_system()) {
+				segment = TS->format_number(segment, _find_language(l.from));
+			}
 		} else if (list_items[i]->list_type == LIST_LETTERS) {
 			segment = _letters(list_index[i], list_items[i]->capitalize);
 		} else if (list_items[i]->list_type == LIST_ROMAN) {
@@ -887,7 +890,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						Color odd_row_bg = theme_cache.table_odd_row_bg;
 						Color even_row_bg = theme_cache.table_even_row_bg;
 						Color border = theme_cache.table_border;
-						int hseparation = theme_cache.table_h_separation;
+						int h_separation = theme_cache.table_h_separation;
 
 						int col_count = table->columns.size();
 						int row_count = table->rows.size();
@@ -905,11 +908,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									coff.x = rect.size.width - table->columns[col].width - coff.x;
 								}
 								if (row % 2 == 0) {
-									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + hseparation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg), true);
+									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg), true);
 								} else {
-									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + hseparation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg), true);
+									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg), true);
 								}
-								draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + hseparation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->border != Color(0, 0, 0, 0) ? frame->border : border), false);
+								draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->border != Color(0, 0, 0, 0) ? frame->border : border), false);
 							}
 
 							for (int j = 0; j < (int)frame->lines.size(); j++) {
@@ -1002,6 +1005,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!custom_effect.is_null()) {
 						charfx->elapsed_time = item_custom->elapsed_time;
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
+						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
 						charfx->visibility = txt_visible;
 						charfx->outline = true;
 						charfx->font = frid;
@@ -1219,6 +1223,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!custom_effect.is_null()) {
 						charfx->elapsed_time = item_custom->elapsed_time;
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
+						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
 						charfx->visibility = txt_visible;
 						charfx->outline = false;
 						charfx->font = frid;
@@ -1849,10 +1854,6 @@ void RichTextLabel::_notification(int p_what) {
 }
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
-	if (!underline_meta) {
-		return get_default_cursor_shape();
-	}
-
 	if (selection.click_item) {
 		return CURSOR_IBEAM;
 	}
@@ -2686,6 +2687,7 @@ bool RichTextLabel::_validate_line_caches() {
 		int ctrl_height = get_size().height;
 
 		// Update fonts.
+		float old_scroll = vscroll->get_value();
 		if (main->first_invalid_font_line.load() != (int)main->lines.size()) {
 			for (int i = main->first_invalid_font_line.load(); i < (int)main->lines.size(); i++) {
 				_update_line_font(main, i, theme_cache.normal_font, theme_cache.normal_font_size);
@@ -2695,6 +2697,7 @@ bool RichTextLabel::_validate_line_caches() {
 		}
 
 		if (main->first_resized_line.load() == (int)main->lines.size()) {
+			vscroll->set_value(old_scroll);
 			return true;
 		}
 
@@ -2733,6 +2736,8 @@ bool RichTextLabel::_validate_line_caches() {
 			vscroll->set_page(text_rect.size.height);
 			if (scroll_follow && scroll_following) {
 				vscroll->set_value(total_height);
+			} else {
+				vscroll->set_value(old_scroll);
 			}
 			updating_scroll = false;
 
@@ -3853,6 +3858,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							Color color2 = Color::from_string(subtag_b[1], fallback_color);
 							set_cell_row_background_color(color1, color2);
 						}
+						if (subtag_b.size() == 1) {
+							Color color1 = Color::from_string(subtag_a[1], fallback_color);
+							set_cell_row_background_color(color1, color1);
+						}
 					}
 				}
 			}
@@ -4057,7 +4066,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			Color color = theme_cache.default_color;
 			Color outline_color = theme_cache.font_outline_color;
 			int outline_size = theme_cache.outline_size;
-			Rect2 dropcap_margins = Rect2();
+			Rect2 dropcap_margins;
 
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
@@ -4515,6 +4524,30 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 	}
 }
 
+void RichTextLabel::scroll_to_selection() {
+	if (selection.active && selection.from_frame && selection.from_line >= 0 && selection.from_line < (int)selection.from_frame->lines.size()) {
+		// Selected frame paragraph offset.
+		float line_offset = selection.from_frame->lines[selection.from_line].offset.y;
+
+		// Add wrapped line offset.
+		for (int i = 0; i < selection.from_frame->lines[selection.from_line].text_buf->get_line_count(); i++) {
+			Vector2i range = selection.from_frame->lines[selection.from_line].text_buf->get_line_range(i);
+			if (range.x <= selection.from_char && range.y >= selection.from_char) {
+				break;
+			}
+			line_offset += selection.from_frame->lines[selection.from_line].text_buf->get_line_size(i).y + theme_cache.line_separation;
+		}
+
+		// Add nested frame (e.g. table cell) offset.
+		ItemFrame *it = selection.from_frame;
+		while (it->parent_frame != nullptr) {
+			line_offset += it->parent_frame->lines[it->line].offset.y;
+			it = it->parent_frame;
+		}
+		vscroll->set_value(line_offset);
+	}
+}
+
 void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
 	_validate_line_caches();
 
@@ -4759,7 +4792,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 		char_idx = p_search_previous ? selection.from_char - 1 : selection.to_char;
 		if (!(p_search_previous && char_idx < 0) &&
 				_search_line(selection.from_frame, selection.from_line, p_string, char_idx, p_search_previous)) {
-			scroll_to_line(selection.from_frame->line + selection.from_line);
+			scroll_to_selection();
 			queue_redraw();
 			return true;
 		}
@@ -4784,7 +4817,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 
 				// Search for next element
 				if (_search_table(parent_table, parent_element, p_string, p_search_previous)) {
-					scroll_to_line(selection.from_frame->line + selection.from_line);
+					scroll_to_selection();
 					queue_redraw();
 					return true;
 				}
@@ -4808,7 +4841,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 		}
 
 		if (_search_line(main, current_line, p_string, char_idx, p_search_previous)) {
-			scroll_to_line(current_line);
+			scroll_to_selection();
 			queue_redraw();
 			return true;
 		}
@@ -5296,6 +5329,7 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("scroll_to_line", "line"), &RichTextLabel::scroll_to_line);
 	ClassDB::bind_method(D_METHOD("scroll_to_paragraph", "paragraph"), &RichTextLabel::scroll_to_paragraph);
+	ClassDB::bind_method(D_METHOD("scroll_to_selection"), &RichTextLabel::scroll_to_selection);
 
 	ClassDB::bind_method(D_METHOD("set_tab_size", "spaces"), &RichTextLabel::set_tab_size);
 	ClassDB::bind_method(D_METHOD("get_tab_size"), &RichTextLabel::get_tab_size);
@@ -5385,7 +5419,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 
 	ADD_GROUP("Markup", "");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "RichTextEffect"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_effects", "get_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("RichTextEffect"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_effects", "get_effects");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_underlined"), "set_meta_underline", "is_meta_underlined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hint_underlined"), "set_hint_underline", "is_hint_underlined");
 
@@ -5716,11 +5750,11 @@ Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_id
 }
 
 Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressions) {
-	Dictionary d = Dictionary();
+	Dictionary d;
 	for (int i = 0; i < p_expressions.size(); i++) {
 		String expression = p_expressions[i];
 
-		Array a = Array();
+		Array a;
 		Vector<String> parts = expression.split("=", true);
 		String key = parts[0];
 		if (parts.size() != 2) {

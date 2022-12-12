@@ -114,7 +114,7 @@
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
 			If [code]true[/code], the light will cast real-time shadows. This has a significant performance cost. Only enable shadow rendering when it makes a noticeable difference in the scene's appearance, and consider using [member distance_fade_enabled] to hide the light when far away from the [Camera3D].
 		</member>
-		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" default="1.0">
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" default="2.0">
 			Offsets the lookup into the shadow map by the object's normal. This can be used to reduce self-shadowing artifacts without using [member shadow_bias]. In practice, this value should be tweaked along with [member shadow_bias] to reduce artifacts as much as possible.
 		</member>
 		<member name="shadow_opacity" type="float" setter="set_param" getter="get_param" default="1.0">

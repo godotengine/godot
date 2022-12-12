@@ -38,6 +38,10 @@
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/menu_button.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/scene_string_names.h"
 
 void MeshInstance3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -66,7 +70,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			if (selection.is_empty()) {
-				Ref<Shape3D> shape = mesh->create_trimesh_shape();
+				Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 				if (shape.is_null()) {
 					err_dialog->set_text(TTR("Couldn't create a Trimesh collision shape."));
 					err_dialog->popup_centered();
@@ -84,8 +88,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				ur->add_do_method(node, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", body);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, body);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 				ur->add_do_reference(body);
 				ur->add_undo_method(node, "remove_child", body);
 				ur->commit_action();
@@ -105,7 +109,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 					continue;
 				}
 
-				Ref<Shape3D> shape = m->create_trimesh_shape();
+				Ref<ConcavePolygonShape3D> shape = m->create_trimesh_shape();
 				if (shape.is_null()) {
 					continue;
 				}
@@ -120,8 +124,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				ur->add_do_method(instance, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", body);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, body);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 				ur->add_do_reference(body);
 				ur->add_undo_method(instance, "remove_child", body);
 			}
@@ -137,7 +141,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Ref<Shape3D> shape = mesh->create_trimesh_shape();
+			Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 			if (shape.is_null()) {
 				return;
 			}
@@ -155,7 +159,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
-			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 			ur->add_do_reference(cshape);
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			ur->commit_action();
@@ -171,7 +175,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			bool simplify = (p_option == MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
 
-			Ref<Shape3D> shape = mesh->create_convex_shape(true, simplify);
+			Ref<ConvexPolygonShape3D> shape = mesh->create_convex_shape(true, simplify);
 
 			if (shape.is_null()) {
 				err_dialog->set_text(TTR("Couldn't create a single convex collision shape."));
@@ -195,7 +199,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
-			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 			ur->add_do_reference(cshape);
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 
@@ -234,7 +238,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				ur->add_do_method(node->get_parent(), "add_child", cshape);
 				ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 				ur->add_do_reference(cshape);
 				ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			}
@@ -260,7 +264,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			ur->add_do_method(node, "add_child", nmi, true);
 			ur->add_do_method(nmi, "set_owner", owner);
-			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", nmi);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, nmi);
 
 			ur->add_do_reference(nmi);
 			ur->add_undo_method(node, "remove_child", nmi);
@@ -271,7 +275,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			outline_dialog->popup_centered(Vector2(200, 90));
 		} break;
 		case MENU_OPTION_CREATE_DEBUG_TANGENTS: {
-			Ref<EditorUndoRedoManager> ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Create Debug Tangents"));
 
 			MeshInstance3D *tangents = node->create_debug_tangents_node();
@@ -495,7 +499,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	ur->add_do_method(node, "add_child", mi, true);
 	ur->add_do_method(mi, "set_owner", owner);
-	ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", mi);
+	ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, mi);
 
 	ur->add_do_reference(mi);
 	ur->add_undo_method(node, "remove_child", mi);

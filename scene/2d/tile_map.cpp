@@ -358,7 +358,7 @@ TileMap::TerrainConstraint::TerrainConstraint(const TileMap *p_tile_map, const V
 	terrain = p_terrain;
 }
 
-Vector2i TileMap::transform_coords_layout(Vector2i p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout) {
+Vector2i TileMap::transform_coords_layout(const Vector2i &p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout) {
 	// Transform to stacked layout.
 	Vector2i output = p_coords;
 	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
@@ -755,6 +755,7 @@ void TileMap::set_y_sort_enabled(bool p_enable) {
 	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
+	update_configuration_warnings();
 }
 
 Vector2i TileMap::_coords_to_quadrant_coords(int p_layer, const Vector2i &p_coords) const {
@@ -995,9 +996,11 @@ void TileMap::_recompute_rect_cache() {
 		}
 	}
 
+	bool changed = rect_cache != r_total;
+
 	rect_cache = r_total;
 
-	item_rect_changed();
+	item_rect_changed(changed);
 
 	rect_cache_dirty = false;
 #endif
@@ -1340,7 +1343,7 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	}
 }
 
-void TileMap::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override) {
+void TileMap::draw_tile(RID p_canvas_item, const Vector2i &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
 	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
 	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
@@ -1733,6 +1736,7 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 							tile_transform.set_origin(map_to_local(E_cell));
 
 							RID region = NavigationServer2D::get_singleton()->region_create();
+							NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
 							NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
 							NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
 							NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
@@ -1859,11 +1863,13 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 	while (q_list_element) {
 		TileMapQuadrant &q = *q_list_element->self();
 
-		// Clear the scenes.
-		for (const KeyValue<Vector2i, String> &E : q.scenes) {
-			Node *node = get_node_or_null(E.value);
-			if (node) {
-				node->queue_free();
+		// Clear the scenes if instance cache was cleared.
+		if (instantiated_scenes.is_empty()) {
+			for (const KeyValue<Vector2i, String> &E : q.scenes) {
+				Node *node = get_node_or_null(E.value);
+				if (node) {
+					node->queue_free();
+				}
 			}
 		}
 
@@ -1871,6 +1877,15 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 
 		// Recreate the scenes.
 		for (const Vector2i &E_cell : q.cells) {
+			Vector3i cell_coords = Vector3i(q.layer, E_cell.x, E_cell.y);
+			if (instantiated_scenes.has(cell_coords)) {
+				// Skip scene if the instance was cached (to avoid recreating scenes unnecessarily).
+				continue;
+			}
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				instantiated_scenes.insert(cell_coords);
+			}
+
 			const TileMapCell &c = get_cell(q.layer, E_cell, true);
 
 			TileSetSource *source;
@@ -1907,15 +1922,16 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 }
 
 void TileMap::_scenes_cleanup_quadrant(TileMapQuadrant *p_quadrant) {
-	// Clear the scenes.
-	for (const KeyValue<Vector2i, String> &E : p_quadrant->scenes) {
-		Node *node = get_node_or_null(E.value);
-		if (node) {
-			node->queue_free();
+	// Clear the scenes if instance cache was cleared.
+	if (instantiated_scenes.is_empty()) {
+		for (const KeyValue<Vector2i, String> &E : p_quadrant->scenes) {
+			Node *node = get_node_or_null(E.value);
+			if (node) {
+				node->queue_free();
+			}
 		}
+		p_quadrant->scenes.clear();
 	}
-
-	p_quadrant->scenes.clear();
 }
 
 void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
@@ -2171,7 +2187,7 @@ Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coo
 	return output;
 }
 
-Vector2i TileMap::map_pattern(Vector2i p_position_in_tilemap, Vector2i p_coords_in_pattern, Ref<TileMapPattern> p_pattern) {
+Vector2i TileMap::map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern) {
 	ERR_FAIL_COND_V(p_pattern.is_null(), Vector2i());
 	ERR_FAIL_COND_V(!p_pattern->has_cell(p_coords_in_pattern), Vector2i());
 
@@ -2195,7 +2211,7 @@ Vector2i TileMap::map_pattern(Vector2i p_position_in_tilemap, Vector2i p_coords_
 	return output;
 }
 
-void TileMap::set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPattern> p_pattern) {
+void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -2206,7 +2222,7 @@ void TileMap::set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPat
 	}
 }
 
-TileSet::TerrainsPattern TileMap::_get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, RBSet<TerrainConstraint> p_constraints, TileSet::TerrainsPattern p_current_pattern) {
+TileSet::TerrainsPattern TileMap::_get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) {
 	if (!tile_set.is_valid()) {
 		return TileSet::TerrainsPattern();
 	}
@@ -2219,7 +2235,7 @@ TileSet::TerrainsPattern TileMap::_get_best_terrain_pattern_for_constraints(int 
 
 		// Check the center bit constraint
 		TerrainConstraint terrain_constraint = TerrainConstraint(this, p_position, terrain_pattern.get_terrain());
-		RBSet<TerrainConstraint>::Element *in_set_constraint_element = p_constraints.find(terrain_constraint);
+		const RBSet<TerrainConstraint>::Element *in_set_constraint_element = p_constraints.find(terrain_constraint);
 		if (in_set_constraint_element) {
 			if (in_set_constraint_element->get().get_terrain() != terrain_constraint.get_terrain()) {
 				score += in_set_constraint_element->get().get_priority();
@@ -2266,7 +2282,7 @@ TileSet::TerrainsPattern TileMap::_get_best_terrain_pattern_for_constraints(int 
 	return min_score_pattern;
 }
 
-RBSet<TileMap::TerrainConstraint> TileMap::_get_terrain_constraints_from_added_pattern(Vector2i p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const {
+RBSet<TileMap::TerrainConstraint> TileMap::_get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const {
 	if (!tile_set.is_valid()) {
 		return RBSet<TerrainConstraint>();
 	}
@@ -2374,7 +2390,7 @@ RBSet<TileMap::TerrainConstraint> TileMap::_get_terrain_constraints_from_painted
 	return constraints;
 }
 
-HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> p_constraints) {
+HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) {
 	if (!tile_set.is_valid()) {
 		return HashMap<Vector2i, TileSet::TerrainsPattern>();
 	}
@@ -2440,7 +2456,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_connect(int p_
 		// Find the adequate neighbor
 		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
-			if (tile_set->is_valid_terrain_peering_bit(p_terrain_set, bit)) {
+			if (is_existing_neighbor(bit)) {
 				Vector2i neighbor = get_neighbor_cell(coords, bit);
 				if (!can_modify_set.has(neighbor)) {
 					can_modify_list.push_back(neighbor);
@@ -2538,7 +2554,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_path(int p_lay
 		TileSet::CellNeighbor found_bit = TileSet::CELL_NEIGHBOR_MAX;
 		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
-			if (tile_set->is_valid_terrain_peering_bit(p_terrain_set, bit)) {
+			if (is_existing_neighbor(bit)) {
 				if (get_neighbor_cell(p_path[i], bit) == p_path[i + 1]) {
 					found_bit = bit;
 					break;
@@ -3826,7 +3842,7 @@ void TileMap::set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) {
 	}
 }
 
-TypedArray<Vector2i> TileMap::get_surrounding_tiles(Vector2i coords) {
+TypedArray<Vector2i> TileMap::get_surrounding_cells(const Vector2i &coords) {
 	if (!tile_set.is_valid()) {
 		return TypedArray<Vector2i>();
 	}
@@ -3864,7 +3880,7 @@ TypedArray<Vector2i> TileMap::get_surrounding_tiles(Vector2i coords) {
 	return around;
 }
 
-void TileMap::draw_cells_outline(Control *p_control, RBSet<Vector2i> p_cells, Color p_color, Transform2D p_transform) {
+void TileMap::draw_cells_outline(Control *p_control, const RBSet<Vector2i> &p_cells, Color p_color, Transform2D p_transform) {
 	if (!tile_set.is_valid()) {
 		return;
 	}
@@ -3943,6 +3959,22 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 		}
 	}
 
+	if (tile_set.is_valid() && tile_set->get_tile_shape() == TileSet::TILE_SHAPE_ISOMETRIC) {
+		bool warn = !is_y_sort_enabled();
+		if (!warn) {
+			for (int layer = 0; layer < (int)layers.size(); layer++) {
+				if (!layers[layer].y_sort_enabled) {
+					warn = true;
+					break;
+				}
+			}
+		}
+
+		if (warn) {
+			warnings.push_back(RTR("Isometric TileSet will likely not look as intended without Y-sort enabled for the TileMap and all of its layers."));
+		}
+	}
+
 	return warnings;
 }
 
@@ -4000,7 +4032,7 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_update", "layer"), &TileMap::force_update, DEFVAL(-1));
 
-	ClassDB::bind_method(D_METHOD("get_surrounding_tiles", "coords"), &TileMap::get_surrounding_tiles);
+	ClassDB::bind_method(D_METHOD("get_surrounding_cells", "coords"), &TileMap::get_surrounding_cells);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells", "layer"), &TileMap::get_used_cells);
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &TileMap::get_used_rect);
@@ -4037,7 +4069,9 @@ void TileMap::_bind_methods() {
 void TileMap::_tile_set_changed() {
 	emit_signal(SNAME("changed"));
 	_tile_set_changed_deferred_update_needed = true;
+	instantiated_scenes.clear();
 	call_deferred(SNAME("_tile_set_changed_deferred_update"));
+	update_configuration_warnings();
 }
 
 void TileMap::_tile_set_changed_deferred_update() {
@@ -4056,5 +4090,9 @@ TileMap::TileMap() {
 }
 
 TileMap::~TileMap() {
+	if (tile_set.is_valid()) {
+		tile_set->disconnect("changed", callable_mp(this, &TileMap::_tile_set_changed));
+	}
+
 	_clear_internals();
 }

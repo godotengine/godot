@@ -206,7 +206,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the id of the item at the given [param index]. [code]id[/code] can be manually assigned, while index can not.
+				Returns the ID of the item at the given [param index]. [code]id[/code] can be manually assigned, while index can not.
 			</description>
 		</method>
 		<method name="get_item_indent" qualifiers="const">
@@ -544,6 +544,7 @@
 		</signal>
 		<signal name="menu_changed">
 			<description>
+				Emitted when any item is added, modified or removed.
 			</description>
 		</signal>
 	</signals>
@@ -576,8 +577,10 @@
 			Width of the single indentation level.
 		</theme_item>
 		<theme_item name="item_end_padding" data_type="constant" type="int" default="2">
+			Horizontal padding to the right of the items (or left, in RTL layout).
 		</theme_item>
 		<theme_item name="item_start_padding" data_type="constant" type="int" default="2">
+			Horizontal padding to the left of the items (or right, in RTL layout).
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.

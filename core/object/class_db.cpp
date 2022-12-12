@@ -31,6 +31,7 @@
 #include "class_db.h"
 
 #include "core/config/engine.h"
+#include "core/object/script_language.h"
 #include "core/os/mutex.h"
 #include "core/version.h"
 
@@ -317,7 +318,7 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 	{
 		OBJTYPE_RLOCK;
 		ti = classes.getptr(p_class);
-		if (!ti || ti->disabled || !ti->creation_func || (ti->native_extension && !ti->native_extension->create_instance)) {
+		if (!ti || ti->disabled || !ti->creation_func || (ti->gdextension && !ti->gdextension->create_instance)) {
 			if (compat_classes.has(p_class)) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
@@ -332,8 +333,8 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 		return nullptr;
 	}
 #endif
-	if (ti->native_extension && ti->native_extension->create_instance) {
-		return (Object *)ti->native_extension->create_instance(ti->native_extension->class_userdata);
+	if (ti->gdextension && ti->gdextension->create_instance) {
+		return (Object *)ti->gdextension->create_instance(ti->gdextension->class_userdata);
 	} else {
 		return ti->creation_func();
 	}
@@ -345,17 +346,17 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 	{
 		OBJTYPE_RLOCK;
 		ti = classes.getptr(p_class);
-		if (!ti || ti->disabled || !ti->creation_func || (ti->native_extension && !ti->native_extension->create_instance)) {
+		if (!ti || ti->disabled || !ti->creation_func || (ti->gdextension && !ti->gdextension->create_instance)) {
 			if (compat_classes.has(p_class)) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
 		}
 		ERR_FAIL_COND_MSG(!ti, "Cannot get class '" + String(p_class) + "'.");
 		ERR_FAIL_COND_MSG(ti->disabled, "Class '" + String(p_class) + "' is disabled.");
-		ERR_FAIL_COND_MSG(!ti->native_extension, "Class '" + String(p_class) + "' has no native extension.");
+		ERR_FAIL_COND_MSG(!ti->gdextension, "Class '" + String(p_class) + "' has no native extension.");
 	}
 
-	p_object->_extension = ti->native_extension;
+	p_object->_extension = ti->gdextension;
 	p_object->_extension_instance = p_instance;
 }
 
@@ -369,20 +370,25 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance));
+	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance));
 }
 
 bool ClassDB::is_virtual(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+	if (!ti) {
+		if (!ScriptServer::is_global_class(p_class)) {
+			ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+		}
+		return false;
+	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance) && ti->is_virtual);
+	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance) && ti->is_virtual);
 }
 
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
@@ -1454,7 +1460,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 		if (Engine::get_singleton()->has_singleton(p_class)) {
 			c = Engine::get_singleton()->get_singleton_object(p_class);
 			cleanup_c = false;
-		} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) {
+		} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) { // Keep this condition in sync with doc_tools.cpp get_documentation_default_value.
 			c = ClassDB::instantiate(p_class);
 			cleanup_c = true;
 		}
@@ -1516,7 +1522,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	return var;
 }
 
-void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
+void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 	GLOBAL_LOCK_FUNCTION;
 
 	ERR_FAIL_COND_MSG(classes.has(p_extension->class_name), "Class already registered: " + String(p_extension->class_name));
@@ -1526,7 +1532,7 @@ void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
 
 	ClassInfo c;
 	c.api = p_extension->editor_class ? API_EDITOR_EXTENSION : API_EXTENSION;
-	c.native_extension = p_extension;
+	c.gdextension = p_extension;
 	c.name = p_extension->class_name;
 	c.is_virtual = p_extension->is_virtual;
 	if (!p_extension->is_abstract) {

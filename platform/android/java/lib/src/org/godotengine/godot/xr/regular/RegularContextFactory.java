@@ -52,17 +52,16 @@ public class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
 	private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 
 	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
-		// FIXME: Add support for Vulkan.
-		Log.w(TAG, "creating OpenGL ES 2.0 context :");
+		Log.w(TAG, "creating OpenGL ES 3.0 context :");
 
 		GLUtils.checkEglError(TAG, "Before eglCreateContext", egl);
 		EGLContext context;
 		if (GLUtils.use_debug_opengl) {
-			int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
-			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list2);
+			int[] attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
+			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
 		} else {
-			int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
-			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list2);
+			int[] attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
+			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
 		}
 		GLUtils.checkEglError(TAG, "After eglCreateContext", egl);
 		return context;

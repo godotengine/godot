@@ -94,8 +94,6 @@ public:
 	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance) = 0;
 	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance) = 0;
 
-	virtual void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) = 0;
-
 	virtual void update_particles() = 0;
 
 	/* PARTICLES COLLISION */
@@ -116,7 +114,6 @@ public:
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const = 0;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
-	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const = 0;
 
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision) = 0;

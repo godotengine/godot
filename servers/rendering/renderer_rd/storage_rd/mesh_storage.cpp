@@ -445,7 +445,14 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			const AABB &bone = p_surface.bone_aabbs[i];
 			if (bone.has_volume()) {
-				mesh->bone_aabbs.write[i].merge_with(bone);
+				AABB &mesh_bone = mesh->bone_aabbs.write[i];
+				if (mesh_bone != AABB()) {
+					// Already initialized, merge AABBs.
+					mesh_bone.merge_with(bone);
+				} else {
+					// Not yet initialized, copy the bone AABB.
+					mesh_bone = bone;
+				}
 			}
 		}
 		mesh->aabb.merge_with(p_surface.aabb);
@@ -616,7 +623,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
-	if (!skeleton || skeleton->size == 0) {
+	if (!skeleton || skeleton->size == 0 || mesh->skeleton_aabb_version == skeleton->version) {
 		return mesh->aabb;
 	}
 
@@ -708,6 +715,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 		}
 	}
 
+	mesh->skeleton_aabb_version = skeleton->version;
 	return aabb;
 }
 
@@ -1841,7 +1849,7 @@ void MeshStorage::_update_dirty_multimeshes() {
 							RD::get_singleton()->buffer_update(multimesh->buffer, buffer_offset * sizeof(float) + offset, MIN(region_size, size - offset), &data[region_start_index], RD::BARRIER_MASK_NO_BARRIER);
 						}
 					}
-					RD::get_singleton()->barrier(RD::BARRIER_MASK_NO_BARRIER, RD::BARRIER_MASK_ALL);
+					RD::get_singleton()->barrier(RD::BARRIER_MASK_NO_BARRIER, RD::BARRIER_MASK_ALL_BARRIERS);
 				}
 
 				memcpy(multimesh->previous_data_cache_dirty_regions, multimesh->data_cache_dirty_regions, data_cache_dirty_region_count * sizeof(bool));

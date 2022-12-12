@@ -97,14 +97,14 @@ TEST_CASE("[OS] Feature tags") {
 			OS::get_singleton()->has_feature("editor"),
 			"The binary has the \"editor\" feature tag.");
 	CHECK_MESSAGE(
-			!OS::get_singleton()->has_feature("standalone"),
-			"The binary does not have the \"standalone\" feature tag.");
+			!OS::get_singleton()->has_feature("template"),
+			"The binary does not have the \"template\" feature tag.");
 	CHECK_MESSAGE(
-			OS::get_singleton()->has_feature("debug"),
-			"The binary has the \"debug\" feature tag.");
+			!OS::get_singleton()->has_feature("template_debug"),
+			"The binary does not have the \"template_debug\" feature tag.");
 	CHECK_MESSAGE(
-			!OS::get_singleton()->has_feature("release"),
-			"The binary does not have the \"release\" feature tag.");
+			!OS::get_singleton()->has_feature("template_release"),
+			"The binary does not have the \"template_release\" feature tag.");
 }
 
 TEST_CASE("[OS] Process ID") {

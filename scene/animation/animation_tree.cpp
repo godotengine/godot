@@ -86,7 +86,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	}
 }
 
-void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_seek_root, real_t p_blend, int p_pingponged) {
+void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag) {
 	ERR_FAIL_COND(!state);
 	ERR_FAIL_COND(!state->player->has_animation(p_animation));
 
@@ -112,19 +112,19 @@ void AnimationNode::blend_animation(const StringName &p_animation, double p_time
 	anim_state.time = p_time;
 	anim_state.animation = animation;
 	anim_state.seeked = p_seeked;
-	anim_state.pingponged = p_pingponged;
-	anim_state.seek_root = p_seek_root;
+	anim_state.looped_flag = p_looped_flag;
+	anim_state.is_external_seeking = p_is_external_seeking;
 
 	state->animation_states.push_back(anim_state);
 }
 
-double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_seek_root, const Vector<StringName> &p_connections) {
+double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections) {
 	base_path = p_base_path;
 	parent = p_parent;
 	connections = p_connections;
 	state = p_state;
 
-	double t = process(p_time, p_seek, p_seek_root);
+	double t = process(p_time, p_seek, p_is_external_seeking);
 
 	state = nullptr;
 	parent = nullptr;
@@ -148,7 +148,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	state->invalid_reasons += String::utf8("•  ") + p_reason;
 }
 
-double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, bool p_sync) {
+double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -167,7 +167,7 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 
 	//inputs.write[p_input].last_pass = state->last_pass;
 	real_t activity = 0.0;
-	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_seek_root, p_blend, p_filter, p_sync, &activity);
+	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, &activity);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
@@ -178,11 +178,11 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 	return ret;
 }
 
-double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, bool p_sync) {
-	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_seek_root, p_blend, p_filter, p_sync);
+double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync) {
+	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync);
 }
 
-double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, bool p_sync, real_t *r_max) {
+double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, real_t *r_max) {
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -221,7 +221,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (blendw[i] > CMP_EPSILON) {
+					if (!Math::is_zero_approx(blendw[i])) {
 						any_valid = true;
 					}
 				}
@@ -236,7 +236,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (blendw[i] > CMP_EPSILON) {
+					if (!Math::is_zero_approx(blendw[i])) {
 						any_valid = true;
 					}
 				}
@@ -252,7 +252,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 						blendw[i] = blendr[i]; //not filtered, do not blend
 					}
 
-					if (blendw[i] > CMP_EPSILON) {
+					if (!Math::is_zero_approx(blendw[i])) {
 						any_valid = true;
 					}
 				}
@@ -263,7 +263,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		for (int i = 0; i < blend_count; i++) {
 			//regular blend
 			blendw[i] = blendr[i] * p_blend;
-			if (blendw[i] > CMP_EPSILON) {
+			if (!Math::is_zero_approx(blendw[i])) {
 				any_valid = true;
 			}
 		}
@@ -289,15 +289,12 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		new_path = String(parent->base_path) + String(p_subpath) + "/";
 	}
 
-	// If tracks for blending don't exist for one of the animations, Rest or RESET animation is blended as init animation instead.
-	// Then blend weight is 0 means that the init animation blend weight is 1.
-	// In that case, processing only the animation with the lacking track will not process the lacking track, and will not properly apply the Reset value.
-	// This means that all tracks which the animations in the branch that may be blended have must be processed.
-	// Therefore, the blending process must be executed even if the blend weight is 0.
+	// This process, which depends on p_sync is needed to process sync correctly in the case of
+	// that a synced AnimationNodeSync exists under the un-synced AnimationNodeSync.
 	if (!p_seek && !p_sync && !any_valid) {
-		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_seek_root, p_connections);
+		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_is_external_seeking, p_connections);
 	}
-	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_seek_root, p_connections);
+	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_is_external_seeking, p_connections);
 }
 
 int AnimationNode::get_input_count() const {
@@ -338,9 +335,9 @@ void AnimationNode::remove_input(int p_index) {
 	emit_changed();
 }
 
-double AnimationNode::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNode::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	double ret = 0;
-	GDVIRTUAL_CALL(_process, p_time, p_seek, p_seek_root, ret);
+	GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret);
 	return ret;
 }
 
@@ -416,9 +413,9 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
 
-	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "seek_root", "blend", "pingponged"), &AnimationNode::blend_animation, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "seek_root", "blend", "filter", "sync"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "seek_root", "blend", "filter", "sync"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "is_external_seeking", "blend", "looped_flag"), &AnimationNode::blend_animation, DEFVAL(Animation::LOOPED_FLAG_NONE));
+	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
@@ -430,7 +427,7 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_get_parameter_list);
 	GDVIRTUAL_BIND(_get_child_by_name, "name");
 	GDVIRTUAL_BIND(_get_parameter_default_value, "parameter");
-	GDVIRTUAL_BIND(_process, "time", "seek", "seek_root");
+	GDVIRTUAL_BIND(_process, "time", "seek", "is_external_seeking");
 	GDVIRTUAL_BIND(_get_caption);
 	GDVIRTUAL_BIND(_has_filter);
 
@@ -589,6 +586,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 							track_value->object = child;
 						}
 
+						track_value->is_discrete = anim->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE;
 						track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 						track_value->subpath = leftover_path;
@@ -596,6 +594,13 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 						track = track_value;
 
+						// If a value track without a key is cached first, the initial value cannot be determined.
+						// It is a corner case, but which may cause problems with blending.
+						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, "AnimationTree: '" + String(E) + "', value track:  '" + String(path) + "' must have at least one key to cache for blending.");
+						track_value->init_value = anim->track_get_key_value(i, 0);
+						track_value->init_value.zero();
+
+						// If there is a Reset Animation, it takes precedence by overwriting.
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_type);
 							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
@@ -795,8 +800,18 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				}
 			} else if (track_cache_type == Animation::TYPE_VALUE) {
 				// If it has at least one angle interpolation, it also uses angle interpolation for blending.
-				TrackCacheValue *track_value = memnew(TrackCacheValue);
+				TrackCacheValue *track_value = static_cast<TrackCacheValue *>(track);
+				bool was_discrete = track_value->is_discrete;
+				bool was_using_angle = track_value->is_using_angle;
+				track_value->is_discrete |= anim->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE;
 				track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
+
+				if (was_discrete != track_value->is_discrete) {
+					ERR_PRINT_ED("Value track: " + String(path) + " with different update modes are blended. Blending prioritizes Discrete mode, so other update mode tracks will not be blended.");
+				}
+				if (was_using_angle != track_value->is_using_angle) {
+					WARN_PRINT_ED("Value track: " + String(path) + " with different interpolation types for rotation are blended. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
+				}
 			}
 
 			track->setup_pass = setup_pass;
@@ -844,7 +859,6 @@ void AnimationTree::_clear_caches() {
 		memdelete(K.value);
 	}
 	playing_caches.clear();
-
 	track_cache.clear();
 	cache_valid = false;
 }
@@ -868,7 +882,9 @@ void AnimationTree::_process_graph(double p_delta) {
 	_update_properties(); //if properties need updating, update them
 
 	//check all tracks, see if they need modification
-	root_motion_transform = Transform3D();
+	root_motion_position = Vector3(0, 0, 0);
+	root_motion_rotation = Quaternion(0, 0, 0, 1);
+	root_motion_scale = Vector3(0, 0, 0);
 
 	if (!root.is_valid()) {
 		ERR_PRINT("AnimationTree: root AnimationNode is not set, disabling playback.");
@@ -955,8 +971,44 @@ void AnimationTree::_process_graph(double p_delta) {
 	if (!state.valid) {
 		return; //state is not valid. do nothing.
 	}
-	//apply value/transform/bezier blends to track caches and execute method/audio/animation tracks
 
+	// Init all value/transform/blend/bezier tracks that track_cache has.
+	{
+		for (const KeyValue<NodePath, TrackCache *> &K : track_cache) {
+			TrackCache *track = K.value;
+
+			switch (track->type) {
+				case Animation::TYPE_POSITION_3D: {
+					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
+					if (track->root_motion) {
+						t->loc = Vector3(0, 0, 0);
+						t->rot = Quaternion(0, 0, 0, 1);
+						t->scale = Vector3(1, 1, 1);
+					} else {
+						t->loc = t->init_loc;
+						t->rot = t->init_rot;
+						t->scale = t->init_scale;
+					}
+				} break;
+				case Animation::TYPE_BLEND_SHAPE: {
+					TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
+					t->value = t->init_value;
+				} break;
+				case Animation::TYPE_VALUE: {
+					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
+					t->value = t->init_value;
+				} break;
+				case Animation::TYPE_BEZIER: {
+					TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
+					t->value = t->init_value;
+				} break;
+				default: {
+				} break;
+			}
+		}
+	}
+
+	// Apply value/transform/blend/bezier blends to track caches and execute method/audio/animation tracks.
 	{
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 
@@ -966,10 +1018,11 @@ void AnimationTree::_process_graph(double p_delta) {
 			double delta = as.delta;
 			real_t weight = as.blend;
 			bool seeked = as.seeked;
-			int pingponged = as.pingponged;
+			Animation::LoopedFlag looped_flag = as.looped_flag;
+			bool is_external_seeking = as.is_external_seeking;
 #ifndef _3D_DISABLED
-			bool backward = signbit(delta);
-			bool calc_root = !seeked || as.seek_root;
+			bool backward = signbit(delta); // This flag is required only for the root motion since it calculates the difference between the previous and current frames.
+			bool calc_root = !seeked || is_external_seeking;
 #endif // _3D_DISABLED
 
 			for (int i = 0; i < a->get_track_count(); i++) {
@@ -978,37 +1031,31 @@ void AnimationTree::_process_graph(double p_delta) {
 				}
 
 				NodePath path = a->track_get_path(i);
-
-				ERR_CONTINUE(!track_cache.has(path));
-
+				if (!track_cache.has(path)) {
+					continue; // No path, but avoid error spamming.
+				}
 				TrackCache *track = track_cache[path];
+
+				ERR_CONTINUE(!state.track_map.has(path));
+				int blend_idx = state.track_map[path];
+				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
+				real_t blend = (*as.track_blends)[blend_idx] * weight;
+				if (Math::is_zero_approx(blend)) {
+					continue; // Nothing to blend.
+				}
 
 				Animation::TrackType ttype = a->track_get_type(i);
 				if (ttype != Animation::TYPE_POSITION_3D && ttype != Animation::TYPE_ROTATION_3D && ttype != Animation::TYPE_SCALE_3D && track->type != ttype) {
 					//broken animation, but avoid error spamming
 					continue;
 				}
-
 				track->root_motion = root_motion_track == path;
-
-				ERR_CONTINUE(!state.track_map.has(path));
-				int blend_idx = state.track_map[path];
-
-				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
-
-				real_t blend = (*as.track_blends)[blend_idx] * weight;
 
 				switch (ttype) {
 					case Animation::TYPE_POSITION_3D: {
 #ifndef _3D_DISABLED
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 						if (track->root_motion && calc_root) {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = Vector3(0, 0, 0);
-								t->rot = Quaternion(0, 0, 0, 1);
-								t->scale = Vector3(0, 0, 0);
-							}
 							double prev_time = time - delta;
 							if (!backward) {
 								if (prev_time < 0) {
@@ -1084,12 +1131,6 @@ void AnimationTree::_process_graph(double p_delta) {
 							prev_time = !backward ? 0 : (double)a->get_length();
 
 						} else {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = t->init_loc;
-								t->rot = t->init_rot;
-								t->scale = t->init_scale;
-							}
 							Vector3 loc;
 
 							Error err = a->position_track_interpolate(i, time, &loc);
@@ -1106,12 +1147,6 @@ void AnimationTree::_process_graph(double p_delta) {
 #ifndef _3D_DISABLED
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 						if (track->root_motion && calc_root) {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = Vector3(0, 0, 0);
-								t->rot = Quaternion(0, 0, 0, 1);
-								t->scale = Vector3(0, 0, 0);
-							}
 							double prev_time = time - delta;
 							if (!backward) {
 								if (prev_time < 0) {
@@ -1186,12 +1221,6 @@ void AnimationTree::_process_graph(double p_delta) {
 							prev_time = !backward ? 0 : (double)a->get_length();
 
 						} else {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = t->init_loc;
-								t->rot = t->init_rot;
-								t->scale = t->init_scale;
-							}
 							Quaternion rot;
 
 							Error err = a->rotation_track_interpolate(i, time, &rot);
@@ -1208,12 +1237,6 @@ void AnimationTree::_process_graph(double p_delta) {
 #ifndef _3D_DISABLED
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 						if (track->root_motion && calc_root) {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = Vector3(0, 0, 0);
-								t->rot = Quaternion(0, 0, 0, 1);
-								t->scale = Vector3(0, 0, 0);
-							}
 							double prev_time = time - delta;
 							if (!backward) {
 								if (prev_time < 0) {
@@ -1289,12 +1312,6 @@ void AnimationTree::_process_graph(double p_delta) {
 							prev_time = !backward ? 0 : (double)a->get_length();
 
 						} else {
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->loc = t->init_loc;
-								t->rot = t->init_rot;
-								t->scale = t->init_scale;
-							}
 							Vector3 scale;
 
 							Error err = a->scale_track_interpolate(i, time, &scale);
@@ -1310,11 +1327,6 @@ void AnimationTree::_process_graph(double p_delta) {
 					case Animation::TYPE_BLEND_SHAPE: {
 #ifndef _3D_DISABLED
 						TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
-
-						if (t->process_pass != process_pass) {
-							t->process_pass = process_pass;
-							t->value = t->init_value;
-						}
 
 						float value;
 
@@ -1340,15 +1352,6 @@ void AnimationTree::_process_graph(double p_delta) {
 
 							if (value == Variant()) {
 								continue;
-							}
-
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								if (!t->init_value) {
-									t->init_value = value;
-									t->init_value.zero();
-								}
-								t->value = t->init_value;
 							}
 
 							// Special case for angle interpolation.
@@ -1379,12 +1382,8 @@ void AnimationTree::_process_graph(double p_delta) {
 								}
 							}
 						} else {
-							if (blend < CMP_EPSILON) {
-								continue; //nothing to blend
-							}
-
 							if (seeked) {
-								int idx = a->track_find_key(i, time);
+								int idx = a->track_find_key(i, time, !is_external_seeking);
 								if (idx < 0) {
 									continue;
 								}
@@ -1393,7 +1392,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								t->object->set_indexed(t->subpath, value);
 							} else {
 								List<int> indices;
-								a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
+								a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 								for (int &F : indices) {
 									Variant value = a->track_get_key_value(i, F);
 									value = _post_process_key_value(a, i, value, t->object);
@@ -1404,13 +1403,10 @@ void AnimationTree::_process_graph(double p_delta) {
 
 					} break;
 					case Animation::TYPE_METHOD: {
-						if (blend < CMP_EPSILON) {
-							continue; //nothing to blend
-						}
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
 						if (seeked) {
-							int idx = a->track_find_key(i, time);
+							int idx = a->track_find_key(i, time, !is_external_seeking);
 							if (idx < 0) {
 								continue;
 							}
@@ -1421,7 +1417,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						} else {
 							List<int> indices;
-							a->method_track_get_key_indices(i, time, delta, &indices, pingponged);
+							a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 							for (int &F : indices) {
 								StringName method = a->method_track_get_name(i, F);
 								Vector<Variant> params = a->method_track_get_params(i, F);
@@ -1437,22 +1433,14 @@ void AnimationTree::_process_graph(double p_delta) {
 						real_t bezier = a->bezier_track_interpolate(i, time);
 						bezier = _post_process_key_value(a, i, bezier, t->object);
 
-						if (t->process_pass != process_pass) {
-							t->process_pass = process_pass;
-							t->value = t->init_value;
-						}
-
 						t->value += (bezier - t->init_value) * blend;
 					} break;
 					case Animation::TYPE_AUDIO: {
-						if (blend < CMP_EPSILON) {
-							continue; //nothing to blend
-						}
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
 						if (seeked) {
 							//find whatever should be playing
-							int idx = a->track_find_key(i, time);
+							int idx = a->track_find_key(i, time, !is_external_seeking);
 							if (idx < 0) {
 								continue;
 							}
@@ -1492,7 +1480,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						} else {
 							//find stuff to play
 							List<int> to_play;
-							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
+							a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
 							if (to_play.size()) {
 								int idx = to_play.back()->get();
 
@@ -1555,9 +1543,6 @@ void AnimationTree::_process_graph(double p_delta) {
 						t->object->call(SNAME("set_volume_db"), db);
 					} break;
 					case Animation::TYPE_ANIMATION: {
-						if (blend < CMP_EPSILON) {
-							continue; //nothing to blend
-						}
 						TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
 						AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t->object);
@@ -1568,7 +1553,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						if (seeked) {
 							//seek
-							int idx = a->track_find_key(i, time);
+							int idx = a->track_find_key(i, time, !is_external_seeking);
 							if (idx < 0) {
 								continue;
 							}
@@ -1599,8 +1584,8 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 
 							if (player2->is_playing() || seeked) {
-								player2->play(anim_name);
 								player2->seek(at_anim_pos);
+								player2->play(anim_name);
 								t->playing = true;
 								playing_caches.insert(t);
 							} else {
@@ -1610,7 +1595,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						} else {
 							//find stuff to play
 							List<int> to_play;
-							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
+							a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
 							if (to_play.size()) {
 								int idx = to_play.back()->get();
 
@@ -1639,9 +1624,6 @@ void AnimationTree::_process_graph(double p_delta) {
 		// finally, set the tracks
 		for (const KeyValue<NodePath, TrackCache *> &K : track_cache) {
 			TrackCache *track = K.value;
-			if (track->process_pass != process_pass) {
-				continue; //not processed, ignore
-			}
 
 			switch (track->type) {
 				case Animation::TYPE_POSITION_3D: {
@@ -1649,11 +1631,9 @@ void AnimationTree::_process_graph(double p_delta) {
 					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
 					if (t->root_motion) {
-						Transform3D xform;
-						xform.origin = t->loc;
-						xform.basis.set_quaternion_scale(t->rot, Vector3(1, 1, 1) + t->scale);
-
-						root_motion_transform = xform;
+						root_motion_position = t->loc;
+						root_motion_rotation = t->rot;
+						root_motion_scale = t->scale - Vector3(1, 1, 1);
 
 					} else if (t->skeleton && t->bone_idx >= 0) {
 						if (t->loc_used) {
@@ -1690,6 +1670,10 @@ void AnimationTree::_process_graph(double p_delta) {
 				} break;
 				case Animation::TYPE_VALUE: {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
+
+					if (t->is_discrete) {
+						break; // Don't overwrite the value set by UPDATE_DISCRETE.
+					}
 
 					if (t->init_value.get_type() == Variant::BOOL) {
 						t->object->set_indexed(t->subpath, t->value.operator real_t() >= 0.5);
@@ -1862,8 +1846,16 @@ NodePath AnimationTree::get_root_motion_track() const {
 	return root_motion_track;
 }
 
-Transform3D AnimationTree::get_root_motion_transform() const {
-	return root_motion_transform;
+Vector3 AnimationTree::get_root_motion_position() const {
+	return root_motion_position;
+}
+
+Quaternion AnimationTree::get_root_motion_rotation() const {
+	return root_motion_rotation;
+}
+
+Vector3 AnimationTree::get_root_motion_scale() const {
+	return root_motion_scale;
 }
 
 void AnimationTree::_tree_changed() {
@@ -2021,7 +2013,9 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_motion_track", "path"), &AnimationTree::set_root_motion_track);
 	ClassDB::bind_method(D_METHOD("get_root_motion_track"), &AnimationTree::get_root_motion_track);
 
-	ClassDB::bind_method(D_METHOD("get_root_motion_transform"), &AnimationTree::get_root_motion_transform);
+	ClassDB::bind_method(D_METHOD("get_root_motion_position"), &AnimationTree::get_root_motion_position);
+	ClassDB::bind_method(D_METHOD("get_root_motion_rotation"), &AnimationTree::get_root_motion_rotation);
+	ClassDB::bind_method(D_METHOD("get_root_motion_scale"), &AnimationTree::get_root_motion_scale);
 
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
 

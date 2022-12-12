@@ -45,7 +45,7 @@ void OpenXRInterface::_bind_methods() {
 	// Display refresh rate
 	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
 	ClassDB::bind_method(D_METHOD("set_display_refresh_rate", "refresh_rate"), &OpenXRInterface::set_display_refresh_rate);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "display_refresh_rate"), "set_display_refresh_rate", "get_display_refresh_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_refresh_rate"), "set_display_refresh_rate", "get_display_refresh_rate");
 
 	ClassDB::bind_method(D_METHOD("get_available_display_refresh_rates"), &OpenXRInterface::get_available_display_refresh_rates);
 }
@@ -666,6 +666,7 @@ Transform3D OpenXRInterface::get_camera_transform() {
 Transform3D OpenXRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, Transform3D());
+	ERR_FAIL_UNSIGNED_INDEX_V_MSG(p_view, get_view_count(), Transform3D(), "View index outside bounds.");
 
 	Transform3D t;
 	if (openxr_api && openxr_api->get_view_transform(p_view, t)) {
@@ -685,6 +686,7 @@ Transform3D OpenXRInterface::get_transform_for_view(uint32_t p_view, const Trans
 
 Projection OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	Projection cm;
+	ERR_FAIL_UNSIGNED_INDEX_V_MSG(p_view, get_view_count(), cm, "View index outside bounds.");
 
 	if (openxr_api) {
 		if (openxr_api->get_view_projection(p_view, p_z_near, p_z_far, cm)) {

@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "node_3d_editor_plugin.h"
@@ -41,10 +42,12 @@
 #include "scene/3d/joint_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
+#include "scene/gui/separator.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/scene_string_names.h"
 
 void BoneTransformEditor::create_editors() {
 	const Color section_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
@@ -113,6 +116,7 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 		return;
 	}
 	if (skeleton) {
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_undo_property(skeleton, p_property, skeleton->get(p_property));
 		undo_redo->add_do_property(skeleton, p_property, p_value);
@@ -122,7 +126,6 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 
 BoneTransformEditor::BoneTransformEditor(Skeleton3D *p_skeleton) :
 		skeleton(p_skeleton) {
-	undo_redo = EditorNode::get_undo_redo();
 }
 
 void BoneTransformEditor::set_keyable(const bool p_keyable) {
@@ -397,8 +400,8 @@ void Skeleton3DEditor::create_physical_skeleton() {
 								ur->add_do_method(physical_bone, "set_joint_type", PhysicalBone3D::JOINT_TYPE_PIN);
 							}
 
-							ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", physical_bone);
-							ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", collision_shape);
+							ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, physical_bone);
+							ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, collision_shape);
 
 							ur->add_do_reference(physical_bone);
 							ur->add_undo_method(skeleton, "remove_child", physical_bone);
@@ -714,12 +717,12 @@ void Skeleton3DEditor::create_editors() {
 
 	// Skeleton options.
 	PopupMenu *p = skeleton_options->get_popup();
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_all_poses", TTR("Reset all bone Poses")), SKELETON_OPTION_RESET_ALL_POSES);
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_poses", TTR("Reset selected Poses")), SKELETON_OPTION_RESET_SELECTED_POSES);
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTR("Apply all poses to rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTR("Apply selected poses to rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
-	p->add_item(TTR("Create physical skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
-	p->add_item(TTR("Export skeleton profile"), SKELETON_OPTION_EXPORT_SKELETON_PROFILE);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_all_poses", TTR("Reset All Bone Poses")), SKELETON_OPTION_RESET_ALL_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_poses", TTR("Reset Selected Poses")), SKELETON_OPTION_RESET_SELECTED_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTR("Apply All Poses to Rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTR("Apply Selected Poses to Rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
+	p->add_item(TTR("Create Physical Skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
+	p->add_item(TTR("Export Skeleton Profile"), SKELETON_OPTION_EXPORT_SKELETON_PROFILE);
 
 	p->connect("id_pressed", callable_mp(this, &Skeleton3DEditor::_on_click_skeleton_option));
 	set_bone_options_enabled(false);
@@ -1239,7 +1242,7 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 
-	if (!se->is_edit_mode()) {
+	if (!se || !se->is_edit_mode()) {
 		return -1;
 	}
 
@@ -1288,7 +1291,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	ERR_FAIL_COND(!skeleton);
 
 	// Prepare for global to local.
-	Transform3D original_to_local = Transform3D();
+	Transform3D original_to_local;
 	int parent_idx = skeleton->get_bone_parent(p_id);
 	if (parent_idx >= 0) {
 		original_to_local = original_to_local * skeleton->get_bone_global_pose(parent_idx);
@@ -1296,7 +1299,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	Basis to_local = original_to_local.get_basis().inverse();
 
 	// Prepare transform.
-	Transform3D t = Transform3D();
+	Transform3D t;
 
 	// Basis.
 	t.basis = to_local * p_transform.get_basis();

@@ -221,7 +221,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 
 	Rect2 safe_area = this_rect;
 	safe_area.position.y += items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2;
-	safe_area.size.y = items[p_over]._height_cache;
+	safe_area.size.y = items[p_over]._height_cache + theme_cache.v_separation;
 	DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
 
 	// Make the position of the parent popup relative to submenu popup.
@@ -472,7 +472,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 	if (allow_search && k.is_valid() && k->get_unicode() && k->is_pressed()) {
 		uint64_t now = OS::get_singleton()->get_ticks_msec();
 		uint64_t diff = now - search_time_msec;
-		uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000));
+		uint64_t max_interval = uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"));
 		search_time_msec = now;
 
 		if (diff > max_interval) {
@@ -558,7 +558,7 @@ void PopupMenu::_draw_items() {
 		check_ofs += theme_cache.h_separation;
 	}
 
-	Point2 ofs = Point2();
+	Point2 ofs;
 
 	// Loop through all items and draw each.
 	for (int i = 0; i < items.size(); i++) {

@@ -2512,7 +2512,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 			} break;
 		}
 
-		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter);
+		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, camera->visible_layers);
 	} else {
 		// Setup our camera for our XR interface.
 		// We can support multiple views here each with their own camera
@@ -2520,7 +2520,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		Projection projections[RendererSceneRender::MAX_RENDER_VIEWS];
 
 		uint32_t view_count = p_xr_interface->get_view_count();
-		ERR_FAIL_COND_MSG(view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
+		ERR_FAIL_COND_MSG(view_count == 0 || view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
 
 		float aspect = p_viewport_size.width / (float)p_viewport_size.height;
 
@@ -2534,7 +2534,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		}
 
 		if (view_count == 1) {
-			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter);
+			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter, camera->visible_layers);
 		} else if (view_count == 2) {
 			camera_data.set_multiview_camera(view_count, transforms, projections, false, camera->vaspect);
 		} else {
@@ -3319,7 +3319,7 @@ void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_rend
 	RendererSceneRender::CameraData camera_data;
 	camera_data.set_camera(Transform3D(), Projection(), true, false);
 
-	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), RID(), RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
+	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
 #endif
 }
 

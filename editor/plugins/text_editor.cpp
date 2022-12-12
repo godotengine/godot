@@ -33,6 +33,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/menu_button.h"
 
 void TextEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 	ERR_FAIL_COND(p_highlighter.is_null());
@@ -352,7 +353,9 @@ void TextEditor::_edit_option(int p_op) {
 			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			tx->toggle_foldable_line(tx->get_caret_line());
+			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
+				tx->toggle_foldable_line(tx->get_caret_line(caret_idx));
+			}
 			tx->queue_redraw();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {

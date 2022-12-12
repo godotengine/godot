@@ -275,12 +275,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	if (ci->clip) {
 		if (p_canvas_clip != nullptr) {
 			ci->final_clip_rect = p_canvas_clip->final_clip_rect.intersection(global_rect);
-			if (ci->final_clip_rect == Rect2()) {
-				// Clip rects do not intersect, so don't draw this item.
-				return;
-			}
 		} else {
-			ci->final_clip_rect = global_rect;
+			ci->final_clip_rect = p_clip_rect.intersection(global_rect);
+		}
+		if (ci->final_clip_rect.size.width < 0.5 || ci->final_clip_rect.size.height < 0.5) {
+			// The clip rect area is 0, so don't draw the item.
+			return;
 		}
 		ci->final_clip_rect.position = ci->final_clip_rect.position.round();
 		ci->final_clip_rect.size = ci->final_clip_rect.size.round();
@@ -1075,18 +1075,36 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
 	ERR_FAIL_COND(p_points.size() < 2);
-	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
-	ERR_FAIL_COND(!pline);
+	// TODO: `canvas_item_add_line`(`multiline`, `polyline`) share logic, should factor out.
+	if (p_width <= 1) {
+		Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+		ERR_FAIL_COND(!canvas_item);
 
-	if (true || p_width <= 1) {
-#define TODO make thick lines possible
-
+		Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline);
 		pline->primitive = RS::PRIMITIVE_LINES;
 		pline->polygon.create(Vector<int>(), p_points, p_colors);
 	} else {
+		if (p_colors.size() == 1) {
+			Color color = p_colors[0];
+			for (int i = 0; i < p_points.size() >> 1; i++) {
+				Vector2 from = p_points[i * 2 + 0];
+				Vector2 to = p_points[i * 2 + 1];
+
+				canvas_item_add_line(p_item, from, to, color, p_width);
+			}
+		} else if (p_colors.size() == p_points.size() >> 1) {
+			for (int i = 0; i < p_points.size() >> 1; i++) {
+				Color color = p_colors[i];
+				Vector2 from = p_points[i * 2 + 0];
+				Vector2 to = p_points[i * 2 + 1];
+
+				canvas_item_add_line(p_item, from, to, color, p_width);
+			}
+		} else {
+			ERR_FAIL_MSG("Length of p_colors is invalid.");
+		}
 	}
 }
 
@@ -1964,7 +1982,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 
 			if (!visibility_notifier->enter_callable.is_null()) {
 				if (RSG::threaded) {
-					visibility_notifier->enter_callable.call_deferredp(nullptr, 0);
+					visibility_notifier->enter_callable.call_deferred();
 				} else {
 					Callable::CallError ce;
 					Variant ret;
@@ -1977,7 +1995,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 
 				if (!visibility_notifier->exit_callable.is_null()) {
 					if (RSG::threaded) {
-						visibility_notifier->exit_callable.call_deferredp(nullptr, 0);
+						visibility_notifier->exit_callable.call_deferred();
 					} else {
 						Callable::CallError ce;
 						Variant ret;

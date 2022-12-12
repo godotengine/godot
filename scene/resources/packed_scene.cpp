@@ -71,7 +71,7 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 }
 
 Node *SceneState::instantiate(GenEditState p_edit_state) const {
-	// nodes where instancing failed (because something is missing)
+	// Nodes where instantiation failed (because something is missing.)
 	List<Node *> stray_instances;
 
 #define NODE_FROM_ID(p_name, p_id)                      \
@@ -122,7 +122,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			NODE_FROM_ID(nparent, n.parent);
 #ifdef DEBUG_ENABLED
 			if (!nparent && (n.parent & FLAG_ID_IS_PATH)) {
-				WARN_PRINT(String("Parent path '" + String(node_paths[n.parent & FLAG_MASK]) + "' for node '" + String(snames[n.name]) + "' has vanished when instancing: '" + get_path() + "'.").ascii().get_data());
+				WARN_PRINT(String("Parent path '" + String(node_paths[n.parent & FLAG_MASK]) + "' for node '" + String(snames[n.name]) + "' has vanished when instantiating: '" + get_path() + "'.").ascii().get_data());
 				old_parent_path = String(node_paths[n.parent & FLAG_MASK]).trim_prefix("./").replace("/", "@");
 				nparent = ret_nodes[0];
 			}
@@ -131,7 +131,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		} else {
 			// i == 0 is root node.
 			ERR_FAIL_COND_V_MSG(n.parent != -1, nullptr, vformat("Invalid scene: root node %s cannot specify a parent node.", snames[n.name]));
-			ERR_FAIL_COND_V_MSG(n.type == TYPE_INSTANCED && base_scene_idx < 0, nullptr, vformat("Invalid scene: root node %s in an instance, but there's no base scene.", snames[n.name]));
+			ERR_FAIL_COND_V_MSG(n.type == TYPE_INSTANTIATED && base_scene_idx < 0, nullptr, vformat("Invalid scene: root node %s in an instance, but there's no base scene.", snames[n.name]));
 		}
 
 		Node *node = nullptr;
@@ -169,7 +169,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				ERR_FAIL_COND_V(!node, nullptr);
 			}
 
-		} else if (n.type == TYPE_INSTANCED) {
+		} else if (n.type == TYPE_INSTANTIATED) {
 			//get the node from somewhere, it likely already exists from another instance
 			if (parent) {
 				node = parent->_get_child_by_name(snames[n.name]);
@@ -345,7 +345,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				node->add_to_group(snames[n.groups[j]], true);
 			}
 
-			if (n.instance >= 0 || n.type != TYPE_INSTANCED || i == 0) {
+			if (n.instance >= 0 || n.type != TYPE_INSTANTIATED || i == 0) {
 				//if node was not part of instance, must set its name, parenthood and ownership
 				if (i > 0) {
 					if (parent) {
@@ -382,7 +382,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				}
 			}
 
-			// we only want to deal with pinned flag if instancing as pure main (no instance, no inheriting)
+			// We only want to deal with pinned flag if instantiating as pure main (no instance, no inheriting.)
 			if (p_edit_state == GEN_EDIT_STATE_MAIN) {
 				_sanitize_node_pinned_properties(node);
 			} else {
@@ -450,7 +450,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			callable = callable.bindp(argptrs, binds.size());
 		}
 
-		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags);
+		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags | (p_edit_state == GEN_EDIT_STATE_MAIN ? 0 : CONNECT_INHERITED));
 	}
 
 	//Node *s = ret_nodes[0];
@@ -665,7 +665,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	// Save the right type. If this node was created by an instance
 	// then flag that the node should not be created but reused
 	if (states_stack.is_empty() && !is_editable_instance) {
-		//this node is not part of an instancing process, so save the type
+		//This node is not part of an instantiation process, so save the type.
 		if (missing_node != nullptr) {
 			// It's a missing node (type non existent on load).
 			nd.type = _nm_get_string(missing_node->get_original_class(), name_map);
@@ -675,7 +675,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	} else {
 		// this node is part of an instantiated process, so do not save the type.
 		// instead, save that it was instantiated
-		nd.type = TYPE_INSTANCED;
+		nd.type = TYPE_INSTANTIATED;
 	}
 
 	// determine whether to save this node or not
@@ -1003,6 +1003,37 @@ void SceneState::clear() {
 	node_paths.clear();
 	editable_instances.clear();
 	base_scene_idx = -1;
+}
+
+Error SceneState::copy_from(const Ref<SceneState> &p_scene_state) {
+	ERR_FAIL_COND_V(p_scene_state.is_null(), ERR_INVALID_PARAMETER);
+
+	clear();
+
+	for (const StringName &E : p_scene_state->names) {
+		names.append(E);
+	}
+	for (const Variant &E : p_scene_state->variants) {
+		variants.append(E);
+	}
+	for (const SceneState::NodeData &E : p_scene_state->nodes) {
+		nodes.append(E);
+	}
+	for (const SceneState::ConnectionData &E : p_scene_state->connections) {
+		connections.append(E);
+	}
+	for (KeyValue<NodePath, int> &E : p_scene_state->node_path_cache) {
+		node_path_cache.insert(E.key, E.value);
+	}
+	for (const NodePath &E : p_scene_state->node_paths) {
+		node_paths.append(E);
+	}
+	for (const NodePath &E : p_scene_state->editable_instances) {
+		editable_instances.append(E);
+	}
+	base_scene_idx = p_scene_state->base_scene_idx;
+
+	return OK;
 }
 
 Ref<SceneState> SceneState::get_base_scene_state() const {
@@ -1351,7 +1382,7 @@ int SceneState::get_node_count() const {
 
 StringName SceneState::get_node_type(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), StringName());
-	if (nodes[p_idx].type == TYPE_INSTANCED) {
+	if (nodes[p_idx].type == TYPE_INSTANTIATED) {
 		return StringName();
 	}
 	return names[nodes[p_idx].type];
@@ -1735,6 +1766,28 @@ Error PackedScene::pack(Node *p_scene) {
 
 void PackedScene::clear() {
 	state->clear();
+}
+
+void PackedScene::reload_from_file() {
+	String path = get_path();
+	if (!path.is_resource_file()) {
+		return;
+	}
+
+	Ref<PackedScene> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+	if (!s.is_valid()) {
+		return;
+	}
+
+	// Backup the loaded_state
+	Ref<SceneState> loaded_state = s->get_state();
+	// This assigns a new state to s->state
+	// We do this because of the next step
+	s->recreate_state();
+	// This has a side-effect to clear s->state
+	copy_from(s);
+	// Then, we copy the backed-up loaded_state to state
+	state->copy_from(loaded_state);
 }
 
 bool PackedScene::can_instantiate() const {

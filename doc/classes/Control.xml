@@ -1010,6 +1010,10 @@
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
 			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 		</member>
+		<member name="localize_numeral_system" type="bool" setter="set_localize_numeral_system" getter="is_localizing_numeral_system" default="true">
+			If [code]true[/code], automatically converts code line numbers, list indices, [SpinBox] and [ProgressBar] values from the Western Arabic (0..9) to the numeral systems used in current locale.
+			[b]Note:[/b] Numbers within the text are not automatically converted, it can be done manually, using [method TextServer.format_number].
+		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
 			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
 			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
@@ -1048,7 +1052,7 @@
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
 			The node's scale, relative to its [member size]. Change this property to scale the node around its [member pivot_offset]. The Control's [member tooltip_text] will also scale according to this value.
-			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=$DOCS_URL/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
+			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
 			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]await get_tree().process_frame[/code] then set its [member scale] property.
 		</member>
 		<member name="shortcut_context" type="Node" setter="set_shortcut_context" getter="get_shortcut_context">
@@ -1067,7 +1071,8 @@
 			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
-			The [Theme] resource this node and all its [Control] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
+			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
+			[b]Note:[/b] [Window] styles will have no effect unless the window is embedded.
 		</member>
 		<member name="theme_type_variation" type="StringName" setter="set_theme_type_variation" getter="get_theme_type_variation" default="&amp;&quot;&quot;">
 			The name of a theme type variation used by this [Control] to look up its own theme items. When empty, the class name of the node is used (e.g. [code]Button[/code] for the [Button] control), as well as the class names of all parent classes (in order of inheritance).

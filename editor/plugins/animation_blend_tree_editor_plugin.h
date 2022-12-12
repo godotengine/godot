@@ -31,17 +31,21 @@
 #ifndef ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 #define ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
+class AcceptDialog;
+class CheckBox;
 class ProgressBar;
 class EditorFileDialog;
-class EditorUndoRedoManager;
+class EditorProperty;
+class MenuButton;
+class PanelContainer;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
@@ -57,8 +61,6 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	AcceptDialog *filter_dialog = nullptr;
 	Tree *filters = nullptr;
@@ -115,7 +117,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _filter_toggled();
 	Ref<AnimationNode> _filter_edit;
 
-	void _popup(bool p_has_input_ports, const Vector2 &p_popup_position, const Vector2 &p_node_position);
+	void _popup(bool p_has_input_ports, const Vector2 &p_node_position);
 	void _popup_request(const Vector2 &p_position);
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);

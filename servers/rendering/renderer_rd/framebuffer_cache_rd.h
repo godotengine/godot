@@ -254,11 +254,11 @@ public:
 
 	RID get_cache_multipass(const Vector<RID> &p_textures, const Vector<RD::FramebufferPass> &p_passes, uint32_t p_views = 1) {
 		uint32_t h = hash_murmur3_one_32(p_views);
-		h = hash_murmur3_one_32(p_textures.size());
+		h = hash_murmur3_one_32(p_textures.size(), h);
 		for (int i = 0; i < p_textures.size(); i++) {
 			h = hash_murmur3_one_64(p_textures[i].get_id(), h);
 		}
-		h = hash_murmur3_one_32(p_passes.size());
+		h = hash_murmur3_one_32(p_passes.size(), h);
 		for (int i = 0; i < p_passes.size(); i++) {
 			h = _hash_pass(p_passes[i], h);
 		}

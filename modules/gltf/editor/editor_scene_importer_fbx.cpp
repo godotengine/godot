@@ -33,12 +33,9 @@
 #ifdef TOOLS_ENABLED
 
 #include "../gltf_document.h"
-#include "../gltf_state.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
-#include "scene/main/node.h"
-#include "scene/resources/animation.h"
 
 uint32_t EditorSceneFormatImporterFBX::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
@@ -49,7 +46,7 @@ void EditorSceneFormatImporterFBX::get_extensions(List<String> *r_extensions) co
 }
 
 Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t p_flags,
-		const HashMap<StringName, Variant> &p_options, int p_bake_fps,
+		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
 	// Get global paths for source and sink.
 
@@ -95,14 +92,14 @@ Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t 
 	Ref<GLTFState> state;
 	state.instantiate();
 	print_verbose(vformat("glTF path: %s", sink));
-	Error err = gltf->append_from_file(sink, state, p_flags, p_bake_fps);
+	Error err = gltf->append_from_file(sink, state, p_flags);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
 		}
 		return nullptr;
 	}
-	return gltf->generate_scene(state, p_bake_fps);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"]);
 }
 
 Variant EditorSceneFormatImporterFBX::get_option_visibility(const String &p_path, bool p_for_animation,

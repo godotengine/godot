@@ -90,7 +90,7 @@ OS_IOS *OS_IOS::get_singleton() {
 	return (OS_IOS *)OS::get_singleton();
 }
 
-OS_IOS::OS_IOS(String p_data_dir, String p_cache_dir) {
+OS_IOS::OS_IOS() {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -100,11 +100,6 @@ OS_IOS::OS_IOS(String p_data_dir, String p_cache_dir) {
 	ios_init_callbacks_capacity = 0;
 
 	main_loop = nullptr;
-
-	// can't call set_data_dir from here, since it requires DirAccess
-	// which is initialized in initialize_core
-	user_data_dir = p_data_dir;
-	cache_dir = p_cache_dir;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(SyslogLogger));
@@ -130,8 +125,6 @@ void OS_IOS::alert(const String &p_alert, const String &p_title) {
 
 void OS_IOS::initialize_core() {
 	OS_Unix::initialize_core();
-
-	set_user_data_dir(user_data_dir);
 }
 
 void OS_IOS::initialize() {
@@ -273,18 +266,26 @@ Error OS_IOS::shell_open(String p_uri) {
 	return OK;
 }
 
-void OS_IOS::set_user_data_dir(String p_dir) {
-	Ref<DirAccess> da = DirAccess::open(p_dir);
-	user_data_dir = da->get_current_dir();
-	printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), p_dir.utf8().get_data());
-}
-
 String OS_IOS::get_user_data_dir() const {
-	return user_data_dir;
+	static String ret;
+	if (ret.is_empty()) {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+		if (paths && [paths count] >= 1) {
+			ret.parse_utf8([[paths firstObject] UTF8String]);
+		}
+	}
+	return ret;
 }
 
 String OS_IOS::get_cache_path() const {
-	return cache_dir;
+	static String ret;
+	if (ret.is_empty()) {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+		if (paths && [paths count] >= 1) {
+			ret.parse_utf8([[paths firstObject] UTF8String]);
+		}
+	}
+	return ret;
 }
 
 String OS_IOS::get_locale() const {
@@ -333,9 +334,7 @@ Vector<String> OS_IOS::get_system_fonts() const {
 	return ret;
 }
 
-String OS_IOS::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
-	String ret;
-
+String OS_IOS::_get_default_fontname(const String &p_font_name) const {
 	String font_name = p_font_name;
 	if (font_name.to_lower() == "sans-serif") {
 		font_name = "Helvetica";
@@ -348,20 +347,152 @@ String OS_IOS::get_system_font_path(const String &p_font_name, bool p_bold, bool
 	} else if (font_name.to_lower() == "cursive") {
 		font_name = "Apple Chancery";
 	};
+	return font_name;
+}
+
+CGFloat OS_IOS::_weight_to_ct(int p_weight) const {
+	if (p_weight < 150) {
+		return -0.80;
+	} else if (p_weight < 250) {
+		return -0.60;
+	} else if (p_weight < 350) {
+		return -0.40;
+	} else if (p_weight < 450) {
+		return 0.0;
+	} else if (p_weight < 550) {
+		return 0.23;
+	} else if (p_weight < 650) {
+		return 0.30;
+	} else if (p_weight < 750) {
+		return 0.40;
+	} else if (p_weight < 850) {
+		return 0.56;
+	} else if (p_weight < 925) {
+		return 0.62;
+	} else {
+		return 1.00;
+	}
+}
+
+CGFloat OS_IOS::_stretch_to_ct(int p_stretch) const {
+	if (p_stretch < 56) {
+		return -0.5;
+	} else if (p_stretch < 69) {
+		return -0.37;
+	} else if (p_stretch < 81) {
+		return -0.25;
+	} else if (p_stretch < 93) {
+		return -0.13;
+	} else if (p_stretch < 106) {
+		return 0.0;
+	} else if (p_stretch < 137) {
+		return 0.13;
+	} else if (p_stretch < 144) {
+		return 0.25;
+	} else if (p_stretch < 162) {
+		return 0.37;
+	} else {
+		return 0.5;
+	}
+}
+
+Vector<String> OS_IOS::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
+	Vector<String> ret;
+	String font_name = _get_default_fontname(p_font_name);
 
 	CFStringRef name = CFStringCreateWithCString(kCFAllocatorDefault, font_name.utf8().get_data(), kCFStringEncodingUTF8);
-
 	CTFontSymbolicTraits traits = 0;
-	if (p_bold) {
+	if (p_weight >= 700) {
 		traits |= kCTFontBoldTrait;
 	}
 	if (p_italic) {
 		traits |= kCTFontItalicTrait;
 	}
+	if (p_stretch < 100) {
+		traits |= kCTFontCondensedTrait;
+	} else if (p_stretch > 100) {
+		traits |= kCTFontExpandedTrait;
+	}
 
 	CFNumberRef sym_traits = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &traits);
 	CFMutableDictionaryRef traits_dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
 	CFDictionaryAddValue(traits_dict, kCTFontSymbolicTrait, sym_traits);
+
+	CGFloat weight = _weight_to_ct(p_weight);
+	CFNumberRef font_weight = CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &weight);
+	CFDictionaryAddValue(traits_dict, kCTFontWeightTrait, font_weight);
+
+	CGFloat stretch = _stretch_to_ct(p_stretch);
+	CFNumberRef font_stretch = CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &stretch);
+	CFDictionaryAddValue(traits_dict, kCTFontWidthTrait, font_stretch);
+
+	CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
+	CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, name);
+	CFDictionaryAddValue(attributes, kCTFontTraitsAttribute, traits_dict);
+
+	CTFontDescriptorRef font = CTFontDescriptorCreateWithAttributes(attributes);
+	if (font) {
+		CTFontRef family = CTFontCreateWithFontDescriptor(font, 0, nullptr);
+		CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
+		CFRange range = CFRangeMake(0, CFStringGetLength(string));
+		CTFontRef fallback_family = CTFontCreateForString(family, string, range);
+		if (fallback_family) {
+			CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
+			if (fallback_font) {
+				CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
+				if (url) {
+					NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
+					ret.push_back(String::utf8([font_path UTF8String]));
+					CFRelease(url);
+				}
+				CFRelease(fallback_font);
+			}
+			CFRelease(fallback_family);
+		}
+		CFRelease(string);
+		CFRelease(font);
+	}
+
+	CFRelease(attributes);
+	CFRelease(traits_dict);
+	CFRelease(sym_traits);
+	CFRelease(font_stretch);
+	CFRelease(font_weight);
+	CFRelease(name);
+
+	return ret;
+}
+
+String OS_IOS::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
+	String ret;
+	String font_name = _get_default_fontname(p_font_name);
+
+	CFStringRef name = CFStringCreateWithCString(kCFAllocatorDefault, font_name.utf8().get_data(), kCFStringEncodingUTF8);
+
+	CTFontSymbolicTraits traits = 0;
+	if (p_weight >= 700) {
+		traits |= kCTFontBoldTrait;
+	}
+	if (p_italic) {
+		traits |= kCTFontItalicTrait;
+	}
+	if (p_stretch < 100) {
+		traits |= kCTFontCondensedTrait;
+	} else if (p_stretch > 100) {
+		traits |= kCTFontExpandedTrait;
+	}
+
+	CFNumberRef sym_traits = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &traits);
+	CFMutableDictionaryRef traits_dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
+	CFDictionaryAddValue(traits_dict, kCTFontSymbolicTrait, sym_traits);
+
+	CGFloat weight = _weight_to_ct(p_weight);
+	CFNumberRef font_weight = CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &weight);
+	CFDictionaryAddValue(traits_dict, kCTFontWeightTrait, font_weight);
+
+	CGFloat stretch = _stretch_to_ct(p_stretch);
+	CFNumberRef font_stretch = CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &stretch);
+	CFDictionaryAddValue(traits_dict, kCTFontWidthTrait, font_stretch);
 
 	CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
 	CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, name);
@@ -381,6 +512,8 @@ String OS_IOS::get_system_font_path(const String &p_font_name, bool p_bold, bool
 	CFRelease(attributes);
 	CFRelease(traits_dict);
 	CFRelease(sym_traits);
+	CFRelease(font_stretch);
+	CFRelease(font_weight);
 	CFRelease(name);
 
 	return ret;

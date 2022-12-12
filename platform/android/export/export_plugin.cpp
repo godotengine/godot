@@ -205,7 +205,7 @@ static const char *LEGACY_BUILD_SPLASH_IMAGE_EXPORT_PATH = "res/drawable-nodpi-v
 static const char *SPLASH_BG_COLOR_PATH = "res/drawable-nodpi/splash_bg_color.png";
 static const char *LEGACY_BUILD_SPLASH_BG_COLOR_PATH = "res/drawable-nodpi-v4/splash_bg_color.png";
 static const char *SPLASH_CONFIG_PATH = "res://android/build/res/drawable/splash_drawable.xml";
-static const char *GDNATIVE_LIBS_PATH = "res://android/build/libs/gdnativelibs.json";
+static const char *GDEXTENSION_LIBS_PATH = "res://android/build/libs/gdextensionlibs.json";
 
 static const int icon_densities_count = 6;
 static const char *launcher_icon_option = PNAME("launcher_icons/main_192x192");
@@ -245,7 +245,7 @@ static const int EXPORT_FORMAT_AAB = 1;
 static const char *APK_ASSETS_DIRECTORY = "res://android/build/assets";
 static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/installTime/src/main/assets";
 
-static const int DEFAULT_MIN_SDK_VERSION = 19; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
+static const int DEFAULT_MIN_SDK_VERSION = 21; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
 static const int DEFAULT_TARGET_SDK_VERSION = 32; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
 
 #ifndef ANDROID_ENABLED
@@ -585,12 +585,13 @@ zip_fileinfo EditorExportPlatformAndroid::get_zip_fileinfo() {
 	return zipfi;
 }
 
-Vector<String> EditorExportPlatformAndroid::get_abis() {
-	Vector<String> abis;
-	abis.push_back("armeabi-v7a");
-	abis.push_back("arm64-v8a");
-	abis.push_back("x86");
-	abis.push_back("x86_64");
+Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_abis() {
+	// Should have the same order and size as get_archs.
+	Vector<ABI> abis;
+	abis.push_back(ABI("armeabi-v7a", "arm32"));
+	abis.push_back(ABI("arm64-v8a", "arm64"));
+	abis.push_back(ABI("x86", "x86_32"));
+	abis.push_back(ABI("x86_64", "x86_64"));
 	return abis;
 }
 
@@ -687,24 +688,28 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 		return FAILED;
 	}
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
-	Vector<String> abis = get_abis();
+	Vector<ABI> abis = get_abis();
 	bool exported = false;
 	for (int i = 0; i < p_so.tags.size(); ++i) {
 		// shared objects can be fat (compatible with multiple ABIs)
-		int abi_index = abis.find(p_so.tags[i]);
+		int abi_index = -1;
+		for (int j = 0; j < abis.size(); ++j) {
+			if (abis[j].abi == p_so.tags[i] || abis[j].arch == p_so.tags[i]) {
+				abi_index = j;
+				break;
+			}
+		}
 		if (abi_index != -1) {
 			exported = true;
-			String abi = abis[abi_index];
+			String abi = abis[abi_index].abi;
 			String dst_path = String("lib").path_join(abi).path_join(p_so.path.get_file());
-			Vector<uint8_t> array = FileAccess::get_file_as_array(p_so.path);
+			Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_so.path);
 			Error store_err = store_in_apk(ed, dst_path, array);
 			ERR_FAIL_COND_V_MSG(store_err, store_err, "Cannot store in apk file '" + dst_path + "'.");
 		}
 	}
 	if (!exported) {
-		String abis_string = String(" ").join(abis);
-		String err = "Cannot determine ABI for library \"" + p_so.path + "\". One of the supported ABIs must be used as a tag: " + abis_string;
-		ERR_PRINT(err);
+		ERR_PRINT("Cannot determine architecture for library \"" + p_so.path + "\". One of the supported architectures must be used as a tag: " + join_abis(abis, " ", true));
 		return FAILED;
 	}
 	return OK;
@@ -725,19 +730,25 @@ Error EditorExportPlatformAndroid::ignore_apk_file(void *p_userdata, const Strin
 Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const SharedObject &p_so) {
 	ERR_FAIL_COND_V_MSG(!p_so.path.get_file().begins_with("lib"), FAILED,
 			"Android .so file names must start with \"lib\", but got: " + p_so.path);
-	Vector<String> abis = get_abis();
+	Vector<ABI> abis = get_abis();
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 	bool exported = false;
 	for (int i = 0; i < p_so.tags.size(); ++i) {
-		int abi_index = abis.find(p_so.tags[i]);
+		int abi_index = -1;
+		for (int j = 0; j < abis.size(); ++j) {
+			if (abis[j].abi == p_so.tags[i] || abis[j].arch == p_so.tags[i]) {
+				abi_index = j;
+				break;
+			}
+		}
 		if (abi_index != -1) {
 			exported = true;
 			String base = "res://android/build/libs";
 			String type = export_data->debug ? "debug" : "release";
-			String abi = abis[abi_index];
+			String abi = abis[abi_index].abi;
 			String filename = p_so.path.get_file();
 			String dst_path = base.path_join(type).path_join(abi).path_join(filename);
-			Vector<uint8_t> data = FileAccess::get_file_as_array(p_so.path);
+			Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_so.path);
 			print_verbose("Copying .so file from " + p_so.path + " to " + dst_path);
 			Error err = store_file_at_path(dst_path, data);
 			ERR_FAIL_COND_V_MSG(err, err, "Failed to copy .so file from " + p_so.path + " to " + dst_path);
@@ -745,7 +756,7 @@ Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const Shared
 		}
 	}
 	ERR_FAIL_COND_V_MSG(!exported, FAILED,
-			"Cannot determine ABI for library \"" + p_so.path + "\". One of the supported ABIs must be used as a tag: " + String(" ").join(abis));
+			"Cannot determine architecture for library \"" + p_so.path + "\". One of the supported architectures must be used as a tag:" + join_abis(abis, " ", true));
 	return OK;
 }
 
@@ -791,7 +802,7 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 }
 
 void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug) {
-	print_verbose("Building temporary manifest..");
+	print_verbose("Building temporary manifest...");
 	String manifest_text =
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 			"<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
@@ -1656,11 +1667,11 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 	}
 }
 
-Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
-	Vector<String> abis = get_abis();
-	Vector<String> enabled_abis;
+Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
+	Vector<ABI> abis = get_abis();
+	Vector<ABI> enabled_abis;
 	for (int i = 0; i < abis.size(); ++i) {
-		bool is_enabled = p_preset->get("architectures/" + abis[i]);
+		bool is_enabled = p_preset->get("architectures/" + abis[i].abi);
 		if (is_enabled) {
 			enabled_abis.push_back(abis[i]);
 		}
@@ -1671,9 +1682,10 @@ Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExp
 void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	r_features->push_back("etc2");
 
-	Vector<String> abis = get_enabled_abis(p_preset);
+	Vector<ABI> abis = get_enabled_abis(p_preset);
 	for (int i = 0; i < abis.size(); ++i) {
-		r_features->push_back(abis[i]);
+		r_features->push_back(abis[i].arch);
+		r_features->push_back(abis[i].abi);
 	}
 }
 
@@ -1697,9 +1709,9 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	// Android supports multiple architectures in an app bundle, so
 	// we expose each option as a checkbox in the export dialog.
-	const Vector<String> abis = get_abis();
+	const Vector<ABI> abis = get_abis();
 	for (int i = 0; i < abis.size(); ++i) {
-		const String abi = abis[i];
+		const String abi = abis[i].abi;
 		// All Android devices supporting Vulkan run 64-bit Android,
 		// so there is usually no point in exporting for 32-bit Android.
 		const bool is_default = abi == "arm64-v8a";
@@ -2479,7 +2491,7 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 
 	// Clear the APK assets directory
 	if (da_res->dir_exists(APK_ASSETS_DIRECTORY)) {
-		print_verbose("Clearing APK assets directory..");
+		print_verbose("Clearing APK assets directory...");
 		Ref<DirAccess> da_assets = DirAccess::open(APK_ASSETS_DIRECTORY);
 		da_assets->erase_contents_recursive();
 		da_res->remove(APK_ASSETS_DIRECTORY);
@@ -2487,7 +2499,7 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 
 	// Clear the AAB assets directory
 	if (da_res->dir_exists(AAB_ASSETS_DIRECTORY)) {
-		print_verbose("Clearing AAB assets directory..");
+		print_verbose("Clearing AAB assets directory...");
 		Ref<DirAccess> da_assets = DirAccess::open(AAB_ASSETS_DIRECTORY);
 		da_assets->erase_contents_recursive();
 		da_res->remove(AAB_ASSETS_DIRECTORY);
@@ -2497,7 +2509,7 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 void EditorExportPlatformAndroid::_remove_copied_libs() {
 	print_verbose("Removing previously installed libraries...");
 	Error error;
-	String libs_json = FileAccess::get_file_as_string(GDNATIVE_LIBS_PATH, &error);
+	String libs_json = FileAccess::get_file_as_string(GDEXTENSION_LIBS_PATH, &error);
 	if (error || libs_json.is_empty()) {
 		print_verbose("No previously installed libraries found");
 		return;
@@ -2513,16 +2525,27 @@ void EditorExportPlatformAndroid::_remove_copied_libs() {
 		print_verbose("Removing previously installed library " + libs[i]);
 		da->remove(libs[i]);
 	}
-	da->remove(GDNATIVE_LIBS_PATH);
+	da->remove(GDEXTENSION_LIBS_PATH);
 }
 
-String EditorExportPlatformAndroid::join_list(List<String> parts, const String &separator) const {
+String EditorExportPlatformAndroid::join_list(const List<String> &p_parts, const String &p_separator) {
 	String ret;
-	for (int i = 0; i < parts.size(); ++i) {
+	for (int i = 0; i < p_parts.size(); ++i) {
 		if (i > 0) {
-			ret += separator;
+			ret += p_separator;
 		}
-		ret += parts[i];
+		ret += p_parts[i];
+	}
+	return ret;
+}
+
+String EditorExportPlatformAndroid::join_abis(const Vector<EditorExportPlatformAndroid::ABI> &p_parts, const String &p_separator, bool p_use_arch) {
+	String ret;
+	for (int i = 0; i < p_parts.size(); ++i) {
+		if (i > 0) {
+			ret += p_separator;
+		}
+		ret += (p_use_arch) ? p_parts[i].arch : p_parts[i].abi;
 	}
 	return ret;
 }
@@ -2544,7 +2567,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	bool use_custom_build = bool(p_preset->get("custom_build/use_custom_build"));
 	bool p_give_internet = p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG);
 	bool apk_expansion = p_preset->get("apk_expansion/enable");
-	Vector<String> enabled_abis = get_enabled_abis(p_preset);
+	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
 
 	print_verbose("Exporting for Android...");
 	print_verbose("- debug build: " + bool_to_string(p_debug));
@@ -2553,7 +2576,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	print_verbose("- sign build: " + bool_to_string(should_sign));
 	print_verbose("- custom build enabled: " + bool_to_string(use_custom_build));
 	print_verbose("- apk expansion enabled: " + bool_to_string(apk_expansion));
-	print_verbose("- enabled abis: " + String(",").join(enabled_abis));
+	print_verbose("- enabled abis: " + join_abis(enabled_abis, ",", false));
 	print_verbose("- export filter: " + itos(p_preset->get_export_filter()));
 	print_verbose("- include filter: " + p_preset->get_include_filter());
 	print_verbose("- exclude filter: " + p_preset->get_exclude_filter());
@@ -2592,10 +2615,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	if (use_custom_build) {
-		print_verbose("Starting custom build..");
+		print_verbose("Starting custom build...");
 		//test that installed build version is alright
 		{
-			print_verbose("Checking build version..");
+			print_verbose("Checking build version...");
 			Ref<FileAccess> f = FileAccess::open("res://android/.build_version", FileAccess::READ);
 			if (f.is_null()) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
@@ -2628,7 +2651,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_clear_assets_directory();
 		_remove_copied_libs();
 		if (!apk_expansion) {
-			print_verbose("Exporting project files..");
+			print_verbose("Exporting project files...");
 			CustomExportData user_data;
 			user_data.assets_directory = assets_directory;
 			user_data.debug = p_debug;
@@ -2638,18 +2661,18 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return err;
 			}
 			if (user_data.libs.size() > 0) {
-				Ref<FileAccess> fa = FileAccess::open(GDNATIVE_LIBS_PATH, FileAccess::WRITE);
+				Ref<FileAccess> fa = FileAccess::open(GDEXTENSION_LIBS_PATH, FileAccess::WRITE);
 				fa->store_string(JSON::stringify(user_data.libs, "\t"));
 			}
 		} else {
-			print_verbose("Saving apk expansion file..");
+			print_verbose("Saving apk expansion file...");
 			err = save_apk_expansion_file(p_preset, p_debug, p_path);
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not write expansion package file!"));
 				return err;
 			}
 		}
-		print_verbose("Storing command line flags..");
+		print_verbose("Storing command line flags...");
 		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
 		print_verbose("Updating ANDROID_HOME environment to " + sdk_path);
@@ -2676,7 +2699,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		if (!target_sdk_version.is_valid_int()) {
 			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 		}
-		String enabled_abi_string = String("|").join(enabled_abis);
+		String enabled_abi_string = join_abis(enabled_abis, "|", false);
 		String sign_flag = should_sign ? "true" : "false";
 		String zipalign_flag = "true";
 
@@ -2802,7 +2825,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		return OK;
 	}
 	// This is the start of the Legacy build system
-	print_verbose("Starting legacy build system..");
+	print_verbose("Starting legacy build system...");
 	if (p_debug) {
 		src_apk = p_preset->get("custom_template/debug");
 	} else {
@@ -2861,7 +2884,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
-	Vector<String> invalid_abis(enabled_abis);
+	Vector<ABI> invalid_abis(enabled_abis);
 	while (ret == UNZ_OK) {
 		//get filename
 		unz_file_info info;
@@ -2924,7 +2947,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		if (file.ends_with(".so")) {
 			bool enabled = false;
 			for (int i = 0; i < enabled_abis.size(); ++i) {
-				if (file.begins_with("lib/" + enabled_abis[i] + "/")) {
+				if (file.begins_with("lib/" + enabled_abis[i].abi + "/")) {
 					invalid_abis.erase(enabled_abis[i]);
 					enabled = true;
 					break;
@@ -2966,8 +2989,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	if (!invalid_abis.is_empty()) {
-		String unsupported_arch = String(", ").join(invalid_abis);
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Missing libraries in the export template for the selected architectures: %s. Please build a template with all required libraries, or uncheck the missing architectures in the export preset."), unsupported_arch));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Missing libraries in the export template for the selected architectures: %s. Please build a template with all required libraries, or uncheck the missing architectures in the export preset."), join_abis(invalid_abis, ", ", false)));
 		CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
 	}
 

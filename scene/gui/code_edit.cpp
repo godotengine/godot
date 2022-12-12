@@ -378,12 +378,13 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (symbol_lookup_on_click_enabled) {
-			if (mm->is_command_or_control_pressed() && mm->get_button_mask() == MouseButton::NONE && !is_dragging_cursor()) {
+			if (mm->is_command_or_control_pressed() && mm->get_button_mask() == MouseButton::NONE) {
+				symbol_lookup_pos = get_line_column_at_pos(mpos);
 				symbol_lookup_new_word = get_word_at_pos(mpos);
 				if (symbol_lookup_new_word != symbol_lookup_word) {
 					emit_signal(SNAME("symbol_validate"), symbol_lookup_new_word);
 				}
-			} else {
+			} else if (!mm->is_command_or_control_pressed() || (mm->get_button_mask() != MouseButton::NONE && symbol_lookup_pos != get_line_column_at_pos(mpos))) {
 				set_symbol_lookup_word_as_valid(false);
 			}
 		}
@@ -694,8 +695,8 @@ void CodeEdit::_backspace_internal(int p_caret) {
 		return;
 	}
 
-	if (has_selection()) {
-		delete_selection();
+	if (has_selection(p_caret)) {
+		delete_selection(p_caret);
 		return;
 	}
 
@@ -1425,7 +1426,10 @@ bool CodeEdit::is_line_numbers_zero_padded() const {
 }
 
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
-	String fc = TS->format_number(String::num(p_line + 1).lpad(line_number_digits, line_number_padding));
+	String fc = String::num(p_line + 1).lpad(line_number_digits, line_number_padding);
+	if (is_localizing_numeral_system()) {
+		fc = TS->format_number(fc);
+	}
 	Ref<TextLine> tl;
 	tl.instantiate();
 	tl->add_string(fc, font, font_size);

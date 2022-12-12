@@ -46,6 +46,7 @@
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Changes the alignment of the underlying [LineEdit].
 		</member>
 		<member name="custom_arrow_step" type="float" setter="set_custom_arrow_step" getter="get_custom_arrow_step" default="0.0">
 			If not [code]0[/code], [code]value[/code] will always be rounded to a multiple of [code]custom_arrow_step[/code] when interacting with the arrow buttons of the [SpinBox].
@@ -59,6 +60,8 @@
 		<member name="select_all_on_focus" type="bool" setter="set_select_all_on_focus" getter="is_select_all_on_focus" default="false">
 			If [code]true[/code], the [SpinBox] will select the whole text when the [LineEdit] gains focus. Clicking the up and down arrows won't trigger this behavior.
 		</member>
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" default="1" />
+		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
 		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
 			Adds the specified [code]suffix[/code] string after the numerical value of the [SpinBox].
 		</member>

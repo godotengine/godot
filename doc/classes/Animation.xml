@@ -251,15 +251,6 @@
 				Returns the amount of tracks in the animation.
 			</description>
 		</method>
-		<method name="method_track_get_key_indices" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="time_sec" type="float" />
-			<param index="2" name="delta" type="float" />
-			<description>
-				Returns all the key indices of a method track, given a position and delta time.
-			</description>
-		</method>
 		<method name="method_track_get_name" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="track_idx" type="int" />
@@ -523,15 +514,6 @@
 				Swaps the track [param track_idx]'s index position with the track [param with_idx].
 			</description>
 		</method>
-		<method name="value_track_get_key_indices" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="time_sec" type="float" />
-			<param index="2" name="delta" type="float" />
-			<description>
-				Returns all the key indices of a value track, given a position and delta time.
-			</description>
-		</method>
 		<method name="value_track_get_update_mode" qualifiers="const">
 			<return type="int" enum="Animation.UpdateMode" />
 			<param index="0" name="track_idx" type="int" />
@@ -568,13 +550,6 @@
 			The animation step value.
 		</member>
 	</members>
-	<signals>
-		<signal name="tracks_changed">
-			<description>
-				Emitted when there's a change in the list of tracks, e.g. tracks are added, moved or have changed paths.
-			</description>
-		</signal>
-	</signals>
 	<constants>
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be interpolated. For 3D position/rotation/scale, using the dedicated [constant TYPE_POSITION_3D], [constant TYPE_ROTATION_3D] and [constant TYPE_SCALE_3D] track types instead of [constant TYPE_VALUE] is recommended for performance reasons.
@@ -621,15 +596,12 @@
 			[b]Note:[/b] The result value is always normalized and may not match the key value.
 		</constant>
 		<constant name="UPDATE_CONTINUOUS" value="0" enum="UpdateMode">
-			Update between keyframes.
+			Update between keyframes and hold the value.
 		</constant>
 		<constant name="UPDATE_DISCRETE" value="1" enum="UpdateMode">
-			Update at the keyframes and hold the value.
-		</constant>
-		<constant name="UPDATE_TRIGGER" value="2" enum="UpdateMode">
 			Update at the keyframes.
 		</constant>
-		<constant name="UPDATE_CAPTURE" value="3" enum="UpdateMode">
+		<constant name="UPDATE_CAPTURE" value="2" enum="UpdateMode">
 			Same as linear interpolation, but also interpolates from the current value (i.e. dynamically at runtime) if the first key isn't at 0 seconds.
 		</constant>
 		<constant name="LOOP_NONE" value="0" enum="LoopMode">
@@ -640,6 +612,15 @@
 		</constant>
 		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
 			Repeats playback and reverse playback at both ends of the animation.
+		</constant>
+		<constant name="LOOPED_FLAG_NONE" value="0" enum="LoopedFlag">
+			This flag indicates that the animation proceeds without any looping.
+		</constant>
+		<constant name="LOOPED_FLAG_END" value="1" enum="LoopedFlag">
+			This flag indicates that the animation has reached the end of the animation and just after loop processed.
+		</constant>
+		<constant name="LOOPED_FLAG_START" value="2" enum="LoopedFlag">
+			This flag indicates that the animation has reached the start of the animation and just after loop processed.
 		</constant>
 	</constants>
 </class>

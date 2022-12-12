@@ -38,6 +38,9 @@
 
 EditorCommandPalette *EditorCommandPalette::singleton = nullptr;
 
+static Rect2i prev_rect = Rect2i();
+static bool was_showed = false;
+
 float EditorCommandPalette::_score_path(const String &p_search, const String &p_path) {
 	float score = 0.9f + .1f * (p_search.length() / (float)p_path.length());
 
@@ -145,6 +148,17 @@ void EditorCommandPalette::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_command", "key_name"), &EditorCommandPalette::remove_command);
 }
 
+void EditorCommandPalette::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				prev_rect = Rect2i(get_position(), get_size());
+				was_showed = true;
+			}
+		} break;
+	}
+}
+
 void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid()) {
@@ -171,7 +185,11 @@ void EditorCommandPalette::_confirmed() {
 }
 
 void EditorCommandPalette::open_popup() {
-	popup_centered_clamped(Size2i(600, 440), 0.8f);
+	if (was_showed) {
+		popup(prev_rect);
+	} else {
+		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
+	}
 
 	command_search_box->clear();
 	command_search_box->grab_focus();
@@ -226,7 +244,7 @@ void EditorCommandPalette::_add_command(String p_command_name, String p_key_name
 void EditorCommandPalette::execute_command(String &p_command_key) {
 	ERR_FAIL_COND_MSG(!commands.has(p_command_key), p_command_key + " not found.");
 	commands[p_command_key].last_used = OS::get_singleton()->get_unix_time();
-	commands[p_command_key].callable.call_deferredp(nullptr, 0);
+	commands[p_command_key].callable.call_deferred();
 	_save_history();
 }
 

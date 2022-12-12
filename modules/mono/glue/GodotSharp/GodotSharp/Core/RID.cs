@@ -12,9 +12,9 @@ namespace Godot
     /// classes such as <see cref="RenderingServer"/>.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct RID
+    public readonly struct RID
     {
-        private ulong _id; // Default is 0
+        private readonly ulong _id; // Default is 0
 
         internal RID(ulong id)
         {

@@ -32,11 +32,11 @@ jobs:
             proj-conv: true
             artifact: true
 
-          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, float=64, use_asan=yes, use_ubsan=yes, linker=gold)
+          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
             target: editor
             tests: true
-            sconsflags: dev_build=yes float=64 use_asan=yes use_ubsan=yes linker=gold
+            sconsflags: dev_build=yes precision=double use_asan=yes use_ubsan=yes linker=gold
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
@@ -101,6 +101,9 @@ jobs:
         if: ${{ matrix.build-mono }}
         with:
           dotnet-version: '6.0.x'
+
+      - name: Setup GCC problem matcher
+        uses: ammaraskar/gcc-problem-matcher@master
 
       - name: Compilation
         uses: ./.github/actions/godot-build
@@ -208,7 +211,7 @@ jobs:
         if: ${{ matrix.godot-cpp-test }}
         run: |
           cp -f extension_api.json godot-cpp/godot-headers/
-          cp -f core/extension/gdnative_interface.h godot-cpp/godot-headers/godot/
+          cp -f core/extension/gdextension_interface.h godot-cpp/godot-headers/godot/
 
       # Build godot-cpp test extension
       - name: Build godot-cpp test extension

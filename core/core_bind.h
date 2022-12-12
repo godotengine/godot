@@ -170,7 +170,8 @@ public:
 	void crash(const String &p_message);
 
 	Vector<String> get_system_fonts() const;
-	String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const;
+	String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
+	Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
 	String get_executable_path() const;
 	String read_string_from_stdin(bool p_block = true);
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
@@ -485,6 +486,9 @@ public:
 	static Engine *get_singleton() { return singleton; }
 	void set_physics_ticks_per_second(int p_ips);
 	int get_physics_ticks_per_second() const;
+
+	void set_max_physics_steps_per_frame(int p_max_physics_steps);
+	int get_max_physics_steps_per_frame() const;
 
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;

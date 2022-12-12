@@ -418,8 +418,8 @@ namespace Godot.Collections
             {
                 for (int i = 0; i < count; i++)
                 {
-                    object obj = Marshaling.ConvertVariantToManagedObject(NativeValue.DangerousSelfRef.Elements[i]);
-                    array.SetValue(obj, index);
+                    object boxedVariant = Variant.CreateCopyingBorrowed(NativeValue.DangerousSelfRef.Elements[i]);
+                    array.SetValue(boxedVariant, index);
                     index++;
                 }
             }
@@ -474,6 +474,11 @@ namespace Godot.Collections
         }
     }
 
+    internal interface IGenericGodotArray
+    {
+        public Array UnderlyingArray { get; }
+    }
+
     /// <summary>
     /// Typed wrapper around Godot's Array class, an array of Variant
     /// typed elements allocated in the engine in C++. Useful when
@@ -487,7 +492,8 @@ namespace Godot.Collections
         IList<T>,
         IReadOnlyList<T>,
         ICollection<T>,
-        IEnumerable<T>
+        IEnumerable<T>,
+        IGenericGodotArray
     {
         private static godot_variant ToVariantFunc(in Array<T> godotArray) =>
             VariantUtils.CreateFromArray(godotArray);
@@ -495,38 +501,15 @@ namespace Godot.Collections
         private static Array<T> FromVariantFunc(in godot_variant variant) =>
             VariantUtils.ConvertToArrayObject<T>(variant);
 
-        // ReSharper disable StaticMemberInGenericType
-        // Warning is about unique static fields being created for each generic type combination:
-        // https://www.jetbrains.com/help/resharper/StaticMemberInGenericType.html
-        // In our case this is exactly what we want.
-
-        private static readonly unsafe delegate* managed<in T, godot_variant> ConvertToVariantCallback;
-        private static readonly unsafe delegate* managed<in godot_variant, T> ConvertToManagedCallback;
-
-        // ReSharper restore StaticMemberInGenericType
-
         static unsafe Array()
         {
-            VariantConversionCallbacks.GenericConversionCallbacks[typeof(Array<T>)] =
-            (
-                (IntPtr)(delegate* managed<in Array<T>, godot_variant>)&ToVariantFunc,
-                (IntPtr)(delegate* managed<in godot_variant, Array<T>>)&FromVariantFunc
-            );
-
-            ConvertToVariantCallback = VariantConversionCallbacks.GetToVariantCallback<T>();
-            ConvertToManagedCallback = VariantConversionCallbacks.GetToManagedCallback<T>();
-        }
-
-        private static unsafe void ValidateVariantConversionCallbacks()
-        {
-            if (ConvertToVariantCallback == null || ConvertToManagedCallback == null)
-            {
-                throw new InvalidOperationException(
-                    $"The array element type is not supported for conversion to Variant: '{typeof(T).FullName}'.");
-            }
+            VariantUtils.GenericConversion<Array<T>>.ToVariantCb = &ToVariantFunc;
+            VariantUtils.GenericConversion<Array<T>>.FromVariantCb = &FromVariantFunc;
         }
 
         private readonly Array _underlyingArray;
+
+        Array IGenericGodotArray.UnderlyingArray => _underlyingArray;
 
         internal ref godot_array.movable NativeValue
         {
@@ -539,8 +522,6 @@ namespace Godot.Collections
         /// </summary>
         public Array()
         {
-            ValidateVariantConversionCallbacks();
-
             _underlyingArray = new Array();
         }
 
@@ -551,8 +532,6 @@ namespace Godot.Collections
         /// <returns>A new Godot Array.</returns>
         public Array(IEnumerable<T> collection)
         {
-            ValidateVariantConversionCallbacks();
-
             if (collection == null)
                 throw new ArgumentNullException(nameof(collection));
 
@@ -569,8 +548,6 @@ namespace Godot.Collections
         /// <returns>A new Godot Array.</returns>
         public Array(T[] array) : this()
         {
-            ValidateVariantConversionCallbacks();
-
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
 
@@ -586,8 +563,6 @@ namespace Godot.Collections
         /// <param name="array">The untyped array to construct from.</param>
         public Array(Array array)
         {
-            ValidateVariantConversionCallbacks();
-
             _underlyingArray = array;
         }
 
@@ -665,7 +640,7 @@ namespace Godot.Collections
             get
             {
                 _underlyingArray.GetVariantBorrowElementAt(index, out godot_variant borrowElem);
-                return ConvertToManagedCallback(borrowElem);
+                return VariantUtils.ConvertTo<T>(borrowElem);
             }
             set
             {
@@ -675,7 +650,7 @@ namespace Godot.Collections
                 godot_variant* ptrw = NativeFuncs.godotsharp_array_ptrw(ref self);
                 godot_variant* itemPtr = &ptrw[index];
                 (*itemPtr).Dispose();
-                *itemPtr = ConvertToVariantCallback(value);
+                *itemPtr = VariantUtils.CreateFrom(value);
             }
         }
 
@@ -685,9 +660,9 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="item">The item to search for.</param>
         /// <returns>The index of the item, or -1 if not found.</returns>
-        public unsafe int IndexOf(T item)
+        public int IndexOf(T item)
         {
-            using var variantValue = ConvertToVariantCallback(item);
+            using var variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
             return NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
         }
@@ -700,12 +675,12 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="index">The index to insert at.</param>
         /// <param name="item">The item to insert.</param>
-        public unsafe void Insert(int index, T item)
+        public void Insert(int index, T item)
         {
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
-            using var variantValue = ConvertToVariantCallback(item);
+            using var variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
             NativeFuncs.godotsharp_array_insert(ref self, index, variantValue);
         }
@@ -736,9 +711,9 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="item">The item to add.</param>
         /// <returns>The new size after adding the item.</returns>
-        public unsafe void Add(T item)
+        public void Add(T item)
         {
-            using var variantValue = ConvertToVariantCallback(item);
+            using var variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
             _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
         }

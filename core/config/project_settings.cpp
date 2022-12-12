@@ -82,7 +82,7 @@ String ProjectSettings::get_imported_files_path() const {
 // Returns the features that a project must have when opened with this build of Godot.
 // This is used by the project manager to provide the initial_settings for config/features.
 const PackedStringArray ProjectSettings::get_required_features() {
-	PackedStringArray features = PackedStringArray();
+	PackedStringArray features;
 	features.append(VERSION_BRANCH);
 #ifdef REAL_T_IS_DOUBLE
 	features.append("Double Precision");
@@ -115,7 +115,7 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 
 // Returns the features that this project needs but this build of Godot lacks.
 const PackedStringArray ProjectSettings::get_unsupported_features(const PackedStringArray &p_project_features) {
-	PackedStringArray unsupported_features = PackedStringArray();
+	PackedStringArray unsupported_features;
 	PackedStringArray supported_features = singleton->_get_supported_features();
 	for (int i = 0; i < p_project_features.size(); i++) {
 		if (!supported_features.has(p_project_features[i])) {
@@ -619,7 +619,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
 	if (err == OK) {
-		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
+		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
 		if (!custom_settings.is_empty()) {
 			_load_settings_text(custom_settings);
 		}
@@ -1200,6 +1200,7 @@ ProjectSettings::ProjectSettings() {
 	// Initialization of engine variables should be done in the setup() method,
 	// so that the values can be overridden from project.godot or project.binary.
 
+	CRASH_COND_MSG(singleton != nullptr, "Instantiating a new ProjectSettings singleton is not supported.");
 	singleton = this;
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
@@ -1246,12 +1247,12 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/buses/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
-	GLOBAL_DEF_RST("audio/general/2d_panning_strength", 1.0f);
-	custom_prop_info["audio/general/2d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
-	GLOBAL_DEF_RST("audio/general/3d_panning_strength", 1.0f);
-	custom_prop_info["audio/general/3d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
+	GLOBAL_DEF_RST("audio/general/2d_panning_strength", 0.5f);
+	custom_prop_info["audio/general/2d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01");
+	GLOBAL_DEF_RST("audio/general/3d_panning_strength", 0.5f);
+	custom_prop_info["audio/general/3d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01");
 
-	PackedStringArray extensions = PackedStringArray();
+	PackedStringArray extensions;
 	extensions.push_back("gd");
 	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
 		extensions.push_back("cs");
@@ -1276,6 +1277,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
 
+	GLOBAL_DEF("debug/disable_touch", false);
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");
 
@@ -1291,6 +1293,22 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("compression/formats/gzip/compression_level", Compression::gzip_level);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+
+	GLOBAL_DEF("debug/settings/crash_handler/message",
+			String("Please include this when reporting the bug to the project developer."));
+	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
+			String("Please include this when reporting the bug on: https://github.com/godotengine/godot/issues"));
+	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
+	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
+	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
+
+	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/incremental_search_max_interval_msec", PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers.
+
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/block_size_kb", 256);
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/max_size_mb", 128);
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/texture_upload_region_size_px", 64);
+	GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
 
 	// These properties will not show up in the dialog nor in the documentation. If you want to exclude whole groups, see _get_property_list() method.
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());

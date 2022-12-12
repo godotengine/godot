@@ -107,6 +107,8 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &
 }
 
 Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encrypt) {
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_INVALID_PARAMETER, "File must be opened before use.");
+
 	Ref<FileAccess> f = FileAccess::open(p_src, FileAccess::READ);
 	if (f.is_null()) {
 		return ERR_FILE_CANT_OPEN;
@@ -118,7 +120,7 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	pf.ofs = ofs;
 	pf.size = f->get_length();
 
-	Vector<uint8_t> data = FileAccess::get_file_as_array(p_src);
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_src);
 	{
 		unsigned char hash[16];
 		CryptoCore::md5(data.ptr(), data.size(), hash);

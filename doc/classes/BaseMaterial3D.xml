@@ -319,7 +319,7 @@
 			Texture that controls the strength of the refraction per-pixel. Multiplied by [member refraction_scale].
 		</member>
 		<member name="refraction_texture_channel" type="int" setter="set_refraction_texture_channel" getter="get_refraction_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
-			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+			Specifies the channel of the [member refraction_texture] in which the refraction information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored refraction in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
 		<member name="rim" type="float" setter="set_rim" getter="get_rim" default="1.0">
 			Sets the strength of the rim lighting effect.
@@ -341,7 +341,7 @@
 			Texture used to control the roughness per-pixel. Multiplied by [member roughness].
 		</member>
 		<member name="roughness_texture_channel" type="int" setter="set_roughness_texture_channel" getter="get_roughness_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
-			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+			Specifies the channel of the [member roughness_texture] in which the roughness information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
 		<member name="shading_mode" type="int" setter="set_shading_mode" getter="get_shading_mode" enum="BaseMaterial3D.ShadingMode" default="1">
 			Sets whether the shading takes place per-pixel or per-vertex. Per-vertex lighting is faster, making it the best choice for mobile applications, however it looks considerably worse than per-pixel.
@@ -529,13 +529,13 @@
 			The material will use the texture's alpha values for transparency.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency">
-			The material will cut off all values below a threshold, the rest will remain opaque.
+			The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendering in the depth prepass.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_HASH" value="3" enum="Transparency">
 			The material will cut off all values below a spatially-deterministic threshold, the rest will remain opaque.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="4" enum="Transparency">
-			The material will use the texture's alpha value for transparency, but will still be rendered in the pre-pass.
+			The material will use the texture's alpha value for transparency, but will still be rendered in the depth prepass.
 		</constant>
 		<constant name="TRANSPARENCY_MAX" value="5" enum="Transparency">
 			Represents the size of the [enum Transparency] enum.
@@ -613,13 +613,14 @@
 			Enables AlphaToCoverage and forces all non-zero alpha values to [code]1[/code]. Alpha values in the material are passed to the AntiAliasing sample mask.
 		</constant>
 		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
-			Default depth draw mode. Depth is drawn only for opaque objects.
+			Default depth draw mode. Depth is drawn only for opaque objects during the opaque prepass (if any) and during the opaque pass.
 		</constant>
 		<constant name="DEPTH_DRAW_ALWAYS" value="1" enum="DepthDrawMode">
-			Depth draw is calculated for both opaque and transparent objects.
+			Objects will write to depth during the opaque and the transparent passes. Transparent objects that are close to the camera may obscure other transparent objects behind them.
+			[b]Note:[/b] This does not influence whether transparent objects are included in the depth prepass or not. For that, see [enum Transparency].
 		</constant>
 		<constant name="DEPTH_DRAW_DISABLED" value="2" enum="DepthDrawMode">
-			No depth draw.
+			Objects will not write their depth to the depth buffer, even during the depth prepass (if enabled).
 		</constant>
 		<constant name="CULL_BACK" value="0" enum="CullMode">
 			Default cull mode. The back of the object is culled when not visible. Back face triangles will be culled when facing the camera. This results in only the front side of triangles being drawn. For closed-surface meshes this means that only the exterior of the mesh will be visible.
@@ -631,7 +632,7 @@
 			No culling is performed.
 		</constant>
 		<constant name="FLAG_DISABLE_DEPTH_TEST" value="0" enum="Flags">
-			Disables the depth test, so this object is drawn on top of all others. However, objects drawn after it in the draw order may cover it.
+			Disables the depth test, so this object is drawn on top of all others drawn before it. This puts the object in the transparent draw pass where it is sorted based on distance to camera. Objects drawn after it in the draw order may cover it. This also disables writing to depth.
 		</constant>
 		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="1" enum="Flags">
 			Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh.

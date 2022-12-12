@@ -57,9 +57,9 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 		capsule->set_radial_segments(16);
 		capsule->set_rings(32);
 
-		CHECK_MESSAGE(Math::is_equal_approx(capsule->get_radius(), 1.3f),
+		CHECK_MESSAGE(capsule->get_radius() == doctest::Approx(1.3f),
 				"Get/Set radius work with one set.");
-		CHECK_MESSAGE(Math::is_equal_approx(capsule->get_height(), 7.1f),
+		CHECK_MESSAGE(capsule->get_height() == doctest::Approx(7.1f),
 				"Get/Set radius work with one set.");
 		CHECK_MESSAGE(capsule->get_radial_segments() == 16,
 				"Get/Set radius work with one set.");
@@ -129,7 +129,7 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 				if (normals[ii].y == 0.f) {
 					float mag_of_normal = Math::sqrt(normals[ii].x * normals[ii].x + normals[ii].z * normals[ii].z);
 					Vector3 normalized_normal = normals[ii] / mag_of_normal;
-					CHECK_MESSAGE(Math::is_equal_approx(point_dist_from_yaxis, radius),
+					CHECK_MESSAGE(point_dist_from_yaxis == doctest::Approx(radius),
 							"Points on the tube of the capsule are radius away from y-axis.");
 					CHECK_MESSAGE(normalized_normal.is_equal_approx(yaxis_to_point),
 							"Normal points orthogonal from mid cylinder.");
@@ -244,9 +244,9 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 		cylinder->set_cap_top(false);
 		cylinder->set_cap_bottom(false);
 
-		CHECK(Math::is_equal_approx(cylinder->get_top_radius(), 4.3f));
-		CHECK(Math::is_equal_approx(cylinder->get_bottom_radius(), 1.2f));
-		CHECK(Math::is_equal_approx(cylinder->get_height(), 9.77f));
+		CHECK(cylinder->get_top_radius() == doctest::Approx(4.3f));
+		CHECK(cylinder->get_bottom_radius() == doctest::Approx(1.2f));
+		CHECK(cylinder->get_height() == doctest::Approx(9.77f));
 		CHECK(cylinder->get_radial_segments() == 12);
 		CHECK(cylinder->get_rings() == 16);
 		CHECK(!cylinder->is_cap_top());
@@ -478,7 +478,7 @@ TEST_CASE("[SceneTree][Primitive][Prism] Prism Primitive") {
 		prism->set_subdivide_height(5);
 		prism->set_subdivide_depth(64);
 
-		CHECK(Math::is_equal_approx(prism->get_left_to_right(), 3.4f));
+		CHECK(prism->get_left_to_right() == doctest::Approx(3.4f));
 		CHECK(prism->get_size().is_equal_approx(size));
 		CHECK(prism->get_subdivide_width() == 36);
 		CHECK(prism->get_subdivide_height() == 5);
@@ -513,8 +513,8 @@ TEST_CASE("[SceneTree][Primitive][Sphere] Sphere Primitive") {
 		sphere->set_rings(5);
 		sphere->set_is_hemisphere(true);
 
-		CHECK(Math::is_equal_approx(sphere->get_radius(), 3.4f));
-		CHECK(Math::is_equal_approx(sphere->get_height(), 2.2f));
+		CHECK(sphere->get_radius() == doctest::Approx(3.4f));
+		CHECK(sphere->get_height() == doctest::Approx(2.2f));
 		CHECK(sphere->get_radial_segments() == 36);
 		CHECK(sphere->get_rings() == 5);
 		CHECK(sphere->get_is_hemisphere());
@@ -581,8 +581,8 @@ TEST_CASE("[SceneTree][Primitive][Torus] Torus Primitive") {
 		torus->set_rings(19);
 		torus->set_ring_segments(43);
 
-		CHECK(Math::is_equal_approx(torus->get_inner_radius(), 3.2f));
-		CHECK(Math::is_equal_approx(torus->get_outer_radius(), 9.5f));
+		CHECK(torus->get_inner_radius() == doctest::Approx(3.2f));
+		CHECK(torus->get_outer_radius() == doctest::Approx(9.5f));
 		CHECK(torus->get_rings() == 19);
 		CHECK(torus->get_ring_segments() == 43);
 	}
@@ -610,8 +610,8 @@ TEST_CASE("[SceneTree][Primitive][TubeTrail] TubeTrail Primitive") {
 		Ref<Curve> curve = memnew(Curve);
 		tube->set_curve(curve);
 
-		CHECK(Math::is_equal_approx(tube->get_radius(), 7.2f));
-		CHECK(Math::is_equal_approx(tube->get_section_length(), 5.5f));
+		CHECK(tube->get_radius() == doctest::Approx(7.2f));
+		CHECK(tube->get_section_length() == doctest::Approx(5.5f));
 		CHECK(tube->get_radial_steps() == 9);
 		CHECK(tube->get_sections() == 33);
 		CHECK(tube->get_section_rings() == 12);
@@ -670,8 +670,8 @@ TEST_CASE("[SceneTree][Primitive][RibbonTrail] RibbonTrail Primitive") {
 		ribbon->set_section_segments(9);
 		ribbon->set_curve(curve);
 
-		CHECK(Math::is_equal_approx(ribbon->get_size(), 4.3f));
-		CHECK(Math::is_equal_approx(ribbon->get_section_length(), 1.3f));
+		CHECK(ribbon->get_size() == doctest::Approx(4.3f));
+		CHECK(ribbon->get_section_length() == doctest::Approx(1.3f));
 		CHECK(ribbon->get_sections() == 16);
 		CHECK(ribbon->get_section_segments() == 9);
 		CHECK(ribbon->get_curve() == curve);
@@ -781,11 +781,11 @@ TEST_CASE("[SceneTree][Primitive][Text] Text Primitive") {
 		CHECK(text->get_structured_text_bidi_override_options() == options);
 		CHECK(text->is_uppercase() == true);
 		CHECK(text->get_offset() == offset);
-		CHECK(Math::is_equal_approx(text->get_line_spacing(), 1.7f));
-		CHECK(Math::is_equal_approx(text->get_width(), width));
-		CHECK(Math::is_equal_approx(text->get_depth(), depth));
-		CHECK(Math::is_equal_approx(text->get_curve_step(), curve_step));
-		CHECK(Math::is_equal_approx(text->get_pixel_size(), pixel_size));
+		CHECK(text->get_line_spacing() == doctest::Approx(1.7f));
+		CHECK(text->get_width() == doctest::Approx(width));
+		CHECK(text->get_depth() == doctest::Approx(depth));
+		CHECK(text->get_curve_step() == doctest::Approx(curve_step));
+		CHECK(text->get_pixel_size() == doctest::Approx(pixel_size));
 	}
 
 	SUBCASE("[Primitive][Text] Set objects multiple times.") {

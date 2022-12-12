@@ -34,9 +34,12 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/text_shader_editor.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/shader_create_dialog.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/texture_rect.h"
 
 void ShaderEditorPlugin::_update_shader_list() {
 	shader_list->clear();

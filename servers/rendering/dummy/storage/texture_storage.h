@@ -80,6 +80,7 @@ public:
 	virtual void texture_free(RID p_rid) override {
 		// delete the texture
 		DummyTexture *texture = texture_owner.get_or_null(p_rid);
+		ERR_FAIL_COND(!texture);
 		texture_owner.free(p_rid);
 		memdelete(texture);
 	};
@@ -125,6 +126,8 @@ public:
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) override{};
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override { return Size2(); };
+
+	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const override { return RID(); };
 
 	/* DECAL API */
 	virtual RID decal_allocate() override { return RID(); }
@@ -184,11 +187,9 @@ public:
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override {}
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const override { return RID(); }
 
-	virtual void render_target_set_override_color(RID p_render_target, RID p_texture) override {}
+	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) override {}
 	virtual RID render_target_get_override_color(RID p_render_target) const override { return RID(); }
-	virtual void render_target_set_override_depth(RID p_render_target, RID p_texture) override {}
 	virtual RID render_target_get_override_depth(RID p_render_target) const override { return RID(); }
-	virtual void render_target_set_override_velocity(RID p_render_target, RID p_texture) override {}
 	virtual RID render_target_get_override_velocity(RID p_render_target) const override { return RID(); }
 
 	virtual RID render_target_get_texture(RID p_render_target) override { return RID(); }

@@ -31,6 +31,7 @@
 #ifndef MATERIAL_EDITOR_PLUGIN_H
 #define MATERIAL_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "scene/3d/camera_3d.h"
@@ -40,12 +41,14 @@
 #include "scene/resources/material.h"
 #include "scene/resources/primitive_meshes.h"
 
+class SubViewport;
 class SubViewportContainer;
+class TextureButton;
 
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
-	Vector2 rot = Vector2();
+	Vector2 rot;
 
 	HBoxContainer *layout_2d = nullptr;
 	ColorRect *rect_instance = nullptr;

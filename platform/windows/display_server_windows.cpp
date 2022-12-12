@@ -741,9 +741,20 @@ int64_t DisplayServerWindows::window_get_native_handle(HandleType p_handle_type,
 		case WINDOW_HANDLE: {
 			return (int64_t)windows[p_window].hWnd;
 		}
+#if defined(GLES3_ENABLED)
 		case WINDOW_VIEW: {
-			return 0; // Not supported.
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_hdc(p_window);
+			}
+			return 0;
 		}
+		case OPENGL_CONTEXT: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_hglrc(p_window);
+			}
+			return 0;
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -896,6 +907,24 @@ Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
 	ClientToScreen(wd.hWnd, &point);
 
 	return Point2i(point.x, point.y);
+}
+
+Point2i DisplayServerWindows::window_get_position_with_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
+	const WindowData &wd = windows[p_window];
+
+	if (wd.minimized) {
+		return wd.last_pos;
+	}
+
+	RECT r;
+	if (GetWindowRect(wd.hWnd, &r)) {
+		return Point2i(r.left, r.top);
+	}
+
+	return Point2i();
 }
 
 void DisplayServerWindows::_update_real_mouse_position(WindowID p_window) {
@@ -1113,7 +1142,7 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 	return Size2();
 }
 
-Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -1881,7 +1910,7 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	pos += sizeof(WORD);
 	f->seek(pos);
 
-	icon_dir = (ICONDIR *)memrealloc(icon_dir, 3 * sizeof(WORD) + icon_dir->idCount * sizeof(ICONDIRENTRY));
+	icon_dir = (ICONDIR *)memrealloc(icon_dir, sizeof(ICONDIR) - sizeof(ICONDIRENTRY) + icon_dir->idCount * sizeof(ICONDIRENTRY));
 	f->get_buffer((uint8_t *)&icon_dir->idEntries[0], icon_dir->idCount * sizeof(ICONDIRENTRY));
 
 	int small_icon_index = -1; // Select 16x16 with largest color count.
@@ -2012,6 +2041,12 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
+
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->set_use_vsync(p_window, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+#endif
 }
 
 DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
@@ -2021,6 +2056,13 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 		return context_vulkan->get_vsync_mode(p_window);
 	}
 #endif
+
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		return gl_manager->is_using_vsync(p_window) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	}
+#endif
+
 	return DisplayServer::VSYNC_ENABLED;
 }
 
@@ -2390,7 +2432,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_GETMINMAXINFO: {
 			if (windows[window_id].resizable && !windows[window_id].fullscreen) {
 				// Size of window decorations.
-				Size2 decor = window_get_real_size(window_id) - window_get_size(window_id);
+				Size2 decor = window_get_size_with_decorations(window_id) - window_get_size(window_id);
 
 				MINMAXINFO *min_max_info = (MINMAXINFO *)lParam;
 				if (windows[window_id].min_size != Size2()) {
@@ -2449,7 +2491,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				window_mouseover_id = INVALID_WINDOW_ID;
 
 				_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
-			} else if (window_mouseover_id != INVALID_WINDOW_ID) {
+			} else if (window_mouseover_id != INVALID_WINDOW_ID && windows.has(window_mouseover_id)) {
 				// This is reached during drag and drop, after dropping in a different window.
 				// Once-off notification, must call again.
 				track_mouse_leave_event(windows[window_mouseover_id].hWnd);
@@ -2688,7 +2730,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
-					if (window_mouseover_id != INVALID_WINDOW_ID) {
+					if (window_mouseover_id != INVALID_WINDOW_ID && windows.has(window_mouseover_id)) {
 						// Leave previous window.
 						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
 					}
@@ -2790,7 +2832,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			DisplayServer::WindowID over_id = get_window_at_screen_position(mouse_get_position());
-			if (!Rect2(window_get_position(over_id), Point2(windows[over_id].width, windows[over_id].height)).has_point(mouse_get_position())) {
+			if (windows.has(over_id) && !Rect2(window_get_position(over_id), Point2(windows[over_id].width, windows[over_id].height)).has_point(mouse_get_position())) {
 				// Don't consider the windowborder as part of the window.
 				over_id = INVALID_WINDOW_ID;
 			}
@@ -2798,12 +2840,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
-					if (window_mouseover_id != INVALID_WINDOW_ID) {
+					if (window_mouseover_id != INVALID_WINDOW_ID && windows.has(window_mouseover_id)) {
 						// Leave previous window.
 						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
 					}
 
-					if (over_id != INVALID_WINDOW_ID) {
+					if (over_id != INVALID_WINDOW_ID && windows.has(over_id)) {
 						_send_window_event(windows[over_id], WINDOW_EVENT_MOUSE_ENTER);
 					}
 				}
@@ -2886,11 +2928,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 
-			if (!windows[receiving_window_id].window_has_focus) {
-				// In case of unfocused Popups, adjust event position.
-				Point2i pos = mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id);
-				mm->set_position(pos);
-				mm->set_global_position(pos);
+			if (receiving_window_id != window_id) {
+				// Adjust event position relative to window distance when event is sent to a different window.
+				mm->set_position(mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id));
+				mm->set_global_position(mm->get_position());
 			}
 			Input::get_singleton()->parse_input_event(mm);
 
@@ -3497,7 +3538,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT), dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
@@ -3590,6 +3631,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				windows.erase(id);
 				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
 			}
+			window_set_vsync_mode(p_vsync_mode, id);
 		}
 #endif
 
@@ -3894,6 +3936,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution));
 	ERR_FAIL_COND_MSG(main_window == INVALID_WINDOW_ID, "Failed to create main window.");
 
+	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);
+
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, main_window);
@@ -3932,8 +3976,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	cursor_shape = CURSOR_ARROW;
 
 	_update_real_mouse_position(MAIN_WINDOW_ID);
-
-	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);
 
 	r_error = OK;
 

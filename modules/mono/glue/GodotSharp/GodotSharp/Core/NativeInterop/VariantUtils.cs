@@ -8,7 +8,7 @@ using Godot.Collections;
 
 namespace Godot.NativeInterop
 {
-    public static class VariantUtils
+    public static partial class VariantUtils
     {
         public static godot_variant CreateFromRID(RID from)
             => new() { Type = Variant.Type.Rid, RID = from };
@@ -593,13 +593,6 @@ namespace Godot.NativeInterop
         {
             using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
             return Marshaling.ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(godotArray);
-        }
-
-        // ReSharper disable once RedundantNameQualifier
-        public static Godot.Object[] ConvertToSystemArrayOfGodotObject(in godot_variant p_var, Type type)
-        {
-            using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
-            return Marshaling.ConvertNativeGodotArrayToSystemArrayOfGodotObjectType(godotArray, type);
         }
     }
 }

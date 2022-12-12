@@ -45,8 +45,37 @@
 #include "extensions/openxr_android_extension.h"
 #endif
 
+// We need to have all the graphics API defines before the Vulkan or OpenGL
+// extensions are included, otherwise we'll only get one graphics API.
+#ifdef VULKAN_ENABLED
+#define XR_USE_GRAPHICS_API_VULKAN
+#endif
+#ifdef GLES3_ENABLED
+#ifdef ANDROID_ENABLED
+#define XR_USE_GRAPHICS_API_OPENGL_ES
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
+#else
+#define XR_USE_GRAPHICS_API_OPENGL
+#endif // ANDROID_ENABLED
+#ifdef X11_ENABLED
+#include OPENGL_INCLUDE_H
+#define GL_GLEXT_PROTOTYPES 1
+#define GL3_PROTOTYPES 1
+#include "thirdparty/glad/glad/gl.h"
+#include "thirdparty/glad/glad/glx.h"
+#include <X11/Xlib.h>
+#endif // X11_ENABLED
+#endif // GLES_ENABLED
+
 #ifdef VULKAN_ENABLED
 #include "extensions/openxr_vulkan_extension.h"
+#endif
+
+#ifdef GLES3_ENABLED
+#include "extensions/openxr_opengl_extension.h"
 #endif
 
 #include "extensions/openxr_composition_layer_depth_extension.h"
@@ -269,9 +298,17 @@ bool OpenXRAPI::create_instance() {
 		XR_CURRENT_API_VERSION // apiVersion
 	};
 
+	void *next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		void *np = wrapper->set_instance_create_info_and_get_next_pointer(next_pointer);
+		if (np != nullptr) {
+			next_pointer = np;
+		}
+	}
+
 	XrInstanceCreateInfo instance_create_info = {
 		XR_TYPE_INSTANCE_CREATE_INFO, // type
-		nullptr, // next
+		next_pointer, // next
 		0, // createFlags
 		application_info, // applicationInfo
 		0, // enabledApiLayerCount, need to find out if we need support for this?
@@ -691,7 +728,7 @@ bool OpenXRAPI::create_swapchains() {
 			print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(swapchain_format_to_use));
 		}
 
-		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
+		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
 			return false;
 		}
 	}
@@ -703,9 +740,10 @@ bool OpenXRAPI::create_swapchains() {
 	ERR_FAIL_NULL_V_MSG(projection_views, false, "OpenXR Couldn't allocate memory for projection views");
 
 	// We create our depth swapchain if:
+	// - we've enabled submitting depth buffer
 	// - we support our depth layer extension
 	// - we have our spacewarp extension (not yet implemented)
-	if (OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
+	if (submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
 		// Build a vector with swapchain formats we want to use, from best fit to worst
 		Vector<int64_t> usable_swapchain_formats;
 		int64_t swapchain_format_to_use = 0;
@@ -753,13 +791,13 @@ bool OpenXRAPI::create_swapchains() {
 		projection_views[i].subImage.imageRect.extent.width = recommended_size.width;
 		projection_views[i].subImage.imageRect.extent.height = recommended_size.height;
 
-		if (OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && depth_views) {
+		if (submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && depth_views) {
 			projection_views[i].next = &depth_views[i];
 
 			depth_views[i].type = XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR;
 			depth_views[i].next = nullptr;
 			depth_views[i].subImage.swapchain = swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain;
-			depth_views[i].subImage.imageArrayIndex = 0;
+			depth_views[i].subImage.imageArrayIndex = i;
 			depth_views[i].subImage.imageRect.offset.x = 0;
 			depth_views[i].subImage.imageRect.offset.y = 0;
 			depth_views[i].subImage.imageRect.extent.width = recommended_size.width;
@@ -1029,6 +1067,30 @@ bool OpenXRAPI::on_state_exiting() {
 	return true;
 }
 
+void OpenXRAPI::set_form_factor(XrFormFactor p_form_factor) {
+	ERR_FAIL_COND(is_initialized());
+
+	form_factor = p_form_factor;
+}
+
+void OpenXRAPI::set_view_configuration(XrViewConfigurationType p_view_configuration) {
+	ERR_FAIL_COND(is_initialized());
+
+	view_configuration = p_view_configuration;
+}
+
+void OpenXRAPI::set_reference_space(XrReferenceSpaceType p_reference_space) {
+	ERR_FAIL_COND(is_initialized());
+
+	reference_space = p_reference_space;
+}
+
+void OpenXRAPI::set_submit_depth_buffer(bool p_submit_depth_buffer) {
+	ERR_FAIL_COND(is_initialized());
+
+	submit_depth_buffer = p_submit_depth_buffer;
+}
+
 bool OpenXRAPI::is_initialized() {
 	return (instance != XR_NULL_HANDLE);
 }
@@ -1142,9 +1204,8 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 #endif
 	} else if (p_rendering_driver == "opengl3") {
 #ifdef GLES3_ENABLED
-		// graphics_extension = memnew(OpenXROpenGLExtension(this));
-		// register_extension_wrapper(graphics_extension);
-		ERR_FAIL_V_MSG(false, "OpenXR: OpenGL is not supported at this time.");
+		graphics_extension = memnew(OpenXROpenGLExtension(this));
+		register_extension_wrapper(graphics_extension);
 #else
 		// shouldn't be possible...
 		ERR_FAIL_V(false);
@@ -1648,7 +1709,7 @@ RID OpenXRAPI::get_color_texture() {
 }
 
 RID OpenXRAPI::get_depth_texture() {
-	if (swapchains[OPENXR_SWAPCHAIN_DEPTH].image_acquired) {
+	if (submit_depth_buffer && swapchains[OPENXR_SWAPCHAIN_DEPTH].image_acquired) {
 		return graphics_extension->get_texture(swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data, swapchains[OPENXR_SWAPCHAIN_DEPTH].image_index);
 	} else {
 		return RID();
@@ -1826,6 +1887,8 @@ OpenXRAPI::OpenXRAPI() {
 			default:
 				break;
 		}
+
+		submit_depth_buffer = GLOBAL_GET("xr/openxr/submit_depth_buffer");
 	}
 
 	// reset a few things that can't be done in our class definition
