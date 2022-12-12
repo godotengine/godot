@@ -2138,11 +2138,13 @@ FRAGMENT_SHADER_CODE
 	if (depth_z < value) {
 		vec3 pssm_coord;
 		float pssm_fade = 0.0;
+		float blur_factor = 1.0;
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-skip
 		float pssm_blend;
 		vec3 pssm_coord2;
 		bool use_blend = true;
+		float blur_factor2 = 1.0;
 #endif //ubershader-skip
 
 #ifdef LIGHT_USE_PSSM4 //ubershader-runtime
@@ -2153,37 +2155,42 @@ FRAGMENT_SHADER_CODE
 				pssm_coord = splane.xyz / splane.w;
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
-
 				splane = (shadow_matrix2 * vec4(vertex, 1.0));
 				pssm_coord2 = splane.xyz / splane.w;
 				pssm_blend = smoothstep(0.0, shadow_split_offsets.x, depth_z);
+				blur_factor2 = shadow_split_offsets.x / shadow_split_offsets.y;
 #endif //ubershader-runtime
 
 			} else {
 				highp vec4 splane = (shadow_matrix2 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
+				blur_factor = shadow_split_offsets.x / shadow_split_offsets.y;
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 				splane = (shadow_matrix3 * vec4(vertex, 1.0));
 				pssm_coord2 = splane.xyz / splane.w;
 				pssm_blend = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
+				blur_factor2 = shadow_split_offsets.x / shadow_split_offsets.z;
 #endif //ubershader-runtime
 			}
 		} else {
 			if (depth_z < shadow_split_offsets.z) {
 				highp vec4 splane = (shadow_matrix3 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
+				blur_factor = shadow_split_offsets.x / shadow_split_offsets.z;
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 				splane = (shadow_matrix4 * vec4(vertex, 1.0));
 				pssm_coord2 = splane.xyz / splane.w;
 				pssm_blend = smoothstep(shadow_split_offsets.y, shadow_split_offsets.z, depth_z);
+				blur_factor2 = shadow_split_offsets.x / shadow_split_offsets.w;
 #endif //ubershader-runtime
 
 			} else {
 				highp vec4 splane = (shadow_matrix4 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
 				pssm_fade = smoothstep(shadow_split_offsets.z, shadow_split_offsets.w, depth_z);
+				blur_factor = shadow_split_offsets.x / shadow_split_offsets.w;
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 				use_blend = false;
@@ -2205,12 +2212,14 @@ FRAGMENT_SHADER_CODE
 			splane = (shadow_matrix2 * vec4(vertex, 1.0));
 			pssm_coord2 = splane.xyz / splane.w;
 			pssm_blend = smoothstep(0.0, shadow_split_offsets.x, depth_z);
+			blur_factor2 = shadow_split_offsets.x / shadow_split_offsets.y;
 #endif //ubershader-runtime
 
 		} else {
 			highp vec4 splane = (shadow_matrix2 * vec4(vertex, 1.0));
 			pssm_coord = splane.xyz / splane.w;
 			pssm_fade = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
+			blur_factor = shadow_split_offsets.x / shadow_split_offsets.y;
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 			use_blend = false;
 
@@ -2230,12 +2239,12 @@ FRAGMENT_SHADER_CODE
 
 		//one one sample
 
-		float shadow = sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord.xy, pssm_coord.z, light_clamp);
+		float shadow = sample_shadow(directional_shadow, directional_shadow_pixel_size * blur_factor, pssm_coord.xy, pssm_coord.z, light_clamp);
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 
 		if (use_blend) {
-			shadow = mix(shadow, sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord2.xy, pssm_coord2.z, light_clamp), pssm_blend);
+			shadow = mix(shadow, sample_shadow(directional_shadow, directional_shadow_pixel_size * blur_factor2, pssm_coord2.xy, pssm_coord2.z, light_clamp), pssm_blend);
 		}
 #endif //ubershader-runtime
 

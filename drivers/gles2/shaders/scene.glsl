@@ -1501,8 +1501,10 @@ LIGHT_SHADER_CODE
 #define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, SHADOW_DEPTH(texture2D(p_shadow, p_pos)))
 #define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, SHADOW_DEPTH(texture2DProj(p_shadow, p_pos)))
 
-float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
+float sample_shadow(highp sampler2D shadow, float shadow_pixel_size_factor, highp vec4 spos) {
 #ifdef SHADOW_MODE_PCF_13
+
+	vec2 pixel_size = shadow_pixel_size * shadow_pixel_size_factor;
 
 	// Soft PCF filter adapted from three.js:
 	// https://github.com/mrdoob/three.js/blob/0c815022849389cbe6de14a93e1c2fc7e4b21c18/src/renderers/shaders/ShaderChunk/shadowmap_pars_fragment.glsl.js#L148-L182
@@ -1512,36 +1514,36 @@ float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 	spos.xyz /= spos.w;
 	vec2 pos = spos.xy;
 	float depth = spos.z;
-	vec2 f = fract(pos * (1.0 / shadow_pixel_size) + 0.5);
-	pos -= f * shadow_pixel_size;
+	vec2 f = fract(pos * (1.0 / pixel_size) + 0.5);
+	pos -= f * pixel_size;
 
 	return (
 				   SAMPLE_SHADOW_TEXEL(shadow, pos, depth) +
-				   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, 0.0), depth) +
-				   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, shadow_pixel_size.y), depth) +
-				   SAMPLE_SHADOW_TEXEL(shadow, pos + shadow_pixel_size, depth) +
+				   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(pixel_size.x, 0.0), depth) +
+				   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, pixel_size.y), depth) +
+				   SAMPLE_SHADOW_TEXEL(shadow, pos + pixel_size, depth) +
 				   mix(
-						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, 0.0), depth),
-						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, 0.0), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-pixel_size.x, 0.0), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * pixel_size.x, 0.0), depth),
 						   f.x) +
 				   mix(
-						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, shadow_pixel_size.y), depth),
-						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, shadow_pixel_size.y), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-pixel_size.x, pixel_size.y), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * pixel_size.x, pixel_size.y), depth),
 						   f.x) +
 				   mix(
-						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, -shadow_pixel_size.y), depth),
-						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, 2.0 * shadow_pixel_size.y), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, -pixel_size.y), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, 2.0 * pixel_size.y), depth),
 						   f.y) +
 				   mix(
-						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, -shadow_pixel_size.y), depth),
-						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, 2.0 * shadow_pixel_size.y), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(pixel_size.x, -pixel_size.y), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(pixel_size.x, 2.0 * pixel_size.y), depth),
 						   f.y) +
 				   mix(
-						   mix(SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, -shadow_pixel_size.y), depth),
-								   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, -shadow_pixel_size.y), depth),
+						   mix(SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-pixel_size.x, -pixel_size.y), depth),
+								   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * pixel_size.x, -pixel_size.y), depth),
 								   f.x),
-						   mix(SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, 2.0 * shadow_pixel_size.y), depth),
-								   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, 2.0 * shadow_pixel_size.y), depth),
+						   mix(SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-pixel_size.x, 2.0 * pixel_size.y), depth),
+								   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * pixel_size.x, 2.0 * pixel_size.y), depth),
 								   f.x),
 						   f.y)) *
 			(1.0 / 9.0);
@@ -1549,15 +1551,17 @@ float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 
 #ifdef SHADOW_MODE_PCF_5
 
+	vec2 pixel_size = shadow_pixel_size * shadow_pixel_size_factor;
+
 	spos.xyz /= spos.w;
 	vec2 pos = spos.xy;
 	float depth = spos.z;
 
 	float avg = SAMPLE_SHADOW_TEXEL(shadow, pos, depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, 0.0), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, 0.0), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, shadow_pixel_size.y), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, -shadow_pixel_size.y), depth);
+	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(pixel_size.x, 0.0), depth);
+	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-pixel_size.x, 0.0), depth);
+	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, pixel_size.y), depth);
+	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, -pixel_size.y), depth);
 	return avg * (1.0 / 5.0);
 
 #endif
@@ -1924,7 +1928,7 @@ FRAGMENT_SHADER_CODE
 		splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
 		splane.w = 1.0;
 
-		float shadow = sample_shadow(light_shadow_atlas, splane);
+		float shadow = sample_shadow(light_shadow_atlas, 1.0, splane);
 
 		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
 	}
@@ -1951,10 +1955,11 @@ FRAGMENT_SHADER_CODE
 
 #ifdef LIGHT_USE_PSSM4
 	//take advantage of prefetch
-	float shadow1 = sample_shadow(light_directional_shadow, shadow_coord);
-	float shadow2 = sample_shadow(light_directional_shadow, shadow_coord2);
-	float shadow3 = sample_shadow(light_directional_shadow, shadow_coord3);
-	float shadow4 = sample_shadow(light_directional_shadow, shadow_coord4);
+	float shadow1 = sample_shadow(light_directional_shadow, 1.0, shadow_coord);
+	// Use lower blur for distant shadow splits to reduce visual discrepancy between splits.
+	float shadow2 = sample_shadow(light_directional_shadow, light_split_offsets.x / light_split_offsets.y, shadow_coord2);
+	float shadow3 = sample_shadow(light_directional_shadow, light_split_offsets.x / light_split_offsets.z, shadow_coord3);
+	float shadow4 = sample_shadow(light_directional_shadow, light_split_offsets.x / light_split_offsets.w, shadow_coord4);
 
 	if (depth_z < light_split_offsets.w) {
 		float pssm_fade = 0.0;
@@ -2013,8 +2018,9 @@ FRAGMENT_SHADER_CODE
 #ifdef LIGHT_USE_PSSM2
 
 	//take advantage of prefetch
-	float shadow1 = sample_shadow(light_directional_shadow, shadow_coord);
-	float shadow2 = sample_shadow(light_directional_shadow, shadow_coord2);
+	float shadow1 = sample_shadow(light_directional_shadow, 1.0, shadow_coord);
+	// Use lower blur for distant shadow splits to reduce visual discrepancy between splits.
+	float shadow2 = sample_shadow(light_directional_shadow, light_split_offsets.x / light_split_offsets.y, shadow_coord2);
 
 	if (depth_z < light_split_offsets.y) {
 		float shadow_att = 1.0;
@@ -2052,7 +2058,7 @@ FRAGMENT_SHADER_CODE
 
 #if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
 
-	light_att *= mix(shadow_color.rgb, vec3(1.0), sample_shadow(light_directional_shadow, shadow_coord));
+	light_att *= mix(shadow_color.rgb, vec3(1.0), sample_shadow(light_directional_shadow, 1.0, shadow_coord));
 #endif //orthogonal
 
 #else //fragment version of pssm
@@ -2068,11 +2074,15 @@ FRAGMENT_SHADER_CODE
 
 			highp vec4 pssm_coord;
 			float pssm_fade = 0.0;
+			// Use lower blur for distant shadow splits to reduce visual discrepancy between splits.
+			float blur_factor = 1.0;
 
 #ifdef LIGHT_USE_PSSM_BLEND
 			float pssm_blend;
 			highp vec4 pssm_coord2;
 			bool use_blend = true;
+			// Use lower blur for distant shadow splits to reduce visual discrepancy between splits.
+			float blur_factor2 = 1.0;
 #endif
 
 #ifdef LIGHT_USE_PSSM4
@@ -2083,30 +2093,34 @@ FRAGMENT_SHADER_CODE
 
 #ifdef LIGHT_USE_PSSM_BLEND
 					pssm_coord2 = shadow_coord2;
-
 					pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
+					blur_factor2 = light_split_offsets.x / light_split_offsets.y;
 #endif
 				} else {
 					pssm_coord = shadow_coord2;
+					blur_factor = light_split_offsets.x / light_split_offsets.y;
 
 #ifdef LIGHT_USE_PSSM_BLEND
 					pssm_coord2 = shadow_coord3;
-
 					pssm_blend = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
+					blur_factor2 = light_split_offsets.x / light_split_offsets.z;
 #endif
 				}
 			} else {
 				if (depth_z < light_split_offsets.z) {
 					pssm_coord = shadow_coord3;
+					blur_factor = light_split_offsets.x / light_split_offsets.z;
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 					pssm_coord2 = shadow_coord4;
 					pssm_blend = smoothstep(light_split_offsets.y, light_split_offsets.z, depth_z);
+					blur_factor2 = light_split_offsets.x / light_split_offsets.w;
 #endif
 
 				} else {
 					pssm_coord = shadow_coord4;
 					pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
+					blur_factor = light_split_offsets.x / light_split_offsets.w;
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 					use_blend = false;
@@ -2123,10 +2137,12 @@ FRAGMENT_SHADER_CODE
 #ifdef LIGHT_USE_PSSM_BLEND
 				pssm_coord2 = shadow_coord2;
 				pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
+				blur_factor2 = light_split_offsets.x / light_split_offsets.y;
 #endif
 			} else {
 				pssm_coord = shadow_coord2;
 				pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
+				blur_factor = light_split_offsets.x / light_split_offsets.y;
 #ifdef LIGHT_USE_PSSM_BLEND
 				use_blend = false;
 #endif
@@ -2140,11 +2156,11 @@ FRAGMENT_SHADER_CODE
 			}
 #endif
 
-			float shadow = sample_shadow(light_directional_shadow, pssm_coord);
+			float shadow = sample_shadow(light_directional_shadow, blur_factor, pssm_coord);
 
 #ifdef LIGHT_USE_PSSM_BLEND
 			if (use_blend) {
-				shadow = mix(shadow, sample_shadow(light_directional_shadow, pssm_coord2), pssm_blend);
+				shadow = mix(shadow, sample_shadow(light_directional_shadow, blur_factor2, pssm_coord2), pssm_blend);
 			}
 #endif
 
@@ -2204,7 +2220,7 @@ FRAGMENT_SHADER_CODE
 	{
 		highp vec4 splane = shadow_coord;
 
-		float shadow = sample_shadow(light_shadow_atlas, splane);
+		float shadow = sample_shadow(light_shadow_atlas, 1.0, splane);
 		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
 	}
 #endif
