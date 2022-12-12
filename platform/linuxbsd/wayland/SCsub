@@ -108,6 +108,7 @@ source_files = [
     "dynwrappers/wayland-client-core.c",
     "dynwrappers/wayland-egl-core.c",
     "dynwrappers/xkbcommon.c",
+    "dynwrappers/libdecor-so_wrap.c",
     "protocol/wayland.gen.c",
     "protocol/xdg_shell.gen.c",
     "protocol/xdg_decoration.gen.c",

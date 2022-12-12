@@ -50,6 +50,7 @@ def get_opts():
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
         BoolVariable("wayland", "Enable Wayland display", True),
+        BoolVariable("libdecor", "Enable libdecor support", True),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
@@ -195,9 +196,17 @@ def configure(env: "Environment"):
         env.ParseConfig("pkg-config xi --cflags")
 
     if env["wayland"]:
-        env.ParseConfig("pkg-config wayland-client --cflags")  # Only cflags, we dlopen the library.
-        env.ParseConfig("pkg-config wayland-cursor --cflags")  # Only cflags, we dlopen the library.
-        env.ParseConfig("pkg-config xkbcommon --cflags")  # Only cflags, we dlopen the library.
+        # Only cflags, we dlopen the libraries.
+        env.ParseConfig("pkg-config wayland-client --cflags")
+        env.ParseConfig("pkg-config wayland-cursor --cflags")
+        env.ParseConfig("pkg-config xkbcommon --cflags")
+
+        if os.system("pkg-config --exists libdecor-0") == 0:  # 0 means found
+            env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
+            env.ParseConfig("pkg-config libdecor-0 --cflags")  # Only cflags, we dlopen the library.
+        else:
+            env["libdecor"] = False
+            print("Warning: libdecor development libraries not found. Disabling client-side decorations.")
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])

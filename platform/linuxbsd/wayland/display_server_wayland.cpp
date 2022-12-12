@@ -173,6 +173,77 @@ String DisplayServerWayland::_wp_primary_selection_offer_read(zwp_primary_select
 	return "";
 }
 
+#ifdef LIBDECOR_ENABLED
+void DisplayServerWayland::libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message) {
+	ERR_PRINT(vformat("libdecor error %d: %s", error, message));
+}
+
+// NOTE: This is pretty much a reimplementation of _xdg_surface_on_configure.
+// Libdecor really likes wrapping everything, forcing us to do stuff like this.
+void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
+	WindowData *wd = (WindowData *)user_data;
+	ERR_FAIL_NULL(wd);
+
+	WaylandState *wls = wd->wls;
+	ERR_FAIL_NULL(wls);
+
+	int width = 0;
+	int height = 0;
+
+	if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
+		// The configuration doesn't have a size. We'll use the one already set in the window.
+		width = wd->rect.size.width;
+		height = wd->rect.size.height;
+	} else {
+		// The configuration has a size, let's update the window rect.
+		wd->rect.size.width = width;
+		wd->rect.size.height = height;
+	}
+
+	Ref<WaylandWindowRectMessage> winrect_msg;
+	winrect_msg.instantiate();
+
+	winrect_msg->rect = wd->rect;
+
+	wls->message_queue.push_back(winrect_msg);
+
+	struct libdecor_state *state = libdecor_state_new(width, height);
+	libdecor_frame_commit(frame, state, configuration);
+	libdecor_state_free(state);
+
+	DEBUG_LOG_WAYLAND("libdecor frame on configure");
+}
+
+void DisplayServerWayland::libdecor_frame_on_close(struct libdecor_frame *frame, void *user_data) {
+	WindowData *wd = (WindowData *)user_data;
+	ERR_FAIL_NULL(wd);
+
+	WaylandState *wls = wd->wls;
+	ERR_FAIL_NULL(wls);
+
+	Ref<WaylandWindowEventMessage> winevent_msg;
+	winevent_msg.instantiate();
+
+	winevent_msg->event = WINDOW_EVENT_CLOSE_REQUEST;
+
+	wls->message_queue.push_back(winevent_msg);
+
+	DEBUG_LOG_WAYLAND("libdecor frame on close");
+}
+
+void DisplayServerWayland::libdecor_frame_on_commit(struct libdecor_frame *frame, void *user_data) {
+	WindowData *wd = (WindowData *)user_data;
+	ERR_FAIL_NULL(wd);
+
+	wl_surface_commit(wd->wl_surface);
+
+	DEBUG_LOG_WAYLAND("libdecor frame on commit");
+}
+
+void DisplayServerWayland::libdecor_frame_on_dismiss_popup(struct libdecor_frame *frame, const char *seat_name, void *user_data) {
+}
+#endif // LIBDECOR_ENABLED
+
 void DisplayServerWayland::_seat_state_set_current(SeatState &p_ss) {
 	WaylandState *wls = p_ss.wls;
 	ERR_FAIL_NULL(wls);
@@ -376,7 +447,7 @@ bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<
 // Method which forces the modesetting logic without any fancy no-op case
 // useful in internal Wayland window handling.
 void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_mode) {
-	if (!p_wd.wl_surface || !p_wd.xdg_toplevel) {
+	if (!p_wd.wl_surface || !p_wd.xdg_toplevel || !p_wd.libdecor_frame) {
 		// Don't waste time with hidden windows and whatnot. Behave like it worked.
 		p_wd.mode = p_mode;
 		return;
@@ -398,13 +469,29 @@ void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_
 		case WINDOW_MODE_MAXIMIZED: {
 			// Try to unmaximize. This isn't garaunteed to work actually, so we'll have
 			// to check whether something changed.
-			xdg_toplevel_unset_maximized(p_wd.xdg_toplevel);
+			if (p_wd.xdg_toplevel) {
+				xdg_toplevel_unset_maximized(p_wd.xdg_toplevel);
+			}
+
+#ifdef LIBDECOR_ENABLED
+			if (p_wd.libdecor_frame) {
+				libdecor_frame_unset_maximized(p_wd.libdecor_frame);
+			}
+#endif
 		} break;
 
 		case WINDOW_MODE_FULLSCREEN:
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN: {
 			// Same thing as above, unset fullscreen and check later if it worked.
-			xdg_toplevel_unset_fullscreen(p_wd.xdg_toplevel);
+			if (p_wd.xdg_toplevel) {
+				xdg_toplevel_unset_fullscreen(p_wd.xdg_toplevel);
+			}
+
+#ifdef LIBDECOR_ENABLED
+			if (p_wd.libdecor_frame) {
+				libdecor_frame_unset_fullscreen(p_wd.libdecor_frame);
+			}
+#endif
 		} break;
 	}
 
@@ -424,13 +511,25 @@ void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_
 		} break;
 
 		case WINDOW_MODE_MINIMIZED: {
-			if (!p_wd.can_minimize) {
-				// We can't minimize, ignore.
-				break;
+			if (p_wd.xdg_toplevel) {
+				if (!p_wd.can_minimize) {
+					// We can't minimize, ignore.
+					break;
+				}
+
+				xdg_toplevel_set_minimized(p_wd.xdg_toplevel);
 			}
 
-			xdg_toplevel_set_minimized(p_wd.xdg_toplevel);
+#ifdef LIBDECOR_ENABLED
+			if (p_wd.libdecor_frame) {
+				if (!libdecor_frame_has_capability(p_wd.libdecor_frame, LIBDECOR_ACTION_MINIMIZE)) {
+					// We can't minimize, ignore.
+					break;
+				}
 
+				libdecor_frame_set_minimized(p_wd.libdecor_frame);
+			}
+#endif
 			// We have no way to actually detect this state, so we'll have to report it
 			// manually to the engine (hoping that it worked). In the worst case it'll
 			// get reset by the next configure event.
@@ -438,22 +537,45 @@ void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_
 		} break;
 
 		case WINDOW_MODE_MAXIMIZED: {
-			if (!p_wd.can_maximize) {
-				// We can't maximize, ignore.
-				break;
+			if (p_wd.xdg_toplevel) {
+				if (!p_wd.can_maximize) {
+					// We can't maximize, ignore.
+					break;
+				}
+
+				xdg_toplevel_set_maximized(p_wd.xdg_toplevel);
 			}
 
-			xdg_toplevel_set_maximized(p_wd.xdg_toplevel);
+#ifdef LIBDECOR_ENABLED
+			if (p_wd.libdecor_frame) {
+				// NOTE: libdecor doesn't seem to have a maximize capability query?
+				// The fact that there's a fullscreen one makes me suspicious.
+				libdecor_frame_set_maximized(p_wd.libdecor_frame);
+			}
+#endif
 		} break;
 
 		case WINDOW_MODE_FULLSCREEN:
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN: {
-			if (!p_wd.can_fullscreen) {
-				// We can't set fullscreen, ignore.
-				break;
+			if (p_wd.xdg_toplevel) {
+				if (!p_wd.can_fullscreen) {
+					// We can't fullscreen, ignore.
+					break;
+				}
+
+				xdg_toplevel_set_fullscreen(p_wd.xdg_toplevel, nullptr);
 			}
 
-			xdg_toplevel_set_fullscreen(p_wd.xdg_toplevel, nullptr);
+#ifdef LIBDECOR_ENABLED
+			if (p_wd.libdecor_frame) {
+				if (!libdecor_frame_has_capability(p_wd.libdecor_frame, LIBDECOR_ACTION_FULLSCREEN)) {
+					// We can't fullscreen, ignore.
+					break;
+				}
+
+				libdecor_frame_set_fullscreen(p_wd.libdecor_frame, nullptr);
+			}
+#endif
 		} break;
 
 		default: {
@@ -2186,28 +2308,43 @@ void DisplayServerWayland::_show_window() {
 		wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
 		wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
 
-		wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
-		xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
-
-		wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
-
-		if (!window_get_flag(WINDOW_FLAG_BORDERLESS) && wls.globals.xdg_decoration_manager) {
-			wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
-			zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
-
-			zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-		}
-
-		xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
-
-		if (wd.title.utf8().ptr()) {
-			xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
-		}
-
 		wl_surface_commit(wd.wl_surface);
 
-		// Wait for the surface to be configured before continuing.
-		wl_display_roundtrip(wls.wl_display);
+		bool decorated = false;
+
+#ifdef LIBDECOR_ENABLED
+		if (!decorated && wls.libdecor_context) {
+			wd.libdecor_frame = libdecor_decorate(wls.libdecor_context, wd.wl_surface, (struct libdecor_frame_interface *)&libdecor_frame_interface, &wd);
+			libdecor_frame_map(wd.libdecor_frame);
+
+			decorated = true;
+		}
+#endif
+
+		if (!decorated) {
+			// libdecor is failed or disabled, we shall handle xdg_toplevel creation and
+			// decoration ourselves.
+			wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
+			xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
+
+			wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
+			xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
+
+			if (wd.title.utf8().ptr()) {
+				xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
+			}
+
+			if (!window_get_flag(WINDOW_FLAG_BORDERLESS) && wls.globals.xdg_decoration_manager) {
+				wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
+				zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
+
+				zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+
+				decorated = true;
+			}
+		}
+
+		wd.visible = true;
 
 #ifdef VULKAN_ENABLED
 		// Since `VulkanContextWayland::window_create` automatically assigns a buffer
@@ -2227,12 +2364,21 @@ void DisplayServerWayland::_show_window() {
 			window_set_vsync_mode(wd.vsync_mode, MAIN_WINDOW_ID);
 		}
 #endif
-		wd.visible = true;
+
+		// Wait for the surface to be configured before continuing.
+		wl_display_roundtrip(wls.wl_display);
 
 		if (wd.xdg_toplevel) {
 			// Actually try to apply any mode the window has now that it's visible.
 			_window_data_set_mode(wd, wd.mode);
 		}
+
+#ifdef LIBDECOR_ENABLED
+		if (wd.libdecor_frame) {
+			libdecor_frame_set_visibility(wd.libdecor_frame, !window_get_flag(WINDOW_FLAG_BORDERLESS));
+			libdecor_frame_set_title(wd.libdecor_frame, wd.title.utf8().ptr());
+		}
+#endif // LIBDECOR_ENABLED
 	}
 }
 
@@ -2259,6 +2405,12 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 	if (wd.xdg_toplevel) {
 		xdg_toplevel_set_title(wd.xdg_toplevel, p_title.utf8().get_data());
 	}
+
+#ifdef LIBDECOR_ENABLED
+	if (wd.libdecor_frame) {
+		libdecor_frame_set_title(wd.libdecor_frame, p_title.utf8().get_data());
+	}
+#endif //LIBDECOR_ENABLED
 }
 
 void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window) {
@@ -2341,8 +2493,15 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 
 	wd.max_size = p_size;
 
-	if (wd.wl_surface && wd.xdg_toplevel) {
-		xdg_toplevel_set_max_size(wd.xdg_toplevel, p_size.width, p_size.height);
+	if (wd.wl_surface) {
+		if (wd.xdg_toplevel) {
+			xdg_toplevel_set_max_size(wd.xdg_toplevel, p_size.width, p_size.height);
+		}
+
+		if (wd.libdecor_frame) {
+			libdecor_frame_set_max_content_size(wd.libdecor_frame, p_size.width, p_size.height);
+		}
+
 		wl_surface_commit(wd.wl_surface);
 	}
 }
@@ -2406,6 +2565,15 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 		xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, wd.rect.size.width, wd.rect.size.height);
 	}
 
+#ifdef LIBDECOR_ENABLED
+	if (wd.libdecor_frame) {
+		struct libdecor_state *state = libdecor_state_new(wd.rect.size.width, wd.rect.size.height);
+		// I'm not sure whether we can just pass null here.
+		libdecor_frame_commit(wd.libdecor_frame, state, nullptr);
+		libdecor_state_free(state);
+	}
+#endif
+
 #ifdef VULKAN_ENABLED
 	if (wd.visible && context_vulkan) {
 		context_vulkan->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
@@ -2467,11 +2635,19 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 		case WINDOW_FLAG_BORDERLESS: {
 			if (wls.globals.xdg_decoration_manager && wd.xdg_toplevel_decoration) {
 				if (p_enabled) {
+					// We implement borderless windows by simply asking the compositor to let
+					// us handle decorations (we don't).
 					zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
 				} else {
 					zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
 				}
 			}
+
+#ifdef LIBDECOR_ENABLED
+			if (wd.libdecor_frame) {
+				libdecor_frame_set_visibility(wd.libdecor_frame, !p_enabled);
+			}
+#endif
 		} break;
 
 		default: {
@@ -2975,7 +3151,6 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	// Wait for globals to get notified from the compositor.
 	wl_display_roundtrip(wls.wl_display);
 
-	// TODO: Perhaps gracefully handle missing protocols when possible?
 	ERR_FAIL_COND_MSG(!wls.globals.wl_shm, "Can't obtain the Wayland shared memory global.");
 	ERR_FAIL_COND_MSG(!wls.globals.wl_compositor, "Can't obtain the Wayland compositor global.");
 	ERR_FAIL_COND_MSG(!wls.globals.wl_subcompositor, "Can't obtain the Wayland subcompositor global.");
@@ -2984,7 +3159,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	ERR_FAIL_COND_MSG(!wls.globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
 
 	if (!wls.globals.xdg_decoration_manager) {
-		WARN_PRINT("Can't obtain the XDG decoration manager. Probably this compositor handles only CSDs, which aren't supported yet!");
+#ifdef LIBDECOR_ENABLED
+		WARN_PRINT("Can't obtain the XDG decoration manager. Libdecor will be used for drawing CSDs, if available.");
+#else
+		WARN_PRINT("Can't obtain the XDG decoration manager. Decorations won't show up.");
+#endif
 	}
 
 	if (!wls.globals.xdg_activation) {
@@ -2996,6 +3175,14 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		WARN_PRINT("Can't obtain the idle inhibition manager. The screen might turn off even after calling screen_set_keep_on()!");
 	}
 #endif
+
+#ifdef LIBDECOR_ENABLED
+	if (initialize_libdecor(dylibloader_verbose) == 0) {
+		wls.libdecor_context = libdecor_new(wls.wl_display, (struct libdecor_interface *)&libdecor_interface);
+	} else {
+		print_verbose("libdecor not found. Client-side decorations disabled.");
+	}
+#endif // LIBDECOR_ENABLED
 
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);

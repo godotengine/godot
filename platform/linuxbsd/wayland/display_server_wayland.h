@@ -45,6 +45,10 @@
 #include "dynwrappers/wayland-egl-core.h"
 #include "dynwrappers/xkbcommon.h"
 
+#ifdef LIBDECOR_ENABLED
+#include "dynwrappers/libdecor-so_wrap.h"
+#endif // LIBDECOR_ENABLED
+
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"
 
@@ -181,6 +185,13 @@ class DisplayServerWayland : public DisplayServer {
 		struct xdg_toplevel *xdg_toplevel = nullptr;
 
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
+
+#ifdef LIBDECOR_ENABLED
+		// If this is null the xdg_* variables must be set and viceversa. This way we
+		// can handle this mess gracely enough to hopefully being able of getting rid
+		// of this cleanly once we have our own CSDs.
+		struct libdecor_frame *libdecor_frame = nullptr;
+#endif
 
 #ifdef GLES3_ENABLED
 		struct wl_egl_window *wl_egl_window = nullptr;
@@ -381,6 +392,10 @@ class DisplayServerWayland : public DisplayServer {
 		List<Ref<WaylandMessage>> message_queue;
 
 		struct zwp_idle_inhibitor_v1 *wp_idle_inhibitor = nullptr;
+
+#ifdef LIBDECOR_ENABLED
+		struct libdecor *libdecor_context = nullptr;
+#endif // LIBDECOR_ENABLED
 	};
 
 	WaylandState wls;
@@ -624,6 +639,51 @@ class DisplayServerWayland : public DisplayServer {
 		.send = _wp_primary_selection_source_on_send,
 		.cancelled = _wp_primary_selection_source_on_cancelled,
 	};
+
+#ifdef LIBDECOR_ENABLED
+	// libdecor event handlers.
+	static void libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message);
+
+	static void libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data);
+
+	static void libdecor_frame_on_close(struct libdecor_frame *frame, void *user_data);
+
+	static void libdecor_frame_on_commit(struct libdecor_frame *frame, void *user_data);
+
+	static void libdecor_frame_on_dismiss_popup(struct libdecor_frame *frame, const char *seat_name, void *user_data);
+
+	// libdecor event listeners.
+	static constexpr struct libdecor_interface libdecor_interface = {
+		.error = libdecor_on_error,
+		.reserved0 = nullptr,
+		.reserved1 = nullptr,
+		.reserved2 = nullptr,
+		.reserved3 = nullptr,
+		.reserved4 = nullptr,
+		.reserved5 = nullptr,
+		.reserved6 = nullptr,
+		.reserved7 = nullptr,
+		.reserved8 = nullptr,
+		.reserved9 = nullptr,
+	};
+
+	static constexpr struct libdecor_frame_interface libdecor_frame_interface = {
+		.configure = libdecor_frame_on_configure,
+		.close = libdecor_frame_on_close,
+		.commit = libdecor_frame_on_commit,
+		.dismiss_popup = libdecor_frame_on_dismiss_popup,
+		.reserved0 = nullptr,
+		.reserved1 = nullptr,
+		.reserved2 = nullptr,
+		.reserved3 = nullptr,
+		.reserved4 = nullptr,
+		.reserved5 = nullptr,
+		.reserved6 = nullptr,
+		.reserved7 = nullptr,
+		.reserved8 = nullptr,
+		.reserved9 = nullptr,
+	};
+#endif // LIBDECOR_ENABLED
 
 public:
 	virtual bool has_feature(Feature p_feature) const override;
