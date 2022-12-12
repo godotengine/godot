@@ -220,7 +220,7 @@
 			<description>
 				If the string is a valid file path, returns the base directory name.
 				[codeblock]
-				var dir_path = "/path/to/file.txt".get_basename() # dir_path is "/path/to"
+				var dir_path = "/path/to/file.txt".get_base_dir() # dir_path is "/path/to"
 				[/codeblock]
 			</description>
 		</method>
