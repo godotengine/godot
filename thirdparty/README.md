@@ -377,11 +377,11 @@ Collection of single-file libraries used in Godot components.
   * Modifications: use `const char*` instead of `char*` for input string
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.01 (af1a5bc352164740c1cc1354942b1c6b72eacb8a, 2021)
+  * Version: 1.01 (1ee679ca2ef753a528db5ba6801e1067b40481b8, 2021)
   * License: Public Domain or Unlicense or MIT
 - `stb_vorbis.c`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.20 (314d0a6f9af5af27e585336eecea333e95c5a2d8, 2020)
+  * Version: 1.22 (1ee679ca2ef753a528db5ba6801e1067b40481b8, 2021)
   * License: Public Domain or Unlicense or MIT
 - `triangulator.{cpp,h}`
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
