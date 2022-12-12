@@ -2367,6 +2367,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"preload",
 		"signal",
 		"super",
+		"yield",
 		// var
 		"const",
 		"enum",
@@ -2387,8 +2388,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		// We highlight them as keywords to make errors easier to understand.
 		"trait",
 		"namespace",
-		"yield",
-		nullptr
+		"nullptr"
 	};
 
 	const char **w = _reserved_words;
