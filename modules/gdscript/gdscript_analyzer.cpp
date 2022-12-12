@@ -1595,7 +1595,7 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 	}
 
 	if (p_constant->datatype_specifier != nullptr) {
-		if (!is_type_compatible(explicit_type, type)) {
+		if (!is_type_compatible(explicit_type, type, true)) {
 			push_error(vformat(R"(Assigned value for constant "%s" has type %s which is not compatible with defined type %s.)", p_constant->identifier->name, type.to_string(), explicit_type.to_string()), p_constant->initializer);
 #ifdef DEBUG_ENABLED
 		} else if (explicit_type.builtin_type == Variant::INT && type.builtin_type == Variant::FLOAT) {
@@ -4187,8 +4187,6 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 
 	if (p_target.kind == GDScriptParser::DataType::BUILTIN) {
 		bool valid = p_source.kind == GDScriptParser::DataType::BUILTIN && p_target.builtin_type == p_source.builtin_type;
-		valid |= p_source.builtin_type == Variant::STRING && p_target.builtin_type == Variant::STRING_NAME;
-		valid |= p_source.builtin_type == Variant::STRING_NAME && p_target.builtin_type == Variant::STRING;
 		if (!valid && p_allow_implicit_conversion) {
 			valid = Variant::can_convert_strict(p_source.builtin_type, p_target.builtin_type);
 		}
@@ -4204,7 +4202,7 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 					// Variant array can't be appended to typed array.
 					valid = false;
 				} else {
-					valid = is_type_compatible(p_target.get_container_element_type(), p_source.get_container_element_type(), false);
+					valid = is_type_compatible(p_target.get_container_element_type(), p_source.get_container_element_type(), p_allow_implicit_conversion);
 				}
 			}
 		}
