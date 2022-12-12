@@ -81,6 +81,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	Tree *animations = nullptr;
 	SpinBox *anim_speed = nullptr;
 	CheckButton *anim_loop = nullptr;
+	SpinBox *anim_loop_begin = nullptr;
+	SpinBox *anim_loop_end = nullptr;
 
 	EditorFileDialog *file = nullptr;
 
@@ -143,6 +145,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
 	void _animation_loop_changed();
+	void _animation_loop_begin_changed(int p_value);
+	void _animation_loop_end_changed(int p_value);
 	void _animation_fps_changed(double p_value);
 
 	void _tree_input(const Ref<InputEvent> &p_event);

@@ -39,6 +39,7 @@ class AnimatedSprite2D : public Node2D {
 
 	Ref<SpriteFrames> frames;
 	bool playing = false;
+	bool loop_animation = false;
 	bool playing_backwards = false;
 	bool backwards = false;
 	StringName animation = "default";
@@ -87,6 +88,8 @@ public:
 
 	void set_playing(bool p_playing);
 	bool is_playing() const;
+	void set_loop_animation(bool p_looping);
+	bool is_looping_animation() const;
 
 	void set_animation(const StringName &p_animation);
 	StringName get_animation() const;

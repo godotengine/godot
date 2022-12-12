@@ -36,9 +36,15 @@
 class SpriteFrames : public Resource {
 	GDCLASS(SpriteFrames, Resource);
 
+	struct LoopRegion {
+		int begin = 0;
+		int end = -1; // (-1 = animation length)
+	};
+
 	struct Anim {
 		double speed = 5.0;
 		bool loop = true;
+		LoopRegion loop_region = {};
 		Vector<Ref<Texture2D>> frames;
 	};
 
@@ -46,6 +52,7 @@ class SpriteFrames : public Resource {
 
 	Array _get_animations() const;
 	void _set_animations(const Array &p_animations);
+	void _validate_loop_region(SpriteFrames::LoopRegion &r_loop_region);
 
 protected:
 	static void _bind_methods();
@@ -63,7 +70,13 @@ public:
 	double get_animation_speed(const StringName &p_anim) const;
 
 	void set_animation_loop(const StringName &p_anim, bool p_loop);
+	void set_animation_loop_region(const StringName &p_anim, int p_loop_begin, int p_loop_end);
+	void set_animation_loop_begin(const StringName &p_anim, int p_loop_begin);
+	void set_animation_loop_end(const StringName &p_anim, int p_loop_end);
 	bool get_animation_loop(const StringName &p_anim) const;
+	void _get_animation_loop_region(const StringName &p_anim, int &r_loop_begin, int &r_loop_end) const;
+	int get_animation_loop_begin(const StringName &p_anim) const;
+	int get_animation_loop_end(const StringName &p_anim) const;
 
 	void add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos = -1);
 	int get_frame_count(const StringName &p_anim) const;

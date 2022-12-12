@@ -97,6 +97,7 @@ public:
 	StringName animation_finished;
 	StringName animation_changed;
 	StringName animation_started;
+	StringName animation_looped;
 	StringName RESET;
 
 	StringName pose_updated;

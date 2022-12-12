@@ -196,6 +196,53 @@ TEST_CASE("[SpriteFrames] Animation Loop getter and setter") {
 	ERR_PRINT_ON;
 }
 
+TEST_CASE("[SpriteFrames] Animation Loop Region getter and setter") {
+	SpriteFrames frames;
+
+	frames.add_animation(test_animation_name);
+
+	frames.add_frame(test_animation_name, nullptr); // 0
+	frames.add_frame(test_animation_name, nullptr); // 1
+	frames.add_frame(test_animation_name, nullptr); // 2
+	frames.set_animation_loop_begin(test_animation_name, 1);
+
+	CHECK_MESSAGE(
+			frames.get_animation_loop_begin(test_animation_name) == 1,
+			"Sets loop region begin to frame 1");
+
+	frames.set_animation_loop_begin(test_animation_name, 10);
+
+	CHECK_MESSAGE(
+			frames.get_animation_loop_begin(test_animation_name) == 2,
+			"Prevent out of range loop begin.");
+	frames.set_animation_loop_begin(test_animation_name, 0); // Reset for next test
+
+	frames.set_animation_loop_end(test_animation_name, 1);
+
+	CHECK_MESSAGE(
+			frames.get_animation_loop_end(test_animation_name) == 1,
+			"Sets loop region end to frame 1");
+
+	frames.set_animation_loop_end(test_animation_name, 8);
+
+	CHECK_MESSAGE(
+			frames.get_animation_loop_end(test_animation_name) == 2,
+			"Prevent out of range loop end.");
+
+	frames.set_animation_loop_begin(test_animation_name, 2);
+	frames.set_animation_loop_end(test_animation_name, 1);
+
+	CHECK_MESSAGE(
+			frames.get_animation_loop_end(test_animation_name) == 2,
+			"Loop start and end cannot be inverted.");
+
+	// These error handling cases should not crash.
+	ERR_PRINT_OFF;
+	frames.get_animation_loop_begin("This does not exist");
+	frames.set_animation_loop_region("This does not exist", 0, 0);
+	ERR_PRINT_ON;
+}
+
 // TODO
 TEST_CASE("[SpriteFrames] Frame addition, removal, and retrieval") {
 	Ref<Texture2D> dummy_frame1;

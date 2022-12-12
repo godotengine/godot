@@ -917,6 +917,11 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 
 void AnimatedSprite3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (frames.is_valid()) {
+				set_loop_animation(frames->get_animation_loop(animation));
+			}
+		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (frames.is_null() || !frames->has_animation(animation)) {
 				return;
@@ -926,7 +931,26 @@ void AnimatedSprite3D::_notification(int p_what) {
 			if (speed == 0) {
 				return; // Do nothing.
 			}
-			int last_frame = frames->get_frame_count(animation) - 1;
+
+			int loop_region[2] = {};
+			if (loop_animation) {
+				// Uses `_get_animation_loop_region` instead of `get_loop_region_begin/end` to prevent multiple searches for the correct animation
+				frames->_get_animation_loop_region(animation, loop_region[0], loop_region[1]);
+				if (loop_region[1] == -1) {
+					loop_region[0] = MAX(loop_region[0], 0);
+					loop_region[1] = frames->get_frame_count(animation) - 1;
+				} else { // Validate region
+					if (loop_region[1] < loop_region[0]) {
+						loop_region[1] = frames->get_frame_count(animation) - 1;
+					}
+					if (loop_region[0] > loop_region[1]) {
+						loop_region[0] = loop_region[1] - 1;
+					}
+				}
+			} else {
+				loop_region[0] = 0; // First Frame
+				loop_region[1] = frames->get_frame_count(animation) - 1; // Last Frame
+			}
 
 			double remaining = get_process_delta_time();
 			while (remaining) {
@@ -935,12 +959,12 @@ void AnimatedSprite3D::_notification(int p_what) {
 
 					if (!playing_backwards) {
 						// Forward.
-						if (frame >= last_frame) {
-							if (frames->get_animation_loop(animation)) {
-								frame = 0;
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+						if (frame >= loop_region[1]) {
+							if (loop_animation) {
+								frame = loop_region[0];
+								emit_signal(SceneStringNames::get_singleton()->animation_looped);
 							} else {
-								frame = last_frame;
+								frame = loop_region[1];
 								if (!is_over) {
 									is_over = true;
 									emit_signal(SceneStringNames::get_singleton()->animation_finished);
@@ -951,12 +975,12 @@ void AnimatedSprite3D::_notification(int p_what) {
 						}
 					} else {
 						// Reversed.
-						if (frame <= 0) {
-							if (frames->get_animation_loop(animation)) {
-								frame = last_frame;
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+						if (frame <= loop_region[0]) {
+							if (loop_animation) {
+								frame = loop_region[1];
+								emit_signal(SceneStringNames::get_singleton()->animation_looped);
 							} else {
-								frame = 0;
+								frame = loop_region[0];
 								if (!is_over) {
 									is_over = true;
 									emit_signal(SceneStringNames::get_singleton()->animation_finished);
@@ -1104,6 +1128,39 @@ void AnimatedSprite3D::set_playing(bool p_playing) {
 bool AnimatedSprite3D::is_playing() const {
 	return playing;
 }
+void AnimatedSprite3D::set_loop_animation(bool p_loop_animation) {
+	if (!frames.is_valid()) {
+		return;
+	}
+	if (!playing) {
+		return;
+	}
+	loop_animation = p_loop_animation;
+}
+
+bool AnimatedSprite3D::is_looping_animation() const {
+	if (!frames.is_valid()) {
+		return false;
+	}
+	if (!playing) {
+		return false;
+	}
+	if (!loop_animation) {
+		return false;
+	}
+	if (!frames->has_animation(animation)) {
+		return false;
+	}
+	int loop_region[2] = {};
+	frames->_get_animation_loop_region(animation, loop_region[0], loop_region[1]);
+	if (loop_region[1] == -1) {
+		loop_region[1] = frames->get_frame_count(animation) - 1;
+	}
+	if (frame >= loop_region[0] && frame <= loop_region[1]) {
+		return true;
+	}
+	return false;
+}
 
 void AnimatedSprite3D::play(const StringName &p_animation, bool p_backwards) {
 	backwards = p_backwards;
@@ -1114,6 +1171,8 @@ void AnimatedSprite3D::play(const StringName &p_animation, bool p_backwards) {
 		if (frames.is_valid() && playing_backwards && get_frame() == 0) {
 			set_frame(frames->get_frame_count(p_animation) - 1);
 		}
+	} else if (frames.is_valid()) {
+		set_loop_animation(frames->get_animation_loop(p_animation));
 	}
 
 	is_over = false;
@@ -1153,6 +1212,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_animation) {
 	animation = p_animation;
 	_reset_timeout();
 	set_frame(0);
+	set_loop_animation(frames->get_animation_loop(animation));
 	notify_property_list_changed();
 	_queue_redraw();
 }
@@ -1190,6 +1250,8 @@ void AnimatedSprite3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite3D::set_playing);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite3D::is_playing);
+	ClassDB::bind_method(D_METHOD("set_loop_animation", "loop_animation"), &AnimatedSprite3D::set_loop_animation);
+	ClassDB::bind_method(D_METHOD("is_looping_animation"), &AnimatedSprite3D::is_looping_animation);
 
 	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite3D::play, DEFVAL(StringName()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite3D::stop);
@@ -1203,6 +1265,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite3D::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("animation_looped"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
@@ -1210,6 +1273,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop_animation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_INSTANCE_STATE), "set_loop_animation", "is_looping_animation");
 }
 
 AnimatedSprite3D::AnimatedSprite3D() {

@@ -49,6 +49,9 @@
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
 			The [SpriteFrames] resource containing the animation(s). Allows you the option to load, edit, clear, make unique and save the states of the [SpriteFrames] resource.
 		</member>
+		<member name="loop_animation" type="bool" setter="set_loop_animation" getter="is_looping_animation">
+			If [code]true[/code], the [member animation] will loop if [member frame] is in it's loop region. Setting this property to [code]false[/code] can be used to exit or prevent a loop.
+		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
 		</member>
@@ -63,6 +66,11 @@
 		<signal name="animation_finished">
 			<description>
 				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted every time the last frame is drawn.
+			</description>
+		</signal>
+		<signal name="animation_looped">
+			<description>
+				Emitted when each time the animation is looped.
 			</description>
 		</signal>
 		<signal name="frame_changed">

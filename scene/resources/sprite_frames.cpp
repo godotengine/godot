@@ -130,10 +130,64 @@ void SpriteFrames::set_animation_loop(const StringName &p_anim, bool p_loop) {
 	E->value.loop = p_loop;
 }
 
+void SpriteFrames::set_animation_loop_region(const StringName &p_anim, int p_loop_begin, int p_loop_end) {
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
+	E->value.loop_region.begin = CLAMP(p_loop_begin, 0, E->value.frames.size() - 1);
+	E->value.loop_region.end = CLAMP(p_loop_end, -1, E->value.frames.size() - 1);
+	_validate_loop_region(E->value.loop_region);
+}
+
+void SpriteFrames::set_animation_loop_begin(const StringName &p_anim, int p_loop_begin) {
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
+	E->value.loop_region.begin = CLAMP(p_loop_begin, 0, E->value.frames.size() - 1);
+	_validate_loop_region(E->value.loop_region);
+}
+
+void SpriteFrames::set_animation_loop_end(const StringName &p_anim, int p_loop_end) {
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
+	E->value.loop_region.end = CLAMP(p_loop_end, -1, E->value.frames.size() - 1);
+	_validate_loop_region(E->value.loop_region);
+}
+
+void SpriteFrames::_validate_loop_region(SpriteFrames::LoopRegion &r_loop_region) {
+	if (r_loop_region.end == -1) {
+		r_loop_region.begin = MAX(r_loop_region.begin, 0);
+		return;
+	}
+	if (r_loop_region.end < r_loop_region.begin && r_loop_region.end != -1) {
+		r_loop_region.end = r_loop_region.begin;
+	}
+	if (r_loop_region.begin > r_loop_region.end) {
+		r_loop_region.begin = r_loop_region.end;
+	}
+}
+
 bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
 	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
 	return E->value.loop;
+}
+
+void SpriteFrames::_get_animation_loop_region(const StringName &p_anim, int &r_loop_begin, int &r_loop_end) const {
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
+	r_loop_begin = E->value.loop_region.begin;
+	r_loop_end = E->value.loop_region.end;
+}
+
+int SpriteFrames::get_animation_loop_begin(const StringName &p_anim) const {
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
+	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
+	return E->value.loop_region.begin;
+}
+
+int SpriteFrames::get_animation_loop_end(const StringName &p_anim) const {
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
+	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
+	return E->value.loop_region.end;
 }
 
 Array SpriteFrames::_get_animations() const {
@@ -149,6 +203,8 @@ Array SpriteFrames::_get_animations() const {
 		d["name"] = anim_name;
 		d["speed"] = anim.speed;
 		d["loop"] = anim.loop;
+		d["loop_region_begin"] = anim.loop_region.begin;
+		d["loop_region_end"] = anim.loop_region.end;
 		Array frames;
 		for (int i = 0; i < anim.frames.size(); i++) {
 			frames.push_back(anim.frames[i]);
@@ -173,6 +229,10 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		Anim anim;
 		anim.speed = d["speed"];
 		anim.loop = d["loop"];
+		if (d.has("loop_region_begin")) {
+			ERR_CONTINUE(!d.has("loop_region_end"));
+			anim.loop_region = { d["loop_region_begin"], d["loop_region_end"] };
+		}
 		Array frames = d["frames"];
 		for (int j = 0; j < frames.size(); j++) {
 			Ref<Resource> res = frames[j];
@@ -196,6 +256,10 @@ void SpriteFrames::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_animation_loop", "anim", "loop"), &SpriteFrames::set_animation_loop);
 	ClassDB::bind_method(D_METHOD("get_animation_loop", "anim"), &SpriteFrames::get_animation_loop);
+	ClassDB::bind_method(D_METHOD("set_animation_loop_begin", "anim", "loop_begin"), &SpriteFrames::set_animation_loop_begin);
+	ClassDB::bind_method(D_METHOD("set_animation_loop_end", "anim", "loop_end"), &SpriteFrames::set_animation_loop_end);
+	ClassDB::bind_method(D_METHOD("get_animation_loop_begin", "anim"), &SpriteFrames::get_animation_loop_begin);
+	ClassDB::bind_method(D_METHOD("get_animation_loop_end", "anim"), &SpriteFrames::get_animation_loop_end);
 
 	ClassDB::bind_method(D_METHOD("add_frame", "anim", "frame", "at_position"), &SpriteFrames::add_frame, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_frame_count", "anim"), &SpriteFrames::get_frame_count);

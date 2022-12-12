@@ -685,6 +685,14 @@ void SpriteFramesEditor::_animation_select() {
 		if (!Math::is_equal_approx(value, (double)frames->get_animation_speed(edited_anim))) {
 			_animation_fps_changed(value);
 		}
+		int begin = anim_loop_begin->get_line_edit()->get_text().to_int();
+		if (begin == frames->get_animation_loop_begin(edited_anim)) {
+			_animation_loop_begin_changed(value);
+		}
+		int end = anim_loop_end->get_line_edit()->get_text().to_int();
+		if (end == frames->get_animation_loop_begin(edited_anim)) {
+			_animation_loop_end_changed(value);
+		}
 	}
 
 	TreeItem *selected = animations->get_selected();
@@ -853,6 +861,34 @@ void SpriteFramesEditor::_animation_loop_changed() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_animation_loop_begin_changed(int p_value) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	undo_redo->create_action(TTR("Change Animation Loop Begin"), UndoRedo::MERGE_ENDS);
+	undo_redo->add_do_method(frames, "set_animation_loop_begin", edited_anim, p_value);
+	undo_redo->add_undo_method(frames, "set_animation_loop_begin", edited_anim, frames->get_animation_loop_begin(edited_anim));
+	undo_redo->add_do_method(this, "_update_library", true);
+	undo_redo->add_undo_method(this, "_update_library", true);
+	undo_redo->commit_action();
+}
+
+void SpriteFramesEditor::_animation_loop_end_changed(int p_value) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	undo_redo->create_action(TTR("Change Animation Loop End"), UndoRedo::MERGE_ENDS);
+	undo_redo->add_do_method(frames, "set_animation_loop_end", edited_anim, p_value);
+	undo_redo->add_undo_method(frames, "set_animation_loop_end", edited_anim, frames->get_animation_loop_end(edited_anim));
+	undo_redo->add_do_method(this, "_update_library", true);
+	undo_redo->add_undo_method(this, "_update_library", true);
+	undo_redo->commit_action();
+}
+
 void SpriteFramesEditor::_animation_fps_changed(double p_value) {
 	if (updating) {
 		return;
@@ -964,6 +1000,8 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		sel = 0;
 	}
 
+	int loop_region[2] = {};
+	frames->_get_animation_loop_region(edited_anim, loop_region[0], loop_region[1]);
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 		String name;
 		Ref<Texture2D> frame = frames->get_frame(edited_anim, i);
@@ -994,10 +1032,39 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		if (sel == i) {
 			tree->select(tree->get_item_count() - 1);
 		}
+		if (frames->get_animation_loop(edited_anim)) {
+			int loop_end = loop_region[1];
+			if (loop_end == -1) {
+				loop_end = frames->get_frame_count(edited_anim) - 1;
+			}
+			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			accent.a *= 0.05;
+			if (i >= loop_region[0] && i <= loop_end) {
+				if (i == loop_region[0]) {
+					tree->set_item_tag_icon(-1, get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
+				}
+				tree->set_item_custom_bg_color(-1, accent);
+			}
+		}
 	}
 
 	anim_speed->set_value(frames->get_animation_speed(edited_anim));
 	anim_loop->set_pressed(frames->get_animation_loop(edited_anim));
+	if (!frames->get_animation_loop(edited_anim)) {
+		static_cast<CanvasItem *>(anim_loop_begin->get_parent())->hide();
+	} else {
+		static_cast<CanvasItem *>(anim_loop_begin->get_parent())->show();
+		anim_loop_begin->set_value(loop_region[0]);
+		if (loop_region[1] <= 0) {
+			anim_loop_end->set_suffix("(End)");
+			anim_loop_begin->set_max(frames->get_frame_count(edited_anim) - 1);
+		} else {
+			anim_loop_end->set_suffix("");
+			anim_loop_begin->set_max(loop_region[1]);
+		}
+		anim_loop_end->set_value(loop_region[1]);
+		anim_loop_end->set_max(frames->get_frame_count(edited_anim) - 1);
+	}
 
 	updating = false;
 }
@@ -1039,6 +1106,8 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 	delete_anim->set_disabled(read_only);
 	anim_speed->set_editable(!read_only);
 	anim_loop->set_disabled(read_only);
+	anim_loop_begin->set_editable(!read_only);
+	anim_loop_end->set_editable(!read_only);
 	load->set_disabled(read_only);
 	load_sheet->set_disabled(read_only);
 	copy->set_disabled(read_only);
@@ -1250,6 +1319,26 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_loop->set_text(TTR("Loop"));
 	vbc_animlist->add_child(anim_loop);
 	anim_loop->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
+
+	HBoxContainer *anim_loop_region_container = memnew(HBoxContainer);
+	anim_loop_region_container->add_child(memnew(Label(TTR("Loop Region:"))));
+	vbc_animlist->add_child(anim_loop_region_container);
+
+	anim_loop_begin = memnew(SpinBox);
+	anim_loop_begin->set_min(0); // Always 0
+	anim_loop_begin->set_step(1);
+	anim_loop_begin->set_h_size_flags(SIZE_EXPAND_FILL);
+	anim_loop_region_container->add_child(anim_loop_begin);
+	anim_loop_begin->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_animation_loop_begin_changed));
+
+	anim_loop_region_container->add_child(memnew(Label(TTR("to"))));
+
+	anim_loop_end = memnew(SpinBox);
+	anim_loop_end->set_min(-1);
+	anim_loop_end->set_step(1);
+	anim_loop_end->set_h_size_flags(SIZE_EXPAND_FILL);
+	anim_loop_region_container->add_child(anim_loop_end);
+	anim_loop_end->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_animation_loop_end_changed));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
