@@ -447,8 +447,12 @@ bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<
 // Method which forces the modesetting logic without any fancy no-op case
 // useful in internal Wayland window handling.
 void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_mode) {
+	// Don't waste time with hidden windows and whatnot. Behave like it worked.
+#ifdef LIBDECOR_ENABLED
 	if (!p_wd.wl_surface || !p_wd.xdg_toplevel || !p_wd.libdecor_frame) {
-		// Don't waste time with hidden windows and whatnot. Behave like it worked.
+#else
+	if (!p_wd.wl_surface || !p_wd.xdg_toplevel) {
+#endif // LIBDECOR_ENABLED
 		p_wd.mode = p_mode;
 		return;
 	}
@@ -2498,9 +2502,11 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 			xdg_toplevel_set_max_size(wd.xdg_toplevel, p_size.width, p_size.height);
 		}
 
+#ifdef LIBDECOR_ENABLED
 		if (wd.libdecor_frame) {
 			libdecor_frame_set_max_content_size(wd.libdecor_frame, p_size.width, p_size.height);
 		}
+#endif // LIBDECOR_ENABLED
 
 		wl_surface_commit(wd.wl_surface);
 	}

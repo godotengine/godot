@@ -108,7 +108,6 @@ source_files = [
     "dynwrappers/wayland-client-core.c",
     "dynwrappers/wayland-egl-core.c",
     "dynwrappers/xkbcommon.c",
-    "dynwrappers/libdecor-so_wrap.c",
     "protocol/wayland.gen.c",
     "protocol/xdg_shell.gen.c",
     "protocol/xdg_decoration.gen.c",
@@ -127,6 +126,9 @@ if env["vulkan"]:
 
 if env["opengl3"]:
     source_files.append("egl_manager_wayland.cpp")
+
+if env["libdecor"]:
+    source_files.append("dynwrappers/libdecor-so_wrap.c")
 
 objects = []
 
