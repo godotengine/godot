@@ -359,7 +359,7 @@
 		<method name="get_stack">
 			<return type="Array" />
 			<description>
-				Returns an array of dictionaries representing the current call stack.
+				Returns an array of dictionaries representing the current call stack. See also [method print_stack].
 				[codeblock]
 				func _ready():
 				    foo()
@@ -374,6 +374,7 @@
 				[codeblock]
 				[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]
 				[/codeblock]
+				[b]Note:[/b] [method get_stack] only works if the running instance is connected to a debugging server (i.e. an editor instance). [method get_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
 			</description>
 		</method>
 		<method name="hash">
@@ -727,11 +728,12 @@
 		<method name="print_stack">
 			<return type="void" />
 			<description>
-				Prints a stack track at code location, only works when running with debugger turned on.
+				Prints a stack trace at the current code location. See also [method get_stack].
 				Output in the console would look something like this:
 				[codeblock]
 				Frame 0 - res://test.gd:16 in function '_process'
 				[/codeblock]
+				[b]Note:[/b] [method print_stack] only works if the running instance is connected to a debugging server (i.e. an editor instance). [method print_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
 			</description>
 		</method>
 		<method name="printerr" qualifiers="vararg">

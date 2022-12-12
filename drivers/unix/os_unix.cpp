@@ -460,10 +460,6 @@ bool OS_Unix::set_environment(const String &p_var, const String &p_value) const 
 	return setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ true) == 0;
 }
 
-int OS_Unix::get_processor_count() const {
-	return sysconf(_SC_NPROCESSORS_CONF);
-}
-
 String OS_Unix::get_user_data_dir() const {
 	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
 	if (appname != "") {
