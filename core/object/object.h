@@ -187,10 +187,6 @@ struct PropertyInfo {
 		}
 	}
 
-	PropertyInfo(const StringName &p_class_name) :
-			type(Variant::OBJECT),
-			class_name(p_class_name) {}
-
 	explicit PropertyInfo(const GDNativePropertyInfo &pinfo) :
 			type((Variant::Type)pinfo.type),
 			name(*reinterpret_cast<StringName *>(pinfo.name)),
@@ -211,6 +207,15 @@ struct PropertyInfo {
 	bool operator<(const PropertyInfo &p_info) const {
 		return name < p_info.name;
 	}
+
+private:
+	template <class T, typename I>
+	friend struct GetTypeInfo;
+	// For privileged access only; private to prevent user code misusing it by
+	// calling it with just a string intended to be the the property name.
+	explicit PropertyInfo(const StringName &p_class_name) :
+			type(Variant::OBJECT),
+			class_name(p_class_name) {}
 };
 
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);

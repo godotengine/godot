@@ -86,7 +86,7 @@ void EditorDebuggerRemoteObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &EditorDebuggerRemoteObject::clear);
 	ClassDB::bind_method(D_METHOD("get_remote_object_id"), &EditorDebuggerRemoteObject::get_remote_object_id);
 
-	ADD_SIGNAL(MethodInfo("value_edited", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value")));
+	ADD_SIGNAL(MethodInfo("value_edited", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value")));
 }
 
 EditorDebuggerInspector::EditorDebuggerInspector() {
@@ -100,7 +100,7 @@ EditorDebuggerInspector::~EditorDebuggerInspector() {
 
 void EditorDebuggerInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("object_edited", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value")));
+	ADD_SIGNAL(MethodInfo("object_edited", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value")));
 	ADD_SIGNAL(MethodInfo("object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 }
 
