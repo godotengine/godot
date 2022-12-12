@@ -490,24 +490,29 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		} break;
 		case GDScriptParser::Node::CAST: {
 			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
-			GDScriptParser::DataType og_cast_type = cn->cast_type->get_datatype();
+			GDScriptParser::DataType og_cast_type = cn->get_datatype();
 			GDScriptDataType cast_type = _gdtype_from_datatype(og_cast_type, codegen.script);
 
-			if (og_cast_type.kind == GDScriptParser::DataType::ENUM) {
-				// Enum types are usually treated as dictionaries, but in this case we want to cast to an integer.
-				cast_type.kind = GDScriptDataType::BUILTIN;
-				cast_type.builtin_type = Variant::INT;
-			}
+			GDScriptCodeGenerator::Address result;
+			if (cast_type.has_type) {
+				if (og_cast_type.kind == GDScriptParser::DataType::ENUM) {
+					// Enum types are usually treated as dictionaries, but in this case we want to cast to an integer.
+					cast_type.kind = GDScriptDataType::BUILTIN;
+					cast_type.builtin_type = Variant::INT;
+				}
 
-			// Create temporary for result first since it will be deleted last.
-			GDScriptCodeGenerator::Address result = codegen.add_temporary(cast_type);
+				// Create temporary for result first since it will be deleted last.
+				result = codegen.add_temporary(cast_type);
 
-			GDScriptCodeGenerator::Address src = _parse_expression(codegen, r_error, cn->operand);
+				GDScriptCodeGenerator::Address src = _parse_expression(codegen, r_error, cn->operand);
 
-			gen->write_cast(result, src, cast_type);
+				gen->write_cast(result, src, cast_type);
 
-			if (src.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
+				if (src.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					gen->pop_temporary();
+				}
+			} else {
+				result = _parse_expression(codegen, r_error, cn->operand);
 			}
 
 			return result;
