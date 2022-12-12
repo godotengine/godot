@@ -588,10 +588,12 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 					material = default_clip_children_material;
 				}
 			} else {
-				if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_ONLY) {
-					material = default_clip_children_material;
-				} else {
-					material = default_canvas_group_material;
+				if (material.is_null()) {
+					if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_ONLY) {
+						material = default_clip_children_material;
+					} else {
+						material = default_canvas_group_material;
+					}
 				}
 			}
 		}

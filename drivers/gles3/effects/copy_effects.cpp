@@ -148,8 +148,8 @@ void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, con
 		dest_region.size.y = MAX(1, dest_region.size.y >> 1);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffers[i % 2]);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_source_texture, i);
-		glBlitFramebuffer(source_region.position.x, source_region.position.y, source_region.size.x, source_region.size.y,
-				dest_region.position.x, dest_region.position.y, dest_region.size.x, dest_region.size.y, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		glBlitFramebuffer(source_region.position.x, source_region.position.y, source_region.position.x + source_region.size.x, source_region.position.y + source_region.size.y,
+				dest_region.position.x, dest_region.position.y, dest_region.position.x + dest_region.size.x, dest_region.position.y + dest_region.size.y, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffers[i % 2]);
 		source_region = dest_region;
 	}

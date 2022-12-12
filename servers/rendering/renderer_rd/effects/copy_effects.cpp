@@ -628,7 +628,7 @@ void CopyEffects::copy_raster(RID p_source_texture, RID p_dest_framebuffer) {
 	RD::get_singleton()->draw_list_end();
 }
 
-void CopyEffects::gaussian_blur(RID p_source_rd_texture, RID p_texture, const Rect2i &p_region, bool p_8bit_dst) {
+void CopyEffects::gaussian_blur(RID p_source_rd_texture, RID p_texture, const Rect2i &p_region, const Size2i &p_size, bool p_8bit_dst) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute version of the gaussian blur with the mobile renderer.");
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
@@ -640,8 +640,10 @@ void CopyEffects::gaussian_blur(RID p_source_rd_texture, RID p_texture, const Re
 
 	copy.push_constant.section[0] = p_region.position.x;
 	copy.push_constant.section[1] = p_region.position.y;
-	copy.push_constant.section[2] = p_region.size.width;
-	copy.push_constant.section[3] = p_region.size.height;
+	copy.push_constant.target[0] = p_region.position.x;
+	copy.push_constant.target[1] = p_region.position.y;
+	copy.push_constant.section[2] = p_size.width;
+	copy.push_constant.section[3] = p_size.height;
 
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
