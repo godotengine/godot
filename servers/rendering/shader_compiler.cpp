@@ -1287,7 +1287,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 					code += ")";
 					if (is_screen_texture && actions.apply_luminance_multiplier) {
-						code = "(" + code + " / vec4(vec3(sc_luminance_multiplier), 1.0))";
+						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
 					}
 				} break;
 				case SL::OP_INDEX: {
