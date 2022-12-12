@@ -1059,7 +1059,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 	UINT32 index = 0;
 	BOOL exists = false;
 	HRESULT hr = font_collection->FindFamilyName((const WCHAR *)font_name.utf16().get_data(), &index, &exists);
-	if (FAILED(hr)) {
+	if (FAILED(hr) || !exists) {
 		return String();
 	}
 
