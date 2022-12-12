@@ -177,9 +177,10 @@ namespace embree
   __forceinline vfloat16 abs    (const vfloat16& a) { return _mm512_castsi512_ps(_mm512_and_epi32(_mm512_castps_si512(a),_mm512_set1_epi32(0x7FFFFFFF))); }
   __forceinline vfloat16 signmsk(const vfloat16& a) { return _mm512_castsi512_ps(_mm512_and_epi32(_mm512_castps_si512(a),_mm512_set1_epi32(0x80000000))); }
 
-  __forceinline vfloat16 rcp(const vfloat16& a) {
+  __forceinline vfloat16 rcp(const vfloat16& a)
+  {
     const vfloat16 r = _mm512_rcp14_ps(a);
-    return _mm512_mul_ps(r, _mm512_fnmadd_ps(r, a, vfloat16(2.0f)));
+    return _mm512_fmadd_ps(r, _mm512_fnmadd_ps(a, r, vfloat16(1.0)), r);  // computes r + r * (1 - a*r)
   }
 
   __forceinline vfloat16 sqr (const vfloat16& a) { return _mm512_mul_ps(a,a); }

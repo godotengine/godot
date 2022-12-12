@@ -2,6 +2,20 @@
 
 Import("env")
 
+# The HTTP server "targets". Run with "scons p=javascript serve", or "scons p=javascript run"
+if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
+    from serve import serve
+    import os
+
+    port = os.environ.get("GODOT_WEB_TEST_PORT", 8060)
+    try:
+        port = int(port)
+    except Exception:
+        print("GODOT_WEB_TEST_PORT must be a valid integer")
+        sys.exit(255)
+    serve(env.Dir("#bin/.javascript_zip").abspath, port, "run" in COMMAND_LINE_TARGETS)
+    sys.exit(0)
+
 javascript_files = [
     "audio_driver_javascript.cpp",
     "godot_webgl2.cpp",

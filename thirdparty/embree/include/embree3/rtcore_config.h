@@ -1,4 +1,3 @@
-
 // Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,23 +5,25 @@
 
 #define RTC_VERSION_MAJOR 3
 #define RTC_VERSION_MINOR 13
-#define RTC_VERSION_PATCH 0
-#define RTC_VERSION 31300
-#define RTC_VERSION_STRING "3.13.0"
+#define RTC_VERSION_PATCH 5
+#define RTC_VERSION 31305
+#define RTC_VERSION_STRING "3.13.5"
 
 #define RTC_MAX_INSTANCE_LEVEL_COUNT 1
 
 #define EMBREE_MIN_WIDTH 0
 #define RTC_MIN_WIDTH EMBREE_MIN_WIDTH
 
-#define EMBREE_STATIC_LIB
-/* #undef EMBREE_API_NAMESPACE */
+#if !defined(EMBREE_STATIC_LIB)
+#   define EMBREE_STATIC_LIB
+#endif
+/* #undef EMBREE_API_NAMESPACE*/
 
 #if defined(EMBREE_API_NAMESPACE)
 #  define RTC_NAMESPACE
-#  define RTC_NAMESPACE_BEGIN namespace  {
+#  define RTC_NAMESPACE_BEGIN namespace {
 #  define RTC_NAMESPACE_END }
-#  define RTC_NAMESPACE_USE using namespace ;
+#  define RTC_NAMESPACE_USE using namespace;
 #  define RTC_API_EXTERN_C
 #  undef EMBREE_API_NAMESPACE
 #else

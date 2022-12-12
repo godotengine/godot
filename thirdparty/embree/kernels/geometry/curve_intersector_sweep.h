@@ -60,7 +60,7 @@ namespace embree
       const Vec3fa dir = ray.dir;
       const float length_ray_dir = length(dir);
 
-      /* error of curve evaluations is propertional to largest coordinate */
+      /* error of curve evaluations is proportional to largest coordinate */
       const BBox3ff box = curve.bounds();
       const float P_err = 16.0f*float(ulp)*reduce_max(max(abs(box.lower),abs(box.upper)));
      

@@ -81,29 +81,29 @@ namespace embree
         {
           SourceCurve<Vec3ff> vcurve = center;
           SourceCurve<Vec3fa> ncurve = normal;
-          
+
           /* here we construct a patch which follows the curve l(t) =
            * p(t) +/- r(t)*normalize(cross(n(t),dp(t))) */
           
           const Vec3ff p0   = vcurve.eval(0.0f);
           const Vec3ff dp0  = vcurve.eval_du(0.0f);
-          const Vec3ff ddp0 = vcurve.eval_dudu(0.0f);
+          //const Vec3ff ddp0 = vcurve.eval_dudu(0.0f); // ddp0 is assumed to be 0
 
           const Vec3fa n0   = ncurve.eval(0.0f);
           const Vec3fa dn0  = ncurve.eval_du(0.0f);
 
           const Vec3ff p1   = vcurve.eval(1.0f);
           const Vec3ff dp1  = vcurve.eval_du(1.0f);
-          const Vec3ff ddp1 = vcurve.eval_dudu(1.0f);
+          //const Vec3ff ddp1 = vcurve.eval_dudu(1.0f);  // ddp1 is assumed to be 0
 
           const Vec3fa n1   = ncurve.eval(1.0f);
           const Vec3fa dn1  = ncurve.eval_du(1.0f);
 
           const Vec3fa bt0  = cross(n0,dp0);
-          const Vec3fa dbt0 = cross(dn0,dp0) + cross(n0,ddp0);
+          const Vec3fa dbt0 = cross(dn0,dp0);// + cross(n0,ddp0);
 
           const Vec3fa bt1  = cross(n1,dp1);
-          const Vec3fa dbt1 = cross(dn1,dp1) + cross(n1,ddp1);
+          const Vec3fa dbt1 = cross(dn1,dp1);// + cross(n1,ddp1);
             
           const Vec3fa k0  = normalize(bt0);
           const Vec3fa dk0 = dnormalize(bt0,dbt0);

@@ -55,12 +55,16 @@ if env["builtin_embree"]:
         "kernels/bvh/bvh_builder_sah_mb.cpp",
         "kernels/bvh/bvh_builder_twolevel.cpp",
         "kernels/bvh/bvh_intersector1_bvh4.cpp",
+        "kernels/bvh/bvh_intersector_hybrid4_bvh4.cpp",
+        "kernels/bvh/bvh_intersector_stream_bvh4.cpp",
+        "kernels/bvh/bvh_intersector_stream_filters.cpp",
     ]
 
     thirdparty_sources = [thirdparty_dir + file for file in embree_src]
 
     env_raycast.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "include"])
-    env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE2", "EMBREE_LOWEST_ISA", "TASKING_INTERNAL", "NDEBUG"])
+    env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE2", "EMBREE_LOWEST_ISA", "TASKING_INTERNAL"])
+    env_raycast.AppendUnique(CPPDEFINES=["NDEBUG"])  # No assert() even in debug builds.
 
     if not env.msvc:
         if env["arch"] in ["x86", "x86_64"]:
@@ -76,6 +80,7 @@ if env["builtin_embree"]:
             env.Append(LIBS=["psapi"])
 
     env_thirdparty = env_raycast.Clone()
+    env_thirdparty.force_optimization_on_debug()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
