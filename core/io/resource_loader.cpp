@@ -830,7 +830,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		Ref<FileAccess> f = FileAccess::open(new_path + ".remap", FileAccess::READ, &err);
 		if (f.is_valid()) {
 			VariantParser::StreamFile stream;
-			stream.f = f;
+			stream.set_file(f);
 
 			String assign;
 			Variant value;

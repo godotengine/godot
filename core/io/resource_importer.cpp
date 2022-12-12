@@ -50,7 +50,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	}
 
 	VariantParser::StreamFile stream;
-	stream.f = f;
+	stream.set_file(f);
 
 	String assign;
 	Variant value;
@@ -282,7 +282,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 	}
 
 	VariantParser::StreamFile stream;
-	stream.f = f;
+	stream.set_file(f);
 
 	String assign;
 	Variant value;

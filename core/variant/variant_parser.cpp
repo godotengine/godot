@@ -35,6 +35,11 @@
 #include "core/os/keyboard.h"
 #include "core/string/string_buffer.h"
 
+void VariantParser::Stream::_clear() {
+	readahead_pointer = 0;
+	readahead_filled = 0;
+}
+
 char32_t VariantParser::Stream::get_char() {
 	// is within buffer?
 	if (readahead_pointer < readahead_filled) {
@@ -54,6 +59,16 @@ char32_t VariantParser::Stream::get_char() {
 	return get_char();
 }
 
+void VariantParser::StreamFile::set_file(const Ref<FileAccess> p_file) {
+	if (f == p_file) {
+		return;
+	}
+	f = p_file;
+
+	_clear();
+	buffer_read_end_position = f->eof_reached() ? f->get_length() : f->get_position();
+}
+
 bool VariantParser::StreamFile::is_utf8() const {
 	return true;
 }
@@ -66,13 +81,21 @@ uint32_t VariantParser::StreamFile::_read_buffer(char32_t *p_buffer, uint32_t p_
 	// The buffer is assumed to include at least one character (for null terminator)
 	ERR_FAIL_COND_V(!p_num_chars, 0);
 
+	uint64_t f_position = f->eof_reached() ? f->get_length() : f->get_position();
+	bool need_seek = buffer_read_end_position != f_position;
+
+	if (need_seek) {
+		f->seek(buffer_read_end_position); // Sync to the state in the stream.
+	}
+
 	uint8_t *temp = (uint8_t *)alloca(p_num_chars);
 	uint64_t num_read = f->get_buffer(temp, p_num_chars);
-	if (f->eof_reached()) {
-		buffer_read_end_position = f->get_length();
-	} else {
-		buffer_read_end_position = f->get_position();
+
+	buffer_read_end_position = f->eof_reached() ? f->get_length() : f->get_position();
+	if (need_seek) {
+		f->seek(f_position); // Revert to previous state.
 	}
+
 	ERR_FAIL_COND_V(num_read == UINT64_MAX, 0);
 
 	// translate to wchar

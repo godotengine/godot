@@ -693,7 +693,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 	}
 
 	VariantParser::StreamFile stream;
-	stream.f = f;
+	stream.set_file(f);
 
 	String assign;
 	Variant value;

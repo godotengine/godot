@@ -369,7 +369,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	}
 
 	VariantParser::StreamFile stream;
-	stream.f = f;
+	stream.set_file(f);
 
 	String assign;
 	Variant value;
@@ -454,7 +454,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	}
 
 	VariantParser::StreamFile md5_stream;
-	md5_stream.f = md5s;
+	md5_stream.set_file(md5s);
 
 	while (true) {
 		assign = Variant();
