@@ -81,6 +81,7 @@ void NavigationAgent::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_target_location", "location"), &NavigationAgent::set_target_location);
 	ClassDB::bind_method(D_METHOD("get_target_location"), &NavigationAgent::get_target_location);
+
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent::get_next_location);
 	ClassDB::bind_method(D_METHOD("distance_to_target"), &NavigationAgent::distance_to_target);
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &NavigationAgent::set_velocity);
@@ -94,6 +95,7 @@ void NavigationAgent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_avoidance_done", "new_velocity"), &NavigationAgent::_avoidance_done);
 
 	ADD_GROUP("Pathfinding", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_location", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_target_location", "get_target_location");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01"), "set_path_desired_distance", "get_path_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01"), "set_target_desired_distance", "get_target_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent_height_offset", PROPERTY_HINT_RANGE, "-100.0,100,0.01"), "set_agent_height_offset", "get_agent_height_offset");
