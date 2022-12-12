@@ -43,6 +43,8 @@ class VisualInstance : public CullInstance {
 	RID base;
 	RID instance;
 	uint32_t layers;
+	float sorting_offset;
+	bool sorting_use_aabb_center;
 
 	RID _get_visual_instance_rid() const;
 
@@ -76,6 +78,12 @@ public:
 
 	void set_layer_mask_bit(int p_layer, bool p_enable);
 	bool get_layer_mask_bit(int p_layer) const;
+
+	void set_sorting_offset(float p_offset);
+	float get_sorting_offset();
+
+	void set_sorting_use_aabb_center(bool p_enabled);
+	bool is_sorting_use_aabb_center();
 
 	VisualInstance();
 	~VisualInstance();

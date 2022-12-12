@@ -49,17 +49,15 @@
 */
 
 Vector3 BulletPhysicsDirectBodyState::get_total_gravity() const {
-	Vector3 gVec;
-	B_TO_G(body->btBody->getGravity(), gVec);
-	return gVec;
+	return body->total_gravity;
 }
 
 float BulletPhysicsDirectBodyState::get_total_angular_damp() const {
-	return body->btBody->getAngularDamping();
+	return body->total_angular_damp;
 }
 
 float BulletPhysicsDirectBodyState::get_total_linear_damp() const {
-	return body->btBody->getLinearDamping();
+	return body->total_linear_damp;
 }
 
 Vector3 BulletPhysicsDirectBodyState::get_center_of_mass() const {
@@ -917,16 +915,9 @@ void RigidBodyBullet::reload_space_override_modificator() {
 		return;
 	}
 
-	if (omit_forces_integration) {
-		// Custom behaviour.
-		btBody->setGravity(btVector3(0, 0, 0));
-		btBody->setDamping(0, 0);
-		return;
-	}
-
-	Vector3 newGravity(0.0, 0.0, 0.0);
-	real_t newLinearDamp = MAX(0.0, linearDamp);
-	real_t newAngularDamp = MAX(0.0, angularDamp);
+	total_gravity = Vector3(0.0, 0.0, 0.0);
+	total_linear_damp = MAX(0.0, linearDamp);
+	total_angular_damp = MAX(0.0, angularDamp);
 
 	AreaBullet *currentArea;
 	// Variable used to calculate new gravity for gravity point areas, it is pointed by currentGravity pointer
@@ -977,49 +968,54 @@ void RigidBodyBullet::reload_space_override_modificator() {
 				/// This area adds its gravity/damp values to whatever has been
 				/// calculated so far. This way, many overlapping areas can combine
 				/// their physics to make interesting
-				newGravity += support_gravity;
-				newLinearDamp += currentArea->get_spOv_linearDamp();
-				newAngularDamp += currentArea->get_spOv_angularDamp();
+				total_gravity += support_gravity;
+				total_linear_damp += currentArea->get_spOv_linearDamp();
+				total_angular_damp += currentArea->get_spOv_angularDamp();
 				break;
 			case PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE_REPLACE:
 				/// This area adds its gravity/damp values to whatever has been calculated
 				/// so far. Then stops taking into account the rest of the areas, even the
 				/// default one.
-				newGravity += support_gravity;
-				newLinearDamp += currentArea->get_spOv_linearDamp();
-				newAngularDamp += currentArea->get_spOv_angularDamp();
+				total_gravity += support_gravity;
+				total_linear_damp += currentArea->get_spOv_linearDamp();
+				total_angular_damp += currentArea->get_spOv_angularDamp();
 				stopped = true;
 				break;
 			case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE:
 				/// This area replaces any gravity/damp, even the default one, and
 				/// stops taking into account the rest of the areas.
-				newGravity = support_gravity;
-				newLinearDamp = currentArea->get_spOv_linearDamp();
-				newAngularDamp = currentArea->get_spOv_angularDamp();
+				total_gravity = support_gravity;
+				total_linear_damp = currentArea->get_spOv_linearDamp();
+				total_angular_damp = currentArea->get_spOv_angularDamp();
 				stopped = true;
 				break;
 			case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE_COMBINE:
 				/// This area replaces any gravity/damp calculated so far, but keeps
 				/// calculating the rest of the areas, down to the default one.
-				newGravity = support_gravity;
-				newLinearDamp = currentArea->get_spOv_linearDamp();
-				newAngularDamp = currentArea->get_spOv_angularDamp();
+				total_gravity = support_gravity;
+				total_linear_damp = currentArea->get_spOv_linearDamp();
+				total_angular_damp = currentArea->get_spOv_angularDamp();
 				break;
 		}
 	}
 
 	// Add default gravity and damping from space.
 	if (!stopped) {
-		newGravity += space->get_gravity_direction() * space->get_gravity_magnitude();
-		newLinearDamp += space->get_linear_damp();
-		newAngularDamp += space->get_angular_damp();
+		total_gravity += space->get_gravity_direction() * space->get_gravity_magnitude();
+		total_linear_damp += space->get_linear_damp();
+		total_angular_damp += space->get_angular_damp();
 	}
 
-	btVector3 newBtGravity;
-	G_TO_B(newGravity * gravity_scale, newBtGravity);
-
-	btBody->setGravity(newBtGravity);
-	btBody->setDamping(newLinearDamp, newAngularDamp);
+	if (omit_forces_integration) {
+		// Don't apply gravity or damping.
+		btBody->setGravity(btVector3(0, 0, 0));
+		btBody->setDamping(0, 0);
+	} else {
+		btVector3 newBtGravity;
+		G_TO_B(total_gravity * gravity_scale, newBtGravity);
+		btBody->setGravity(newBtGravity);
+		btBody->setDamping(total_linear_damp, total_angular_damp);
+	}
 }
 
 void RigidBodyBullet::reload_kinematic_shapes() {

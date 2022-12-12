@@ -1967,7 +1967,7 @@ void HeightMapShapeSW::_get_cell(const Vector3 &p_point, int &r_x, int &r_y, int
 	Vector3 clamped_point(p_point);
 	clamped_point.x = CLAMP(p_point.x, pos_local.x, pos_local.x + aabb.size.x);
 	clamped_point.y = CLAMP(p_point.y, pos_local.y, pos_local.y + aabb.size.y);
-	clamped_point.z = CLAMP(p_point.z, pos_local.z, pos_local.x + aabb.size.z);
+	clamped_point.z = CLAMP(p_point.z, pos_local.z, pos_local.z + aabb.size.z);
 
 	r_x = (clamped_point.x < 0.0) ? (clamped_point.x - 0.5) : (clamped_point.x + 0.5);
 	r_y = (clamped_point.y < 0.0) ? (clamped_point.y - 0.5) : (clamped_point.y + 0.5);
