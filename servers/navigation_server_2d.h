@@ -226,7 +226,7 @@ public:
 	virtual bool agent_is_map_changed(RID p_agent) const;
 
 	/// Callback called at the end of the RVO process
-	virtual void agent_set_callback(RID p_agent, Object *p_receiver, StringName p_method, Variant p_udata = Variant()) const;
+	virtual void agent_set_callback(RID p_agent, ObjectID p_object_id, StringName p_method, Variant p_udata = Variant()) const;
 
 	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const;
 
