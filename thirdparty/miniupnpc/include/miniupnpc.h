@@ -1,9 +1,9 @@
-/* $Id: miniupnpc.h,v 1.58 2021/03/02 23:49:52 nanard Exp $ */
+/* $Id: miniupnpc.h,v 1.61 2022/10/21 21:15:02 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project: miniupnp
- * http://miniupnp.free.fr/
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author: Thomas Bernard
- * Copyright (c) 2005-2021 Thomas Bernard
+ * Copyright (c) 2005-2022 Thomas Bernard
  * This software is subjects to the conditions detailed
  * in the LICENCE file provided within this distribution */
 #ifndef MINIUPNPC_H_INCLUDED
@@ -20,7 +20,7 @@
 #define UPNPDISCOVER_MEMORY_ERROR (-102)
 
 /* versions : */
-#define MINIUPNPC_VERSION	"2.2.2"
+#define MINIUPNPC_VERSION	"2.2.4"
 #define MINIUPNPC_API_VERSION	17
 
 /* Source port:

@@ -26,9 +26,9 @@ if env["builtin_miniupnpc"]:
         "receivedata.c",
         "addr_is_reserved.c",
     ]
-    thirdparty_sources = [thirdparty_dir + "miniupnpc/" + file for file in thirdparty_sources]
+    thirdparty_sources = [thirdparty_dir + "src/" + file for file in thirdparty_sources]
 
-    env_upnp.Prepend(CPPPATH=[thirdparty_dir])
+    env_upnp.Prepend(CPPPATH=[thirdparty_dir + "include"])
     env_upnp.Append(CPPDEFINES=["MINIUPNP_STATICLIB"])
     env_upnp.Append(CPPDEFINES=["MINIUPNPC_SET_SOCKET_TIMEOUT"])
 
