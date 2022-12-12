@@ -73,6 +73,7 @@ public:
 		void set_file(const Ref<FileAccess> p_file);
 		virtual bool is_utf8() const override;
 		uint64_t get_position() const;
+		void clear_and_calibrate();
 
 		StreamFile() {}
 	};

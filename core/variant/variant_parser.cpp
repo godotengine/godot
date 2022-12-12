@@ -65,8 +65,7 @@ void VariantParser::StreamFile::set_file(const Ref<FileAccess> p_file) {
 	}
 	f = p_file;
 
-	_clear();
-	buffer_read_end_position = f->eof_reached() ? f->get_length() : f->get_position();
+	clear_and_calibrate();
 }
 
 bool VariantParser::StreamFile::is_utf8() const {
@@ -75,6 +74,11 @@ bool VariantParser::StreamFile::is_utf8() const {
 
 uint64_t VariantParser::StreamFile::get_position() const {
 	return buffer_read_end_position - _get_buffer_remaining_length();
+}
+
+void VariantParser::StreamFile::clear_and_calibrate() {
+	_clear();
+	buffer_read_end_position = f->eof_reached() ? f->get_length() : f->get_position();
 }
 
 uint32_t VariantParser::StreamFile::_read_buffer(char32_t *p_buffer, uint32_t p_num_chars) {
