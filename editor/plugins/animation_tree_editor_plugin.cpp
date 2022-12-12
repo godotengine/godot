@@ -77,6 +77,7 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 void AnimationTreeEditor::_node_removed(Node *p_node) {
 	if (p_node == tree) {
 		tree = nullptr;
+		_clear_editors();
 	}
 }
 
@@ -151,13 +152,23 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 	} else {
 		current_root = ObjectID();
 		edited_path = button_path;
-
 		for (int i = 0; i < editors.size(); i++) {
 			editors[i]->edit(Ref<AnimationNode>());
 			editors[i]->hide();
 		}
 	}
 
+	_update_path();
+}
+
+void AnimationTreeEditor::_clear_editors() {
+	button_path.clear();
+	current_root = ObjectID();
+	edited_path = button_path;
+	for (int i = 0; i < editors.size(); i++) {
+		editors[i]->edit(Ref<AnimationNode>());
+		editors[i]->hide();
+	}
 	_update_path();
 }
 
