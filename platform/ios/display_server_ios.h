@@ -113,7 +113,7 @@ public:
 
 	// MARK: Keyboard
 
-	void key(Key p_key, bool p_pressed);
+	void key(Key p_key, char32_t p_char, bool p_pressed);
 
 	// MARK: Motion
 
