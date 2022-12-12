@@ -117,8 +117,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			result.builtin_type = p_datatype.builtin_type;
 			result.native_type = p_datatype.native_type;
 
-			String root_name = p_datatype.class_type->fqcn.get_slice("::", 0);
-			bool is_local_class = !root_name.is_empty() && root_name == main_script->fully_qualified_name;
+			bool is_local_class = parser->has_class(p_datatype.class_type);
 
 			Ref<GDScript> script;
 			if (is_local_class) {
@@ -2300,7 +2299,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				return ERR_COMPILATION_FAILED;
 			}
 
-			if (base.ptr() == main_script || main_script->is_subclass(base.ptr())) {
+			if (main_script->has_class(base.ptr())) {
 				Error err = _populate_class_members(base.ptr(), p_class->base_type.class_type, p_keep_state);
 				if (err) {
 					return err;

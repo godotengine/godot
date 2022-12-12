@@ -187,7 +187,7 @@ public:
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
 	GDScript *find_class(const String &p_qualified_name);
-	bool is_subclass(const GDScript *p_script);
+	bool has_class(const GDScript *p_script);
 	GDScript *get_root_script();
 	bool is_root_script() const { return _owner == nullptr; }
 	String get_fully_qualified_name() const { return fully_qualified_name; }
