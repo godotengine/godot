@@ -102,7 +102,7 @@ namespace Godot.NativeInterop
             => new() { Type = Variant.Type.Signal, Signal = from };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static godot_variant CreateFromSignalInfo(SignalInfo from)
+        public static godot_variant CreateFromSignal(Signal from)
             => CreateFromSignalTakingOwnershipOfDisposableValue(
                 Marshaling.ConvertSignalToNative(from));
 
@@ -486,7 +486,7 @@ namespace Godot.NativeInterop
             => NativeFuncs.godotsharp_variant_as_signal(p_var);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SignalInfo ConvertToSignalInfo(in godot_variant p_var)
+        public static Signal ConvertToSignalManaged(in godot_variant p_var)
             => Marshaling.ConvertSignalToManaged(ConvertToSignal(p_var));
 
         public static godot_array ConvertToArray(in godot_variant p_var)
