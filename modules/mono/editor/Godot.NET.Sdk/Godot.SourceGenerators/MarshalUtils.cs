@@ -56,7 +56,7 @@ namespace Godot.SourceGenerators
                 MarshalType.Color => VariantType.Color,
                 MarshalType.Plane => VariantType.Plane,
                 MarshalType.Callable => VariantType.Callable,
-                MarshalType.SignalInfo => VariantType.Signal,
+                MarshalType.Signal => VariantType.Signal,
                 MarshalType.Enum => VariantType.Int,
                 MarshalType.ByteArray => VariantType.PackedByteArray,
                 MarshalType.Int32Array => VariantType.PackedInt32Array,
@@ -147,7 +147,7 @@ namespace Godot.SourceGenerators
                                 { Name: "Plane" } => MarshalType.Plane,
                                 { Name: "RID" } => MarshalType.RID,
                                 { Name: "Callable" } => MarshalType.Callable,
-                                { Name: "SignalInfo" } => MarshalType.SignalInfo,
+                                { Name: "Signal" } => MarshalType.Signal,
                                 { Name: "Variant" } => MarshalType.Variant,
                                 _ => null
                             };

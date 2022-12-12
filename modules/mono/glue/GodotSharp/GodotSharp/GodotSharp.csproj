@@ -116,7 +116,7 @@
     <Compile Include="Core\NativeInterop\NativeFuncs.cs" />
     <Compile Include="Core\NativeInterop\InteropStructs.cs" />
     <Compile Include="Core\NativeInterop\Marshaling.cs" />
-    <Compile Include="Core\SignalInfo.cs" />
+    <Compile Include="Core\Signal.cs" />
     <Compile Include="Core\SignalAwaiter.cs" />
     <Compile Include="Core\StringExtensions.cs" />
     <Compile Include="Core\StringName.cs" />
