@@ -680,7 +680,7 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
+			bool draw_placeholder = text.size() == 1 && text[0].is_empty() && ime_text.is_empty();
 
 			// Get the highlighted words.
 			String highlighted_text = get_selected_text(0);
