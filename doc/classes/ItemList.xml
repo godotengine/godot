@@ -61,6 +61,14 @@
 			<return type="void" />
 			<description>
 				Forces an update to the list size based on its items. This happens automatically whenever size of the items, or other relevant settings like [member auto_height], change. The method can be used to trigger the update ahead of next drawing pass.
+				See [method get_auto_height_value] for the new auto_height value if [member auto_height] is [code]true[/code].
+			</description>
+		</method>
+		<method name="get_auto_height_value" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the calculated minimum height of the list according to its items if [member auto_height] is [code]true[/code], excluding [member Control.custom_minimum_size]. If [member auto_height] is [code]true[/code], this returns the last auto height value.
+				See [method force_update_list_size] for updating the value before the next draw.
 			</description>
 		</method>
 		<method name="get_h_scroll_bar">

@@ -324,6 +324,8 @@ public:
 	void set_auto_height(bool p_enable);
 	bool has_auto_height() const;
 
+	float get_auto_height_value() const;
+
 	void set_wraparound_items(bool p_enable);
 	bool has_wraparound_items() const;
 
