@@ -218,7 +218,7 @@ License: glslang
 Files: ./thirdparty/graphite/
 Comment: Graphite engine
 Copyright: 2010, SIL International
-License: MPL-2.0
+License: Expat
 
 Files: ./thirdparty/harfbuzz/
 Comment: HarfBuzz text shaping library
