@@ -85,13 +85,17 @@
 # bsr <bsndrn16@gmail.com>, 2022.
 # Ramazan SANCAR <ramazansancar4545@gmail.com>, 2022.
 # Burak Orcun OZKABLAN <borcunozkablan@gmail.com>, 2022.
+# arda4888 <ardagaming2006@gmail.com>, 2022.
+# Dream Drunk <myemailpoly149@gmail.com>, 2022.
+# alpdenthedev <ekrem_ekrem_45@hotmail.com>, 2022.
+# Muhammed Said Gülberk <msgulberk@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-11 22:22+0000\n"
-"Last-Translator: Burak Orcun OZKABLAN <borcunozkablan@gmail.com>\n"
+"PO-Revision-Date: 2022-12-05 10:16+0000\n"
+"Last-Translator: Muhammed Said Gülberk <msgulberk@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -99,11 +103,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
-msgstr "Tablet Sürücü"
+msgstr "Tablet Sürücüsü"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
@@ -114,7 +118,6 @@ msgid "Current Screen"
 msgstr "Şu anki Ekran"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Exit Code"
 msgstr "Çıkış Kodu"
 
@@ -132,11 +135,11 @@ msgstr "Delta Yumuşatma"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode"
-msgstr "Düşük İşlemci Kullanım Modu"
+msgstr "İşlemci Dostu Mod"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "Düşük İşlemci Kullanımı Uyku Modu (μsn)"
+msgstr "Uykulu İşlemci Modu (µsec)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
@@ -152,7 +155,7 @@ msgstr "Maksimum Ekran Boyutu"
 
 #: core/bind/core_bind.cpp
 msgid "Screen Orientation"
-msgstr "Ekran Yönü"
+msgstr "Ekran oryantasyonu"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
 #: platform/uwp/os_uwp.cpp
@@ -161,7 +164,7 @@ msgstr "Pencere"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
-msgstr "Kenarlıksız"
+msgstr "Kenarsız"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
@@ -333,7 +336,7 @@ msgstr "Ağ Profilcisi"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
 msgid "Root Node"
-msgstr "Kök Düğüm Adı"
+msgstr "Kök Düğümü"
 
 #: core/io/networked_multiplayer_peer.cpp
 msgid "Refuse New Connections"
@@ -361,7 +364,7 @@ msgstr "Akış Eşi"
 
 #: core/io/stream_peer.cpp
 msgid "Big Endian"
-msgstr "big-endian"
+msgstr "Big Endian"
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
@@ -369,7 +372,7 @@ msgstr "Veri Dizisi"
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
-msgstr "Tokalaşmayı blokla"
+msgstr "El Sıkışmayı Blokla"
 
 #: core/io/udp_server.cpp
 msgid "Max Pending Connections"
@@ -388,7 +391,7 @@ msgstr "1(bir) karakter uzunluğunda bir dize bekleniyor ."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Baytları çözümlemek için yetersiz miktarda bayt ya da geçersiz format."
+msgstr "Baytları çözümlemek için yetersiz bayt miktarı veya geçersiz format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %d (not passed) in expression"
@@ -396,7 +399,7 @@ msgstr "İfadede geçersiz giriş %d"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self kullanılamaz çünkü örnek boş (geçilmedi)"
+msgstr "örnek boş olduğu için self kullanılamaz (geçilmedi)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -7222,6 +7225,9 @@ msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
 "texture compression to reduce memory usage (blue channel is discarded)."
 msgstr ""
+"%s: Dokunun 3D'de normal haritası olarak kullanıldığı algılandı. Bellek "
+"kullanımını azaltmak için kırmızı-yeşil doku sıkıştırma etkinleştiriliyor. "
+"(mavi kanal kullanılmıyor)."
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7251,7 +7257,7 @@ msgstr "HDR Modu"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "BPTC LDR"
-msgstr ""
+msgstr "BPTC LDR"
 
 #: editor/import/resource_importer_texture.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
@@ -7359,7 +7365,7 @@ msgstr "Maximum Hz Oranı"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "Trim"
-msgstr ""
+msgstr "Kırp"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "Normalize"
@@ -9535,7 +9541,7 @@ msgstr "Simge"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -10708,7 +10714,7 @@ msgstr "Script İsimlerini Listele"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Exec Flags"
-msgstr ""
+msgstr "Çalıştırma Bayrakları"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Scripts"
@@ -12891,9 +12897,10 @@ msgstr "Hizalama Ayarları"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr "Kaydırma"
 
@@ -14319,16 +14326,17 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Geçersiz proje yolu (bir şey değişti mi?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Proje yolundaki proje.godot düzenlenemedi (error %d). Eksik veya bozulmuş "
 "olabilir."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "proje yolundaki proje.godot düzenlenemedi."
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "'%s' adresindeki proje açılamıyor."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -15326,6 +15334,9 @@ msgid ""
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
+"Halihazırda örneklendirilmiş bir sahnenin alt öğesi olan dal kaydedilemez.\n"
+"Bu dalı kendisine ait sahneye kaydetmek için, orijinal sahneyi açın, bu dala "
+"sağ tıklayın, ve \"Dalı Sahne olarak Kaydet\"i seçin."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -15333,6 +15344,9 @@ msgid ""
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
+"Devralınan sahnenin parçası olan bir dal kaydedilemez.\n"
+"Bu dalı kendisine ait sahneye kaydetmek için, orijinal sahneyi açın, bu dala "
+"sağ tıklayın, ve \"Dalı Sahne olarak Kaydet\"i seçin."
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -15360,19 +15374,18 @@ msgid "Make Local"
 msgstr "Yerelleştir"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name(s)"
-msgstr "Sahne Benzersiz İsmini Etkin Kıl"
+msgstr "Sahne İçi Benzersiz İsim(ler)i Etkin Kıl"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Unique names already used by another node in the scene:"
-msgstr "Başka bir düğüm sahnede bu benzersiz adı zaten kullanıyor."
+msgstr ""
+"Halihazırda sahnedeki başka bir düğüm tarafından kullanılan benzersiz "
+"isimler:"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Disable Scene Unique Name(s)"
-msgstr "Sahne Benzersiz İsmini Etkisiz Kıl"
+msgstr "Sahne İçi Benzersiz İsim(ler)i Etkisiz Kıl"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -15400,7 +15413,7 @@ msgstr "Diğer Düğüm"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
-msgstr "Yad bir sahnedeki düğümler üzerinde çalışamaz!"
+msgstr "Yabancı bir sahnedeki düğümler üzerinde çalışılamaz!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
@@ -15439,7 +15452,7 @@ msgstr "Sahne kaydedilirken hata."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error duplicating scene to save it."
-msgstr "Kaydetmek için sahne çoğaltılırken hata."
+msgstr "Sahne kaydetmek için çoğaltılırken hata."
 
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
@@ -15447,11 +15460,11 @@ msgstr "Alt Kaynaklar"
 
 #: editor/scene_tree_dock.cpp
 msgid "Access as Scene Unique Name"
-msgstr ""
+msgstr "Sahne İçi Benzersiz İsim olarak Erişim"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
-msgstr "Kalıtı Temizle"
+msgstr "Kalıtımı Temizle"
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -15476,7 +15489,7 @@ msgstr "Alt Düğüm Ekle"
 
 #: editor/scene_tree_dock.cpp
 msgid "Expand/Collapse All"
-msgstr "Hepsini Aç/Kapa"
+msgstr "Hepsini Genişlet/Daralt"
 
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
@@ -16193,7 +16206,7 @@ msgstr "Godot Fiziği"
 #: main/main.cpp servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/visual/visual_server_scene.cpp
 msgid "Use BVH"
-msgstr ""
+msgstr "BVH Kullan"
 
 #: main/main.cpp servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/visual/visual_server_scene.cpp
@@ -16213,7 +16226,7 @@ msgstr "MultiNode Kur"
 
 #: main/main.cpp
 msgid "RID Pool Prealloc"
-msgstr ""
+msgstr "RID Havuzu Ön Tahsisi"
 
 #: main/main.cpp
 #, fuzzy
@@ -16275,7 +16288,7 @@ msgstr "Sürücü Adı"
 
 #: main/main.cpp
 msgid "Fallback To GLES2"
-msgstr ""
+msgstr "GLES2'ye Geri Dön"
 
 #: main/main.cpp
 msgid "Use Nvidia Rect Flicker Workaround"
@@ -16889,9 +16902,8 @@ msgid "Script Class"
 msgstr "Betik Sınıfı"
 
 #: modules/gdnative/nativescript/nativescript.cpp
-#, fuzzy
 msgid "Icon Path"
-msgstr "Yola Odaklan"
+msgstr "İkon Yolu"
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
@@ -16899,9 +16911,8 @@ msgstr "GDYerel"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 #: modules/gdscript/gdscript.cpp
-#, fuzzy
 msgid "GDScript"
-msgstr "Betik"
+msgstr "GDScript"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 msgid "Function Definition Color"
@@ -18203,7 +18214,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Type Cast"
-msgstr "Tür Değişimi"
+msgstr "Tür Dönüştür"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Is %s?"
@@ -18253,9 +18264,8 @@ msgid "Validate"
 msgstr "Doğrula"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "RPC Call Mode"
-msgstr "Esnetme Şekli"
+msgstr "RPC çağrı modu"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Subtract %s"
@@ -23138,7 +23148,7 @@ msgstr "Küçük harf"
 
 #: scene/3d/physics_joint.cpp
 msgid "Motor"
-msgstr ""
+msgstr "Motor"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
@@ -23770,6 +23780,16 @@ msgstr "Hata"
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
 msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Sırala"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Use AABB Center"
+msgstr "Çevreyi Kullan"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 #, fuzzy

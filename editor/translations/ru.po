@@ -126,13 +126,14 @@
 # Дмитрий <Dimega@inbox.ru>, 2022.
 # Vladimir Kirillovskiy <vladimir.kirillovskiy@gmail.com>, 2022.
 # Evgeniy Khramov <thejenjagamertjg@gmail.com>, 2022.
+# kirill blaze <kirillblaze2@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-27 21:37+0000\n"
-"Last-Translator: Evgeniy Khramov <thejenjagamertjg@gmail.com>\n"
+"PO-Revision-Date: 2022-11-25 12:13+0000\n"
+"Last-Translator: Vladimir Kirillovskiy <vladimir.kirillovskiy@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -141,7 +142,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -1298,9 +1299,8 @@ msgid "Animation"
 msgstr "Анимация"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Easing"
-msgstr "Переход В-ИЗ"
+msgstr "Облегчение"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -1443,12 +1443,10 @@ msgid "Easing:"
 msgstr "Переход В-ИЗ:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In-Handle:"
 msgstr "Обработчик Ввода:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Out-Handle:"
 msgstr "Обработчик Вывода:"
 
@@ -11695,9 +11693,8 @@ msgid "New Animation"
 msgstr "Новая анимация"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Filter animations"
-msgstr "Фильтровать анимации"
+msgstr "Фильтр анимации"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -12878,9 +12875,10 @@ msgstr "Параметры привязки"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr "Смещение"
 
@@ -12911,9 +12909,8 @@ msgid "Texture"
 msgstr "Текстура"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tex Offset"
-msgstr "Смещение байтов"
+msgstr "Смещение текстуры"
 
 #: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
@@ -12931,44 +12928,36 @@ msgid "Tile Mode"
 msgstr "Режим плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotile Bitmask Mode"
 msgstr "Режим битовой маски"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Subtile Size"
 msgstr "Размер контура"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Subtile Spacing"
 msgstr "Межстрочный интервал"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Offset"
-msgstr "Отверстие окклюдера"
+msgstr "Сдвиг окклюдера"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation Offset"
 msgstr "Чувствительность навигации"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Shape Offset"
-msgstr "Базовое смещение"
+msgstr "Смещение Формы"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Shape Transform"
-msgstr "Преобразование"
+msgstr "Трансформация формы"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Collision"
-msgstr "Использовать столкновение"
+msgstr "Выделить столкновение"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -12991,9 +12980,8 @@ msgid "Selected Occlusion"
 msgstr "Выделение"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tileset Script"
-msgstr "Фильтр сценариев"
+msgstr "Скрипт набора тайлов"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
@@ -14305,16 +14293,17 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Неверный путь к проекту (Что-то изменили?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Не удалось загрузить project.godot в пути проекта (ошибка %d). Возможно, он "
 "отсутствует или поврежден."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "Не удалось изменить project.godot в папке проекта."
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Не удаётся открыть проект в «%s»."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -19322,11 +19311,11 @@ msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "For Mobile"
-msgstr ""
+msgstr "Для мобильных устройств"
 
 #: platform/javascript/export/export.cpp
 msgid "HTML"
-msgstr ""
+msgstr "HTML"
 
 #: platform/javascript/export/export.cpp
 msgid "Export Icon"
@@ -23386,6 +23375,16 @@ msgstr "Макс Сила"
 msgid "AABB"
 msgstr ""
 
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Сортировать"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Use AABB Center"
+msgstr "Использовать Ambient"
+
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 msgid "Geometry"
 msgstr "Геометрия"
@@ -25895,9 +25894,8 @@ msgid "Height Curve"
 msgstr "Кривая высоты"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Tonemap"
-msgstr "Переназначения"
+msgstr "Карта тональности"
 
 #: scene/resources/environment.cpp
 #, fuzzy
@@ -26011,7 +26009,7 @@ msgstr ""
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp
 msgid "2"
-msgstr ""
+msgstr "2"
 
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp

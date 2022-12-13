@@ -13,13 +13,14 @@
 # Matti Niskanen <matti.t.niskanen@gmail.com>, 2020.
 # Severi Vidnäs <severi.vidnas@gmail.com>, 2021.
 # Akseli Pihlajamaa <akselijuhanipihlajamaa@gmail.com>, 2022.
+# Hannu Lammi <hpl@kapsi.fi>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-11 22:22+0000\n"
-"Last-Translator: Akseli Pihlajamaa <akselijuhanipihlajamaa@gmail.com>\n"
+"PO-Revision-Date: 2022-10-27 01:11+0000\n"
+"Last-Translator: Hannu Lammi <hpl@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -27,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.14.2-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -137,9 +138,8 @@ msgstr "Telakan sijainti"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Koko:"
+msgstr "Koko"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
@@ -152,7 +152,7 @@ msgstr "Editori"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Tulosta virheilmoitukset"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -195,7 +195,7 @@ msgstr "Haun tulokset"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Muisti"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -458,7 +458,7 @@ msgstr "Fyysinen avain"
 
 #: core/os/input_event.cpp
 msgid "Unicode"
-msgstr ""
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
@@ -486,7 +486,7 @@ msgstr "Hiiren painikkeen indeksi:"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
-msgstr ""
+msgstr "Kaksoisnapsautus"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
@@ -510,9 +510,8 @@ msgstr "Suhteellinen tarttuminen"
 #: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/resources/environment.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Speed"
-msgstr "Nopeus:"
+msgstr "Nopeus"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
@@ -525,9 +524,8 @@ msgid "Axis Value"
 msgstr "Kiinnitä arvo"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Index"
-msgstr "Indeksi:"
+msgstr "Indeksi"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -639,15 +637,15 @@ msgstr "Toimintakyvytön osanen"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr ""
+msgstr "Käytä piilotettua projektin datahakemistoa"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
-msgstr ""
+msgstr "Käytä mukautettua käyttäjähakemistoa"
 
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
-msgstr ""
+msgstr "Mukautetun käyttäjähakemiston nimi"
 
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
@@ -660,7 +658,7 @@ msgstr "Näytä kaikki"
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Leveys"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
@@ -674,7 +672,7 @@ msgstr "Valo"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
-msgstr ""
+msgstr "Aina päällimmäisenä"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -818,7 +816,7 @@ msgstr " (fyysinen)"
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
 #: servers/physics/space_sw.cpp servers/physics_server.cpp
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -846,7 +844,7 @@ msgstr "Renderöijä:"
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "Laatu"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
 #: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
@@ -915,15 +913,15 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Zlib"
-msgstr ""
+msgstr "Zlib"
 
 #: core/project_settings.cpp
 msgid "Gzip"
-msgstr ""
+msgstr "Gzip"
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "Android"
 
 #: core/project_settings.cpp
 msgid "Modules"
@@ -931,7 +929,7 @@ msgstr ""
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr ""
+msgstr "TCP"
 
 #: core/register_core_types.cpp
 #, fuzzy
@@ -948,7 +946,7 @@ msgstr ""
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
 #, fuzzy
@@ -1047,7 +1045,7 @@ msgstr ""
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1126,7 +1124,7 @@ msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "Korkea laatu"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
@@ -1399,9 +1397,8 @@ msgid "Remove this track."
 msgstr "Poista tämä raita."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s):"
-msgstr "Aika (s): "
+msgstr "Aika (s):"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1680,9 +1677,8 @@ msgid "Add Method Track Key"
 msgstr "Lisää metodikutsuraidan avainruutu"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object:"
-msgstr "Metodia ei löydy objektista: "
+msgstr "Metodia ei löydy objektista:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -1702,7 +1698,7 @@ msgstr "Metodit"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier"
-msgstr ""
+msgstr "Bezier"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -2857,7 +2853,7 @@ msgstr "Valitse"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "Projektin vienti alustalle:"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2865,14 +2861,12 @@ msgid "Completed with warnings."
 msgstr "Kopioi solmun polku"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed successfully."
-msgstr "Paketti asennettu onnistuneesti!"
+msgstr "Paketti asennettu onnistuneesti."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed."
-msgstr "Epäonnistui:"
+msgstr "Epäonnistui."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2897,14 +2891,12 @@ msgid "Cannot create file \"%s\"."
 msgstr "Kansiota ei voitu luoda."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "Ei voitu viedä projektin tiedostoja"
+msgstr "Ei voitu viedä projektin tiedostoja."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "Ei voida avata tiedostoa kirjoitettavaksi:"
+msgstr "Ei voida avata tiedostoa luettavaksi polulta \"%s\"."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2986,7 +2978,7 @@ msgstr "Värioperaattori."
 
 #: editor/editor_export.cpp
 msgid "64 Bits"
-msgstr ""
+msgstr "64 bittiä"
 
 #: editor/editor_export.cpp
 msgid "Embed PCK"
@@ -2999,19 +2991,19 @@ msgstr "Tekstuurialue"
 
 #: editor/editor_export.cpp
 msgid "BPTC"
-msgstr ""
+msgstr "BPTC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "S3TC"
-msgstr ""
+msgstr "S3TC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC"
-msgstr ""
+msgstr "ETC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC2"
-msgstr ""
+msgstr "ETC2"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -3036,19 +3028,16 @@ msgid "Prepare Template"
 msgstr "Hallinnoi malleja"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist."
-msgstr "Annettu vientipolku ei ole olemassa:"
+msgstr "Annettu vientipolku ei ole olemassa."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "Mallitiedostoa ei löytynyt:"
+msgstr "Mallitiedostoa \"%s\" ei löytynyt."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to copy export template."
-msgstr "Virheellinen vientimalli:"
+msgstr "Vientimallin kopiointi epäonnistui."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
@@ -5253,9 +5242,8 @@ msgid "Size:"
 msgstr "Koko:"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "Page:"
-msgstr "Sivu: "
+msgstr "Sivu:"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5548,9 +5536,8 @@ msgid "File Dialog"
 msgstr "XForm-ikkuna"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Thumbnail Size"
-msgstr "Pienoiskuva..."
+msgstr "Pienoiskuvan koko"
 
 #: editor/editor_settings.cpp
 msgid "Docks"
@@ -6212,9 +6199,8 @@ msgid "Auto Save"
 msgstr "Jaa automaattisesti"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Save Before Running"
-msgstr "Tallenna kohtaus ennen suorittamista..."
+msgstr "Tallenna kohtaus ennen suorittamista"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6300,9 +6286,8 @@ msgstr "Varastoidaan tiedostoa:"
 #: editor/editor_settings.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Background Color"
-msgstr "Virheellinen taustaväri."
+msgstr "Taustaväri"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -8450,9 +8435,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Aseta loppuanimaatio. Tämä on hyödyllistä alisiirtymiä varten."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition:"
-msgstr "Siirtymä: "
+msgstr "Siirtymä:"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Play Mode:"
@@ -10226,9 +10210,8 @@ msgid "Volume"
 msgstr "Tilavuus"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Source:"
-msgstr "Emission lähde: "
+msgstr "Emission lähde:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -11879,19 +11862,16 @@ msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Simplification:"
-msgstr "Yksinkertaistus: "
+msgstr "Yksinkertaistus:"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels):"
-msgstr "Kutista (pikseleissä): "
+msgstr "Kutista (pikseleissä):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Grow (Pixels):"
-msgstr "Suurrennus (pikseleissä): "
+msgstr "Suurrennus (pikseleissä):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
@@ -13150,9 +13130,10 @@ msgstr "Tarttumisen asetukset"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
 msgstr "Siirtymä:"
@@ -14481,14 +14462,12 @@ msgid "More Info..."
 msgstr "Siirrä..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export PCK/Zip..."
-msgstr "Vie PCK/Zip"
+msgstr "Vie PCK/Zip..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Project..."
-msgstr "Vie projekti"
+msgstr "Vie projekti..."
 
 #: editor/project_export.cpp
 msgid "Export All"
@@ -14500,9 +14479,8 @@ msgid "Choose an export mode:"
 msgstr "Ole hyvä ja valitse tyhjä kansio."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All..."
-msgstr "Vie kaikki"
+msgstr "Vie kaikki..."
 
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
@@ -14586,16 +14564,17 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Virheellinen projektin polku (muuttuiko mikään?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Tiedoston project.godot lataus projektin polusta epäonnistui (virhe %d). Se "
 "saattaa puuttua tai olla vioittunut."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "Ei voitu muokata project.godot tiedostoa projektin polussa."
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Ei voida avata projektia kohteesta '%s'."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -17139,9 +17118,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "GDNative singleton on poistettu käytöstä"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-#, fuzzy
 msgid "Libraries:"
-msgstr "Kirjastot: "
+msgstr "Kirjastot:"
 
 #: modules/gdnative/nativescript/nativescript.cpp
 #, fuzzy
@@ -18063,18 +18041,16 @@ msgstr ""
 "korjaa solmusi."
 
 #: modules/visual_script/visual_script.cpp
-#, fuzzy
 msgid "Node returned an invalid sequence output:"
-msgstr "Solmu palautti virheellisen jakson tulosteen: "
+msgstr "Solmu palautti virheellisen jakson tulosteen:"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr "Jaksobitti löytyi, mutta solmua ei löydy pinosta, raportoi bugi!"
 
 #: modules/visual_script/visual_script.cpp
-#, fuzzy
 msgid "Stack overflow with stack depth:"
-msgstr "Pinon ylivuoto pinosyvyydellä: "
+msgstr "Pinon ylivuoto pinosyvyydellä:"
 
 #: modules/visual_script/visual_script.cpp
 #, fuzzy
@@ -18444,18 +18420,16 @@ msgid "for (elem) in (input):"
 msgstr "kullekin (elementille) (syötteessä):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Input type not iterable:"
-msgstr "Syötetyyppi ei ole iteroitavissa: "
+msgstr "Syötetyyppi ei ole iteroitavissa:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
 msgstr "Iteraattori muuttui epäkelvoksi"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Iterator became invalid:"
-msgstr "Iteraattori muuttui epäkelvoksi: "
+msgstr "Iteraattori muuttui epäkelvoksi:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
@@ -18613,19 +18587,16 @@ msgstr "Laadi taulukko"
 
 #: modules/visual_script/visual_script_nodes.cpp scene/resources/material.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Operator"
-msgstr "Iteraattori"
+msgstr "Operaattori"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Invalid argument of type:"
-msgstr ": Virheellinen argumentti tyyppiä: "
+msgstr "Virheellinen argumentti tyyppiä:"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Invalid arguments:"
-msgstr ": Virheelliset argumentit: "
+msgstr "Virheelliset argumentit:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
@@ -18637,14 +18608,12 @@ msgid "Var Name"
 msgstr "Nimi"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "VariableGet not found in script:"
-msgstr "VariableGet ei löytynyt skriptistä: "
+msgstr "VariableGet ei löytynyt skriptistä:"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "VariableSet not found in script:"
-msgstr "VariableSet ei löytynyt skriptistä: "
+msgstr "VariableSet ei löytynyt skriptistä:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Preload"
@@ -19341,15 +19310,13 @@ msgid "Code Signing"
 msgstr "Allekirjoitetaan DMG-koodi"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"'apksigner' ei löydy.\n"
-"Ole hyvä ja tarkista, että komento on saatavilla Android SDK build-tools "
-"hakemistossa.\n"
-"Tuloksena syntynyt %s on allekirjoittamaton."
+"'apksigner' ei löydy. Ole hyvä ja tarkista, että komento on saatavilla "
+"Android SDK build-tools hakemistossa. Tuloksena syntynyt %s on "
+"allekirjoittamaton."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -19364,9 +19331,8 @@ msgid "Could not find keystore, unable to export."
 msgstr "Keystorea ei löytynyt, ei voida viedä."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not start apksigner executable."
-msgstr "Aliprosessia ei voitu käynnistää!"
+msgstr "apkgsigner-käynnistystiedostoa ei voitu käynnistää."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -19400,9 +19366,8 @@ msgstr ""
 "Virheellinen tiedostonimi! Android APK tarvitsee *.apk tiedostopäätteen."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "Vientiformaatti ei ole tuettu!\n"
+msgstr "Vientiformaatti ei ole tuettu!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19413,28 +19378,24 @@ msgstr ""
 "versiotietoa. Ole hyvä ja uudelleenasenna se 'Projekti'-valikosta."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Androidin käännösversion epäyhteensopivuus:\n"
-"   Malli asennettu: %s\n"
-"   Godotin versio: %s\n"
-"Ole hyvä ja uudelleenasenna Androidin käännösmalli 'Projekti'-valikosta."
+"Androidin käännösversion epäyhteensopivuus: Malli asennettu: %s, Godotin "
+"versio: %s. Ole hyvä ja uudelleenasenna Androidin käännösmalli 'Projekti'-"
+"valikosta."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
 "Ei voitu ylikirjoittaa res://android/build/res/*.xml tiedostoja projektin "
-"nimellä"
+"nimellä."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "Ei voitu viedä projektitiedostoja gradle-projektiksi.\n"
+msgstr "Ei voitu viedä projektitiedostoja gradle-projektiksi."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -19445,12 +19406,11 @@ msgid "Building Android Project (gradle)"
 msgstr "Käännetään Android-projektia (gradle)"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"Android-projektin käännös epäonnistui, tarkista virhe tulosteesta.\n"
+"Android-projektin käännös epäonnistui, tarkista virhe tulosteesta. "
 "Vaihtoehtoisesti, lue docs.godotengine.org sivustolta Androidin "
 "käännösdokumentaatio."
 
@@ -19467,30 +19427,25 @@ msgstr ""
 "tulosteet gradle-projektin hakemistosta."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Package not found: \"%s\"."
-msgstr "Pakettia ei löytynyt: %s"
+msgstr "Pakettia ei löytynyt: \"%s\"."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Creating APK..."
 msgstr "Luodaan APK:ta..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"Ei löydetty APK-vientimallia vientiä varten:\n"
-"%s"
+msgstr "Ei löydetty APK-vientimallia vientiä varten: \"%s\"."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
-"Vientimalleista puuttuu kirjastoja valituille arkkitehtuureille: %s.\n"
-"Ole hyvä ja kokoa malli, jossa on kaikki tarvittavat kirjastot, tai poista "
+"Vientimalleista puuttuu kirjastoja valituille arkkitehtuureille: %s. Ole "
+"hyvä ja kokoa malli, jossa on kaikki tarvittavat kirjastot, tai poista "
 "puuttuvien arkkitehtuurien valinta viennin esiasetuksista."
 
 #: platform/android/export/export_plugin.cpp
@@ -19498,9 +19453,8 @@ msgid "Adding files..."
 msgstr "Lisätään tiedostoja..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files."
-msgstr "Ei voitu viedä projektin tiedostoja"
+msgstr "Ei voitu viedä projektin tiedostoja."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -19779,19 +19733,16 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Suorita viety HTML järjestelmän oletusselaimessa."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export: \"%s\"."
-msgstr "Mallin avaus vientiin epäonnistui:"
+msgstr "Mallin avaus vientiin epäonnistui: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template: \"%s\"."
-msgstr "Virheellinen vientimalli:"
+msgstr "Virheellinen vientimalli: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file: \"%s\"."
-msgstr "Ei voitu kirjoittaa tiedostoa:"
+msgstr "Ei voitu kirjoittaa tiedostoa: \"%s\"."
 
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -19799,9 +19750,8 @@ msgid "Icon Creation"
 msgstr "Aseta marginaali"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file: \"%s\"."
-msgstr "Ei voitu lukea tiedostoa:"
+msgstr "Ei voitu lukea tiedostoa: \"%s\"."
 
 #: platform/javascript/export/export.cpp
 msgid "PWA"
@@ -19882,19 +19832,16 @@ msgid "Icon 512 X 512"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell: \"%s\"."
-msgstr "Ei voitu lukea HTML tulkkia:"
+msgstr "Ei voitu lukea HTML tulkkia: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory: %s."
-msgstr "Ei voitu luoda HTTP-palvelimen hakemistoa:"
+msgstr "Ei voitu luoda HTTP-palvelimen hakemistoa: %s."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server: %d."
-msgstr "Virhe käynnistettäessä HTTP-palvelinta:"
+msgstr "Virhe käynnistettäessä HTTP-palvelinta: %d."
 
 #: platform/javascript/export/export.cpp
 msgid "Web"
@@ -20191,9 +20138,8 @@ msgid "Could not open icon file \"%s\"."
 msgstr "Ei voitu viedä projektin tiedostoja"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start xcrun executable."
-msgstr "Aliprosessia ei voitu käynnistää!"
+msgstr "xcrun-käynnistystiedostoa ei voitu käynnistää."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20280,9 +20226,8 @@ msgid "DMG Creation"
 msgstr "Suunnat"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start hdiutil executable."
-msgstr "Aliprosessia ei voitu käynnistää!"
+msgstr "hkiutil-käynnistystiedostoa ei voitu käynnistää."
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed - file exists."
@@ -20302,9 +20247,8 @@ msgid "Could not find template app to export: \"%s\"."
 msgstr "Ei löydetty app-vientimallia vientiä varten:"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid export format."
-msgstr "Virheellinen vientimalli:"
+msgstr "Virheellinen vientimalli."
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -20369,9 +20313,8 @@ msgid "ZIP Creation"
 msgstr "Projekti"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "Ei voitu viedä projektitiedostoja gradle-projektiksi.\n"
+msgstr "Ei voitu avata luettavaksi tiedostoa polulta \"%s\"."
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -20839,9 +20782,8 @@ msgid "Signtool failed to sign executable: %s."
 msgstr "Virheellinen käynnistystiedosto."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to remove temporary file \"%s\"."
-msgstr "Väliaikaista tiedosta ei voida poistaa:"
+msgstr "Väliaikaista tiedosta ei voida poistaa: \"%s\"."
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -21944,9 +21886,8 @@ msgstr "Matkaa"
 
 #: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
 #: scene/main/canvas_layer.cpp
-#, fuzzy
 msgid "Rotation Degrees"
-msgstr "Kierto %s astetta."
+msgstr "Kierto asteina"
 
 #: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
@@ -24204,6 +24145,15 @@ msgstr "Virhe"
 msgid "AABB"
 msgstr ""
 
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Lajittele"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
+msgstr ""
+
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Geometry"
@@ -25137,9 +25087,8 @@ msgid "Max Value"
 msgstr "Arvo"
 
 #: scene/gui/range.cpp
-#, fuzzy
 msgid "Page"
-msgstr "Sivu: "
+msgstr "Sivu"
 
 #: scene/gui/range.cpp
 #, fuzzy
@@ -25575,9 +25524,8 @@ msgid "Max Redirects"
 msgstr ""
 
 #: scene/main/http_request.cpp
-#, fuzzy
 msgid "Timeout"
-msgstr "Aikakatkaisu."
+msgstr "Aikakatkaisu"
 
 #: scene/main/node.cpp
 msgid ""
@@ -27045,9 +26993,8 @@ msgid "Distance"
 msgstr "Poimintaetäisyys:"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Transition"
-msgstr "Siirtymä: "
+msgstr "Siirtymä"
 
 #: scene/resources/environment.cpp
 msgid "DOF Near Blur"
@@ -28401,9 +28348,8 @@ msgid "Physics Engine"
 msgstr "Fysiikkaruutujen %"
 
 #: servers/physics_server.cpp
-#, fuzzy
 msgid "Center Of Mass"
-msgstr "Keskitä vasemmalle"
+msgstr "Massakeskipiste"
 
 #: servers/physics_server.cpp
 msgid "Principal Inertia Axes"
@@ -28459,29 +28405,24 @@ msgid "VRAM Compression"
 msgstr "Lauseke"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import BPTC"
-msgstr "Tuo"
+msgstr "Tuo BPTC"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import S3TC"
-msgstr "Tuo"
+msgstr "Tuo S3TC"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import ETC"
-msgstr "Tuo"
+msgstr "Tuo ETC"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import ETC2"
-msgstr "Tuo"
+msgstr "Tuo ETC2"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import PVRTC"
-msgstr "Tuo teema"
+msgstr "Tuo PVRTC"
 
 #: servers/visual_server.cpp
 msgid "Lossless Compression"
@@ -28612,9 +28553,8 @@ msgid "Ninepatch Mode"
 msgstr "Interpolaatiotila"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "OpenGL"
-msgstr "Avaa"
+msgstr "OpenGL"
 
 #: servers/visual_server.cpp
 msgid "Batching Send Null"

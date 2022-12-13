@@ -13105,9 +13105,10 @@ msgstr "Opsi-opsi Snap"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
 msgstr "Pengimbangan:"
@@ -14569,16 +14570,17 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Lokasi proyek tidak valid (mengubah sesuatu?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Tidak dapat memuat project.godot dalam lokasi proyek (galat %d). Mungkin "
 "berkas itu tidak ada atau rusak."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "Tidak dapat menyunting project.godot dalam lokasi proyek."
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Tidak dapat membuka proyek di '%s'."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -23963,6 +23965,16 @@ msgstr "Galat"
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
 msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Urutkan"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Use AABB Center"
+msgstr "Gunakan Sebagai Kemudi"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 #, fuzzy
