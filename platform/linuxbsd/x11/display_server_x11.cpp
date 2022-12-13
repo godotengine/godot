@@ -469,7 +469,7 @@ void DisplayServerX11::clipboard_set(const String &p_text) {
 	{
 		// The clipboard content can be accessed while polling for events.
 		MutexLock mutex_lock(events_mutex);
-		internal_clipboard = p_text;
+		current_clipboard = p_text;
 	}
 
 	XSetSelectionOwner(x11_display, XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
@@ -482,7 +482,7 @@ void DisplayServerX11::clipboard_set_primary(const String &p_text) {
 		{
 			// The clipboard content can be accessed while polling for events.
 			MutexLock mutex_lock(events_mutex);
-			internal_clipboard_primary = p_text;
+			current_clipboard_primary = p_text;
 		}
 
 		XSetSelectionOwner(x11_display, XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
@@ -490,196 +490,160 @@ void DisplayServerX11::clipboard_set_primary(const String &p_text) {
 	}
 }
 
-Bool DisplayServerX11::_predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg) {
-	if (event->type == SelectionNotify && event->xselection.requestor == *(Window *)arg) {
-		return True;
-	} else {
-		return False;
+void DisplayServerX11::_init_clipboard() {
+	clipboard_atom = XInternAtom(x11_display, "CLIPBOARD", False);
+	clipboard_primary_atom = XA_PRIMARY;
+
+	XFixesSelectSelectionInput(x11_display, DefaultRootWindow(x11_display), clipboard_atom, XFixesSetSelectionOwnerNotifyMask | XFixesSelectionClientCloseNotifyMask);
+	XFixesSelectSelectionInput(x11_display, DefaultRootWindow(x11_display), clipboard_primary_atom, XFixesSetSelectionOwnerNotifyMask | XFixesSelectionClientCloseNotifyMask);
+}
+
+void DisplayServerX11::_on_clipboard_change(const Atom selection) {
+	if (selection == clipboard_atom) {
+		_update_clipboard();
+	} else if (selection == clipboard_primary_atom) {
+		_update_clipboard_primary();
 	}
 }
 
-Bool DisplayServerX11::_predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg) {
-	if (event->type == PropertyNotify && event->xproperty.state == PropertyNewValue) {
-		return True;
+void DisplayServerX11::_update_clipboard() {
+	_request_selection(clipboard_atom, XInternAtom(x11_display, "UTF8_STRING", False));
+}
+
+void DisplayServerX11::_update_clipboard_primary() {
+	_request_selection(clipboard_primary_atom, XInternAtom(x11_display, "UTF8_STRING", False));
+}
+
+void DisplayServerX11::_request_selection(Atom selection, Atom target) const {
+	XConvertSelection(
+			x11_display,
+			selection,
+			target, selection,
+			windows[MAIN_WINDOW_ID].x11_window,
+			CurrentTime);
+}
+
+void DisplayServerX11::_handle_selection_notify(Window x11_window, Atom selection, Atom property) {
+	if (property == None) {
+		_cleanup_clipboard(selection);
+		return;
+	}
+
+	// We cannot rely on target as it's not the actual type, it can be INCR for example.
+	Atom type;
+	int format;
+	unsigned long length, remaining_length;
+	unsigned char *data;
+	int result = XGetWindowProperty(x11_display, x11_window,
+			selection,
+			0, LONG_MAX,
+			False,
+			AnyPropertyType,
+			&type, &format,
+			&length, &remaining_length,
+			&data);
+
+	if (result != Success) {
+		_cleanup_clipboard(selection);
+		return;
+	}
+
+	if (type == XInternAtom(x11_display, "INCR", False)) {
+		_clipboard_get_incremental(x11_window, selection);
 	} else {
-		return False;
+		_clipboard_get_property(selection, data);
+	}
+
+	XFree(data);
+}
+
+void DisplayServerX11::_clipboard_get_property(Atom selection, unsigned char *data) {
+	if (selection == clipboard_atom) {
+		current_clipboard.parse_utf8((const char *)data);
+	} else {
+		current_clipboard_primary.parse_utf8((const char *)data);
 	}
 }
 
-String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const {
-	String ret;
+void DisplayServerX11::_clipboard_get_incremental(Window x11_window, Atom selection) {
+	DEBUG_LOG_X11("INCR selection started.\n");
 
-	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
-	if (selection_owner == x11_window) {
-		static const char *target_type = "PRIMARY";
-		if (p_source != None && get_atom_name(x11_display, p_source) == target_type) {
-			return internal_clipboard_primary;
+	// Delete INCR property to notify the owner.
+	XDeleteProperty(x11_display, x11_window, selection);
+	incr_in_progress = true;
+}
+
+void DisplayServerX11::_handle_clipboard_incr(Window x11_window, Atom selection) {
+	Atom type;
+	int format;
+	unsigned long length, remaining_bytes;
+	unsigned char *data;
+	int result = XGetWindowProperty(
+			x11_display, x11_window,
+			selection,
+			0, LONG_MAX,
+			True, // Delete property to notify the owner.
+			AnyPropertyType,
+			&type, &format,
+			&length, &remaining_bytes,
+			&data);
+
+	if (result == Success) {
+		if (length > 0) {
+			DEBUG_LOG_X11("INCR selection chunk: len=%lu\n", length);
+			_handle_incr_chunk(data, length);
 		} else {
-			return internal_clipboard;
+			DEBUG_LOG_X11("INCR selection end\n");
+			_finish_incr(selection);
 		}
+
+		XFree(data);
+	} else {
+		DEBUG_LOG_X11("Failed getting INCR selection chunk\n");
+
+		_cleanup_clipboard(selection);
+		clipboard_incr_buffer.clear();
+		incr_in_progress = false;
 	}
-
-	if (selection_owner != None) {
-		// Block events polling while processing selection events.
-		MutexLock mutex_lock(events_mutex);
-
-		Atom selection = XA_PRIMARY;
-		XConvertSelection(x11_display, p_source, target, selection,
-				x11_window, CurrentTime);
-
-		XFlush(x11_display);
-
-		// Blocking wait for predicate to be True and remove the event from the queue.
-		XEvent event;
-		XIfEvent(x11_display, &event, _predicate_clipboard_selection, (XPointer)&x11_window);
-
-		// Do not get any data, see how much data is there.
-		Atom type;
-		int format, result;
-		unsigned long len, bytes_left, dummy;
-		unsigned char *data;
-		XGetWindowProperty(x11_display, x11_window,
-				selection, // Tricky..
-				0, 0, // offset - len
-				0, // Delete 0==FALSE
-				AnyPropertyType, // flag
-				&type, // return type
-				&format, // return format
-				&len, &bytes_left, // data length
-				&data);
-
-		if (data) {
-			XFree(data);
-		}
-
-		if (type == XInternAtom(x11_display, "INCR", 0)) {
-			// Data is going to be received incrementally.
-			DEBUG_LOG_X11("INCR selection started.\n");
-
-			LocalVector<uint8_t> incr_data;
-			uint32_t data_size = 0;
-			bool success = false;
-
-			// Delete INCR property to notify the owner.
-			XDeleteProperty(x11_display, x11_window, type);
-
-			// Process events from the queue.
-			bool done = false;
-			while (!done) {
-				if (!_wait_for_events()) {
-					// Error or timeout, abort.
-					break;
-				}
-
-				// Non-blocking wait for next event and remove it from the queue.
-				XEvent ev;
-				while (XCheckIfEvent(x11_display, &ev, _predicate_clipboard_incr, nullptr)) {
-					result = XGetWindowProperty(x11_display, x11_window,
-							selection, // selection type
-							0, LONG_MAX, // offset - len
-							True, // delete property to notify the owner
-							AnyPropertyType, // flag
-							&type, // return type
-							&format, // return format
-							&len, &bytes_left, // data length
-							&data);
-
-					DEBUG_LOG_X11("PropertyNotify: len=%lu, format=%i\n", len, format);
-
-					if (result == Success) {
-						if (data && (len > 0)) {
-							uint32_t prev_size = incr_data.size();
-							if (prev_size == 0) {
-								// First property contains initial data size.
-								unsigned long initial_size = *(unsigned long *)data;
-								incr_data.resize(initial_size);
-							} else {
-								// New chunk, resize to be safe and append data.
-								incr_data.resize(MAX(data_size + len, prev_size));
-								memcpy(incr_data.ptr() + data_size, data, len);
-								data_size += len;
-							}
-						} else {
-							// Last chunk, process finished.
-							done = true;
-							success = true;
-						}
-					} else {
-						print_verbose("Failed to get selection data chunk.");
-						done = true;
-					}
-
-					if (data) {
-						XFree(data);
-					}
-
-					if (done) {
-						break;
-					}
-				}
-			}
-
-			if (success && (data_size > 0)) {
-				ret.parse_utf8((const char *)incr_data.ptr(), data_size);
-			}
-		} else if (bytes_left > 0) {
-			// Data is ready and can be processed all at once.
-			result = XGetWindowProperty(x11_display, x11_window,
-					selection, 0, bytes_left, 0,
-					AnyPropertyType, &type, &format,
-					&len, &dummy, &data);
-
-			if (result == Success) {
-				ret.parse_utf8((const char *)data);
-			} else {
-				print_verbose("Failed to get selection data.");
-			}
-
-			if (data) {
-				XFree(data);
-			}
-		}
-	}
-
-	return ret;
 }
 
-String DisplayServerX11::_clipboard_get(Atom p_source, Window x11_window) const {
-	String ret;
-	Atom utf8_atom = XInternAtom(x11_display, "UTF8_STRING", True);
-	if (utf8_atom != None) {
-		ret = _clipboard_get_impl(p_source, x11_window, utf8_atom);
+void DisplayServerX11::_handle_incr_chunk(unsigned char *chunk, unsigned long length) {
+	int prev_size = clipboard_incr_buffer.size();
+
+	clipboard_incr_buffer.resize(prev_size + length);
+	memcpy((void *)(clipboard_incr_buffer.ptr() + prev_size), chunk, length);
+}
+
+void DisplayServerX11::_finish_incr(Atom selection) {
+	if (selection == clipboard_atom) {
+		current_clipboard.parse_utf8((const char *)clipboard_incr_buffer.ptr());
+	} else {
+		current_clipboard_primary.parse_utf8((const char *)clipboard_incr_buffer.ptr());
 	}
-	if (ret.is_empty()) {
-		ret = _clipboard_get_impl(p_source, x11_window, XA_STRING);
+
+	clipboard_incr_buffer.clear();
+	incr_in_progress = false;
+}
+
+// Used for cleaning up clipboard on errors.
+void DisplayServerX11::_cleanup_clipboard(Atom selection) {
+	if (selection == clipboard_atom) {
+		current_clipboard.clear();
+	} else {
+		current_clipboard_primary.clear();
 	}
-	return ret;
 }
 
 String DisplayServerX11::clipboard_get() const {
 	_THREAD_SAFE_METHOD_
 
-	String ret;
-	ret = _clipboard_get(XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window);
-
-	if (ret.is_empty()) {
-		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
-	}
-
-	return ret;
+	return current_clipboard;
 }
 
 String DisplayServerX11::clipboard_get_primary() const {
 	_THREAD_SAFE_METHOD_
 
-	String ret;
-	ret = _clipboard_get(XInternAtom(x11_display, "PRIMARY", 0), windows[MAIN_WINDOW_ID].x11_window);
-
-	if (ret.is_empty()) {
-		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
-	}
-
-	return ret;
+	return current_clipboard_primary;
 }
 
 Bool DisplayServerX11::_predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg) {
@@ -2099,6 +2063,29 @@ void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
 	}
 }
 
+void DisplayServerX11::_on_property_change(WindowID p_window, Atom atom, int state) {
+	if (incr_in_progress && (atom == clipboard_atom || atom == clipboard_primary_atom)) {
+		_handle_clipboard_incr(windows[MAIN_WINDOW_ID].x11_window, atom);
+	} else {
+		_on_window_property_change(p_window, atom);
+	}
+}
+
+void DisplayServerX11::_on_window_property_change(WindowID p_window, Atom atom) {
+	Atom wm_state_atom = XInternAtom(x11_display, "WM_STATE", True);
+	Atom net_wm_state_atom = XInternAtom(x11_display, "_NET_WM_STATE", True);
+
+	// WM_STATE is received after MapNotify,
+	// so check for minimization also on _NET_WM_STATE to not break validation
+	if (atom == wm_state_atom || atom == net_wm_state_atom) {
+		WindowData &wd = windows[p_window];
+
+		wd.minimized = _window_minimize_check(p_window);
+		wd.maximized = _window_maximize_check(p_window, "_NET_WM_STATE");
+		wd.fullscreen = _window_fullscreen_check(p_window);
+	}
+}
+
 bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 	return _window_maximize_check(p_window, "_NET_WM_ALLOWED_ACTIONS");
@@ -2257,7 +2244,6 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			//Remove full-screen
-			wd.fullscreen = false;
 			wd.exclusive_fullscreen = false;
 
 			_set_wm_fullscreen(p_window, false, false);
@@ -2292,7 +2278,6 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 				_set_wm_maximized(p_window, true);
 			}
 
-			wd.fullscreen = true;
 			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 				wd.exclusive_fullscreen = true;
 				_set_wm_fullscreen(p_window, true, true);
@@ -2321,14 +2306,12 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 		}
 	}
 
-	// Test maximized.
-	// Using EWMH -- Extended Window Manager Hints
-	if (_window_maximize_check(p_window, "_NET_WM_STATE")) {
+	if (wd.maximized) {
 		return WINDOW_MODE_MAXIMIZED;
 	}
 
 	{
-		if (_window_minimize_check(p_window)) {
+		if (wd.minimized) {
 			return WINDOW_MODE_MINIMIZED;
 		}
 	}
@@ -3328,9 +3311,9 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 		CharString clip;
 		static const char *target_type = "PRIMARY";
 		if (p_selection != None && get_atom_name(x11_display, p_selection) == target_type) {
-			clip = internal_clipboard_primary.utf8();
+			clip = current_clipboard_primary.utf8();
 		} else {
-			clip = internal_clipboard.utf8();
+			clip = current_clipboard_primary.utf8();
 		}
 		XChangeProperty(x11_display,
 				p_requestor,
@@ -3504,11 +3487,6 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	if (wd.x11_window != event->xany.window) { // Check if the correct window, in case it was not main window or anything else
 		return;
 	}
-
-	// Query display server about a possible new window state.
-	wd.fullscreen = _window_fullscreen_check(window_id);
-	wd.minimized = _window_minimize_check(window_id);
-	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE");
 
 	{
 		//the position in xconfigure is not useful here, obtain it manually
@@ -4099,33 +4077,22 @@ void DisplayServerX11::process_events() {
 				_validate_mode_on_map(window_id);
 			} break;
 
+			case PropertyNotify: {
+				DEBUG_LOG_X11("[%u] PropertyNotify window=%u\n", frame, window_id);
+				_on_property_change(window_id, event.xproperty.atom, event.xproperty.state);
+			} break;
+
 			case Expose: {
 				DEBUG_LOG_X11("[%u] Expose window=%lu (%u), count='%u' \n", frame, event.xexpose.window, window_id, event.xexpose.count);
-				if (ime_window_event) {
-					break;
-				}
-
-				windows[window_id].fullscreen = _window_fullscreen_check(window_id);
-
 				Main::force_redraw();
 			} break;
 
 			case NoExpose: {
 				DEBUG_LOG_X11("[%u] NoExpose drawable=%lu (%u) \n", frame, event.xnoexpose.drawable, window_id);
-				if (ime_window_event) {
-					break;
-				}
-
-				windows[window_id].minimized = true;
 			} break;
 
 			case VisibilityNotify: {
 				DEBUG_LOG_X11("[%u] VisibilityNotify window=%lu (%u), state=%u \n", frame, event.xvisibility.window, window_id, event.xvisibility.state);
-				if (ime_window_event) {
-					break;
-				}
-
-				windows[window_id].minimized = _window_minimize_check(window_id);
 			} break;
 
 			case LeaveNotify: {
@@ -4537,44 +4504,21 @@ void DisplayServerX11::process_events() {
 				_handle_key_event(window_id, &event.xkey, events, event_index);
 			} break;
 
-			case SelectionNotify:
+			case SelectionNotify: {
 				if (ime_window_event) {
 					break;
 				}
+
+				DEBUG_LOG_X11("[%u] SelectionNotify window=%u\n", frame, MAIN_WINDOW_ID);
+
 				if (event.xselection.target == requested) {
-					Property p = _read_property(x11_display, windows[window_id].x11_window, XInternAtom(x11_display, "PRIMARY", 0));
-
-					Vector<String> files = String((char *)p.data).split("\r\n", false);
-					XFree(p.data);
-					for (int i = 0; i < files.size(); i++) {
-						files.write[i] = files[i].replace("file://", "").uri_decode();
-					}
-
-					if (!windows[window_id].drop_files_callback.is_null()) {
-						Variant v = files;
-						Variant *vp = &v;
-						Variant ret;
-						Callable::CallError ce;
-						windows[window_id].drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
-					}
-
-					//Reply that all is well.
-					XClientMessageEvent m;
-					memset(&m, 0, sizeof(m));
-					m.type = ClientMessage;
-					m.display = x11_display;
-					m.window = xdnd_source_window;
-					m.message_type = xdnd_finished;
-					m.format = 32;
-					m.data.l[0] = windows[window_id].x11_window;
-					m.data.l[1] = 1;
-					m.data.l[2] = xdnd_action_copy; //We only ever copy.
-
-					XSendEvent(x11_display, xdnd_source_window, False, NoEventMask, (XEvent *)&m);
+					_handle_drop_message(windows[window_id]);
+				} else {
+					_handle_selection_notify(windows[MAIN_WINDOW_ID].x11_window, event.xselection.selection, event.xselection.property);
 				}
-				break;
+			} break;
 
-			case ClientMessage:
+			case ClientMessage: {
 				if (ime_window_event) {
 					break;
 				}
@@ -4635,9 +4579,11 @@ void DisplayServerX11::process_events() {
 						XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent *)&m);
 					}
 				}
-				break;
-			default:
-				break;
+			} break;
+
+			default: {
+				_process_extensions_events(windows[window_id].x11_window, &event);
+			} break;
 		}
 	}
 
@@ -4660,6 +4606,51 @@ void DisplayServerX11::process_events() {
 	}
 
 	Input::get_singleton()->flush_buffered_events();
+}
+
+void DisplayServerX11::_handle_drop_message(WindowData window_data) {
+	// TODO: This is a mess. Refactor?
+	Property p = _read_property(x11_display, window_data.x11_window, XInternAtom(x11_display, "PRIMARY", 0));
+
+	Vector<String> files = String((char *)p.data).split("\r\n", false);
+	XFree(p.data);
+	for (int i = 0; i < files.size(); i++) {
+		files.write[i] = files[i].replace("file://", "").uri_decode();
+	}
+
+	if (!window_data.drop_files_callback.is_null()) {
+		Variant v = files;
+		Variant *vp = &v;
+		Variant ret;
+		Callable::CallError ce;
+		window_data.drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
+	}
+
+	//Reply that all is well.
+	XClientMessageEvent m;
+	memset(&m, 0, sizeof(m));
+	m.type = ClientMessage;
+	m.display = x11_display;
+	m.window = xdnd_source_window;
+	m.message_type = xdnd_finished;
+	m.format = 32;
+	m.data.l[0] = window_data.x11_window;
+	m.data.l[1] = 1;
+	m.data.l[2] = xdnd_action_copy; //We only ever copy.
+
+	XSendEvent(x11_display, xdnd_source_window, False, NoEventMask, (XEvent *)&m);
+}
+
+void DisplayServerX11::_process_extensions_events(Window x11_window, XEvent *event) {
+	// NOTE: Maybe there is a way to differentiate between different extensions using event type?
+	if (ext_xfixes_loaded && event->type == ext_xfixes_event_base + XFixesSelectionNotify) {
+		DEBUG_LOG_X11("XFixesSelectionNotify\n");
+
+		XFixesSelectionNotifyEvent *selection_event = (XFixesSelectionNotifyEvent *)event;
+		if (selection_event->owner != x11_window) {
+			_on_clipboard_change(selection_event->selection);
+		}
+	}
 }
 
 void DisplayServerX11::release_rendering_thread() {
@@ -4934,7 +4925,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	windowAttributes.colormap = colormap;
 	windowAttributes.background_pixel = 0xFFFFFFFF;
 	windowAttributes.border_pixel = 0;
-	windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
+	windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | PropertyChangeMask | ExposureMask;
 
 	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
 
@@ -5288,6 +5279,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		xkb_loaded = false;
 	}
 #endif
+	if (initialize_xfixes(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		DEBUG_LOG_X11("Failed loading XFixes extension.");
+	}
+
 	if (initialize_xext(dylibloader_verbose) != 0) {
 		r_error = ERR_UNAVAILABLE;
 		ERR_FAIL_MSG("Can't load Xext dynamically.");
@@ -5409,6 +5405,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 				}
 			}
 		}
+	}
+
+	ext_xfixes_loaded = _init_ext_xfixes();
+	if (!ext_xfixes_loaded) {
+		DEBUG_LOG_X11("Could not init XFixes extention.");
 	}
 
 	if (!_refresh_device_info()) {
@@ -5747,7 +5748,18 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
 #endif
 
+	_update_clipboard();
+	_update_clipboard_primary();
+
 	r_error = OK;
+}
+
+bool DisplayServerX11::_init_ext_xfixes() {
+	bool success = XFixesQueryExtension(x11_display, &ext_xfixes_event_base, &ext_xfixes_event_error);
+	if (success) {
+		_init_clipboard();
+	}
+	return success;
 }
 
 DisplayServerX11::~DisplayServerX11() {

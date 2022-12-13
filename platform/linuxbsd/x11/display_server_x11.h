@@ -76,6 +76,7 @@
 
 #include "dynwrappers/xcursor-so_wrap.h"
 #include "dynwrappers/xext-so_wrap.h"
+#include "dynwrappers/xfixes-so_wrap.h"
 #include "dynwrappers/xinerama-so_wrap.h"
 #include "dynwrappers/xinput2-so_wrap.h"
 #include "dynwrappers/xrandr-so_wrap.h"
@@ -90,6 +91,7 @@
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xext.h>
+#include <X11/extensions/Xfixes.h>
 #include <X11/extensions/Xinerama.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/extensions/Xrender.h>
@@ -133,7 +135,14 @@ class DisplayServerX11 : public DisplayServer {
 	Atom xdnd_finished;
 	Atom xdnd_selection;
 	Atom xdnd_aware;
+	Atom clipboard_atom;
+	Atom clipboard_primary_atom;
 	Atom requested = None;
+
+	bool ext_xfixes_loaded;
+	int ext_xfixes_event_base = 0;
+	int ext_xfixes_event_error = 0;
+
 	int xdnd_version = 5;
 
 #if defined(GLES3_ENABLED)
@@ -228,8 +237,11 @@ class DisplayServerX11 : public DisplayServer {
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 
-	String internal_clipboard;
-	String internal_clipboard_primary;
+	String current_clipboard;
+	String current_clipboard_primary;
+	Vector<uint8_t> clipboard_incr_buffer;
+	bool incr_in_progress;
+
 	Window xdnd_source_window = 0;
 	::Display *x11_display;
 	char *xmbstring = nullptr;
@@ -297,9 +309,24 @@ class DisplayServerX11 : public DisplayServer {
 	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
 	void _update_window_mouse_passthrough(WindowID p_window);
 
-	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
-	String _clipboard_get(Atom p_source, Window x11_window) const;
+	void _init_clipboard();
+	void _on_clipboard_change(Atom selection);
+	void _update_clipboard();
+	void _update_clipboard_primary();
+
+	void _request_selection(Atom selection, Atom target) const;
+	void _handle_selection_notify(Window x11_window, Atom selection, Atom property);
+	void _clipboard_get_property(Atom selection, unsigned char *data);
+	void _clipboard_get_incremental(Window x11_window, Atom selection);
+
+	void _handle_clipboard_incr(Window x11_window, Atom selection);
+	void _handle_incr_chunk(unsigned char *chunk, unsigned long length);
+	void _finish_incr(Atom selection);
+
+	void _cleanup_clipboard(Atom selection);
+
 	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
+	void _handle_drop_message(WindowData window_data);
 
 	bool do_mouse_warp = false;
 
@@ -330,6 +357,8 @@ class DisplayServerX11 : public DisplayServer {
 	static Property _read_property(Display *p_display, Window p_window, Atom p_property);
 
 	void _update_real_mouse_position(const WindowData &wd);
+	void _on_property_change(WindowID p_window, Atom atom, int state);
+	void _on_window_property_change(WindowID p_window, Atom atom);
 	bool _window_maximize_check(WindowID p_window, const char *p_atom_name) const;
 	bool _window_fullscreen_check(WindowID p_window) const;
 	bool _window_minimize_check(WindowID p_window) const;
@@ -356,11 +385,12 @@ class DisplayServerX11 : public DisplayServer {
 	static void _poll_events_thread(void *ud);
 	bool _wait_for_events() const;
 	void _poll_events();
+	void _process_extensions_events(Window window, XEvent *event);
 	void _check_pending_events(LocalVector<XEvent> &r_events);
 
+	bool _init_ext_xfixes();
+
 	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
-	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
-	static Bool _predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg);
 	static Bool _predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg);
 
 protected:

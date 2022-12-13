@@ -12,6 +12,7 @@ if env["use_sowrap"]:
         [
             "dynwrappers/xlib-so_wrap.c",
             "dynwrappers/xcursor-so_wrap.c",
+            "dynwrappers/xfixes-so_wrap.c",
             "dynwrappers/xinerama-so_wrap.c",
             "dynwrappers/xinput2-so_wrap.c",
             "dynwrappers/xrandr-so_wrap.c",
