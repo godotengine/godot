@@ -288,6 +288,8 @@ Generated\ Files/
 *.pidb
 *.svclog
 *.scc
+# compile profiler output
+*.obj.profile
 
 # Visual C++ cache files
 ipch/

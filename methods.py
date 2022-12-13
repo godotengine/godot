@@ -5,7 +5,13 @@ import glob
 import subprocess
 from collections import OrderedDict
 from collections.abc import Mapping
-from typing import Iterator
+from typing import Iterator, List, Tuple
+
+# Only used for MSVC compile profiling, not required
+try:
+    import pydemangler
+except:
+    pass
 
 
 def add_source_files(self, sources, files):
@@ -32,6 +38,17 @@ def add_source_files(self, sources, files):
         if obj in sources:
             print('WARNING: Object "{}" already included in environment sources.'.format(obj))
             continue
+        if "profile_compilation" in self:
+            if not isinstance(path, str):
+                profile_path = "#" + obj[0].get_relpath() + ".profile"
+            else:
+                profile_path = os.path.splitext(path)[0] + self["OBJSUFFIX"] + ".profile"
+            # only enabled on MSVC for now
+            if self.msvc:
+                # mark the ".profile" file as a side effect and set it to be cleaned when --clean is run
+                # Don't add it to the sources, as there is no builder for it
+                prof_target = self.SideEffect(profile_path, obj)
+                self.Clean(obj, prof_target)
         sources.append(obj)
 
 
@@ -422,11 +439,141 @@ def sort_module_list(env):
         env.module_list.move_to_end(k)
 
 
+def parse_msvc_profiler_output(output: str) -> Tuple[float, float, str, List[Tuple[str, float, int]]]:
+    lines = output.splitlines()
+    c1_time: float = 0.0
+    c2_time: float = 0.0
+    anomalistic_section = False
+    anomalistic_func_count: int = 0
+    most_hit_section = False
+    least_hit_section = False
+    anom_funcs: List[Tuple[str, float, int]] = []
+    most_hit_funcs: List[Tuple[str, int]] = []
+    least_hit_funcs: List[Tuple[str, int]] = []
+    for i in range(0, len(lines)):
+        _line = lines[i].strip()
+        if _line.startswith("time"):
+            # time([...]\c1xx.dll)=3.732s
+            if _line.find("c1xx.dll") != -1:
+                c1_time = float(_line.split("=")[1].strip("s"))
+            # time([...]\c2.dll)=350.095s
+            elif _line.find("c2.dll") != -1:
+                c2_time = float(_line.split("=")[1].strip("s"))
+        # 	Anomalistic Compile Times: 2
+        if _line.startswith("Anomalistic"):
+            anomalistic_func_count = int(_line.split(":")[1].strip())
+            anomalistic_section = True
+        elif anomalistic_section:
+            if not _line.startswith("?") or _line.startswith("@"):
+                anomalistic_section = False
+            else:
+                # 	?_font_render_range[...]@Z: 315.485 sec, 196944 instrs
+                # - OR -
+                # 	?_font_render_range[...]@Z: 315.485 sec
+                _spl = _line.split(":")
+                mangled_func = _spl[0]
+                try:
+                    func = pydemangler.demangle(mangled_func)
+                finally:
+                    if not func:
+                        func = mangled_func
+                stats = _spl[1].split(",")
+                time: float = float(stats[0].replace("sec", "").strip())
+                instrs: int = int(stats[1].replace("instrs", "").strip()) if len(stats) > 1 else 0
+                anom_funcs.append((func, time, instrs))
+                suffix = ", " + str(instrs) + " instrs" if instrs > 0 else ""
+                # reconstruct line
+                lines[i] = "\t\t" + func + ": " + str("%.3f" % time) + " sec" + suffix
+                continue
+        # 	Most Hits:
+        if _line.startswith("Most Hits"):
+            most_hit_section = True
+        elif _line.startswith("Least Hits"):
+            most_hit_section = True
+        elif most_hit_section or least_hit_section:
+            if not _line.startswith("?") or _line.startswith("@"):
+                if most_hit_section:
+                    most_hit_section = False
+                elif least_hit_section:
+                    least_hit_section = False
+            else:
+                _spl = _line.strip().split(":")
+                mangled_func = _spl[0].strip()
+                try:
+                    func = pydemangler.demangle(mangled_func)
+                finally:
+                    if not func:
+                        func = mangled_func
+                hits: int = int(_spl[1].strip())
+                if most_hit_section:
+                    most_hit_funcs.append((func, hits))
+                elif least_hit_section:
+                    least_hit_funcs.append((func, hits))
+                lines[i] = "\t\t" + func + ": " + str(hits)
+                continue
+    demangled_output = "\n".join(lines)
+    return (c1_time, c2_time, demangled_output, anom_funcs)
+
+
+def write_msvc_compiliation_profile(cmd, args, env, cmdline, output, err):
+    if "SCONS_USING_MSVC" in env and cmd.startswith("cl"):
+        obj_file = ""
+        profile_file = ""
+        code_file = ""
+        for i in range(0, len(args)):
+            arg = args[i]
+            if arg.startswith("/Fo"):
+                obj_file = arg.replace("/Fo", "")
+                if not obj_file:
+                    # try next arg
+                    obj_file = args[i + 1]
+                profile_file = obj_file + ".profile"
+            if arg.startswith("/c"):
+                code_file = arg.replace("/c", "")
+                if not code_file:
+                    # code file is next arg
+                    code_file = args[i + 1]
+            if profile_file and code_file:
+                break
+        if not profile_file:
+            raise
+        c1_time, c2_time, demangled_output, anom_funcs = parse_msvc_profiler_output(output)
+        with open(profile_file, "w") as pffw:
+            pffw.write("***** Compile Command: " + cmdline + "\n")
+            pffw.write("***** Obj file: " + obj_file + "\n")
+            pffw.write("***** Code file: " + code_file + "\n")
+            pffw.write("***** Compiler output:\n")
+            pffw.write(demangled_output)
+            if err:
+                pffw.write("\n***** Errors:\n")
+                pffw.write(err)
+        _, tail = os.path.split(obj_file)
+        obj_file = tail if tail else obj_file
+        perf_string = "PERF - %s: total: %.2fs  frontend: %.2fs  backend: %.2fs" % (
+            obj_file,
+            (c1_time + c2_time),
+            c1_time,
+            c2_time,
+        )
+        # if the compile time is greater than 40 seconds, print the anomalistic functions
+        if c1_time + c2_time > 40.0:
+            perf_string = "!!!! " + perf_string + " !!!!\n"
+            perf_string += "!!!! Anomalistic functions:\n"
+            for func, time, instrs in anom_funcs:
+                perf_string += "!!!! %s: %0.2f secs" % (func, time)
+                if instrs > 0:
+                    perf_string += ", %d instrs" % instrs
+                perf_string += "\n"
+            perf_string += "!!!! See profiling report for more details: " + profile_file
+        print(perf_string)
+
+
 def use_windows_spawn_fix(self, platform=None):
 
     if os.name != "nt":
         return  # not needed, only for windows
 
+    # MINGW:
     # On Windows, due to the limited command line length, when creating a static library
     # from a very high number of objects SCons will invoke "ar" once per object file;
     # that makes object files with same names to be overwritten so the last wins and
@@ -435,30 +582,59 @@ def use_windows_spawn_fix(self, platform=None):
     # got built correctly regardless the invocation strategy.
     # Furthermore, since SCons will rebuild the library from scratch when an object file
     # changes, no multiple versions of the same object file will be present.
-    self.Replace(ARFLAGS="q")
+    if not self.msvc:
+        self.Replace(ARFLAGS="q")
+
+    # MSVC:
+    # Compilation profiling to debug performance issues with MSVC builds
+    # The reason this is here in the spawner is because there's no way to capture the compiler
+    # output from the scons build action after its spawned. Ideally, we'd write the compilation
+    # profile as a seperate action after having saved the build output, but
+    # we can't without making a custom build action.
+
+    # add ENV breadcrumbs here as spawn() does not inherit the global scons env
+    if self.msvc:
+        self["ENV"]["SCONS_USING_MSVC"] = "1"
+    if "profile_compilation" in self:
+        self["ENV"]["SCONS_PROFILE_COMPILATION"] = "1"
+        # test to see if we have pydemangler and that it works
+        try:
+            test = pydemangler.demangle("?Fxi@@YAHP6AHH@Z@Z")
+        except:
+            print("Could not find pydemangler, compilation profiling output will be mangled")
+        else:
+            if not test:
+                print(
+                    "Found pydemangler, but may be configured incorrectly, compilation profiling output will be mangled"
+                )
 
     def mySubProcess(cmdline, env):
 
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        shell = False
+        # The default spawner for MSVC uses "cmd.exe /C", and if we don't use
+        # shell here, certain commands like "del" will fail to execute
+        if "SCONS_USING_MSVC" in env:
+            shell = True
         popen_args = {
             "stdin": subprocess.PIPE,
             "stdout": subprocess.PIPE,
             "stderr": subprocess.PIPE,
             "startupinfo": startupinfo,
-            "shell": False,
+            "shell": shell,
             "env": env,
         }
         if sys.version_info >= (3, 7, 0):
             popen_args["text"] = True
-        proc = subprocess.Popen(cmdline, **popen_args)
-        _, err = proc.communicate()
+        proc = subprocess.Popen(str(cmdline), **popen_args)
+        output, err = proc.communicate()
         rv = proc.wait()
         if rv:
             print("=====")
             print(err)
             print("=====")
-        return rv
+        return (rv, output, err)
 
     def mySpawn(sh, escape, cmd, args, env):
 
@@ -466,16 +642,21 @@ def use_windows_spawn_fix(self, platform=None):
         cmdline = cmd + " " + newargs
 
         rv = 0
-        env = {str(key): str(value) for key, value in iter(env.items())}
+        newenv = {str(key): str(value) for key, value in iter(env.items())}
+        # MINGW ar
         if len(cmdline) > 32000 and cmd.endswith("ar"):
             cmdline = cmd + " " + args[1] + " " + args[2] + " "
             for i in range(3, len(args)):
-                rv = mySubProcess(cmdline + args[i], env)
+                rv, output, err = mySubProcess(cmdline + args[i], newenv)
                 if rv:
                     break
         else:
-            rv = mySubProcess(cmdline, env)
-
+            rv, output, err = mySubProcess(cmdline, newenv)
+            if "SCONS_PROFILE_COMPILATION" in env:
+                try:
+                    write_msvc_compiliation_profile(cmd, args, env, cmdline, output, err)
+                except:
+                    print("Failed to write profiling data for " + cmd)
         return rv
 
     self["SPAWN"] = mySpawn

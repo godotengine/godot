@@ -189,6 +189,11 @@ def get_opts():
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
+        BoolVariable(
+            "profile_compilation",
+            "Compile with MSVCs compile-time profiling flags (/Bt /d2cgsummary /d2wpasummary)",
+            False,
+        ),
     ]
 
 
@@ -339,6 +344,12 @@ def configure_msvc(env, vcvars_msvc_config):
         env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
 
     ## Compile/link flags
+
+    if env["profile_compilation"]:
+        env.AppendUnique(CCFLAGS=["/Bt", "/d2cgsummary", "/d2wpasummary"])
+        env.AppendUnique(LINKFLAGS=["/d2:-cgsummary", "/d2:-wpasummary"])
+        # We use our own spawn() for compilation profiling because we can't get the output otherwise
+        env.use_windows_spawn_fix()
 
     if env["debug_crt"]:
         # Always use dynamic runtime, static debug CRT breaks thread_local.
