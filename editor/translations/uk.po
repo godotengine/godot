@@ -30,8 +30,8 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-27 21:37+0000\n"
-"Last-Translator: Teashrock <kajitsu22@gmail.com>\n"
+"PO-Revision-Date: 2022-10-03 12:44+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -12804,9 +12804,10 @@ msgstr "Параметри прилипання"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr "Зміщення"
 
@@ -14218,16 +14219,17 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Некоректний шлях до проєкту (щось змінилося?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Не вдалося завантажити project.godot у каталозі проєкту (помилка %d). "
 "Можливо, файл вилучено або пошкоджено."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "Не вдалося редагувати project.godot у каталозі проєкту."
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Не вдалося відкрити проєкт у «%s»."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -20477,7 +20479,7 @@ msgstr "Режим змішування"
 
 #: scene/2d/canvas_item.cpp
 msgid "Light Mode"
-msgstr "Праворуч за шириною"
+msgstr "Режим освітлення"
 
 #: scene/2d/canvas_item.cpp
 msgid "Particles Animation"
@@ -23231,6 +23233,16 @@ msgstr "Максимальна сила"
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
 msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Сортувати"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Use AABB Center"
+msgstr "Використовувати адаптивний"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 msgid "Geometry"

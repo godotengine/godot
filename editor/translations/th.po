@@ -13,13 +13,14 @@
 # PT 07 <porton555@gmail.com>, 2021.
 # SysError_ <ictsanook@hotmail.com>, 2021.
 # Kanda Ninthfish <akkhaporn@gmail.com>, 2022.
+# Absurdnoobman <jakkalin91@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-18 09:10+0000\n"
-"Last-Translator: Kanda Ninthfish <akkhaporn@gmail.com>\n"
+"PO-Revision-Date: 2022-11-26 14:36+0000\n"
+"Last-Translator: Absurdnoobman <jakkalin91@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -27,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -48,9 +49,8 @@ msgid "Exit Code"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "เปิด"
+msgstr "เปิด V-Sync"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -114,14 +114,13 @@ msgid "Maximized"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Minimized"
-msgstr "เริ่มต้น"
+msgstr "ย่อขนาด"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
-msgstr ""
+msgstr "ปรับขนาดได้"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -185,12 +184,11 @@ msgstr "ผิดพลาด"
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Error String"
-msgstr "ผิดพลาดขณะบันทึก"
+msgstr "String ผิดพลาด"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error Line"
-msgstr "ผิดพลาดขณะบันทึก"
+msgstr "บรรทัดผิดพลาด"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -213,9 +211,8 @@ msgid "Limits"
 msgstr ""
 
 #: core/command_queue_mt.cpp
-#, fuzzy
 msgid "Command Queue"
-msgstr "ctrl: หมุน"
+msgstr "คิวคำสั่ง"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
@@ -232,7 +229,7 @@ msgstr "ฟังก์ชัน"
 #: core/image.cpp core/packed_data_container.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Data"
-msgstr ""
+msgstr "ข้อมูล"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
@@ -13201,9 +13198,10 @@ msgstr "ตัวเลือกการสแนป"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
 msgstr "เลื่อน:"
@@ -14635,15 +14633,16 @@ msgid "Invalid project path (changed anything?)."
 msgstr "ตำแหน่งโปรเจกต์ผิดพลาด (ได้แก้ไขอะไรไปหรือไม่?)"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "โหลดไฟล์ project.godot ในโฟลเดอร์โปรเจกต์ไม่ได้ (ข้อผิดพลาด %d) ไฟล์อาจสูญหายหรือเสียหาย"
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "แก้ไขไฟล์ project.godot ไม่ได้"
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "ไม่สามารถเปิดโปรเจกต์ที่ '%s'"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -24074,6 +24073,15 @@ msgstr "ผิดพลาด"
 msgid "AABB"
 msgstr ""
 
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "เรียง"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
+msgstr ""
+
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Geometry"
@@ -26878,7 +26886,7 @@ msgstr "ดีบั๊ก UV"
 
 #: scene/resources/environment.cpp
 msgid "Blur"
-msgstr ""
+msgstr "เบลอร์"
 
 #: scene/resources/environment.cpp
 msgid "Edge Sharpness"
