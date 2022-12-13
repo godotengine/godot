@@ -807,9 +807,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	} else {
 		tile_data_editor_dropdown_button->set_text(TTR("Select a property editor"));
 	}
-	tile_data_editors_label->set_visible(is_visible);
-	tile_data_editors_tree->set_visible(is_visible);
-	tile_data_painting_editor_container->set_visible(is_visible);
+	tile_data_editors_scroll->set_visible(is_visible);
 }
 
 void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
@@ -2428,17 +2426,26 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	middle_vbox_container->add_child(tile_inspector_no_tile_selected_label);
 
 	// Property values palette.
+	tile_data_editors_scroll = memnew(ScrollContainer);
+	tile_data_editors_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	tile_data_editors_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	middle_vbox_container->add_child(tile_data_editors_scroll);
+
+	VBoxContainer *tile_data_editors_vbox = memnew(VBoxContainer);
+	tile_data_editors_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	tile_data_editors_scroll->add_child(tile_data_editors_vbox);
+
 	tile_data_editors_popup = memnew(Popup);
 
 	tile_data_editors_label = memnew(Label);
 	tile_data_editors_label->set_text(TTR("Paint Properties:"));
 	tile_data_editors_label->set_theme_type_variation("HeaderSmall");
-	middle_vbox_container->add_child(tile_data_editors_label);
+	tile_data_editors_vbox->add_child(tile_data_editors_label);
 
 	tile_data_editor_dropdown_button = memnew(Button);
 	tile_data_editor_dropdown_button->connect("draw", callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw));
 	tile_data_editor_dropdown_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_pressed));
-	middle_vbox_container->add_child(tile_data_editor_dropdown_button);
+	tile_data_editors_vbox->add_child(tile_data_editor_dropdown_button);
 	tile_data_editor_dropdown_button->add_child(tile_data_editors_popup);
 
 	tile_data_editors_tree = memnew(Tree);
@@ -2451,7 +2458,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tile_data_painting_editor_container = memnew(VBoxContainer);
 	tile_data_painting_editor_container->set_h_size_flags(SIZE_EXPAND_FILL);
-	middle_vbox_container->add_child(tile_data_painting_editor_container);
+	tile_data_editors_vbox->add_child(tile_data_painting_editor_container);
 
 	// Atlas source inspector.
 	atlas_source_proxy_object = memnew(TileSetAtlasSourceProxyObject());
