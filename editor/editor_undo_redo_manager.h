@@ -41,6 +41,7 @@ class EditorUndoRedoManager : public RefCounted {
 public:
 	enum SpecialHistory {
 		GLOBAL_HISTORY = 0,
+		REMOTE_HISTORY = -9,
 		INVALID_HISTORY = -99,
 	};
 
