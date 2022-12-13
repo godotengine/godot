@@ -348,14 +348,20 @@ static void ReadRuntimeDataFilesInRegistry(const std::string &runtime_registry_l
     if (ERROR_SUCCESS != open_value) {
         LoaderLogger::LogWarningMessage("",
                                         "ReadRuntimeDataFilesInRegistry - failed to open registry key " + full_registry_location);
-    } else if (ERROR_SUCCESS != RegGetValueW(hkey, nullptr, default_runtime_value_name_w.c_str(),
-                                             RRF_RT_REG_SZ | REG_EXPAND_SZ | RRF_ZEROONFAILURE, NULL,
-                                             reinterpret_cast<LPBYTE>(&value_w), &value_size_w)) {
+
+        return;
+    }
+
+    if (ERROR_SUCCESS != RegGetValueW(hkey, nullptr, default_runtime_value_name_w.c_str(),
+                                      RRF_RT_REG_SZ | REG_EXPAND_SZ | RRF_ZEROONFAILURE, NULL, reinterpret_cast<LPBYTE>(&value_w),
+                                      &value_size_w)) {
         LoaderLogger::LogWarningMessage(
             "", "ReadRuntimeDataFilesInRegistry - failed to read registry value " + default_runtime_value_name);
     } else {
         AddFilesInPath(wide_to_utf8(value_w), false, manifest_files);
     }
+
+    RegCloseKey(hkey);
 }
 
 // Look for layer data files in the provided paths, but first check the environment override to determine

@@ -357,6 +357,13 @@ struct XrGeneratedDispatchTable {
     PFN_xrGetAudioInputDeviceGuidOculus GetAudioInputDeviceGuidOculus;
 #endif // defined(XR_USE_PLATFORM_WIN32)
 
+    // ---- XR_FB_scene extension commands
+    PFN_xrGetSpaceBoundingBox2DFB GetSpaceBoundingBox2DFB;
+    PFN_xrGetSpaceBoundingBox3DFB GetSpaceBoundingBox3DFB;
+    PFN_xrGetSpaceSemanticLabelsFB GetSpaceSemanticLabelsFB;
+    PFN_xrGetSpaceBoundary2DFB GetSpaceBoundary2DFB;
+    PFN_xrGetSpaceRoomLayoutFB GetSpaceRoomLayoutFB;
+
     // ---- XR_ALMALENCE_digital_lens_control extension commands
     PFN_xrSetDigitalLensControlALMALENCE SetDigitalLensControlALMALENCE;
 
@@ -371,6 +378,13 @@ struct XrGeneratedDispatchTable {
     PFN_xrSetPerformanceMetricsStateMETA SetPerformanceMetricsStateMETA;
     PFN_xrGetPerformanceMetricsStateMETA GetPerformanceMetricsStateMETA;
     PFN_xrQueryPerformanceMetricsCounterMETA QueryPerformanceMetricsCounterMETA;
+
+    // ---- XR_HTC_passthrough extension commands
+    PFN_xrCreatePassthroughHTC CreatePassthroughHTC;
+    PFN_xrDestroyPassthroughHTC DestroyPassthroughHTC;
+
+    // ---- XR_HTC_foveation extension commands
+    PFN_xrApplyFoveationHTC ApplyFoveationHTC;
 };
 
 
