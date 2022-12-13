@@ -55,7 +55,7 @@ void TileMapEditorTilesPlugin::tile_set_changed() {
 }
 
 void TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled(bool p_pressed) {
-	scatter_spinbox->set_editable(p_pressed);
+	scatter_controls_container->set_visible(p_pressed);
 }
 
 void TileMapEditorTilesPlugin::_on_scattering_spinbox_changed(double p_value) {
@@ -2124,10 +2124,12 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	tools_settings->add_child(random_tile_toggle);
 
 	// Random tile scattering.
+	scatter_controls_container = memnew(HBoxContainer);
+
 	scatter_label = memnew(Label);
 	scatter_label->set_tooltip_text(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
 	scatter_label->set_text(TTR("Scattering:"));
-	tools_settings->add_child(scatter_label);
+	scatter_controls_container->add_child(scatter_label);
 
 	scatter_spinbox = memnew(SpinBox);
 	scatter_spinbox->set_min(0.0);
@@ -2136,7 +2138,8 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	scatter_spinbox->set_tooltip_text(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
 	scatter_spinbox->get_line_edit()->add_theme_constant_override("minimum_character_width", 4);
 	scatter_spinbox->connect("value_changed", callable_mp(this, &TileMapEditorTilesPlugin::_on_scattering_spinbox_changed));
-	tools_settings->add_child(scatter_spinbox);
+	scatter_controls_container->add_child(scatter_spinbox);
+	tools_settings->add_child(scatter_controls_container);
 
 	_on_random_tile_checkbox_toggled(false);
 
