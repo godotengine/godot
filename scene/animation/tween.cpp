@@ -280,7 +280,16 @@ bool Tween::step(double p_delta) {
 	}
 
 	if (!started) {
-		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
+		if (tweeners.is_empty()) {
+			String tween_id;
+			Node *node = get_bound_node();
+			if (node) {
+				tween_id = vformat("Tween (bound to %s)", node->is_inside_tree() ? (String)node->get_path() : (String)node->get_name());
+			} else {
+				tween_id = to_string();
+			}
+			ERR_FAIL_V_MSG(false, tween_id + ": started with no Tweeners.");
+		}
 		current_step = 0;
 		loops_done = 0;
 		total_time = 0;
@@ -390,6 +399,15 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, d
 
 	Variant ret = Animation::add_variant(p_initial_val, p_delta_val);
 	ret = Animation::interpolate_variant(p_initial_val, ret, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration));
+	return ret;
+}
+
+String Tween::to_string() {
+	String ret = Object::to_string();
+	Node *node = get_bound_node();
+	if (node) {
+		ret += vformat(" (bound to %s)", node->get_name());
+	}
 	return ret;
 }
 
