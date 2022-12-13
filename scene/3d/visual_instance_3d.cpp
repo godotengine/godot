@@ -101,6 +101,24 @@ bool VisualInstance3D::get_layer_mask_value(int p_layer_number) const {
 	return layers & (1 << (p_layer_number - 1));
 }
 
+void VisualInstance3D::set_sorting_offset(float p_offset) {
+	sorting_offset = p_offset;
+	RenderingServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+}
+
+float VisualInstance3D::get_sorting_offset() const {
+	return sorting_offset;
+}
+
+void VisualInstance3D::set_sorting_use_aabb_center(bool p_enabled) {
+	sorting_use_aabb_center = p_enabled;
+	RenderingServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+}
+
+bool VisualInstance3D::is_sorting_use_aabb_center() const {
+	return sorting_use_aabb_center;
+}
+
 void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance3D::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &VisualInstance3D::get_base);
@@ -109,9 +127,17 @@ void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_mask"), &VisualInstance3D::get_layer_mask);
 	ClassDB::bind_method(D_METHOD("set_layer_mask_value", "layer_number", "value"), &VisualInstance3D::set_layer_mask_value);
 	ClassDB::bind_method(D_METHOD("get_layer_mask_value", "layer_number"), &VisualInstance3D::get_layer_mask_value);
+	ClassDB::bind_method(D_METHOD("set_sorting_offset", "offset"), &VisualInstance3D::set_sorting_offset);
+	ClassDB::bind_method(D_METHOD("get_sorting_offset"), &VisualInstance3D::get_sorting_offset);
+	ClassDB::bind_method(D_METHOD("set_sorting_use_aabb_center", "enabled"), &VisualInstance3D::set_sorting_use_aabb_center);
+	ClassDB::bind_method(D_METHOD("is_sorting_use_aabb_center"), &VisualInstance3D::is_sorting_use_aabb_center);
 
 	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
+
+	ADD_GROUP("Sorting", "sorting_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sorting_offset"), "set_sorting_offset", "get_sorting_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_use_aabb_center"), "set_sorting_use_aabb_center", "is_sorting_use_aabb_center");
 }
 
 void VisualInstance3D::set_base(const RID &p_base) {
