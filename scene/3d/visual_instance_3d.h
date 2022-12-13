@@ -39,6 +39,8 @@ class VisualInstance3D : public Node3D {
 	RID base;
 	RID instance;
 	uint32_t layers = 1;
+	float sorting_offset = 0.0;
+	bool sorting_use_aabb_center = true;
 
 protected:
 	void _update_visibility();
@@ -66,6 +68,12 @@ public:
 
 	void set_layer_mask_value(int p_layer_number, bool p_enable);
 	bool get_layer_mask_value(int p_layer_number) const;
+
+	void set_sorting_offset(float p_offset);
+	float get_sorting_offset() const;
+
+	void set_sorting_use_aabb_center(bool p_enabled);
+	bool is_sorting_use_aabb_center() const;
 
 	VisualInstance3D();
 	~VisualInstance3D();

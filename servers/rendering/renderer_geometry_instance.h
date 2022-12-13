@@ -50,6 +50,7 @@ public:
 	virtual void set_surface_materials(const Vector<RID> &p_materials) = 0;
 	virtual void set_mesh_instance(RID p_mesh_instance) = 0;
 	virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) = 0;
+	virtual void set_pivot_data(float p_sorting_offset, bool p_use_aabb_center) = 0;
 	virtual void set_lod_bias(float p_lod_bias) = 0;
 	virtual void set_layer_mask(uint32_t p_layer_mask) = 0;
 	virtual void set_fade_range(bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) = 0;
@@ -86,11 +87,13 @@ public:
 	RID mesh_instance;
 
 	Transform3D transform;
-	bool mirror = false; // move into data?
-	AABB transformed_aabb; //needed for LOD
+	bool mirror = false;
+	AABB transformed_aabb;
 	bool non_uniform_scale = false;
 	float lod_model_scale = 1.0;
 	float lod_bias = 0.0;
+	float sorting_offset = 0.0;
+	bool use_aabb_center = true;
 
 	uint32_t layer_mask = 1;
 
@@ -133,6 +136,7 @@ public:
 	virtual void set_surface_materials(const Vector<RID> &p_materials) override;
 	virtual void set_mesh_instance(RID p_mesh_instance) override;
 	virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;
+	virtual void set_pivot_data(float p_sorting_offset, bool p_use_aabb_center) override;
 	virtual void set_lod_bias(float p_lod_bias) override;
 	virtual void set_layer_mask(uint32_t p_layer_mask) override;
 	virtual void set_fade_range(bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) override;
