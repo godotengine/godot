@@ -954,9 +954,18 @@ void DynamicFontImportSettings::_re_import() {
 		Dictionary preload_config;
 		preload_config["name"] = vars_item->get_text(0);
 
+		Size2i conf_size = Vector2i(16, 0);
 		for (const KeyValue<StringName, Variant> &E : import_variation_data->settings) {
-			preload_config[E.key] = E.value;
+			if (E.key == "size") {
+				conf_size.x = E.value;
+			}
+			if (E.key == "outline_size") {
+				conf_size.y = E.value;
+			} else {
+				preload_config[E.key] = E.value;
+			}
 		}
+		preload_config["size"] = conf_size;
 
 		Array chars;
 		for (const char32_t &E : import_variation_data->selected_chars) {
