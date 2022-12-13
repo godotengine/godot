@@ -120,6 +120,7 @@ private:
 	bool tile_set_changed_needs_update = false;
 
 	// -- Properties painting --
+	ScrollContainer *tile_data_editors_scroll = nullptr;
 	VBoxContainer *tile_data_painting_editor_container = nullptr;
 	Label *tile_data_editors_label = nullptr;
 	Button *tile_data_editor_dropdown_button = nullptr;
