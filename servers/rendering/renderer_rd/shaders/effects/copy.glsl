@@ -93,7 +93,7 @@ void main() {
 #ifdef MODE_GAUSSIAN_BLUR
 
 	// First pass copy texture into 16x16 local memory for every 8x8 thread block
-	vec2 quad_center_uv = clamp(vec2(gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.5) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
+	vec2 quad_center_uv = clamp(vec2(params.section.xy + gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.5) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
 	uint dest_index = gl_LocalInvocationID.x * 2 + gl_LocalInvocationID.y * 2 * 16;
 
 #ifdef MODE_GLOW

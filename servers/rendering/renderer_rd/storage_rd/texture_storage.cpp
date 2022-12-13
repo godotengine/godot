@@ -3140,13 +3140,13 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 		region.position.y >>= 1;
 		region.size.x = MAX(1, region.size.x >> 1);
 		region.size.y = MAX(1, region.size.y >> 1);
+		texture_size.x = MAX(1, texture_size.x >> 1);
+		texture_size.y = MAX(1, texture_size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-			copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, true);
 		} else {
-			texture_size.x = MAX(1, texture_size.x >> 1);
-			texture_size.y = MAX(1, texture_size.y >> 1);
 			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
 		}
 		prev_texture = mipmap;
@@ -3179,7 +3179,7 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
 		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
 	} else {
-		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+		copy_effects->set_color_raster(rt->backbuffer_mipmap0, p_color, region);
 	}
 }
 
@@ -3213,14 +3213,14 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 		region.position.y >>= 1;
 		region.size.x = MAX(1, region.size.x >> 1);
 		region.size.y = MAX(1, region.size.y >> 1);
+		texture_size.x = MAX(1, texture_size.x >> 1);
+		texture_size.y = MAX(1, texture_size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 
 		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-			copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, true);
 		} else {
-			texture_size.x = MAX(1, texture_size.x >> 1);
-			texture_size.y = MAX(1, texture_size.y >> 1);
 			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
 		}
 		prev_texture = mipmap;
