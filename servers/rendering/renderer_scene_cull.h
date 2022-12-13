@@ -1173,7 +1173,6 @@ public:
 	PASS1RC(RID, environment_get_glow_map, RID)
 
 	PASS1(environment_glow_set_use_bicubic_upscale, bool)
-	PASS1(environment_glow_set_use_high_quality, bool)
 
 	// SSR
 	PASS6(environment_set_ssr, RID, bool, int, float, float, float)

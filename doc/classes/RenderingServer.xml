@@ -962,12 +962,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="environment_glow_set_use_high_quality">
-			<return type="void" />
-			<param index="0" name="enable" type="bool" />
-			<description>
-			</description>
-		</method>
 		<method name="environment_set_adjustment">
 			<return type="void" />
 			<param index="0" name="env" type="RID" />
