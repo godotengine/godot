@@ -130,6 +130,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual String to_string() override;
+
 	Ref<PropertyTweener> tween_property(Object *p_target, NodePath p_property, Variant p_to, double p_duration);
 	Ref<IntervalTweener> tween_interval(double p_time);
 	Ref<CallbackTweener> tween_callback(Callable p_callback);
