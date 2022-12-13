@@ -702,7 +702,7 @@ void CopyEffects::gaussian_blur_raster(RID p_source_rd_texture, RID p_dest_textu
 	RD::get_singleton()->draw_list_end();
 }
 
-void CopyEffects::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_scale) {
+void CopyEffects::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_scale) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute version of the gaussian glow with the mobile renderer.");
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
@@ -746,14 +746,14 @@ void CopyEffects::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, con
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_auto_exposure), 1);
 	}
 
-	copy.push_constant.flags = base_flags | (p_first_pass ? COPY_FLAG_GLOW_FIRST_PASS : 0) | (p_high_quality ? COPY_FLAG_HIGH_QUALITY_GLOW : 0);
+	copy.push_constant.flags = base_flags | (p_first_pass ? COPY_FLAG_GLOW_FIRST_PASS : 0);
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_size.width, p_size.height, 1);
 	RD::get_singleton()->compute_list_end();
 }
 
-void CopyEffects::gaussian_glow_raster(RID p_source_rd_texture, RID p_half_texture, RID p_dest_texture, float p_luminance_multiplier, const Size2i &p_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_scale) {
+void CopyEffects::gaussian_glow_raster(RID p_source_rd_texture, RID p_half_texture, RID p_dest_texture, float p_luminance_multiplier, const Size2i &p_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_scale) {
 	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the raster version of the gaussian glow with the clustered renderer.");
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();

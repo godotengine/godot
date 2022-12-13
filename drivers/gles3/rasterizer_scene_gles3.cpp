@@ -1068,10 +1068,6 @@ void RasterizerSceneGLES3::environment_glow_set_use_bicubic_upscale(bool p_enabl
 	glow_bicubic_upscale = p_enable;
 }
 
-void RasterizerSceneGLES3::environment_glow_set_use_high_quality(bool p_enable) {
-	glow_high_quality = p_enable;
-}
-
 void RasterizerSceneGLES3::environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) {
 }
 

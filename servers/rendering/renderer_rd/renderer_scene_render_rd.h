@@ -114,7 +114,6 @@ protected:
 	/* ENVIRONMENT */
 
 	bool glow_bicubic_upscale = false;
-	bool glow_high_quality = false;
 
 	bool use_physical_light_units = false;
 
@@ -239,7 +238,6 @@ public:
 	/* ENVIRONMENT API */
 
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) override;
-	virtual void environment_glow_set_use_high_quality(bool p_enable) override;
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) override;
