@@ -21,13 +21,14 @@
 # Manuel González <mgoopazo@gmail.com>, 2021.
 # emnrx <emanuelermancia@gmail.com>, 2022.
 # Mau_Restor <restor@gmail.com>, 2022.
+# Leonardo Martínez <leonardomartinez85@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-23 03:57+0000\n"
-"Last-Translator: Mau_Restor <restor@gmail.com>\n"
+"PO-Revision-Date: 2022-11-26 14:36+0000\n"
+"Last-Translator: emnrx <emanuelermancia@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -71,7 +72,7 @@ msgstr "Modo de Bajo Uso del Procesador"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr ""
+msgstr "Modo de Baja Utilización del Procesador en Reposo (µseg)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
@@ -141,7 +142,7 @@ msgstr "Tamaño"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
-msgstr ""
+msgstr "Intercambio Endiano"
 
 #: core/bind/core_bind.cpp
 msgid "Editor Hint"
@@ -248,20 +249,19 @@ msgstr "Conección"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
-msgstr ""
+msgstr "Tamaño de fragmento de lectura"
 
 #: core/io/marshalls.cpp
 msgid "Object ID"
 msgstr "ID de Objeto"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
-#, fuzzy
 msgid "Allow Object Decoding"
-msgstr "Activar Onion Skinning"
+msgstr "Permitir decodificación de objetos"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
-msgstr ""
+msgstr "Rechazar Nuevas Conexiones de Red"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 #, fuzzy
@@ -309,9 +309,8 @@ msgid "Blocking Handshake"
 msgstr ""
 
 #: core/io/udp_server.cpp
-#, fuzzy
 msgid "Max Pending Connections"
-msgstr "Editar Conexión:"
+msgstr "Máximo de Conexiones Pendientes"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -364,7 +363,6 @@ msgid "Seed"
 msgstr "Semilla"
 
 #: core/math/random_number_generator.cpp
-#, fuzzy
 msgid "State"
 msgstr "Estado"
 
@@ -381,9 +379,8 @@ msgid "Mouse Mode"
 msgstr "Modo Mouse"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "Eliminar Entrada"
+msgstr "Usar entrada acumulada"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -411,9 +408,8 @@ msgid "Command"
 msgstr "Comando"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " (Física)"
+msgstr "Física"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -757,9 +753,8 @@ msgstr "Al Final de la interfaz de usuario"
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
-#, fuzzy
 msgid "Physics"
-msgstr " (Física)"
+msgstr "(Física)"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -1073,7 +1068,7 @@ msgstr ""
 #. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Gratis"
+msgstr "Libre"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -13119,9 +13114,10 @@ msgstr "Opciones de Ajuste"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
 msgstr "Offset:"
@@ -14563,16 +14559,17 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Ruta de proyecto inválida (cambiaste algo?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "No se pudo cargar project.godot desde la ruta de proyecto (error %d). La "
 "ruta no existe o está corrupta."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "No se pudo editar project.godot en la ruta de proyecto."
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "No se puede abrir el proyecto en '%s'."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -19323,15 +19320,13 @@ msgid "Code Signing"
 msgstr "Firmando código de DMG"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"No se ha encontrado 'apksigner'.\n"
-"Por favor, comprobá que el comando esté disponible en el directorio Android "
-"SDK build-tools.\n"
-"El %s resultante está sin firmar."
+"No se ha encontrado 'apksigner'. Por favor, comprobá que el comando esté "
+"disponible en el directorio Android SDK build-tools. El %s resultante está "
+"sin firmar."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -19380,9 +19375,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "¡Nombre de archivo inválido! Android APK requiere la extensión *.apk."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "¡Formato de exportación no soportado!\n"
+msgstr "¡Formato de exportación no soportado!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19394,16 +19388,13 @@ msgstr ""
 "'Proyecto'."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"La versión de compilación de Android no coincide:\n"
-"   Plantilla instalada: %s\n"
-"   Versión de Godot: %s\n"
-"Por favor, reinstalá la plantilla de compilación de Android desde el menú "
-"'Proyecto'."
+"La versión de compilación de Android no coincide: Plantilla instalada: %s, "
+"Versión de Godot: %s. Por favor, reinstalá la plantilla de compilación de "
+"Android desde el menú 'Proyecto'."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -19414,10 +19405,9 @@ msgstr ""
 "el nombre del proyecto"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
 msgstr ""
-"No se pudieron exportar los archivos del proyecto a un proyecto gradle\n"
+"No se pudieron exportar los archivos del proyecto a un proyecto gradle."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -19428,12 +19418,11 @@ msgid "Building Android Project (gradle)"
 msgstr "Construir Proyecto Android (gradle)"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"La construcción del proyecto Android falló, comprueba la salida del error.\n"
+"La construcción del proyecto Android falló, comprueba la salida del error. "
 "También podés visitar docs.godotengine.org para consultar la documentación "
 "de compilación de Android."
 
@@ -19459,23 +19448,19 @@ msgid "Creating APK..."
 msgstr "Creando APK..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"No se pudo encontrar la plantilla APK para exportar:\n"
-"%s"
+msgstr "No se pudo encontrar la plantilla APK para exportar: %s"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
 "Bibliotecas faltantes en la plantilla de exportación para las arquitecturas "
-"seleccionadas: %s.\n"
-"Por favor, construya una plantilla con todas las bibliotecas necesarias, o "
-"desmarque las arquitecturas faltantes en el preset de exportación."
+"seleccionadas: %s. Por favor, construya una plantilla con todas las "
+"bibliotecas necesarias, o desmarque las arquitecturas faltantes en el preset "
+"de exportación."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adding files..."
@@ -20350,10 +20335,8 @@ msgid "ZIP Creation"
 msgstr "Proyección"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr ""
-"No se pudieron exportar los archivos del proyecto a un proyecto gradle\n"
+msgstr "No se pudieron exportar los archivos del proyecto a un proyecto gradle"
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -22186,9 +22169,8 @@ msgid "Safe Margin"
 msgstr "Margen Seguro"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Sync To Physics"
-msgstr " (Física)"
+msgstr "(Física)"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 #, fuzzy
@@ -23667,9 +23649,8 @@ msgid "A RoomGroup should not be a child or grandchild of a Portal."
 msgstr "Un RoomGroup no debe ser hijo o nieto de un Portal."
 
 #: scene/3d/portal.cpp
-#, fuzzy
 msgid "Portal Active"
-msgstr " [portales activos]"
+msgstr "[portales activos]"
 
 #: scene/3d/portal.cpp scene/resources/occluder_shape_polygon.cpp
 msgid "Two Way"
@@ -24133,6 +24114,15 @@ msgstr "Error"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Ordenar"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
@@ -25863,14 +25853,12 @@ msgid "3D Render"
 msgstr "Renderizador:"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "2D Physics"
-msgstr " (Física)"
+msgstr "(Física)"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "3D Physics"
-msgstr " (Física)"
+msgstr "(Física)"
 
 #: scene/register_scene_types.cpp
 #, fuzzy
