@@ -720,6 +720,12 @@ public:
 				Node(TYPE_SHADER) {}
 	};
 
+	struct UniformOrderComparator {
+		_FORCE_INLINE_ bool operator()(const Pair<StringName, int> &A, const Pair<StringName, int> &B) const {
+			return A.second < B.second;
+		}
+	};
+
 	struct Expression {
 		bool is_op;
 		union {

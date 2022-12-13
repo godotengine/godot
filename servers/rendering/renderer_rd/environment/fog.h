@@ -188,27 +188,18 @@ private:
 		RID version;
 
 		RID pipeline;
-		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size = 0;
 
-		String path;
 		String code;
-		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		bool uses_time = false;
 
-		virtual void set_path_hint(const String &p_hint);
 		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
-		virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
-		virtual bool is_parameter_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
 		FogShaderData() {}
