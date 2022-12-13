@@ -20,18 +20,19 @@
 # Daniele Basso <tiziodcaio@gmail.com>, 2021.
 # Jacopo Farina <jacopo1.farina@gmail.com>, 2021.
 # Riteo Siuga <riteo@posteo.net>, 2021.
-# ZeroKun265 <davidegiambirtone265@gmail.com>, 2021.
+# ZeroKun265 <davidegiambirtone265@gmail.com>, 2021, 2022.
 # Andrea Montagna <fullmontis@gmail.com>, 2021.
 # Andrea Leganza <neogene@gmail.com>, 2021.
 # Federico Caprini <caprinifede@gmail.com>, 2022.
 # Alessandro Casalino <alessandro.casalino93@gmail.com>, 2022.
 # AndreWharn <andrewharnofficial@gmail.com>, 2022.
+# Silvia Scaglione <sissisoad@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-09-14 18:45+0000\n"
-"Last-Translator: Federico Caprini <caprinifede@gmail.com>\n"
+"PO-Revision-Date: 2022-10-16 11:17+0000\n"
+"Last-Translator: Silvia Scaglione <sissisoad@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/it/>\n"
 "Language: it\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -47,7 +48,7 @@ msgstr "Descrizione"
 
 #: doc/tools/make_rst.py
 msgid "Tutorials"
-msgstr "Guide"
+msgstr "Tutorials"
 
 #: doc/tools/make_rst.py
 msgid "Properties"
@@ -253,8 +254,8 @@ msgid ""
 "s = asin(0.5)\n"
 "[/codeblock]"
 msgstr ""
-"Ritorna l'arcoseno di [code]s[/code] in radianti. Usato per prendere "
-"l'angolo del seno [code]s[/code]. [code]s[/code] deve essere compreso tra "
+"Ritorna l'arcoseno di [code]s[/code] in radianti. Utilizza [code]s[/code] "
+"per prendere l'angolo del seno. [code]s[/code] deve essere compreso tra "
 "[code]-1.0[/code] e [code]1.0[/code] (inclusi), altrimenti, [method asin] "
 "ritornerà [constant NAN].\n"
 "[codeblock]\n"
@@ -288,20 +289,20 @@ msgid ""
 "a message with clarifying details\n"
 "[/codeblock]"
 msgstr ""
-"Controlla che [code]condition[/code] sia [code]true[/code]. Se "
-"[code]condition[/code] è [code]false[/code], un errore è generato. Mentre si "
-"sta eseguendo dall'editor, il progetto corrente verrà interrotto finché non "
-"lo riprenderai. Questo può essere usato come una forma più forte di [method "
-"push_error] per riportare gli errori allo sviluppatore del progetto o agli "
-"utilizzatori di add-on.\n"
-"[b]Note:[/b] Per ragioni di performance, il codice dentro [method assert] "
-"viene eseguito sono nelle versione di debug o mentre si sta eseguendo il "
-"progetto dall'editor. Non includere codice che ha effetti collaterali mentre "
-"[method assert] viene chiamato. Altrimenti il progetto si comporterà "
-"diversamente quando viene esportato nella modalità di rilascio.\n"
-"Il parametro [code]message[/code] opzionale, se passato, è mostrato insieme "
-"al messaggio generico \"Assertion failed\". Puoi usarlo per dare dettagli "
-"addizionali sul perché l'asserzione sia fallita.\n"
+"Controlla che [code]condizion[/code] sia [code]true[/code](vero). Se "
+"[code]condition[/code] è [code]false[/code](falso), un errore è generato."
+"Quando eseguito all'interno dell'editor, il progetto verrà anche messo in "
+"pausa, finchè non lo farai ripartire. Ciò può essere usato come un migliore "
+"sistema di [method push_error] per riportare errori agli sviluppatori del "
+"progetto o ulteriori utenti.\n"
+"[b]Nota bene:[/b] Per motivi di prestazioni, il codice all'interno di "
+"[method assert] è eseguito solo nelle build di debug o quando il progetto è "
+"eseguito dall'editor. Non scrivere codice che dovrà avere effetti "
+"collaterali in una chiamata [method assert]. Altrimenti il progetto si "
+"comporterà in modo diverso quando esportato in modalità release.\n"
+"L'argomento opzionale [code]message[/code], se dato, è mostrato in aggiunta "
+"al generico messaggio \"Assertion failed\" (Asserzione fallita). Può essere "
+"usato per fornire più dettagli sul motivo per cui un asserzione ha fallito.\n"
 "[codeblock]\n"
 "# Immaginati di voler sempre avere una velocità (speed nel caso nostro) "
 "sempre tra 0 e 20\n"
@@ -734,8 +735,10 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
-"Returns an array of dictionaries representing the current call stack.\n"
+"Returns an array of dictionaries representing the current call stack. See "
+"also [method print_stack].\n"
 "[codeblock]\n"
 "func _ready():\n"
 "    foo()\n"
@@ -750,7 +753,11 @@ msgid ""
 "[codeblock]\n"
 "[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, "
 "source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Note:[/b] [method get_stack] only works if the running instance is "
+"connected to a debugging server (i.e. an editor instance). [method "
+"get_stack] will not work in projects exported in release mode, or in "
+"projects exported in debug mode if not connected to a debugging server."
 msgstr ""
 "Restituisce un vettore di dizionari rappresentanti il call stack corrente.\n"
 "[codeblock]\n"
@@ -947,7 +954,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Linearly interpolates between two values by the factor defined in "
 "[code]weight[/code]. To perform interpolation, [code]weight[/code] should be "
@@ -971,7 +977,10 @@ msgid ""
 msgstr ""
 "Interpola linearmente tra due valori mediante un valore definito in "
 "[code]weight[/code]. Per interpolare, [code]weight[/code] dovrebbe rimanere "
-"tra [code]0.0[/code] e [code]1.0[/code] (inclusi).\n"
+"tra [code]0.0[/code] e [code]1.0[/code] (inclusi). Tuttavia, i valori fuori "
+"da questo range sono permessi e possono essere utilizzati per eseguire "
+"[i]extrapolation[/i]. Utilizza [method clamp] sul risultato di [method lerp] "
+"se non lo si desidera.\n"
 "Se gli argomenti [code]from[/code] e [code]to[/code] sono di tipo [int] o "
 "[float], il valore di ritorno è un [float].\n"
 "Se entrambi sono dello stesso tipo di vettore ([Vector2], [Vector3] o "
@@ -987,7 +996,6 @@ msgstr ""
 "combinalo con [method ease] o [method smoothstep]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Linearly interpolates between two angles (in radians) by a normalized "
 "value.\n"
@@ -1012,18 +1020,25 @@ msgid ""
 msgstr ""
 "Interpola linearmente tra due angoli (in radianti) con un valore "
 "normalizzato.\n"
-"Simile a [metodo lerp], ma interpola correttamente quando gli angoli sono "
+"Simile a [method lerp], ma interpola correttamente quando gli angoli sono "
 "attorno [costante @GDScript.TAU]. Per eseguire un'interpolazione alleggerita "
 "con [method lerp_angle], combinalo con [method ease] o [method smoothstep].\n"
 "[codeblock]\n"
 "extends Sprite\n"
 "var elapsed = 0.0\n"
 "func _process(delta):\n"
-" var min_angle = deg2rad(0.0)\n"
-" var max_angle = deg2rad(90.0)\n"
-" rotation = lerp_angle(min_angle, max_angle, elapsed)\n"
-" elapsed += delta\n"
-"[/codeblock]"
+"    var min_angle = deg2rad(0.0)\n"
+"    var max_angle = deg2rad(90.0)\n"
+"    rotation = lerp_angle(min_angle, max_angle, elapsed)\n"
+"    elapsed += delta\n"
+"[/codeblock]\n"
+"[b]Nota:[/b] Questo metodo interpola linearmente tra [code]da[/code] e "
+"[code]a[/code]. Tuttavia, quando questi due angoli sono approssimativamente "
+"[code]PI + k * TAU[/code] distanti per qualsiasi numero intero [code]k[/"
+"code], non è ovvio in quale modo si interpolano a causa di errori di "
+"precisione a virgola mobile. Per esempio, [code]lerp_angle(0, PI, weight)[/"
+"code] interpola in senso anti-orario, mentre [code]lerp_angle(0, PI + 5 * "
+"TAU, weight)[/code] interpola in senso orario."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1272,7 +1287,6 @@ msgstr ""
 "coordinate cartesiane (assi X e Y)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the integer modulus of [code]a/b[/code] that wraps equally in "
 "positive and negative.\n"
@@ -1297,7 +1311,7 @@ msgstr ""
 "for i in range(-3, 4):\n"
 "    print(\"%2d %2d %2d\" % [i, i % 3, posmod(i, 3)])\n"
 "[/codeblock]\n"
-"Produces:\n"
+"Produce:\n"
 "[codeblock]\n"
 "-3  0  0\n"
 "-2 -2  1\n"
@@ -1375,7 +1389,6 @@ msgstr ""
 "messaggi di debug ed errore che vengono mostrati con la stack trace."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Like [method print], but includes the current stack frame when running with "
 "the debugger turned on.\n"
@@ -1385,28 +1398,27 @@ msgid ""
 "   At: res://test.gd:15:_process()\n"
 "[/codeblock]"
 msgstr ""
-"Stampa un stack trace nella posizione del codice, funziona solo quando il "
-"debugger è attivato.\n"
+"Come [method print], ma include l'attuale stack frame quando si avvia con il "
+"debugger attivato.\n"
 "L'output nella console apparirà come:\n"
 "[codeblock]\n"
-"Frame 0 - res://test.gd:16 in function '_process'\n"
+"Test print\n"
+"   At: res://test.gd:15:_process()\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
-"Prints a stack track at code location, only works when running with debugger "
-"turned on.\n"
+"Prints a stack trace at the current code location. See also [method "
+"get_stack].\n"
 "Output in the console would look something like this:\n"
 "[codeblock]\n"
 "Frame 0 - res://test.gd:16 in function '_process'\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Note:[/b] [method print_stack] only works if the running instance is "
+"connected to a debugging server (i.e. an editor instance). [method "
+"print_stack] will not work in projects exported in release mode, or in "
+"projects exported in debug mode if not connected to a debugging server."
 msgstr ""
-"Stampa un stack trace nella posizione del codice, funziona solo quando il "
-"debugger è attivato.\n"
-"L'output nella console apparirà come:\n"
-"[codeblock]\n"
-"Frame 0 - res://test.gd:16 in function '_process'\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1524,7 +1536,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns a random floating point value between [code]from[/code] and "
 "[code]to[/code] (both endpoints inclusive).\n"
@@ -1533,11 +1544,12 @@ msgid ""
 "[/codeblock]\n"
 "[b]Note:[/b] This is equivalent to [code]randf() * (to - from) + from[/code]."
 msgstr ""
-"Un range casuale, un qualsiasi numero in virgola mobile tra [code]from[/"
-"code] e [code]to[/code]\n"
+"Ritorna in modo casuale un numero a virgola mobile tra [code]from[/code] e "
+"[code]to[/code] (incluse entrambe le estremità).\n"
 "[codeblock]\n"
 "prints(rand_range(0, 1), rand_range(0, 1)) # Stampa 0.135591 0.405263\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Nota:[/b] Ciò equivale a [code]randf() * (to - from) + from[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1559,8 +1571,8 @@ msgid ""
 "randf() # Returns e.g. 0.375671\n"
 "[/codeblock]"
 msgstr ""
-"Restituisce un numero casuale in virgola mobile nell'intervallo [code][0, 1]"
-"[/code].\n"
+"Restituisce un numero casuale a virgola mobile nell'intervallo [code][0, 1][/"
+"code].\n"
 "[codeblock]\n"
 "randf() # Restituisce ad esempio 0.375671\n"
 "[/codeblock]"
@@ -1695,6 +1707,17 @@ msgid ""
 "For complex use cases where you need multiple ranges, consider using [Curve] "
 "or [Gradient] instead."
 msgstr ""
+"Mostra un [code]value[/code] da [code][istart, istop][/code] a [code]"
+"[ostart, ostop][/code]. Vedi anche [methop lerp] e [method inverse_lerp]. Se "
+"[code]value[/code] è fuori da [code][istart, istop][/code], allora il numero "
+"che risulterà sarà anche esso fuori da [code][ostart, ostop][/code]. "
+"Utilizza [method clamp] sul risultato di [method range_lerp] se non lo si "
+"desidera.\n"
+"[codeblock]\n"
+"range_lerp(75, 0, 100, -1, 1) # Returns 0.5\n"
+"[/codeblock]\n"
+"Per utilizzi complessi in cui ti servono molteplici range, considera "
+"piuttosto l'utilizzo di [Curve] o [Gradient]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1799,6 +1822,29 @@ msgid ""
 "smoothstep_ease_comparison.png]Comparison between smoothstep() and ease(x, "
 "-1.6521) return values[/url]"
 msgstr ""
+"Ritorna il risultato della regolare interpolazione del valore di [code]s[/"
+"code] tra [code]0[/code] e [code]1[/code], basata sulla posizione di "
+"[code]s[/code] rispetto agli angoli [code]from[/code] e [code]to[/code].\n"
+"Il valore di ritorno è [code]0[/code] if [code]s <= from[/code], e [code]1[/"
+"code] if [code]s >= to[/code]. Se [code]s[/code] è posizionato tra "
+"[code]from[/code] e [code]to[/code], il valore di ritorno seguirà una curva "
+"a forma di S che mostrerà [code]s[/code] tra [code]0[/code] e [code]1[/"
+"code].\n"
+"La curva a forma di S è l'interpolatore cubico Hermite, dato da [code]f(y) = "
+"3*y^2 - 2*y^3[/code] dove [code]y = (x-from) / (to-from)[/code].\n"
+"[codeblock]\n"
+"smoothstep(0, 2, -5.0) # Returns 0.0\n"
+"smoothstep(0, 2, 0.5) # Returns 0.15625\n"
+"smoothstep(0, 2, 1.0) # Returns 0.5\n"
+"smoothstep(0, 2, 2.0) # Returns 1.0\n"
+"[/codeblock]\n"
+"Rispetto a [method ease] con un valore di curva di [code]-1.6521[/code], "
+"[method smoothstep] ritorna la curva più regolare possibile senza improvvisi "
+"cambiamenti sulla derivata. Se hai bisogno di effettuare transizioni più "
+"avanzate, usa [Tween] o [AnimationPlayer].\n"
+"[url=https://raw.githubusercontent.com/godotengine/godot-docs/3.5/img/"
+"smoothstep_ease_comparison.png] Confronto tra smoothstep() e ease(x, "
+"-1.6521) fa tornare i valori[/url]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1840,7 +1886,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Snaps float value [code]s[/code] to a given [code]step[/code]. This can also "
 "be used to round a floating point number to an arbitrary number of "
@@ -1851,12 +1896,12 @@ msgid ""
 "[/codeblock]\n"
 "See also [method ceil], [method floor], [method round], and [int]."
 msgstr ""
-"Arrotonda un valore float [code]s[/code] ad un valore [code]step[/code] su "
-"una scala. Questo può essere anche utilizzato per arrotondare un valore "
-"float ad un numero arbitrario di cifre decimali.\n"
+"Scatta un valore float [code]s[/code] ad un valore [code]step[/code]. Questo "
+"può essere anche utilizzato per arrotondare un valore float ad un numero "
+"arbitrario di cifre decimali.\n"
 "[codeblock]\n"
 "stepify(100, 32) # Ritorna 96.0\n"
-"stepify(3.14159, 0.01) # Ritorna3.14\n"
+"stepify(3.14159, 0.01) # Ritorna 3.14\n"
 "[/codeblock]\n"
 "Guarda anche [method ceil], [method floor], [method round] e [int]."
 
@@ -1985,6 +2030,15 @@ msgid ""
 "    print(\"unexpected results\")\n"
 "[/codeblock]"
 msgstr ""
+"Ritorna l'internal type della Variant dell'oggetto, utilizzando i valori "
+"[enum Variant.Type].\n"
+"[codeblock]\n"
+"p = parse_json('[\"a\", \"b\", \"c\"]')\n"
+"if typeof(p) == TYPE_ARRAY:\n"
+"    print(p[0]) # Prints a\n"
+"oppure:\n"
+"    print(\"unexpected results\")\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -2088,6 +2142,26 @@ msgid ""
 "[code]wrapf[/code] is more flexible than using the [method fposmod] approach "
 "by giving the user control over the minimum value."
 msgstr ""
+"Avvolge il float [code]value[/code] tra [code]min[/code] e [code]max[/"
+"code].\n"
+"Utilizzabile per creare dei funzionamenti simili a loop o infinite "
+"superfici.\n"
+"[codeblock]\n"
+"# Infinite loop between 5.0 and 9.9\n"
+"value = wrapf(value + 0.1, 5.0, 10.0)\n"
+"[/codeblock]\n"
+"[codeblock]\n"
+"# Infinite rotation (in radians)\n"
+"angle = wrapf(angle + 0.1, 0.0, TAU)\n"
+"[/codeblock]\n"
+"[codeblock]\n"
+"# Infinite rotation (in radians)\n"
+"angle = wrapf(angle + 0.1, -PI, PI)\n"
+"[/codeblock]\n"
+"[b]Nota:[/b] Se [code]min[/code] è [code]0[/code], ciò è equivalente a "
+"[method fposmod], quindi utilizza quello preferibilmente.\n"
+"[code]wrapf[/code] è più flessibile rispetto all'approccio [method fposmod] "
+"dando l'user control sopra il valore minimo."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -2238,6 +2312,16 @@ msgid ""
 "code] will not result in [constant INF] and will result in a run-time error "
 "instead."
 msgstr ""
+"L'infinità positiva della virgola mobile. Questo è il risultato della "
+"divisione in virgola mobile quando il divisore è [code]0.0[/code]. Per "
+"infinità negativa, utilizza [code]-INF[/code]. Dividere per [code]-0.0[/"
+"code] risulterà in infinità negativa se è il numeratore è positivo, quindi "
+"dividere per [code]0.0[/code] non è lo stesso di dividere per [code]-0.0[/"
+"code] (nonostante [code]0.0 == -0.0[/code] ritorni [code]true[/code]).\n"
+"[b]Nota:[/b] L'infinità numerica è solo un concetto per numeri a virgola "
+"mobile, e non ha equivalenti per numeri interi. Dividere un numero intero "
+"per [code]0[/code] non risulterà in [constant INF] e risulterà, invece, in "
+"un errore di avviamento."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -2263,7 +2347,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Global scope constants and variables."
-msgstr ""
+msgstr "Costanti e variabili degli ambiti globali."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -2272,6 +2356,11 @@ msgid ""
 "Singletons are also documented here, since they can be accessed from "
 "anywhere."
 msgstr ""
+"Costanti e varianti degli ambiti globali. Questo è ciò che risiede nei "
+"globali, le costanti riguardano gli errori di codice, scancodes, property "
+"hints, ecc...\n"
+"I Singletons sono documentati anche qui, dato che sono accessibili da "
+"qualsiasi parte."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [ARVRServer] singleton."
@@ -2334,19 +2423,16 @@ msgid "The [Marshalls] singleton."
 msgstr "Il singleton [Marshalls]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [Navigation2DServer] singleton."
-msgstr "Il singleton [TranslationServer]."
+msgstr "Il singleton [Navigation2DServer]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [NavigationMeshGenerator] singleton."
-msgstr "Il singleton [EditorNavigationMeshGenerator]."
+msgstr "Il singleton [NavigationMeshGenerator]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [NavigationServer] singleton."
-msgstr "Il singleton [TranslationServer]."
+msgstr "Il singleton [NavigationServer]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [OS] singleton."
@@ -2377,9 +2463,8 @@ msgid "The [ResourceSaver] singleton."
 msgstr "Il singleton [ResourceSaver]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [Time] singleton."
-msgstr "Il singleton [Engine]."
+msgstr "Il singleton [Time]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [TranslationServer] singleton."
@@ -2439,16 +2524,22 @@ msgid ""
 "General vertical alignment, usually used for [Separator], [ScrollBar], "
 "[Slider], etc."
 msgstr ""
+"L'allineamento generale verticale, solitamente utilizzato per [Separator], "
+"[Scrollbar], [Slider], ecc."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "General horizontal alignment, usually used for [Separator], [ScrollBar], "
 "[Slider], etc."
 msgstr ""
+"L'allineamento orizzontale generale, solitamente utilizzato per [Separator], "
+"[Scrollbar], [Slider], etc."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Horizontal left alignment, usually for text-derived classes."
 msgstr ""
+"L'allineamento orizzontale sinistro, solitamente per text-derived classes."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Horizontal center alignment, usually for text-derived classes."
@@ -2721,26 +2812,24 @@ msgid "Context menu key."
 msgstr "Tasto menu contestuale."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Left Hyper key."
 msgstr "Tasto Hyper sinistro."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Right Hyper key."
 msgstr "Tasto Hyper destro."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Help key."
-msgstr ""
+msgstr "Tasto help."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Left Direction key."
-msgstr ""
+msgstr "Il tasto direzionale sinistro."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Right Direction key."
-msgstr ""
+msgstr "Il tasto direzionale destro."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -2776,7 +2865,7 @@ msgstr "Tasto del volume su."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Bass Boost key."
-msgstr ""
+msgstr "Il tasto Bass Boost."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Bass up key."
@@ -2810,7 +2899,7 @@ msgstr "Tasto brano successivo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Media record key."
-msgstr ""
+msgstr "Tasto di registrazione."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -2818,98 +2907,96 @@ msgid "Home page key."
 msgstr "Tasto pagina iniziale."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Favorites key."
 msgstr "Tasto Preferiti."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Search key."
 msgstr "Tasto Ricerca."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Standby key."
-msgstr ""
+msgstr "Tasto Modalità Riposo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Open URL / Launch Browser key."
-msgstr ""
+msgstr "Tasto Apri URL / Avvia Browser."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Mail key."
-msgstr ""
+msgstr "Tasto Avvia Mail."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Media key."
-msgstr ""
+msgstr "Tasto Avvia Media."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 0 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 0."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 1 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 1."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 2 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 2."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 3 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 3."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 4 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 4."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 5 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 5."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 6 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 6."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 7 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 7."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 8 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 8."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut 9 key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut 9."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut A key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut A."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut B key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut B."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut C key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut C."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut D key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut D."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut E key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut E."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Launch Shortcut F key."
-msgstr ""
+msgstr "Tasto Avvia Shortcut F."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unknown key."
-msgstr ""
+msgstr "Tasto Sconosciuto."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -2927,117 +3014,94 @@ msgid "\" key."
 msgstr "Tasto \"."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "# key."
 msgstr "Tasto #."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "$ key."
 msgstr "Tasto $."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "% key."
 msgstr "Tasto %."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "& key."
 msgstr "Tasto &."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "' key."
 msgstr "Tasto '."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "( key."
 msgstr "Tasto (."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid ") key."
 msgstr "Tasto )."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "* key."
 msgstr "Tasto *."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "+ key."
 msgstr "Tasto +."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid ", key."
 msgstr "Tasto ,."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "- key."
 msgstr "Tasto -."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid ". key."
 msgstr "Tasto \".\"."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "/ key."
 msgstr "Tasto /."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 0."
 msgstr "Numero 0."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 1."
 msgstr "Numero 1."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 2."
 msgstr "Numero 2."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 3."
 msgstr "Numero 3."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 4."
 msgstr "Numero 4."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 5."
 msgstr "Numero 5."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 6."
 msgstr "Numero 6."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 7."
 msgstr "Numero 7."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 8."
 msgstr "Numero 8."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Number 9."
 msgstr "Numero 9."
 
@@ -3047,127 +3111,102 @@ msgid ": key."
 msgstr "Tasto :."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "; key."
 msgstr "Tasto ;."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "< key."
 msgstr "Tasto <."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "= key."
 msgstr "Tasto =."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "> key."
 msgstr "Tasto >."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "? key."
 msgstr "Tasto ?."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "@ key."
 msgstr "Tasto @."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "A key."
 msgstr "Tasto A."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "B key."
 msgstr "Tasto B."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "C key."
 msgstr "Tasto C."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "D key."
 msgstr "Tasto D."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "E key."
 msgstr "Tasto E."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "F key."
 msgstr "Tasto F."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "G key."
 msgstr "Tasto G."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "H key."
 msgstr "Tasto H."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "I key."
 msgstr "Tasto I."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "J key."
 msgstr "Tasto J."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "K key."
 msgstr "Tasto K."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "L key."
 msgstr "Tasto L."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "M key."
 msgstr "Tasto M."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "N key."
 msgstr "Tasto N."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "O key."
 msgstr "Tasto O."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "P key."
 msgstr "Tasto P."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Q key."
 msgstr "Tasto Q."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "R key."
 msgstr "Tasto R."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "S key."
 msgstr "Tasto S."
 
@@ -3177,88 +3216,72 @@ msgid "T key."
 msgstr "Tasto T."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "U key."
 msgstr "Tasto U."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "V key."
 msgstr "Tasto V."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "W key."
 msgstr "Tasto W."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "X key."
 msgstr "Tasto X."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Y key."
 msgstr "Tasto Y."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Z key."
 msgstr "Tasto Z."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "[ key."
 msgstr "Tasto [."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "\\ key."
 msgstr "Tasto \\."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "] key."
 msgstr "Tasto ]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "^ key."
 msgstr "Tasto ^."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "_ key."
 msgstr "Tasto _."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "` key."
 msgstr "Tasto '."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "{ key."
 msgstr "Tasto {."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "| key."
 msgstr "Tasto |."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "} key."
 msgstr "Tasto }."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "~ key."
 msgstr "Tasto ~."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Non-breakable space key."
-msgstr ""
+msgstr "Tasto spazio Non-breakable."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -3286,307 +3309,248 @@ msgid "¥ key."
 msgstr "Tasto ¥."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¦ key."
 msgstr "Tasto ¦."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "§ key."
 msgstr "Tasto §."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¨ key."
 msgstr "Tasto ¨."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "© key."
 msgstr "Tasto ©."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "ª key."
 msgstr "Tasto ª."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "« key."
 msgstr "Tasto «."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¬ key."
 msgstr "Tasto ¬."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Soft hyphen key."
-msgstr ""
+msgstr "Tasto trattino morbido."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "® key."
 msgstr "Tasto ®."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¯ key."
 msgstr "Tasto ¯."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "° key."
 msgstr "Tasto °."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "± key."
 msgstr "Tasto ±."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "² key."
 msgstr "Tasto ²."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "³ key."
 msgstr "Tasto ³."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "´ key."
 msgstr "Tasto ´."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "µ key."
 msgstr "Tasto µ."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¶ key."
 msgstr "Tasto ¶."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "· key."
 msgstr "Tasto ·."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¸ key."
 msgstr "Tasto ¸."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¹ key."
 msgstr "Tasto ¹."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "º key."
 msgstr "Tasto º."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "» key."
 msgstr "Tasto »."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¼ key."
 msgstr "Tasto ¼."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "½ key."
 msgstr "Tasto ½."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¾ key."
 msgstr "Tasto ¾."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "¿ key."
 msgstr "Tasto ¿."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "À key."
 msgstr "Tasto À."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Á key."
 msgstr "Tasto Á."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Â key."
 msgstr "Tasto Â."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ã key."
 msgstr "Tasto Ã."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ä key."
 msgstr "Tasto Ä."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Å key."
 msgstr "Tasto Å."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Æ key."
 msgstr "Tasto Æ."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ç key."
 msgstr "Tasto Ç."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "È key."
 msgstr "Tasto È."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "É key."
 msgstr "Tasto É."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ê key."
 msgstr "Tasto Ê."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ë key."
 msgstr "Tasto Ë."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ì key."
 msgstr "Tasto Ì."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Í key."
 msgstr "Tasto Í."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Î key."
 msgstr "Tasto Î."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ï key."
 msgstr "Tasto Ï."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ð key."
 msgstr "Tasto Ð."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ñ key."
 msgstr "Tasto Ñ."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ò key."
 msgstr "Tasto Ò."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ó key."
 msgstr "Tasto Ó."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ô key."
 msgstr "Tasto Ô."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Õ key."
 msgstr "Tasto Õ."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ö key."
 msgstr "Tasto Ö."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "× key."
 msgstr "Tasto ×."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ø key."
 msgstr "Tasto Ø."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ù key."
 msgstr "Tasto Ù."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ú key."
 msgstr "Tasto Ú."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Û key."
 msgstr "Tasto Û."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ü key."
 msgstr "Tasto Ü."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Ý key."
 msgstr "Tasto Ý."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Þ key."
 msgstr "Tasto Þ."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "ß key."
 msgstr "Tasto ß."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "÷ key."
 msgstr "Tasto ÷."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "ÿ key."
 msgstr "Tasto ÿ."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Key Code mask."
-msgstr ""
+msgstr "Tasto Code mask."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Modifier key mask."
@@ -3594,11 +3558,11 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Shift key mask."
-msgstr ""
+msgstr "Tasto Shift."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Alt key mask."
-msgstr ""
+msgstr "Tasto Alt."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Meta key mask."
@@ -3606,7 +3570,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Ctrl key mask."
-msgstr ""
+msgstr "Tasto Ctrl."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3615,61 +3579,62 @@ msgid ""
 "mask should be preferred to [constant KEY_MASK_META] or [constant "
 "KEY_MASK_CTRL] for system shortcuts as it handles all platforms correctly."
 msgstr ""
+"Tasto Comandi. Su macOS, ciò equivale a [constant KEY_MASK_META]. Su altre "
+"piattaforme, ciò equivale a [constant KEY_MASK_CTRL]. Questo tasto dovrebbe "
+"essere preferito a [constant KEY_MASK_META] o [constant KEY_MASK_CTRL] per "
+"sistemi di shortcut in quanto gestito correttamente da tutte le piattaforme."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Keypad key mask."
-msgstr ""
+msgstr "Tasto Keypad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Group Switch key mask."
-msgstr ""
+msgstr "Tasto Group Switch."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Left mouse button."
 msgstr "Tasto sinistro del mouse."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Right mouse button."
 msgstr "Tasto destro del mouse."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Middle mouse button."
 msgstr "Tasto centrale del mouse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Extra mouse button 1 (only present on some mice)."
-msgstr ""
+msgstr "Tasto Mouse Extra 1 (presente solo su alcuni mouse)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Extra mouse button 2 (only present on some mice)."
-msgstr ""
+msgstr "Tasto Mouse Extra 1 (presente solo su alcuni mouse)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Mouse wheel up."
-msgstr ""
+msgstr "Rotella del Mouse in su'."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Mouse wheel down."
-msgstr ""
+msgstr "Rotella del mouse in giu'."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Mouse wheel left button (only present on some mice)."
-msgstr ""
+msgstr "Tasto rotella sinistra del mouse (presente solo su alcuni mouse)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Mouse wheel right button (only present on some mice)."
-msgstr ""
+msgstr "Tasto rotella del mouse destra (presente solo su alcuni mouse)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Left mouse button mask."
-msgstr ""
+msgstr "Tasto sinistro del mouse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Right mouse button mask."
-msgstr ""
+msgstr "Tasto destro del mouse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Middle mouse button mask."
@@ -3689,95 +3654,95 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 0."
-msgstr ""
+msgstr "Tasto 0 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 1."
-msgstr ""
+msgstr "Tasto 1 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 2."
-msgstr ""
+msgstr "Tasto 2 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 3."
-msgstr ""
+msgstr "Tasto 3 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 4."
-msgstr ""
+msgstr "Tasto 4 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 5."
-msgstr ""
+msgstr "Tasto 5 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 6."
-msgstr ""
+msgstr "Tasto 6 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 7."
-msgstr ""
+msgstr "Tasto 7 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 8."
-msgstr ""
+msgstr "Tasto 8 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 9."
-msgstr ""
+msgstr "Tasto 9 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 10."
-msgstr ""
+msgstr "Tasto 10 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 11."
-msgstr ""
+msgstr "Tasto 11 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 12."
-msgstr ""
+msgstr "Tasto 12 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 13."
-msgstr ""
+msgstr "Tasto 13 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 14."
-msgstr ""
+msgstr "Tasto 14 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 15."
-msgstr ""
+msgstr "Tasto 15 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 16."
-msgstr ""
+msgstr "Tasto 16 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 17."
-msgstr ""
+msgstr "Tasto 17 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 18."
-msgstr ""
+msgstr "Tasto 18 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 19."
-msgstr ""
+msgstr "Tasto 19 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 20."
-msgstr ""
+msgstr "Tasto 20 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 21."
-msgstr ""
+msgstr "Tasto 21 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 22."
-msgstr ""
+msgstr "Tasto 22 Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3787,114 +3752,125 @@ msgid ""
 "- Linux: Up to 80 buttons.\n"
 "- Windows and macOS: Up to 128 buttons."
 msgstr ""
+"Il numero massimo di tasti di controller di gioco supportati dal motore. Il "
+"reale limite potrebbe essere inferiore su piattaforme specifiche:\n"
+"- Android: Fino a 36 tasti.\n"
+"- Linux: Fino a 80 tasti.\n"
+"- Windows e macOS: Fino a 128 tasti."
 
 #: doc/classes/@GlobalScope.xml
 msgid "DualShock circle button."
-msgstr ""
+msgstr "Tasto Cerchio del DualShock."
 
 #: doc/classes/@GlobalScope.xml
 msgid "DualShock X button."
-msgstr ""
+msgstr "Tasto X del DualShock."
 
 #: doc/classes/@GlobalScope.xml
 msgid "DualShock square button."
-msgstr ""
+msgstr "Tasto Quadrato del DualShock."
 
 #: doc/classes/@GlobalScope.xml
 msgid "DualShock triangle button."
-msgstr ""
+msgstr "Tasto Triangolo del DualShock."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Xbox controller B button."
-msgstr ""
+msgstr "Tasto B del controller Xbox."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Xbox controller A button."
-msgstr ""
+msgstr "Tasto A del controller Xbox."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Xbox controller X button."
-msgstr ""
+msgstr "Tasto X del controller Xbox."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Xbox controller Y button."
-msgstr ""
+msgstr "Tasto Y del controller Xbox."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Nintendo controller A button."
-msgstr ""
+msgstr "Tasto A del controller Nintendo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Nintendo controller B button."
-msgstr ""
+msgstr "Tasto B del controller Nintendo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Nintendo controller X button."
-msgstr ""
+msgstr "Tasto X del controller Nintendo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Nintendo controller Y button."
-msgstr ""
+msgstr "Tasto Y del controller Nintendo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Grip (side) buttons on a VR controller."
-msgstr ""
+msgstr "Tasti Grip (di lato) su un controller VR."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Push down on the touchpad or main joystick on a VR controller."
-msgstr ""
+msgstr "Premi giù sul touchpad o il joystick principale su un controller VR."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Trigger on a VR controller."
-msgstr ""
+msgstr "Trigger su un controller VR."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "A button on the right Oculus Touch controller, X button on the left "
 "controller (also when used in OpenVR)."
 msgstr ""
+"Tasto A sul controller destro Oculus Touch, tasto X sul controller sinistro "
+"(anche quando utilizzato in OpenVR)."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "B button on the right Oculus Touch controller, Y button on the left "
 "controller (also when used in OpenVR)."
 msgstr ""
+"Tasto B sul controller destro Oculus Touch, tasto Y sul controller sinistro "
+"(anche quando utilizzando in OpenVR)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Menu button on either Oculus Touch controller."
-msgstr ""
+msgstr "Tasto Menu su entrambi i controller Oculus Touch."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Menu button in OpenVR (Except when Oculus Touch controllers are used)."
 msgstr ""
+"Tasto Menu in OpenVR (tranne quando sono in utilizzo i controller Oculus "
+"Touch)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button Select."
-msgstr ""
+msgstr "Tasto Select del Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button Start."
-msgstr ""
+msgstr "Tasto Start del Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad DPad up."
-msgstr ""
+msgstr "Tasto in su' DPad del Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad DPad down."
-msgstr ""
+msgstr "Tasto in giu' DPad del Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad DPad left."
-msgstr ""
+msgstr "Tasto sinistro DPad del Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad DPad right."
-msgstr ""
+msgstr "Tasto destro DPad del Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL guide button."
-msgstr ""
+msgstr "Tasto Guida SDL del Gamepad."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL miscellaneous button."
@@ -4122,6 +4098,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "Methods that return [enum Error] return [constant OK] when no error "
 "occurred. Note that many functions don't return an error code but will print "
@@ -4137,30 +4114,39 @@ msgid ""
 "    print(\"Still failing!\")\n"
 "[/codeblock]"
 msgstr ""
+"Metodi che ritornano [enum Error] ritornano [constant OK] quando non risulta "
+"alcun errore. Nota che molte funzioni non ritornano un errore di codice ma "
+"stampano messaggi di errore come standard output.\n"
+"Dato che [constant OK] ha valore 0, e tutti gli altri codici mancati sono "
+"interi positivi, può essere utilizzato anche nei controlli booleani, e.g.:\n"
+"[codeblock]\n"
+"var err = method_that_returns_error()\n"
+"if err != OK:\n"
+"    print(\"Failure!\")\n"
+"# O, equivalente:\n"
+"if err:\n"
+"    print(\"Still failing!\")\n"
+"[/codeblock]"
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Generic error."
 msgstr "Errore generico."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Unavailable error."
 msgstr "Errore non disponibile."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Unconfigured error."
 msgstr "Errore non configurato."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Unauthorized error."
 msgstr "Errore non autorizzato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Parameter range error."
-msgstr ""
+msgstr "Errore di parametro del range."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Out of memory (OOM) error."
@@ -4180,11 +4166,11 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: No permission error."
-msgstr ""
+msgstr "File: Errore nessun permesso."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Already in use error."
-msgstr ""
+msgstr "File: Errore già in uso."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Can't open error."
@@ -4199,13 +4185,12 @@ msgid "File: Can't read error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "File: Unrecognized error."
 msgstr "File: Errore non riconosciuto."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Corrupt error."
-msgstr ""
+msgstr "File: Errore corrotto."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Missing dependencies error."
@@ -4216,14 +4201,12 @@ msgid "File: End of file (EOF) error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Can't open error."
-msgstr "Impossibile aprire l'errore."
+msgstr "Impossibile aprire errore."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Can't create error."
-msgstr "Impossibile creare l'errore."
+msgstr "Impossibile creare errore."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Query failed error."
@@ -4231,35 +4214,31 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Already in use error."
-msgstr ""
+msgstr "Errore già in uso."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Locked error."
 msgstr "Errore bloccato."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Timeout error."
 msgstr "Errore di timeout."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't connect error."
-msgstr ""
+msgstr "Errore impossibile connettersi."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Can't resolve error."
 msgstr "Impossibile risolvere l'errore."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Connection error."
 msgstr "Errore di connessione."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't acquire resource error."
-msgstr ""
+msgstr "Impossibile acquisire fonte dell'errore."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't fork process error."
@@ -4270,36 +4249,32 @@ msgid "Invalid data error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Invalid parameter error."
 msgstr "Errore di parametro non valido."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Already exists error."
-msgstr "Esiste già l'errore."
+msgstr "Errore già esistente."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Does not exist error."
-msgstr ""
+msgstr "Errore inesistente."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Database: Read error."
 msgstr "Database: Errore di lettura."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Database: Write error."
 msgstr "Database: Errore di scrittura."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Compilation failed error."
-msgstr ""
+msgstr "Errore compilazione fallita."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Method not found error."
-msgstr ""
+msgstr "Errore metodo non trovato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Linking failed error."
@@ -4307,24 +4282,23 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Script failed error."
-msgstr ""
+msgstr "Errore script fallito."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Cycling link (import cycle) error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Invalid declaration error."
 msgstr "Errore di dichiarazione non valida."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Duplicate symbol error."
-msgstr ""
+msgstr "Errore simbolo duplicato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Parse error."
-msgstr ""
+msgstr "Errore di analizzazione."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Busy error."
@@ -4336,21 +4310,23 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Help error."
-msgstr ""
+msgstr "Errore aiuto."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Bug error."
-msgstr ""
+msgstr "Errore bug."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Printer on fire error. (This is an easter egg, no engine methods return this "
 "error code.)"
 msgstr ""
+"Errore stampante a fuoco. (E' un easter egg, nessun motore di metodi riporta "
+"questo codice di errore.)"
 
 #: doc/classes/@GlobalScope.xml
 msgid "No hint for the edited property."
-msgstr ""
+msgstr "Nessun indizio sulle proprietà modificate."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4361,6 +4337,13 @@ msgid ""
 "above the max or below the min values. Example: [code]\"-360,360,1,"
 "or_greater,or_lesser\"[/code]."
 msgstr ""
+"Indica che un numero intero o proprietà mobile dovrebbe essere in un range "
+"specifico tramite la stringa indicativa [code]\"min,max\"[/code] o "
+"[code]\"min,max,step\"[/code]. La stringa indicativa può, opzionalmente, "
+"includere [code]\"or_greater\"[/code] e/o [code]\"or_lesser\"[/code] per "
+"permettere un input manuale che vada rispettivamente sopra il massimo o "
+"sotto il minimo dei valori. Esempio: [code]\"-360,360,1,or_greater,"
+"or_lesser\"[/code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4371,6 +4354,13 @@ msgid ""
 "above the max or below the min values. Example: [code]\"0.01,100,0.01,"
 "or_greater\"[/code]."
 msgstr ""
+"Indica che una proprietà mobile dovrebbe essere in un range esponenziale "
+"specificato tramite la stringa indicativa [code]\"min,max\"[/code] "
+"o[code]\"min,max,step\"[/code]. La stringa indicativa può, opzionalmente, "
+"includere [code]\"or_greater\"[/code] e/o [code]\"or_lesser\"[/code] per "
+"permettere un input manuale di andare rispettivamente sopra il massimo o "
+"sotto il minimo dei valori. Esempio: [code]\"0.01,100,0.01,or_greater\"[/"
+"code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4382,6 +4372,13 @@ msgid ""
 "specified by appending [code]:integer[/code] to the name, e.g. [code]\"Zero,"
 "One,Three:3,Four,Six:6\"[/code]."
 msgstr ""
+"Indica che una proprietà intera, mobile o stringa sia un valore innumerato "
+"da scegliere tramite una specifica stringa indicativa.\n"
+"La stringa indicativa è un elenco di nomi come [code]\"Hello,Something,"
+"Else\"[/code]. Per proprietà intere o mobili, il primo nome sulla lista ha "
+"valore 0, il successivo 1, e così via. I valori espliciti possono anche "
+"essere specificati aggiungendo [code]:integer[/code] al nome, p.e. "
+"[code]\"Zero,One,Three:3,Four,Six:6\"[/code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4506,6 +4503,26 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Hints that an image is compressed using lossless compression."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"Hint that a property represents a particular type. If a property is "
+"[constant TYPE_STRING], allows to set a type from the create dialog. If you "
+"need to create an [Array] to contain elements of a specific type, the "
+"[code]hint_string[/code] must encode nested types using [code]\":\"[/code] "
+"and [code]\"/\"[/code] for specifying [Resource] types. For instance:\n"
+"[codeblock]\n"
+"hint_string = \"%s:\" % [TYPE_INT] # Array of inteters.\n"
+"hint_string = \"%s:%s:\" % [TYPE_ARRAY, TYPE_REAL] # Two-dimensional array "
+"of floats.\n"
+"hint_string = \"%s/%s:Resource\" % [TYPE_OBJECT, TYPE_OBJECT] # Array of "
+"resources.\n"
+"hint_string = \"%s:%s/%s:Resource\" % [TYPE_ARRAY, TYPE_OBJECT, TYPE_OBJECT] "
+"# Two-dimensional array of resources.\n"
+"[/codeblock]\n"
+"[b]Note:[/b] The final colon is required to specify for properly detecting "
+"built-in types."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
@@ -5194,8 +5211,7 @@ msgstr ""
 #: doc/classes/AudioStreamPlayer.xml doc/classes/Button.xml
 #: doc/classes/CanvasLayer.xml doc/classes/CollisionShape2D.xml
 #: doc/classes/ColorRect.xml doc/classes/Input.xml doc/classes/InputEvent.xml
-#: doc/classes/InputEventAction.xml doc/classes/Label.xml
-#: doc/classes/Particles2D.xml doc/classes/Timer.xml
+#: doc/classes/InputEventAction.xml doc/classes/Label.xml doc/classes/Timer.xml
 #: doc/classes/VisibilityNotifier2D.xml
 msgid "2D Dodge The Creeps Demo"
 msgstr ""
@@ -7160,13 +7176,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid ""
 "Returns whether node [code]id[/code] and [code]dst_id[/code] are connected "
 "at the specified slot."
 msgstr ""
-"Restituisce [code]true[/code] se [code]a[/code] e [code]b[/code] sono "
-"approssimativamente uguali tra di loro."
+"Restituisce se nodo [code]id[/code] e [code]dst_id[/code] sono connessi "
+"nella specifica casella."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid "Returns the blend amount of a Blend2 node given its name."
@@ -8132,7 +8147,10 @@ msgid ""
 "var array = []\n"
 "array.resize(10)\n"
 "array.fill(0) # Initialize the 10 elements to 0.\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Note:[/b] If [code]value[/code] is of a reference type ([Object]-derived, "
+"[Array], [Dictionary], etc.) then the array is filled with the references to "
+"the same object, i.e. no duplicates are created."
 msgstr ""
 
 #: doc/classes/Array.xml doc/classes/PoolByteArray.xml
@@ -8317,6 +8335,9 @@ msgstr ""
 #: doc/classes/Array.xml
 msgid ""
 "Sorts the array.\n"
+"[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/"
+"wiki/Sorting_algorithm#Stability]stable[/url]. This means that values "
+"considered equal may have their order changed when using [method sort].\n"
 "[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural "
 "order). This may lead to unexpected behavior when sorting an array of "
 "strings ending with a sequence of numbers. Consider the following example:\n"
@@ -8336,9 +8357,13 @@ msgid ""
 "For two elements [code]a[/code] and [code]b[/code], if the given method "
 "returns [code]true[/code], element [code]b[/code] will be after element "
 "[code]a[/code] in the array.\n"
+"[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/"
+"wiki/Sorting_algorithm#Stability]stable[/url]. This means that values "
+"considered equal may have their order changed when using [method "
+"sort_custom].\n"
 "[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm "
-"expects a deterministic result. Doing so will result in unexpected "
-"behavior.\n"
+"expects a deterministic result. Randomizing the return value will result in "
+"unexpected behavior.\n"
 "[codeblock]\n"
 "class MyCustomSorter:\n"
 "    static func sort_ascending(a, b):\n"
@@ -8756,12 +8781,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ARVRController.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the button at index [code]button[/code] is "
 "pressed. See [enum JoystickList], in particular the [code]JOY_VR_*[/code] "
 "constants."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Ritorna [code]true[/code]se il tasto sull'indice [code]button[/code] è stato "
+"premuto. Vedi [enum JoystickList], in particolare i [code]JOY_VR_*[/code] "
+"costanti."
 
 #: doc/classes/ARVRController.xml
 msgid ""
@@ -9305,9 +9332,8 @@ msgstr ""
 #: doc/classes/PanelContainer.xml doc/classes/ScrollContainer.xml
 #: doc/classes/SplitContainer.xml doc/classes/TabContainer.xml
 #: doc/classes/VBoxContainer.xml doc/classes/VSplitContainer.xml
-#, fuzzy
 msgid "GUI containers"
-msgstr "Contenitore a schede."
+msgstr "Contenitore a schede"
 
 #: doc/classes/AspectRatioContainer.xml
 msgid "Specifies the horizontal relative position of child controls."
@@ -9894,13 +9920,12 @@ msgid "Audio buses"
 msgstr ""
 
 #: doc/classes/AudioEffectCapture.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if at least [code]frames[/code] audio frames are "
 "available to read in the internal ring buffer."
 msgstr ""
-"Restituisce [code]true[/code] se [code]a[/code] e [code]b[/code] sono "
-"approssimativamente uguali tra di loro."
+"Restituisce [code]true[/code] se almeno [code]frames[/code] frame audio sono "
+"disponibili per la lettura nell'internal ring buffer."
 
 #: doc/classes/AudioEffectCapture.xml
 msgid "Clears the internal ring buffer."
@@ -10986,12 +11011,14 @@ msgid "Clears the audio sample data buffer."
 msgstr ""
 
 #: doc/classes/AudioStreamGeneratorPlayback.xml
+#, fuzzy
 msgid ""
-"Returns the number of audio data frames left to play. If this returned "
-"number reaches [code]0[/code], the audio will stop playing until frames are "
-"added again. Therefore, make sure your script can always generate and push "
-"new audio frames fast enough to avoid audio cracking."
+"Returns the number of frames that can be pushed to the audio sample data "
+"buffer without overflowing it. If the result is [code]0[/code], the buffer "
+"is full."
 msgstr ""
+"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
+"esiste, [code]false[/code] altrimenti."
 
 #: doc/classes/AudioStreamGeneratorPlayback.xml
 msgid ""
@@ -11522,14 +11549,14 @@ msgstr ""
 #: doc/classes/BackBufferCopy.xml
 msgid ""
 "Node for back-buffering the currently-displayed screen. The region defined "
-"in the BackBufferCopy node is buffered with the content of the screen it "
+"in the [BackBufferCopy] node is buffered with the content of the screen it "
 "covers, or the entire screen according to the copy mode set. Use the "
 "[code]texture(SCREEN_TEXTURE, ...)[/code] function in your shader scripts to "
 "access the buffer.\n"
 "[b]Note:[/b] Since this node inherits from [Node2D] (and not [Control]), "
 "anchors and margins won't apply to child [Control]-derived nodes. This can "
 "be problematic when resizing the window. To avoid this, add [Control]-"
-"derived nodes as [i]siblings[/i] to the BackBufferCopy node instead of "
+"derived nodes as [i]siblings[/i] to the [BackBufferCopy] node instead of "
 "adding them as children."
 msgstr ""
 
@@ -11539,22 +11566,22 @@ msgstr ""
 
 #: doc/classes/BackBufferCopy.xml
 msgid ""
-"The area covered by the BackBufferCopy. Only used if [member copy_mode] is "
+"The area covered by the [BackBufferCopy]. Only used if [member copy_mode] is "
 "[constant COPY_MODE_RECT]."
 msgstr ""
 
 #: doc/classes/BackBufferCopy.xml
 msgid ""
-"Disables the buffering mode. This means the BackBufferCopy node will "
+"Disables the buffering mode. This means the [BackBufferCopy] node will "
 "directly use the portion of screen it covers."
 msgstr ""
 
 #: doc/classes/BackBufferCopy.xml
-msgid "BackBufferCopy buffers a rectangular region."
+msgid "[BackBufferCopy] buffers a rectangular region."
 msgstr ""
 
 #: doc/classes/BackBufferCopy.xml
-msgid "BackBufferCopy buffers the entire screen."
+msgid "[BackBufferCopy] buffers the entire screen."
 msgstr ""
 
 #: doc/classes/BakedLightmap.xml
@@ -13261,9 +13288,9 @@ msgid "The camera's process callback. See [enum Camera2DProcessMode]."
 msgstr ""
 
 #: doc/classes/Camera2D.xml
-#, fuzzy
 msgid "If [code]true[/code], the camera view rotates with the target."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Se [code]true[/code], la visuale della telecamera ruota insieme al target."
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -13401,11 +13428,12 @@ msgid "Returns an array of [CameraFeed]s."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
-#, fuzzy
 msgid ""
 "Returns the [CameraFeed] corresponding to the camera with the given "
 "[code]index[/code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce il [CameraFeed] corrispondente alla telecamera con il dato "
+"[code]index[/code]."
 
 #: doc/classes/CameraServer.xml
 msgid "Returns the number of [CameraFeed]s registered."
@@ -14740,9 +14768,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ClippedCamera.xml
-#, fuzzy
 msgid "If [code]true[/code], the camera stops on contact with [Area]s."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr "Se [code]true[/code], la telecamera si ferma al contatto con [Area]s."
 
 #: doc/classes/ClippedCamera.xml
 msgid "If [code]true[/code], the camera stops on contact with [PhysicsBody]s."
@@ -15160,9 +15187,8 @@ msgstr ""
 #: doc/classes/Physics2DDirectSpaceState.xml
 #: doc/classes/PhysicsDirectBodyState.xml
 #: doc/classes/PhysicsDirectSpaceState.xml doc/classes/RigidBody.xml
-#, fuzzy
 msgid "Physics introduction"
-msgstr "Interpolazione cubica."
+msgstr "Introduzione fisica"
 
 #: doc/classes/CollisionShape.xml
 msgid ""
@@ -16792,7 +16818,7 @@ msgstr ""
 #: doc/classes/Control.xml
 #, fuzzy
 msgid "Control node gallery"
-msgstr "Tasto Control/CTRL."
+msgstr "Galleria controllo nodo"
 
 #: doc/classes/Control.xml
 msgid "All GUI Demos"
@@ -16902,15 +16928,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Creates a local override for a theme constant with the specified [code]name[/"
 "code]. Local overrides always take precedence when fetching theme items for "
 "the control.\n"
 "See also [method get_constant], [method remove_constant_override]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Crea un override locale per un tema costante con lo specifico [code]name[/"
+"code]. I local overrides hanno sempre la precedenza quando si recuperano "
+"elementi del tema per il controllo.\n"
+"Vedi anche [method get_constant], [method remove_constant_override]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -17210,14 +17237,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme [Color] "
 "with the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_color_override]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se è presente un locale override per un tema "
+"[Color] con lo specifico [code]name[/code] in questo [Control] nodo.\n"
+"Vedi [method add_color_override]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -17228,14 +17255,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme constant "
 "with the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_constant_override]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se c'è un override locale per un tema costante "
+"nello specifico [code]name[/code] in questo [Control] nodo.\n"
+"Vedi [method add_constant_override]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -17255,14 +17282,14 @@ msgstr ""
 "esiste, [code]false[/code] altrimenti."
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme [Font] "
 "with the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_font_override]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se è presente un override locale per un tema "
+"[Font] con lo specifico [code]name[/code] in questo [Control] nodo.\n"
+"Vedi [method add_font_override]."
 
 #: doc/classes/Control.xml
 #, fuzzy
@@ -17276,14 +17303,14 @@ msgstr ""
 "esiste, [code]false[/code] altrimenti."
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme icon with "
 "the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_icon_override]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se è presente un override locale per un'icona "
+"a tema con lo specifico [code]name[/code] in questo [Control] nodo.\n"
+"Vedi [method add_icon_override]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -17296,14 +17323,15 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme shader "
 "with the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_shader_override]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se è un presente un override locale per un "
+"ombreggiatore di tema con lo specifico [code]name[/code] in questo [Control] "
+"nodo.\n"
+"Vedi [method add_shader_override]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -17314,14 +17342,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme "
 "[StyleBox] with the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_stylebox_override]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se è presente un override locale per un tema "
+"[StyleBox] con lo specifico [code]name[/code] in questo [Control] nodo.\n"
+"Vedi [method add_stylebox_override]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20445,6 +20473,14 @@ msgid "Cylinder shape for collisions."
 msgstr ""
 
 #: doc/classes/CylinderShape.xml
+msgid ""
+"Cylinder shape for collisions.\n"
+"[b]Note:[/b] When using GodotPhysics instead of the default Bullet physics "
+"engine, there are several known bugs with cylinder collision shapes. Using "
+"[CapsuleShape] or [BoxShape] instead is recommended."
+msgstr ""
+
+#: doc/classes/CylinderShape.xml
 msgid "The cylinder's height."
 msgstr ""
 
@@ -23285,7 +23321,10 @@ msgid ""
 "[/codeblock]\n"
 "[b]Note:[/b] The script is run in the Editor context, which means the output "
 "is visible in the console window started with the Editor (stdout) instead of "
-"the usual Godot [b]Output[/b] dock."
+"the usual Godot [b]Output[/b] dock.\n"
+"[b]Note:[/b] EditorScript is reference counted, meaning it is destroyed when "
+"nothing references it. This can cause errors during asynchronous operations "
+"if there are no references to the script."
 msgstr ""
 
 #: doc/classes/EditorScript.xml
@@ -28290,11 +28329,12 @@ msgid ""
 msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
-#, fuzzy
 msgid ""
 "Returns an array of all cells with the given item index specified in "
 "[code]item[/code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce un vettore di tutte le celle con il dato elemento indice "
+"specificato in [code]item[/code]."
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid ""
@@ -28326,11 +28366,12 @@ msgid ""
 msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], this GridMap uses cell navmesh resources to create "
 "navigation regions."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Se [code]true[/code], questa GridMap utilizza celle navmesh come fonti per "
+"creare regioni di navigazione."
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid "If [code]true[/code], grid items are centered on the X axis."
@@ -30986,11 +31027,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if you are pressing the joypad button (see [enum "
 "JoystickList])."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce [code]true[/code] se premi un tasto del joypad (vedi [enum "
+"JoystickList])."
 
 #: doc/classes/Input.xml
 msgid ""
@@ -31774,11 +31816,13 @@ msgid "Mouse and input coordinates"
 msgstr ""
 
 #: doc/classes/InputEventMouseMotion.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] when using the eraser end of a stylus pen.\n"
 "[b]Note:[/b] This property is implemented on Linux, macOS and Windows."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce [code]true[/code] quando è in utilizzo la gomma di una penna "
+"stilo.\n"
+"[b]Nota:[/b] Questa proprietà è implementata su Linux, macOS e Windows."
 
 #: doc/classes/InputEventMouseMotion.xml
 msgid ""
@@ -33974,9 +34018,8 @@ msgid "Returns the offset of the piece with the index [code]idx[/code]."
 msgstr ""
 
 #: doc/classes/LargeTexture.xml
-#, fuzzy
 msgid "Returns the [Texture] of the piece with the index [code]idx[/code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr "Restituisce la [Texture] del pezzo con l'indice [code]idx[/code]."
 
 #: doc/classes/LargeTexture.xml
 msgid ""
@@ -34063,7 +34106,9 @@ msgid ""
 "The size of the light in Godot units. Only considered in baked lightmaps and "
 "only if [member light_bake_mode] is set to [constant BAKE_ALL]. Increasing "
 "this value will make the shadows appear blurrier. This can be used to "
-"simulate area lights to an extent."
+"simulate area lights to an extent.\n"
+"[b]Note:[/b] [member light_size] is not affected by [member Spatial.scale] "
+"(the light's scale or its parent's scale)."
 msgstr ""
 
 #: doc/classes/Light.xml
@@ -37223,9 +37268,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml
-#, fuzzy
 msgid "Returns the map cell height. [b]Note:[/b] Currently not implemented."
-msgstr "Prende la linea corrente nel file analizzato (non ancora implementato)"
+msgstr ""
+"Prende la linea corrente nel file analizzato. [b]Note:[/b] Attualmente non "
+"implementato."
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
@@ -37399,7 +37445,10 @@ msgid ""
 "use the [method get_next_location] function once every physics frame to "
 "update the internal path logic of the NavigationAgent. The returned vector "
 "position from this function should be used as the next movement position for "
-"the agent's parent Node."
+"the agent's parent Node.\n"
+"[b]Note:[/b] By default, the expensive calculations for avoidance are done "
+"in a thread. In HTML5 exports without thread support, they will be done on "
+"the main thread, which can lead to performance issues."
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
@@ -37652,7 +37701,10 @@ msgid ""
 "use the [method get_next_location] function once every physics frame to "
 "update the internal path logic of the NavigationAgent. The returned vector "
 "position from this function should be used as the next movement position for "
-"the agent's parent Node."
+"the agent's parent Node.\n"
+"[b]Note:[/b] By default, the expensive calculations for avoidance are done "
+"in a thread. In HTML5 exports without thread support, they will be done on "
+"the main thread, which can lead to performance issues."
 msgstr ""
 
 #: doc/classes/NavigationAgent2D.xml
@@ -37733,13 +37785,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
-#, fuzzy
 msgid ""
 "Returns whether the specified [code]bit[/code] of the [member "
 "geometry_collision_mask] is set."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce se lo specifico [code]bit[/code] del [member "
+"geometry_collision_mask] è impostato."
 
 #: doc/classes/NavigationMesh.xml doc/classes/NavigationPolygon.xml
 msgid ""
@@ -38377,6 +38428,9 @@ msgid ""
 "modified velocity as-is might lead to pushing and agent outside of a "
 "navigable area. This is a limitation of the collision avoidance system, any "
 "more complex situation may require the use of the physics engine.\n"
+"[b]Note:[/b] By default, the expensive calculations for avoidance are done "
+"in a thread. In HTML5 exports without thread support, they will be done on "
+"the main thread, which can lead to performance issues.\n"
 "This server keeps tracks of any call and executes them during the sync "
 "phase. This means that you can request any change to the map, using any "
 "thread, without worrying."
@@ -40866,13 +40920,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Object.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if a connection exists for a given [code]signal[/"
 "code], [code]target[/code], and [code]method[/code]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se la connessione esiste per un dato "
+"[code]signal[/code], [code]target[/code], e [code]method[/code]."
 
 #: doc/classes/Object.xml
 msgid ""
@@ -41195,7 +41248,9 @@ msgid ""
 "The light's radius. Note that the effectively lit area may appear to be "
 "smaller depending on the [member omni_attenuation] in use. No matter the "
 "[member omni_attenuation] in use, the light will never reach anything "
-"outside this radius."
+"outside this radius.\n"
+"[b]Note:[/b] [member omni_range] is not affected by [member Spatial.scale] "
+"(the light's scale or its parent's scale)."
 msgstr ""
 
 #: doc/classes/OmniLight.xml
@@ -41712,11 +41767,11 @@ msgstr "Restituisce l'angolo al vettore dato, in radianti."
 #: doc/classes/OS.xml
 msgid ""
 "Returns the [i]global[/i] cache data directory according to the operating "
-"system's standards. On desktop platforms, this path can be overridden by "
-"setting the [code]XDG_CACHE_HOME[/code] environment variable before starting "
-"the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in "
-"Godot projects[/url] in the documentation for more information. See also "
-"[method get_config_dir] and [method get_data_dir].\n"
+"system's standards. On Linux, this path can be overridden by setting the "
+"[code]XDG_CACHE_HOME[/code] environment variable before starting the "
+"project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot "
+"projects[/url] in the documentation for more information. See also [method "
+"get_config_dir] and [method get_data_dir].\n"
 "Not to be confused with [method get_user_data_dir], which returns the "
 "[i]project-specific[/i] user data path."
 msgstr ""
@@ -41750,11 +41805,11 @@ msgstr ""
 #: doc/classes/OS.xml
 msgid ""
 "Returns the [i]global[/i] user configuration directory according to the "
-"operating system's standards. On desktop platforms, this path can be "
-"overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable "
-"before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths."
-"html]File paths in Godot projects[/url] in the documentation for more "
-"information. See also [method get_cache_dir] and [method get_data_dir].\n"
+"operating system's standards. On Linux, this path can be overridden by "
+"setting the [code]XDG_CONFIG_HOME[/code] environment variable before "
+"starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File "
+"paths in Godot projects[/url] in the documentation for more information. See "
+"also [method get_cache_dir] and [method get_data_dir].\n"
 "Not to be confused with [method get_user_data_dir], which returns the "
 "[i]project-specific[/i] user data path."
 msgstr ""
@@ -41776,11 +41831,11 @@ msgstr ""
 #: doc/classes/OS.xml
 msgid ""
 "Returns the [i]global[/i] user data directory according to the operating "
-"system's standards. On desktop platforms, this path can be overridden by "
-"setting the [code]XDG_DATA_HOME[/code] environment variable before starting "
-"the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in "
-"Godot projects[/url] in the documentation for more information. See also "
-"[method get_cache_dir] and [method get_config_dir].\n"
+"system's standards. On Linux, this path can be overridden by setting the "
+"[code]XDG_DATA_HOME[/code] environment variable before starting the project. "
+"See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot "
+"projects[/url] in the documentation for more information. See also [method "
+"get_cache_dir] and [method get_config_dir].\n"
 "Not to be confused with [method get_user_data_dir], which returns the "
 "[i]project-specific[/i] user data path."
 msgstr ""
@@ -42304,11 +42359,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the [b]OK[/b] button should appear on the left "
 "and [b]Cancel[/b] on the right."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce [code]true[/code] se il tasto [b]OK[/b] debba apparire a "
+"sinistra e [b]Cancel[/b] a destra."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -42320,11 +42376,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the input scancode corresponds to a Unicode "
 "character."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce [code]true[/code] se l'input scancode corrisponde a un carattere "
+"Unicode."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -43140,7 +43197,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PacketPeer.xml
-#, fuzzy
 msgid ""
 "[i]Deprecated.[/i] Use [code]get_var[/code] and [code]put_var[/code] "
 "parameters instead.\n"
@@ -43150,12 +43206,14 @@ msgid ""
 "Do not use this option if the serialized object comes from untrusted sources "
 "to avoid potential security threats such as remote code execution."
 msgstr ""
-"Decodifica un byte array in un valore. Quando [code]allow_objects[/code] è "
-"[code]true[/code], decodificare gli oggetti è permesso.\n"
-"[b]ATTENZIONE:[/b] Deserializzare un oggetto può contenere codice che verrà "
+"[i]Deprecated.[/i] Usa i parametri [code]get_var[/code] e [code]put_var[/"
+"code] piuttosto.\n"
+"Se [code]true[/code], il PacketPeer consentirà la codifica e decodifica di "
+"oggetti tramite [method get_var] and [method put_var].\n"
+"[b]Attenzione:[/b] Oggetti deserializzati possono contenere codice che verrà "
 "eseguito. Non usare questa opzione se l'oggetto serializzato arriva da fonti "
-"sconosciute per evitare potenziali pericoli di sicurezza (remote code "
-"execution, esecuzione di codice remoto)."
+"inaffidabili per evitare potenziali minacce di sicurezza come esecuzione di "
+"codice remoto."
 
 #: doc/classes/PacketPeer.xml
 msgid ""
@@ -43656,6 +43714,16 @@ msgstr ""
 
 #: doc/classes/Particles2D.xml
 msgid "Particle systems (2D)"
+msgstr ""
+
+#: doc/classes/Particles2D.xml
+msgid "2D Particles Demo"
+msgstr ""
+
+#: doc/classes/Particles2D.xml
+msgid ""
+"2D Dodge The Creeps Demo (uses GPUParticles2D for the trail behind the "
+"player)"
 msgstr ""
 
 #: doc/classes/Particles2D.xml
@@ -46826,11 +46894,12 @@ msgstr ""
 #: doc/classes/PoolIntArray.xml doc/classes/PoolRealArray.xml
 #: doc/classes/PoolStringArray.xml doc/classes/PoolVector2Array.xml
 #: doc/classes/PoolVector3Array.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the array contains the given value.\n"
 "[b]Note:[/b] This is equivalent to using the [code]in[/code] operator."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Ritorna [code]true[/code] se il vettore contiene il dato valore.\n"
+"[b]Nota:[/b] Ciò equivale ad utilizzare il [code]in[/code] operatore."
 
 #: doc/classes/PoolByteArray.xml
 msgid ""
@@ -47084,11 +47153,12 @@ msgid "Appends a [PoolStringArray] at the end of this array."
 msgstr ""
 
 #: doc/classes/PoolStringArray.xml
-#, fuzzy
 msgid ""
 "Returns a [String] with each element of the array joined with the given "
 "[code]delimiter[/code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce una [String] con cui ogni elemento del vettore aderì con il dato "
+"[code]delimiter[/code]."
 
 #: doc/classes/PoolStringArray.xml
 msgid "Appends a string element at end of the array."
@@ -47570,11 +47640,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PopupMenu.xml
-#, fuzzy
 msgid ""
 "Sets the currently focused item as the given [code]index[/code].\n"
 "Passing [code]-1[/code] as the index makes so that no item is focused."
-msgstr "Calcola il prodotto vettoriale di questo vettore e [code]with[/code]."
+msgstr ""
+"Imposta l'attuale elemento focalizzato come il dato [code]index[/code].\n"
+"Passando [code]-1[/code] come indice fa in modo che nessun elemento venga "
+"focalizzato."
 
 #: doc/classes/PopupMenu.xml
 msgid "Hides the [PopupMenu] when the window loses focus."
@@ -51264,15 +51336,22 @@ msgstr ""
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "If [code]true[/code], uses a fast post-processing filter to make banding "
-"significantly less visible. In some cases, debanding may introduce a "
-"slightly noticeable dithering pattern. It's recommended to enable debanding "
-"only when actually needed since the dithering pattern will make lossless-"
-"compressed screenshots larger.\n"
+"significantly less visible in 3D. 2D rendering is [i]not[/i] affected by "
+"debanding unless the [member Environment.background_mode] is [constant "
+"Environment.BG_CANVAS]. In this case, [member rendering/quality/"
+"intended_usage/framebuffer_allocation] must also be set to [b]3D[/b].\n"
+"In some cases, debanding may introduce a slightly noticeable dithering "
+"pattern. It's recommended to enable debanding only when actually needed "
+"since the dithering pattern will make lossless-compressed screenshots "
+"larger.\n"
 "[b]Note:[/b] Only available on the GLES3 backend. [member rendering/quality/"
 "depth/hdr] must also be [code]true[/code] for debanding to be effective.\n"
 "[b]Note:[/b] There are known issues with debanding breaking rendering on "
 "mobile platforms. Due to this, it is recommended to leave this option "
-"disabled when targeting mobile platforms."
+"disabled when targeting mobile platforms.\n"
+"[b]Note:[/b] This property is only read when the project starts. To set "
+"debanding at run-time, set [member Viewport.debanding] on the root "
+"[Viewport] instead."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -51911,14 +51990,14 @@ msgid "Returns the inverse of the quaternion."
 msgstr ""
 
 #: doc/classes/Quat.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this quaternion and [code]quat[/code] are "
 "approximately equal, by running [method @GDScript.is_equal_approx] on each "
 "component."
 msgstr ""
-"Restituisce [code]true[/code] se [code]a[/code] e [code]b[/code] sono "
-"approssimativamente uguali tra di loro."
+"Restituisce [code]true[/code] se questo quaternione e  [code]quat[/code] "
+"sono approssimativament eguali, avviando [method @GDScript.is_equal_approx] "
+"su ogni componente."
 
 #: doc/classes/Quat.xml
 msgid "Returns whether the quaternion is normalized or not."
@@ -52875,17 +52954,28 @@ msgstr ""
 #: modules/regex/doc_classes/RegEx.xml
 msgid ""
 "Searches the text for the compiled pattern. Returns a [RegExMatch] container "
-"of the first matching result if found, otherwise [code]null[/code]. The "
-"region to search within can be specified without modifying where the start "
-"and end anchor would be."
+"of the first matching result if found, otherwise [code]null[/code].\n"
+"The region to search within can be specified with [code]offset[/code] and "
+"[code]end[/code]. This is useful when searching for another match in the "
+"same [code]subject[/code] by calling this method again after a previous "
+"success. Setting these parameters differs from passing over a shortened "
+"string. For example, the start anchor [code]^[/code] is not affected by "
+"[code]offset[/code], and the character before [code]offset[/code] will be "
+"checked for the word boundary [code]\\b[/code]."
 msgstr ""
 
 #: modules/regex/doc_classes/RegEx.xml
 msgid ""
 "Searches the text for the compiled pattern. Returns an array of [RegExMatch] "
 "containers for each non-overlapping result. If no results were found, an "
-"empty array is returned instead. The region to search within can be "
-"specified without modifying where the start and end anchor would be."
+"empty array is returned instead.\n"
+"The region to search within can be specified with [code]offset[/code] and "
+"[code]end[/code]. This is useful when searching for another match in the "
+"same [code]subject[/code] by calling this method again after a previous "
+"success. Setting these parameters differs from passing over a shortened "
+"string. For example, the start anchor [code]^[/code] is not affected by "
+"[code]offset[/code], and the character before [code]offset[/code] will be "
+"checked for the word boundary [code]\\b[/code]."
 msgstr ""
 
 #: modules/regex/doc_classes/RegEx.xml
@@ -52894,8 +52984,14 @@ msgid ""
 "specified string. Escapes and backreferences such as [code]$1[/code] and "
 "[code]$name[/code] are expanded and resolved. By default, only the first "
 "instance is replaced, but it can be changed for all instances (global "
-"replacement). The region to search within can be specified without modifying "
-"where the start and end anchor would be."
+"replacement).\n"
+"The region to search within can be specified with [code]offset[/code] and "
+"[code]end[/code]. This is useful when searching for another match in the "
+"same [code]subject[/code] by calling this method again after a previous "
+"success. Setting these parameters differs from passing over a shortened "
+"string. For example, the start anchor [code]^[/code] is not affected by "
+"[code]offset[/code], and the character before [code]offset[/code] will be "
+"checked for the word boundary [code]\\b[/code]."
 msgstr ""
 
 #: modules/regex/doc_classes/RegExMatch.xml
@@ -53299,11 +53395,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ResourceInteractiveLoader.xml
-#, fuzzy
 msgid ""
 "Returns the loaded resource if the load operation completed successfully, "
 "[code]null[/code] otherwise."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce la fonte caricata se l'operazione caricata è stata completata "
+"con successo, [code]null[/code] altrimenti."
 
 #: doc/classes/ResourceInteractiveLoader.xml
 msgid ""
@@ -55614,7 +55711,11 @@ msgid "Call a group immediately (calls are normally made on idle)."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
-msgid "Call a group only once even if the call is executed many times."
+msgid ""
+"Call a group only once even if the call is executed many times.\n"
+"[b]Note:[/b] Arguments are not taken into account when deciding whether the "
+"call is unique or not. Therefore when the same method is called with "
+"different arguments, only the first call will be performed."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
@@ -57453,7 +57554,9 @@ msgid ""
 "[b]Note:[/b] Mixed negative scales in 3D are not decomposable from the "
 "transformation matrix. Due to the way scale is represented with "
 "transformation matrices in Godot, the scale values will either be all "
-"positive or all negative."
+"positive or all negative.\n"
+"[b]Note:[/b] Not all nodes are visually scaled by the [member scale] "
+"property. For example, [Light]s are not visually affected by [member scale]."
 msgstr ""
 
 #: doc/classes/Spatial.xml
@@ -58835,7 +58938,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SpotLight.xml
-msgid "The spotlight's angle in degrees."
+msgid ""
+"The spotlight's angle in degrees.\n"
+"[b]Note:[/b] [member spot_angle] is not affected by [member Spatial.scale] "
+"(the light's scale or its parent's scale)."
 msgstr ""
 
 #: doc/classes/SpotLight.xml
@@ -58851,7 +58957,9 @@ msgid ""
 "The maximal range that can be reached by the spotlight. Note that the "
 "effectively lit area may appear to be smaller depending on the [member "
 "spot_attenuation] in use. No matter the [member spot_attenuation] in use, "
-"the light will never reach anything outside this range."
+"the light will never reach anything outside this range.\n"
+"[b]Note:[/b] [member spot_range] is not affected by [member Spatial.scale] "
+"(the light's scale or its parent's scale)."
 msgstr ""
 
 #: doc/classes/SpringArm.xml
@@ -61956,20 +62064,20 @@ msgid ""
 msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
 
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] when the specified [code]line[/code] has a "
 "breakpoint."
-msgstr "Ritorna [code]true[/code] se [Rect2i] contiene un punto."
+msgstr ""
+"Restituisce [code]true[/code] quando lo specificato [code]line[/code] ha un "
+"breakpoint."
 
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] when the specified [code]line[/code] is marked as "
 "safe."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] quando lo specifico [code]line[/code] è "
+"marcato come sicuro."
 
 #: doc/classes/TextEdit.xml
 #, fuzzy
@@ -61977,13 +62085,12 @@ msgid "Returns if the given line is wrapped."
 msgstr "Restituisce la tangente del parametro."
 
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid ""
 "Returns whether the mouse is over selection. If [code]edges[/code] is "
 "[code]true[/code], the edges are considered part of the selection."
 msgstr ""
-"Restituisce [code]true[/code] se [code]a[/code] e [code]b[/code] sono "
-"approssimativamente uguali tra di loro."
+"Restituisce se il mouse è sotto selezione. Se [code]edges[/code] è "
+"[code]true[/code], gli angoli sono considerati parte della selezione"
 
 #: doc/classes/TextEdit.xml
 msgid "Returns [code]true[/code] if the selection is active."
@@ -63034,11 +63141,12 @@ msgid ""
 msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Clears the theme item of [code]data_type[/code] at [code]name[/code] if the "
 "theme has [code]theme_type[/code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Pulisce l'elemento del tema di [code]data_type[/code] a [code]name[/code] se "
+"il tema contiene [code]theme_type[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63062,12 +63170,14 @@ msgid ""
 msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns all the [Color]s as a [PoolStringArray] filled with each [Color]'s "
 "name, for use in [method get_color], if the theme has [code]theme_type[/"
 "code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce tutto il [Color]s come un [PoolStringArray] riempito di "
+"[Color]'s nomi, per utilizzo in [method get_color], se il tema ha "
+"[code]theme_type[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63083,12 +63193,14 @@ msgid ""
 msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns all the constants as a [PoolStringArray] filled with each constant's "
 "name, for use in [method get_constant], if the theme has [code]theme_type[/"
 "code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce tutte le costanti come [PoolStringArray] carico dei nomi di ogni "
+"costante, per utilizzo in [method get_constant], se il tema contiene "
+"[code]theme_type[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63105,11 +63217,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns all the [Font]s as a [PoolStringArray] filled with each [Font]'s "
 "name, for use in [method get_font], if the theme has [code]theme_type[/code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce i [Font]s come [PoolStringArray] carico con ogni [Font]'s nomi, "
+"per utilizzo in [method get_font], se il tema ha [code]theme_type[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63125,11 +63238,13 @@ msgid ""
 msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns all the icons as a [PoolStringArray] filled with each [Texture]'s "
 "name, for use in [method get_icon], if the theme has [code]theme_type[/code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce tutte le icona come [PoolStringArray] cariche di ogni "
+"[Texture]'s nomi, per utilizzo in [method get_icon], se il tema contiene "
+"[code]theme_type[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63202,83 +63317,87 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns a list of all type variations for the given [code]base_type[/code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce una lista di tutti i tipi di variazioni per il dato "
+"[code]base_type[/code]."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if [Color] with [code]name[/code] is in "
 "[code]theme_type[/code].\n"
 "Returns [code]false[/code] if the theme does not have [code]theme_type[/"
 "code]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se [Color] con [code]name[/code] è in "
+"[code]theme_type[/code].\n"
+"Restituisce [code]false[/code] se il tema non ha [code]theme_type[/code]."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if constant with [code]name[/code] is in "
 "[code]theme_type[/code].\n"
 "Returns [code]false[/code] if the theme does not have [code]theme_type[/"
 "code]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se costante con [code]name[/code] è in "
+"[code]theme_type[/code].\n"
+"Restituisce [code]false[/code] se il tema non contiene [code]theme_type[/"
+"code]."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this theme has a valid [member default_font] "
 "value."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce [code]true[/code] se questo tema ha un valido [member "
+"default_font] valore."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if [Font] with [code]name[/code] is in "
 "[code]theme_type[/code].\n"
 "Returns [code]false[/code] if the theme does not have [code]theme_type[/"
 "code]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se [Font] con [code]name[/code] è in "
+"[code]theme_type[/code].\n"
+"Restituisce [code]false[/code] se il tema non contiene [code]theme_type[/"
+"code]."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if icon [Texture] with [code]name[/code] is in "
 "[code]theme_type[/code].\n"
 "Returns [code]false[/code] if the theme does not have [code]theme_type[/"
 "code]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se l'icona [Texture] con [code]name[/code] è "
+"in [code]theme_type[/code].\n"
+"Restituisce [code]false[/code] se il tema non ha [code]theme_type[/code]."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if [StyleBox] with [code]name[/code] is in "
 "[code]theme_type[/code].\n"
 "Returns [code]false[/code] if the theme does not have [code]theme_type[/"
 "code]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se [StyleBox] con [code]name[/code] è in "
+"[code]theme_type[/code].\n"
+"Restituisce [code]false[/code] se il tema non ha [code]theme_type[/code]."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if a theme item of [code]data_type[/code] with "
 "[code]name[/code] is in [code]theme_type[/code].\n"
 "Returns [code]false[/code] if the theme does not have [code]theme_type[/"
 "code]."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Restituisce [code]true[/code] se un elemento del tema di  [code]data_type[/"
+"code] con [code]name[/code] è in [code]theme_type[/code].\n"
+"Restituisce [code]false[/code] se il tema non ha [code]theme_type[/code]."
 
 #: doc/classes/Theme.xml
 #, fuzzy
@@ -63306,44 +63425,54 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Renames the [Color] at [code]old_name[/code] to [code]name[/code] if the "
 "theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Rinomina il [Color] da [code]old_name[/code] a [code]name[/code] se il tema "
+"ha [code]theme_type[/code]. Se [code]name[/code] è già occupato, questo "
+"metodo non può funzionare."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Renames the constant at [code]old_name[/code] to [code]name[/code] if the "
 "theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Rinomina la costante da [code]old_name[/code] a [code]name[/code] se il tema "
+"ha [code]theme_type[/code]. Se [code]name[/code] è già occupato, questo "
+"metodo non può funzionare."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Renames the [Font] at [code]old_name[/code] to [code]name[/code] if the "
 "theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Rinomina il [Font] da [code]old_name[/code] a [code]name[/code] se il tema "
+"ha [code]theme_type[/code]. Se [code]name[/code] è già occupato, questo "
+"metodo non può funzionare."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Renames the icon at [code]old_name[/code] to [code]name[/code] if the theme "
 "has [code]theme_type[/code]. If [code]name[/code] is already taken, this "
 "method fails."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Rinomina l'icona da [code]old_name[/code] a [code]name[/code] se il tema ha "
+"[code]theme_type[/code]. Se [code]name[/code] è già occupato, questo metodo "
+"non può funzionare."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Renames [StyleBox] at [code]old_name[/code] to [code]name[/code] if the "
 "theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Rinomina [StyleBox] da [code]old_name[/code] a [code]name[/code] se il tema "
+"ha [code]theme_type[/code]. Se [code]name[/code] è già occupato, questo "
+"metodo non può funzionare."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63353,57 +63482,56 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Sets the theme's [Color] to [code]color[/code] at [code]name[/code] in "
 "[code]theme_type[/code].\n"
 "Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Imposta il [Color] del tema da [code]color[/code] a [code]name[/code] in "
+"[code]theme_type[/code].\n"
+"Crea [code]theme_type[/code] se il tema non ce l'ha."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Sets the theme's constant to [code]constant[/code] at [code]name[/code] in "
 "[code]theme_type[/code].\n"
 "Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Imposta la costante del tema da [code]constant[/code] a [code]name[/code] in "
+"[code]theme_type[/code].\n"
+"Crea [code]theme_type[/code]se il tema non ce l'ha."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Sets the theme's [Font] to [code]font[/code] at [code]name[/code] in "
 "[code]theme_type[/code].\n"
 "Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Imposta il [Font] del tema da [code]font[/code] a [code]name[/code] in "
+"[code]theme_type[/code].\n"
+"Crea [code]theme_type[/code] se il tema non ce l'ha."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Sets the theme's icon [Texture] to [code]texture[/code] at [code]name[/code] "
 "in [code]theme_type[/code].\n"
 "Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Imposta l'icona del tema [Texture] da [code]texture[/code] a [code]name[/"
+"code] in [code]theme_type[/code].\n"
+"Crea [code]theme_type[/code] se il tema non ce l'ha."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Sets theme's [StyleBox] to [code]stylebox[/code] at [code]name[/code] in "
 "[code]theme_type[/code].\n"
 "Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Imposta lo [StyleBox] del tema da [code]stylebox[/code] a [code]name[/code] "
+"in [code]theme_type[/code].\n"
+"Crea [code]theme_type[/code] se il tema non ce l'ha."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Sets the theme item of [code]data_type[/code] to [code]value[/code] at "
 "[code]name[/code] in [code]theme_type[/code].\n"
@@ -63411,8 +63539,11 @@ msgid ""
 "code].\n"
 "Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
-"Ritorna [code]true[/code] se l'impostazione specificata da [code]name[/code] "
-"esiste, [code]false[/code] altrimenti."
+"Imposta l'elemento del tema di [code]data_type[/code] da [code]value[/code] "
+"a [code]name[/code] in [code]theme_type[/code].\n"
+"Non funziona se il modello [code]value[/code] non combacia con "
+"[code]data_type[/code].\n"
+"Crea [code]theme_type[/code] se il tema non ce l'ha."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -65695,9 +65826,8 @@ msgid ""
 msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
 
 #: doc/classes/TreeItem.xml
-#, fuzzy
 msgid "Returns the number of buttons in column [code]column[/code]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr "Restituisce il numero dei tasti in colonna [code]column[/code]."
 
 #: doc/classes/TreeItem.xml
 #, fuzzy
@@ -67300,12 +67430,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the vector is normalized, [code]false[/code] "
 "otherwise."
 msgstr ""
-"Ritorna [code]true[/code] se il vettore è normalizzato, o falso altrimenti."
+"Restituisce [code]true[/code] se il vettore è normalizzato, [code]false[/"
+"code] altrimenti."
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid "Returns the length (magnitude) of this vector."
@@ -67332,13 +67462,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
-#, fuzzy
 msgid ""
 "Returns a new vector moved toward [code]to[/code] by the fixed [code]delta[/"
 "code] amount. Will not go past the final value."
 msgstr ""
-"Restituisce [code]true[/code] se [code]a[/code] e [code]b[/code] sono "
-"approssimativamente uguali tra di loro."
+"Restituisce un nuovo vettore mosso verso [code]to[/code] da una quantità "
+"fissa [code]delta[/code]. Non va oltre il valore finale."
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
@@ -68226,10 +68355,15 @@ msgstr ""
 #: doc/classes/Viewport.xml
 msgid ""
 "If [code]true[/code], uses a fast post-processing filter to make banding "
-"significantly less visible. In some cases, debanding may introduce a "
-"slightly noticeable dithering pattern. It's recommended to enable debanding "
-"only when actually needed since the dithering pattern will make lossless-"
-"compressed screenshots larger.\n"
+"significantly less visible in 3D. 2D rendering is [i]not[/i] affected by "
+"debanding unless the [member Environment.background_mode] is [constant "
+"Environment.BG_CANVAS]. In this case, [member usage] must also be set to "
+"[constant USAGE_3D]. See also [member ProjectSettings.rendering/quality/"
+"filters/use_debanding].\n"
+"In some cases, debanding may introduce a slightly noticeable dithering "
+"pattern. It's recommended to enable debanding only when actually needed "
+"since the dithering pattern will make lossless-compressed screenshots "
+"larger.\n"
 "[b]Note:[/b] Only available on the GLES3 backend. [member hdr] must also be "
 "[code]true[/code] for debanding to be effective."
 msgstr ""
@@ -68240,8 +68374,8 @@ msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid ""
-"If [code]true[/code], the viewport will disable 3D rendering. For actual "
-"disabling use [code]usage[/code]."
+"If [code]true[/code], the viewport will disable 3D rendering. To actually "
+"disable allocation of 3D buffers, set [member usage] instead."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -68305,11 +68439,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Viewport.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the viewport will use a unique copy of the [World] "
 "defined in [member world]."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Se [code]true[/code], il viewport utilizzerà una copia unica del [World] "
+"definito in [member world]."
 
 #: doc/classes/Viewport.xml
 msgid ""
@@ -68399,7 +68534,9 @@ msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid ""
-"The rendering mode of viewport.\n"
+"The viewport's rendering mode. This controls which buffers are allocated for "
+"the viewport (2D only, or 2D + 3D). 2D-only options can reduce memory usage "
+"and improve performance slightly, especially on low-end devices.\n"
 "[b]Note:[/b] If set to [constant USAGE_2D] or [constant "
 "USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since "
 "HDR is not supported for 2D."
@@ -68929,6 +69066,22 @@ msgid ""
 "The render layer(s) this [VisualInstance] is drawn on.\n"
 "This object will only be visible for [Camera]s whose cull mask includes the "
 "render object this [VisualInstance] is set to."
+msgstr ""
+
+#: doc/classes/VisualInstance.xml
+msgid ""
+"The sorting offset used by this [VisualInstance]. Adjusting it to a higher "
+"value will make the [VisualInstance] reliably draw on top of other "
+"[VisualInstance]s that are otherwise positioned at the same spot."
+msgstr ""
+
+#: doc/classes/VisualInstance.xml
+msgid ""
+"If [code]true[/code], the object is sorted based on the [AABB] center. "
+"Sorted based on the global position otherwise.\n"
+"The [AABB] center based sorting is generally more accurate for 3D models. "
+"The position based sorting instead allows to better control the drawing "
+"order when working with [Particles] and [CPUParticles]."
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScript.xml
@@ -70125,7 +70278,6 @@ msgid "Pi divided by two: [code]1.570796[/code]."
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
-#, fuzzy
 msgid "Tau: [code]6.283185[/code]."
 msgstr "Tau: [code]6.283185[/code]."
 
@@ -70140,9 +70292,8 @@ msgid "Square root of two: [code]1.414214[/code]."
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
-#, fuzzy
 msgid "Infinity: [code]inf[/code]."
-msgstr "Infinito: [code]inf[/code]."
+msgstr "Infinità: [code]inf[/code]."
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
 msgid "Not a number: [code]nan[/code]."
@@ -71887,11 +72038,12 @@ msgid "Returns the value of a certain material's parameter."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Returns the default value for the param if available. Returns [code]null[/"
 "code] otherwise."
-msgstr "Ritorna [code]true[/code] se [code]s[/code] è zero o quasi zero."
+msgstr ""
+"Restituisce il valore predefinito per il parametro, se disponibile. "
+"Altrimenti restituisce [code]null[/code]."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -76974,19 +77126,21 @@ msgid ""
 "Gets the value of the attribute specified by the index in [code]idx[/code] "
 "argument."
 msgstr ""
-"Prende il nome dell'attributo specificato dall'indice nell'argomento "
+"Prende il valore dell'attributo specificato dall'indice nell'argomento "
 "[code]idx[/code]."
 
 #: doc/classes/XMLParser.xml
-#, fuzzy
 msgid "Gets the current line in the parsed file (currently not implemented)."
-msgstr "Prende la linea corrente nel file analizzato (non ancora implementato)"
+msgstr ""
+"Prende la linea corrente nel file analizzato (non ancora implementato)."
 
 #: doc/classes/XMLParser.xml
 msgid ""
 "Gets the value of a certain attribute of the current element by name. This "
 "will raise an error if the element has no such attribute."
 msgstr ""
+"Prende il valore di un certo attributo dell'elemento corrente usando il "
+"nome. Questo darà errore se l'elemento non ha tale attributo."
 
 #: doc/classes/XMLParser.xml
 msgid ""
@@ -77061,13 +77215,12 @@ msgstr ""
 "legge il nodo seguente. Questo ritorna un codice errore."
 
 #: doc/classes/XMLParser.xml
-#, fuzzy
 msgid ""
 "Skips the current section. If the node contains other elements, they will be "
 "ignored and the cursor will go to the closing of the current element."
 msgstr ""
 "Salta la sezione corrente. Se il nodo contiene altri elementi, questi "
-"saranno ignorati e il cursore andrà alla chiusura dell'elemento corrente"
+"saranno ignorati e il cursore andrà alla chiusura dell'elemento corrente."
 
 #: doc/classes/XMLParser.xml
 #, fuzzy
