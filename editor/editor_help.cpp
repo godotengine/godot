@@ -68,6 +68,8 @@ void EditorHelp::_update_theme() {
 	doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 
 	doc_title_font_size = get_theme_font_size(SNAME("doc_title_size"), SNAME("EditorFonts"));
+	doc_font_size = get_theme_font_size(SNAME("doc_size"), SNAME("EditorFonts"));
+	doc_code_font_size = get_theme_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"));
 }
 
 void EditorHelp::_search(bool p_search_previous) {
@@ -606,6 +608,8 @@ void EditorHelp::_update_doc() {
 
 	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
 
+	class_desc->push_font_size(doc_font_size);
+
 	// Class name
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
 	class_desc->push_font(doc_title_font);
@@ -777,6 +781,8 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
+
+	class_desc->push_font_size(doc_code_font_size);
 
 	// Online tutorials
 	if (cd.tutorials.size()) {
@@ -1725,6 +1731,9 @@ void EditorHelp::_update_doc() {
 		_update_method_descriptions(cd, cd.operators, "operator");
 	}
 
+	class_desc->pop();
+	class_desc->pop();
+
 	// Free the scroll.
 	scroll_locked = false;
 }
@@ -1829,6 +1838,8 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 	const Color code_bg_color = p_owner_node->get_theme_color(SNAME("code_bg_color"), SNAME("EditorHelp"));
 	const Color kbd_bg_color = p_owner_node->get_theme_color(SNAME("kbd_bg_color"), SNAME("EditorHelp"));
 	const Color param_bg_color = p_owner_node->get_theme_color(SNAME("param_bg_color"), SNAME("EditorHelp"));
+
+	const int code_font_size = p_owner_node->get_theme_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"));
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
@@ -1939,11 +1950,13 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			if (tag != "/img") {
 				p_rt->pop();
 				if (code_tag) {
-					// Pop both color and background color.
+					// Pop color, background color and font size.
+					p_rt->pop();
 					p_rt->pop();
 					p_rt->pop();
 				} else if (codeblock_tag) {
-					// Pop color, cell and table.
+					// Pop color, cell, table and font size.
+					p_rt->pop();
 					p_rt->pop();
 					p_rt->pop();
 					p_rt->pop();
@@ -2022,6 +2035,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 		} else if (tag == "code") {
 			// Use monospace font with darkened background color to make code easier to distinguish from other text.
 			p_rt->push_font(doc_code_font);
+			p_rt->push_font_size(code_font_size);
 			p_rt->push_bgcolor(code_bg_color);
 			p_rt->push_color(code_color.lerp(p_owner_node->get_theme_color(SNAME("error_color"), SNAME("Editor")), 0.6));
 			code_tag = true;
@@ -2032,6 +2046,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			// Use a single-column table with cell row background color instead of `[bgcolor]`.
 			// This makes the background color highlight cover the entire block, rather than individual lines.
 			p_rt->push_font(doc_code_font);
+			p_rt->push_font_size(code_font_size);
 			p_rt->push_table(1);
 			p_rt->push_cell();
 			p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
