@@ -82,7 +82,9 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 		cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
 
+		ERR_PRINT_OFF
 		mesh->add_blend_shape(name_a);
+		ERR_PRINT_ON
 		CHECK(mesh->get_blend_shape_count() == 0);
 	}
 
@@ -121,7 +123,9 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 		cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
 
+		ERR_PRINT_OFF
 		mesh->clear_blend_shapes();
+		ERR_PRINT_ON
 		CHECK(mesh->get_blend_shape_count() == 2);
 	}
 
