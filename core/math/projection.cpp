@@ -319,6 +319,8 @@ void Projection::set_oblique(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_
 		p_fovy_degrees = get_fovy(p_fovy_degrees, 1.0 / p_aspect);
 	}
 
+	// real_t *columns = (real_t *)columns;
+
 	real_t sine, cotangent, deltaZ;
 	real_t radians = p_fovy_degrees / 2.0 * Math_PI / 180.0;
 
@@ -332,12 +334,12 @@ void Projection::set_oblique(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_
 
 	set_identity();
 
-	matrix[0][0] = cotangent / p_aspect;
-	matrix[1][1] = cotangent;
-	matrix[2][2] = -(p_z_far + p_z_near) / deltaZ;
-	matrix[2][3] = -1;
-	matrix[3][2] = -2 * p_z_near * p_z_far / deltaZ;
-	matrix[3][3] = 0;
+	columns[0][0] = cotangent / p_aspect;
+	columns[1][1] = cotangent;
+	columns[2][2] = -(p_z_far + p_z_near) / deltaZ;
+	columns[2][3] = -1;
+	columns[3][2] = -2 * p_z_near * p_z_far / deltaZ;
+	columns[3][3] = 0;
 
 	// Here goes oblique magic!
 	// Eric Lengyel Solution: http://terathon.com/code/oblique.html
@@ -348,24 +350,24 @@ void Projection::set_oblique(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_
 	q.x = ((
 		p_oblique_plane.x < 0 ? -1 :
 		p_oblique_plane.x > 0 ? +1 : 0
-		) + matrix[2][0]
-	) / matrix[0][0];
+		) + columns[2][0]
+	) / columns[0][0];
 
 	q.y = ((
 		p_oblique_plane.y < 0 ? -1 :
 		p_oblique_plane.y > 0 ? +1 : 0
-		) + matrix[2][1]
-	) / matrix[1][1];
+		) + columns[2][1]
+	) / columns[1][1];
 	/* clang-format on */
 
 	q.z = -1.0F;
-	q.w = (1.0F + matrix[2][2]) / matrix[3][2];
+	q.w = (1.0F + columns[2][2]) / columns[3][2];
 
 	Quaternion c = p_oblique_plane * (2.0F / p_oblique_plane.dot(q));
-	matrix[0][2] = c.x;
-	matrix[1][2] = c.y;
-	matrix[2][2] = c.z + 1.0F;
-	matrix[3][2] = c.w;
+	columns[0][2] = c.x;
+	columns[1][2] = c.y;
+	columns[2][2] = c.z + 1.0F;
+	columns[3][2] = c.w;
 }
 
 void Projection::set_for_hmd(int p_eye, real_t p_aspect, real_t p_intraocular_dist, real_t p_display_width, real_t p_display_to_lens, real_t p_oversample, real_t p_z_near, real_t p_z_far) {
