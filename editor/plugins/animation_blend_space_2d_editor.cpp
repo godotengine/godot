@@ -95,6 +95,11 @@ StringName AnimationNodeBlendSpace2DEditor::get_blend_position_path() const {
 }
 
 void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEvent> &p_event) {
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (!tree) {
+		return;
+	}
+
 	Ref<InputEventKey> k = p_event;
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == Key::KEY_DELETE && !k->is_echo()) {
 		if (selected_point != -1 || selected_triangle != -1) {
@@ -118,10 +123,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
 			menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-			AnimationTree *gp = AnimationTreeEditor::get_singleton()->get_animation_tree();
-			ERR_FAIL_COND(!gp);
-			if (gp && gp->has_node(gp->get_animation_player())) {
-				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(gp->get_node(gp->get_animation_player()));
+			if (tree->has_node(tree->get_animation_player())) {
+				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
 				if (ap) {
 					List<StringName> names;
 					ap->get_animation_list(&names);
@@ -275,7 +278,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
 		blend_pos += blend_space->get_min_space();
 
-		AnimationTreeEditor::get_singleton()->get_animation_tree()->set(get_blend_position_path(), blend_pos);
+		tree->set(get_blend_position_path(), blend_pos);
 
 		blend_space_draw->queue_redraw();
 	}
@@ -311,7 +314,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
 		blend_pos += blend_space->get_min_space();
 
-		AnimationTreeEditor::get_singleton()->get_animation_tree()->set(get_blend_position_path(), blend_pos);
+		tree->set(get_blend_position_path(), blend_pos);
 
 		blend_space_draw->queue_redraw();
 	}
@@ -438,6 +441,11 @@ void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (!tree) {
+		return;
+	}
+
 	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
@@ -596,7 +604,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			color.a *= 0.5;
 		}
 
-		Vector2 blend_pos = AnimationTreeEditor::get_singleton()->get_animation_tree()->get(get_blend_position_path());
+		Vector2 blend_pos = tree->get(get_blend_position_path());
 		Vector2 point = blend_pos;
 
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
@@ -806,14 +814,19 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+			if (!tree) {
+				return;
+			}
+
 			String error;
 
-			if (!AnimationTreeEditor::get_singleton()->get_animation_tree()) {
+			if (!tree) {
 				error = TTR("BlendSpace2D does not belong to an AnimationTree node.");
-			} else if (!AnimationTreeEditor::get_singleton()->get_animation_tree()->is_active()) {
+			} else if (!tree->is_active()) {
 				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (AnimationTreeEditor::get_singleton()->get_animation_tree()->is_state_invalid()) {
-				error = AnimationTreeEditor::get_singleton()->get_animation_tree()->get_invalid_state_reason();
+			} else if (tree->is_state_invalid()) {
+				error = tree->get_invalid_state_reason();
 			} else if (blend_space->get_triangle_count() == 0) {
 				error = TTR("No triangles exist, so no blending can take place.");
 			}
