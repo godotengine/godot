@@ -497,7 +497,6 @@ protected:
 	float ssao_fadeout_to = 300.0;
 
 	bool glow_bicubic_upscale = false;
-	bool glow_high_quality = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
 	/* Sky */
@@ -610,7 +609,6 @@ public:
 	/* ENVIRONMENT API */
 
 	void environment_glow_set_use_bicubic_upscale(bool p_enable) override;
-	void environment_glow_set_use_high_quality(bool p_enable) override;
 
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override;
 
