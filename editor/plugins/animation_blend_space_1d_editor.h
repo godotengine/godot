@@ -41,6 +41,7 @@
 #include "scene/gui/tree.h"
 
 class CheckBox;
+class OptionButton;
 class PanelContainer;
 
 class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
@@ -66,6 +67,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *min_value = nullptr;
 
 	CheckBox *sync = nullptr;
+	OptionButton *interpolation = nullptr;
 
 	HBoxContainer *edit_hb = nullptr;
 	SpinBox *edit_value = nullptr;
