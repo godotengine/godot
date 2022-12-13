@@ -1,29 +1,6 @@
-/*  GRAPHITE2 LICENSING
+// SPDX-License-Identifier: MIT OR MPL-2.0 OR LGPL-2.1-or-later OR GPL-2.0-or-later
+// Copyright 2013, SIL International, All rights reserved.
 
-    Copyright 2013, SIL International
-    All rights reserved.
-
-    This library is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published
-    by the Free Software Foundation; either version 2.1 of License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
-
-    You should also have received a copy of the GNU Lesser General Public
-    License along with this library in the file named "LICENSE".
-    If not, write to the Free Software Foundation, 51 Franklin Street,
-    Suite 500, Boston, MA 02110-1335, USA or visit their web page on the
-    internet at http://www.fsf.org/licenses/lgpl.html.
-
-Alternatively, the contents of this file may be used under the terms of the
-Mozilla Public License (http://mozilla.org/MPL) or the GNU General Public
-License, as published by the Free Software Foundation, either version 2
-of the License or (at your option) any later version.
-*/
 #pragma once
 
 // numbers are explicitly assigned for future proofing
@@ -38,7 +15,7 @@ public:
     operator bool() { return (_e != 0); }
     int error() { return _e; }
     void error(int e) { _e = e; }
-    bool test(bool pr, int err) { return (_e = int(pr) * err); }
+    bool test(bool pr, int err) { return (_e = pr ? err : 0); }
 
 private:
     int _e;
@@ -56,7 +33,7 @@ enum errcontext {
     EC_ARULEMAP = 9         // in Silf %d, pass %d, state %d
 };
 
-enum errors {
+enum error {
     E_OUTOFMEM = 1,         // Out of memory
     E_NOGLYPHS = 2,         // There are no glyphs in the font
     E_BADUPEM = 3,          // The units per em for the font is bad (0)
@@ -125,7 +102,7 @@ enum errors {
     E_BADJUMPCODE = 65,     // Code jumps past end of op codes
     E_CODEBADARGS = 66,     // Code arguments exhausted
     E_CODENORETURN = 67,    // Missing return type op code at end of code
-    E_CODENESTEDCTXT = 68,   // Nested context encountered in code
+    E_CODENESTEDCTXT = 68,  // Nested context encountered in code
 // Compression errors
     E_BADSCHEME = 69,
     E_SHRINKERFAILED = 70,

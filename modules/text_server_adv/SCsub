@@ -223,9 +223,6 @@ if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
         ]
     )
 
-    if env.msvc:  # Not our business to fix.
-        env_graphite.Append(CCFLAGS=["-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS"])
-
     lib = env_graphite.add_library("graphite_builtin", thirdparty_sources)
     thirdparty_obj += lib
 
