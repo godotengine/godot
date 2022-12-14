@@ -2754,11 +2754,20 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				log->add_message(TTR("Can't undo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				String action = editor_data.get_undo_redo()->get_current_action_name();
-
+				int id = editor_data.get_undo_redo()->get_current_action_history_id();
 				if (!editor_data.get_undo_redo()->undo()) {
 					log->add_message(TTR("Nothing to undo."), EditorLog::MSG_TYPE_EDITOR);
 				} else if (!action.is_empty()) {
-					log->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+					switch (id) {
+						case EditorUndoRedoManager::GLOBAL_HISTORY:
+							log->add_message(vformat(TTR("Global Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+							break;
+						case EditorUndoRedoManager::REMOTE_HISTORY:
+							log->add_message(vformat(TTR("Remote Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+							break;
+						default:
+							log->add_message(vformat(TTR("Scene Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+					}
 				}
 			}
 		} break;
@@ -2770,7 +2779,20 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					log->add_message(TTR("Nothing to redo."), EditorLog::MSG_TYPE_EDITOR);
 				} else {
 					String action = editor_data.get_undo_redo()->get_current_action_name();
-					log->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+					if (action.is_empty()) {
+						break;
+					}
+
+					switch (editor_data.get_undo_redo()->get_current_action_history_id()) {
+						case EditorUndoRedoManager::GLOBAL_HISTORY:
+							log->add_message(vformat(TTR("Global Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+							break;
+						case EditorUndoRedoManager::REMOTE_HISTORY:
+							log->add_message(vformat(TTR("Remote Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+							break;
+						default:
+							log->add_message(vformat(TTR("Scene Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+					}
 				}
 			}
 		} break;

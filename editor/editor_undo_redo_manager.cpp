@@ -270,35 +270,9 @@ bool EditorUndoRedoManager::undo() {
 		return false;
 	}
 
-	int selected_history = INVALID_HISTORY;
-	double global_timestamp = 0;
-
-	// Pick the history with greatest last action timestamp (either global or current scene).
-	{
-		History &history = get_or_create_history(GLOBAL_HISTORY);
-		if (!history.undo_stack.is_empty()) {
-			selected_history = history.id;
-			global_timestamp = history.undo_stack.back()->get().timestamp;
-		}
-	}
-
-	{
-		History &history = get_or_create_history(REMOTE_HISTORY);
-		if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
-			selected_history = history.id;
-			global_timestamp = history.undo_stack.back()->get().timestamp;
-		}
-	}
-
-	{
-		History &history = get_or_create_history(EditorNode::get_editor_data().get_current_edited_scene_history_id());
-		if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
-			selected_history = history.id;
-		}
-	}
-
-	if (selected_history != INVALID_HISTORY) {
-		return undo_history(selected_history);
+	History *selected_history = _get_newest_undo();
+	if (selected_history) {
+		return undo_history(selected_history->id);
 	}
 	return false;
 }
@@ -427,38 +401,22 @@ void EditorUndoRedoManager::clear_history(bool p_increase_version, int p_idx) {
 
 String EditorUndoRedoManager::get_current_action_name() {
 	if (has_undo()) {
-		History *selected_history = nullptr;
-		double global_timestamp = 0;
-
-		// Pick the history with greatest last action timestamp (either global or current scene).
-		{
-			History &history = get_or_create_history(GLOBAL_HISTORY);
-			if (!history.undo_stack.is_empty()) {
-				selected_history = &history;
-				global_timestamp = history.undo_stack.back()->get().timestamp;
-			}
-		}
-
-		{
-			History &history = get_or_create_history(REMOTE_HISTORY);
-			if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
-				selected_history = &history;
-				global_timestamp = history.undo_stack.back()->get().timestamp;
-			}
-		}
-
-		{
-			History &history = get_or_create_history(EditorNode::get_editor_data().get_current_edited_scene_history_id());
-			if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
-				selected_history = &history;
-			}
-		}
-
+		History *selected_history = _get_newest_undo();
 		if (selected_history) {
 			return selected_history->undo_redo->get_current_action_name();
 		}
 	}
 	return "";
+}
+
+int EditorUndoRedoManager::get_current_action_history_id() {
+	if (has_undo()) {
+		History *selected_history = _get_newest_undo();
+		if (selected_history) {
+			return selected_history->id;
+		}
+	}
+	return INVALID_HISTORY;
 }
 
 void EditorUndoRedoManager::discard_history(int p_idx, bool p_erase_from_map) {
@@ -473,6 +431,37 @@ void EditorUndoRedoManager::discard_history(int p_idx, bool p_erase_from_map) {
 	if (p_erase_from_map) {
 		history_map.erase(p_idx);
 	}
+}
+
+EditorUndoRedoManager::History *EditorUndoRedoManager::_get_newest_undo() {
+	History *selected_history = nullptr;
+	double global_timestamp = 0;
+
+	// Pick the history with greatest last action timestamp (either global or current scene).
+	{
+		History &history = get_or_create_history(GLOBAL_HISTORY);
+		if (!history.undo_stack.is_empty()) {
+			selected_history = &history;
+			global_timestamp = history.undo_stack.back()->get().timestamp;
+		}
+	}
+
+	{
+		History &history = get_or_create_history(REMOTE_HISTORY);
+		if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
+			selected_history = &history;
+			global_timestamp = history.undo_stack.back()->get().timestamp;
+		}
+	}
+
+	{
+		History &history = get_or_create_history(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+		if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
+			selected_history = &history;
+		}
+	}
+
+	return selected_history;
 }
 
 void EditorUndoRedoManager::_bind_methods() {
