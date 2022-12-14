@@ -790,6 +790,19 @@ void Curve2D::_bake_segment2d_even_length(RBMap<real_t, Vector2> &r_bake, real_t
 	}
 }
 
+Vector2 Curve2D::_calculate_tangent(const Vector2 &p_begin, const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) {
+	// Handle corner cases.
+	if (Math::is_zero_approx(p_t - 0.0f) && p_control_1.is_equal_approx(p_begin)) {
+		return (p_end - p_begin).normalized();
+	}
+
+	if (Math::is_zero_approx(p_t - 1.0f) && p_control_2.is_equal_approx(p_end)) {
+		return (p_end - p_begin).normalized();
+	}
+
+	return p_begin.bezier_derivative(p_control_1, p_control_2, p_end, p_t).normalized();
+}
+
 void Curve2D::_bake() const {
 	if (!baked_cache_dirty) {
 		return;
@@ -835,19 +848,19 @@ void Curve2D::_bake() const {
 
 		// Collect positions and sample tilts and tangents for each baked points.
 		bpw[0] = points[0].position;
-		bfw[0] = points[0].position.bezier_derivative(points[0].position + points[0].out, points[1].position + points[1].in, points[1].position, 0.0).normalized();
+		bfw[0] = _calculate_tangent(points[0].position, points[0].position + points[0].out, points[1].position + points[1].in, points[1].position, 0.0);
 		int pidx = 0;
 
 		for (int i = 0; i < points.size() - 1; i++) {
 			for (const KeyValue<real_t, Vector2> &E : midpoints[i]) {
 				pidx++;
 				bpw[pidx] = E.value;
-				bfw[pidx] = points[i].position.bezier_derivative(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, E.key).normalized();
+				bfw[pidx] = _calculate_tangent(points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, E.key);
 			}
 
 			pidx++;
 			bpw[pidx] = points[i + 1].position;
-			bfw[pidx] = points[i].position.bezier_derivative(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, 1.0).normalized();
+			bfw[pidx] = _calculate_tangent(points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, 1.0);
 		}
 
 		// Recalculate the baked distances.
@@ -1482,6 +1495,19 @@ void Curve3D::_bake_segment3d_even_length(RBMap<real_t, Vector3> &r_bake, real_t
 	}
 }
 
+Vector3 Curve3D::_calculate_tangent(const Vector3 &p_begin, const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) {
+	// Handle corner cases.
+	if (Math::is_zero_approx(p_t - 0.0f) && p_control_1.is_equal_approx(p_begin)) {
+		return (p_end - p_begin).normalized();
+	}
+
+	if (Math::is_zero_approx(p_t - 1.0f) && p_control_2.is_equal_approx(p_end)) {
+		return (p_end - p_begin).normalized();
+	}
+
+	return p_begin.bezier_derivative(p_control_1, p_control_2, p_end, p_t).normalized();
+}
+
 void Curve3D::_bake() const {
 	if (!baked_cache_dirty) {
 		return;
@@ -1541,7 +1567,7 @@ void Curve3D::_bake() const {
 
 		// Collect positions and sample tilts and tangents for each baked points.
 		bpw[0] = points[0].position;
-		bfw[0] = points[0].position.bezier_derivative(points[0].position + points[0].out, points[1].position + points[1].in, points[1].position, 0.0).normalized();
+		bfw[0] = _calculate_tangent(points[0].position, points[0].position + points[0].out, points[1].position + points[1].in, points[1].position, 0.0);
 		btw[0] = points[0].tilt;
 		int pidx = 0;
 
@@ -1549,13 +1575,13 @@ void Curve3D::_bake() const {
 			for (const KeyValue<real_t, Vector3> &E : midpoints[i]) {
 				pidx++;
 				bpw[pidx] = E.value;
-				bfw[pidx] = points[i].position.bezier_derivative(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, E.key).normalized();
+				bfw[pidx] = _calculate_tangent(points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, E.key);
 				btw[pidx] = Math::lerp(points[i].tilt, points[i + 1].tilt, E.key);
 			}
 
 			pidx++;
 			bpw[pidx] = points[i + 1].position;
-			bfw[pidx] = points[i].position.bezier_derivative(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, 1.0).normalized();
+			bfw[pidx] = _calculate_tangent(points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, 1.0);
 			btw[pidx] = points[i + 1].tilt;
 		}
 
