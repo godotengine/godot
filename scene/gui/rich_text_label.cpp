@@ -150,7 +150,12 @@ RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item
 					return it;
 				}
 			} break;
-			case ITEM_IMAGE:
+			case ITEM_IMAGE: {
+				offset += 1;
+				if (offset > p_position) {
+					return it;
+				}
+			} break;
 			case ITEM_TABLE: {
 				offset += 1;
 			} break;
