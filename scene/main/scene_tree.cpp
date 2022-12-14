@@ -942,6 +942,9 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	}
 
 	for (const ObjectID &id : no_context_node_ids) {
+		if (p_viewport->is_input_handled()) {
+			break;
+		}
 		Node *n = Object::cast_to<Node>(ObjectDB::get_instance(id));
 		if (n) {
 			n->_call_shortcut_input(p_input);
