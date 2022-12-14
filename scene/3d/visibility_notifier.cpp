@@ -147,13 +147,25 @@ void VisibilityNotifier::_notification(int p_what) {
 			ERR_FAIL_COND(!world.is_valid());
 
 			AABB world_aabb = get_global_transform().xform(aabb);
+#ifdef TOOLS_ENABLED
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				world->_register_notifier(this, world_aabb);
+			}
+#else
 			world->_register_notifier(this, world_aabb);
+#endif
 			_world_aabb_center = world_aabb.get_center();
 			_refresh_portal_mode();
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			AABB world_aabb = get_global_transform().xform(aabb);
+#ifdef TOOLS_ENABLED
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				world->_update_notifier(this, world_aabb);
+			}
+#else
 			world->_update_notifier(this, world_aabb);
+#endif
 			if (_max_distance_active) {
 				_world_aabb_center = world_aabb.get_center();
 			}
@@ -164,7 +176,13 @@ void VisibilityNotifier::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			ERR_FAIL_COND(!world.is_valid());
+#ifdef TOOLS_ENABLED
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				world->_remove_notifier(this);
+			}
+#else
 			world->_remove_notifier(this);
+#endif
 
 			if (_cull_instance_rid != RID()) {
 				VisualServer::get_singleton()->ghost_set_scenario(_cull_instance_rid, RID(), get_instance_id(), AABB());
@@ -294,9 +312,11 @@ void VisibilityEnabler::_find_nodes(Node *p_node) {
 
 void VisibilityEnabler::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
+#ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint()) {
 			return;
 		}
+#endif
 
 		Node *from = this;
 		//find where current scene starts
@@ -308,9 +328,11 @@ void VisibilityEnabler::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
+#ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint()) {
 			return;
 		}
+#endif
 
 		for (Map<Node *, Variant>::Element *E = nodes.front(); E; E = E->next()) {
 			if (!visible) {
