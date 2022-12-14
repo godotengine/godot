@@ -11,6 +11,7 @@ mode_instanced = #define USE_ATTRIBUTES \n#define USE_INSTANCING
 
 DISABLE_LIGHTING = false
 USE_RGBA_SHADOWS = false
+SINGLE_INSTANCE = false
 
 #[vertex]
 
@@ -25,9 +26,74 @@ layout(location = 1) in highp vec4 instance_xform0;
 layout(location = 2) in highp vec4 instance_xform1;
 layout(location = 5) in highp uvec4 instance_color_custom_data; // Color packed into xy, custom_data packed into zw for compatibility with 3D
 
+#endif // USE_INSTANCING
+
+#endif // USE_ATTRIBUTES
+
+#include "stdlib_inc.glsl"
+
+layout(location = 6) in highp vec4 attrib_A;
+layout(location = 7) in highp vec4 attrib_B;
+layout(location = 8) in highp vec4 attrib_C;
+layout(location = 9) in highp vec4 attrib_D;
+layout(location = 10) in highp vec4 attrib_E;
+#ifdef USE_PRIMITIVE
+layout(location = 11) in highp uvec4 attrib_F;
+#else
+layout(location = 11) in highp vec4 attrib_F;
 #endif
+layout(location = 12) in highp uvec4 attrib_G;
+layout(location = 13) in highp uvec4 attrib_H;
+
+#define read_draw_data_world_x attrib_A.xy
+#define read_draw_data_world_y attrib_A.zw
+#define read_draw_data_world_ofs attrib_B.xy
+#define read_draw_data_color_texture_pixel_size attrib_B.zw
+
+#ifdef USE_PRIMITIVE
+
+#define read_draw_data_point_a attrib_C.xy
+#define read_draw_data_point_b attrib_C.zw
+#define read_draw_data_point_c attrib_D.xy
+#define read_draw_data_uv_a attrib_D.zw
+#define read_draw_data_uv_b attrib_E.xy
+#define read_draw_data_uv_c attrib_E.zw
+
+#define read_draw_data_color_a_rg attrib_F.x
+#define read_draw_data_color_a_ba attrib_F.y
+#define read_draw_data_color_b_rg attrib_F.z
+#define read_draw_data_color_b_ba attrib_F.w
+#define read_draw_data_color_c_rg attrib_G.x
+#define read_draw_data_color_c_ba attrib_G.y
+
+#else
+
+#define read_draw_data_modulation attrib_C
+#define read_draw_data_ninepatch_margins attrib_D
+#define read_draw_data_dst_rect attrib_E
+#define read_draw_data_src_rect attrib_F
 
 #endif
+
+#define read_draw_data_flags attrib_G.z
+#define read_draw_data_specular_shininess attrib_G.w
+#define read_draw_data_lights attrib_H
+
+// Varyings so the per-instance info can be used in the fragment shader
+flat out vec4 varying_A;
+flat out vec2 varying_B;
+#ifndef USE_PRIMITIVE
+flat out vec4 varying_C;
+#ifndef USE_ATTRIBUTES
+#ifdef USE_NINEPATCH
+
+flat out vec2 varying_D;
+#endif
+flat out vec4 varying_E;
+#endif
+#endif
+flat out uvec2 varying_F;
+flat out uvec4 varying_G;
 
 // This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
@@ -39,12 +105,10 @@ layout(std140) uniform MaterialUniforms{ //ubo:4
 #endif
 /* clang-format on */
 #include "canvas_uniforms_inc.glsl"
-#include "stdlib_inc.glsl"
 
 out vec2 uv_interp;
 out vec4 color_interp;
 out vec2 vertex_interp;
-flat out int draw_data_instance;
 
 #ifdef USE_NINEPATCH
 
@@ -55,35 +119,46 @@ out vec2 pixel_size_interp;
 #GLOBALS
 
 void main() {
+	varying_A = vec4(read_draw_data_world_x, read_draw_data_world_y);
+	varying_B = read_draw_data_color_texture_pixel_size;
+#ifndef USE_PRIMITIVE
+	varying_C = read_draw_data_ninepatch_margins;
+
+#ifndef USE_ATTRIBUTES
+#ifdef USE_NINEPATCH
+	varying_D = vec2(read_draw_data_dst_rect.z, read_draw_data_dst_rect.w);
+#endif // USE_NINEPATCH
+	varying_E = read_draw_data_src_rect;
+#endif // !USE_ATTRIBUTES
+#endif // USE_PRIMITIVE
+
+	varying_F = uvec2(read_draw_data_flags, read_draw_data_specular_shininess);
+	varying_G = read_draw_data_lights;
+
 	vec4 instance_custom = vec4(0.0);
 
 #ifdef USE_PRIMITIVE
-	draw_data_instance = gl_InstanceID;
 	vec2 vertex;
 	vec2 uv;
 	vec4 color;
 
 	if (gl_VertexID % 3 == 0) {
-		vertex = draw_data[draw_data_instance].point_a;
-		uv = draw_data[draw_data_instance].uv_a;
-		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_a_rg), unpackHalf2x16(draw_data[draw_data_instance].color_a_ba));
+		vertex = read_draw_data_point_a;
+		uv = read_draw_data_uv_a;
+		color = vec4(unpackHalf2x16(read_draw_data_color_a_rg), unpackHalf2x16(read_draw_data_color_a_ba));
 	} else if (gl_VertexID % 3 == 1) {
-		vertex = draw_data[draw_data_instance].point_b;
-		uv = draw_data[draw_data_instance].uv_b;
-		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_b_rg), unpackHalf2x16(draw_data[draw_data_instance].color_b_ba));
+		vertex = read_draw_data_point_b;
+		uv = read_draw_data_uv_b;
+		color = vec4(unpackHalf2x16(read_draw_data_color_b_rg), unpackHalf2x16(read_draw_data_color_b_ba));
 	} else {
-		vertex = draw_data[draw_data_instance].point_c;
-		uv = draw_data[draw_data_instance].uv_c;
-		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_c_rg), unpackHalf2x16(draw_data[draw_data_instance].color_c_ba));
+		vertex = read_draw_data_point_c;
+		uv = read_draw_data_uv_c;
+		color = vec4(unpackHalf2x16(read_draw_data_color_c_rg), unpackHalf2x16(read_draw_data_color_c_ba));
 	}
 
 #elif defined(USE_ATTRIBUTES)
-	draw_data_instance = gl_InstanceID;
-#ifdef USE_INSTANCING
-	draw_data_instance = 0;
-#endif
 	vec2 vertex = vertex_attrib;
-	vec4 color = color_attrib * draw_data[draw_data_instance].modulation;
+	vec4 color = color_attrib * read_draw_data_modulation;
 	vec2 uv = uv_attrib;
 
 #ifdef USE_INSTANCING
@@ -93,30 +168,29 @@ void main() {
 #endif
 
 #else
-	draw_data_instance = gl_VertexID / 6;
 	vec2 vertex_base_arr[6] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0), vec2(0.0, 0.0), vec2(1.0, 1.0));
 	vec2 vertex_base = vertex_base_arr[gl_VertexID % 6];
 
-	vec2 uv = draw_data[draw_data_instance].src_rect.xy + abs(draw_data[draw_data_instance].src_rect.zw) * ((draw_data[draw_data_instance].flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
-	vec4 color = draw_data[draw_data_instance].modulation;
-	vec2 vertex = draw_data[draw_data_instance].dst_rect.xy + abs(draw_data[draw_data_instance].dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data[draw_data_instance].src_rect.zw, vec2(0.0, 0.0)));
+	vec2 uv = read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) * ((read_draw_data_flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
+	vec4 color = read_draw_data_modulation;
+	vec2 vertex = read_draw_data_dst_rect.xy + abs(read_draw_data_dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(read_draw_data_src_rect.zw, vec2(0.0, 0.0)));
 
 #endif
 
-	mat4 model_matrix = mat4(vec4(draw_data[draw_data_instance].world_x, 0.0, 0.0), vec4(draw_data[draw_data_instance].world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data[draw_data_instance].world_ofs, 0.0, 1.0));
+	mat4 model_matrix = mat4(vec4(read_draw_data_world_x, 0.0, 0.0), vec4(read_draw_data_world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(read_draw_data_world_ofs, 0.0, 1.0));
 
 #ifdef USE_INSTANCING
 	model_matrix = model_matrix * transpose(mat4(instance_xform0, instance_xform1, vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)));
 #endif // USE_INSTANCING
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-	if (bool(draw_data[draw_data_instance].flags & FLAGS_USING_PARTICLES)) {
+	if (bool(read_draw_data_flags & FLAGS_USING_PARTICLES)) {
 		//scale by texture size
-		vertex /= draw_data[draw_data_instance].color_texture_pixel_size;
+		vertex /= read_draw_data_color_texture_pixel_size;
 	}
 #endif
 
-	vec2 color_texture_pixel_size = draw_data[draw_data_instance].color_texture_pixel_size.xy;
+	vec2 color_texture_pixel_size = read_draw_data_color_texture_pixel_size;
 
 #ifdef USE_POINT_SIZE
 	float point_size = 1.0;
@@ -126,7 +200,7 @@ void main() {
 	}
 
 #ifdef USE_NINEPATCH
-	pixel_size_interp = abs(draw_data[draw_data_instance].dst_rect.zw) * vertex_base;
+	pixel_size_interp = abs(read_draw_data_dst_rect.zw) * vertex_base;
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED)
@@ -159,6 +233,46 @@ void main() {
 #include "canvas_uniforms_inc.glsl"
 #include "stdlib_inc.glsl"
 
+in vec2 uv_interp;
+in vec2 vertex_interp;
+in vec4 color_interp;
+
+#ifdef USE_NINEPATCH
+
+in vec2 pixel_size_interp;
+
+#endif
+
+// Can all be flat as they are the same for the whole batched instance
+flat in vec4 varying_A;
+flat in vec2 varying_B;
+#define read_draw_data_world_x varying_A.xy
+#define read_draw_data_world_y varying_A.zw
+#define read_draw_data_color_texture_pixel_size varying_B
+
+#ifndef USE_PRIMITIVE
+flat in vec4 varying_C;
+#define read_draw_data_ninepatch_margins varying_C
+
+#ifndef USE_ATTRIBUTES
+#ifdef USE_NINEPATCH
+
+flat in vec2 varying_D;
+#define read_draw_data_dst_rect_z varying_D.x
+#define read_draw_data_dst_rect_w varying_D.y
+#endif
+
+flat in vec4 varying_E;
+#define read_draw_data_src_rect varying_E
+#endif // USE_ATTRIBUTES
+#endif // USE_PRIMITIVE
+
+flat in uvec2 varying_F;
+flat in uvec4 varying_G;
+#define read_draw_data_flags varying_F.x
+#define read_draw_data_specular_shininess varying_F.y
+#define read_draw_data_lights varying_G
+
 #ifndef DISABLE_LIGHTING
 uniform sampler2D atlas_texture; //texunit:-2
 uniform sampler2D shadow_atlas_texture; //texunit:-3
@@ -169,17 +283,6 @@ uniform sampler2D normal_texture; //texunit:-6
 uniform sampler2D specular_texture; //texunit:-7
 
 uniform sampler2D color_texture; //texunit:0
-
-in vec2 uv_interp;
-in vec4 color_interp;
-in vec2 vertex_interp;
-flat in int draw_data_instance;
-
-#ifdef USE_NINEPATCH
-
-in vec2 pixel_size_interp;
-
-#endif
 
 layout(location = 0) out vec4 frag_color;
 
@@ -366,7 +469,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 	} else if (pixel >= draw_size - margin_end) {
 		return (tex_size - (draw_size - pixel)) * tex_pixel_size;
 	} else {
-		if (!bool(draw_data[draw_data_instance].flags & FLAGS_NINEPACH_DRAW_CENTER)) {
+		if (!bool(read_draw_data_flags & FLAGS_NINEPACH_DRAW_CENTER)) {
 			draw_center--;
 		}
 
@@ -414,28 +517,26 @@ void main() {
 
 	int draw_center = 2;
 	uv = vec2(
-			map_ninepatch_axis(pixel_size_interp.x, abs(draw_data[draw_data_instance].dst_rect.z), draw_data[draw_data_instance].color_texture_pixel_size.x, draw_data[draw_data_instance].ninepatch_margins.x, draw_data[draw_data_instance].ninepatch_margins.z, int(draw_data[draw_data_instance].flags >> FLAGS_NINEPATCH_H_MODE_SHIFT) & 0x3, draw_center),
-			map_ninepatch_axis(pixel_size_interp.y, abs(draw_data[draw_data_instance].dst_rect.w), draw_data[draw_data_instance].color_texture_pixel_size.y, draw_data[draw_data_instance].ninepatch_margins.y, draw_data[draw_data_instance].ninepatch_margins.w, int(draw_data[draw_data_instance].flags >> FLAGS_NINEPATCH_V_MODE_SHIFT) & 0x3, draw_center));
+			map_ninepatch_axis(pixel_size_interp.x, abs(read_draw_data_dst_rect_z), read_draw_data_color_texture_pixel_size.x, read_draw_data_ninepatch_margins.x, read_draw_data_ninepatch_margins.z, int(read_draw_data_flags >> FLAGS_NINEPATCH_H_MODE_SHIFT) & 0x3, draw_center),
+			map_ninepatch_axis(pixel_size_interp.y, abs(read_draw_data_dst_rect_w), read_draw_data_color_texture_pixel_size.y, read_draw_data_ninepatch_margins.y, read_draw_data_ninepatch_margins.w, int(read_draw_data_flags >> FLAGS_NINEPATCH_V_MODE_SHIFT) & 0x3, draw_center));
 
 	if (draw_center == 0) {
 		color.a = 0.0;
 	}
 
-	uv = uv * draw_data[draw_data_instance].src_rect.zw + draw_data[draw_data_instance].src_rect.xy; //apply region if needed
+	uv = uv * read_draw_data_src_rect.zw + read_draw_data_src_rect.xy; //apply region if needed
 
 #endif
-	if (bool(draw_data[draw_data_instance].flags & FLAGS_CLIP_RECT_UV)) {
-		uv = clamp(uv, draw_data[draw_data_instance].src_rect.xy, draw_data[draw_data_instance].src_rect.xy + abs(draw_data[draw_data_instance].src_rect.zw));
+	if (bool(read_draw_data_flags & FLAGS_CLIP_RECT_UV)) {
+		uv = clamp(uv, read_draw_data_src_rect.xy, read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw));
 	}
 
 #endif
 
 #ifndef USE_PRIMITIVE
-	if (bool(draw_data[draw_data_instance].flags & FLAGS_USE_MSDF)) {
-		float px_range = draw_data[draw_data_instance].ninepatch_margins.x;
-		float outline_thickness = draw_data[draw_data_instance].ninepatch_margins.y;
-		//float reserved1 = draw_data[draw_data_instance].ninepatch_margins.z;
-		//float reserved2 = draw_data[draw_data_instance].ninepatch_margins.w;
+	if (bool(read_draw_data_flags & FLAGS_USE_MSDF)) {
+		float px_range = read_draw_data_ninepatch_margins.x;
+		float outline_thickness = read_draw_data_ninepatch_margins.y;
 
 		vec4 msdf_sample = texture(color_texture, uv);
 		vec2 msdf_size = vec2(textureSize(color_texture, 0));
@@ -451,7 +552,7 @@ void main() {
 			float a = clamp(d * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		}
-	} else if (bool(draw_data[draw_data_instance].flags & FLAGS_USE_LCD)) {
+	} else if (bool(read_draw_data_flags & FLAGS_USE_LCD)) {
 		vec4 lcd_sample = texture(color_texture, uv);
 		if (lcd_sample.a == 1.0) {
 			color.rgb = lcd_sample.rgb * color.a;
@@ -465,7 +566,7 @@ void main() {
 		color *= texture(color_texture, uv);
 	}
 
-	uint light_count = (draw_data[draw_data_instance].flags >> uint(FLAGS_LIGHT_COUNT_SHIFT)) & uint(0xF); //max 16 lights
+	uint light_count = (read_draw_data_flags >> uint(FLAGS_LIGHT_COUNT_SHIFT)) & uint(0xF); //max 16 lights
 	bool using_light = light_count > 0u || directional_light_count > 0u;
 
 	vec3 normal;
@@ -476,7 +577,7 @@ void main() {
 	bool normal_used = false;
 #endif
 
-	if (normal_used || (using_light && bool(draw_data[draw_data_instance].flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
+	if (normal_used || (using_light && bool(read_draw_data_flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(normal_texture, uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
 		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
 		normal_used = true;
@@ -493,9 +594,9 @@ void main() {
 	bool specular_shininess_used = false;
 #endif
 
-	if (specular_shininess_used || (using_light && normal_used && bool(draw_data[draw_data_instance].flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
+	if (specular_shininess_used || (using_light && normal_used && bool(read_draw_data_flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
 		specular_shininess = texture(specular_texture, uv);
-		specular_shininess *= godot_unpackUnorm4x8(draw_data[draw_data_instance].specular_shininess);
+		specular_shininess *= godot_unpackUnorm4x8(read_draw_data_specular_shininess);
 		specular_shininess_used = true;
 	} else {
 		specular_shininess = vec4(1.0);
@@ -507,7 +608,7 @@ void main() {
 	vec2 screen_uv = vec2(0.0);
 #endif
 
-	vec2 color_texture_pixel_size = draw_data[draw_data_instance].color_texture_pixel_size.xy;
+	vec2 color_texture_pixel_size = read_draw_data_color_texture_pixel_size.xy;
 
 	vec3 light_vertex = vec3(vertex, 0.0);
 	vec2 shadow_vertex = vertex;
@@ -529,7 +630,7 @@ void main() {
 
 	if (normal_used) {
 		//convert by item transform
-		normal.xy = mat2(normalize(draw_data[draw_data_instance].world_x), normalize(draw_data[draw_data_instance].world_y)) * normal.xy;
+		normal.xy = mat2(normalize(read_draw_data_world_x), normalize(read_draw_data_world_y)) * normal.xy;
 		//convert by canvas transform
 		normal = normalize((canvas_normal_transform * vec4(normal, 0.0)).xyz);
 	}
@@ -591,15 +692,15 @@ void main() {
 		uint light_base;
 		if (i < 8u) {
 			if (i < 4u) {
-				light_base = draw_data[draw_data_instance].lights[0];
+				light_base = read_draw_data_lights[0];
 			} else {
-				light_base = draw_data[draw_data_instance].lights[1];
+				light_base = read_draw_data_lights[1];
 			}
 		} else {
 			if (i < 12u) {
-				light_base = draw_data[draw_data_instance].lights[2];
+				light_base = read_draw_data_lights[2];
 			} else {
-				light_base = draw_data[draw_data_instance].lights[3];
+				light_base = read_draw_data_lights[3];
 			}
 		}
 		light_base >>= (i & 3u) * 8u;

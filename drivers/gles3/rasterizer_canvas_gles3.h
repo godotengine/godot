@@ -245,7 +245,7 @@ public:
 		uint32_t max_lights_per_render = 256;
 		uint32_t max_lights_per_item = 16;
 		uint32_t max_instances_per_batch = 512;
-		uint32_t max_instances_per_ubo = 16384;
+		uint32_t max_instances_per_buffer = 16384;
 		uint32_t max_instance_buffer_size = 16384 * 128;
 	} data;
 
@@ -278,7 +278,7 @@ public:
 	// We track them and ensure that they don't get reused until at least 2 frames have passed
 	// to avoid the GPU stalling to wait for a resource to become available.
 	struct DataBuffer {
-		GLuint ubo = 0;
+		GLuint buffer = 0;
 		GLuint light_ubo = 0;
 		GLuint state_ubo = 0;
 		uint64_t last_frame_used = -3;
@@ -359,6 +359,7 @@ public:
 	void _add_to_batch(uint32_t &r_index, bool &r_batch_broken);
 	void _allocate_instance_data_buffer();
 	void _align_instance_data_buffer(uint32_t &r_index);
+	void _enable_attributes(uint32_t p_start, bool p_primitive, uint32_t p_rate = 1);
 
 	void set_time(double p_time);
 
