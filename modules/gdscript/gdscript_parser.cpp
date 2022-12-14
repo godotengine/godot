@@ -1585,6 +1585,19 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 	}
 
 	if (p_for_lambda) {
+		if (!check(GDScriptTokenizer::Token::SEMICOLON) && ()) { // Implicit return shouldn't end in a semicolon.
+			if (suite->statements.size() > 1) {
+				if ()
+				ReturnNode *return_node = alloc_node<ReturnNode>();
+				return_node->return_value = expression;
+				complete_extents(return_node);
+				current_suite->has_return = true;
+				end_statement("return");
+				lambda_ended = lambda_ended || has_ended_lambda;
+				result = return_node;
+				break; // Skips the warning code below. This isn't a standalone lambda or expression because it's being returned.
+			}
+		}
 		lambda_ended = true;
 	}
 	current_suite = suite->parent_block;
@@ -1692,6 +1705,22 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					push_error(vformat(R"(Expected statement, found "%s" instead.)", previous.get_name()));
 				}
 			} else {
+				// FIXME: One-liner detection isn't always accurate. Currently attempting to implement the below code in parse_suite instead, so we can guarantee the length of the lambda, as the extents are completed.
+				// Will do later.
+				if (in_lambda) {
+					if (!check(GDScriptTokenizer::Token::SEMICOLON) && ()) { // Implicit return shouldn't end in a semicolon.
+						if (current_suite->start_line == previous.start_line) {
+							ReturnNode *return_node = alloc_node<ReturnNode>();
+							return_node->return_value = expression;
+							complete_extents(return_node);
+							current_suite->has_return = true;
+							end_statement("return");
+							lambda_ended = lambda_ended || has_ended_lambda;
+							result = return_node;
+							break; // Skips the warning code below. This isn't a standalone lambda or expression because it's being returned.
+						}
+					}
+				}
 				end_statement("expression");
 			}
 			lambda_ended = lambda_ended || has_ended_lambda;
