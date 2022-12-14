@@ -1031,10 +1031,11 @@ Vector2 Curve2D::get_closest_point(const Vector2 &p_to_point) const {
 	real_t nearest_dist = -1.0f;
 
 	for (int i = 0; i < pc - 1; i++) {
+		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
 		Vector2 origin = r[i];
-		Vector2 direction = (r[i + 1] - origin) / bake_interval;
+		Vector2 direction = (r[i + 1] - origin) / interval;
 
-		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, bake_interval);
+		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, interval);
 		Vector2 proj = origin + direction * d;
 
 		real_t dist = proj.distance_squared_to(p_to_point);
@@ -1070,10 +1071,13 @@ real_t Curve2D::get_closest_offset(const Vector2 &p_to_point) const {
 	real_t offset = 0.0f;
 
 	for (int i = 0; i < pc - 1; i++) {
-		Vector2 origin = r[i];
-		Vector2 direction = (r[i + 1] - origin) / bake_interval;
+		offset = baked_dist_cache[i];
 
-		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, bake_interval);
+		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		Vector2 origin = r[i];
+		Vector2 direction = (r[i + 1] - origin) / interval;
+
+		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, interval);
 		Vector2 proj = origin + direction * d;
 
 		real_t dist = proj.distance_squared_to(p_to_point);
@@ -1082,8 +1086,6 @@ real_t Curve2D::get_closest_offset(const Vector2 &p_to_point) const {
 			nearest = offset + d;
 			nearest_dist = dist;
 		}
-
-		offset += bake_interval;
 	}
 
 	return nearest;
