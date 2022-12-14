@@ -191,9 +191,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 
 	uint32_t v_normal;
 	{
-		Vector3 n = normal * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
-
-		Vector2 res = n.octahedron_encode();
+		Vector2 res = normal.octahedron_encode();
 		uint32_t value = 0;
 		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
