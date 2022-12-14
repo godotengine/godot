@@ -446,7 +446,7 @@ private:
 					String::utf8("\n•  ") + TTR("Fast rendering of simple scenes."));
 		} else if (renderer_type == "gl_compatibility") {
 			renderer_info->set_text(
-					String::utf8("•  ") + TTR("Supports desktop, mobile, + web platforms.") +
+					String::utf8("•  ") + TTR("Supports desktop, mobile + web platforms.") +
 					String::utf8("\n•  ") + TTR("Least advanced 3D graphics.") +
 					String::utf8("\n•  ") + TTR("Intended for low-end/older devices.") +
 					String::utf8("\n•  ") + TTR("Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).") +
