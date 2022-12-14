@@ -1364,6 +1364,23 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="type_convert">
+			<return type="Variant" />
+			<param index="0" name="variant" type="Variant" />
+			<param index="1" name="type" type="int" />
+			<description>
+				Converts the given [param variant] to the given [param type], using the [enum Variant.Type] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
+				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [code]Vector2.ZERO[/code]. This method will never show error messages as long as [param type] is a valid Variant type.
+				The returned value is a [Variant], but the data inside and the [enum Variant.Type] will be the same as the requested type.
+				[codeblock]
+				type_convert("Hi!", TYPE_INT) # Returns 0
+				type_convert("123", TYPE_INT) # Returns 123
+				type_convert(123.4, TYPE_INT) # Returns 123
+				type_convert(5, TYPE_VECTOR2) # Returns (0, 0)
+				type_convert("Hi!", TYPE_NIL) # Returns null
+				[/codeblock]
+			</description>
+		</method>
 		<method name="typeof">
 			<return type="int" />
 			<param index="0" name="variable" type="Variant" />

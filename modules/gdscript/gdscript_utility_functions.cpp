@@ -85,6 +85,7 @@
 #endif
 
 struct GDScriptUtilityFunctionsDefinitions {
+#ifndef DISABLE_DEPRECATED
 	static inline void convert(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(2);
 		VALIDATE_ARG_INT(1);
@@ -100,6 +101,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 			Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
 		}
 	}
+#endif // DISABLE_DEPRECATED
 
 	static inline void type_exists(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
@@ -703,7 +705,9 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 	PropertyInfo(Variant::NIL, m_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT)
 
 void GDScriptUtilityFunctions::register_functions() {
+#ifndef DISABLE_DEPRECATED
 	REGISTER_VARIANT_FUNC(convert, true, VARARG("what"), ARG("type", Variant::INT));
+#endif // DISABLE_DEPRECATED
 	REGISTER_FUNC(type_exists, true, Variant::BOOL, ARG("type", Variant::STRING_NAME));
 	REGISTER_FUNC(_char, true, Variant::STRING, ARG("char", Variant::INT));
 	REGISTER_VARARG_FUNC(range, false, Variant::ARRAY);
