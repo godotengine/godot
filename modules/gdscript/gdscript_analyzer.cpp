@@ -3148,6 +3148,16 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				case GDScriptParser::ClassNode::Member::FUNCTION:
 					p_identifier->set_datatype(make_callable_type(member.function->info));
 					break;
+				case GDScriptParser::ClassNode::Member::CLASS:
+					if (p_base != nullptr && p_base->is_constant) {
+						Error err = OK;
+						GDScript *scr = GDScriptCache::get_full_script(base.script_path, err).ptr();
+						ERR_FAIL_COND_MSG(err != OK, "Error while getting subscript full script.");
+						scr = scr->find_class(p_identifier->get_datatype().class_type->fqcn);
+						p_identifier->reduced_value = scr;
+						p_identifier->is_constant = true;
+					}
+					break;
 				default:
 					break; // Type already set.
 			}
