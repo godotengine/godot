@@ -5,6 +5,154 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [3.5.2] - TBD
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-5-2) for details.
+
+### Added
+
+#### Core
+
+- Expose all existing PropertyHint global enums #67360
+
+#### Editor
+
+- Improve dragging scene into 3D viewport #68114
+
+#### Physics
+
+- Store Bullet total gravity, linear damp and angular damp calculations #69823
+
+#### Rendering
+
+- Add options for sorting transparent objects #63040
+
+### Changed
+
+#### Animation
+
+- Cast between float and ints in Tween `tween_property()` #65072
+
+#### Core
+
+- Improve string formatting (`%f`) for `inf` and `nan` #64870
+
+#### Editor
+
+- Hide `text` property of RichTextLabel if BBCode is enabled #67255
+
+#### Porting
+
+- Android: Upgrade gradle plugin to version 7.2.1 #68497
+- Only support XDG directory path configuration on Linux #67040
+
+#### Thirdparty
+
+- libwebp updated to version 1.2.4.
+- miniupnpc updated to version 2.2.4.
+- nanosvg updated to 2022-11-21 git snapshot.
+- Recast updated to 2022-11-26 git snapshot.
+- stb_vorbis updated to version 1.22.
+- CA root certificates updated to 2022-10-21 bundle from Mozilla.
+- SDL GameControllerDB updated to 2022-12-07 git snapshot.
+
+### Fixed
+
+#### 2D
+
+- Fix CanvasLayer visibility toggle can only run once per frame #69558
+
+#### 3D
+
+- Fix Sprite3D/AnimatedSprite3D drawing AtlasTextures with vertical margins differently than in 2D #66063
+- Fix editor crash when MeshLibrary gets replaced while used in an open scene #67141
+- Fix Skeleton3D falsely assuming all physical bones will be children of their first bone #67282
+- Fix bug in CylinderMesh when computing normals #67336
+- Fix error when having BoneAttachment before PhysicalBone #67698
+- Fix spatial gizmo still active when node is deselected #67947
+
+#### Core
+
+- Fix String `word_wrap()` for long words #64564
+- Fix potential crash loading invalid TGA images from buffer #68057
+- Fix Image `bump_map_to_normal_map()` incorrectly keeping mipmap flag #68115
+- Fix potential PCKPacker error spam #68735
+- Revert "RID: Change comparison operators to use RID_Data id instead of address" #69946
+
+#### Editor
+
+- Fix checking if script is attached to any node belonging to scene for drag and drop to script editor #66212
+- Fix fetching source to link C++ error on GitHub in debugger #66977
+- Fix exporting with export template binaries over 2.0 GiB #67577
+- Fix wrong owner for editor plugin created nodes in instanced scene #67666
+- Fix SpriteFrames editor calculating frame index from mouse position #68064
+- Fix drag and drop of resource files with non-lowercase extension #68107
+- Fix Project Manager code for project rename #69338
+
+#### GDNative
+
+- Fix `script_data` error when updating placeholder scripts for GDNative libraries #66255
+
+#### GDScript
+
+- Fix Script editor completion doesn't suggest members of a script for type hints #48037
+- LSP: Improve handling of file URI scheme #69960
+
+#### GUI
+
+- Fix RichTextLabel wrong visible line count for newline #59765
+- Fix TreeItem `remove_child()` not updating Tree immediately #69569
+- Fix TextMesh auto-translation and ignore control chars #69585
+- Fix errors while deselecting all tree items #68546
+
+#### Import
+
+- Fix trying to import unknown dependency from scan #67664
+- Handle closed splines in Collada importer #67834
+
+#### Input
+
+- Fix setting Input action `raw strength` and `exact` in `action_press()`/`action_release()` #66480
+- Fix routing of InputEventScreenDrag events to Control nodes #68630
+
+#### Mono (C#)
+
+- Fix incorrect C# bindings for `Array.Shuffle` #68252
+
+#### Navigation
+
+- Fix NavigationObstacle not registering to default navigation map #66530
+- Fix NavigationObstacle not estimating radius #66585
+- Fix avoidance calculation on `NO_THREADS` build (e.g. HTML5 without threads) #66806
+- Fix property export hint for Navigation2D layer names #66868
+- Fix emitting `target_reached` signal before updating state #68072
+- Fix crash conditions in Navigation system #68988
+- Fix Recast crash in NavigationMesh baking #69189
+
+#### Physics
+
+- Fix computation of RigidBody2D `inverse_mass` when inertia is defined by the user #68659
+- Fix typo bug in heightmap shape #69852
+
+#### Porting
+
+- Android: Fix potential null in keyboard handling #66942
+- Android: Fix exporting custom `APPLICATION_ATTRIBS` #69024
+- HTML5: Add missing `OS::get_cursor_shape()` implementation #66871
+- Linux: Fix burning CPU with udev disabled on Flatpak #69563
+- macOS: Update activation hack to work on Ventura #68777
+- Web: Fix bug in setting custom cursor #67044
+- Windows: Fix handling of some dead key combinations using Unicode char instead of Virtual key #66314
+- Windows: Fix Directory `make_dir()` choking on ".." #66467
+- Windows: Fix newlines not honored in Windows console subsystem #67236
+
+#### Rendering
+
+- Fix debanding strength being affected by environment adjustments #66327
+- Fix potential shader compiler out of bounds read #68813
+- Fix GLES 2 SpotLight bug with shadow filter mode #69826
+
+
 ## [3.5.1] - 2022-09-28
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-5-1) for details.
@@ -2740,6 +2888,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[3.5.2]: https://downloads.tuxfamily.org/godotengine/3.5.2/Godot_v3.5.2-stable_changelog_chrono.txt
 [3.5.1]: https://downloads.tuxfamily.org/godotengine/3.5.1/Godot_v3.5.1-stable_changelog_chrono.txt
 [3.5]: https://downloads.tuxfamily.org/godotengine/3.5/Godot_v3.5-stable_changelog_chrono.txt
 [3.4]: https://downloads.tuxfamily.org/godotengine/3.4/Godot_v3.4-stable_changelog_chrono.txt
