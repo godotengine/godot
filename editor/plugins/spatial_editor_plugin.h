@@ -428,6 +428,7 @@ private:
 
 	void _view_settings_confirmed(float p_interp_delta);
 	void _update_camera(float p_interp_delta);
+	void _update_navigation_controls_visibility();
 	Transform to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
@@ -443,6 +444,7 @@ private:
 	Camera *previewing;
 	Camera *preview;
 
+	bool previewing_camera;
 	bool previewing_cinema;
 	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
