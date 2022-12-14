@@ -163,6 +163,16 @@
 				Sets camera to use orthogonal projection, also known as orthographic projection. Objects remain the same size on the screen no matter how far away they are.
 			</description>
 		</method>
+		<method name="camera_set_override_projection">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="matrix" type="Projection" />
+			<description>
+				If set to a non-zero Projection, overrides the view-projection matrix passed to shaders with this custom matrix. This *only* overrides the projection passed to shaders on the GPU. The [method camera_set_frustum], [method camera_set_orthogonal], or [method camera_set_frustum] values are still used for CPU-side operations such as culling, which can be used to provide a separate culling frustum.
+				To clear the overridden projection, set to [code]Projection(Vector4.ZERO, Vector4.ZERO, Vector4.ZERO, Vector4.ZERO)[/code].
+				[method camera_set_override_projection] does not currently support stereo cameras.
+			</description>
+		</method>
 		<method name="camera_set_perspective">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
