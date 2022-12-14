@@ -2594,6 +2594,7 @@ bool Main::start() {
 	}
 
 	if (dump_gdextension_interface || dump_extension_api) {
+		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 		return false;
 	}
 
