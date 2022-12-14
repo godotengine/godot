@@ -70,17 +70,17 @@ void RenderForwardMobile::ForwardIDStorageMobile::map_forward_id(RendererRD::For
 void RenderForwardMobile::ForwardIDStorageMobile::fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, uint32_t &spec_constants, const GeometryInstanceForwardMobile *p_instance) {
 	// first zero out our indices
 
-	p_push_constant->omni_lights[0] = 0xFFFF;
-	p_push_constant->omni_lights[1] = 0xFFFF;
+	p_push_constant->omni_lights[0] = 0xFFFFFFFF;
+	p_push_constant->omni_lights[1] = 0xFFFFFFFF;
 
-	p_push_constant->spot_lights[0] = 0xFFFF;
-	p_push_constant->spot_lights[1] = 0xFFFF;
+	p_push_constant->spot_lights[0] = 0xFFFFFFFF;
+	p_push_constant->spot_lights[1] = 0xFFFFFFFF;
 
-	p_push_constant->decals[0] = 0xFFFF;
-	p_push_constant->decals[1] = 0xFFFF;
+	p_push_constant->decals[0] = 0xFFFFFFFF;
+	p_push_constant->decals[1] = 0xFFFFFFFF;
 
-	p_push_constant->reflection_probes[0] = 0xFFFF;
-	p_push_constant->reflection_probes[1] = 0xFFFF;
+	p_push_constant->reflection_probes[0] = 0xFFFFFFFF;
+	p_push_constant->reflection_probes[1] = 0xFFFFFFFF;
 
 	if (p_instance->omni_light_count == 0) {
 		spec_constants |= 1 << SPEC_CONSTANT_DISABLE_OMNI_LIGHTS;
