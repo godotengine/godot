@@ -923,6 +923,104 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// ShaderData
+
+void ShaderData::set_path_hint(const String &p_hint) {
+	path = p_hint;
+}
+
+void ShaderData::set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) {
+	if (!p_texture.is_valid()) {
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
+	} else {
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = HashMap<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
+	}
+}
+
+Variant ShaderData::get_default_parameter(const StringName &p_parameter) const {
+	if (uniforms.has(p_parameter)) {
+		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
+		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
+	}
+	return Variant();
+}
+
+void ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
+	SortArray<Pair<StringName, int>, ShaderLanguage::UniformOrderComparator> sorter;
+	LocalVector<Pair<StringName, int>> filtered_uniforms;
+
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+			continue;
+		}
+		if (E.value.texture_order >= 0) {
+			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.texture_order + 100000));
+		} else {
+			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.order));
+		}
+	}
+	int uniform_count = filtered_uniforms.size();
+	sorter.sort(filtered_uniforms.ptr(), uniform_count);
+
+	String last_group;
+	for (int i = 0; i < uniform_count; i++) {
+		const StringName &uniform_name = filtered_uniforms[i].first;
+		const ShaderLanguage::ShaderNode::Uniform &uniform = uniforms[uniform_name];
+
+		String group = uniform.group;
+		if (!uniform.subgroup.is_empty()) {
+			group += "::" + uniform.subgroup;
+		}
+
+		if (group != last_group) {
+			PropertyInfo pi;
+			pi.usage = PROPERTY_USAGE_GROUP;
+			pi.name = group;
+			p_param_list->push_back(pi);
+
+			last_group = group;
+		}
+
+		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniform);
+		pi.name = uniform_name;
+		p_param_list->push_back(pi);
+	}
+}
+
+void ShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
+		RendererMaterialStorage::InstanceShaderParam p;
+		p.info = ShaderLanguage::uniform_to_property_info(E.value);
+		p.info.name = E.key; //supply name
+		p.index = E.value.instance_index;
+		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.array_size, E.value.hint);
+		p_param_list->push_back(p);
+	}
+}
+
+bool ShaderData::is_parameter_texture(const StringName &p_param) const {
+	if (!uniforms.has(p_param)) {
+		return false;
+	}
+
+	return uniforms[p_param].texture_order >= 0;
+}
+
+///////////////////////////////////////////////////////////////////////////
 // MaterialData
 
 // Look up table to translate ShaderLanguage::DataType to GL_TEXTURE_*
@@ -2806,10 +2904,6 @@ void MaterialStorage::material_update_dependency(RID p_material, DependencyTrack
 
 /* Canvas Shader Data */
 
-void CanvasShaderData::set_path_hint(const String &p_path) {
-	path = p_path;
-}
-
 void CanvasShaderData::set_code(const String &p_code) {
 	// compile the shader
 
@@ -2890,100 +2984,12 @@ void CanvasShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void CanvasShaderData::set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) {
-	if (!p_texture.is_valid()) {
-		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
-			default_texture_params[p_name].erase(p_index);
-
-			if (default_texture_params[p_name].is_empty()) {
-				default_texture_params.erase(p_name);
-			}
-		}
-	} else {
-		if (!default_texture_params.has(p_name)) {
-			default_texture_params[p_name] = HashMap<int, RID>();
-		}
-		default_texture_params[p_name][p_index] = p_texture;
-	}
-}
-
-void CanvasShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
-	HashMap<int, StringName> order;
-
-	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL ||
-				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
-				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
-				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
-			continue;
-		}
-		if (E.value.texture_order >= 0) {
-			order[E.value.texture_order + 100000] = E.key;
-		} else {
-			order[E.value.order] = E.key;
-		}
-	}
-
-	String last_group;
-	for (const KeyValue<int, StringName> &E : order) {
-		String group = uniforms[E.value].group;
-		if (!uniforms[E.value].subgroup.is_empty()) {
-			group += "::" + uniforms[E.value].subgroup;
-		}
-
-		if (group != last_group) {
-			PropertyInfo pi;
-			pi.usage = PROPERTY_USAGE_GROUP;
-			pi.name = group;
-			p_param_list->push_back(pi);
-
-			last_group = group;
-		}
-
-		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
-		pi.name = E.value;
-		p_param_list->push_back(pi);
-	}
-}
-
-void CanvasShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
-	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
-			continue;
-		}
-
-		RendererMaterialStorage::InstanceShaderParam p;
-		p.info = ShaderLanguage::uniform_to_property_info(E.value);
-		p.info.name = E.key; //supply name
-		p.index = E.value.instance_index;
-		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.array_size, E.value.hint);
-		p_param_list->push_back(p);
-	}
-}
-
-bool CanvasShaderData::is_parameter_texture(const StringName &p_param) const {
-	if (!uniforms.has(p_param)) {
-		return false;
-	}
-
-	return uniforms[p_param].texture_order >= 0;
-}
-
 bool CanvasShaderData::is_animated() const {
 	return false;
 }
 
 bool CanvasShaderData::casts_shadows() const {
 	return false;
-}
-
-Variant CanvasShaderData::get_default_parameter(const StringName &p_parameter) const {
-	if (uniforms.has(p_parameter)) {
-		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
-		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
-		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
-	}
-	return Variant();
 }
 
 RS::ShaderNativeSourceCode CanvasShaderData::get_native_source_code() const {
@@ -3043,10 +3049,6 @@ GLES3::MaterialData *GLES3::_create_canvas_material_func(ShaderData *p_shader) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SKY SHADER
-
-void SkyShaderData::set_path_hint(const String &p_path) {
-	path = p_path;
-}
 
 void SkyShaderData::set_code(const String &p_code) {
 	//compile
@@ -3138,98 +3140,12 @@ void SkyShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void SkyShaderData::set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) {
-	if (!p_texture.is_valid()) {
-		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
-			default_texture_params[p_name].erase(p_index);
-
-			if (default_texture_params[p_name].is_empty()) {
-				default_texture_params.erase(p_name);
-			}
-		}
-	} else {
-		if (!default_texture_params.has(p_name)) {
-			default_texture_params[p_name] = HashMap<int, RID>();
-		}
-		default_texture_params[p_name][p_index] = p_texture;
-	}
-}
-
-void SkyShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
-	RBMap<int, StringName> order;
-
-	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL || E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
-			continue;
-		}
-
-		if (E.value.texture_order >= 0) {
-			order[E.value.texture_order + 100000] = E.key;
-		} else {
-			order[E.value.order] = E.key;
-		}
-	}
-
-	String last_group;
-	for (const KeyValue<int, StringName> &E : order) {
-		String group = uniforms[E.value].group;
-		if (!uniforms[E.value].subgroup.is_empty()) {
-			group += "::" + uniforms[E.value].subgroup;
-		}
-
-		if (group != last_group) {
-			PropertyInfo pi;
-			pi.usage = PROPERTY_USAGE_GROUP;
-			pi.name = group;
-			p_param_list->push_back(pi);
-
-			last_group = group;
-		}
-
-		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
-		pi.name = E.value;
-		p_param_list->push_back(pi);
-	}
-}
-
-void SkyShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
-	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
-			continue;
-		}
-
-		RendererMaterialStorage::InstanceShaderParam p;
-		p.info = ShaderLanguage::uniform_to_property_info(E.value);
-		p.info.name = E.key; //supply name
-		p.index = E.value.instance_index;
-		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.array_size, E.value.hint);
-		p_param_list->push_back(p);
-	}
-}
-
-bool SkyShaderData::is_parameter_texture(const StringName &p_param) const {
-	if (!uniforms.has(p_param)) {
-		return false;
-	}
-
-	return uniforms[p_param].texture_order >= 0;
-}
-
 bool SkyShaderData::is_animated() const {
 	return false;
 }
 
 bool SkyShaderData::casts_shadows() const {
 	return false;
-}
-
-Variant SkyShaderData::get_default_parameter(const StringName &p_parameter) const {
-	if (uniforms.has(p_parameter)) {
-		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
-		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
-		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
-	}
-	return Variant();
 }
 
 RS::ShaderNativeSourceCode SkyShaderData::get_native_source_code() const {
@@ -3290,10 +3206,6 @@ void SkyMaterialData::bind_uniforms() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Scene SHADER
-
-void SceneShaderData::set_path_hint(const String &p_path) {
-	path = p_path;
-}
 
 void SceneShaderData::set_code(const String &p_code) {
 	//compile
@@ -3471,86 +3383,6 @@ void SceneShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void SceneShaderData::set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) {
-	if (!p_texture.is_valid()) {
-		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
-			default_texture_params[p_name].erase(p_index);
-
-			if (default_texture_params[p_name].is_empty()) {
-				default_texture_params.erase(p_name);
-			}
-		}
-	} else {
-		if (!default_texture_params.has(p_name)) {
-			default_texture_params[p_name] = HashMap<int, RID>();
-		}
-		default_texture_params[p_name][p_index] = p_texture;
-	}
-}
-
-void SceneShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
-	RBMap<int, StringName> order;
-
-	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL ||
-				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
-				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
-				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
-			continue;
-		}
-
-		if (E.value.texture_order >= 0) {
-			order[E.value.texture_order + 100000] = E.key;
-		} else {
-			order[E.value.order] = E.key;
-		}
-	}
-
-	String last_group;
-	for (const KeyValue<int, StringName> &E : order) {
-		String group = uniforms[E.value].group;
-		if (!uniforms[E.value].subgroup.is_empty()) {
-			group += "::" + uniforms[E.value].subgroup;
-		}
-
-		if (group != last_group) {
-			PropertyInfo pi;
-			pi.usage = PROPERTY_USAGE_GROUP;
-			pi.name = group;
-			p_param_list->push_back(pi);
-
-			last_group = group;
-		}
-
-		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
-		pi.name = E.value;
-		p_param_list->push_back(pi);
-	}
-}
-
-void SceneShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
-	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
-			continue;
-		}
-
-		RendererMaterialStorage::InstanceShaderParam p;
-		p.info = ShaderLanguage::uniform_to_property_info(E.value);
-		p.info.name = E.key; //supply name
-		p.index = E.value.instance_index;
-		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.array_size, E.value.hint);
-		p_param_list->push_back(p);
-	}
-}
-
-bool SceneShaderData::is_parameter_texture(const StringName &p_param) const {
-	if (!uniforms.has(p_param)) {
-		return false;
-	}
-
-	return uniforms[p_param].texture_order >= 0;
-}
-
 bool SceneShaderData::is_animated() const {
 	return (uses_fragment_time && uses_discard) || (uses_vertex_time && uses_vertex);
 }
@@ -3561,15 +3393,6 @@ bool SceneShaderData::casts_shadows() const {
 	bool has_alpha = has_base_alpha || uses_blend_alpha;
 
 	return !has_alpha || (uses_depth_pre_pass && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
-}
-
-Variant SceneShaderData::get_default_parameter(const StringName &p_parameter) const {
-	if (uniforms.has(p_parameter)) {
-		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
-		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
-		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
-	}
-	return Variant();
 }
 
 RS::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {
@@ -3636,10 +3459,6 @@ void SceneMaterialData::bind_uniforms() {
 
 /* Particles SHADER */
 
-void ParticlesShaderData::set_path_hint(const String &p_path) {
-	path = p_path;
-}
-
 void ParticlesShaderData::set_code(const String &p_code) {
 	//compile
 
@@ -3696,98 +3515,12 @@ void ParticlesShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void ParticlesShaderData::set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) {
-	if (!p_texture.is_valid()) {
-		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
-			default_texture_params[p_name].erase(p_index);
-
-			if (default_texture_params[p_name].is_empty()) {
-				default_texture_params.erase(p_name);
-			}
-		}
-	} else {
-		if (!default_texture_params.has(p_name)) {
-			default_texture_params[p_name] = HashMap<int, RID>();
-		}
-		default_texture_params[p_name][p_index] = p_texture;
-	}
-}
-
-void ParticlesShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
-	HashMap<int, StringName> order;
-
-	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL || E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
-			continue;
-		}
-
-		if (E.value.texture_order >= 0) {
-			order[E.value.texture_order + 100000] = E.key;
-		} else {
-			order[E.value.order] = E.key;
-		}
-	}
-
-	String last_group;
-	for (const KeyValue<int, StringName> &E : order) {
-		String group = uniforms[E.value].group;
-		if (!uniforms[E.value].subgroup.is_empty()) {
-			group += "::" + uniforms[E.value].subgroup;
-		}
-
-		if (group != last_group) {
-			PropertyInfo pi;
-			pi.usage = PROPERTY_USAGE_GROUP;
-			pi.name = group;
-			p_param_list->push_back(pi);
-
-			last_group = group;
-		}
-
-		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
-		pi.name = E.value;
-		p_param_list->push_back(pi);
-	}
-}
-
-void ParticlesShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
-	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
-			continue;
-		}
-
-		RendererMaterialStorage::InstanceShaderParam p;
-		p.info = ShaderLanguage::uniform_to_property_info(E.value);
-		p.info.name = E.key; //supply name
-		p.index = E.value.instance_index;
-		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.array_size, E.value.hint);
-		p_param_list->push_back(p);
-	}
-}
-
-bool ParticlesShaderData::is_parameter_texture(const StringName &p_param) const {
-	if (!uniforms.has(p_param)) {
-		return false;
-	}
-
-	return uniforms[p_param].texture_order >= 0;
-}
-
 bool ParticlesShaderData::is_animated() const {
 	return false;
 }
 
 bool ParticlesShaderData::casts_shadows() const {
 	return false;
-}
-
-Variant ParticlesShaderData::get_default_parameter(const StringName &p_parameter) const {
-	if (uniforms.has(p_parameter)) {
-		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
-		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
-		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
-	}
-	return Variant();
 }
 
 RS::ShaderNativeSourceCode ParticlesShaderData::get_native_source_code() const {
