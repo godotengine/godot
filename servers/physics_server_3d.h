@@ -210,8 +210,8 @@ public:
 class PhysicsServer3DRenderingServerHandler : public Object {
 	GDCLASS(PhysicsServer3DRenderingServerHandler, Object)
 protected:
-	GDVIRTUAL2(_set_vertex, int, GDNativeConstPtr<void>)
-	GDVIRTUAL2(_set_normal, int, GDNativeConstPtr<void>)
+	GDVIRTUAL2(_set_vertex, int, GDExtensionConstPtr<void>)
+	GDVIRTUAL2(_set_normal, int, GDExtensionConstPtr<void>)
 	GDVIRTUAL1(_set_aabb, const AABB &)
 
 	static void _bind_methods();

@@ -236,6 +236,7 @@ private:
 
 	String symbol_lookup_new_word = "";
 	String symbol_lookup_word = "";
+	Point2i symbol_lookup_pos;
 
 	/* Visual */
 	Ref<StyleBox> style_normal;

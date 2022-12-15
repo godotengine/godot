@@ -115,6 +115,7 @@ class GDScriptCompiler {
 
 	bool _is_class_member_property(CodeGen &codegen, const StringName &p_name);
 	bool _is_class_member_property(GDScript *owner, const StringName &p_name);
+	bool _is_local_or_parameter(CodeGen &codegen, const StringName &p_name);
 
 	void _set_error(const String &p_error, const GDScriptParser::Node *p_node);
 
@@ -139,6 +140,7 @@ class GDScriptCompiler {
 	bool within_await = false;
 
 public:
+	static void convert_to_initializer_type(Variant &p_variant, const GDScriptParser::VariableNode *p_node);
 	static void make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	Error compile(const GDScriptParser *p_parser, GDScript *p_script, bool p_keep_state = false);
 

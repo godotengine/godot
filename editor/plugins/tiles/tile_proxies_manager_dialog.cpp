@@ -36,7 +36,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/separator.h"
 
-void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list, MouseButton p_mouse_button_index) {
+void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index, Object *p_item_list) {
 	if (p_mouse_button_index != MouseButton::RIGHT) {
 		return;
 	}
@@ -77,7 +77,7 @@ void TileProxiesManagerDialog::_delete_selected_bindings() {
 	Vector<int> alternative_level_selected = alternative_level_list->get_selected_items();
 	for (int i = 0; i < alternative_level_selected.size(); i++) {
 		Array key = alternative_level_list->get_item_metadata(alternative_level_selected[i]);
-		Array val = tile_set->get_coords_level_tile_proxy(key[0], key[1]);
+		Array val = tile_set->get_alternative_level_tile_proxy(key[0], key[1], key[2]);
 		undo_redo->add_do_method(*tile_set, "remove_alternative_level_tile_proxy", key[0], key[1], key[2]);
 		undo_redo->add_undo_method(*tile_set, "set_alternative_level_tile_proxy", key[0], key[1], key[2], val[0], val[1], val[2]);
 	}

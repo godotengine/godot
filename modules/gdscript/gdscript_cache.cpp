@@ -50,6 +50,13 @@ GDScriptParser *GDScriptParserRef::get_parser() const {
 	return parser;
 }
 
+GDScriptAnalyzer *GDScriptParserRef::get_analyzer() {
+	if (analyzer == nullptr) {
+		analyzer = memnew(GDScriptAnalyzer(parser));
+	}
+	return analyzer;
+}
+
 Error GDScriptParserRef::raise_status(Status p_new_status) {
 	ERR_FAIL_COND_V(parser == nullptr, ERR_INVALID_DATA);
 
@@ -64,23 +71,22 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 				result = parser->parse(GDScriptCache::get_source_code(path), path, false);
 				break;
 			case PARSED: {
-				analyzer = memnew(GDScriptAnalyzer(parser));
 				status = INHERITANCE_SOLVED;
-				Error inheritance_result = analyzer->resolve_inheritance();
+				Error inheritance_result = get_analyzer()->resolve_inheritance();
 				if (result == OK) {
 					result = inheritance_result;
 				}
 			} break;
 			case INHERITANCE_SOLVED: {
 				status = INTERFACE_SOLVED;
-				Error interface_result = analyzer->resolve_interface();
+				Error interface_result = get_analyzer()->resolve_interface();
 				if (result == OK) {
 					result = interface_result;
 				}
 			} break;
 			case INTERFACE_SOLVED: {
 				status = FULLY_SOLVED;
-				Error body_result = analyzer->resolve_body();
+				Error body_result = get_analyzer()->resolve_body();
 				if (result == OK) {
 					result = body_result;
 				}
@@ -128,6 +134,10 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 
 	MutexLock lock(singleton->mutex);
 
+	if (singleton->cleared) {
+		return;
+	}
+
 	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
 		if (E.value.has(p_from)) {
 			E.value.insert(p_to);
@@ -157,6 +167,10 @@ void GDScriptCache::remove_script(const String &p_path) {
 	}
 
 	MutexLock lock(singleton->mutex);
+
+	if (singleton->cleared) {
+		return;
+	}
 
 	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
 		if (!E.value.has(p_path)) {
@@ -371,6 +385,10 @@ void GDScriptCache::clear_unreferenced_packed_scenes() {
 
 	MutexLock lock(singleton->mutex);
 
+	if (singleton->cleared) {
+		return;
+	}
+
 	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
 		if (E.value.size() > 0 || !ResourceLoader::is_imported(E.key)) {
 			continue;
@@ -381,15 +399,20 @@ void GDScriptCache::clear_unreferenced_packed_scenes() {
 	}
 }
 
-GDScriptCache::GDScriptCache() {
-	singleton = this;
-}
+void GDScriptCache::clear() {
+	if (singleton == nullptr) {
+		return;
+	}
 
-GDScriptCache::~GDScriptCache() {
-	destructing = true;
+	MutexLock lock(singleton->mutex);
+
+	if (singleton->cleared) {
+		return;
+	}
+	singleton->cleared = true;
 
 	RBSet<Ref<GDScriptParserRef>> parser_map_refs;
-	for (KeyValue<String, GDScriptParserRef *> &E : parser_map) {
+	for (KeyValue<String, GDScriptParserRef *> &E : singleton->parser_map) {
 		parser_map_refs.insert(E.value);
 	}
 
@@ -398,13 +421,25 @@ GDScriptCache::~GDScriptCache() {
 			E->clear();
 	}
 
+	singleton->packed_scene_dependencies.clear();
+	singleton->packed_scene_cache.clear();
+
 	parser_map_refs.clear();
-	parser_map.clear();
-	shallow_gdscript_cache.clear();
-	full_gdscript_cache.clear();
+	singleton->parser_map.clear();
+	singleton->shallow_gdscript_cache.clear();
+	singleton->full_gdscript_cache.clear();
 
-	packed_scene_cache.clear();
-	packed_scene_dependencies.clear();
+	singleton->packed_scene_cache.clear();
+	singleton->packed_scene_dependencies.clear();
+}
 
+GDScriptCache::GDScriptCache() {
+	singleton = this;
+}
+
+GDScriptCache::~GDScriptCache() {
+	if (!cleared) {
+		clear();
+	}
 	singleton = nullptr;
 }

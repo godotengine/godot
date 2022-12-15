@@ -32,7 +32,8 @@
 #define GLTF_CAMERA_H
 
 #include "core/io/resource.h"
-#include "scene/3d/camera_3d.h"
+
+class Camera3D;
 
 // Reference and test file:
 // https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_015_SimpleCameras.md
@@ -64,7 +65,7 @@ public:
 	real_t get_depth_near() const { return depth_near; }
 	void set_depth_near(real_t p_val) { depth_near = p_val; }
 
-	static Ref<GLTFCamera> from_node(const Camera3D *p_light);
+	static Ref<GLTFCamera> from_node(const Camera3D *p_camera);
 	Camera3D *to_node() const;
 
 	static Ref<GLTFCamera> from_dictionary(const Dictionary p_dictionary);

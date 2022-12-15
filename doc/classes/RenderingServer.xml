@@ -962,12 +962,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="environment_glow_set_use_high_quality">
-			<return type="void" />
-			<param index="0" name="enable" type="bool" />
-			<description>
-			</description>
-		</method>
 		<method name="environment_set_adjustment">
 			<return type="void" />
 			<param index="0" name="env" type="RID" />
@@ -1295,13 +1289,13 @@
 		<method name="get_test_cube">
 			<return type="RID" />
 			<description>
-				Returns the id of the test cube. Creates one if none exists.
+				Returns the ID of the test cube. Creates one if none exists.
 			</description>
 		</method>
 		<method name="get_test_texture">
 			<return type="RID" />
 			<description>
-				Returns the id of the test texture. Creates one if none exists.
+				Returns the ID of the test texture. Creates one if none exists.
 			</description>
 		</method>
 		<method name="get_video_adapter_api_version" qualifiers="const">
@@ -1335,7 +1329,7 @@
 		<method name="get_white_texture">
 			<return type="RID" />
 			<description>
-				Returns the id of a white texture. Creates one if none exists.
+				Returns the ID of a white texture. Creates one if none exists.
 			</description>
 		</method>
 		<method name="gi_set_use_half_resolution">

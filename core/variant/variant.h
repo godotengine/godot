@@ -797,6 +797,10 @@ struct VariantComparator {
 	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
+struct StringLikeVariantComparator {
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs);
+};
+
 Variant::ObjData &Variant::_get_obj() {
 	return *reinterpret_cast<ObjData *>(&_data._mem[0]);
 }

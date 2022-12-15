@@ -55,6 +55,8 @@
 #include <stdio.h>
 
 #define WIN32_LEAN_AND_MEAN
+#include <dwrite.h>
+#include <dwrite_2.h>
 #include <windows.h>
 #include <windowsx.h>
 
@@ -79,6 +81,9 @@ public:
 	_FORCE_INLINE_ bool is_valid() const { return reference != nullptr; }
 	_FORCE_INLINE_ bool is_null() const { return reference == nullptr; }
 	ComAutoreleaseRef() {}
+	ComAutoreleaseRef(T *p_ref) {
+		reference = p_ref;
+	}
 	~ComAutoreleaseRef() {
 		if (reference != nullptr) {
 			reference->Release();
@@ -113,6 +118,18 @@ class OS_Windows : public OS {
 #endif
 
 	HWND main_window;
+
+	IDWriteFactory *dwrite_factory = nullptr;
+	IDWriteFactory2 *dwrite_factory2 = nullptr;
+	IDWriteFontCollection *font_collection = nullptr;
+	IDWriteFontFallback *system_font_fallback = nullptr;
+
+	bool dwrite_init = false;
+	bool dwrite2_init = false;
+
+	String _get_default_fontname(const String &p_font_name) const;
+	DWRITE_FONT_WEIGHT _weight_to_dw(int p_weight) const;
+	DWRITE_FONT_STRETCH _stretch_to_dw(int p_stretch) const;
 
 	// functions used by main to initialize/deinitialize the OS
 protected:
@@ -172,7 +189,8 @@ public:
 	virtual bool set_environment(const String &p_var, const String &p_value) const override;
 
 	virtual Vector<String> get_system_fonts() const override;
-	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
+	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
+	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 
 	virtual String get_executable_path() const override;
 

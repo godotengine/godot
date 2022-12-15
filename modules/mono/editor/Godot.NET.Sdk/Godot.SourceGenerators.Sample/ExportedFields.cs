@@ -45,7 +45,7 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Color field_Color = Colors.Aquamarine;
         [Export] private Plane field_Plane = Plane.PlaneXZ;
         [Export] private Callable field_Callable = new Callable(Engine.GetMainLoop(), "_process");
-        [Export] private SignalInfo field_SignalInfo = new SignalInfo(Engine.GetMainLoop(), "property_list_changed");
+        [Export] private Signal field_Signal = new Signal(Engine.GetMainLoop(), "property_list_changed");
 
         // Enums
         [SuppressMessage("ReSharper", "UnusedMember.Local")]

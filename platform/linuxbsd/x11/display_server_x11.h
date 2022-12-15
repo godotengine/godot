@@ -64,11 +64,19 @@
 #include "../freedesktop_screensaver.h"
 #endif
 
-#include <X11/Xcursor/Xcursor.h>
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xrandr.h>
+#include <X11/Xutil.h>
 #include <X11/keysym.h>
+
+#include "dynwrappers/xlib-so_wrap.h"
+
+#include "dynwrappers/xcursor-so_wrap.h"
+#include "dynwrappers/xext-so_wrap.h"
+#include "dynwrappers/xinerama-so_wrap.h"
+#include "dynwrappers/xinput2-so_wrap.h"
+#include "dynwrappers/xrandr-so_wrap.h"
+#include "dynwrappers/xrender-so_wrap.h"
 
 typedef struct _xrr_monitor_info {
 	Atom name;
@@ -151,6 +159,7 @@ class DisplayServerX11 : public DisplayServer {
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
 		bool fullscreen = false; //OS can't exit from this mode
+		bool exclusive_fullscreen = false;
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
@@ -275,7 +284,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool _window_minimize_check(WindowID p_window) const;
 	void _validate_mode_on_map(WindowID p_window);
 	void _update_size_hints(WindowID p_window);
-	void _set_wm_fullscreen(WindowID p_window, bool p_enabled);
+	void _set_wm_fullscreen(WindowID p_window, bool p_enabled, bool p_exclusive);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
 	void _set_wm_minimized(WindowID p_window, bool p_enabled);
 
@@ -384,6 +393,7 @@ public:
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Point2i window_get_position_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
@@ -397,7 +407,7 @@ public:
 
 	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;

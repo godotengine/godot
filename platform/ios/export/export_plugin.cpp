@@ -1134,7 +1134,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 									   "<key>CFBundleShortVersionString</key>\n"
 									   "<string>1.0</string>\n"
 									   "<key>CFBundleIdentifier</key>\n"
-									   "<string>com.gdnative.framework.$name</string>\n"
+									   "<string>com.gdextension.framework.$name</string>\n"
 									   "<key>CFBundleName</key>\n"
 									   "<string>$name</string>\n"
 									   "<key>CFBundleExecutable</key>\n"

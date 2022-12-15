@@ -137,7 +137,7 @@ public partial struct Variant : IDisposable
             Type.Rid => AsRID(),
             Type.Object => AsGodotObject(),
             Type.Callable => AsCallable(),
-            Type.Signal => AsSignalInfo(),
+            Type.Signal => AsSignal(),
             Type.Dictionary => AsGodotDictionary(),
             Type.Array => AsGodotArray(),
             Type.PackedByteArray => AsByteArray(),
@@ -283,8 +283,8 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertToCallableManaged((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SignalInfo AsSignalInfo() =>
-        VariantUtils.ConvertToSignalInfo((godot_variant)NativeVar);
+    public Signal AsSignal() =>
+        VariantUtils.ConvertToSignalManaged((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public byte[] AsByteArray() =>
@@ -464,7 +464,7 @@ public partial struct Variant : IDisposable
     public static explicit operator Callable(Variant from) => from.AsCallable();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator SignalInfo(Variant from) => from.AsSignalInfo();
+    public static explicit operator Signal(Variant from) => from.AsSignal();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator byte[](Variant from) => from.AsByteArray();
@@ -614,7 +614,7 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Callable from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(SignalInfo from) => from;
+    public static Variant CreateFrom(Signal from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Span<byte> from) => from;
@@ -804,8 +804,8 @@ public partial struct Variant : IDisposable
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromCallable(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(SignalInfo from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSignalInfo(from));
+    public static implicit operator Variant(Signal from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSignal(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(byte[] from) =>

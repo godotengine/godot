@@ -31,9 +31,9 @@
 #ifndef GLTF_LIGHT_H
 #define GLTF_LIGHT_H
 
-#include "core/config/engine.h"
 #include "core/io/resource.h"
-#include "scene/3d/light_3d.h"
+
+class Light3D;
 
 // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual
 

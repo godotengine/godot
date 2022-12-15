@@ -30,6 +30,8 @@
 
 #include "gltf_camera.h"
 
+#include "scene/3d/camera_3d.h"
+
 void GLTFCamera::_bind_methods() {
 	ClassDB::bind_static_method("GLTFCamera", D_METHOD("from_node", "camera_node"), &GLTFCamera::from_node);
 	ClassDB::bind_method(D_METHOD("to_node"), &GLTFCamera::to_node);
