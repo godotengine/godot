@@ -38,24 +38,11 @@
 class VariantParser {
 public:
 	struct Stream {
-	private:
-		enum { READAHEAD_SIZE = 2048 };
-		CharType readahead_buffer[READAHEAD_SIZE];
-		uint32_t readahead_pointer = 0;
-		uint32_t readahead_filled = 0;
-		bool eof = false;
-
-	protected:
-		bool readahead_enabled = true;
-		virtual uint32_t _read_buffer(CharType *p_buffer, uint32_t p_num_chars) = 0;
-		virtual bool _is_eof() const = 0;
-
-	public:
-		CharType saved;
-
-		CharType get_char();
+		virtual CharType get_char() = 0;
 		virtual bool is_utf8() const = 0;
-		bool is_eof() const;
+		virtual bool is_eof() const = 0;
+
+		CharType saved;
 
 		Stream() :
 				saved(0) {}
@@ -63,36 +50,24 @@ public:
 	};
 
 	struct StreamFile : public Stream {
-	protected:
-		virtual uint32_t _read_buffer(CharType *p_buffer, uint32_t p_num_chars);
-		virtual bool _is_eof() const;
-
-	public:
 		FileAccess *f;
 
+		virtual CharType get_char();
 		virtual bool is_utf8() const;
-		StreamFile(bool p_readahead_enabled = true) {
-			f = nullptr;
-			readahead_enabled = p_readahead_enabled;
-		}
+		virtual bool is_eof() const;
+
+		StreamFile() { f = nullptr; }
 	};
 
 	struct StreamString : public Stream {
-	private:
+		String s;
 		int pos;
 
-	protected:
-		virtual uint32_t _read_buffer(CharType *p_buffer, uint32_t p_num_chars);
-		virtual bool _is_eof() const;
-
-	public:
-		String s;
-
+		virtual CharType get_char();
 		virtual bool is_utf8() const;
-		StreamString(bool p_readahead_enabled = true) {
-			pos = 0;
-			readahead_enabled = p_readahead_enabled;
-		}
+		virtual bool is_eof() const;
+
+		StreamString() { pos = 0; }
 	};
 
 	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);

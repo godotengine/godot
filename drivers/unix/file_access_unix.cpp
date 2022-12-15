@@ -148,7 +148,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessUnix::close() {
+void FileAccessUnix::_close() {
 	if (!f) {
 		return;
 	}
@@ -184,7 +184,7 @@ String FileAccessUnix::get_path_absolute() const {
 	return path;
 }
 
-void FileAccessUnix::seek(uint64_t p_position) {
+void FileAccessUnix::_seek(uint64_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	last_error = OK;
@@ -193,7 +193,7 @@ void FileAccessUnix::seek(uint64_t p_position) {
 	}
 }
 
-void FileAccessUnix::seek_end(int64_t p_position) {
+void FileAccessUnix::_seek_end(int64_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (fseeko(f, p_position, SEEK_END)) {
@@ -201,7 +201,7 @@ void FileAccessUnix::seek_end(int64_t p_position) {
 	}
 }
 
-uint64_t FileAccessUnix::get_position() const {
+uint64_t FileAccessUnix::_get_position() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
 	int64_t pos = ftello(f);
@@ -225,11 +225,11 @@ uint64_t FileAccessUnix::get_len() const {
 	return size;
 }
 
-bool FileAccessUnix::eof_reached() const {
+bool FileAccessUnix::_eof_reached() const {
 	return last_error == ERR_FILE_EOF;
 }
 
-uint8_t FileAccessUnix::get_8() const {
+uint8_t FileAccessUnix::_get_8() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	uint8_t b;
 	if (fread(&b, 1, 1, f) == 0) {
@@ -239,7 +239,7 @@ uint8_t FileAccessUnix::get_8() const {
 	return b;
 }
 
-uint64_t FileAccessUnix::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessUnix::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V_MSG(!f, -1, "File must be opened before use.");
 

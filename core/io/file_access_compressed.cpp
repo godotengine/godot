@@ -133,9 +133,13 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 		}
 	}
 
+	// FileAccessCompressed seems to generally work better using only internal buffering
+	// rather than FileAccess buffering. If desired to use FileAccess buffering, uncomment next line.
+	// choose_buffering(p_mode_flags);
+
 	return OK;
 }
-void FileAccessCompressed::close() {
+void FileAccessCompressed::_close() {
 	if (!f) {
 		return;
 	}
@@ -190,7 +194,7 @@ bool FileAccessCompressed::is_open() const {
 	return f != nullptr;
 }
 
-void FileAccessCompressed::seek(uint64_t p_position) {
+void FileAccessCompressed::_seek(uint64_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (writing) {
@@ -220,7 +224,7 @@ void FileAccessCompressed::seek(uint64_t p_position) {
 	}
 }
 
-void FileAccessCompressed::seek_end(int64_t p_position) {
+void FileAccessCompressed::_seek_end(int64_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	if (writing) {
 		seek(write_max + p_position);
@@ -229,7 +233,7 @@ void FileAccessCompressed::seek_end(int64_t p_position) {
 	}
 }
 
-uint64_t FileAccessCompressed::get_position() const {
+uint64_t FileAccessCompressed::_get_position() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	if (writing) {
 		return write_pos;
@@ -247,7 +251,7 @@ uint64_t FileAccessCompressed::get_len() const {
 	}
 }
 
-bool FileAccessCompressed::eof_reached() const {
+bool FileAccessCompressed::_eof_reached() const {
 	ERR_FAIL_COND_V_MSG(!f, false, "File must be opened before use.");
 	if (writing) {
 		return false;
@@ -256,7 +260,7 @@ bool FileAccessCompressed::eof_reached() const {
 	}
 }
 
-uint8_t FileAccessCompressed::get_8() const {
+uint8_t FileAccessCompressed::_get_8() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
 
@@ -288,7 +292,7 @@ uint8_t FileAccessCompressed::get_8() const {
 	return ret;
 }
 
-uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessCompressed::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V_MSG(!f, -1, "File must be opened before use.");
 	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");

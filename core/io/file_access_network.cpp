@@ -290,7 +290,7 @@ Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 	return response;
 }
 
-void FileAccessNetwork::close() {
+void FileAccessNetwork::_close() {
 	if (!opened) {
 		return;
 	}
@@ -309,7 +309,7 @@ bool FileAccessNetwork::is_open() const {
 	return opened;
 }
 
-void FileAccessNetwork::seek(uint64_t p_position) {
+void FileAccessNetwork::_seek(uint64_t p_position) {
 	ERR_FAIL_COND_MSG(!opened, "File must be opened before use.");
 
 	eof_flag = p_position > total_size;
@@ -321,11 +321,11 @@ void FileAccessNetwork::seek(uint64_t p_position) {
 	pos = p_position;
 }
 
-void FileAccessNetwork::seek_end(int64_t p_position) {
+void FileAccessNetwork::_seek_end(int64_t p_position) {
 	seek(total_size + p_position);
 }
 
-uint64_t FileAccessNetwork::get_position() const {
+uint64_t FileAccessNetwork::_get_position() const {
 	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return pos;
 }
@@ -335,12 +335,12 @@ uint64_t FileAccessNetwork::get_len() const {
 	return total_size;
 }
 
-bool FileAccessNetwork::eof_reached() const {
+bool FileAccessNetwork::_eof_reached() const {
 	ERR_FAIL_COND_V_MSG(!opened, false, "File must be opened before use.");
 	return eof_flag;
 }
 
-uint8_t FileAccessNetwork::get_8() const {
+uint8_t FileAccessNetwork::_get_8() const {
 	uint8_t v;
 	get_buffer(&v, 1);
 	return v;
@@ -367,7 +367,7 @@ void FileAccessNetwork::_queue_page(int32_t p_page) const {
 	}
 }
 
-uint64_t FileAccessNetwork::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessNetwork::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	if (pos + p_length > total_size) {

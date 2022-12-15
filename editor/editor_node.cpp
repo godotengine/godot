@@ -3736,7 +3736,11 @@ void EditorNode::open_request(const String &p_path) {
 		}
 	}
 
+	uint32_t before = OS::get_singleton()->get_ticks_msec();
 	load_scene(p_path); // as it will be opened in separate tab
+	uint32_t after = OS::get_singleton()->get_ticks_msec();
+
+	print_line("EditorNode::load_scene() took " + itos(after - before) + " ms.");
 }
 
 void EditorNode::request_instance_scene(const String &p_path) {

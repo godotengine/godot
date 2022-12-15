@@ -250,7 +250,7 @@ Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessZip::close() {
+void FileAccessZip::_close() {
 	if (!zfile) {
 		return;
 	}
@@ -265,18 +265,18 @@ bool FileAccessZip::is_open() const {
 	return zfile != nullptr;
 }
 
-void FileAccessZip::seek(uint64_t p_position) {
+void FileAccessZip::_seek(uint64_t p_position) {
 	ERR_FAIL_COND(!zfile);
 
 	unzSeekCurrentFile(zfile, p_position);
 }
 
-void FileAccessZip::seek_end(int64_t p_position) {
+void FileAccessZip::_seek_end(int64_t p_position) {
 	ERR_FAIL_COND(!zfile);
 	unzSeekCurrentFile(zfile, get_len() + p_position);
 }
 
-uint64_t FileAccessZip::get_position() const {
+uint64_t FileAccessZip::_get_position() const {
 	ERR_FAIL_COND_V(!zfile, 0);
 	return unztell(zfile);
 }
@@ -286,19 +286,19 @@ uint64_t FileAccessZip::get_len() const {
 	return file_info.uncompressed_size;
 }
 
-bool FileAccessZip::eof_reached() const {
+bool FileAccessZip::_eof_reached() const {
 	ERR_FAIL_COND_V(!zfile, true);
 
 	return at_eof;
 }
 
-uint8_t FileAccessZip::get_8() const {
+uint8_t FileAccessZip::_get_8() const {
 	uint8_t ret = 0;
 	get_buffer(&ret, 1);
 	return ret;
 }
 
-uint64_t FileAccessZip::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessZip::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V(!zfile, -1);
 

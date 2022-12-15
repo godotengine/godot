@@ -33,6 +33,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/os/file_access_buffer.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
@@ -81,7 +82,21 @@ FileAccess *FileAccess::create_for_path(const String &p_path) {
 	return ret;
 }
 
-Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
+void FileAccess::set_buffered(bool p_buffered) {
+	if (p_buffered == _is_buffered()) {
+		return;
+	}
+
+	if (p_buffered) {
+		_buffer = memnew(FileAccessBuffer);
+	} else {
+		DEV_ASSERT(_buffer);
+		memdelete(_buffer);
+		_buffer = nullptr;
+	}
+}
+
+Error FileAccess::_reopen(const String &p_path, int p_mode_flags) {
 	return _open(p_path, p_mode_flags);
 };
 
@@ -110,7 +125,15 @@ FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_er
 		ret = nullptr;
 	}
 
+	if (ret) {
+		ret->choose_buffering(p_mode_flags);
+	}
+
 	return ret;
+}
+
+void FileAccess::choose_buffering(int p_mode_flags) {
+	set_buffered(p_mode_flags == ModeFlags::READ);
 }
 
 FileAccess::CreateFunc FileAccess::get_create_func(AccessType p_access) {
@@ -371,7 +394,7 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 	return strings;
 }
 
-uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccess::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	uint64_t i = 0;
@@ -677,8 +700,152 @@ String FileAccess::get_sha256(const String &p_file) {
 	return String::hex_encode_buffer(hash, 32);
 }
 
+// Buffering
+uint8_t FileAccess::get_8() const {
+	if (_is_buffered()) {
+		uint8_t c;
+		uint64_t read = get_buffer(&c, 1);
+		ERR_FAIL_COND_V(read == UINT64_MAX, 0);
+		return c;
+	}
+
+	return _get_8();
+}
+
+uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+	if (_is_buffered()) {
+		// first read from buffer
+		uint32_t available = _buffer->get_buffer_offset();
+
+		// note available may be zero
+		if (available) {
+			if (available > p_length) {
+				available = p_length;
+			}
+
+			memcpy(p_dst, _buffer->get_current_data(), available);
+			p_length -= available;
+
+			// move the buffer pointer on
+			_buffer->readahead_pointer += available;
+			DEV_ASSERT(_buffer->readahead_pointer <= _buffer->readahead_filled);
+
+			// destination moved on
+			p_dst += available;
+		}
+
+		// read the rest directly from file if there is more
+		if (p_length) {
+			// two possible here. If the read is more than the buffer length, read all in at conce
+			if (p_length > FileAccessBuffer::BUFFER_SIZE) {
+				uint64_t bytes_read = _get_buffer(p_dst, p_length);
+
+				// may return -1 .. error .. something has gone horribly wrong, don't return any data
+				ERR_FAIL_COND_V(bytes_read == UINT64_MAX, 0);
+				return available + bytes_read;
+			} else {
+				// fill the buffer, and read from it
+				ERR_FAIL_COND_V(_fill_buffer() == false, 0);
+				uint32_t bytes_read = _buffer->readahead_filled;
+
+				// only at a maximum do we want to read p_length out of the buffer.
+				if (bytes_read > p_length) {
+					bytes_read = p_length;
+				}
+
+				// may be zero bytes read
+				memcpy(p_dst, _buffer->get_current_data(), bytes_read);
+				_buffer->readahead_pointer += bytes_read;
+				DEV_ASSERT(_buffer->readahead_pointer <= _buffer->readahead_filled);
+
+				return available + bytes_read;
+			}
+		} else {
+			return available;
+		}
+	}
+
+	return _get_buffer(p_dst, p_length);
+}
+
+bool FileAccess::eof_reached() const {
+	if (_is_buffered()) {
+		return _buffer->eof;
+	}
+
+	return _eof_reached();
+}
+
+uint64_t FileAccess::get_position() const {
+	if (_is_buffered()) {
+		uint64_t pos = _get_position();
+		ERR_FAIL_COND_V(pos == UINT64_MAX, -1);
+
+		uint32_t offset = _buffer->get_buffer_offset();
+
+		ERR_FAIL_COND_V(offset > pos, -1);
+		return pos - offset;
+	}
+
+	return _get_position();
+}
+
+void FileAccess::seek(uint64_t p_position) {
+	if (_is_buffered()) {
+		// within the buffer already?
+		uint64_t pos = _get_position();
+		ERR_FAIL_COND(pos == UINT64_MAX);
+
+		// get pos to the buffer start
+		DEV_ASSERT(pos >= _buffer->readahead_filled);
+		pos -= _buffer->readahead_filled;
+
+		// for localized seeks, this should be a lot faster
+		if ((p_position >= pos) && (p_position < (pos + _buffer->readahead_filled))) {
+			_buffer->readahead_pointer = p_position - pos;
+			DEV_ASSERT(_buffer->readahead_pointer <= _buffer->readahead_filled);
+			return;
+		}
+
+		// outside the buffer, invalidate and seek the file
+		_buffer->invalidate(false);
+	}
+	_seek(p_position);
+}
+
+void FileAccess::seek_end(int64_t p_position) {
+	if (_is_buffered()) {
+		_buffer->invalidate(false);
+	}
+	_seek_end(p_position);
+}
+
+void FileAccess::close() {
+	set_buffered(false);
+	_close();
+}
+
+void FileAccess::set_endian_swap(bool p_swap) {
+	_set_endian_swap(p_swap);
+}
+
+// return false if error
+bool FileAccess::_fill_buffer() const {
+	DEV_ASSERT(_buffer->readahead_pointer == _buffer->readahead_filled);
+	_buffer->readahead_pointer = 0;
+	uint64_t bytes_read = _get_buffer(_buffer->data, FileAccessBuffer::BUFFER_SIZE);
+	ERR_FAIL_COND_V(bytes_read == UINT64_MAX, false);
+	_buffer->readahead_filled = bytes_read;
+	_buffer->eof = bytes_read == 0;
+	return true;
+}
+
 FileAccess::FileAccess() {
 	endian_swap = false;
 	real_is_double = false;
 	_access_type = ACCESS_FILESYSTEM;
 };
+
+FileAccess::~FileAccess() {
+	set_buffered(false);
+}
