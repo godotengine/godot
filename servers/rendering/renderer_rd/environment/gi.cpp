@@ -3496,6 +3496,10 @@ void GI::init(SkyRD *p_sky) {
 	{
 		//calculate tables
 		String defines = "\n#define SDFGI_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		if (RendererSceneRenderRD::get_singleton()->is_vrs_supported()) {
+			defines += "\n#define USE_VRS\n";
+		}
+
 		Vector<String> gi_modes;
 
 		gi_modes.push_back("\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_VOXEL_GI
@@ -4011,7 +4015,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				u.append_id(rbgi->scene_data_ubo);
 				uniforms.push_back(u);
 			}
-			{
+			if (RendererSceneRenderRD::get_singleton()->is_vrs_supported()) {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 19;
