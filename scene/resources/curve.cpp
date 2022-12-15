@@ -829,7 +829,7 @@ void Curve2D::_bake() const {
 		return;
 	}
 
-	// Tesselate curve to (almost) even length segments
+	// Tessellate curve to (almost) even length segments
 	{
 		Vector<RBMap<real_t, Vector2>> midpoints = _tessellate_even_length(10, bake_interval);
 
@@ -1546,7 +1546,7 @@ void Curve3D::_bake() const {
 		return;
 	}
 
-	// Step 1: Tesselate curve to (almost) even length segments
+	// Step 1: Tessellate curve to (almost) even length segments
 	{
 		Vector<RBMap<real_t, Vector3>> midpoints = _tessellate_even_length(10, bake_interval);
 
@@ -1649,7 +1649,7 @@ void Curve3D::_bake() const {
 			}
 
 			real_t dot = forward_ptr[0].dot(forward_ptr[point_count - 1]);
-			if (dot < 1.0 - UNIT_EPSILON) { // Alignment should not be too tight, or it dosen't work for coarse bake interval.
+			if (dot < 1.0 - UNIT_EPSILON) { // Alignment should not be too tight, or it doesn't work for coarse bake interval.
 				is_loop = false;
 			}
 		}

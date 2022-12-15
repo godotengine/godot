@@ -7,7 +7,7 @@
 //
 // NOTE: Generated from Xi 1.7.10.
 // This has been handpatched to workaround some issues with the generator that
-// will be eventually fixed. In this case, non-existant symbols inherited from
+// will be eventually fixed. In this case, non-existent symbols inherited from
 // libX11, liXext and libXfixes, but absent in libXi.so.6, were removed.
 #include <stdint.h>
 

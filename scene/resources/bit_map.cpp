@@ -317,7 +317,7 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 		if (sv == 6 || sv == 9) {
 			const Point2i cur_pos(curx, cury);
 
-			// Find if this point has occured before.
+			// Find if this point has occurred before.
 			if (HashMap<Point2i, int>::Iterator found = cross_map.find(cur_pos)) {
 				// Add points after the previous crossing to the result.
 				ret.push_back(_points.slice(found->value + 1, points_size));

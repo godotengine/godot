@@ -15,7 +15,7 @@
 			<param index="0" name="transform" type="Transform3D" />
 			<param index="1" name="rotation_mode" type="int" enum="PathFollow3D.RotationMode" />
 			<description>
-				Correct the [code]transform[/code]. [code]rotation_mode[/code] implicitly specifies how posture (forward, up and sideway direction) is caculated.
+				Correct the [code]transform[/code]. [code]rotation_mode[/code] implicitly specifies how posture (forward, up and sideway direction) is calculated.
 			</description>
 		</method>
 	</methods>
