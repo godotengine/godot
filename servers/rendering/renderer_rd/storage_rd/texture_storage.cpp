@@ -419,11 +419,12 @@ TextureStorage::TextureStorage() {
 		tformat.format = RD::DATA_FORMAT_R8_UINT;
 		tformat.width = 4;
 		tformat.height = 4;
-		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		if (RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
-			tformat.usage_bits |= RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
-		}
+		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
 		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+		if (!RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
+			tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+			tformat.format = RD::DATA_FORMAT_R8_UNORM;
+		}
 
 		Vector<uint8_t> pv;
 		pv.resize(4 * 4);
