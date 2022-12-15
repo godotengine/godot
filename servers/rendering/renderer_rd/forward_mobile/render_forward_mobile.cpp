@@ -361,7 +361,9 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 	Ref<RenderSceneBuffersRD> rb;
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
 		rb = p_render_data->render_buffers;
-		rb_data = rb->get_custom_data(RB_SCOPE_MOBILE);
+		if (rb->has_custom_data(RB_SCOPE_MOBILE)) {
+			rb_data = rb->get_custom_data(RB_SCOPE_MOBILE);
+		}
 	}
 
 	// default render buffer and scene state uniform set
@@ -640,7 +642,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	Ref<RenderBufferDataForwardMobile> rb_data;
 	if (p_render_data->render_buffers.is_valid()) {
 		rb = p_render_data->render_buffers;
-		rb_data = rb->get_custom_data(RB_SCOPE_MOBILE);
+		if (rb->has_custom_data(RB_SCOPE_MOBILE)) {
+			rb_data = rb->get_custom_data(RB_SCOPE_MOBILE);
+		}
 	}
 
 	RENDER_TIMESTAMP("Prepare 3D Scene");
@@ -689,7 +693,21 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = p_render_data->instances->size();
 	}
 
-	if (rb_data.is_valid()) {
+	if (p_render_data->reflection_probe.is_valid()) {
+		uint32_t resolution = light_storage->reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
+		screen_size.x = resolution;
+		screen_size.y = resolution;
+
+		framebuffer = light_storage->reflection_probe_instance_get_framebuffer(p_render_data->reflection_probe, p_render_data->reflection_probe_pass);
+
+		if (light_storage->reflection_probe_is_interior(light_storage->reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
+			p_render_data->environment = RID(); //no environment on interiors
+		}
+
+		reverse_cull = true;
+		using_subpass_transparent = true; // we ignore our screen/depth texture here
+		using_subpass_post_process = false; // not applicable at all for reflection probes.
+	} else if (rb_data.is_valid()) {
 		// setup rendering to render buffer
 		screen_size = p_render_data->render_buffers->get_internal_size();
 
@@ -717,20 +735,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			// only opaque and sky as subpasses
 			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_TWO_SUBPASSES);
 		}
-	} else if (p_render_data->reflection_probe.is_valid()) {
-		uint32_t resolution = light_storage->reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
-		screen_size.x = resolution;
-		screen_size.y = resolution;
-
-		framebuffer = light_storage->reflection_probe_instance_get_framebuffer(p_render_data->reflection_probe, p_render_data->reflection_probe_pass);
-
-		if (light_storage->reflection_probe_is_interior(light_storage->reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
-			p_render_data->environment = RID(); //no environment on interiors
-		}
-
-		reverse_cull = true;
-		using_subpass_transparent = true; // we ignore our screen/depth texture here
-		using_subpass_post_process = false; // not applicable at all for reflection probes.
 	} else {
 		ERR_FAIL(); //bug?
 	}
@@ -796,7 +800,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				draw_sky = true;
 			} break;
 			case RS::ENV_BG_CANVAS: {
-				if (rb.is_valid()) {
+				if (rb_data.is_valid()) {
 					RID dest_framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_ONE_PASS);
 					RID texture = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(rb->get_render_target());
 					copy_effects->copy_to_fb_rect(texture, dest_framebuffer, Rect2i(), false, false, false, false, RID(), false, false, true);
@@ -811,53 +815,43 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			default: {
 			}
 		}
+
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_render_data->environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			RD::get_singleton()->draw_command_begin_label("Setup Sky");
-			Projection projection = p_render_data->scene_data->cam_projection;
+
+			// Setup our sky render information for this frame/viewport
 			if (p_render_data->reflection_probe.is_valid()) {
+				Vector3 eye_offset;
 				Projection correction;
 				correction.set_depth_correction(true);
-				projection = correction * p_render_data->scene_data->cam_projection;
-			}
+				Projection projection = correction * p_render_data->scene_data->cam_projection;
 
-			sky.setup(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, projection, p_render_data->scene_data->cam_transform, screen_size, this);
+				sky.setup_sky(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, 1, &projection, &eye_offset, p_render_data->scene_data->cam_transform, screen_size, this);
+			} else {
+				sky.setup_sky(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, screen_size, this);
+			}
 
 			sky_energy_multiplier *= bg_energy_multiplier;
 
 			RID sky_rid = environment_get_sky(p_render_data->environment);
 			if (sky_rid.is_valid()) {
-				sky.update(p_render_data->environment, projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
+				sky.update_radiance_buffers(rb, p_render_data->environment, p_render_data->scene_data->cam_transform.origin, time, sky_energy_multiplier);
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
 				draw_sky = false;
 			}
+
+			if (draw_sky || draw_sky_fog_only) {
+				// update sky half/quarter res buffers (if required)
+				sky.update_res_buffers(rb, p_render_data->environment, time, sky_energy_multiplier);
+			}
 			RD::get_singleton()->draw_command_end_label(); // Setup Sky
 		}
 	} else {
 		clear_color = p_default_bg_color;
-	}
-
-	// update sky buffers (if required)
-	if (draw_sky || draw_sky_fog_only) {
-		// !BAS! @TODO See if we can limit doing some things double and maybe even move this into _pre_opaque_render
-		// and change Forward Clustered in the same way as we have here (but without using subpasses)
-		RENDER_TIMESTAMP("Setup Sky Resolution Buffers");
-
-		RD::get_singleton()->draw_command_begin_label("Setup Sky Resolution Buffers");
-
-		if (p_render_data->reflection_probe.is_valid()) {
-			Projection correction;
-			correction.set_depth_correction(true);
-			Projection projection = correction * p_render_data->scene_data->cam_projection;
-			sky.update_res_buffers(p_render_data->environment, 1, &projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
-		} else {
-			sky.update_res_buffers(p_render_data->environment, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
-		}
-
-		RD::get_singleton()->draw_command_end_label(); // Setup Sky resolution buffers
 	}
 
 	_pre_opaque_render(p_render_data);
@@ -944,16 +938,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		if (draw_sky || draw_sky_fog_only) {
 			RD::get_singleton()->draw_command_begin_label("Draw Sky Subpass");
 
+			// Note, sky.setup should have been called up above and setup stuff we need.
+
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
-			if (p_render_data->reflection_probe.is_valid()) {
-				Projection correction;
-				correction.set_depth_correction(true);
-				Projection projection = correction * p_render_data->scene_data->cam_projection;
-				sky.draw(draw_list, p_render_data->environment, framebuffer, 1, &projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
-			} else {
-				sky.draw(draw_list, p_render_data->environment, framebuffer, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
-			}
+			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, sky_energy_multiplier);
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky Subpass
 
@@ -1021,7 +1010,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		} else {
 			RENDER_TIMESTAMP("Render Transparent");
 
-			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_ONE_PASS);
+			if (rb_data.is_valid()) {
+				framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_ONE_PASS);
+			}
 
 			// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
 			// _setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);

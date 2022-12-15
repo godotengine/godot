@@ -207,6 +207,21 @@ void RenderSceneBuffersRD::configure(RID p_render_target, const Size2i p_interna
 	}
 }
 
+void RenderSceneBuffersRD::configure_for_reflections(const Size2i p_reflection_size) {
+	// For now our render buffers for reflections are only used for effects/environment (Sky/Fog/Etc)
+	// Possibly at some point move our entire reflection atlas buffer management into this class
+
+	target_size = p_reflection_size;
+	internal_size = p_reflection_size;
+	render_target = RID();
+	fsr_sharpness = 0.0;
+	msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
+	screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+	use_taa = false;
+	use_debanding = false;
+	view_count = 1;
+}
+
 void RenderSceneBuffersRD::set_fsr_sharpness(float p_fsr_sharpness) {
 	fsr_sharpness = p_fsr_sharpness;
 }
@@ -483,6 +498,10 @@ void RenderSceneBuffersRD::set_custom_data(const StringName &p_name, Ref<RenderB
 }
 
 Ref<RenderBufferCustomDataRD> RenderSceneBuffersRD::get_custom_data(const StringName &p_name) const {
+	if (!data_buffers.has(p_name)) {
+		print_line("test");
+	}
+
 	ERR_FAIL_COND_V(!data_buffers.has(p_name), Ref<RenderBufferCustomDataRD>());
 
 	Ref<RenderBufferCustomDataRD> ret = data_buffers[p_name];

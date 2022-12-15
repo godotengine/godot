@@ -140,6 +140,7 @@ public:
 
 	void cleanup();
 	virtual void configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa_3d, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) override;
+	void configure_for_reflections(const Size2i p_reflection_size);
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
