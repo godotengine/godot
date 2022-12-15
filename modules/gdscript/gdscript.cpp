@@ -1288,15 +1288,10 @@ String GDScript::_get_gdscript_reference_class_name(const GDScript *p_gdscript) 
 }
 
 GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {
-	Variant::Type type = p_variant.get_type();
-	if (type != Variant::Type::OBJECT)
-		return nullptr;
-
 	Object *obj = p_variant;
-	if (obj == nullptr) {
+	if (obj == nullptr || obj->get_instance_id().is_null()) {
 		return nullptr;
 	}
-
 	return Object::cast_to<GDScript>(obj);
 }
 
