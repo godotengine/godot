@@ -99,11 +99,11 @@ private:
 
 	struct SkyPushConstant {
 		float orientation[12]; // 48 - 48
-		float projections[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 2 x 16 - 80
-		float position[3]; // 12 - 92
-		float time; // 4 - 96
-		float pad[3]; // 12 - 108
-		float luminance_multiplier; // 4 - 112
+		float projection[4]; // 16 - 64
+		float position[3]; // 12 - 76
+		float time; // 4 - 80
+		float pad[3]; // 12 - 92
+		float luminance_multiplier; // 4 - 96
 		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
 	};
 
@@ -134,31 +134,38 @@ private:
 		virtual ~SkyShaderData();
 	};
 
-	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, uint32_t p_view_count, const Projection *p_projections, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier);
+	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier);
 
 public:
 	struct SkySceneState {
 		struct UBO {
-			uint32_t volumetric_fog_enabled; // 4 - 4
-			float volumetric_fog_inv_length; // 4 - 8
-			float volumetric_fog_detail_spread; // 4 - 12
-			float volumetric_fog_sky_affect; // 4 - 16
+			float view_inv_projections[RendererSceneRender::MAX_RENDER_VIEWS][16]; // 2 x 64 - 128
+			float view_eye_offsets[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 2 x 16 - 160
 
-			uint32_t fog_enabled; // 4 - 20
-			float fog_sky_affect; // 4 - 24
-			float fog_density; // 4 - 28
-			float fog_sun_scatter; // 4 - 32
+			uint32_t volumetric_fog_enabled; // 4 - 164
+			float volumetric_fog_inv_length; // 4 - 168
+			float volumetric_fog_detail_spread; // 4 - 172
+			float volumetric_fog_sky_affect; // 4 - 176
 
-			float fog_light_color[3]; // 12 - 44
-			float fog_aerial_perspective; // 4 - 48
+			uint32_t fog_enabled; // 4 - 180
+			float fog_sky_affect; // 4 - 184
+			float fog_density; // 4 - 188
+			float fog_sun_scatter; // 4 - 192
 
-			float z_far; // 4 - 52
-			uint32_t directional_light_count; // 4 - 56
-			uint32_t pad1; // 4 - 60
-			uint32_t pad2; // 4 - 64
+			float fog_light_color[3]; // 12 - 204
+			float fog_aerial_perspective; // 4 - 208
+
+			float z_far; // 4 - 212
+			uint32_t directional_light_count; // 4 - 216
+			uint32_t pad1; // 4 - 220
+			uint32_t pad2; // 4 - 224
 		};
 
 		UBO ubo;
+
+		uint32_t view_count = 1;
+		Transform3D cam_transform;
+		Projection cam_projection;
 
 		SkyDirectionalLightData *directional_lights = nullptr;
 		SkyDirectionalLightData *last_frame_directional_lights = nullptr;
@@ -238,13 +245,10 @@ public:
 
 	struct Sky {
 		RID radiance;
-		RID half_res_pass;
-		RID half_res_framebuffer;
 		RID quarter_res_pass;
 		RID quarter_res_framebuffer;
 		Size2i screen_size;
 
-		RID texture_uniform_sets[SKY_TEXTURE_SET_MAX];
 		RID uniform_set;
 
 		RID material;
@@ -267,7 +271,7 @@ public:
 
 		void free();
 
-		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd);
+		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, Ref<RenderSceneBuffersRD> p_render_buffers);
 		bool set_radiance_size(int p_radiance_size);
 		bool set_mode(RS::SkyMode p_mode);
 		bool set_material(RID p_material);
@@ -291,11 +295,10 @@ public:
 	void set_texture_format(RD::DataFormat p_texture_format);
 	~SkyRD();
 
-	void setup(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
-	void update(RID p_env, const Projection &p_projection, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
-	void draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0); // only called by clustered renderer
-	void update_res_buffers(RID p_env, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
-	void draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
+	void setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
+	void update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, const Vector3 &p_global_pos, double p_time, float p_luminance_multiplier = 1.0);
+	void update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, double p_time, float p_luminance_multiplier = 1.0);
+	void draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, RID p_fb, double p_time, float p_luminance_multiplier = 1.0);
 
 	void invalidate_sky(Sky *p_sky);
 	void update_dirty_skys();

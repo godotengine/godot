@@ -502,6 +502,10 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	return false;
 }
 
+Ref<RenderSceneBuffers> LightStorage::reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) {
+	return Ref<RenderSceneBuffers>();
+}
+
 bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 	return true;
 }
