@@ -202,11 +202,13 @@ def configure(env: "Environment"):
         env.ParseConfig("pkg-config xkbcommon --cflags")
 
         if os.system("pkg-config --exists libdecor-0") == 0:  # 0 means found
-            env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
             env.ParseConfig("pkg-config libdecor-0 --cflags")  # Only cflags, we dlopen the library.
         else:
             env["libdecor"] = False
             print("Warning: libdecor development libraries not found. Disabling client-side decorations.")
+
+        if env["libdecor"]:
+            env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
