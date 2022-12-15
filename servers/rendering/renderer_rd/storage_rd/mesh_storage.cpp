@@ -715,6 +715,8 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 		}
 	}
 
+	mesh->aabb = aabb;
+
 	mesh->skeleton_aabb_version = skeleton->version;
 	return aabb;
 }
