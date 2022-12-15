@@ -5,7 +5,7 @@
 //
 // NOTE: Generated from Xinerama 1.1.4.
 // This has been handpatched to workaround some issues with the generator that
-// will be eventually fixed. In this case, non-existant symbols inherited from
+// will be eventually fixed. In this case, non-existent symbols inherited from
 // libX11, but absent in libXinerama.so.1, were removed.
 #include <stdint.h>
 

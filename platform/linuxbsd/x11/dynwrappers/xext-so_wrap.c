@@ -5,10 +5,10 @@
 //
 // NOTE: Generated from Xext 1.3.5.
 // This has been handpatched to workaround some issues with the generator that
-// will be eventually fixed. In this case, non-existant symbols inherited from
+// will be eventually fixed. In this case, non-existent symbols inherited from
 // libX11, but absent in libXext.so.6, were removed and an include needed for
 // proper parsing was added (this had also to be temporarily added to the
-// original header, as dynload-wrapper would complain otherwsise)
+// original header, as dynload-wrapper would complain otherwise)
 #include <stdint.h>
 
 // HANDPATCH: Needed for a successful compilation.
