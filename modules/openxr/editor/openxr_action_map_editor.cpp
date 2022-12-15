@@ -57,7 +57,7 @@ void OpenXRActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < tabs->get_child_count(); i++) {
-				Control *tab = static_cast<Control *>(tabs->get_child(i));
+				Control *tab = Object::cast_to<Control>(tabs->get_child(i));
 				if (tab) {
 					tab->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 				}
@@ -208,7 +208,7 @@ void OpenXRActionMapEditor::_on_remove_action_set(Object *p_action_set_editor) {
 void OpenXRActionMapEditor::_on_action_removed() {
 	for (int i = 0; i < tabs->get_tab_count(); i++) {
 		// First tab won't be an interaction profile editor, but being thorough..
-		OpenXRInteractionProfileEditorBase *interaction_profile_editor = static_cast<OpenXRInteractionProfileEditorBase *>(tabs->get_tab_control(i));
+		OpenXRInteractionProfileEditorBase *interaction_profile_editor = Object::cast_to<OpenXRInteractionProfileEditorBase>(tabs->get_tab_control(i));
 		if (interaction_profile_editor) {
 		}
 	}
@@ -309,7 +309,7 @@ void OpenXRActionMapEditor::_on_tabs_tab_changed(int p_tab) {
 }
 
 void OpenXRActionMapEditor::_on_tab_button_pressed(int p_tab) {
-	OpenXRInteractionProfileEditorBase *interaction_profile_editor = static_cast<OpenXRInteractionProfileEditorBase *>(tabs->get_tab_control(p_tab));
+	OpenXRInteractionProfileEditorBase *interaction_profile_editor = Object::cast_to<OpenXRInteractionProfileEditorBase>(tabs->get_tab_control(p_tab));
 	ERR_FAIL_NULL(interaction_profile_editor);
 
 	undo_redo->create_action(TTR("Remove interaction profile"));
@@ -375,9 +375,9 @@ void OpenXRActionMapEditor::_clear_action_map() {
 		child->queue_free();
 	}
 
-	for (int i = 0; i < tabs->get_tab_count(); i++) {
+	for (int i = tabs->get_tab_count() - 1; i >= 0; --i) {
 		// First tab won't be an interaction profile editor, but being thorough..
-		OpenXRInteractionProfileEditorBase *interaction_profile_editor = static_cast<OpenXRInteractionProfileEditorBase *>(tabs->get_tab_control(i));
+		OpenXRInteractionProfileEditorBase *interaction_profile_editor = Object::cast_to<OpenXRInteractionProfileEditorBase>(tabs->get_tab_control(i));
 		if (interaction_profile_editor) {
 			tabs->remove_child(interaction_profile_editor);
 			interaction_profile_editor->queue_free();
