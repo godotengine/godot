@@ -5469,10 +5469,8 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 						// Can also be used as storage, add to mutable sampled.
 						mutable_sampled_textures.push_back(texture);
 					}
-					if (texture->owner.is_valid()) {
-						texture = texture_owner.get_or_null(texture->owner);
-						ERR_FAIL_COND_V(!texture, RID()); // Bug, should never happen.
-					}
+
+					DEV_ASSERT(!texture->owner.is_valid() || texture_owner.get_or_null(texture->owner));
 
 					img_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -5523,10 +5521,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 						mutable_sampled_textures.push_back(texture);
 					}
 
-					if (texture->owner.is_valid()) {
-						texture = texture_owner.get_or_null(texture->owner);
-						ERR_FAIL_COND_V(!texture, RID()); // Bug, should never happen.
-					}
+					DEV_ASSERT(!texture->owner.is_valid() || texture_owner.get_or_null(texture->owner));
 
 					img_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -5571,10 +5566,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 						mutable_storage_textures.push_back(texture);
 					}
 
-					if (texture->owner.is_valid()) {
-						texture = texture_owner.get_or_null(texture->owner);
-						ERR_FAIL_COND_V(!texture, RID()); // Bug, should never happen.
-					}
+					DEV_ASSERT(!texture->owner.is_valid() || texture_owner.get_or_null(texture->owner));
 
 					img_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
@@ -5736,10 +5728,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					img_info.sampler = VK_NULL_HANDLE;
 					img_info.imageView = texture->view;
 
-					if (texture->owner.is_valid()) {
-						texture = texture_owner.get_or_null(texture->owner);
-						ERR_FAIL_COND_V(!texture, RID()); // Bug, should never happen.
-					}
+					DEV_ASSERT(!texture->owner.is_valid() || texture_owner.get_or_null(texture->owner));
 
 					img_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
