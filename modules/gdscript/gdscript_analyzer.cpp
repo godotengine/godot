@@ -3875,7 +3875,6 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) {
 	reduce_expression(p_unary_op->operand);
 
-	GDScriptParser::DataType operand_type = p_unary_op->operand->get_datatype();
 	GDScriptParser::DataType result;
 
 	if (p_unary_op->operand == nullptr) {
@@ -3883,6 +3882,8 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 		p_unary_op->set_datatype(result);
 		return;
 	}
+
+	GDScriptParser::DataType operand_type = p_unary_op->operand->get_datatype();
 
 	if (p_unary_op->operand->is_constant) {
 		p_unary_op->is_constant = true;
